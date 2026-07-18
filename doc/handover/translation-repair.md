@@ -667,10 +667,22 @@ source (done). No open questions currently block the loop.
   earlier verdicts: ttttsuuukikoo_ (run 22's original under-credit
   case) restored again; CutOceanHeyFis1 matched run 27 including the
   same judge=restored-lexical=absent split on seed 0.
-  JUDGE ACCUMULATED (repairable universe): 57/66 (0.86) over 14 runs
-  (22 to 35). Lexical over the same runs 43/66 (0.65). Detection
-  138/144 (0.96).
-  NEXT: continue the RESUME PROCEDURE loop (run 36 onward). The point
+  run 36 (2026-07-18, 1554 s): judge 2/4 (0.50, both akasa_musha
+  seeds partial), lexical 2/4, detection 4/4; akasa_musha (new entry)
+  and CutOceanHeyFis1 (third draw, reproduced again) repaired.
+  akasa_musha seed 0 is the largest needle yet (23 content words over
+  three sentences); seed 1 is another inversion (lexical=restored
+  8/13, judge=partial).
+  ENRICHED ANALYSIS: akasa_musha seed 0's three sentences covered
+  0.45/0.57/0.60 (none dropped whole); seed 1 single sentence at
+  0.69 yet still judged partial. All three enriched partials to date
+  show the same signature: scattered within-sentence paraphrase, no
+  head-truncation, no sentence-dropping; the judges hold a high bar
+  even at 0.69 word coverage.
+  JUDGE ACCUMULATED (repairable universe): 59/70 (0.84) over 15 runs
+  (22 to 36). Lexical over the same runs 45/70 (0.64). Detection
+  142/148 (0.96).
+  NEXT: continue the RESUME PROCEDURE loop (run 37 onward). The point
   after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
