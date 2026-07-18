@@ -765,7 +765,15 @@ source (done). No open questions currently block the loop.
   run). Promotion changes the measured pipeline mid-accumulation, so
   it awaits explicit direction; the loop continues on the BASELINE
   prompt meanwhile for measurement continuity.
-  NEXT: resume the RESUME PROCEDURE loop (run 38 onward, baseline
+  run 38 (2026-07-18, 1598 s): judge 4/4 (1.0), lexical 3/4,
+  detection 4/4; xixi_yuexi and homoyamakaze (both first-time
+  entries) fully repaired (two dispatched, four budget-skipped).
+  homoyamakaze includes a 16-word needle restored at 11/16 and
+  another under-credit (3/10 words, unanimous judge=restored).
+  JUDGE ACCUMULATED (repairable universe): 66/80 (0.83) over 17 runs
+  (22 to 38). Lexical 51/80 (0.64). Detection 152/158 (0.96).
+  Lenient 78/80 (0.98). Probe-adjusted effective 78/80 (0.98).
+  NEXT: continue the RESUME PROCEDURE loop (run 39 onward, baseline
   prompt). The point after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
