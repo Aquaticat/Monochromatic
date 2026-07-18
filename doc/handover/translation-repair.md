@@ -682,8 +682,28 @@ source (done). No open questions currently block the loop.
   JUDGE ACCUMULATED (repairable universe): 59/70 (0.84) over 15 runs
   (22 to 36). Lexical over the same runs 45/70 (0.64). Detection
   142/148 (0.96).
-  NEXT: continue the RESUME PROCEDURE loop (run 37 onward). The point
-  after run 23 is where the user chose to compact.
+  USER DIRECTION (2026-07-18, interactive): pursue BOTH the
+  derivability probe AND the editor calibration A/B, probe first.
+  Built and committed while run 37 was in flight:
+  - Derivability probe (commit `2951e9b42`): derivability-wire.ts +
+    derivability-probe.ts ask the judge ensemble whether each deleted
+    sentence is fully derivable from the zh source
+    (derivable/partially-derivable/not-derivable). UPPER-median
+    resolution (opposite of the restoration judge) rounds splits
+    toward derivable: the probe can only EXCUSE a partial, so the
+    excuse carries the burden of proof. Unjudged defaults derivable.
+    Driver `derivability-probe-run.ts` (scratchpad) probes all five
+    stable-partial entries with restored siblings as controls; run it
+    BETWEEN benchmark runs (one stream per model is fastest).
+  - Editor rule addendum (commit `c767a550a`):
+    RepairModels.editorRuleAddendum threads one extra rule line into
+    the editor system prompt (composed from named blocks, never
+    string surgery). A/B plan: baseline vs clause-enumeration rule on
+    the stable-partial entries, judge verdicts on target seeds
+    compared; only meaningful for seeds the probe rules derivable.
+  NEXT: record run 37, then run the derivability probe in the gap
+  before run 38. The point after run 23 is where the user chose to
+  compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
