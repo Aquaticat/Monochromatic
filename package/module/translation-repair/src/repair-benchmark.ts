@@ -122,6 +122,13 @@ export type RepairAttemptRecord = {
    * Failure or skip detail in scorecard-stable wording.
    */
   readonly detail: string;
+
+  /**
+   * Shipped candidate text; present only on dispatched attempts so
+   * saved run artifacts support post-run analysis of how partially
+   * restored seeds differ from their planted needles.
+   */
+  readonly repairedText?: string;
 };
 
 /**
@@ -511,6 +518,7 @@ export async function runRepairBenchmark(
         },)
           .length,
         detail: '',
+        repairedText: result.repairedText,
       },);
     }
     catch (error) {
