@@ -750,11 +750,23 @@ source (done). No open questions currently block the loop.
   The rule text lives in scratchpad `editor-ab-run.ts` as
   CLAUSE_ENUMERATION_RULE. Variant arm 2 (replicate) launched to
   confirm the n=1 flip before drawing conclusions.
-  NEXT: read arm 2, record the A/B verdict, then resume the loop at
-  run 38. Promoting the addendum to the baseline prompt is a design
-  decision for the user (it changes the measured pipeline
-  mid-accumulation). The point after run 23 is where the user chose
-  to compact.
+  EDITOR A/B, VARIANT ARM 2 (2026-07-18, 591 s): reproduces arm 1
+  EXACTLY: seed 1 restored (unanimous), seed 0 partial, identical
+  lexical counts (6/15, 5/12).
+  A/B VERDICT: the clause-enumeration rule reliably flips TLL1122
+  seed 1 (2/2 variant arms vs partial at baseline); TLL1122 seed 0 is
+  now the accumulation's ONLY unresolved derivable seed, resisting
+  both arms at 0.47 coverage. Why it resists is open; candidate
+  probes: per-clause derivability of that one sentence, or a
+  different editor model on that entry.
+  DECISION FOR USER: promote CLAUSE_ENUMERATION_RULE into the
+  baseline editor prompt? Evidence: 2/2 reproducible win on the one
+  targeted seed, no observed regression (arm seeds elsewhere weren't
+  run). Promotion changes the measured pipeline mid-accumulation, so
+  it awaits explicit direction; the loop continues on the BASELINE
+  prompt meanwhile for measurement continuity.
+  NEXT: resume the RESUME PROCEDURE loop (run 38 onward, baseline
+  prompt). The point after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
