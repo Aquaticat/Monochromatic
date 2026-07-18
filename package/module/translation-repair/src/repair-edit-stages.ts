@@ -67,6 +67,8 @@ export type EditorStageResult = {
  *
  * @param editorModelId - editor voice for this chunk
  *
+ * @param editorRuleAddendum - extra rule line for prompt calibration
+ *
  * @param sourceText - original chunk text
  *
  * @param targetText - translation chunk text the envelopes were cut from
@@ -92,6 +94,7 @@ export async function runEditorStage(
   {
     client,
     editorModelId,
+    editorRuleAddendum,
     sourceText,
     targetText,
     envelopes,
@@ -102,6 +105,7 @@ export async function runEditorStage(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly editorModelId: SyntheticModelId;
+    readonly editorRuleAddendum?: string;
     readonly sourceText: string;
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
@@ -119,6 +123,7 @@ export async function runEditorStage(
     targetText,
     envelopes,
     issues,
+    ...(editorRuleAddendum === undefined ? {} : { editorRuleAddendum, }),
   },);
 
   /**

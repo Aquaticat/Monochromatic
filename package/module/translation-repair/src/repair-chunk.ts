@@ -63,6 +63,12 @@ export type RepairModels = {
   readonly editorModelId: SyntheticModelId;
 
   /**
+   * Extra rule line appended to the editor system prompt, for prompt
+   * calibration experiments; absent means the baseline prompt.
+   */
+  readonly editorRuleAddendum?: string;
+
+  /**
    * Resolution checkers proving the repair.
    */
   readonly checkerModelIds: readonly SyntheticModelId[];
@@ -300,6 +306,9 @@ export async function repairChunk(
   const editor = await runEditorStage({
     client,
     editorModelId: models.editorModelId,
+    ...(models.editorRuleAddendum === undefined
+      ? {}
+      : { editorRuleAddendum: models.editorRuleAddendum, }),
     sourceText,
     targetText,
     envelopes,
