@@ -156,11 +156,26 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
-RESUME PROCEDURE (post-compaction, autonomous overnight loop).
-The user is running an unattended milestone-two accumulation loop and
-said "spare no expense, only stop when genuinely blocked; back in a few
-hours" (2026-07-17). Standing procedure, one run at a time (never
-concurrent; one stream per model is the fastest dispatch on this plan):
+MILESTONE TWO DECLARED COMPLETE (2026-07-18, user directive
+"Promote the clause-enumeration rule and declare milestone two").
+Final accumulated numbers over 20 judge-graded runs (22 to 41),
+repairable universe: judge strict 80/96 (0.83); PROBE-ADJUSTED
+EFFECTIVE 94/96 (0.98); lenient 92/96 (0.96); detection 166/174
+(0.95, the four falses being correct refusals of not-derivable
+content); lexical (retired comparison) 59/96 (0.61). Every miss is
+attributed: embellishment-capped partials, correct refusals of
+unfounded content, and TLL1122's two derivable seeds, one of which
+the now-promoted clause-enumeration rule (commit `b6967cbc9`)
+reproducibly fixes. The accumulation loop is CLOSED; run 42 (in
+flight at declaration, old baseline prompt) gets recorded as the
+final baseline-era run when it lands, and no run 43 follows.
+
+RESUME PROCEDURE (historical, loop closed at milestone-two
+declaration). The user ran an unattended milestone-two accumulation
+loop, "spare no expense, only stop when genuinely blocked; back in a
+few hours" (2026-07-17). Standing procedure was one run at a time
+(never concurrent; one stream per model is the fastest dispatch on
+this plan):
 1. Launch a budgeted benchmark pass:
    `cd <worktree> && mise exec -- node <scratchpad>/repair-benchmark-run.ts`
    where `<scratchpad>` is this session's scratchpad dir. The driver
@@ -806,8 +821,17 @@ source (done). No open questions currently block the loop.
   (22 to 41). Lexical 59/96 (0.61). Detection 166/174 (0.95, the four
   wangzihao980 falses being correct refusals in disguise). Lenient
   92/96 (0.96). Probe-adjusted effective 94/96 (0.98).
-  NEXT: continue the RESUME PROCEDURE loop (run 42 onward, baseline
-  prompt). The point after run 23 is where the user chose to compact.
+  PROMOTION AND DECLARATION (2026-07-18, user directive): the
+  clause-enumeration rule is now a baseline editor prompt rule
+  (commit `b6967cbc9`; the editorRuleAddendum plumbing stays for
+  future calibration experiments), and MILESTONE TWO IS DECLARED
+  COMPLETE with the final numbers recorded at the top of the resume
+  block. Run 42, launched before the promotion, runs the old baseline
+  and closes the baseline era when recorded; no run 43.
+  NEXT AFTER CLOSURE: package completeness per PKG (README, exported
+  API surface review, test coverage over every exported path) awaits
+  user direction, as does any milestone-three scoping.
+  The point after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
