@@ -793,7 +793,20 @@ source (done). No open questions currently block the loop.
   JUDGE ACCUMULATED (repairable universe): 78/92 (0.85) over 19 runs
   (22 to 40). Lexical 58/92 (0.63). Detection 164/170 (0.96).
   Lenient and probe-adjusted effective both 90/92 (0.98).
-  NEXT: continue the RESUME PROCEDURE loop (run 41 onward, baseline
+  run 41 (2026-07-18, 1919 s): judge 2/4, lexical 1/4, detection 2/4;
+  wangzihao980 and a2581911655 repaired (two dispatched, four
+  budget-skipped). wangzihao980's first re-draw since run 22
+  REPRODUCES it exactly: both seeds absent, detection false. With the
+  probe's not-derivable verdict this is the correct-refusal case
+  confirming across independent runs, and the detection "misses" are
+  the same coin: nothing is actually missing relative to zh, so the
+  panel rightly accepts no issue there. a2581911655 third draw, both
+  restored again.
+  JUDGE ACCUMULATED (repairable universe): 80/96 (0.83) over 20 runs
+  (22 to 41). Lexical 59/96 (0.61). Detection 166/174 (0.95, the four
+  wangzihao980 falses being correct refusals in disguise). Lenient
+  92/96 (0.96). Probe-adjusted effective 94/96 (0.98).
+  NEXT: continue the RESUME PROCEDURE loop (run 42 onward, baseline
   prompt). The point after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
