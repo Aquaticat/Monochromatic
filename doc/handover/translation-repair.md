@@ -773,7 +773,15 @@ source (done). No open questions currently block the loop.
   JUDGE ACCUMULATED (repairable universe): 66/80 (0.83) over 17 runs
   (22 to 38). Lexical 51/80 (0.64). Detection 152/158 (0.96).
   Lenient 78/80 (0.98). Probe-adjusted effective 78/80 (0.98).
-  NEXT: continue the RESUME PROCEDURE loop (run 39 onward, baseline
+  run 39 (2026-07-18, 2281 s): judge 6/6 (1.0), lexical 5/6,
+  detection 6/6; Katerina (first draw), homoyamakaze, a2581911655
+  all fully repaired (three dispatched, three budget-skipped). Both
+  repeats reproduced earlier verdicts; a2581911655 seed 0 repeated
+  its under-credit (6/18, unanimous judge=restored).
+  JUDGE ACCUMULATED (repairable universe): 72/86 (0.84) over 18 runs
+  (22 to 39). Lexical 56/86 (0.65). Detection 158/164 (0.96).
+  Lenient and probe-adjusted effective both 84/86 (0.98).
+  NEXT: continue the RESUME PROCEDURE loop (run 40 onward, baseline
   prompt). The point after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
