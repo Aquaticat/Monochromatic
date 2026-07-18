@@ -152,6 +152,39 @@ await describe({
         expect(wholePrompt.includes('baseHash',),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'splices a calibration addendum in as one more enforced rule',
+      fn: async () => {
+        /** Experimental rule line under test. */
+        const addendum = 'Translate every whisker clause separately.';
+
+        /** Plan carrying the addendum. */
+        const plan = buildEditorMessages({
+          sourceText: '原文',
+          targetText: TARGET_TEXT,
+          envelopes: ENVELOPES,
+          issues: [],
+          editorRuleAddendum: addendum,
+        },);
+
+        /** System prompt as the editor receives it. */
+        const systemPrompt = plan.messages[0]?.content ?? '';
+        expect(systemPrompt,).toContain(`- ${addendum}`,);
+        // The addendum lands inside the rule list, before the reply shape.
+        expect(systemPrompt.indexOf(`- ${addendum}`,),)
+          .toBeLessThan(systemPrompt.indexOf('Reply with ONLY',),);
+
+        /** Baseline plan without the addendum. */
+        const baseline = buildEditorMessages({
+          sourceText: '原文',
+          targetText: TARGET_TEXT,
+          envelopes: ENVELOPES,
+          issues: [],
+        },);
+        expect((baseline.messages[0]?.content ?? '').includes(addendum,),).toBe(false,);
+      },
+    },),
   ],
 },);
 

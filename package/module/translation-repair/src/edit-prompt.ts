@@ -23,9 +23,10 @@ const EDITOR_FENCE = '=====';
 const REGION_CONTEXT_CHARS = 40;
 
 /**
- * System instructions shared by every editor call.
+ * Rule block of the editor system prompt; a calibration addendum splices
+ * after its last rule line.
  */
-const EDITOR_SYSTEM_PROMPT = `You are a careful bilingual translation editor.
+const EDITOR_RULES_BLOCK = `You are a careful bilingual translation editor.
 Reviewers confirmed the numbered issues below in the TRANSLATION of the ORIGINAL document.
 Fix them by rewriting ONLY the numbered edit regions.
 
@@ -36,9 +37,19 @@ Rules, strictly enforced by a machine:
 - When an issue reports omitted content, translate ALL of the missing content in full sentences; never summarize, compress, or drop clauses. A short paraphrase of a long omission is not a fix.
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
-- Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.
+- Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.`;
 
-Reply with ONLY a JSON object of shape {"edits": [{"region": 1, "newText": "..."}]}. No prose, no code fences.`;
+/**
+ * Reply-shape block closing the editor system prompt.
+ */
+const EDITOR_REPLY_BLOCK = `Reply with ONLY a JSON object of shape {"edits": [{"region": 1, "newText": "..."}]}. No prose, no code fences.`;
+
+/**
+ * System instructions shared by every baseline editor call.
+ */
+const EDITOR_SYSTEM_PROMPT = `${EDITOR_RULES_BLOCK}
+
+${EDITOR_REPLY_BLOCK}`;
 
 /**
  * Messages plus the envelope order edits resolve through:
@@ -164,6 +175,9 @@ CONTEXT: ...${before}«REGION ${regionNumber}»${after}...`;
  *
  * @param issues - adjudicated issues referenced by the envelopes
  *
+ * @param editorRuleAddendum - extra rule line appended to the enforced
+ * rule list, for prompt calibration experiments
+ *
  * @returns Messages plus the envelope numbering order
  *
  * @example
@@ -177,11 +191,13 @@ export function buildEditorMessages(
     targetText,
     envelopes,
     issues,
+    editorRuleAddendum,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
     readonly issues: readonly AdjudicatedIssue[];
+    readonly editorRuleAddendum?: string;
   },
 ): EditorPromptPlan {
   /**
@@ -199,11 +215,22 @@ export function buildEditorMessages(
     },);
   },);
 
+  /**
+   * System prompt with the calibration addendum composed in as one more
+   * machine-enforced rule, before the reply-shape block.
+   */
+  const systemPrompt = editorRuleAddendum === undefined
+    ? EDITOR_SYSTEM_PROMPT
+    : `${EDITOR_RULES_BLOCK}
+- ${editorRuleAddendum}
+
+${EDITOR_REPLY_BLOCK}`;
+
   return {
     messages: [
       {
         role: 'system',
-        content: EDITOR_SYSTEM_PROMPT,
+        content: systemPrompt,
       },
       {
         role: 'user',
