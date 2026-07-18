@@ -740,10 +740,21 @@ source (done). No open questions currently block the loop.
   wrong, run 22's two wangzihao980 absents make lenient through run
   37 74/76 (0.97). Per-run lenient scorecards were correct; only the
   accumulated claim in these notes was wrong.
-  NEXT: editor calibration A/B on TLL1122 (baseline = run 37, both
-  seeds partial; variant = clause-enumeration editorRuleAddendum),
-  then resume the loop at run 38. The point after run 23 is where the
-  user chose to compact.
+  EDITOR A/B, VARIANT ARM 1 (2026-07-18, 937 s): TLL1122 with the
+  clause-enumeration editorRuleAddendum. Seed 1 FLIPPED partial ->
+  RESTORED (unanimous, on 5/12 lexical words: meaning-complete
+  rewording only the zh-anchored judge credits). Seed 0 stayed
+  partial. Word coverage identical across arms (0.47 and 0.50), so
+  the flip is purely semantic. Retry-to-quorum recovered a 4-critic
+  forfeit and a whole-panel 7-voice forfeit inside this run.
+  The rule text lives in scratchpad `editor-ab-run.ts` as
+  CLAUSE_ENUMERATION_RULE. Variant arm 2 (replicate) launched to
+  confirm the n=1 flip before drawing conclusions.
+  NEXT: read arm 2, record the A/B verdict, then resume the loop at
+  run 38. Promoting the addendum to the baseline prompt is a design
+  decision for the user (it changes the measured pipeline
+  mid-accumulation). The point after run 23 is where the user chose
+  to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
   per seed, which TLL1122 and luxuanwen3 need.
