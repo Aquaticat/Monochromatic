@@ -180,7 +180,11 @@ concurrent; one stream per model is the fastest dispatch on this plan):
 Artifacts persist in this session's scratchpad across compaction:
 `repair-benchmark-run.ts` (driver), `repair-benchmark-accumulator.jsonl`
 (one line per run with judge+detection+lexical per seed),
-`repair-benchmark-result-<ts>.json` (full per-run dumps).
+`repair-benchmark-result-<ts>.json` (full per-run dumps; from run 33
+they also carry `repairedText` per dispatched record, commit
+`66e0d0f42`), and `partial-needle-analysis.ts` (offline per-sentence
+coverage report over non-restored seeds in enriched artifacts, zero
+quota; run it when a stable-partial entry re-draws).
 THE HEADLINE NUMBER is judge `seededRepairRate` (zh-anchored, strict
 restored/judged); `seededRepairRateLenient` adds partial;
 `lexicalRepairRate` is the retired vocabulary grader kept for contrast.
