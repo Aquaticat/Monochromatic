@@ -781,7 +781,19 @@ source (done). No open questions currently block the loop.
   JUDGE ACCUMULATED (repairable universe): 72/86 (0.84) over 18 runs
   (22 to 39). Lexical 56/86 (0.65). Detection 158/164 (0.96).
   Lenient and probe-adjusted effective both 84/86 (0.98).
-  NEXT: continue the RESUME PROCEDURE loop (run 40 onward, baseline
+  run 40 (2026-07-18, 1504 s): judge 6/6 (1.0), lexical 2/6,
+  detection 6/6; SU5ZI2MO1, luxuanwen3, coin all fully repaired
+  (three dispatched, three budget-skipped). LUXUANWEN3 at last: one
+  of the two original pre-judge long-needle miss entries dispatched
+  for the first time in the judge era, and BOTH seeds judged restored
+  on extreme under-credits (2/13 and 2/8 lexical words, unanimous).
+  Its historic lexical-era "miss" was faithful rewording; with
+  TLL1122 probed and A/B'd, every pre-judge question is now closed.
+  SU5ZI2MO1's 20-word needle restored again (third time).
+  JUDGE ACCUMULATED (repairable universe): 78/92 (0.85) over 19 runs
+  (22 to 40). Lexical 58/92 (0.63). Detection 164/170 (0.96).
+  Lenient and probe-adjusted effective both 90/92 (0.98).
+  NEXT: continue the RESUME PROCEDURE loop (run 41 onward, baseline
   prompt). The point after run 23 is where the user chose to compact.
   Seed-detection grading (commit `a5c368a8a`) is active from run 5:
   it splits panel detection misses from editor under-restoration
