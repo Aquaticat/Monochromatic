@@ -216,7 +216,7 @@ export default { policies: object({}) };
 export default { trust: { children: Boolean(missing) } };
 `,);
         const failure = await captureBuildFailure(fixture,);
-        if (!Error.isError(failure,)
+        if ((!Error.isError(failure,))
           || (!('errors' in failure))
           || (!Array.isArray(failure.errors)))
           throw new Error('Expected Rolldown failure with nested plugin errors.',);
