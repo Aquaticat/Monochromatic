@@ -427,8 +427,8 @@ async function initializeAutoMode(
       /**
        * Private current and historical compatibility roots whose existing non-secret contents bypass prompts.
        */
-      const trustedAgentTempDirs = event.toolName === 'read'
-        || event.toolName === 'bash'
+      const trustedAgentTempDirs = (event.toolName === 'read'
+        || event.toolName === 'bash')
         ? await agentTempAllowlistedDirs({
           home: signalCtx.home,
           historicalAgentTempDir,
