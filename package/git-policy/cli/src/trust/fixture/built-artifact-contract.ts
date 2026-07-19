@@ -231,7 +231,7 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
    */
   const scopedPackages = (await readdir('/opt/cli-git/node_modules/@monochromatic-dev',))
     .toSorted();
-  if (JSON.stringify(scopedPackages,) !== JSON.stringify(['cli-git',],))
+  if (JSON.stringify(scopedPackages,) !== JSON.stringify(['git-policy-cli',],))
     throw new Error(`packed cli-git retained private workspace packages: ${scopedPackages.join(', ')}`,);
   /**
    * Package-root import proving policy export and inert executable boundary.
