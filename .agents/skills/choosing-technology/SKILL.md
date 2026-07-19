@@ -461,7 +461,8 @@ and skill revision do not participate in collision identity.
 
 Before each report edit:
 
-1. Ensure `~/temp/agent/` and `~/temp/agent/technology-vet-locks/` exist with private permissions.
+1. Run `mkdir --parents "${HOME}/temp/agent/technology-vet-locks"`,
+   then `chmod 700 "${HOME}/temp/agent" "${HOME}/temp/agent/technology-vet-locks"`.
 2. Derive a lock key from the absolute report path.
 3. Atomically create the lock with create-new semantics.
 4. Record session ID,
