@@ -552,14 +552,17 @@ The package `/ts` export now names the source-only module at
 }
 ```
 
-`package/git-policy/cli/src/trust/typescript-source-capture.ts:270-292`
+`package/git-policy/cli/src/trust/typescript-source-capture.ts:270-294`
 anchors cli-git's own imports to that installed source,
 keeps consumer resolution first for other packages,
-and falls back only to package names in the packed runtime manifest:
+falls back only to package names in the packed runtime manifest,
+and rejects any remaining unresolved package before output generation:
 
 ```ts
 const packageName = artifactPackageName(source,);
-if ((source === CLI_GIT_PACKAGE_IMPORT) || (source === CLI_GIT_SOURCE_IMPORT))
+if (((typeof packageName) !== 'symbol')
+  && (packageName === CLI_GIT_PACKAGE_IMPORT)
+  && ((source === CLI_GIT_PACKAGE_IMPORT) || (source === CLI_GIT_SOURCE_IMPORT)))
   return installedAuthoringSourcePath;
 const consumerResolved = await this.resolve(
   source,
@@ -571,6 +574,7 @@ if ((consumerResolved !== null)
   return consumerResolved;
 if (((typeof packageName) !== 'symbol') && ARTIFACT_RUNTIME_PACKAGE_NAMES.has(packageName,))
   return artifactImportPath(source,);
+throw new TypeScriptBuildError(`Bare TypeScript package import did not resolve into bundle: ${source}`,);
 ```
 
 The packed wrapper fixture installs under `/opt/cli-git`,
