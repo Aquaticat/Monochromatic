@@ -139,7 +139,7 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
   /**
    * Packed JavaScript and declaration artifact names.
    */
-  const artifactFiles = (await readdir('/work/node_modules/@monochromatic-dev/git-policy-cli/dist/final/node',))
+  const artifactFiles = (await readdir('/opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/dist/final/node',))
     .toSorted();
   /**
    * Exact files permitted in packed runtime artifact directory.
@@ -154,13 +154,13 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
    * Packed executable source used for syntax-boundary audit.
    */
   const artifactSource = await readFile(
-    '/work/node_modules/@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs',
+    '/opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs',
     'utf8',
   );
   /**
    * Acorn parser resolved from packed cli-git runtime dependencies.
    */
-  const parser: unknown = createRequire('/work/package.json',)('acorn');
+  const parser: unknown = createRequire('/opt/cli-git/package.json',)('acorn');
   if (!isArtifactParser(parser,))
     throw new Error('packed acorn dependency has no parse function',);
   /**
@@ -214,7 +214,7 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
    * Published TypeScript source retained for explicit source consumers.
    */
   const sourceFiles = await readdir(
-    '/work/node_modules/@monochromatic-dev/git-policy-cli/src',
+    '/opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/src',
     { recursive: true, },
   );
   if (!sourceFiles.includes('index.ts',))
@@ -229,7 +229,7 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
   /**
    * Installed packages in private workspace scope.
    */
-  const scopedPackages = (await readdir('/work/node_modules/@monochromatic-dev',))
+  const scopedPackages = (await readdir('/opt/cli-git/node_modules/@monochromatic-dev',))
     .toSorted();
   if (JSON.stringify(scopedPackages,) !== JSON.stringify(['cli-git',],))
     throw new Error(`packed cli-git retained private workspace packages: ${scopedPackages.join(', ')}`,);
@@ -244,7 +244,7 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
       `import { repositoryPolicyPlugin } from '@monochromatic-dev/git-policy-cli';
 console.log(JSON.stringify({ name: repositoryPolicyPlugin.name, exitCode: process.exitCode ?? null }));`,
     ],
-    cwd: '/work',
+    cwd: '/opt/cli-git',
   },);
   assertIncludes({
     text: packageImport.stdout,

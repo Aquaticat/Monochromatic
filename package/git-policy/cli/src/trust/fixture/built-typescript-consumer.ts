@@ -3,6 +3,7 @@
  */
 import {
   mkdir,
+  readdir,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -33,6 +34,12 @@ export async function verifyTypeScriptConsumer({
    */
   const repository = '/work/typescript';
   await mkdir(repository,);
+  /**
+   * Initial entries proving consumer package-manager state is absent.
+   */
+  const initialEntries = await readdir(repository,);
+  if (initialEntries.length !== 0)
+    throw new Error(`poison TypeScript repository was not empty: ${initialEntries.join(', ')}`,);
   await execute({
     command: '/usr/bin/git',
     args: [
@@ -50,7 +57,10 @@ export async function verifyTypeScriptConsumer({
   );
   await writeFile(
     policyPath,
-    `export const message: string = 'built TypeScript ran';\n`,
+    `import acornPackage from 'acorn/package.json';
+import { object } from 'valibot';
+export const message: string = \`built TypeScript \${String(acornPackage.name)} \${String(Boolean(object({})))}\`;
+`,
   );
   /**
    * TypeScript config with bare package and relative imports.
@@ -61,10 +71,10 @@ export async function verifyTypeScriptConsumer({
   );
   await writeFile(
     configPath,
-    `import { object } from 'valibot';
+    `import { defineConfig } from '@monochromatic-dev/git-policy-cli/ts';
 import { message } from './policy.ts';
-export default {
-  trust: { children: Boolean(object({})) },
+export default defineConfig({
+  trust: { children: true },
   plugins: {
     typescript: {
       name: 'typescript',
@@ -77,8 +87,19 @@ export default {
       }],
     },
   },
-};
+});
 `,
+  );
+  /**
+   * Ambient tsconfig whose unavailable extension must never be consulted.
+   */
+  const tsconfigPath = join(
+    repository,
+    'tsconfig.json',
+  );
+  await writeFile(
+    tsconfigPath,
+    JSON.stringify({ extends: '@missing/config/dom', },),
   );
   /**
    * First TypeScript loading use remains blocked.
@@ -123,6 +144,8 @@ export default {
     expected: 'bare package import is bundled but excluded',
     context: 'package warning',
   },);
+  if (trusted.stderr.includes('UNRESOLVED_IMPORT',))
+    throw new Error(`poison TypeScript trust leaked unresolved import\n${trusted.stderr}`,);
   /**
    * Stored bundle produces direct policy finding.
    */
@@ -141,7 +164,7 @@ export default {
   },);
   assertIncludes({
     text: finding.stdout,
-    expected: 'built TypeScript ran',
+    expected: 'built TypeScript acorn true',
     context: 'stored TypeScript policy',
   },);
   /**

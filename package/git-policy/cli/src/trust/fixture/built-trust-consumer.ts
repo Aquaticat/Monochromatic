@@ -26,6 +26,7 @@ import { verifyPolicyConfigConsumer, } from './built-policy-config-consumer.ts';
 import { verifyPolicyDefaultConsumer, } from './built-policy-default-consumer.ts';
 import { verifyRecursiveConsumer, } from './built-recursive-consumer.ts';
 import { verifyRepositoryPluginConsumer, } from './built-repository-plugin-consumer.ts';
+import { verifyTypeScriptBootstrapConsumer, } from './built-typescript-bootstrap-consumer.ts';
 import { verifyTypeScriptConsumer, } from './built-typescript-consumer.ts';
 
 await execute({
@@ -42,8 +43,12 @@ await execute({
     'mount',
   ],
 },);
+/**
+ * Packed wrapper installation kept outside consumer repository ancestry.
+ */
+const installationRoot = '/opt/cli-git';
 await mkdir(
-  '/work',
+  installationRoot,
   { recursive: true, },
 );
 await execute({
@@ -52,7 +57,7 @@ await execute({
     'init',
     '--yes',
   ],
-  cwd: '/work',
+  cwd: installationRoot,
 },);
 await execute({
   command: 'npm',
@@ -61,8 +66,12 @@ await execute({
     '--ignore-scripts',
     '/fixture/cli.tgz',
   ],
-  cwd: '/work',
+  cwd: installationRoot,
 },);
+await mkdir(
+  '/work',
+  { recursive: true, },
+);
 await verifyBuiltArtifactContract();
 /**
  * Disposable Git repository.
@@ -107,7 +116,7 @@ await writeFile(
  */
 const env: NodeJS.ProcessEnv = {
   ...process.env,
-  PATH: `/work/node_modules/.bin${delimiter}${process.env
+  PATH: `${installationRoot}/node_modules/.bin${delimiter}${process.env
     .PATH
     ?? ''}`,
 };
@@ -333,5 +342,6 @@ await verifyForbiddenStringsPolicyConsumer({ env, },);
 await verifyPostCommitPolicyConsumer({ env, },);
 await verifyPostCommitRoutingConsumer({ env, },);
 await verifyAutofixTransactionConsumer({ env, },);
+await verifyTypeScriptBootstrapConsumer({ env, },);
 await verifyTypeScriptConsumer({ env, },);
 console.log('built-trust-consumer-ok',);
