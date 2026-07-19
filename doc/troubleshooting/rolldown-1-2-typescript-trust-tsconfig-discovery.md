@@ -563,9 +563,14 @@ That keeps normal wrapper startup lazy.
 Fourth,
 resolve every other bare import from the consumer first.
 When consumer resolution returns no module,
-fall back to ESM resolution from the installed artifact only when the imported
-package name is declared in cli-git's packed runtime dependency manifest.
-Apply this rule to imports from the root config and every tracked relative source.
+derive the package name from the bare specifier:
+the first segment for an unscoped package and the first two segments for a scoped
+package.
+Fall back to ESM resolution from the installed artifact only when that package name
+is declared in cli-git's packed runtime dependency manifest.
+This supports package subpaths without treating the complete subpath as a manifest
+key.
+Apply the rule to imports from the root config and every tracked relative source.
 Keep artifact-resolved packages outside exact-source invalidation and retain the
 existing bare-package disclosure.
 This preserves consumer-selected package versions,
@@ -603,6 +608,8 @@ imports.
 Also import an artifact runtime dependency such as `valibot` from a tracked relative
 module,
 and assert that no unresolved-import warning appears.
+Unit coverage for fallback eligibility must include unscoped and scoped package roots
+plus both subpath forms.
 The poison case is the red-before-fix regression;
 the no-tsconfig case is not.
 
