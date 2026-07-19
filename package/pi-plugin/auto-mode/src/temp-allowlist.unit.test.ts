@@ -36,8 +36,8 @@ await describe({
       name: agentTempAllowlistedDirs.name,
       children: [
         it({
-          name: 'includes private current root and excludes it after group read access',
-          fn: async function checksCurrentAgentTempRoot() {
+          name: 'includes private current and historical compatibility roots',
+          fn: async function checksAgentTempRoots() {
             const home = await mkdtemp(join(
               tmpdir(),
               'auto-mode-home-',
@@ -47,30 +47,57 @@ await describe({
               'temp',
               'agent',
             );
+            const historicalAgentTempDir = await mkdtemp(join(
+              tmpdir(),
+              'auto-mode-historical-',
+            ),);
             await mkdir(
               agentRoot,
               { recursive: true, },
             );
-            await chmod(
-              agentRoot,
-              PRIVATE_DIRECTORY_MODE,
-            );
+            await Promise.all([
+              chmod(
+                agentRoot,
+                PRIVATE_DIRECTORY_MODE,
+              ),
+              chmod(
+                historicalAgentTempDir,
+                PRIVATE_DIRECTORY_MODE,
+              ),
+            ],);
 
-            expect(await agentTempAllowlistedDirs({ home, },),).toContain(agentRoot,);
+            const trustedDirs = await agentTempAllowlistedDirs({
+              home,
+              historicalAgentTempDir,
+            },);
+            expect(trustedDirs,).toContain(agentRoot,);
+            expect(trustedDirs,).toContain(historicalAgentTempDir,);
 
             await chmod(
               agentRoot,
               GROUP_READABLE_DIRECTORY_MODE,
             );
 
-            expect(await agentTempAllowlistedDirs({ home, },),).not.toContain(agentRoot,);
-            await rm(
+            expect(await agentTempAllowlistedDirs({
               home,
-              {
-                recursive: true,
-                force: true,
-              },
-            );
+              historicalAgentTempDir,
+            },),).not.toContain(agentRoot,);
+            await Promise.all([
+              rm(
+                home,
+                {
+                  recursive: true,
+                  force: true,
+                },
+              ),
+              rm(
+                historicalAgentTempDir,
+                {
+                  recursive: true,
+                  force: true,
+                },
+              ),
+            ],);
           },
         },),
       ],

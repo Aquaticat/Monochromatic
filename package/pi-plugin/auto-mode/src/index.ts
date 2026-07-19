@@ -29,6 +29,7 @@ import {
   updateBypassStatus,
 } from './bypass.ts';
 import { loadMergedConfig, } from './config.ts';
+import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
 import { evaluate, } from './evaluate.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { registerGuardCommand, } from './guard-command.ts';
@@ -111,22 +112,33 @@ type SkillPromptEvent = {
  *
  * @param pi - the pi extension API
  *
+ * @param home - current account home used to derive current agent scratch root
+ *
+ * @param historicalAgentTempDir - historical compatibility root used for isolated verification
+ *
  * @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
  *
  * @example
  * ```typescript
- * // In ~/.pi/agent/settings.json:
- * // { "packages": ["./packages/pi-plugin/auto-mode"] }
+ * await initializeAutoMode({ pi, home: '/account-home' });
  * ```
  */
-export default async function autoMode(
-  pi: ForeignBorrowed<ExtensionAPI>,
+async function initializeAutoMode(
+  {
+    pi,
+    home = homedir(),
+    historicalAgentTempDir = HISTORICAL_AGENT_TEMP_DIR,
+  }: {
+    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly home?: string;
+    readonly historicalAgentTempDir?: string;
+  },
 ): Promise<void> {
   /**
    * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
    */
   const innerL = tagged({
-    tag: autoMode.name,
+    tag: initializeAutoMode.name,
     l,
   },);
   /**
@@ -410,14 +422,17 @@ export default async function autoMode(
        */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
-        home: homedir(),
+        home,
       };
       /**
        * Private current and historical compatibility roots whose existing non-secret contents bypass prompts.
        */
       const trustedAgentTempDirs = event.toolName === 'read'
         || event.toolName === 'bash'
-        ? await agentTempAllowlistedDirs({ home: signalCtx.home, },)
+        ? await agentTempAllowlistedDirs({
+          home: signalCtx.home,
+          historicalAgentTempDir,
+        },)
         : [];
       /**
        * Read-only roots whose existing non-secret contents bypass location prompts.
@@ -516,3 +531,26 @@ export default async function autoMode(
 
   //endregion
 }
+
+/**
+ * Load auto-mode through Pi's extension factory boundary.
+ *
+ * Delegates to {@link initializeAutoMode} with runtime-derived current account paths.
+ *
+ * @param pi - Pi extension API supplied by extension loader
+ *
+ * @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
+ *
+ * @example
+ * ```typescript
+ * // In ~/.pi/agent/settings.json:
+ * // { "packages": ["./packages/pi-plugin/auto-mode"] }
+ * ```
+ */
+export default async function autoMode(
+  pi: ForeignBorrowed<ExtensionAPI>,
+): Promise<void> {
+  await initializeAutoMode({ pi, },);
+}
+
+export { initializeAutoMode, };

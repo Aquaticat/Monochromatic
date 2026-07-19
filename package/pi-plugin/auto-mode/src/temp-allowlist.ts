@@ -104,6 +104,8 @@ async function isTrustedAgentTempDir(
  *
  * @param home - permits isolated callers to derive current-user boundary without mutating process env
  *
+ * @param historicalAgentTempDir - permits isolated callers to replace shared compatibility root
+ *
  * @returns private existing agent temp roots, otherwise an empty list
  *
  * @example
@@ -114,8 +116,10 @@ async function isTrustedAgentTempDir(
 async function agentTempAllowlistedDirs(
   {
     home = homedir(),
+    historicalAgentTempDir = HISTORICAL_AGENT_TEMP_DIR,
   }: {
     readonly home?: string;
+    readonly historicalAgentTempDir?: string;
   } = {},
 ): Promise<readonly string[]> {
   /**
@@ -127,7 +131,7 @@ async function agentTempAllowlistedDirs(
       'temp',
       'agent',
     ),
-    HISTORICAL_AGENT_TEMP_DIR,
+    historicalAgentTempDir,
   ];
   /**
    * Per-root trust decisions in the same order as {@link candidateDirs}.

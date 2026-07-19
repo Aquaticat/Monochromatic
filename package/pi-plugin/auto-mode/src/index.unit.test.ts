@@ -21,7 +21,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
 import { buildApprovalFingerprint, } from './tool-helpers.ts';
 import {
   VERDICT_ENTRY_TYPE,
@@ -160,8 +159,11 @@ function getHandler(
 
 //endregion
 
-// Dynamic import to get the default export
-const { default: autoMode, } = await import('./index.ts');
+// Dynamic import isolates extension registration until mock infrastructure exists.
+const {
+  default: autoMode,
+  initializeAutoMode,
+} = await import('./index.ts');
 
 await describe({
   name: autoMode.name,
@@ -249,18 +251,27 @@ await describe({
     },),
 
     it({
-      name: 'allows read tool calls inside historical compatibility directory',
-      fn: async function allowsHistoricalAgentTempRead() {
+      name: 'allows read tool calls inside current account scratch directory',
+      fn: async function allowsCurrentAgentTempRead() {
+        const home = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-home-',
+        ),);
+        const agentRoot = join(
+          home,
+          'temp',
+          'agent',
+        );
         await mkdir(
-          HISTORICAL_AGENT_TEMP_DIR,
+          agentRoot,
           { recursive: true, },
         );
         await chmod(
-          HISTORICAL_AGENT_TEMP_DIR,
+          agentRoot,
           PRIVATE_DIRECTORY_MODE,
         );
         const tempRoot = await mkdtemp(join(
-          HISTORICAL_AGENT_TEMP_DIR,
+          agentRoot,
           'auto-mode-index-test-',
         ),);
         const tempFile = join(
@@ -273,7 +284,14 @@ await describe({
         );
 
         const { api, registrations, } = createMockApi();
-        await autoMode(api,);
+        await initializeAutoMode({
+          pi: api,
+          home,
+          historicalAgentTempDir: join(
+            home,
+            'historical-agent',
+          ),
+        },);
 
         const toolCallHandler = getHandler({
           registrations,
@@ -290,13 +308,13 @@ await describe({
             },
           },
           {
-            cwd: '/var/home/user/project',
+            cwd: '/account-project',
           },
         );
 
         expect(result,).toBeUndefined();
         await rm(
-          tempRoot,
+          home,
           {
             recursive: true,
             force: true,
@@ -306,14 +324,23 @@ await describe({
     },),
 
     it({
-      name: 'allows Bash credential handoff through historical compatibility root',
-      fn: async function allowsHistoricalAgentTempBashCredentialHandoff() {
+      name: 'allows Bash credential handoff through current account scratch root',
+      fn: async function allowsCurrentAgentTempBashCredentialHandoff() {
+        const home = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-home-',
+        ),);
+        const agentRoot = join(
+          home,
+          'temp',
+          'agent',
+        );
         await mkdir(
-          HISTORICAL_AGENT_TEMP_DIR,
+          agentRoot,
           { recursive: true, },
         );
         await chmod(
-          HISTORICAL_AGENT_TEMP_DIR,
+          agentRoot,
           PRIVATE_DIRECTORY_MODE,
         );
         const projectRoot = await mkdtemp(join(
@@ -321,7 +348,7 @@ await describe({
           'amode-index-project-',
         ),);
         const tempRoot = await mkdtemp(join(
-          HISTORICAL_AGENT_TEMP_DIR,
+          agentRoot,
           'amode-index-test-',
         ),);
         const envPath = join(
@@ -346,7 +373,14 @@ await describe({
         );
 
         const { api, registrations, } = createMockApi();
-        await autoMode(api,);
+        await initializeAutoMode({
+          pi: api,
+          home,
+          historicalAgentTempDir: join(
+            home,
+            'historical-agent',
+          ),
+        },);
 
         const toolCallHandler = getHandler({
           registrations,
@@ -357,7 +391,7 @@ await describe({
           {
             type: 'tool_call',
             toolName: 'bash',
-            toolCallId: 'bash-agent-temp-credential',
+            toolCallId: 'bash-current-agent-temp-credential',
             input: {
               command:
                 `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" node ${scriptPath} gemini-3.5-flash ${imageGlob}`,
@@ -369,20 +403,22 @@ await describe({
         );
 
         expect(result,).toBeUndefined();
-        await rm(
-          projectRoot,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
-        await rm(
-          tempRoot,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
+        await Promise.all([
+          rm(
+            projectRoot,
+            {
+              recursive: true,
+              force: true,
+            },
+          ),
+          rm(
+            home,
+            {
+              recursive: true,
+              force: true,
+            },
+          ),
+        ],);
       },
     },),
 
