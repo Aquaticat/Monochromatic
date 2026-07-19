@@ -216,7 +216,11 @@ export default { policies: object({}) };
 export default { trust: { children: Boolean(missing) } };
 `,);
         const failure = await captureBuildFailure(fixture,);
-        expect(failure,).toBeInstanceOf(TypeScriptBuildError,);
+        if (!Error.isError(failure,)
+          || (!('errors' in failure))
+          || (!Array.isArray(failure.errors)))
+          throw new Error('Expected Rolldown failure with nested plugin errors.',);
+        expect(failure.errors[0],).toBeInstanceOf(TypeScriptBuildError,);
       },
     },),
     it({
