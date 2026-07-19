@@ -58,10 +58,10 @@ for (const path of paths) {
   if (content.includes('POST_ONLY_FORBIDDEN')) {
     const state = process.cwd() + '/.scanner-post-state';
     if (!existsSync(state)) { writeFileSync(state, 'seen'); continue; }
-    process.stderr.write(path + ':1:1..19 rule=2\\n'); process.exitCode = 1; break;
+    process.stderr.write(path + ':1 rule=2\\n'); process.exitCode = 1; break;
   }
   if (content.includes('FORBIDDEN_SCANNER')) {
-    process.stderr.write(path + ':1:1..17 rule=1\\n'); process.exitCode = 1; break;
+    process.stderr.write(path + ':1 rule=1\\n'); process.exitCode = 1; break;
   }
 }
 `,
