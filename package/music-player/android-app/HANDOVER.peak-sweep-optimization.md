@@ -1,6 +1,7 @@
 # Handover: Android peak-sweep parallelization and the sub-20-minute goal
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Cross-session state for the work that turned the Android true-peak sweep from "never finishes" into a

@@ -1,6 +1,7 @@
 # Oxlint no-immediate-mutation handover
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## User request
@@ -82,7 +83,7 @@ Prototype changes made:
 Prototype verification command started with process tool:
 
 ```bash
-# ${HOME}/temp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4
+# /tmp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4
 cargo test --package oxc_linter no_immediate_mutation::test
 ```
 

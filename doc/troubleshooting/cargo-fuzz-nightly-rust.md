@@ -1,6 +1,7 @@
 # cargo-fuzz 0.13.2 default ASan still emits nightly-only -Zsanitizer on stable Rust
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -157,9 +158,9 @@ host: x86_64 Linux
 Disposable fixture:
 
 ```bash
-rm --recursive --force ${HOME}/temp/agent/cargo-fuzz-stable-repro
-mkdir --parents ${HOME}/temp/agent/cargo-fuzz-stable-repro
-cd ${HOME}/temp/agent/cargo-fuzz-stable-repro
+rm --recursive --force /tmp/agent/cargo-fuzz-stable-repro
+mkdir --parents /tmp/agent/cargo-fuzz-stable-repro
+cd /tmp/agent/cargo-fuzz-stable-repro
 cargo +stable new fuzzed
 cd fuzzed
 cargo +stable fuzz init

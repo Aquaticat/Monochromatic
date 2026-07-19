@@ -1,6 +1,7 @@
 # Music-player true-peak parameter search handover
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## How to read this handover
@@ -338,7 +339,7 @@ for the candidate windows.
 The command just run was:
 
 ```bash
-# from ${HOME}/temp/agent/truepeak-param-search
+# from /tmp/agent/truepeak-param-search
 cargo run --release --bin measure_windows -- \
   out-20260624/tracks.jsonl \
   14 \
@@ -355,7 +356,7 @@ Use this file for the exact-target `14` window analysis:
 A second exact measurement is running for the faster bin candidate:
 
 ```bash
-# from ${HOME}/temp/agent/truepeak-param-search
+# from /tmp/agent/truepeak-param-search
 cargo run --release --bin measure_windows -- \
   out-20260624/tracks.jsonl \
   14 \
@@ -464,7 +465,7 @@ to loosen the too-quiet side.
 `measure_windows` exact run:
 
 ```bash
-# from ${HOME}/temp/agent/truepeak-param-search
+# from /tmp/agent/truepeak-param-search
 cargo run --release --bin measure_windows -- \
   out-20260624/tracks.jsonl \
   14 \

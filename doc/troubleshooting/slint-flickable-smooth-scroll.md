@@ -1,6 +1,7 @@
 # Slint 1.16.1 smooth-scrolls touchpad gestures but not mouse-wheel events; Slint 1.17.0 fixes the wheel path
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Slint 1.16.1's `Flickable` has momentum (fluent) scrolling,

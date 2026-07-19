@@ -1,6 +1,7 @@
 # Television versus fd plus rg audit
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Generated 2026-06-15.
@@ -795,25 +796,25 @@ require these mitigations before using it on untrusted trees or shared data:
 
 ```sh
 # Metadata and maintenance
-mkdir --parents ${HOME}/temp/agent && chmod 700 ${HOME}/temp/agent
+mkdir --parents /tmp/agent && chmod 700 /tmp/agent
 gh repo view alexpasmantier/television --json ...
 gh repo view sharkdp/fd --json ...
 gh repo view BurntSushi/ripgrep --json ...
 gh repo view junegunn/fzf --json ...
 gh repo view skim-rs/skim --json ...
 gh repo view jhawthorn/fzy --json ...
-python3 ${HOME}/temp/agent/gh_maintenance.py > ${HOME}/temp/agent/gh_maintenance.json
+python3 /tmp/agent/gh_maintenance.py > /tmp/agent/gh_maintenance.json
 
 # Clones
-gh repo clone alexpasmantier/television ${HOME}/temp/agent/television-20260615 -- --depth 1
-gh repo clone sharkdp/fd ${HOME}/temp/agent/fd-20260615 -- --depth 1
-gh repo clone BurntSushi/ripgrep ${HOME}/temp/agent/ripgrep-20260615 -- --depth 1
-gh repo clone junegunn/fzf ${HOME}/temp/agent/fzf-20260615 -- --depth 1
-gh repo clone skim-rs/skim ${HOME}/temp/agent/skim-20260615 -- --depth 1
-gh repo clone jhawthorn/fzy ${HOME}/temp/agent/fzy-20260615 -- --depth 1
+gh repo clone alexpasmantier/television /tmp/agent/television-20260615 -- --depth 1
+gh repo clone sharkdp/fd /tmp/agent/fd-20260615 -- --depth 1
+gh repo clone BurntSushi/ripgrep /tmp/agent/ripgrep-20260615 -- --depth 1
+gh repo clone junegunn/fzf /tmp/agent/fzf-20260615 -- --depth 1
+gh repo clone skim-rs/skim /tmp/agent/skim-20260615 -- --depth 1
+gh repo clone jhawthorn/fzy /tmp/agent/fzy-20260615 -- --depth 1
 
 # Television
-cd ${HOME}/temp/agent/television-20260615
+cd /tmp/agent/television-20260615
 cargo build --locked --release
 ./target/release/tv --source-command "printf 'alpha\\nbeta\\n'" --take-1
 ./target/release/tv files --input Cargo.toml --take-1
@@ -822,30 +823,30 @@ cargo tree --locked --invert libghostty-vt-sys
 python3 <pty script that drives a temporary malicious-entry cable action through target/release/tv>
 
 # fd
-cd ${HOME}/temp/agent/fd-20260615
+cd /tmp/agent/fd-20260615
 CARGO_BUILD_JOBS=2 cargo test --locked --all-features
-${HOME}/temp/agent/fd-20260615/target/debug/fd --hidden --type f txt <fixture>
+/tmp/agent/fd-20260615/target/debug/fd --hidden --type f txt <fixture>
 
 # ripgrep
-cd ${HOME}/temp/agent/ripgrep-20260615
+cd /tmp/agent/ripgrep-20260615
 CARGO_BUILD_JOBS=2 cargo test --locked --workspace --features pcre2
-${HOME}/temp/agent/ripgrep-20260615/target/debug/rg needle <fixture>
+/tmp/agent/ripgrep-20260615/target/debug/rg needle <fixture>
 
 # fzf
-cd ${HOME}/temp/agent/fzf-20260615
+cd /tmp/agent/fzf-20260615
 GO=/home/user/.local/share/mise/installs/go/1.26.4/bin/go make test
 GO=/home/user/.local/share/mise/installs/go/1.26.4/bin/go make all
 printf 'alpha\nbeta\ngamma\n' | ./target/fzf-linux_amd64 --filter=alp
 make itest
 
 # skim
-cd ${HOME}/temp/agent/skim-20260615
+cd /tmp/agent/skim-20260615
 cargo test --locked --workspace
 ./target/debug/sk --version
 printf 'alpha\nbeta\ngamma\n' | ./target/debug/sk --filter=alp
 
 # fzy
-cd ${HOME}/temp/agent/fzy-20260615
+cd /tmp/agent/fzy-20260615
 make test
 make
 printf 'alpha\nbeta\ngamma\n' | ./fzy --show-matches=alp

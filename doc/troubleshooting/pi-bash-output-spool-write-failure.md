@@ -1,6 +1,7 @@
 # Pi 0.80.6 large Bash output on an exhausted temporary quota loses results or terminates Pi
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom

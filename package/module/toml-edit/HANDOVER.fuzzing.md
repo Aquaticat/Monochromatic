@@ -1,6 +1,7 @@
 # Implementation plan: strengthen fuzzing coverage for module-toml-edit
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 This is the source-of-truth plan for the toml-edit fuzzing work.

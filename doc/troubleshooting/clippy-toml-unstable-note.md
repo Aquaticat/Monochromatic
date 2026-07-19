@@ -1,6 +1,7 @@
 # Clippy 0.1.98 configuration docs: unstable `clippy.toml` note hides stable Cargo lint levels
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -359,9 +360,9 @@ Run this harness from any scratch-safe directory.
 It creates four tiny crates under current `~/temp/agent` scratch space.
 
 ```shell
-mkdir --parents ${HOME}/temp/agent
-chmod 700 ${HOME}/temp/agent
-scratch=$(mktemp --directory ${HOME}/temp/agent/clippy-config-harness-XXXXXXXXXX)
+mkdir --parents "${HOME}/temp/agent"
+chmod 700 "${HOME}/temp/agent"
+scratch=$(mktemp --directory "${HOME}/temp/agent/clippy-config-harness-XXXXXXXXXX")
 mkdir --parents \
   "$scratch/stable-lints/src" \
   "$scratch/disallowed-clippy-toml/src" \

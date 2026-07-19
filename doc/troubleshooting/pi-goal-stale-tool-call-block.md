@@ -1,6 +1,7 @@
 # `@narumitw/pi-goal@0.12.0` blocks every Pi tool after an aborted goal turn, preventing recovery
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -400,12 +401,12 @@ console.log(JSON.stringify({
 Run it with a disposable agent directory and explicit local paths:
 
 ```bash
-mkdir --parents ${HOME}/temp/agent/pi-goal-reproduction
-chmod 700 ${HOME}/temp/agent/pi-goal-reproduction
-REPO_ROOT=/var/home/user/Monochromatic \
-PI_GOAL_SOURCE=/var/home/user/.pi/agent/npm/node_modules/@narumitw/pi-goal/src/goal.ts \
-REPRO_AGENT_DIR=${HOME}/temp/agent/pi-goal-reproduction \
-node ${HOME}/temp/agent/pi-goal-reproduce.mjs
+mkdir --parents "${HOME}/temp/agent/pi-goal-reproduction"
+chmod 700 "${HOME}/temp/agent/pi-goal-reproduction"
+REPO_ROOT="${PWD}" \
+PI_GOAL_SOURCE="${HOME}/.pi/agent/npm/node_modules/@narumitw/pi-goal/src/goal.ts" \
+REPRO_AGENT_DIR="${HOME}/temp/agent/pi-goal-reproduction" \
+node "${HOME}/temp/agent/pi-goal-reproduce.mjs"
 ```
 
 Observed output:

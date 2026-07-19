@@ -1,6 +1,7 @@
 # Pi context-management plugin
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Decision record for the agentic context-management plugin wired into this Pi harness.
@@ -121,7 +122,7 @@ Source files read:
 ### Validation run
 
 ```bash
-cd ${HOME}/temp/agent/pi-context-20260615
+cd /tmp/agent/pi-context-20260615
 npm install
 npm run typecheck   # passes
 npm audit           # 2 vulnerabilities, transitive through @earendil-works/pi-coding-agent

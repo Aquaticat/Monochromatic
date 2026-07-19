@@ -1,6 +1,7 @@
 # Handover: resharp rust fuzz campaign (2026-06-04)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Living handover for the resharp fuzzing effort.
@@ -597,10 +598,10 @@ lookarounds,
   ```sh
   cd /var/home/user/Downloads/extended-regexes
   export PATH="$HOME/.elan/bin:$PATH"
-  head -3 ${HOME}/temp/agent/<round>.lean > ${HOME}/temp/agent/hdr.txt
-  tail -n +4 ${HOME}/temp/agent/<round>.lean > ${HOME}/temp/agent/ev.txt
-  split -n l/16 -d --additional-suffix=.e ${HOME}/temp/agent/ev.txt ${HOME}/temp/agent/Chunk_
-  for f in ${HOME}/temp/agent/Chunk_*.e; do n=$(basename "$f" .e|sed 's/Chunk_//'); cat ${HOME}/temp/agent/hdr.txt "$f" > "<round>_chunk_$n.lean"; done
+  head -3 /tmp/agent/<round>.lean > /tmp/agent/hdr.txt
+  tail -n +4 /tmp/agent/<round>.lean > /tmp/agent/ev.txt
+  split -n l/16 -d --additional-suffix=.e /tmp/agent/ev.txt /tmp/agent/Chunk_
+  for f in /tmp/agent/Chunk_*.e; do n=$(basename "$f" .e|sed 's/Chunk_//'); cat /tmp/agent/hdr.txt "$f" > "<round>_chunk_$n.lean"; done
   for f in <round>_chunk_*.lean; do n=$(basename "$f" .lean|sed 's/<round>_chunk_//'); timeout 1800 lake env lean "$f" 2>/dev/null | grep '^R' > "<round>_out_$n.txt" & done; wait
   ```
 

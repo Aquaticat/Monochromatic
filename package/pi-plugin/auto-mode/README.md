@@ -1,6 +1,7 @@
 # @monochromatic-dev/pi-plugin-auto-mode
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 LLM-as-judge guardrail for pi.

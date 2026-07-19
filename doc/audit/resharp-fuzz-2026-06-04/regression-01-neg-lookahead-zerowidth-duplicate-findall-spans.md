@@ -1,6 +1,7 @@
 # REG-1 zero-width negative lookahead duplicates find_all spans
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Classification

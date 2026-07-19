@@ -1,6 +1,7 @@
 # resharp 0.6.13: find_all, find_anchored, and is_match wrong on end-anchor shapes
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Status note (forbidden-strings 0.2.0):

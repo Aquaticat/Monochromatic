@@ -1,6 +1,7 @@
 # mise 2026.6.13 alternates cargo-git `rev:` and `ref:` lock entries for Slint tools
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 mise 2026.6.13,
@@ -203,9 +204,9 @@ Run this in a disposable worktree,
 
 ```bash
 # /var/home/user/Monochromatic
-mkdir --parents ${HOME}/temp/agent
-chmod 700 ${HOME}/temp/agent
-worktree=$(mktemp --directory ${HOME}/temp/agent/mise-lock-repro.XXXXXXXX)
+mkdir --parents /tmp/agent
+chmod 700 /tmp/agent
+worktree=$(mktemp --directory /tmp/agent/mise-lock-repro.XXXXXXXX)
 rmdir "$worktree"
 git worktree add --detach "$worktree" 205f14b845
 cd "$worktree"
@@ -250,12 +251,12 @@ The harness used disposable mise state so no installed tool state in the user's 
 
 ```bash
 # /var/home/user/Monochromatic
-mkdir --parents ${HOME}/temp/agent
-chmod 700 ${HOME}/temp/agent
-worktree=$(mktemp --directory ${HOME}/temp/agent/mise-lock-remove-repro.XXXXXXXX)
+mkdir --parents /tmp/agent
+chmod 700 /tmp/agent
+worktree=$(mktemp --directory /tmp/agent/mise-lock-remove-repro.XXXXXXXX)
 rmdir "$worktree"
 git worktree add --detach "$worktree" 11d6da57b
-scratch=$(mktemp --directory ${HOME}/temp/agent/mise-state.XXXXXXXX)
+scratch=$(mktemp --directory /tmp/agent/mise-state.XXXXXXXX)
 cd "$worktree"
 printf '' > "$scratch/global.toml"
 export MISE_TRUSTED_CONFIG_PATHS="$worktree/mise.toml"
@@ -447,9 +448,9 @@ The disposable upstream clone was created fresh under `/tmp/agent/`:
 
 ```bash
 # /var/home/user/Monochromatic
-mkdir --parents ${HOME}/temp/agent
-chmod 700 ${HOME}/temp/agent
-fresh=$(mktemp --directory ${HOME}/temp/agent/mise-upstream-prototype.XXXXXXXX)
+mkdir --parents /tmp/agent
+chmod 700 /tmp/agent
+fresh=$(mktemp --directory /tmp/agent/mise-upstream-prototype.XXXXXXXX)
 rmdir "$fresh"
 gh repo clone jdx/mise "$fresh" -- --depth 1
 cd "$fresh"
@@ -469,15 +470,15 @@ Targeted verification ran in a secret-free environment outside this repository,
 with Cargo writing build artifacts under `/tmp/agent/`:
 
 ```bash
-# ${HOME}/temp/agent
+# /tmp/agent
 env -i \
-  HOME=${HOME}/temp/agent/mise-proto-home \
-  CARGO_HOME=${HOME}/temp/agent/mise-proto-home/.cargo \
+  HOME=/tmp/agent/mise-proto-home \
+  CARGO_HOME=/tmp/agent/mise-proto-home/.cargo \
   RUSTUP_HOME=/home/user/.rustup \
   RUSTUP_TOOLCHAIN=nightly-x86_64-unknown-linux-gnu \
-  CARGO_TARGET_DIR=${HOME}/temp/agent/mise-20260624-lock-oscillation/target \
+  CARGO_TARGET_DIR=/tmp/agent/mise-20260624-lock-oscillation/target \
   PATH=/home/user/.cargo/bin:/usr/bin:/bin \
-  cargo test --manifest-path ${HOME}/temp/agent/mise-upstream-prototype.DzUfrrWU/Cargo.toml cargo_git
+  cargo test --manifest-path /tmp/agent/mise-upstream-prototype.DzUfrrWU/Cargo.toml cargo_git
 ```
 
 The first prototype test run caught an over-broad unit-test seam that called

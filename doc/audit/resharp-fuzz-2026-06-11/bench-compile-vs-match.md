@@ -8,7 +8,8 @@ This is a deliberate, documented exception.
 
 # resharp vs the regex crate: compile time, match time, and where the budget should sit
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Benchmarks settling the open questions on [ieviev/resharp#21][i21]:

@@ -1,6 +1,7 @@
 # Ktor (ktorio/ktor) vetting report
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Subject:
@@ -62,8 +63,8 @@ adoption absent a concrete Kotlin workload.
 ## 1. Clone
 
 ```bash
-mkdir --parents ${HOME}/temp/agent; chmod 700 ${HOME}/temp/agent
-gh repo clone ktorio/ktor ${HOME}/temp/agent/ktor-vet -- --depth 1
+mkdir --parents /tmp/agent; chmod 700 /tmp/agent
+gh repo clone ktorio/ktor /tmp/agent/ktor-vet -- --depth 1
 ```
 
 HEAD:

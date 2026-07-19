@@ -1,6 +1,7 @@
 # Android runtime vetting: Retrofit, WorkManager + Foreground Service, Compose instrumented test
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Scope:

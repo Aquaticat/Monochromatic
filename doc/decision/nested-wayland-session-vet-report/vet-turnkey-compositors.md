@@ -1,6 +1,7 @@
 # Source audit: turnkey single-app compositors (cage, weston, sway, gamescope)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Desk audit of the existing compositors that could host one Slint/winit/femtovg dmabuf GPU client.

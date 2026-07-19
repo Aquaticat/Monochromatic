@@ -1,6 +1,7 @@
 # bug-06 revisited: the \w{24} compile cost is one gated safety proof, not UTF-8
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Settles ieviev's claim on #21 ("the several seconds of compile time for full

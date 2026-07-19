@@ -1,6 +1,7 @@
 # Morph MCP 0.8.193: Fast Apply fails with `Premature close` through OpenAI's Node `node-fetch`
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom

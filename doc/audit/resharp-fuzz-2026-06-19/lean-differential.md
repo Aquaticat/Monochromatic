@@ -1,6 +1,7 @@
 # Lean formal position differential
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Re-establishes the formally-verified position oracle the 2026-06-11 campaign used,
@@ -122,11 +123,11 @@ the Lean lane checks.
 
 ```bash
 # x86: generate pairs + resharp side
-cd ${HOME}/temp/agent/resharp-denot-oracle
-python3 gen_pairs.py 1 6000 ${HOME}/temp/agent/pairs1
-cargo run --release --bin readpairs < ${HOME}/temp/agent/pairs1.tsv > ${HOME}/temp/agent/pairs1.resharp.txt
+cd /tmp/agent/resharp-denot-oracle
+python3 gen_pairs.py 1 6000 /tmp/agent/pairs1
+cargo run --release --bin readpairs < /tmp/agent/pairs1.tsv > /tmp/agent/pairs1.resharp.txt
 # M1: evaluate Lean
-scp ${HOME}/temp/agent/pairs1.lean m1:resharp-fuzz-2026-06-19/oracle/extended-regexes/
+scp /tmp/agent/pairs1.lean m1:resharp-fuzz-2026-06-19/oracle/extended-regexes/
 ssh m1 'cd ~/resharp-fuzz-2026-06-19/oracle/extended-regexes && lake env lean pairs1.lean > pairs1.lean.out'
 # join + diff by Rn id
 ```

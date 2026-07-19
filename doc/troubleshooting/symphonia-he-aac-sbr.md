@@ -1,6 +1,7 @@
 # Symphonia 0.6.0 rejects MP4 HE-AAC/SBR during true-peak measurement with `aac too complex`
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -317,10 +318,10 @@ It includes the desktop app's `decode.rs`,
 Run it against the containing folder:
 
 ```bash
-# from ${HOME}/temp/agent/music-player-truepeak-bench
+# from /tmp/agent/music-player-truepeak-bench
 mise run bench -- \
   /home/user/Seafile/Plain/Music/Fate \
-  ${HOME}/temp/agent/music-player-truepeak-bench/fate-out
+  /tmp/agent/music-player-truepeak-bench/fate-out
 ```
 
 Expected result:
@@ -358,7 +359,7 @@ The failing remux and working transcode were created with:
 
 ```bash
 # from /var/home/user/Monochromatic
-scratch=${HOME}/temp/agent/music-player-aac-failure
+scratch=/tmp/agent/music-player-aac-failure
 file="/home/user/Seafile/Plain/Music/Fate/Super ☆ Affection.mp4"
 rm --recursive --force "$scratch"
 mkdir --parents "$scratch/copy" "$scratch/transcoded"
@@ -382,14 +383,14 @@ ffmpeg -hide_banner -v error -nostdin \
 Then verified with:
 
 ```bash
-# from ${HOME}/temp/agent/music-player-truepeak-bench
+# from /tmp/agent/music-player-truepeak-bench
 mise run bench -- \
-  ${HOME}/temp/agent/music-player-aac-failure/copy \
-  ${HOME}/temp/agent/music-player-aac-failure/out-copy
+  /tmp/agent/music-player-aac-failure/copy \
+  /tmp/agent/music-player-aac-failure/out-copy
 
 mise run bench -- \
-  ${HOME}/temp/agent/music-player-aac-failure/transcoded \
-  ${HOME}/temp/agent/music-player-aac-failure/out-transcoded
+  /tmp/agent/music-player-aac-failure/transcoded \
+  /tmp/agent/music-player-aac-failure/out-transcoded
 ```
 
 The remux result fails:
@@ -433,7 +434,7 @@ ffmpeg -hide_banner -v error -nostdin \
   -c:a aac \
   -profile:a aac_low \
   -b:a 160k \
-  ${HOME}/temp/agent/music-player-aac-failure/transcoded/super-affection-aac-lc.m4a
+  /tmp/agent/music-player-aac-failure/transcoded/super-affection-aac-lc.m4a
 ```
 
 Tradeoffs:

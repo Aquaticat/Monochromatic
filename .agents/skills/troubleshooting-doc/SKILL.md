@@ -5,7 +5,8 @@ description: Use when investigating an external tool's behavior, bug, quirk, cap
 
 # Writing a troubleshooting file
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Fires automatically,
@@ -315,15 +316,14 @@ prefer this when the prototype is headed for a pull request) or in a
 disposable upstream clone.
  The disposable-clone path:
 
-1. Clone the upstream source into a fresh,
-    private,
-    unpredictable
-   directory under `~/temp/agent/`,
-    created with `mktemp --directory`
-   (or an equivalently private throwaway workspace under `~/temp/agent/`).
-   Before first use,
-    ensure the root exists with private permissions:
+1. Before first use,
+    ensure current scratch root exists with private permissions:
    `mkdir --parents "${HOME}/temp/agent"; chmod 700 "${HOME}/temp/agent"`.
+   Clone upstream source into a fresh,
+    private,
+    unpredictable directory created with
+   `mktemp --directory "${HOME}/temp/agent/upstream-prototype.XXXXXXXX"`
+   (or an equivalently private throwaway workspace under `~/temp/agent/`).
    Never reuse an existing `~/temp/agent/<repo>` clone or any other
    pre-existing directory for this step.
 2. Confirm the clone's `origin` URL and checked-out commit/tag match the

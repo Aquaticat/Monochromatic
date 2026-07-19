@@ -1,6 +1,7 @@
 # Slint 1.17.0 ContextMenuArea: right-click on a ListView/TouchArea row does not open the menu
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 A `ContextMenuArea` wrapping a list (`StandardTableView`, `ListView`, or a custom

@@ -1,6 +1,7 @@
 # Kopia 0.23.1 snapshot auto-maintenance fails rewriting short packs after pack blobs disappear
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 This note records the 2026-06-18 repair of the local Kopia repository at
@@ -261,7 +262,7 @@ This was the repair used when old snapshots were not needed.
 First record sources:
 
 ```bash
-kopia --no-auto-maintenance --no-progress snapshot list --all --json > ${HOME}/temp/agent/kopia-snapshot-list-before-repair.json
+kopia --no-auto-maintenance --no-progress snapshot list --all --json > /tmp/agent/kopia-snapshot-list-before-repair.json
 ```
 
 The recorded sources were:
@@ -285,7 +286,7 @@ while IFS= read -r path; do
     --all-snapshots-for-source \
     --delete \
     "$source"
-done < ${HOME}/temp/agent/kopia-sources-before-repair.txt
+done < /tmp/agent/kopia-sources-before-repair.txt
 ```
 
 Run one purge maintenance pass.
@@ -311,7 +312,7 @@ Recreate fresh snapshots from recorded sources,
 repopulates content instead of trusting stale cache state:
 
 ```bash
-readarray -t sources < ${HOME}/temp/agent/kopia-sources-before-repair.txt
+readarray -t sources < /tmp/agent/kopia-sources-before-repair.txt
 kopia --no-auto-maintenance --no-progress snapshot create --force-hash=100 "${sources[@]}"
 ```
 

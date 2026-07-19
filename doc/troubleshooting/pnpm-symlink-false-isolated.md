@@ -1,6 +1,7 @@
 # pnpm 11.8.0: `symlink: false` with `nodeLinker: isolated` builds an unresolvable virtual store
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 This document records what pnpm's `symlink: false` setting does when the node linker remains
@@ -423,7 +424,7 @@ but it does not create a runnable isolated tree without dependency symlinks.
 Searches run on 2026-06-22:
 
 ```sh
-# ${HOME}/temp/agent/pnpm-symlink-duplicate-search.txt
+# /tmp/agent/pnpm-symlink-duplicate-search.txt
 gh search issues --repo pnpm/pnpm "symlink false isolated node-linker" --state open --limit 20
 gh search issues --repo pnpm/pnpm "symlink false isolated node-linker" --state closed --limit 20
 gh search prs --repo pnpm/pnpm "symlink false isolated node-linker" --state open --limit 20

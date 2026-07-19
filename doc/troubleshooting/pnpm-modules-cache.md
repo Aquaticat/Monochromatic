@@ -1,6 +1,7 @@
 # pnpm 11.9.0 retains stale node_modules/.pnpm entries under modulesCacheMaxAge
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom

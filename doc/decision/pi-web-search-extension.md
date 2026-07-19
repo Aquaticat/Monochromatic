@@ -1,6 +1,7 @@
 # Pi web search extension
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Decision record for which Pi extension to use for web search and page fetching

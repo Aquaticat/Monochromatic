@@ -1,6 +1,7 @@
 # ESLint v10.4.1: disable comment descriptions require a whitespace-surrounded hyphen run
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Current status (2026-06-06):
@@ -221,7 +222,7 @@ Harness:
 
 ```sh
 # doc/troubleshooting/eslint-disable-description-separator.md
-TMP_DIR=$(mktemp --directory ${HOME}/temp/agent/eslint-separator-harness.XXXXXXXX)
+TMP_DIR=$(mktemp --directory /tmp/agent/eslint-separator-harness.XXXXXXXX)
 cat > "$TMP_DIR/eslint.config.js" <<'EOF'
 export default [
   {

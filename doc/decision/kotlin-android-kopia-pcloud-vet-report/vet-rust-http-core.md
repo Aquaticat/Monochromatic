@@ -1,6 +1,7 @@
 # Vet: Rust HTTP core for the on-device S3 gateway (kopia -> pCloud)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Scope:
@@ -243,7 +244,7 @@ Build command (bounded container,
 
 ```bash
 podman run --rm --memory=6g --cpus=4 \
-  --volume ${HOME}/temp/agent/streamtest:/work:z \
+  --volume /tmp/agent/streamtest:/work:z \
   --workdir /work \
   --env CARGO_TARGET_DIR=/var/tmp/target \
   --env CARGO_HOME=/var/tmp/cargo \
@@ -257,7 +258,7 @@ Measurement command and output (fresh container;
 
 ```bash
 podman run --rm --memory=6g --cpus=4 \
-  --volume ${HOME}/temp/agent/streamtest:/work:z --workdir /work \
+  --volume /tmp/agent/streamtest:/work:z --workdir /work \
   docker.io/library/rust:1-bookworm \
   bash -c 'apt-get install -y -qq time && /usr/bin/time -v /work/streamtest.bin'
 ```
@@ -385,8 +386,8 @@ Client alternatives:
 
 ```bash
 # clones
-gh repo clone tokio-rs/axum ${HOME}/temp/agent/axum-vet -- --depth 1
-gh repo clone seanmonstar/reqwest ${HOME}/temp/agent/reqwest-vet -- --depth 1
+gh repo clone tokio-rs/axum /tmp/agent/axum-vet -- --depth 1
+gh repo clone seanmonstar/reqwest /tmp/agent/reqwest-vet -- --depth 1
 
 # crates.io versions (User-Agent required)
 curl -s -H "User-Agent: ..." https://crates.io/api/v1/crates/axum     # 0.8.9

@@ -1,6 +1,7 @@
 # mise 2026.5.15 `env --redacted` lists sensitive values instead of masking them
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 This note records a 2026-06-06 diagnosis against mise 2026.5.15
@@ -235,7 +236,7 @@ $ git -C /tmp/agent/mise-2026.5.15 rev-parse HEAD
 Fixture:
 
 ```bash
-fixture_dir=$(mktemp --directory ${HOME}/temp/agent/mise-redacted-fixture.XXXXXX)
+fixture_dir=$(mktemp --directory /tmp/agent/mise-redacted-fixture.XXXXXX)
 cat > "$fixture_dir/mise.toml" <<'EOF'
 [env]
 SECRET_TOKEN = { value = "fixture-secret-token", redact = true }

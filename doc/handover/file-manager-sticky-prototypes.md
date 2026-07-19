@@ -1,6 +1,7 @@
 # Handover: file-manager sticky prototypes, audit doc, and troubleshooting write-ups
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Working session state for the sticky-layout prototype effort.

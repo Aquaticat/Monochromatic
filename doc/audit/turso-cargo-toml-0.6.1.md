@@ -1,6 +1,7 @@
 # Turso 0.6.1 Cargo manifest audit
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Date:

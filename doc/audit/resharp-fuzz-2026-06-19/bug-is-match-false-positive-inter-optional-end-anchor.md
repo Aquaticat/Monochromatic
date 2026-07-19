@@ -1,6 +1,7 @@
 # is_match false positive vs find_all on intersection with optional end-anchor (0.6.13, live)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Second new live soundness bug,
@@ -143,7 +144,7 @@ not actually match:
 ## Reproduce
 
 ```bash
-# ${HOME}/temp/agent/resharp-denot-oracle, resharp = "=0.6.13"
+# /tmp/agent/resharp-denot-oracle, resharp = "=0.6.13"
 cargo run --release --bin c1min      # trigger-boundary minimization, both arches
 cargo run --release --bin c1probe    # full per-config table
 ```

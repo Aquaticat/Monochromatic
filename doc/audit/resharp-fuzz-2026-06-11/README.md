@@ -1,6 +1,7 @@
 # Resharp fuzz campaign 2026-06-11 (ARM64 NEON, plus full re-audit)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Findings from a fresh fuzz campaign against `ieviev/resharp` v0.6.12 (`3d4ddde`,

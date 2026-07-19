@@ -1,6 +1,7 @@
 # Code-quality issues in resharp (rust): definitely-rewrite tier
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Issues found while reading the engine,

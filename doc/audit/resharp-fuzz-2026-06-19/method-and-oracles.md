@@ -1,6 +1,7 @@
 # Method and oracles
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Five lanes against resharp 0.6.13 (fuzzed at HEAD `f0ce60a`,

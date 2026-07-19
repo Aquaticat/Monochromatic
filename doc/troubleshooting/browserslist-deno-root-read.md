@@ -1,6 +1,7 @@
 # Browserslist 4.28.4 under Deno 2.8.3 requests root read during stats discovery
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -312,14 +313,14 @@ TS
 Working catalog for the current repo config:
 
 ```sh
-cd ${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626
-XDG_CONFIG_HOME=${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626/xdg-config \
+cd /tmp/agent/monochromatic-file-enforcer-browserslist-20260626
+XDG_CONFIG_HOME=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626/xdg-config \
   DENO_TRACE_PERMISSIONS=1 deno run \
   --no-prompt \
   --allow-env \
   --allow-sys=homedir \
-  --allow-read=${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626,/var/home/user/Monochromatic/node_modules \
-  --allow-write=${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626 \
+  --allow-read=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626,/var/home/user/Monochromatic/node_modules \
+  --allow-write=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626 \
   file-enforcer.config.ts
 ```
 

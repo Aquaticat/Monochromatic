@@ -1,6 +1,7 @@
 # iOS source-audit: Qt
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Verbatim structured output from the 2026-06-12 `ios-framework-desk-audit` fan-out (16 parallel

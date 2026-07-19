@@ -1,6 +1,7 @@
 # Image processing library vet
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Why this handover exists
@@ -372,7 +373,7 @@ Use explicit `cd "${HOME}/temp/agent/..." && command` in Bash for current scratc
 Scratch install command:
 
 ```sh
-cd ${HOME}/temp/agent/image-vet-scratch-20260702 && npm install sharp@0.35.3 jimp@1.6.1 @napi-rs/image@1.14.0 pica@10.0.2 imagescript@1.3.1 image-js@1.6.2 browser-image-compression@2.0.2 compressorjs@1.3.0 rastermill@0.3.1 imgkit@2.3.0 --save-exact
+cd /tmp/agent/image-vet-scratch-20260702 && npm install sharp@0.35.3 jimp@1.6.1 @napi-rs/image@1.14.0 pica@10.0.2 imagescript@1.3.1 image-js@1.6.2 browser-image-compression@2.0.2 compressorjs@1.3.0 rastermill@0.3.1 imgkit@2.3.0 --save-exact
 ```
 
 Result:

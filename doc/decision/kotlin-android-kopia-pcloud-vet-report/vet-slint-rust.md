@@ -1,6 +1,7 @@
 # Vet: Slint + Rust as the stack for an Android-only app (kopia + local S3 to pCloud)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Scope:

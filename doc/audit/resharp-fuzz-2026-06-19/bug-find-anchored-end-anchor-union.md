@@ -1,6 +1,7 @@
 # find_anchored phantom/missing span on a union of end anchors (0.6.13, live)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 New live soundness bug found by the self-consistency lane and minimized by
@@ -160,7 +161,7 @@ matching rejection would resolve it.
 ## Reproduce
 
 ```bash
-# ${HOME}/temp/agent/resharp-denot-oracle, resharp = "=0.6.13"
+# /tmp/agent/resharp-denot-oracle, resharp = "=0.6.13"
 cargo run --release --bin anchored_probe   # full table across configs
 cargo run --release --bin trig             # trigger-boundary minimization
 ```

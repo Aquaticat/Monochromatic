@@ -1,6 +1,7 @@
 # hk 1.50.0 pre-commit fixing duplicates LF at a partially staged EOF tail
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -212,7 +213,7 @@ A two-hunk patch and regression test are stored in
 The binary was built in a disposable container with two CPUs and 2 GiB memory:
 
 ```sh
-PROTOTYPE=${HOME}/temp/agent/hk-newline-tail-prototype-8fF1KLdu
+PROTOTYPE=/tmp/agent/hk-newline-tail-prototype-8fF1KLdu
 podman run --memory=2g --cpus=2 --rm \
   --volume "$PROTOTYPE:/work:Z" \
   --workdir /work rust:1.88-bookworm cargo build --release

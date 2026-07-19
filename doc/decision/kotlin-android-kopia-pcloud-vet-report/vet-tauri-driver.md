@@ -1,6 +1,7 @@
 # Vet: tauri-driver (Tauri webview UI testing via WebDriver)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Date:
@@ -169,7 +170,7 @@ Reproduction (exact commands):
 ```sh
 # container
 podman run -d --name tdrv --shm-size=1g --security-opt seccomp=unconfined \
-  --memory=8g --cpus=8 -v ${HOME}/temp/agent/tdrv:/work:Z \
+  --memory=8g --cpus=8 -v /tmp/agent/tdrv:/work:Z \
   registry.fedoraproject.org/fedora:43 sleep infinity
 
 # deps (inside)

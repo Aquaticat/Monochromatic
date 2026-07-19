@@ -1,6 +1,7 @@
 # Vetting report: PIT / Pitest (hcoles/pitest) for Kotlin mutation testing
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Date:

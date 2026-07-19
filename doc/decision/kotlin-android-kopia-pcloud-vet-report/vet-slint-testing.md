@@ -1,6 +1,7 @@
 # Vet: Slint testing API (ElementHandle / accessibility-based UI testing) for Slint+Rust
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Date:
@@ -284,9 +285,9 @@ assert `accessible_label()` == "Increment" and `accessible_role()` ==
 Exact command (display vars unset to prove headlessness):
 
 ```sh
-cd ${HOME}/temp/agent/slint-testing-demo
+cd /tmp/agent/slint-testing-demo
 env -u DISPLAY -u WAYLAND_DISPLAY SLINT_EMIT_DEBUG_INFO=1 \
-  CARGO_TARGET_DIR=${HOME}/temp/agent/slint-testing-demo/target cargo test
+  CARGO_TARGET_DIR=/tmp/agent/slint-testing-demo/target cargo test
 ```
 
 Output:

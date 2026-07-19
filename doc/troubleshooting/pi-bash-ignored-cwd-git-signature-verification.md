@@ -1,6 +1,7 @@
 # Pi 0.80.6 Bash ignores per-call cwd, contaminating Git identity and making SSH-signed commits unverified
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -254,7 +255,7 @@ A disposable allowed-signers file associated both observed commit principals wit
 The harness verified the same frozen pre-diagnosis set:
 
 ```bash
-allowed="$(mktemp ${HOME}/temp/agent/git-signing-allowed-signers-XXXXXXXX)"
+allowed="$(mktemp /tmp/agent/git-signing-allowed-signers-XXXXXXXX)"
 awk '{
   print "an@aquati.cat " $1 " " $2
   print "fixture@example.invalid " $1 " " $2

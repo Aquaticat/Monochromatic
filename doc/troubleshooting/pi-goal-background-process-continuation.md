@@ -1,6 +1,7 @@
 # Pi goal with pi-processes 0.9.4: live background work caused automatic continuation turns
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -172,17 +173,17 @@ The regression test in
 can be copied into a disposable worktree at the baseline commit:
 
 ```bash
-mkdir --parents ${HOME}/temp/agent
-chmod 700 ${HOME}/temp/agent
-git worktree add ${HOME}/temp/agent/goal-process-baseline \
+mkdir --parents /tmp/agent
+chmod 700 /tmp/agent
+git worktree add /tmp/agent/goal-process-baseline \
   39ffdb81a27e6e45352ba11a9a219ef4ee1c0609
-ln --symbolic "$PWD/node_modules" ${HOME}/temp/agent/goal-process-baseline/node_modules
+ln --symbolic "$PWD/node_modules" /tmp/agent/goal-process-baseline/node_modules
 ln --symbolic "$PWD/package/pi-plugin/goal/node_modules" \
-  ${HOME}/temp/agent/goal-process-baseline/package/pi-plugin/goal/node_modules
+  /tmp/agent/goal-process-baseline/package/pi-plugin/goal/node_modules
 cp package/pi-plugin/goal/src/lifecycle.unit.test.ts \
-  ${HOME}/temp/agent/goal-process-baseline/package/pi-plugin/goal/src/lifecycle.unit.test.ts
-mise trust ${HOME}/temp/agent/goal-process-baseline/mise.toml
-cd ${HOME}/temp/agent/goal-process-baseline
+  /tmp/agent/goal-process-baseline/package/pi-plugin/goal/src/lifecycle.unit.test.ts
+mise trust /tmp/agent/goal-process-baseline/mise.toml
+cd /tmp/agent/goal-process-baseline
 mise run //package/pi-plugin/goal:build
 mise run //package/pi-plugin/goal:test:unit
 ```

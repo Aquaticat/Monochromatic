@@ -1,6 +1,7 @@
 # Black-box E2E UI automation for native Jetpack Compose (Maestro vs Appium vs UiAutomator)
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Vet date:

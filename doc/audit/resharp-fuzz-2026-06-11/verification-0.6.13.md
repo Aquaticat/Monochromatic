@@ -1,6 +1,7 @@
 # Resharp v0.6.13 re-verification of the 2026-06-11 findings
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Re-run of every reproducer from this campaign (`README.md`,
@@ -239,8 +240,8 @@ These are not claimed fixed;
 ## Reproduce
 
 ```bash
-# ${HOME}/temp/agent/resharp-0613-probe/Cargo.toml: resharp = "=0.6.13"
-cd ${HOME}/temp/agent/resharp-0613-probe
+# /tmp/agent/resharp-0613-probe/Cargo.toml: resharp = "=0.6.13"
+cd /tmp/agent/resharp-0613-probe
 cargo run            # debug: assertions + overflow-checks ON
 cargo run --release  # release: both OFF
 ```

@@ -1,6 +1,7 @@
 # Pi Synthetic provider extension
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Decision record for which third-party Pi extension to use for registering

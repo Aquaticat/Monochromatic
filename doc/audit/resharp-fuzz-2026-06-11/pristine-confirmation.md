@@ -1,6 +1,7 @@
 # Pristine-engine confirmation of the oracle-only findings
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 The five soundness bugs that were found only through the oracle harness (bug-02,

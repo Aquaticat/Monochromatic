@@ -1,6 +1,7 @@
 # Vet: raw Jetpack Compose (Android-native androidx.compose) for the kopia + local-S3 + pCloud app
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Date:

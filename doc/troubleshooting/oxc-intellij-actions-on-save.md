@@ -1,6 +1,7 @@
 # Oxc IntelliJ Plugin 0.0.35 cannot uncheck "Run Oxlint 'Fix All' on Save" in IntelliJ IDEA 2026.2 EAP
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 ## Symptom
@@ -182,10 +183,10 @@ cd /var/home/user/Monochromatic
 unzip -p \
   /var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/oxc-intellij-plugin/lib/oxc-intellij-plugin-0.0.35.jar \
   META-INF/plugin.xml \
-  > ${HOME}/temp/agent/oxc-intellij-plugin-0.0.35-plugin.xml
+  > /tmp/agent/oxc-intellij-plugin-0.0.35-plugin.xml
 rg --line-number \
   '<version>|<id>|actionOnSave|OxlintFixAllOnSaveAction|OxcOnSaveInfoProvider|idea-version' \
-  ${HOME}/temp/agent/oxc-intellij-plugin-0.0.35-plugin.xml
+  /tmp/agent/oxc-intellij-plugin-0.0.35-plugin.xml
 ```
 
 ```text
@@ -200,7 +201,7 @@ A static harness against the `v0.0.35` source reproduces the root-cause
 mismatch:
 
 ```shell
-cd ${HOME}/temp/agent/oxc-intellij-plugin-proto-KdNzE2
+cd /tmp/agent/oxc-intellij-plugin-proto-KdNzE2
 node -e "const fs = require('node:fs'); const plugin = fs.readFileSync('src/main/resources/META-INF/plugin.xml', 'utf8'); const config = fs.readFileSync('src/main/kotlin/com/github/oxc/project/oxcintellijplugin/oxlint/settings/OxlintConfigurable.kt', 'utf8'); const pluginId = plugin.match(/instance=\"com\\.github\\.oxc\\.project\\.oxcintellijplugin\\.oxlint\\.settings\\.OxlintConfigurable\"[\\s\\S]*?id=\"([^\"]+)\"/)?.[1]; const constantId = config.match(/CONFIGURABLE_ID = \"([^\"]+)\"/)?.[1]; console.log(JSON.stringify({ pluginId, constantId })); if (pluginId !== constantId) { console.error('FAIL: Oxlint CONFIGURABLE_ID does not match plugin.xml projectConfigurable id'); process.exitCode = 1; }"
 ```
 

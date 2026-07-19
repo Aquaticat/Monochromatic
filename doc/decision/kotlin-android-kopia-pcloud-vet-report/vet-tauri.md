@@ -1,6 +1,7 @@
 # Vet: Tauri v2 (mobile/Android) plus Rust ecosystem for the kopia-to-pCloud Android app
 
-> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Scratch-path note:
+> `/tmp/agent` paths in this document are historical.
 > Use `~/temp/agent` for current work.
 
 Date:
