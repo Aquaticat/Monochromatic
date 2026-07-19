@@ -4,6 +4,9 @@
  * @module
  */
 
+import { homedir, } from 'node:os';
+import { join, } from 'node:path';
+
 import {
   createEventBus,
   discoverAndLoadExtensions,
@@ -17,9 +20,14 @@ import {
 const BUILT_PACKAGE_PATH = '.';
 
 /**
- * Empty agent directory that prevents unrelated global extensions from joining this verification.
+ * Empty directory under current agent scratch root that excludes unrelated global extensions.
  */
-const EMPTY_AGENT_DIRECTORY = '/tmp/agent/pi-agent-settled-notification-loader-check';
+const EMPTY_AGENT_DIRECTORY = join(
+  homedir(),
+  'temp',
+  'agent',
+  'pi-agent-settled-notification-loader-check',
+);
 
 /**
  * Pi lifecycle event whose handler must reach the desktop-notification boundary.
