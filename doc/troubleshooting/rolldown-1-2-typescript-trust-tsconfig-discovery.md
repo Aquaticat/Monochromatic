@@ -351,6 +351,28 @@ a clean linked worktree outside the wrapper installation's ancestor path cannot
 resolve either form through consumer `node_modules`.
 A direct probe then left
 `@monochromatic-dev/git-policy-cli/ts` unresolved.
+
+The same generic branch affects other bare imports.
+For example,
+`valibot` is a packed runtime dependency at
+`package/git-policy/cli/package.json:49-55`:
+
+```jsonc
+"dependencies": {
+  "acorn": "catalog:",
+  "nano-spawn": "catalog:",
+  "rolldown": "catalog:",
+  "type-fest": "catalog:",
+  "typescript": "catalog:",
+  "valibot": "catalog:"
+}
+```
+
+A config or tracked relative module importing `valibot` still cannot find it when
+the wrapper installation is outside consumer ancestry.
+The complete package-resolution design must cover artifact-provided runtime
+packages as well as cli-git's own specifiers.
+
 The packed package already contains the needed source export at
 `package/git-policy/cli/package.json:10-16` and includes its source tree at `:20-22`:
 
@@ -505,7 +527,7 @@ node --experimental-strip-types /tmp/rolldown-tsconfig-catalog/reproduce.mts
 
 ### Disable discovery and introduce a dedicated authoring source entry
 
-The complete internal correction has three parts.
+The complete internal correction has four parts.
 First,
 set the explicit supported option at cli-git's Rolldown seam:
 
@@ -526,8 +548,7 @@ This places the source-authoring interface at a seam that excludes wrapper start
 
 Third,
 resolve both `@monochromatic-dev/git-policy-cli` and `/ts` to that dedicated module
-from the running installed artifact before the consumer-root resolver handles other
-bare packages.
+from the running installed artifact.
 The location mechanism is:
 
 ```ts
@@ -537,8 +558,19 @@ const packageSourcePath = createRequire(import.meta.url)
 
 Compute the path only inside the TypeScript build path and pass it into the capture
 plugin.
-That keeps normal wrapper startup lazy and leaves consumer-relative and ordinary
-consumer package resolution unchanged.
+That keeps normal wrapper startup lazy.
+
+Fourth,
+resolve every other bare import from the consumer first.
+When consumer resolution returns no module,
+fall back to ESM resolution from the installed artifact only when the imported
+package name is declared in cli-git's packed runtime dependency manifest.
+Apply this rule to imports from the root config and every tracked relative source.
+Keep artifact-resolved packages outside exact-source invalidation and retain the
+existing bare-package disclosure.
+This preserves consumer-selected package versions,
+makes the promised artifact dependencies available,
+and avoids exposing unrelated packages from the installation prefix.
 
 The Rolldown catalog proves `tsconfig: false` succeeds with an unresolvable
 `extends`.
@@ -567,7 +599,10 @@ put only that prefix's bin on `PATH`,
 and leave both repositories without
 `node_modules`.
 Exercise the actual `git cli-git trust --yes` command for package-root and `/ts`
-imports and assert that no unresolved-import warning appears.
+imports.
+Also import an artifact runtime dependency such as `valibot` from a tracked relative
+module,
+and assert that no unresolved-import warning appears.
 The poison case is the red-before-fix regression;
 the no-tsconfig case is not.
 
@@ -612,6 +647,14 @@ workspace imports reached through `bin.ts`.
 Tree shaking dead code after failed resolution is not a clean package contract and
 may stop working if an executable module gains a retained side effect.
 Use a dedicated authoring source entry instead.
+
+### Anchor only cli-git's own package specifiers
+
+This leaves direct bare imports such as `valibot` dependent on consumer
+`node_modules`,
+even when the wrapper artifact installed that runtime package.
+Use consumer-first resolution with a packed-runtime-dependency fallback for every
+tracked source.
 
 ### Use only a no-tsconfig packed fixture
 
