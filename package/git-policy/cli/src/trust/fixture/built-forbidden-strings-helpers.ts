@@ -48,7 +48,7 @@ export async function writeForbiddenScanner(): Promise<void> {
     SCANNER_PATH,
     `#!${process.execPath}
 const { readFileSync, writeFileSync, existsSync } = require('node:fs');
-const paths = process.argv.slice(2);
+const paths = process.argv.slice(2).filter((argument) => argument !== '--builtin-rules');
 for (const path of paths) {
   const content = readFileSync(path, 'utf8');
   if (content.includes('SIGNAL_SCANNER')) process.kill(process.pid, 'SIGTERM');
