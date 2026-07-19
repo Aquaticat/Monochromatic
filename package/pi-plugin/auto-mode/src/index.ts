@@ -425,10 +425,14 @@ async function initializeAutoMode(
         home,
       };
       /**
+       * Whether tool supports trusted agent scratch paths.
+       */
+      const usesAgentTempTrust = event.toolName === 'read'
+        || event.toolName === 'bash';
+      /**
        * Private current and historical compatibility roots whose existing non-secret contents bypass prompts.
        */
-      const trustedAgentTempDirs = (event.toolName === 'read'
-        || event.toolName === 'bash')
+      const trustedAgentTempDirs = usesAgentTempTrust
         ? await agentTempAllowlistedDirs({
           home: signalCtx.home,
           historicalAgentTempDir,
