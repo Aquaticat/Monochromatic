@@ -180,8 +180,10 @@ export async function buildTypeScriptCandidate({
     /**
      * Owned module ID list detached from Rolldown output.
      */
-    const outputModuleIds = [...chunk.moduleIds,];
-    return outputModuleIds.map(modulePath,);
+    const detachedModuleIds = [...chunk.moduleIds,];
+    return detachedModuleIds.map(function normalizeModuleId(id,) {
+      return modulePath(id,);
+    },);
   },),);
   sources.forEach(function assertIncluded(source,) {
     if (!moduleIds.has(source.canonicalPath,))
