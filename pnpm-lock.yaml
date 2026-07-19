@@ -14,25 +14,25 @@ catalogs:
       version: 4.0.0
     '@deck.gl/core':
       specifier: '>=9.3.6'
-      version: 9.3.6
+      version: 9.3.7
     '@deck.gl/layers':
       specifier: '>=9.3.6'
-      version: 9.3.6
+      version: 9.3.7
     '@deck.gl/mesh-layers':
       specifier: '>=9.3.6'
-      version: 9.3.6
+      version: 9.3.7
     '@earendil-works/pi-ai':
       specifier: '>=0.80.6'
-      version: 0.80.8
+      version: 0.80.10
     '@earendil-works/pi-coding-agent':
       specifier: '>=0.80.6'
-      version: 0.80.8
+      version: 0.80.10
     '@earendil-works/pi-tui':
       specifier: '>=0.80.6'
-      version: 0.80.8
+      version: 0.80.10
     '@electron/packager':
       specifier: '>=20.0.2'
-      version: 20.0.2
+      version: 20.0.3
     '@homebridge/dbus-native':
       specifier: '>=0.7.7'
       version: 0.7.7
@@ -149,7 +149,7 @@ catalogs:
       version: 43.1.1
     execa:
       specifier: '>=9.6.1'
-      version: 9.6.1
+      version: 10.0.0
     expect-type:
       specifier: '>=1.4.0'
       version: 1.4.0
@@ -206,7 +206,7 @@ catalogs:
       version: 1.74.0
     oxlint-tsgolint:
       specifier: '>=0.24.0'
-      version: 0.24.0
+      version: 0.25.0
     p-limit:
       specifier: '>=7.3.0'
       version: 7.3.0
@@ -236,7 +236,7 @@ catalogs:
       version: 1.2.0
     rolldown-plugin-dts:
       specifier: '>=0.27.9'
-      version: 0.27.9
+      version: 0.27.11
     satteri:
       specifier: '>=0.9.5'
       version: 0.9.5
@@ -421,7 +421,7 @@ importers:
         version: 4.28.6
       execa:
         specifier: 'catalog:'
-        version: 9.6.1
+        version: 10.0.0
       h3:
         specifier: 'catalog:'
         version: 2.0.1-rc.25
@@ -430,10 +430,10 @@ importers:
         version: 2.1.0
       oxlint:
         specifier: 'catalog:'
-        version: 1.74.0(oxlint-tsgolint@0.24.0)
+        version: 1.74.0(oxlint-tsgolint@0.25.0)
       oxlint-tsgolint:
         specifier: 'catalog:'
-        version: 0.24.0
+        version: 0.25.0
       postcss-html:
         specifier: 'catalog:'
         version: 1.8.1
@@ -442,7 +442,7 @@ importers:
         version: 1.2.0
       stylelint:
         specifier: 'catalog:'
-        version: 17.14.0(typescript@7.0.2)
+        version: 17.14.0(supports-color@10.2.2)(typescript@7.0.2)
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -1181,7 +1181,7 @@ importers:
         version: link:../../oxlint-plugin/tsdoc
       oxlint:
         specifier: 'catalog:'
-        version: 1.74.0(oxlint-tsgolint@0.24.0)
+        version: 1.74.0(oxlint-tsgolint@0.25.0)
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -1206,7 +1206,7 @@ importers:
         version: 1.2.0
       rolldown-plugin-dts:
         specifier: 'catalog:'
-        version: 0.27.9(rolldown@1.2.0)(typescript@7.0.2)
+        version: 0.27.11(rolldown@1.2.0)(typescript@7.0.2)
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -1228,11 +1228,11 @@ importers:
         version: 1.8.1
       stylelint-config-standard:
         specifier: 'catalog:'
-        version: 40.0.0(stylelint@17.14.0(typescript@7.0.2))
+        version: 40.0.0(stylelint@17.14.0(supports-color@10.2.2)(typescript@7.0.2))
     devDependencies:
       stylelint:
         specifier: 'catalog:'
-        version: 17.14.0(typescript@7.0.2)
+        version: 17.14.0(supports-color@10.2.2)(typescript@7.0.2)
 
   package/config/tofu:
     devDependencies:
@@ -1253,7 +1253,7 @@ importers:
     devDependencies:
       '@electron/packager':
         specifier: 'catalog:'
-        version: 20.0.2
+        version: 20.0.3(supports-color@10.2.2)
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -1268,7 +1268,7 @@ importers:
         version: 26.1.1
       electron:
         specifier: 'catalog:'
-        version: 43.1.1
+        version: 43.1.1(supports-color@10.2.2)
       rolldown:
         specifier: 'catalog:'
         version: 1.2.0
@@ -1280,13 +1280,13 @@ importers:
     dependencies:
       '@electron/packager':
         specifier: 'catalog:'
-        version: 20.0.2
+        version: 20.0.3(supports-color@10.2.2)
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
       electron:
         specifier: 'catalog:'
-        version: 43.1.1
+        version: 43.1.1(supports-color@10.2.2)
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -1330,7 +1330,7 @@ importers:
         version: 26.1.1
       electron:
         specifier: 'catalog:'
-        version: 43.1.1
+        version: 43.1.1(supports-color@10.2.2)
       rolldown:
         specifier: 'catalog:'
         version: 1.2.0
@@ -1424,13 +1424,13 @@ importers:
     dependencies:
       '@deck.gl/core':
         specifier: 'catalog:'
-        version: 9.3.6
+        version: 9.3.7
       '@deck.gl/layers':
         specifier: 'catalog:'
-        version: 9.3.6(@deck.gl/core@9.3.6)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))
+        version: 9.3.7(@deck.gl/core@9.3.7)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))
       '@deck.gl/mesh-layers':
         specifier: 'catalog:'
-        version: 9.3.6(@deck.gl/core@9.3.6)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))
+        version: 9.3.7(@deck.gl/core@9.3.7)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))
       '@luma.gl/engine':
         specifier: 'catalog:'
         version: 9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6))
@@ -2631,7 +2631,7 @@ importers:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: '>=0.111.0'
-        version: 0.111.0
+        version: 0.112.3
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2810,7 +2810,7 @@ importers:
         version: 1.2.0
       rolldown-plugin-dts:
         specifier: 'catalog:'
-        version: 0.27.9(rolldown@1.2.0)(typescript@7.0.2)
+        version: 0.27.11(rolldown@1.2.0)(typescript@7.0.2)
 
   package/oxlint-plugin/shared:
     devDependencies:
@@ -2940,13 +2940,13 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -2980,7 +2980,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3023,10 +3023,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3054,7 +3054,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3088,13 +3088,13 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3131,7 +3131,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3159,10 +3159,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3193,7 +3193,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3233,7 +3233,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3264,7 +3264,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3289,7 +3289,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3314,7 +3314,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3342,7 +3342,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3376,10 +3376,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.80.8
+        version: 0.80.10(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -3471,7 +3471,7 @@ importers:
     dependencies:
       '@mdx-js/mdx':
         specifier: 'catalog:'
-        version: 3.1.1
+        version: 3.1.1(supports-color@10.2.2)
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -3513,7 +3513,7 @@ importers:
         version: 2.0.0
       remark-gfm:
         specifier: 'catalog:'
-        version: 4.0.1
+        version: 4.0.1(supports-color@10.2.2)
       remark-sectionize:
         specifier: 'catalog:'
         version: 2.1.0
@@ -3897,8 +3897,8 @@ importers:
 
 packages:
 
-  '@anthropic-ai/sdk@0.111.0':
-    resolution: {integrity: sha512-1hUqKi+uJQoS5X90+InwHbFAXMvgq0DnsC5hVLEeSRaODiU5WvmqDAcVCmGS2wC0pN9Z8jtWCbWw7JLzeDdm/Q==, tarball: https://registry.npmjs.org/@anthropic-ai/sdk/-/sdk-0.111.0.tgz}
+  '@anthropic-ai/sdk@0.112.3':
+    resolution: {integrity: sha512-wjcozJlitVIuBEw9cj/xBuRznwkhcLmXmNzlFoeHbh4AvrDG3HGZrdvEOTTmobcbhjGkfOpKbmDTCQ4s9LQvCg==, tarball: https://registry.npmjs.org/@anthropic-ai/sdk/-/sdk-0.112.3.tgz}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -4025,40 +4025,40 @@ packages:
     peerDependencies:
       postcss-selector-parser: ^7.1.1
 
-  '@deck.gl/core@9.3.6':
-    resolution: {integrity: sha512-dCwF+ATE382DdbIqbaoHYCTAW7vutkVlQvWlmMebTDW1j7rPnKrT6ZPa0Y996U/8ZL5NNWc2/wWWY9LYhZVm2Q==, tarball: https://registry.npmjs.org/@deck.gl/core/-/core-9.3.6.tgz}
+  '@deck.gl/core@9.3.7':
+    resolution: {integrity: sha512-l+YPm1I0Fwj+b7xsu8FvyDT5MGPgEPJe2cQJUpQNgG742b2goB4tyYpteUhNAOeVo1gmenvqv36ZJGNsGxipJA==, tarball: https://registry.npmjs.org/@deck.gl/core/-/core-9.3.7.tgz}
 
-  '@deck.gl/layers@9.3.6':
-    resolution: {integrity: sha512-Ex3Lh4AIQ4zi8iojyWr/kpjwdY9HFKkR0iLeNt0hgz3fOmgL8++5jwUuzt+VOQnjE+x7TsNlM1B1fLciHnH4Xg==, tarball: https://registry.npmjs.org/@deck.gl/layers/-/layers-9.3.6.tgz}
+  '@deck.gl/layers@9.3.7':
+    resolution: {integrity: sha512-T2CnkEU1QEqmusrSdot7+8Nl09gzntG5DvhaogyBbTjmABhTh4rUnS6dLOjf5/ju3aJ+Q58/FvDzgBBcK4V7kg==, tarball: https://registry.npmjs.org/@deck.gl/layers/-/layers-9.3.7.tgz}
     peerDependencies:
       '@deck.gl/core': ~9.3.0
       '@loaders.gl/core': ^4.4.3
       '@luma.gl/core': ~9.3.3
       '@luma.gl/engine': ~9.3.3
 
-  '@deck.gl/mesh-layers@9.3.6':
-    resolution: {integrity: sha512-tKG+gqwSfVQTocH2XlV5o3otUQ/DARJ5vj/JpRv6FTWhUkHo5Acp9BDkvv3Lb5KYx0MkLZyjSKsvai1oAxVAIQ==, tarball: https://registry.npmjs.org/@deck.gl/mesh-layers/-/mesh-layers-9.3.6.tgz}
+  '@deck.gl/mesh-layers@9.3.7':
+    resolution: {integrity: sha512-Rc88vaOd/isTw8sZS44xrJOA2vSMYXcO0n9QAEm6AYRBwneZ3+l1/6WIiMIs3Vo8xUytMRyZthdNV3hn2Qv/lg==, tarball: https://registry.npmjs.org/@deck.gl/mesh-layers/-/mesh-layers-9.3.7.tgz}
     peerDependencies:
       '@deck.gl/core': ~9.3.0
       '@luma.gl/core': ~9.3.3
       '@luma.gl/engine': ~9.3.3
 
-  '@earendil-works/pi-agent-core@0.80.8':
-    resolution: {integrity: sha512-TPY9mdZARD/W52R/Y3pGftqC2QuolhYLgqnAn8V8I3J7oXY/KHcnG3AMUloJvmAIFX0n6LuRDZLcvcBPlUwKJg==, tarball: https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.80.8.tgz}
+  '@earendil-works/pi-agent-core@0.80.10':
+    resolution: {integrity: sha512-nwnOR3SuLYGRFfyQm8ri4Nj5VGVAvAM9GuqQd3u7BUQj0d6hmD2F8w7OHAAjThE3CuySIdM+v8E22QJG6/RfCg==, tarball: https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.80.10.tgz}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-ai@0.80.8':
-    resolution: {integrity: sha512-GkiMUP3PB0hwBhj7qNppCa6z1U+CnwBf4gcxC+fg2PWdNrliaJQQNp4DUERiZqS7MJBLEu56kwpdrG7Tjymonw==, tarball: https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.80.8.tgz}
-    engines: {node: '>=22.19.0'}
-    hasBin: true
-
-  '@earendil-works/pi-coding-agent@0.80.8':
-    resolution: {integrity: sha512-oal0jK9E221Imhrj4Q4wXOhWmhzZEzbt9gmbVHs3UR4+KaClg+Ki1vH2FTVY7hntga89koPFSq4kQ6XV/HoSng==, tarball: https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.80.8.tgz}
+  '@earendil-works/pi-ai@0.80.10':
+    resolution: {integrity: sha512-Moe/H8c87yacDGK9dPbWphZNjVsrb3nTrIHycOQJAkFEnY9PYxOOd74+ny44kATfPU9Dm7aTHefar3pZF+UKUA==, tarball: https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.80.10.tgz}
     engines: {node: '>=22.19.0'}
     hasBin: true
 
-  '@earendil-works/pi-tui@0.80.8':
-    resolution: {integrity: sha512-EPKtojwGyjGruZEUYgyZpIYEdiwVAXFu6I+cx2LcZeOTpg+RHFUHboOd0uNEA/beihIdq2yc2lYmFnWFNoN0bA==, tarball: https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.80.8.tgz}
+  '@earendil-works/pi-coding-agent@0.80.10':
+    resolution: {integrity: sha512-aL4apbupCHiVLSXASXvRzH4Q2vmtfrDa+0s909CJuVu/GgGylbDzr7oyF1mPmip5E+VxYYxKWmph4hV04wUcQg==, tarball: https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.80.10.tgz}
+    engines: {node: '>=22.19.0'}
+    hasBin: true
+
+  '@earendil-works/pi-tui@0.80.10':
+    resolution: {integrity: sha512-c2JO29PbhKPEQ6fgHQKAl0WhwuFqzWfzspMmP+8B5tpDuP+0mvarRbKKg8gq4b+pQx/QX+6aVS4ko7deoyjQjg==, tarball: https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.80.10.tgz}
     engines: {node: '>=22.19.0'}
 
   '@electron-internal/extract-zip@1.0.4':
@@ -4078,13 +4078,13 @@ packages:
     resolution: {integrity: sha512-uQQSlOiJnqRkTL1wlEBAxe90nVN/Fc/hEmk0bqpKk8nKjV1if/tXLHKUPePtv9Xsx90PtZU8aidx5lAiOpjkQQ==, tarball: https://registry.npmjs.org/@electron/notarize/-/notarize-3.1.1.tgz}
     engines: {node: '>= 22.12.0'}
 
-  '@electron/osx-sign@2.5.0':
-    resolution: {integrity: sha512-o4+Yq1WQGO+ewJJ0sL0ofWCo5rEZ1omLX7X8Q22rEotQzhZbwcWuXXBOu4/5xrWzyBALNCPAxDkY3Dfo5536Lg==, tarball: https://registry.npmjs.org/@electron/osx-sign/-/osx-sign-2.5.0.tgz}
+  '@electron/osx-sign@2.6.0':
+    resolution: {integrity: sha512-XiJHXekSfeQpk11d9uWZ9PtDm4ADIWvcrSTRJocaDgA46t1okxrQ1keL8rthURJX6AP3DDFnzrouiP6Q5qoHYA==, tarball: https://registry.npmjs.org/@electron/osx-sign/-/osx-sign-2.6.0.tgz}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
-  '@electron/packager@20.0.2':
-    resolution: {integrity: sha512-+JK2Fb1+PwJseK5yaeW3XCFGhe+yPXtRWJeFZN4l8Cq2rLv6zS4PMus/khbcNj5l5Git9w8hffFg7jkJGbbUtg==, tarball: https://registry.npmjs.org/@electron/packager/-/packager-20.0.2.tgz}
+  '@electron/packager@20.0.3':
+    resolution: {integrity: sha512-3hl7LuML+QKmxS1GushnqFIUi6DbvKOUQDlGLbFCP2w8MW8tsHl6oQkDb8xjbIQtzP11kq/S7uYRJTXCirqtrQ==, tarball: https://registry.npmjs.org/@electron/packager/-/packager-20.0.3.tgz}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -4429,8 +4429,8 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@nodable/entities@2.2.0':
-    resolution: {integrity: sha512-9uGyhaQavEUMC8AIddIjau4NsnsXhou+j5sBAGojCM1oxmQpVKTWR/9JxABD6UAv12vpIms55fPZKFQEhG6uBg==, tarball: https://registry.npmjs.org/@nodable/entities/-/entities-2.2.0.tgz}
+  '@nodable/entities@3.0.0':
+    resolution: {integrity: sha512-8L9xFeTYKhm49xfIypoe2W5wV1m/3Z58kT+7kR9A8OyFxcPduI4VmxaUMQyKYrRjUoLLSXv6EKKID5Tvj9cUVw==, tarball: https://registry.npmjs.org/@nodable/entities/-/entities-3.0.0.tgz}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==, tarball: https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz}
@@ -4586,33 +4586,33 @@ packages:
   '@oxc-project/types@0.140.0':
     resolution: {integrity: sha512-h5LUOzGArYemnW1NMz/DuuQhBi96J6JL2Bk8zE4kvqxB5Sg3jxmCiH4uyOWHDkiKSt5vWlG4FIwCR/DbstcNRQ==, tarball: https://registry.npmjs.org/@oxc-project/types/-/types-0.140.0.tgz}
 
-  '@oxlint-tsgolint/darwin-arm64@0.24.0':
-    resolution: {integrity: sha512-C2uMmwK5Bc4ri4ysZ6sA8Rcu+A5zBQTp6ml2u0CLLbRZp4kMFPV3yWk8B5DK9Aw7y9bbjogIm75tUwGLFzlsYQ==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/darwin-arm64/-/darwin-arm64-0.24.0.tgz}
+  '@oxlint-tsgolint/darwin-arm64@0.25.0':
+    resolution: {integrity: sha512-87opKlwFP8qS9WHAeETV+kA0fC9Oyj4sg7OxWdI4xQY0WC7zlN6BgG66uE5mvtN5mahkt/gL0i/AVEnX6POq2Q==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/darwin-arm64/-/darwin-arm64-0.25.0.tgz}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxlint-tsgolint/darwin-x64@0.24.0':
-    resolution: {integrity: sha512-Wgvt/1lRbDxmoNqWQKKcL+UIiqLmdJ+EWLpQa1qzoNVAfNB0PJpa82/8dH1twT/3rSs4zrP5TXPWl4juB71WuQ==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/darwin-x64/-/darwin-x64-0.24.0.tgz}
+  '@oxlint-tsgolint/darwin-x64@0.25.0':
+    resolution: {integrity: sha512-HJmuZexsrhqp4WmETn+Soq7Ogt5F0jirv+cYRSniIPe+d/x5beQzLX69xOLhQRE+8FLGETe7FahWMVP8x0dW4g==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/darwin-x64/-/darwin-x64-0.25.0.tgz}
     cpu: [x64]
     os: [darwin]
 
-  '@oxlint-tsgolint/linux-arm64@0.24.0':
-    resolution: {integrity: sha512-PB1rxII7KV83+ASY4sSkXtqvpij6ME66+QCRL49uksi/ofs2Rf/UVboYr095n0Rkbl2wgvlsHGl6DHC361jQUQ==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/linux-arm64/-/linux-arm64-0.24.0.tgz}
+  '@oxlint-tsgolint/linux-arm64@0.25.0':
+    resolution: {integrity: sha512-aNyYsPREvCJi3qjfBA0sQB7DhT3y/W5Ac2JI2D8IJynoTOAhVZj401Si6901oDajlBWyqJqqojudn0VgHB6+7A==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/linux-arm64/-/linux-arm64-0.25.0.tgz}
     cpu: [arm64]
     os: [linux]
 
-  '@oxlint-tsgolint/linux-x64@0.24.0':
-    resolution: {integrity: sha512-xcz3CxKmjTQLREtE/UShh+ruWmm9nAb7UM9zKcD65BStiuYgOakAKkPHl4YS5DztpVcDrE0+HqbOolTlRKYWmw==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-0.24.0.tgz}
+  '@oxlint-tsgolint/linux-x64@0.25.0':
+    resolution: {integrity: sha512-+60+VjK9Mch3uA5WlTdNHuAm5+WA7wPPjuWdPWlU0F6JJpYpGZXUpO1RPKuFEWsBpNbLcLeJ0LbCJ1doWu58NA==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/linux-x64/-/linux-x64-0.25.0.tgz}
     cpu: [x64]
     os: [linux]
 
-  '@oxlint-tsgolint/win32-arm64@0.24.0':
-    resolution: {integrity: sha512-A2i6ZGBec3i20S7RaxkgHc6r3HYtD5Mn7j/mb22NkTz14u0JuudvTu6JggAnbGMcv8+dBKQI//EasxSPJLD8pw==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/win32-arm64/-/win32-arm64-0.24.0.tgz}
+  '@oxlint-tsgolint/win32-arm64@0.25.0':
+    resolution: {integrity: sha512-r53TO+eHp/t53nnUkQJfrYYXODPAxmtf3RUFQG5XsE2hD21IunliOaAdZXP2UwzCx+r/fbNaEelqTaAHcDr57w==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/win32-arm64/-/win32-arm64-0.25.0.tgz}
     cpu: [arm64]
     os: [win32]
 
-  '@oxlint-tsgolint/win32-x64@0.24.0':
-    resolution: {integrity: sha512-0ZbGd9qRB6zs82moekaKdEvncRANq49EAwfNX62JpTS46feXUhKAuoyVDvZMj6Rywejylrmmu79Wo6faYCo4Ew==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/win32-x64/-/win32-x64-0.24.0.tgz}
+  '@oxlint-tsgolint/win32-x64@0.25.0':
+    resolution: {integrity: sha512-vqe66B+gL9HarhyHemdlfC2VWT7eoA+o/ufZ7zT6AGHv64boyDZIJS3U+rpZo+ey4O7wZtiS/vYR2fWqDoFeBw==, tarball: https://registry.npmjs.org/@oxlint-tsgolint/win32-x64/-/win32-x64-0.25.0.tgz}
     cpu: [x64]
     os: [win32]
 
@@ -4873,8 +4873,8 @@ packages:
   '@sinonjs/samsam@10.0.2':
     resolution: {integrity: sha512-8lVwD1Df1BmzoaOLhMcGGcz/Jyr5QY2KSB75/YK1QgKzoabTeLdIVyhXNZK9ojfSKSdirbXqdbsXXqP9/Ve8+A==, tarball: https://registry.npmjs.org/@sinonjs/samsam/-/samsam-10.0.2.tgz}
 
-  '@smithy/core@3.29.4':
-    resolution: {integrity: sha512-G1GRglAabzEhqghJMBAd54FkRS7SAFGHEwbhcI9r+O+LIMuFsLyXkLZkCoFSgAglRu8s/URVXJB0hglq3ZipIg==, tarball: https://registry.npmjs.org/@smithy/core/-/core-3.29.4.tgz}
+  '@smithy/core@3.29.5':
+    resolution: {integrity: sha512-i0dk2t5B+CwV/dcJdUHILYkOQF5lof8f44dFCfDWToGCxjT9YQ+CgHqTAvJxzc3+zqQwm2QtVoJ5IqiNar/CnQ==, tarball: https://registry.npmjs.org/@smithy/core/-/core-3.29.5.tgz}
     engines: {node: '>=18.0.0'}
 
   '@smithy/node-http-handler@4.7.3':
@@ -5115,130 +5115,136 @@ packages:
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==, tarball: https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.10.tgz}
     engines: {node: '>=14.6'}
 
-  '@yuku-codegen/binding-darwin-arm64@0.6.3':
-    resolution: {integrity: sha512-pbDcFygFmbvo0jGFq5U0m5Sa9U8aVttVJWbBHZDZ68w/X48HdDWS1V4XvBacs8XkmWbTr/ef5fMGG7HsngqTmg==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-darwin-arm64/-/binding-darwin-arm64-0.6.3.tgz}
+  '@yuku-codegen/binding-darwin-arm64@0.6.12':
+    resolution: {integrity: sha512-C9rpGA8S8MTze6+EeM9wVu63OXyfzvzhVaBW7gvvS+X36uQc3DZ3qAN5kuXkRVaVN+pJqb+maIKEjnJ0k9lwmw==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-darwin-arm64/-/binding-darwin-arm64-0.6.12.tgz}
     cpu: [arm64]
     os: [darwin]
 
-  '@yuku-codegen/binding-darwin-x64@0.6.3':
-    resolution: {integrity: sha512-qZMrnA4i8OfqL3NMGoOvLdh1vby8cCGsmNo+tJQIIezXO557m3fdQLenz/57GqtBnnGWzWqd/aDp+faNxWlLwQ==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-darwin-x64/-/binding-darwin-x64-0.6.3.tgz}
+  '@yuku-codegen/binding-darwin-x64@0.6.12':
+    resolution: {integrity: sha512-YV2jLF2hJtkRjw50szArmyl19DI2s50Y0v+UTb6vADaDTts0kCP/ZJ5bvTX8XuX/5RW7kTERZx/PI+w/9lnAKw==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-darwin-x64/-/binding-darwin-x64-0.6.12.tgz}
     cpu: [x64]
     os: [darwin]
 
-  '@yuku-codegen/binding-freebsd-x64@0.6.3':
-    resolution: {integrity: sha512-2+SFpfem2GBH6BlCTAq6R44bZwuieduwRWHkCQnSgbK8tdEjMwB0Ix0IchryVBn6hdiWCZSTkSE3UILliRXsRQ==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-freebsd-x64/-/binding-freebsd-x64-0.6.3.tgz}
+  '@yuku-codegen/binding-freebsd-x64@0.6.12':
+    resolution: {integrity: sha512-hNAMOQhYuW9f3wIPwP7anyvr+sBBwtEUSTEOD7BYwcuay9f+wjAYM+UBiL2wiJ/4L/0yV0SNc1fF/N+BWEKqKw==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-freebsd-x64/-/binding-freebsd-x64-0.6.12.tgz}
     cpu: [x64]
     os: [freebsd]
 
-  '@yuku-codegen/binding-linux-arm-gnu@0.6.3':
-    resolution: {integrity: sha512-fbxg3cBPdJ++36DXtdzcoKw2xzFov91Wxvmn1khX9MXQbDqJQLJmITZhtokcZsj4uGJe32sUmxAZnKbUtZLjmA==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm-gnu/-/binding-linux-arm-gnu-0.6.3.tgz}
+  '@yuku-codegen/binding-linux-arm-gnu@0.6.12':
+    resolution: {integrity: sha512-ClOiLpyofntNGZzQ3BxbwkNe92J911t9C2R3s6HwQ2yH0lRLS88DUey7+xQNu4az96T1PEc+pR9ZIP/GzOCHNg==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm-gnu/-/binding-linux-arm-gnu-0.6.12.tgz}
     cpu: [arm]
     os: [linux]
     libc: [glibc]
 
-  '@yuku-codegen/binding-linux-arm-musl@0.6.3':
-    resolution: {integrity: sha512-Jk4P7kocGEisSvUFIm1VuHO3hC01LvS3sYAAmVVu1/ve5TuZ0iXyl9kIGtd1ZrgUvchgvZWNOaB+/Kq/RO63FA==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm-musl/-/binding-linux-arm-musl-0.6.3.tgz}
+  '@yuku-codegen/binding-linux-arm-musl@0.6.12':
+    resolution: {integrity: sha512-8LnO3kYIEpm13Gj0RDfM2hciPxagTZWJcB6RM6DZBEF+GJYsmOII90F0UulLzn/l2bLY5oVPMPgF0Rn29fY2jw==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm-musl/-/binding-linux-arm-musl-0.6.12.tgz}
     cpu: [arm]
     os: [linux]
     libc: [musl]
 
-  '@yuku-codegen/binding-linux-arm64-gnu@0.6.3':
-    resolution: {integrity: sha512-i1xE8Bx1YZLheWtBZHD0Mq3nAIDrhgiH7o8VB4GiCbHufKb4XKj4CqSDMWSC0RYPmn//E+UEd1NsE2NbOux1tQ==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.6.3.tgz}
+  '@yuku-codegen/binding-linux-arm64-gnu@0.6.12':
+    resolution: {integrity: sha512-GdETEflvfkPtdEpzT6QBAucsMAt7wiLYMk4+w1qA34J02OAo11BsTJrxUkPaQ4z/S6KkX3IfK5Ud9rCAyelnCg==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.6.12.tgz}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@yuku-codegen/binding-linux-arm64-musl@0.6.3':
-    resolution: {integrity: sha512-ZeLkC6xZrlDoIJTadHfqTABTmsj2f6wCCtYBYx/RPGgdmQcGLA0NALRl7m0tnK2CT45eNRuOYzsfEZyF0XWM/A==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm64-musl/-/binding-linux-arm64-musl-0.6.3.tgz}
+  '@yuku-codegen/binding-linux-arm64-musl@0.6.12':
+    resolution: {integrity: sha512-ztFEUChX/sK9B0DH6//g4/QYl4dvTs3BOE+YMVt7pxg9G9fzBcV1vMZdROuXXNGWp6/hU56kTSZ8t4uW/0qpjw==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-arm64-musl/-/binding-linux-arm64-musl-0.6.12.tgz}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@yuku-codegen/binding-linux-x64-gnu@0.6.3':
-    resolution: {integrity: sha512-HNYt7zjIChPcnjZRG42CZq3Zn5mqaRo4UcFLr4mIbmGqdhX5hDDE8O8US8YgYyOUosfbBTBFdsbvFwVAx1TOkQ==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.6.3.tgz}
+  '@yuku-codegen/binding-linux-x64-gnu@0.6.12':
+    resolution: {integrity: sha512-aDZEat8bARks9upxd8Joi7LGatX2B/TwlnXIdbMCGlONK3WAEroihY1SUyGlf02niU1OyBidhlN7l3l+LByMxw==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.6.12.tgz}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@yuku-codegen/binding-linux-x64-musl@0.6.3':
-    resolution: {integrity: sha512-/1ttT31dAQc7hGtXWSEYEgzGtakAyO2C+/GqAzIuKXlGLpNPZgXdR8LZ0iDHDalbEr3AuHIPRV43sWLUrHWdsA==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-x64-musl/-/binding-linux-x64-musl-0.6.3.tgz}
+  '@yuku-codegen/binding-linux-x64-musl@0.6.12':
+    resolution: {integrity: sha512-IEuUSS04RsAx+d3PpAMAgCmEC0PzAuk5cath2Zk/KGe/te1zwTjZGxbBJM7n+0APaHB+IhUEMgm0bcjIAweEVQ==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-linux-x64-musl/-/binding-linux-x64-musl-0.6.12.tgz}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@yuku-codegen/binding-win32-arm64@0.6.3':
-    resolution: {integrity: sha512-oAArRDU1lkKg+xFEtiQ7C+/wghpqrkBrFWM05W73S+3sZz8JIHH79Q+Qh5gWls3i8vccitUgCnvln5V7xKn3XQ==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-win32-arm64/-/binding-win32-arm64-0.6.3.tgz}
+  '@yuku-codegen/binding-win32-arm64@0.6.12':
+    resolution: {integrity: sha512-0HHfyj/TbuFN09QFyypZ4+5vqmxeOYmEdFGuDnsq0KJdxnTeH0Fbqh1Bn7ZRV89IRzi8Fm7zSkb3mMJIS8Tk4g==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-win32-arm64/-/binding-win32-arm64-0.6.12.tgz}
     cpu: [arm64]
     os: [win32]
 
-  '@yuku-codegen/binding-win32-x64@0.6.3':
-    resolution: {integrity: sha512-bhFDcDsvmp5KuBfWTt4carNo1E4LXH7++S8qqZgDtXVqJxs0xMm7gbuqPihA8kBbphM+NzAUm5qmq6ocfqM6kg==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-win32-x64/-/binding-win32-x64-0.6.3.tgz}
+  '@yuku-codegen/binding-win32-x64@0.6.12':
+    resolution: {integrity: sha512-ZItYULslPqB9S7b53v23IeUcPCd5NeW+5+BoMyCY5/AEsMADKdznZXd4ELO1TZxv+0oA55g3iAOC9GWgigCsZA==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-win32-x64/-/binding-win32-x64-0.6.12.tgz}
     cpu: [x64]
     os: [win32]
 
-  '@yuku-parser/binding-darwin-arm64@0.6.3':
-    resolution: {integrity: sha512-Xate6yyZgvi7da/gdnZy+Vu5jlFB0LRlb5m4MY6Y98KSQeJPZIhoVXMK2Vsl48XOmPlDIS8lge414HUVUEo+hg==, tarball: https://registry.npmjs.org/@yuku-parser/binding-darwin-arm64/-/binding-darwin-arm64-0.6.3.tgz}
+  '@yuku-parser/binding-darwin-arm64@0.6.12':
+    resolution: {integrity: sha512-8nsmwwzuh2YCmJ3LT26RQp1tvS6FzGC2+XP6wFz6TNaBtQje+QgwkVdKVuECVWNHPFmuSTHonOnSzX0QirHqvQ==, tarball: https://registry.npmjs.org/@yuku-parser/binding-darwin-arm64/-/binding-darwin-arm64-0.6.12.tgz}
     cpu: [arm64]
     os: [darwin]
 
-  '@yuku-parser/binding-darwin-x64@0.6.3':
-    resolution: {integrity: sha512-WKMZ5UU2HBdGZDEpQoLq+21f1FlS+BjroH1FaVE6zCSeqKmZ7xRP5jIRGtQ4vCYj/k2KHgyABZ16lgK9mTe2Sg==, tarball: https://registry.npmjs.org/@yuku-parser/binding-darwin-x64/-/binding-darwin-x64-0.6.3.tgz}
+  '@yuku-parser/binding-darwin-x64@0.6.12':
+    resolution: {integrity: sha512-URbCSLE/B0jWnB94RpOxak2TM0GvRLUmArtfb/UmxtQfNOLed4LKK0jUv68IMAL9lOmJlvOBH9UwOyeuLEfuvA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-darwin-x64/-/binding-darwin-x64-0.6.12.tgz}
     cpu: [x64]
     os: [darwin]
 
-  '@yuku-parser/binding-freebsd-x64@0.6.3':
-    resolution: {integrity: sha512-OWX8V2k4bmtl/DNwU3yz3PZa2QXiSqWN3Xk7pNB5IPt7FcJBDlnpkOcX6h3tjMS7CyKE0lMvPUwwcmWSdbjkyA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-freebsd-x64/-/binding-freebsd-x64-0.6.3.tgz}
+  '@yuku-parser/binding-freebsd-x64@0.6.12':
+    resolution: {integrity: sha512-VmiuUxe6uUe2c5tmBnIdZ+/LQ++ioKIZcCP/zMB8E7tuUaQesvMEPOS8ZQrUohFY2VlrKroiATaB1l9KJw15Zw==, tarball: https://registry.npmjs.org/@yuku-parser/binding-freebsd-x64/-/binding-freebsd-x64-0.6.12.tgz}
     cpu: [x64]
     os: [freebsd]
 
-  '@yuku-parser/binding-linux-arm-gnu@0.6.3':
-    resolution: {integrity: sha512-/4LzmPXPaCWqIpY1j3+XVb8rbXIratqCte3A4sGEjua6aVhvVxEVAqeKlBsoGkORWLeqbpcxhgxKwOGM17eexA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm-gnu/-/binding-linux-arm-gnu-0.6.3.tgz}
+  '@yuku-parser/binding-linux-arm-gnu@0.6.12':
+    resolution: {integrity: sha512-q9WcllopGo8W9qzMz4Aahew3z/rLxiZFpmVoZQaLjwaO9EDW3sULue2zJ9agvVMf1NzRXircauTUrPZ4EZ74cQ==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm-gnu/-/binding-linux-arm-gnu-0.6.12.tgz}
     cpu: [arm]
     os: [linux]
     libc: [glibc]
 
-  '@yuku-parser/binding-linux-arm-musl@0.6.3':
-    resolution: {integrity: sha512-Df4jk0M/eNKKQfYzXBBKhKkmJBpB+XoX2LkMxmlK3GN+fxUdeb8EM78wX+1+eLVl5dZNo6f7gOd6oDV0gChevw==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm-musl/-/binding-linux-arm-musl-0.6.3.tgz}
+  '@yuku-parser/binding-linux-arm-musl@0.6.12':
+    resolution: {integrity: sha512-DcEO5Ywaw4r5keOonqdvuQdKNqN+VipJrdiC+jakOwiy1NLSbseylyufheg6uafviMuGn2to1oWw1FXD6Y4ztQ==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm-musl/-/binding-linux-arm-musl-0.6.12.tgz}
     cpu: [arm]
     os: [linux]
     libc: [musl]
 
-  '@yuku-parser/binding-linux-arm64-gnu@0.6.3':
-    resolution: {integrity: sha512-sRCtDktUgIbbV78SYX3wdGVVm1Hz/nSUS24JgXB4MzUeGNwBNB+eQAWMtBxCGriyJNXK3zwfj+SSgvTmUdPf/A==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.6.3.tgz}
+  '@yuku-parser/binding-linux-arm64-gnu@0.6.12':
+    resolution: {integrity: sha512-zUFJar5Y9On9eIAw6kLxCmuAirGUjC3pyLdxrHC1dYueIMzZDrBa0hyzHRC7Nybr6R7COQ2U0oVZuZcl46RboA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.6.12.tgz}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@yuku-parser/binding-linux-arm64-musl@0.6.3':
-    resolution: {integrity: sha512-3J/jV3ROSqlhLyB/6i5EUHxjkom5i59iPvrtiAsnAjHzMsZJJPEke9LSaOsB0rf4MJFH9AmjvsK8gDahTjZy+A==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm64-musl/-/binding-linux-arm64-musl-0.6.3.tgz}
+  '@yuku-parser/binding-linux-arm64-musl@0.6.12':
+    resolution: {integrity: sha512-nPkXLUBQ0GiU0+BQByTb5M+a9wnCfM0SSBmIHYJ2KtaRUYmOruMut4AyBOVwIE2mbPeiOYcrWpMkseeFJ7Wonw==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-arm64-musl/-/binding-linux-arm64-musl-0.6.12.tgz}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@yuku-parser/binding-linux-x64-gnu@0.6.3':
-    resolution: {integrity: sha512-a5mPn/OMSq2Aa2i7eJXcc37Jtw0b89gDO2mDpXN769b06IirEiqOzLNNJd6R7R8DxoadHzY0nLFhYNChE+jyAg==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.6.3.tgz}
+  '@yuku-parser/binding-linux-x64-gnu@0.6.12':
+    resolution: {integrity: sha512-XucJKw1k2nyfQoiBJiQJm1q3n6K8rCDvhQpF4XRoIzTQNhAV2sldEayJvCAsTS4orCHcsDqrDrBVRMRg8ExXPw==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.6.12.tgz}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@yuku-parser/binding-linux-x64-musl@0.6.3':
-    resolution: {integrity: sha512-kQSjfa6zdvotuXEGNKQ9vZZxE+lcEEbTUMSuvY/5+0crlwBCjEqrf9/W9ViFDoQAEt8WJiu/mtVNYkKAOkjLmA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-x64-musl/-/binding-linux-x64-musl-0.6.3.tgz}
+  '@yuku-parser/binding-linux-x64-musl@0.6.12':
+    resolution: {integrity: sha512-+p17OXn9xf4zePE3EEh1NriHv5GtfBJ8dEeaGVHUQNo5rkzDzcMH3PrMUD00RqWrWci5BfY7jMhMxgUye+NArA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-linux-x64-musl/-/binding-linux-x64-musl-0.6.12.tgz}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@yuku-parser/binding-win32-arm64@0.6.3':
-    resolution: {integrity: sha512-ZawdN3R0YKr48BeXCpbax+WDWbgEG6nWyDosVeZasrT5TjgfF4XMP5SfuyMNvRJ4gbTitrcYHZkENSXZ9ncqcg==, tarball: https://registry.npmjs.org/@yuku-parser/binding-win32-arm64/-/binding-win32-arm64-0.6.3.tgz}
+  '@yuku-parser/binding-win32-arm64@0.6.12':
+    resolution: {integrity: sha512-BF6hLXQzaKj5Rn5r1QrCu6GBqdkjOOb8qpzWoKdG18QVhr/pnMPJpFl9isMg20orlOM+Kl/mU6XfzljgmzbocQ==, tarball: https://registry.npmjs.org/@yuku-parser/binding-win32-arm64/-/binding-win32-arm64-0.6.12.tgz}
     cpu: [arm64]
     os: [win32]
 
-  '@yuku-parser/binding-win32-x64@0.6.3':
-    resolution: {integrity: sha512-NcqZwBXQhKyfC0Eb+yBxXQcPjZoUstD1Dbr3X4UlOD1QiYfnvAYRKCZJ6nQ6KQ5p30dGaKkQeBL4t3qQtDQNWA==, tarball: https://registry.npmjs.org/@yuku-parser/binding-win32-x64/-/binding-win32-x64-0.6.3.tgz}
+  '@yuku-parser/binding-win32-x64@0.6.12':
+    resolution: {integrity: sha512-Qv4Lwg3pvLJrLg+JlB71Xuz3kIxEg/S402jpoLSlchvUkQKTzO+dii0+97FZfQsN67pqqssenhezg5iLNrdw1w==, tarball: https://registry.npmjs.org/@yuku-parser/binding-win32-x64/-/binding-win32-x64-0.6.12.tgz}
     cpu: [x64]
     os: [win32]
 
   '@yuku-toolchain/types@0.5.43':
     resolution: {integrity: sha512-kSpvPntnXw5+lYjO71ffBEnQ5ycQ74KGIYknh0TS4xeyCuBkOqxyJumxZkMhLBBUCLjDAbx2+Icnr3Zh4ftjpQ==, tarball: https://registry.npmjs.org/@yuku-toolchain/types/-/types-0.5.43.tgz}
+
+  '@yuku-toolchain/types@0.6.11':
+    resolution: {integrity: sha512-i1JYFNJaKNCgyJ/nVoR8GK7wvlXF+ShYzFHBauWcvg8IoiXInK7pVziHcgNz/MWLPNr/Mb/CtmXccrJMkKqSHQ==, tarball: https://registry.npmjs.org/@yuku-toolchain/types/-/types-0.6.11.tgz}
+
+  '@yuku-toolchain/types@0.6.8':
+    resolution: {integrity: sha512-AbUd1775RVkOxJkh8hkldIWoU6kRMTCsZFSZq8Ny53q7GkbaVe5UCfleNZ3RWCoz/ZKE8qwfeB7Cj0xqhLWsKA==, tarball: https://registry.npmjs.org/@yuku-toolchain/types/-/types-0.6.8.tgz}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==, tarball: https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.3.2.tgz}
@@ -5331,8 +5337,8 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==, tarball: https://registry.npmjs.org/callsites/-/callsites-3.1.0.tgz}
     engines: {node: '>=6'}
 
-  caniuse-lite@1.0.30001805:
-    resolution: {integrity: sha512-52noaS3DubycKSXaU30TwPGIp+POyQSUVa5jBEq3vkRkY0kjyb3LQgvhU6WGyCcyXqVLWO0Cw0Q6BSdD0kUfVA==, tarball: https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001805.tgz}
+  caniuse-lite@1.0.30001806:
+    resolution: {integrity: sha512-72Cuvd95zbSYPKq6Fhg8eDJRlzgWDf7/mtoZv6Qe/DYNCEBdNxoA3+rZAU2ZhGCpZlns3EssFavaZomckT5Uuw==, tarball: https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001806.tgz}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==, tarball: https://registry.npmjs.org/ccount/-/ccount-2.0.1.tgz}
@@ -5524,8 +5530,8 @@ packages:
   earcut@2.2.4:
     resolution: {integrity: sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ==, tarball: https://registry.npmjs.org/earcut/-/earcut-2.2.4.tgz}
 
-  electron-to-chromium@1.5.392:
-    resolution: {integrity: sha512-1yQq3VQCZRwsnYc67Oc+1fge6Lwtn0hzi6zmEVkB61Zx21kTbwJAW4dFLadl5Rc1tKhG/kSpYXnfiAhu0f0a1g==, tarball: https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.392.tgz}
+  electron-to-chromium@1.5.393:
+    resolution: {integrity: sha512-kiDJdIUawuEIcp9XoICKp1iTYDEbgguIPq526N1Q7jIQDeQ3CqoMx71025PI/7E48Ddtw2HuWsVjY7afEgNxmg==, tarball: https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.393.tgz}
 
   electron@43.1.1:
     resolution: {integrity: sha512-I5c5vfuVvaXpWx3IZdwvXgxQW44+e7OP1wXGVQkogLeSFSkUZ6sLCcWV05AdEcs65AO5tAIJJwbp7ixw+LdarA==, tarball: https://registry.npmjs.org/electron/-/electron-43.1.1.tgz}
@@ -5603,9 +5609,9 @@ packages:
   event-stream@4.0.1:
     resolution: {integrity: sha512-qACXdu/9VHPBzcyhdOWR5/IahhGMf0roTeZJfzz077GwylcDd90yOHLouhmv7GJ5XzPi6ekaQWd8AvPP2nOvpA==, tarball: https://registry.npmjs.org/event-stream/-/event-stream-4.0.1.tgz}
 
-  execa@9.6.1:
-    resolution: {integrity: sha512-9Be3ZoN4LmYR90tUoVu2te2BsbzHfhJyfEiAVfz7N5/zv+jduIfLrV2xdQXOHbaD6KgpGdO9PRPM1Y4Q9QkPkA==, tarball: https://registry.npmjs.org/execa/-/execa-9.6.1.tgz}
-    engines: {node: ^18.19.0 || >=20.5.0}
+  execa@10.0.0:
+    resolution: {integrity: sha512-Cxl6MKxB1dr1H0FHmiizJ+lavKF7pV+fcDZFyqMB8d5m7qUPm/OtZYcD5vPWePKxSnTQ57KuBd9mtdZ3oNCvyQ==, tarball: https://registry.npmjs.org/execa/-/execa-10.0.0.tgz}
+    engines: {node: '>=22'}
 
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==, tarball: https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz}
@@ -5650,8 +5656,8 @@ packages:
   fast-xml-builder@1.3.0:
     resolution: {integrity: sha512-F74cZEdCvuw9P41GAC3rod4X04jjWGM1JPEv/GWSqFTWLsdyMSBMBMlm9Hk3GLBgLBbdBNY8yee0pQh2RBVESQ==, tarball: https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.3.0.tgz}
 
-  fast-xml-parser@5.10.0:
-    resolution: {integrity: sha512-SLhnTEqE5QpJHq/6zl9bsmImEP2adv+y6Wy+cJa7nVTRzQh1OZfCe9k29M5xN74LWnu0xa1zrUrq3KnOKl92Fg==, tarball: https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.10.0.tgz}
+  fast-xml-parser@5.10.1:
+    resolution: {integrity: sha512-IEMIf7298kXuZSRFoGfMYrl7is8LpavODgbNz1cwIudv7KwVFnuU+UsMporfq6PD6aXSlawZlARiA3UywCTfMw==, tarball: https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.10.1.tgz}
     hasBin: true
 
   fastest-levenshtein@1.0.16:
@@ -5758,8 +5764,8 @@ packages:
     resolution: {integrity: sha512-awConJSVCHVGND6x3tmMaKcQvwXLhjdkmomy2W+Goaui8YPgYgXJZewhg3fWC+DlfqqQuWg8AwqjGTD2nAPVWg==, tarball: https://registry.npmjs.org/global-prefix/-/global-prefix-3.0.0.tgz}
     engines: {node: '>=6'}
 
-  globby@16.2.1:
-    resolution: {integrity: sha512-JmsqJalahxxgW8V2ecSQ2G7UjPlI9cpKdrkG9KoNiXhd/YslXOTEB0cViENWUznuovIuNT+FkMbraDGjr4FCUg==, tarball: https://registry.npmjs.org/globby/-/globby-16.2.1.tgz}
+  globby@16.2.2:
+    resolution: {integrity: sha512-NLvV9ubZ6NDsJaOpKPy3cQeJpKi9DcWiyCiFUpJPA0YihRqiE6RWaLUmgNNPr8MgPpLZjnBjSmou7uZBRJv9wA==, tarball: https://registry.npmjs.org/globby/-/globby-16.2.2.tgz}
     engines: {node: '>=20'}
 
   globjoin@0.1.4:
@@ -6274,8 +6280,8 @@ packages:
     resolution: {integrity: sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA==, tarball: https://registry.npmjs.org/npm-run-path/-/npm-run-path-6.0.0.tgz}
     engines: {node: '>=18'}
 
-  obug@2.1.3:
-    resolution: {integrity: sha512-9miFgM2OFba7hB+pRgvtV84pYTBaoTHohvmIgiRt6dRIzbwEOIaNaP+dIlGs2fNFoB0SeISs0Jz5WFVRid6Xyg==, tarball: https://registry.npmjs.org/obug/-/obug-2.1.3.tgz}
+  obug@2.1.4:
+    resolution: {integrity: sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA==, tarball: https://registry.npmjs.org/obug/-/obug-2.1.4.tgz}
     engines: {node: '>=12.20.0'}
 
   openai@6.26.0:
@@ -6298,8 +6304,8 @@ packages:
     resolution: {integrity: sha512-h6QFWd6lBMfjESqgQ27GjzrSDb0qbznp7VDQqp2zvgsrWut4vcchyMIzOVXvGQ2GMZgKw9RWrFNWv9WqGL0p7Q==, tarball: https://registry.npmjs.org/oxc-parser/-/oxc-parser-0.140.0.tgz}
     engines: {node: ^20.19.0 || >=22.12.0}
 
-  oxlint-tsgolint@0.24.0:
-    resolution: {integrity: sha512-giCk5sEvG02d5tzPmFMX3hem8ndzEEu1xvGYS5OwNfO2WGl6ZVxt5LjE0yiMDoz94INI7XkXwgFAQiydPvVHDw==, tarball: https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-0.24.0.tgz}
+  oxlint-tsgolint@0.25.0:
+    resolution: {integrity: sha512-7DBpqyLZCfyoXiivyfzt9Xmju/K1RcN+Y1W7buEwrgRCWWF11v9alypPqWGZBmh2erDkKL/kVyhKUH2Px+t13A==, tarball: https://registry.npmjs.org/oxlint-tsgolint/-/oxlint-tsgolint-0.25.0.tgz}
     hasBin: true
 
   oxlint@1.74.0:
@@ -6533,19 +6539,19 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==, tarball: https://registry.npmjs.org/reusify/-/reusify-1.1.0.tgz}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rolldown-plugin-dts@0.27.9:
-    resolution: {integrity: sha512-d54yt65+ZF/Mk8H6P36As02PAMdaiWRSzVNtJRc1h7nCgUFjuRI4cN2DyTfJyfVpPH6pgy7/2D7YQH1/Rh75Yg==, tarball: https://registry.npmjs.org/rolldown-plugin-dts/-/rolldown-plugin-dts-0.27.9.tgz}
+  rolldown-plugin-dts@0.27.11:
+    resolution: {integrity: sha512-DnBl4USSTV/h/sgy//QjCLHVo2JypE/52P5QugGeYaEqZmjBz/FYESOld0MhyIhul2U3Vsh41K63UWGHhJU/qQ==, tarball: https://registry.npmjs.org/rolldown-plugin-dts/-/rolldown-plugin-dts-0.27.11.tgz}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@ts-macro/tsc': ^0.3.6
       '@typescript/native-preview': '*'
+      '@volar/typescript': ~2.4.0
       rolldown: ^1.0.0
       typescript: ^5.0.0 || ^6.0.0 || ~7.0.0
       vue-tsc: ~3.2.0 || ~3.3.0
     peerDependenciesMeta:
-      '@ts-macro/tsc':
-        optional: true
       '@typescript/native-preview':
+        optional: true
+      '@volar/typescript':
         optional: true
       typescript:
         optional: true
@@ -6888,6 +6894,11 @@ packages:
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==, tarball: https://registry.npmjs.org/web-namespaces/-/web-namespaces-2.0.1.tgz}
 
+  which-command@0.1.0:
+    resolution: {integrity: sha512-XZyoF5/5hZtXitIwzrU4NKK+Wtbb9aB9CezUEw2Q0wlYK8NUYQxC1rRXgNueYLtBAJwXIb+/tFVk4dozciNJMA==, tarball: https://registry.npmjs.org/which-command/-/which-command-0.1.0.tgz}
+    engines: {node: '>=22'}
+    hasBin: true
+
   which@1.3.1:
     resolution: {integrity: sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==, tarball: https://registry.npmjs.org/which/-/which-1.3.1.tgz}
     hasBin: true
@@ -6950,11 +6961,14 @@ packages:
   yuku-ast@0.1.7:
     resolution: {integrity: sha512-2RiMEWv500TixY5rJy6OZd4fSy9WYZKWh6gGbIJ7y7vAGcuCugWOWwOLGaQcRZrXcPUfqtLtvpaJ3SdXtWlhKA==, tarball: https://registry.npmjs.org/yuku-ast/-/yuku-ast-0.1.7.tgz}
 
-  yuku-codegen@0.6.3:
-    resolution: {integrity: sha512-3c9H521tf1RRDu4cNUySfH01sKlALve4HKu2sITk33gLl5HhsvI6ngSuarpWxMPAiJEgqJc/HTvojWQRnYm9/g==, tarball: https://registry.npmjs.org/yuku-codegen/-/yuku-codegen-0.6.3.tgz}
+  yuku-ast@0.6.11:
+    resolution: {integrity: sha512-ZfXkFYVsDewS45+kv3WiA/qNB73CRfxFDEQwfnRMUAR4AD5zRI7PRqxmI2U3Jz/oG41GneTVW6mxDOQal0lgeA==, tarball: https://registry.npmjs.org/yuku-ast/-/yuku-ast-0.6.11.tgz}
 
-  yuku-parser@0.6.3:
-    resolution: {integrity: sha512-iI6uABvvup9mvv8Mcpz7Tp//gehQlvcSnX4A4/0bf9i6X3RVQDuVUZel8jdpljwlF7WrbKsvD19y55Mc6+sKZw==, tarball: https://registry.npmjs.org/yuku-parser/-/yuku-parser-0.6.3.tgz}
+  yuku-codegen@0.6.12:
+    resolution: {integrity: sha512-5cAJedx9MdKf/ngFpMYH9B1DKaB3FVJOPncl80M+8nNS2rEvrta17N59ryEVIewuHYS81o4XDb4Hg5/5hBdF7A==, tarball: https://registry.npmjs.org/yuku-codegen/-/yuku-codegen-0.6.12.tgz}
+
+  yuku-parser@0.6.12:
+    resolution: {integrity: sha512-A1+KVTvdm1pQmrl/cS5JlqFvUclKpM8I5MvAOoQnYSGmmJBVDKN24HNXiZmxE8Ndsl4g3qBliZBAxq8/J4pKxA==, tarball: https://registry.npmjs.org/yuku-parser/-/yuku-parser-0.6.12.tgz}
 
   zeptomatch@2.1.0:
     resolution: {integrity: sha512-KiGErG2J0G82LSpniV0CtIzjlJ10E04j02VOudJsPyPwNZgGnRKQy7I1R7GMyg/QswnE4l7ohSGrQbQbjXPPDA==, tarball: https://registry.npmjs.org/zeptomatch/-/zeptomatch-2.1.0.tgz}
@@ -6964,7 +6978,7 @@ packages:
 
 snapshots:
 
-  '@anthropic-ai/sdk@0.111.0':
+  '@anthropic-ai/sdk@0.112.3':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.0.0
@@ -7062,7 +7076,7 @@ snapshots:
     dependencies:
       postcss-selector-parser: 7.1.4
 
-  '@deck.gl/core@9.3.6':
+  '@deck.gl/core@9.3.7':
     dependencies:
       '@loaders.gl/core': 4.4.3
       '@loaders.gl/images': 4.4.3(@loaders.gl/core@4.4.3)
@@ -7083,9 +7097,9 @@ snapshots:
     transitivePeerDependencies:
       - '@75lb/nature'
 
-  '@deck.gl/layers@9.3.6(@deck.gl/core@9.3.6)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))':
+  '@deck.gl/layers@9.3.7(@deck.gl/core@9.3.7)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))':
     dependencies:
-      '@deck.gl/core': 9.3.6
+      '@deck.gl/core': 9.3.7
       '@loaders.gl/core': 4.4.3
       '@loaders.gl/images': 4.4.3(@loaders.gl/core@4.4.3)
       '@loaders.gl/schema': 4.4.3
@@ -7101,9 +7115,9 @@ snapshots:
     transitivePeerDependencies:
       - '@75lb/nature'
 
-  '@deck.gl/mesh-layers@9.3.6(@deck.gl/core@9.3.6)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))':
+  '@deck.gl/mesh-layers@9.3.7(@deck.gl/core@9.3.7)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))':
     dependencies:
-      '@deck.gl/core': 9.3.6
+      '@deck.gl/core': 9.3.7
       '@loaders.gl/gltf': 4.4.3(@loaders.gl/core@4.4.3)
       '@loaders.gl/schema': 4.4.3
       '@luma.gl/core': 9.3.6
@@ -7114,9 +7128,9 @@ snapshots:
       - '@75lb/nature'
       - '@loaders.gl/core'
 
-  '@earendil-works/pi-agent-core@0.80.8':
+  '@earendil-works/pi-agent-core@0.80.10(supports-color@10.2.2)':
     dependencies:
-      '@earendil-works/pi-ai': 0.80.8
+      '@earendil-works/pi-ai': 0.80.10(supports-color@10.2.2)
       ignore: 7.0.5
       typebox: 1.1.38
       yaml: 2.9.0
@@ -7125,13 +7139,13 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.80.8':
+  '@earendil-works/pi-ai@0.80.10(supports-color@10.2.2)':
     dependencies:
-      '@anthropic-ai/sdk': 0.111.0
+      '@anthropic-ai/sdk': 0.112.3
       '@opentelemetry/api': 1.9.0
       '@smithy/node-http-handler': 4.7.3
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
+      http-proxy-agent: 7.0.2(supports-color@10.2.2)
+      https-proxy-agent: 7.0.6(supports-color@10.2.2)
       openai: 6.26.0
       partial-json: 0.1.7
       typebox: 1.1.38
@@ -7140,11 +7154,11 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@0.80.8':
+  '@earendil-works/pi-coding-agent@0.80.10(supports-color@10.2.2)':
     dependencies:
-      '@earendil-works/pi-agent-core': 0.80.8
-      '@earendil-works/pi-ai': 0.80.8
-      '@earendil-works/pi-tui': 0.80.8
+      '@earendil-works/pi-agent-core': 0.80.10(supports-color@10.2.2)
+      '@earendil-works/pi-ai': 0.80.10(supports-color@10.2.2)
+      '@earendil-works/pi-tui': 0.80.10
       '@silvia-odwyer/photon-node': 0.3.4
       chalk: 5.6.2
       cross-spawn: 7.0.6
@@ -7165,7 +7179,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-tui@0.80.8':
+  '@earendil-works/pi-tui@0.80.10':
     dependencies:
       get-east-asian-width: 1.6.0
       marked: 18.0.5
@@ -7178,48 +7192,48 @@ snapshots:
       glob: 13.0.6
       minimatch: 10.2.5
 
-  '@electron/get@5.0.0':
+  '@electron/get@5.0.0(supports-color@10.2.2)':
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       env-paths: 3.0.0
       graceful-fs: 4.2.11
       progress: 2.0.3
       semver: 7.8.5
-      sumchecker: 3.0.1
+      sumchecker: 3.0.1(supports-color@10.2.2)
     optionalDependencies:
       undici: 8.7.0
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/notarize@3.1.1':
+  '@electron/notarize@3.1.1(supports-color@10.2.2)':
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       promise-retry: 2.0.1
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/osx-sign@2.5.0':
+  '@electron/osx-sign@2.6.0(supports-color@10.2.2)':
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       isbinaryfile: 4.0.10
       plist: 3.1.1
       semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/packager@20.0.2':
+  '@electron/packager@20.0.3(supports-color@10.2.2)':
     dependencies:
       '@electron-internal/extract-zip': 1.0.4
       '@electron/asar': 4.2.0
-      '@electron/get': 5.0.0
-      '@electron/notarize': 3.1.1
-      '@electron/osx-sign': 2.5.0
-      '@electron/universal': 3.0.6
-      '@electron/windows-sign': 2.0.6
+      '@electron/get': 5.0.0(supports-color@10.2.2)
+      '@electron/notarize': 3.1.1(supports-color@10.2.2)
+      '@electron/osx-sign': 2.6.0(supports-color@10.2.2)
+      '@electron/universal': 3.0.6(supports-color@10.2.2)
+      '@electron/windows-sign': 2.0.6(supports-color@10.2.2)
       '@malept/cross-spawn-promise': 2.0.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       filenamify: 6.0.0
-      galactus: 2.0.2
+      galactus: 2.0.2(supports-color@10.2.2)
       graceful-fs: 4.2.11
       junk: 4.0.1
       plist: 3.1.1
@@ -7229,17 +7243,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/universal@3.0.6':
+  '@electron/universal@3.0.6(supports-color@10.2.2)':
     dependencies:
       '@electron/asar': 4.2.0
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       plist: 3.1.1
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/windows-sign@2.0.6':
+  '@electron/windows-sign@2.0.6(supports-color@10.2.2)':
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       graceful-fs: 4.2.11
       postject: 1.0.0-alpha.6
     transitivePeerDependencies:
@@ -7602,7 +7616,7 @@ snapshots:
     dependencies:
       '@math.gl/core': 4.1.0
 
-  '@mdx-js/mdx@3.1.1':
+  '@mdx-js/mdx@3.1.1(supports-color@10.2.2)':
     dependencies:
       '@types/estree': 1.0.9
       '@types/estree-jsx': 1.0.5
@@ -7614,14 +7628,14 @@ snapshots:
       estree-util-is-identifier-name: 3.0.0
       estree-util-scope: 1.0.0
       estree-walker: 3.0.3
-      hast-util-to-jsx-runtime: 2.3.6
+      hast-util-to-jsx-runtime: 2.3.6(supports-color@10.2.2)
       markdown-extensions: 2.0.0
       recma-build-jsx: 1.0.0
       recma-jsx: 1.0.1(acorn@8.17.0)
       recma-stringify: 1.0.0
-      rehype-recma: 1.0.0
-      remark-mdx: 3.1.1
-      remark-parse: 11.0.0
+      rehype-recma: 1.0.0(supports-color@10.2.2)
+      remark-mdx: 3.1.1(supports-color@10.2.2)
+      remark-parse: 11.0.0(supports-color@10.2.2)
       remark-rehype: 11.1.2
       source-map: 0.7.6
       unified: 11.0.5
@@ -7650,7 +7664,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@nodable/entities@2.2.0': {}
+  '@nodable/entities@3.0.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -7738,22 +7752,22 @@ snapshots:
 
   '@oxc-project/types@0.140.0': {}
 
-  '@oxlint-tsgolint/darwin-arm64@0.24.0':
+  '@oxlint-tsgolint/darwin-arm64@0.25.0':
     optional: true
 
-  '@oxlint-tsgolint/darwin-x64@0.24.0':
+  '@oxlint-tsgolint/darwin-x64@0.25.0':
     optional: true
 
-  '@oxlint-tsgolint/linux-arm64@0.24.0':
+  '@oxlint-tsgolint/linux-arm64@0.25.0':
     optional: true
 
-  '@oxlint-tsgolint/linux-x64@0.24.0':
+  '@oxlint-tsgolint/linux-x64@0.25.0':
     optional: true
 
-  '@oxlint-tsgolint/win32-arm64@0.24.0':
+  '@oxlint-tsgolint/win32-arm64@0.25.0':
     optional: true
 
-  '@oxlint-tsgolint/win32-x64@0.24.0':
+  '@oxlint-tsgolint/win32-x64@0.25.0':
     optional: true
 
   '@oxlint/binding-android-arm-eabi@1.74.0':
@@ -7897,14 +7911,14 @@ snapshots:
       '@sinonjs/commons': 3.0.1
       type-detect: 4.1.0
 
-  '@smithy/core@3.29.4':
+  '@smithy/core@3.29.5':
     dependencies:
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
   '@smithy/node-http-handler@4.7.3':
     dependencies:
-      '@smithy/core': 3.29.4
+      '@smithy/core': 3.29.5
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
@@ -8076,73 +8090,77 @@ snapshots:
 
   '@xmldom/xmldom@0.9.10': {}
 
-  '@yuku-codegen/binding-darwin-arm64@0.6.3':
+  '@yuku-codegen/binding-darwin-arm64@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-darwin-x64@0.6.3':
+  '@yuku-codegen/binding-darwin-x64@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-freebsd-x64@0.6.3':
+  '@yuku-codegen/binding-freebsd-x64@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-linux-arm-gnu@0.6.3':
+  '@yuku-codegen/binding-linux-arm-gnu@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-linux-arm-musl@0.6.3':
+  '@yuku-codegen/binding-linux-arm-musl@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-linux-arm64-gnu@0.6.3':
+  '@yuku-codegen/binding-linux-arm64-gnu@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-linux-arm64-musl@0.6.3':
+  '@yuku-codegen/binding-linux-arm64-musl@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-linux-x64-gnu@0.6.3':
+  '@yuku-codegen/binding-linux-x64-gnu@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-linux-x64-musl@0.6.3':
+  '@yuku-codegen/binding-linux-x64-musl@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-win32-arm64@0.6.3':
+  '@yuku-codegen/binding-win32-arm64@0.6.12':
     optional: true
 
-  '@yuku-codegen/binding-win32-x64@0.6.3':
+  '@yuku-codegen/binding-win32-x64@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-darwin-arm64@0.6.3':
+  '@yuku-parser/binding-darwin-arm64@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-darwin-x64@0.6.3':
+  '@yuku-parser/binding-darwin-x64@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-freebsd-x64@0.6.3':
+  '@yuku-parser/binding-freebsd-x64@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-linux-arm-gnu@0.6.3':
+  '@yuku-parser/binding-linux-arm-gnu@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-linux-arm-musl@0.6.3':
+  '@yuku-parser/binding-linux-arm-musl@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-linux-arm64-gnu@0.6.3':
+  '@yuku-parser/binding-linux-arm64-gnu@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-linux-arm64-musl@0.6.3':
+  '@yuku-parser/binding-linux-arm64-musl@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-linux-x64-gnu@0.6.3':
+  '@yuku-parser/binding-linux-x64-gnu@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-linux-x64-musl@0.6.3':
+  '@yuku-parser/binding-linux-x64-musl@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-win32-arm64@0.6.3':
+  '@yuku-parser/binding-win32-arm64@0.6.12':
     optional: true
 
-  '@yuku-parser/binding-win32-x64@0.6.3':
+  '@yuku-parser/binding-win32-x64@0.6.12':
     optional: true
 
   '@yuku-toolchain/types@0.5.43': {}
+
+  '@yuku-toolchain/types@0.6.11': {}
+
+  '@yuku-toolchain/types@0.6.8': {}
 
   acorn-jsx@5.3.2(acorn@8.17.0):
     dependencies:
@@ -8213,8 +8231,8 @@ snapshots:
   browserslist@4.28.6:
     dependencies:
       baseline-browser-mapping: 2.10.43
-      caniuse-lite: 1.0.30001805
-      electron-to-chromium: 1.5.392
+      caniuse-lite: 1.0.30001806
+      electron-to-chromium: 1.5.393
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.6)
 
@@ -8228,7 +8246,7 @@ snapshots:
 
   callsites@3.1.0: {}
 
-  caniuse-lite@1.0.30001805: {}
+  caniuse-lite@1.0.30001806: {}
 
   ccount@2.0.1: {}
 
@@ -8332,9 +8350,11 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  debug@4.4.3:
+  debug@4.4.3(supports-color@10.2.2):
     dependencies:
       ms: 2.1.3
+    optionalDependencies:
+      supports-color: 10.2.2
 
   decircular@1.0.0: {}
 
@@ -8384,12 +8404,12 @@ snapshots:
 
   earcut@2.2.4: {}
 
-  electron-to-chromium@1.5.392: {}
+  electron-to-chromium@1.5.393: {}
 
-  electron@43.1.1:
+  electron@43.1.1(supports-color@10.2.2):
     dependencies:
       '@electron-internal/extract-zip': 1.0.4
-      '@electron/get': 5.0.0
+      '@electron/get': 5.0.0(supports-color@10.2.2)
       '@types/node': 24.13.3
     transitivePeerDependencies:
       - supports-color
@@ -8475,19 +8495,20 @@ snapshots:
       stream-combiner: 0.2.2
       through: 2.3.8
 
-  execa@9.6.1:
+  execa@10.0.0:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
-      cross-spawn: 7.0.6
       figures: 6.1.0
       get-stream: 9.0.1
       human-signals: 8.0.1
       is-plain-obj: 4.1.0
       is-stream: 4.0.1
       npm-run-path: 6.0.0
+      path-key: 4.0.0
       pretty-ms: 9.3.0
       signal-exit: 4.1.0
       strip-final-newline: 4.0.0
+      which-command: 0.1.0
       yoctocolors: 2.1.2
 
   expect-type@1.4.0: {}
@@ -8535,9 +8556,9 @@ snapshots:
       path-expression-matcher: 1.6.2
       xml-naming: 0.3.0
 
-  fast-xml-parser@5.10.0:
+  fast-xml-parser@5.10.1:
     dependencies:
-      '@nodable/entities': 2.2.0
+      '@nodable/entities': 3.0.0
       fast-xml-builder: 1.3.0
       is-unsafe: 2.0.0
       path-expression-matcher: 1.6.2
@@ -8553,7 +8574,7 @@ snapshots:
   feedsmith@3.0.0-rc.2:
     dependencies:
       entities: 7.0.1
-      fast-xml-parser: 5.10.0
+      fast-xml-parser: 5.10.1
 
   fflate@0.8.3: {}
 
@@ -8592,9 +8613,9 @@ snapshots:
 
   flatted@3.4.2: {}
 
-  flora-colossus@3.0.2:
+  flora-colossus@3.0.2(supports-color@10.2.2):
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -8603,10 +8624,10 @@ snapshots:
   fsevents@2.3.2:
     optional: true
 
-  galactus@2.0.2:
+  galactus@2.0.2(supports-color@10.2.2):
     dependencies:
-      debug: 4.4.3
-      flora-colossus: 3.0.2
+      debug: 4.4.3(supports-color@10.2.2)
+      flora-colossus: 3.0.2(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -8645,7 +8666,7 @@ snapshots:
       kind-of: 6.0.3
       which: 1.3.1
 
-  globby@16.2.1:
+  globby@16.2.2:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
       fast-glob: 3.3.3
@@ -8721,7 +8742,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
 
-  hast-util-to-estree@3.1.3:
+  hast-util-to-estree@3.1.3(supports-color@10.2.2):
     dependencies:
       '@types/estree': 1.0.9
       '@types/estree-jsx': 1.0.5
@@ -8731,9 +8752,9 @@ snapshots:
       estree-util-attach-comments: 3.0.0
       estree-util-is-identifier-name: 3.0.0
       hast-util-whitespace: 3.0.0
-      mdast-util-mdx-expression: 2.0.1
-      mdast-util-mdx-jsx: 3.2.0
-      mdast-util-mdxjs-esm: 2.0.1
+      mdast-util-mdx-expression: 2.0.1(supports-color@10.2.2)
+      mdast-util-mdx-jsx: 3.2.0(supports-color@10.2.2)
+      mdast-util-mdxjs-esm: 2.0.1(supports-color@10.2.2)
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
       style-to-js: 1.1.21
@@ -8742,7 +8763,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  hast-util-to-jsx-runtime@2.3.6:
+  hast-util-to-jsx-runtime@2.3.6(supports-color@10.2.2):
     dependencies:
       '@types/estree': 1.0.9
       '@types/hast': 3.0.5
@@ -8751,9 +8772,9 @@ snapshots:
       devlop: 1.1.0
       estree-util-is-identifier-name: 3.0.0
       hast-util-whitespace: 3.0.0
-      mdast-util-mdx-expression: 2.0.1
-      mdast-util-mdx-jsx: 3.2.0
-      mdast-util-mdxjs-esm: 2.0.1
+      mdast-util-mdx-expression: 2.0.1(supports-color@10.2.2)
+      mdast-util-mdx-jsx: 3.2.0(supports-color@10.2.2)
+      mdast-util-mdxjs-esm: 2.0.1(supports-color@10.2.2)
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
       style-to-js: 1.1.21
@@ -8807,17 +8828,17 @@ snapshots:
       domutils: 3.2.2
       entities: 4.5.0
 
-  http-proxy-agent@7.0.2:
+  http-proxy-agent@7.0.2(supports-color@10.2.2):
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.6:
+  https-proxy-agent@7.0.6(supports-color@10.2.2):
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -8962,14 +8983,14 @@ snapshots:
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
 
-  mdast-util-from-markdown@2.0.3:
+  mdast-util-from-markdown@2.0.3(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
       decode-named-character-reference: 1.3.0
       devlop: 1.1.0
       mdast-util-to-string: 4.0.0
-      micromark: 4.0.2
+      micromark: 4.0.2(supports-color@10.2.2)
       micromark-util-decode-numeric-character-reference: 2.0.2
       micromark-util-decode-string: 2.0.1
       micromark-util-normalize-identifier: 2.0.1
@@ -8987,67 +9008,67 @@ snapshots:
       mdast-util-find-and-replace: 3.0.2
       micromark-util-character: 2.1.1
 
-  mdast-util-gfm-footnote@2.1.0:
+  mdast-util-gfm-footnote@2.1.0(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
       devlop: 1.1.0
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
       micromark-util-normalize-identifier: 2.0.1
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-gfm-strikethrough@2.0.0:
+  mdast-util-gfm-strikethrough@2.0.0(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-gfm-table@2.0.0:
+  mdast-util-gfm-table@2.0.0(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
       devlop: 1.1.0
       markdown-table: 3.0.4
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-gfm-task-list-item@2.0.0:
+  mdast-util-gfm-task-list-item@2.0.0(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
       devlop: 1.1.0
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-gfm@3.1.0:
+  mdast-util-gfm@3.1.0(supports-color@10.2.2):
     dependencies:
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-gfm-autolink-literal: 2.0.1
-      mdast-util-gfm-footnote: 2.1.0
-      mdast-util-gfm-strikethrough: 2.0.0
-      mdast-util-gfm-table: 2.0.0
-      mdast-util-gfm-task-list-item: 2.0.0
+      mdast-util-gfm-footnote: 2.1.0(supports-color@10.2.2)
+      mdast-util-gfm-strikethrough: 2.0.0(supports-color@10.2.2)
+      mdast-util-gfm-table: 2.0.0(supports-color@10.2.2)
+      mdast-util-gfm-task-list-item: 2.0.0(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-mdx-expression@2.0.1:
+  mdast-util-mdx-expression@2.0.1(supports-color@10.2.2):
     dependencies:
       '@types/estree-jsx': 1.0.5
       '@types/hast': 3.0.5
       '@types/mdast': 4.0.4
       devlop: 1.1.0
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-mdx-jsx@3.2.0:
+  mdast-util-mdx-jsx@3.2.0(supports-color@10.2.2):
     dependencies:
       '@types/estree-jsx': 1.0.5
       '@types/hast': 3.0.5
@@ -9055,7 +9076,7 @@ snapshots:
       '@types/unist': 3.0.3
       ccount: 2.0.1
       devlop: 1.1.0
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
       parse-entities: 4.0.2
       stringify-entities: 4.0.4
@@ -9064,23 +9085,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-mdx@3.0.0:
+  mdast-util-mdx@3.0.0(supports-color@10.2.2):
     dependencies:
-      mdast-util-from-markdown: 2.0.3
-      mdast-util-mdx-expression: 2.0.1
-      mdast-util-mdx-jsx: 3.2.0
-      mdast-util-mdxjs-esm: 2.0.1
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
+      mdast-util-mdx-expression: 2.0.1(supports-color@10.2.2)
+      mdast-util-mdx-jsx: 3.2.0(supports-color@10.2.2)
+      mdast-util-mdxjs-esm: 2.0.1(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-mdxjs-esm@2.0.1:
+  mdast-util-mdxjs-esm@2.0.1(supports-color@10.2.2):
     dependencies:
       '@types/estree-jsx': 1.0.5
       '@types/hast': 3.0.5
       '@types/mdast': 4.0.4
       devlop: 1.1.0
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
@@ -9366,10 +9387,10 @@ snapshots:
 
   micromark-util-types@2.0.2: {}
 
-  micromark@4.0.2:
+  micromark@4.0.2(supports-color@10.2.2):
     dependencies:
       '@types/debug': 4.1.13
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       decode-named-character-reference: 1.3.0
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.3
@@ -9420,7 +9441,7 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  obug@2.1.3: {}
+  obug@2.1.4: {}
 
   openai@6.26.0: {}
 
@@ -9451,16 +9472,16 @@ snapshots:
       '@oxc-parser/binding-win32-ia32-msvc': 0.140.0
       '@oxc-parser/binding-win32-x64-msvc': 0.140.0
 
-  oxlint-tsgolint@0.24.0:
+  oxlint-tsgolint@0.25.0:
     optionalDependencies:
-      '@oxlint-tsgolint/darwin-arm64': 0.24.0
-      '@oxlint-tsgolint/darwin-x64': 0.24.0
-      '@oxlint-tsgolint/linux-arm64': 0.24.0
-      '@oxlint-tsgolint/linux-x64': 0.24.0
-      '@oxlint-tsgolint/win32-arm64': 0.24.0
-      '@oxlint-tsgolint/win32-x64': 0.24.0
+      '@oxlint-tsgolint/darwin-arm64': 0.25.0
+      '@oxlint-tsgolint/darwin-x64': 0.25.0
+      '@oxlint-tsgolint/linux-arm64': 0.25.0
+      '@oxlint-tsgolint/linux-x64': 0.25.0
+      '@oxlint-tsgolint/win32-arm64': 0.25.0
+      '@oxlint-tsgolint/win32-x64': 0.25.0
 
-  oxlint@1.74.0(oxlint-tsgolint@0.24.0):
+  oxlint@1.74.0(oxlint-tsgolint@0.25.0):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.74.0
       '@oxlint/binding-android-arm64': 1.74.0
@@ -9481,7 +9502,7 @@ snapshots:
       '@oxlint/binding-win32-arm64-msvc': 1.74.0
       '@oxlint/binding-win32-ia32-msvc': 1.74.0
       '@oxlint/binding-win32-x64-msvc': 1.74.0
-      oxlint-tsgolint: 0.24.0
+      oxlint-tsgolint: 0.25.0
 
   p-limit@4.0.0:
     dependencies:
@@ -9668,11 +9689,11 @@ snapshots:
       hast-util-from-html: 2.0.3
       unified: 11.0.5
 
-  rehype-recma@1.0.0:
+  rehype-recma@1.0.0(supports-color@10.2.2):
     dependencies:
       '@types/estree': 1.0.9
       '@types/hast': 3.0.5
-      hast-util-to-estree: 3.1.3
+      hast-util-to-estree: 3.1.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -9687,28 +9708,28 @@ snapshots:
       unified: 11.0.5
       unist-util-visit: 5.1.0
 
-  remark-gfm@4.0.1:
+  remark-gfm@4.0.1(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
-      mdast-util-gfm: 3.1.0
+      mdast-util-gfm: 3.1.0(supports-color@10.2.2)
       micromark-extension-gfm: 3.0.0
-      remark-parse: 11.0.0
+      remark-parse: 11.0.0(supports-color@10.2.2)
       remark-stringify: 11.0.0
       unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
 
-  remark-mdx@3.1.1:
+  remark-mdx@3.1.1(supports-color@10.2.2):
     dependencies:
-      mdast-util-mdx: 3.0.0
+      mdast-util-mdx: 3.0.0(supports-color@10.2.2)
       micromark-extension-mdxjs: 3.0.0
     transitivePeerDependencies:
       - supports-color
 
-  remark-parse@11.0.0:
+  remark-parse@11.0.0(supports-color@10.2.2):
     dependencies:
       '@types/mdast': 4.0.4
-      mdast-util-from-markdown: 2.0.3
+      mdast-util-from-markdown: 2.0.3(supports-color@10.2.2)
       micromark-util-types: 2.0.2
       unified: 11.0.5
     transitivePeerDependencies:
@@ -9747,15 +9768,15 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.27.9(rolldown@1.2.0)(typescript@7.0.2):
+  rolldown-plugin-dts@0.27.11(rolldown@1.2.0)(typescript@7.0.2):
     dependencies:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.5
-      obug: 2.1.3
+      obug: 2.1.4
       rolldown: 1.2.0
       yuku-ast: 0.1.7
-      yuku-codegen: 0.6.3
-      yuku-parser: 0.6.3
+      yuku-codegen: 0.6.12
+      yuku-parser: 0.6.12
     optionalDependencies:
       typescript: 7.0.2
     transitivePeerDependencies:
@@ -9934,16 +9955,16 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.7
 
-  stylelint-config-recommended@18.0.0(stylelint@17.14.0(typescript@7.0.2)):
+  stylelint-config-recommended@18.0.0(stylelint@17.14.0(supports-color@10.2.2)(typescript@7.0.2)):
     dependencies:
-      stylelint: 17.14.0(typescript@7.0.2)
+      stylelint: 17.14.0(supports-color@10.2.2)(typescript@7.0.2)
 
-  stylelint-config-standard@40.0.0(stylelint@17.14.0(typescript@7.0.2)):
+  stylelint-config-standard@40.0.0(stylelint@17.14.0(supports-color@10.2.2)(typescript@7.0.2)):
     dependencies:
-      stylelint: 17.14.0(typescript@7.0.2)
-      stylelint-config-recommended: 18.0.0(stylelint@17.14.0(typescript@7.0.2))
+      stylelint: 17.14.0(supports-color@10.2.2)(typescript@7.0.2)
+      stylelint-config-recommended: 18.0.0(stylelint@17.14.0(supports-color@10.2.2)(typescript@7.0.2))
 
-  stylelint@17.14.0(typescript@7.0.2):
+  stylelint@17.14.0(supports-color@10.2.2)(typescript@7.0.2):
     dependencies:
       '@csstools/css-calc': 3.2.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
@@ -9956,12 +9977,12 @@ snapshots:
       cosmiconfig: 9.0.2(typescript@7.0.2)
       css-functions-list: 3.3.3
       css-tree: 3.2.1
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
       fast-glob: 3.3.3
       fastest-levenshtein: 1.0.16
       file-entry-cache: 11.1.5
       global-modules: 2.0.0
-      globby: 16.2.1
+      globby: 16.2.2
       globjoin: 0.1.4
       html-tags: 5.1.0
       ignore: 7.0.6
@@ -9984,9 +10005,9 @@ snapshots:
       - supports-color
       - typescript
 
-  sumchecker@3.0.1:
+  sumchecker@3.0.1(supports-color@10.2.2):
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.3(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -10204,6 +10225,8 @@ snapshots:
 
   web-namespaces@2.0.1: {}
 
+  which-command@0.1.0: {}
+
   which@1.3.1:
     dependencies:
       isexe: 2.0.0
@@ -10245,37 +10268,42 @@ snapshots:
     dependencies:
       '@yuku-toolchain/types': 0.5.43
 
-  yuku-codegen@0.6.3:
+  yuku-ast@0.6.11:
     dependencies:
-      '@yuku-toolchain/types': 0.5.43
-    optionalDependencies:
-      '@yuku-codegen/binding-darwin-arm64': 0.6.3
-      '@yuku-codegen/binding-darwin-x64': 0.6.3
-      '@yuku-codegen/binding-freebsd-x64': 0.6.3
-      '@yuku-codegen/binding-linux-arm-gnu': 0.6.3
-      '@yuku-codegen/binding-linux-arm-musl': 0.6.3
-      '@yuku-codegen/binding-linux-arm64-gnu': 0.6.3
-      '@yuku-codegen/binding-linux-arm64-musl': 0.6.3
-      '@yuku-codegen/binding-linux-x64-gnu': 0.6.3
-      '@yuku-codegen/binding-linux-x64-musl': 0.6.3
-      '@yuku-codegen/binding-win32-arm64': 0.6.3
-      '@yuku-codegen/binding-win32-x64': 0.6.3
+      '@yuku-toolchain/types': 0.6.8
 
-  yuku-parser@0.6.3:
+  yuku-codegen@0.6.12:
     dependencies:
-      '@yuku-toolchain/types': 0.5.43
+      '@yuku-toolchain/types': 0.6.11
     optionalDependencies:
-      '@yuku-parser/binding-darwin-arm64': 0.6.3
-      '@yuku-parser/binding-darwin-x64': 0.6.3
-      '@yuku-parser/binding-freebsd-x64': 0.6.3
-      '@yuku-parser/binding-linux-arm-gnu': 0.6.3
-      '@yuku-parser/binding-linux-arm-musl': 0.6.3
-      '@yuku-parser/binding-linux-arm64-gnu': 0.6.3
-      '@yuku-parser/binding-linux-arm64-musl': 0.6.3
-      '@yuku-parser/binding-linux-x64-gnu': 0.6.3
-      '@yuku-parser/binding-linux-x64-musl': 0.6.3
-      '@yuku-parser/binding-win32-arm64': 0.6.3
-      '@yuku-parser/binding-win32-x64': 0.6.3
+      '@yuku-codegen/binding-darwin-arm64': 0.6.12
+      '@yuku-codegen/binding-darwin-x64': 0.6.12
+      '@yuku-codegen/binding-freebsd-x64': 0.6.12
+      '@yuku-codegen/binding-linux-arm-gnu': 0.6.12
+      '@yuku-codegen/binding-linux-arm-musl': 0.6.12
+      '@yuku-codegen/binding-linux-arm64-gnu': 0.6.12
+      '@yuku-codegen/binding-linux-arm64-musl': 0.6.12
+      '@yuku-codegen/binding-linux-x64-gnu': 0.6.12
+      '@yuku-codegen/binding-linux-x64-musl': 0.6.12
+      '@yuku-codegen/binding-win32-arm64': 0.6.12
+      '@yuku-codegen/binding-win32-x64': 0.6.12
+
+  yuku-parser@0.6.12:
+    dependencies:
+      '@yuku-toolchain/types': 0.6.11
+      yuku-ast: 0.6.11
+    optionalDependencies:
+      '@yuku-parser/binding-darwin-arm64': 0.6.12
+      '@yuku-parser/binding-darwin-x64': 0.6.12
+      '@yuku-parser/binding-freebsd-x64': 0.6.12
+      '@yuku-parser/binding-linux-arm-gnu': 0.6.12
+      '@yuku-parser/binding-linux-arm-musl': 0.6.12
+      '@yuku-parser/binding-linux-arm64-gnu': 0.6.12
+      '@yuku-parser/binding-linux-arm64-musl': 0.6.12
+      '@yuku-parser/binding-linux-x64-gnu': 0.6.12
+      '@yuku-parser/binding-linux-x64-musl': 0.6.12
+      '@yuku-parser/binding-win32-arm64': 0.6.12
+      '@yuku-parser/binding-win32-x64': 0.6.12
 
   zeptomatch@2.1.0:
     dependencies:
