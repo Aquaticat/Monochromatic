@@ -47,7 +47,35 @@ run = [
 [tasks.'test:built:trust']
 description = "Exercise packed shadow git trust lifecycle in a disposable container"
 depends = ["pack:npm"]
-run = "podman run --memory=1g --cpus=1 --cap-add SYS_ADMIN --rm --volume \"$PWD/dist/pack/monochromatic-dev-cli-git-0.0.1.tgz:/fixture/cli.tgz:ro,Z\" --volume \"$PWD/src/trust/fixture:/fixture/tests:ro,Z\" --tmpfs /work/recursive/child:rw,size=16m docker.io/library/node:24-slim node /fixture/tests/built-trust-consumer.ts"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { readFile } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const packageRoot = process.cwd()
+const manifest = JSON.parse(await readFile(join(packageRoot, 'package.json'), 'utf8'))
+const tarballName = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
+const child = spawn('podman', [
+  'run',
+  '--memory=1g',
+  '--cpus=1',
+  '--cap-add',
+  'SYS_ADMIN',
+  '--rm',
+  '--volume',
+  `${join(packageRoot, 'dist', 'pack', tarballName)}:/fixture/cli.tgz:ro,Z`,
+  '--volume',
+  `${join(packageRoot, 'src', 'trust', 'fixture')}:/fixture/tests:ro,Z`,
+  '--tmpfs',
+  '/work/recursive/child:rw,size=16m',
+  'docker.io/library/node:24-slim',
+  'node',
+  '/fixture/tests/built-trust-consumer.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`Packed trust container exited with ${String(code)}`)
+'''
 
 [tasks.'test:hk-config-cleanup']
 description = "Verify exact idempotent hk Git-config cleanup in disposable local and global fixtures"
