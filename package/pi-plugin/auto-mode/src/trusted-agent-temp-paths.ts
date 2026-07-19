@@ -309,7 +309,7 @@ function isDotenvBasename(
  *
  * @example
  * ```typescript
- * realpathOrUnavailable('/tmp/agent');
+ * realpathOrUnavailable('/account-home/temp/agent');
  * ```
  */
 async function realpathOrUnavailable(

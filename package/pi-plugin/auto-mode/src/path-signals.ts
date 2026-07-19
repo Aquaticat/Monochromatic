@@ -15,6 +15,7 @@
  */
 
 import { realpath, } from 'node:fs/promises';
+import { homedir, } from 'node:os';
 import * as nodePath from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { SECRET_PATH_PATTERN, } from './constants.ts';
@@ -81,12 +82,13 @@ type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
  *
  * @example
  * ```typescript
- * pathSignals({ filePath: "/etc/passwd", ctx: { cwd: "/project", home: "/home/user" } }); // true
- * pathSignals({ filePath: "./src/index.ts", ctx: { cwd: "/project", home: "/home/user" } }); // false
+ * pathSignals({ filePath: "/etc/passwd", ctx: { cwd: "/project", home: "/account-home" } }); // true
+ * pathSignals({ filePath: "./src/index.ts", ctx: { cwd: "/project", home: "/account-home" } }); // false
+ * const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
  * pathSignals({
- *   filePath: "/tmp/agent/example/src/index.ts",
+ *   filePath: nodePath.join(currentAgentTempDir, 'example/src/index.ts'),
  *   ctx,
- *   allowlistedDirs: ["/tmp/agent"],
+ *   allowlistedDirs: [currentAgentTempDir],
  * }); // false
  * const allowlistedDirs = ["/home/user/.agents/skills/example"];
  * pathSignals({
@@ -192,10 +194,11 @@ async function pathSignals(
  *
  * @example
  * ```typescript
+ * const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
  * isAllowlistedPath({
- *   canonicalResolved: "/tmp/agent/repo/index.ts",
+ *   canonicalResolved: nodePath.join(currentAgentTempDir, 'repo/index.ts'),
  *   cwd: "/project",
- *   allowlistedDirs: ["/tmp/agent"],
+ *   allowlistedDirs: [currentAgentTempDir],
  * }); // true
  * ```
  */
@@ -249,10 +252,11 @@ async function isAllowlistedPath(
  *
  * @example
  * ```typescript
+ * const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
  * hasSecretPathSignal({
- *   filePath: "/tmp/agent/link",
- *   resolved: "/tmp/agent/link",
- *   canonicalResolved: "/tmp/agent/repo/.env",
+ *   filePath: nodePath.join(currentAgentTempDir, 'link'),
+ *   resolved: nodePath.join(currentAgentTempDir, 'link'),
+ *   canonicalResolved: nodePath.join(currentAgentTempDir, 'repo/.env'),
  * }); // true
  * ```
  */
@@ -291,7 +295,7 @@ function hasSecretPathSignal(
  *
  * @example
  * ```typescript
- * const canonical = tryRealpath("/tmp/agent/repo");
+ * const canonical = tryRealpath(nodePath.join(homedir(), 'temp', 'agent', 'repo'));
  * ```
  */
 async function tryRealpath(
@@ -323,7 +327,7 @@ async function tryRealpath(
  *
  * @example
  * ```typescript
- * const path = realpathOrLexical("/tmp/agent/repo");
+ * const path = realpathOrLexical(nodePath.join(homedir(), 'temp', 'agent', 'repo'));
  * ```
  */
 async function realpathOrLexical(
@@ -345,7 +349,7 @@ async function realpathOrLexical(
  *
  * @example
  * ```typescript
- * resolvePath({ filePath: "~/.bashrc", cwd: "/project" }); // "/home/user/.bashrc"
+ * resolvePath({ filePath: "~/.bashrc", cwd: "/project" }); // `${homedir()}/.bashrc`
  * ```
  */
 function resolvePath(
@@ -359,9 +363,7 @@ function resolvePath(
 ): string {
   if (filePath.startsWith('~',)) {
     return nodePath.resolve(
-      process.env
-        .HOME
-        ?? '/home',
+      homedir(),
       filePath.slice(1,)
         .startsWith('/',)
         ? filePath.slice(2,)

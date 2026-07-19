@@ -41,7 +41,11 @@ import type { SignalContext, } from './types.ts';
  *
  * @example
  * ```typescript
- * isNonSecretTrustedAgentTempBashPath({ filePath: '/tmp/agent/page-*.png', ctx, trustedAgentTempDirs: ['/tmp/agent'] });
+ * isNonSecretTrustedAgentTempBashPath({
+ *   filePath: '/account-home/temp/agent/page-*.png',
+ *   ctx,
+ *   trustedAgentTempDirs: ['/account-home/temp/agent'],
+ * });
  * ```
  */
 async function isNonSecretTrustedAgentTempBashPath(
@@ -92,7 +96,11 @@ async function isNonSecretTrustedAgentTempBashPath(
  *
  * @example
  * ```typescript
- * isNonSecretTrustedAgentTempGlobPath({ filePath: '/tmp/agent/page-*.png', ctx, trustedAgentTempDirs });
+ * isNonSecretTrustedAgentTempGlobPath({
+ *   filePath: '/account-home/temp/agent/page-*.png',
+ *   ctx,
+ *   trustedAgentTempDirs,
+ * });
  * ```
  */
 async function isNonSecretTrustedAgentTempGlobPath(

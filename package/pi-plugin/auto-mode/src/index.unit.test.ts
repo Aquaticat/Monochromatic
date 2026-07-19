@@ -21,14 +21,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { AGENT_TEMP_READ_DIR, } from './constants.ts';
+import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
 import { buildApprovalFingerprint, } from './tool-helpers.ts';
 import {
   VERDICT_ENTRY_TYPE,
   type VerdictData,
 } from './types.ts';
 
-/** Private directory mode required before `/tmp/agent` is read-allowlisted. */
+/** Private directory mode required before agent scratch roots are allowlisted. */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 //region Mock infrastructure
@@ -249,18 +249,18 @@ await describe({
     },),
 
     it({
-      name: 'allows read tool calls inside agent temp directory',
-      fn: async function allowsAgentTempRead() {
+      name: 'allows read tool calls inside historical compatibility directory',
+      fn: async function allowsHistoricalAgentTempRead() {
         await mkdir(
-          AGENT_TEMP_READ_DIR,
+          HISTORICAL_AGENT_TEMP_DIR,
           { recursive: true, },
         );
         await chmod(
-          AGENT_TEMP_READ_DIR,
+          HISTORICAL_AGENT_TEMP_DIR,
           PRIVATE_DIRECTORY_MODE,
         );
         const tempRoot = await mkdtemp(join(
-          AGENT_TEMP_READ_DIR,
+          HISTORICAL_AGENT_TEMP_DIR,
           'auto-mode-index-test-',
         ),);
         const tempFile = join(
@@ -306,14 +306,14 @@ await describe({
     },),
 
     it({
-      name: 'allows bash credential handoff to trusted agent temp helper',
-      fn: async function allowsAgentTempBashCredentialHandoff() {
+      name: 'allows Bash credential handoff through historical compatibility root',
+      fn: async function allowsHistoricalAgentTempBashCredentialHandoff() {
         await mkdir(
-          AGENT_TEMP_READ_DIR,
+          HISTORICAL_AGENT_TEMP_DIR,
           { recursive: true, },
         );
         await chmod(
-          AGENT_TEMP_READ_DIR,
+          HISTORICAL_AGENT_TEMP_DIR,
           PRIVATE_DIRECTORY_MODE,
         );
         const projectRoot = await mkdtemp(join(
@@ -321,7 +321,7 @@ await describe({
           'amode-index-project-',
         ),);
         const tempRoot = await mkdtemp(join(
-          AGENT_TEMP_READ_DIR,
+          HISTORICAL_AGENT_TEMP_DIR,
           'amode-index-test-',
         ),);
         const envPath = join(

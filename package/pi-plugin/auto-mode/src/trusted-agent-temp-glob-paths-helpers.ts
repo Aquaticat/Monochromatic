@@ -62,8 +62,8 @@ type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
  *
  * @example
  * ```typescript
- * hasSupportedShellGlobSyntax('/tmp/agent/page-*.png'); // true
- * hasSupportedShellGlobSyntax('/tmp/agent/[.]env*'); // false
+ * hasSupportedShellGlobSyntax('/account-home/temp/agent/page-*.png'); // true
+ * hasSupportedShellGlobSyntax('/account-home/temp/agent/[.]env*'); // false
  * ```
  */
 function hasSupportedShellGlobSyntax(
@@ -92,7 +92,7 @@ function hasSupportedShellGlobSyntax(
  *
  * @example
  * ```typescript
- * globParentDirectory('/tmp/agent/page-*.png'); // '/tmp/agent'
+ * globParentDirectory('/account-home/temp/agent/page-*.png'); // '/account-home/temp/agent'
  * ```
  */
 function globParentDirectory(
@@ -167,7 +167,10 @@ function firstSupportedGlobIndex(
  *
  * @example
  * ```typescript
- * pathTextHasSecretMarker({ filePath: '/tmp/agent/.env*', resolved: '/tmp/agent/.env*' }); // true
+ * pathTextHasSecretMarker({
+ *   filePath: '/account-home/temp/agent/.env*',
+ *   resolved: '/account-home/temp/agent/.env*',
+ * }); // true
  * ```
  */
 function pathTextHasSecretMarker(
@@ -223,7 +226,11 @@ function pathTextHasSecretMarker(
  *
  * @example
  * ```typescript
- * trustedDirContainsCanonicalPath({ canonicalPath: '/tmp/agent', cwd: '/repo', trustedDir: '/tmp/agent' });
+ * trustedDirContainsCanonicalPath({
+ *   canonicalPath: '/account-home/temp/agent',
+ *   cwd: '/repo',
+ *   trustedDir: '/account-home/temp/agent',
+ * });
  * ```
  */
 async function trustedDirContainsCanonicalPath(
@@ -260,7 +267,7 @@ async function trustedDirContainsCanonicalPath(
  *
  * @example
  * ```typescript
- * realpathOrUnavailable('/tmp/agent');
+ * realpathOrUnavailable('/account-home/temp/agent');
  * ```
  */
 async function realpathOrUnavailable(

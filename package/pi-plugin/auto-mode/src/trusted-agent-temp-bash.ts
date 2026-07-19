@@ -1,11 +1,11 @@
 /**
  * Trusted agent temp bash allowances.
  *
- * The `/tmp/agent` root is private agent scratch space when it passes the
- * ownership and mode checks in `temp-read-allowlist.ts`. Bash commands may run
- * helper scripts from that root and hand credentials to those helpers without
- * treating the helper path or project-local dotenv source as user-interrupting
- * signals.
+ * Current `~/temp/agent` and historical `/tmp/agent` compatibility roots are
+ * private agent scratch space when they pass ownership and mode checks in
+ * `temp-allowlist.ts`. Bash commands may run helper scripts from either trusted
+ * root and hand credentials to those helpers without treating the helper path
+ * or project-local dotenv source as user-interrupting signals.
  *
  * @module
  */
@@ -72,9 +72,9 @@ const TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS = new Set([
  * @example
  * ```typescript
  * isTrustedAgentTempBashPathAllowed({
- *   filePath: '/tmp/agent/check.ts',
+ *   filePath: '/account-home/temp/agent/check.ts',
  *   ctx,
- *   trustedAgentTempDirs: ['/tmp/agent'],
+ *   trustedAgentTempDirs: ['/account-home/temp/agent'],
  *   allowProjectDotenvCredentialSource: false,
  * }); // true for existing non-secret helper path
  * ```

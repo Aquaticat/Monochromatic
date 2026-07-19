@@ -12,7 +12,10 @@ import {
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import {
+  homedir,
+  tmpdir,
+} from 'node:os';
 import { join, } from 'node:path';
 
 import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
@@ -1081,7 +1084,7 @@ await describe({
     it({
       name: 'resolves ~ to home directory',
       fn: async () => {
-        const expectedHome = process.env.HOME ?? '/home/user';
+        const expectedHome = homedir();
         expect(resolvePath({ filePath: '~/.bashrc', cwd: '/project', },),).toBe(
           `${expectedHome}/.bashrc`,
         );

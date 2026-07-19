@@ -9,6 +9,8 @@
  * @module
  */
 
+import { homedir, } from 'node:os';
+
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -36,10 +38,7 @@ import {
   shouldFlag,
 } from './signals.ts';
 import { buildSystemPrompt, } from './system-prompt.ts';
-import {
-  agentTempAllowlistedDirs,
-  agentTempReadAllowlistedDirs,
-} from './temp-read-allowlist.ts';
+import { agentTempAllowlistedDirs, } from './temp-allowlist.ts';
 import {
   buildApprovalFingerprint,
   describeAction,
@@ -411,28 +410,21 @@ export default async function autoMode(
        */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
-        home: process.env
-          .HOME
-          ?? '/home',
+        home: homedir(),
       };
       /**
-       * Private roots whose existing non-secret contents bypass structured-read location prompts.
+       * Private current and historical compatibility roots whose existing non-secret contents bypass prompts.
        */
-      const readAgentTempDirs = event.toolName === 'read'
-        ? await agentTempReadAllowlistedDirs({ home: signalCtx.home, },)
-        : [];
-      /**
-       * Private `/tmp/agent` root trusted for bash helper execution, intentionally excluding `~/temp/agent`.
-       */
-      const trustedAgentTempDirs = event.toolName === 'bash'
-        ? await agentTempAllowlistedDirs()
+      const trustedAgentTempDirs = event.toolName === 'read'
+        || event.toolName === 'bash'
+        ? await agentTempAllowlistedDirs({ home: signalCtx.home, },)
         : [];
       /**
        * Read-only roots whose existing non-secret contents bypass location prompts.
        */
       const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
         ? [
-          ...readAgentTempDirs,
+          ...trustedAgentTempDirs,
           ...(await linkedWorktreeReadAllowlistedDirs({ cwd: ctx.cwd, },)),
           ...currentSkillReadDirs,
         ]

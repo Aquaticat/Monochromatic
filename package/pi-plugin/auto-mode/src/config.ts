@@ -8,6 +8,7 @@
  */
 
 import { readFile, } from 'node:fs/promises';
+import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 import * as v from 'valibot';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -235,9 +236,7 @@ const PROJECT_DEFAULTS: ProjectConfig = {
  */
 function globalConfigPath(): string {
   return join(
-    process.env
-      .HOME
-      ?? '~',
+    homedir(),
     '.pi',
     'agent',
     'extensions',

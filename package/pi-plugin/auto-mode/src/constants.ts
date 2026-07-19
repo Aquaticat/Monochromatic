@@ -53,17 +53,19 @@ export const MAX_CONTEXT_ACTIVITIES: typeof CONTEXT_ACTIVITY_FLOOR = CONTEXT_ACT
 
 //endregion
 
-//region Read allowlist directories
+//region Agent temp directories
 
 /**
- * Agent-owned temp root whose existing files may be inspected without guard prompts.
+ * Historical agent-owned temp root retained for compatibility.
+ *
+ * Current scratch work uses `~/temp/agent`.
  *
  * @example
  * ```typescript
- * const root = AGENT_TEMP_READ_DIR;
+ * const historicalRoot = HISTORICAL_AGENT_TEMP_DIR;
  * ```
  */
-export const AGENT_TEMP_READ_DIR = '/tmp/agent';
+export const HISTORICAL_AGENT_TEMP_DIR = '/tmp/agent';
 
 //endregion
 
