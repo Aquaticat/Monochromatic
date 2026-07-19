@@ -536,8 +536,8 @@ RGP:
 
 CLN:
  Investigating package source:
- `mkdir --parents ${HOME}/temp/agent/`,
- then `gh repo clone <repo> ${HOME}/temp/agent/<name>-<date> -- --depth 1`;
+ `mkdir --parents "${HOME}/temp/agent/"`,
+ then `gh repo clone <repo> "${HOME}/temp/agent/<name>-<date>" -- --depth 1`;
  not `git clone`,
  unless commit history matters.
 
