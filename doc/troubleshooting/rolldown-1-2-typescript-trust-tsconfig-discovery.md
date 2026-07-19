@@ -7,8 +7,17 @@
 extends a package that is unavailable to the trust build:
 
 ```text
-Failed to load tsconfig '@monochromatic-dev/config-typescript/dom': Tsconfig not found
+Build failed with 2 errors:
+
+[RESOLVE_ERROR] Could not resolve 'node:module' in \0rolldown/runtime.js
+Tsconfig not found
+
+[TSCONFIG_ERROR] Failed to load tsconfig '@monochromatic-dev/config-typescript/dom': Tsconfig not found
 ```
+
+Both diagnostics have the same cause.
+The `node:module` line does not mean that Node's built-in module is absent.
+Rolldown's resolver failed while loading the consumer tsconfig before it could classify that built-in.
 
 The failure occurs before cli-git can disclose or store the trusted bundle.
 It makes a consumer's TypeScript project configuration an undeclared bootstrap
@@ -35,7 +44,75 @@ await using build = await rolldown({
 
 That omission was initially read as meaning that the bundler would transpile
 TypeScript without consulting a project configuration.
-Rolldown 1.2.0 disproves that reading.
+Rolldown's public option contract disproves that reading.
+
+### The coupling entered through the original tsdown builder
+
+The bug was not introduced by the later Rolldown `1.2.0` lockfile update.
+The original TypeScript trust implementation at commit `16e2de74d3851206c83d230629e774e33c6a1539`
+set tsdown's `config: false` but omitted tsdown's separate `tsconfig` option at
+`packages/cli/git/src/trust/typescript-builder.ts:414-423` in that commit:
+
+```ts
+const outputs = await build({
+  config: false,
+  cwd: discovered.repositoryRoot,
+  entry: discovered.configPath,
+  platform: 'node',
+  format: 'esm',
+  outDir: buildDirectory,
+  write: false,
+  clean: false,
+  dts: false,
+```
+
+The accepted issue required tsdown config-file discovery to be disabled.
+`config: false` met that requirement,
+but it did not disable `tsconfig.json` discovery.
+Tsdown `0.22.4` resolves an omitted `tsconfig` by searching upward from `cwd` at
+`src/features/tsconfig.ts:24-27`:
+
+```ts
+if (tsconfig !== false) {
+  if (tsconfig === true || tsconfig == null) {
+    tsconfig = findTsconfig(cwd)
+```
+
+Tsdown then passed the discovered path into Rolldown at
+`src/features/rolldown.ts:244-253`:
+
+```ts
+const inputOptions = await mergeUserOptions(
+  {
+    input: entry,
+    cwd,
+    external,
+    resolve: {
+      alias,
+    },
+    tsconfig: tsconfig || undefined,
+```
+
+The direct-Rolldown refactor in commit
+`6cca70db8be4d28f9c9235a8bf2b299faf829393` preserved that accidental behavior by
+omitting the top-level Rolldown option.
+Rolldown `1.1.5`,
+the version locked when that refactor landed,
+already used `TsConfig::Auto(true)` at
+`crates/rolldown_common/src/inner_bundler_options/types/tsconfig.rs:16-20`:
+
+```rust
+impl Default for TsConfig {
+  fn default() -> Self {
+    Self::Auto(true)
+  }
+}
+```
+
+The later `1.2.0` update exposed no new default in this path.
+A direct runtime probe against both versions reproduced automatic discovery.
+The actual discovery bug therefore dates to the first TypeScript trust builder and
+remained hidden while builds ran in populated repositories.
 
 ### Rolldown defaults omitted `tsconfig` to discovery
 
@@ -104,6 +181,60 @@ let tsconfig =
 format!("Failed to load tsconfig{tsconfig}: {reason}")
 ```
 
+### The `node:module` diagnostic is collateral
+
+Rolldown's generated Node runtime imports `node:module` at
+`crates/rolldown/src/runtime/runtime-head-node.js:1`:
+
+```js
+import { createRequire } from 'node:module';
+```
+
+The resolver receives automatic tsconfig discovery and Node built-in handling in the
+same option object at
+`crates/rolldown_resolver/src/resolver_config.rs:97-101` and `:125-134`:
+
+```rust
+let default_options = OxcResolverOptions {
+  cwd: Some(cwd.to_path_buf()),
+  tsconfig: match tsconfig {
+    TsConfig::Auto(v) => v.then_some(oxc_resolver::TsconfigDiscovery::Auto),
+```
+
+```rust
+modules: resolve_options.modules.unwrap_or_else(|| vec!["node_modules".into()]),
+// ...
+builtin_modules: matches!(platform, Platform::Node),
+```
+
+Resolution runs through that combined resolver at
+`crates/rolldown_resolver/src/resolver.rs:159-168`:
+
+```rust
+let mut resolution = if let Some(importer) = importer {
+  if importer.is_absolute() {
+    selected_resolver.resolve_file(importer, specifier)
+  } else {
+    selected_resolver.resolve_file(self.cwd.join(importer), specifier)
+  }
+} else {
+  selected_resolver.resolve(self.cwd.as_path(), specifier)
+};
+```
+
+When loading the inherited config fails first,
+`crates/rolldown_error/src/utils/resolve_error.rs:17-20` renders the nested resolver reason:
+
+```rust
+ResolveError::NotFound(_) => "Cannot find module".to_string(),
+ResolveError::TsconfigNotFound(_) => "Tsconfig not found".to_string(),
+```
+
+A Rolldown `1.1.5` probe containing only `export default 1` still emitted the
+`node:module` resolver diagnostic alongside the tsconfig diagnostic.
+That proves the generated runtime line is a second report of the same failed config load,
+not another bootstrap dependency.
+
 ### Disabling discovery is a supported boundary
 
 Rolldown does not need a consumer tsconfig to strip TypeScript syntax.
@@ -131,17 +262,155 @@ match tsconfig {
 Cli-git config trust already requires ordinary relative or package imports to
 resolve through the bundle graph.
 It does not promise to inherit consumer path aliases,
- JSX settings,
- or decorator
-semantics from an ambient TypeScript project.
+JSX settings,
+or decorator semantics from an ambient TypeScript project.
 The accidental auto-discovery therefore belongs at cli-git's Rolldown call,
 not in the consumer dependency contract.
+
+### Existing tests omit the adversarial state
+
+The builder unit fixture creates only `cli-git.config.ts` and its private output
+directory at
+`package/git-policy/cli/src/trust/typescript-builder.unit.test.ts:41-51`:
+
+```ts
+const repository = await realpath(
+  await mkdtemp(join(tmpdir(), 'cli-git-typescript-',),),
+);
+const configPath = join(repository, 'cli-git.config.ts',);
+await writeFile(configPath, source,);
+const buildDirectory = join(repository, '.private-build',);
+await mkdir(buildDirectory,);
+```
+
+Tests that need cli-git's authoring package explicitly add consumer-local package
+state at `package/git-policy/cli/src/trust/typescript-builder.unit.test.ts:147-151`:
+
+```ts
+const packageDirectory = await realpath(join(import.meta.dirname, '../..',),);
+const fixtureScope = join(fixture.repository, 'node_modules', '@monochromatic-dev',);
+await mkdir(fixtureScope, { recursive: true, },);
+await symlink(packageDirectory, join(fixtureScope, 'git-policy-cli',), 'dir',);
+```
+
+The packed fixture installs cli-git under `/work` at
+`package/git-policy/cli/src/trust/fixture/built-trust-consumer.ts:49-65`,
+then creates the TypeScript repository at `/work/typescript` in
+`package/git-policy/cli/src/trust/fixture/built-typescript-consumer.ts:31-42`:
+
+```ts
+await execute({
+  command: 'npm',
+  args: ['install', '--ignore-scripts', '/fixture/cli.tgz',],
+  cwd: '/work',
+},);
+```
+
+```ts
+const repository = '/work/typescript';
+await mkdir(repository,);
+```
+
+That repository has no tsconfig,
+and Node package lookup can walk to `/work/node_modules`.
+It exercises clean absence,
+not a present tsconfig whose `extends` target is unavailable.
+A no-tsconfig fixture alone therefore cannot regress this bug:
+removing `tsconfig: false` would still let Rolldown discover nothing and succeed.
+
+### A package-resolution failure is masked behind the tsconfig failure
+
+The root repository config imports the source export directly as
+`@monochromatic-dev/git-policy-cli/ts`.
+The current resolver hook special-cases only the package root and asks Rolldown to
+resolve the source export from the consumer importer at
+`package/git-policy/cli/src/trust/typescript-builder.ts:143-155`:
+
+```ts
+if (source === CLI_GIT_PACKAGE_IMPORT) {
+  bareImports.add(source,);
+  const resolved = await this.resolve(
+    CLI_GIT_SOURCE_IMPORT,
+    importer,
+    { skipSelf: true, },
+  );
+```
+
+A direct `/ts` import reaches the generic bare-import branch at
+`package/git-policy/cli/src/trust/typescript-builder.ts:183-186`:
+
+```ts
+if (isAbsolute(source,))
+  throw new TypeScriptBuildError(`Absolute TypeScript import is outside tracked graph: ${source}`,);
+bareImports.add(source,);
+return null;
+```
+
+After setting `tsconfig: false`,
+a clean linked worktree outside the wrapper installation's ancestor path cannot
+resolve either form through consumer `node_modules`.
+A direct probe then left
+`@monochromatic-dev/git-policy-cli/ts` unresolved.
+The packed package already contains the needed source export at
+`package/git-policy/cli/package.json:10-16` and includes its source tree at `:20-22`:
+
+```jsonc
+"exports": {
+  ".": {
+    "types": "./dist/final/node/index.d.mts",
+    "import": "./dist/final/node/index.mjs"
+  },
+  "./ts": "./src/index.ts"
+}
+```
+
+```jsonc
+"files": [
+  "dist/final/node",
+  "src",
+```
+
+
+The complete bootstrap correction must therefore resolve cli-git's own package-root
+and `/ts` authoring imports from the running installed artifact,
+not from the consumer repository.
+A disposable packed-artifact probe used
+`createRequire(installedEntryUrl).resolve(CLI_GIT_SOURCE_IMPORT)` for that anchor.
+With `tsconfig: false`,
+a poison consumer tsconfig,
+a relative TypeScript import,
+and no consumer `node_modules`,
+Rolldown generated one self-contained MJS chunk and the loaded config retained the
+relative import's value.
 
 ## Verification
 
 The installed package reported Rolldown `1.2.0`.
 The source checkout matched tag `v1.2.0` and commit
 `03e1e3422cd85495c9863ff3bc3b24212d9f4be2`.
+The historical comparison used Rolldown tag `v1.1.5`,
+commit `f09947ab017d6df74299f691853dcfc4f4f0f86e`,
+and tsdown tag `v0.22.4`.
+
+### End-user reproduction
+
+At repository commit `0db4382c1`,
+the installed cli-git `0.0.1` wrapper created a detached linked worktree with
+`--no-worktree-copy`.
+The fixture had `cli-git.config.ts` and the tracked root `tsconfig.json`,
+but no `node_modules`.
+Both consecutive runs of this command exited `2` with the exact two-error symptom:
+
+```console
+git -C /tmp/agent/mono-393-repro-20260719 cli-git trust --yes
+```
+
+Running the same public Rolldown API catalog against `1.1.5` also failed with an
+omitted `tsconfig` and succeeded with `tsconfig: false`.
+This rules out the later `1.2.0` lockfile update as the introducing event.
+The linked worktree was removed after the repeated reproduction.
+
+### Public API catalog
 
 This Node harness creates independent consumer directories and calls Rolldown's
 public API for each case:
@@ -213,10 +482,11 @@ node --experimental-strip-types /tmp/rolldown-tsconfig-catalog/reproduce.mts
 
 ## Verified workarounds
 
-### Disable ambient tsconfig discovery at cli-git's bundler boundary
+### Disable discovery and anchor cli-git's authoring source
 
-Add the explicit supported option to the call in
-`package/git-policy/cli/src/trust/typescript-builder.ts`:
+The complete internal correction has two independent parts.
+First,
+set the explicit supported option at cli-git's Rolldown boundary:
 
 ```ts
 await using build = await rolldown({
@@ -226,15 +496,50 @@ await using build = await rolldown({
   platform: 'node',
 ```
 
-The verification catalog proves this setting succeeds while the discovered
-config still has an unresolvable `extends`.
+Second,
+resolve both `@monochromatic-dev/git-policy-cli` and its `/ts` source export from
+the running installed artifact before the consumer-root resolver handles other
+bare packages.
+The verified prototype used this resolution primitive:
+
+```ts
+const packageSourcePath = createRequire(installedEntryUrl)
+  .resolve('@monochromatic-dev/git-policy-cli/ts');
+```
+
+Production code can derive the anchor from its own `import.meta.url` inside the
+TypeScript build path and pass the resolved source path into the capture plugin.
+That keeps normal wrapper startup lazy and leaves consumer-relative and ordinary
+consumer package resolution unchanged.
+
+The Rolldown catalog proves `tsconfig: false` succeeds with an unresolvable
+`extends`.
+The separate packed-artifact probe proves the installed source anchor,
+relative TypeScript imports,
+one output chunk,
+and self-contained MJS validation without consumer `node_modules`.
+
 The tradeoff is intentional:
- trusted cli-git config cannot rely on ambient
-`paths`,
- JSX,
- decorator,
- or class-field settings from the consumer tsconfig.
-Issue #393 must add a built packed-consumer regression before landing this fix.
+trusted cli-git config cannot rely on ambient `paths`,
+JSX,
+decorator,
+or class-field settings from the consumer tsconfig.
+Those semantics would need explicit cli-git-owned transform options instead of an
+ambient project file.
+
+Issue #393 should use two packed consumer cases:
+
+- no tsconfig,
+  proving the clean baseline;
+- a poison tsconfig extending an unavailable package,
+  proving the builder does not consult it.
+
+Install the tarball in a prefix outside both consumer repositories,
+put only that prefix's bin on `PATH`,
+and leave both repositories without
+`node_modules`.
+The poison case is the red-before-fix regression;
+the no-tsconfig case is not.
 
 ### Make the consumer's extended package available
 
@@ -257,11 +562,29 @@ synchronized.
 
 ### Treat omitted `tsconfig` as disabled
 
-Rolldown 1.2.0 changed the default to `true`.
+Rolldown `1.1.5` and `1.2.0` both default omission to automatic discovery.
 The type declaration,
- Rust default,
- and reproduced default failure all reject
-this reading.
+Rust default,
+and reproduced failures reject this reading.
+The `1.2.0` dependency update did not introduce the bug.
+
+### Add only `tsconfig: false`
+
+This removes the first error,
+but a linked worktree outside the wrapper installation path then exposes the
+unresolved cli-git authoring import.
+The source export must also be anchored to the installed artifact.
+
+### Use only a no-tsconfig packed fixture
+
+Rolldown succeeds when automatic discovery finds no config,
+so this fixture passes with and without the required opt-out.
+It is a useful baseline but not a regression test for ambient-config isolation.
+
+### Pin or downgrade Rolldown
+
+A direct `1.1.5` probe reproduced the same discovery and `node:module` errors.
+Pinning that version would preserve the defect while hiding the ownership error.
 
 ### Change Rolldown's `cwd` to cli-git's package directory
 
