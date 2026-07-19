@@ -371,17 +371,38 @@ The packed package already contains the needed source export at
 ```
 
 
-The complete bootstrap correction must therefore resolve cli-git's own package-root
-and `/ts` authoring imports from the running installed artifact,
-not from the consumer repository.
+The installed source export is not yet a clean production anchor.
+`package/git-policy/cli/src/index.ts:7-9` statically imports executable startup before
+exposing authoring declarations:
+
+```ts
+import { runCliGit, } from './bin.ts';
+```
+
 A disposable packed-artifact probe used
-`createRequire(installedEntryUrl).resolve(CLI_GIT_SOURCE_IMPORT)` for that anchor.
+`createRequire(installedEntryUrl).resolve(CLI_GIT_SOURCE_IMPORT)` to anchor that
+current source tree.
 With `tsconfig: false`,
 a poison consumer tsconfig,
 a relative TypeScript import,
 and no consumer `node_modules`,
-Rolldown generated one self-contained MJS chunk and the loaded config retained the
-relative import's value.
+Rolldown generated a final self-contained MJS chunk and the loaded config retained
+the relative import's value.
+However,
+resolution also emitted warnings from dead executable modules before tree shaking,
+including:
+
+```text
+Could not resolve '@monochromatic-dev/module-caught-value/ts' in .../src/bin.ts
+Could not resolve '@monochromatic-dev/module-logger/ts' in .../src/bin.ts
+```
+
+Those workspace packages are not installed runtime dependencies of the packed
+artifact.
+Final-output validation happened to remove the dead executable graph,
+but relying on unresolved warnings is not an acceptable source interface.
+The anchor probe proves the package-location mechanism only.
+It does not prove the current `src/index.ts` is a clean authoring entry.
 
 ## Verification
 
@@ -482,11 +503,11 @@ node --experimental-strip-types /tmp/rolldown-tsconfig-catalog/reproduce.mts
 
 ## Verified workarounds
 
-### Disable discovery and anchor cli-git's authoring source
+### Disable discovery and introduce a dedicated authoring source entry
 
-The complete internal correction has two independent parts.
+The complete internal correction has three parts.
 First,
-set the explicit supported option at cli-git's Rolldown boundary:
+set the explicit supported option at cli-git's Rolldown seam:
 
 ```ts
 await using build = await rolldown({
@@ -497,27 +518,34 @@ await using build = await rolldown({
 ```
 
 Second,
-resolve both `@monochromatic-dev/git-policy-cli` and its `/ts` source export from
-the running installed artifact before the consumer-root resolver handles other
+move the source-level authoring exports behind a dedicated module that does not
+import `bin.ts` or executable-only workspace modules.
+Point package export `/ts` at that module,
+and let the executable `src/index.ts` re-export it before its direct-entry branch.
+This places the source-authoring interface at a seam that excludes wrapper startup.
+
+Third,
+resolve both `@monochromatic-dev/git-policy-cli` and `/ts` to that dedicated module
+from the running installed artifact before the consumer-root resolver handles other
 bare packages.
-The verified prototype used this resolution primitive:
+The location mechanism is:
 
 ```ts
-const packageSourcePath = createRequire(installedEntryUrl)
+const packageSourcePath = createRequire(import.meta.url)
   .resolve('@monochromatic-dev/git-policy-cli/ts');
 ```
 
-Production code can derive the anchor from its own `import.meta.url` inside the
-TypeScript build path and pass the resolved source path into the capture plugin.
+Compute the path only inside the TypeScript build path and pass it into the capture
+plugin.
 That keeps normal wrapper startup lazy and leaves consumer-relative and ordinary
 consumer package resolution unchanged.
 
 The Rolldown catalog proves `tsconfig: false` succeeds with an unresolvable
 `extends`.
-The separate packed-artifact probe proves the installed source anchor,
-relative TypeScript imports,
-one output chunk,
-and self-contained MJS validation without consumer `node_modules`.
+The packed-artifact probe proves the location mechanism and final-output behavior,
+but its unresolved warnings disqualify current `src/index.ts` as the final source
+entry.
+The dedicated entry still requires packed-wrapper verification.
 
 The tradeoff is intentional:
 trusted cli-git config cannot rely on ambient `paths`,
@@ -538,6 +566,8 @@ Install the tarball in a prefix outside both consumer repositories,
 put only that prefix's bin on `PATH`,
 and leave both repositories without
 `node_modules`.
+Exercise the actual `git cli-git trust --yes` command for package-root and `/ts`
+imports and assert that no unresolved-import warning appears.
 The poison case is the red-before-fix regression;
 the no-tsconfig case is not.
 
@@ -574,6 +604,14 @@ This removes the first error,
 but a linked worktree outside the wrapper installation path then exposes the
 unresolved cli-git authoring import.
 The source export must also be anchored to the installed artifact.
+
+### Anchor the current `src/index.ts` without splitting authoring from execution
+
+The packed probe produced a valid final chunk only after warning about unresolved
+workspace imports reached through `bin.ts`.
+Tree shaking dead code after failed resolution is not a clean package contract and
+may stop working if an executable module gains a retained side effect.
+Use a dedicated authoring source entry instead.
 
 ### Use only a no-tsconfig packed fixture
 
