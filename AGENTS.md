@@ -534,9 +534,15 @@ Inspect processes + logs;
 RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
+ATH:
+ Before current agent scratch use,
+ run `mkdir --parents "${HOME}/temp/agent"`,
+ then `chmod 700 "${HOME}/temp/agent"`.
+Trust checks reject group or other permission bits.
+
 CLN:
  Investigating package source:
- `mkdir --parents "${HOME}/temp/agent/"`,
+ prepare current scratch root per ATH,
  then `gh repo clone <repo> "${HOME}/temp/agent/<name>-<date>" -- --depth 1`;
  not `git clone`,
  unless commit history matters.
