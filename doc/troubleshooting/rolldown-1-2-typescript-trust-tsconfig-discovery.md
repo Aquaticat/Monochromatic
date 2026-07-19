@@ -23,14 +23,15 @@ The failure occurs before cli-git can disclose or store the trusted bundle.
 It makes a consumer's TypeScript project configuration an undeclared bootstrap
 dependency of cli-git's config bundler.
 GitHub issue [#393](https://github.com/Aquaticat/Monochromatic/issues/393)
-tracks the cli-git correction separately from ignored-state worktree copying.
+tracked the cli-git correction separately from ignored-state worktree copying.
 
 ## Root cause
 
-### Cli-git leaves Rolldown's tsconfig behavior implicit
+### Before resolution cli-git left Rolldown's tsconfig behavior implicit
 
-`package/git-policy/cli/src/trust/typescript-builder.ts:348-356` sets the consumer
-repository as Rolldown's working directory but does not set `tsconfig`:
+At pre-fix commit `0db4382c1`,
+`package/git-policy/cli/src/trust/typescript-builder.ts:348-356` set the consumer
+repository as Rolldown's working directory but did not set `tsconfig`:
 
 ```ts
 await using build = await rolldown({
@@ -267,7 +268,7 @@ or decorator semantics from an ambient TypeScript project.
 The accidental auto-discovery therefore belongs at cli-git's Rolldown call,
 not in the consumer dependency contract.
 
-### Existing tests omit the adversarial state
+### Existing pre-fix tests omitted the adversarial state
 
 The builder unit fixture creates only `cli-git.config.ts` and its private output
 directory at
@@ -293,9 +294,10 @@ await mkdir(fixtureScope, { recursive: true, },);
 await symlink(packageDirectory, join(fixtureScope, 'git-policy-cli',), 'dir',);
 ```
 
-The packed fixture installs cli-git under `/work` at
+At pre-fix commit `0db4382c1`,
+the packed fixture installed cli-git under `/work` at
 `package/git-policy/cli/src/trust/fixture/built-trust-consumer.ts:49-65`,
-then creates the TypeScript repository at `/work/typescript` in
+then created the TypeScript repository at `/work/typescript` in
 `package/git-policy/cli/src/trust/fixture/built-typescript-consumer.ts:31-42`:
 
 ```ts
@@ -322,7 +324,8 @@ removing `tsconfig: false` would still let Rolldown discover nothing and succeed
 
 The root repository config imports the source export directly as
 `@monochromatic-dev/git-policy-cli/ts`.
-The current resolver hook special-cases only the package root and asks Rolldown to
+At pre-fix commit `0db4382c1`,
+the resolver hook special-cased only the package root and asked Rolldown to
 resolve the source export from the consumer importer at
 `package/git-policy/cli/src/trust/typescript-builder.ts:143-155`:
 
@@ -373,8 +376,8 @@ the wrapper installation is outside consumer ancestry.
 The complete package-resolution design must cover artifact-provided runtime
 packages as well as cli-git's own specifiers.
 
-The packed package already contains the needed source export at
-`package/git-policy/cli/package.json:10-16` and includes its source tree at `:20-22`:
+The pre-fix packed package already contained the needed source export at
+`package/git-policy/cli/package.json:10-16` and included its source tree at `:20-22`:
 
 ```jsonc
 "exports": {
@@ -393,7 +396,7 @@ The packed package already contains the needed source export at
 ```
 
 
-The installed source export is not yet a clean production anchor.
+The pre-fix installed source export was not a clean production anchor.
 `package/git-policy/cli/src/index.ts:7-9` statically imports executable startup before
 exposing authoring declarations:
 
@@ -424,7 +427,7 @@ artifact.
 Final-output validation happened to remove the dead executable graph,
 but relying on unresolved warnings is not an acceptable source interface.
 The anchor probe proves the package-location mechanism only.
-It does not prove the current `src/index.ts` is a clean authoring entry.
+It did not prove pre-fix `src/index.ts` was a clean authoring entry.
 
 ## Verification
 
@@ -523,6 +526,75 @@ node --experimental-strip-types /tmp/rolldown-tsconfig-catalog/reproduce.mts
 - Explicit `tsconfig: true` with the same `extends`:
    the same diagnostic.
 
+## Resolution
+
+Cli-git now disables ambient project discovery explicitly at
+`package/git-policy/cli/src/trust/typescript-builder.ts:132-145`:
+
+```ts
+await using build = await rolldown({
+  cwd: discovered.repositoryRoot,
+  input: discovered.configPath,
+  platform: 'node',
+  tsconfig: false,
+```
+
+The package `/ts` export now names the source-only module at
+`package/git-policy/cli/package.json:10-16`:
+
+```json
+"exports": {
+  ".": {
+    "types": "./dist/final/node/index.d.mts",
+    "import": "./dist/final/node/index.mjs"
+  },
+  "./ts": "./src/authoring.ts"
+}
+```
+
+`package/git-policy/cli/src/trust/typescript-source-capture.ts:270-292`
+anchors cli-git's own imports to that installed source,
+keeps consumer resolution first for other packages,
+and falls back only to package names in the packed runtime manifest:
+
+```ts
+const packageName = artifactPackageName(source,);
+if ((source === CLI_GIT_PACKAGE_IMPORT) || (source === CLI_GIT_SOURCE_IMPORT))
+  return installedAuthoringSourcePath;
+const consumerResolved = await this.resolve(
+  source,
+  importer,
+  { skipSelf: true, },
+);
+if ((consumerResolved !== null)
+  && ((consumerResolved.external === undefined) || (consumerResolved.external === false)))
+  return consumerResolved;
+if (((typeof packageName) !== 'symbol') && ARTIFACT_RUNTIME_PACKAGE_NAMES.has(packageName,))
+  return artifactImportPath(source,);
+```
+
+The packed wrapper fixture installs under `/opt/cli-git`,
+outside `/work` consumer ancestry,
+at `package/git-policy/cli/src/trust/fixture/built-trust-consumer.ts:47-75`.
+Its poison repository has no initial entries,
+imports `/ts`,
+imports `valibot` and `acorn/package.json` from a tracked relative module,
+and carries an unresolvable ambient config at
+`package/git-policy/cli/src/trust/fixture/built-typescript-consumer.ts:35-103`.
+The separate clean fixture carries no tsconfig or consumer `node_modules`.
+
+The least-trusting command completed with `built-trust-consumer-ok`:
+
+```console
+mise run //package/git-policy/cli:test:built:trust
+```
+
+That run also retained strict relative-source invalidation,
+relaxed rebuild,
+package warnings,
+stored execution,
+and the complete packed trust lifecycle.
+
 ## Verified workarounds
 
 ### Disable discovery and introduce a dedicated authoring source entry
@@ -579,10 +651,10 @@ and avoids exposing unrelated packages from the installation prefix.
 
 The Rolldown catalog proves `tsconfig: false` succeeds with an unresolvable
 `extends`.
-The packed-artifact probe proves the location mechanism and final-output behavior,
-but its unresolved warnings disqualify current `src/index.ts` as the final source
+The initial packed-artifact probe proved the location mechanism and final-output behavior,
+but its unresolved warnings disqualified pre-fix `src/index.ts` as the final source
 entry.
-The dedicated entry still requires packed-wrapper verification.
+The resolution section records successful packed-wrapper verification of the dedicated entry.
 
 The tradeoff is intentional:
 trusted cli-git config cannot rely on ambient `paths`,
@@ -592,7 +664,7 @@ or class-field settings from the consumer tsconfig.
 Those semantics would need explicit cli-git-owned transform options instead of an
 ambient project file.
 
-Issue #393 should use two packed consumer cases:
+The issue #393 resolution uses two packed consumer cases:
 
 - no tsconfig,
   proving the clean baseline;
@@ -608,7 +680,7 @@ imports.
 Also import an artifact runtime dependency such as `valibot` from a tracked relative
 module,
 and assert that no unresolved-import warning appears.
-Unit coverage for fallback eligibility must include unscoped and scoped package roots
+Coverage for fallback eligibility includes unscoped and scoped package roots
 plus both subpath forms.
 The poison case is the red-before-fix regression;
 the no-tsconfig case is not.
