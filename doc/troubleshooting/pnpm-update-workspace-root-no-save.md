@@ -1,5 +1,8 @@
 # pnpm 11.9.0 root `update --no-save` reports current while recursive importers are stale
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 From the repository root,

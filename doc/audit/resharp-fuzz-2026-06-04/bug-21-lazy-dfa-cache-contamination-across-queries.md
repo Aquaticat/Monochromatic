@@ -1,5 +1,8 @@
 # BUG-21 is_match/find_all results depend on prior queries (lazy DFA cache contamination)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Classification
 
 - Type:

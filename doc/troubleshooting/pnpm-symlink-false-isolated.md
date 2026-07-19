@@ -1,5 +1,8 @@
 # pnpm 11.8.0: `symlink: false` with `nodeLinker: isolated` builds an unresolvable virtual store
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This document records what pnpm's `symlink: false` setting does when the node linker remains
 `isolated`.
 The behavior is intentional enough to explain from pnpm's docs and source,

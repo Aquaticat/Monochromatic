@@ -1,5 +1,8 @@
 # pnpm 11.6.0 `minimumReleaseAgeExclude` honors only the first listed version per package name, so accumulated per-release entries silently fail to exempt newer versions
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 A package version that is present in `minimumReleaseAgeExclude` still fails

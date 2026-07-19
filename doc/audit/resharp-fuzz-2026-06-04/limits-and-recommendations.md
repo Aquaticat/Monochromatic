@@ -1,5 +1,8 @@
 # resharp-rust deliberate limits and recommendations
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This inventories every construct resharp-rust rejects at compile time that a user
 might reasonably expect to work,
  with a recommendation for each.

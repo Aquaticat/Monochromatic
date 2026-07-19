@@ -1,5 +1,8 @@
 # Television versus fd plus rg audit
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Generated 2026-06-15.
 
 This audit compares [`alexpasmantier/television`](https://github.com/alexpasmantier/television)

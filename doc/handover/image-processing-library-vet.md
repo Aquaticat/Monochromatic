@@ -1,5 +1,8 @@
 # Image processing library vet
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Why this handover exists
 
 The user asked whether there is anything better than `sharp` after a detailed `sharp` versus `jimp`

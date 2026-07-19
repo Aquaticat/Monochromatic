@@ -1,5 +1,8 @@
 # Vetting: kotlin.test vs Kotest (Kotlin testing technologies)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Date:
  2026-06-07.
  Standard applied:

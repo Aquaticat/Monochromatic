@@ -1,5 +1,8 @@
 # Android runtime vetting: Retrofit, WorkManager + Foreground Service, Compose instrumented test
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Scope:
  vet three runtime constituents for a Kotlin/Jetpack-Compose Android app that runs
 kopia and backs up to pCloud.

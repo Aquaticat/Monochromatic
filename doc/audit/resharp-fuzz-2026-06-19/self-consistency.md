@@ -1,5 +1,8 @@
 # Self-consistency lane results
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 `src/bin/selfconsist.rs`.
  Engine-internal contract checks across all four unicode
 modes (ascii,

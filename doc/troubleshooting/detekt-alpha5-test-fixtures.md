@@ -1,5 +1,8 @@
 # detekt 2.0.0-alpha.5 detekt-test requests unpublished detekt-api test fixtures
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 Adding detekt version `2.0.0-alpha.5` rule-test support

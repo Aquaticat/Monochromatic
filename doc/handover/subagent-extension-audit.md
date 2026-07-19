@@ -1,5 +1,8 @@
 # Subagent extension audit
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Purpose
 
 Evaluate open-source Pi extensions and a minimal custom design for subagent orchestration, prioritizing clarity and human auditability for both the parent agent and the user.

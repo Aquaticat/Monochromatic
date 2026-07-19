@@ -1,5 +1,8 @@
 # cli-git policies platform implementation grilling handover
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Status
 
 Shared understanding was confirmed and implementation was authorized on 2026-07-09.

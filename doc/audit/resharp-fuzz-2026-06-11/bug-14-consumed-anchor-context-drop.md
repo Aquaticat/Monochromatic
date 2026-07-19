@@ -1,5 +1,8 @@
 # bug-14: find_all drops matches whose `^` context bytes were consumed
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Status:
  ADJUDICATED (resharp-dotnet,
  2026-06-11).

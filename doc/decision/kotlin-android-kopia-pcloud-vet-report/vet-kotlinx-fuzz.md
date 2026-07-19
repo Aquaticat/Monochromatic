@@ -1,5 +1,8 @@
 # Technology vetting: kotlinx.fuzz
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Vetted against the `choosing-technology` skill FULL-VERIFICATION standard.
 Date of vetting:
  2026-06-07.

@@ -1,5 +1,8 @@
 # Ghostty 63e75e86 ignores OSC title payloads at 256 UTF-8 bytes
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 Ghostty can leave a stale terminal title visible when an agent integration sends an OSC title payload

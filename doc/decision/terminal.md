@@ -1,5 +1,8 @@
 # Terminal PTY dependency
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Decision
 
 Use `portable-pty` for `package/desktop-app/terminal` PTY process management.

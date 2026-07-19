@@ -1,5 +1,8 @@
 # Slint 1.17 can recurse when a Flickable sizes itself from a wrapped FlexboxLayout child
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This was diagnosed while `music-player` pinned Slint commit
 `85e3eb76819762cdcaa732fa87533ff896546bac`.
  The app now uses the Slint

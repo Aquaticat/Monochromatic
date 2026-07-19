@@ -1,5 +1,8 @@
 # Slint file-manager suitability assessment
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Purpose
 
 This handover preserves the assessment state for whether Slint is suitable for a highly integrated cross-platform file

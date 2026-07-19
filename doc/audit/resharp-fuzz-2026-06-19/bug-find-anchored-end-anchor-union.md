@@ -1,5 +1,8 @@
 # find_anchored phantom/missing span on a union of end anchors (0.6.13, live)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 New live soundness bug found by the self-consistency lane and minimized by
 `anchored_probe`/`trig`.
  `find_anchored` returns a wrong span for patterns shaped

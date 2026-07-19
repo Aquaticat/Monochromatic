@@ -1,5 +1,8 @@
 # @narumitw/pi-goal 0.12.0 pause or interruption blocks unrelated Pi tool calls
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 A Pi session loaded with `@narumitw/pi-goal` 0.12.0 can reject `read`,

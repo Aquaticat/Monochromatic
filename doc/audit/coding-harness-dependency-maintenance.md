@@ -1,5 +1,8 @@
 # Coding harness dependency maintenance audit
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Last updated:
  2026-06-24.
 

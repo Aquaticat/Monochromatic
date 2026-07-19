@@ -1,5 +1,8 @@
 # pnpm lockfile v9 records npm registry tarball integrity as sha512 because npm publish and SRI use SHA-2 tokens
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This document explains why dependency entries in `pnpm-lock.yaml` commonly use `sha512-...` for
 `resolution.integrity`.
 It also explains why browser Subresource Integrity (SRI) is limited to these tokens:

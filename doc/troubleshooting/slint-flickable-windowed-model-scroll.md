@@ -1,5 +1,8 @@
 # Slint 1.17.0 Flickable: replacing a virtualized Repeater model mid-scroll caps the drag/wheel gesture
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 A horizontally virtualized strip renders a windowed subset of columns inside a
 `Flickable` whose `viewport-width` is the full strip width, and swaps the Slint
 model when the visible window changes.

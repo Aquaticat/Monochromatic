@@ -1,5 +1,8 @@
 # Vet: Slint + Rust as the stack for an Android-only app (kopia + local S3 to pCloud)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Scope:
  assess the STACK (Slint UI + Rust ecosystem) for an Android-only app.
  kopia and the

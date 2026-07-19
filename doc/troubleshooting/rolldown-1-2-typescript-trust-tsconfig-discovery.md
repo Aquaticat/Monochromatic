@@ -1,5 +1,8 @@
 # Rolldown 1.2.0 TypeScript trust builds inherit consumer tsconfig failures by default
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 `git cli-git trust --yes` fails while bundling a repository-root

@@ -1,5 +1,8 @@
 # Oxlint 1.71.0 `node/no-sync` flags non-Node `parseSync` calls by suffix alone
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 `mise run //package/git-policy/cli:lint:oxlint` reports `node(no-sync)` warnings for Optique CLI parser calls:

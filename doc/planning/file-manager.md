@@ -1,5 +1,8 @@
 # Plan: file manager
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Status:
  accepted stack direction.
  Product decisions resolved in a grilling session on 2026-07-05.

@@ -1,5 +1,8 @@
 # cargo-fuzz 0.13.2 default ASan still emits nightly-only -Zsanitizer on stable Rust
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 Running the default cargo-fuzz command through stable Rust still fails before the fuzz target builds:

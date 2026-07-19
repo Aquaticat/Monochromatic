@@ -1,5 +1,8 @@
 # Resharp v0.6.13 re-verification of the 2026-06-11 findings
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Re-run of every reproducer from this campaign (`README.md`,
  filed against
 v0.6.12) plus the two older `doc/handover/resharp-panic-fix.md` shapes,

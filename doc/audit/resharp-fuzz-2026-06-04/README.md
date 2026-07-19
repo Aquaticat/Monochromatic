@@ -1,5 +1,8 @@
 # Resharp fuzz campaign 2026-06-04
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Findings from a fresh coverage-guided plus directed-differential fuzz campaign
 against `ieviev/resharp` at the current `main` (the version with the two
 recently merged fuzzing-enablement PRs).

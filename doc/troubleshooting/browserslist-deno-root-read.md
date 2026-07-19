@@ -1,5 +1,8 @@
 # Browserslist 4.28.4 under Deno 2.8.3 requests root read during stats discovery
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 Running the root file-enforcer config directly with Deno can eventually prompt for read access to `/`:

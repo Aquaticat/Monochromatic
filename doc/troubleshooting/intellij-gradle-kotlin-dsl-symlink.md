@@ -1,5 +1,8 @@
 # IntelliJ IDEA 2026.2 EAP shows red Gradle Kotlin DSL imports when the repo is opened through a symlinked home path
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 IntelliJ IDEA 2026.2 EAP Build `IU-262.8117.19` can keep Gradle Kotlin DSL script
 classpath state on a different filesystem spelling from the editor file when this repo is opened through
 `/home/user/Monochromatic` while Gradle and VCS state canonicalize to

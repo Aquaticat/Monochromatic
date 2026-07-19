@@ -1,5 +1,8 @@
 # Oxlint node/no-sync handover
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Current request
 
 User wants two outcomes:

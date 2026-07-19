@@ -1,5 +1,8 @@
 # Pi context-management plugin
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Decision record for the agentic context-management plugin wired into this Pi harness.
 
 - **Context-fork answers**

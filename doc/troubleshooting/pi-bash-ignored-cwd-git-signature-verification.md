@@ -1,5 +1,8 @@
 # Pi 0.80.6 Bash ignores per-call cwd, contaminating Git identity and making SSH-signed commits unverified
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 Commits created in `Aquaticat/Monochromatic` after 2026-07-09 17:48:21 EDT appear unverified on GitHub.

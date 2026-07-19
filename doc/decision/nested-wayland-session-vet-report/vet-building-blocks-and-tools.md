@@ -1,5 +1,8 @@
 # Source audit: building blocks (Smithay), blit-compositor, and companion tools
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Desk audit of the build-our-own path and the small tools a compose-existing solution would need.
 Findings are from reading cloned source (ephemeral clones under `/tmp/agent/`) plus package and GitHub API
 metadata. No binary was built or run for this audit.

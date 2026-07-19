@@ -1,5 +1,8 @@
 # Vet: Rust HTTP core for the on-device S3 gateway (kopia -> pCloud)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Scope:
  the local async HTTP server kopia targets (axum,
  on hyper/tower/tokio) plus the

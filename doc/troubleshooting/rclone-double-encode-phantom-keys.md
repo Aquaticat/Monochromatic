@@ -1,5 +1,8 @@
 # rclone v1.74.3 double-encodes a literal fullwidth colon into phantom S3 keys that Garage v2.3.0 lists but cannot HEAD, and bisync treats them as fatal
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 A filename containing a literal fullwidth colon `：` (U+FF1A,
  common in Chinese book titles)
 can be written to an S3 bucket twice under two different keys when two sync passes apply

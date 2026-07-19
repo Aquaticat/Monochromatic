@@ -1,5 +1,8 @@
 # mise uses current MISE_GITHUB_TOKEN and gets 401 when GitHub rejects it
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This note records a local diagnosis from 2026-06-05 against mise 2026.5.15
 (`v2026.5.15`,
  upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`),

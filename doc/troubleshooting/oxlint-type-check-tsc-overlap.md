@@ -1,5 +1,8 @@
 # Oxlint 1.74.0 package lint reports TypeScript diagnostics but does not cover every `tsc` input
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 The package lint command:

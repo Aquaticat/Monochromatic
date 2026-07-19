@@ -7,6 +7,9 @@ nested lists or code fences. This is a deliberate, documented exception.
 
 # Replace the zstd CLI with node:zlib's built-in zstd
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Context
 
 Two places in the workspace shell out to the external `zstd` command-line tool:

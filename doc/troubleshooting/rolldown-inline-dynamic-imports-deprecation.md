@@ -1,5 +1,8 @@
 # Rolldown 1.1.5 `inlineDynamicImports` through tsdown 0.22.4 emits an unsuppressible deprecation warning
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 A tsdown public `build()` call that passes:

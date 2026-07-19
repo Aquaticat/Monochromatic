@@ -1,5 +1,8 @@
 # Handover: building the `music-player` app
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Working handover for the in-progress Slint music player.
  Read this top to bottom before continuing;
  it captures every

@@ -1,5 +1,8 @@
 # Oxlint no-immediate-mutation handover
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## User request
 
 Implement the oxlint `unicorn/no-immediate-mutation` replacement work:

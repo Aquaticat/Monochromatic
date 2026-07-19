@@ -1,5 +1,8 @@
 # Decision: filesystem backend for kv-store
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Records the design options for adding a filesystem-backed `StorageBackend` to
 `@monochromatic-dev/module-kv-store`,
  the constraints that eliminate some of them,

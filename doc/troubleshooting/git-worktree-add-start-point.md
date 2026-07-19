@@ -1,5 +1,8 @@
 # Git 2.55.0 `worktree add` forms can select a commit other than invoking `HEAD`
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 A caller wants to copy ignored files from an existing worktree into every worktree created by

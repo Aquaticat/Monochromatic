@@ -1,5 +1,8 @@
 # is_match false positive vs find_all on intersection with optional end-anchor (0.6.13, live)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Second new live soundness bug,
  found by the self-consistency lane (check C1:
 is_match is true exactly when find_all is non-empty) and minimized by `c1min`.

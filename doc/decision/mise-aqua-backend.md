@@ -1,5 +1,8 @@
 # Vet: mise's aqua backend and aqua itself
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Vet date:
  2026-06-09.
 Verdict:

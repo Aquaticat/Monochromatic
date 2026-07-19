@@ -1,5 +1,8 @@
 # Pitchfork should complement systemd, not replace it
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Audit date:
  2026-06-21.
 Verdict:

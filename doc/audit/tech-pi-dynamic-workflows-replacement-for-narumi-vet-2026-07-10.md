@@ -1,5 +1,8 @@
 # Pi dynamic workflows replacement vet report
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Audit metadata
 
 - Status: named candidate excluded; discovery reopened after independent review

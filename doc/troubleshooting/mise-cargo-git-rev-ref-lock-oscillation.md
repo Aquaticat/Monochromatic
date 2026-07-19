@@ -1,5 +1,8 @@
 # mise 2026.6.13 alternates cargo-git `rev:` and `ref:` lock entries for Slint tools
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 mise 2026.6.13,
  cargo backend,
  `mise lock`,

@@ -1,5 +1,8 @@
 # Ktor (ktorio/ktor) vetting report
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Subject:
  Ktor,
  the Kotlin coroutine-based async client and server framework,

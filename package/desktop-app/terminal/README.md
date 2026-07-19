@@ -1,5 +1,8 @@
 # Terminal
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 A Slint desktop terminal prototype backed by Ghostty's `libghostty-vt` terminal core.
 
 The prototype runs the user's shell inside a PTY,

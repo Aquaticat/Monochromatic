@@ -1,5 +1,8 @@
 # Vetting: Rust QA trio for S3-gateway translation logic
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Scope:
  proptest (property testing),
  cargo-mutants (mutation testing),

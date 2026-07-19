@@ -1,5 +1,8 @@
 # Symphonia 0.6.0 rejects MP4 HE-AAC/SBR during true-peak measurement with `aac too complex`
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 The music-player true-peak benchmark measured the library with the desktop app decoder path and reported one

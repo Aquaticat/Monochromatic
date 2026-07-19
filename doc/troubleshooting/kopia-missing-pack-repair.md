@@ -1,5 +1,8 @@
 # Kopia 0.23.1 snapshot auto-maintenance fails rewriting short packs after pack blobs disappear
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This note records the 2026-06-18 repair of the local Kopia repository at
 `/mnt/pcloud/rclone`,
  exposed through the `pCloud.fs` FUSE mount.

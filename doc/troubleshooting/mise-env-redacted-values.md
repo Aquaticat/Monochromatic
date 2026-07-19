@@ -1,5 +1,8 @@
 # mise 2026.5.15 `env --redacted` lists sensitive values instead of masking them
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 This note records a 2026-06-06 diagnosis against mise 2026.5.15
 (`v2026.5.15`,
  upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`).

@@ -1,5 +1,8 @@
 # Use zeptomatch for pi model-scope globs
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Context
 
 `package/pi-shared/model-selection/src/scope-patterns.ts` resolves pi model-scope glob patterns against in-memory

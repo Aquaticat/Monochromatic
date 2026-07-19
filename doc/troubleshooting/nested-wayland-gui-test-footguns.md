@@ -1,5 +1,8 @@
 # nested-wayland-session 0.1.1: keystrokes sent before the hosted app maps its window are silently dropped, plus two operational traps when driving the compositor by hand
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Cluster of footguns hit while writing keyboard-driven boundary tests against
 `package/cli/nested-wayland-session` (repo-owned tool) for
 `package/desktop-app/file-manager-gtk-sticky` and during manual driving of the compositor.

@@ -1,5 +1,8 @@
 # ESLint v10.4.1: disable comment descriptions require a whitespace-surrounded hyphen run
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Current status (2026-06-06):
  ESLint intentionally parses disable comment
 reasons only after a whitespace-surrounded run of two or more hyphens.

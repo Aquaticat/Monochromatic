@@ -1,5 +1,8 @@
 # Pi goal with pi-processes 0.9.4: live background work caused automatic continuation turns
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 With an active repository-owned `/goal`,

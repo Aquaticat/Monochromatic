@@ -1,5 +1,8 @@
 # Code-quality recommendations in resharp (rust): below the definitely-rewrite bar
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Observations worth raising that do NOT clear the "any reasonable Rust author rewrites
 this immediately" bar,
  because a maintainer could reasonably keep the current shape.

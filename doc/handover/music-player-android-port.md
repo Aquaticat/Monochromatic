@@ -1,5 +1,8 @@
 # Handover: porting music-player to Android (Jetpack Compose + Kotlin)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Working state for porting `package/music-player/desktop-app` (Rust + Slint) to Android,
  targeting the connected
 Pixel 6.

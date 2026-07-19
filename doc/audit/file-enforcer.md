@@ -1,5 +1,8 @@
 # file-enforcer alternatives audit
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## What this audit is
 
 `file-enforcer` keeps arbitrary repo-local derived files in sync inside this monorepo's worktree.

@@ -1,5 +1,8 @@
 # hk 1.50.0 pre-commit fixing duplicates LF at a partially staged EOF tail
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 With `fix = true` and `stash = "git"`,

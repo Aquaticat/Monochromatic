@@ -1,5 +1,8 @@
 # Handover: resharp rust fuzz campaign (2026-06-04)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Living handover for the resharp fuzzing effort.
  Context compacts repeatedly,
  so

@@ -1,5 +1,8 @@
 # pnpm modules cache benchmark handover
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Status
 
 The user is questioning whether pnpm's project-local virtual-store orphan retention is worth its

@@ -1,5 +1,8 @@
 # Oxlint 1.71 JS plugin visitors are synchronous, so awaited visitor classification reports after file context reset
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 A custom oxlint JS rule sometimes needs data from a file other than the file currently being linted.

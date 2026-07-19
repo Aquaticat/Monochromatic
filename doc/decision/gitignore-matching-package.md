@@ -1,5 +1,8 @@
 # Keep ignore for gitignore matching
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Status
 
 Accepted,

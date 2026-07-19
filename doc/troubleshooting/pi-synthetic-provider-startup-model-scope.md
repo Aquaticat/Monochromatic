@@ -1,5 +1,8 @@
 # Pi 0.79.6 and @benvargas/pi-synthetic-provider 1.1.14: startup model scope drops Synthetic GLM-5.2
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Current status (2026-06-18):
 diagnosed and reproduced.
 The local package was not patched.

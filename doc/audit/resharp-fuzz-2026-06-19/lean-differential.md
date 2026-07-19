@@ -1,5 +1,8 @@
 # Lean formal position differential
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Re-establishes the formally-verified position oracle the 2026-06-11 campaign used,
 which is the right replacement for the retiring dotnet RE# reference.
 

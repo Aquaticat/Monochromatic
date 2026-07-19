@@ -1,5 +1,8 @@
 # Music-player true-peak parameter search handover
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## How to read this handover
 
 This document now has two layers:

@@ -1,5 +1,8 @@
 # Vet: Slint testing API (ElementHandle / accessibility-based UI testing) for Slint+Rust
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Date:
  2026-06-07.
  Standard:

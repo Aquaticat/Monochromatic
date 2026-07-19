@@ -8,6 +8,9 @@ description: >-
 
 # Choosing technology and vendors
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Use this workflow before recommending:
 
 - a SaaS or managed service;

@@ -1,5 +1,8 @@
 # Vet: NativeScript (TypeScript/JavaScript, V8 on Android) for the kopia-to-pCloud Android app
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Date:
  2026-06-12
 Standard:

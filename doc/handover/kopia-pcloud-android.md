@@ -1,5 +1,8 @@
 # Handover: kopia to pCloud backup on the Pixel 6
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Goal:
  an unattended,
  scheduled,

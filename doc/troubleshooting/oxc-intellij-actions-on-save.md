@@ -1,5 +1,8 @@
 # Oxc IntelliJ Plugin 0.0.35 cannot uncheck "Run Oxlint 'Fix All' on Save" in IntelliJ IDEA 2026.2 EAP
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 In IntelliJ IDEA 2026.2 EAP with Oxc IntelliJ Plugin 0.0.35,

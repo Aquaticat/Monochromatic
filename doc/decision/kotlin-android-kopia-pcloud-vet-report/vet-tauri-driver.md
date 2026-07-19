@@ -1,5 +1,8 @@
 # Vet: tauri-driver (Tauri webview UI testing via WebDriver)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Date:
  2026-06-07.
  Standard:

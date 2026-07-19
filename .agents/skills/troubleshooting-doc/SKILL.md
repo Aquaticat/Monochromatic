@@ -5,6 +5,9 @@ description: Use when investigating an external tool's behavior, bug, quirk, cap
 
 # Writing a troubleshooting file
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Fires automatically,
  no user request needed,
  when you investigate an

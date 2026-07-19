@@ -1,5 +1,8 @@
 # Performance
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Measured wall-clock budget for the `forbidden-strings` scanner.
 Numbers below are not aspirational targets;
  they are reproducible measurements

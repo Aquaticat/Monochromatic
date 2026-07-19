@@ -1,5 +1,8 @@
 # find_all false negative on intersection with an end-anchor alternation (0.6.13, live)
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 THIRD new live soundness bug,
  and the most severe of the three:
  `find_all` (the

@@ -1,5 +1,8 @@
 # Slint 1.17.0 drag-and-drop: in-process DragArea/DropArea works, but no OS-native file-list drag-and-drop on any backend
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 Slint 1.17.0 exposes a working in-process drag-and-drop surface (`DragArea` and
 `DropArea`, made public in this release), so a Slint app can drag items between
 its own panes with a typed app-local payload and a copy/move/link action.

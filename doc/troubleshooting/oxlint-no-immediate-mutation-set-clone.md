@@ -1,5 +1,8 @@
 # Oxlint 1.71.0 `unicorn/no-immediate-mutation` flags Set and Map clone-plus-mutate patterns that need a spread temp to inline
 
+> Scratch-path note: `/tmp/agent` paths in this document are historical.
+> Use `~/temp/agent` for current work.
+
 ## Symptom
 
 Oxlint reports `unicorn(no-immediate-mutation)` for this shape:
