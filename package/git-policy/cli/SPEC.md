@@ -1259,6 +1259,7 @@ Invoke its public `rolldown()` interface with:
 - one output chunk;
 - dependencies bundled by default;
 - `codeSplitting: false`;
+- `tsconfig: false` so no consumer TypeScript project configuration is read;
 - in-memory generation in the private build directory.
 
 Close the disposable bundle after generation,
@@ -1270,6 +1271,15 @@ native binary,
 or additional chunk.
 Reject unresolved imports except Node built-ins.
 Reject nonliteral dynamic imports whose targets cannot be bundled.
+
+Resolve cli-git's package root and `/ts` subpath to the dedicated authoring source entry in the running installed
+artifact.
+For every other bare import from the entry or a tracked relative source,
+use bundled consumer resolution first.
+When that resolution is absent,
+derive the unscoped package's first segment or the scoped package's first two segments and fall back to the installed
+artifact only when that package name occurs in cli-git's packed runtime dependencies.
+Do not expose unrelated packages from the installation prefix.
 
 Extract the tracked relative-local source graph from Rolldown chunk module metadata and canonicalize every path.
 The graph must include the entry.

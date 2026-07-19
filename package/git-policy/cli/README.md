@@ -415,9 +415,21 @@ If a root config was deleted,
 When root `cli-git.config.mjs` is absent,
 cli-git discovers `cli-git.config.ts`.
 Explicit trust lazily imports Rolldown and calls its public bundle API directly with
-Node ESM output and `codeSplitting: false`.
+Node ESM output,
+`codeSplitting: false`,
+and `tsconfig: false`.
+The builder therefore strips TypeScript syntax without reading consumer path aliases,
+JSX settings,
+decorator settings,
+or extended tsconfig packages.
 The disposable bundle is closed explicitly after in-memory generation,
 so ordinary Git commands never initialize Rolldown and trust builds do not retain native workers.
+
+Cli-git's package-root and `/ts` config imports resolve to a dedicated authoring source entry inside the running
+installed artifact.
+Other bare imports resolve from the consumer first,
+then fall back only to package names declared by cli-git's packed runtime dependencies.
+Package-root and package-subpath forms share that rule.
 It accepts one JavaScript chunk only,
 captures the entry and every statically resolved relative local source through stable no-follow reads,
 and rechecks the complete graph after build completion.
@@ -437,8 +449,9 @@ Refresh failure blocks with exit `2` and retains the previous record;
 metadata signals never waive first trust.
 
 The maintained packed-bin integration check builds the unpublished tarball,
-installs its shadowing `git` executable in a bounded disposable container,
-and exercises untrusted blocking,
+installs its shadowing `git` executable outside consumer repository ancestry in a bounded disposable container,
+and exercises clean and poison-tsconfig TypeScript bootstrap without consumer `node_modules`,
+untrusted blocking,
 trust,
 status,
 stored plugin checks,
