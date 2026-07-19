@@ -216,7 +216,7 @@ export default { trust: { children: Boolean(missing) } };
 `,);
         const failure = await captureBuildFailure(fixture,);
         expect(failure,).toBeInstanceOf(Error,);
-        if (failure instanceof Error)
+        if (Error.isError(failure,))
           expect(failure.message,).toContain('Bare TypeScript package import did not resolve into bundle',);
       },
     },),
