@@ -175,10 +175,13 @@ export async function buildTypeScriptCandidate({
    */
   const moduleIds = new Set(bundle.output
     .flatMap(function outputModuleIds(chunk,) {
-    return chunk.type === 'chunk' ? Array.from(
-      chunk.moduleIds,
-      modulePath,
-    ) : [];
+    if (chunk.type !== 'chunk')
+      return [];
+    /**
+     * Owned module ID list detached from Rolldown output.
+     */
+    const outputModuleIds = [...chunk.moduleIds,];
+    return outputModuleIds.map(modulePath,);
   },),);
   sources.forEach(function assertIncluded(source,) {
     if (!moduleIds.has(source.canonicalPath,))
