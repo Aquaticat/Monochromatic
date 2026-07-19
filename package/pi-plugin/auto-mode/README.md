@@ -237,32 +237,33 @@ referenced files from global,
  project,
  or package skills.
 
-Auto-mode also allows `read` tool access to existing files under `/tmp/agent`
-and `~/temp/agent` when each directory is owned by the current process user,
+Auto-mode also allows `read` tool access to existing files under current
+`~/temp/agent` and historical `/tmp/agent` compatibility roots when each
+directory is owned by the current process user,
 has no group or other permission bits,
  and resolves without symlinks.
-Agents should place third-party source clones under either root when they need
-repeated inspection outside the current project.
+Agents should place new third-party source clones under `~/temp/agent` when they
+need repeated inspection outside the current project.
 The allowlist uses canonical filesystem paths,
  so symlinks that resolve outside
 either root still go through the normal signal and judge pipeline.
 
-For bash tool calls,
- only the private `/tmp/agent` root is trusted for existing
-non-secret helper paths.
- `~/temp/agent` is read-only allowlisted.
- Running an inspected helper script from there does not
+For Bash tool calls,
+ both private roots are trusted for existing non-secret
+helper paths.
+ Running an inspected helper script from either root does not
 trigger a location-only prompt.
  Bash calls still flag destructive commands,
-secret-looking paths inside `/tmp/agent`,
- and paths outside the trusted root.
+secret-looking paths inside either root,
+ and paths outside trusted roots.
 
-When a bash command passes a secret-looking environment variable to a trusted
-`/tmp/agent` script or interpreter command,
- auto-mode permits `grep` to source
-that key from a project-local `.env` file.
- This covers image-diff or model-check
-helpers such as `GEMINI_API_KEY="$KEY" node /tmp/agent/...`.
+When a Bash command passes a secret-looking environment variable to a trusted
+script or interpreter command under either root,
+ auto-mode permits `grep` to
+source that key from a project-local `.env` file.
+ This covers image-diff or
+model-check helpers such as
+`GEMINI_API_KEY="$KEY" node "${HOME}/temp/agent/check.mjs"`.
  It does not allow
 arbitrary secret files,
  unrelated dotenv reads,
@@ -282,8 +283,8 @@ The allowlist preserves secret-path checks.
  `write` and `edit` calls targeting
 skill directories,
  linked worktrees,
- or `/tmp/agent` still go through the normal
-signal and judge pipeline.
+ or either agent scratch root still go through
+the normal signal and judge pipeline.
 
 ## Logging
 

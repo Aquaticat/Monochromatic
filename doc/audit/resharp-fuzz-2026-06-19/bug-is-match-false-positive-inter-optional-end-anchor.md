@@ -143,7 +143,7 @@ not actually match:
 ## Reproduce
 
 ```bash
-# /tmp/agent/resharp-denot-oracle, resharp = "=0.6.13"
+# ${HOME}/temp/agent/resharp-denot-oracle, resharp = "=0.6.13"
 cargo run --release --bin c1min      # trigger-boundary minimization, both arches
 cargo run --release --bin c1probe    # full per-config table
 ```

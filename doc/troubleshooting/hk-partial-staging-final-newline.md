@@ -212,7 +212,7 @@ A two-hunk patch and regression test are stored in
 The binary was built in a disposable container with two CPUs and 2 GiB memory:
 
 ```sh
-PROTOTYPE=/tmp/agent/hk-newline-tail-prototype-8fF1KLdu
+PROTOTYPE=${HOME}/temp/agent/hk-newline-tail-prototype-8fF1KLdu
 podman run --memory=2g --cpus=2 --rm \
   --volume "$PROTOTYPE:/work:Z" \
   --workdir /work rust:1.88-bookworm cargo build --release

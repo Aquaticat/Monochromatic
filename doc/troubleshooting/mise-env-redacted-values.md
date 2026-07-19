@@ -235,7 +235,7 @@ $ git -C /tmp/agent/mise-2026.5.15 rev-parse HEAD
 Fixture:
 
 ```bash
-fixture_dir=$(mktemp --directory /tmp/agent/mise-redacted-fixture.XXXXXX)
+fixture_dir=$(mktemp --directory ${HOME}/temp/agent/mise-redacted-fixture.XXXXXX)
 cat > "$fixture_dir/mise.toml" <<'EOF'
 [env]
 SECRET_TOKEN = { value = "fixture-secret-token", redact = true }

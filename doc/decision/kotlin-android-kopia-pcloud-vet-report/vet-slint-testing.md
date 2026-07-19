@@ -284,9 +284,9 @@ assert `accessible_label()` == "Increment" and `accessible_role()` ==
 Exact command (display vars unset to prove headlessness):
 
 ```sh
-cd /tmp/agent/slint-testing-demo
+cd ${HOME}/temp/agent/slint-testing-demo
 env -u DISPLAY -u WAYLAND_DISPLAY SLINT_EMIT_DEBUG_INFO=1 \
-  CARGO_TARGET_DIR=/tmp/agent/slint-testing-demo/target cargo test
+  CARGO_TARGET_DIR=${HOME}/temp/agent/slint-testing-demo/target cargo test
 ```
 
 Output:

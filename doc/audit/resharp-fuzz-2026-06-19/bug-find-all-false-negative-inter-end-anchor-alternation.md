@@ -236,7 +236,7 @@ not pursued further.
 ## Reproduce
 
 ```bash
-# /tmp/agent/resharp-denot-oracle, resharp = "=0.6.13"
+# ${HOME}/temp/agent/resharp-denot-oracle, resharp = "=0.6.13"
 cargo run --release --bin anchor_denot          # the lane that found it (RESHARP-INCONSISTENT line)
 # minimal, both arches, resharp-internal proof:
 #   /./ and /a(?:$|b)/ both match (0,1) on "a\n"; /.&a(?:$|b)/ returns []

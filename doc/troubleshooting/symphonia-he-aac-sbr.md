@@ -317,10 +317,10 @@ It includes the desktop app's `decode.rs`,
 Run it against the containing folder:
 
 ```bash
-# from /tmp/agent/music-player-truepeak-bench
+# from ${HOME}/temp/agent/music-player-truepeak-bench
 mise run bench -- \
   /home/user/Seafile/Plain/Music/Fate \
-  /tmp/agent/music-player-truepeak-bench/fate-out
+  ${HOME}/temp/agent/music-player-truepeak-bench/fate-out
 ```
 
 Expected result:
@@ -358,7 +358,7 @@ The failing remux and working transcode were created with:
 
 ```bash
 # from /var/home/user/Monochromatic
-scratch=/tmp/agent/music-player-aac-failure
+scratch=${HOME}/temp/agent/music-player-aac-failure
 file="/home/user/Seafile/Plain/Music/Fate/Super ☆ Affection.mp4"
 rm --recursive --force "$scratch"
 mkdir --parents "$scratch/copy" "$scratch/transcoded"
@@ -382,14 +382,14 @@ ffmpeg -hide_banner -v error -nostdin \
 Then verified with:
 
 ```bash
-# from /tmp/agent/music-player-truepeak-bench
+# from ${HOME}/temp/agent/music-player-truepeak-bench
 mise run bench -- \
-  /tmp/agent/music-player-aac-failure/copy \
-  /tmp/agent/music-player-aac-failure/out-copy
+  ${HOME}/temp/agent/music-player-aac-failure/copy \
+  ${HOME}/temp/agent/music-player-aac-failure/out-copy
 
 mise run bench -- \
-  /tmp/agent/music-player-aac-failure/transcoded \
-  /tmp/agent/music-player-aac-failure/out-transcoded
+  ${HOME}/temp/agent/music-player-aac-failure/transcoded \
+  ${HOME}/temp/agent/music-player-aac-failure/out-transcoded
 ```
 
 The remux result fails:
@@ -433,7 +433,7 @@ ffmpeg -hide_banner -v error -nostdin \
   -c:a aac \
   -profile:a aac_low \
   -b:a 160k \
-  /tmp/agent/music-player-aac-failure/transcoded/super-affection-aac-lc.m4a
+  ${HOME}/temp/agent/music-player-aac-failure/transcoded/super-affection-aac-lc.m4a
 ```
 
 Tradeoffs:

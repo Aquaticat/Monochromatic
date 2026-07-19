@@ -367,12 +367,12 @@ A scratch package was created at `/tmp/agent/image-vet-scratch-20260702`.
 Because the Bash tool ignored `cwd` in one run, `npm init --yes` accidentally rewrote the repo root `package.json`.
 That was immediately restored with `git restore -- package.json`.
 Do not repeat that pattern.
-Use explicit `cd /tmp/agent/... && command` in Bash for scratch validation.
+Use explicit `cd "${HOME}/temp/agent/..." && command` in Bash for current scratch validation.
 
 Scratch install command:
 
 ```sh
-cd /tmp/agent/image-vet-scratch-20260702 && npm install sharp@0.35.3 jimp@1.6.1 @napi-rs/image@1.14.0 pica@10.0.2 imagescript@1.3.1 image-js@1.6.2 browser-image-compression@2.0.2 compressorjs@1.3.0 rastermill@0.3.1 imgkit@2.3.0 --save-exact
+cd ${HOME}/temp/agent/image-vet-scratch-20260702 && npm install sharp@0.35.3 jimp@1.6.1 @napi-rs/image@1.14.0 pica@10.0.2 imagescript@1.3.1 image-js@1.6.2 browser-image-compression@2.0.2 compressorjs@1.3.0 rastermill@0.3.1 imgkit@2.3.0 --save-exact
 ```
 
 Result:
@@ -542,6 +542,6 @@ For synthesis:
 - Do not cite open issue count alone as maintenance evidence.
   Use the sampled maintainer actions and backlog shape.
 - Do not run scratch commands relying on Bash tool `cwd` alone.
-  Use explicit `cd /tmp/agent/... && command`.
+  Use explicit `cd "${HOME}/temp/agent/..." && command`.
 - Do not stage unrelated repo changes.
   Many unrelated files were already modified or untracked while this investigation ran.

@@ -99,7 +99,7 @@ The lane cleanly separates the state of 0.6.13:
 ## Reproduce
 
 ```bash
-cd /tmp/agent/resharp-denot-oracle
+cd ${HOME}/temp/agent/resharp-denot-oracle
 cargo run --release --bin selfconsist 300 8000 5 4   # one seed; sweep many seeds
 cargo run --release --bin c1min          # is_match (C1) trigger boundary
 cargo run --release --bin trig           # find_anchored (C2/C3) trigger boundary

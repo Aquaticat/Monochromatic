@@ -261,7 +261,7 @@ This was the repair used when old snapshots were not needed.
 First record sources:
 
 ```bash
-kopia --no-auto-maintenance --no-progress snapshot list --all --json > /tmp/agent/kopia-snapshot-list-before-repair.json
+kopia --no-auto-maintenance --no-progress snapshot list --all --json > ${HOME}/temp/agent/kopia-snapshot-list-before-repair.json
 ```
 
 The recorded sources were:
@@ -285,7 +285,7 @@ while IFS= read -r path; do
     --all-snapshots-for-source \
     --delete \
     "$source"
-done < /tmp/agent/kopia-sources-before-repair.txt
+done < ${HOME}/temp/agent/kopia-sources-before-repair.txt
 ```
 
 Run one purge maintenance pass.
@@ -311,7 +311,7 @@ Recreate fresh snapshots from recorded sources,
 repopulates content instead of trusting stale cache state:
 
 ```bash
-readarray -t sources < /tmp/agent/kopia-sources-before-repair.txt
+readarray -t sources < ${HOME}/temp/agent/kopia-sources-before-repair.txt
 kopia --no-auto-maintenance --no-progress snapshot create --force-hash=100 "${sources[@]}"
 ```
 

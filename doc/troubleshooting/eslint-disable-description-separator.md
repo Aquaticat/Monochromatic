@@ -221,7 +221,7 @@ Harness:
 
 ```sh
 # doc/troubleshooting/eslint-disable-description-separator.md
-TMP_DIR=$(mktemp --directory /tmp/agent/eslint-separator-harness.XXXXXXXX)
+TMP_DIR=$(mktemp --directory ${HOME}/temp/agent/eslint-separator-harness.XXXXXXXX)
 cat > "$TMP_DIR/eslint.config.js" <<'EOF'
 export default [
   {

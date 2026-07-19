@@ -236,9 +236,9 @@ Command:
 
 ```sh
 # /var/home/user/Monochromatic
-GRADLE_USER_HOME=/tmp/agent/detekt-gradle-home \
-  /tmp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
-  --project-dir /tmp/agent/detekt-consumer-before-P7uAER \
+GRADLE_USER_HOME=${HOME}/temp/agent/detekt-gradle-home \
+  ${HOME}/temp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
+  --project-dir ${HOME}/temp/agent/detekt-consumer-before-P7uAER \
   resolveTestRuntime \
   --no-daemon \
   --console=plain
@@ -263,13 +263,13 @@ Command:
 ```sh
 # /var/home/user/Monochromatic
 env -i \
-  HOME=/tmp/agent/detekt-proto-home \
+  HOME=${HOME}/temp/agent/detekt-proto-home \
   PATH="$PATH" \
   JAVA_HOME="${JAVA_HOME:-}" \
-  GRADLE_USER_HOME=/tmp/agent/detekt-gradle-home \
-  /tmp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
-  -Dmaven.repo.local=/tmp/agent/detekt-proto-m2 \
-  --project-dir /tmp/agent/detekt-alpha5-prototype-KQgY5o \
+  GRADLE_USER_HOME=${HOME}/temp/agent/detekt-gradle-home \
+  ${HOME}/temp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
+  -Dmaven.repo.local=${HOME}/temp/agent/detekt-proto-m2 \
+  --project-dir ${HOME}/temp/agent/detekt-alpha5-prototype-KQgY5o \
   :detekt-api:publishToMavenLocal \
   :detekt-test:publishToMavenLocal \
   --no-daemon \
@@ -297,9 +297,9 @@ Command:
 
 ```sh
 # /var/home/user/Monochromatic
-GRADLE_USER_HOME=/tmp/agent/detekt-gradle-home \
-  /tmp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
-  --project-dir /tmp/agent/detekt-consumer-after-KnWsL1 \
+GRADLE_USER_HOME=${HOME}/temp/agent/detekt-gradle-home \
+  ${HOME}/temp/agent/detekt-alpha5-prototype-KQgY5o/gradlew \
+  --project-dir ${HOME}/temp/agent/detekt-consumer-after-KnWsL1 \
   resolveTestRuntime \
   --no-daemon \
   --console=plain

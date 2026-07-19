@@ -423,7 +423,7 @@ but it does not create a runnable isolated tree without dependency symlinks.
 Searches run on 2026-06-22:
 
 ```sh
-# /tmp/agent/pnpm-symlink-duplicate-search.txt
+# ${HOME}/temp/agent/pnpm-symlink-duplicate-search.txt
 gh search issues --repo pnpm/pnpm "symlink false isolated node-linker" --state open --limit 20
 gh search issues --repo pnpm/pnpm "symlink false isolated node-linker" --state closed --limit 20
 gh search prs --repo pnpm/pnpm "symlink false isolated node-linker" --state open --limit 20

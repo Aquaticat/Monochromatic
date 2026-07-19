@@ -67,7 +67,8 @@ Update this file whenever a work unit lands so the context survives auto-compact
     `Fatal Wayland communication error: Broken pipe` and a `Failed to shutdown` FATAL at quit;
     benign in passing runs; one early run flaked nonzero (unreproduced across 5 later runs).
 11. Operational: AF_UNIX socket paths must stay under SUN_LEN (~108 bytes); deep scratchpad
-    paths fail (`path must be shorter than SUN_LEN`), use `/tmp/agent/...`.
+    paths fail (`path must be shorter than SUN_LEN`). Use `~/temp/agent/...` with a short child name,
+    and verify the complete socket path remains within the platform limit.
     Also `pkill -f <pattern>` matches the invoking shell's own command line and kills it.
 
 ## Landed since the last update
@@ -106,10 +107,11 @@ Update this file whenever a work unit lands so the context survives auto-compact
 - GTK expand probe: cargo project at the path recorded in `/tmp/agent/probe-path.txt`
   (`gtk-expand-probe`), prints widths and `compute_expand` for a plain vs
   `set_hexpand(false)` `GtkFixed` with an hexpanding child, under the nested compositor.
-- Manual compositor driving: socket must live under `/tmp/agent/` (SUN_LEN);
+- Manual compositor driving: place the socket under `~/temp/agent/` with a short child name
+  that keeps the complete path within `SUN_LEN`;
   drive with python `socket.AF_UNIX` one-liners (`nc` is absent on this host);
   commands: `ping`, `key <name>`, `screenshot <abs path>`, `resize`, `quit`.
-- GTK source for citations: clone the GitHub mirror `GNOME/gtk` shallowly under `/tmp/agent/`.
+- GTK source for citations: clone the GitHub mirror `GNOME/gtk` shallowly under `~/temp/agent/`.
 
 ## Repo-rule notes that bit during this session
 

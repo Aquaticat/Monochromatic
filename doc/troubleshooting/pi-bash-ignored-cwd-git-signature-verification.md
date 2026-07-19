@@ -254,7 +254,7 @@ A disposable allowed-signers file associated both observed commit principals wit
 The harness verified the same frozen pre-diagnosis set:
 
 ```bash
-allowed="$(mktemp /tmp/agent/git-signing-allowed-signers-XXXXXXXX)"
+allowed="$(mktemp ${HOME}/temp/agent/git-signing-allowed-signers-XXXXXXXX)"
 awk '{
   print "an@aquati.cat " $1 " " $2
   print "fixture@example.invalid " $1 " " $2

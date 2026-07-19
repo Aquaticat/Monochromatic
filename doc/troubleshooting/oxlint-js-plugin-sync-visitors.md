@@ -292,7 +292,7 @@ The `sync` rule reports in `Program` before returning.
 The `awaited` rule awaits one resolved promise before reporting:
 
 ```javascript
-// /tmp/agent/oxlint-js-plugin-sync-probe-gXBdqD/plugin.mjs
+// ~/temp/agent/oxlint-js-plugin-sync-probe-gXBdqD/plugin.mjs
 export default {
   meta: { name: 'sync-probe' },
   rules: {
@@ -335,7 +335,7 @@ The config enabled both rules:
 The task ran oxlint against one input file:
 
 ```toml
-# /tmp/agent/oxlint-js-plugin-sync-probe-gXBdqD/mise.toml
+# ~/temp/agent/oxlint-js-plugin-sync-probe-gXBdqD/mise.toml
 [tasks.probe]
 run = "/var/home/user/Monochromatic/node_modules/.bin/oxlint --config .oxlintrc.json input.js"
 ```
@@ -343,7 +343,7 @@ run = "/var/home/user/Monochromatic/node_modules/.bin/oxlint --config .oxlintrc.
 Command:
 
 ```bash
-cd /tmp/agent/oxlint-js-plugin-sync-probe-gXBdqD
+cd ${HOME}/temp/agent/oxlint-js-plugin-sync-probe-gXBdqD
 mise run probe
 ```
 

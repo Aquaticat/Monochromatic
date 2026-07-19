@@ -312,14 +312,14 @@ TS
 Working catalog for the current repo config:
 
 ```sh
-cd /tmp/agent/monochromatic-file-enforcer-browserslist-20260626
-XDG_CONFIG_HOME=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626/xdg-config \
+cd ${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626
+XDG_CONFIG_HOME=${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626/xdg-config \
   DENO_TRACE_PERMISSIONS=1 deno run \
   --no-prompt \
   --allow-env \
   --allow-sys=homedir \
-  --allow-read=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626,/var/home/user/Monochromatic/node_modules \
-  --allow-write=/tmp/agent/monochromatic-file-enforcer-browserslist-20260626 \
+  --allow-read=${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626,/var/home/user/Monochromatic/node_modules \
+  --allow-write=${HOME}/temp/agent/monochromatic-file-enforcer-browserslist-20260626 \
   file-enforcer.config.ts
 ```
 

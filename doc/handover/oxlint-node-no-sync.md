@@ -59,12 +59,12 @@ Prototype artifacts:
 Verification commands passed:
 
 ```bash
-cargo fmt --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --check
-git -C /tmp/agent/oxc-no-sync-prototype-LmG4Snov diff --check
-cargo test --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
+cargo fmt --manifest-path ${HOME}/temp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --check
+git -C ${HOME}/temp/agent/oxc-no-sync-prototype-LmG4Snov diff --check
+cargo test --manifest-path ${HOME}/temp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter node::no_sync::test
 ```
 
-`cargo clippy --manifest-path /tmp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml --package oxc_linter --lib --tests`
+`cargo clippy --manifest-path "${HOME}/temp/agent/oxc-no-sync-prototype-LmG4Snov/Cargo.toml" --package oxc_linter --lib --tests`
 was rerun after increasing local `/tmp` quota and exited successfully.
 It still prints existing upstream warnings outside the prototype `no_sync.rs` changes,
 but no `no_sync.rs` clippy warning remains.

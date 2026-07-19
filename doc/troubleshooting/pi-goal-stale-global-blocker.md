@@ -161,12 +161,12 @@ and resolves its peer dependencies from this checkout.
 Run from the repository root:
 
 ```bash
-mkdir --parents /tmp/agent/pi-goal-stale-repro-20260717
-chmod 700 /tmp/agent/pi-goal-stale-repro-20260717
+mkdir --parents ${HOME}/temp/agent/pi-goal-stale-repro-20260717
+chmod 700 ${HOME}/temp/agent/pi-goal-stale-repro-20260717
 cp /var/home/user/.pi/agent/npm/node_modules/@narumitw/pi-goal/src/goal.ts \
-  /tmp/agent/pi-goal-stale-repro-20260717/goal.ts
+  ${HOME}/temp/agent/pi-goal-stale-repro-20260717/goal.ts
 ln --symbolic /var/home/user/Monochromatic/package/pi-plugin/goal/node_modules \
-  /tmp/agent/pi-goal-stale-repro-20260717/node_modules
+  ${HOME}/temp/agent/pi-goal-stale-repro-20260717/node_modules
 node --input-type=module-typescript -e '
 const handlers = new Map();
 let command;
@@ -190,7 +190,7 @@ const context = {
   },
 };
 const imported = await import(
-  "file:///tmp/agent/pi-goal-stale-repro-20260717/goal.ts"
+  "file://${HOME}/temp/agent/pi-goal-stale-repro-20260717/goal.ts"
 );
 imported.default(pi);
 await command.handler("reproduce stale blocker", context);

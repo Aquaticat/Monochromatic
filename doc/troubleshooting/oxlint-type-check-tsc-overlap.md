@@ -213,9 +213,9 @@ A disposable harness reproduced the flag distinction:
 ```bash
 repo=/var/home/user/Monochromatic
 oxlint="$repo/node_modules/.bin/oxlint"
-mkdir --parents /tmp/agent
-chmod 700 /tmp/agent
-fixture="$(mktemp --directory /tmp/agent/oxlint-typecheck-doc.XXXXXX)"
+mkdir --parents ${HOME}/temp/agent
+chmod 700 ${HOME}/temp/agent
+fixture="$(mktemp --directory ${HOME}/temp/agent/oxlint-typecheck-doc.XXXXXX)"
 cd -- "$fixture"
 printf '%s\n' \
   '{"compilerOptions":{"strict":true,"noEmit":true},"include":["valid.ts","semantic.ts","syntax.ts"]}' \
@@ -261,9 +261,9 @@ A second disposable harness reproduced the file-selection difference with the sa
 repo=/var/home/user/Monochromatic
 oxlint="$repo/node_modules/.bin/oxlint"
 tsc="$repo/node_modules/.bin/tsc"
-mkdir --parents /tmp/agent
-chmod 700 /tmp/agent
-fixture="$(mktemp --directory /tmp/agent/oxlint-typecheck-ignore.XXXXXX)"
+mkdir --parents ${HOME}/temp/agent
+chmod 700 ${HOME}/temp/agent
+fixture="$(mktemp --directory ${HOME}/temp/agent/oxlint-typecheck-ignore.XXXXXX)"
 mkdir --parents "$fixture/src"
 cd -- "$fixture"
 printf '%s\n' \

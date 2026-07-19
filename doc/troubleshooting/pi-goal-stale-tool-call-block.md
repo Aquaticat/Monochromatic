@@ -282,10 +282,10 @@ It does not read or write real Pi sessions or settings.
 
 ### Reproduction harness
 
-Save this as `/tmp/agent/pi-goal-reproduce.mjs`:
+Save this as `~/temp/agent/pi-goal-reproduce.mjs`:
 
 ```javascript
-// /tmp/agent/pi-goal-reproduce.mjs
+// ~/temp/agent/pi-goal-reproduce.mjs
 import { pathToFileURL } from 'node:url';
 
 const repoRoot = process.env.REPO_ROOT;
@@ -400,12 +400,12 @@ console.log(JSON.stringify({
 Run it with a disposable agent directory and explicit local paths:
 
 ```bash
-mkdir --parents /tmp/agent/pi-goal-reproduction
-chmod 700 /tmp/agent/pi-goal-reproduction
+mkdir --parents ${HOME}/temp/agent/pi-goal-reproduction
+chmod 700 ${HOME}/temp/agent/pi-goal-reproduction
 REPO_ROOT=/var/home/user/Monochromatic \
 PI_GOAL_SOURCE=/var/home/user/.pi/agent/npm/node_modules/@narumitw/pi-goal/src/goal.ts \
-REPRO_AGENT_DIR=/tmp/agent/pi-goal-reproduction \
-node /tmp/agent/pi-goal-reproduce.mjs
+REPRO_AGENT_DIR=${HOME}/temp/agent/pi-goal-reproduction \
+node ${HOME}/temp/agent/pi-goal-reproduce.mjs
 ```
 
 Observed output:

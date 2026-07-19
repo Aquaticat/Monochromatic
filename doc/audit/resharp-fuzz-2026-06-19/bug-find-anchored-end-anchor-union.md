@@ -160,7 +160,7 @@ matching rejection would resolve it.
 ## Reproduce
 
 ```bash
-# /tmp/agent/resharp-denot-oracle, resharp = "=0.6.13"
+# ${HOME}/temp/agent/resharp-denot-oracle, resharp = "=0.6.13"
 cargo run --release --bin anchored_probe   # full table across configs
 cargo run --release --bin trig             # trigger-boundary minimization
 ```

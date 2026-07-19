@@ -308,7 +308,7 @@ Version under test:
 Exact GLM-5.2 scoped pattern fails before live model refresh:
 
 ```bash
-scratch_dir=$(mktemp --directory /tmp/agent/pi-synthetic-warning-XXXXXX)
+scratch_dir=$(mktemp --directory ${HOME}/temp/agent/pi-synthetic-warning-XXXXXX)
 python - "$scratch_dir/settings.json" <<'PY'
 import json, sys
 settings = {
@@ -368,7 +368,7 @@ if (config.models && config.models.length > 0) {
 An exact fallback model works because it exists before `session_start`:
 
 ```bash
-scratch_dir=$(mktemp --directory /tmp/agent/pi-synthetic-glm51-XXXXXX)
+scratch_dir=$(mktemp --directory ${HOME}/temp/agent/pi-synthetic-glm51-XXXXXX)
 python - "$scratch_dir/settings.json" <<'PY'
 import json, sys
 settings = {
@@ -398,11 +398,11 @@ synthetic  hf:zai-org/GLM-5.1  196.6K   65.5K    yes       no
 The upstream prototype patch makes exact GLM-5.2 work before `session_start`:
 
 ```bash
-scratch_dir=$(mktemp --directory /tmp/agent/pi-synthetic-prototype-verify-XXXXXX)
+scratch_dir=$(mktemp --directory ${HOME}/temp/agent/pi-synthetic-prototype-verify-XXXXXX)
 python - "$scratch_dir/settings.json" <<'PY'
 import json, sys
 settings = {
-  "packages": ["/tmp/agent/pi-synthetic-prototype-KOhVns/repo/packages/pi-synthetic-provider"],
+  "packages": ["${HOME}/temp/agent/pi-synthetic-prototype-KOhVns/repo/packages/pi-synthetic-provider"],
   "enabledModels": ["synthetic/hf:zai-org/GLM-5.2"]
 }
 with open(sys.argv[1], "w", encoding="utf-8") as f:

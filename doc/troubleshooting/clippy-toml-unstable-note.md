@@ -356,12 +356,12 @@ cargo commit: a335d47ff8036918d3d548dabd513dc0444096a9
 ```
 
 Run this harness from any scratch-safe directory.
-It creates four tiny crates under `/tmp/agent`.
+It creates four tiny crates under current `~/temp/agent` scratch space.
 
 ```shell
-mkdir --parents /tmp/agent
-chmod 700 /tmp/agent
-scratch=$(mktemp --directory /tmp/agent/clippy-config-harness-XXXXXXXXXX)
+mkdir --parents ${HOME}/temp/agent
+chmod 700 ${HOME}/temp/agent
+scratch=$(mktemp --directory ${HOME}/temp/agent/clippy-config-harness-XXXXXXXXXX)
 mkdir --parents \
   "$scratch/stable-lints/src" \
   "$scratch/disallowed-clippy-toml/src" \

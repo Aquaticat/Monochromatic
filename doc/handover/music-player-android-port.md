@@ -681,7 +681,7 @@ Milestone 1,
    SDK is now mise-provisioned via `ANDROID_HOME` (no `local.properties`);
   see "Build environment:
    self-contained via mise" below.
-  adb is flock-guarded on `/tmp/agent/adb-phone.lock`,
+  adb is flock-guarded on `~/temp/agent/adb-phone.lock` for current runs,
    serial `1C171FDF600KWW`.
 
 ## Build environment: self-contained via mise (2026-06-13)
@@ -1216,7 +1216,7 @@ Note:
    The build fingerprint spoofs stock Google (GrapheneOS behavior).
    Other sessions may attach
   devices:
-   guard adb with `flock /tmp/agent/adb-phone.lock` and target `-s 1C171FDF600KWW`.
+   guard adb with `flock "${HOME}/temp/agent/adb-phone.lock"` and target `-s 1C171FDF600KWW`.
 - Library (host `/home/user/Seafile/Plain/Music`,
    3857 files):
    Opus 2584,
@@ -1826,7 +1826,7 @@ persistable grants are per-applicationId,
 - Instrumented tests (`mise run //package/music-player/android-app:test:instrumented` ->
   `connectedMedia3DebugAndroidTest`) run on the connected device via gradle's own adb,
    so pin `ANDROID_SERIAL` and
-  hold the `/tmp/agent/adb-phone.lock` flock around the run to coordinate with concurrent sessions.
+  hold the `~/temp/agent/adb-phone.lock` flock around the run to coordinate with concurrent sessions.
    CAVEAT:
    AGP
   UNINSTALLS both the app and the test APK after a connected run,

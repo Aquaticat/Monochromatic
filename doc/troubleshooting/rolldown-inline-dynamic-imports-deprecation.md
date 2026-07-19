@@ -96,7 +96,7 @@ Verified with:
 The fixture contains one literal dynamic import:
 
 ```ts
-// /tmp/agent/tsdown-inline-fixture.ts
+// ~/temp/agent/tsdown-inline-fixture.ts
 export async function loadValue(): Promise<unknown> {
   return await import('./tsdown-inline-value.ts');
 }
@@ -107,7 +107,7 @@ export async function loadValue(): Promise<unknown> {
 This invocation emits the warning despite `logLevel: 'silent'` and prints `1` for the output count:
 
 ```sh
-node --input-type=module --eval "import { build } from 'tsdown'; const outputs = await build({ config: false, entry: '/tmp/agent/tsdown-inline-fixture.ts', write: false, clean: false, dts: false, logLevel: 'silent', outputOptions: { inlineDynamicImports: true } }); console.log(outputs[0].chunks.length); await Promise.all(outputs.map((output) => output[Symbol.asyncDispose]()));"
+node --input-type=module --eval "import { build } from 'tsdown'; const outputs = await build({ config: false, entry: '${HOME}/temp/agent/tsdown-inline-fixture.ts', write: false, clean: false, dts: false, logLevel: 'silent', outputOptions: { inlineDynamicImports: true } }); console.log(outputs[0].chunks.length); await Promise.all(outputs.map((output) => output[Symbol.asyncDispose]()));"
 ```
 
 Observed output:
@@ -122,7 +122,7 @@ WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false
 The supported equivalent emits no warning and still prints one output:
 
 ```sh
-node --input-type=module --eval "import { build } from 'tsdown'; const outputs = await build({ config: false, entry: '/tmp/agent/tsdown-inline-fixture.ts', write: false, clean: false, dts: false, logLevel: 'silent', outputOptions: { codeSplitting: false } }); console.log(outputs[0].chunks.length); await Promise.all(outputs.map((output) => output[Symbol.asyncDispose]()));"
+node --input-type=module --eval "import { build } from 'tsdown'; const outputs = await build({ config: false, entry: '${HOME}/temp/agent/tsdown-inline-fixture.ts', write: false, clean: false, dts: false, logLevel: 'silent', outputOptions: { codeSplitting: false } }); console.log(outputs[0].chunks.length); await Promise.all(outputs.map((output) => output[Symbol.asyncDispose]()));"
 ```
 
 Observed output:

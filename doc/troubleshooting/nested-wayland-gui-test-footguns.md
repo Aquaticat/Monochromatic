@@ -99,11 +99,11 @@ session.
    a bare "process started"
   or "state file exists" signal is NOT sufficient.
 - Short socket paths:
-   create sockets under `/tmp/agent/` (`mkdir --parents /tmp/agent;
-  chmod 700 /tmp/agent`).
+   create sockets under `~/temp/agent/`
+  (`mkdir --parents "${HOME}/temp/agent"; chmod 700 "${HOME}/temp/agent"`).
    Tradeoff:
-   fixed shared prefix rather than per-session isolation;
-  use unique basenames.
+   current account home makes the prefix longer;
+  use unique short basenames and verify the complete socket path remains within `SUN_LEN`.
 - Process cleanup while driving manually:
    prefer asking the compositor to exit over signals
   (`quit` on the control socket);

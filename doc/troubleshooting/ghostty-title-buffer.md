@@ -28,10 +28,10 @@ not JavaScript character-counted.
 Verified source clone:
 
 ```sh
-mkdir --parents /tmp/agent
-chmod 700 /tmp/agent
-gh repo clone ghostty-org/ghostty /tmp/agent/ghostty-title-buffer-269 -- --depth 1
-git -C /tmp/agent/ghostty-title-buffer-269 rev-parse HEAD
+mkdir --parents ${HOME}/temp/agent
+chmod 700 ${HOME}/temp/agent
+gh repo clone ghostty-org/ghostty ${HOME}/temp/agent/ghostty-title-buffer-269 -- --depth 1
+git -C ${HOME}/temp/agent/ghostty-title-buffer-269 rev-parse HEAD
 # 63e75e86c282ca1d07de9588f0c2cfc268b2621b
 ```
 
@@ -59,7 +59,7 @@ The relevant source still contains the fixed buffer and reject branch in
 `ghostty-org/ghostty@63e75e86c282ca1d07de9588f0c2cfc268b2621b`:
 
 ```sh
-cd /tmp/agent/ghostty-title-buffer-269
+cd ${HOME}/temp/agent/ghostty-title-buffer-269
 rg --line-number "change title requested|var buf: \\[256\\]u8|title\\.len >= buf\\.len" src/termio/stream_handler.zig
 # 1013:        var buf: [256]u8 = undefined;
 # 1014:        if (title.len >= buf.len) {
@@ -69,7 +69,7 @@ rg --line-number "change title requested|var buf: \\[256\\]u8|title\\.len >= buf
 A minimal Zig harness reproduces the branch predicate from Ghostty's source:
 
 ```zig
-// /tmp/agent/ghostty-title-buffer-check.zig
+// ~/temp/agent/ghostty-title-buffer-check.zig
 const std = @import("std");
 
 pub fn main() void {
@@ -82,7 +82,7 @@ pub fn main() void {
 ```
 
 ```sh
-cd /tmp/agent
+cd ${HOME}/temp/agent
 zig run ghostty-title-buffer-check.zig
 # title_len=255 ignored=false
 # title_len=256 ignored=true

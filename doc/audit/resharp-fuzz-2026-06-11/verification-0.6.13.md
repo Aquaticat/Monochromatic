@@ -239,8 +239,8 @@ These are not claimed fixed;
 ## Reproduce
 
 ```bash
-# /tmp/agent/resharp-0613-probe/Cargo.toml: resharp = "=0.6.13"
-cd /tmp/agent/resharp-0613-probe
+# ${HOME}/temp/agent/resharp-0613-probe/Cargo.toml: resharp = "=0.6.13"
+cd ${HOME}/temp/agent/resharp-0613-probe
 cargo run            # debug: assertions + overflow-checks ON
 cargo run --release  # release: both OFF
 ```

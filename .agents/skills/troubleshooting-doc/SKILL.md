@@ -318,13 +318,13 @@ disposable upstream clone.
 1. Clone the upstream source into a fresh,
     private,
     unpredictable
-   directory under `/tmp/agent/`,
+   directory under `~/temp/agent/`,
     created with `mktemp --directory`
-   (or an equivalently private throwaway workspace under `/tmp/agent/`).
+   (or an equivalently private throwaway workspace under `~/temp/agent/`).
    Before first use,
     ensure the root exists with private permissions:
-   `mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
-   Never reuse an existing `/tmp/agent/<repo>` clone or any other
+   `mkdir --parents "${HOME}/temp/agent"; chmod 700 "${HOME}/temp/agent"`.
+   Never reuse an existing `~/temp/agent/<repo>` clone or any other
    pre-existing directory for this step.
 2. Confirm the clone's `origin` URL and checked-out commit/tag match the
    upstream source cited in the doc before editing.

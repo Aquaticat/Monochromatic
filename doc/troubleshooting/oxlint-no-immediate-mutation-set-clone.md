@@ -247,7 +247,7 @@ The source clone commit was `d8c6b550c8802cc68f8e404f279cdc603692b3b6`.
 Runnable harness:
 
 ```bash
-scratch_dir=$(mktemp --directory /tmp/agent/oxlint-no-immediate-mutation.verify.XXXXXXXX)
+scratch_dir=$(mktemp --directory ${HOME}/temp/agent/oxlint-no-immediate-mutation.verify.XXXXXXXX)
 cat > "$scratch_dir/cases.ts" <<'TS'
 const setFromArray = new Set([1, 2]);
 setFromArray.add(3);
@@ -512,7 +512,7 @@ The target directory was removed from the disposable clone,
 and the successful verification used a target directory outside `/tmp`:
 
 ```bash
-# /tmp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4
+# ${HOME}/temp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4
 env CARGO_TARGET_DIR=/var/home/user/temp/oxc-no-immediate-mutation-target \
   cargo test --package oxc_linter no_immediate_mutation::test
 ```

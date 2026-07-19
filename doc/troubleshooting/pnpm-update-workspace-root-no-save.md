@@ -280,7 +280,7 @@ importers:
 A throwaway worktree verified that recursive update reaches the stale importers and rewrites only `pnpm-lock.yaml` when `--no-save --lockfile-only` is used:
 
 ```shell
-# /tmp/agent/monochromatic-pnpm-lockfile-only-20260626
+# ${HOME}/temp/agent/monochromatic-pnpm-lockfile-only-20260626
 /var/home/user/.local/share/mise/installs/pnpm/11.9.0/pnpm \
   update --recursive --no-save --lockfile-only --reporter append-only
 

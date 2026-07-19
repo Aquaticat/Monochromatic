@@ -349,9 +349,10 @@ on dotnet alone.
 
 ## Environments, clones, and key paths
 
-All scratch lives under `/tmp/agent` (recreate with `mkdir -p /tmp/agent; chmod 700
-/tmp/agent` if missing).
- Do not delete audit artifacts there;
+Historical artifacts were recorded under `/tmp/agent`.
+Recreate current scratch under `~/temp/agent` with
+`mkdir --parents "${HOME}/temp/agent"; chmod 700 "${HOME}/temp/agent"` if missing.
+Do not delete audit artifacts there;
  the user cleans up.
 
 - Pristine rust clone (do not modify,
@@ -373,7 +374,7 @@ All scratch lives under `/tmp/agent` (recreate with `mkdir -p /tmp/agent; chmod 
    binary `/tmp/agent/repro/target/release/repro`.
    Rebuild
   after editing:
-   `cd /tmp/agent/repro && cargo build --release` (raw `cargo` is
+   `cd "${HOME}/temp/agent/repro" && cargo build --release` (raw `cargo` is
   correct here;
    this crate is NOT part of the Monochromatic workspace,
    so the
@@ -394,7 +395,7 @@ All scratch lives under `/tmp/agent` (recreate with `mkdir -p /tmp/agent; chmod 
    or it prints "You must install .
   NET".
    Rebuild:
-   `cd /tmp/agent/dnharness
+   `cd "${HOME}/temp/agent/dnharness"
   && DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_ROOT=... <dotnet> build -c Release`.
 - Lean reference:
    `/var/home/user/Downloads/extended-regexes` (Zhuchko,
@@ -542,7 +543,7 @@ plus translator flags `dot_matches_new_line`,
 ### dnharness (dotnet, secondary)
 
 `export DOTNET_ROOT=/home/user/.local/share/mise/installs/dotnet/10.0.300` first.
-`echo '<hexpat> <hexhay>' | /tmp/agent/dnharness/bin/Release/net10.0/dnharness`.
+`echo '<hexpat> <hexhay>' | "${HOME}/temp/agent/dnharness/bin/Release/net10.0/dnharness"`.
 Throws `err=UnsupportedPatternException` on constructs it cannot parse (nested
 lookarounds,
  some complements,
@@ -596,10 +597,10 @@ lookarounds,
   ```sh
   cd /var/home/user/Downloads/extended-regexes
   export PATH="$HOME/.elan/bin:$PATH"
-  head -3 /tmp/agent/<round>.lean > /tmp/agent/hdr.txt
-  tail -n +4 /tmp/agent/<round>.lean > /tmp/agent/ev.txt
-  split -n l/16 -d --additional-suffix=.e /tmp/agent/ev.txt /tmp/agent/Chunk_
-  for f in /tmp/agent/Chunk_*.e; do n=$(basename "$f" .e|sed 's/Chunk_//'); cat /tmp/agent/hdr.txt "$f" > "<round>_chunk_$n.lean"; done
+  head -3 ${HOME}/temp/agent/<round>.lean > ${HOME}/temp/agent/hdr.txt
+  tail -n +4 ${HOME}/temp/agent/<round>.lean > ${HOME}/temp/agent/ev.txt
+  split -n l/16 -d --additional-suffix=.e ${HOME}/temp/agent/ev.txt ${HOME}/temp/agent/Chunk_
+  for f in ${HOME}/temp/agent/Chunk_*.e; do n=$(basename "$f" .e|sed 's/Chunk_//'); cat ${HOME}/temp/agent/hdr.txt "$f" > "<round>_chunk_$n.lean"; done
   for f in <round>_chunk_*.lean; do n=$(basename "$f" .lean|sed 's/<round>_chunk_//'); timeout 1800 lake env lean "$f" 2>/dev/null | grep '^R' > "<round>_out_$n.txt" & done; wait
   ```
 
@@ -608,10 +609,10 @@ lookarounds,
 
 - Rust side of a round (parallelize;
    single-process `--batch` is the bottleneck):
-  `split -n l/16 -d --additional-suffix=.p <round>_pairs.txt /tmp/agent/Rp_`;
-  run `repro --batch < Rp_NN > /tmp/agent/Rr_NN` in parallel;
+  `split -n l/16 -d --additional-suffix=.p <round>_pairs.txt "${HOME}/temp/agent/Rp_"`;
+  run `repro --batch < Rp_NN > "${HOME}/temp/agent/Rr_NN"` in parallel;
    then
-  `cat /tmp/agent/Rr_*.txt > <round>_rust.txt` (glob sorts numerically,
+  `cat "${HOME}"/temp/agent/Rr_*.txt > <round>_rust.txt` (glob sorts numerically,
    preserving
   index alignment).
 

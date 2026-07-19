@@ -121,7 +121,7 @@ Source files read:
 ### Validation run
 
 ```bash
-cd /tmp/agent/pi-context-20260615
+cd ${HOME}/temp/agent/pi-context-20260615
 npm install
 npm run typecheck   # passes
 npm audit           # 2 vulnerabilities, transitive through @earendil-works/pi-coding-agent

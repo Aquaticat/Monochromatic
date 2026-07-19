@@ -316,8 +316,8 @@ than fixing the engine;
    never stage those.
    `cli-git` rejects `-A`/`.`/pathspec-less
   commits by design.
-- Scratch lives under `/tmp/agent` (`mkdir -p /tmp/agent; chmod 700` if
-  missing).
+- Current scratch lives under `~/temp/agent`
+  (`mkdir --parents "${HOME}/temp/agent"; chmod 700 "${HOME}/temp/agent"` if missing).
    The user cleans up;
    do not delete audit artifacts.
 

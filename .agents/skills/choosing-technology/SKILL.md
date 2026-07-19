@@ -464,7 +464,7 @@ and skill revision do not participate in collision identity.
 
 Before each report edit:
 
-1. Ensure `/tmp/agent/` and `/tmp/agent/technology-vet-locks/` exist with private permissions.
+1. Ensure `~/temp/agent/` and `~/temp/agent/technology-vet-locks/` exist with private permissions.
 2. Derive a lock key from the absolute report path.
 3. Atomically create the lock with create-new semantics.
 4. Record session ID,
@@ -646,7 +646,7 @@ and aggregators are leads or corroboration.
 
 ## Open-source technology gates
 
-Clone every serious alternative and finalist under a private `/tmp/agent/` root using the repository
+Clone every serious alternative and finalist under a private `~/temp/agent/` root using the repository
 cloning convention.
 Record exact clone path and revision.
 Do not recommend from registry metadata,

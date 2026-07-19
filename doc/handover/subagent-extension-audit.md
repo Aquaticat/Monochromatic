@@ -116,7 +116,7 @@ All containerized validation runs used a 2 GB memory cap and 2 CPU cap.
 ## Evidence rules
 
 - Do not recommend a candidate from metadata alone.
-- Clone serious open-source candidates under `/tmp/agent/` and record exact paths.
+- Clone serious open-source candidates under `~/temp/agent/` and record exact paths.
 - Read production source, tests, CI, dependency manifests, and security-sensitive boundaries.
 - Search for fuzzing, property testing, mutation testing, and coverage evidence; record absence explicitly.
 - Run each candidate's complete validation task and exercise the Pi integration boundary where feasible.

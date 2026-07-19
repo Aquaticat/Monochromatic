@@ -8,7 +8,7 @@
 Implement the oxlint `unicorn/no-immediate-mutation` replacement work:
 
 - Document the upstream oxlint behavior under `doc/troubleshooting/` using the troubleshooting-doc process.
-- Auto-prototype the Rust-side upstream behavior in a fresh `/tmp/agent` clone.
+- Auto-prototype Rust-side upstream behavior in a fresh clone under `~/temp/agent`.
 - Disable oxlint's built-in `unicorn/no-immediate-mutation` rule in repo config.
 - Add a custom `no-restricted-syntax/no-immediate-mutation` rule that preserves the efficient Set/Map clone-plus-mutate pattern.
 - Keep this handover updated for auto-compaction recovery.
@@ -82,7 +82,7 @@ Prototype changes made:
 Prototype verification command started with process tool:
 
 ```bash
-# /tmp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4
+# ${HOME}/temp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4
 cargo test --package oxc_linter no_immediate_mutation::test
 ```
 
