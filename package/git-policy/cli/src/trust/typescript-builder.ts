@@ -175,8 +175,10 @@ export async function buildTypeScriptCandidate({
    */
   const moduleIds = new Set(bundle.output
     .flatMap(function outputModuleIds(chunk,) {
-    return chunk.type === 'chunk' ? chunk.moduleIds
-      .map(modulePath,) : [];
+    return chunk.type === 'chunk' ? Array.from(
+      chunk.moduleIds,
+      modulePath,
+    ) : [];
   },),);
   sources.forEach(function assertIncluded(source,) {
     if (!moduleIds.has(source.canonicalPath,))

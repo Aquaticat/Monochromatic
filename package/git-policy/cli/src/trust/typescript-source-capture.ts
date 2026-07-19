@@ -35,6 +35,11 @@ const ARTIFACT_RUNTIME_PACKAGE_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Domain absence when bare specifier does not name package.
+ */
+const PACKAGE_NAME_NOT_FOUND: unique symbol = Symbol('bare specifier does not name package');
+
+/**
  * Removes Rolldown query suffix from resolved module ID.
  *
  * @param id - resolved module ID
@@ -64,30 +69,30 @@ export function modulePath(id: string,): string {
  *
  * @returns unscoped first segment,
  * scoped first two segments,
- * or null for non-package syntax
+ * or domain absence for non-package syntax
  *
  * @example
  * ```ts
  * artifactPackageName('\@scope/example/subpath');
  * ```
  */
-function artifactPackageName(specifier: string,): string | null {
+function artifactPackageName(specifier: string,): string | typeof PACKAGE_NAME_NOT_FOUND {
   if ((specifier === '') || specifier.startsWith('#',))
-    return null;
+    return PACKAGE_NAME_NOT_FOUND;
   /**
    * First package path delimiter.
    */
   const firstSlash = specifier.indexOf('/',);
   if (!specifier.startsWith('@',)) {
     if (firstSlash === 0)
-      return null;
+      return PACKAGE_NAME_NOT_FOUND;
     return firstSlash === (-1) ? specifier : specifier.slice(
       0,
       firstSlash,
     );
   }
   if (firstSlash <= 1)
-    return null;
+    return PACKAGE_NAME_NOT_FOUND;
   /**
    * Delimiter after scoped package name.
    */
@@ -99,7 +104,7 @@ function artifactPackageName(specifier: string,): string | null {
    * End of scoped package name.
    */
   const packageEnd = secondSlash === (-1) ? specifier.length : secondSlash;
-  return packageEnd === (firstSlash + 1) ? null : specifier.slice(
+  return packageEnd === (firstSlash + 1) ? PACKAGE_NAME_NOT_FOUND : specifier.slice(
     0,
     packageEnd,
   );
@@ -112,7 +117,7 @@ function artifactPackageName(specifier: string,): string | null {
  *
  * @returns absolute installed module path
  *
- * @throws {TypeScriptBuildError} when installed artifact does not provide import
+ * @throws When installed artifact does not provide import
  *
  * @example
  * ```ts
@@ -138,7 +143,7 @@ function artifactImportPath(specifier: string,): string {
  *
  * @param sourcePath - canonical source path
  *
- * @throws {TypeScriptBuildError} when source escapes repository root
+ * @throws When source escapes repository root
  *
  * @example
  * ```ts
@@ -282,7 +287,7 @@ export function sourceCapturePlugin({
       if ((consumerResolved !== null)
         && ((consumerResolved.external === undefined) || (consumerResolved.external === false)))
         return consumerResolved;
-      if ((packageName !== null) && ARTIFACT_RUNTIME_PACKAGE_NAMES.has(packageName,))
+      if (((typeof packageName) !== 'symbol') && ARTIFACT_RUNTIME_PACKAGE_NAMES.has(packageName,))
         return artifactImportPath(source,);
       return consumerResolved;
     },
