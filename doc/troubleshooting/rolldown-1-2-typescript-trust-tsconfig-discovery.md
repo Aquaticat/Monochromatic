@@ -577,6 +577,10 @@ if (((typeof packageName) !== 'symbol') && ARTIFACT_RUNTIME_PACKAGE_NAMES.has(pa
 throw new TypeScriptBuildError(`Bare TypeScript package import did not resolve into bundle: ${source}`,);
 ```
 
+The unavailable scoped-subpath regression at
+`package/git-policy/cli/src/trust/typescript-builder.unit.test.ts:212-224`
+asserts that rejection remains a `TypeScriptBuildError` after Rolldown wraps plugin failures.
+
 The packed wrapper fixture installs under `/opt/cli-git`,
 outside `/work` consumer ancestry,
 at `package/git-policy/cli/src/trust/fixture/built-trust-consumer.ts:47-75`.
