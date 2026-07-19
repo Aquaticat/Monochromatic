@@ -16,6 +16,7 @@ import {
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { executeStoredConfig, } from './config-loader.ts';
 import { writePrivateFile, } from './registry-io.ts';
+import { TypeScriptBuildError, } from './typescript-build-error.ts';
 import { buildTypeScriptCandidate, } from './typescript-builder.ts';
 
 /** Disposable TypeScript builder fixture. */
@@ -215,9 +216,7 @@ export default { policies: object({}) };
 export default { trust: { children: Boolean(missing) } };
 `,);
         const failure = await captureBuildFailure(fixture,);
-        expect(failure,).toBeInstanceOf(Error,);
-        if (Error.isError(failure,))
-          expect(failure.message,).toContain('Bare TypeScript package import did not resolve into bundle',);
+        expect(failure,).toBeInstanceOf(TypeScriptBuildError,);
       },
     },),
     it({
