@@ -274,7 +274,9 @@ export function sourceCapturePlugin({
        * Manifest package name for root or subpath import.
        */
       const packageName = artifactPackageName(source,);
-      if ((source === CLI_GIT_PACKAGE_IMPORT) || (source === CLI_GIT_SOURCE_IMPORT))
+      if (((typeof packageName) !== 'symbol')
+        && (packageName === CLI_GIT_PACKAGE_IMPORT)
+        && ((source === CLI_GIT_PACKAGE_IMPORT) || (source === CLI_GIT_SOURCE_IMPORT)))
         return installedAuthoringSourcePath;
       /**
        * Consumer-owned package resolution remains first.
@@ -289,7 +291,7 @@ export function sourceCapturePlugin({
         return consumerResolved;
       if (((typeof packageName) !== 'symbol') && ARTIFACT_RUNTIME_PACKAGE_NAMES.has(packageName,))
         return artifactImportPath(source,);
-      return consumerResolved;
+      throw new TypeScriptBuildError(`Bare TypeScript package import did not resolve into bundle: ${source}`,);
     },
     async load(id,) {
       /**

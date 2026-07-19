@@ -209,6 +209,18 @@ export default { policies: object({}) };
       },
     },),
     it({
+      name: 'rejects unavailable scoped package subpath before output generation',
+      fn: async function testUnavailablePackage() {
+        await using fixture = await createFixture(`import missing from '@missing/package/subpath';
+export default { trust: { children: Boolean(missing) } };
+`,);
+        const failure = await captureBuildFailure(fixture,);
+        expect(failure,).toBeInstanceOf(Error,);
+        if (failure instanceof Error)
+          expect(failure.message,).toContain('Bare TypeScript package import did not resolve into bundle',);
+      },
+    },),
+    it({
       name: 'contains package asset within sole JavaScript bundle',
       fn: async function testPackageAsset() {
         await using fixture = await createFixture(`import value from 'asset-package';\nexport default { trust: { children: Boolean(value) } };\n`,);
