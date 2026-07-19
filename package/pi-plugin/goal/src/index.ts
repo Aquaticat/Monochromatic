@@ -49,6 +49,7 @@ export * from './effects.ts';
 export * from './events.ts';
 export * from './footer.ts';
 export * from './lifecycle.ts';
+export * from './lifecycle-services.ts';
 export * from './manual-review-dialog.ts';
 export * from './message.ts';
 export * from './prompt.ts';

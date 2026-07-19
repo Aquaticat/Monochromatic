@@ -66,8 +66,12 @@ After Pi fully settles,
 the extension emits at most one continuation when the exact generation remains active,
 Pi is idle,
 no human steering or follow-up is pending,
+no live `@aliou/pi-processes` process is observed,
 and the run was not aborted.
 Pi-owned retries and overflow compaction finish before this decision.
+A live process leaves the goal active but suppresses the goal-owned turn.
+Process completion alerts retain their own configured turn behavior,
+so the goal does not poll or override process notification preferences.
 
 ## Independent completion review
 

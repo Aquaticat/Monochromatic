@@ -21,7 +21,7 @@ import type {
   GoalCompletionReviewer,
   ValidGoalCompletionRequest,
 } from './completion-types.ts';
-import type { GoalLifecycleHandle, } from './lifecycle.ts';
+import type { GoalLifecycleHandle, } from './lifecycle-services.ts';
 
 /**
  * Tool arguments submitted by primary model.

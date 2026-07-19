@@ -22,7 +22,7 @@ import type { GoalCompletionResult, } from './completion-types.ts';
 import {
   defaultNow,
   type GoalLifecycleHandle,
-} from './lifecycle.ts';
+} from './lifecycle-services.ts';
 import {
   type ManualGoalReviewPrompt,
   promptManualGoalReview,

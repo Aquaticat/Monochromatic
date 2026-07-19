@@ -664,6 +664,8 @@ await describe({
         expect(prompt,).toContain('"Ship the exact feature"',);
         expect(prompt,).toContain('generation-1',);
         expect(prompt,).toContain('Do not redefine the objective',);
+        expect(prompt,).toContain('no background process is live',);
+        expect(prompt,).toContain('Do not poll',);
         expect(prompt,).toContain('final action',);
         expect(prompt,).toContain('restored generation',);
       },

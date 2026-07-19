@@ -32,6 +32,11 @@ const NATURAL_MESSAGE_COUNT = REPLACEMENT_MESSAGE_COUNT + 1;
 const LENGTH_MESSAGE_COUNT = NATURAL_MESSAGE_COUNT + 1;
 
 /**
+ * Messages after process-gated settlement later becomes eligible.
+ */
+const PROCESS_RELEASED_MESSAGE_COUNT = LENGTH_MESSAGE_COUNT + 1;
+
+/**
  * Loaded lifecycle verification result retained for completion scenario.
  */
 type GoalFlowResult = {
@@ -141,6 +146,64 @@ async function verifyDiscoveredGoalFlow(
       .length,
     expected: LENGTH_MESSAGE_COUNT,
     message: 'length settlement continuation',
+  },);
+
+  await emitGoalEvent({
+    harness,
+    type: 'tool_result',
+    event: {
+      type: 'tool_result',
+      toolCallId: 'process-start',
+      toolName: 'process',
+      input: { action: 'start', },
+      content: [],
+      isError: false,
+      details: {
+        action: 'start',
+        success: true,
+        process: {
+          id: 'proc_runtime',
+          status: 'running',
+        },
+      },
+    },
+  },);
+  await settleGoalRun({
+    harness,
+    stopReason: 'stop',
+  },);
+  requireCount({
+    actual: harness.messages
+      .length,
+    expected: LENGTH_MESSAGE_COUNT,
+    message: 'live process settlement suppression',
+  },);
+  await emitGoalEvent({
+    harness,
+    type: 'tool_result',
+    event: {
+      type: 'tool_result',
+      toolCallId: 'process-list',
+      toolName: 'process',
+      input: { action: 'list', },
+      content: [],
+      isError: false,
+      details: {
+        action: 'list',
+        success: true,
+        processes: [],
+      },
+    },
+  },);
+  await settleGoalRun({
+    harness,
+    stopReason: 'stop',
+  },);
+  requireCount({
+    actual: harness.messages
+      .length,
+    expected: PROCESS_RELEASED_MESSAGE_COUNT,
+    message: 'process release settlement continuation',
   },);
 
   /**
@@ -286,7 +349,7 @@ async function verifyDiscoveredGoalFlow(
   },);
   return {
     harness,
-    summary: 'manifest discovery, lifecycle continuation, abort, compaction, clear, and branch reconstruction',
+    summary: 'manifest discovery, lifecycle continuation, process gating, abort, compaction, clear, and branch reconstruction',
   };
 }
 

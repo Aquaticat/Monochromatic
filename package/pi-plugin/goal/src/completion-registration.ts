@@ -23,7 +23,7 @@ import { GOAL_COMPLETE_TOOL_NAME, } from './constants.ts';
 import {
   defaultNow,
   type GoalLifecycleHandle,
-} from './lifecycle.ts';
+} from './lifecycle-services.ts';
 import { reviewGoalCompletion, } from './review-runner.ts';
 import { createGoalReviewerUnavailableHandler, } from './review-unavailable.ts';
 

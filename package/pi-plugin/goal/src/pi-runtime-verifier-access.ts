@@ -20,15 +20,15 @@ import type {
 } from './pi-runtime-verifier-harness.ts';
 
 /**
- * Retrieve sole loaded handler for lifecycle event.
+ * Retrieve loaded handlers for one lifecycle event as a sequential composite.
  *
  * @param harness - loaded goal extension harness
  *
  * @param event - lifecycle event name
  *
- * @returns sole registered handler
+ * @returns registered handlers invoked in extension registration order
  *
- * @throws when registration is absent or duplicated
+ * @throws when registration is absent
  *
  * @example
  * ```ts
@@ -50,44 +50,39 @@ function getRuntimeHandler(
   const handlers = harness.extension
     .handlers
     .get(eventName,);
-  if (handlers?.length !== 1)
-    throw new Error(`expected one ${eventName} handler, received ${handlers?.length ?? 0}`,);
-  /**
-   * Sole handler after count validation.
-   */
-  const [handler,] = handlers;
-  if (handler === undefined)
+  if ((handlers === undefined) || (handlers.length === 0))
     throw new Error(`missing ${eventName} handler`,);
   /**
-   * Narrowed handler retained across nested declaration boundary.
+   * Narrowed nonempty handler collection retained across nested function boundary.
    */
-  const loadedHandler: NonNullable<typeof handler> = handler;
+  const loadedHandlers: NonNullable<typeof handlers> = handlers;
   /**
-   * Invoke foreign lifecycle callback selected from loaded extension.
+   * Invoke every foreign callback using Pi's registration order.
    *
    * @param input - externally owned lifecycle payload and Pi context
    *
-   * @returns loaded handler result
-   *
-   * @mutates input - loadedHandler may mutate or retain event and context references
+   * @mutates input - loaded handlers may mutate or retain event and context references
    *
    * @example
    * ```ts
-   * await invokeLoadedHandler({ event: { type: 'agent_settled' }, context });
+   * await invokeLoadedHandlers({ event: { type: 'agent_settled' }, context });
    * ```
    */
-  async function invokeLoadedHandler(
+  async function invokeLoadedHandlers(
     input: ForeignBorrowed<{
       readonly event: Readonly<Record<string, unknown>>;
       readonly context: ExtensionContext;
     }>,
-  ): Promise<unknown> {
-    return await loadedHandler(
-      input.event,
-      input.context,
-    );
+  ): Promise<void> {
+    for (const handler of loadedHandlers) {
+      // oxlint-disable-next-line no-await-in-loop -- Pi lifecycle handlers chain in registration order; parallel dispatch would not model the consumer boundary.
+      await handler(
+        input.event,
+        input.context,
+      );
+    }
   }
-  return invokeLoadedHandler;
+  return invokeLoadedHandlers;
 }
 
 /**

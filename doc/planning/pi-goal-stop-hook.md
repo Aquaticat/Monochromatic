@@ -429,6 +429,7 @@ emit at most one continuation when all conditions hold:
 - The runtime epoch is current.
 - Pi is idle.
 - Pi has no steering or follow-up message pending.
+- No live `@aliou/pi-processes` process is observed in the current runtime.
 - No kickoff or continuation for the same settlement is already emitted.
 - The final outcome was not a user abort.
 
@@ -480,6 +481,17 @@ Pending steering or follow-up input always wins over goal continuation.
 When `ctx.hasPendingMessages()` is true,
 do not enqueue a goal message.
 The pending turn receives the active goal system prompt naturally.
+
+### Live background processes
+
+Observe successful `process` start and list tool results plus `ad-process:update` lifecycle messages.
+Treat `running`,
+`terminating`,
+and `terminate_timeout` as live states in the current extension runtime.
+When any observed process remains live,
+do not enqueue a goal continuation.
+Keep the goal active and let process notification preferences decide whether process completion starts a later turn.
+Do not poll or override those preferences.
 
 ### Duplicate prevention
 
@@ -1099,6 +1111,8 @@ Cover every settlement branch:
 - pending steering suppresses continuation
 - pending follow-up suppresses continuation
 - non-idle context suppresses continuation
+- each live background-process status suppresses continuation
+- process lifecycle completion permits a later eligible settlement to continue
 - restored active state does not trigger
 - one settlement produces at most one message
 - later settlement may produce the next sequence
@@ -1301,6 +1315,10 @@ Exercise these flows through Pi's actual extension loader:
 
 - Start a goal and inspect the visible custom kickoff.
 - Let the model stop without completion and observe one continuation.
+- Start a disposable background process,
+  let the model settle,
+  and observe no goal continuation while the process remains live.
+- Finish the disposable process and verify its configured alert behavior owns any later turn.
 - Force output exhaustion and observe continuation.
 - Force overflow compaction and observe no pre-compaction duplicate,
   then one post-recovery continuation.
@@ -1467,6 +1485,7 @@ Issue #360 is complete only when:
 - Goal state reconstructs from the active branch only.
 - Every generation-sensitive callback revalidates current state.
 - The stop hook continues exactly once at eligible settlement.
+- A live background process makes settlement ineligible without terminating the goal.
 - User abort produces no goal-owned action.
 - Compaction and retry produce no duplicate continuation.
 - Reviewer approval,

@@ -17,18 +17,19 @@ import type {
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Exact lifecycle events installed by goal default factory.
+ * Exact lifecycle handler counts installed by goal default factory.
  */
-const EXPECTED_EVENTS: readonly string[] = [
-  'agent_end',
-  'agent_settled',
-  'before_agent_start',
-  'message_end',
-  'session_compact',
-  'session_shutdown',
-  'session_start',
-  'session_tree',
-];
+const EXPECTED_EVENT_HANDLER_COUNTS = {
+  agent_end: 1,
+  agent_settled: 1,
+  before_agent_start: 1,
+  message_end: 2,
+  session_compact: 1,
+  session_shutdown: 1,
+  session_start: 1,
+  session_tree: 1,
+  tool_result: 1,
+} as const satisfies Readonly<Record<string, number>>;
 
 /**
  * Public built module shape required by consumers and deterministic verifiers.
@@ -226,19 +227,34 @@ async function verifyBuiltGoalExtension(): Promise<string> {
   const actualEvents = [...harness.events
     .keys(),]
     .toSorted();
-  if (JSON.stringify(actualEvents,) !== JSON.stringify(EXPECTED_EVENTS,))
+  /**
+   * Sorted expected lifecycle inventory for exact name comparison.
+   */
+  const expectedEvents = Object.keys(EXPECTED_EVENT_HANDLER_COUNTS,)
+    .toSorted();
+  if (JSON.stringify(actualEvents,) !== JSON.stringify(expectedEvents,))
     throw new Error(`unexpected lifecycle inventory: ${actualEvents.join(', ')}`,);
   /**
-   * Events required to have exactly one handler each.
+   * Expected handler counts with safe dynamic event lookup.
    */
-  const duplicateEvent = actualEvents.find(function hasWrongCount(event,) {
+  const expectedEventHandlerCounts = new Map(Object.entries(EXPECTED_EVENT_HANDLER_COUNTS,),);
+  /**
+   * First event whose loaded handler count differs from contract.
+   */
+  const wrongCountEvent = actualEvents.find(function hasWrongCount(event,) {
+    /**
+     * Expected handler count for exact event name.
+     */
+    const expectedCount = expectedEventHandlerCounts.get(event,);
+    if (expectedCount === undefined)
+      return true;
     return harness.events
       .get(event,)
       ?.length
-      !== 1;
+      !== expectedCount;
   },);
-  if (duplicateEvent !== undefined)
-    throw new Error(`expected one ${duplicateEvent} handler`,);
+  if (wrongCountEvent !== undefined)
+    throw new Error(`unexpected ${wrongCountEvent} handler count`,);
   return 'pi-goal built extension verified: one command, one completion tool, exact lifecycle handlers, no tool_call blocker';
 }
 

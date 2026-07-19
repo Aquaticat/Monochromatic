@@ -4,8 +4,6 @@
  * @module
  */
 
-import { randomUUID, } from 'node:crypto';
-
 import type {
   AgentEndEvent,
   AgentSettledEvent,
@@ -21,6 +19,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { registerBackgroundProcessMonitor, } from './background-process-monitor.ts';
 import { parseGoalCommand, } from './command.ts';
 import {
   clearGoal,
@@ -31,6 +30,12 @@ import {
 } from './controller.ts';
 import { applyGoalEffects, } from './effects.ts';
 import { goalEventsFromBranch, } from './events.ts';
+import {
+  defaultCreateId,
+  defaultNow,
+  type GoalLifecycleHandle,
+  type GoalLifecycleServices,
+} from './lifecycle-services.ts';
 import { buildActiveGoalPrompt, } from './prompt.ts';
 import { reduceGoalEvents, } from './reducer.ts';
 import {
@@ -42,69 +47,6 @@ import type {
   GoalControllerTransition,
   GoalGenerationRotatedEvent,
 } from './types.ts';
-
-/**
- * Injectable nondeterministic lifecycle services.
- */
-type GoalLifecycleServices = {
-  /**
-   * Mint unique run, generation, runtime, and message identities.
-   */
-  readonly createId: () => string;
-
-  /**
-   * Read current ISO timestamp.
-   */
-  readonly now: () => string;
-};
-
-/**
- * Shared runtime boundary used by completion-review registration.
- */
-type GoalLifecycleHandle = {
-  /**
-   * Read current immutable controller snapshot.
-   */
-  readonly currentController: () => GoalControllerState;
-
-  /**
-   * Commit pure transition and execute ordered Pi effects.
-   */
-  readonly applyTransition: (
-    input: {
-      readonly transition: GoalControllerTransition;
-      readonly context: ForeignBorrowed<ExtensionContext>;
-    },
-  ) => void;
-};
-
-/**
- * Default cryptographically unique lifecycle identity source.
- *
- * @returns UUID identity
- *
- * @example
- * ```ts
- * defaultCreateId();
- * ```
- */
-function defaultCreateId(): string {
-  return randomUUID();
-}
-
-/**
- * Default wall-clock source for persisted transition timestamps.
- *
- * @returns current ISO timestamp
- *
- * @example
- * ```ts
- * defaultNow();
- * ```
- */
-function defaultNow(): string {
-  return new Date().toISOString();
-}
 
 /**
  * Register goal state lifecycle without model-completion review tool.
@@ -138,6 +80,10 @@ function registerGoalLifecycle(
    * Runtime identity invalidating callbacks from prior extension instances.
    */
   const runtimeEpoch = services.createId();
+  /**
+   * Passive runtime-local view of background work that must settle before goal continuation.
+   */
+  const backgroundProcessMonitor = registerBackgroundProcessMonitor(pi,);
   /**
    * Controller ownership belongs to this single extension runtime closure.
    */
@@ -321,13 +267,15 @@ function registerGoalLifecycle(
   }
 
   /**
-   * Continue current active goal after final settlement.
+   * Continue current active goal after final settlement when no process remains live.
    *
    * @param context - active session context
    *
    * @mutates context - context.hasPendingMessages may change context-owned Pi state, and emitted effects may update UI
    */
   function settleCurrentGoal(context: ForeignBorrowed<ExtensionContext>,): void {
+    if (backgroundProcessMonitor.hasLiveBackgroundProcess())
+      return;
     applyTransition({
       transition: settleGoal({
         controller,
@@ -452,12 +400,4 @@ function registerGoalLifecycle(
   };
 }
 
-export {
-  defaultCreateId,
-  defaultNow,
-  registerGoalLifecycle,
-};
-export type {
-  GoalLifecycleHandle,
-  GoalLifecycleServices,
-};
+export { registerGoalLifecycle, };

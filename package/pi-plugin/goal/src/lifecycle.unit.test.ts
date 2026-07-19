@@ -291,6 +291,188 @@ await describe({
       },
     },),
     it({
+      name: 'suppresses continuation while observed background processes remain live',
+      fn: async () => {
+        /** Runtime that starts one background process before goal activation. */
+        const harness = lifecycleHarness([],);
+        await harness.handlers.tool_result?.(
+          {
+            type: 'tool_result',
+            toolCallId: 'process-start',
+            toolName: 'process',
+            input: { action: 'start', },
+            content: [],
+            isError: false,
+            details: {
+              action: 'start',
+              success: true,
+              process: {
+                id: 'proc_1',
+                status: 'running',
+              },
+            },
+          },
+          harness.context,
+        );
+        await harness.command('Wait for background verification', harness.context,);
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.appended,).toHaveLength(1,);
+        expect(harness.messages,).toHaveLength(1,);
+        await requiredHandler(harness, 'message_end',)(
+          {
+            type: 'message_end',
+            message: {
+              role: 'custom',
+              customType: 'ad-process:update',
+              content: 'Process completed',
+              display: true,
+              details: {
+                kind: 'lifecycle',
+                processId: 'proc_1',
+                status: 'exited',
+              },
+            },
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.appended,).toHaveLength(2,);
+        expect(harness.messages,).toHaveLength(2,);
+      },
+    },),
+    it({
+      name: 'ignores delayed start result after terminal lifecycle message',
+      fn: async () => {
+        /** Active goal runtime receiving terminal event before delayed start result. */
+        const harness = lifecycleHarness([],);
+        await harness.command('Survive process event reordering', harness.context,);
+        await requiredHandler(harness, 'message_end',)(
+          {
+            type: 'message_end',
+            message: {
+              role: 'custom',
+              customType: 'ad-process:update',
+              content: 'Process completed',
+              display: true,
+              details: {
+                kind: 'lifecycle',
+                processId: 'proc_race',
+                status: 'exited',
+              },
+            },
+          },
+          harness.context,
+        );
+        await harness.handlers.tool_result?.(
+          {
+            type: 'tool_result',
+            toolCallId: 'process-start-delayed',
+            toolName: 'process',
+            input: { action: 'start', },
+            content: [],
+            isError: false,
+            details: {
+              action: 'start',
+              success: true,
+              process: {
+                id: 'proc_race',
+                status: 'running',
+              },
+            },
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.messages,).toHaveLength(2,);
+      },
+    },),
+    it({
+      name: 'reconciles live processes from list results before continuation',
+      fn: async () => {
+        /** Active goal runtime receiving complete process-manager snapshot. */
+        const harness = lifecycleHarness([],);
+        await harness.command('Respect process list', harness.context,);
+        await harness.handlers.tool_result?.(
+          {
+            type: 'tool_result',
+            toolCallId: 'process-list',
+            toolName: 'process',
+            input: { action: 'list', },
+            content: [],
+            isError: false,
+            details: {
+              action: 'list',
+              success: true,
+              processes: [
+                { id: 'proc_timeout', status: 'terminate_timeout', },
+                { id: 'proc_terminating', status: 'terminating', },
+                { id: 'proc_done', status: 'exited', },
+              ],
+            },
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.messages,).toHaveLength(1,);
+        await requiredHandler(harness, 'message_end',)(
+          {
+            type: 'message_end',
+            message: {
+              role: 'custom',
+              customType: 'ad-process:update',
+              content: 'Process terminated',
+              display: true,
+              details: {
+                kind: 'lifecycle',
+                processId: 'proc_timeout',
+                status: 'killed',
+              },
+            },
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.messages,).toHaveLength(1,);
+        await requiredHandler(harness, 'message_end',)(
+          {
+            type: 'message_end',
+            message: {
+              role: 'custom',
+              customType: 'ad-process:update',
+              content: 'Process exited',
+              display: true,
+              details: {
+                kind: 'lifecycle',
+                processId: 'proc_terminating',
+                status: 'exited',
+              },
+            },
+          },
+          harness.context,
+        );
+        await requiredHandler(harness, 'agent_settled',)(
+          { type: 'agent_settled', },
+          harness.context,
+        );
+        expect(harness.messages,).toHaveLength(2,);
+      },
+    },),
+    it({
       name: 'reconstructs branch on tree and compaction and suppresses post-shutdown settlement',
       fn: async () => {
         /** Empty selected branch harness. */
