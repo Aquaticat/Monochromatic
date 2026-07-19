@@ -217,8 +217,17 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
     '/opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/src',
     { recursive: true, },
   );
-  if (!sourceFiles.includes('index.ts',))
-    throw new Error('packed cli-git omitted public TypeScript source entry',);
+  if ((!sourceFiles.includes('index.ts',)) || (!sourceFiles.includes('authoring.ts',)))
+    throw new Error('packed cli-git omitted executable or authoring TypeScript source entry',);
+  /**
+   * Dedicated authoring source must not pull executable startup into trust builds.
+   */
+  const authoringSource = await readFile(
+    '/opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/src/authoring.ts',
+    'utf8',
+  );
+  if (authoringSource.includes('./bin.ts',))
+    throw new Error('packed cli-git authoring source imported executable startup',);
   if (sourceFiles.some(function isDevelopmentOnlySource(path,) {
     return path.endsWith('.unit.test.ts',)
       || path.endsWith('.host-evidence.ts',)
@@ -250,5 +259,17 @@ console.log(JSON.stringify({ name: repositoryPolicyPlugin.name, exitCode: proces
     text: packageImport.stdout,
     expected: '{"name":"repository","exitCode":null}',
     context: 'packed package-root import',
+  },);
+  /**
+   * Packed manifest proving dedicated source-authoring subpath export.
+   */
+  const packageManifestSource = await readFile(
+    '/opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/package.json',
+    'utf8',
+  );
+  assertIncludes({
+    text: packageManifestSource,
+    expected: '"./ts": "./src/authoring.ts"',
+    context: 'packed authoring source export',
   },);
 }

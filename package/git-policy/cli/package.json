@@ -12,7 +12,7 @@
       "types": "./dist/final/node/index.d.mts",
       "import": "./dist/final/node/index.mjs"
     },
-    "./ts": "./src/index.ts"
+    "./ts": "./src/authoring.ts"
   },
   "bin": {
     "git": "dist/final/node/index.mjs"

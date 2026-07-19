@@ -1,13 +1,6 @@
 /**
  * Private Rolldown TypeScript trust candidate builder. @module
  */
-import { isBuiltin, } from 'node:module';
-import {
-  isAbsolute,
-  relative,
-} from 'node:path';
-import { realpath, } from 'node:fs/promises';
-import type { Plugin, } from 'rolldown';
 import {
   captureTrustCandidate,
   captureTrustSource,
@@ -17,223 +10,14 @@ import { exactBytesEqual, } from './config-loader.ts';
 import type { DiscoveredConfig, } from './config-discovery.ts';
 import { validateMjs, } from './mjs-validator.ts';
 import { TypeScriptBuildError, } from './typescript-build-error.ts';
-import { assertLiteralDynamicImports, } from './typescript-syntax-validation.ts';
+import {
+  modulePath,
+  sourceCapturePlugin,
+} from './typescript-source-capture.ts';
 import type {
   CapturedTrustSource,
   TypeScriptTrustCandidate,
 } from './types.ts';
-
-/**
- * Public cli-git package import used by trusted configs.
- */
-const CLI_GIT_PACKAGE_IMPORT = '@monochromatic-dev/git-policy-cli';
-
-/**
- * Source export used to avoid rebundling cli-git's complete executable artifact.
- */
-const CLI_GIT_SOURCE_IMPORT = '@monochromatic-dev/git-policy-cli/ts';
-
-/**
- * Removes Rolldown query suffix from resolved module ID.
- *
- * @param id - resolved module ID
- *
- * @returns filesystem portion
- */
-function modulePath(id: string,): string {
-  /**
-   * First query delimiter.
-   */
-  const queryIndex = id.indexOf('?',);
-  return queryIndex === (-1) ? id : id.slice(
-    0,
-    queryIndex,
-  );
-}
-
-/**
- * Asserts canonical path remains inside repository root.
- *
- * @param repositoryRoot - canonical root
- *
- * @param sourcePath - canonical source path
- */
-function assertRepositorySource({
-  repositoryRoot,
-  sourcePath,
-}: Readonly<{
-  repositoryRoot: string;
-  sourcePath: string;
-}>,): void {
-  /**
-   * Component-aware relative path.
-   */
-  const localPath = relative(
-    repositoryRoot,
-    sourcePath,
-  );
-  if ((localPath === '') || ((!localPath.startsWith('..',)) && (!isAbsolute(localPath,))))
-    return;
-  throw new TypeScriptBuildError(`Relative TypeScript source escaped repository root: ${sourcePath}`,);
-}
-
-/**
- * Source-capture plugin plus build-local observations.
- */
-type SourceCaptureState = Readonly<{
-  /**
-   * Source-capturing Rolldown plugin.
-   */
-  plugin: Plugin;
-  /**
-   * Exact captured source map.
-   */
-  capturedSources: ReadonlyMap<string, CapturedTrustSource>;
-  /**
-   * Bare package warning set.
-   */
-  bareImports: ReadonlySet<string>;
-}>;
-
-/**
- * Creates source-capturing Rolldown plugin.
- *
- * @param discovered - canonical TypeScript entry
- *
- * @param entrySource - exact entry snapshot
- *
- * @returns source-capturing plugin and immutable observations
- */
-function sourceCapturePlugin({
-  discovered,
-  entrySource,
-}: Readonly<{
-  discovered: DiscoveredConfig;
-  entrySource: CapturedTrustSource;
-}>,): SourceCaptureState {
-  /**
-   * Paths whose bytes belong to invalidation graph.
-   */
-  const trackedPaths = new Set<string>([entrySource.canonicalPath,],);
-  /**
-   * Exact build-local sources keyed by canonical path.
-   */
-  const capturedSources = new Map<string, CapturedTrustSource>();
-  /**
-   * Bare package imports originating in tracked sources.
-   */
-  const bareImports = new Set<string>();
-  /**
-   * Source-capturing plugin.
-   */
-  const plugin: Plugin = {
-    name: 'cli-git-trust-source-capture',
-    async resolveId(
-      source,
-      importer,
-    ) {
-      if ((importer === undefined) || isBuiltin(source,))
-        return null;
-      /**
-       * Canonical importing module when filesystem-backed.
-       */
-      const importerPath = modulePath(importer,);
-      if (!trackedPaths.has(importerPath,))
-        return null;
-      if (source === CLI_GIT_PACKAGE_IMPORT) {
-        bareImports.add(source,);
-        /**
-         * Source-level package entry lets tree shaking remove direct-executable code from stored config.
-         */
-        const resolved = await this.resolve(
-          CLI_GIT_SOURCE_IMPORT,
-          importer,
-          { skipSelf: true, },
-        );
-        if ((resolved === null) || ((resolved.external !== undefined) && (resolved.external !== false)))
-          throw new TypeScriptBuildError('cli-git source authoring export did not resolve into bundle.',);
-        return resolved;
-      }
-      if (source.startsWith('.',)) {
-        /**
-         * Rolldown-resolved local target.
-         */
-        const resolved = await this.resolve(
-          source,
-          importer,
-          { skipSelf: true, },
-        );
-        if ((resolved === null) || ((resolved.external !== undefined) && (resolved.external !== false)))
-          throw new TypeScriptBuildError(`Relative TypeScript import did not resolve into bundle: ${source}`,);
-        /**
-         * Canonical local source target.
-         */
-        const sourcePath = await realpath(modulePath(resolved.id,),);
-        assertRepositorySource({
-          repositoryRoot: discovered.repositoryRoot,
-          sourcePath,
-        },);
-        trackedPaths.add(sourcePath,);
-        return {
-          ...resolved,
-          id: sourcePath,
-          moduleSideEffects: 'no-treeshake',
-        };
-      }
-      if (isAbsolute(source,))
-        throw new TypeScriptBuildError(`Absolute TypeScript import is outside tracked graph: ${source}`,);
-      bareImports.add(source,);
-      return null;
-    },
-    async load(id,) {
-      /**
-       * Filesystem-backed path without query.
-       */
-      const sourcePath = modulePath(id,);
-      if (!trackedPaths.has(sourcePath,))
-        return null;
-      /**
-       * Exact captured bytes supplied directly to Rolldown.
-       */
-      const captured = sourcePath === entrySource.canonicalPath
-        ? entrySource
-        : await captureTrustSource(sourcePath,);
-      capturedSources.set(
-        captured.canonicalPath,
-        captured,
-      );
-      try {
-        /**
-         * Strict source text supplied to Rolldown.
-         */
-        const sourceText = new TextDecoder(
-          'utf-8',
-          { fatal: true, },
-        ).decode(captured.bytes,);
-        assertLiteralDynamicImports(this.parse(
-          sourceText,
-          {
-          lang: sourcePath.endsWith('.tsx',) ? 'tsx' : 'ts',
-          sourceType: 'module',
-          astType: 'ts',
-        },
-        ),);
-        return sourceText;
-      }
-      catch (error: unknown) {
-        throw new TypeScriptBuildError(
-          `Tracked TypeScript source is not strict UTF-8: ${sourcePath}`,
-          { cause: error, },
-        );
-      }
-    },
-  };
-  return {
-    plugin,
-    capturedSources,
-    bareImports,
-  };
-}
 
 /**
  * Immutable output fields needed by trust validation.
@@ -349,6 +133,7 @@ export async function buildTypeScriptCandidate({
     cwd: discovered.repositoryRoot,
     input: discovered.configPath,
     platform: 'node',
+    tsconfig: false,
     treeshake: true,
     transform: {
       define: {
