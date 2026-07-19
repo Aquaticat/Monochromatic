@@ -1,9 +1,5 @@
 # Clippy 0.1.98 configuration docs: unstable `clippy.toml` note hides stable Cargo lint levels
 
-> Scratch-path note:
-> `/tmp/agent` paths in this document are historical.
-> Use `~/temp/agent` for current work.
-
 ## Symptom
 
 The stable Clippy configuration page opens with this warning:

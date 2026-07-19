@@ -1,9 +1,5 @@
 # `@narumitw/pi-goal@0.12.0` blocks every Pi tool after an aborted goal turn, preventing recovery
 
-> Scratch-path note:
-> `/tmp/agent` paths in this document are historical.
-> Use `~/temp/agent` for current work.
-
 ## Symptom
 
 An active `/goal` turn that ends with `stopReason: "aborted"` transitions to paused state.
