@@ -736,6 +736,11 @@ EC4:
 XRT:
  Prefer cross-runtime patterns instead of Bun-specific implementations.
 
+HOM:
+ Production paths for current user derive from injected home or runtime homedir;
+ never hardcode username or assume `/home`.
+Environment-sensitive tests inject disposable homes.
+
 SCR:
  Never write bash/powershell scripts.
 Inline mise task logic via `shell = "node --input-type=module-typescript -e"`,
