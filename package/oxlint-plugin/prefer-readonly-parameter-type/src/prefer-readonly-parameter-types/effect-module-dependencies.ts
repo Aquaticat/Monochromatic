@@ -14,6 +14,8 @@ import {
   isExportDeclaration,
   isImportDeclaration,
   isImportEqualsDeclaration,
+  isImportTypeNode,
+  isLiteralTypeNode,
   isStringLiteral,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -34,15 +36,22 @@ export const MODULE_DEPENDENCIES_UNRESOLVED: unique symbol = Symbol(
  * Collects module reference specifier nodes authored in one source.
  *
  * Static `import`/`export ... from` declarations, `import =` external
- * references, and literal dynamic `import()` arguments name every channel
- * TypeScript name resolution can enter another module from this source.
- * A statically unknowable reference fails the whole collection closed
+ * references, literal dynamic `import()` arguments, and literal
+ * `import('...')` type queries name every channel TypeScript name
+ * resolution can enter another module from this source.
+ * A runtime-variable dynamic `import()` argument is skipped instead of
+ * failing closed: the checker types its result independently of any
+ * workspace file's content, so no other file can change this source's
+ * summaries through that call, and value flow through it stays fail-closed
+ * inside effect analysis itself.
+ * A non-literal `import()` type-query argument is statically unknowable
+ * yet does shape checker semantics, so it fails the collection closed
  * through the unresolved sentinel.
  *
  * @param sourceFile - Source whose module references are collected.
  *
  * @returns specifier nodes,
- * or unresolved sentinel when any reference is statically unknowable.
+ * or unresolved sentinel when any semantic reference is statically unknowable.
  */
 function moduleReferenceSpecifiers(
   sourceFile: SourceFile,
@@ -73,18 +82,28 @@ function moduleReferenceSpecifiers(
       specifiers.push(reference.expression,);
       continue;
     }
+    if (isImportTypeNode(node,)) {
+      /**
+       * Type-query module argument shaping checker semantics.
+       */
+      const { argument, } = node;
+      if ((!isLiteralTypeNode(argument,))
+        || (!isStringLiteral(argument.literal,)))
+        return MODULE_DEPENDENCIES_UNRESOLVED;
+      specifiers.push(argument.literal,);
+      continue;
+    }
     if (isCallExpression(node,)
       && (node.expression
         .kind
         === SyntaxKind.ImportKeyword)) {
       /**
-       * First dynamic import argument, resolvable only as string literal.
+       * First dynamic import argument, statically typed only as string literal.
        */
       const argument = node.arguments
         .at(0,);
-      if ((argument === undefined) || (!isStringLiteral(argument,)))
-        return MODULE_DEPENDENCIES_UNRESOLVED;
-      specifiers.push(argument,);
+      if ((argument !== undefined) && isStringLiteral(argument,))
+        specifiers.push(argument,);
     }
   }
   return specifiers;

@@ -33,6 +33,8 @@ export const TYPESCRIPT_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     'isImportDeclaration',
     'isImportEqualsDeclaration',
     'isImportSpecifier',
+    'isImportTypeNode',
+    'isLiteralTypeNode',
     'isMethodDeclaration',
     'isMethodSignatureDeclaration',
     'isNamedExports',

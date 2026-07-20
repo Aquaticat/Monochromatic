@@ -26,6 +26,12 @@ import {
 /** Non-declaration fixture sources scanned and persisted on a cold build. */
 const FIXTURE_SOURCE_COUNT = 3;
 
+/** Fixture sources when the runtime-variable dynamic import file joins. */
+const DYNAMIC_FIXTURE_SOURCE_COUNT = FIXTURE_SOURCE_COUNT + 1;
+
+/** Source whose runtime-variable dynamic import must not join any closure. */
+const DYNAMIC_IMPORT_SOURCE = 'export async function loadRuntime(specifier: string,): Promise<unknown> { return import(specifier); }\n';
+
 /** Caller source whose dependency closure contains the helper module. */
 const CALLER_SOURCE = "import { inspect, } from './helper.js';\nexport function caller(value: { text: string; },): string { return inspect(value); }\n";
 
@@ -238,6 +244,35 @@ await describe({
         if (summary === NO_EFFECT_SUMMARY)
           throw new Error('Expected caller effect summary.',);
         expect([...summary.referentMutatedParameterIndexes,],).toEqual([0,],);
+        releaseCycle();
+      },
+    },),
+    it({
+      name: 'keeps a runtime-variable dynamic import out of every closure',
+      fn: async () => {
+        using projectRoot = disposableFixtureRoot();
+        /** Shared fixture paths for the dynamic-import case. */
+        const paths = writeIncrementalFixture(projectRoot.path,);
+        writeFileSync(
+          join(projectRoot.path, 'dynamic.ts',),
+          DYNAMIC_IMPORT_SOURCE,
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        buildFixtureIndex(paths,);
+        /** Cold counters covering the dynamic-import source. */
+        const coldStats = effectSummaryCacheStats();
+        expect(coldStats.persistentCacheWriteCount,).toBe(DYNAMIC_FIXTURE_SOURCE_COUNT,);
+        closeSemanticBridge();
+        writeFileSync(paths.standalonePath, EDITED_STANDALONE_SOURCE,);
+        /** Warm counters after an edit unrelated to the dynamic importer. */
+        const { stats, } = runWarmCycle(paths,);
+        /* A runtime-variable import() contributes no static semantics, so
+         * the dynamic importer must keep a resolved closure instead of a
+         * whole-scope snapshot that any edit would invalidate. */
+        expect(stats.persistentSourceCacheHitCount,).toBe(FIXTURE_SOURCE_COUNT,);
+        expect(stats.directSummaryBuildCount,).toBe(1,);
+        expect(stats.persistentCacheWriteCount,).toBe(1,);
         releaseCycle();
       },
     },),
