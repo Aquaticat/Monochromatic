@@ -139,14 +139,10 @@ const MONGODB_PREFIX: &str = "\\b(mongodb";
 /// password phases, and the `@` delimiter. The delimiter-excluding user and password classes
 /// keep the phases deterministic, and dropping the non-secret host, port, replica-set, and path
 /// suffix removes the nested counters that determinized past the engine's DFA state cap.
-// concat!-split so the credential-shaped byte sequence never sits on one source
-// line: the deny-list commit gate scans this file line-by-line, and the compiled
-// rule's own shape would otherwise self-match right here.
-const MONGODB_CORE: &str = concat!(
-    "\\bmongodb(?:\\+srv)?://",
-    "[!-9;-~]{3,50}:",
-    "[!-?A-~]{3,88}@",
-);
+///
+/// This pattern text does not self-match the compiled rule (probed 2026-07-20): the rule
+/// requires `://` immediately after the scheme, but this text interposes `(?:\+srv)?`.
+const MONGODB_CORE: &str = "\\bmongodb(?:\\+srv)?://[!-9;-~]{3,50}:[!-?A-~]{3,88}@";
 
 /// Ports one rule pattern, reshaping the curl and mongodb rules per the settled decisions.
 ///

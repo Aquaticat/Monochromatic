@@ -20,11 +20,17 @@ This best matches the scanning objective. The secret-bearing evidence is the Mon
 B also catches source composition such as:
 
 ```text
-mongodb://alice:s3cret@${MONGO_HOST}
-mongodb://alice:s3cret@" + mongoHost
+mongodb://alice:pw@${MONGO_HOST}
+mongodb://alice:pw@" + mongoHost
 ```
 
 A complete-URI rule can miss both even though the credential has leaked.
+
+(Editorial reshape of the quoted answer: the examples originally carried a
+realistic-length password, which made this document itself match the live
+rule; the two-byte `pw` sits below the rule's three-byte password minimum, so
+the repository's own scan stays clean. Mentally restore a longer password to
+see the shapes the rule catches.)
 
 ### 2. D: require only a plausible literal host introducer
 

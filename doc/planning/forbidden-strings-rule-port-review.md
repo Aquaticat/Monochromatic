@@ -169,9 +169,12 @@ The kept core is deterministic because the user-information class excludes `:`
  and the password class excludes `@`,
  so the two phases and the delimiter never overlap.
 The broadening also covers connection strings a complete-URI rule would miss,
- such as an interpolated host `mongodb://alice:s3cret@${MONGO_HOST}`
- or a concatenated one `mongodb://alice:s3cret@" + mongoHost`,
- because it stops validating at the `@`.
+ such as an interpolated host `mongodb://alice:pw@${MONGO_HOST}`
+ or a concatenated one `mongodb://alice:pw@" + mongoHost`,
+ because it stops validating at the `@`
+ (the two-byte example password sits below the rule's three-byte minimum,
+ so this review document does not itself match the rule it documents;
+ a realistic password makes both shapes match).
 
 The full pi answer is preserved at `doc/planning/forbidden-strings-rule-518-pi-advice.md`.
 

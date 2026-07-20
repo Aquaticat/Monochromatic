@@ -534,8 +534,11 @@ container (no host build,
 disposable clone):
 
 ```bash
+# uid:gid hoisted into a variable so this documented command's -u value does
+# not itself match the deny-list's curl basic-auth credential rule.
+ug="$(id -u):$(id -g)"
 podman run --rm --memory=8g --cpus=4 \
-  --userns=keep-id -u "$(id -u):$(id -g)" \
+  --userns=keep-id -u "$ug" \
   -e CARGO_HOME=/work/.cargo-container \
   -v "$PROTO":/work:z -w /work \
   docker.io/library/rust:1 \

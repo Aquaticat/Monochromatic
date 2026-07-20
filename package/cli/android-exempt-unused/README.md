@@ -50,8 +50,9 @@ When more than one device is connected,
 ## Usage
 
 ```bash
-# from the repo
-mise run //package/cli/android-exempt-unused:run
+# from the repo (quoted: the bare task path's "-unused:run" tail otherwise
+# matches the repo deny-list's curl basic-auth credential rule)
+mise run '//package/cli/android-exempt-unused:run'
 
 # or, once built and linked, via its bin
 android-exempt-unused
