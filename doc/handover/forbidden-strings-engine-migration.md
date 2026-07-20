@@ -428,7 +428,8 @@ Updated:
     the maintainer adopted the tail-format sectioned file:
     `==> name <==` headers (strict kebab name grammar) delimit rule
     sections whose bodies the always-verbose engine reads raw;
-    `.literals` sections hold one bare literal per line;
+    every rule, bare literal included, is its own named section
+    (the `.literals` list form was rejected by maintainer correction);
     near-header lines fail closed;
     format autodetection keeps legacy files working through the
     transition.
@@ -446,21 +447,19 @@ Updated:
     embed wiring; 112/112 tests, all lints green, boundary-verified
     with the release binary (tail findings fire, near-header fails
     closed redacted, legacy unchanged).
-    PENDING CODE DELTA (spec ruling landed `65dd44404`, code does NOT
-    yet match): the near-header rule was HARDENED by maintainer ruling
-    to "any line whose trimmed form starts with `==>` and is not
-    exactly a strict header fails closed" (implementation currently
-    errors only on within-alphabet near-misses and lets
-    `==> X9 <==` / `==> /etc/passwd <==` / indented / missing-space
-    forms silently join the body). Next action: implement the
-    broadened check in `sections.rs`, flip
-    `out_of_alphabet_middle_stays_content_not_near_header` to expect
-    the error, add indented-header / no-space-arrow / comment-line
-    cases, keep the `[=]=> ` reshape test green (`[=]` in a bare
-    literal stays literal; a literal cannot begin with `==>`), rerun
-    package test+lint tasks foreground, redo the near-header boundary
-    arm, commit referencing #396 without a Closes footer.
-    Dispatch fresh (prior agent killed mid-read; no partial edits).
+    NEAR-HEADER HARDENING LANDED (`d15e60397`, done in-session, no
+    subagent, per maintainer instruction): code now matches spec ruling
+    `65dd44404`; any line whose trimmed form starts with `==>` that is
+    not exactly a strict header is a redacted line-numbered
+    `NearHeader` error (out-of-alphabet middles, indented headers,
+    missing-space arrows alike; `#`-comment arrow mentions unaffected;
+    `[=]` in a bare literal stays literal, new test). The grammar was
+    also simplified on maintainer prompt (a `?`-chained `strict_name`
+    helper, extracted `close_section`, functional detection and
+    duplicate-name tracking). 116/116 tests, all three lints green,
+    boundary re-verified: `==> /etc/passwd <==` in a rules file fails
+    closed printing only its line number, and a good tail file still
+    yields findings.
   - OPEN ITEMS after the delta: cut the bundled release (word-boundary
     fix `296c5169c` + tail format; version likely 0.3.0 given the
     format addition), move gate + CI to it, then convert the three rule
