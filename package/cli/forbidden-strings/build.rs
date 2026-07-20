@@ -53,13 +53,16 @@ mod format;
 #[path = "src/rule/frx/sections.rs"]
 mod sections;
 
-/// Compiles the ported baseline once and writes its serialized bytes into `OUT_DIR`.
+/// Compiles the ported baseline once and writes its serialized bytes into `OUT_DIR`,
+/// beside a name sidecar carrying each rule's section name for finding identity.
 ///
 /// Parses the committed, generated `data/builtin-rules.txt` through the shared
-/// two-form parser, compiles the whole set through the engine, serializes it, and
-/// writes the blob for `include_bytes!`. A parse or compile failure fails the build,
-/// which is the correct fail-closed response to a corrupt or un-ported baseline; the
-/// error is surfaced only through its redacted `Display`, never rule text.
+/// parser, compiles the whole set through the engine, serializes it, and writes the
+/// blob for `include_bytes!` plus one sidecar line per rule (the rule's section
+/// name, or an empty line for an unnamed legacy rule) for `include_str!`. A parse
+/// or compile failure fails the build, which is the correct fail-closed response to
+/// a corrupt or un-ported baseline; the error is surfaced only through its redacted
+/// `Display`, never rule text.
 fn main() {
     // Rerun only when the baseline data or the shared parser sources change; the
     // build script's own edits are tracked by cargo automatically.
@@ -77,10 +80,12 @@ fn main() {
     let ported = fs::read_to_string(&ported_path)
         .unwrap_or_else(|error| panic!("read {}: {error}", ported_path.display()));
 
-    // Parse the two-form baseline into engine-ready patterns, then compile the whole
+    // Parse the baseline into named, engine-ready rules, then compile the whole
     // set in one pass. `Display` on either error carries no rule text.
-    let patterns = format::parse_patterns(&ported)
+    let rules = format::parse_rules(&ported)
         .unwrap_or_else(|error| panic!("parse builtin baseline: {error}"));
+    let patterns: Vec<String> =
+        rules.iter().map(|rule| return rule.pattern.clone()).collect();
     let set = RegexSet::new(&patterns)
         .unwrap_or_else(|error| panic!("compile builtin baseline: {error}"));
     let bytes = set
@@ -90,4 +95,15 @@ fn main() {
     let out_path = Path::new(&out_dir).join("builtin-rules-precompiled.bin");
     fs::write(&out_path, bytes)
         .unwrap_or_else(|error| panic!("write {}: {error}", out_path.display()));
+
+    // One sidecar line per rule, in compiled order: the section name, or an empty
+    // line for an unnamed legacy rule. The runtime loader rejects a count mismatch,
+    // so the trailing newline per entry keeps `lines()` at exactly one per rule.
+    let names_text: String = rules
+        .iter()
+        .map(|rule| return format!("{}\n", rule.name.as_deref().unwrap_or_default()))
+        .collect();
+    let names_path = Path::new(&out_dir).join("builtin-rules-names.txt");
+    fs::write(&names_path, names_text)
+        .unwrap_or_else(|error| panic!("write {}: {error}", names_path.display()));
 }

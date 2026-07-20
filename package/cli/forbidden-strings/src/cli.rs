@@ -80,8 +80,15 @@ EXAMPLES:\n\
     # Scan the whole working tree\n\
     FORBIDDEN_STRINGS_RULES=./rules.txt forbidden-strings --all\n\
 \n\
-RULE FORMAT:\n\
-    Bare line              -> case-sensitive literal substring\n\
+RULE FORMAT (autodetected per file, never mixed):\n\
+    Tail format            -> '==> name <==' headers open one-rule sections;\n\
+                              the name ([a-z0-9], then [a-z0-9.-]) is the\n\
+                              rule's identity in findings. One significant\n\
+                              body line classifies as below; several are one\n\
+                              verbatim always-verbose pattern.\n\
+    Legacy format          -> one rule per line, unnamed:\n\
+    Bare line              -> case-sensitive literal; under 8 bytes it is\n\
+                              word-boundary gated at word-byte ends\n\
     /PATTERN/FLAGS         -> regex in the forbidden-regex dialect\n\
     # ...                  -> comment\n\
     Empty line             -> skipped\n\
@@ -96,7 +103,9 @@ DIALECT:\n\
     pattern matching the empty string.\n\
 \n\
 OUTPUT:\n\
-    PATH:LINE rule=N    (columnless; matched substring is NEVER printed)\n\
+    PATH:LINE rule=<token>    (columnless; matched substring is NEVER\n\
+    printed). The token is the rule's section name (baseline rules use\n\
+    their betterleaks id); unnamed legacy rules use the 0-based index.\n\
 \n\
 See README.md for the full dialect, set-algebra examples, and CI integration.\n\
 ";
@@ -147,7 +156,7 @@ pub struct Cli {
         long = "rules",
         value_name = "PATH",
         allow_hyphen_values = true,
-        help = "Path to the rule file (one rule per line)"
+        help = "Path to the rule file (tail-format sections or legacy lines)"
     )]
     pub rules_path: Option<String>,
 

@@ -46,12 +46,18 @@ fn line_starts(buf: &[u8]) -> Vec<usize> {
 
 /// Runs one set's batch matcher under a fail-closed unwind boundary.
 ///
-/// On a normal return the `(line index, rule id)` pairs become `PATH:LINE rule=N`
-/// findings, with `base` added to each rule id for cross-set disambiguation and the
+/// On a normal return the `(line index, rule id)` pairs become findings: a named
+/// rule renders as `PATH:LINE rule=<name>` (its section name), an unnamed rule as
+/// `PATH:LINE rule=N` with `base` added for cross-set disambiguation, and the
 /// 0-based line index rendered 1-based. On a panic the boundary catches it and emits
 /// a single synthetic diagnostic so the file cannot exit clean, matching the
 /// read-error diagnostic precedent; the panic never escapes the scan.
-fn scan_one_set<Match>(path: &str, base: usize, matcher: Match) -> Vec<String>
+fn scan_one_set<Match>(
+    path: &str,
+    base: usize,
+    names: &[Option<String>],
+    matcher: Match,
+) -> Vec<String>
 where
     Match: FnOnce() -> Vec<(usize, usize)> + std::panic::UnwindSafe,
 {
@@ -60,7 +66,10 @@ where
             return pairs
                 .into_iter()
                 .map(|(line_index, rule_id)| {
-                    return format!("{}:{} rule={}", path, line_index + 1, base + rule_id)
+                    return match names.get(rule_id).and_then(|name| return name.as_deref()) {
+                        Some(name) => format!("{}:{} rule={}", path, line_index + 1, name),
+                        None => format!("{}:{} rule={}", path, line_index + 1, base + rule_id),
+                    }
                 })
                 .collect()
         }
@@ -75,21 +84,23 @@ where
 /// Scans one file's bytes against every loaded set, returning redacted findings.
 ///
 /// Splits `buf` into lines once, then runs each set's `line_matches` under the
-/// fail-closed boundary and collects `PATH:LINE rule=N` findings in set order (runtime
-/// rules before the builtin baseline), each set's ids offset by its base. An empty
-/// file yields no findings. A match on line 2 of `a.txt` from the runtime set renders
-/// as `a.txt:2 rule=0`.
+/// fail-closed boundary and collects findings in set order (runtime rules before
+/// the builtin baseline): `PATH:LINE rule=<name>` for named rules, `PATH:LINE
+/// rule=N` with the set's base offset for unnamed ones. An empty file yields no
+/// findings. A match on line 2 of `a.txt` from an unnamed runtime rule renders as
+/// `a.txt:2 rule=0`; the same match from a section named `qqq-token` renders as
+/// `a.txt:2 rule=qqq-token`.
 pub fn scan_file(path: &str, buf: &[u8], loaded: &LoadedRules) -> Vec<String> {
     if buf.is_empty() {
         return Vec::new();
     }
     let starts = line_starts(buf);
     let mut hits: Vec<String> = Vec::new();
-    for (set, base) in loaded.iter_sets() {
-        // AssertUnwindSafe: the borrows captured here (`set`, `buf`, `starts`) are
+    for scan_set in loaded.iter_sets() {
+        // AssertUnwindSafe: the borrows captured here (the set, `buf`, `starts`) are
         // read-only, so a caught unwind leaves no observable broken invariant.
-        let matcher = AssertUnwindSafe(|| return set.line_matches(buf, &starts));
-        hits.extend(scan_one_set(path, base, matcher));
+        let matcher = AssertUnwindSafe(|| return scan_set.set.line_matches(buf, &starts));
+        hits.extend(scan_one_set(path, scan_set.base, &scan_set.names, matcher));
     }
     return hits
 }

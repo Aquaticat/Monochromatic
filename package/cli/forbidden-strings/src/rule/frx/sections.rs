@@ -113,7 +113,7 @@ fn classify_header(line: &str) -> HeaderKind {
 
 /// Reports whether a line is a strict section header, for format autodetection.
 ///
-/// The sibling `format` module's `parse_patterns` calls this on the first
+/// The sibling `format` module's `parse_rules` calls this on the first
 /// significant line: a strict header there selects the tail-format path, any other
 /// shape selects the byte-for-byte legacy path.
 pub(super) fn detect_tail_format(text: &str) -> bool {

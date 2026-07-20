@@ -1,13 +1,19 @@
 // What:  load a generated two-form ruleset and scan a generated multi-line buffer
 //        through the real `scan_file`, then assert the columnless output contract: every
-//        finding is exactly `PATH:LINE rule=N` (or the fail-closed `PATH: engine error`),
-//        the line index is 1-based and within the buffer, findings arrive line-ascending,
-//        and no content byte leaks into the finding.
+//        finding is exactly `PATH:LINE rule=<token>` (or the fail-closed
+//        `PATH: engine error`), where the token is a numeric id or a tail-format section
+//        name drawn from the strict name alphabet `[a-z0-9.-]`, the line index is
+//        1-based and within the buffer, findings arrive line-ascending, and no content
+//        byte leaks into the finding.
 // Why:   the finding format is the externally visible contract and the leak surface. The
 //        engine swap (#384) dropped the old `path:line:col_start..col_end rule=N` columns
-//        for the columnless `PATH:LINE rule=N`; the redaction argument is now structural
-//        (the formatter interpolates only the fixed path and two integers), and this
-//        target pins that a regression cannot reintroduce columns or interpolate content.
+//        for the columnless form, and the tail-format migration made the rule token a
+//        section name for named rules (numeric ids remain for legacy sources, the only
+//        kind this generator produces: its alphabets exclude `=`/`<`/`>`, so a generated
+//        file can never open with a section header). The redaction argument is
+//        structural (the formatter interpolates only the fixed path, the line integer,
+//        and a token bounded by the name alphabet), and this target pins that a
+//        regression cannot reintroduce columns or interpolate content.
 
 #![no_main]
 
@@ -28,10 +34,20 @@ fn check_format(hit: &str, content: &[u8], max_line: usize) -> usize {
     let Some(rule_pos) = hit.rfind(" rule=") else {
         panic!("finding missing ' rule=': {} ({})", hit.len(), redacted_fingerprint(content));
     };
+    // The rule token is a numeric id (legacy rules; digits are inside the name
+    // alphabet) or a tail-format section name over `[a-z0-9.-]`. Anything outside
+    // that alphabet would mean interpolated content or format drift.
     let rule_str = &hit[rule_pos + " rule=".len()..];
-    let Ok(rule) = rule_str.parse::<usize>() else {
-        panic!("finding rule id not numeric ({})", redacted_fingerprint(content));
-    };
+    let token_ok = !rule_str.is_empty()
+        && rule_str.bytes().all(|byte| {
+            return byte.is_ascii_lowercase()
+                || byte.is_ascii_digit()
+                || byte == b'.'
+                || byte == b'-';
+        });
+    if !token_ok {
+        panic!("finding rule token outside name alphabet ({})", redacted_fingerprint(content));
+    }
 
     // The prefix is `PATH:LINE`; split at the last colon (PATH itself has no colon).
     let prefix = &hit[..rule_pos];
@@ -54,9 +70,10 @@ fn check_format(hit: &str, content: &[u8], max_line: usize) -> usize {
         redacted_fingerprint(content),
     );
 
-    // Redaction: the whole finding is exactly the fixed template plus the two integers.
-    // Any content byte would make this reconstruction unequal, so equality proves no leak.
-    let expected = format!("{PATH}:{line} rule={rule}");
+    // Redaction: the whole finding is exactly the fixed template plus the parsed line
+    // integer and the alphabet-bounded rule token. Any other byte would make this
+    // reconstruction unequal, so equality proves nothing else was interpolated.
+    let expected = format!("{PATH}:{line} rule={rule_str}");
     assert_eq!(hit, expected.as_str(), "finding carries unexpected bytes ({})", redacted_fingerprint(content));
 
     return line

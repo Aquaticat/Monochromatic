@@ -37,16 +37,32 @@ pub use error::LoadError;
 #[cfg(feature = "fuzzing")]
 pub use escape::escape_literal;
 
-/// Compiles a rule source (two-form text) into a combined `RegexSet`.
+/// One compiled rule set paired with the per-rule names that drive finding identity.
 ///
-/// Parses the two-form format (escaping literals, applying the flag policy,
+/// `names` is parallel to the set's rule indices: a tail-format source names every
+/// rule (its section name, rendered in findings as `rule=<name>`), a legacy source
+/// names none (findings fall back to the offset numeric index). Splitting the two
+/// out of the parse keeps the engine set free of identity concerns.
+pub struct CompiledRules {
+    /// Compiled engine set the scan path runs.
+    pub set: RegexSet,
+    /// Per-rule section names parallel to the set's rule indices; `None` for
+    /// legacy line-based rules.
+    pub names: Vec<Option<String>>,
+}
+
+/// Compiles a rule source into a combined `RegexSet` plus its per-rule names.
+///
+/// Parses the autodetected format (escaping literals, applying the flag policy,
 /// stripping a BOM), then validates each rule through the engine to attribute a
 /// redacted, index-bearing error to the first offender, and finally assembles the
 /// combined set. Validation and assembly both go through `RegexSet::new`, so no
 /// pattern is ever logged. Errors carry only an opaque rule index and the
 /// engine's static reason, never rule text.
-pub fn compile_from_text(text: &str) -> Result<RegexSet, LoadError> {
-    let patterns = format::parse_patterns(text)?;
+pub fn compile_rules(text: &str) -> Result<CompiledRules, LoadError> {
+    let rules = format::parse_rules(text)?;
+    let (names, patterns): (Vec<Option<String>>, Vec<String>) =
+        rules.into_iter().map(|rule| return (rule.name, rule.pattern)).unzip();
     // Validate rule by rule first: `RegexSet::new` over the whole slice reports
     // only its first error without the offending index, so a per-rule pass
     // recovers the index for the redacted diagnostic. Each single-rule set is
@@ -59,10 +75,20 @@ pub fn compile_from_text(text: &str) -> Result<RegexSet, LoadError> {
     // Every rule compiled individually, so assembly cannot fail on a rule; any
     // error here is a genuine engine invariant break, surfaced fail-closed with a
     // sentinel index and the engine's static reason (still no rule text).
-    return RegexSet::new(&patterns).map_err(|reason| return LoadError::Compile {
+    let set = RegexSet::new(&patterns).map_err(|reason| return LoadError::Compile {
         index: patterns.len(),
         reason,
-    });
+    })?;
+    return Ok(CompiledRules { set, names });
+}
+
+/// Compiles a rule source (autodetected format) into a combined `RegexSet`.
+///
+/// A projection over [`compile_rules`] for callers that only need the engine set
+/// (the build-time baseline verifier, the fuzz targets); the runtime loader uses
+/// [`compile_rules`] so findings can carry rule names.
+pub fn compile_from_text(text: &str) -> Result<RegexSet, LoadError> {
+    return compile_rules(text).map(|compiled| return compiled.set);
 }
 
 /// Loads a precompiled serialized `RegexSet` from bytes.

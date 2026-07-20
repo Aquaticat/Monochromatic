@@ -1,7 +1,7 @@
 // Compile, redaction, and precompiled round-trip tests for the frx rule compiler.
 
 use super::format::parse_patterns;
-use super::{compile_from_text, load_precompiled, LoadError};
+use super::{compile_from_text, compile_rules, load_precompiled, LoadError};
 use forbidden_regex::{CompileError, RegexSet};
 use rayon::prelude::*;
 
@@ -110,6 +110,22 @@ fn sentinel_never_reaches_a_tracing_subscriber() {
     });
     let captured = String::from_utf8_lossy(&buf.lock().expect("sink lock")).into_owned();
     assert!(!captured.contains(SENTINEL), "sentinel reached the tracing/stderr path");
+}
+
+#[test]
+fn compile_rules_carries_names_per_format() {
+    // A tail-format source names every rule with its section name; a legacy
+    // source names none, so findings fall back to numeric ids.
+    let tail = compile_rules("==> qqq-one <==\n/foo[0-9]/\n==> qqq-two <==\nabcdefgh\n")
+        .expect("tail compiles");
+    assert_eq!(tail.set.len(), 2);
+    let tail_names: Vec<Option<&str>> =
+        tail.names.iter().map(|name| return name.as_deref()).collect();
+    assert_eq!(tail_names, vec![Some("qqq-one"), Some("qqq-two")]);
+
+    let legacy = compile_rules("/foo[0-9]/\nabcdefgh\n").expect("legacy compiles");
+    assert_eq!(legacy.set.len(), 2);
+    assert_eq!(legacy.names, vec![None, None]);
 }
 
 #[test]

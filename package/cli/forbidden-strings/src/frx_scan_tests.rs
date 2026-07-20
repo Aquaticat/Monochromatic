@@ -16,7 +16,7 @@ fn load_runtime(rules: &str) -> crate::frx_load::LoadedRules {
     let dir = temp_dir("rules");
     let path = dir.join("rules.txt");
     std::fs::write(&path, rules).expect("write rules");
-    let loaded = crate::frx_load::load(path.to_str().expect("utf8 path"), false, true, b"")
+    let loaded = crate::frx_load::load(path.to_str().expect("utf8 path"), false, true, b"", "")
         .expect("load runtime rules");
     let _ = std::fs::remove_dir_all(&dir);
     return loaded
@@ -64,10 +64,23 @@ fn line_starts_empty_buffer_is_just_the_zero_start() {
 
 #[test]
 fn scan_one_set_normal_return_formats_and_offsets() {
-    // (line index, rule id) pairs render 1-based with the base offset added.
+    // Unnamed (line index, rule id) pairs render 1-based with the base offset added.
     let matcher = AssertUnwindSafe(|| vec![(0usize, 0usize), (2usize, 1usize)]);
-    let hits = scan_one_set("a.txt", 5, matcher);
+    let hits = scan_one_set("a.txt", 5, &[], matcher);
     assert_eq!(hits, vec!["a.txt:1 rule=5".to_string(), "a.txt:3 rule=6".to_string()]);
+}
+
+#[test]
+fn scan_one_set_named_rules_render_names_and_skip_offset() {
+    // A named rule renders its section name; an unnamed slot in the same set still
+    // falls back to the offset numeric id.
+    let names = vec![Some("qqq-named".to_string()), None];
+    let matcher = AssertUnwindSafe(|| vec![(0usize, 0usize), (1usize, 1usize)]);
+    let hits = scan_one_set("a.txt", 5, &names, matcher);
+    assert_eq!(
+        hits,
+        vec!["a.txt:1 rule=qqq-named".to_string(), "a.txt:2 rule=6".to_string()],
+    );
 }
 
 #[test]
@@ -78,7 +91,7 @@ fn scan_one_set_engine_panic_fails_closed() {
     let previous = std::panic::take_hook();
     std::panic::set_hook(Box::new(|_| {}));
     let matcher = AssertUnwindSafe(|| -> Vec<(usize, usize)> { panic!("synthetic engine fault") });
-    let hits = scan_one_set("a.txt", 0, matcher);
+    let hits = scan_one_set("a.txt", 0, &[], matcher);
     std::panic::set_hook(previous);
     assert_eq!(hits, vec!["a.txt: engine error".to_string()]);
 }

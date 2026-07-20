@@ -102,22 +102,30 @@ fn parse_legacy(text: &str) -> Result<Vec<ParsedRule>, LoadError> {
     return Ok(rules);
 }
 
-/// Parses a rule source into the engine-ready pattern list, autodetecting the format.
+/// Parses a rule source into named, engine-ready rules, autodetecting the format.
 ///
 /// Strips a leading BOM, then routes on the first significant line: a strict header
-/// parses the whole file as tail-format sections, otherwise the whole file parses
-/// as the legacy line-based format unchanged. Both paths return named or unnamed
-/// rules; this entry point keeps its `Vec<String>` shape by projecting each rule's
-/// engine pattern, so the compiler, the build-script embed, and the finding output
-/// are all unchanged. Every error is redacted, carrying only an opaque index or a
-/// source line number, never rule text.
-pub(super) fn parse_patterns(text: &str) -> Result<Vec<String>, LoadError> {
+/// parses the whole file as tail-format sections (every rule named), otherwise the
+/// whole file parses as the legacy line-based format unchanged (every rule unnamed).
+/// The names drive finding identity (`rule=<name>`); the patterns feed the engine.
+/// Every error is redacted, carrying only an opaque index or a source line number,
+/// never rule text.
+pub(super) fn parse_rules(text: &str) -> Result<Vec<ParsedRule>, LoadError> {
     let stripped = strip_bom(text);
-    let rules = if detect_tail_format(stripped) {
-        parse_sections(stripped)?
-    } else {
-        parse_legacy(stripped)?
-    };
+    if detect_tail_format(stripped) {
+        return parse_sections(stripped);
+    }
+    return parse_legacy(stripped);
+}
+
+/// Parses a rule source into the engine-ready pattern list, dropping rule names.
+///
+/// A projection over [`parse_rules`] for the format and compile tests, which
+/// assert against the bare `Vec<String>` pattern shape; production callers all
+/// need the names, so this exists only in test builds.
+#[cfg(test)]
+pub(super) fn parse_patterns(text: &str) -> Result<Vec<String>, LoadError> {
+    let rules = parse_rules(text)?;
     return Ok(rules.into_iter().map(|rule| return rule.pattern).collect());
 }
 

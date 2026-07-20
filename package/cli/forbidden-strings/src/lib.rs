@@ -95,6 +95,16 @@ pub const BUILTIN_RULES: &str = include_str!("../data/builtin-rules.txt");
 pub const BUILTIN_PRECOMPILED: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/builtin-rules-precompiled.bin"));
 
+/// The builtin baseline's rule-name sidecar, embedded at build time.
+///
+/// One line per baseline rule, in compiled order: the rule's tail-format section
+/// name (its betterleaks id), or an empty line for an unnamed legacy rule. The
+/// loader pairs it with `BUILTIN_PRECOMPILED` so a baseline finding renders as
+/// `rule=<name>` instead of a drifting numeric index; a count mismatch against the
+/// decoded set fails the load closed.
+pub const BUILTIN_NAMES: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/builtin-rules-names.txt"));
+
 /// Re-exports the forbidden-regex rule compiler's public surface.
 // What:     `pub use rule::frx::{...}` lifts the engine's rule-compiler entry
 //           points to the crate root so they are reachable crate-public API.
@@ -108,7 +118,7 @@ pub const BUILTIN_PRECOMPILED: &[u8] =
 // ```ts
 // export { compileFromText, loadPrecompiled, LoadError } from "./rule/frx";
 // ```
-pub use rule::frx::{compile_from_text, load_precompiled, LoadError};
+pub use rule::frx::{compile_from_text, compile_rules, load_precompiled, CompiledRules, LoadError};
 
 /// Imports dependencies used by this module.
 // What:     `use anyhow::Result;` imports `anyhow`'s one-parameter application
@@ -687,6 +697,7 @@ pub fn run_cli_from_env() -> Result<i32> {
                 builtin_rules,
                 explicit_rules_source,
                 crate::BUILTIN_PRECOMPILED,
+                crate::BUILTIN_NAMES,
             ),
             || if all { return Some(list_files(".")) } else { return None },
         );
