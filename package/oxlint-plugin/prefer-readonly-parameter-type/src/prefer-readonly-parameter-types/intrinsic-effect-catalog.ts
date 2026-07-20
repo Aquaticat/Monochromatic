@@ -232,6 +232,18 @@ export type IntrinsicEffectEntry = {
   readonly receiverValuesReachResult?: boolean;
   readonly evidence: string;
   readonly authority?: HostEffectAuthority;
+  /**
+   * Validation tier for package-provenance audits.
+   * `shipped-content` claims derive from shipped implementation bytes:
+   * evidence must name the audited version and carry `shipped <path>
+   * sha256 <hex>` claims that machine validation checks against installed
+   * content, so version bumps force a loud re-audit.
+   * `api-contract` claims derive from declared API surface: the
+   * `provenance` major is the whole compatibility pin and evidence
+   * carries no version token, so routine dependency bumps stay quiet.
+   * Package entries must declare one; host-provenance entries never do.
+   */
+  readonly auditTier?: 'shipped-content' | 'api-contract';
 };
 
 /**

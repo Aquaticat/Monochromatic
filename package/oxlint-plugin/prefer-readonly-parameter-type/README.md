@@ -32,8 +32,13 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
   member,
   declaration provenance,
   and evidence;
-  external package evidence digests are machine-validated against installed
-  content so version bumps force re-audit;
+- package catalog entries declare an audit tier:
+  `shipped-content` entries pin an audited version whose
+  `shipped <path> sha256 <hex>` claims are machine-validated against
+  installed content so version bumps force a loud re-audit,
+  while `api-contract` entries pin compatibility through the provenance
+  major alone so routine dependency bumps stay quiet;
+  a package entry with no declared tier fails evidence validation;
 - unresolved calls fail closed with diagnostics naming affected inputs,
   calls with bracketed origin locations,
   uncertainty,

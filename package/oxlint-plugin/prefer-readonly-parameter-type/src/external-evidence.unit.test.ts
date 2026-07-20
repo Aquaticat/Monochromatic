@@ -153,6 +153,18 @@ await describe({
            * Published package name from exact provenance.
            */
           const { packageName, } = entry.provenance;
+          // Tier gates validation: api-contract entries pin compatibility
+          // through the provenance major alone, shipped-content entries pin
+          // exact installed bytes, and an undeclared tier fails loudly so no
+          // package audit silently opts out.
+          if (entry.auditTier === 'api-contract')
+            return;
+          if (entry.auditTier !== 'shipped-content') {
+            failures.push(
+              `${packageName} (${entry.ownerType}.${entry.member}): package entry declares no audit tier`,
+            );
+            return;
+          }
           /**
            * Claimed version token following package name in evidence prose.
            */
@@ -163,14 +175,18 @@ await describe({
               .split(' ',)
               .at(0,)
             : undefined;
-          if (version === undefined)
-            return;
           /**
            * Leading version character distinguishing versions from prose.
            */
-          const versionLead = version.at(0,) ?? '';
-          if ((versionLead < '0') || (versionLead > '9'))
+          const versionLead = version?.at(0,) ?? '';
+          if ((version === undefined)
+            || (versionLead < '0')
+            || (versionLead > '9')) {
+            failures.push(
+              `${packageName} (${entry.ownerType}.${entry.member}): shipped-content evidence must open with package name and audited version`,
+            );
             return;
+          }
           /**
            * Installed roots matching claimed name and version.
            */
@@ -184,7 +200,17 @@ await describe({
             );
             return;
           }
-          shippedClaims(entry.evidence,)
+          /**
+           * Machine-checkable shipped-content claims for this entry.
+           */
+          const claims = shippedClaims(entry.evidence,);
+          if (claims.length === 0) {
+            failures.push(
+              `${packageName} ${version} (${entry.ownerType}.${entry.member}): shipped-content evidence carries no shipped sha256 claim`,
+            );
+            return;
+          }
+          claims
             .forEach(function validateClaim(claim,): void {
               validatedClaims.count += 1;
               /**

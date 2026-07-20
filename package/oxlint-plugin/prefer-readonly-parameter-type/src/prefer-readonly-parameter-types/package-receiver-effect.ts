@@ -20,6 +20,8 @@ import type {
  *
  * @param evidence - Audited declaration evidence
  *
+ * @param auditTier - Validation tier for package-provenance audits
+ *
  * @returns Package receiver effect
  *
  * @example
@@ -32,11 +34,13 @@ export function receiverEffect({
   ownerType,
   member,
   evidence,
+  auditTier,
 }: {
   readonly provenance: IntrinsicProvenance;
   readonly ownerType: string;
   readonly member: string;
   readonly evidence: string;
+  readonly auditTier?: IntrinsicEffectEntry['auditTier'];
 },): IntrinsicEffectEntry {
   return {
     provenance,
@@ -44,5 +48,6 @@ export function receiverEffect({
     member,
     targets: [{ kind: 'receiver', },],
     evidence,
+    ...(auditTier === undefined) ? {} : { auditTier, },
   };
 }

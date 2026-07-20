@@ -19,7 +19,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'globalThis',
     member: 'isToolCallEventType',
     targets: [],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 compares primitive tool-name discriminator',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent compares primitive tool-name discriminator',
   },
   ...[
     'appendEntry',
@@ -43,7 +44,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'ExtensionAPI',
       member,
       targets: [{ kind: 'receiver', },],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 extension loader and agent session state updates',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent extension loader and agent session state updates',
     };
   },),
   ...[
@@ -58,7 +60,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'ExtensionContext',
       member,
       targets: [{ kind: 'receiver', },],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 changes active command session state',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent changes active command session state',
     };
   },),
   {
@@ -70,7 +73,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'ExtensionContext',
     member: 'getContextUsage',
     targets: [],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 computes usage from current session entries without host mutation',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent computes usage from current session entries without host mutation',
   },
   {
     provenance: {
@@ -81,7 +85,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'ExtensionCommandContext',
     member: 'waitForIdle',
     targets: [],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 waits for current agent stream completion',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent waits for current agent stream completion',
   },
   ...[
     'notify',
@@ -96,7 +101,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'ExtensionUIContext',
       member,
       targets: [{ kind: 'receiver', },],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 changes rendered extension UI state',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent changes rendered extension UI state',
     };
   },),
   {
@@ -118,7 +124,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         index: 2,
       },
     ],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 stores selector state and abort-signal listeners',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent stores selector state and abort-signal listeners',
   },
   {
     provenance: {
@@ -139,7 +146,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         index: 2,
       },
     ],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 stores widget state and invokes supplied component factories',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent stores widget state and invokes supplied component factories',
   },
   {
     provenance: {
@@ -156,7 +164,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         index: 0,
       },
     ],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 resolves auth including command-backed configuration',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent resolves auth including command-backed configuration',
   },
   ...[
     'find',
@@ -171,7 +180,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'ModelRegistry',
       member,
       targets: [],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 reads current model registry entries',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent reads current model registry entries',
     };
   },),
   {
@@ -186,7 +196,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       kind: 'argument',
       index: 0,
     },],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 reads supplied model fields without refreshing auth',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent reads supplied model fields without refreshing auth',
   },
   ...[
     'getSessionFile',
@@ -201,7 +212,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'SessionManager',
       member,
       targets: [],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 reads primitive session identity fields',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent reads primitive session identity fields',
     };
   },),
   {
@@ -213,7 +225,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'SessionManager',
     member: 'getBranch',
     targets: [],
-    evidence: '@earendil-works/pi-coding-agent 0.80.6 returns a fresh path array without changing session state',
+    auditTier: 'api-contract',
+    evidence: '@earendil-works/pi-coding-agent returns a fresh path array without changing session state',
   },
   ...[
     'bg',
@@ -229,7 +242,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'Theme',
       member,
       targets: [],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 theme primitive text formatting',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent theme primitive text formatting',
     };
   },),
   ...[
@@ -246,7 +260,8 @@ export const PI_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'ExtensionAPI',
       member,
       targets: [],
-      evidence: '@earendil-works/pi-coding-agent 0.80.6 agent-session state queries returning owned values',
+      auditTier: 'api-contract',
+      evidence: '@earendil-works/pi-coding-agent agent-session state queries returning owned values',
     };
   },),
 ];

@@ -8,8 +8,14 @@ import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 
 /**
  * Turso database implementation audit identity.
+ *
+ * Re-audited 2026-07-20 for 0.7.0: `exec` still acquires the receiver
+ * lock, builds a native executor from SQL and options, steps with I/O
+ * advancement, resets the executor, and releases the lock; the version
+ * adds an unrelated `batch()` API and widens lock visibility to
+ * protected.
  */
-const TURSO_DATABASE_EVIDENCE = '@tursodatabase/database-common 0.6.1 commit 76af5a1250cd98bb26c13862093a638714b0a3a6 bindings/javascript/packages/common/promise.ts sha256 e3f721edd511079ad107707a0636481d9444668e454e44b969abcfd9d46f5715';
+const TURSO_DATABASE_EVIDENCE = '@tursodatabase/database-common 0.7.0 commit e7cb62a8bd2f3655a661a621ee389365c1a1e43e bindings/javascript/packages/common/promise.ts sha256 07ac3b75ac37eb0d350fe8ea4965b8470178ad7f2f849466b9d932f047c2a621 shipped dist/promise.js sha256 eb688cc7a808ace08c6c9d5346938ce81e881350780013a22ce522a819b00db1';
 
 /**
  * Audited effects for Turso database calls.
@@ -23,6 +29,7 @@ export const TURSO_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },
     ownerType: 'Database',
     member: 'exec',
+    auditTier: 'shipped-content',
     targets: [{ kind: 'receiver', },],
     opaqueTargets: [
       {

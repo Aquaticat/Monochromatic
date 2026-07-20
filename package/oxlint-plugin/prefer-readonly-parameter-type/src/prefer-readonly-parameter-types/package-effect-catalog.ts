@@ -34,7 +34,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },
     ownerType: 'Context',
     member: 'report',
-    evidence: '@oxlint/plugins 1.73 Context report diagnostic emission',
+    auditTier: 'api-contract',
+    evidence: '@oxlint/plugins Context report diagnostic emission',
   },),
   ...[
     'add',
@@ -49,7 +50,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       },
       ownerType: 'Ignore',
       member,
-      evidence: 'ignore 7.0.6 shipped implementation updates matcher rules or result caches',
+      auditTier: 'api-contract',
+      evidence: 'ignore matcher implementation updates rules or result caches',
     },);
   },),
   ...[
@@ -82,7 +84,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: '__type',
       member,
       targets: [],
-      evidence: '@oxlint/plugins 1.73 index.d.ts source and fixer descriptor operations',
+      auditTier: 'api-contract',
+      evidence: '@oxlint/plugins index.d.ts source and fixer descriptor operations',
     };
   },),
   {
@@ -97,7 +100,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       kind: 'argument',
       index: 0,
     },],
-    evidence: 'toml-eslint-parser 1.0.3 source reads parser AST fields and can invoke caller-owned hooks',
+    auditTier: 'api-contract',
+    evidence: 'toml-eslint-parser source reads parser AST fields and can invoke caller-owned hooks',
   },
   ...[
     'isArrayLiteralExpression',
@@ -151,7 +155,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'globalThis',
       member,
       targets: [],
-      evidence: 'typescript 7.0.2 dist/ast predicate declarations',
+      auditTier: 'api-contract',
+      evidence: 'typescript dist/ast predicate declarations',
     };
   },),
   ...[
@@ -180,7 +185,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'Checker',
       member,
       targets: [],
-      evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts Checker query declaration',
+      auditTier: 'api-contract',
+      evidence: 'typescript dist/api/sync/api.d.ts Checker query declaration',
     };
   },),
   ...[
@@ -203,7 +209,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'Type',
       member,
       targets: [],
-      evidence: 'typescript 7.0.2 dist/api/sync/types.d.ts Type query declaration',
+      auditTier: 'api-contract',
+      evidence: 'typescript dist/api/sync/types.d.ts Type query declaration',
     };
   },),
   {
@@ -215,7 +222,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'Type',
     member: 'getTarget',
     targets: [],
-    evidence: 'typescript 7.0.2 dist/api/sync/api.js TypeObject.getTarget reads target through ObjectRegistry.fetchType; only library-internal identity cache changes',
+    auditTier: 'api-contract',
+    evidence: 'typescript dist/api/sync/api.js TypeObject.getTarget reads target through ObjectRegistry.fetchType; only library-internal identity cache changes',
   },
   {
     provenance: {
@@ -226,7 +234,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'UnionOrIntersectionType',
     member: 'getTypes',
     targets: [],
-    evidence: 'typescript 7.0.2 dist/api/sync/types.d.ts union constituent query',
+    auditTier: 'api-contract',
+    evidence: 'typescript dist/api/sync/types.d.ts union constituent query',
   },
   ...[
     'getSourceFile',
@@ -242,7 +251,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'Node',
       member,
       targets: [],
-      evidence: 'typescript 7.0.2 dist/ast/index.d.ts Node source query',
+      auditTier: 'api-contract',
+      evidence: 'typescript dist/ast/index.d.ts Node source query',
     };
   },),
   {
@@ -254,7 +264,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     ownerType: 'NodeHandle',
     member: 'resolve',
     targets: [],
-    evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts NodeHandle resolution',
+    auditTier: 'api-contract',
+    evidence: 'typescript dist/api/sync/api.d.ts NodeHandle resolution',
   },
   ...[
     'getSourceFile',
@@ -271,7 +282,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       ownerType: 'Program',
       member,
       targets: [],
-      evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts Program source query',
+      auditTier: 'api-contract',
+      evidence: 'typescript dist/api/sync/api.d.ts Program source query',
     };
   },),
   ...[
@@ -287,7 +299,8 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
       },
       ownerType: 'API',
       member,
-      evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts API declaration',
+      auditTier: 'api-contract',
+      evidence: 'typescript dist/api/sync/api.d.ts API declaration',
     },);
   },),
   receiverEffect({
@@ -298,6 +311,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
     },
     ownerType: 'Snapshot',
     member: 'dispose',
-    evidence: 'typescript 7.0.2 dist/api/sync/api.d.ts Snapshot declaration',
+    auditTier: 'api-contract',
+    evidence: 'typescript dist/api/sync/api.d.ts Snapshot declaration',
   },),
 ];

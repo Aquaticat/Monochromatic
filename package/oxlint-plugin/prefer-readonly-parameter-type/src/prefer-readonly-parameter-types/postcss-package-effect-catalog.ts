@@ -17,13 +17,24 @@ const POSTCSS_PROVENANCE = {
 
 /**
  * PostCSS `Node` implementation audit identity.
+ *
+ * Re-audited 2026-07-20 for 8.5.19: `cloneNode` moved from recursion to an
+ * explicit work stack without changing its property enumeration, source
+ * retention, or non-mutation of the receiver; audited member bodies in
+ * `lib/node.js` are otherwise byte-identical to 8.5.16.
  */
-const NODE_EVIDENCE = 'postcss 8.5.16 commit 92ccc93ff15bd193491d67fad9763e62d489dfad lib/node.js sha256 52c8d992e881f0d40d3dc4610039d3cc19b1dfdf0fc32aef8923b5537d161eae';
+const NODE_EVIDENCE = 'postcss 8.5.19 commit 9543b22769bef5bcd47600fbca752204c106cda8 shipped lib/node.js sha256 1cc8d56d0c77783fa7fecf702321129936efa3dc504eb4528042a103fe54770d';
 
 /**
  * PostCSS `Container` implementation audit identity.
+ *
+ * Re-audited 2026-07-20 for 8.5.19: `walk` replaced recursive `each` calls
+ * with an explicit stack of live per-walk index slots; it still mutates
+ * receiver iterator state, still invokes the callback with receiver
+ * children, and `walkAtRules` still applies RegExp filters through `test`,
+ * so every recorded effect holds.
  */
-const CONTAINER_EVIDENCE = 'postcss 8.5.16 commit 92ccc93ff15bd193491d67fad9763e62d489dfad lib/container.js sha256 0f8aaa013a910e142be706c3d6f54a3ce04751a08df3f17ed3a61bb91f863c39';
+const CONTAINER_EVIDENCE = 'postcss 8.5.19 commit 9543b22769bef5bcd47600fbca752204c106cda8 shipped lib/container.js sha256 e2fc6a559238ac8186ef56d13d340b7c62c04ba9551e2edc027e761eb393ddd0';
 
 /**
  * Audited PostCSS effects used by CSS transformation packages.
@@ -31,6 +42,7 @@ const CONTAINER_EVIDENCE = 'postcss 8.5.16 commit 92ccc93ff15bd193491d67fad9763e
 export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   {
     provenance: POSTCSS_PROVENANCE,
+    auditTier: 'shipped-content',
     ownerType: 'Container_',
     member: 'walkAtRules',
     targets: [{ kind: 'receiver', },],
@@ -61,10 +73,11 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
         callArgumentCount: 2,
       },
     ],
-    evidence: `${CONTAINER_EVIDENCE}; delegates to walk and each, updates receiver iterator state, can change a RegExp selector lastIndex, and invokes selected callback with receiver children; postcss.Container_.walkAtRules`,
+    evidence: `${CONTAINER_EVIDENCE}; delegates to walk, updates receiver iterator state through per-walk index slots, can change a RegExp selector lastIndex, and invokes selected callback with receiver children; postcss.Container_.walkAtRules`,
   },
   {
     provenance: POSTCSS_PROVENANCE,
+    auditTier: 'shipped-content',
     ownerType: 'AtRule_',
     member: 'clone',
     targets: [],
@@ -80,6 +93,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   {
     provenance: POSTCSS_PROVENANCE,
+    auditTier: 'shipped-content',
     ownerType: 'Node_',
     member: 'error',
     targets: [],
@@ -94,6 +108,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   {
     provenance: POSTCSS_PROVENANCE,
+    auditTier: 'shipped-content',
     ownerType: 'Node_',
     member: 'remove',
     targets: [{ kind: 'receiver', },],
@@ -101,6 +116,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   {
     provenance: POSTCSS_PROVENANCE,
+    auditTier: 'shipped-content',
     ownerType: 'Node_',
     member: 'toString',
     targets: [],
@@ -114,6 +130,7 @@ export const POSTCSS_PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   },
   {
     provenance: POSTCSS_PROVENANCE,
+    auditTier: 'shipped-content',
     ownerType: 'Node_',
     member: 'replaceWith',
     targets: [
