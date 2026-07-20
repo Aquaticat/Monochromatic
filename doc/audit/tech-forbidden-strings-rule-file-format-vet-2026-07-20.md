@@ -221,10 +221,18 @@ then frozen).
   Recorded caveats:
   the header convention is not POSIX (see evidence; the spec would be pinned
   here to the measured GNU shape);
-  a content line of the exact shape `==> ... <==` is a false boundary, with
-  an in-dialect workaround (reshape such a pattern line, for example
-  bracketing the first byte as `[=]`) plus fail-closed misparse as the
-  likely failure mode;
+  a content line of the exact shape `==> ... <==` is a false boundary that
+  splits the rule in two, and the failure is loud only when the split lands
+  inside an open group or alternation (`missing closing ')'` and
+  `'|' has no left operand`,
+  `package/rust-module/forbidden-regex/src/parse/grammar.rs`);
+  a split between flat atoms compiles both halves and SILENTLY broadens the
+  rule set (a stranded `abc` prefix matches far more than the intended
+  `abc==>x<==def`), and the realistic collision, a rule targeting tail-style
+  content, is exactly the flat silent case;
+  mitigations: the in-dialect reshape (for example bracketing the first byte
+  as `[=]`) plus a producer-side validator refusing header-shaped content
+  lines;
   a stream not starting with a header must fail closed (measured: single-file
   `tail` without `--verbose` omits the header);
   bare-literal rules need a per-section classification rule (design forks:
