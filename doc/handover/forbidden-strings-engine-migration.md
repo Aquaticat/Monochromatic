@@ -460,22 +460,51 @@ Updated:
     boundary re-verified: `==> /etc/passwd <==` in a rules file fails
     closed printing only its line number, and a good tail file still
     yields findings.
-  - OPEN ITEMS after the delta: cut the bundled release (word-boundary
-    fix `296c5169c` + tail format; version likely 0.3.0 given the
-    format addition), move gate + CI to it, then convert the three rule
-    files per the spec's migration section.
-    Rule-identity finding output (`rule=N` vs names) still awaits the
-    maintainer; section names are the carrier.
-    Unratified proposal from this session: AGENTS.md rule `RFY`
+  - RULE-IDENTITY DECIDED and NAME MIGRATION UNDERWAY (2026-07-20,
+    maintainer: "migrating the rules so every rule can have a sanitized
+    name that forbidden-string rule match outputs can refer to. But for
+    *.local.* rules: Hide even the fact they're about China
+    specifically." plus "Re-write the porter or recover it from git and
+    still auto generate the rule and make the generate rules task refer
+    to it."). Landed this session, all pushed:
+    `d95a3a72a` porter chain (TS porter emits `==> id <==` headers, two
+    named demo sections, `.cache` stage-one intermediate; dialectport +
+    caseexpand recovered from `5a5b9e3b7^` as the standing stage two;
+    generate:rules runs both; MONGODB_CORE concat!-split against rule
+    518 self-match);
+    `20db3b030` gate parser relays alphabet-validated rule tokens
+    (names verbatim, numeric ids kept, `rule=0` no longer rejected;
+    stale walker-exclusion test realigned with the #389 pruned skip
+    list, red since `2d3d1d8b0`);
+    `2e89b498f` docs/templates (identity decision recorded; seed and
+    cache templates describe tail + opaque naming; scan:all repaired);
+    `c8de3b8f1` scanner name support (compile_rules with name table,
+    BUILTIN_NAMES build-time sidecar, cross-set collision fail-closed,
+    named findings `rule=<name>` with numeric fallback; fuzz scan-format
+    contract widened; dialectport split into src/dialectport/ modules
+    for max-lines); 122/122 tests, clippy -D warnings green, fuzzing
+    check green, rust-linter green on scanner and bench;
+    `79abdfe59` baseline converted to tail sections via the chain, all
+    259 rule bodies verified byte-identical (compare script kept the
+    #387 differential validity).
+  - REMAINING STEPS (in order): bump 0.3.0 (+ three Cargo.locks:
+    scanner, bench, fuzz) and push (cargo-publish.yml triggers on the
+    Cargo.toml change; CI downloads the version-matched release);
+    rebuild local release binary + git-policy dist + `git cli-git
+    trust --yes` (new parser must be in the trusted snapshot BEFORE any
+    appendix converts, or a named finding breaks the old numeric
+    parser);
+    convert `forbidden-strings.append.txt` (two sections:
+    ncd-reserved-shortcodes, ncd-reserved-shortcode-families) and the
+    gitignored local appendix (opaque sequential `local-NNN` names for
+    ALL its rules, hiding topic entirely per maintainer instruction);
+    regenerate the .cache rules file; refresh FORBIDDEN_STRINGS_LIST
+    from the converted local file via straight pipe; non-vacuous gate
+    canary + CI check.
+    Unratified proposal from an earlier session: AGENTS.md rule `RFY`
     ("'X must change' ratifies the problem, not your design; present
     options per OPT and get the concrete design ratified before
     implementing or dispatching") awaits maintainer wording approval.
-    Prior step, same thread: per-code rationale comments restored to
-    `forbidden-strings.append.txt` from the pre-combine revision
-    (`0fd094236`);
-    after #396 ships and the gate/CI run the new binary,
-    that comment block folds into block-form rules with each comment
-    attached to its branch.
   - OPEN DECISION, rule-identity UX (user asked "how does one know which
     rule is the trigger?"):
     the finding `PATH:LINE rule=N` is opaque and the index DRIFTS
