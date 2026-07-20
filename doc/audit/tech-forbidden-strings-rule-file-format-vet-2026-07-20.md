@@ -468,7 +468,92 @@ implementation; local interpreter only, no third-party installs, no
 network). Prototype code stays in scratch and is discarded; no product
 changes during evaluation.
 
+## Validation results (2026-07-20)
+
+Shared fixture set (a bare literal plus a named two-branch alternation
+with per-branch comments) hand-converted into each finalist format;
+prototype readers in the session scratchpad (block and tail and
+NestedText subset in node; TOML parsed by python tomllib, the stdlib
+reference implementation, local interpreter only). Assertion: the
+engine-visible semantic body (after the first-column comment stripping
+the engine itself performs) is identical across formats.
+
+- Result: IDENTICAL for all four finalists
+  (`literal:bare-literal-QQ` plus
+  `regex:^(?:\n(?:QQQ)\n|(?:ZZQ)\n):`).
+  Every finalist can carry the required content faithfully.
+- Adversarial, each format's own delimiter embedded as content:
+  block form fails LOUD (UnterminatedRegex);
+  tail-format SILENTLY splits one rule into two wrong rules
+  (empirical confirmation of the corrected ledger caveat);
+  NestedText carries `==> x <==`, `'''`, `/`, and a nested `> `
+  tag verbatim with no split (structural immunity demonstrated);
+  TOML fails LOUD on embedded `'''` (TOMLDecodeError; such a body is
+  inexpressible in a literal string and needs the escaped basic-string
+  form).
+
+## Scoring (frozen criteria, weight 1 each, max 28)
+
+Ratings 0 through 4 with confidence; overlapping evidence counted once
+under its primary criterion (the toml soundness issue counts under
+criterion 3 only).
+
+Criterion order: 1 ergonomics, 2 boundary surface, 3 parser
+auditability, 4 migration, 5 precedent, 6 rule-identity extensibility,
+7 maintenance health.
+
+- Block form: 3 (high), 3 (high, loud-fail validated), 4 (high, tens of
+  lines on existing machinery), 4 (high: incumbent-compatible superset,
+  zero data-file migration, zero-collision audit), 1 (medium), 1 (high:
+  no naming slot), 3 (medium). Total 19/28 = 67.9.
+- Tail-format: 3 (medium: raw bodies and names, but literal sections
+  need headers unless a literal-list fork is added), 2 (high: silent
+  split validated; producer-side validator mitigates by convention),
+  4 (high: smallest parser of all), 2 (medium: full rewrite of three
+  files), 2 (medium: conf.d shape and tail familiarity, no scanner
+  uses it), 4 (high: mandatory names structural), 3 (medium: spec ours,
+  pinned to measured GNU shape). Total 20/28 = 71.4.
+- NestedText subset: 4 (medium: container comments anywhere, one-line
+  literals, names available; the per-line `> ` tag is the tax),
+  4 (high: structural immunity validated), 3 (medium: in-house subset,
+  roughly one to two hundred lines against a 1225-line full-parser
+  reference), 2 (medium: full rewrite, concatenation stays plain
+  append), 1 (high: no peer uses it), 4 (high), 3 (medium: active
+  upstream spec, single-maintainer concentration, reusable conformance
+  suite). Total 21/28 = 75.0.
+- TOML (crate supply): 2 (medium: quoting tax and per-rule boilerplate
+  on the literal-dense local file), 3 (high: loud fail validated,
+  escaped fallback exists), 1 (high: measured 16700-line parsing path
+  plus winnow, open soundness issue toml-rs/toml#1175 at a commit
+  gate), 2 (medium: full rewrite; append-concatenation happens to stay
+  valid for files holding only [[rule]] tables), 4 (high: gitleaks
+  lineage, industry standard), 4 (high), 4 (high: frozen 1.0 spec,
+  heavily maintained multi-contributor crates). Total 20/28 = 71.4.
+
+Baseline order: NestedText 75.0 > tail 71.4 = TOML 71.4 > block 67.9.
+
+## Sensitivity (one input at a time)
+
+The baseline is NOT stable; the winner changes under single-weight
+raises, and several medium-confidence single-step rating shifts reorder
+the 21/20/20/19 cluster. Outcome-changing weight raises:
+
+- Criterion 3 (parser auditability) raised: tail-format wins
+  (36 versus block 35, NestedText 33, TOML 24 at weight 5).
+- Criterion 4 (migration) raised: block form wins (35 at weight 5).
+- Criterion 5 (precedent) or 7 (maintenance) raised: TOML wins
+  (36 at weight 5).
+- Criterion 1 or 2 raised: NestedText extends its lead.
+- The tail-versus-TOML tie at baseline is itself weight-dependent.
+
+Per the governing skill this requires asking the controlling preference
+rather than inventing a tiebreaker: the decision hinges on which axis
+the maintainer values most for a commit-gate security tool. Conditional
+rankings stand as listed; no recommendation is issued from arithmetic
+alone.
+
 ## Pending sections
 
-- Validation results for the four finalists.
-- Scoring, sensitivity, ranking, recommendation.
+- Maintainer's controlling preference (weight emphasis), refreeze,
+  rerun of the full sensitivity matrix, final ranking and
+  recommendation.
