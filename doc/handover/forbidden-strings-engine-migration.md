@@ -517,8 +517,24 @@ Updated:
     `rule=mongodb-connection-string` four times, in the two planning
     docs, one troubleshooting doc, one package README); the
     `index.html` base64 collision finding is GONE (boundary fix
-    confirmed in CI). Accepting or reshaping those six doc
-    over-matches stays the open maintainer decision from #389.
+    confirmed in CI).
+  - DOC EXAMPLES RESHAPED (maintainer directive "Reshape the doc
+    examples", closing #389's open decision 1 via its ranked option B):
+    `b3808ad16` drops the two mongodb examples to a two-byte password
+    below the rule's three-byte minimum (annotated so the illustration
+    stays honest), hoists the podman example's uid:gid into a variable,
+    and quotes the android-exempt-unused task path whose `-unused:run`
+    tail matched the curl credential rule (that rule has no leading
+    word boundary; any `...-u<word>:<word>` doc line can match it).
+    The commit also went through the gate cleanly on
+    `doc/planning/forbidden-strings-rule-port-review.md`, ending that
+    file's commit block. Side correction: the MONGODB_CORE concat!
+    split was reverted; probing showed the pattern text cannot
+    self-match (the rule wants `://` right after the scheme, the text
+    interposes `(?:\+srv)?`).
+    CI run 29784124951 on `b3808ad16` concluded SUCCESS: the only
+    green push-event run among the last 40 (workflow red since
+    2026-07-12), and the local full-tree scan exits 0.
     Unratified proposal from an earlier session: AGENTS.md rule `RFY`
     ("'X must change' ratifies the problem, not your design; present
     options per OPT and get the concrete design ratified before
