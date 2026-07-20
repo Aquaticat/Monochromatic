@@ -416,10 +416,28 @@ Updated:
     not self-match the deny-list.
     ACTIVATION DEFERRED: the local release binary and CI both still run
     0.2.0 (old escaping);
-    making this live in CI needs a 0.2.1 release
+    making this live in CI needs a release
     (CI downloads the version-matched release binary),
-    bundled with the rule-identity decision below so one release covers
-    both.
+    bundled with the rule-identity decision below and the block-form
+    format (#396) so one release covers all pending scanner changes.
+  - DECIDED 2026-07-20, block-form multi-line rule format (#396,
+    implementation dispatched to a subagent):
+    the maintainer ruled the rule FILE format itself changes so rules can
+    span lines with per-line comments,
+    which is what the always-verbose engine was built for.
+    Spec, verified engine facts (first-column-only `#` comments, mid-line
+    `#` and `/` are literal bytes), whole-line closer design, rejected
+    alternatives, zero-collision audit of the three live rule files, and
+    the CRITICAL binary-before-data-file release sequencing (an old binary
+    reads a block opener as a bare `/` literal that matches nearly every
+    line) all live in
+    `doc/planning/forbidden-strings-block-rule-format.md`.
+    Prior step, same thread: per-code rationale comments restored to
+    `forbidden-strings.append.txt` from the pre-combine revision
+    (`0fd094236`);
+    after #396 ships and the gate/CI run the new binary,
+    that comment block folds into block-form rules with each comment
+    attached to its branch.
   - OPEN DECISION, rule-identity UX (user asked "how does one know which
     rule is the trigger?"):
     the finding `PATH:LINE rule=N` is opaque and the index DRIFTS
