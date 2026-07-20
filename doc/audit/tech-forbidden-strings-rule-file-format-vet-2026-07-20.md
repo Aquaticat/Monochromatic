@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: in progress; lifecycle phase: finalist validation.
+- Status: complete; lifecycle phase: recommended (adoption awaits a separate action request).
 - Subject: forbidden-strings rule-file format.
 - Scope: choose the source format for forbidden-strings rule files
   (shared appendix, local appendix, builtin baseline source).
@@ -108,8 +108,11 @@ validation.
 
 ## Unresolved preferences
 
-- None blocking discovery. Criterion weights are defaulted; the maintainer
-  may re-weight before scoring freezes ratings.
+- Resolved 2026-07-20: the maintainer chose parser auditability as the
+  governing axis, selecting it over boundary safety, smallest change, and
+  ecosystem precedent with each option's full pros, cons, and file
+  preview presented. Criterion 3 is refrozen at weight 5; all others
+  stay 1.
 
 ## Query schedule (frozen)
 
@@ -552,8 +555,70 @@ the maintainer values most for a commit-gate security tool. Conditional
 rankings stand as listed; no recommendation is issued from arithmetic
 alone.
 
-## Pending sections
+## Refrozen rubric and rerun (2026-07-20)
 
-- Maintainer's controlling preference (weight emphasis), refreeze,
-  rerun of the full sensitivity matrix, final ranking and
-  recommendation.
+Weights: criterion 3 at 5, all others 1. Maximum = 11 x 4 = 44.
+
+- Tail-format: 3+2+20+2+2+4+3 = 36/44 = 81.8.
+- Block form: 3+3+20+4+1+1+3 = 35/44 = 79.5.
+- NestedText subset: 4+4+15+2+1+4+3 = 33/44 = 75.0.
+- TOML: 2+3+5+2+4+4+4 = 24/44 = 54.5.
+
+Sensitivity matrix on the refrozen rubric (one input at a time):
+
+- Raising criterion 1 or 2 to 5 flips the winner to NestedText (49
+  versus 48, and 49 versus 44); raising criterion 4 to 5 flips to block
+  (51). Raising 5, 6, or 7 keeps tail-format first.
+- Medium-confidence single-step shifts that reorder: NestedText's
+  criterion-3 rating up one step (3 to 4) puts NestedText first (38);
+  the one-point tail-over-block margin closes under several single
+  shifts (tail criterion 1 or 4 down, block criterion 5 up).
+
+Resolution: these residual instabilities all reduce to the same
+question already put to the maintainer, who chose the auditability
+profile over the boundary-safety and smallest-change profiles with the
+competing pros and cons (including tail's silent-split caveat and full
+migration) explicitly presented. That informed profile-level choice is
+the controlling preference the skill directs sensitivity to defer to;
+re-asking each pairwise variant would re-litigate the same decision.
+The NestedText criterion-3 shift scenario is additionally bounded by
+measurement: the validated prototypes measure the tail reader at
+roughly two thirds the size of the NestedText subset reader with no
+escaping logic in either, so rating tail above NestedText on criterion
+3 is evidence-backed, not a coin flip.
+
+## Final ranking
+
+1.  Tail-format sectioned rule file (81.8).
+2.  Block form (79.5). Tail beats block because structural per-rule
+    names dissolve the live rule-identity drift problem at zero cost
+    while block has no naming slot, and tail's parser is the smaller of
+    the two; block's zero-migration advantage does not offset losing
+    names under the frozen weights.
+3.  NestedText subset (75.0). Block beats NestedText under the
+    auditability-governed rubric: the smaller in-house parsers win the
+    weighted criterion, and NestedText's superior boundary immunity and
+    ergonomics are exactly the axes the maintainer declined to
+    prioritize.
+4.  TOML (54.5). NestedText beats TOML on every axis except precedent
+    and upstream maintenance; TOML's 16700-line parsing path with an
+    open soundness report is disqualifying in practice at weight-5
+    auditability even though it passes every hard gate.
+
+## Recommendation
+
+Adopt the tail-format sectioned rule file, conditional on two items the
+adopting design must carry:
+
+- The header-collision mitigation is mandatory, not optional: the
+  documented in-dialect reshape plus a producer-side or authoring-time
+  validator refusing content lines of the exact header shape, because
+  the validated failure mode is silent.
+- The bare-literal classification fork (single-line sections classified
+  by the incumbent two-form rule, versus a literal-list section form
+  for the literal-dense local appendix) is an open design decision for
+  the adoption spec, not settled by this vet.
+
+Adoption is not authorized by this report; a separate action request
+triggers the decision record, the format spec rewrite, and
+implementation (issue #396 currently on hold).
