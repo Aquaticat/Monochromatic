@@ -184,6 +184,46 @@ await describe({
       },
     },),
     it({
+      name: 'records Lezer tree iteration and dot-prop path query observations',
+      fn: async () => {
+        /** Audited Tree spec-property iteration effect. */
+        const iterate = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: '@lezer/common',
+            major: 1,
+          },
+          ownerType: 'Tree',
+          member: 'iterate',
+        },);
+        expect(iterate,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (iterate === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected Tree.iterate package effect.',);
+        expect(iterate.targets,).toEqual([],);
+        expect(iterate.invokedArgumentProperties,).toEqual([{
+          argumentIndex: 0,
+          propertyNames: [
+            'enter',
+            'leave',
+          ],
+        },],);
+        /** Audited dot-prop chained property read effect. */
+        const pathQuery = intrinsicEffect({
+          provenance: {
+            kind: 'package',
+            packageName: 'dot-prop',
+            major: 10,
+          },
+          ownerType: 'globalThis',
+          member: 'getProperty',
+        },);
+        expect(pathQuery,).not.toBe(NO_INTRINSIC_EFFECT,);
+        if (pathQuery === NO_INTRINSIC_EFFECT)
+          throw new Error('Expected dot-prop getProperty package effect.',);
+        expect(pathQuery.targets,).toEqual([],);
+      },
+    },),
+    it({
       name: 'records DataView integer reads and writes',
       fn: async () => {
         [

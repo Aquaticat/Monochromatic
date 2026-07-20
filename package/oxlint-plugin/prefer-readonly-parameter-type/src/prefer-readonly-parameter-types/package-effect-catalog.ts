@@ -4,6 +4,7 @@
  * @module
  */
 
+import { DOT_PROP_PACKAGE_EFFECTS, } from './dot-prop-package-effect-catalog.ts';
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { LEZER_PACKAGE_EFFECTS, } from './lezer-package-effect-catalog.ts';
 import { NANO_SPAWN_PACKAGE_EFFECTS, } from './nano-spawn-package-effect-catalog.ts';
@@ -23,6 +24,7 @@ import { TYPESCRIPT_PACKAGE_EFFECTS, } from './typescript-package-effect-catalog
  * migrating off Optique entirely.
  */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  ...DOT_PROP_PACKAGE_EFFECTS,
   ...LEZER_PACKAGE_EFFECTS,
   ...NANO_SPAWN_PACKAGE_EFFECTS,
   ...PI_PACKAGE_EFFECTS,
