@@ -700,12 +700,18 @@ async function generateForbiddenStringsRules(): Promise<void> {
     content: `# forbidden-strings per-repo appendix (gitignored).
 # Sensitive deny-list rules that must NOT enter version control: codenames,
 # customer names, partner identifiers, politically-charged literals, etc.
-# Add literal substrings or /PATTERN/FLAGS regex rules below; one per line.
+# Tail-format sections: a '==> name <==' header opens one rule (a bare
+# literal or a /PATTERN/FLAGS regex on a single significant line; several
+# significant lines form one verbatim always-verbose pattern).
+# Section names surface in findings and CI logs as 'rule=<name>', so give
+# sensitive rules deliberately opaque names (for example sequential
+# 'local-001' style) that reveal nothing about what the rule bans.
 # This file is concatenated onto forbidden-strings.append.txt by
 # file-enforcer to produce the runtime .cache/forbidden-strings.rules.txt
 # (the betterleaks baseline ships inside the scanner binary; repo scans
-# pass --builtin-rules). Non-sensitive shared rules belong in the
-# checked-in forbidden-strings.append.txt instead.
+# pass --builtin-rules). Names must not collide with the shared appendix's
+# or the baseline's. Non-sensitive shared rules belong in the checked-in
+# forbidden-strings.append.txt instead.
 `,
   },);
   await mkdir(
@@ -718,10 +724,11 @@ async function generateForbiddenStringsRules(): Promise<void> {
       `# Generated from forbidden-strings.append.txt + forbidden-strings.append.local.txt by file-enforcer.
 # Do not edit manually. Baseline credential rules are NOT in this file: they
 # ship inside the forbidden-strings binary and repo invocations pass
-# --builtin-rules (edit package/cli/forbidden-strings/src/mise.port-betterleaks.ts
-# to change them). To add shared (non-sensitive) rules, edit
-# forbidden-strings.append.txt. To add sensitive rules, edit
-# forbidden-strings.append.local.txt.
+# --builtin-rules (regenerate via
+# mise run //package/cli/forbidden-strings:generate:rules). To add shared
+# (non-sensitive) rules, edit forbidden-strings.append.txt. To add sensitive
+# rules, edit forbidden-strings.append.local.txt; section names must stay
+# unique across the concatenation.
 
 ${await cat([
         './forbidden-strings.append.txt',

@@ -1,8 +1,21 @@
 # Forbidden-strings rule-identity UX
 
 Status:
-open design decision as of 2026-07-17,
-awaiting the maintainer's choice on the forks in the last section.
+RESOLVED 2026-07-20 by maintainer instruction
+("migrating the rules so every rule can have a sanitized name that
+forbidden-string rule match outputs can refer to";
+local rules hide even their subject area).
+Outcome:
+findings render named rules as `rule=<name>` (tail-format section names;
+baseline names are betterleaks ids embedded at build time as a name
+sidecar),
+unnamed legacy rules keep the offset numeric fallback,
+cross-set name collisions fail the load closed,
+and local-appendix rules take opaque sequential `local-NNN` names.
+The namespacing (`builtin:`/`local:`) and hash options below were not
+adopted;
+names alone kill the index drift.
+The analysis stays for the record.
 
 Context:
 the forbidden-strings engine migration

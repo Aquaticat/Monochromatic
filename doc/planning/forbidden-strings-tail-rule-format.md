@@ -88,11 +88,18 @@ newline tail guarantees, plus any of the body's own).
 ## Rule identity
 
 The section name is the rule's stable identity. Sensitive local rules
-receive maintainer-chosen safe names, because names surface in findings
-and CI logs. How findings render names (versus the current drifting
-`rule=N` index) is the rule-identity decision
-(`doc/planning/forbidden-strings-rule-identity-ux.md`), which this
-format gives a carrier but does not decide.
+receive deliberately opaque names, because names surface in findings
+and CI logs.
+
+DECIDED (maintainer, 2026-07-20, resolving
+`doc/planning/forbidden-strings-rule-identity-ux.md`): findings render
+named rules as `rule=<name>`; unnamed legacy rules keep the offset
+numeric `rule=N` fallback. Baseline names are the betterleaks ids,
+embedded at build time as a name sidecar beside the precompiled set.
+A runtime rule name that collides with a baseline name fails the load
+closed. Local-appendix rules use opaque sequential names (`local-NNN`)
+that reveal nothing about a rule's topic, per the maintainer's
+instruction to hide even the subject area of the local rules.
 
 ## Migration sequencing (binary before data files)
 

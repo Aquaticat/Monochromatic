@@ -77,7 +77,7 @@ jobs:
       # repo-wide rules) plus the per-repo secret when one is configured. The
       # embedded betterleaks-ported baseline is NOT a file here: the scan steps
       # activate it with --builtin-rules, which reads it from inside the
-      # 0.2.0 binary. This keeps the baseline credential scan running even when
+      # downloaded binary. This keeps the baseline credential scan running even when
       # no secret exists, while the sensitive repo-specific literals stay
       # out-of-band: the gitignored forbidden-strings.append.local.txt is
       # absent in CI, so its sensitive equivalent is the FORBIDDEN_STRINGS_LIST

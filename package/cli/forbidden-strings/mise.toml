@@ -58,9 +58,13 @@ shell = "node --input-type=module-typescript -e"
 run = """
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
+// No --rules flag: the root mise [env] exports FORBIDDEN_STRINGS_RULES
+// pointing at the file-enforcer composed .cache rules file (the retired
+// root forbidden-strings.local.txt no longer exists). --builtin-rules
+// mirrors how the commit gate and CI invoke the scanner.
 const child = spawn(
   './package/cli/forbidden-strings/target/release/forbidden-strings',
-  ['--rules', './forbidden-strings.local.txt', '--all'],
+  ['--builtin-rules', '--all'],
   { cwd: '../../..', stdio: 'inherit' },
 )
 await once(child, 'exit')

@@ -488,13 +488,27 @@ function isStrictSectionName({ id, }: { readonly id: string; },): boolean {
   /**
    * Leading character; the grammar restricts it to `[a-z0-9]`.
    */
-  const first = id[0]!;
+  const first = id.charAt(0,);
   if (!(((first >= 'a') && (first <= 'z')) || ((first >= '0') && (first <= '9'))))
     return false;
-  return [...id,].every(function isNameChar(ch,): boolean {
-    return ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9'))
-      || (ch === '.') || (ch === '-');
-  },);
+  // Indexed UTF-16 walk instead of string spread: the alphabet is pure ASCII,
+  // so any surrogate half fails the range checks and rejects correctly.
+  for (let index = 0; index < id.length; index += 1) {
+    /**
+     * Single UTF-16 unit under the cursor.
+     */
+    const ch = id.charAt(index,);
+    /**
+     * Whether the unit sits inside the strict section-name alphabet.
+     */
+    const isNameChar = ((ch >= 'a') && (ch <= 'z'))
+      || ((ch >= '0') && (ch <= '9'))
+      || (ch === '.')
+      || (ch === '-');
+    if (!isNameChar)
+      return false;
+  }
+  return true;
 }
 
 /**
