@@ -67,6 +67,12 @@ function isQuotaExceededError(error: unknown,): boolean {
  * this once per sink at startup and owns the resulting availability, so no
  * verified/available flag is kept here.
  *
+ * Node-compatible server runtimes fail verification even though Node 22+
+ * exposes a working `sessionStorage` global: this sink exists for per-tab
+ * browser persistence, server processes already persist through the file
+ * sink, and the duplicate synchronous `setItem` per record measurably slows
+ * hot server paths (522 ms of a profiled 13.7 s oxlint semantic rebuild).
+ *
  * @returns Whether sessionStorage is available and round-trips a probe write.
  *
  * @example
@@ -77,6 +83,10 @@ function isQuotaExceededError(error: unknown,): boolean {
  * ```
  */
 function verifySessionStorage(): Promise<boolean> {
+  if (globalThis.process
+    ?.versions
+    ?.node !== undefined)
+    return Promise.resolve(false,);
   try {
     /**
      * Sentinel key used only for the probe write/read; removed afterward to avoid polluting real log entries.

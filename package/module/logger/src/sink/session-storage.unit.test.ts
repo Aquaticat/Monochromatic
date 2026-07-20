@@ -131,24 +131,28 @@ function sinkFailureCount(calls: readonly string[],): number {
 }
 
 // Node exposes an in-memory Web Storage `sessionStorage` (on by default in the
-// v26 the test runner uses), so the sink genuinely works under node and this
-// file exercises the available path directly: verify round-trips and writes
-// persist under incrementing namespaced keys. The browser environment is
-// covered by `session-storage.browser.test.ts`; OPFS, whose backend node
-// lacks, covers the unavailable-verify fallback in `opfs.unit.test.ts`.
+// v26 the test runner uses), so write mechanics are exercised directly against
+// a genuine backend here: records persist under incrementing namespaced keys
+// and eviction obeys quota accounting. Verification is a separate concern:
+// the sink is browser-scoped, so verify rejects Node-branded runtimes even
+// though their backend works, keeping server processes on the file sink and
+// off the per-record synchronous `setItem` cost. The browser availability
+// path is covered by `session-storage.browser.test.ts`; OPFS, whose backend
+// node lacks, covers the unavailable-verify fallback in `opfs.unit.test.ts`.
 await describe({
   name: 'sessionStorage sink (node web storage)',
   // Serial because every test shares the one process-global sessionStorage.
   concurrency: 1,
   children: [
     it({
-      name: 'verify resolves true where sessionStorage round-trips',
+      name: 'verify resolves false under a Node-branded runtime despite a working backend',
       fn: async () => {
-        // The probe writes a sentinel, reads it back, and removes it; a match
-        // proves the backend persists, so verify reports it available.
+        // Node's web storage round-trips, so a probe alone would elect this
+        // sink and duplicate the file sink on every server log record; verify
+        // must reject on runtime brand before probing.
         const sink = createSessionStorageSink();
         expect(await sink.verify(),)
-          .toBe(true,);
+          .toBe(false,);
       },
     },),
 
