@@ -1,4 +1,5 @@
-import { nodeConfig,
+import {
+  nodeConfig,
   type NodeFlavorConfig,
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
