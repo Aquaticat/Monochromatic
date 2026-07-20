@@ -24,11 +24,11 @@ const PNPM_LOCKFILE_UNAVAILABLE: unique symbol = Symbol(
 );
 
 /**
- * Cached lockfile text and metadata identity by exact path.
+ * Cached parsed package keys and metadata identity by exact lockfile path.
  */
-const lockTextByPath = new Map<string, {
+const lockKeysByPath = new Map<string, {
   readonly signature: string;
-  readonly text: string;
+  readonly keys: ReadonlySet<string>;
 }>();
 
 /**
@@ -67,13 +67,78 @@ function nearestPnpmLockfile(
 }
 
 /**
- * Reads governing lockfile once in stable lint process.
+ * Extracts package key from one lockfile line when line carries one.
+ *
+ * Package and snapshot keys sit at two-space indentation as
+ * `  name@version:`, `  name@version(peers):`, or their single-quoted
+ * variants used by scoped names. Extraction reads between indentation
+ * (plus optional opening quote) and matching delimiter, so membership
+ * of `name@version` in extracted keys equals prior per-call prefix and
+ * delimiter probing.
+ *
+ * @param line - One lockfile line.
+ *
+ * @returns exact `name@version` key or undefined for non-key lines.
+ */
+function lockfileLinePackageKey(line: string,): string | undefined {
+  if (!line.startsWith('  ',))
+    return undefined;
+  /**
+   * Whether key uses single-quoted form.
+   */
+  const quoted = line[2] === "'";
+  /**
+   * First character index of candidate key text.
+   */
+  const start = quoted ? 3 : 2;
+  /* Linear delimiter scan; quoted keys end at closing quote or peer
+   * parenthesis, unquoted keys end at colon or peer parenthesis. */
+  for (let index = start; index < line.length; index++) {
+    /**
+     * Current scanned character.
+     */
+    const character = line[index];
+    if ((character === '(')
+      || (quoted ? (character === "'") : (character === ':')))
+      return line.slice(
+        start,
+        index,
+      );
+  }
+  return undefined;
+}
+
+/**
+ * Parses every package and snapshot key from lockfile text.
+ *
+ * @param text - Complete governing lockfile text.
+ *
+ * @returns exact `name@version` keys occurring in lockfile.
+ */
+function lockfilePackageKeys(text: string,): ReadonlySet<string> {
+  /**
+   * Collected package keys for one lockfile snapshot.
+   */
+  const keys = new Set<string>();
+  for (const line of text.split('\n',)) {
+    /**
+     * Extracted key for current line, when line carries one.
+     */
+    const key = lockfileLinePackageKey(line,);
+    if (key !== undefined)
+      keys.add(key,);
+  }
+  return keys;
+}
+
+/**
+ * Reads and parses governing lockfile once per metadata identity.
  *
  * @param path - Exact pnpm lockfile path.
  *
- * @returns lockfile text.
+ * @returns parsed package keys.
  */
-function lockfileText(path: string,): string {
+function lockfileKeys(path: string,): ReadonlySet<string> {
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor validates governing lockfile metadata before cached reuse. */
   /**
    * Current governing lockfile metadata.
@@ -85,11 +150,11 @@ function lockfileText(path: string,): string {
    */
   const signature = `${String(metadata.dev,)}:${String(metadata.ino,)}:${String(metadata.size,)}:${String(metadata.mtimeMs,)}:${String(metadata.ctimeMs,)}`;
   /**
-   * Prior lockfile text retained for exact metadata identity.
+   * Prior parsed keys retained for exact metadata identity.
    */
-  const cached = lockTextByPath.get(path,);
+  const cached = lockKeysByPath.get(path,);
   if ((cached !== undefined) && (cached.signature === signature))
-    return cached.text;
+    return cached.keys;
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor reads governing lockfile after metadata cache miss. */
   /**
    * Exact governing lockfile text.
@@ -99,59 +164,22 @@ function lockfileText(path: string,): string {
     'utf8',
   );
   /* oxlint-enable no-restricted-syntax/no-sync */
-  lockTextByPath.set(
+  /**
+   * Package keys parsed once for every later eligibility query.
+   */
+  const keys = lockfilePackageKeys(text,);
+  lockKeysByPath.set(
     path,
     {
       signature,
-      text,
+      keys,
     },
   );
-  return text;
+  return keys;
 }
 
 /**
- * Tests whether lockfile key starts with exact package name and version.
- *
- * @param line - One lockfile line.
- *
- * @param identity - Exact installed package identity.
- *
- * @returns whether line is matching package or snapshot key.
- */
-function matchesPackageKey({
-  line,
-  identity,
-}: {
-  readonly line: string;
-  readonly identity: InstalledPackageIdentity;
-}): boolean {
-  /**
-   * Unquoted lock key prefix used by ordinary package names.
-   */
-  const unquoted = `  ${identity.name}@${identity.version}`;
-  /**
-   * Quoted lock key prefix used by scoped package names.
-   */
-  const quoted = `  '${identity.name}@${identity.version}`;
-  if (line.startsWith(unquoted,)) {
-    /**
-     * Delimiter after exact unquoted package version.
-     */
-    const delimiter = line[unquoted.length];
-    return (delimiter === ':') || (delimiter === '(');
-  }
-  if (line.startsWith(quoted,)) {
-    /**
-     * Delimiter after exact quoted package version.
-     */
-    const delimiter = line[quoted.length];
-    return (delimiter === "'") || (delimiter === '(');
-  }
-  return false;
-}
-
-/**
- * Clears process-local lockfile text at semantic lifecycle boundary.
+ * Clears process-local lockfile keys at semantic lifecycle boundary.
  *
  * @example
  * ```ts
@@ -159,7 +187,7 @@ function matchesPackageKey({
  * ```
  */
 export function clearLockfilePackageEligibilityCache(): void {
-  lockTextByPath.clear();
+  lockKeysByPath.clear();
 }
 
 /**
@@ -189,12 +217,6 @@ export function packageVersionIsLocked({
   const path = nearestPnpmLockfile(configFileName,);
   if (path === PNPM_LOCKFILE_UNAVAILABLE)
     return false;
-  return lockfileText(path,)
-    .split('\n',)
-    .some(function packageKey(line,): boolean {
-      return matchesPackageKey({
-        line,
-        identity,
-      },);
-    },);
+  return lockfileKeys(path,)
+    .has(`${identity.name}@${identity.version}`,);
 }
