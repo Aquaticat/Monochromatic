@@ -29,10 +29,13 @@ hard gates, validation, and sensitivity live in the vet report.
 
 ## Conditions carried from the vet
 
-- The header-collision mitigation is mandatory: a tightly constrained
-  header name grammar, a fail-closed loader error on loose-shaped
-  near-headers, and a documented reshape convention (spec sections
-  "Header grammar" and "Collision mitigation").
+- The header-collision mitigation is mandatory, strengthened by
+  maintainer ruling 2026-07-20: any non-header line whose trimmed form
+  starts with `==>` fails the load closed, and genuine arrow-leading
+  content uses the `[=]=> ` reshape in regex bodies (bare literals
+  cannot begin with `==>`; `[=]` in a literal stays literal). Nothing
+  arrow-leading is ever silently absorbed (spec sections "Near-header
+  fail-closed rule" and "Collision mitigation").
 - The bare-literal fork resolved by maintainer correction 2026-07-20:
   every rule, bare literals included, is its own named section
   (single-significant-line bodies classify by the incumbent two-form

@@ -21,29 +21,31 @@ A section opens with a line matching exactly:
   but names are unique within one loaded rule set (duplicate names are a
   fail-closed load error).
 
-The constrained name alphabet is the primary collision defense: a
-content line such as `==> /etc/passwd <==` or `==> X9 <==` is not a
-header and stays pattern content.
+The constrained name alphabet defines valid names; collision defense
+is the arrow rule below (maintainer ruling 2026-07-20, replacing an
+earlier draft where out-of-alphabet arrow lines stayed content).
 
 ## Near-header fail-closed rule
 
-A line matching the loose shape `==> ... <==` whose name violates the
-strict grammar is a fail-closed load error (redacted, reporting the line
-number only), not content and not a header. Rationale: the overwhelmingly
-likely cause is a mistyped header, and silently absorbing it into the
-previous section's body is the one failure mode the vet validated as
-silent. Genuine content of that shape is written with the reshape
-convention below.
+Any line whose trimmed form starts with `==>` and is not exactly a
+strict header line is a fail-closed load error (redacted, reporting the
+line number only). This covers case-typo'd headers, indented would-be
+headers, missing-space typos, and genuine content about tail-style
+text alike; nothing arrow-leading is ever silently absorbed into a
+section body, which closes the silent-split failure mode the vet
+validated. Genuine content is written with the reshape convention
+below. A `#`-leading comment line mentioning an arrow is unaffected
+(its trimmed form starts with `#`).
 
 ## Collision mitigation (mandatory, from the vet)
 
-A rule body that must genuinely match tail-style header text never
-writes the header shape literally at line start. Reshape the first byte
-with a character class, for example `[=]=> ` in place of `==> `, which
-compiles to the same match. This convention is documented here and in
-the shared appendix header comment; within-alphabet literal collisions
-(a body line that is exactly a strict header) remain expressible only
-via reshape.
+A regex body that must genuinely match line-leading tail-style text
+reshapes the first byte with a character class: `[=]=> ` in place of
+`==> `, compiling to the same match. A bare literal cannot begin with
+`==>` at all; express such a rule in regex form instead. Inside a bare
+literal, `[=]` remains the literal three characters (the escaper
+escapes brackets; there is no de-reshaping in literal context;
+maintainer ruling 2026-07-20).
 
 ## Section body classification
 
