@@ -233,6 +233,48 @@ within run-to-run noise):
   15.9 µs per record of main-thread enqueue cost;
   382 µs per record wall time for 2000 writes issued then all awaited.
 
+### Batch-size sweep
+
+Rerunning the harness's batched loop with batch sizes swept across
+1, 5, 10, 25, 50, 100, 250, 500, and 1000 records per key
+(same engine, `http://127.0.0.1` origin;
+the sweep is the embedded harness with `batchSize` iterated instead of
+fixed) shows the batch size is not magic;
+the curve is per-call overhead amortized as `overhead / batchSize`
+plus a per-char cost that grows with batch bytes:
+
+- `sessionStorage`, 130-char records, µs per record:
+  4.84 at 1; 1.37 at 5; 0.74 at 10; 0.47 at 25; 0.44 at 50;
+  0.35 at 100; 0.26 at 250; 0.26 at 500; 0.40 at 1000.
+- `sessionStorage`, 1030-char records, µs per record:
+  5.87 at 1; 4.87 at 5; 2.40 at 10; 2.00 at 25; 1.67 at 50;
+  1.73 at 100; 3.87 at 250; 7.87 at 500; 8.93 at 1000,
+  a genuine U-shape: at 500 records the flush writes a ~515 KB value
+  and per-record cost exceeds unbatched `setItem`.
+- `localStorage`, 130-char records, µs per record:
+  5.56 at 1; 1.11 at 5; 0.62 at 10; 0.37 at 25; 0.27 at 50;
+  0.24 at 100; 0.32 at 250; 0.22 at 500; 0.19 at 1000.
+- `localStorage`, 1030-char records, µs per record:
+  7.67 at 1; 2.13 at 5; 1.87 at 10; 1.60 at 25; 1.33 at 50;
+  1.27 at 100; 1.33 at 250; 1.53 at 500; 3.33 at 1000.
+- OPFS, 130-char records, main-thread enqueue µs per record:
+  14.3 at 1; 1.45 at 10; 0.35 at 100; 0.20 at 1000;
+  awaited-settle µs per record drops 368 to 0.65 across the same
+  sweep (fewer IPC round trips), with no U-turn up to the ~130 KB
+  write.
+
+The knee sits at roughly 10 to 25 records:
+most of the win is banked there,
+and the region from 25 to a few hundred records is flat for small
+records.
+The U-turn for 1030-char records puts the minimum near 50 to 100
+records, about 50 KB to 100 KB per flush,
+so batch bytes, not batch count, is the variable to cap.
+Flush-call latency scales the same way:
+50 large records flush in about 84 µs,
+while 500 flush in about 3.9 ms,
+which is jank territory if it lands mid-interaction.
+
 Two conclusions the numbers force:
 
 - The synchronous sink is cheap per record (about 5 µs) but linear in
@@ -274,11 +316,17 @@ Buffer serialized records in memory and flush one concatenated
 on a small interval or `requestIdleCallback`,
 plus an unconditional flush on `pagehide` and on
 `visibilitychange` to `hidden`.
-The harness's batched loop is the measured shape:
-100 records per key cuts per-record main-thread cost from about 5 µs
-to 0.26 µs to 1.6 µs depending on record size, a 3x to 19x reduction,
-and it also amortizes eviction to once per batch instead of up to once
-per record.
+The harness's batched loop is the measured shape,
+and the batch-size sweep in Verification sets the parameters:
+cap the buffer by bytes, around 32 KB to 64 KB per flush,
+rather than by record count.
+That lands in the flat bottom of the measured curve for both small and
+large records (0.2 µs to 1.7 µs per record, versus about 5 µs
+unbatched), keeps each flush call under ~100 µs,
+and stays clear of the measured U-turn where a ~515 KB flush costs
+more per record than not batching at all.
+Batching also amortizes eviction to once per batch instead of up to
+once per record.
 
 Tradeoffs:
 
@@ -385,8 +433,11 @@ any sink work before the first genuine await runs on the caller's
 thread,
 and for web storage that is all of it, about 5 µs per record in
 Chromium 149.
-Amortize with one `setItem` per batch (3x to 19x cheaper per record,
-flushed on idle and `pagehide`),
+Amortize with one `setItem` per byte-capped batch
+(32 KB to 64 KB per flush lands in the flat bottom of the measured
+curve, 3x to 26x cheaper per record; a fixed record count is the wrong
+knob, since ~515 KB flushes cost more per record than not batching),
+flushed on idle and `pagehide`,
 and remember the measured surprise:
 the OPFS sink's enqueue costs about 3x more main-thread time per
 record than `setItem`,
