@@ -39,9 +39,19 @@ mod error;
 #[path = "src/rule/frx/escape.rs"]
 mod escape;
 
-/// Registers the two-form file-format parser and flag policy shared with the runtime.
+/// Registers the format autodetector, legacy line parser, and flag policy shared
+/// with the runtime.
 #[path = "src/rule/frx/format.rs"]
 mod format;
+
+/// Registers the tail-format sectioned parser shared with the runtime.
+///
+/// The `format` module this build script includes now routes through the section
+/// parser, so the section source must be included here too or the shared `#[path]`
+/// parser would not compile. The committed baseline is legacy-format, so this parser
+/// is never exercised at build time; it only needs to compile.
+#[path = "src/rule/frx/sections.rs"]
+mod sections;
 
 /// Compiles the ported baseline once and writes its serialized bytes into `OUT_DIR`.
 ///
@@ -55,6 +65,7 @@ fn main() {
     // build script's own edits are tracked by cargo automatically.
     println!("cargo:rerun-if-changed=data/builtin-rules.txt");
     println!("cargo:rerun-if-changed=src/rule/frx/format.rs");
+    println!("cargo:rerun-if-changed=src/rule/frx/sections.rs");
     println!("cargo:rerun-if-changed=src/rule/frx/escape.rs");
     println!("cargo:rerun-if-changed=src/rule/frx/error.rs");
 

@@ -41,6 +41,33 @@ pub enum LoadError {
         /// Engine's static reason; a codec/validation message, never rule text.
         reason: CompileError,
     },
+    /// A tail-format line matched the loose `==> ... <==` shape but its name
+    /// violated the strict lowercase-kebab grammar, so it is a mistyped header,
+    /// never absorbed silently into the previous section's body.
+    NearHeader {
+        /// 1-based source line of the malformed header; carries no name text.
+        line: usize,
+    },
+    /// A tail-format file carried significant content before its first section
+    /// header, which the format forbids so no rule can escape a section.
+    PreHeaderContent {
+        /// 1-based source line of the offending pre-header content.
+        line: usize,
+    },
+    /// A tail-format section header opened a body with no significant rule line,
+    /// which is fail-closed rather than a silently dropped section.
+    EmptySection {
+        /// 1-based source line of the empty section's header.
+        line: usize,
+    },
+    /// Two tail-format sections declared the same name, which collides the rule
+    /// identities the format exists to keep unique across the loaded input.
+    DuplicateName {
+        /// 1-based source line where the name was first declared.
+        first_line: usize,
+        /// 1-based source line of the colliding redeclaration.
+        line: usize,
+    },
 }
 
 /// Renders a `LoadError` as a redacted, user-facing diagnostic.
@@ -64,6 +91,24 @@ impl fmt::Display for LoadError {
             }
             LoadError::Precompiled { reason } => {
                 return write!(f, "precompiled ruleset failed to load: {reason}")
+            }
+            LoadError::NearHeader { line } => {
+                return write!(
+                    f,
+                    "line {line}: malformed section header; a '==> name <==' header takes a lowercase kebab-with-dots name",
+                )
+            }
+            LoadError::PreHeaderContent { line } => {
+                return write!(f, "line {line}: content before the first section header")
+            }
+            LoadError::EmptySection { line } => {
+                return write!(f, "line {line}: section header has no rule body")
+            }
+            LoadError::DuplicateName { first_line, line } => {
+                return write!(
+                    f,
+                    "line {line}: duplicate section name first declared at line {first_line}",
+                )
             }
         }
     }

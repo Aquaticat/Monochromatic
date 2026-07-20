@@ -39,6 +39,43 @@ fn precompiled_renders_engine_reason() {
 }
 
 #[test]
+fn near_header_renders_line_number_only() {
+    let rendered = LoadError::NearHeader { line: 7 }.to_string();
+    assert!(rendered.contains("line 7"), "{rendered}");
+    assert!(rendered.contains("section header"), "{rendered}");
+}
+
+#[test]
+fn pre_header_content_renders_line_number() {
+    let rendered = LoadError::PreHeaderContent { line: 2 }.to_string();
+    assert!(rendered.contains("line 2"), "{rendered}");
+    assert!(rendered.contains("before the first section header"), "{rendered}");
+}
+
+#[test]
+fn empty_section_renders_line_number() {
+    let rendered = LoadError::EmptySection { line: 4 }.to_string();
+    assert!(rendered.contains("line 4"), "{rendered}");
+    assert!(rendered.contains("no rule body"), "{rendered}");
+}
+
+#[test]
+fn duplicate_name_renders_both_line_numbers() {
+    let rendered = LoadError::DuplicateName { first_line: 1, line: 9 }.to_string();
+    assert!(rendered.contains("line 9"), "{rendered}");
+    assert!(rendered.contains("line 1"), "{rendered}");
+    assert!(rendered.contains("duplicate section name"), "{rendered}");
+}
+
+#[test]
+fn tail_variants_debug_holds_no_free_text_field() {
+    // Every tail-format variant carries only line-number positions, so the derived
+    // Debug is leak-safe by construction like the rest of the type.
+    let debugged = format!("{:?}", LoadError::DuplicateName { first_line: 3, line: 8 });
+    assert!(debugged.contains('3') && debugged.contains('8'), "{debugged}");
+}
+
+#[test]
 fn debug_is_derived_and_holds_no_free_text_field() {
     // LoadError carries only an index, a flag char, and the engine's CompileError;
     // none is rule text, so the derived Debug is leak-safe by construction.

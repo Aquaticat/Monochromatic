@@ -3,6 +3,7 @@
 use super::parse_patterns;
 use super::strip_bom;
 use crate::rule::frx::LoadError;
+use forbidden_regex::RegexSet;
 
 #[test]
 fn literal_line_is_escaped() {
@@ -72,6 +73,53 @@ fn slashed_line_with_nonflag_trailer_is_literal() {
     let patterns = parse_patterns("/x/9").expect("literal");
     assert_eq!(patterns.len(), 1);
     assert_ne!(patterns[0], "x");
-    let set = forbidden_regex::RegexSet::new(&patterns).expect("compile");
+    let set = RegexSet::new(&patterns).expect("compile");
     assert!(set.is_match(b"/x/9"));
+}
+
+#[test]
+fn strict_header_first_line_autodetects_tail_format() {
+    // A strict header on the first significant line routes the whole file through
+    // the tail-format parser: the single-line regex body passes through unchanged.
+    let patterns = parse_patterns("==> qqq-e2e <==\n/foo[0-9]/\n").expect("tail parsed");
+    assert_eq!(patterns, vec!["foo[0-9]".to_string()]);
+}
+
+#[test]
+fn bom_then_header_is_tail_format() {
+    // The BOM is stripped before autodetection, so a BOM directly before the first
+    // header still selects the tail-format path. The literal is eight bytes, so no
+    // boundary gating obscures the assertion.
+    let patterns = parse_patterns("\u{FEFF}==> qqq-bom <==\nabcdefgh\n").expect("bom tail");
+    assert_eq!(patterns, vec!["abcdefgh".to_string()]);
+}
+
+#[test]
+fn legacy_first_line_starting_with_equals_routes_to_legacy() {
+    // A first line starting with `=` is not a strict header, so the whole file
+    // parses byte-for-byte as legacy: two lines yield two literal rules.
+    let patterns =
+        parse_patterns("=legacy-literal\nother-legacy\n").expect("legacy routed");
+    assert_eq!(patterns.len(), 2);
+    let set = RegexSet::new(&patterns).expect("compile legacy");
+    assert!(set.is_match(b"x =legacy-literal y"));
+    assert!(set.is_match(b"z other-legacy w"));
+}
+
+#[test]
+fn tail_format_multiple_sections_parse_in_file_order() {
+    // A multi-section tail file parses end-to-end through the public entry: the
+    // first section's single-line regex and the second's bare literal both survive
+    // in file order, projected to the unchanged `Vec<String>` shape.
+    let patterns = parse_patterns("==> qqq-first <==\n/foo[0-9]/\n==> qqq-second <==\nabcdefgh\n")
+        .expect("two tail sections");
+    assert_eq!(patterns, vec!["foo[0-9]".to_string(), "abcdefgh".to_string()]);
+}
+
+#[test]
+fn tail_format_duplicate_name_fails_closed_end_to_end() {
+    // Name uniqueness is enforced over the whole loaded input at the public entry.
+    let err = parse_patterns("==> qqq-same <==\naaaa\n==> qqq-same <==\nbbbb\n")
+        .expect_err("duplicate name through public entry");
+    assert_eq!(err, LoadError::DuplicateName { first_line: 1, line: 3 });
 }

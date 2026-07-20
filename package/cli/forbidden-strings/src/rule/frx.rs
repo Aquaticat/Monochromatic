@@ -20,8 +20,10 @@ use forbidden_regex::{CompileError, RegexSet};
 mod error;
 /// Registers the literal-to-verbose-dialect escaper.
 mod escape;
-/// Registers the two-form file-format parser and flag policy.
+/// Registers the format autodetector, legacy line parser, and flag policy.
 mod format;
+/// Registers the tail-format sectioned parser and header grammar.
+mod sections;
 
 /// Re-exports the redacted load-error type as this module's public failure.
 pub use error::LoadError;
