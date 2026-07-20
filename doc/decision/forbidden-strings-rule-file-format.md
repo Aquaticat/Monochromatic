@@ -33,10 +33,12 @@ hard gates, validation, and sensitivity live in the vet report.
   header name grammar, a fail-closed loader error on loose-shaped
   near-headers, and a documented reshape convention (spec sections
   "Header grammar" and "Collision mitigation").
-- The bare-literal fork resolved at adoption: sections named with a
-  `.literals` suffix hold one bare literal per line, so the
-  literal-dense local appendix keeps near-incumbent compactness;
-  other single-line sections classify by the incumbent two-form rule.
+- The bare-literal fork resolved by maintainer correction 2026-07-20:
+  every rule, bare literals included, is its own named section
+  (single-significant-line bodies classify by the incumbent two-form
+  rule). A `.literals` list-section form was initially adopted for
+  local-appendix compactness and rejected the same day: uniform
+  per-rule identity is worth one header line per literal.
 
 ## Integration boundary and migration
 

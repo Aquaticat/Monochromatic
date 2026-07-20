@@ -51,16 +51,17 @@ After the header, body lines run to the next header or end of file.
 Trailing blank lines of a section are insignificant (the separator
 newline tail guarantees, plus any of the body's own).
 
-- Name ends in `.literals`: each body line that is non-blank and does
-  not start (after trimming) with `#` is one bare literal rule, escaped
-  and word-boundary-gated exactly like an incumbent bare literal line.
-  Lines starting with `#` are comments (an incumbent bare literal can
-  never start with `#` either).
-- Any other name, body containing exactly one significant line
-  (non-blank, not `#`-leading): classified by the incumbent two-form
-  rule, so a bare literal and a single-line `/PATTERN/FLAGS` both work
-  unchanged inside a named section.
-- Any other name, body containing more than one significant line: the
+- Every section is exactly one rule, and every rule, bare literal or
+  regex, therefore carries its own name (maintainer correction
+  2026-07-20: a literal-list section form was considered and rejected
+  because uniform per-rule identity outweighs local-appendix
+  compactness).
+- A body containing exactly one significant line (non-blank, not
+  `#`-leading): classified by the incumbent two-form rule, so a bare
+  literal (escaped and word-boundary-gated exactly as today) and a
+  single-line `/PATTERN/FLAGS` both work unchanged inside a named
+  section.
+- A body containing more than one significant line: the
   body is one verbatim regex pattern handed to the engine as-is
   (the engine's always-verbose mode ignores blank lines and consumes
   first-column `#` comment lines itself). No delimiters, no flags slot
