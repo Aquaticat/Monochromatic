@@ -18,9 +18,11 @@ type ScannerHit = Readonly<{
    */
   line: number;
   /**
-   * Opaque scanner rule index.
+   * Opaque rule identity token: a tail-format section name over `[a-z0-9.-]`,
+   * or a numeric index for legacy unnamed rules (digits sit inside that same
+   * alphabet). Relayed verbatim; rule text never appears here.
    */
-  rule: number;
+  rule: string;
   /**
    * Plugin-owned materialized path.
    */
@@ -51,6 +53,48 @@ function parsePositiveInteger({
     || (String(parsed,) !== value))
     throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
   return parsed;
+}
+
+/**
+ * Validates a rule identity token against the scanner's name alphabet.
+ *
+ * Accepts a tail-format section name (`[a-z0-9.-]`, non-empty) or a legacy
+ * numeric index, which the same alphabet covers; anything else means the
+ * scanner output drifted and the gate must fail closed rather than relay it.
+ *
+ * @param value - scanner rule field
+ *
+ * @param line - complete scanner line for diagnostic
+ *
+ * @returns validated token
+ */
+function parseRuleToken({
+  value,
+  line,
+}: Readonly<{
+  value: string;
+  line: string;
+}>): string {
+  if (value.length === 0)
+    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+  // Indexed UTF-16 walk instead of string spread: the alphabet is pure ASCII,
+  // so any surrogate half fails the range checks and rejects correctly.
+  for (let index = 0; index < value.length; index += 1) {
+    /**
+     * Single UTF-16 unit under the cursor.
+     */
+    const ch = value.charAt(index,);
+    /**
+     * Whether the unit sits inside the strict section-name alphabet.
+     */
+    const isNameChar = ((ch >= 'a') && (ch <= 'z'))
+      || ((ch >= '0') && (ch <= '9'))
+      || (ch === '.')
+      || (ch === '-');
+    if (!isNameChar)
+      throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+  }
+  return value;
 }
 
 /**
@@ -92,7 +136,7 @@ function parseHit(line: string,): ScannerHit {
       ),
       line,
     },),
-    rule: parsePositiveInteger({
+    rule: parseRuleToken({
       value: line.slice(ruleSeparator + ' rule='.length,),
       line,
     },),
@@ -138,7 +182,7 @@ export function parseScannerOutput({
       const candidate = candidateForPath(hit.scannerPath,);
       return {
         code: 'forbidden-string',
-        message: `Forbidden string matched at line ${String(hit.line)} (rule ${String(hit.rule)}).`,
+        message: `Forbidden string matched at line ${String(hit.line)} (rule ${hit.rule}).`,
         path: candidate.path,
       };
     },);

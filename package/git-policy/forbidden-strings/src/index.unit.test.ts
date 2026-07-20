@@ -173,6 +173,62 @@ await describe({
       },
     },),
     it({
+      name: 'relays tail-format rule names and legacy zero index',
+      fn: async function testRuleNameTokens() {
+        /** Exact materialized scanner path. */
+        const scannerPath = '/tmp/plugin-owned/candidate-0';
+        /**
+         * Lookup shared by both parses.
+         */
+        function lookup(path: string,): CandidateFile {
+          if (path !== scannerPath)
+            throw new Error(`Unexpected scanner path: ${path}`,);
+          return candidate('src/value.ts',);
+        }
+        // A section name (the 0.3.0 scanner's finding identity) relays verbatim.
+        expect(parseScannerOutput({
+          stderr: `${scannerPath}:7 rule=github-pat`,
+          candidateForPath: lookup,
+        },),).toEqual([{
+          code: 'forbidden-string',
+          message: 'Forbidden string matched at line 7 (rule github-pat).',
+          path: 'src/value.ts',
+        },],);
+        // Legacy numeric ids are 0-based: rule=0 is the first rule, not malformed.
+        expect(parseScannerOutput({
+          stderr: `${scannerPath}:1 rule=0`,
+          candidateForPath: lookup,
+        },),).toEqual([{
+          code: 'forbidden-string',
+          message: 'Forbidden string matched at line 1 (rule 0).',
+          path: 'src/value.ts',
+        },],);
+      },
+    },),
+    it({
+      name: 'rejects rule tokens outside the section-name alphabet',
+      fn: async function testRuleTokenAlphabet() {
+        /** Captured plugin errors, one per malformed token shape. */
+        const failures = await Promise.all([
+          'rule=',
+          'rule=UPPER',
+          'rule=has space',
+          'rule=semi;colon',
+        ].map(async function parseBadToken(bad,) {
+          return await capturePluginError(async function parseOne() {
+            parseScannerOutput({
+              stderr: `/tmp/plugin-owned/candidate-0:1 ${bad}`,
+              candidateForPath: function noCandidate(): never {
+                throw new Error('Candidate lookup must not run.',);
+              },
+            },);
+          },);
+        },),);
+        for (const failure of failures)
+          expect(failure.message,).toContain('Malformed',);
+      },
+    },),
+    it({
       name: 'rejects malformed and scanner infrastructure output',
       fn: async function testMalformedOutput() {
         const malformed = await capturePluginError(async function parseMalformed() {
@@ -261,18 +317,19 @@ await describe({
       name: 'preserves scanner walker exclusions for materialized candidates',
       fn: async function testScannerWalkerExclusions() {
         await using directory = await createTestDirectory();
-        /** Scanner requiring exactly three retained candidate arguments. */
+        /** Scanner requiring exactly four retained candidate arguments. */
         const scanner = await writeScanner({
           directory: directory.path,
-          body: `if (process.argv.length !== 5) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
+          body: `if (process.argv.length !== 6) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
         },);
-        /** Paths scanner excludes only at canonical repository locations. */
+        /** Paths scanner excludes only at canonical repository locations,
+         * mirroring the pruned three-entry SCANNER_SELF_MATCH_PATHS plus the
+         * cwd-default rules file. */
         const excludedPaths = [
           'forbidden-strings.local.txt',
           'package/cli/forbidden-strings/data/betterleaks-default-config.toml',
           'package/cli/forbidden-strings/data/builtin-rules.txt',
           'package/cli/forbidden-strings/src/port-betterleaks-relaxations.ts',
-          'package/cli/forbidden-strings/src/rule/algebra_tests.rs',
         ] as const;
         /** Candidates whose bytes must remain unread. */
         const excludedCandidates = excludedPaths.map(function excludedCandidate(path,): CandidateFile {
@@ -283,12 +340,14 @@ await describe({
             },
           };
         },);
-        /** Same basename outside canonical location must remain scannable, and
-         * the retired root example path is ordinary scannable content now that
-         * the baseline lives inside the scanner package. */
+        /** Same basename outside canonical location must remain scannable, the
+         * retired root example path is ordinary scannable content now that
+         * the baseline lives inside the scanner package, and the stale
+         * algebra_tests.rs entry pruned by #389 scans like any other file. */
         const retainedCandidates = [
           candidate('nested/forbidden-strings.local.example.txt',),
           candidate('forbidden-strings.local.example.txt',),
+          candidate('package/cli/forbidden-strings/src/rule/algebra_tests.rs',),
           candidate('src/value.ts',),
         ];
         // The cwd-default exclusion only applies when no env override
