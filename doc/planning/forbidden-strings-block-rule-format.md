@@ -1,8 +1,10 @@
 # Forbidden-strings block-form rule file format
 
 Status:
-decided 2026-07-20 (maintainer directive: the format itself changes);
-implementation pending.
+the maintainer decided 2026-07-20 that the format itself changes;
+the concrete design below is one PROPOSED option (block form),
+not yet ratified against the alternatives (distinct fences, TOML),
+and implementation is on hold until the maintainer picks.
 
 Context:
 the forbidden-regex engine is deliberately always-verbose.
