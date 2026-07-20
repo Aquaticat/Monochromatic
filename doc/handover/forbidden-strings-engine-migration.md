@@ -420,18 +420,26 @@ Updated:
     (CI downloads the version-matched release binary),
     bundled with the rule-identity decision below and the block-form
     format (#396) so one release covers all pending scanner changes.
-  - DECIDED 2026-07-20, block-form multi-line rule format (#396,
-    implementation dispatched to a subagent):
-    the maintainer ruled the rule FILE format itself changes so rules can
-    span lines with per-line comments,
-    which is what the always-verbose engine was built for.
-    Spec, verified engine facts (first-column-only `#` comments, mid-line
-    `#` and `/` are literal bytes), whole-line closer design, rejected
-    alternatives, zero-collision audit of the three live rule files, and
-    the CRITICAL binary-before-data-file release sequencing (an old binary
-    reads a block opener as a bare `/` literal that matches nearly every
-    line) all live in
-    `doc/planning/forbidden-strings-block-rule-format.md`.
+  - ADOPTED 2026-07-20, tail-format sectioned rule files (#396):
+    after a full choosing-technology vet
+    (`doc/audit/tech-forbidden-strings-rule-file-format-vet-2026-07-20.md`,
+    finalists block form, tail-format, NestedText, TOML;
+    maintainer chose parser auditability as the governing axis),
+    the maintainer adopted the tail-format sectioned file:
+    `==> name <==` headers (strict kebab name grammar) delimit rule
+    sections whose bodies the always-verbose engine reads raw;
+    `.literals` sections hold one bare literal per line;
+    near-header lines fail closed;
+    format autodetection keeps legacy files working through the
+    transition.
+    Decision record `doc/decision/forbidden-strings-rule-file-format.md`;
+    normative spec `doc/planning/forbidden-strings-tail-rule-format.md`;
+    the block-form draft is superseded but keeps the verified engine
+    facts.
+    Section names give the rule-identity decision its carrier
+    (baseline sections get betterleaks ids at conversion).
+    CRITICAL sequencing unchanged: binary and release first, gate/CI
+    move second, data-file conversion third.
     Prior step, same thread: per-code rationale comments restored to
     `forbidden-strings.append.txt` from the pre-combine revision
     (`0fd094236`);

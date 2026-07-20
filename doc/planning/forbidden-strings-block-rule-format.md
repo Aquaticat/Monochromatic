@@ -1,10 +1,14 @@
 # Forbidden-strings block-form rule file format
 
 Status:
-the maintainer decided 2026-07-20 that the format itself changes;
-the concrete design below is one PROPOSED option (block form),
-not yet ratified against the alternatives (distinct fences, TOML),
-and implementation is on hold until the maintainer picks.
+SUPERSEDED 2026-07-20.
+The vet (`doc/audit/tech-forbidden-strings-rule-file-format-vet-2026-07-20.md`)
+ranked this design second;
+the maintainer adopted the tail-format sectioned file instead
+(`doc/decision/forbidden-strings-rule-file-format.md`,
+spec `doc/planning/forbidden-strings-tail-rule-format.md`).
+The verified engine facts and the sequencing constraint below remain
+accurate and are cited by the successor documents.
 
 Context:
 the forbidden-regex engine is deliberately always-verbose.
