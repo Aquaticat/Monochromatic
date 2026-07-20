@@ -125,14 +125,18 @@ Rules written for the old resharp dialect (trailing `/i` flags,
  `(?i)` groups,
  unbounded quantifiers) do not load under the strict `0.2.0`
  loader and must be ported once.
-The transitional porter that performed the committed-file port,
+The porter that performed the committed-file port,
  `dialectport`,
- lived in the benchmark sidecar at
+ lives in the benchmark sidecar at
  `package/rust-module/forbidden-regex.bench/src/bin/dialectport.rs`.
 Issue #390 removed it (and its `caseexpand` support module) after the cutover
  settled;
- git history preserves both for anyone who needs to port a fresh
- out-of-band ruleset later.
+ both were recovered when the baseline adopted the tail rule-file
+ format,
+ and `dialectport` is now the standing stage two of
+ `mise run //package/cli/forbidden-strings:generate:rules`
+ (stage one is the TS porter `src/mise.port-betterleaks.ts`,
+ which emits the tail-format intermediate the dialect port rewrites).
 The per-rule semantics the port applies (quantifier bounding,
  three-casing
  expansion of inline case-insensitivity,

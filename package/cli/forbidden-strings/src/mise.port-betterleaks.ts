@@ -1,16 +1,23 @@
-// What:     Port the betterleaks default ruleset to the forbidden-strings
-//           built-in baseline. Input is the upstream betterleaks
-//           configuration TOML stored verbatim under `data/`; output is
-//           written to `<package>/data/builtin-rules.txt` at run time,
-//           where `lib.rs` embeds it into the binary via `include_str!`
-//           (see doc/decision/gitignore-negations.md).
+// What:     Stage one of the two-stage builtin-baseline generation chain.
+//           Input is the upstream betterleaks configuration TOML stored
+//           verbatim under `data/`; output is the tail-format intermediate
+//           at `<repo>/.cache/forbidden-strings-builtin-stage1.txt`, whose
+//           rule bodies are still in the PCRE-leaning pre-port dialect.
+//           Stage two (the `dialectport` bin in
+//           `package/rust-module/forbidden-regex.bench/src/bin/`) rewrites
+//           each `/PATTERN/FLAGS` body into the forbidden-regex dialect,
+//           passes every other line through byte-identically (including the
+//           `==> name <==` section headers this stage emits), and writes the
+//           final `<package>/data/builtin-rules.txt` that `lib.rs` embeds
+//           (see doc/decision/gitignore-negations.md). Run both stages via
+//           `mise run //package/cli/forbidden-strings:generate:rules`.
 // Why:      Forbidden-strings is rules-out-of-band by design, but most
 //           teams want a sane starting deny-list of common credential
 //           shapes. Rather than maintain that list ourselves, we port
 //           betterleaks' default config and document every conversion
 //           and intentional omission. Re-port by replacing
 //           `data/betterleaks-default-config.toml` with a fresh upstream
-//           dump and re-running this script.
+//           dump and re-running the generation chain.
 //
 // Source TOML attribution:
 //   Repo:    https://github.com/betterleaks/betterleaks
@@ -65,14 +72,11 @@
 //                                    mode.
 
 import {
+  mkdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import {
-  dirname,
-  join,
-} from 'node:path';
-import { fileURLToPath, } from 'node:url';
+import { join, } from 'node:path';
 
 import { RELAXATIONS, } from './port-betterleaks-relaxations.ts';
 
@@ -467,16 +471,51 @@ const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
 ],);
 
 /**
- * Render one rule as a forbidden-strings entry (comments + regex line),
+ * Reports whether an id fits the tail-format strict section-name grammar.
+ *
+ * Rejecting here fails the generation loudly instead of shipping a baseline
+ * whose header the scanner would refuse as a near-header at load time.
+ *
+ * @example
+ * ```ts
+ * isStrictSectionName({ id: '1password-secret-key' }); // true
+ * isStrictSectionName({ id: 'Bad_Name' }); // false
+ * ```
+ */
+function isStrictSectionName({ id, }: { readonly id: string; },): boolean {
+  if (id.length === 0)
+    return false;
+  /**
+   * Leading character; the grammar restricts it to `[a-z0-9]`.
+   */
+  const first = id[0]!;
+  if (!(((first >= 'a') && (first <= 'z')) || ((first >= '0') && (first <= '9'))))
+    return false;
+  return [...id,].every(function isNameChar(ch,): boolean {
+    return ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9'))
+      || (ch === '.') || (ch === '-');
+  },);
+}
+
+/**
+ * Render one rule as a tail-format section (header + comments + regex line),
  * applying any {@link RELAXATIONS} entry before converting via {@link pcreToResharp}.
+ *
+ * @throws Error when the betterleaks id falls outside the strict section-name
+ * grammar the scanner enforces on headers.
  */
 function renderRule({ rule, }: { readonly rule: RawRule; },): string {
+  if (!isStrictSectionName({ id: rule.id, },))
+    throw new Error(`betterleaks id '${rule.id}' is not a valid tail-format section name`,);
   /**
    * Accumulator for the output block; joined with newlines at the end.
    */
   const lines: string[] = [];
+  // The betterleaks id doubles as the tail-format section name: the scanner
+  // renders it in findings (`rule=<name>`), so every baseline match is
+  // self-identifying. Ids are lowercase kebab, inside the strict name grammar.
   lines.push(
-    `# === ${rule.id} ===`,
+    `==> ${rule.id} <==`,
     `# ${rule.description}`
   );
   if (rule.pathScope
@@ -539,23 +578,28 @@ function renderRule({ rule, }: { readonly rule: RawRule; },): string {
  */
 const HEADER = `# forbidden-strings built-in baseline deny-list.
 #
-# THIS FILE IS GENERATED. Do not edit by hand. Source of truth is
-# package/cli/forbidden-strings/src/mise.port-betterleaks.ts
-# plus the upstream TOML at
-# package/cli/forbidden-strings/data/betterleaks-default-config.toml.
+# THIS FILE IS GENERATED. Do not edit by hand. It is the output of the
+# two-stage generation chain:
+#   1. package/cli/forbidden-strings/src/mise.port-betterleaks.ts reads the
+#      upstream TOML at
+#      package/cli/forbidden-strings/data/betterleaks-default-config.toml
+#      and emits a tail-format intermediate whose bodies are still PCRE.
+#   2. The dialectport bin in
+#      package/rust-module/forbidden-regex.bench/src/bin/ rewrites each body
+#      into the forbidden-regex dialect and writes this file.
 # Re-generate via:
 #   mise run //package/cli/forbidden-strings:generate:rules
 #
 # Composition:
-#   - This file ports the betterleaks default ruleset into
-#     forbidden-strings format. It is a sane baseline of common
-#     credential shapes (PEM, AWS, Slack, GitHub PAT, etc.) plus
-#     resharp set-algebra demonstrations.
-#   - The build embeds it into the forbidden-strings binary via
-#     \`include_str!\`; the \`--builtin-rules\` flag appends it to
-#     whatever rules file resolves at scan time (and scans with it
-#     alone when the implicit default rules file is absent). Without
-#     the flag the scanner never reads these rules.
+#   - This file ports the betterleaks default ruleset into the
+#     forbidden-strings tail rule-file format. It is a sane baseline of
+#     common credential shapes (PEM, AWS, Slack, GitHub PAT, etc.) plus
+#     two forbidden-regex set-algebra demonstrations.
+#   - The build precompiles it into the forbidden-strings binary; the
+#     \`--builtin-rules\` flag appends it to whatever rules file resolves
+#     at scan time (and scans with it alone when the implicit default
+#     rules file is absent). Without the flag the scanner never reads
+#     these rules.
 #
 # Attribution:
 #   Rules are ported from betterleaks' default configuration
@@ -566,11 +610,13 @@ const HEADER = `# forbidden-strings built-in baseline deny-list.
 #   positives than betterleaks would produce; consult the converter
 #   source for the full list of conversions and intentional omissions.
 #
-# Format reminder:
-#   - Bare line                = case-sensitive literal substring
-#   - /PATTERN/FLAGS           = regex (resharp; supports A&B, ~(A))
-#   - Lines starting with \`#\`  = comment
-#   - Empty lines              = ignored
+# Format reminder (tail rule-file format):
+#   - \`==> name <==\`  = section header; the section name is the rule's
+#     identity, rendered in findings as \`rule=<name>\`. Baseline names are
+#     the upstream betterleaks ids.
+#   - Every section is exactly one rule. A single significant body line is
+#     a bare literal or a \`/PATTERN/FLAGS\` regex; \`#\` lines and blanks
+#     are insignificant.
 #
 # A literal that itself looks like /.../flags must be expressed as a regex
 # (escape the slashes), e.g. ban literal \`/etc/passwd\` as \`/\\/etc\\/passwd/\`.
@@ -580,32 +626,33 @@ const HEADER = `# forbidden-strings built-in baseline deny-list.
 /**
  * Trailer appended to the generated built-in baseline file.
  *
- * Includes two resharp-only set-algebra demonstrations (intersection and
- * complement) so consumers can see capabilities that pure-PCRE engines lack.
+ * Includes two engine-specific set-algebra demonstration sections
+ * (intersection and complement) so consumers can see capabilities that
+ * pure-PCRE engines lack. Each demonstration is its own named section
+ * because the tail format gives every rule its own identity.
  */
-const FOOTER = `# === resharp set-algebra demonstrations (engine-specific) ===
-#
-# Resharp extends standard regex with two top-level set operators that
-# pure-PCRE engines lack:
+const FOOTER = `==> set-algebra-demo-build-tag <==
+# The two demonstration sections here are engine-specific (forbidden-regex
+# set algebra), not betterleaks ports. The engine extends standard regex
+# with two top-level set operators that pure-PCRE engines lack:
 #   - A&B   intersection: matches strings matched by both A and B
 #   - ~(A)  complement:   matches strings that do NOT match A
 # Combined, these express "match X but not Y" without lookaround. PCRE
 # engines (gitleaks, trufflehog, secretlint, plain RE2) cannot do this;
 # the workaround is per-rule allowlists, which scale badly.
-
+#
 # Reads as: "match any 6-digit BUILD_ tag, EXCEPT the all-zeros placeholder."
 /BUILD_[0-9]{6}&~(BUILD_000000)/
 
+==> set-algebra-demo-release-tag <==
 # Intersection composed with two complements: ban any 32-char hex hash
 # under \`RELEASE_TAG_\`, except the documented placeholders.
 # The complements inline their quantifier bodies: \`0{32}\` is a
 # quantified literal (not a quantified group), and the deadbeef
 # placeholder is written as 16 concatenated unquantified
-# \`(de|ad|be|ef)\` groups (32 chars total). Either form avoids
-# resharp Bug E (intersection co-occurring with a \`)\`-quantifier
-# hangs \`calc_prefix_sets_inner\`; see doc/troubleshooting/resharp.md
-# Bug E) and is enforced by the
-# \`complement_intersection_quantified_group\` pre-validator.
+# \`(de|ad|be|ef)\` groups (32 chars total). The inlined shapes date from
+# the resharp era; they compile fine on forbidden-regex and are kept
+# byte-stable so the compiled baseline does not shift.
 /RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_0{32})&~(RELEASE_TAG_${
   '(de|ad|be|ef)'.repeat(16,)
 })/
@@ -630,15 +677,26 @@ async function main(): Promise<void> {
     'betterleaks-default-config.toml',
   );
   /**
-   * Path to the generated baseline inside the package, embedded into the
-   * binary by `lib.rs` via `include_str!` and activated by the
-   * `--builtin-rules` flag.
+   * Path to the repo-root `.cache` scratch directory holding the stage-one
+   * intermediate; gitignored wholesale, shared with the file-enforcer
+   * generated rules file.
    */
-  const outPath = join(
+  const cacheDir = join(
     here,
     '..',
-    'data',
-    'builtin-rules.txt',
+    '..',
+    '..',
+    '..',
+    '.cache',
+  );
+  /**
+   * Path to the stage-one intermediate: tail-format sections whose bodies are
+   * still PCRE. The dialectport bin (stage two) reads exactly this path and
+   * writes the final embedded baseline into the package `data/` directory.
+   */
+  const outPath = join(
+    cacheDir,
+    'forbidden-strings-builtin-stage1.txt',
   );
 
   /**
@@ -687,6 +745,17 @@ async function main(): Promise<void> {
   }
 
   /**
+   * Every kept id, used for the duplicate check below; duplicate section
+   * names are a fail-closed load error in the scanner, so catch them here.
+   */
+  const seenIds = new Set<string>();
+  for (const rule of kept) {
+    if (seenIds.has(rule.id,))
+      throw new Error(`duplicate betterleaks id '${rule.id}' would collide as a section name`,);
+    seenIds.add(rule.id,);
+  }
+
+  /**
    * Concatenated rule blocks rendered between the header and footer.
    */
   const body = kept
@@ -699,6 +768,10 @@ async function main(): Promise<void> {
    * Full output file contents written to disk.
    */
   const content = `${HEADER}${body}${FOOTER}`;
+  await mkdir(
+    cacheDir,
+    { recursive: true, },
+  );
   await writeFile(
     outPath,
     content,

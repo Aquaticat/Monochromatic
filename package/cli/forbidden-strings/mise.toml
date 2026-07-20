@@ -7,8 +7,11 @@ description = "Build the forbidden-strings binary in debug mode"
 run = "cargo build"
 
 [tasks."generate:rules"]
-description = "Regenerate the embedded data/builtin-rules.txt baseline from the vendored betterleaks config"
-run = "node src/mise.port-betterleaks.ts"
+description = "Regenerate the embedded data/builtin-rules.txt baseline from the vendored betterleaks config (two-stage: TS porter, then dialectport)"
+run = [
+  "node src/mise.port-betterleaks.ts",
+  "cargo run --release --manifest-path ../../rust-module/forbidden-regex.bench/Cargo.toml --bin dialectport",
+]
 
 [tasks.lint]
 description = "cargo check (no codegen)"
