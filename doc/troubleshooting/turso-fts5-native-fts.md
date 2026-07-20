@@ -231,3 +231,63 @@ Decision: **do not file, nothing to add.** Every finding here (FTS5 absence, nat
 `USING fts` API, `fts_score` = 0, score-ordering) is already represented by the issues
 above; a new issue or a "me too" comment would be a duplicate. The durable artifact is
 this doc plus the consumer-side workaround already landed.
+
+## 0.7.0: compat API transactional writes to a native-FTS table abort at process teardown
+
+Found 2026-07-20 while probing Drizzle ORM over `@tursodatabase/database@0.7.0`
+(vet report: `doc/audit/tech-drizzle-orm-for-turso-needs-vet-2026-07-20.md`).
+This is an engine bug, not a Drizzle bug; any better-sqlite3-compat consumer hits it.
+
+### Symptom
+
+A process that successfully commits an explicit transaction containing a write to a
+table covered by a native `USING fts` index, through the **compat** API
+(`@tursodatabase/database/compat`), aborts at teardown with SIGABRT (exit 134):
+
+```txt
+thread '<unnamed>' panicked at core/index_method/fts.rs:2628:9:
+FTS Drop: transaction already committed, cannot flush | pending_docs_count=1
+```
+
+All application work completes first; the abort fires when the engine drops during
+process exit, so tests pass their assertions and then the process dies.
+
+### Repro matrix (0.7.0, Linux x64, `:memory:`, `experimental: ['index_method']`)
+
+Every case creates a table, a `USING fts` index over it, and then:
+
+- compat, `transaction()` wrapper insert: **aborts** at exit.
+- compat, raw `BEGIN` + insert + `COMMIT`: **aborts** at exit.
+- compat, transactional insert then explicit `close()`: **still aborts**.
+- compat, non-transactional insert/update/delete: clean exit.
+- promise API, raw `BEGIN` + insert + `COMMIT`, with or without `close()`: clean exit.
+- promise API, non-transactional writes: clean exit.
+- `fts_match`/`fts_score` reads: never the trigger on either API.
+
+So the pending-document flush is mishandled only when the committing context is the
+compat layer's explicit transaction; the promise API path flushes correctly.
+
+### Exposure in this repo
+
+Not exposed today: `package/webapp-productivity/done` and `done-postcss` use the
+promise API and issue no transactions (`rg --ignore-case 'transaction|BEGIN'` over
+`package/webapp-productivity/done/src` matches nothing). The hazard binds any future
+compat-API adoption, notably Drizzle's `better-sqlite3` driver route.
+
+### Workaround
+
+Use the promise API for anything transactional near a native-FTS index. For Drizzle,
+that means the `sqlite-proxy` driver over a promise connection (verified clean,
+including `db.transaction()`), not the `better-sqlite3` driver over compat.
+
+### Upstream filing decision
+
+Open adjacent cluster on `tursodatabase/turso` as of 2026-07-20: #7259 (Tantivy FTS
+panic on cursor Drop after trigger INSERT commits transaction), #7520 (FTS cursor Drop
+panics after failed multi-row insert leaves pending docs), #7530 (FK cascades bypass
+FTS maintenance), #5027 (fts index rollback on failed insert). Same panic family and
+the `pending docs` language matches #7520, but our variant differs on two axes that
+none of the open issues state: the insert **succeeds** and the asymmetry is
+**compat-only** (promise API is clean). That asymmetry is diagnostic signal, so filing
+plausibly adds value rather than duplicating. Filing is an external action and was not
+performed by the evaluation session; if authorized, attach the repro matrix above.
