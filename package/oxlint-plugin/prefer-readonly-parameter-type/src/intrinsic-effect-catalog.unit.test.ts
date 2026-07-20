@@ -167,19 +167,19 @@ await describe({
     it({
       name: 'records TypeScript type-reference target as internal-cache observation',
       fn: async () => {
-        /** Audited Type wrapper target query effect. */
+        /** Audited TypeReference wrapper target query effect. */
         const effect = intrinsicEffect({
           provenance: {
             kind: 'package',
             packageName: 'typescript',
             major: 7,
           },
-          ownerType: 'Type',
+          ownerType: 'TypeReference',
           member: 'getTarget',
         },);
         expect(effect,).not.toBe(NO_INTRINSIC_EFFECT,);
         if (effect === NO_INTRINSIC_EFFECT)
-          throw new Error('Expected Type.getTarget package effect.',);
+          throw new Error('Expected TypeReference.getTarget package effect.',);
         expect(effect.targets,).toEqual([],);
       },
     },),
