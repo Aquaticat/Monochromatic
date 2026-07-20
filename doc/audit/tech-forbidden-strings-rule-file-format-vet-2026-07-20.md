@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: in progress; lifecycle phase: discovery and targeted evidence.
+- Status: in progress; lifecycle phase: finalist validation.
 - Subject: forbidden-strings rule-file format.
 - Scope: choose the source format for forbidden-strings rule files
   (shared appendix, local appendix, builtin baseline source).
@@ -160,8 +160,11 @@ then frozen).
 - Discovery source: class 4 (design alternative in the same draft).
 - Base: incumbent-lineage custom extension. Overlays: as block form.
 - Screening: no hard-gate failure; same properties as block form with a
-  second bespoke syntax. Proceeds (equal-depth rule) though preliminary
-  soft outlook is weakest; soft outlook does not gate promotion.
+  second bespoke syntax.
+- Resolution 2026-07-20: folded into block form as a delimiter-spelling
+  variant; the parser machinery, hazards, and validation results are
+  identical modulo the delimiter, so it is not a separate technology and is
+  not separately validated.
 
 ### TOML
 
@@ -243,10 +246,54 @@ then frozen).
   chosen.
   Proceeds to targeted evidence.
 
-### To screen (discovery in progress)
+### Screened and held (targeted evidence not warranted)
 
-- KDL, StrictYAML, YAML, JSON5/Hjson, scfg, UCL, HCL, and peer secret
-  scanners' formats: enumeration and screening pending the query schedule.
+All screened 2026-07-20 by the evidence agent against the decisive
+question: can a multi-line verbatim regex body carry per-line comments
+interleaved inside the same string, and what is the
+container-to-pattern escaping surface. None hard-fails; none is promoted,
+each for the recorded reason. Cross-cutting mechanism grounding the
+"engine-level comments" notes: the engine's own verbose mode consumes
+first-column `#` lines inside a pattern body (`skip_ignorable`,
+`package/rust-module/forbidden-regex/src/parse/cursor.rs`), so
+per-branch comments are expressible in any verbatim container; containers
+that rewrite leading whitespace endanger that first-column rule.
+
+- KDL 2.0: raw strings disable escapes but multi-line strings are
+  dedented (whitespace rewritten); comments are content inside strings;
+  closing-delimiter collision (`"#`) exists. Same class as TOML with an
+  extra dedent hazard; no advantage. Source: KDL 2.0 spec draft.
+- YAML / StrictYAML: block scalars are indentation-delimited and comments
+  must not appear inside scalars (spec 1.2.2, sections 3.2.3.3, 5.7, 8.1);
+  indentation stripping is the same dedent hazard. No advantage over TOML.
+- JSON5 / Hjson: no true verbatim multi-line carrier (JSON5) or
+  triple-quote with comments-as-content (Hjson). Weakest fit in class.
+- scfg: no multi-line string type at all; a rule body would shred into
+  per-line directives. Poor category fit for one verbatim body.
+- UCL / HCL / HOCON: heredoc or triple-quote verbatim bodies, comments
+  cannot interleave; HCL indented heredoc dedents. Same class as TOML,
+  no advantage. Sources: libucl README, HCL native-syntax spec,
+  lightbend HOCON.md.
+- Pkl / Dhall / Jsonnet / CCL: programmable config languages; parser plus
+  evaluator surface is far larger than a data format with no capability
+  advantage on the decisive question. Held on auditability
+  proportionality.
+
+### Discovery saturation
+
+The frozen schedule and one expansion round executed 2026-07-20
+(evidence agent; per-query counts summarized here, full log in the agent
+transcript). crates.io: nestedtext 3 results (two real crates, one dead
+stub), kdl 170, toml 53113, strictyaml 4, configuration-format and
+config-parser queries surfaced only loaders and the expansion taxonomy
+(HOCON, UCL, HCL, Pkl, Dhall, CCL, quire). lib.rs config category:
+loaders only. GitHub topics configuration-format and config-language:
+experimental sub-25-star projects only; org and code searches confirmed
+the implementation sets. Expansion round added zero new survivors.
+Terminal result: saturated with survivors. Decisive negative finding:
+across every source class, NestedText is the only discovered format
+whose spec makes interleaved comment lines inside a verbatim multi-line
+string legal at the container level.
 
 ## Evidence records
 
@@ -328,14 +375,100 @@ then frozen).
 - Outcome: precedent evidence; peer secret-scanner survey pending from the
   discovery agent.
 
+## Targeted evidence: NestedText (agent, 2026-07-20)
+
+Clones: reference KenKundert/nestedtext at 09753761e0af (v3.8);
+hansstimer/nested-text at ecedd27164ba; both under the agent scratch
+root.
+
+- Spec facts (doc/file_format.rst, doc/basic_syntax.rst): string items
+  are verbatim after tag removal, leading and trailing whitespace on each
+  line retained, last newline removed; a lone `>` is an empty content
+  line; "Comments are lines that have # as the first non-ASCII-space
+  character"; "After comments and blank lines have been removed, adjacent
+  string items with the same indentation level are combined" (the
+  interleaving guarantee); "There is no escaping or quoting in
+  NestedText"; rest-of-line strings keep leading and trailing whitespace.
+- Version cadence: 3.8 (2025-12-26), 3.7 (2024), 3.6 (2023), 3.5 (2022);
+  core grammar stable across v2 to v3; recent churn is Python API, not
+  grammar; implementation-independent test suite since 3.8.
+- Reference implementation health: single maintainer (kenkundert),
+  396 stars, pushed 2026-07-11; five issues updated in 12 months, all
+  closed with maintainer comments; last substantive merge 2026-06-28
+  ("fix comments being silently dropped"). Actively maintained,
+  single-maintainer concentration. Python, so spec authority only for a
+  Rust gate, not a linkable dependency.
+- Rust supply: crate nestedtext 0.1.0 (bob22z) is a dead stub (repo
+  404, published lib.rs empty); ELIMINATED as supply. Crate nested-text
+  0.1.0 (hansstimer, 2026-03-22) parses against the canonical
+  cross-implementation suite; parsing subset about 1225 non-test lines
+  with zero required runtime deps (serde optional); but it is a fresh
+  single-release with zero follow-up activity, no tags, no community,
+  and a committed CLAUDE.md suggesting AI-assisted authorship. Adopting
+  it as a crate scores poorly on criteria 3 and 7; an in-house subset
+  (line classification, one indentation level, comment-and-blank
+  stripping before adjacency, no escaping logic) is the viable supply,
+  with the reference suite reusable for conformance.
+
+## Targeted evidence: TOML in Rust (agent, 2026-07-20)
+
+Clone: toml-rs/toml at a0c14f4b6a46.
+
+- Parsing-path size: toml 1.1.3 (9077 non-test lines) delegating to
+  toml_parser 1.1.2 (5915) plus toml_datetime (1398) and serde_spanned
+  (374), roughly 16700 first-party lines plus the external winnow
+  combinator library; toml_edit 0.25.13 adds 9929 lines and indexmap.
+  All core crates released 2026-07-14.
+- Maintenance: heavily and actively maintained, multi-contributor,
+  industry standard (cargo's TOML stack); 57 issues touched in 12
+  months, maintainer-responsive; hardening PRs in flight.
+- High-trust flag: OPEN issue toml-rs/toml#1175, "Soundness:
+  Out-of-bounds memory access via safe API", unresolved as of
+  2026-06-28. Live weight for a commit-gate binary.
+- Spec facts (toml.io/en/v1.0.0): multi-line literal strings have "no
+  escaping whatsoever"; sequences of three or more single quotes are
+  forbidden inside them (a regex containing ''' cannot be carried);
+  "A hash symbol marks the rest of the line as a comment, except when
+  inside a string" (comments cannot interleave; engine-level # required).
+
+## Peer secret-scanner survey (agent, 2026-07-20; criterion 5)
+
+- gitleaks: TOML, [[rules]] with id/description/'''regex'''; the direct
+  lineage of this repo's betterleaks porter.
+- trufflehog: YAML custom detectors (name/keywords/regex map).
+- detect-secrets: JSON baseline; custom logic is Python code.
+- git-secrets: raw regexes in git config, no rule file.
+- ripsecrets: patterns compiled into Rust source; CLI additions only.
+- secretlint: JSON/YAML/JS config with regex-like strings.
+
+Takeaway: TOML holds the strongest peer precedent and matches the
+betterleaks lineage; YAML second; nobody uses NestedText, KDL, or a
+bespoke sectioned format.
+
+## Finalists (hard-gate confirmed, promoted 2026-07-20)
+
+1.  Incumbent-extended block form (fences folded in as a variant).
+2.  Tail-format sectioned rule file.
+3.  NestedText, as an in-house subset parser (crate supply eliminated:
+    one dead stub, one unvetted fresh single-release).
+4.  TOML, with a supply fork to resolve at validation: toml crates
+    (soundness flag open) versus an in-house subset.
+
+## Validation plan (consumer-boundary, next phase)
+
+A shared representative rule set (bare literal; the multi-branch
+commented alternation; adversarial bodies embedding each format's own
+delimiters) is hand-converted into each finalist format. Throwaway
+prototype readers in the session scratchpad parse each file; the
+assertion is that the engine-visible semantic body (bytes after
+first-column comment stripping, which the engine performs itself) is
+identical across formats, plus per-format adversarial outcomes recorded.
+TOML fixtures parse with python tomllib (stdlib reference
+implementation; local interpreter only, no third-party installs, no
+network). Prototype code stays in scratch and is discarded; no product
+changes during evaluation.
+
 ## Pending sections
 
-- Discovery execution log and saturation result (agent running).
-- Screening outcomes for the to-screen list.
-- Targeted evidence: NestedText implementations (clone, maintenance audit),
-  TOML crates (clone, maintenance audit), spec stability for both.
-- Targeted evidence for the tail-format candidate: parser subset sketch and
-  size estimate measured against a prototype, BSD tail header-shape
-  comparison (interop bonus only), migration sketch for the three live
-  files including the literal-classification design fork.
-- Finalist validation, scoring, sensitivity, ranking, recommendation.
+- Validation results for the four finalists.
+- Scoring, sensitivity, ranking, recommendation.
