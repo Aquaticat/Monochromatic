@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Status: in progress; lifecycle phase: discovery.
+- Status: in progress; lifecycle phase: discovery and targeted evidence.
 - Subject: forbidden-strings rule-file format.
 - Scope: choose the source format for forbidden-strings rule files
   (shared appendix, local appendix, builtin baseline source).
@@ -24,7 +24,10 @@ forbidden-regex engine was deliberately built to support
 doc). The incumbent line-based format cannot express this. A block-form
 extension was drafted (`doc/planning/forbidden-strings-block-rule-format.md`)
 but the maintainer required a full design-space evaluation before
-implementation; the maintainer then named NestedText as a candidate.
+implementation; the maintainer then named NestedText as a candidate, and
+later a tail-output sectioned format (single file whose syntax is what
+`tail -n +1` over per-rule files would produce, written by hand "pretending
+to be tail").
 
 Measured incumbent facts:
 
@@ -44,7 +47,13 @@ Measured incumbent facts:
 - The repo TOML incumbent (`@monochromatic-dev/module-toml-edit`) is
   TypeScript-side only; no Rust TOML parser is incumbent.
 - Redacted finding output (`PATH:LINE rule=N`) is format-independent and out
-  of scope.
+  of scope, except that a format carrying rule names interacts with the open
+  rule-identity decision
+  (`doc/planning/forbidden-strings-rule-identity-ux.md`).
+- The incumbent flags slot is vestigial: `first_bad_flag`
+  (`package/cli/forbidden-strings/src/rule/frx/format.rs`) accepts only `m`
+  and `x`, both engine no-ops, and hard-errors on everything else. Any
+  replacement format may drop the flags slot with zero expressiveness loss.
 
 ## Hard constraints
 
@@ -63,9 +72,11 @@ Measured incumbent facts:
   open-source local technology (a spec plus either a parser crate or an
   in-house subset implementation; if a crate is adopted it is a second
   component and audited as such).
-- Incumbent-lineage candidates (block form, distinct fences): custom format
-  extension of the incumbent, eligible under the replacement overlay's
-  keep-the-incumbent lineage.
+- Incumbent-lineage candidates (block form, distinct fences, tail-format
+  sections): custom format extension of the incumbent, eligible under the
+  replacement overlay's keep-the-incumbent lineage. The tail-format
+  candidate additionally leans on the de-facto GNU/BSD multi-file header
+  convention rather than a syntax invented here.
 - Overlays active for all candidates: incumbent replacement, high-trust
   execution, human-auditability.
 - Not applicable: SaaS gates (no hosted component); native/Wasm/prebuilt
@@ -182,6 +193,48 @@ then frozen).
   concatenate by file append, matching file-enforcer. Proceeds to targeted
   evidence.
 
+### Tail-format sectioned rule file
+
+- Discovery source: maintainer-named 2026-07-20. The rule file is a single
+  hand-edited file whose syntax is defined as what `tail -n +1` over
+  per-rule files would produce: a `==> name <==` header line opens each
+  rule section, the section body is the rule (multi-line regex body read by
+  the engine's own verbose mode, including first-column `#` comment lines),
+  and authors "pretend to be tail" when writing or modifying the file.
+  Splitting rules into real files and aggregating with `tail --verbose` is
+  an interop bonus, not the storage model.
+- Base: incumbent-lineage custom format leaning on the de-facto GNU/BSD
+  multi-file header convention. Overlays: replacement, high-trust,
+  human-auditability.
+- Screening: no hard-gate failure. Distinctive properties:
+  the per-rule body has no container grammar at all (the engine reads it
+  directly, so criterion-2 surface reduces to the header line itself);
+  every rule carries a name, converging with the open rule-identity
+  decision (baseline sections can carry betterleaks ids from the porter;
+  sensitive local rules need maintainer-chosen safe names because names
+  surface in findings and CI logs);
+  plain file append stays a valid concatenation, keeping file-enforcer
+  unchanged;
+  the sectioned-config shape has strong Unix precedent (conf.d and rules.d
+  drop-in conventions, measured locally below, are the same
+  one-unit-per-section idea).
+  Recorded caveats:
+  the header convention is not POSIX (see evidence; the spec would be pinned
+  here to the measured GNU shape);
+  a content line of the exact shape `==> ... <==` is a false boundary, with
+  an in-dialect workaround (reshape such a pattern line, for example
+  bracketing the first byte as `[=]`) plus fail-closed misparse as the
+  likely failure mode;
+  a stream not starting with a header must fail closed (measured: single-file
+  `tail` without `--verbose` omits the header);
+  bare-literal rules need a per-section classification rule (design forks:
+  single-line section classified by the incumbent two-form rule, or a
+  section-name convention marking literal sections, or literal-list
+  sections holding one literal per line), and the literal-dense local
+  appendix gains one header line per literal unless a literal-list form is
+  chosen.
+  Proceeds to targeted evidence.
+
 ### To screen (discovery in progress)
 
 - KDL, StrictYAML, YAML, JSON5/Hjson, scfg, UCL, HCL, and peer secret
@@ -213,10 +266,68 @@ then frozen).
 - Outcome: crate-versus-in-house-subset is scored under criterion 3, not
   hard-gated.
 
+### Incumbent flags slot is vestigial
+
+- Candidates: all (cross-cutting design fact).
+- Claim: the incumbent `/PATTERN/FLAGS` flags slot only ever accepts the
+  engine no-ops `m` and `x` and hard-errors otherwise, so no replacement
+  format needs a flags slot.
+- Gate: scored-concern input (criteria 1 and 4).
+- Status: pass (measured: `first_bad_flag`,
+  `package/cli/forbidden-strings/src/rule/frx/format.rs`).
+- Outcome: candidates are compared without requiring flag syntax.
+
+### Measured GNU tail multi-file output shape
+
+- Candidate: tail-format sectioned rule file.
+- Claim: the aggregate shape is: `==> NAME <==` header line, body bytes
+  verbatim, and for each subsequent file a separator of exactly one newline
+  then the next header line (so a body ending in its own newline yields one
+  blank line before the next header, and a body without a trailing newline
+  yields none); single-file invocations print no header unless `--verbose`.
+- Gate: screening (format definition pin).
+- Status: pass.
+- Source: local empirical run, GNU coreutils tail 9.10, 2026-07-20, scratch
+  fixtures with `cat -A` byte display (three-file, one-file, one-file with
+  `--verbose`, and a no-trailing-newline body).
+- Outcome: the spec for this candidate pins to this measured shape; parser
+  must strip at most the separator-guaranteed trailing newline for
+  classification-sensitive sections and must fail closed on a headerless
+  stream.
+
+### POSIX does not specify the tail header
+
+- Candidate: tail-format sectioned rule file.
+- Claim: POSIX tail takes a single file operand and its STDOUT section
+  defines no multi-file header, so `==> NAME <==` is GNU/BSD de-facto
+  convention, not standards-backed.
+- Gate: screening (spec-stability input to criterion 7).
+- Status: pass with caveat recorded.
+- Source: pubs.opengroup.org/onlinepubs/9699919799/utilities/tail.html,
+  accessed 2026-07-20.
+- Outcome: the format spec would be owned in-repo, pinned to the measured
+  GNU shape; de-facto stability is decades-long but not standardized.
+
+### Local drop-in directory precedent
+
+- Candidate: tail-format sectioned rule file (criterion 5 input).
+- Claim: the one-unit-per-section configuration shape is established Unix
+  practice.
+- Gate: scored-concern input.
+- Status: recorded.
+- Source: measured locally 2026-07-20: `/usr/lib/udev/rules.d` and
+  `/etc/sysctl.d` populated on the development machine.
+- Outcome: precedent evidence; peer secret-scanner survey pending from the
+  discovery agent.
+
 ## Pending sections
 
-- Discovery execution log and saturation result.
+- Discovery execution log and saturation result (agent running).
 - Screening outcomes for the to-screen list.
 - Targeted evidence: NestedText implementations (clone, maintenance audit),
   TOML crates (clone, maintenance audit), spec stability for both.
+- Targeted evidence for the tail-format candidate: parser subset sketch and
+  size estimate measured against a prototype, BSD tail header-shape
+  comparison (interop bonus only), migration sketch for the three live
+  files including the literal-classification design fork.
 - Finalist validation, scoring, sensitivity, ranking, recommendation.
