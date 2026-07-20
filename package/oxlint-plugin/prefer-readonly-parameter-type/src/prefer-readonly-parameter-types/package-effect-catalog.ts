@@ -7,7 +7,6 @@
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { LEZER_PACKAGE_EFFECTS, } from './lezer-package-effect-catalog.ts';
 import { NANO_SPAWN_PACKAGE_EFFECTS, } from './nano-spawn-package-effect-catalog.ts';
-import { OPTIQUE_PACKAGE_EFFECTS, } from './optique-package-effect-catalog.ts';
 import { receiverEffect, } from './package-receiver-effect.ts';
 import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
 import { POSTCSS_PACKAGE_EFFECTS, } from './postcss-package-effect-catalog.ts';
@@ -16,10 +15,14 @@ import { TURSO_PACKAGE_EFFECTS, } from './turso-package-effect-catalog.ts';
 /**
  * Package effects audited by exact current-lock major.
  */
+/* Optique entries were removed 2026-07-20: no repository code calls the
+ * audited `parseSync`/`runParserSync` members (live consumers call
+ * `runSync` from `@optique/run`, whose shipped implementation reaches
+ * `runParser`/`runWith`/`runWithSync` instead), and the repository is
+ * migrating off Optique entirely. */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...LEZER_PACKAGE_EFFECTS,
   ...NANO_SPAWN_PACKAGE_EFFECTS,
-  ...OPTIQUE_PACKAGE_EFFECTS,
   ...PI_PACKAGE_EFFECTS,
   ...POSTCSS_PACKAGE_EFFECTS,
   ...TURSO_PACKAGE_EFFECTS,
