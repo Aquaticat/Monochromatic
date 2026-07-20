@@ -487,20 +487,38 @@ Updated:
     `79abdfe59` baseline converted to tail sections via the chain, all
     259 rule bodies verified byte-identical (compare script kept the
     #387 differential validity).
-  - REMAINING STEPS (in order): bump 0.3.0 (+ three Cargo.locks:
-    scanner, bench, fuzz) and push (cargo-publish.yml triggers on the
-    Cargo.toml change; CI downloads the version-matched release);
-    rebuild local release binary + git-policy dist + `git cli-git
-    trust --yes` (new parser must be in the trusted snapshot BEFORE any
-    appendix converts, or a named finding breaks the old numeric
-    parser);
-    convert `forbidden-strings.append.txt` (two sections:
-    ncd-reserved-shortcodes, ncd-reserved-shortcode-families) and the
-    gitignored local appendix (opaque sequential `local-NNN` names for
-    ALL its rules, hiding topic entirely per maintainer instruction);
-    regenerate the .cache rules file; refresh FORBIDDEN_STRINGS_LIST
-    from the converted local file via straight pipe; non-vacuous gate
-    canary + CI check.
+  - NAME MIGRATION COMPLETE (2026-07-20, same session):
+    `2ff0ee2c5` bumped 0.3.0 (three locks regenerated; the fuzz lock
+    also shed a stale orphaned subtree, zmij and serde leftovers);
+    cargo-publish run 29781894639 succeeded, release
+    `forbidden-strings-v0.3.0` live with 7 attested assets and the
+    crates.io publish;
+    git-policy dists rebuilt and `git cli-git trust --yes` refreshed
+    BEFORE any appendix converted (parser accepts both token forms, so
+    the refresh was format-independent);
+    gate canary relayed "Forbidden string matched at line 1 (rule
+    age-secret-key)" through `git cli-git check`, non-vacuous;
+    `6382098ce` converted `forbidden-strings.append.txt` (sections
+    ncd-reserved-shortcodes, ncd-reserved-shortcode-families);
+    the gitignored local appendix converted to 36 opaque `local-NNN`
+    sections (numbering append-only; names deliberately reveal nothing
+    about a rule's subject, per maintainer instruction);
+    `.cache/forbidden-strings.rules.txt` regenerated (38 sections);
+    `FORBIDDEN_STRINGS_LIST` refreshed from the converted local file
+    via straight pipe (gh secret list stamps 2026-07-20T22:10:50Z);
+    composed-ruleset scan verified all three sources render names
+    (`rule=local-007`, `rule=ncd-reserved-shortcodes`,
+    `rule=age-secret-key`), and the word-boundary gate is live
+    (`xxCCPxx` glued does not fire; the standalone token fires as
+    `rule=local-005` and the gate relays it).
+    CI run 29783022880 on `6382098ce` downloaded and
+    attestation-verified 0.3.0 and is red with EXACTLY the six known
+    accepted over-matches, now named (`rule=curl-auth-user` twice,
+    `rule=mongodb-connection-string` four times, in the two planning
+    docs, one troubleshooting doc, one package README); the
+    `index.html` base64 collision finding is GONE (boundary fix
+    confirmed in CI). Accepting or reshaping those six doc
+    over-matches stays the open maintainer decision from #389.
     Unratified proposal from an earlier session: AGENTS.md rule `RFY`
     ("'X must change' ratifies the problem, not your design; present
     options per OPT and get the concrete design ratified before
