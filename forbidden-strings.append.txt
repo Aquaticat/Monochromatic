@@ -1,7 +1,8 @@
 # forbidden-strings shared appendix (checked into version control).
 # Non-sensitive deny-list rules that apply to every clone of this repo.
-# Add literal substrings or /PATTERN/FLAGS regex rules below; one per line.
-# This file is concatenated onto forbidden-strings.append.local.txt by
+# Tail-format sections: a '==> name <==' header opens one rule; section names
+# surface in findings as 'rule=<name>'.
+# This file is concatenated with forbidden-strings.append.local.txt by
 # file-enforcer to produce the runtime .cache/forbidden-strings.rules.txt
 # (the betterleaks baseline ships inside the scanner binary; repo scans pass
 # --builtin-rules). Keep sensitive rules (codenames, customer names, partner
@@ -15,6 +16,7 @@
 # codes, then the two-letter-plus-digit families) so the engine compiles each
 # list as one automaton; keep the per-code comments below in sync with the rules.
 
+==> ncd-reserved-shortcodes <==
 # INF: Infinity abbreviation
 # PRO: Pro label
 # MEA: Common name
@@ -113,8 +115,10 @@
 # ART: Assisted reproductive technology abbreviation, also ordinary word
 # PAP: Papanicolaou smear abbreviation
 # ICU: Intensive care unit abbreviation
+#
 /^(?:(?:INF)|(?:PRO)|(?:MEA)|(?:ADJ)|(?:CAN)|(?:DNF)|(?:SYR)|(?:PRC)|(?:FDP)|(?:SRS)|(?:ISO)|(?:EXC)|(?:VFR)|(?:TSA)|(?:TSB)|(?:TSC)|(?:TSE)|(?:PPA)|(?:TCP)|(?:UDP)|(?:DNS)|(?:VPN)|(?:SSH)|(?:MAC)|(?:USB)|(?:PCI)|(?:CPU)|(?:GPU)|(?:AWS)|(?:GCP)|(?:SQL)|(?:IBM)|(?:NPM)|(?:RPG)|(?:NPC)|(?:GTA)|(?:USA)|(?:CHN)|(?:RUS)|(?:PRK)|(?:IRN)|(?:ISR)|(?:ESP)|(?:UKR)|(?:WIP)|(?:TBD)|(?:POC)|(?:MVP)|(?:ETA)|(?:KPI)|(?:SAM)|(?:BOB)|(?:MAX)|(?:IAN)|(?:HIV)|(?:STD)|(?:STI)|(?:UTI)|(?:ALS)|(?:OCD)|(?:ADD)|(?:DID)|(?:IBS)|(?:IBD)|(?:CAD)|(?:CHF)|(?:DVT)|(?:TIA)|(?:PAD)|(?:HPV)|(?:HBV)|(?:HCV)|(?:HSV)|(?:RSV)|(?:CMV)|(?:SLE)|(?:PID)|(?:ASD)|(?:CKD)|(?:FLU)|(?:GAD)|(?:BPD)|(?:MRI)|(?:ECG)|(?:EKG)|(?:EEG)|(?:EMG)|(?:CPR)|(?:IVF)|(?:CAT)|(?:PET)|(?:IUD)|(?:ECT)|(?:DNR)|(?:HRT)|(?:ART)|(?:PAP)|(?:ICU)):/
 
+==> ncd-reserved-shortcode-families <==
 # PR[0-9]: Pull request abbreviation
 # TS[0-9]: TypeScript compiler diagnostic shortcode family
 # TX[0-9]: Texas abbreviation
