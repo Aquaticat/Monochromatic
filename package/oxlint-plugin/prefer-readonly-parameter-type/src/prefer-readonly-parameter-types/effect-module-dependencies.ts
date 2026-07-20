@@ -1,0 +1,139 @@
+/**
+ * Resolved module dependencies for persistent-cache invalidation.
+ *
+ * @module
+ */
+
+import {
+  type Node,
+  type SourceFile,
+  SyntaxKind,
+} from 'typescript/unstable/ast';
+import {
+  isCallExpression,
+  isExportDeclaration,
+  isImportDeclaration,
+  isImportEqualsDeclaration,
+  isStringLiteral,
+} from 'typescript/unstable/ast/is';
+import type { Project, } from 'typescript/unstable/sync';
+
+import { collectAstNodes, } from './effect-summary-model.ts';
+
+/**
+ * Sentinel when one module reference cannot be resolved to a program file.
+ *
+ * Unresolved references make a file's dependency set unknowable, so its
+ * persistent cache entry must fail closed instead of validating a partial set.
+ */
+export const MODULE_DEPENDENCIES_UNRESOLVED: unique symbol = Symbol(
+  'module dependency references could not be fully resolved',
+);
+
+/**
+ * Collects module reference specifier nodes authored in one source.
+ *
+ * Static `import`/`export ... from` declarations, `import =` external
+ * references, and literal dynamic `import()` arguments name every channel
+ * TypeScript name resolution can enter another module from this source.
+ * A non-literal dynamic import argument is reported as one undefined entry
+ * so resolution fails closed.
+ *
+ * @param sourceFile - Source whose module references are collected.
+ *
+ * @returns specifier nodes, each undefined when statically unknowable.
+ */
+function moduleReferenceSpecifiers(
+  sourceFile: SourceFile,
+): readonly (Node | undefined)[] {
+  return collectAstNodes(sourceFile,)
+    .flatMap(function gatherSpecifier(node,): readonly (Node | undefined)[] {
+      if (isImportDeclaration(node,))
+        return [node.moduleSpecifier,];
+      if (isExportDeclaration(node,))
+        return (node.moduleSpecifier === undefined) ? [] : [node.moduleSpecifier,];
+      if (isImportEqualsDeclaration(node,)) {
+        /**
+         * External module reference expression for `import name = require(...)`.
+         */
+        const reference = node.moduleReference;
+        return (reference.kind === SyntaxKind.ExternalModuleReference)
+          ? ['expression' in reference ? reference.expression : undefined,]
+          : [];
+      }
+      if (isCallExpression(node,)
+        && (node.expression
+          .kind
+          === SyntaxKind.ImportKeyword)) {
+        /**
+         * First dynamic import argument, resolvable only as string literal.
+         */
+        const argument = node.arguments
+          .at(0,);
+        return [
+          ((argument !== undefined) && isStringLiteral(argument,))
+            ? argument
+            : undefined,
+        ];
+      }
+      return [];
+    },);
+}
+
+/**
+ * Resolves every authored module reference in one source to program files.
+ *
+ * @param project - Configured project resolving module symbols.
+ *
+ * @param sourceFile - Source whose dependencies are resolved.
+ *
+ * @returns sorted unique resolved file paths,
+ * or unresolved sentinel when any reference cannot be proven.
+ *
+ * @example
+ * ```ts
+ * const dependencies = directModuleDependencies({ project, sourceFile });
+ * ```
+ */
+export function directModuleDependencies({
+  project,
+  sourceFile,
+}: {
+  readonly project: Project;
+  readonly sourceFile: SourceFile;
+},): readonly string[] | typeof MODULE_DEPENDENCIES_UNRESOLVED {
+  /**
+   * Authored module reference specifiers, undefined entries unknowable.
+   */
+  const specifiers = moduleReferenceSpecifiers(sourceFile,);
+  /**
+   * Unique resolved dependency paths.
+   */
+  const resolved = new Set<string>();
+  for (const specifier of specifiers) {
+    if (specifier === undefined)
+      return MODULE_DEPENDENCIES_UNRESOLVED;
+    /**
+     * Module symbol for specifier, undefined for unresolvable references.
+     */
+    const symbol = project.checker
+      .getSymbolAtLocation(specifier,);
+    /**
+     * Preferred declaration handle carrying module source identity.
+     */
+    const handle = symbol?.valueDeclaration
+      ?? symbol?.declarations
+      .at(0,);
+    /**
+     * Resolved declaration whose owning file names the dependency.
+     */
+    const declaration = handle?.resolve(project,);
+    if (declaration === undefined)
+      return MODULE_DEPENDENCIES_UNRESOLVED;
+    resolved.add(
+      declaration.getSourceFile()
+        .fileName,
+    );
+  }
+  return [...resolved,].toSorted();
+}

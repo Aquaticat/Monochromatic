@@ -14,13 +14,16 @@ import {
   cacheFinalEffectIndex,
   FINAL_EFFECT_INDEX_CACHE_MISS,
 } from './effect-final-index-cache.ts';
+import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
 import {
   effectProjectFingerprint,
   effectProjectSourceSignatures,
 } from './effect-project-fingerprint.ts';
 import {
-  directSummariesForSource,
+  LAYERED_SUMMARY_CACHE_MISS,
   pruneDirectSummaryCache,
+  readCachedSummariesForSource,
+  storeCreatedSummariesForSource,
 } from './effect-summary-cache.ts';
 import { contentDigest, } from './effect-summary-cache-identity.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
@@ -251,7 +254,7 @@ export function buildEffectSummaryIndex({
   if (cachedIndex !== FINAL_EFFECT_INDEX_CACHE_MISS)
     return cachedIndex;
   /**
-   * Complete configured-project identity used by persistent direct summaries.
+   * Complete configured-project identity used by process-layer invalidation.
    */
   const projectFingerprint = effectProjectFingerprint({
     project,
@@ -264,6 +267,33 @@ export function buildEffectSummaryIndex({
     `${projectFingerprint.digest}\0${analysisRoot ?? ''}`,
   );
   /**
+   * Persistent scope identity separating analysis-root policies.
+   */
+  const scopeKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
+  /**
+   * Current program state validating incremental persistent entries.
+   */
+  const dependencyState = {
+    surfaces: projectFingerprint.surfaces,
+    sourceDigests: projectFingerprint.sourceDigests,
+  };
+  /**
+   * Indexed scope membership for closure walks.
+   */
+  const indexedFileNames = new Set(
+    indexedSourceFiles.map(function indexedName(sourceFile,): string {
+      return sourceFile.fileName;
+    },),
+  );
+  /**
+   * Closure resolver seeded by validated entries, resolving misses freshly.
+   */
+  const closureResolver = createDependencyClosureResolver({
+    project,
+    indexedFileNames,
+    sourceDigests: projectFingerprint.sourceDigests,
+  },);
+  /**
    * Mutable summaries keyed by stable declaration identity.
    */
   const summaries = new Map<string, MutableEffectSummary>();
@@ -271,59 +301,107 @@ export function buildEffectSummaryIndex({
    * Current owned source paths used to prune rename and deletion residue.
    */
   const activeFiles = new Set<string>();
-  indexedSourceFiles.forEach(function gatherSource(sourceFile,): void {
-    /**
-     * Exact source path participating in direct and propagated summaries.
-     */
-    const { fileName, } = sourceFile;
-    activeFiles.add(fileName,);
-    /**
-     * Direct summaries reused when exact source text remains unchanged.
-     */
-    const fileSummaries = directSummariesForSource({
+
+  /**
+   * Builds both-layer identity for one indexed source.
+   *
+   * @param sourceFile - Indexed source.
+   *
+   * @returns shared layered-cache identity.
+   */
+  function sourceIdentity(sourceFile: SourceFile,): {
+    readonly projectKey: string;
+    readonly scopeKey: string;
+    readonly projectDigest: string;
+    readonly fileName: string;
+    readonly sourceText: string;
+    readonly cacheRootOverride?: string;
+  } {
+    return {
       projectKey: project.configFileName,
+      scopeKey,
       projectDigest,
-      fileName,
+      fileName: sourceFile.fileName,
       sourceText: sourceFile.text,
       ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
-      create(): ReadonlyMap<string, MutableEffectSummary> {
-        /**
-         * Callable declarations decoded only after both cache layers miss.
-         */
-        const declarations = collectAstNodes(sourceFile,)
-          .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
-            return isEffectCallableDeclaration(node,);
-          },);
-        return new Map(declarations.map(function gatherCallable(declaration,): [
-          string,
-          MutableEffectSummary,
-        ] {
-          return [
-            callableKey(declaration,),
-            directEffectSummary({
-              project,
-              declaration,
-              ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-              externalEffectResolver({
-                consumerProject,
-                call,
-                declaration: externalDeclaration,
-              },) {
-                return externalCallableEffect({
-                  consumerProject,
-                  call,
-                  declaration: externalDeclaration,
-                  buildIndex(options,) {
-                    return buildEffectSummaryIndex(options,);
-                  },
-                },);
-              },
-            },),
-          ];
-        },),);
-      },
+    };
+  }
+
+  /**
+   * Sources whose summaries both cache layers missed, scanned in second phase.
+   */
+  const missedSourceFiles = indexedSourceFiles.filter(function readCachedSource(sourceFile,): boolean {
+    activeFiles.add(sourceFile.fileName,);
+    /**
+     * Layered hit carrying cloned summaries and recorded closure edges.
+     */
+    const hit = readCachedSummariesForSource({
+      identity: sourceIdentity(sourceFile,),
+      state: dependencyState,
     },);
-    fileSummaries.forEach(function addSummary(
+    if (hit === LAYERED_SUMMARY_CACHE_MISS)
+      return true;
+    closureResolver.seedEdges({
+      fileName: sourceFile.fileName,
+      edges: hit.edges,
+    },);
+    hit.summaries
+      .forEach(function addSummary(
+        summary,
+        key,
+      ): void {
+        summaries.set(
+          key,
+          summary,
+        );
+      },);
+    return false;
+  },);
+  missedSourceFiles.forEach(function scanMissedSource(sourceFile,): void {
+    /**
+     * Callable declarations decoded only after both cache layers miss.
+     */
+    const declarations = collectAstNodes(sourceFile,)
+      .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
+        return isEffectCallableDeclaration(node,);
+      },);
+    /**
+     * Freshly scanned direct summaries for one source.
+     */
+    const fileSummaries = new Map(declarations.map(function gatherCallable(declaration,): [
+      string,
+      MutableEffectSummary,
+    ] {
+      return [
+        callableKey(declaration,),
+        directEffectSummary({
+          project,
+          declaration,
+          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+          externalEffectResolver({
+            consumerProject,
+            call,
+            declaration: externalDeclaration,
+          },) {
+            return externalCallableEffect({
+              consumerProject,
+              call,
+              declaration: externalDeclaration,
+              buildIndex(options,) {
+                return buildEffectSummaryIndex(options,);
+              },
+            },);
+          },
+        },),
+      ];
+    },),);
+    storeCreatedSummariesForSource({
+      identity: sourceIdentity(sourceFile,),
+      summaries: fileSummaries,
+      surfaces: projectFingerprint.surfaces,
+      closure: closureResolver.closureFor(sourceFile.fileName,),
+    },);
+    fileSummaries.forEach(function addCreatedSummary(
       summary,
       key,
     ): void {

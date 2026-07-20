@@ -23,8 +23,12 @@ import { version as typescriptVersion, } from 'typescript';
 
 /**
  * Persistent cache schema identity.
+ *
+ * Schema 2 replaced whole-project digest addressing with per-entry
+ * dependency-closure snapshots, so one changed file invalidates only the
+ * entries whose recorded closures contain it.
  */
-export const EFFECT_CACHE_SCHEMA = 1;
+export const EFFECT_CACHE_SCHEMA = 2;
 
 /**
  * Process memo for analyzer implementation digest.

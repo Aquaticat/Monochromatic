@@ -31,13 +31,73 @@ import { contentDigest, } from './effect-summary-cache-identity.ts';
 const l = tagged({ tag: 'effect-project-fingerprint', },);
 
 /**
+ * Whole-scope invalidation surfaces validating incremental cache entries.
+ *
+ * Each digest binds one channel through which a file's semantics can change
+ * without any of its resolved module dependencies changing: project
+ * membership, ambient and external declaration files, global or module
+ * augmentations authored in non-declaration sources, resolved compiler
+ * options, and governing lockfile content.
+ */
+export type EffectProjectSurfaces = {
+  readonly fileListDigest: string;
+  readonly declarationSurfaceDigest: string;
+  readonly augmentationSurfaceDigest: string;
+  readonly compilerOptionsDigest: string;
+  readonly lockfileDigest: string;
+};
+
+/**
  * Fingerprint and per-source identities for one project snapshot.
  */
 export type EffectProjectFingerprint = {
   readonly digest: string;
   readonly fileListDigest: string;
   readonly sourceDigests: ReadonlyMap<string, string>;
+  readonly surfaces: EffectProjectSurfaces;
 };
+
+/**
+ * Declaration-file suffixes excluded from incremental dependency closures.
+ */
+const DECLARATION_SURFACE_SUFFIXES: readonly string[] = [
+  '.d.ts',
+  '.d.mts',
+  '.d.cts',
+];
+
+/**
+ * Tests whether file participates in declaration surface.
+ *
+ * @param fileName - Program source path.
+ *
+ * @returns whether path names a declaration file.
+ *
+ * @example
+ * ```ts
+ * isDeclarationSurfaceFileName('/repo/src/env.d.ts');
+ * ```
+ */
+export function isDeclarationSurfaceFileName(fileName: string,): boolean {
+  return DECLARATION_SURFACE_SUFFIXES.some(function declaration(suffix,): boolean {
+    return fileName.endsWith(suffix,);
+  },);
+}
+
+/**
+ * Tests whether source text can carry global or module augmentation.
+ *
+ * Token containment over-approximates: comment or string occurrences also
+ * bind, which only widens invalidation and never misses a real augmentation.
+ *
+ * @param sourceText - Non-declaration source text.
+ *
+ * @returns whether text contains an augmentation token.
+ */
+function containsAugmentationToken(sourceText: string,): boolean {
+  return sourceText.includes('declare global',)
+    || sourceText.includes('declare module',);
+}
 
 /**
  * Sentinel when no governing pnpm lockfile exists.
@@ -315,12 +375,28 @@ export function effectProjectFingerprint({
    * Complete semantic identity digest.
    */
   const digest = createHash('sha256',);
+  /**
+   * Declaration-file surface digest covering ambient and external types.
+   */
+  const declarationSurface = createHash('sha256',);
+  /**
+   * Augmentation surface digest covering non-declaration ambient authorship.
+   */
+  const augmentationSurface = createHash('sha256',);
   updateHashString({
     digest,
     value: project.configFileName,
   },);
   updateHashPlainValue({
     digest,
+    value: project.compilerOptions,
+  },);
+  /**
+   * Resolved compiler-option identity validated by incremental entries.
+   */
+  const optionsDigest = createHash('sha256',);
+  updateHashPlainValue({
+    digest: optionsDigest,
     value: project.compilerOptions,
   },);
   fileNames.forEach(function hashSource(fileName,): void {
@@ -348,11 +424,36 @@ export function effectProjectFingerprint({
       digest,
       value: sourceDigest,
     },);
+    if (isDeclarationSurfaceFileName(fileName,)) {
+      updateHashString({
+        digest: declarationSurface,
+        value: fileName,
+      },);
+      updateHashString({
+        digest: declarationSurface,
+        value: sourceDigest,
+      },);
+      return;
+    }
+    if (containsAugmentationToken(sourceText,)) {
+      updateHashString({
+        digest: augmentationSurface,
+        value: fileName,
+      },);
+      updateHashString({
+        digest: augmentationSurface,
+        value: sourceDigest,
+      },);
+    }
   },);
   /**
    * Governing lockfile whose package identities affect resolution.
    */
   const lockfile = nearestLockfile(project.configFileName,);
+  /**
+   * Lockfile content identity, or absence marker when no lockfile governs.
+   */
+  const lockfileState = { digest: 'lockfile-absent', };
   if ((typeof lockfile) !== 'symbol') {
     /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor includes exact lockfile identity once per project cache miss. */
     /**
@@ -367,6 +468,7 @@ export function effectProjectFingerprint({
       digest,
       value: lockfile,
     },);
+    lockfileState.digest = contentDigest(`${lockfile}\0${contentDigest(lockfileText,)}`,);
     updateHashString({
       digest,
       value: contentDigest(lockfileText,),
@@ -376,5 +478,12 @@ export function effectProjectFingerprint({
     digest: digest.digest('hex',),
     fileListDigest,
     sourceDigests,
+    surfaces: {
+      fileListDigest,
+      declarationSurfaceDigest: declarationSurface.digest('hex',),
+      augmentationSurfaceDigest: augmentationSurface.digest('hex',),
+      compilerOptionsDigest: optionsDigest.digest('hex',),
+      lockfileDigest: lockfileState.digest,
+    },
   };
 }
