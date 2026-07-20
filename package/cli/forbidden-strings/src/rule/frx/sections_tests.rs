@@ -71,20 +71,60 @@ fn reshape_convention_matches_header_text_through_regexset() {
 }
 
 #[test]
-fn out_of_alphabet_middle_stays_content_not_near_header() {
-    // The collision defense: a header-shaped line whose middle leaves the strict
-    // alphabet (uppercase, a slash) is ordinary content, never a near-header error.
+fn out_of_alphabet_arrow_lines_fail_closed_as_near_headers() {
+    // Maintainer ruling 2026-07-20: any line whose trimmed form starts with `==>`
+    // and is not exactly a strict header fails closed, including out-of-alphabet
+    // middles (uppercase, a slash) an earlier draft absorbed as content.
+    let upper = parse_sections("==> qqq-carve <==\ncontent-a\n==> Upper9 <==\n")
+        .expect_err("uppercase middle is a near-header");
+    assert_eq!(upper, LoadError::NearHeader { line: 3 });
+    let slash = parse_sections("==> qqq-carve <==\ncontent-a\n==> path/seg <==\n")
+        .expect_err("slash middle is a near-header");
+    assert_eq!(slash, LoadError::NearHeader { line: 3 });
+}
+
+#[test]
+fn indented_exact_header_fails_closed_as_near_header() {
+    // Strictness is judged on the untrimmed full line, so an otherwise-exact
+    // header behind indentation is a near-header, never body content.
+    let err = parse_sections("==> qqq-outer <==\nbody-line\n  ==> qqq-inner <==\nx\n")
+        .expect_err("indented header");
+    assert_eq!(err, LoadError::NearHeader { line: 3 });
+}
+
+#[test]
+fn arrow_without_space_fails_closed_as_near_header() {
+    // A bare `==>` lead without the header's space (a missing-space typo, or
+    // genuine arrow content the author forgot to reshape) fails closed.
+    let err = parse_sections("==> qqq-outer <==\nbody-line\n==>not-a-header\n")
+        .expect_err("no-space arrow");
+    assert_eq!(err, LoadError::NearHeader { line: 3 });
+}
+
+#[test]
+fn comment_lines_mentioning_header_text_are_unaffected() {
+    // A `#`-comment line's trimmed form starts with `#`, not `==>`, so arrow talk
+    // inside comments never trips the near-header rule, before or inside sections.
     let text = concat!(
-        "==> qqq-carve <==\n",
+        "# tail writes ==> name <== headers\n",
+        "==> qqq-cmt <==\n",
+        "# see ==> qqq-cmt <== for this rule\n",
         "content-a\n",
-        "==> Upper9 <==\n",
-        "==> path/seg <==\n",
     );
-    let rules = parse_sections(text).expect("out-of-alphabet middles stay content");
+    let rules = parse_sections(text).expect("comment arrows stay comments");
     assert_eq!(rules.len(), 1);
-    assert_eq!(rules[0].name.as_deref(), Some("qqq-carve"));
-    assert!(rules[0].pattern.contains("Upper9"), "{}", rules[0].pattern);
-    assert!(rules[0].pattern.contains("path/seg"), "{}", rules[0].pattern);
+    assert_eq!(rules[0].name.as_deref(), Some("qqq-cmt"));
+}
+
+#[test]
+fn reshape_bytes_in_bare_literal_stay_literal() {
+    // In literal context there is no de-reshaping (maintainer ruling 2026-07-20):
+    // `[=]` in a bare literal stays the three bytes, matching them and not `==>`.
+    let rules = parse_sections("==> qqq-lit <==\n[=]=> marker\n").expect("literal rule");
+    assert_eq!(rules.len(), 1);
+    let set = RegexSet::new(std::slice::from_ref(&rules[0].pattern)).expect("compile literal");
+    assert!(set.is_match(b"see [=]=> marker here"), "{}", rules[0].pattern);
+    assert!(!set.is_match(b"see ==> marker here"), "{}", rules[0].pattern);
 }
 
 #[test]

@@ -41,9 +41,10 @@ pub enum LoadError {
         /// Engine's static reason; a codec/validation message, never rule text.
         reason: CompileError,
     },
-    /// A tail-format line matched the loose `==> ... <==` shape but its name
-    /// violated the strict lowercase-kebab grammar, so it is a mistyped header,
-    /// never absorbed silently into the previous section's body.
+    /// A tail-format line's trimmed form led with `==>` without being exactly a
+    /// strict `==> name <==` header, so it is a near-header, never absorbed
+    /// silently into a section body; genuine arrow-leading content uses the
+    /// `[=]=> ` reshape in regex bodies.
     NearHeader {
         /// 1-based source line of the malformed header; carries no name text.
         line: usize,
@@ -95,7 +96,7 @@ impl fmt::Display for LoadError {
             LoadError::NearHeader { line } => {
                 return write!(
                     f,
-                    "line {line}: malformed section header; a '==> name <==' header takes a lowercase kebab-with-dots name",
+                    "line {line}: line starts with '==>' but is not a strict '==> name <==' section header; reshape genuine content as '[=]=>'",
                 )
             }
             LoadError::PreHeaderContent { line } => {
