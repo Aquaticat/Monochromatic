@@ -8,11 +8,122 @@
 # identifiers, politically-charged literals) out of this file; put those in
 # the gitignored forbidden-strings.append.local.txt instead.
 
-# AGENTS.md shortcode labels reserved against the NCD rule: common acronyms,
-# abbreviations, country codes, networking and tech identifiers, and medical terms
-# whose first reading would mislead a future reader. Each is forbidden as a `^CODE:`
-# label at the start of a line. Combined into two rules (the three-letter codes, and
-# the two-letter-plus-digit codes like PR0:, TS1:); see git history for the per-code
-# rationale.
+# AGENTS.md shortcode labels reserved against the NCD rule: codes whose first
+# reading (acronym, product, country code, medical term, ordinary word) would
+# mislead a future reader. Each is forbidden as a `^CODE:` label at the start of
+# a line. The codes are combined into two alternation rules (the three-letter
+# codes, then the two-letter-plus-digit families) so the engine compiles each
+# list as one automaton; keep the per-code comments below in sync with the rules.
+
+# INF: Infinity abbreviation
+# PRO: Pro label
+# MEA: Common name
+# ADJ: Common abbreviation for adjective
+# CAN: ISO country code for Canada
+# DNF: Did Not Finish status abbreviation
+# SYR: ISO country code for Syria
+# PRC: People's Republic of China abbreviation
+# FDP: Free Democratic Party abbreviation
+# SRS: Software requirements specification abbreviation
+# ISO: International Organization for Standardization abbreviation
+# EXC: Exception abbreviation
+# VFR: Visual flight rules abbreviation
+# TSA: Transportation Security Administration abbreviation
+# TSB: Transportation Safety Board abbreviation
+# TSC: TypeScript compiler shorthand
+# TSE: Tokyo Stock Exchange abbreviation
+# PPA: Personal Package Archive abbreviation
+# TCP: Transmission Control Protocol abbreviation
+# UDP: User Datagram Protocol abbreviation
+# DNS: Domain Name System abbreviation
+# VPN: Virtual private network abbreviation
+# SSH: Secure Shell abbreviation
+# MAC: Media access control address, Apple Mac, and message authentication code
+# USB: Universal Serial Bus abbreviation
+# PCI: Peripheral Component Interconnect abbreviation
+# CPU: Central processing unit abbreviation
+# GPU: Graphics processing unit abbreviation
+# AWS: Amazon Web Services abbreviation
+# GCP: Google Cloud Platform abbreviation
+# SQL: Structured Query Language abbreviation
+# IBM: IBM company name
+# NPM: npm package registry abbreviation
+# RPG: Role-playing game abbreviation
+# NPC: Non-player character abbreviation
+# GTA: Grand Theft Auto shorthand
+# USA: ISO country code for the United States
+# CHN: ISO country code for China
+# RUS: ISO country code for Russia
+# PRK: ISO country code for North Korea
+# IRN: ISO country code for Iran
+# ISR: ISO country code for Israel
+# ESP: ISO country code for Spain, also extrasensory perception and Espressif
+# UKR: ISO country code for Ukraine
+# WIP: Work in progress status abbreviation
+# TBD: To be determined status abbreviation
+# POC: Proof of concept abbreviation
+# MVP: Minimum viable product abbreviation
+# ETA: Estimated time of arrival abbreviation
+# KPI: Key performance indicator abbreviation
+# SAM: Common name
+# BOB: Common name
+# MAX: Common name, also maximum
+# IAN: Common name
+# HIV: Human immunodeficiency virus abbreviation
+# STD: Sexually transmitted disease abbreviation
+# STI: Sexually transmitted infection abbreviation
+# UTI: Urinary tract infection abbreviation
+# ALS: Amyotrophic lateral sclerosis abbreviation
+# OCD: Obsessive-compulsive disorder abbreviation
+# ADD: Attention deficit disorder abbreviation, also ordinary verb
+# DID: Dissociative identity disorder abbreviation, also ordinary verb
+# IBS: Irritable bowel syndrome abbreviation
+# IBD: Inflammatory bowel disease abbreviation
+# CAD: Coronary artery disease abbreviation, also computer-aided design
+# CHF: Congestive heart failure abbreviation
+# DVT: Deep vein thrombosis abbreviation
+# TIA: Transient ischemic attack abbreviation
+# PAD: Peripheral artery disease abbreviation, also ordinary word
+# HPV: Human papillomavirus abbreviation
+# HBV: Hepatitis B virus abbreviation
+# HCV: Hepatitis C virus abbreviation
+# HSV: Herpes simplex virus abbreviation
+# RSV: Respiratory syncytial virus abbreviation
+# CMV: Cytomegalovirus abbreviation
+# SLE: Systemic lupus erythematosus abbreviation
+# PID: Pelvic inflammatory disease abbreviation, also process identifier
+# ASD: Autism spectrum disorder abbreviation
+# CKD: Chronic kidney disease abbreviation
+# FLU: Influenza abbreviation
+# GAD: Generalized anxiety disorder abbreviation
+# BPD: Borderline personality disorder abbreviation
+# MRI: Magnetic resonance imaging abbreviation
+# ECG: Electrocardiogram abbreviation
+# EKG: Electrocardiogram abbreviation, German spelling
+# EEG: Electroencephalogram abbreviation
+# EMG: Electromyography abbreviation
+# CPR: Cardiopulmonary resuscitation abbreviation
+# IVF: In vitro fertilization abbreviation
+# CAT: CT scan procedure abbreviation, also ordinary word
+# PET: Positron emission tomography scan abbreviation, also ordinary word
+# IUD: Intrauterine device abbreviation
+# ECT: Electroconvulsive therapy abbreviation
+# DNR: Do not resuscitate order abbreviation
+# HRT: Hormone replacement therapy abbreviation
+# ART: Assisted reproductive technology abbreviation, also ordinary word
+# PAP: Papanicolaou smear abbreviation
+# ICU: Intensive care unit abbreviation
 /^(?:(?:INF)|(?:PRO)|(?:MEA)|(?:ADJ)|(?:CAN)|(?:DNF)|(?:SYR)|(?:PRC)|(?:FDP)|(?:SRS)|(?:ISO)|(?:EXC)|(?:VFR)|(?:TSA)|(?:TSB)|(?:TSC)|(?:TSE)|(?:PPA)|(?:TCP)|(?:UDP)|(?:DNS)|(?:VPN)|(?:SSH)|(?:MAC)|(?:USB)|(?:PCI)|(?:CPU)|(?:GPU)|(?:AWS)|(?:GCP)|(?:SQL)|(?:IBM)|(?:NPM)|(?:RPG)|(?:NPC)|(?:GTA)|(?:USA)|(?:CHN)|(?:RUS)|(?:PRK)|(?:IRN)|(?:ISR)|(?:ESP)|(?:UKR)|(?:WIP)|(?:TBD)|(?:POC)|(?:MVP)|(?:ETA)|(?:KPI)|(?:SAM)|(?:BOB)|(?:MAX)|(?:IAN)|(?:HIV)|(?:STD)|(?:STI)|(?:UTI)|(?:ALS)|(?:OCD)|(?:ADD)|(?:DID)|(?:IBS)|(?:IBD)|(?:CAD)|(?:CHF)|(?:DVT)|(?:TIA)|(?:PAD)|(?:HPV)|(?:HBV)|(?:HCV)|(?:HSV)|(?:RSV)|(?:CMV)|(?:SLE)|(?:PID)|(?:ASD)|(?:CKD)|(?:FLU)|(?:GAD)|(?:BPD)|(?:MRI)|(?:ECG)|(?:EKG)|(?:EEG)|(?:EMG)|(?:CPR)|(?:IVF)|(?:CAT)|(?:PET)|(?:IUD)|(?:ECT)|(?:DNR)|(?:HRT)|(?:ART)|(?:PAP)|(?:ICU)):/
+
+# PR[0-9]: Pull request abbreviation
+# TS[0-9]: TypeScript compiler diagnostic shortcode family
+# TX[0-9]: Texas abbreviation
+# RE[0-9]: Resident Evil shorthand
+# PS[0-9]: Shell prompt variable and PlayStation shortcode family
+# DP[0-9]: DisplayPort abbreviation
+# AS[0-9]: Autonomous System networking identifier family
+# CS[0-9]: C# compiler diagnostic shortcode family
+# SA[0-9]: StyleCop and Roslyn analyzer shortcode family, also ISO country code for South Africa
+# CA[0-9]: .NET code-analysis diagnostic family, also California and certificate authority
+# FF[0-9]: Final Fantasy series shorthand family
 /^(?:(?:PR)|(?:TS)|(?:TX)|(?:RE)|(?:PS)|(?:DP)|(?:AS)|(?:CS)|(?:SA)|(?:CA)|(?:FF))[0-9]:/
