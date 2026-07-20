@@ -8,13 +8,13 @@ import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
-import { propagateCallbackRelations, } from './effect-callback-relation.ts';
 import {
   cachedFinalEffectIndex,
   cacheFinalEffectIndex,
   FINAL_EFFECT_INDEX_CACHE_MISS,
 } from './effect-final-index-cache.ts';
 import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
+import { propagateEffects, } from './effect-fixed-point-propagation.ts';
 import {
   effectProjectFingerprint,
   effectProjectSourceSignatures,
@@ -26,9 +26,7 @@ import {
   storeCreatedSummariesForSource,
 } from './effect-summary-cache.ts';
 import { contentDigest, } from './effect-summary-cache-identity.ts';
-import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
 import { externalCallableEffect, } from './external-callable-effect.ts';
-import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
 import {
   callableKey,
   collectAstNodes,
@@ -36,7 +34,6 @@ import {
   isEffectCallableDeclaration,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
-import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
 import {
   type CallableEffectSummary,
   type EffectSummaryIndex,
@@ -45,117 +42,11 @@ import {
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 
-/**
- * Mutable effect dimensions propagated per parameter.
- */
-const EFFECT_DIMENSION_COUNT = 4;
-
-/**
- * Empty exclusion set for ordinary effect propagation.
- */
-const NO_EXCLUDED_EFFECT_INDEXES: ReadonlySet<number> = new Set();
-
 export {
   type CallableEffectSummary,
   type EffectSummaryIndex,
   NO_EFFECT_SUMMARY,
 } from './effect-summary-index.ts';
-
-/**
- * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
- *
- * @param summaries - Mutable summaries keyed by declaration.
- *
- * @mutates summaries - Propagates call effects to fixed point.
- */
-function propagateEffects(
-  summaries: ReadonlyMap<string, MutableEffectSummary>,
-): void {
-  /**
-   * Total effect bits that can change before fixed point.
-   */
-  const effectBitCount = [...summaries.values(),].reduce(
-    function total(
-    totalCount,
-    summary,
-  ): number {
-    return totalCount + (summary.parameterCount * EFFECT_DIMENSION_COUNT);
-  },
-    0,
-  );
-  /**
-   * Mutable convergence state shared across each propagation pass.
-   */
-  const state = {
-    changed: true,
-    pass: 0,
-  };
-  while (state.changed && (state.pass <= effectBitCount)) {
-    state.changed = false;
-    state.pass++;
-    summaries.forEach(
-      /**
-       * Propagates every owned call edge from one caller summary.
-       *
-       * @param summary - Caller summary receiving transitive effects.
-       *
-       * @mutates summary - Adds callee and callback effects.
-       */
-      function propagateSummary(summary,): void {
-        summary.calls
-          .forEach(function propagateCall(edge,): void {
-            /**
-             * Summary for owned callee edge.
-             */
-            const calleeSummary = summaries.get(edge.calleeKey,);
-            if (calleeSummary === undefined)
-              return;
-            state.changed = propagateInvokedCapabilities({
-              summaries,
-              summary,
-              calleeSummary,
-              edge,
-            },) || state.changed;
-            state.changed = propagateCalleeIndexes({
-              target: summary.mutated,
-              edge,
-              calleeIndexes: calleeSummary.mutated,
-              excludedIndexes: calleeSummary.invoked,
-            },) || state.changed;
-            state.changed = propagateCalleeIndexes({
-              target: summary.opaque,
-              edge,
-              calleeIndexes: calleeSummary.opaque,
-              excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
-            },) || state.changed;
-            state.changed = propagateCalleeIndexes({
-              target: summary.documentedUncertain,
-              edge,
-              calleeIndexes: calleeSummary.documentedUncertain,
-              excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
-            },) || state.changed;
-            state.changed = propagateUncertaintyProvenance({
-              summary,
-              calleeSummary,
-              edge,
-              calleeIndexes: calleeSummary.opaque,
-            },) || state.changed;
-            state.changed = propagateUncertaintyProvenance({
-              summary,
-              calleeSummary,
-              edge,
-              calleeIndexes: calleeSummary.documentedUncertain,
-            },) || state.changed;
-            state.changed = propagateCallbackRelations({
-              summaries,
-              summary,
-              calleeSummary,
-              edge,
-            },) || state.changed;
-          },);
-      },);
-  }
-}
 
 /**
  * Builds effect summaries for owned non-declaration source in project.
@@ -230,7 +121,7 @@ export function buildEffectSummaryIndex({
    */
   const indexedFileListDigest = contentDigest(
     indexedSourceFiles
-      .map(function sourceIdentity(sourceFile,): string {
+      .map(function indexedSourceName(sourceFile,): string {
         return sourceFile.fileName;
       },)
       .join('\0',),

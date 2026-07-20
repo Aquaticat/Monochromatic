@@ -67,6 +67,23 @@ function nearestPnpmLockfile(
 }
 
 /**
+ * Sentinel for lockfile lines carrying no package key.
+ */
+const LINE_WITHOUT_PACKAGE_KEY: unique symbol = Symbol(
+  'lockfile line carries no package or snapshot key',
+);
+
+/**
+ * Key indentation width preceding every package or snapshot key line.
+ */
+const KEY_INDENT_WIDTH = 2;
+
+/**
+ * Key start offset when indentation is followed by an opening quote.
+ */
+const QUOTED_KEY_START = KEY_INDENT_WIDTH + 1;
+
+/**
  * Extracts package key from one lockfile line when line carries one.
  *
  * Package and snapshot keys sit at two-space indentation as
@@ -78,19 +95,21 @@ function nearestPnpmLockfile(
  *
  * @param line - One lockfile line.
  *
- * @returns exact `name@version` key or undefined for non-key lines.
+ * @returns exact `name@version` key or no-key sentinel.
  */
-function lockfileLinePackageKey(line: string,): string | undefined {
+function lockfileLinePackageKey(
+  line: string,
+): string | typeof LINE_WITHOUT_PACKAGE_KEY {
   if (!line.startsWith('  ',))
-    return undefined;
+    return LINE_WITHOUT_PACKAGE_KEY;
   /**
    * Whether key uses single-quoted form.
    */
-  const quoted = line[2] === "'";
+  const quoted = line[KEY_INDENT_WIDTH] === "'";
   /**
    * First character index of candidate key text.
    */
-  const start = quoted ? 3 : 2;
+  const start = quoted ? QUOTED_KEY_START : KEY_INDENT_WIDTH;
   /* Linear delimiter scan; quoted keys end at closing quote or peer
    * parenthesis, unquoted keys end at colon or peer parenthesis. */
   for (let index = start; index < line.length; index++) {
@@ -105,7 +124,7 @@ function lockfileLinePackageKey(line: string,): string | undefined {
         index,
       );
   }
-  return undefined;
+  return LINE_WITHOUT_PACKAGE_KEY;
 }
 
 /**
@@ -122,10 +141,10 @@ function lockfilePackageKeys(text: string,): ReadonlySet<string> {
   const keys = new Set<string>();
   for (const line of text.split('\n',)) {
     /**
-     * Extracted key for current line, when line carries one.
+     * Extracted key for current line, or no-key sentinel.
      */
     const key = lockfileLinePackageKey(line,);
-    if (key !== undefined)
+    if ((typeof key) === 'string')
       keys.add(key,);
   }
   return keys;

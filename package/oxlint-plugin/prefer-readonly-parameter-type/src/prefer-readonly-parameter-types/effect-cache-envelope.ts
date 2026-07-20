@@ -71,11 +71,12 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
  * @returns whether every property value is a string.
  */
 function isStringRecord(value: unknown,): value is Readonly<Record<string, string>> {
-  return isRecord(value,)
-    && Object.values(value,)
-      .every(function stringValue(entry,): boolean {
-        return (typeof entry) === 'string';
-      },);
+  if (!isRecord(value,))
+    return false;
+  return Object.values(value,)
+    .every(function stringValue(entry,): boolean {
+      return (typeof entry) === 'string';
+    },);
 }
 
 /**
@@ -184,7 +185,7 @@ export function validatePersistentEnvelope({
     fileName: identity.fileName,
     sourceDigest: identity.sourceDigest,
     surfaces: state.surfaces,
-    dependenciesResolved: value.dependenciesResolved === true,
+    dependenciesResolved: value.dependenciesResolved,
     directDependencies: value.directDependencies
       .filter(function stringEntry(entry,): entry is string {
         return (typeof entry) === 'string';

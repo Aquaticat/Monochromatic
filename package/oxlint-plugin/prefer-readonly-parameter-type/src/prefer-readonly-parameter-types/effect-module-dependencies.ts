@@ -36,48 +36,58 @@ export const MODULE_DEPENDENCIES_UNRESOLVED: unique symbol = Symbol(
  * Static `import`/`export ... from` declarations, `import =` external
  * references, and literal dynamic `import()` arguments name every channel
  * TypeScript name resolution can enter another module from this source.
- * A non-literal dynamic import argument is reported as one undefined entry
- * so resolution fails closed.
+ * A statically unknowable reference fails the whole collection closed
+ * through the unresolved sentinel.
  *
  * @param sourceFile - Source whose module references are collected.
  *
- * @returns specifier nodes, each undefined when statically unknowable.
+ * @returns specifier nodes,
+ * or unresolved sentinel when any reference is statically unknowable.
  */
 function moduleReferenceSpecifiers(
   sourceFile: SourceFile,
-): readonly (Node | undefined)[] {
-  return collectAstNodes(sourceFile,)
-    .flatMap(function gatherSpecifier(node,): readonly (Node | undefined)[] {
-      if (isImportDeclaration(node,))
-        return [node.moduleSpecifier,];
-      if (isExportDeclaration(node,))
-        return (node.moduleSpecifier === undefined) ? [] : [node.moduleSpecifier,];
-      if (isImportEqualsDeclaration(node,)) {
-        /**
-         * External module reference expression for `import name = require(...)`.
-         */
-        const reference = node.moduleReference;
-        return (reference.kind === SyntaxKind.ExternalModuleReference)
-          ? ['expression' in reference ? reference.expression : undefined,]
-          : [];
-      }
-      if (isCallExpression(node,)
-        && (node.expression
-          .kind
-          === SyntaxKind.ImportKeyword)) {
-        /**
-         * First dynamic import argument, resolvable only as string literal.
-         */
-        const argument = node.arguments
-          .at(0,);
-        return [
-          ((argument !== undefined) && isStringLiteral(argument,))
-            ? argument
-            : undefined,
-        ];
-      }
-      return [];
-    },);
+): readonly Node[] | typeof MODULE_DEPENDENCIES_UNRESOLVED {
+  /**
+   * Collected statically resolvable specifier nodes.
+   */
+  const specifiers: Node[] = [];
+  for (const node of collectAstNodes(sourceFile,)) {
+    if (isImportDeclaration(node,)) {
+      specifiers.push(node.moduleSpecifier,);
+      continue;
+    }
+    if (isExportDeclaration(node,)) {
+      if (node.moduleSpecifier !== undefined)
+        specifiers.push(node.moduleSpecifier,);
+      continue;
+    }
+    if (isImportEqualsDeclaration(node,)) {
+      /**
+       * External module reference expression for `import name = require(...)`.
+       */
+      const reference = node.moduleReference;
+      if (reference.kind !== SyntaxKind.ExternalModuleReference)
+        continue;
+      if (!('expression' in reference))
+        return MODULE_DEPENDENCIES_UNRESOLVED;
+      specifiers.push(reference.expression,);
+      continue;
+    }
+    if (isCallExpression(node,)
+      && (node.expression
+        .kind
+        === SyntaxKind.ImportKeyword)) {
+      /**
+       * First dynamic import argument, resolvable only as string literal.
+       */
+      const argument = node.arguments
+        .at(0,);
+      if ((argument === undefined) || (!isStringLiteral(argument,)))
+        return MODULE_DEPENDENCIES_UNRESOLVED;
+      specifiers.push(argument,);
+    }
+  }
+  return specifiers;
 }
 
 /**
@@ -103,16 +113,16 @@ export function directModuleDependencies({
   readonly sourceFile: SourceFile;
 },): readonly string[] | typeof MODULE_DEPENDENCIES_UNRESOLVED {
   /**
-   * Authored module reference specifiers, undefined entries unknowable.
+   * Authored module reference specifiers, or unknowable-reference sentinel.
    */
   const specifiers = moduleReferenceSpecifiers(sourceFile,);
+  if ((typeof specifiers) === 'symbol')
+    return MODULE_DEPENDENCIES_UNRESOLVED;
   /**
    * Unique resolved dependency paths.
    */
   const resolved = new Set<string>();
   for (const specifier of specifiers) {
-    if (specifier === undefined)
-      return MODULE_DEPENDENCIES_UNRESOLVED;
     /**
      * Module symbol for specifier, undefined for unresolvable references.
      */
