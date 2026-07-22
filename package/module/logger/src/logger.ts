@@ -1,8 +1,8 @@
 import { createLogger, } from './create-logger.ts';
 import { createConsoleSink, } from './sink/console.ts';
 import { createFileSink, } from './sink/file.ts';
+import { createIndexedDbSink, } from './sink/indexed-db.ts';
 import { createLocalStorageSink, } from './sink/local-storage.ts';
-import { createOpfsSink, } from './sink/opfs.ts';
 import { createSessionStorageSink, } from './sink/session-storage.ts';
 import type {
   Logger,
@@ -12,17 +12,20 @@ import type {
 /**
  * Default sink backends to attempt, in priority order. Each runtime keeps
  * only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
- * everywhere, {@link createOpfsSink} in browsers,
+ * everywhere, {@link createIndexedDbSink} in browsers,
  * {@link createSessionStorageSink} wherever web storage round-trips (browsers,
  * Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
  * round-trips (browsers, Deno, Node launched with `--localstorage-file`),
  * {@link createFileSink} under Node. The noop sink is intentionally absent so
  * a process with no working backend surfaces the "No logging backends
- * available" error instead of silently discarding.
+ * available" error instead of silently discarding. The OPFS sink is exported
+ * but no longer a default: its stream stages writes until a close that a
+ * crash never performs, so IndexedDB holds the persistent-browser slot; see
+ * `DECISIONS.md`.
  */
 const defaultSinks: readonly Sink[] = [
   createConsoleSink(),
-  createOpfsSink(),
+  createIndexedDbSink(),
   createSessionStorageSink(),
   createLocalStorageSink(),
   createFileSink(),

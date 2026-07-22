@@ -4,6 +4,7 @@ export {
   findNodeModulesUp,
   NO_NODE_MODULES_FOUND,
 } from './file.ts';
+export { createIndexedDbSink, } from './indexed-db.ts';
 export { createLocalStorageSink, } from './local-storage.ts';
 export { createNoopSink, } from './noop.ts';
 export { createOpfsSink, } from './opfs.ts';
