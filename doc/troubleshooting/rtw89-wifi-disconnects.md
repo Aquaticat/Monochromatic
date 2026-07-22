@@ -243,8 +243,8 @@ Verify the end-user boundary rather than relying on daemon startup alone:
 
 ```sh
 nmcli --terse --fields GENERAL.STATE,GENERAL.CONNECTION device show <interface>
-ping --count=3 <gateway-address>
-ping --count=3 <internet-address>
+ping -c 3 <gateway-address>
+ping -c 3 <internet-address>
 ```
 
 For restart persistence,
