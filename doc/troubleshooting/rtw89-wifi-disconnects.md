@@ -306,8 +306,7 @@ Before sending it, reproduce on a current upstream kernel and include:
 - [IWD `3.10` configuration reference][iwd-config]
 - [IWD `3.10` beacon-loss handling][iwd-beacon]
 - [NetworkManager `1.56.1` IWD backend configuration][nm-iwd-config]
-- [OGC Linux `v7.1.3-ogc5` RTL8852C firmware features][ogc-fw-features]
-- [OGC Linux `v7.1.3-ogc5` beacon-loss handling][ogc-beacon-loss]
+- [OGC Linux `v7.1.3-ogc5` RTL8852C driver source][ogc-rtw89]
 - [OGC Linux `v7.1.3-ogc5` mac80211 connection polling][ogc-connection-poll]
 - [`rtw89` issue `121`][rtw89-issue-121]
 - [Linux wireless issue-reporting guide][linux-reporting]
@@ -315,8 +314,7 @@ Before sending it, reproduce on a current upstream kernel and include:
 [iwd-config]: https://kernel.googlesource.com/pub/scm/network/wireless/iwd/+/refs/tags/3.10/src/iwd.config.rst
 [iwd-beacon]: https://kernel.googlesource.com/pub/scm/network/wireless/iwd/+/refs/tags/3.10/src/station.c
 [nm-iwd-config]: https://github.com/NetworkManager/NetworkManager/blob/1.56.1/man/NetworkManager.conf.xml
-[ogc-fw-features]: https://github.com/OpenGamingCollective/linux/blob/v7.1.3-ogc5/drivers/net/wireless/realtek/rtw89/fw.c
-[ogc-beacon-loss]: https://github.com/OpenGamingCollective/linux/blob/v7.1.3-ogc5/drivers/net/wireless/realtek/rtw89/mac.c
+[ogc-rtw89]: https://github.com/OpenGamingCollective/linux/tree/v7.1.3-ogc5/drivers/net/wireless/realtek/rtw89
 [ogc-connection-poll]: https://github.com/OpenGamingCollective/linux/blob/v7.1.3-ogc5/net/mac80211/mlme.c
 [rtw89-issue-121]: https://github.com/lwfinger/rtw89/issues/121
 [linux-reporting]: https://docs.kernel.org/admin-guide/reporting-issues.html
