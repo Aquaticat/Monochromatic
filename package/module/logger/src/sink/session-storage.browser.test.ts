@@ -100,11 +100,14 @@ test.describe('sessionStorage sink', () => {
       await sink.verify();
 
       const testMessage = `unique-test-${Date.now()}`;
-      void sink.write({
+      await sink.write({
         level: 'info' as const,
         message: testMessage,
         timestamp: Date.now(),
       },);
+      // Routine severity buffers; the flush hook forces the batch out so the
+      // read-back below observes it deterministically.
+      await sink.flush?.();
 
       // Find the written record.
       const currentStorageLength = globalThis.sessionStorage.length;

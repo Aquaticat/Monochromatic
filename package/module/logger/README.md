@@ -107,12 +107,16 @@ still being verified are replayed to that sink when it becomes available.
   keeps a `FileSystemWritableFileStream` open for the session
 - **sessionStorage**:
    available wherever `globalThis.sessionStorage` exists (browsers, Node, Deno);
-   stores JSONL records under `monochromatic.log.{n}` keys
-  with an auto-incrementing counter;
+   buffers records and stores them as newline-joined JSONL batches under
+  `monochromatic.log.{n}` keys with an auto-incrementing counter;
+   one uniform write path on every runtime flushes a batch when it reaches
+  32 KiB, when a record's severity is `warn` or worse, after 250 ms of quiet,
+  on `pagehide`/document-hidden where those events exist, and on
+  `logger.flush()`;
    caps its own footprint at half the runtime's default sessionStorage quota
   (a measured per-runtime heuristic: 5 MiB on Node and the browser engines,
   10 MiB on Deno),
-   evicting its oldest records first and reclaiming further space reactively
+   evicting its oldest batches first and reclaiming further space reactively
   if the real store still overflows
 - **noop**:
    discards all records;
@@ -254,7 +258,10 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    browser OPFS sink with persistent writable stream
 - `src/sink/session-storage.ts`:
    `createSessionStorageSink()`,
-   browser sessionStorage sink
+   cross-runtime web storage sink (buffering, flush triggers)
+- `src/sink/session-storage-store.ts`:
+   persistence engine behind it (key allocation, footprint accounting,
+   quota eviction)
 - `src/sink/noop.ts`:
    `createNoopSink()`,
    discards all records

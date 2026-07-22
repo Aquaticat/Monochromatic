@@ -11,10 +11,11 @@ import type {
 /**
  * Default sink backends to attempt, in priority order. Each runtime keeps
  * only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
- * everywhere, {@link createOpfsSink} and {@link createSessionStorageSink} in
- * browsers, {@link createFileSink} under Node. The noop sink is intentionally
- * absent so a process with no working backend surfaces the "No logging
- * backends available" error instead of silently discarding.
+ * everywhere, {@link createOpfsSink} in browsers,
+ * {@link createSessionStorageSink} wherever web storage round-trips (browsers,
+ * Node 22+, Deno), {@link createFileSink} under Node. The noop sink is
+ * intentionally absent so a process with no working backend surfaces the "No
+ * logging backends available" error instead of silently discarding.
  */
 const defaultSinks: readonly Sink[] = [
   createConsoleSink(),
