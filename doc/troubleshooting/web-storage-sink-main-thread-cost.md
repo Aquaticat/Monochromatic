@@ -397,6 +397,28 @@ which lands 8 KiB short of the 10 MiB its sessionStorage measures.
 Design rationale for its run-scoped keys and cross-run eviction:
 `package/module/logger/DECISIONS.md`.
 
+An IndexedDB sink followed the same day and took the default
+persistent-browser slot from OPFS,
+whose staged-until-close stream made its records unrecoverable in
+exactly the crash scenarios a persistent sink exists for.
+Headless Chromium 149 measurements that drove the shape
+(130-char-equivalent records):
+18.6 µs per record for one transaction per record
+(worse than unbatched `setItem`, a trap for naive ports);
+8.0 µs for one transaction per batch with one `add` per record;
+0.76 µs for one `add` per batch storing an array of record objects;
+0.15 µs for one `add` per batch storing the exact newline-joined JSONL
+string `record-buffer.ts` emits,
+which is the shape shipped,
+settling in 1.3 ms per 10,000 records' worth of batches.
+The rejected keep-OPFS alternative,
+closing and reopening its writable around every batch for durability,
+measured 1.56 ms per flush cycle,
+6.26 µs per record amortized.
+Full rationale,
+including the relaxed-durability choice and retention cap:
+`package/module/logger/DECISIONS.md`.
+
 ### Crash durability under batching
 
 "Batching loses the records a crash was supposed to explain" holds

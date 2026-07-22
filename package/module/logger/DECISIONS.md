@@ -182,3 +182,65 @@ Measurements,
  crash taxonomy,
  and the buffering design live in
 `doc/troubleshooting/web-storage-sink-main-thread-cost.md`.
+
+## IndexedDB takes the default persistent-browser slot from OPFS (2026-07-22)
+
+The OPFS sink keeps one `FileSystemWritableFileStream` open for the whole session,
+ and stream writes stage into a swap file that only becomes the real file on `close()`;
+ the sink's own verify comment records that `getFile()` reads stale content while a
+writable is open.
+A crash never closes,
+ so the OPFS sink's records were unreadable mid-session and effectively lost in
+exactly the crash scenarios a persistent sink exists for.
+
+`createIndexedDbSink` replaces it in the default set because IndexedDB commits per
+transaction:
+ records are readable the moment the transaction settles (DevTools Application tab
+included),
+ survive tab close and full browser restart,
+ and the API is also exposed in workers,
+ unlike `[Exposed=Window]` web storage.
+Probes found `indexedDB` undefined on Node 26,
+ Deno 2.9,
+ and Bun,
+ so the sink is browser-only,
+ the same election set OPFS had.
+
+Shape and cost were measured on headless Chromium 149 before building
+(130-char-equivalent records):
+
+- one transaction per record:
+   18.6 µs of main-thread enqueue per record,
+   worse than unbatched `setItem`,
+   so a naive per-record port was rejected;
+- one transaction per batch with one `add` per record:
+   8.0 µs per record;
+- one `add` per batch storing the exact newline-joined JSONL string
+  `record-buffer.ts` emits:
+   0.15 µs per record,
+   the shape shipped;
+- the alternative of keeping OPFS and closing-and-reopening its writable per batch
+  for durability:
+   1.56 ms per flush,
+   6.26 µs per record,
+   rejected as costlier for less capability.
+
+Retention caps the store at 2048 batches,
+ trimmed oldest-first inside the same transaction as each add,
+ bounding the store near 64 MiB at the 32 KiB flush cap without a cross-session
+byte tally.
+Transactions use relaxed durability deliberately:
+ relaxed commits reach the browser's storage backend promptly and survive renderer
+crashes,
+ and the OS-crash window `durability: 'strict'` would close is the rarest failure
+class per the humility principle,
+ not worth an fsync per batch.
+Known limits,
+ stated rather than hidden:
+ the measurements are Chromium-only,
+ and IndexedDB sits under best-effort origin storage,
+ evictable by the browser under disk pressure unless the application obtains
+`navigator.storage.persist()`.
+
+The OPFS factory stays exported for callers who want an origin-private JSONL file
+and accept its close-to-persist semantics.

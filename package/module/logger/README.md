@@ -101,13 +101,27 @@ still being verified are replayed to that sink when it becomes available.
    this prevents
   stray log directories from landing inside build output or other
   non-project trees when a script is invoked from an unexpected cwd
-- **OPFS**:
+- **IndexedDB**:
+   browser only;
+   buffers records through the same shared policy and flush triggers as the
+  sessionStorage sink and stores each newline-joined JSONL batch as one
+  string value per transaction in the `monochromatic.log` database
+  (`batch` store, auto-incremented keys, so concurrent tabs serialize
+  without any key scheme);
+   records are readable the moment their transaction settles, DevTools
+  Application tab included, and survive tab close and browser restart;
+   retention trims oldest-first past 2048 stored batches;
+   `logger.flush()` settles every issued batch transaction
+- **OPFS** (exported but not a default):
    browser only;
    buffers records and appends them to the Origin Private File System as
   newline-joined JSONL batches, one queued stream write per batch, under
   the same flush triggers as the sessionStorage sink;
    keeps a `FileSystemWritableFileStream` open for the session,
-   and `logger.flush()` settles every issued batch write
+   and `logger.flush()` settles every issued batch write;
+   staged stream content only becomes the file on a close a crash never
+  performs, which is why the IndexedDB sink holds the default
+  persistent-browser slot instead (see `DECISIONS.md`)
 - **sessionStorage**:
    available wherever `globalThis.sessionStorage` exists (browsers, Node, Deno);
    buffers records and stores them as newline-joined JSONL batches under
@@ -144,6 +158,7 @@ still being verified are replayed to that sink when it becomes available.
 Each sink is a factory,
  `createConsoleSink()`,
  `createFileSink()`,
+ `createIndexedDbSink()`,
  `createOpfsSink()`,
 `createSessionStorageSink()`,
  `createLocalStorageSink()`,
@@ -180,6 +195,7 @@ type LogRecord = {
 ```
 
 File,
+ IndexedDB,
  OPFS,
  sessionStorage,
  and localStorage sinks write records as one JSON object per line (JSONL).
@@ -274,9 +290,14 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    `createFileSink()`,
    Node.
   js file sink (JSONL via `appendFile`)
+- `src/sink/indexed-db.ts`:
+   `createIndexedDbSink()`,
+   default persistent-browser sink (one transaction per batch, retention trim)
+- `src/sink/indexed-db-util.ts`:
+   promise bridges for the event-based IndexedDB API
 - `src/sink/opfs.ts`:
    `createOpfsSink()`,
-   browser OPFS sink with persistent writable stream (batched writes)
+   opt-in browser OPFS sink with persistent writable stream (batched writes)
 - `src/sink/record-buffer.ts`:
    buffering stage shared by the OPFS and sessionStorage sinks
    (byte cap, severity flush, quiet-period deadline, page lifecycle)
