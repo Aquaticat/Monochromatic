@@ -7,8 +7,10 @@ import { createOpfsSink, } from './opfs.ts';
 
 // Node/Bun has no `navigator.storage`, so this file exercises the
 // unavailable-backend fallback that the browser test (which runs where OPFS
-// exists) never reaches: `getDirectory` throws and is caught. The available
-// path lives in `opfs.browser.test.ts`.
+// exists) never reaches: `getDirectory` throws and is caught, and drained
+// batches hit the unset-stream guard. The available path lives in
+// `opfs.browser.test.ts`; the shared buffering policy is covered in
+// `record-buffer.unit.test.ts`.
 await describe({
   name: 'OPFS sink (node fallback)',
   children: [
@@ -24,19 +26,45 @@ await describe({
     },),
 
     it({
-      name: 'write is a silent no-op when OPFS is absent',
+      name: 'write buffers without throwing when OPFS is absent',
       fn: async () => {
-        // Without a verified writable stream, write takes the unset-guard early
-        // return, resolving without throwing.
+        // The record buffers; nothing touches the missing backend until a
+        // flush trigger fires.
         const sink = createOpfsSink();
-        await expect(
-          sink.write({
-            level: 'info',
-            message: 'dropped',
-            timestamp: 0,
-          },),
-        )
-          .resolves
+        /**
+         * Resolved write result; the sink write contract is `Promise<void>`.
+         */
+        const result = await sink.write({
+          level: 'info',
+          message: 'dropped',
+          timestamp: 0,
+        },);
+        expect(result,)
+          .toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'flush drains the buffer into the unset-stream guard and resolves',
+      fn: async () => {
+        // A warn record drains synchronously on add, an info record drains on
+        // the flush hook; both batches hit the guard and are dropped silently.
+        const sink = createOpfsSink();
+        await sink.write({
+          level: 'warn',
+          message: 'urgent but backendless',
+          timestamp: 0,
+        },);
+        await sink.write({
+          level: 'info',
+          message: 'buffered but backendless',
+          timestamp: 1,
+        },);
+        /**
+         * Resolved flush result; must settle even with no stream to write to.
+         */
+        const result = await sink.flush?.();
+        expect(result,)
           .toBeUndefined();
       },
     },),

@@ -1,14 +1,24 @@
 import { reportLoggerInternalError, } from '../error-format.ts';
+import { createRecordBuffer, } from './record-buffer.ts';
 
-import type { Sink, } from '../types.ts';
+import type {
+  Level,
+  Sink,
+} from '../types.ts';
 
 /**
- * Builds an OPFS sink that appends JSONL records to a per-session file in the
- * Origin Private File System. The kept-open writable stream lives in this
+ * Builds an OPFS sink that buffers serialized records through the shared
+ * {@link createRecordBuffer} policy and appends each newline-joined JSONL
+ * batch to a per-session file in the Origin Private File System with one
+ * stream write per batch. The kept-open writable stream lives in this
  * instance's closure (no module-global state), so independent loggers and
- * tests never share a handle or need a reset hook. Each `write` awaits the
- * underlying stream write, so ordering holds at the record boundary and no
- * `flush` hook is needed.
+ * tests never share a handle or need a reset hook.
+ *
+ * Flush triggers (32 KiB in-write cap, `warn`-or-worse severity, 250 ms
+ * quiet-period deadline, page lifecycle, and the `flush` hook) are the
+ * buffer's; see {@link createRecordBuffer}. Batch writes queue on the stream
+ * in issue order, so ordering holds at the batch boundary, and the sink's
+ * `flush` hook awaits every issued batch before resolving.
  *
  * @returns Sink backed by OPFS.
  *
@@ -21,9 +31,15 @@ import type { Sink, } from '../types.ts';
 export function createOpfsSink(): Sink {
   /**
    * Instance-local kept-open OPFS stream, opened by `verify` and reused by
-   * every `write`. Absent until a successful verification.
+   * every batch write. Absent until a successful verification.
    */
   const state: { writable?: FileSystemWritableFileStream; } = {};
+
+  /**
+   * Batch writes issued to the stream and not yet settled; the `flush` hook
+   * drains this so logger-level `flush()` observes every issued batch.
+   */
+  const pendingBatchWrites = new Set<Promise<void>>();
 
   /**
    * Verifies OPFS is available and round-trips a probe write, then opens the
@@ -102,19 +118,18 @@ export function createOpfsSink(): Sink {
   }
 
   /**
-   * Writes a single record as a JSONL line to the OPFS stream.
+   * Writes one newline-terminated batch to the OPFS stream, swallowing and
+   * reporting failures so the pending-write set always settles.
    *
-   * @param record - Log record to write.
-   *
-   * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+   * @param batch - Newline-joined JSONL batch from the buffer.
    */
-  async function write(record: object,): Promise<void> {
+  async function writeBatch(batch: string,): Promise<void> {
     if (!state.writable)
       return;
 
     try {
       await state.writable
-        .write(`${JSON.stringify(record,)}\n`,);
+        .write(`${batch}\n`,);
     }
     catch (error: unknown) {
       reportLoggerInternalError({
@@ -124,7 +139,73 @@ export function createOpfsSink(): Sink {
     }
   }
 
+  /**
+   * Removes a tracked batch write from {@link pendingBatchWrites} once it
+   * settles.
+   *
+   * @param pending - Promise returned by {@link writeBatch}.
+   */
+  async function removePendingWhenSettled(pending: Promise<void>,): Promise<void> {
+    await pending;
+    pendingBatchWrites.delete(pending,);
+  }
+
+  /**
+   * Backend handoff for the buffer: issues the batch write without awaiting
+   * (stream writes queue in issue order) and tracks it for the `flush` hook.
+   *
+   * @param batch - Newline-joined JSONL batch from the buffer.
+   */
+  function handOffBatch(batch: string,): void {
+    /**
+     * In-flight batch write; never rejects, because {@link writeBatch} reports internally.
+     */
+    const pending = writeBatch(batch,);
+    pendingBatchWrites.add(pending,);
+    void removePendingWhenSettled(pending,);
+  }
+
+  /**
+   * Shared buffering stage; every flush trigger issues one queued stream
+   * write per joined batch.
+   */
+  const buffer = createRecordBuffer({ onFlush: handOffBatch, },);
+
+  /**
+   * Buffers a log record through the shared policy; see
+   * {@link createRecordBuffer} for the flush triggers.
+   *
+   * @param record - Log record to buffer and eventually append.
+   *
+   * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+   */
+  function write(record: {
+    level: Level;
+    message: string;
+    timestamp: number;
+  },): Promise<void> {
+    buffer.add({
+      level: record.level,
+      serialized: JSON.stringify(record,),
+    },);
+    return Promise.resolve();
+  }
+
+  /**
+   * Drains the buffer onto the stream and resolves once every issued batch
+   * write has settled.
+   */
+  async function flush(): Promise<void> {
+    buffer.drain();
+    /**
+     * Snapshot of in-flight batch writes at drain time.
+     */
+    const writes = [...pendingBatchWrites,];
+    await Promise.all(writes,);
+  }
+
   return {
+    flush,
     verify,
     write,
   };
