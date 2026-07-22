@@ -450,6 +450,14 @@ RPB:
  One failed probe of resource user says is present isn't proof of absence.
 Re-probe + ask user to reconnect/re-authorize/restart before concluding unreachable.
 
+JEV:
+ Journal silence isn't stability evidence.
+Verify retention + emitting unit,
+then reproduce with live link,
+supplicant,
+kernel,
+and reachability capture before excluding a failure.
+
 RBK:
  User must execute manually:
  invoke `runbook` skill for the document.
