@@ -79,6 +79,10 @@ async function openLogDatabase(): Promise<IDBDatabase> {
  *
  * @throws DOMException - When the transaction errors or aborts, for example
  * under an origin-quota overflow.
+ *
+ * @mutates database - `database.transaction` opens a readwrite transaction,
+ * registering live state on the host-owned connection, and the queued add
+ * and trim change the store that connection controls.
  */
 async function persistBatch(
   {
@@ -117,7 +121,7 @@ async function persistBatch(
     /**
      * Newest key still to be trimmed; everything at or below it goes.
      */
-    const newestStale = staleKeys[staleKeys.length - 1];
+    const newestStale = staleKeys.at(-1,);
     if (newestStale !== undefined)
       store.delete(IDBKeyRange.upperBound(newestStale,),);
   }
@@ -205,7 +209,7 @@ export function createIndexedDbSink(): Sink {
       /**
        * Probe value read back; equality proves the backend round-trips writes.
        */
-      const readBack = await awaitRequest(store.get(probeKey,),);
+      const readBack = await awaitRequest(store.get(probeKey,) as IDBRequest<unknown>,);
       store.delete(probeKey,);
       await awaitTransaction(transaction,);
 
