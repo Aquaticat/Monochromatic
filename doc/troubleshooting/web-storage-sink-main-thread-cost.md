@@ -380,13 +380,22 @@ and the sink keeps its stream open for the whole session,
 so OPFS log content is not observable mid-session under either the
 per-record or the batched design.
 
-No localStorage sink exists in `@monochromatic-dev/module-logger`
-(the sink registry is console, file, noop, OPFS, session-storage),
-so the synchronous-cost finding has no second web-storage sink to
-apply to;
-if one is ever added, it must compose `record-buffer.ts` the same way,
-and the localStorage rows in the sweep above already supply its
-numbers.
+A localStorage sink was absent from the package until 2026-07-22:
+the original sink set (commit `7fe3a2044`) shipped console, file,
+OPFS, sessionStorage, and noop with no recorded reason for the gap,
+an omission rather than a decision.
+`package/module/logger/src/sink/local-storage.ts` now composes
+`record-buffer.ts` exactly the way this document prescribed,
+so the synchronous-cost finding applies to it the same way,
+and the localStorage rows in the sweep above supplied its numbers.
+Its quota table was fill-probed separately
+(`local-storage-quota.ts`):
+5,242,880 chars total on Node 26 with `--localstorage-file`,
+5,242,880 on headless Chromium 149 over an `http://127.0.0.1` origin,
+and 10,477,569 on Deno 2.9,
+which lands 8 KiB short of the 10 MiB its sessionStorage measures.
+Design rationale for its run-scoped keys and cross-run eviction:
+`package/module/logger/DECISIONS.md`.
 
 ### Crash durability under batching
 

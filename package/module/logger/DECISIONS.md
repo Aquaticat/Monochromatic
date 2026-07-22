@@ -117,3 +117,68 @@ briefly-locked file would silently kill a backend permanently.
  Verification is the one
 event that owns availability;
  transient write errors stay transient.
+
+## localStorage sink: absent by omission, added with run-scoped keys (2026-07-22)
+
+The original sink set (commit `7fe3a2044`,
+ 2025-12-29) shipped console,
+ file,
+ OPFS,
+ sessionStorage,
+ and noop.
+No decision record,
+ code comment,
+ or issue explains localStorage's absence;
+ the commit message enumerates the set with one-line rationales and never mentions it.
+The absence was an omission,
+ not a decision.
+
+The omission was accidentally defensible,
+ which is probably why nobody noticed it.
+The sessionStorage sink's design leans on two properties localStorage lacks:
+ per-tab isolation (so flat `monochromatic.log.{n}` counter keys cannot collide with
+another tab) and tab-close cleanup (so the sink cannot permanently squat on the
+origin's quota).
+A localStorage sink reusing that design would corrupt itself across tabs and,
+ worse,
+ fill the store with dead-session leftovers until no future run could ever write again,
+ because the sessionStorage engine's eviction only touches keys it wrote itself.
+
+The added sink (`src/sink/local-storage.ts`) resolves both differences instead of
+inheriting them:
+
+- Keys carry a run identity,
+   `monochromatic.log.{stamp}.{nonce}.{index}` (`local-storage-key.ts`):
+   the stamp orders runs oldest-first,
+   the nonce separates same-millisecond tabs,
+   the index orders batches within a run.
+- On its first persist the engine adopts every strictly-parsed entry left by other
+  runs into its footprint tally and evicts those oldest-first before its own,
+   so leftovers roll off instead of bricking the store.
+   Keys that fail the strict parse,
+   including the host application's and the sessionStorage sink's flat shape,
+   are never counted and never evicted.
+- The half-quota footprint cap covers the combined (adopted plus own) footprint,
+   from a fill-probed per-runtime table (`local-storage-quota.ts`).
+- Buffering composes the same `record-buffer.ts` stage as the sessionStorage and
+  OPFS sinks:
+   one uniform write path,
+   no per-runtime mode.
+- `verify` elects by probe wherever `localStorage` round-trips (browsers,
+   Deno,
+   Node with `--localstorage-file`).
+   The single short-circuit returns the probe's own answer for flagless plain Node
+  without touching the getter,
+   because merely accessing `globalThis.localStorage` there prints an
+  `ExperimentalWarning` on every consumer's stderr.
+
+It also earns its default-set slot rather than duplicating sessionStorage:
+ localStorage is the only web storage sink whose records survive tab close and a
+full browser restart (Chromium's browser process commits localStorage to disk on a
+five-second cadence),
+ so it is the backend whose records remain inspectable after the crash classes the
+other sinks lose.
+Measurements,
+ crash taxonomy,
+ and the buffering design live in
+`doc/troubleshooting/web-storage-sink-main-thread-cost.md`.

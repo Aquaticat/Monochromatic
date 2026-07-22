@@ -121,6 +121,22 @@ still being verified are replayed to that sink when it becomes available.
   10 MiB on Deno),
    evicting its oldest batches first and reclaiming further space reactively
   if the real store still overflows
+- **localStorage**:
+   available wherever `globalThis.localStorage` round-trips (browsers,
+   Deno,
+   Node launched with `--localstorage-file`;
+   flagless Node skips the probe silently);
+   buffers through the same shared policy and flush triggers as the
+  sessionStorage sink,
+   but stores each batch under a run-scoped key
+  (`monochromatic.log.{stamp}.{nonce}.{index}`) because localStorage is shared
+  across tabs and survives restarts;
+   adopts entries left by earlier runs and evicts oldest-first,
+   capping the combined footprint at half the runtime's default localStorage
+  quota (5 MiB on Node and the browser engines,
+   just under 10 MiB on Deno);
+   the one web storage sink whose records remain inspectable after tab close
+  or a full browser restart
 - **noop**:
    discards all records;
    a stand-in that disables logging without removing log calls
@@ -130,6 +146,7 @@ Each sink is a factory,
  `createFileSink()`,
  `createOpfsSink()`,
 `createSessionStorageSink()`,
+ `createLocalStorageSink()`,
  and `createNoopSink()`,
  exported under the `sinks` namespace.
 A sink instance keeps its own buffers,
@@ -164,7 +181,8 @@ type LogRecord = {
 
 File,
  OPFS,
- and sessionStorage sinks write records as one JSON object per line (JSONL).
+ sessionStorage,
+ and localStorage sinks write records as one JSON object per line (JSONL).
 
 ## Error handling
 
@@ -268,6 +286,19 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - `src/sink/session-storage-store.ts`:
    persistence engine behind it (key allocation, footprint accounting,
    quota eviction)
+- `src/sink/local-storage.ts`:
+   `createLocalStorageSink()`,
+   cross-runtime persistent web storage sink (same buffering, run-scoped keys)
+- `src/sink/local-storage-store.ts`:
+   persistence engine behind it (run identity, prior-run adoption,
+   cross-run oldest-first eviction)
+- `src/sink/local-storage-key.ts`:
+   run-scoped key building, strict parsing, and eviction ordering
+- `src/sink/local-storage-quota.ts` and `src/sink/session-storage-quota.ts`:
+   fill-probed per-runtime quota tables
+- `src/sink/web-storage-runtime.ts` and `src/sink/web-storage-quota-error.ts`:
+   host-runtime detection and quota-overflow recognition shared by both
+  web storage engines
 - `src/sink/noop.ts`:
    `createNoopSink()`,
    discards all records
