@@ -1,0 +1,27 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/web-demo-glass",
+  "private": true,
+  "description": "Glass corridor demo: walk forward, throw balls, crack then shatter physically simulated glass panes on the three.js WebGPU renderer",
+  "type": "module",
+  "main": "src/build.ts",
+  "version": "0.0.1",
+  "dependencies": {
+    "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "three": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/three": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/web-demo/glass"
+  },
+  "sideEffects": true
+}
