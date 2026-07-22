@@ -6,35 +6,47 @@ A Bazzite host using an RTL8852CE adapter intermittently lost a strong Wi-Fi con
 The durable local mitigation is to disable Wi-Fi power saving through IWD and let NetworkManager own reconnection.
 
 The mitigation survived an IWD restart and restored connectivity without manual activation.
-It is verified as a workaround, not as proof that the adapter, firmware, or access point contains a specific defect.
+It is verified as a workaround,
+ not as proof that the adapter,
+ firmware,
+ or access point contains a specific defect.
 The leading explanation is an RTL8852C power-save and scan interaction that causes false beacon loss.
 
 Do not infer stability from an empty or incomplete journal interval.
-The same disconnect class occurred with the earlier `wpa_supplicant` backend, so changing to IWD did not create it.
+The same disconnect class occurred with the earlier `wpa_supplicant` backend,
+ so changing to IWD did not create it.
 
 ## Affected environment
 
 The diagnosed host had:
 
 - Bazzite `44.20260721.0`.
-- Kernel `7.1.3-ogc5.1.fc44.x86_64`, based on OGC Linux tag `v7.1.3-ogc5`.
+- Kernel `7.1.3-ogc5.1.fc44.x86_64`,
+   based on OGC Linux tag `v7.1.3-ogc5`.
 - NetworkManager `1.56.1-2.fc44`.
 - IWD `3.10-1.fc44.bazzite`.
-- Realtek RTL8852CE PCI device `10ec:c852`, driven by `rtw89_8852ce`.
+- Realtek RTL8852CE PCI device `10ec:c852`,
+   driven by `rtw89_8852ce`.
 - RTL8852C firmware `0.27.129.4`.
 - An 802.11ax connection at 5660 MHz with signal near `-44 dBm` before the captured failure.
 
 ## Symptoms
 
 The user-visible symptom was a spontaneous loss of network connectivity.
-The connection could sometimes be restored manually, but reconnect attempts could first encounter:
+The connection could sometimes be restored manually,
+ but reconnect attempts could first encounter:
 
-- association status `30`, meaning the access point rejected association temporarily;
-- disconnect reason `4`, `DISASSOC_DUE_TO_INACTIVITY`;
-- disconnect reason `15`, `4WAY_HANDSHAKE_TIMEOUT`.
+- association status `30`,
+   meaning the access point rejected association temporarily;
+- disconnect reason `4`,
+   `DISASSOC_DUE_TO_INACTIVITY`;
+- disconnect reason `15`,
+   `4WAY_HANDSHAKE_TIMEOUT`.
 
 Those values describe stages in recovery.
-They do not, by themselves, identify the event that caused the original link loss.
+They do not,
+ by themselves,
+ identify the event that caused the original link loss.
 
 ## Diagnostic capture
 
@@ -61,7 +73,8 @@ NetworkManager Wi-Fi trace logging was enabled only for diagnosis:
 sudo nmcli general logging level TRACE domains WIFI:TRACE,DEVICE:TRACE,PLATFORM:TRACE,CORE:DEBUG
 ```
 
-After capture, logging was returned to its normal runtime level:
+After capture,
+ logging was returned to its normal runtime level:
 
 ```sh
 sudo nmcli general logging level INFO domains DEFAULT
@@ -72,13 +85,17 @@ The correlated failure proceeded as follows:
 1. IWD started a full scan while the station remained associated.
 2. Gateway and internet replies stopped during the scan.
 3. The scan completed.
-4. About six seconds after scan start, the driver reported a CQM beacon-loss event despite the preceding strong signal.
+4. About six seconds after scan start,
+    the driver reported a CQM beacon-loss event despite the preceding strong signal.
 5. mac80211 sent connection probes and locally disconnected with reason `4` when they received no acknowledgement.
 6. The first recovery attempts encountered temporary association rejection and a four-way-handshake timeout.
 7. A later activation succeeded.
 
 A full scan is not proof of a fault because successful connections also scan.
-The diagnostic value is the ordering of scan, reachability loss, beacon loss, and local disconnection.
+The diagnostic value is the ordering of scan,
+ reachability loss,
+ beacon loss,
+ and local disconnection.
 
 ## Source-level explanation
 
@@ -93,16 +110,20 @@ The inspected OGC Linux source explains the captured sequence:
 - `net/mac80211/mlme.c` polls the access point after connection loss and disconnects with
   `WLAN_REASON_DISASSOC_DUE_TO_INACTIVITY` when the probes are not acknowledged.
 
-This is why reason `4` is a local consequence of failed reachability checks, not evidence that the access point
+This is why reason `4` is a local consequence of failed reachability checks,
+ not evidence that the access point
 first chose to disconnect the station.
 
 RTL8852C firmware `0.27.129.4` is new enough for both mitigations recognized by the inspected driver:
 
-- `BEACON_LOSS_COUNT_V1`, enabled for RTL8852C firmware `0.27.128.0` or newer;
-- `BEACON_TRACKING`, enabled for RTL8852C firmware `0.27.129.1` or newer.
+- `BEACON_LOSS_COUNT_V1`,
+   enabled for RTL8852C firmware `0.27.128.0` or newer;
+- `BEACON_TRACKING`,
+   enabled for RTL8852C firmware `0.27.129.1` or newer.
 
 The driver configures `RTW89_BCN_LOSS_CNT` as `60`.
-With a 100 ms beacon interval, that produces the observed interval of about six seconds before beacon loss.
+With a 100 ms beacon interval,
+ that produces the observed interval of about six seconds before beacon loss.
 The beacon-tracking path operates only while low-power state is enabled.
 The installed kernel and firmware therefore already contain the known tolerance and tracking mechanisms,
 but the failure still occurred while power saving was on.
@@ -128,9 +149,12 @@ The causal confidence is moderate:
 - A related `rtw89` report describes beacon loss caused by station and access-point disagreement about power save,
   with driver power-save disablement as the workaround.
 
-The capture does not prove whether the initiating defect is in RTL8852C firmware, the Linux driver, or the access
+The capture does not prove whether the initiating defect is in RTL8852C firmware,
+ the Linux driver,
+ or the access
 point's handling of power-save state.
-A short observation without recurrence is supporting evidence, not proof of permanent stability.
+A short observation without recurrence is supporting evidence,
+ not proof of permanent stability.
 
 ## Durable workaround
 
@@ -144,7 +168,8 @@ PowerSaveDisable=rtw89_8852ce
 ```
 
 The value must match the kernel driver name reported by `ethtool --driver <interface>`.
-On the diagnosed host, IWD logged both the driver-quirk match and power-save disablement after restart.
+On the diagnosed host,
+ IWD logged both the driver-quirk match and power-save disablement after restart.
 
 The existing NetworkManager setting did not provide this result:
 
@@ -153,7 +178,8 @@ The existing NetworkManager setting did not provide this result:
 wifi.powersave=2
 ```
 
-While that setting was present, `iw dev <interface> get power_save` still reported `on` under the IWD backend.
+While that setting was present,
+ `iw dev <interface> get power_save` still reported `on` under the IWD backend.
 The IWD driver quirk addresses the owner that actually configures this interface.
 
 Disabling power saving can increase energy use.
@@ -170,7 +196,9 @@ wifi.iwd.autoconnect=no
 ```
 
 NetworkManager `1.56.1` defaults `wifi.iwd.autoconnect` to `yes`.
-In that mode, IWD controls ranking and autoconnection, and NetworkManager ignores connection settings including
+In that mode,
+ IWD controls ranking and autoconnection,
+ and NetworkManager ignores connection settings including
 `autoconnect-priority` and `autoconnect-retries`.
 Setting it to `no` lets the NetworkManager profile's retry policy take effect while retaining IWD as the backend.
 
@@ -219,14 +247,17 @@ ping --count=3 <gateway-address>
 ping --count=3 <internet-address>
 ```
 
-For restart persistence, restart only IWD and observe recovery without activating the profile manually:
+For restart persistence,
+ restart only IWD and observe recovery without activating the profile manually:
 
 ```sh
 sudo systemctl restart iwd.service
 ```
 
 The diagnosed host briefly showed the Wi-Fi device as unavailable while IWD re-registered it.
-NetworkManager then selected the saved profile automatically, completed association, restored global connectivity,
+NetworkManager then selected the saved profile automatically,
+ completed association,
+ restored global connectivity,
 and left `iw` power saving off.
 Temporary unavailability during backend restart is not a failed verification if automatic recovery completes.
 
@@ -236,11 +267,13 @@ Temporary unavailability during backend restart is not a failed verification if 
 
 The earlier `wpa_supplicant` backend also disconnected frequently.
 An absence of retained journal entries from that period cannot establish that it was stable.
-Retain IWD unless a new, correlated comparison demonstrates a backend-specific failure.
+Retain IWD unless a new,
+ correlated comparison demonstrates a backend-specific failure.
 
 ### NetworkManager power-save configuration alone
 
-`wifi.powersave=2` was already configured, but the live IWD-managed interface reported power saving as on.
+`wifi.powersave=2` was already configured,
+ but the live IWD-managed interface reported power saving as on.
 Use IWD's `PowerSaveDisable` driver quirk for this backend and verify live state with `iw`.
 
 ### Retry settings while IWD owns autoconnect
@@ -252,49 +285,76 @@ Set `wifi.iwd.autoconnect=no` when NetworkManager profile retry semantics are re
 ### Treating recovery errors as the original cause
 
 Association status `30` and reason `15` occurred after the local beacon-loss disconnection.
-They explain why an immediate recovery attempt failed, not why the established connection first vanished.
+They explain why an immediate recovery attempt failed,
+ not why the established connection first vanished.
 
 ## Rollback
 
-To restore power saving, remove only this entry from `/etc/iwd/main.conf` and restart IWD:
+To restore power saving,
+ remove only this entry from `/etc/iwd/main.conf` and restart IWD:
 
 ```ini
 PowerSaveDisable=rtw89_8852ce
 ```
 
-To return autoconnection to IWD, set:
+To return autoconnection to IWD,
+ set:
 
 ```ini
 wifi.iwd.autoconnect=yes
 ```
 
 Then restart NetworkManager.
-When IWD owns autoconnection, do not expect NetworkManager's per-profile priority and retry settings to apply.
+When IWD owns autoconnection,
+ do not expect NetworkManager's per-profile priority and retry settings to apply.
 
 ## Upstream status
 
 No new upstream report was filed during this diagnosis.
-The issue is actionable locally, but an upstream report still lacks reproduction on an unmodified current upstream
+The issue is actionable locally,
+ but an upstream report still lacks reproduction on an unmodified current upstream
 kernel and isolation from access-point behavior.
 
 The closest known report is `lwfinger/rtw89` issue `121` for RTL8852AE.
-It describes strong-signal beacon loss across access points, attributes the behavior to power-save disagreement,
+It describes strong-signal beacon loss across access points,
+ attributes the behavior to power-save disagreement,
 and recommends disabling driver power saving.
-It is a related predecessor, not an exact duplicate for RTL8852CE.
+It is a related predecessor,
+ not an exact duplicate for RTL8852CE.
 That repository directs in-kernel driver reports to Linux wireless maintainers rather than using it as the canonical
 issue tracker.
 
-The inspected OGC kernel already includes RTL8852C beacon-loss count version 1, beacon tracking, beacon timeout
-calculation, and beacon diagnostics.
+The inspected OGC kernel already includes RTL8852C beacon-loss count version 1,
+ beacon tracking,
+ beacon timeout
+calculation,
+ and beacon diagnostics.
 Those mechanisms reduce known failure modes but did not prevent this captured event with power saving enabled.
 
-A future report should go to `linux-wireless@vger.kernel.org`, copying the `rtw89` maintainer listed in
+A future report should go to `linux-wireless@vger.kernel.org`,
+ copying the `rtw89` maintainer listed in
 `MAINTAINERS`.
-Before sending it, reproduce on a current upstream kernel and include:
+Before sending it,
+ reproduce on a current upstream kernel and include:
 
-- exact adapter PCI ID, driver, firmware, kernel, IWD, and NetworkManager versions;
-- access-point model, firmware, security mode, band, channel, and beacon interval;
-- correlated kernel, IWD, NetworkManager, `iw event -t -f`, gateway, and internet timelines;
+- exact adapter PCI ID,
+   driver,
+   firmware,
+   kernel,
+   IWD,
+   and NetworkManager versions;
+- access-point model,
+   firmware,
+   security mode,
+   band,
+   channel,
+   and beacon interval;
+- correlated kernel,
+   IWD,
+   NetworkManager,
+   `iw event -t -f`,
+   gateway,
+   and internet timelines;
 - live power-save state before and after the workaround;
 - results with power saving on and off across the same scan trigger;
 - whether the failure reproduces across more than one access point;
