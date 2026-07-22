@@ -420,12 +420,12 @@ RPB:
 Re-probe + ask user to reconnect/re-authorize/restart before concluding unreachable.
 
 JEV:
- Journal silence isn't stability evidence.
-Verify retention + emitting unit,
-then reproduce with live link,
+ Journal silence or a later recovery action isn't cause or stability evidence.
+Verify retention + emitter;
+reproduce with live link,
 supplicant,
 kernel,
-and reachability capture before excluding a failure.
+and reachability capture.
 
 RBK:
  User must execute manually:
