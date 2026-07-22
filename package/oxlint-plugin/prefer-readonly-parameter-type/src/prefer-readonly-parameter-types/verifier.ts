@@ -10,6 +10,7 @@ import type {
   Context,
   Fixer,
 } from '@oxlint/plugins';
+import { undocumentedBoundaries, } from './effect-adapter.ts';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
 import { inputUsageSubject, } from './input-diagnostic-description.ts';
@@ -286,6 +287,12 @@ export function verifyReadonlyCallable({
         parameterIndex,
         uncertainty,
         parsedContracts,
+        undocumentedContractBoundaries: parameterBlocks.length === 0
+          ? []
+          : undocumentedBoundaries({
+            facts: uncertainty.facts,
+            contracts: parameterBlocks,
+          },),
       },),);
       return;
     }

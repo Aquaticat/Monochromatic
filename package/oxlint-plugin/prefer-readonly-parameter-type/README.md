@@ -45,6 +45,10 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
   every valid remediation,
   and an echo of every parsed `@mutates` block including names matching no
   input;
+- a parsed contract that leaves calls unnamed additionally gets a coverage
+  note listing exactly those calls and stating the literal matching rule
+  (explanation contains the call name, or a documentation URL plus the final
+  member name);
 - inert `ForeignBorrowed` markers over deeply readonly types and stale
   `@mutates` contracts are reported for removal;
 - ordinary `--fix` does not alter signatures or contracts;

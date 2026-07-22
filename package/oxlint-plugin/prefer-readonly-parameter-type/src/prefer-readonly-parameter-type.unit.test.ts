@@ -285,6 +285,23 @@ children: [
       expect(methodMessage.includes(
         'A method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.',
       ),).toBe(true,);
+      /** Coverage note for a contract that exists but never names the call. */
+      const incompleteContractMessage = messages.find(function unrelatedLinkContract(message,): boolean {
+        return message.startsWith(
+          'The function input named "state" is used by these calls: opaqueExternalMutation [',
+        );
+      },);
+      if (incompleteContractMessage === undefined)
+        throw new Error('Expected incomplete-contract uncertainty diagnostic.',);
+      expect(incompleteContractMessage.includes(
+        '\n\nA @mutates contract for this input was parsed, but its explanation does not mention these calls: opaqueExternalMutation.',
+      ),).toBe(true,);
+      expect(incompleteContractMessage.includes(
+        'The rule matches literally: an explanation covers a call once it contains that call\'s name (for example "opaqueExternalMutation")',
+      ),).toBe(true,);
+      /* Without any parsed contract the coverage note must stay absent; the
+       * numbered remediations already own that case. */
+      expect(opaqueMessage.includes('does not mention these calls',),).toBe(false,);
       /** Exact global String diagnostic naming coercion hooks and every remedy. */
       const stringMessage = messages.find(function stringCoercion(message,): boolean {
         return message.startsWith(

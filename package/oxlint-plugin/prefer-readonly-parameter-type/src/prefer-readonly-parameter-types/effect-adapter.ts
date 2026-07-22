@@ -77,6 +77,51 @@ function descriptionDocumentsBoundary({
 }
 
 /**
+ * Lists boundary names no supplied contract explanation documents, in the
+ * plain form a `@mutates` explanation must contain, deduplicated and sorted.
+ * The verifier includes these in the unresolved-effect diagnostic so an
+ * incomplete contract learns exactly which calls it still has to name,
+ * instead of leaving the author to diff prose against the boundary list.
+ *
+ * @param facts - Unresolved provenance facts affecting one parameter.
+ *
+ * @param contracts - Contract blocks targeting that same parameter.
+ *
+ * @returns Sorted plain boundary names no contract documents.
+ *
+ * @example
+ * ```ts
+ * undocumentedBoundaries({ facts: uncertainty.facts, contracts: parameterBlocks });
+ * ```
+ */
+export function undocumentedBoundaries(
+  {
+    facts,
+    contracts,
+  }: {
+    readonly facts: readonly string[];
+    readonly contracts: readonly { readonly description: string; }[];
+  },
+): readonly string[] {
+  /**
+   * Plain boundary names whose provenance no contract explanation documents.
+   */
+  const uncovered = facts
+    .filter(function lacksContract(provenance,): boolean {
+      return !contracts.some(function namesBoundary(block,): boolean {
+        return descriptionDocumentsBoundary({
+          description: block.description,
+          provenance,
+        },);
+      },);
+    },)
+    .map(function plainName(provenance,): string {
+      return originBoundaryName(provenance,);
+    },);
+  return [...new Set(uncovered,),].toSorted();
+}
+
+/**
  * Converts documented direct opaque boundary into conservative uncertainty.
  *
  * @param declaration - Callable whose contracts describe boundary.

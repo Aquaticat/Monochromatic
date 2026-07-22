@@ -80,6 +80,13 @@ export function uncertaintyBoundaries({
  *
  * @param uncertainty - Sorted upstream boundary description.
  *
+ * @param parsedContracts - Echo of every parsed contract block.
+ *
+ * @param undocumentedContractBoundaries - Plain boundary names no parsed
+ * contract explanation documents; empty when no contract targets this
+ * parameter, so the coverage note only appears for the
+ * present-but-incomplete case the numbered remediations do not single out.
+ *
  * @returns unresolved-effect report descriptor.
  *
  * @example
@@ -94,6 +101,7 @@ export function opaqueEffectReport({
   parameterIndex,
   uncertainty,
   parsedContracts,
+  undocumentedContractBoundaries,
 }: {
   readonly loc: {
     readonly start: {
@@ -110,6 +118,7 @@ export function opaqueEffectReport({
   readonly parameterIndex: number;
   readonly uncertainty: UncertaintyBoundaries;
   readonly parsedContracts: string;
+  readonly undocumentedContractBoundaries: readonly string[];
 },): Parameters<Context['report']>[0] {
   /**
    * Number of unresolved provenance facts.
@@ -133,6 +142,20 @@ export function opaqueEffectReport({
     targetIndexes,
     parameterIndex,
   },);
+  /**
+   * First undocumented boundary, doubling as a concrete matching example.
+   */
+  const [firstUndocumented,] = undocumentedContractBoundaries;
+  /**
+   * Coverage note for a contract that exists but leaves calls unnamed; the
+   * echoed contract list alone cannot show which calls remain uncovered or
+   * that matching is literal.
+   */
+  const contractCoverage = firstUndocumented === undefined
+    ? ''
+    : `\n\nA @mutates contract for this input was parsed, but its explanation does not mention these calls: ${
+      undocumentedContractBoundaries.join(', ',)
+    }. The rule matches literally: an explanation covers a call once it contains that call's name (for example "${firstUndocumented}"), or a documentation URL (http:// or https://) together with the name after the call's last dot.`;
   return {
     loc,
     messageId: onlyStringObjectCoercion
@@ -150,6 +173,7 @@ export function opaqueEffectReport({
         : inputSubject,
       boundaries: uncertainty.names,
       parsedContracts,
+      contractCoverage,
     },
   };
 }
