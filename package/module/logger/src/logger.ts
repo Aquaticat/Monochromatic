@@ -1,6 +1,7 @@
 import { createLogger, } from './create-logger.ts';
 import { createConsoleSink, } from './sink/console.ts';
 import { createFileSink, } from './sink/file.ts';
+import { createLocalStorageSink, } from './sink/local-storage.ts';
 import { createOpfsSink, } from './sink/opfs.ts';
 import { createSessionStorageSink, } from './sink/session-storage.ts';
 import type {
@@ -13,14 +14,17 @@ import type {
  * only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
  * everywhere, {@link createOpfsSink} in browsers,
  * {@link createSessionStorageSink} wherever web storage round-trips (browsers,
- * Node 22+, Deno), {@link createFileSink} under Node. The noop sink is
- * intentionally absent so a process with no working backend surfaces the "No
- * logging backends available" error instead of silently discarding.
+ * Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
+ * round-trips (browsers, Deno, Node launched with `--localstorage-file`),
+ * {@link createFileSink} under Node. The noop sink is intentionally absent so
+ * a process with no working backend surfaces the "No logging backends
+ * available" error instead of silently discarding.
  */
 const defaultSinks: readonly Sink[] = [
   createConsoleSink(),
   createOpfsSink(),
   createSessionStorageSink(),
+  createLocalStorageSink(),
   createFileSink(),
 ];
 
