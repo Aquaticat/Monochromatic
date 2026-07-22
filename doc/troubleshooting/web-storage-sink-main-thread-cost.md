@@ -289,44 +289,57 @@ Two conclusions the numbers force:
 
 ## Verified workarounds
 
-### Stop electing the sink where it duplicates a cheaper one (shipped)
+### Reject election under Node (shipped in `583f1c25b`, reverted in `c040389f8`)
 
-Commit `583f1c25b`:
-`verify` rejects under Node
-(`package/module/logger/src/sink/session-storage.ts:86`):
+Commit `583f1c25b` made `verify` reject Node-branded runtimes despite a
+working backend, on the judgment that the process-local store served no
+diagnostic purpose there.
+That judgment was reversed by decision:
+the sink stays elected wherever `sessionStorage` round-trips a probe,
+because availability plus one uniform cross-runtime behavior outranks
+the duplication,
+and the buffered write path below makes the cost acceptable.
+Kept here as history so the rejection is not re-shipped;
+the current `verify` is probe-only
+(`package/module/logger/src/sink/session-storage.ts`).
 
-```ts
-  if (globalThis.process
-    ?.versions
-    ?.node !== undefined)
-    return Promise.resolve(false,);
-```
+### One uniform buffered write path (shipped in `c040389f8`)
 
-Tradeoff:
-none under Node
-(the file sink already persists there,
-and Node's `sessionStorage` is process-local memory,
-so the dropped writes served no diagnostic purpose).
-Browsers are unaffected by design.
+The sink buffers serialized records and persists them as
+newline-joined JSONL batches, one batch per counter-incremented key,
+identically on every runtime; no per-runtime mode exists
+(`package/module/logger/src/sink/session-storage.ts`,
+persistence engine split to
+`package/module/logger/src/sink/session-storage-store.ts`).
+A batch flushes:
 
-### Batch records per storage key (measured; hold until a browser profile demands it)
+- synchronously from inside `write` at a 32 KiB joined-length cap
+  (`FLUSH_BUFFER_CAP_CHARS`), the flat bottom of the measured
+  batch-size curve on both Chromium 149 and Node 26, clear of the
+  measured U-turn where ~100 KiB+ flushes cost more per record than
+  not batching;
+- synchronously from inside `write` on `warn`-or-worse severity,
+  so every record up to and including a failure is persisted before
+  control returns;
+- by a 250 ms quiet-period deadline timer, `unref`ed where the handle
+  supports it so a pending flush never holds a process open;
+- on `pagehide` and on the document becoming hidden, where those
+  events exist (no-ops elsewhere);
+- via the sink `flush` hook, which logger-level `flush()` drains.
 
-Buffer serialized records in memory and flush one concatenated
-`setItem` per batch,
-on a small interval or `requestIdleCallback`,
-plus an unconditional flush on `pagehide` and on
-`visibilitychange` to `hidden`.
-The harness's batched loop is the measured shape,
-and the batch-size sweep in Verification sets the parameters:
-cap the buffer by bytes, around 32 KB to 64 KB per flush,
-rather than by record count.
-That lands in the flat bottom of the measured curve for both small and
-large records (0.2 µs to 1.7 µs per record, versus about 5 µs
-unbatched), keeps each flush call under ~100 µs,
-and stays clear of the measured U-turn where a ~515 KB flush costs
-more per record than not batching at all.
-Batching also amortizes eviction to once per batch instead of up to
-once per record.
+When appending a record would breach the cap, the existing entries
+flush first, so an oversized record's quota give-up can only drop that
+record, never its batch-mates.
+
+Measured outcome at the consumer boundary (built `dist`, Node 26.5):
+a 10,000-record `debug` storm through a logger with only this sink
+costs 2.78 µs per record, of which about 2 µs is logger dispatch
+overhead (a suppressed-console-only logger measures 2.05 µs),
+versus ~14.7 µs per unbatched `setItem` before;
+a `warn` record lands itself and the buffered records ahead of it as
+one JSONL batch;
+and a process holding buffered records and an armed deadline timer
+exits promptly (~0.5 s total script time, no timer hold-open).
 
 Tradeoffs:
 
@@ -426,37 +439,41 @@ so a whole-browser or OS crash can lose up to about 5 seconds of
 "synchronously written" `localStorage` regardless of sink design,
 and the spec quoted in Root cause guarantees nothing here.
 
-Ordering the classes by expected frequency settles the design.
-The governing principle, set as a project decision:
+Two project decisions weigh against each other here.
+The humility principle:
 assume our code fails far more often than Chromium,
 and Chromium far more often than the OS;
 never design as though our recovery code is more robust than the
 layers below it.
-Our exceptions are the most common failure and lose nothing under
-either design (given severity- and lifecycle-triggered flushes).
-Our hangs and leaks are next,
-and there per-record wins outright:
+Under it, per-record wins the hang-and-leak class outright:
 it is the only design that needs none of our code to run after the
 record is emitted,
 whereas every buffered design bets that our flush scheduling survives
 whatever bug is currently destroying the app.
-Chromium and OS crashes, where batching's extra loss window actually
-bites, are the rarest class,
-and both designs are already lossy there at layers we do not control.
+The uniformity-and-availability decision, made later and final:
+the sink stays elected wherever the backend round-trips,
+and every runtime uses one identical write path;
+no per-runtime modes.
 
-Consequently browsers keep the per-record sink shape by default.
-From the measured numbers,
-both storage-backed sinks together cost about 21 µs of main thread
-per record (4.9 setItem + 15.9 OPFS enqueue),
-so 100 records/s costs about 0.2% of one core and 1000 records/s
-about 2%;
-the Node incident was a synchronous build tool emitting thousands of
-records, not a browser workload.
-Batching (byte-capped, severity- and lifecycle-flushed, per the
-subsections above) is the lever to pull only when a browser profile
-shows these sinks in self time,
-and the hybrid limits its blast radius when pulled:
-write `warn` and above per record, batch only `debug`/`trace` volume.
+The shipped design (`c040389f8`) satisfies the second decision and
+bounds what the first one loses.
+The 32 KiB cap flush runs synchronously inside `write` itself,
+on the caller's stack,
+so even a wedged main thread that keeps logging can never hold more
+than one batch of unpersisted records:
+the hang-class loss is capped at 32 KiB of tail,
+not unbounded buffering.
+`warn`-or-worse records flush themselves and everything buffered ahead
+of them synchronously,
+so no record at or before a logged failure is ever in the window.
+The residual exposure versus per-record writes is exactly:
+`debug`/`trace`/`info` records younger than the last flush trigger,
+at most one batch,
+lost only when the process dies with no further JS and no lifecycle
+event.
+Chromium and OS crashes, where the window also bites,
+are the rarest class and already lossy at layers below us
+(async mojo `Put`, 5 s disk-commit batching).
 
 ## What does not work
 
@@ -478,13 +495,14 @@ write `warn` and above per record, batch only `debug`/`trace` volume.
   measured OPFS enqueue is about 15.9 µs per record versus 4.9 µs for
   `setItem`,
   so per-record it spends more main-thread time, not less.
-- Keeping the sink under Node with batching instead of rejecting
-  election:
-  Node's web storage is process-local memory duplicating the file
-  sink's job,
-  so even a cheap write buys nothing there
-  (see the `verify` rustdoc-style rationale at
-  `package/module/logger/src/sink/session-storage.ts:70`).
+- Rejecting election under Node instead of batching (the `583f1c25b`
+  approach, since reverted):
+  it judged the process-local store worthless and so priced uniform
+  cross-runtime behavior at zero;
+  the standing decision values availability plus one identical write
+  path everywhere, and the buffered path makes that affordable,
+  so runtime-brand rejection solved the cost by discarding the
+  capability instead of fixing the cost.
 - Per-record `requestIdleCallback` scheduling:
   pays scheduling overhead per record without amortizing the storage
   call, and reorders records;
@@ -544,21 +562,18 @@ Fire-and-forget hides latency, not CPU:
 any sink work before the first genuine await runs on the caller's
 thread,
 and for web storage that is all of it, about 5 µs per record in
-Chromium 149.
-Browsers still keep per-record writes by default,
-because our code fails more often than Chromium or the OS,
-and per-record is the only shape that needs none of our code to run
-after a record is emitted;
-at realistic browser volumes the cost is a fraction of a percent of
-one core.
-When a browser profile ever shows these sinks in self time,
-the measured lever is one `setItem` per byte-capped batch
-(32 KB to 64 KB per flush lands in the flat bottom of the curve, 3x to
-26x cheaper per record; a fixed record count is the wrong knob, since
-~515 KB flushes cost more per record than not batching),
-flushed on error severity, on idle, and on `pagehide`,
-batching only `debug`/`trace` volume.
-The measured surprise stands either way:
+Chromium 149 and about 15 µs on Node 26.
+The shipped answer (`c040389f8`) is election by probe alone plus one
+uniform buffered write path on every runtime:
+one `setItem` per byte-capped batch
+(32 KiB lands in the flat bottom of the curve, 3x to 60x cheaper per
+record; a fixed record count is the wrong knob, since ~100 KiB+
+flushes cost more per record than not batching),
+flushed synchronously in-write at the cap and on `warn`-or-worse,
+by unref'd 250 ms deadline, on `pagehide`/hidden, and on `flush()`.
+The in-write cap flush is what keeps the humility principle satisfied:
+a wedged main thread can never hold more than one batch of tail.
+The measured surprise stands:
 the OPFS sink's enqueue costs about 3x more main-thread time per
 record than `setItem`,
-so batching helps the async sink even more than the sync one.
+so batching would help the async sink even more than the sync one.
