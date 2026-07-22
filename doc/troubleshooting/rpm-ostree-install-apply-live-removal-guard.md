@@ -77,9 +77,10 @@ if (packages->len > 0)
 ```
 
 The separately printed `Will download: 5 packages` is only the cache-miss count.
-The transcript's larger list includes the packages being layered into the newly composed deployment,
-including already requested host packages and their dependencies.
-It is not evidence that Chromium unexpectedly requested all of those packages as new dependencies.
+The transcript's larger list includes the packages being layered into the newly composed deployment.
+It may include pre-existing host package requests and their dependencies,
+but only `rpm-ostree status --verbose` on the affected host can identify those requests.
+The list is not evidence that Chromium unexpectedly requested all of those packages as new dependencies.
 
 ### Staging succeeds before live application begins
 
@@ -219,7 +220,9 @@ and updates with `!` and `=`.
 
 Working catalog:
 
-- `rpm-ostree install chromium` composes a pending deployment for the next boot.
+- On a fresh state without an existing Chromium request,
+  `rpm-ostree install chromium` normally composes a pending deployment for the next boot.
+  This is not a recovery command after Chromium has already been staged.
 - `rpm-ostree install chromium --apply-live` works when the complete booted-to-pending package diff is additive.
 - `rpm-ostree apply-live --allow-replacement` accepts package changes and removals after a deployment is pending.
 
@@ -232,14 +235,21 @@ Failing catalog:
 
 ### Inspect the pending deployment and reboot
 
+First inspect the pending deployment:
+
 ```sh
 rpm-ostree status --verbose
 rpm-ostree db diff --format=diff
-systemctl reboot
 ```
 
 Use this path only after the removed-package lines are understood and acceptable.
-The tradeoff is that Chromium and every other queued pending change become active at boot,
+The following command activates Chromium and every other queued pending change at boot:
+
+```sh
+systemctl reboot
+```
+
+The tradeoff is that all queued changes become active at boot,
 not immediately.
 This is the normal transactional package-layering path documented by both rpm-ostree and Bazzite.
 
