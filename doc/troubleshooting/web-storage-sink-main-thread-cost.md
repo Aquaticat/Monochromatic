@@ -309,7 +309,7 @@ and Node's `sessionStorage` is process-local memory,
 so the dropped writes served no diagnostic purpose).
 Browsers are unaffected by design.
 
-### Batch records per storage key (measured, not yet implemented)
+### Batch records per storage key (measured; hold until a browser profile demands it)
 
 Buffer serialized records in memory and flush one concatenated
 `setItem` per batch,
@@ -367,10 +367,23 @@ Crash classes and what each loses:
 - Navigation, reload, tab close, backgrounded-tab kill:
   `pagehide` and `visibilitychange` to `hidden` fire;
   flushing there loses nothing.
-- Hard renderer/browser/OS crash: JS never runs again;
+- Hang or runaway allocation from our own bug, ended by the user
+  killing the unresponsive tab or the OS OOM-killing the renderer:
+  nothing throws, so no severity flush ever fires,
+  and once the main thread wedges, timer- and idle-based deadline
+  flushes can never run again either.
+  The batched buffer dies inside the wedged process's JS heap.
+  Per-record writes were already handed to Chromium at emit time,
+  and for `sessionStorage` the authoritative map lives in the browser
+  process (that is what the async `Put` cited below updates),
+  so records logged before and during the hang survive the kill,
+  minus at most an in-flight tail.
+  This is the class where batching genuinely forfeits forensics that
+  per-record keeps,
+  and because our code causes it, it is not rare.
+- Hard renderer/browser/OS crash from below us: JS never runs again;
   the buffer since the last deadline flush is lost.
-  This window is the real cost, bounded by the flush deadline and byte
-  cap.
+  Bounded by the flush deadline and byte cap.
 
 The honest baseline for that last class:
 per-record `setItem` is synchronous only into the renderer's local
@@ -412,10 +425,37 @@ disk commits itself
 so a whole-browser or OS crash can lose up to about 5 seconds of
 "synchronously written" `localStorage` regardless of sink design,
 and the spec quoted in Root cause guarantees nothing here.
-Batching with a sub-second deadline therefore widens a window that
-already exists at two layers below JS;
-it does not convert a durable write into a lossy one.
-A hybrid also works when even that window is unacceptable:
+
+Ordering the classes by expected frequency settles the design.
+The governing principle, set as a project decision:
+assume our code fails far more often than Chromium,
+and Chromium far more often than the OS;
+never design as though our recovery code is more robust than the
+layers below it.
+Our exceptions are the most common failure and lose nothing under
+either design (given severity- and lifecycle-triggered flushes).
+Our hangs and leaks are next,
+and there per-record wins outright:
+it is the only design that needs none of our code to run after the
+record is emitted,
+whereas every buffered design bets that our flush scheduling survives
+whatever bug is currently destroying the app.
+Chromium and OS crashes, where batching's extra loss window actually
+bites, are the rarest class,
+and both designs are already lossy there at layers we do not control.
+
+Consequently browsers keep the per-record sink shape by default.
+From the measured numbers,
+both storage-backed sinks together cost about 21 µs of main thread
+per record (4.9 setItem + 15.9 OPFS enqueue),
+so 100 records/s costs about 0.2% of one core and 1000 records/s
+about 2%;
+the Node incident was a synchronous build tool emitting thousands of
+records, not a browser workload.
+Batching (byte-capped, severity- and lifecycle-flushed, per the
+subsections above) is the lever to pull only when a browser profile
+shows these sinks in self time,
+and the hybrid limits its blast radius when pulled:
 write `warn` and above per record, batch only `debug`/`trace` volume.
 
 ## What does not work
@@ -505,12 +545,20 @@ any sink work before the first genuine await runs on the caller's
 thread,
 and for web storage that is all of it, about 5 µs per record in
 Chromium 149.
-Amortize with one `setItem` per byte-capped batch
-(32 KB to 64 KB per flush lands in the flat bottom of the measured
-curve, 3x to 26x cheaper per record; a fixed record count is the wrong
-knob, since ~515 KB flushes cost more per record than not batching),
-flushed on idle and `pagehide`,
-and remember the measured surprise:
+Browsers still keep per-record writes by default,
+because our code fails more often than Chromium or the OS,
+and per-record is the only shape that needs none of our code to run
+after a record is emitted;
+at realistic browser volumes the cost is a fraction of a percent of
+one core.
+When a browser profile ever shows these sinks in self time,
+the measured lever is one `setItem` per byte-capped batch
+(32 KB to 64 KB per flush lands in the flat bottom of the curve, 3x to
+26x cheaper per record; a fixed record count is the wrong knob, since
+~515 KB flushes cost more per record than not batching),
+flushed on error severity, on idle, and on `pagehide`,
+batching only `debug`/`trace` volume.
+The measured surprise stands either way:
 the OPFS sink's enqueue costs about 3x more main-thread time per
 record than `setItem`,
 so batching helps the async sink even more than the sync one.
