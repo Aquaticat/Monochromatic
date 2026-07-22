@@ -10,11 +10,12 @@ It is verified as a workaround,
  not as proof that the adapter,
  firmware,
  or access point contains a specific defect.
-The leading explanation is an RTL8852C power-save and scan interaction that causes false beacon loss.
+The leading hypothesis is that an RTL8852C power-save and scan interaction contributed to the reported beacon loss.
 
 Do not infer stability from an empty or incomplete journal interval.
-The same disconnect class occurred with the earlier `wpa_supplicant` backend,
- so changing to IWD did not create it.
+The user reported frequent disconnects with the earlier `wpa_supplicant` backend,
+ but no retained correlated capture establishes whether they had the same mechanism.
+Changing to IWD therefore does not establish when the problem began.
 
 ## Affected environment
 
@@ -85,7 +86,8 @@ The correlated failure proceeded as follows:
 1. IWD started a full scan while the station remained associated.
 2. Gateway and internet replies stopped during the scan.
 3. The scan completed.
-4. About six seconds after scan start,
+4. About six seconds after scan completion,
+    and roughly eleven seconds after scan start,
     the driver reported a CQM beacon-loss event despite the preceding strong signal.
 5. mac80211 sent connection probes and locally disconnected with reason `4` when they received no acknowledgement.
 6. The first recovery attempts encountered temporary association rejection and a four-way-handshake timeout.
@@ -123,7 +125,9 @@ RTL8852C firmware `0.27.129.4` is new enough for both mitigations recognized by 
 
 The driver configures `RTW89_BCN_LOSS_CNT` as `60`.
 With the observed 100 TU beacon interval,
- that produces the observed interval of about six seconds before beacon loss.
+ that corresponds to about 6.1 seconds.
+This is consistent with the measured gap from scan completion to beacon loss,
+ but does not prove when the timer began or what caused the missed beacons.
 The beacon-tracking path operates only while low-power state is enabled.
 The installed kernel and firmware therefore already contain the known tolerance and tracking mechanisms,
 but the failure still occurred while power saving was on.
@@ -265,8 +269,9 @@ Temporary unavailability during backend restart is not a failed verification if 
 
 ### Changing the Wi-Fi backend
 
-The earlier `wpa_supplicant` backend also disconnected frequently.
-An absence of retained journal entries from that period cannot establish that it was stable.
+The user reported that the earlier `wpa_supplicant` backend also disconnected frequently.
+An absence of retained journal entries from that period cannot establish that it was stable or that its failures had
+ the same mechanism.
 Retain IWD unless a new,
  correlated comparison demonstrates a backend-specific failure.
 
@@ -285,7 +290,7 @@ Set `wifi.iwd.autoconnect=no` when NetworkManager profile retry semantics are re
 ### Treating recovery errors as the original cause
 
 Association status `30` and reason `15` occurred after the local beacon-loss disconnection.
-They explain why an immediate recovery attempt failed,
+They describe failures during immediate recovery attempts,
  not why the established connection first vanished.
 
 ## Rollback
