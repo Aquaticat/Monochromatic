@@ -122,7 +122,7 @@ RTL8852C firmware `0.27.129.4` is new enough for both mitigations recognized by 
    enabled for RTL8852C firmware `0.27.129.1` or newer.
 
 The driver configures `RTW89_BCN_LOSS_CNT` as `60`.
-With a 100 ms beacon interval,
+With the observed 100 TU beacon interval,
  that produces the observed interval of about six seconds before beacon loss.
 The beacon-tracking path operates only while low-power state is enabled.
 The installed kernel and firmware therefore already contain the known tolerance and tracking mechanisms,
@@ -144,8 +144,8 @@ The causal confidence is moderate:
 
 - The failure followed a scan and reported beacon loss at strong signal.
 - Power saving was unexpectedly on before the failure.
-- Turning power saving off at runtime was followed by several IWD roam scans and a manual rescan without another
-  beacon-loss disconnect during the observation period.
+- After the persistent workaround and IWD restart,
+   twelve full roam scans completed without another beacon-loss event or disconnect.
 - A related `rtw89` report describes beacon loss caused by station and access-point disagreement about power save,
   with driver power-save disablement as the workaround.
 
