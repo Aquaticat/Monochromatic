@@ -13,9 +13,10 @@
  * @module
  */
 
-import { detectWebStorageRuntime, } from './web-storage-runtime.ts';
-
-import type { WebStorageRuntime, } from './web-storage-runtime.ts';
+import {
+  detectWebStorageRuntime,
+  type WebStorageRuntime,
+} from './web-storage-runtime.ts';
 
 /**
  * Measured default per-origin sessionStorage quotas, in UTF-16 code units, one

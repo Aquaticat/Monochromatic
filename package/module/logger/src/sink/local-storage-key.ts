@@ -18,6 +18,11 @@
 export const LOCAL_STORAGE_KEY_PREFIX = 'monochromatic.log';
 
 /**
+ * Identity segments after the prefix: stamp, nonce, and index.
+ */
+const RUN_KEY_SEGMENTS = 3;
+
+/**
  * Parsed identity of one owned localStorage entry, used to order eviction
  * across runs.
  */
@@ -50,7 +55,11 @@ function isDigits(text: string,): boolean {
 /**
  * Builds the namespaced localStorage key for one batch slot of one run.
  *
- * @param slot - Run identity plus zero-based batch index.
+ * @param stamp - Run creation time ordering runs oldest-first.
+ *
+ * @param nonce - Same-millisecond disambiguator between concurrent tabs.
+ *
+ * @param index - Zero-based batch slot within the run.
  *
  * @returns Key such as `monochromatic.log.1753000000000.a1b2.3`.
  *
@@ -74,26 +83,25 @@ export function buildLogKey(
 }
 
 /**
- * Parses a localStorage key back into its run identity, or reports it foreign.
- * Parsing is strict (exact prefix, exactly three dot segments, digit-shaped
- * stamp and index, non-empty nonce) because eviction trusts this to never
- * classify a host application's key, or the sessionStorage sink's flat
- * `monochromatic.log.{n}` shape, as evictable.
+ * Parses a localStorage key back into its run identity, or reports it foreign
+ * by leaving `parsed` absent. Parsing is strict (exact prefix, exactly the
+ * identity segment count, digit-shaped stamp and index, non-empty nonce)
+ * because eviction trusts this to never classify a host application's key, or
+ * the sessionStorage sink's flat `monochromatic.log.{n}` shape, as evictable.
  *
  * @param key - Candidate localStorage key.
  *
- * @returns Parsed identity, or `undefined` for any key this engine must not
- * touch.
+ * @returns Wrapper whose `parsed` property is present only for an owned key.
  *
  * @example
  * ```ts
- * parseLogKey('monochromatic.log.1753000000000.a1b2.3'); // ParsedLogKey
- * parseLogKey('monochromatic.log.5'); // undefined: sessionStorage shape
+ * parseLogKey('monochromatic.log.1753000000000.a1b2.3').parsed; // ParsedLogKey
+ * parseLogKey('monochromatic.log.5').parsed; // undefined: sessionStorage shape
  * ```
  */
-export function parseLogKey(key: string,): ParsedLogKey | undefined {
+export function parseLogKey(key: string,): { readonly parsed?: ParsedLogKey; } {
   if (!key.startsWith(`${LOCAL_STORAGE_KEY_PREFIX}.`,))
-    return undefined;
+    return {};
   /**
    * Key remainder past the prefix and its trailing dot, holding the run
    * identity segments.
@@ -104,26 +112,39 @@ export function parseLogKey(key: string,): ParsedLogKey | undefined {
    * key.
    */
   const segments = rest.split('.',);
-  if (segments.length !== 3)
-    return undefined;
+  if (segments.length !== RUN_KEY_SEGMENTS)
+    return {};
+  /**
+   * Identity segments in declaration order; any missing or malformed one
+   * makes the key foreign.
+   */
   const [stampText, nonce, indexText,] = segments;
-  if ((stampText === undefined) || (nonce === undefined) || (indexText === undefined))
-    return undefined;
-  if (!isDigits(stampText,) || (nonce.length === 0) || !isDigits(indexText,))
-    return undefined;
+  if (
+    (stampText === undefined)
+    || (nonce === undefined)
+      || (indexText === undefined)
+  )
+    return {};
+  if (!isDigits(stampText,))
+    return {};
+  if (nonce.length === 0)
+    return {};
+  if (!isDigits(indexText,))
+    return {};
   return {
-    key,
-    stamp: Number.parseInt(stampText, 10,),
-    nonce,
-    index: Number.parseInt(indexText, 10,),
+    parsed: {
+      key,
+      stamp: Math.trunc(Number(stampText,),),
+      nonce,
+      index: Math.trunc(Number(indexText,),),
+    },
   };
 }
 
 /**
  * Orders parsed keys oldest-first for eviction: by run stamp, then by nonce
  * (an arbitrary but stable tiebreak between same-millisecond runs), then by
- * batch index within the run. Positional parameters because `Array.sort`
- * dictates the comparator signature.
+ * batch index within the run.
  *
  * @param first - Parsed key compared first.
  *
@@ -133,10 +154,20 @@ export function parseLogKey(key: string,): ParsedLogKey | undefined {
  *
  * @example
  * ```ts
- * entries.sort(compareLogKeys);
+ * entries.toSorted(function byOldestFirst(first, second) {
+ *   return compareLogKeys({ first, second });
+ * });
  * ```
  */
-export function compareLogKeys(first: ParsedLogKey, second: ParsedLogKey,): number {
+export function compareLogKeys(
+  {
+    first,
+    second,
+  }: {
+    readonly first: ParsedLogKey;
+    readonly second: ParsedLogKey;
+  },
+): number {
   if (first.stamp !== second.stamp)
     return first.stamp - second.stamp;
   if (first.nonce !== second.nonce)

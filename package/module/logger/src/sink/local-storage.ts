@@ -33,12 +33,23 @@ function nodeWithoutLocalStorageFile(): boolean {
   if ('document' in globalThis)
     return false;
   /**
-   * Whether the backing-file flag reached this process by either channel.
+   * Whether the backing-file flag reached this process on the command line.
    */
-  const flagged = process.execArgv
-    .some((argument: string,) => argument.startsWith(NODE_LOCALSTORAGE_FLAG,),)
-    || (process.env.NODE_OPTIONS ?? '').includes(NODE_LOCALSTORAGE_FLAG,);
-  return !flagged;
+  const flaggedInExecArgv = process.execArgv
+    .some(function startsWithFlag(argument: string,) {
+      return argument.startsWith(NODE_LOCALSTORAGE_FLAG,);
+    },);
+  /**
+   * Raw `NODE_OPTIONS` value, absent when the variable is unset; `execArgv`
+   * does not echo flags arriving through it, so it is scanned separately.
+   */
+  const nodeOptions = process.env
+    .NODE_OPTIONS;
+  /**
+   * Whether the backing-file flag reached this process through `NODE_OPTIONS`.
+   */
+  const flaggedInNodeOptions = (nodeOptions ?? '').includes(NODE_LOCALSTORAGE_FLAG,);
+  return !(flaggedInExecArgv || flaggedInNodeOptions);
 }
 
 /**

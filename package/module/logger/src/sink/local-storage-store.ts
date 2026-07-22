@@ -3,11 +3,10 @@ import {
   buildLogKey,
   compareLogKeys,
   parseLogKey,
+  type ParsedLogKey,
 } from './local-storage-key.ts';
 import { detectLocalStorageQuotaChars, } from './local-storage-quota.ts';
 import { isQuotaExceededError, } from './web-storage-quota-error.ts';
-
-import type { ParsedLogKey, } from './local-storage-key.ts';
 
 /**
  * Radix for the run nonce so `Number.prototype.toString` yields compact
@@ -70,8 +69,14 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
     stamp: Date.now(),
     nonce: Math.random()
       .toString(NONCE_RADIX,)
-      .slice(2, 2 + NONCE_LENGTH,)
-      .padEnd(NONCE_LENGTH, '0',),
+      .slice(
+        2,
+        2 + NONCE_LENGTH,
+      )
+      .padEnd(
+        NONCE_LENGTH,
+        '0',
+      ),
   };
 
   /**
@@ -148,7 +153,8 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
      * Entry count at scan time; enumeration is by index because `Storage`
      * exposes no iterator.
      */
-    const total = globalThis.localStorage.length;
+    const total = globalThis.localStorage
+      .length;
     /**
      * Strictly-parsed foreign-run entries found by the scan, unsorted.
      */
@@ -162,9 +168,9 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
       if (key === null)
         continue;
       /**
-       * Parsed run identity, or `undefined` for any key the engine must not touch.
+       * Parsed run identity, absent for any key the engine must not touch.
        */
-      const parsed = parseLogKey(key,);
+      const { parsed, } = parseLogKey(key,);
       if (parsed === undefined)
         continue;
       if ((parsed.stamp === runIdentity.stamp) && (parsed.nonce === runIdentity.nonce))
@@ -181,10 +187,22 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
         chars: value.length,
       },);
     }
-    found.sort(compareLogKeys,);
-    prior.entries = found;
+    prior.entries = found.toSorted(function byOldestFirst(
+      first,
+      second,
+    ) {
+      return compareLogKeys({
+        first,
+        second,
+      },);
+    },);
     state.usedChars += found.reduce(
-      (sum, entry,) => sum + entry.chars,
+      function sumChars(
+        sum,
+        entry,
+      ) {
+        return sum + entry.chars;
+      },
       0,
     );
   }
@@ -196,7 +214,13 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
    * @returns Whether an eviction call would reclaim something.
    */
   function hasEvictable(): boolean {
-    return (prior.cursor < prior.entries.length) || (state.oldestIndex < state.lineCounter);
+    /**
+     * Count of adopted prior-run entries; those before the cursor are gone.
+     */
+    const priorCount = prior.entries
+      .length;
+    return (prior.cursor < priorCount)
+      || (state.oldestIndex < state.lineCounter);
   }
 
   /**
