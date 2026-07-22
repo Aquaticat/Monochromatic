@@ -335,6 +335,8 @@ Tradeoffs:
   Crash forensics is a core reason a session-storage sink exists,
   so the flush interval bounds the loss window and must stay small;
   `pagehide`/`visibilitychange` cover navigation, reload, and close.
+  The crash-durability subsection below sizes this loss honestly:
+  per-record `setItem` never guaranteed hard-crash durability either.
 - Eviction granularity coarsens to whole batches,
   so the half-quota cap overshoots by up to one batch.
 - Readers must split stored values on the record delimiter;
@@ -345,6 +347,76 @@ The same batching applies to the OPFS sink
 (join buffered lines, one `writable.write` per batch),
 and matters more there:
 its per-call enqueue cost is 3x `setItem`'s.
+
+### Crash durability under batching
+
+"Batching loses the records a crash was supposed to explain" holds
+only for one crash class, and the unbatched design is weaker against
+that class than it appears.
+
+Crash classes and what each loses:
+
+- Uncaught exception or unhandled rejection (the common "app crashed"
+  for a web app): the tab keeps running and handlers still execute.
+  A sink that flushes immediately on `warn`/`error`/`fatal` records,
+  plus `window.onerror`/`unhandledrejection` listeners that flush,
+  loses nothing:
+  the flush drains the buffered `debug` records preceding the error.
+  Severity-triggered flushes cost per-record `setItem` prices only for
+  rare records, so amortization is unaffected.
+- Navigation, reload, tab close, backgrounded-tab kill:
+  `pagehide` and `visibilitychange` to `hidden` fire;
+  flushing there loses nothing.
+- Hard renderer/browser/OS crash: JS never runs again;
+  the buffer since the last deadline flush is lost.
+  This window is the real cost, bounded by the flush deadline and byte
+  cap.
+
+The honest baseline for that last class:
+per-record `setItem` is synchronous only into the renderer's local
+cache.
+In Chromium (`chromium/chromium@36ac8f31796a`,
+`third_party/blink/renderer/modules/storage/cached_storage_area.cc:73`),
+`SetItem` updates the in-process map and then forwards the value to
+the browser process asynchronously:
+
+```cpp
+  if (!map_->SetItem(key, value, &old_value))
+    return false;
+  ...
+  if (!is_session_storage_for_prerendering_) {
+    remote_area_->Put(
+        StringToUint8Vector(key, GetKeyFormat()),
+        StringToUint8Vector(value, value_format), optional_old_value,
+        mojom::blink::StorageAreaSource::New(page_url, source_id),
+        base::IgnoreArgs<bool>(MakeVirtualTimePauserCallback(source)));
+  }
+```
+
+so a renderer crash can drop records whose `Put` had not crossed the
+process boundary,
+regardless of how synchronously JS called `setItem`.
+One layer further down, the browser process batches `localStorage`
+disk commits itself
+(`components/services/storage/dom_storage/local_storage_impl.cc:56`):
+
+```cpp
+  // Delay for a moment after a value is set in anticipation
+  // of other values being set, so changes are batched.
+  static constexpr base::TimeDelta kCommitDefaultDelaySecs = base::Seconds(5);
+  ...
+  static const size_t kMaxBytesPerHour = kPerStorageAreaQuota;
+  static constexpr int kMaxCommitsPerHour = 60;
+```
+
+so a whole-browser or OS crash can lose up to about 5 seconds of
+"synchronously written" `localStorage` regardless of sink design,
+and the spec quoted in Root cause guarantees nothing here.
+Batching with a sub-second deadline therefore widens a window that
+already exists at two layers below JS;
+it does not convert a durable write into a lossy one.
+A hybrid also works when even that window is unacceptable:
+write `warn` and above per record, batch only `debug`/`trace` volume.
 
 ## What does not work
 
