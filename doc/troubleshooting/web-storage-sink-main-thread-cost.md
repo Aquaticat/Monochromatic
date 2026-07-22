@@ -356,10 +356,37 @@ Tradeoffs:
   the delimiter must be one JSON strings cannot contain unescaped
   (newline works, since `JSON.stringify` escapes it inside strings).
 
-The same batching applies to the OPFS sink
-(join buffered lines, one `writable.write` per batch),
-and matters more there:
-its per-call enqueue cost is 3x `setItem`'s.
+### OPFS sink batched through the same shared buffer (shipped in `13d993c14`)
+
+The buffering stage is extracted to
+`package/module/logger/src/sink/record-buffer.ts` (same triggers, same
+constants) and both sinks compose it;
+the OPFS sink issues one queued stream write per joined batch, tracks
+in-flight batch writes, and its `flush` hook resolves only once every
+issued batch has settled.
+Measured at the consumer boundary (built `dist`, HeadlessChrome 149):
+a 10,000-record `debug` storm costs 0.84 µs of main-thread enqueue per
+record versus 15.9 µs unbatched, 1.76 µs per record with all batch
+writes awaited,
+and an `info` plus `warn` pair through the browser session-storage
+sink lands as one two-line JSONL batch, confirming the shared buffer
+end to end.
+
+Durability caveat, pre-existing and unchanged by batching:
+`FileSystemWritableFileStream` stages writes and the OPFS file's
+readable content updates only when the writable closes (the sink's own
+`verify` works around exactly this for its probe),
+and the sink keeps its stream open for the whole session,
+so OPFS log content is not observable mid-session under either the
+per-record or the batched design.
+
+No localStorage sink exists in `@monochromatic-dev/module-logger`
+(the sink registry is console, file, noop, OPFS, session-storage),
+so the synchronous-cost finding has no second web-storage sink to
+apply to;
+if one is ever added, it must compose `record-buffer.ts` the same way,
+and the localStorage rows in the sweep above already supply its
+numbers.
 
 ### Crash durability under batching
 
@@ -573,7 +600,8 @@ flushed synchronously in-write at the cap and on `warn`-or-worse,
 by unref'd 250 ms deadline, on `pagehide`/hidden, and on `flush()`.
 The in-write cap flush is what keeps the humility principle satisfied:
 a wedged main thread can never hold more than one batch of tail.
-The measured surprise stands:
-the OPFS sink's enqueue costs about 3x more main-thread time per
-record than `setItem`,
-so batching would help the async sink even more than the sync one.
+The measured surprise held and drove the follow-up:
+the OPFS sink's enqueue cost about 3x more main-thread time per record
+than `setItem`,
+so the same buffer now batches it too (`13d993c14`),
+measured at 0.84 µs of enqueue per record through the built artifact.

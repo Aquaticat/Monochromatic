@@ -103,8 +103,11 @@ still being verified are replayed to that sink when it becomes available.
   non-project trees when a script is invoked from an unexpected cwd
 - **OPFS**:
    browser only;
-   appends JSONL records to Origin Private File System;
-  keeps a `FileSystemWritableFileStream` open for the session
+   buffers records and appends them to the Origin Private File System as
+  newline-joined JSONL batches, one queued stream write per batch, under
+  the same flush triggers as the sessionStorage sink;
+   keeps a `FileSystemWritableFileStream` open for the session,
+   and `logger.flush()` settles every issued batch write
 - **sessionStorage**:
    available wherever `globalThis.sessionStorage` exists (browsers, Node, Deno);
    buffers records and stores them as newline-joined JSONL batches under
@@ -255,7 +258,10 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
   js file sink (JSONL via `appendFile`)
 - `src/sink/opfs.ts`:
    `createOpfsSink()`,
-   browser OPFS sink with persistent writable stream
+   browser OPFS sink with persistent writable stream (batched writes)
+- `src/sink/record-buffer.ts`:
+   buffering stage shared by the OPFS and sessionStorage sinks
+   (byte cap, severity flush, quiet-period deadline, page lifecycle)
 - `src/sink/session-storage.ts`:
    `createSessionStorageSink()`,
    cross-runtime web storage sink (buffering, flush triggers)
