@@ -1253,6 +1253,12 @@ VB6:
  Verification must cross artifact-consumer integration boundary;
  "it compiled"/"it installed" alone isn't verification.
 
+ABR:
+ `agent-browser` sessions outlive verification:
+ open pages keep animating,
+ and WebAudio unlocked by scripted clicks plays on system speakers.
+ End browser verification with `agent-browser close`.
+
 URF:
  Verification needing user-provided resource runs FIRST,
  before unrelated work + other parts of same task;
