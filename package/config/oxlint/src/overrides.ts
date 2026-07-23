@@ -256,9 +256,25 @@ const nonUnitTestRuleOverride = {
 } satisfies OxlintOverride;
 
 /**
+ * The effect rule cannot soundly use its own strict opacity policy to prove
+ * ECMAScript collections, TypeScript semantic handles, or Oxlint's host context.
+ * Self-application would require precisely the handwritten host authorities the
+ * rule forbids. Other rules remain active for its implementation and tests.
+ */
+const readonlyEffectSelfHostingOverride = {
+  files: [
+    '**/oxlint-plugin/prefer-readonly-parameter-type/**',
+  ],
+  rules: {
+    'prefer-readonly-parameter-type/prefer-readonly-parameter-types': 'off' as const,
+  },
+} satisfies OxlintOverride;
+
+/**
  * All overrides, ordered from most specific to least specific.
  */
 export const overrides: OxlintOverride[] = [
+  readonlyEffectSelfHostingOverride,
   figmaOverride,
   typeFileOverride,
   fixtureOverride,

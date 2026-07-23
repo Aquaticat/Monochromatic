@@ -84,7 +84,6 @@ export function externalRuntimeShadowFiles({
         .map(function runtimePath(suffix,): string {
           return `${stem}${suffix}`;
         },)
-        // oxlint-disable-next-line no-restricted-syntax/no-sync -- External semantic setup validates reached shipped runtime siblings synchronously.
         .filter(existsSync,)
         .slice(0, 1,);
     },)
