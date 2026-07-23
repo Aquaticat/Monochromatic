@@ -25,13 +25,15 @@ that:
   DOM,
   and Node boundaries.
 
-The active question is whether moving analysis into Rust behind Node-API would meet these requirements.
+The active question is which supported extension path can meet these requirements
+without modifying either linter upstream.
 This is an architectural evaluation,
 not authorization to implement or adopt a dependency.
 
 ## User requirements
 
 - Preserve a fail-closed guarantee rather than silently trusting unresolved behavior.
+- Never fork or contribute to Oxlint or `tsgolint`.
 - Treat 10 seconds as the maximum acceptable target for:
 
   ```bash
@@ -229,12 +231,14 @@ TypeScript-Go issue 2824 states that third-party code cannot be dynamically link
 Two direct-checker Go hosts were discovered:
 
 - `tsgolint` executes rules against TypeScript-Go AST and checker objects inside Oxlint's type-aware backend.
-  A project rule requires a maintained fork,
-  but it shares the exact command whose rule-disabled path measured 396 milliseconds.
+  A project rule requires a fork or upstream contribution,
+  so this path is excluded despite its 396-millisecond rule-disabled baseline.
 - `ttsc` provides a public contributor rule API,
   including type-aware and project-scoped rules.
-  It avoids a linter fork but runs through a separate host,
+  It avoids modifying either linter but runs through a separate host,
   and its contributor binary generation must fit the cold target.
+  "Contributor rule" is `ttsc` API terminology;
+  project source would remain local rather than being contributed upstream.
 
 NAPI-RS and Neon both expose Rust through Node-API.
 They are bridge alternatives,
@@ -245,12 +249,14 @@ Their relative ergonomics cannot decide whether the analyzer meets the guarantee
 
 Prototype in this order:
 
-1.  project-owned `tsgolint` rule or minimal fork;
-2.  `ttsc` contributor rule;
-3.  demand-driven TypeScript/JavaScript analysis using the existing sync API;
-4.  Rust Node-API addon retaining TypeScript-Go as semantic authority;
-5.  maintained native Oxlint fork;
-6.  pure Oxc Rust analyzer.
+1.  demand-driven TypeScript/JavaScript analysis using Oxlint's released JavaScript-plugin API;
+2.  project-owned `ttsc` extension composed into the same Mise task;
+3.  Rust Node-API addon retaining TypeScript-Go as semantic authority.
+
+The `tsgolint` fork,
+native Oxlint fork,
+and upstream-contribution variants are excluded by user requirement.
+Pure Oxc Rust is excluded because its checker performs no type checking.
 
 This is prototype ordering,
 not adoption.
@@ -262,7 +268,8 @@ Do not recommend Node-API based on language-speed intuition.
 - Repository precedent search found Rust packages but no existing repo-owned Node-API addon.
 - Current Oxc source says its Rust type checker performs no checking.
 - Current TypeScript-Go source confirms per-operation checker RPC and no dynamic third-party server plugins.
-- `tsgolint` gives rules direct Program and Checker access and shares Oxlint's type-aware execution.
+- `tsgolint` gives rules direct Program and Checker access,
+  but its lack of an external rule API makes it ineligible under the no-fork and no-contribution constraint.
 - `ttsc` exposes supported custom Go contributor rules over TypeScript-Go,
   including project-scoped state.
 - Current NAPI-RS and Neon source confirms both are Node-API binding frameworks
@@ -270,8 +277,8 @@ Do not recommend Node-API based on language-speed intuition.
 - The required technology vet report now exists at
   `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`.
 - Measure current analysis time by phase and synchronous TypeScript RPC count.
-- Prototype direct TypeScript-Go rule execution first,
-  then compare a `ttsc` contributor only if its binary-generation path can satisfy cold latency.
+- Prototype demand-driven traversal through the incumbent bridge first.
+- Compare a separate `ttsc` extension only if synchronous checker RPC prevents the first prototype from meeting latency.
 - Prototype only in a disposable worktree or scratch package,
   never through main-worktree product mutations during this evaluation.
 - The prototype must preserve diagnostics on the semantic corpus and exercise the exact 13-file command with cold state.
@@ -282,7 +289,9 @@ Do not recommend Node-API based on language-speed intuition.
 - `8e3d38882` records the standalone semantic-bridge startup measurement.
 - `5bd26fcc9` creates this living handover.
 - `20b3fe1e5` fixes its line wrapping.
-- `90c7f9d00` records the native-analysis technology audit.
+- `90c7f9d00` records the initial native-analysis technology audit.
+- `55e0b8b51` excludes Oxlint and `tsgolint` forks or upstream contributions from that audit.
+- `c376888c2` records the direct-checker Go findings in this handover.
 - `/var/home/user/temp/agent/readonly-no-package-catalog-20260722` contains the package-catalog-removal experiment and
   must remain intact.
 
