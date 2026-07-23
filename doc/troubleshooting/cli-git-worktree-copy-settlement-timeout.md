@@ -179,6 +179,12 @@ to not include 'cli-git-worktree-copy'
 After the fix,
 the same built-wrapper test passes.
 
+A separate disposable boundary probe retained a live settlement lock from a linked source while invoking
+`git -C <main> status --short` through the fixed bundle.
+Main status returned exit `0` in `0.16` seconds,
+and the linked holder process and exact `owner.json` record remained live afterward.
+This directly verifies that main status no longer waits on linked-source settlement.
+
 ### Behaviors that now work cleanly
 
 - Main-worktree `git status --short` forwards without creating worktree-copy state.
