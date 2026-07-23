@@ -140,7 +140,7 @@ name: 'prefer-readonly-parameter-types diagnostics',
 concurrency: 1,
 children: [
   it({
-    name: 'accepts readonly inputs, overload-sensitive Node effects, documented uncertainty, and bodyless contracts',
+    name: 'accepts primitive reads from deeply readonly input without callable boundaries',
     fn: async () => {
       expect(await lintReadonly('readonly-valid.ts',),).toEqual([],);
     },
@@ -149,6 +149,24 @@ children: [
     name: 'starts semantic child before high-worker fixed allocator reservations',
     fn: async () => {
       expect(await lintReadonlyWithHighWorkerCount('readonly-valid.ts',),).toEqual([],);
+    },
+  },),
+  it({
+    name: 'rejects former catalog and contract exemptions',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
+      expect(diagnostics.length,).toBe(21,);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      expect(messages.some(function catalogRemediationRemoved(message,): boolean {
+        return message.includes('audited-call catalogue',);
+      },),).toBe(false,);
+      expect(messages.filter(function contractsCannotDischarge(message,): boolean {
+        return message.includes(
+          'An @mutates block documents known effects but cannot make an unresolved implementation safe.',
+        );
+      },).length,).toBe(13,);
     },
   },),
   it({
@@ -163,9 +181,13 @@ children: [
     },
   },),
   it({
-    name: 'skips traversal-hook effects for statically plain data',
+    name: 'rejects static plain-data claims without runtime isolation',
     fn: async () => {
-      expect(await lintReadonly('readonly-plain-data-valid.ts',),).toEqual([],);
+      const diagnostics = await lintReadonly('readonly-static-plain-data-invalid.ts',);
+      expect(diagnostics.length,).toBe(4,);
+      expect(diagnostics.every(function unresolvedBoundary(diagnostic,): boolean {
+        return diagnostic.message.includes('cannot inspect enough of those calls',);
+      },),).toBe(true,);
     },
   },),
   it({
@@ -178,17 +200,17 @@ children: [
       },);
       expect(messages.some(function unknownCoercionStaysClosed(message,): boolean {
         return message.startsWith(
-          'The function input named "value" is passed to global String while it may be an object.',
+          'The function input named "value" is used by these calls: String [',
         );
       },),).toBe(true,);
       expect(messages.some(function frozenPlainDataStaysMutation(message,): boolean {
         return message.startsWith(
-          'Parameter "value" claims readonly semantics dishonestly',
+          'The function input named "value" is used by these calls: Object.freeze [',
         );
       },),).toBe(true,);
       expect(messages.some(function nonPlainEnumerationStaysClosed(message,): boolean {
         return message.startsWith(
-          'Parameter "entriesSource" claims readonly semantics dishonestly',
+          'The function input named "entriesSource" is used by these calls: Object.entries [',
         );
       },),).toBe(true,);
     },
@@ -197,7 +219,7 @@ children: [
     name: 'keeps owned call paths separate from propagated foreign provenance',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-foreign-provenance-invalid.ts',);
-      expect(diagnostics.length,).toBe(4,);
+      expect(diagnostics.length,).toBe(5,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -207,8 +229,10 @@ children: [
       expect(messages.some(function boundaryRemainsOwned(message,): boolean {
         return message.startsWith('Parameter "tree" should be readonly',);
       },),).toBe(true,);
-      expect(messages.some(function replacementRemainsOwned(message,): boolean {
-        return message.startsWith('Parameter "replacement" should be readonly',);
+      expect(messages.some(function replacementRemainsOpaque(message,): boolean {
+        return message.startsWith(
+          'The function input named "replacement" is used by these calls: values.with [',
+        );
       },),).toBe(true,);
       expect(messages.some(function mixedResultRemainsOwned(message,): boolean {
         return message.startsWith('Parameter "child" should be readonly',);
@@ -216,10 +240,10 @@ children: [
     },
   },),
   it({
-    name: 'reports readonly preference, stale contracts, dishonest types, and undocumented uncertainty',
+    name: 'reports readonly preference, stale contracts, and unresolved effects',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);
-      expect(diagnostics.length,).toBe(10,);
+      expect(diagnostics.length,).toBe(11,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -234,14 +258,14 @@ children: [
       expect(messages.some(function staleContract(message,): boolean {
         return message.includes('stale @mutates contract',);
       },),).toBe(true,);
-      expect(messages.some(function dishonest(message,): boolean {
+      expect(messages.some(function opacityPreemptsReadonlyShape(message,): boolean {
         return message.includes('claims readonly semantics dishonestly',);
-      },),).toBe(true,);
-      expect(messages.some(function uncertainReadonly(message,): boolean {
+      },),).toBe(false,);
+      expect(messages.filter(function contractedOpacity(message,): boolean {
         return message.startsWith(
-          'Parameter "state" cannot be verified as readonly because its documented possible effects come from: JSON.stringify [',
+          'The function input named "state" is used by these calls: JSON.stringify [',
         );
-      },),).toBe(true,);
+      },).length,).toBe(4,);
       /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
       const opaqueMessage = messages.find(function unsafeJson(message,): boolean {
         return message.startsWith(
@@ -250,24 +274,17 @@ children: [
       },);
       if (opaqueMessage === undefined)
         throw new Error('Expected JSON.stringify uncertainty diagnostic.',);
-      /* Boundaries carry origin locations and the tail echoes parsed
-       * contracts, so the exact message asserts stable structure around
-       * the fixture-dependent location. */
+      /* Boundaries carry origin locations and strict proof-preserving remediation. */
       expect(opaqueMessage.includes(
         'src/readonly-invalid.ts:',
       ),).toBe(true,);
       expect(opaqueMessage.includes(
         '\n\nThis rule cannot inspect enough of those calls to know what they might change. They could change the input itself, change an object stored inside it, call a function stored inside it, or arrange for one of those changes to happen later.'
-          + '\n\nChoose the remediation that matches the call:'
-          + '\n1. Remove the call or rewrite the code so this input is not given to code the rule cannot inspect.'
-          + '\n2. If the called code is in this repository but missing from its TypeScript project, update the nearest tsconfig.json so the rule can inspect that source.'
-          + '\n3. If the exact external function or method has been audited, add an entry with evidence and tests to the rule\'s audited-call catalogue. Package calls belong in package-effect-catalog.ts; JavaScript, DOM, and Node calls belong in their matching platform catalogue. The entry must record every input or object the call can change; an empty list is allowed only when the audit proves it changes no state that code outside this function can observe.'
-          + '\n4. Otherwise, document the possible change here or in a dedicated function that contains the calls. For each input that might be changed, add its own line to the function\'s /** ... */ comment:'
-          + '\n@mutates inputName - explain what may change and name every listed call responsible'
-          + '\nReplace inputName with that function\'s actual input name.',
-      ),).toBe(true,);
-      expect(opaqueMessage.includes(
-        'Parsed @mutates contracts on this function: none.',
+          + '\n\nResolve the call by one of these proof-preserving changes:'
+          + '\n1. Include the exact repository-owned implementation in the nearest tsconfig.json so the rule can inspect it.'
+          + '\n2. Pass only primitive values or a separately verified isolated snapshot that shares no caller-owned identity or capability.'
+          + '\n3. Remove or replace the call so no caller-owned input reaches unresolved code.'
+          + '\n\nAn @mutates block documents known effects but cannot make an unresolved implementation safe.',
       ),).toBe(true,);
       expect(messages.some(function destructuredInput(message,): boolean {
         return message.startsWith(
@@ -285,7 +302,7 @@ children: [
       expect(methodMessage.includes(
         'A method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.',
       ),).toBe(true,);
-      /** Coverage note for a contract that exists but never names the call. */
+      /** Opaque call remains rejected despite unrelated authored contract. */
       const incompleteContractMessage = messages.find(function unrelatedLinkContract(message,): boolean {
         return message.startsWith(
           'The function input named "state" is used by these calls: opaqueExternalMutation [',
@@ -294,37 +311,22 @@ children: [
       if (incompleteContractMessage === undefined)
         throw new Error('Expected incomplete-contract uncertainty diagnostic.',);
       expect(incompleteContractMessage.includes(
-        '\n\nA @mutates contract for this input was parsed, but its explanation does not mention these calls: opaqueExternalMutation.',
+        'An @mutates block documents known effects but cannot make an unresolved implementation safe.',
       ),).toBe(true,);
-      expect(incompleteContractMessage.includes(
-        'The rule matches literally: an explanation covers a call once it contains that call\'s name (for example "opaqueExternalMutation")',
-      ),).toBe(true,);
-      /* Without any parsed contract the coverage note must stay absent; the
-       * numbered remediations already own that case. */
-      expect(opaqueMessage.includes('does not mention these calls',),).toBe(false,);
-      /** Exact global String diagnostic naming coercion hooks and every remedy. */
+      /** Global String remains an ordinary unresolved bodyless host call. */
       const stringMessage = messages.find(function stringCoercion(message,): boolean {
         return message.startsWith(
-          'The function input named "error" is passed to global String while it may be an object.',
+          'The function input named "error" is used by these calls: String [',
         );
       },);
       if (stringMessage === undefined)
         throw new Error('Expected global String object coercion diagnostic.',);
-      expect(stringMessage,).toBe(
-        'The function input named "error" is passed to global String while it may be an object. String does not reassign the input. Object conversion reads input[Symbol.toPrimitive], input.toString, and input.valueOf; those reads can run getters or proxy traps, and callable values are then invoked. That caller-owned code can change the input, reachable state, or another system. This rule does not report String conversion when the input is provably primitive.'
-          + '\n\nChoose the remediation that preserves the intended output:'
-          + '\n1. Narrow the input to string, number, bigint, boolean, symbol, null, or undefined before calling String. Primitive conversion cannot run caller-owned hooks.'
-          + '\n2. Read a known primitive field and convert that field instead of converting its containing object.'
-          + '\n3. For error or logging fallbacks, return known strings directly and describe other values by a noncoercing fact such as typeof value.'
-          + '\n4. Remove the conversion when its text is not required.'
-          + '\n5. If invoking object coercion hooks is intentional, document every affected input with its own line in the function\'s /** ... */ comment. An object type alone cannot prove that runtime hooks are absent:'
-          + '\n@mutates inputName - String may invoke getters, proxy traps, Symbol.toPrimitive, toString, or valueOf on this input'
-          + '\nReplace inputName with that function\'s actual input name.'
-          + '\n\nParsed @mutates contracts on this function: none.',
-      );
+      expect(stringMessage.includes(
+        'An @mutates block documents known effects but cannot make an unresolved implementation safe.',
+      ),).toBe(true,);
       expect(messages.some(function incompleteStringContract(message,): boolean {
         return message.startsWith(
-          'The function input named "incomplete" is passed to global String while it may be an object.',
+          'The function input named "incomplete" is used by these calls: String [',
         );
       },),).toBe(true,);
     },
