@@ -192,6 +192,34 @@ export function runRealGit({
 }
 
 /**
+ * Resolves common Git directory for fixture worktree.
+ *
+ * @param repositoryRoot - fixture worktree root
+ *
+ * @returns Git-reported absolute common directory
+ *
+ * @example
+ * ```ts
+ * await resolveFixtureCommonDir('/tmp/repo');
+ * ```
+ */
+export async function resolveFixtureCommonDir(repositoryRoot: string,): Promise<string> {
+  /**
+   * Git metadata containing absolute common directory and terminal line break.
+   */
+  const result = await runRealGit({
+    cwd: repositoryRoot,
+    args: [
+      'rev-parse',
+      '--path-format=absolute',
+      '--git-common-dir',
+    ],
+  },);
+  return result.stdout
+    .trim();
+}
+
+/**
  * Runs built shadow Git entry through Node.
  *
  * @param cwd - subprocess working directory
@@ -304,16 +332,16 @@ export function requireFailure(outcome: WrapperOutcome,): SubprocessError {
 }
 
 /**
- * Initializes disposable repository with one committed tracked file.
+ * Initializes disposable main worktree with one committed tracked file.
  *
- * @param repositoryRoot - empty target directory
+ * @param repositoryRoot - empty main-worktree target directory
  *
  * @example
  * ```ts
- * await initializeRepository('/tmp/repo');
+ * await initializeMainRepository('/tmp/repo-main');
  * ```
  */
-export async function initializeRepository(repositoryRoot: string,): Promise<void> {
+export async function initializeMainRepository(repositoryRoot: string,): Promise<void> {
   await mkdir(
     repositoryRoot,
     { recursive: true, },
@@ -364,6 +392,34 @@ export async function initializeRepository(repositoryRoot: string,): Promise<voi
       'initialize fixture',
       '--',
       'tracked.txt',
+    ],
+  },);
+}
+
+/**
+ * Initializes disposable linked source worktree with committed main repository.
+ *
+ * @param repositoryRoot - empty linked-worktree target directory
+ *
+ * @example
+ * ```ts
+ * await initializeRepository('/tmp/repo-linked');
+ * ```
+ */
+export async function initializeRepository(repositoryRoot: string,): Promise<void> {
+  /**
+   * Main worktree retained beside linked source for shared administration.
+   */
+  const mainRoot = `${repositoryRoot}-main`;
+  await initializeMainRepository(mainRoot,);
+  await runRealGit({
+    cwd: mainRoot,
+    args: [
+      'worktree',
+      'add',
+      '--detach',
+      repositoryRoot,
+      'HEAD',
     ],
   },);
 }
@@ -448,11 +504,14 @@ export async function writePostCheckoutHook({
   body: string;
 }>,): Promise<void> {
   /**
+   * Shared common Git directory containing hook storage.
+   */
+  const commonDir = await resolveFixtureCommonDir(repositoryRoot,);
+  /**
    * Shared linked-worktree hook path.
    */
   const hookPath = join(
-    repositoryRoot,
-    '.git',
+    commonDir,
     'hooks',
     'post-checkout',
   );

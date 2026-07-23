@@ -26,10 +26,12 @@ import {
   commitPaths,
   copySummaryLines,
   createTempDirectory,
+  initializeMainRepository,
   initializeRepository,
   permissionMode,
   requireFailure,
   requireSuccess,
+  resolveFixtureCommonDir,
   runRealGit,
   WRAPPER_PATH,
   writePostCheckoutHook,
@@ -51,7 +53,7 @@ await describe({
          * Linked worktree created by forwarded real Git without copied state.
          */
         const destinationRoot = join(fixture.path, 'topic',);
-        await initializeRepository(repositoryRoot,);
+        await initializeMainRepository(repositoryRoot,);
         await writeFile(join(repositoryRoot, '.gitignore',), 'state.txt\n',);
         await commitPaths({
           repositoryRoot,
@@ -98,13 +100,17 @@ await describe({
          */
         const destinationRoot = join(fixture.path, 'topic',);
         await initializeRepository(repositoryRoot,);
+        /**
+         * Shared common Git directory containing repository exclude file.
+         */
+        const commonDir = await resolveFixtureCommonDir(repositoryRoot,);
         await Promise.all([
           writeFile(
             join(repositoryRoot, '.gitignore',),
             'cache/\nfrom-tree.txt\nlink.txt\n',
           ),
           writeFile(
-            join(repositoryRoot, '.git', 'info', 'exclude',),
+            join(commonDir, 'info', 'exclude',),
             'from-info.txt\n',
           ),
           writeFile(
