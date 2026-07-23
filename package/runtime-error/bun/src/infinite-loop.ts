@@ -5,6 +5,6 @@
  */
 export {};
 
-while (true) {
+for (;;) {
   // intentional busy loop: no yield, no sleep, no exit
 }
