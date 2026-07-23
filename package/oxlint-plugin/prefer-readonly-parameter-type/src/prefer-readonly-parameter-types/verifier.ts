@@ -179,6 +179,8 @@ export function verifyReadonlyCallable({
    * Whether callable has analyzable implementation body.
    */
   const hasBody = ('body' in declaration) && (declaration.body !== undefined);
+  if (!hasBody)
+    return;
 
   declaration.parameters
     .forEach(function verifyParameter(
