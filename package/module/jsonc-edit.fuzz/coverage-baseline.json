@@ -15,5 +15,5 @@
   "parse-trivia.ts": 5,
   "parse.ts": 5,
   "scan.ts": 10,
-  "stringify.ts": 9
+  "stringify.ts": 7
 }

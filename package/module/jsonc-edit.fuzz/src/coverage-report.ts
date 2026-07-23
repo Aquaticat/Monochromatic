@@ -66,7 +66,7 @@ type CoverageCounts = Readonly<Record<string, number>>;
 /**
  * Package source marker; only files beneath it are gated.
  */
-const SOURCE_MARKER = `${sep}packages${sep}module${sep}jsonc-edit${sep}src${sep}`;
+const SOURCE_MARKER = `${sep}package${sep}module${sep}jsonc-edit${sep}src${sep}`;
 
 /**
  * Tests whether a package-relative path is a gate target: a non-test source file
@@ -295,6 +295,12 @@ if ((mode === undefined) || (coverageDir === undefined)
  * Covered-function counts from this run.
  */
 const current = await aggregate(coverageDir,);
+
+// A stale SOURCE_MARKER makes every projection miss; catching it here keeps
+// write mode from freezing an empty baseline (the repo-wide packages/ to
+// package/ rename broke the gate exactly this way).
+if (Object.keys(current,).length === 0)
+  throw new Error('coverage projection matched no package source files; SOURCE_MARKER is likely stale',);
 
 if (mode === 'write') {
   await writeFile(
