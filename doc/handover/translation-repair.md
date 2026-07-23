@@ -390,8 +390,21 @@ failed; Aniloviraw REPAIRED (44 issues, 40 accepted, 40 resolved,
 14 findings, 379 s): the false block reproduced a THIRD time (4
 votes, 48 content-critique claims) and the screen dismissed it in
 production, exactly as designed; Anilovr repaired (33 issues, 25
-accepted, 25 resolved, 13 findings, 1358 s; pass-1 drew 78 issues
-there, large but within observed critic-volume variance).
+accepted, 25 resolved, 13 findings, 1358 s). The pass-1 78 versus
+pass-2 33 issue swing decomposes mechanically from the logs (user
+challenged the first "variance" label; measured on challenge):
+pass-1 big chunk ran 7/7 critics (95 claims) into a
+quorum-degraded 4/7 panel (72 issues, acceptance at 3 of 4 heard),
+pass-2 ran 5/7 critics after a forfeit-retry (57 claims, per-critic
+volume nearly identical) into a full 7/7 panel (27 issues). Claims
+barely converge across critics on this entry (95 claims to 72
+distinct issues, mostly singletons), so each lost critic removes
+its singletons, and the thin pass-1 panel is the outlier side.
+Screening uninvolved: zero non-translation votes on Anilovr chunks
+in both passes. No iteration triggered: quorum design worked as
+built, and thin-panel volatility errs toward fewer accepted issues,
+the safe direction for a precision gate; revisit only if the graded
+sample shows precision misses clustering in degraded-panel entries.
 Remaining 88.
 run 003 (2026-07-23, 1913 s): 3 dispatched, 3 completed, 0 failed;
 Arita repaired (20 issues, 18 accepted, 17 resolved, 6 findings,
