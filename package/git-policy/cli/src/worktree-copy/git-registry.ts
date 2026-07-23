@@ -9,8 +9,10 @@ import {
   resolve,
 } from 'node:path';
 
-import nanoSpawn from 'nano-spawn';
-
+import {
+  runMetadataGit,
+  stripGitLine,
+} from '../git-metadata.ts';
 import { readAdminIds, } from './git-observer.ts';
 import { WorktreeCopyError, } from './errors.ts';
 import type {
@@ -32,75 +34,6 @@ const MAIN_WORKTREE_ADMIN_ID: unique symbol = Symbol('main worktree has no linke
  * Registered worktree root is currently absent from filesystem.
  */
 const REGISTERED_ROOT_MISSING: unique symbol = Symbol('registered worktree root is absent',);
-
-/**
- * Removes one Git-produced terminal line break.
- *
- * @param output - captured Git output
- *
- * @returns output without one terminal LF or CRLF
- *
- * @example
- * ```ts
- * stripGitLine('/repo/.git\n');
- * // => '/repo/.git'
- * ```
- */
-function stripGitLine(output: string,): string {
-  if (output.endsWith('\r\n',)) {
-    return output.slice(
-      0,
-      -2,
-    );
-  }
-  if (output.endsWith('\n',)) {
-    return output.slice(
-      0,
-      -1,
-    );
-  }
-  return output;
-}
-
-/**
- * Runs read-only real-Git registry command with captured streams.
- *
- * @param gitPath - absolute real-Git executable
- *
- * @param args - exact metadata arguments
- *
- * @param cwd - command working directory
- *
- * @returns captured stdout
- *
- * @example
- * ```ts
- * await runMetadataGit({ gitPath: '/usr/bin/git', args: ['worktree', 'list'], cwd: '/repo' });
- * ```
- */
-async function runMetadataGit({
-  gitPath,
-  args,
-  cwd,
-}: Readonly<{
-  gitPath: string;
-  args: readonly string[];
-  cwd: string;
-}>,): Promise<string> {
-  /**
-   * Captured registry metadata result.
-   */
-  const result = await nanoSpawn(
-    gitPath,
-    [...args,],
-    {
-      cwd,
-      stderr: 'pipe',
-      stdout: 'pipe',
-    },
-  );
-  return result.stdout;
-}
 
 /**
  * Parses NUL-delimited porcelain output into canonical worktree roots.

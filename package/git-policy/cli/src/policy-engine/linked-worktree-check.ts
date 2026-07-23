@@ -293,19 +293,9 @@ export async function checkLinkedWorktree(
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand}`,);
 
   /**
-   * Pre-subcommand argv that captures the caller's repo-selection layer.
+   * Worktree classification driven by shared identity resolver.
    */
-  const preSubcommandArgs = args.slice(
-    0,
-    subcommandIndex,
-  );
-  /**
-   * Worktree classification driven by real git replaying the caller's repo selection.
-   */
-  const target: EffectiveTarget = await classifyEffectiveTarget({
-    preSubcommandArgs,
-    effectiveCwd,
-  },);
+  const target: EffectiveTarget = await classifyEffectiveTarget({ args, },);
 
   if (target === 'outside-worktree')
     throw new LinkedWorktreeViolationError(outsideWorktreeMessage({ command: subcommand, },),);

@@ -172,6 +172,27 @@ async function createInitialCommit({
   },);
 }
 
+/**
+ * Builds status invocation selecting exact fixture cwd.
+ *
+ * @param path - effective Git working directory
+ *
+ * @returns complete Git arguments
+ *
+ * @example
+ * ```ts
+ * statusArgsAt('/repo');
+ * // => ['-C', '/repo', 'status']
+ * ```
+ */
+function statusArgsAt(path: string,): readonly string[] {
+  return [
+    '-C',
+    path,
+    'status',
+  ];
+}
+
 //endregion Test fixtures
 
 await describe({
@@ -185,8 +206,7 @@ await describe({
 
         expect(
           await classifyEffectiveTarget({
-            preSubcommandArgs: [],
-            effectiveCwd: tempDirectory.path,
+            args: statusArgsAt(tempDirectory.path,),
             allowedWorktreeDirs: [tempDirectory.path,],
           },),
         ).toBe('allowlisted',);
@@ -213,8 +233,7 @@ await describe({
 
         expect(
           await classifyEffectiveTarget({
-            preSubcommandArgs: [],
-            effectiveCwd: tempDirectory.path,
+            args: statusArgsAt(tempDirectory.path,),
             allowedWorktreeDirs: [unrelated,],
           },),
         ).toBe('main-worktree',);
@@ -230,8 +249,7 @@ await describe({
         // and confirms a temp repo outside any tool cache is still main-worktree.
         expect(
           await classifyEffectiveTarget({
-            preSubcommandArgs: [],
-            effectiveCwd: tempDirectory.path,
+            args: statusArgsAt(tempDirectory.path,),
           },),
         ).toBe('main-worktree',);
       },
@@ -267,8 +285,7 @@ await describe({
 
         expect(
           await classifyEffectiveTarget({
-            preSubcommandArgs: [],
-            effectiveCwd: linkedWorktreePath,
+            args: statusArgsAt(linkedWorktreePath,),
             allowedWorktreeDirs: [tempDirectory.path,],
           },),
         ).toBe('allowlisted',);
@@ -283,8 +300,7 @@ await describe({
         // so there is no git-dir to match and the allowlist does not apply.
         expect(
           await classifyEffectiveTarget({
-            preSubcommandArgs: [],
-            effectiveCwd: tempDirectory.path,
+            args: statusArgsAt(tempDirectory.path,),
             allowedWorktreeDirs: [tempDirectory.path,],
           },),
         ).toBe('outside-worktree',);

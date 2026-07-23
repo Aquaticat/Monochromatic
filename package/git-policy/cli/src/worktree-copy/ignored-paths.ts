@@ -8,8 +8,8 @@ import {
 
 import { SubprocessError, } from 'nano-spawn';
 
+import { runMetadataGit, } from '../git-metadata.ts';
 import { WorktreeCopyError, } from './errors.ts';
-import { runMetadataGit, } from './git-observer.ts';
 
 /**
  * Git directory marker appended by `ls-files --directory`.

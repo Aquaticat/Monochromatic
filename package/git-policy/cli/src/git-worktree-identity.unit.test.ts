@@ -34,12 +34,18 @@ await describe({
          * Identity resolved outside repository.
          */
         const identity = await resolveGitWorktreeIdentity({
+          args: [
+            '-C',
+            fixture.path,
+            'status',
+          ],
           gitPath,
-          preSubcommandArgs: [],
-          effectiveCwd: fixture.path,
         },);
 
-        expect(identity,).toEqual({ kind: 'outside-worktree', },);
+        expect(identity,).toEqual({
+          kind: 'outside-worktree',
+          effectiveCwd: fixture.path,
+        },);
       },
     },),
 
@@ -57,9 +63,12 @@ await describe({
          * Canonical main repository identity.
          */
         const identity = await resolveGitWorktreeIdentity({
+          args: [
+            '-C',
+            mainRoot,
+            'status',
+          ],
           gitPath,
-          preSubcommandArgs: [],
-          effectiveCwd: mainRoot,
         },);
         /**
          * Canonical main Git directory expected in identity.
@@ -69,6 +78,7 @@ await describe({
         expect(identity,).toEqual({
           kind: 'main-worktree',
           commonDir: expectedGitDir,
+          effectiveCwd: mainRoot,
           gitDir: expectedGitDir,
           worktreeRoot: await realpath(mainRoot,),
         },);
@@ -89,9 +99,12 @@ await describe({
          * Canonical linked repository identity.
          */
         const identity = await resolveGitWorktreeIdentity({
+          args: [
+            '-C',
+            linkedRoot,
+            'status',
+          ],
           gitPath,
-          preSubcommandArgs: [],
-          effectiveCwd: linkedRoot,
         },);
 
         expect(identity.kind,).toBe('linked-worktree',);
@@ -123,12 +136,12 @@ await describe({
          * Canonical bare repository identity.
          */
         const identity = await resolveGitWorktreeIdentity({
-          gitPath,
-          preSubcommandArgs: [
+          args: [
             '--git-dir',
             bareRoot,
+            'status',
           ],
-          effectiveCwd: fixture.path,
+          gitPath,
         },);
         /**
          * Canonical bare Git directory expected for both administrative fields.
@@ -138,6 +151,7 @@ await describe({
         expect(identity,).toEqual({
           kind: 'bare-repository',
           commonDir: expectedGitDir,
+          effectiveCwd: process.cwd(),
           gitDir: expectedGitDir,
         },);
       },
@@ -157,12 +171,12 @@ await describe({
          * Main identity selected through pre-subcommand chdir.
          */
         const identity = await resolveGitWorktreeIdentity({
-          gitPath,
-          preSubcommandArgs: [
+          args: [
             '-C',
             mainRoot,
+            'status',
           ],
-          effectiveCwd: mainRoot,
+          gitPath,
         },);
 
         expect(identity.kind,).toBe('main-worktree',);
@@ -190,14 +204,16 @@ await describe({
          * Main identity selected through explicit administrative options.
          */
         const identity = await resolveGitWorktreeIdentity({
-          gitPath,
-          preSubcommandArgs: [
+          args: [
+            '-C',
+            invocationRoot,
             '--git-dir',
             join(mainRoot, '.git',),
             '--work-tree',
             mainRoot,
+            'status',
           ],
-          effectiveCwd: invocationRoot,
+          gitPath,
         },);
 
         expect(identity.kind,).toBe('main-worktree',);

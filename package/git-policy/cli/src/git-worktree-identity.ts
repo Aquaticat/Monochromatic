@@ -1,6 +1,12 @@
 import { realpath, } from 'node:fs/promises';
 
-import nanoSpawn, { SubprocessError, } from 'nano-spawn';
+import { SubprocessError, } from 'nano-spawn';
+
+import {
+  runMetadataGit,
+  stripGitLine,
+} from './git-metadata.ts';
+import { parseGlobalOptions, } from './parse-global-options.ts';
 
 /**
  * Repository identity selected by effective Git global options.
@@ -14,12 +20,20 @@ export type GitWorktreeIdentity =
      * No worktree or bare repository was selected.
      */
     kind: 'outside-worktree';
+    /**
+     * Effective cwd after Git global `-C` chaining.
+     */
+    effectiveCwd: string;
   }>
   | Readonly<{
     /**
      * Bare repository with no source worktree root.
      */
     kind: 'bare-repository';
+    /**
+     * Effective cwd after Git global `-C` chaining.
+     */
+    effectiveCwd: string;
     /**
      * Canonical common Git directory.
      */
@@ -34,6 +48,10 @@ export type GitWorktreeIdentity =
      * Main worktree whose Git and common directories are identical.
      */
     kind: 'main-worktree';
+    /**
+     * Effective cwd after Git global `-C` chaining.
+     */
+    effectiveCwd: string;
     /**
      * Canonical common Git directory.
      */
@@ -53,6 +71,10 @@ export type GitWorktreeIdentity =
      */
     kind: 'linked-worktree';
     /**
+     * Effective cwd after Git global `-C` chaining.
+     */
+    effectiveCwd: string;
+    /**
      * Canonical common Git directory.
      */
     commonDir: string;
@@ -71,17 +93,13 @@ export type GitWorktreeIdentity =
  */
 type ResolveGitWorktreeIdentityOptions = Readonly<{
   /**
-   * Effective cwd after Git global `-C` chaining.
+   * Complete forwarded Git arguments.
    */
-  effectiveCwd: string;
+  args: readonly string[];
   /**
    * Absolute real-Git executable.
    */
   gitPath: string;
-  /**
-   * Original Git global option region.
-   */
-  preSubcommandArgs: readonly string[];
 }>;
 
 /**
@@ -107,42 +125,13 @@ type ParsedIdentityMetadata = Readonly<{
 }>;
 
 /**
- * Removes one Git-produced terminal line break.
- *
- * @param output - captured Git output
- *
- * @returns output without one terminal LF or CRLF
- *
- * @example
- * ```ts
- * stripGitLine('/repo/.git\n');
- * // => '/repo/.git'
- * ```
- */
-function stripGitLine(output: string,): string {
-  if (output.endsWith('\r\n',)) {
-    return output.slice(
-      0,
-      -2,
-    );
-  }
-  if (output.endsWith('\n',)) {
-    return output.slice(
-      0,
-      -1,
-    );
-  }
-  return output;
-}
-
-/**
  * Runs real Git metadata command against exact effective target selection.
  *
  * @param gitPath - absolute real-Git executable
  *
  * @param preSubcommandArgs - original Git global option region
  *
- * @param effectiveCwd - effective cwd after global `-C` chaining
+ * @param invocationCwd - wrapper process working directory
  *
  * @param metadataArgs - arguments after `rev-parse`
  *
@@ -153,7 +142,7 @@ function stripGitLine(output: string,): string {
  * await runIdentityGit({
  *   gitPath: '/usr/bin/git',
  *   preSubcommandArgs: [],
- *   effectiveCwd: '/repo',
+ *   invocationCwd: '/repo',
  *   metadataArgs: ['--git-dir'],
  * });
  * ```
@@ -161,30 +150,27 @@ function stripGitLine(output: string,): string {
 async function runIdentityGit({
   gitPath,
   preSubcommandArgs,
-  effectiveCwd,
+  invocationCwd,
   metadataArgs,
-}: Readonly<ResolveGitWorktreeIdentityOptions & {
+}: Readonly<{
+  gitPath: string;
+  preSubcommandArgs: readonly string[];
+  invocationCwd: string;
   metadataArgs: readonly string[];
 }>,): Promise<string> {
   /**
    * Captured metadata result from real Git.
    */
-  const result = await nanoSpawn(
+  return runMetadataGit({
     gitPath,
-    [
+    args: [
       ...preSubcommandArgs,
-      '-C',
-      effectiveCwd,
       'rev-parse',
       '--path-format=absolute',
       ...metadataArgs,
     ],
-    {
-      stderr: 'pipe',
-      stdout: 'pipe',
-    },
-  );
-  return result.stdout;
+    cwd: invocationCwd,
+  },);
 }
 
 /**
@@ -234,29 +220,49 @@ function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
  * and main-versus-linked classification.
  * Policy-specific allowlisting remains outside this shared identity seam.
  *
+ * @param args - complete forwarded Git arguments
+ *
  * @param gitPath - absolute real-Git executable
- *
- * @param preSubcommandArgs - original Git global option region
- *
- * @param effectiveCwd - effective cwd after global `-C` chaining
  *
  * @returns canonical selected repository identity
  *
  * @example
  * ```ts
  * await resolveGitWorktreeIdentity({
+ *   args: ['-C', '/repo', 'status'],
  *   gitPath: '/usr/bin/git',
- *   preSubcommandArgs: [],
- *   effectiveCwd: '/repo',
  * });
- * // => { kind: 'main-worktree', gitDir: '/repo/.git', commonDir: '/repo/.git', worktreeRoot: '/repo' }
+ * // => {
+ * //   kind: 'main-worktree',
+ * //   effectiveCwd: '/repo',
+ * //   gitDir: '/repo/.git',
+ * //   commonDir: '/repo/.git',
+ * //   worktreeRoot: '/repo',
+ * // }
  * ```
  */
 export async function resolveGitWorktreeIdentity({
+  args,
   gitPath,
-  preSubcommandArgs,
-  effectiveCwd,
 }: ResolveGitWorktreeIdentityOptions,): Promise<GitWorktreeIdentity> {
+  /**
+   * Effective cwd and subcommand location for forwarded invocation.
+   */
+  const {
+    effectiveCwd,
+    subcommandIndex,
+  } = parseGlobalOptions(args,);
+  /**
+   * Exact global option region selecting repository target.
+   */
+  const preSubcommandArgs = args.slice(
+    0,
+    subcommandIndex,
+  );
+  /**
+   * Wrapper process cwd from which Git applies original global options.
+   */
+  const invocationCwd = process.cwd();
   /**
    * Raw fixed-order identity metadata or repository absence.
    */
@@ -265,7 +271,7 @@ export async function resolveGitWorktreeIdentity({
       return await runIdentityGit({
         gitPath,
         preSubcommandArgs,
-        effectiveCwd,
+        invocationCwd,
         metadataArgs: [
           '--is-inside-work-tree',
           '--is-bare-repository',
@@ -280,14 +286,22 @@ export async function resolveGitWorktreeIdentity({
       throw error;
     }
   })();
-  if (metadataOutput === undefined)
-    return { kind: 'outside-worktree', };
+  if (metadataOutput === undefined) {
+    return {
+      kind: 'outside-worktree',
+      effectiveCwd,
+    };
+  }
   /**
    * Parsed raw paths and repository-shape flags.
    */
   const metadata = parseIdentityMetadata(metadataOutput,);
-  if ((!metadata.isInsideWorktree) && (!metadata.isBare))
-    return { kind: 'outside-worktree', };
+  if ((!metadata.isInsideWorktree) && (!metadata.isBare)) {
+    return {
+      kind: 'outside-worktree',
+      effectiveCwd,
+    };
+  }
   /**
    * Canonical administrative paths shared by bare and worktree identities.
    */
@@ -302,6 +316,7 @@ export async function resolveGitWorktreeIdentity({
     return {
       kind: 'bare-repository',
       commonDir,
+      effectiveCwd,
       gitDir,
     };
   }
@@ -311,7 +326,7 @@ export async function resolveGitWorktreeIdentity({
   const worktreeRoot = await realpath(stripGitLine(await runIdentityGit({
     gitPath,
     preSubcommandArgs,
-    effectiveCwd,
+    invocationCwd,
     metadataArgs: ['--show-toplevel',],
   },),),);
   return {
@@ -319,6 +334,7 @@ export async function resolveGitWorktreeIdentity({
       ? 'main-worktree'
       : 'linked-worktree',
     commonDir,
+    effectiveCwd,
     gitDir,
     worktreeRoot,
   };

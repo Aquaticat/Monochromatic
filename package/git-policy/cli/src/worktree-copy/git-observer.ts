@@ -5,7 +5,6 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { resolveGitWorktreeIdentity, } from '../git-worktree-identity.ts';
-import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { WorktreeCopyError, } from './errors.ts';
 import type { WorktreeCopyObservation, } from './model.ts';
 
@@ -94,20 +93,6 @@ export async function observeWorktreeRepository({
   gitPath: string;
 }>,): Promise<WorktreeCopyObservation | typeof WORKTREE_COPY_NOT_APPLICABLE> {
   /**
-   * Effective cwd and subcommand position for original invocation.
-   */
-  const {
-    effectiveCwd,
-    subcommandIndex,
-  } = parseGlobalOptions(args,);
-  /**
-   * Original global option region selecting effective repository.
-   */
-  const preSubcommandArgs = args.slice(
-    0,
-    subcommandIndex,
-  );
-  /**
    * Tagged observer logger.
    */
   const rl = tagged({
@@ -118,9 +103,8 @@ export async function observeWorktreeRepository({
    * Canonical repository identity shared across package consumers.
    */
   const identity = await resolveGitWorktreeIdentity({
+    args,
     gitPath,
-    preSubcommandArgs,
-    effectiveCwd,
   },);
   if (identity.kind === 'outside-worktree') {
     rl.debug('effective invocation has no repository; worktree copy observation is not applicable',);
@@ -148,7 +132,7 @@ export async function observeWorktreeRepository({
     adminRoot,
     beforeAdminIds,
     commonDir: identity.commonDir,
-    effectiveCwd,
+    effectiveCwd: identity.effectiveCwd,
     ...(identity.kind === 'linked-worktree'
       ? { sourceRoot: identity.worktreeRoot, }
       : {}),

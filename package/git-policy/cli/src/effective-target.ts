@@ -24,13 +24,9 @@ export type EffectiveTarget =
  */
 type ClassifyEffectiveTargetOptions = Readonly<{
   /**
-   * Pre-subcommand region of wrapper invocation.
+   * Complete forwarded Git arguments.
    */
-  preSubcommandArgs: readonly string[];
-  /**
-   * Effective cwd after `-C` chaining.
-   */
-  effectiveCwd: string;
+  args: readonly string[];
   /**
    * Tool-cache roots whose repositories bypass enforcement.
    */
@@ -49,9 +45,7 @@ type ClassifyEffectiveTargetOptions = Readonly<{
  * This policy adapter adds only tool-cache allowlisting and maps bare repositories
  * to outside-worktree because linked-worktree safeguards require filesystem worktree.
  *
- * @param preSubcommandArgs - pre-subcommand Git global option region
- *
- * @param effectiveCwd - cwd after global `-C` chaining
+ * @param args - complete forwarded Git arguments
  *
  * @param allowedWorktreeDirs - tool-cache roots yielding `allowlisted`
  *
@@ -60,15 +54,13 @@ type ClassifyEffectiveTargetOptions = Readonly<{
  * @example
  * ```ts
  * await classifyEffectiveTarget({
- *   preSubcommandArgs: ['--git-dir', '/main/.git', '--work-tree', '/main'],
- *   effectiveCwd: '/linked',
+ *   args: ['--git-dir', '/main/.git', '--work-tree', '/main', 'status'],
  * });
  * // => 'main-worktree'
  * ```
  */
 export async function classifyEffectiveTarget({
-  preSubcommandArgs,
-  effectiveCwd,
+  args,
   allowedWorktreeDirs = DEFAULT_ALLOWED_WORKTREE_DIRS,
 }: ClassifyEffectiveTargetOptions,): Promise<EffectiveTarget> {
   /**
@@ -79,9 +71,8 @@ export async function classifyEffectiveTarget({
    * Canonical repository identity before policy-specific allowlisting.
    */
   const identity = await resolveGitWorktreeIdentity({
+    args,
     gitPath,
-    preSubcommandArgs,
-    effectiveCwd,
   },);
   if ((identity.kind === 'outside-worktree') || (identity.kind === 'bare-repository'))
     return 'outside-worktree';
