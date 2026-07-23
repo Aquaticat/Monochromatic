@@ -63,9 +63,12 @@ T-Doku then enumerates only within the selected structural configuration.
 
 Measured release assets:
 
-- `grid.counts`: `2_633_637_888` bytes;
-- `grid.index`: `20_291_214` bytes;
-- compressed `tables.tar.xz`: `471_499_152` bytes.
+- `grid.counts`:
+   `2_633_637_888` bytes;
+- `grid.index`:
+   `20_291_214` bytes;
+- compressed `tables.tar.xz`:
+   `471_499_152` bytes.
 
 The release notes state that generating the tables requires about 500 core-hours.
 The source's example reports about 8 hours with 64 processes on a Threadripper 2990WX.
