@@ -16,7 +16,6 @@ import { effectPublicSummary, } from './effect-public-summary.ts';
 import {
   assertReachedCallSummaries,
   reachedSourceFileNames,
-  summaryRequiresCompleteInboundGraph,
 } from './effect-reached-edge.ts';
 import {
   LAYERED_SUMMARY_CACHE_MISS,
@@ -343,21 +342,6 @@ export function createDemandDrivenEffectIndex(
             && (!loadedFileNames.has(fileName,)))
             pending.push(dependency,);
         },);
-      /**
-       * Whether current source introduces provenance needing complete inbounds.
-       */
-      const requiresCompleteInboundGraph = [...loaded.fileSummaries
-        .values(),]
-        .some(function requiresCompleteInbound(summary,): boolean {
-          return summaryRequiresCompleteInboundGraph(summary,);
-        },);
-      if ((!foreignFallback.required) && requiresCompleteInboundGraph) {
-        foreignFallback.required = true;
-        indexedSourceFiles.forEach(function enqueueCompleteInboundGraph(candidate,): void {
-          if (!loadedFileNames.has(candidate.fileName,))
-            pending.push(candidate,);
-        },);
-      }
     }
     if (!expansion.changed)
       return;
@@ -421,7 +405,19 @@ export function createDemandDrivenEffectIndex(
       if (summary === undefined)
         return NO_EFFECT_SUMMARY;
       /**
-       * Guaranteed foreign indexes after complete-inbound fallback when needed.
+       * Foreign candidates from currently reached inbound graph.
+       */
+      const partialForeignParameterIndexes = foreignByCallable.current
+        .get(key,)
+        ?? new Set<number>();
+      if ((!foreignFallback.required) && (partialForeignParameterIndexes.size > 0)) {
+        foreignFallback.required = true;
+        indexedSourceFiles.forEach(function loadCompleteInboundCandidate(candidate,): void {
+          ensureSource(candidate,);
+        },);
+      }
+      /**
+       * Guaranteed foreign indexes after candidate-triggered complete-inbound proof.
        */
       const foreignParameterIndexes = foreignByCallable.current
         .get(key,)

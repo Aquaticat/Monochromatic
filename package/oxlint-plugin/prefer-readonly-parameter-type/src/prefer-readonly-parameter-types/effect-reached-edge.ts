@@ -8,36 +8,6 @@ import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
 
 /**
- * Tests whether foreign provenance requires complete declaration inbounds.
- *
- * @param summary - Reached direct summary under inspection.
- *
- * @returns whether declaration-global foreign proof needs complete graph.
- *
- * @example
- * ```ts
- * summaryRequiresCompleteInboundGraph(summary);
- * ```
- */
-export function summaryRequiresCompleteInboundGraph(
-  summary: MutableEffectSummary,
-): boolean {
-  /**
-   * Explicit marker count on current declaration.
-   */
-  const directForeignCount = summary
-    .directForeignBorrowed
-    .size;
-  if (directForeignCount > 0)
-    return true;
-  return summary.calls
-    .some(function hasDirectForeignArgument(edge,): boolean {
-      return edge.directForeignArguments
-        .includes(true,);
-    },);
-}
-
-/**
  * Adds exact owned source dependency or rejects inconsistent scope.
  *
  * @param dependencies - Dependency set receiving owned source.
