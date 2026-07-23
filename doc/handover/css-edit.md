@@ -126,8 +126,12 @@ escaped selectors, custom-property block values.
    `build-tool-css/ts/expand` directly, recorded in the index TSDoc and README).
    Shadow DOM styles expanded in live browser, no console errors.
 10. [x] `css-edit.fuzz`: round-trip, totality, structural-sharing properties plus
-    postcss differential oracle; clean at 5000 runs. Deferred: a
-    `fuzz:coverage` reachability gate like `jsonc-edit.fuzz`'s.
+    postcss differential oracle; clean at 5000 runs. `fuzz:coverage`
+    reachability gate added 2026-07-22: deterministic driver reaches every
+    function in every runtime source file (baseline frozen and check-verified).
+    While mirroring it, found and fixed the jsonc-edit gate dead since the
+    `packages/` to `package/` rename (stale `SOURCE_MARKER`); both reports now
+    throw when the projection matches zero files.
 11. [x] `css-edit.bench` (mitata, per user direction): raw parse+stringify vs
     postcss and css-tree, plus `bench:pipeline` vs a replica of the retired
     postcss mixin pipeline.
