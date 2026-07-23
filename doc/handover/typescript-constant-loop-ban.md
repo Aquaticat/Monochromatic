@@ -134,10 +134,10 @@ or rewritten:
 
 - Modified:
   `doc/handover/css-edit.md`.
-- Untracked:
-  `package/oxlint-plugin/prefer-readonly-parameter-type/src/csstools-css-tokenizer-package-effect-catalog.unit.test.ts`.
-- Untracked:
-  `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/csstools-css-tokenizer-package-effect-catalog.ts`.
+- Untracked under
+  `package/oxlint-plugin/prefer-readonly-parameter-type/src/`:
+  - `csstools-css-tokenizer-package-effect-catalog.unit.test.ts`.
+  - `prefer-readonly-parameter-types/csstools-css-tokenizer-package-effect-catalog.ts`.
 
 The concurrent files may change or be committed while this task proceeds.
 Re-run `git status --short` before every scoped commit,
@@ -145,15 +145,20 @@ and stage only explicit paths owned by this task.
 
 ## Task state
 
-- Task 6, enable constant-loop linting:
+- Task 6,
+   enable constant-loop linting:
   pending.
-- Task 7, migrate parser and analysis loops:
+- Task 7,
+   migrate parser and analysis loops:
   pending after task 6.
-- Task 8, migrate retry and polling loops:
+- Task 8,
+   migrate retry and polling loops:
   pending after task 7.
-- Task 9, verify constant-loop ban:
+- Task 9,
+   verify constant-loop ban:
   pending after task 8.
-- Task 10, maintain this handover:
+- Task 10,
+   maintain this handover:
   active while implementation proceeds.
 
 Only one task may be actively implemented at a time.
@@ -197,10 +202,14 @@ Final boundary checks:
 
 Research and troubleshooting commits already on `main`:
 
-- `eb0e00071`, initial Oxlint behavior document.
-- `1be1e84c5`, semantic line-break fixes.
-- `0566088cf`, reproducible probe and inventory.
-- `9ee37aa29`, pinned source and compact inventory.
+- `eb0e00071`,
+   initial Oxlint behavior document.
+- `1be1e84c5`,
+   semantic line-break fixes.
+- `0566088cf`,
+   reproducible probe and inventory.
+- `9ee37aa29`,
+   pinned source and compact inventory.
 
 No implementation commit existed when this handover was created.
 
