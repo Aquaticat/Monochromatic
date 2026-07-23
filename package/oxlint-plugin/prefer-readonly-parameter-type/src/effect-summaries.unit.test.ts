@@ -211,8 +211,8 @@ await describe({
         const transitiveProvenance = [
           ...transitiveSummary.opaqueProvenanceByParameter.get(0,) ?? [],
         ];
-        /** Documented uncertainty remains distinct from proven mutation. */
-        const documentedEffects = [
+        /** Mutation contracts leave unresolved implementations opaque. */
+        const contractedOpaqueEffects = [
           'documentedUncertainSemanticEffect',
           'transitiveDocumentedUncertainSemanticEffect',
         ].map(function documentedSummary(functionName,) {
@@ -227,7 +227,6 @@ await describe({
             functionName,
             affected: [...summary.mutatedParameterIndexes,],
             referentMutated: [...summary.referentMutatedParameterIndexes,],
-            documentedUncertain: [...summary.documentedUncertainParameterIndexes,],
             opaque: [...summary.opaqueParameterIndexes,],
             provenance: [...summary.opaqueProvenanceByParameter.get(0,) ?? [],],
           };
@@ -455,7 +454,7 @@ await describe({
          * diagnostics name where each remediation applies. */
         expect(transitiveProvenance.length,).toBe(1,);
         expect(transitiveProvenance[0]?.startsWith('JSON.stringify [',),).toBe(true,);
-        expect(documentedEffects.map(function withoutProvenance({
+        expect(contractedOpaqueEffects.map(function withoutProvenance({
           provenance,
           ...rest
         },) {
@@ -468,18 +467,16 @@ await describe({
         },),).toEqual([
           {
             functionName: 'documentedUncertainSemanticEffect',
-            affected: [0,],
+            affected: [],
             referentMutated: [],
-            documentedUncertain: [0,],
-            opaque: [],
+            opaque: [0,],
             provenanceShape: [true,],
           },
           {
             functionName: 'transitiveDocumentedUncertainSemanticEffect',
-            affected: [0,],
+            affected: [],
             referentMutated: [],
-            documentedUncertain: [0,],
-            opaque: [],
+            opaque: [0,],
             provenanceShape: [true,],
           },
         ],);

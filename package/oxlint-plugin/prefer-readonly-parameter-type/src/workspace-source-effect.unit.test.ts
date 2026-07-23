@@ -68,7 +68,6 @@ await describe({
             functionName,
             mutated: [...summary.mutatedParameterIndexes,],
             opaque: [...summary.opaqueParameterIndexes,],
-            documentedUncertain: [...summary.documentedUncertainParameterIndexes,],
           };
         },);
         closeSemanticBridge();
@@ -77,19 +76,16 @@ await describe({
             functionName: 'setIfDiffers',
             mutated: [],
             opaque: [],
-            documentedUncertain: [],
           },
           {
             functionName: 'applyEnforcement',
             mutated: [],
             opaque: [],
-            documentedUncertain: [],
           },
           {
             functionName: 'applyCargoPlan',
             mutated: [],
             opaque: [],
-            documentedUncertain: [],
           },
         ],);
       },
