@@ -1,5 +1,4 @@
 import { join, } from 'node:path';
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -11,6 +10,7 @@ import {
   decodeBase64,
   execArgs,
 } from './exec-shell.ts';
+import { waitForGuestExecStatus, } from './guest-exec-status.ts';
 import { readVmMeta, } from './meta.ts';
 import { virsh, } from './virsh.ts';
 
@@ -141,62 +141,13 @@ export async function exec(
   rl.debug(`guest-exec started with pid ${String(pid,)}`,);
 
   /**
-   * Serialised `guest-exec-status` request body; reused inside the polling loop.
+   * Completed status after serial QEMU guest-agent polling.
    */
-  const statusPayload = JSON.stringify({
-    execute: 'guest-exec-status',
-    arguments: { pid, },
+  const status = await waitForGuestExecStatus({
+    fullName,
+    pid,
+    pollIntervalMs: POLL_INTERVAL_MS,
   },);
-
-  /**
-   * Latest guest status; the `exited` flag is the polling continuation condition.
-   */
-  const polling: {
-    current: {
-      exited: boolean;
-      exitcode?: number;
-      'out-data'?: string;
-      'err-data'?: string;
-    };
-  } = { current: { exited: false, }, };
-  while (!(polling
-    .current
-    .exited)) {
-    /**
-     * Raw `guest-exec-status` response polled each iteration until the process exits.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
-    const statusResult = await virsh({
-      args: [
-        'qemu-agent-command',
-        fullName,
-        statusPayload,
-      ],
-    },);
-    /**
-     * Parsed status response with the optional captured stdio buffers.
-     */
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
-    const statusParsed = JSON.parse(statusResult,) as { return: {
-      exited: boolean;
-      exitcode?: number;
-      'out-data'?: string;
-      'err-data'?: string;
-    }; };
-    polling.current = statusParsed.return;
-
-    if (!(polling
-      .current
-      .exited)) {
-      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling delay
-      await wait(POLL_INTERVAL_MS,);
-    }
-  }
-
-  /**
-   * Completed inner status payload; unwraps the polling cursor for ergonomic access.
-   */
-  const { current: status, } = polling;
   /**
    * Decoded stdout text; QMP captures it as base64 so it needs decoding before returning.
    */

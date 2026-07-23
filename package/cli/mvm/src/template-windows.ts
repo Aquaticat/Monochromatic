@@ -12,7 +12,6 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 import {
   tagged,
@@ -28,6 +27,7 @@ import {
   WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS,
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
+import { waitForGuestExecStatus, } from './guest-exec-status.ts';
 import {
   ensureImage,
   ensureVirtioWin,
@@ -282,54 +282,14 @@ async function guestExecWait({
   const { pid, } = (JSON.parse(startResult,) as { return: { pid: number; }; }).return;
 
   /**
-   * Serialised status request reused for every poll of this guest process.
+   * Completed status after serial QEMU guest-agent polling.
    */
-  const statusPayload = JSON.stringify({
-    execute: 'guest-exec-status',
-    arguments: { pid, },
+  const status = await waitForGuestExecStatus({
+    fullName,
+    pid,
+    pollIntervalMs: GUEST_EXEC_POLL_MS,
   },);
-  /**
-   * Latest guest status; the `exited` flag is the polling continuation condition.
-   */
-  const polling: {
-    current: {
-      exited: boolean;
-      exitcode?: number;
-    };
-  } = { current: { exited: false, }, };
-  while (!(polling
-    .current
-    .exited)) {
-    /**
-     * Raw `guest-exec-status` response polled each iteration until the process exits.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
-    const statusResult = await virsh({
-      args: [
-        'qemu-agent-command',
-        fullName,
-        statusPayload,
-      ],
-    },);
-    /**
-     * Parsed status payload exposing the `exited` flag and optional `exitcode`.
-     */
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
-    const statusParsed = JSON.parse(statusResult,) as { return: {
-      exited: boolean;
-      exitcode?: number;
-    }; };
-    polling.current = statusParsed.return;
-    if (!(polling
-      .current
-      .exited)) {
-      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling delay
-      await wait(GUEST_EXEC_POLL_MS,);
-    }
-  }
-  return polling
-    .current
-    .exitcode
+  return status.exitcode
     ?? 0;
 }
 
