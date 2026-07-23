@@ -10,27 +10,22 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { hashContent, } from './document-node.ts';
-import {
-  contentWords,
-  measureSeedRestoration,
-} from './lexical-restoration.ts';
-import {
-  computeRepairScorecard,
-  DEFAULT_JUDGE_MODEL_IDS,
-  type RepairAttemptRecord,
-  runRepairBenchmark,
-} from './repair-benchmark.ts';
-import type { RepairModels, } from './repair-chunk.ts';
-import type { repairTranslation, } from './repair-translation.ts';
-import type { runRestorationJudge, } from './restoration-judge.ts';
-import { gradeSeedDetection, } from './seed-detection.ts';
 import {
   applySeededErrors,
+  computeRepairScorecard,
+  contentWords,
+  DEFAULT_JUDGE_MODEL_IDS,
+  gradeSeedDetection,
+  hashContent,
+  measureSeedRestoration,
+  type RepairAttemptRecord,
+  type RepairModels,
+  type repairTranslation,
+  runRepairBenchmark,
+  type runRestorationJudge,
   type SeededErrorSpec,
-} from './seeded-error.ts';
-import { SYNTHETIC_MODELS, } from './synthetic-catalog.ts';
+  SYNTHETIC_MODELS,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Clean fixture translation the seed deletes from.

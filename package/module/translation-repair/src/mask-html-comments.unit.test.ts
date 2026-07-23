@@ -11,8 +11,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { maskHtmlComments, } from './mask-html-comments.ts';
+import { maskHtmlComments, } from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: maskHtmlComments.name,

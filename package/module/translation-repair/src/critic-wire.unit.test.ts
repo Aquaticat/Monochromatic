@@ -10,13 +10,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   type CriticIssueWire,
   isCriticReportWire,
+  parseDocument,
   resolveCriticIssue,
-} from './critic-wire.ts';
-import { parseDocument, } from './parse-document.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Parsed pair resolutions anchor against.

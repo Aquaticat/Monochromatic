@@ -10,11 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   isPanelBallotWire,
   resolvePanelBallot,
-} from './adjudicate-wire.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Claim ids in prompt numbering order for resolution tests.

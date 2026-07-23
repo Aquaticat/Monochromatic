@@ -10,11 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   isJsonArray,
   isJsonRecord,
-} from './json-guard.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: '',

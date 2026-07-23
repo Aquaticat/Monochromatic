@@ -10,11 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   parseQuotaSnapshot,
   QuotaShapeError,
-} from './synthetic-quota.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Recorded-shaped body with invented numbers;

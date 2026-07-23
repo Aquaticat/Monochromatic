@@ -10,10 +10,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { buildAdjudicationMessages, } from './adjudicate-prompt.ts';
-import type { ClaimCluster, } from './aggregate-claims.ts';
-import { hashContent, } from './document-node.ts';
+import {
+  buildAdjudicationMessages,
+  type ClaimCluster,
+  hashContent,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Two clusters: a two-member group then a solo group,

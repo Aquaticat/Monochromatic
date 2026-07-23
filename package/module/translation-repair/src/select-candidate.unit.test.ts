@@ -10,14 +10,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   type CandidateMeasurements,
   type RepairCandidate,
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
   UNCHANGED_MEASUREMENTS,
-} from './select-candidate.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * The always-competing unchanged candidate.

@@ -12,9 +12,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { locateQuote, } from './locate-quote.ts';
-import { parseDocument, } from './parse-document.ts';
+import {
+  locateQuote,
+  parseDocument,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented document carrying a unique phrase, a repeated phrase,

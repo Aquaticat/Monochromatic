@@ -13,22 +13,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-
 import {
+  createSyntheticClient,
+  isJsonRecord,
   MalformedCompletionError,
-  SyntheticHttpError,
-} from './completion-shape.ts';
-import { isJsonRecord, } from './json-guard.ts';
-import {
+  type ModelTransport,
   stripCodeFence,
   stripThinkBlock,
-} from './model-content.ts';
-import { createSyntheticClient, } from './synthetic-client.ts';
-import type {
-  ModelTransport,
-  TransportExchange,
-  TransportReply,
-} from './synthetic-transport.ts';
+  SyntheticHttpError,
+  type TransportExchange,
+  type TransportReply,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Milliseconds granted for queued microtasks and limiter slots to settle.

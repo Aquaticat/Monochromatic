@@ -12,11 +12,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   formatUsageNote,
   parseModelJson,
-} from './model-content.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: '',

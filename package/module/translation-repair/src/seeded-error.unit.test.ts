@@ -10,18 +10,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import {
-  deriveOmissionSeeds,
-  splitSentences,
-} from './derive-seeds.ts';
 import {
   applySeededErrors,
+  deriveOmissionSeeds,
   SEED_MATCH_TOLERANCE,
   SeedApplicationError,
-  seedHitByRegion,
   type SeededErrorSpec,
-} from './seeded-error.ts';
+  seedHitByRegion,
+  splitSentences,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Clean target text seeds are planted into.

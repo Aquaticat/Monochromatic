@@ -11,9 +11,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { hashContent, } from './document-node.ts';
-import { parseDocument, } from './parse-document.ts';
+import {
+  hashContent,
+  parseDocument,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Memorial-shaped fixture mirroring corpus structure with cat-themed invention:

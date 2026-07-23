@@ -12,14 +12,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  SyntheticClient,
-} from './chat-contract.ts';
-import { repairTranslation, } from './repair-translation.ts';
-import type { RepairModels, } from './repair-chunk.ts';
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type RepairModels,
+  repairTranslation,
+  type SyntheticClient,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Original document of the fixture pair.

@@ -14,24 +14,19 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-
 import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  COMPLETION_TOKEN_CEILING,
+  createSyntheticClient,
   MIN_DISPATCH_BUDGET_MS,
   runCriticBenchmark,
-} from './benchmark.ts';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  SyntheticClient,
-} from './chat-contract.ts';
-import { SyntheticHttpError, } from './completion-shape.ts';
-import type { SeededErrorSpec, } from './seeded-error.ts';
-import { COMPLETION_TOKEN_CEILING, } from './attempt-retry.ts';
-import { createSyntheticClient, } from './synthetic-client.ts';
-import type {
-  TransportExchange,
-  TransportReply,
-} from './synthetic-transport.ts';
+  type SeededErrorSpec,
+  type SyntheticClient,
+  SyntheticHttpError,
+  type TransportExchange,
+  type TransportReply,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Delay of the deliberately slow budget-test clients;

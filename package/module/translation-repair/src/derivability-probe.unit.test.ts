@@ -11,18 +11,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  SyntheticClient,
-} from './chat-contract.ts';
-import { runDerivabilityProbe, } from './derivability-probe.ts';
 import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   isDerivabilityVerdict,
   resolveDerivabilityJudgment,
-} from './derivability-wire.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+  runDerivabilityProbe,
+  type SyntheticClient,
+  type SyntheticModelId,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Logger for the stage under test.

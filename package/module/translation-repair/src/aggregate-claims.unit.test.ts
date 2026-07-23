@@ -10,20 +10,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   aggregateClaims,
   CLUSTER_ANCHOR_TOLERANCE,
-} from './aggregate-claims.ts';
-import { hashContent, } from './document-node.ts';
-import type {
-  IssueCategory,
-  IssueSeverity,
-} from './issue-taxonomy.ts';
-import type {
-  IssueClaim,
-  SpanAnchor,
-} from './issue-model.ts';
+  hashContent,
+  type IssueCategory,
+  type IssueClaim,
+  type IssueSeverity,
+  type SpanAnchor,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented target-side quoted span at chosen offsets.

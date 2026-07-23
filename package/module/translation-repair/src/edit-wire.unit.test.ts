@@ -10,15 +10,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import { hashContent, } from './document-node.ts';
-import { buildEditorMessages, } from './edit-prompt.ts';
 import {
+  type AdjudicatedIssue,
+  buildEditorMessages,
+  type EditableEnvelope,
+  hashContent,
   isEditorReportWire,
   resolveEditorEdits,
-} from './edit-wire.ts';
-import type { EditableEnvelope, } from './patch-model.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented translation the fixtures cut regions from.

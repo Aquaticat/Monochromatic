@@ -13,14 +13,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
-import type {
-  DocumentSide,
-  IssueClaim,
-  SpanAnchor,
-} from './issue-model.ts';
-import { parseDocument, } from './parse-document.ts';
-import { validateIssueClaim, } from './validate-issue.ts';
+import {
+  type DocumentSide,
+  type IssueClaim,
+  parseDocument,
+  type SpanAnchor,
+  validateIssueClaim,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented zh source with heading, footnoted paragraph, and definition.

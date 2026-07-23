@@ -10,21 +10,18 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { hashContent, } from './document-node.ts';
-import {
-  computeIssueClaimId,
-  type IssueClaim,
-  type SpanAnchor,
-} from './issue-model.ts';
 import {
   categoryFamily,
+  computeIssueClaimId,
+  hashContent,
+  isIssueCategory,
+  isIssueSeverity,
   ISSUE_CATEGORIES,
   ISSUE_CATEGORY_FAMILIES,
   ISSUE_SEVERITIES,
-  isIssueCategory,
-  isIssueSeverity,
-} from './issue-taxonomy.ts';
+  type IssueClaim,
+  type SpanAnchor,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Reusable anchored span with invented content;

@@ -12,14 +12,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import { hashContent, } from './document-node.ts';
 import {
+  type AdjudicatedIssue,
   buildResolutionMessages,
+  hashContent,
   isResolutionVerdict,
   RESOLUTION_VERDICTS,
-} from './resolution-wire.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Accepted issue whose fix the checkers must confirm.

@@ -10,11 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   FrontMatterParseError,
   splitFrontMatter,
-} from './front-matter.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Well-formed corpus-shaped source with invented metadata and body.

@@ -13,12 +13,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   buildRestorationJudgeMessages,
   isRestorationVerdict,
   RESTORATION_JUDGE_VERDICTS,
-} from './restoration-judge-wire.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented zh source the judge anchors restoration against.

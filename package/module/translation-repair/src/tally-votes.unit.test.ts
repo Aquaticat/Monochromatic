@@ -10,18 +10,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type {
-  PanelBallot,
-  PanelVoteState,
-} from './adjudicate-model.ts';
-import type {
-  AggregatedClaim,
-  ClaimCluster,
-} from './aggregate-claims.ts';
-import { hashContent, } from './document-node.ts';
-import type { IssueSeverity, } from './issue-taxonomy.ts';
-import { tallyVotes, } from './tally-votes.ts';
+import {
+  type AggregatedClaim,
+  type ClaimCluster,
+  hashContent,
+  type IssueSeverity,
+  type PanelBallot,
+  type PanelVoteState,
+  tallyVotes,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented member claim with chosen id suffix and severity.
