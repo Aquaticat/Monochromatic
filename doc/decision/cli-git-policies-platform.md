@@ -40,7 +40,8 @@ and management commands therefore cannot assume mise is installed.
 - Keep ordinary real-Git stdout intact.
 - Fail closed when an enabled policy cannot complete.
 - Apply commit normalizers without staging unrelated worktree bytes.
-- Bootstrap every newly registered linked worktree with the invoking worktree's ignored filesystem state.
+- Bootstrap every linked worktree newly registered from an invoking linked worktree with that source's ignored
+  filesystem state.
 - Execute only explicitly trusted,
   exact stored config artifacts.
 - Provide an npm-ready Node package and shadowing `git` bin.
@@ -76,11 +77,17 @@ CI remains authoritative.
 
 ## Linked-worktree ignored state
 
-Use the PATH wrapper's complete real-Git lifecycle to synchronize local ignored state into every newly registered linked
-worktree.
-Do not classify only literal `worktree add` argv.
-Compare the effective repository's linked administrative identities before and after forwarding so ordinary aliases and
-worktrees retained after Git or hook failure are covered.
+Use the PATH wrapper's complete real-Git lifecycle to synchronize local ignored state into every linked worktree newly
+registered from an invoking linked worktree or bare repository.
+Main-worktree invocations bypass linked-worktree observation,
+journal recovery,
+settlement locking,
+and synchronization,
+even when they create a linked worktree.
+For applicable sources,
+do not classify only literal `worktree add` argv.
+Compare linked administrative identities before and after forwarding so ordinary aliases and worktrees retained after
+Git or hook failure are covered.
 Snapshot after real Git and `post-checkout` settle.
 
 Git's standard ignore stack is the sole source selector.

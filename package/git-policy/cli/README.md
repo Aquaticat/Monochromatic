@@ -30,13 +30,18 @@ That self-contained static bundle is both the executable and the inert package-r
 
 ## Automatic linked-worktree state
 
-Every forwarded Git invocation inside an effective repository observes linked-worktree administrative identities
-before and after real Git runs.
-This outcome-based comparison detects ordinary Git aliases and worktrees that Git retains after a command or
-`post-checkout` hook returns nonzero.
+Every forwarded Git invocation whose effective target is a linked worktree or bare repository observes linked-worktree
+administrative identities before and after real Git runs.
+Main-worktree invocations bypass linked-worktree observation,
+journal recovery,
+settlement locking,
+and ignored-state synchronization,
+even when they create a linked worktree.
+This outcome-based comparison on applicable sources detects ordinary Git aliases and worktrees that Git retains after a
+command or `post-checkout` hook returns nonzero.
 When new linked worktrees exist,
-cli-git snapshots the invoking worktree's paths selected by Git's standard ignore stack after real Git and its hooks
-settle,
+cli-git snapshots the invoking linked worktree's paths selected by Git's standard ignore stack after real Git and its
+hooks settle,
 then installs that state into every new worktree.
 A bare repository has an empty source set.
 No repository-specific copy configuration exists.

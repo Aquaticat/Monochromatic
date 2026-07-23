@@ -1,361 +1,282 @@
-# cli-git 0.0.1: concurrent repository commands can exit 2 on worktree-copy settlement timeout
+# cli-git 0.0.1: main-worktree status wrongly entered worktree-copy settlement and could exit 2
 
 ## Symptom
 
-A repository command using the PATH-shadowing `git` wrapper can fail with:
+This command ran in the main worktree:
+
+```sh
+git status --short && git log -6 --oneline --decorate
+```
+
+Cli-git emitted:
 
 ```text
 cli-git: timed out waiting for active worktree-copy settlement under
 "/var/home/user/Monochromatic/.git".
 ```
 
-The emitting tool is `@monochromatic-dev/git-policy-cli`,
- not real Git and not the command harness.
-The exact text occurs at
-`package/git-policy/cli/src/worktree-copy/journal-lock.ts:513-515`:
+The main-worktree identity is measurable:
 
-```ts
-throw new WorktreeCopyError(
-  `cli-git: timed out waiting for active worktree-copy settlement under ${JSON.stringify(commonDir,)}.`,
-);
+```text
+$ /usr/bin/git rev-parse --show-toplevel --git-dir --git-common-dir
+/var/home/user/Monochromatic
+.git
+.git
 ```
 
-The harness annotation `(timeout 30s)` is its outer command limit.
-It does not extend cli-git's own bounded lock wait.
-Cli-git raised `WorktreeCopyError` first and mapped it to exit `2` at
-`package/git-policy/cli/src/bin.ts:425-428`:
+Equal canonical Git and common directories identify the main worktree.
+That target should not enter linked-worktree administrative observation,
+journal recovery,
+settlement locking,
+or ignored-state synchronization.
 
-```ts
-else if (error instanceof WorktreeCopyError) {
-  console.error(error.message,);
-  process.exitCode = 2;
-}
-```
-
-For this command:
-
-```sh
-git status --short && git log -6 --oneline --decorate
-```
-
-`git status --short` failed.
-Shell `&&` therefore did not start `git log`.
+The exact diagnostic comes from cli-git,
+not real Git and not the command harness.
+The harness's `(timeout 30s)` annotation is an outer limit;
+cli-git exited first with its own code `2`.
+Because `git status --short` failed,
+shell `&&` did not start `git log`.
 
 ## Root cause
 
-### Every forwarded repository command enters worktree-copy observation
+The earlier diagnosis in this file treated live lock contention as the problem.
+That was incomplete.
+Contention explained how the message was emitted,
+but not why main-worktree `status` tried to acquire this lock.
+The applicability bug was the cause at the user boundary.
 
-This is not limited to `git worktree add`.
-`package/git-policy/cli/README.md:33-35` states:
+### Pre-fix observer treated every effective repository as applicable
 
-```text
-Every forwarded Git invocation inside an effective repository observes linked-worktree administrative identities
-before and after real Git runs.
-```
-
-The broad scope lets cli-git detect aliases or hooks that create a linked worktree.
-It also means read-only commands such as `git status` participate in repository-wide settlement.
-
-### The lifecycle acquires one repository-wide lock
-
-After observing an effective repository,
-`package/git-policy/cli/src/worktree-copy/lifecycle.ts:264-270` acquires the lock before recovery,
-real Git execution,
-and post-command worktree detection:
+At pre-fix commit `8efcf4538799f792976ef0d761c60cd0f248a032`,
+`package/git-policy/cli/src/worktree-copy/git-observer.ts:302-344` resolved only the common directory,
+then immediately read linked-worktree administration and returned an observation:
 
 ```ts
-/**
- * Exclusive lease covering refreshed observation, real Git, and synchronization.
- */
+const commonDir = await resolveCommonDir({
+  gitPath,
+  preSubcommandArgs,
+  invocationCwd,
+},);
+if ((typeof commonDir) === 'symbol') {
+  return WORKTREE_COPY_NOT_APPLICABLE;
+}
+const adminRoot = join(
+  commonDir,
+  'worktrees',
+);
+const beforeAdminIds = await readAdminIds(adminRoot,);
+const sourceRoot = await resolveSourceRoot({
+  gitPath,
+  preSubcommandArgs,
+  invocationCwd,
+},);
+return {
+  adminRoot,
+  beforeAdminIds,
+  commonDir,
+  effectiveCwd,
+  ...((typeof sourceRoot) === 'symbol' ? {} : { sourceRoot, }),
+};
+```
+
+No invocation-specific Git directory was resolved.
+The observer therefore could not distinguish:
+
+- main worktree: canonical Git directory equals canonical common directory;
+- linked worktree: canonical Git directory differs from canonical common directory;
+- bare repository: no source worktree root.
+
+### Lifecycle locked every observation
+
+`package/git-policy/cli/src/worktree-copy/lifecycle.ts:269` acquires settlement for every returned observation:
+
+```ts
 await using settlementLock = await acquireWorktreeCopyLock(initialObservation.commonDir,);
 ```
 
-The lock lives at
-`<git-common-dir>/cli-git-worktree-copy/v1/settlement.lock`.
-The `await using` scope retains it while the wrapped Git command and worktree-copy lifecycle settle.
+A plain main-worktree `status` therefore created
+`.git/cli-git-worktree-copy/v1`,
+acquired `settlement.lock`,
+and became vulnerable to another invocation retaining that lock through the bounded acquisition loop.
 
-### A live owner makes another invocation retry
+### Fix excludes main worktrees before stateful worktree-copy operations
 
-`package/git-policy/cli/src/worktree-copy/journal-lock.ts:393-405` compares both PID and process birth identity.
-A matching live owner returns the busy sentinel:
-
-```ts
-const publishedBirthIdentity = await resolveProcessBirthIdentity(publishedOwner.ownerPid,);
-if ((publishedBirthIdentity !== PROCESS_IDENTITY_ABSENT)
-  && (publishedBirthIdentity === publishedOwner.ownerBirthIdentity)) {
-  return LOCK_BUSY;
-}
-return retireStaleLock(lockDirectory,);
-```
-
-This identity check distinguishes a live owner from a dead process or reused PID.
-Dead-owner locks are renamed and removed by `retireStaleLock` rather than treated as permanent contention.
-
-### The contender has a bounded internal wait
-
-`package/git-policy/cli/src/worktree-copy/journal-lock.ts:23-30` configures the retry loop:
+Commit `230f78959153195cbe01b0497d977dcac84fab71` changes
+`package/git-policy/cli/src/worktree-copy/git-observer.ts:347-376` to resolve both source and invocation-specific Git
+administration before reading linked identities:
 
 ```ts
-const LOCK_RETRY_DELAY_MS = 10;
-const LOCK_RETRY_ATTEMPTS = 100;
-```
+const commonDir = await resolveCommonDir({
+  gitPath,
+  preSubcommandArgs,
+  invocationCwd,
+},);
+if ((typeof commonDir) === 'symbol')
+  return WORKTREE_COPY_NOT_APPLICABLE;
 
-`package/git-policy/cli/src/worktree-copy/journal-lock.ts:497-515` retries in order,
-waits after each busy result,
-and then throws:
-
-```ts
-for (const _attempt of Array.from({ length: LOCK_RETRY_ATTEMPTS, },)) {
-  const result = await attemptAcquire({
-    lockDirectory,
-    owner,
+const sourceRoot = await resolveSourceRoot({
+  gitPath,
+  preSubcommandArgs,
+  invocationCwd,
+},);
+if ((typeof sourceRoot) === 'string') {
+  const gitDir = await resolveGitDir({
+    gitPath,
+    preSubcommandArgs,
+    invocationCwd,
   },);
-  if (result !== LOCK_BUSY)
-    return result;
-  await wait(LOCK_RETRY_DELAY_MS,);
+  if (gitDir === commonDir)
+    return WORKTREE_COPY_NOT_APPLICABLE;
 }
-throw new WorktreeCopyError(
-  `cli-git: timed out waiting for active worktree-copy settlement under ${JSON.stringify(commonDir,)}.`,
-);
 ```
 
-The diagnostic establishes that cli-git's published owner record named a process whose PID and birth identity
-remained live throughout this retry budget.
-It does not,
- by itself,
- identify that process's command or mean that `.git` is corrupt.
+Only after this gate does the observer read the linked-worktree administrative identity set.
+The lifecycle receives the not-applicable sentinel for a main worktree and forwards real Git without worktree-copy
+recovery,
+locking,
+or post-command synchronization.
 
-The owner record is removed when its process settles.
-By the later probe,
-the post-incident journal root was empty and a fresh wrapped `git status --short` succeeded.
-This proves only that the lock was no longer blocking at probe time.
-Because successful disposal removes `owner.json`,
-the original owner process and command cannot be identified after the event from the journal alone.
+Linked source worktrees remain applicable because their per-worktree Git directory differs from the common directory.
+Bare repositories retain their explicit empty-source behavior.
 
 ## Verification
 
 Verified on 2026-07-22 with:
 
 - `@monochromatic-dev/git-policy-cli` `0.0.1`;
-- repository commit `f4c02781b3a0f926628071037f87cb343152bf07`;
-- installed artifact SHA-256
-  `c5b388e8367d64ca8006eb35f73f8a3ee9adbd9f2db7320060db327c3e9be1b5`;
 - real Git `2.55.0`;
-- Linux process-birth identity from `/proc/<pid>/stat`.
+- failing regression commit `8efcf4538799f792976ef0d761c60cd0f248a032`;
+- fix commit `230f78959153195cbe01b0497d977dcac84fab71`;
+- linked-source fixture commit `0ca54c3512879e16d8237ed26dd57fa41ff3dac6`;
+- fixed bundle SHA-256
+  `8135d032376ecc9dceef5bc67ab30f90e826c80b42c789893d516df7e6e8348c`.
 
-The installed package resolves to the owned package directory
-`package/git-policy/cli`,
-so no third-party source clone applies.
-The source excerpts explain the owned implementation.
-The installed bundle independently contains the same retry constants at
-`node_modules/@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs:31920-31924`,
-the live-owner check at `:32146`,
-and the bounded loop and exact diagnostic at `:32213-32224`.
-This bundle inspection avoids assuming that the artifact was built from the current source revision.
+### Regression harness
 
-### Runnable contention harness
+The built-wrapper test
+`package/git-policy/cli/src/worktree-copy.unit.test.ts` creates a disposable main worktree,
+runs wrapped `status`,
+creates a linked worktree through wrapped `worktree add`,
+and asserts all of these outcomes:
 
-The verification used a disposable repository.
-One wrapped Git alias retained the lifecycle lock while real Git ran `sleep`:
+- `.git/cli-git-worktree-copy` is never created in the main repository;
+- main-worktree status succeeds;
+- worktree creation still forwards to real Git;
+- ignored main-worktree state is not copied;
+- no copy summary is emitted.
 
-```sh
-ROOT="$(mktemp --directory)"
-CLI_GIT="/var/home/user/Monochromatic/node_modules/.bin/git"
-/usr/bin/git -C "$ROOT" init --quiet
-
-# Run this holder in one process.
-"$CLI_GIT" -C "$ROOT" -c 'alias.hold=!touch holder-started && sleep 30' hold
-
-# Run this contender after holder-started exists.
-"$CLI_GIT" -C "$ROOT" status --short
-```
-
-While the holder was live,
-`owner.json` contained its PID and birth identity:
-
-```json
-{
-  "leaseToken": "e48f2cfc-f85d-464f-9f8d-1e665a2a9d7d",
-  "ownerBirthIdentity": "linux:1607979",
-  "ownerPid": 307549,
-  "schemaVersion": 1
-}
-```
-
-The contender produced:
+Before the fix,
+the test failed at its first applicability assertion:
 
 ```text
-cli-git: timed out waiting for active worktree-copy settlement under
-"/home/user/temp/agent/cli-git-settlement.1jAesXfJ/.git".
-Command exited with non-zero status 2
-elapsed=1.39 exit=2
+AssertionError: expected [..., 'cli-git-worktree-copy', ...]
+to not include 'cli-git-worktree-copy'
 ```
 
-### Commands that work cleanly
+After the fix,
+the same built-wrapper test passes.
 
-- Wrapped `git status --short` with no live holder:
-   exit `0`.
-- Wrapped `git status --no-worktree-copy --short` with a live holder:
-   exit `0`.
-- `/usr/bin/git status --short` with a live holder:
-   exit `0`.
-- Wrapped `git status --short` after terminating the holder:
-   exit `0`,
-   with the stale lock removed automatically.
+### Behaviors that now work cleanly
 
-On the repository under diagnosis,
-wrapped status completed in `0.21` seconds and real Git status completed in `0.03` seconds after contention ended.
+- Main-worktree `git status --short` forwards without creating worktree-copy state.
+- Main-worktree `git worktree add` forwards without copying ignored state or acquiring settlement.
+- A linked source worktree still copies ignored state for direct `worktree add` forms.
+- A linked source worktree still detects ordinary aliases that create worktrees.
+- Bare repositories still synchronize an empty source set.
+- Interrupted journals still recover from a later applicable linked-worktree or bare-repository invocation.
 
-### Commands that fail
+### Pre-fix behavior that failed
 
-- An ordinary wrapped invocation inside the same effective repository can exit `2` when it has no opt-out or inherited
-  lease and a live holder remains through all configured acquisition attempts.
-- The reproduced `status --short` contender exited `2` while a wrapped alias retained the lock.
-
-## Live owner inspection
-
-The owner can be identified only while the failure is active.
-The following read-only probe was verified against the disposable holder:
-
-```sh
-COMMON_DIR="$(/usr/bin/git rev-parse --path-format=absolute --git-common-dir)"
-OWNER="$COMMON_DIR/cli-git-worktree-copy/v1/settlement.lock/owner.json"
-cat "$OWNER"
-OWNER_PID="$(node --input-type=module -e \
-  "import { readFileSync } from 'node:fs'; console.log(JSON.parse(readFileSync(process.argv[1], 'utf8')).ownerPid);" \
-  "$OWNER")"
-ps --pid "$OWNER_PID" --format pid,ppid,lstart,etime,args
-```
-
-The probe resolved the reproduced record's `ownerPid` to the running cli-git holder command.
-The record can disappear between reads when its owner finishes;
-that race means the contention has settled and the wrapped command can be retried.
-Do not delete `settlement.lock` while the reported PID and birth identity are live.
+- Main-worktree `status` created the worktree-copy journal root despite creating no worktree.
+- Concurrent main-worktree commands could then hit the settlement timeout and exit `2`.
+- Retrying could hide the applicability defect after contention ended.
 
 ## Verified workarounds
 
-### Retry after the active command settles
+### Upgrade or rebuild cli-git with the applicability fix
 
-For a read-only command,
-run it again after the competing cli-git process has ended:
-
-```sh
-git status --short && git log -6 --oneline --decorate
-```
-
-This was verified after holder termination.
-Cli-git detected the dead owner,
-retired the stale lock,
-and returned exit `0`.
+This is the complete correction.
+Main-worktree commands no longer enter settlement,
+so they do not need a copy-specific flag or real-Git bypass.
 
 Tradeoff:
-retrying does not identify the competing process,
-and it will fail again if another command retains the lock through the bounded wait.
+main-worktree commands that create linked worktrees no longer bootstrap those destinations with ignored main-worktree
+state.
+Run creation from an applicable linked source when copying is wanted.
 
-### Opt out of worktree copying for this invocation
+### Pre-fix read-only inspection with the wrapper opt-out
 
-For read-only inspection:
+On an older artifact,
+this avoids worktree-copy lifecycle for one read-only invocation:
 
 ```sh
 git status --no-worktree-copy --short
 git log --no-worktree-copy -6 --oneline --decorate
 ```
 
-`package/git-policy/cli/src/worktree-copy/lifecycle.ts:207-225` strips the wrapper-only flag and forwards directly:
-
-```ts
-if (optOutStrippedArgs.length !== args.length) {
-  const execution = await executeRealGit({
-    args: optOutStrippedArgs,
-    gitPath,
-  },);
-  if ('failure' in execution)
-    throw execution.failure;
-  return;
-}
-```
-
-The status form returned exit `0` while the holder was live.
-
 Tradeoff:
-this invocation skips worktree-copy observation,
-worktree-copy transaction recovery,
-and synchronization.
-It does not bypass policy processing or every other cli-git startup behavior,
-because this return occurs inside `runGitWithWorktreeCopy` after the wrapper has reached that lifecycle.
-Do not use the opt-out for a command or alias that might create a linked worktree when ignored-state copying is wanted.
+this requires callers to remember a flag for behavior that should be automatic,
+and it also skips worktree-copy transaction recovery for that invocation.
 
-### Bypass cli-git for forensic inspection
+### Pre-fix forensic real-Git bypass
 
 ```sh
 /usr/bin/git status --short
 /usr/bin/git log -6 --oneline --decorate
 ```
 
-The real-Git status form returned exit `0` while the holder was live.
-
 Tradeoff:
-`package/git-policy/cli/README.md:13-22` says an absolute real-Git path bypasses startup transaction recovery,
-trusted policies,
+an absolute real-Git path bypasses all cli-git policies,
 fixed transforms,
-and post-commit auto-push.
-Use this only for deliberate inspection,
-not as a general replacement for the wrapper.
+transaction recovery,
+and auto-push behavior.
+Use it only for deliberate inspection.
 
 ## What does not work
 
-- Increasing the command harness's outer `30s` limit does not change cli-git's internal acquisition constants.
-- Inspecting the journal after a successful owner exits cannot reveal that owner,
-  because lock disposal removes `settlement.lock`.
-- A first reproduction with a four-second holder did not overlap the contender after tool-call handoff,
-  so it succeeded and did not test contention.
-  The thirty-second holder established overlap and reproduced exit `2`.
-- Manually deleting a live owner's lock is not a valid workaround.
-  The owner checks its lease token,
-  PID,
-  and birth identity again during disposal at
-  `package/git-policy/cli/src/worktree-copy/journal-lock.ts:306-330`.
-  Removing or replacing the lock can turn ordinary contention into an ownership error and can violate settlement
-  serialization.
+- **Explaining only the lock owner.**
+  A live owner explains the timeout mechanism but does not justify main-worktree applicability.
+- **Retrying until contention ends.**
+  Retry can succeed while leaving the wrong lifecycle boundary intact.
+- **Increasing the outer command timeout.**
+  It does not change cli-git's internal acquisition constants or applicability.
+- **Deleting `settlement.lock`.**
+  Manual deletion races the live owner and can convert contention into an ownership failure.
+- **Keeping copy tests rooted only in main repositories.**
+  Those fixtures encoded the bug as expected behavior.
+  Copy scenarios now use linked sources,
+  while a separate regression test covers main-worktree bypass.
 
 ## Upstream filing artifact
 
 ### Upstream filing decision
 
-No external upstream issue or comment should be filed.
-Cli-git is owned by this repository,
-and `.out-of-scope/` contains no matching exemption.
-Searches across open and closed issues and pull requests in
-`Aquaticat/Monochromatic` found no duplicate for `worktree-copy settlement` or the timeout text.
+No external upstream filing applies.
+Cli-git and the fixed source are owned by this repository.
+`.out-of-scope/` contains no matching exemption,
+and searches across open and closed issues and pull requests in
+`Aquaticat/Monochromatic` found no duplicate for the timeout or worktree-copy settlement terms.
 
 The six constraints resolve as follows:
 
-1. **Is it really upstream's fault?
-   ** No external upstream exists.
-   The observed exit follows cli-git's documented repository-wide observation and source-defined bounded lock.
-2. **Can upstream fix it?
-   ** A local product change could improve waiting or diagnostics,
-   but that would be a project design decision rather than an upstream defect correction.
-3. **Are they supporting this use case?
-   ** The README supports automatic worktree state copying and documents the
-   recoverable lock.
-   It does not promise indefinite waiting or concurrent read-only progress.
-4. **Would the repo welcome our contribution?
-   ** No `CONTRIBUTING.md`,
-   issue template,
-   pull request template,
-   or AI-assistance ban was found.
-   This is the same owned repository rather than a third-party contribution boundary.
-5. **Will they likely fix it?
-   ** There is no issue or maintainer decision requesting different behavior.
-   The lock path was introduced by commit `7b63241b3cdd696926852c62905f64a6ebff3040`.
-6. **Have we prototyped a minimal fix compatible with their architecture?
-   ** No.
-   Constraints one through five do not establish an upstream bug,
-   so the auto-prototype gate does not apply.
+1. **Is it really upstream's fault?**
+   No external upstream exists.
+   The defect was this repository's applicability boundary.
+2. **Can upstream fix it?**
+   The owned implementation was fixed by comparing canonical invocation-specific Git and common directories.
+3. **Are they supporting this use case?**
+   Yes.
+   Cli-git already classifies main and linked worktrees for other safeguards.
+4. **Would the repo welcome our contribution?**
+   This is the owning repository,
+   with no external contribution or AI-assistance policy boundary involved.
+5. **Will they likely fix it?**
+   The fix and regression test are committed locally.
+6. **Have we prototyped a minimal compatible fix?**
+   Yes.
+   The built artifact fails before the gate,
+   passes after it,
+   and retains linked-source and bare-source coverage.
 
-Nothing should be posted upstream.
-If the desired product behavior changes,
-a local design issue should separately specify whether read-only commands bypass serialization,
-wait longer,
-or report live-owner details.
+Nothing should be posted to an external upstream.
+The repository commits and this troubleshooting record are the filing artifact.

@@ -2122,9 +2122,15 @@ a later phase does not wait to record an earlier phase's work.
 
 ## Authorized linked-worktree follow-up
 
-A later authorized follow-up adds fixed lifecycle infrastructure that copies the invoking worktree's complete
+A later authorized follow-up adds fixed lifecycle infrastructure that copies an invoking linked worktree's complete
 Git-ignored filesystem state into every newly registered linked worktree.
-Outcome-based administrative identity comparison covers ordinary aliases,
+A 2026-07-22 correction excludes main-worktree invocations before administrative observation,
+journal recovery,
+settlement locking,
+or synchronization,
+even when real Git creates a linked worktree.
+Bare-repository empty-source behavior remains applicable.
+Outcome-based administrative identity comparison for applicable sources covers ordinary aliases,
 `--no-checkout`,
 and worktrees retained after Git or hook failure.
 The settled contract is now canonical in

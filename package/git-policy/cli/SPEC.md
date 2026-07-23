@@ -607,9 +607,14 @@ Remaining errors block before real Git.
 
 ### Linked-worktree ignored-state synchronization
 
-Before forwarding any Git invocation whose effective global options select a repository,
+Before forwarding an invocation whose effective global options select a linked worktree or bare repository,
 cli-git captures the common Git directory and linked-worktree administrative identity set.
-After real Git and its hooks return,
+An invocation targeting the main worktree bypasses administrative observation,
+journal recovery,
+settlement locking,
+and synchronization,
+even when real Git creates a linked worktree.
+After real Git and its hooks return for an applicable source,
 cli-git compares the administrative set again.
 Every new identity is a synchronization destination,
 regardless of whether argv named `worktree add`,
@@ -617,8 +622,8 @@ an ordinary Git alias expanded to it,
 or real Git returned nonzero after retaining registration.
 A missing or stale pre-existing worktree root does not hide a newly created identity.
 
-For a non-bare invocation,
-the source is the invoking effective worktree root after Git and `post-checkout` settle.
+For an applicable non-bare invocation,
+the source is the invoking linked worktree root after Git and `post-checkout` settle.
 Git's standard exclusion stack selects the source paths:
 per-directory `.gitignore`,
 repository exclude state,
@@ -679,7 +684,7 @@ A process-birth-identity lock serializes installation and recovery,
 rejects live contention after bounded acquisition,
 and reclaims stale PID reuse safely.
 
-Every later repository invocation checks for pending journals before forwarding.
+Every later applicable linked-worktree or bare-repository invocation checks for pending journals before forwarding.
 Recovery validates that journal paths remain canonical,
 the stage is a private owned directory beside the destination,
 the destination still resolves to a linked registration under the same common directory,

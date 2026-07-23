@@ -491,6 +491,15 @@ GCW:
  `git-policy-cli` worktree-guard reviews:
  baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`package/git-policy/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
 
+WXG:
+ cli-git worktree-copy incidents:
+ classify effective source before lock analysis.
+Main worktrees must bypass admin observation,
+ recovery,
+ settlement,
+ and copying;
+ verify this invariant first.
+
 ### Research tools
 
 RT1:
