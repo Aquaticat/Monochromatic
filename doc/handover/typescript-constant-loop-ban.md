@@ -149,7 +149,7 @@ and stage only explicit paths owned by this task.
   completed.
 - Task 9,
    verify constant-loop ban:
-  completed.
+  final repository-wide Oxlint sweep in progress.
 - Task 10,
    create this handover:
   completed.
@@ -244,6 +244,17 @@ Research and troubleshooting commits already on `main`:
    deliberate runtime-error `for (;;)` fixtures.
 - `a8f6354bf`,
    executable-only final text inventory.
+- `fc1b39e65`,
+   shared guest-exec status polling boundary.
+- `d8c241786`,
+  `793581d37`,
+  and `725133ac4`,
+   first-attempt,
+   retry,
+   timeout,
+   and completion polling tests.
+- `08397ba5e` and `dc024f240`,
+   root-inclusive ancestor traversal tests.
 
 Config verification passed:
 
@@ -269,7 +280,10 @@ Retry and polling verification passed:
   Oxlint,
   and TypeScript lint.
 - MVM build,
-  unit tests,
+  unit tests including fake-virsh first-attempt,
+  retry,
+  timeout,
+  and completion paths,
   Oxlint,
   and TypeScript lint.
 - File-enforcer build,
@@ -292,10 +306,14 @@ Final verification passed:
   `eslint(no-constant-condition): Unexpected constant condition`.
 - Ordinary migrated sources contain no `for (;;)` statements.
 - The two runtime-error fixtures use `for (;;)` as approved.
+- Root-inclusive ancestor traversal now has focused start-to-root and root-only tests.
 - The pre-existing production statement at `package/ssg/aquati.cat/src/lib/content.ts` remains unchanged and out of scope.
 - Scoped commit path inspection contains only task files.
+- Final repository-wide Oxlint is running as background process `repo-oxlint-final`.
 
 ## Next action
 
-No implementation remains.
+Confirm background process `repo-oxlint-final` passes,
+record task 9 complete,
+and finish.
 Keep the known conditionless `for` policy gap out of scope unless the user requests a separate rule.
