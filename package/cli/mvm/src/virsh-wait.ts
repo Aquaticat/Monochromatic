@@ -7,6 +7,7 @@
  * @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -88,9 +89,14 @@ export async function waitForGuestAgent({
 
   rl.info(`waiting for guest agent on ${name}...`,);
 
-  // oxlint-disable no-await-in-loop, promise/avoid-new -- polling loop
-  while (true) {
+  /**
+   * Retry state; a failed attempt below the deadline explicitly requests the next poll.
+   */
+  const polling = { retryPending: true, };
+  while (polling.retryPending) {
+    polling.retryPending = false;
     try {
+      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling attempt
       await virsh({ args: [
         'qemu-agent-command',
         fullName,
@@ -121,15 +127,11 @@ export async function waitForGuestAgent({
           String(Math.round(elapsed / MS_PER_SECOND,),)
         }s elapsed), retrying...`,
       );
-      await new Promise(function agentPollDelay(resolve,) {
-        setTimeout(
-          resolve,
-          AGENT_POLL_INTERVAL_MS,
-        );
-      },);
+      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling delay
+      await wait(AGENT_POLL_INTERVAL_MS,);
+      polling.retryPending = true;
     }
   }
-  // oxlint-enable no-await-in-loop, promise/avoid-new
 }
 
 /**
@@ -206,20 +208,16 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
 
   rl.info(`waiting for VM ${name} to shut down...`,);
 
-  // oxlint-disable no-await-in-loop, promise/avoid-new -- polling loop
-  while (true) {
-    /**
-     * Current libvirt domain state string; loop exits when it reaches `shut off`.
-     */
-    const state = await virsh({ args: [
+  /**
+   * Latest libvirt domain state; polling continues until it reaches `shut off`.
+   */
+  const polling = {
+    state: await virsh({ args: [
       'domstate',
       fullName,
-    ], },);
-    if (state === 'shut off') {
-      rl.info(`VM ${name} has shut down`,);
-      return;
-    }
-
+    ], },),
+  };
+  while (polling.state !== 'shut off') {
     /**
      * Milliseconds since polling began; compared against the shutdown timeout to give up.
      */
@@ -234,14 +232,15 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
     }
 
     rl.debug(
-      `VM state: ${state} (${String(Math.round(elapsed / MS_PER_SECOND,),)}s elapsed)`,
+      `VM state: ${polling.state} (${String(Math.round(elapsed / MS_PER_SECOND,),)}s elapsed)`,
     );
-    await new Promise(function shutdownPollDelay(resolve,) {
-      setTimeout(
-        resolve,
-        SHUTDOWN_POLL_INTERVAL_MS,
-      );
-    },);
+    // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling delay
+    await wait(SHUTDOWN_POLL_INTERVAL_MS,);
+    // oxlint-disable-next-line no-await-in-loop -- deliberate serial state polling
+    polling.state = await virsh({ args: [
+      'domstate',
+      fullName,
+    ], },);
   }
-  // oxlint-enable no-await-in-loop, promise/avoid-new
+  rl.info(`VM ${name} has shut down`,);
 }
