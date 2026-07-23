@@ -106,9 +106,25 @@ escaped selectors, custom-property block values.
 4. [x] Scaffold `package/module/css-edit` (mirrors `jsonc-edit`; needed `rolldown.browser.config.ts`).
 5. [x] Implement parse (strict, spec section 5 unified block contents), stringify, transform.
 6. [x] Unit tests per branch plus adversarial corpus; all green against built dist.
-7. [ ] Port `build-tool-css` (import inlining, mixin redesign, applyMixins, shim removal).
-8. [ ] Integration fixtures green (both resolution strategies), CLI verified (VB2).
-9. [ ] Browser verification: done-postcss via agent-browser, then `agent-browser close` (VB5, ABR).
+7. [x] Port `build-tool-css`: user authorized a full API redesign mid-task
+   ("current api ... laughably awkward"; migrate all consumers).
+   New deep-module surface: `buildCss({ input, output })` file pipeline and
+   `expandCssMixins({ css, mixinCss? })` text pipeline plus
+   `UnknownCssMixinError`/`CircularCssMixinError`.
+   Old `build`/`applyMixins`/`collectMixins`/`expandMixinBodies`/`mixins` Map
+   protocol deleted; one shared apply-splicing visitor; visited-set cycle
+   detection with exact trail; token-based import specifier extraction
+   (fixes the old `url() layer()` string-slicing bug); `process-shim.ts`,
+   `apply-mixins.ts`, `mixin-registry.ts`, `stripImportSpecifier` deleted.
+   Consumers migrated: done-postcss server + client, paused messages-demo and
+   inference-canary-viewer.
+8. [x] Integration fixtures green (both resolution strategies); CLI exercised on
+   the real done-postcss stylesheet (comments preserved, no residue).
+9. [x] Browser verification via agent-browser, then closed: found and fixed a
+   real regression (client importing the package index pulled node builtins
+   into the bundle; browser consumers must import
+   `build-tool-css/ts/expand` directly, recorded in the index TSDoc and README).
+   Shadow DOM styles expanded in live browser, no console errors.
 10. [ ] `css-edit.fuzz` sibling: byte-identity fuzz plus differential vs postcss oracle.
 11. [ ] `css-edit.bench` sibling: parse plus stringify vs postcss and css-tree baselines.
 12. [ ] `css-edit.conformance` sibling: css-parsing-tests corpus.
