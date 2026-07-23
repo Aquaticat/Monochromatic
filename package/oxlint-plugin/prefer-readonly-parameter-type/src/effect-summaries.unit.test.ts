@@ -939,6 +939,78 @@ await describe({
       },
     },),
     it({
+      name: 'rejects overload provenance when callable alias escapes beside matching call',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Marker source directory preserving exact semantic identity suffix. */
+        const markerRoot = join(
+          projectRoot.path,
+          'ownership-marker',
+          'foreign-borrowed',
+          'src',
+        );
+        /** Active foreign-boundary source. */
+        const foreignPath = join(projectRoot.path, 'foreign.ts',);
+        /** Overloaded helper source. */
+        const helperPath = join(projectRoot.path, 'helper.ts',);
+        /** Separate source escaping helper through value alias. */
+        const escapedPath = join(projectRoot.path, 'escaped.ts',);
+        /** Active source carrying explicit marker into overloaded helper. */
+        const foreignSource = "import type { ForeignBorrowed, } from './ownership-marker/foreign-borrowed/src/index.js';\nimport { read, } from './helper.js';\nexport function readForeign(value: ForeignBorrowed<{ text: string; }>,): string { return read(value); }\n";
+        mkdirSync(markerRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["**/*.ts"]}\n',
+        );
+        writeFileSync(
+          join(markerRoot, 'index.ts',),
+          'declare const FOREIGN_BORROWED_MARKER: unique symbol;\nexport type ForeignBorrowed<Value> = Value & { readonly [FOREIGN_BORROWED_MARKER]?: true; };\n',
+        );
+        writeFileSync(foreignPath, foreignSource,);
+        writeFileSync(
+          helperPath,
+          "export function read(value: { text: string; },): string;\nexport function read(value: { text: string; readonly extra?: true; },): string;\nexport function read(value: { text: string; readonly extra?: true; },): string { return value.text; }\n",
+        );
+        writeFileSync(
+          escapedPath,
+          "import { read, } from './helper.js';\nexport const escapedRead = read;\n",
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: foreignPath,
+          sourceText: foreignSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+          cacheRootOverride: join(projectRoot.path, '.effect-cache',),
+        },);
+        /** Overloaded helper source decoded by active semantic project. */
+        const helperSource = session.project.program.getSourceFile(helperPath,);
+        if (helperSource === undefined)
+          throw new Error('Expected overloaded helper source.',);
+        /** Callable implementation sharing overload-family references. */
+        const helperImplementation = helperSource.statements.find(function hasBody(statement,): boolean {
+          return isFunctionLikeDeclaration(statement,)
+            && ('body' in statement)
+            && (statement.body !== undefined);
+        },);
+        if ((helperImplementation === undefined)
+          || (!isFunctionLikeDeclaration(helperImplementation,)))
+          throw new Error('Expected overloaded helper implementation.',);
+        /** Escaped value usage must prevent call-only provenance inference. */
+        const helperSummary = index.get(helperImplementation,);
+        if (helperSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected overloaded helper summary.',);
+        expect([...helperSummary.foreignBorrowedParameterIndexes,],).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'reuses direct scans in process and through persistent cache',
       fn: async () => {
         using cache = disposableCacheDirectory();
@@ -1072,6 +1144,61 @@ await describe({
           || (!isFunctionLikeDeclaration(nestedDeclaration,)))
           throw new Error('Expected nested function declaration.',);
         expect(nestedIndex.get(nestedDeclaration,),).not.toBe(NO_EFFECT_SUMMARY,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
+      name: 'invalidates final index when active overlay creates a new semantic snapshot',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable persistent cache root. */
+        const cacheRoot = join(projectRoot.path, '.effect-cache',);
+        /** Active source path shared by both semantic snapshots. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Initial observational implementation. */
+        const initialSource = 'export function inspect(value: { text: string; },): string { return value.text; }\n';
+        /** Changed overlay implementation mutating caller-owned state. */
+        const changedSource = 'export function inspect(value: { text: string; },): string { value.text = value.text.trim(); return value.text; }\n';
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
+        );
+        writeFileSync(inputPath, initialSource,);
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const initialSession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: initialSource,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({
+          project: initialSession.project,
+          activeSourceFile: initialSession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        const changedSession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: changedSource,
+          hasBOM: false,
+        },);
+        const changedIndex = buildEffectSummaryIndex({
+          project: changedSession.project,
+          activeSourceFile: changedSession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Changed declaration decoded from new immutable snapshot. */
+        const [changedDeclaration,] = changedSession.sourceFile.statements;
+        if ((changedDeclaration === undefined)
+          || (!isFunctionLikeDeclaration(changedDeclaration,)))
+          throw new Error('Expected changed overlay declaration.',);
+        /** Changed summary must not reuse observational final index. */
+        const changedSummary = changedIndex.get(changedDeclaration,);
+        if (changedSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected changed overlay summary.',);
+        expect([...changedSummary.mutatedParameterIndexes,],).toEqual([0,],);
+        expect(finalEffectIndexCacheStats().writeCount,).toBe(2,);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
