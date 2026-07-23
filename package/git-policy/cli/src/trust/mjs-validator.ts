@@ -4,7 +4,16 @@
  * @module
  */
 import { isBuiltin, } from 'node:module';
-import { parse, } from 'acorn';
+import {
+  type Diagnostic,
+  type ExportAllDeclaration,
+  type ExportNamedDeclaration,
+  type ImportDeclaration,
+  type ImportExpression,
+  parse,
+} from 'yuku-parser';
+import { walk, } from 'yuku-ast';
+import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
@@ -31,74 +40,6 @@ export type MjsValidation = Readonly<{
    */
   nodeBuiltins: readonly string[];
 }>;
-
-/**
- * Read-only top-level syntax fields needed by validator.
- */
-type StaticNodeInput = Readonly<{
-  /**
-   * ESTree node kind.
-   */
-  type: string;
-  /**
-   * Optional external module literal.
-   */
-  source?: unknown;
-}>;
-
-/**
- * Static declaration has no module source.
- */
-const STATIC_MODULE_ABSENT: unique symbol = Symbol('static module declaration has no source',);
-
-/**
- * Reads static module specifier from top-level ESM declaration.
- *
- * @param node - Acorn top-level AST node
- *
- * @returns literal specifier or absence
- */
-function staticModuleSpecifier(node: StaticNodeInput,): string | typeof STATIC_MODULE_ABSENT {
-  if ((node.type !== 'ImportDeclaration')
-    && (node.type !== 'ExportNamedDeclaration')
-    && (node.type !== 'ExportAllDeclaration'))
-    return STATIC_MODULE_ABSENT;
-  if ((!('source' in node)) || ((typeof node.source) !== 'object')
-    || (node.source === null)
-    || (!('value' in node.source))
-    || ((typeof node.source
-      .value) !== 'string'))
-    return STATIC_MODULE_ABSENT;
-  return node.source
-    .value;
-}
-
-/**
- * Collects literal dynamic-import targets from bounded Acorn syntax tree.
- *
- * @param value - syntax node, child collection, or scalar
- *
- * @returns literal dynamic-import targets in source order
- */
-function dynamicModuleSpecifiers(value: unknown,): readonly string[] {
-  if (Array.isArray(value,))
-    return value.flatMap(dynamicModuleSpecifiers,);
-  if (((typeof value) !== 'object') || (value === null))
-    return [];
-  if (('type' in value) && (value.type === 'ImportExpression')) {
-    if ((!('source' in value))
-      || ((typeof value.source) !== 'object')
-      || (value.source === null)
-      || (!('value' in value.source))
-      || ((typeof value.source
-        .value) !== 'string'))
-      throw new MjsValidationError('Dynamic imports must use literal Node built-in specifiers.',);
-    return [value.source
-      .value,];
-  }
-  return Object.values(value,)
-    .flatMap(dynamicModuleSpecifiers,);
-}
 
 /**
  * Validates syntax and dependency self-containment without execution.
@@ -136,51 +77,120 @@ export function validateMjs({
     }
   })();
   /**
-   * Complete parsed ECMAScript module.
+   * Complete parse result; yuku-parser recovers from syntax errors, so
+   * error-severity diagnostics decide rejection.
    */
-  const program = (function parseModule(): ReturnType<typeof parse> {
-    try {
-      return parse(
-        sourceText,
-        {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        allowHashBang: true,
-      },
-      );
-    }
-    catch (error: unknown) {
-      throw new MjsValidationError(`Configuration syntax is invalid in ${sourceName}: ${String(error,)}`,);
-    }
-  })();
+  const parsed = parse(sourceText,);
   /**
-   * Static Node built-ins retained by artifact.
+   * Error-severity syntax diagnostics.
+   */
+  const parseErrors = parsed.diagnostics
+    .filter(function isError(diagnostic: ForeignBorrowed<Diagnostic>,): boolean {
+      return diagnostic.severity === 'error';
+    },);
+
+  if (parseErrors.length > 0)
+    throw new MjsValidationError(
+      `Configuration syntax is invalid in ${sourceName}: ${parseErrors
+        .map(function toMessage(diagnostic: ForeignBorrowed<Diagnostic>,): string {
+          return diagnostic.message;
+        },)
+        .join('; ',)}`,
+    );
+
+  /**
+   * Node built-ins retained by artifact.
    */
   const nodeBuiltins = new Set<string>();
-  program.body
-    .forEach(function inspectTopLevelNode(node: ForeignBorrowed<StaticNodeInput>,) {
+
+  /**
+   * Admits one dependency specifier, rejecting everything except Node
+   * built-ins.
+   *
+   * @param specifier - Module specifier under self-containment judgement.
+   *
+   * @param form - Import form naming for diagnostics.
+   *
+   * @throws MjsValidationError when the specifier is not a Node built-in.
+   *
+   * @example
+   * ```ts
+   * admitBuiltin({ specifier: 'node:fs', form: 'static import' });
+   * ```
+   */
+  function admitBuiltin({
+    specifier,
+    form,
+  }: Readonly<{
+    specifier: string;
+    form: string;
+  }>,): void {
+    if (!isBuiltin(specifier,)) {
+      throw new MjsValidationError(
+        `Configuration must be self-contained; ${form} is not a Node built-in: ${specifier}`,
+      );
+    }
+    nodeBuiltins.add(specifier,);
+  }
+
+  /**
+   * Admits one static module declaration source.
+   *
+   * @param source - Declaration source literal.
+   *
+   * @throws MjsValidationError when the source is not a Node built-in.
+   *
+   * @example
+   * ```ts
+   * admitStaticSource(importDeclaration.source);
+   * ```
+   */
+  function admitStaticSource(source: ReadonlyDeep<ImportDeclaration['source']>,): void {
     /**
-     * Static dependency specifier when declaration has one.
+     * Literal specifier value before the string-shape check.
      */
-    const specifier = staticModuleSpecifier(node,);
-    if (specifier === STATIC_MODULE_ABSENT)
-      return;
-    if (!isBuiltin(specifier,)) {
-      throw new MjsValidationError(
-        `Configuration must be self-contained; static import is not a Node built-in: ${specifier}`,
-      );
-    }
-    nodeBuiltins.add(specifier,);
-  },);
-  dynamicModuleSpecifiers(program,)
-    .forEach(function inspectDynamicImport(specifier,) {
-    if (!isBuiltin(specifier,)) {
-      throw new MjsValidationError(
-        `Configuration must be self-contained; dynamic import is not a Node built-in: ${specifier}`,
-      );
-    }
-    nodeBuiltins.add(specifier,);
-  },);
+    const { value, } = source;
+    if ((typeof value) !== 'string')
+      throw new MjsValidationError('Static imports must use string literal specifiers.',);
+    admitBuiltin({
+      specifier: value,
+      form: 'static import',
+    },);
+  }
+
+  walk(
+    parsed.program,
+    {
+      ImportDeclaration: function visitImport(node: ReadonlyDeep<ImportDeclaration>,): void {
+        admitStaticSource(node.source,);
+      },
+      ExportNamedDeclaration: function visitNamedExport(node: ReadonlyDeep<ExportNamedDeclaration>,): void {
+        /**
+         * Re-export source literal, null for local exports.
+         */
+        const { source, } = node;
+        if (source === null)
+          return;
+        admitStaticSource(source,);
+      },
+      ExportAllDeclaration: function visitAllExport(node: ReadonlyDeep<ExportAllDeclaration>,): void {
+        admitStaticSource(node.source,);
+      },
+      ImportExpression: function visitDynamicImport(node: ReadonlyDeep<ImportExpression>,): void {
+        /**
+         * Dynamic import argument before the literal-shape check.
+         */
+        const { source, } = node;
+        if ((source.type !== 'Literal') || ((typeof source.value) !== 'string'))
+          throw new MjsValidationError('Dynamic imports must use literal Node built-in specifiers.',);
+        admitBuiltin({
+          specifier: source.value,
+          form: 'dynamic import',
+        },);
+      },
+    },
+  );
+
   return {
     nodeBuiltins: [...nodeBuiltins,].toSorted(),
   };

@@ -56,7 +56,6 @@ catalog:
   '@types/sinon-chai': '>=4.0.0'
   '@types/three': '>=0.182.0'
   '@types/unist': '>=3.0.3'
-  'acorn': '>=8.17.0'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
   'browserslist': '>=4.28.5'

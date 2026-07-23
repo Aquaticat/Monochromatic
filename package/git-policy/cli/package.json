@@ -47,12 +47,13 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
-    "acorn": "catalog:",
     "nano-spawn": "catalog:",
     "rolldown": "catalog:",
     "type-fest": "catalog:",
     "typescript": "catalog:",
-    "valibot": "catalog:"
+    "valibot": "catalog:",
+    "yuku-ast": "catalog:",
+    "yuku-parser": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

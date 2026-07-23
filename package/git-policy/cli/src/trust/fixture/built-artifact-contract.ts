@@ -40,8 +40,6 @@ type ArtifactParser = Readonly<{
   parse: (
     source: string,
     options: Readonly<{
-      allowHashBang: boolean;
-      ecmaVersion: 'latest';
       sourceType: 'module';
     }>,
   ) => unknown;
@@ -62,7 +60,7 @@ function isArtifactParser(value: unknown,): value is ArtifactParser {
 }
 
 /**
- * Collects dynamic import targets from bounded Acorn syntax tree.
+ * Collects dynamic import targets from bounded yuku syntax tree.
  *
  * @param value - syntax node, child collection, or scalar
  *
@@ -99,7 +97,7 @@ function dynamicImportTargets({
   if (!('source' in value))
     throw new Error('packed artifact dynamic import has no syntax source',);
   /**
-   * Acorn import-expression source node.
+   * yuku import-expression source node.
    */
   const importSource = value.source;
   if (((typeof importSource) !== 'object') || (importSource === null))
@@ -158,21 +156,18 @@ export async function verifyBuiltArtifactContract(): Promise<void> {
     'utf8',
   );
   /**
-   * Acorn parser resolved from packed cli-git runtime dependencies.
+   * yuku parser resolved from packed cli-git runtime dependencies.
    */
-  const parser: unknown = createRequire('/opt/cli-git/package.json',)('acorn');
+  const parser: unknown = createRequire('/opt/cli-git/package.json',)('yuku-parser');
   if (!isArtifactParser(parser,))
-    throw new Error('packed acorn dependency has no parse function',);
+    throw new Error('packed yuku-parser dependency has no parse function',);
   /**
-   * Complete packed artifact syntax tree.
+   * Complete packed artifact parse result; the recursive target scan
+   * descends through the result wrapper into its program tree.
    */
   const artifactSyntax = parser.parse(
     artifactSource,
-    {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      allowHashBang: true,
-    },
+    { sourceType: 'module', },
   );
   /**
    * Dynamic imports permitted only at documented library and trusted-ESM boundaries.

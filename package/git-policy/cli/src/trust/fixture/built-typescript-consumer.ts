@@ -57,9 +57,9 @@ export async function verifyTypeScriptConsumer({
   );
   await writeFile(
     policyPath,
-    `import acornPackage from 'acorn/package.json';
+    `import yukuPackage from 'yuku-parser/package.json';
 import { object } from 'valibot';
-export const message: string = \`built TypeScript \${String(acornPackage.name)} \${String(Boolean(object({})))}\`;
+export const message: string = \`built TypeScript \${String(yukuPackage.name)} \${String(Boolean(object({})))}\`;
 `,
   );
   /**
@@ -164,7 +164,7 @@ export default defineConfig({
   },);
   assertIncludes({
     text: finding.stdout,
-    expected: 'built TypeScript acorn true',
+    expected: 'built TypeScript yuku-parser true',
     context: 'stored TypeScript policy',
   },);
   /**
