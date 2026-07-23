@@ -379,6 +379,12 @@ independent runs, dismissed against 37 content-critique claims,
 Run 004 had been stopped mid-flight; PASS 2 started from zero
 (all pass-1 artifacts and attempts wiped, 92 pending) under the
 fixed pipeline, logs `pass2-run-NNN.log`.
+Pass 2 run log (all counts, no content):
+pass2 run 001 (2026-07-23, 1502 s): 2 dispatched, 2 completed, 0
+failed; Acheron repaired (48 issues, 46 accepted, 45 resolved, 7
+findings, 1012 s); AkiraComplex repaired (9 issues, 8 accepted, 6
+resolved, 3 findings, 491 s). Both reproduce their pass-1 statuses
+with nondeterministic count drift. Remaining 90.
 run 003 (2026-07-23, 1913 s): 3 dispatched, 3 completed, 0 failed;
 Arita repaired (20 issues, 18 accepted, 17 resolved, 6 findings,
 644 s); ArtsEpiphany unchanged (0 claims from 7/7 critics, 8 s;
