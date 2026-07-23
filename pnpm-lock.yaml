@@ -2106,6 +2106,9 @@ importers:
 
   package/module/css-edit.bench:
     devDependencies:
+      '@monochromatic-dev/build-tool-css':
+        specifier: workspace:*
+        version: link:../../build-tool/css
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript

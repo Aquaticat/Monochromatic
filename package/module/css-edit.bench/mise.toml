@@ -13,3 +13,7 @@ extends = "lint:types"
 [tasks.bench]
 description = "Parse plus stringify benchmark: css-edit vs postcss and css-tree"
 run = "node src/parse.bench.ts"
+
+[tasks."bench:pipeline"]
+description = "Mixin pipeline benchmark: expandCssMixins vs the retired postcss clone-and-fixed-point pipeline"
+run = "node src/mixin-pipeline.bench.ts"

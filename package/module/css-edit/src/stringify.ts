@@ -3,70 +3,152 @@ import type {
   CssEditState,
   CssNode,
 } from './node.ts';
-import { rawTextOfTokens, } from './token.ts';
+import type { CSSToken, } from './token.ts';
 
-//region Node rendering
+//region Accumulation
 
 /**
- * Renders one block back to source text: opening brace, children, closing brace.
+ * Appends the source representation of each token in a slice to the
+ * accumulator.
+ *
+ * @param tokens - Token slice to render.
+ *
+ * @param out - Shared raw-string accumulator.
+ */
+function pushTokenRaws({
+  tokens,
+  out,
+}: {
+  readonly tokens: readonly CSSToken[];
+  readonly out: string[];
+},): void {
+  for (const token of tokens) {
+    /**
+     * Source representation slot of the token tuple.
+     */
+    const [, raw,] = token;
+    out.push(raw,);
+  }
+}
+
+/**
+ * Appends one block's source text: opening brace, children, closing brace.
  *
  * @param block - Block to render.
  *
- * @returns Byte-exact source text for an unedited block.
+ * @param out - Shared raw-string accumulator.
  */
-function stringifyBlock(block: CssBlock,): string {
+function pushBlock({
+  block,
+  out,
+}: {
+  readonly block: CssBlock;
+  readonly out: string[];
+},): void {
   /**
    * Opening brace representation.
    */
   const [, openRaw,] = block.openToken;
+  out.push(openRaw,);
+  pushNodes({
+    nodes: block.children,
+    out,
+  },);
   /**
    * Closing brace representation.
    */
   const [, closeRaw,] = block.closeToken;
-  return `${openRaw}${stringifyNodes({ nodes: block.children, },)}${closeRaw}`;
+  out.push(closeRaw,);
 }
 
 /**
- * Renders one node back to source text by concatenating the byte-exact token
- * representations it owns.
+ * Appends one node's source text.
  *
  * @param node - Node to render.
  *
- * @returns Source text of the node.
+ * @param out - Shared raw-string accumulator.
  */
-function stringifyNode(node: CssNode,): string {
-  if ((node.kind === 'trivia') || (node.kind === 'declaration'))
-    return rawTextOfTokens({ tokens: node.tokens, },);
+function pushNode({
+  node,
+  out,
+}: {
+  readonly node: CssNode;
+  readonly out: string[];
+},): void {
+  if ((node.kind === 'trivia') || (node.kind === 'declaration')) {
+    pushTokenRaws({
+      tokens: node.tokens,
+      out,
+    },);
+    return;
+  }
 
-  if (node.kind === 'rule')
-    return `${rawTextOfTokens({ tokens: node.preludeTokens, },)}${stringifyBlock(node.block,)}`;
+  if (node.kind === 'rule') {
+    pushTokenRaws({
+      tokens: node.preludeTokens,
+      out,
+    },);
+    pushBlock({
+      block: node.block,
+      out,
+    },);
+    return;
+  }
 
   /**
    * At-keyword representation, byte-exact including the `@`.
    */
   const [, atRaw,] = node.atToken;
-  /**
-   * Prelude source text between name and body or terminator.
-   */
-  const prelude = rawTextOfTokens({ tokens: node.preludeTokens, },);
-  if (node.block !== undefined)
-    return `${atRaw}${prelude}${stringifyBlock(node.block,)}`;
-  /**
-   * Statement terminator representation; empty when the at-rule ended at a
-   * block close or end of input.
-   */
-  const semicolon = node.semicolonToken === undefined
-    ? ''
-    : node.semicolonToken[1];
-  return `${atRaw}${prelude}${semicolon}`;
+  out.push(atRaw,);
+  pushTokenRaws({
+    tokens: node.preludeTokens,
+    out,
+  },);
+  if (node.block !== undefined) {
+    pushBlock({
+      block: node.block,
+      out,
+    },);
+    return;
+  }
+  if (node.semicolonToken !== undefined) {
+    /**
+     * Statement terminator representation.
+     */
+    const [, semicolonRaw,] = node.semicolonToken;
+    out.push(semicolonRaw,);
+  }
 }
 
-//endregion Node rendering
+/**
+ * Appends a node list's source text in order.
+ *
+ * @param nodes - Nodes to render.
+ *
+ * @param out - Shared raw-string accumulator.
+ */
+function pushNodes({
+  nodes,
+  out,
+}: {
+  readonly nodes: readonly CssNode[];
+  readonly out: string[];
+},): void {
+  for (const node of nodes) {
+    pushNode({
+      node,
+      out,
+    },);
+  }
+}
+
+//endregion Accumulation
 
 //region Entry points
 
 /**
- * Renders a node list back to source text in order.
+ * Renders a node list back to source text in order. One flat accumulator and
+ * a single join keep large documents allocation-light.
  *
  * @param nodes - Nodes to render.
  *
@@ -82,9 +164,15 @@ export function stringifyNodes({
 }: {
   readonly nodes: readonly CssNode[];
 },): string {
-  return nodes
-    .map(stringifyNode,)
-    .join('',);
+  /**
+   * Raw-string accumulator shared by the whole render.
+   */
+  const out: string[] = [];
+  pushNodes({
+    nodes,
+    out,
+  },);
+  return out.join('',);
 }
 
 /**
@@ -107,8 +195,10 @@ export function stringifyCss({
 }: {
   readonly state: CssEditState;
 },): string {
-  return stringifyNodes({ nodes: state.root
-    .children, },);
+  return stringifyNodes({
+    nodes: state.root
+      .children,
+  },);
 }
 
 //endregion Entry points

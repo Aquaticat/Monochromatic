@@ -6,6 +6,7 @@
   "version": "0.0.0",
   "private": true,
   "devDependencies": {
+    "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-css-edit": "workspace:*",
     "@types/node": "catalog:",
