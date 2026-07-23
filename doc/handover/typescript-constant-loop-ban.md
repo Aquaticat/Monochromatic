@@ -255,6 +255,8 @@ Research and troubleshooting commits already on `main`:
    and completion polling tests.
 - `08397ba5e` and `dc024f240`,
    root-inclusive ancestor traversal tests.
+- `6e5cfe99d` and `7e0b0c4f4`,
+   package-scoped logger unit task using existing storage retry suites.
 
 Config verification passed:
 
@@ -277,6 +279,9 @@ Its full unit suite passed after owning commit `e2cda4e35` retired stale PostCSS
 Retry and polling verification passed:
 
 - Logger build,
+  unit tests covering reactive eviction,
+  terminal give-up,
+  and non-quota failures,
   Oxlint,
   and TypeScript lint.
 - MVM build,
@@ -309,11 +314,11 @@ Final verification passed:
 - Root-inclusive ancestor traversal now has focused start-to-root and root-only tests.
 - The pre-existing production statement at `package/ssg/aquati.cat/src/lib/content.ts` remains unchanged and out of scope.
 - Scoped commit path inspection contains only task files.
-- Final repository-wide Oxlint is running as background process `repo-oxlint-final`.
+- Final repository-wide Oxlint remains pending after the first run was terminated because verification files changed.
 
 ## Next action
 
-Confirm background process `repo-oxlint-final` passes,
+Run repository-wide Oxlint against final HEAD,
 record task 9 complete,
 and finish.
 Keep the known conditionless `for` policy gap out of scope unless the user requests a separate rule.
