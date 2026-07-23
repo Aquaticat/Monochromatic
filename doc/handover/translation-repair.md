@@ -367,11 +367,18 @@ module (barrel path updated). Verification: 87 suites pass against
 dist including the new contradicted-path end-to-end test, oxlint
 0/0 (max-lines remediated by moving screening logic into the new
 module, never by raising the limit), lint:types exit 0.
-LIVE SENTINEL PROBE launched (log
-`~/temp/translation-repair-corpus/sentinel-probe.log`): XIEPT2 and
-shi_Yumiaoya must stay blocked, Aniloviraw must proceed; the pass
-restarts only on ALL PASS. Run 004 was stopped mid-flight (its
-partial artifacts get wiped with the rest at restart).
+LIVE SENTINEL PROBE: ALL PASS (2026-07-23, log
+`~/temp/translation-repair-corpus/sentinel-probe.log`, artifacts
+kept under `probe/`). XIEPT2 stayed blocked (blocked chunk: 5
+claims, 4 votes, 165 s); shi_Yumiaoya stayed blocked (blocked
+chunk: 7 claims, 5 votes; its translated chunk drew 35 claims with
+zero votes, 983 s); Aniloviraw REPAIRED (4 votes reproduced across
+independent runs, dismissed against 37 content-critique claims,
+655 s). The floor of 8 sits in a wide gap: correct blocks at 5 and
+7 total claims, the false block at 37 content-critique claims.
+Run 004 had been stopped mid-flight; PASS 2 started from zero
+(all pass-1 artifacts and attempts wiped, 92 pending) under the
+fixed pipeline, logs `pass2-run-NNN.log`.
 run 003 (2026-07-23, 1913 s): 3 dispatched, 3 completed, 0 failed;
 Arita repaired (20 issues, 18 accepted, 17 resolved, 6 findings,
 644 s); ArtsEpiphany unchanged (0 claims from 7/7 critics, 8 s;
