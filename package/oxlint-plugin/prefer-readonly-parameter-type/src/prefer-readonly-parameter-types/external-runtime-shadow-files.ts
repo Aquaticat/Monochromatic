@@ -102,6 +102,7 @@ export function externalRuntimeShadowFiles({
           return `${stem}${suffix}`;
         },)
         .filter(function runtimeFileExists(runtimePath,): boolean {
+          // oxlint-disable-next-line no-restricted-syntax/no-sync -- External semantic setup validates reached shipped runtime siblings synchronously.
           return existsSync(runtimePath,);
         },)
         .slice(
