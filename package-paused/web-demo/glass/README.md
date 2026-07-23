@@ -66,11 +66,10 @@ Known gaps already deferred by decision or left unbuilt:
   all verification ran on the WebGL2 fallback under software
   rendering.
 
-The package stays in the workspace,
-so lint,
-types,
-and unit tests keep running
-(all green at pause time).
+The package lives in `package-paused/`,
+outside the `package/*/*` workspace and mise config-root globs,
+so no gates run for it
+(all were green at pause time).
 
 ## What it demonstrates
 
