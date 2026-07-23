@@ -20,7 +20,7 @@ The file count and thread count are misleading for this incident.
 The run paid for one cold,
 whole-project analysis in the project-owned
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` JavaScript rule.
-An unchanged repeat of the exact mise task finished in 1.0 seconds.
+An unchanged repeat of the exact mise task in the disposable worktree finished in 1.0 seconds.
 
 ## Root cause
 
@@ -40,7 +40,7 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--type-awar
 """
 ```
 
-The slow work is not Oxlint's Go type-aware engine.
+Oxlint's type-aware and type-check path is not the dominant cost.
 The project-owned JavaScript rule opens its own TypeScript 7 synchronous API.
 For every linted TypeScript file,
 `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types.ts:154-181`
@@ -88,8 +88,10 @@ The current cache scope held 337 indexed source entries.
 In the 62.9-second run,
 the first `openSemanticFile` record appeared at `02:09:21.909Z`.
 The second appeared at `02:10:23.792Z`.
-The first file therefore consumed 61.883 seconds building the project index;
-the remaining file callbacks reused the process-local final index.
+The 61.883-second interval between those records strongly locates the delay in the first callback's project-index
+initialization.
+It does not attribute every millisecond exclusively to that source file.
+The remaining file callbacks reused the process-local final index.
 
 `effect-final-index-cache.ts:99-108` explains that within-process reuse:
 
@@ -121,8 +123,9 @@ but does not distinguish among these immediate triggers:
 - first run after cache deletion or schema rotation.
 
 A disposable-worktree probe confirmed the invalidation mechanism.
-A project file-list change rotated `fileListDigest` and produced a 64.3-second rebuild.
-With no further source change,
+Between cache populations,
+the recorded `fileListDigest` changed and the next custom-rule run rebuilt in 64.3 seconds.
+With no further source change in that worktree,
 the same custom-rule run finished in 894 milliseconds,
 and the exact mise task finished in 1.0 seconds.
 
@@ -312,7 +315,7 @@ export default {
 
 ### Working catalog
 
-- Exact task,
+- Exact task in the disposable worktree,
   unchanged immediately after cache population:
   1.0 seconds,
   13 files,
@@ -342,18 +345,19 @@ export default {
   479 rules.
 - Custom rule enabled,
   type-aware and type-check disabled,
-  after file-list invalidation:
+  after the observed file-list digest rotation:
   64.3 seconds,
   13 files,
   428 rules.
 - The first semantic callback occupied 61.883 seconds of the supplied run.
 - The cold logger contained 21,616 intrinsic-effect-query records and 8 `spawn ENOMEM` records.
 
-The controlled comparison isolates one rule.
+The controlled comparison isolates one rule as the dominant cost.
 Retaining Oxlint type-aware and type-check analysis while disabling only that rule changed 62.9 seconds to
 396 milliseconds.
 Conversely,
 retaining the custom rule while disabling Oxlint type-aware and type-check analysis still took 64.3 seconds.
+This comparison does not benchmark `oxlint-tsgolint` independently.
 
 ### Earlier measured behavior
 
@@ -388,8 +392,10 @@ End-to-end `mise run //package/dev-script/file-enforcer:lint:oxlint` measured:
 
 ### Repeat after semantic inputs stabilize
 
-The current package task fell from 62.9 seconds to 1.0 second on an unchanged repeat.
-This is the normal path after a legitimate cache rebuild.
+In the disposable worktree,
+the exact package task fell from the cold-run range to 1.0 second on an unchanged repeat.
+This verifies the expected warm path for the observed cache identity,
+not a universal time guarantee.
 
 Tradeoff:
 the first run after analyzer,
@@ -410,10 +416,16 @@ mutation-contract,
 and external-effect enforcement for that run.
 It is not an acceptable permanent package configuration.
 
-### Preserve the persistent cache
+### Preserve the persistent cache as operational guidance
 
 Keep `node_modules/.cache/prefer-readonly-parameter-type` across ordinary lint invocations.
 The cache is content-addressed and validates its dependency surfaces before reuse.
+This does not prevent legitimate analyzer,
+project,
+declaration,
+compiler,
+lockfile,
+or dependency invalidations.
 
 Tradeoff:
 stale identities remain until cache maintenance evicts them,
@@ -467,8 +479,10 @@ Check these surfaces in order:
     Incremental caching avoids repeated rebuilds,
     but does not reduce a legitimate cold rebuild.
 
-Whole-repo serial warm lint above the 60-second goal remains tracked in issue #374.
-Package fanout with per-child worker pinning remains the repository-wide path.
+Prior note from the 2026-07-20 investigation,
+not reverified during this incident:
+whole-repo serial warm lint above the 60-second goal was tracked in issue #374.
+The current `mise.toml:831` still pins repository-wide lint fanout children with `OXLINT_THREADS = "1"`.
 
 ## Upstream filing decision
 
