@@ -101,6 +101,24 @@ export function extractRawParams(node: ReadonlyRecord,): readonly ReadonlyRecord
 }
 
 /**
+ * Tests whether a record is a supported binding-pattern wrapper.
+ *
+ * @param node - candidate wrapper record.
+ *
+ * @returns whether wrapper carries one inner binding pattern.
+ *
+ * @example
+ * ```ts
+ * isBindingPatternWrapper({ type: 'RestElement' });
+ * ```
+ */
+function isBindingPatternWrapper(node: ReadonlyRecord,): boolean {
+  return (node.type === 'AssignmentPattern')
+    || (node.type === 'RestElement')
+    || (node.type === 'TSParameterProperty');
+}
+
+/**
  * Removes binding-pattern wrapper nodes whose child carries the real binding.
  *
  * Handles default values, rest wrappers, and TypeScript parameter properties.
@@ -120,17 +138,7 @@ export function unwrapBindingPattern(pattern: ReadonlyRecord,): ReadonlyRecord {
    * Mutable cursor object avoids function-root `let` while walking wrapper nodes iteratively.
    */
   const cursor = { current: pattern, };
-  while (
-    (cursor.current
-      .type
-      === 'AssignmentPattern')
-    || (cursor.current
-      .type
-      === 'RestElement')
-    || (cursor.current
-      .type
-      === 'TSParameterProperty')
-  ) {
+  while (isBindingPatternWrapper(cursor.current,)) {
     /**
      * Current wrapper candidate for this loop iteration.
      */
