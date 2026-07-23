@@ -39,6 +39,7 @@ import {
   externalCallableEffect,
   type ExternalEffectIndexBuilder,
 } from './external-callable-effect.ts';
+import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 
 /**
@@ -412,8 +413,11 @@ export function createDemandDrivenEffectIndex(
         ?? new Set<number>();
       if ((!foreignFallback.required) && (partialForeignParameterIndexes.size > 0)) {
         foreignFallback.required = true;
-        indexedSourceFiles.forEach(function loadCompleteInboundCandidate(candidate,): void {
-          ensureSource(candidate,);
+        foreignByCallable.current = completeForeignBorrowedGraph({
+          project,
+          indexedSourceFiles,
+          analysisBudget,
+          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
       }
       /**
