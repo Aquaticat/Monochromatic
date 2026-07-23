@@ -293,6 +293,26 @@ MILESTONE THREE IS THE REAL-CORPUS PRODUCTION PASS. Execution
 follows the milestone-two accumulation pattern: budgeted runs,
 per-entry artifacts outside the repo (UNLICENSED corpus) under
 `~/temp/translation-repair-corpus/`, content-free tallies here.
+DRIVER BUILT AND LAUNCHED (2026-07-23):
+`~/temp/translation-repair-corpus/corpus-pass-driver.ts` (home temp,
+not the session scratchpad, because milestone-two's scratchpad
+drivers evaporated with their sessions and the user grades from
+these artifacts later). It imports the built dist as a real
+consumer, lists people at the pinned SHA, excludes `tdor` (measured:
+neither `page.md` nor `page.en.md` at the pin, so the universe is
+exactly the 92 pairs), skips entries with existing artifacts,
+orders by fewest attempts then listing order, dispatches while
+elapsed < 25 min with 4-minute per-call deadlines and a 45-minute
+plain-timer outer net (never `AbortSignal.timeout` composition on
+Node 26), roster all seven critics and panelists, GLM-5.2 editor,
+GLM-5.2/Qwen/Kimi checkers, `perModelConcurrency: 1`, and writes
+one full artifact JSON per entry (completion marker) plus a TALLY
+stdout line per entry (status, issue counts, findings, wall).
+Plan mode (`--plan`, zero quota) verified: 92 pending.
+Run 001 launched 2026-07-23 ~14:40 local, log
+`~/temp/translation-repair-corpus/run-001.log`.
+Per-run procedure: read TALLY lines, append content-free run record
+here, commit, push, relaunch until every entry has an artifact.
 
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
