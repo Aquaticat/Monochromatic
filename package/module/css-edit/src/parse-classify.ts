@@ -95,12 +95,14 @@ function probeDeclarationShape({
      * Cursor scanning past trivia between the ident and a possible colon.
      */
     let probe = start + 1;
-    while ((tokens[probe] !== undefined) && isTriviaToken(tokens[probe],))
-      probe += 1;
     /**
-     * First non-trivia token after the candidate property name.
+     * Token at the probe cursor, refreshed as trivia is skipped.
      */
-    const candidate = tokens[probe];
+    let candidate = tokens[probe];
+    while ((candidate !== undefined) && isTriviaToken(candidate,)) {
+      probe += 1;
+      candidate = tokens[probe];
+    }
     if ((candidate === undefined) || (!isTokenColon(candidate,)))
       return NOT_DECLARATION_SHAPED;
     /**

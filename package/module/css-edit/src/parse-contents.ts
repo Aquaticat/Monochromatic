@@ -299,8 +299,14 @@ export function consumeContents({
        * Exclusive end of the trivia run.
        */
       let runEnd = index + 1;
-      while ((tokens[runEnd] !== undefined) && isTriviaToken(tokens[runEnd],))
+      /**
+       * Token at the trivia scan cursor, refreshed as the run advances.
+       */
+      let runToken = tokens[runEnd];
+      while ((runToken !== undefined) && isTriviaToken(runToken,)) {
         runEnd += 1;
+        runToken = tokens[runEnd];
+      }
       children.push({
         kind: 'trivia',
         tokens: tokens.slice(
