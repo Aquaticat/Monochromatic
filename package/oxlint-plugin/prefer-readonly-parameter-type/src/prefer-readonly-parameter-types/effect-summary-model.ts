@@ -86,11 +86,15 @@ export type CallbackRelation = {
  */
 export type CallEdge = {
   readonly calleeKey: string;
+  readonly calleeFileName: string;
   readonly arguments: readonly (readonly number[])[];
   readonly foreignArguments: readonly (readonly number[])[];
   readonly directForeignArguments: readonly boolean[];
   readonly foreignInbound: boolean;
   readonly callbackKeys: readonly (
+    string | typeof OWNED_CALLABLE_UNAVAILABLE
+  )[];
+  readonly callbackFileNames: readonly (
     string | typeof OWNED_CALLABLE_UNAVAILABLE
   )[];
 };

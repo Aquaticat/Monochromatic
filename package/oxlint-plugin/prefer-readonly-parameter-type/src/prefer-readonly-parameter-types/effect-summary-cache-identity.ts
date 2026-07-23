@@ -30,7 +30,7 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
  * dependency-closure snapshots, so one changed file invalidates only the
  * entries whose recorded closures contain it.
  */
-export const EFFECT_CACHE_SCHEMA = 2;
+export const EFFECT_CACHE_SCHEMA = 3;
 
 /**
  * Process memo for analyzer implementation digest.

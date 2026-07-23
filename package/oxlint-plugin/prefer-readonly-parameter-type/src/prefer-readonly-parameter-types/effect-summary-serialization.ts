@@ -36,8 +36,9 @@ export type SerializedCallbackKey =
 /**
  * JSON-safe call edge.
  */
-export type SerializedCallEdge = Omit<CallEdge, 'callbackKeys'> & {
+export type SerializedCallEdge = Omit<CallEdge, 'callbackKeys' | 'callbackFileNames'> & {
   readonly callbackKeys: readonly SerializedCallbackKey[];
+  readonly callbackFileNames: readonly SerializedCallbackKey[];
 };
 
 /**
@@ -175,6 +176,8 @@ export function serializeEffectSummaries(
               ...edge,
               callbackKeys: edge.callbackKeys
                 .map(serializeCallbackKey,),
+              callbackFileNames: edge.callbackFileNames
+                .map(serializeCallbackKey,),
             };
           },),
         },
@@ -236,6 +239,8 @@ export function deserializeEffectSummaries(
           return {
             ...edge,
             callbackKeys: edge.callbackKeys
+              .map(deserializeCallbackKey,),
+            callbackFileNames: edge.callbackFileNames
               .map(deserializeCallbackKey,),
           };
         },),

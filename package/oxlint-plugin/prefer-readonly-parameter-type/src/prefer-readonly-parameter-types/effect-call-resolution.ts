@@ -4,9 +4,10 @@
  * @module
  */
 
-import type {
-  Checker,
-  Project,
+import {
+  type Checker,
+  type Project,
+  SymbolFlags,
 } from 'typescript/unstable/sync';
 import type { Node, } from 'typescript/unstable/ast';
 import {
@@ -264,10 +265,24 @@ export function callableDeclaration({
       : project.checker
         .getSymbolAtLocation(cursor.current,);
     /**
+     * Import and re-export aliases followed to exact value declaration.
+     */
+    const aliasedSymbol = (symbol !== undefined)
+      && ((symbol.flags & SymbolFlags.Alias) !== 0)
+      ? project.checker.getAliasedSymbol(symbol,)
+      : symbol;
+    /**
+     * Resolved symbol unless alias target itself is unavailable.
+     */
+    const declarationSymbol = (aliasedSymbol === undefined)
+      || project.checker.isUnknownSymbol(aliasedSymbol,)
+      ? symbol
+      : aliasedSymbol;
+    /**
      * Preferred value declaration handle, with first declaration fallback.
      */
-    const handle = symbol?.valueDeclaration
-      ?? symbol?.declarations
+    const handle = declarationSymbol?.valueDeclaration
+      ?? declarationSymbol?.declarations
       .at(0,);
     /**
      * Resolved declaration in current project.

@@ -164,6 +164,7 @@ function isCallEdge({
 }): boolean {
   if ((!isRecord(value,))
     || (!isCacheString(value.calleeKey,))
+    || (!isCacheString(value.calleeFileName,))
     || (!Array.isArray(value.arguments,))
     || (!isArgumentRoots({
       value: value.arguments,
@@ -176,6 +177,7 @@ function isCallEdge({
     },))
     || (!Array.isArray(value.directForeignArguments,))
     || (!Array.isArray(value.callbackKeys,))
+    || (!Array.isArray(value.callbackFileNames,))
     || ((typeof value.foreignInbound) !== 'boolean'))
     return false;
   /**
@@ -192,11 +194,16 @@ function isCallEdge({
     && (value.callbackKeys
       .length
       === arity)
+    && (value.callbackFileNames
+      .length
+      === arity)
     && value.directForeignArguments
     .every(function booleanFlag(flag,): boolean {
       return (typeof flag) === 'boolean';
     },)
     && value.callbackKeys
+    .every(isCallbackKey,)
+    && value.callbackFileNames
     .every(isCallbackKey,);
 }
 

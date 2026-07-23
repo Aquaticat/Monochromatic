@@ -244,6 +244,73 @@ await describe({
       },
     },),
     it({
+      name: 'invalidates a caller through a semantic edge without a module import',
+      fn: async () => {
+        using projectRoot = disposableFixtureRoot();
+        /** Persistent cache isolated from source files. */
+        const cacheRoot = join(projectRoot.path, '.effect-cache',);
+        /** Active global-script caller source. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Global-script callee source reached without import syntax. */
+        const helperPath = join(projectRoot.path, 'helper.ts',);
+        /** Caller relying on global declaration from sibling script. */
+        const inputSource = 'function globalCaller(value: { text: string; },): string { return globalInspect(value); }\n';
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["*.ts"]}\n',
+        );
+        writeFileSync(inputPath, inputSource,);
+        writeFileSync(
+          helperPath,
+          'function globalInspect(value: { text: string; },): string { return value.text; }\n',
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const coldSession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        buildEffectSummaryIndex({
+          project: coldSession.project,
+          activeSourceFile: coldSession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        closeSemanticBridge();
+        writeFileSync(
+          helperPath,
+          "function globalInspect(value: { text: string; },): string { value.text = 'changed'; return value.text; }\n",
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const warmSession = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        const warmIndex = buildEffectSummaryIndex({
+          project: warmSession.project,
+          activeSourceFile: warmSession.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Caller declaration whose cached edge depends on helper semantics. */
+        const declaration = warmSession.nodeAtOffset(inputSource.indexOf('globalCaller',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(declaration,))
+          throw new Error('Expected global caller declaration.',);
+        /** Rebuilt caller summary receiving changed helper effect. */
+        const summary = warmIndex.get(declaration,);
+        if (summary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected global caller effect summary.',);
+        /** Counters proving semantic edge invalidated both reached sources. */
+        const stats = effectSummaryCacheStats();
+        expect(stats.persistentSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(2,);
+        expect([...summary.referentMutatedParameterIndexes,],).toEqual([0,],);
+        releaseCycle();
+      },
+    },),
+    it({
       name: 'keeps a runtime-variable dynamic import out of every closure',
       fn: async () => {
         using projectRoot = disposableFixtureRoot();

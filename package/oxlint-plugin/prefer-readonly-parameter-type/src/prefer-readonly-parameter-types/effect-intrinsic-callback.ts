@@ -161,6 +161,8 @@ export function addIntrinsicCallbackEffects({
     summary.calls
       .push({
         calleeKey: callableKey(callback,),
+        calleeFileName: callback.getSourceFile()
+          .fileName,
         arguments: callbackSources,
         foreignArguments: callbackSources,
         directForeignArguments: callback.parameters
@@ -170,6 +172,10 @@ export function addIntrinsicCallbackEffects({
         foreignInbound,
         callbackKeys: callback.parameters
           .map(function noNestedCallback(): typeof OWNED_CALLABLE_UNAVAILABLE {
+            return OWNED_CALLABLE_UNAVAILABLE;
+          },),
+        callbackFileNames: callback.parameters
+          .map(function noNestedCallbackFile(): typeof OWNED_CALLABLE_UNAVAILABLE {
             return OWNED_CALLABLE_UNAVAILABLE;
           },),
       },);

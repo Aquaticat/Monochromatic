@@ -28,6 +28,10 @@ export type EffectDependencyClosureResolver = {
     readonly fileName: string;
     readonly edges: EffectClosureEdges;
   }) => void;
+  readonly includeDirectDependencies: (options: {
+    readonly fileName: string;
+    readonly dependencies: readonly string[];
+  }) => void;
   readonly closureFor: (fileName: string) => EffectDependencyClosure;
 };
 
@@ -153,6 +157,27 @@ export function createDependencyClosureResolver({
       edgesByFile.set(
         fileName,
         edges,
+      );
+    },
+    includeDirectDependencies({
+      fileName,
+      dependencies,
+    },): void {
+      /**
+       * Module-reference edges resolved for current source.
+       */
+      const current = edgesFor(fileName,);
+      if (!current.resolved)
+        return;
+      edgesByFile.set(
+        fileName,
+        {
+          resolved: true,
+          directDependencies: [...new Set([
+            ...current.directDependencies,
+            ...dependencies,
+          ],),].toSorted(),
+        },
       );
     },
     closureFor(fileName: string,): EffectDependencyClosure {

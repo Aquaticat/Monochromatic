@@ -115,9 +115,22 @@ export function addOwnedCallEdge({
           : mutatedPropertyNames,
       },);
     },);
+  /**
+   * Owned callback declarations paired with argument positions.
+   */
+  const callbacks = call.arguments
+    .map(function callbackDeclaration(argument,) {
+      return callableDeclaration({
+        project,
+        node: argument,
+        ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+      },);
+    },);
   summary.calls
     .push({
     calleeKey: callableKey(callee,),
+    calleeFileName: callee.getSourceFile()
+      .fileName,
     arguments: argumentIndexes,
     foreignArguments: allArgumentIndexes,
     directForeignArguments: call.arguments
@@ -128,19 +141,18 @@ export function addOwnedCallEdge({
         },);
       },),
     foreignInbound,
-    callbackKeys: call.arguments
-      .map(function callbackKey(argument,) {
-        /**
-         * Owned callback declaration for current argument.
-         */
-        const callback = callableDeclaration({
-          project,
-          node: argument,
-          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-        },);
+    callbackKeys: callbacks
+      .map(function callbackKey(callback,) {
         return callback === OWNED_CALLABLE_UNAVAILABLE
           ? OWNED_CALLABLE_UNAVAILABLE
           : callableKey(callback,);
+      },),
+    callbackFileNames: callbacks
+      .map(function callbackFileName(callback,) {
+        return callback === OWNED_CALLABLE_UNAVAILABLE
+          ? OWNED_CALLABLE_UNAVAILABLE
+          : callback.getSourceFile()
+            .fileName;
       },),
   },);
 }
