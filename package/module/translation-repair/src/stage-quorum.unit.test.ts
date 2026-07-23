@@ -11,15 +11,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  JsonSchemaResponseFormat,
-  SyntheticClient,
-} from './chat-contract.ts';
-import { gatherStageVoices, } from './stage-quorum.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  gatherStageVoices,
+  type JsonSchemaResponseFormat,
+  type SyntheticClient,
+  type SyntheticModelId,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Logger for the gathers under test.

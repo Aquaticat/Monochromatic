@@ -9,12 +9,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   estimateRequestWeight,
   SYNTHETIC_BASELINE_MODEL_ID,
   SYNTHETIC_MODELS,
-} from './synthetic-catalog.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: estimateRequestWeight.name,

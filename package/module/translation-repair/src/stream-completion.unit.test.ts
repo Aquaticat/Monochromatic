@@ -9,9 +9,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { MalformedCompletionError, } from './completion-shape.ts';
-import { extractStreamedCompletion, } from './stream-completion.ts';
+import {
+  extractStreamedCompletion,
+  MalformedCompletionError,
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: extractStreamedCompletion.name,

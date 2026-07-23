@@ -10,18 +10,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { buildDocumentNodes, UnpositionedNodeError, } from './document-node.ts';
 import {
+  buildDocumentNodes,
   buildFootnoteGraph,
-  scanFullwidthMarkers,
-  scanGfmReferenceLiterals,
-} from './footnote-graph.ts';
-import {
   MdxParseError,
   parseMarkdownBody,
   parseMdxBody,
-} from './parse-mdx.ts';
+  scanFullwidthMarkers,
+  scanGfmReferenceLiterals,
+  UnpositionedNodeError,
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: scanFullwidthMarkers.name,

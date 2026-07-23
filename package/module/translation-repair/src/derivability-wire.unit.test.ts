@@ -13,13 +13,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   buildDerivabilityMessages,
   DERIVABILITY_RESPONSE_FORMAT,
   DERIVABILITY_VERDICTS,
   isDerivabilityVerdict,
-} from './derivability-wire.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented zh source the probe judges against.

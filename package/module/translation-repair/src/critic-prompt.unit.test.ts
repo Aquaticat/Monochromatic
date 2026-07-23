@@ -12,12 +12,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { buildCriticMessages, } from './critic-prompt.ts';
 import {
+  buildCriticMessages,
   ISSUE_CATEGORIES,
   ISSUE_SEVERITIES,
-} from './issue-taxonomy.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented zh source shown to critics.

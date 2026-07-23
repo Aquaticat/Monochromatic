@@ -10,18 +10,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type {
-  AdjudicatedIssue,
-  AdjudicationStatus,
-} from './adjudicate-model.ts';
 import {
+  type AdjudicatedIssue,
+  type AdjudicationStatus,
   applyPatchOperations,
+  deriveEditableEnvelopes,
   EnvelopeOverlapError,
-} from './apply-patch.ts';
-import { hashContent, } from './document-node.ts';
-import type { SpanAnchor, } from './issue-model.ts';
-import { deriveEditableEnvelopes, } from './patch-model.ts';
+  hashContent,
+  type SpanAnchor,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented translation every fixture cuts envelopes from.

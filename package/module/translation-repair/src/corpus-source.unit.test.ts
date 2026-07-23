@@ -25,12 +25,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import spawn from 'nano-spawn';
-
 import {
   CorpusReadError,
   listCorpusPeople,
   readCorpusFile,
-} from './corpus-source.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Real git binary for fixture setup and pinned reads;

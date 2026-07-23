@@ -12,11 +12,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   prepareBenchmarkEntry,
-} from './prepare-entry.ts';
-import type { SeededErrorSpec, } from './seeded-error.ts';
+  type SeededErrorSpec,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Invented zh source of the prepared entry.

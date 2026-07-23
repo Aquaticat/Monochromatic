@@ -12,13 +12,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   extractCompletion,
   MalformedCompletionError,
   readUsage,
   SyntheticHttpError,
-} from './completion-shape.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Character count of the body excerpt embedded in thrown HTTP errors,

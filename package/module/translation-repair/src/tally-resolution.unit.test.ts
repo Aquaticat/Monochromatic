@@ -10,12 +10,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import { isResolutionReportWire, } from './resolution-wire.ts';
 import {
+  isResolutionReportWire,
   resolveResolutionChecks,
   tallyResolutionChecks,
-} from './tally-resolution.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Issue ids in prompt numbering order for resolution tests.

@@ -10,13 +10,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
-import type { CriticAttemptRecord, } from './scorecard.ts';
 import {
   COMPLETION_TOKEN_CEILING,
+  type CriticAttemptRecord,
   isRetryableAttempt,
   isTruncatedAttempt,
-} from './attempt-retry.ts';
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Baseline schema-mismatch record corruptions derive from.

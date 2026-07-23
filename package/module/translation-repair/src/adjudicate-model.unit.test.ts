@@ -10,11 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   isPanelVoteState,
   PANEL_VOTE_STATES,
-} from './adjudicate-model.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: isPanelVoteState.name,

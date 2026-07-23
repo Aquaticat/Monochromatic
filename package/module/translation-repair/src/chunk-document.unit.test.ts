@@ -12,12 +12,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   alignDocumentSections,
   chunkByHeadings,
-} from './chunk-document.ts';
-import { parseDocument, } from './parse-document.ts';
+  parseDocument,
+} from '../dist/final/neutral/index.mjs';
 
 /**
  * Two-section fixture with front matter and a preamble paragraph.

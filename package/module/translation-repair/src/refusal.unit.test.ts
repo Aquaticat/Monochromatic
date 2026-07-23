@@ -9,11 +9,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-
 import {
   detectRefusalShape,
   REFUSAL_SCAN_WINDOW,
-} from './refusal.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: detectRefusalShape.name,
