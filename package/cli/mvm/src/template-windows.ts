@@ -12,6 +12,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 import {
   tagged,
@@ -280,7 +281,25 @@ async function guestExecWait({
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const { pid, } = (JSON.parse(startResult,) as { return: { pid: number; }; }).return;
 
-  while (true) {
+  /**
+   * Serialised status request reused for every poll of this guest process.
+   */
+  const statusPayload = JSON.stringify({
+    execute: 'guest-exec-status',
+    arguments: { pid, },
+  },);
+  /**
+   * Latest guest status; the `exited` flag is the polling continuation condition.
+   */
+  const polling: {
+    current: {
+      exited: boolean;
+      exitcode?: number;
+    };
+  } = { current: { exited: false, }, };
+  while (!(polling
+    .current
+    .exited)) {
     /**
      * Raw `guest-exec-status` response polled each iteration until the process exits.
      */
@@ -289,33 +308,29 @@ async function guestExecWait({
       args: [
         'qemu-agent-command',
         fullName,
-        JSON.stringify({
-          execute: 'guest-exec-status',
-          arguments: { pid, },
-        },),
+        statusPayload,
       ],
     },);
     /**
      * Parsed status payload exposing the `exited` flag and optional `exitcode`.
      */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
-    const status = (JSON
-      .parse(statusResult,) as { return: {
-        exited: boolean;
-        exitcode?: number;
-      }; })
-      .return;
-    if (status.exited)
-      return status.exitcode
-        ?? 0;
-    // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
-    await new Promise(function pollDelay(resolve,) {
-      setTimeout(
-        resolve,
-        GUEST_EXEC_POLL_MS,
-      );
-    },);
+    const statusParsed = JSON.parse(statusResult,) as { return: {
+      exited: boolean;
+      exitcode?: number;
+    }; };
+    polling.current = statusParsed.return;
+    if (!(polling
+      .current
+      .exited)) {
+      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling delay
+      await wait(GUEST_EXEC_POLL_MS,);
+    }
   }
+  return polling
+    .current
+    .exitcode
+    ?? 0;
 }
 
 /**
