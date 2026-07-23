@@ -129,7 +129,7 @@ await describe({
     },),
 
     it({
-      name: 'keeps overlapping cross-family claims in separate clusters',
+      name: 'clusters overlapping cross-family claims for panel disposal',
       fn: async () => {
         /** Accuracy claim over one region. */
         const accuracy = claimWith({
@@ -147,7 +147,10 @@ await describe({
         },);
         /** Aggregation over both claims. */
         const { clusters, } = aggregateClaims({ claims: [accuracy, fluency,], },);
-        expect(clusters,).toHaveLength(2,);
+        // One PROPOSED merge; the panel's sameDefect vote disposes it
+        // (LLMs are part of the union algorithm, never the family gate).
+        expect(clusters,).toHaveLength(1,);
+        expect(clusters[0]?.members,).toHaveLength(2,);
       },
     },),
 

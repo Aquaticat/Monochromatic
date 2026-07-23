@@ -6,13 +6,13 @@ import {
   type IssueClaim,
   type SpanAnchor,
 } from './issue-model.ts';
-import { categoryFamily, } from './issue-taxonomy.ts';
 
 //region Claim aggregation
 // Cross-model dedupe and merge PROPOSAL only: identical claims collapse by
-// deterministic identity, and overlapping same-family claims cluster so an
-// adjudicator can dispose the merge (settled architecture: clustering never
-// decides). Claims stay atomic inside clusters, and provenance stays outside
+// deterministic identity, and overlapping claims cluster so an adjudicator
+// can dispose the merge (settled architecture: clustering never decides;
+// the LLM panel is part of the union algorithm, user directive 2026-07-23).
+// Claims stay atomic inside clusters, and provenance stays outside
 // the claim: the shell maps claim ids to proposers for calibration, never
 // for judging, because a real defect can arrive with exactly one proposer
 // (reference run: gpt-oss-120b was the sole finder of a planted seed).
@@ -182,10 +182,13 @@ function spansOverlap(
 
 /**
  * Whether two claims plausibly describe one defect:
- * same category family and evidence overlap on at least one span pair.
- * Severity never participates because critics grade the same defect
- * differently and adjudication re-grades anyway; cross-family overlaps stay
- * separate clusters so the panel sees them as distinct questions.
+ * evidence overlap on at least one same-side span pair.
+ * Neither category family nor severity participates: critics label one
+ * defect under different families (measured on real corpus artifacts:
+ * 62 overlapping cross-family issue pairs the old family gate kept from
+ * panel judgment) and grade it differently, and the panel's sameDefect
+ * disposal is the union algorithm's judging half, so proposals maximize
+ * recall and the panel decides.
  *
  * @param left - one claim under comparison
  *
@@ -207,13 +210,6 @@ function claimsShareDefect(
     readonly right: IssueClaim;
   },
 ): boolean {
-  /**
-   * Family of the left claim's category.
-   */
-  const leftFamily = categoryFamily({ category: left.category, },);
-  if (leftFamily !== categoryFamily({ category: right.category, },))
-    return false;
-
   return left.spans
     .some(function anyPairOverlaps(leftSpan,) {
     return right.spans
