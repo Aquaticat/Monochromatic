@@ -1,9 +1,9 @@
 # @monochromatic-dev/cli-mutation-test
 
-Container-native mutation testing framework built on oxc.
+Container-native mutation testing framework built on yuku.
 
 Replaces the StrykerJS-based `dev-script-mutation-test`:
-mutants are enumerated host-side with `oxc-parser` and applied by span splicing,
+mutants are enumerated host-side with `yuku-parser` and applied by span splicing,
 then executed in sharded disposable Podman containers with taint-aware re-runs.
 
 ## Trust model
@@ -81,6 +81,7 @@ drops, escape-class negations), not a weapon-regex port.
 ## Design record
 
 <https://github.com/Aquaticat/Monochromatic/issues/247#issuecomment-4887670850>
-(one correction: oxc-parser JS bindings return UTF-16 string offsets, so the
+(one correction: parser JS bindings, oxc-parser then and yuku-parser now,
+return UTF-16 string offsets, so the
 splicer works on JS string slices, not Buffers).
 Integration expectations live in `package/cli/mutation-test.fixture`.

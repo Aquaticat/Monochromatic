@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-mutation-test",
-  "description": "Container-native mutation testing framework built on oxc: sharded disposable Podman containers with taint-aware re-runs.",
+  "description": "Container-native mutation testing framework built on yuku: sharded disposable Podman containers with taint-aware re-runs.",
   "type": "module",
   "private": true,
   "main": "src/index.ts",
