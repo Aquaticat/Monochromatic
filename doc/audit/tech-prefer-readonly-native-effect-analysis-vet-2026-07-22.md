@@ -53,6 +53,7 @@ or reported as opaque.
 - Fail closed when parameter-reachable effects cannot be derived or isolated.
 - Preserve required TypeScript 7 semantic behavior and the existing rule corpus.
 - Avoid handwritten external-effect catalogs.
+- Do not fork or contribute to Oxlint or `tsgolint`.
 - Support repository Linux x64,
   macOS arm64,
   and Windows x64 lint hosts.
@@ -210,11 +211,12 @@ Base category:
 project-owned fork of inspectable open-source local technology.
 
 Screening:
-retained only as a control candidate.
+exited on the project-governance constraint.
 Oxc provides JavaScript plugins for external rules;
 its contributor docs say the project does not plan new Rust-based plugins.
-A project rule in native Rust therefore requires a maintained custom Oxlint build,
-and it still lacks TypeScript-Go checker parity unless a second semantic boundary is added.
+A project rule in native Rust therefore requires a custom Oxlint build,
+which this project will neither maintain nor propose upstream.
+It also lacks TypeScript-Go checker parity unless a second semantic boundary is added.
 
 ### Project-owned `tsgolint` fork
 
@@ -225,12 +227,14 @@ Base category:
 project-owned fork of inspectable open-source local technology.
 
 Screening:
-serious alternative.
+exited on the project-governance constraint.
 It runs Go rules directly against TypeScript-Go AST and checker objects,
 shares the program used by Oxlint type-aware linting,
 and integrates through `OXLINT_TSGOLINT_PATH`.
 It has no dynamic custom-rule API;
-adding this project rule requires a maintained binary fork.
+adding this project rule requires a fork or upstream contribution,
+and this project will do neither.
+Its 396-millisecond rule-disabled baseline remains useful evidence for checker-local execution.
 
 ### `ttsc` contributor rule
 
@@ -248,6 +252,8 @@ and a project-rule surface over the in-process TypeScript-Go checker.
 It is a separate lint host rather than Oxlint's existing `tsgolint` backend,
 so consumer integration may duplicate TypeScript program setup.
 Its contributor binary build and cache behavior must be included in the 10-second cold measurement.
+"Contributor rule" is `ttsc` API terminology:
+project rule source would remain in this repository and would not be contributed to Oxlint or `tsgolint`.
 
 ### STC
 
@@ -396,10 +402,10 @@ or a maintained TypeScript-Go-derived binary.
 - Pure Oxc Rust:
   fail.
 - Native Oxlint fork:
-  fail unless paired with a TypeScript-Go semantic boundary.
+  fail on project governance and semantic authority.
 - `tsgolint` fork:
-  pass at the checker-access level;
-  effect-rule corpus parity remains pending.
+  fail on project governance,
+  despite passing at the checker-access level.
 - `ttsc` contributor:
   pass at the checker-access level;
   effect-rule corpus parity remains pending.
@@ -452,7 +458,7 @@ Native artifact provenance remains pending for any adopted distribution.
 
 Consumer-boundary execution has not yet validated the required matrix.
 
-## Pros and cons of surviving directions
+## Architecture tradeoffs
 
 ### Demand-driven incumbent bridge
 
@@ -486,7 +492,7 @@ Cons:
 - an asynchronous addon cannot satisfy Oxlint's synchronous rule callback;
 - prebuilt release provenance and platform coverage become project responsibilities.
 
-### Project-owned `tsgolint` fork
+### Excluded `tsgolint` fork
 
 Pros:
 
@@ -497,9 +503,11 @@ Pros:
 
 Cons:
 
-- requires carrying a fork because upstream limits new rules to its `typescript-eslint` scope;
+- violates the no-fork and no-contribution constraint;
 - TypeScript-Go shims use `go:linkname` and must track compiler versions;
 - external shipped JavaScript implementation inference still needs project-owned design.
+
+This path is excluded regardless of technical score.
 
 ### `ttsc` contributor rule
 
@@ -520,30 +528,26 @@ Cons:
 ## Preliminary ordering for prototype investment
 
 This is not an adoption recommendation.
-It orders which prototype should be built first:
+It orders the viable prototypes:
 
-1.  Project-owned `tsgolint` rule or minimal fork.
+1.  Demand-driven incumbent JavaScript bridge.
 2.  `ttsc` contributor rule.
-3.  Demand-driven incumbent JavaScript bridge.
-4.  Rust Node-API hybrid.
-5.  Native Oxlint fork.
-6.  Pure Oxc Rust analyzer.
+3.  Rust Node-API hybrid.
 
-`tsgolint` precedes `ttsc` because both place Go analysis beside TypeScript-Go,
-but `tsgolint` already shares the exact Oxlint type-aware command.
-That command's rule-disabled baseline measured 396 milliseconds.
+The incumbent bridge precedes `ttsc` because it already preserves diagnostics and the exact Oxlint plugin boundary.
+The measured 181.7-millisecond project opening also shows that eager 337-source indexing,
+not bridge startup alone,
+caused the demonstrated 62.9-second cold path.
+Demand-driven traversal should therefore be tested before replacing the integration.
 
-`ttsc` precedes the incumbent bridge because it provides a supported direct-checker contributor boundary,
-while the incumbent retains synchronous RPC.
+`ttsc` precedes Rust Node-API because it supplies direct TypeScript-Go checker access through a supported extension API.
+Rust Node-API supplies computation and transport,
+but not TypeScript semantic authority.
 
-The incumbent precedes Rust Node-API because it already preserves semantic parity;
-a Rust hybrid does not remove checker RPC without an additional TypeScript-Go modification.
-
-Rust Node-API precedes a native Oxlint fork because it can remain a loadable project JavaScript plugin,
-while a native Oxlint rule requires distributing a custom Oxlint binary.
-
-A native Oxlint fork precedes pure Oxc type checking because it could still call TypeScript-Go;
-the current Oxc checker explicitly performs no type checking.
+The `tsgolint` fork,
+native Oxlint fork,
+and upstream-contribution variants are excluded by project governance.
+Pure Oxc Rust is excluded by semantic incompatibility.
 
 ## Prototype gate
 
@@ -565,10 +569,14 @@ No candidate becomes recommendable until one disposable prototype proves:
   panic,
   or process-lifecycle diagnostics reach stderr.
 
-The first prototype should use direct TypeScript-Go rule execution,
-not Rust Node-API.
-That tests the highest-leverage hypothesis:
-removing JavaScript checker RPC while reusing the existing Oxlint type-aware program.
+The first prototype should make the incumbent JavaScript bridge demand driven,
+without changing Oxlint or `tsgolint`.
+That tests the demonstrated bottleneck directly:
+remove eager whole-project indexing while preserving the existing semantic and plugin boundaries.
+
+If synchronous checker RPC still prevents the target,
+the next prototype should use a project-owned `ttsc` extension invoked by the same Mise task.
+The task's measured user boundary must include `ttsc` program setup and contributor-binary generation.
 
 ## Scoring and sensitivity
 
@@ -579,7 +587,9 @@ No sensitivity matrix is meaningful before at least two candidates pass those ga
 ## Recommendation status
 
 No adoption recommendation.
-Current evidence answers the narrower question:
+The recommended next action is a demand-driven rewrite prototype through Oxlint's released JavaScript-plugin boundary.
 Rust can accelerate native effect-engine work,
 but Node-API alone does not address the measured architecture or preserve TypeScript semantics.
-Direct Go analysis beside TypeScript-Go is the stronger prototype direction.
+If the supported bridge cannot meet the target,
+a separate `ttsc` extension is the next candidate.
+No path may fork or seek changes to Oxlint or `tsgolint`.
