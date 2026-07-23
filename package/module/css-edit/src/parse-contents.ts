@@ -149,27 +149,14 @@ function consumeAtRule({
      */
     let index = start + 1;
 
-    while (true) {
+    while (index < tokens.length) {
     /**
      * Token at the scan cursor.
      */
     const token = tokens[index];
     if ((token === undefined) || isTokenEOF(token,)
       || ((depth === 0) && isTokenCloseCurly(token,)))
-    {
-      return {
-        node: {
-          kind: 'atRule',
-          atToken,
-          name: atData.value,
-          preludeTokens: tokens.slice(
-            start + 1,
-            index,
-          ),
-        },
-        nextIndex: index,
-      };
-    }
+      break;
 
     if (depth === 0) {
       if (isTokenSemicolon(token,)) {
@@ -225,6 +212,18 @@ function consumeAtRule({
     }
     index += 1;
     }
+    return {
+      node: {
+        kind: 'atRule',
+        atToken,
+        name: atData.value,
+        preludeTokens: tokens.slice(
+          start + 1,
+          index,
+        ),
+      },
+      nextIndex: index,
+    };
   })();
 }
 
@@ -273,23 +272,14 @@ export function consumeContents({
    */
   let index = start;
 
-  while (true) {
+  while (index < tokens.length) {
     /**
      * Token at the scan cursor.
      */
     const token = tokens[index];
 
-    if ((token === undefined) || isTokenEOF(token,)) {
-      if (insideBlock)
-        throw new CssParseError({
-          message: 'block reached end of input without its closing brace',
-          offset: token === undefined ? 0 : token[2],
-        },);
-      return {
-        children,
-        nextIndex: index,
-      };
-    }
+    if ((token === undefined) || isTokenEOF(token,))
+      break;
 
     if (isTokenCloseCurly(token,)) {
       if (!insideBlock)
@@ -309,15 +299,8 @@ export function consumeContents({
        * Exclusive end of the trivia run.
        */
       let runEnd = index + 1;
-      while (true) {
-        /**
-         * Token at the trivia scan cursor.
-         */
-        const runToken = tokens[runEnd];
-        if ((runToken === undefined) || (!isTriviaToken(runToken,)))
-          break;
+      while ((tokens[runEnd] !== undefined) && isTriviaToken(tokens[runEnd],))
         runEnd += 1;
-      }
       children.push({
         kind: 'trivia',
         tokens: tokens.slice(
@@ -383,6 +366,19 @@ export function consumeContents({
     children.push(rule,);
     index = consumed.nextIndex;
   }
+  /**
+   * EOF token at the terminal cursor, when tokenizer supplied one.
+   */
+  const terminalToken = tokens[index];
+  if (insideBlock)
+    throw new CssParseError({
+      message: 'block reached end of input without its closing brace',
+      offset: terminalToken === undefined ? 0 : terminalToken[2],
+    },);
+  return {
+    children,
+    nextIndex: index,
+  };
   })();
 }
 

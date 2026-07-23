@@ -95,30 +95,24 @@ function probeDeclarationShape({
      * Cursor scanning past trivia between the ident and a possible colon.
      */
     let probe = start + 1;
-    while (true) {
-      /**
-       * Token at the probe cursor.
-       */
-      const candidate = tokens[probe];
-      if (candidate === undefined)
-        return NOT_DECLARATION_SHAPED;
-      if (isTriviaToken(candidate,)) {
-        probe += 1;
-        continue;
-      }
-      if (!isTokenColon(candidate,))
-        return NOT_DECLARATION_SHAPED;
-      /**
-       * Parsed data of the ident token, holding the unescaped name.
-       */
-      const identData = tokenData(first,);
-      return {
-        shaped: true,
-        colonIndex: probe,
-        isCustomProperty: identData.value
-          .startsWith('--',),
-      };
-    }
+    while ((tokens[probe] !== undefined) && isTriviaToken(tokens[probe],))
+      probe += 1;
+    /**
+     * First non-trivia token after the candidate property name.
+     */
+    const candidate = tokens[probe];
+    if ((candidate === undefined) || (!isTokenColon(candidate,)))
+      return NOT_DECLARATION_SHAPED;
+    /**
+     * Parsed data of the ident token, holding the unescaped name.
+     */
+    const identData = tokenData(first,);
+    return {
+      shaped: true,
+      colonIndex: probe,
+      isCustomProperty: identData.value
+        .startsWith('--',),
+    };
   })();
 }
 
@@ -177,22 +171,13 @@ export function classifyRun({
       ? declarationShape.colonIndex + 1
       : start;
 
-    while (true) {
+    while (index < tokens.length) {
       /**
        * Token at the scan cursor.
        */
       const token = tokens[index];
-      if ((token === undefined) || isTokenEOF(token,)) {
-        if (declarationShape.shaped)
-          return {
-            outcome: 'declaration',
-            endExclusive: index,
-          };
-        throw new CssParseError({
-          message: 'qualified rule prelude reached end of input without a block',
-          offset: token === undefined ? 0 : token[2],
-        },);
-      }
+      if ((token === undefined) || isTokenEOF(token,))
+        break;
 
       if (depth === 0) {
         if (isTokenSemicolon(token,)) {
@@ -245,6 +230,19 @@ export function classifyRun({
         depth += 1;
       index += 1;
     }
+    if (declarationShape.shaped)
+      return {
+        outcome: 'declaration',
+        endExclusive: index,
+      };
+    /**
+     * EOF token at the terminal cursor, when tokenizer supplied one.
+     */
+    const terminalToken = tokens[index];
+    throw new CssParseError({
+      message: 'qualified rule prelude reached end of input without a block',
+      offset: terminalToken === undefined ? 0 : terminalToken[2],
+    },);
   })();
 }
 
