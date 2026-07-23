@@ -385,6 +385,14 @@ failed; Acheron repaired (48 issues, 46 accepted, 45 resolved, 7
 findings, 1012 s); AkiraComplex repaired (9 issues, 8 accepted, 6
 resolved, 3 findings, 491 s). Both reproduce their pass-1 statuses
 with nondeterministic count drift. Remaining 90.
+pass2 run 002 (2026-07-23, 1737 s): 2 dispatched, 2 completed, 0
+failed; Aniloviraw REPAIRED (44 issues, 40 accepted, 40 resolved,
+14 findings, 379 s): the false block reproduced a THIRD time (4
+votes, 48 content-critique claims) and the screen dismissed it in
+production, exactly as designed; Anilovr repaired (33 issues, 25
+accepted, 25 resolved, 13 findings, 1358 s; pass-1 drew 78 issues
+there, large but within observed critic-volume variance).
+Remaining 88.
 run 003 (2026-07-23, 1913 s): 3 dispatched, 3 completed, 0 failed;
 Arita repaired (20 issues, 18 accepted, 17 resolved, 6 findings,
 644 s); ArtsEpiphany unchanged (0 claims from 7/7 critics, 8 s;
