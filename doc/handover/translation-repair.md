@@ -425,6 +425,32 @@ Aniloviraw repaired, Anilovr measures thoroughness against its
 33-issue section-scale baseline with the user's 200+ as reference;
 log `sentinel-probe-2.log`). Pass 3 restarts from zero on ALL PASS
 plus a decisive Anilovr thoroughness gain.
+THIRD ITERATION (2026-07-23, commit `666d87602`), user question "is
+our union algorithm good" then directive "LLMs must act as part of
+union algorithms". Findings from code plus measurement over pass-2
+artifacts (192 issues, 3496 same-chunk issue pairs): exact dedupe
+can never merge cross-critic claims (free-text summaries differ),
+so clustering is the only cross-critic union; the LLM half already
+exists (panel ballots carry a sameDefect opinion per multi-member
+cluster, majority merges, silence and ties split conservatively
+because a wrong merge hides a defect), and the 243 same-family
+overlapping-but-separate issue pairs are the panel's judged splits
+working as designed. The real gap: the family gate in
+`claimsShareDefect` kept 62 overlapping cross-family pairs
+(accuracy vs terminology 23, accuracy vs fluency 12, accuracy vs
+extension 9...) from ever reaching panel judgment. Fix: proposals
+now arise from same-side span overlap alone; neither family nor
+severity pre-decides, the panel disposes every proposal. Also
+measured: only 3 of 192 issues carry single-side evidence, so the
+same-side overlap requirement is not a material union gap. KNOWN
+LIMIT recorded: disposal is binary per cluster (merge all members
+or split to singletons), so a widened mixed cluster judged "not one
+defect" splinters exactly as today, no regression; per-sub-group
+disposal is the recorded refinement if graded evidence demands it.
+Verification: 89 suites pass, oxlint 0/0, types clean. The running
+sentinel probe loaded the pre-union dist at process start and stays
+internally consistent; Anilovr gets one re-run on the final
+pipeline for the thoroughness gate before pass 3.
 pass2 run 002 (2026-07-23, 1737 s): 2 dispatched, 2 completed, 0
 failed; Aniloviraw REPAIRED (44 issues, 40 accepted, 40 resolved,
 14 findings, 379 s): the false block reproduced a THIRD time (4
