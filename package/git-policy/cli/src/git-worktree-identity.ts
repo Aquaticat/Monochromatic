@@ -9,6 +9,13 @@ import {
 import { parseGlobalOptions, } from './parse-global-options.ts';
 
 /**
+ * Metadata Git process reports target absence.
+ */
+const IDENTITY_METADATA_ABSENT: unique symbol = Symbol(
+  'Git worktree identity metadata is absent',
+);
+
+/**
  * Repository identity selected by effective Git global options.
  *
  * Canonical administrative paths make main-versus-linked classification stable
@@ -143,7 +150,7 @@ type ParsedIdentityMetadata = Readonly<{
  * });
  * ```
  */
-async function runIdentityGit({
+function runIdentityGit({
   gitPath,
   preSubcommandArgs,
   invocationCwd,
@@ -154,9 +161,6 @@ async function runIdentityGit({
   invocationCwd: string;
   metadataArgs: readonly string[];
 }>,): Promise<string> {
-  /**
-   * Captured metadata result from real Git.
-   */
   return runMetadataGit({
     gitPath,
     args: [
@@ -167,6 +171,54 @@ async function runIdentityGit({
     ],
     cwd: invocationCwd,
   },);
+}
+
+/**
+ * Reads fixed-order identity metadata or reports Git target absence.
+ *
+ * @param gitPath - absolute real-Git executable
+ *
+ * @param preSubcommandArgs - original Git global option region
+ *
+ * @param invocationCwd - wrapper process working directory
+ *
+ * @returns raw identity metadata or absence sentinel
+ *
+ * @example
+ * ```ts
+ * await readIdentityMetadata({
+ *   gitPath: '/usr/bin/git',
+ *   preSubcommandArgs: [],
+ *   invocationCwd: '/repo',
+ * });
+ * ```
+ */
+async function readIdentityMetadata({
+  gitPath,
+  preSubcommandArgs,
+  invocationCwd,
+}: Readonly<{
+  gitPath: string;
+  preSubcommandArgs: readonly string[];
+  invocationCwd: string;
+}>,): Promise<string | typeof IDENTITY_METADATA_ABSENT> {
+  try {
+    return await runIdentityGit({
+      gitPath,
+      preSubcommandArgs,
+      invocationCwd,
+      metadataArgs: [
+        '--is-bare-repository',
+        '--git-dir',
+        '--git-common-dir',
+      ],
+    },);
+  }
+  catch (error: unknown) {
+    if (error instanceof SubprocessError)
+      return IDENTITY_METADATA_ABSENT;
+    throw error;
+  }
 }
 
 /**
@@ -218,7 +270,7 @@ function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
  *
  * @param gitPath - absolute real-Git executable
  *
- * @returns canonical selected repository identity
+ * @returns selected repository identity with canonical repository paths
  *
  * @example
  * ```ts
@@ -260,26 +312,12 @@ export async function resolveGitWorktreeIdentity({
   /**
    * Raw fixed-order identity metadata or repository absence.
    */
-  const metadataOutput = await (async function captureMetadata(): Promise<string | undefined> {
-    try {
-      return await runIdentityGit({
-        gitPath,
-        preSubcommandArgs,
-        invocationCwd,
-        metadataArgs: [
-          '--is-bare-repository',
-          '--git-dir',
-          '--git-common-dir',
-        ],
-      },);
-    }
-    catch (error: unknown) {
-      if (error instanceof SubprocessError)
-        return undefined;
-      throw error;
-    }
-  })();
-  if (metadataOutput === undefined) {
+  const metadataOutput = await readIdentityMetadata({
+    gitPath,
+    preSubcommandArgs,
+    invocationCwd,
+  },);
+  if ((typeof metadataOutput) === 'symbol') {
     return {
       kind: 'outside-worktree',
       effectiveCwd,
@@ -308,14 +346,18 @@ export async function resolveGitWorktreeIdentity({
     };
   }
   /**
-   * Canonical effective worktree root for non-bare identity.
+   * Git-reported effective worktree root with terminal line break.
    */
-  const worktreeRoot = await realpath(stripGitLine(await runIdentityGit({
+  const worktreeOutput = await runIdentityGit({
     gitPath,
     preSubcommandArgs,
     invocationCwd,
     metadataArgs: ['--show-toplevel',],
-  },),),);
+  },);
+  /**
+   * Canonical effective worktree root for non-bare identity.
+   */
+  const worktreeRoot = await realpath(stripGitLine(worktreeOutput,),);
   return {
     kind: gitDir === commonDir
       ? 'main-worktree'

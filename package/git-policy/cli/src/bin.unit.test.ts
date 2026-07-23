@@ -441,7 +441,9 @@ await describe({
 import { appendFileSync } from 'node:fs';
 const capturePath = process.env.CLI_GIT_CAPTURE_PATH;
 if (capturePath === undefined) throw new Error('missing capture path');
-appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
+const args = process.argv.slice(2);
+appendFileSync(capturePath, JSON.stringify(args) + '\\n');
+if (args.includes('rev-parse')) process.exitCode = 1;
 `,);
         await chmod(fakeGitPath, TEST_EXECUTABLE_MODE,);
         /** Environment routing wrapper resolution to disposable Git boundary. */
@@ -470,13 +472,13 @@ appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
         },);
         expect(await readFile(capturePath, 'utf8',),).toBe(
           '["rev-parse","--is-inside-work-tree"]\n'
-          + '["rev-parse","--path-format=absolute","--git-common-dir"]\n'
+          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir"]\n'
           + '["push","--atomic","origin","main"]\n'
           + '["rev-parse","--is-inside-work-tree"]\n'
-          + '["-c","advice.statusHints=false","rev-parse","--path-format=absolute","--git-common-dir"]\n'
+          + '["-c","advice.statusHints=false","rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir"]\n'
           + '["-c","advice.statusHints=false","status","--porcelain=v1"]\n'
           + '["rev-parse","--is-inside-work-tree"]\n'
-          + '["rev-parse","--path-format=absolute","--git-common-dir"]\n'
+          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir"]\n'
           + '["commit","-o","--dry-run","-m","message","file.txt"]\n',
         );
       },
@@ -1184,8 +1186,8 @@ appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
       },
     },),
     it({
-      name: 'rejects stash with explicit work-tree from unrelated cwd',
-      fn: async function testStashWithExplicitWorkTreeOutsideWorktree(): Promise<void> {
+      name: 'classifies explicit work-tree stash as main from unrelated cwd',
+      fn: async function testStashWithExplicitMainWorktree(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
         /** Repository whose worktree would be reverted if stash reached real git. */
@@ -1229,7 +1231,7 @@ appendFileSync(capturePath, JSON.stringify(process.argv.slice(2)) + '\\n');
         },),);
 
         expect(error.stderr,).toContain(
-          'cli-git: git stash requires the effective working directory to be inside a linked git worktree',
+          'cli-git: git stash is rejected in the main git worktree',
         );
 
         /** Repository status after rejected stash, proving file contents stayed modified. */

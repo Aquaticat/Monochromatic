@@ -21,6 +21,49 @@ import {
  */
 const gitPath = await resolveGit();
 
+/**
+ * Temporarily overrides one process environment entry.
+ *
+ * @param key - environment key to replace
+ *
+ * @param value - temporary environment value
+ *
+ * @returns disposable environment restoration
+ *
+ * @mutates process.env
+ *
+ * @example
+ * ```ts
+ * using override = overrideEnvironment({ key: 'GIT_DIR', value: '/repo/.git' });
+ * ```
+ */
+function overrideEnvironment({
+  key,
+  value,
+}: Readonly<{
+  key: string;
+  value: string;
+}>,): Disposable {
+  /**
+   * Whether environment originally owned key.
+   */
+  const hadOriginal = Object.hasOwn(process.env, key,);
+  /**
+   * Original value retained only when key was present.
+   */
+  const original = process.env[key] ?? '';
+  process.env[key] = value;
+  return {
+    [Symbol.dispose](): void {
+      if (hadOriginal) {
+        process.env[key] = original;
+        return;
+      }
+      delete process.env[key];
+    },
+  };
+}
+
 await describe({
   name: resolveGitWorktreeIdentity.name,
   concurrency: 1,
@@ -217,6 +260,118 @@ await describe({
         },);
 
         expect(identity.kind,).toBe('main-worktree',);
+      },
+    },),
+
+    it({
+      name: 'honors chained relative chdir selection',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+        /**
+         * Main repository reached through relative second chdir.
+         */
+        const mainRoot = join(fixture.path, 'main',);
+        await initializeMainRepository(mainRoot,);
+
+        /**
+         * Identity selected after ordered absolute and relative chdir options.
+         */
+        const identity = await resolveGitWorktreeIdentity({
+          args: [
+            '-C',
+            fixture.path,
+            '-C',
+            'main',
+            'status',
+          ],
+          gitPath,
+        },);
+
+        expect(identity.kind,).toBe('main-worktree',);
+        expect(identity.effectiveCwd,).toBe(mainRoot,);
+      },
+    },),
+
+    it({
+      name: 'honors glued git-dir and work-tree selection',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+        /**
+         * Main repository selected by glued global options.
+         */
+        const mainRoot = join(fixture.path, 'main',);
+        await initializeMainRepository(mainRoot,);
+
+        /**
+         * Main identity selected through glued administrative options.
+         */
+        const identity = await resolveGitWorktreeIdentity({
+          args: [
+            `--git-dir=${join(mainRoot, '.git',)}`,
+            `--work-tree=${mainRoot}`,
+            'status',
+          ],
+          gitPath,
+        },);
+
+        expect(identity.kind,).toBe('main-worktree',);
+      },
+    },),
+
+    it({
+      name: 'honors inherited git-dir and work-tree selection',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+        /**
+         * Main repository selected by inherited Git environment.
+         */
+        const mainRoot = join(fixture.path, 'main',);
+        await initializeMainRepository(mainRoot,);
+        /**
+         * Temporary inherited Git-directory selection.
+         */
+        using gitDirOverride = overrideEnvironment({
+          key: 'GIT_DIR',
+          value: join(mainRoot, '.git',),
+        },);
+        /**
+         * Temporary inherited worktree selection.
+         */
+        using workTreeOverride = overrideEnvironment({
+          key: 'GIT_WORK_TREE',
+          value: mainRoot,
+        },);
+
+        /**
+         * Main identity selected through inherited environment.
+         */
+        const identity = await resolveGitWorktreeIdentity({
+          args: ['status',],
+          gitPath,
+        },);
+
+        expect(identity.kind,).toBe('main-worktree',);
+      },
+    },),
+
+    it({
+      name: 'maps invalid explicit git-dir to outside worktree',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+
+        /**
+         * Outside identity produced after real Git rejects explicit missing directory.
+         */
+        const identity = await resolveGitWorktreeIdentity({
+          args: [
+            '--git-dir',
+            join(fixture.path, 'missing.git',),
+            'status',
+          ],
+          gitPath,
+        },);
+
+        expect(identity.kind,).toBe('outside-worktree',);
       },
     },),
   ],
