@@ -21,16 +21,22 @@ in order of importance:
     That gives radial spokes crossed by concentric rings,
     with cells growing with distance,
     which is the pattern humans recognize instantly.
-2.  The two-stage break.
-    The pane cracks and holds for a beat
-    (or until a second hit),
-    then the web collapses into shards cut along the exact crack lines,
-    because the same cells drive both the crack texture and the debris.
+2.  Instant localized breakage,
+    the Smash Hit lesson
+    ("objects always break where they get hit").
+    A strike blasts the cells around the impact out as shards
+    immediately and the ball punches through with most of its speed;
+    the surviving rim stands as real geometry around a real hole,
+    cracked along the same cell lines,
+    and collapses on a short hold or the next hit.
+    Later balls fly through the hole untouched.
 3.  Real dynamics.
     Earth gravity,
     ball momentum transfer falling off with distance from the impact,
     floor bounce with restitution and friction,
-    shards settling flat and persisting on the floor.
+    shards settling flat and staying down until they fall behind the
+    camera;
+    debris never evaporates in view.
 4.  Reflections.
     A procedural equirect environment full of bright strips gives the
     transmission glass something to reflect;
@@ -44,24 +50,30 @@ Walking into unbroken gate glass smashes through it bodily.
 
 ## Layout
 
-- `src/client/fracture.ts`:
+- `src/client/fracture.ts`, `fracture-partition.ts`:
   pure impact-centered Voronoi math
-  (polar seeds, half-plane clipping).
-- `src/client/prism.ts`:
-  pure convex-cell to prism-mesh arrays.
+  (polar seeds, half-plane clipping),
+  and the hole/rim split with point-in-cell tests.
+- `src/client/prism.ts`, `rim-mesh.ts`:
+  pure convex-cell to prism-mesh arrays,
+  and the merged pane-local rim mesh built from them.
 - `src/client/physics.ts`:
   pure ball flight, shard ground contact, pane-plane sweep test.
 - `src/client/shard-launch.ts`:
   pure shard launch velocities and spin.
 - `src/client/crack-texture.ts`:
   paints the fracture cells as the crack-web canvas.
-- `src/client/pane-model.ts`, `pane-assembly.ts`, `pane-strike.ts`, `pane.ts`:
+- `src/client/pane-model.ts`, `pane-assembly.ts`, `pane-strike.ts`,
+  `pane-rim.ts`, `crack-overlay.ts`, `pane.ts`:
   pane tuning and types,
   assembly from shared unit geometry,
-  the crack stage,
+  the instant-hole strike,
+  the surviving-rim mesh and crack overlay,
   and the spawn/collapse/recycle system.
-- `src/client/debris.ts`, `shard-alloc.ts`:
-  the batched shard pool and its slot allocator.
+- `src/client/debris.ts`, `debris-model.ts`, `shard-alloc.ts`:
+  the batched shard pool, its contracts, and its slot allocator.
+- `src/client/prewarm.ts`:
+  startup pipeline compilation off the first impact frame.
 - `src/client/ball.ts`, `ball-sweep.ts`, `ball-tuning.ts`:
   the ball pool and the swept-segment collider.
 - `src/client/scene.ts`, `environment-paint.ts`, `corridor.ts`:

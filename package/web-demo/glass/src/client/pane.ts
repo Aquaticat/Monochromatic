@@ -1,11 +1,11 @@
 /**
- * Glass panes: the two-stage break and the spawn/recycle loop.
+ * Glass panes: the instant-hole break and the spawn/recycle loop.
  *
- * The break is staged the way real annealed glass fails: a strike paints
- * the spider-web crack and the pane holds for a beat (or until a second
- * hit), then the web collapses into shards cut along the exact crack
- * lines. The pane system owns stages one and two and emits shatter
- * events; debris, sparks, audio, and score react in the main loop.
+ * A strike blasts the cells around the impact out immediately and leaves
+ * a cracked rim holding around a real hole; the rim collapses on its
+ * hold timer, on the next hit, or under a body smash. The pane system
+ * owns both waves and emits staged shatter events; debris, sparks,
+ * audio, and score react in the main loop.
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -13,8 +13,10 @@ import {
   Vector3,
 } from 'three/webgpu';
 
+import { dropOverlay, } from './crack-overlay.ts';
 import {
   fractureCells,
+  type PaneCell,
   type PanePoint,
   type RandomSource,
 } from './fracture.ts';
@@ -30,10 +32,8 @@ import {
   type PaneSystem,
   type ShatterEvent,
 } from './pane-model.ts';
-import {
-  dropOverlay,
-  strikePane,
-} from './pane-strike.ts';
+import { dropPaneRim, } from './pane-rim.ts';
+import { strikePane, } from './pane-strike.ts';
 import { WORLD_TUNING, } from './scene.ts';
 
 export {
@@ -58,15 +58,17 @@ const l = tagged({
 },);
 
 /**
- * Collapses a cracked pane into a shatter event.
+ * Collapses a pane's remaining glass into a shatter event.
  *
- * @param pane - cracked pane to collapse
+ * @param pane - pane to collapse
+ *
+ * @param cells - cells becoming shards: the rim, or a fresh full fracture
  *
  * @param impactLocal - impact point in pane-local meters
  *
  * @param ballVelocity - driving velocity in world m/s
  *
- * @mutates pane - `pane.group.remove(pane.sheet)` drops the sheet; `dropOverlay` runs `pane.overlayMaterial.map.dispose()`, `pane.overlayMaterial.dispose()`, and `pane.group.remove(pane.overlay)`; the state latch flips to shattered; and `paneFrame` runs `pane.glass.matrixWorld.decompose(...)`, which only reads the matrix.
+ * @mutates pane - `pane.group.remove(pane.sheet)` drops the sheet; `dropOverlay` and `dropPaneRim` dispose and unmount the overlay and rim, each documenting its own edits; the state latch flips to shattered; and `paneFrame` runs `pane.glass.matrixWorld.decompose(...)`, which only reads the matrix.
  *
  * @mutates ballVelocity - `ballVelocity.clone()` is a three.js method the analyzer cannot inspect; it only reads components.
  *
@@ -75,16 +77,19 @@ const l = tagged({
 function collapse(
   {
     pane,
+    cells,
     impactLocal,
     ballVelocity,
   }: Readonly<{
     pane: Pane;
+    cells: readonly PaneCell[];
     impactLocal: PanePoint;
     ballVelocity: Vector3;
   }>,
 ): ShatterEvent {
   pane.state = 'shattered';
   dropOverlay(pane,);
+  dropPaneRim(pane,);
   pane.group
     .remove(pane.sheet,);
   /**
@@ -103,7 +108,8 @@ function collapse(
   )
     .applyMatrix4(paneMatrix,);
   return {
-    cells: pane.cells ?? [],
+    stage: 'collapse',
+    cells,
     paneMatrix,
     impactWorld,
     ballVelocity: ballVelocity.clone(),
@@ -153,6 +159,11 @@ export function createPanes(
    */
   const panes: Pane[] = [];
   /**
+   * Instant strike bursts waiting for the next update to hand them to
+   * the main loop alongside the collapse events.
+   */
+  const pending: ShatterEvent[] = [];
+  /**
    * Spawn frontiers, marching toward -infinity as the camera advances.
    */
   const frontier = {
@@ -181,27 +192,35 @@ export function createPanes(
     /**
      * {@inheritDoc PaneSystem.strike}
      *
-     * @mutates input - `strikePane` advances `input.pane` and clones `input.ballVelocity` through the three.js methods it documents.
+     * @mutates input - `strikePane` advances `input.pane` and clones `input.ballVelocity` through the three.js methods it documents; instant bursts queue for the next update.
      */
     strike: function strike(input,): PaneState {
-      return strikePane({
+      /**
+       * Stage entered plus the instant burst, when glass flew.
+       */
+      const outcome = strikePane({
         pane: input.pane,
         impactLocal: input.impactLocal,
         ballVelocity: input.ballVelocity,
         now: input.now,
         random,
       },);
+      if (outcome.burst !== undefined)
+        pending.push(outcome.burst,);
+      return outcome.state;
     },
     update: function update(input,): ShatterEvent[] {
       /**
-       * Shatter events emitted this frame.
+       * Shatter events emitted this frame, starting with the instant
+       * bursts queued by strikes since the last update.
        */
-      const events: ShatterEvent[] = [];
-      //region Collapse expired cracked panes
+      const events: ShatterEvent[] = pending.splice(0,);
+      //region Collapse expired rim holds
       for (const pane of panes)
         if ((pane.state === 'cracked') && (input.now >= pane.holdUntil))
           events.push(collapse({
             pane,
+            cells: pane.rimCells ?? [],
             impactLocal: pane.impactLocal ?? {
               x: 0,
               y: 0,
@@ -224,26 +243,26 @@ export function createPanes(
               - input.cameraZ,)
             < PANE_TUNING.bodySmashDistance)
         ) {
-          if (pane.state === 'intact')
-            pane.cells = fractureCells({
-              halfWidth: pane.halfWidth,
-              halfHeight: pane.halfHeight,
-              impact: {
-                x: -pane.group
-                  .position
-                  .x,
-                y: 0,
-              },
-              random,
-            },);
+          /**
+           * Impact point of a body smash: chest height at the walk line.
+           */
+          const smashImpact = {
+            x: -pane.group
+              .position
+              .x,
+            y: 0,
+          };
           events.push(collapse({
             pane,
-            impactLocal: {
-              x: -pane.group
-                .position
-                .x,
-              y: 0,
-            },
+            cells: pane.state === 'intact'
+              ? fractureCells({
+                halfWidth: pane.halfWidth,
+                halfHeight: pane.halfHeight,
+                impact: smashImpact,
+                random,
+              },)
+              : pane.rimCells ?? [],
+            impactLocal: smashImpact,
             ballVelocity: new Vector3(
               0,
               0,
@@ -266,6 +285,7 @@ export function createPanes(
       },);
       for (const pane of stale) {
         dropOverlay(pane,);
+        dropPaneRim(pane,);
         scene.remove(pane.group,);
         panes.splice(
           panes.indexOf(pane,),

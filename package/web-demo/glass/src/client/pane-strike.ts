@@ -1,64 +1,50 @@
 /**
- * The crack stage: registering a ball strike on a pane.
+ * The strike: instant localized breakage in the Smash Hit mold.
  *
- * A first hit computes the fracture cells, paints them as the spider-web
- * overlay, and arms the hold timer; a second hit collapses the hold
- * immediately. Kept beside, not inside, the pane system so both files
- * stay under the size budget.
+ * A first hit computes the fracture once, blasts the cells around the
+ * impact out as shards immediately, and leaves the rest standing as a
+ * cracked rim with a real hole; the rim collapses on its hold timer or
+ * on the next hit. The fracture cells drive the hole shards, the rim
+ * geometry, and the crack overlay, so every boundary is the same line.
  */
-import {
-  AdditiveBlending,
-  CanvasTexture,
-  Mesh,
-  MeshBasicMaterial,
-  SRGBColorSpace,
-  Vector3,
-} from 'three/webgpu';
+import { Vector3, } from 'three/webgpu';
 
-import { paintCrackWeb, } from './crack-texture.ts';
+import { attachCrackOverlay, } from './crack-overlay.ts';
 import {
   fractureCells,
   type PanePoint,
   type RandomSource,
 } from './fracture.ts';
-import { UNIT_PLANE, } from './pane-assembly.ts';
+import { partitionCellsByHole, } from './fracture-partition.ts';
+import { paneFrame, } from './pane-assembly.ts';
 import {
   type Pane,
   PANE_TUNING,
   type PaneState,
+  type ShatterEvent,
 } from './pane-model.ts';
+import { buildPaneRim, } from './pane-rim.ts';
 
 /**
- * Disposes a pane's crack overlay resources, when present.
- *
- * @param pane - pane whose overlay should be dropped
- *
- * @mutates pane - `pane.overlayMaterial.map.dispose()` and `pane.overlayMaterial.dispose()` free the crack texture, `pane.group.remove(pane.overlay)` detaches the overlay, and the overlay and overlayMaterial slots clear.
- *
- * @example
- * ```ts
- * dropOverlay(pane,);
- * ```
+ * What one registered strike did: the stage the pane entered, plus the
+ * instant shard burst when glass flew at strike time.
  */
-export function dropOverlay(pane: Pane,): void {
-  if ((pane.overlay === undefined) || (pane.overlayMaterial === undefined))
-    return;
-  pane.overlayMaterial
-    .map
-    ?.dispose();
-  pane.overlayMaterial
-    .dispose();
-  pane.group
-    .remove(pane.overlay,);
-  delete pane.overlay;
-  delete pane.overlayMaterial;
-}
+export type StrikeOutcome = {
+  /**
+   * Stage the pane entered.
+   */
+  readonly state: PaneState;
+  /**
+   * Shards blasted out at strike time, absent when only the hold
+   * collapsed (the rim shards then come from the pane update).
+   */
+  readonly burst?: ShatterEvent;
+};
 
 /**
- * Registers a ball strike: cracks an intact pane or collapses the hold of
- * an already-cracked one. The fracture is computed once here and reused
- * at collapse, so the crack lines and the shard boundaries are the same
- * lines.
+ * Registers a ball strike. An intact pane fractures, loses its hole
+ * cells instantly, and keeps a holding rim; a cracked pane's rim
+ * collapses through the hold timer on the very next pane update.
  *
  * @param pane - struck pane
  *
@@ -70,17 +56,17 @@ export function dropOverlay(pane: Pane,): void {
  *
  * @param random - uniform random source
  *
- * @mutates pane - the break state, cells, hold timer, and impact snapshot advance; `pane.group.add(overlay)` attaches the crack overlay; `overlay.position.copy(pane.glass.position)` reads the sheet position through a three.js method the analyzer cannot inspect.
+ * @mutates pane - the break state, rim cells, hold timer, and impact snapshot advance; the sheet hides; `buildPaneRim` mounts the rim mesh and `attachCrackOverlay` mounts the overlay, each documenting its own scene edits; `paneFrame` runs `pane.glass.matrixWorld.decompose(...)`, which only reads the matrix.
  *
  * @mutates ballVelocity - `ballVelocity.clone()` is a three.js method the analyzer cannot inspect; it only reads components.
  *
- * @mutates random - fracture and hold-timer draws advance the caller-supplied generator state.
+ * @mutates random - fracture, partition, and hold-timer draws advance the caller-supplied generator state.
  *
- * @returns the stage the pane entered
+ * @returns stage entered plus the instant burst, when any
  *
  * @example
  * ```ts
- * const stage = strikePane({
+ * const outcome = strikePane({
  *   pane,
  *   impactLocal: { x: 0.1, y: -0.2 },
  *   ballVelocity,
@@ -103,15 +89,16 @@ export function strikePane(
     readonly now: number;
     readonly random: RandomSource;
   },
-): PaneState {
+): StrikeOutcome {
   if (pane.state === 'cracked') {
     pane.holdUntil = now;
     pane.impactLocal = impactLocal;
     pane.impactVelocity = ballVelocity.clone();
-    return 'shattered';
+    return { state: 'shattered', };
   }
   /**
-   * Fracture computed once at crack time and reused at collapse.
+   * Fracture computed once at strike time; hole shards, rim geometry,
+   * and crack overlay all cut along these cells.
    */
   const cells = fractureCells({
     halfWidth: pane.halfWidth,
@@ -119,56 +106,68 @@ export function strikePane(
     impact: impactLocal,
     random,
   },);
-  pane.cells = cells;
+  /**
+   * Cells flying now versus cells holding as the rim.
+   */
+  const {
+    hole,
+    rim,
+  } = partitionCellsByHole({
+    cells,
+    impact: impactLocal,
+    holeRadius: PANE_TUNING.holeRadius,
+    random,
+  },);
+  /**
+   * Glass world transform with the unit-box scale stripped, shared by
+   * the burst event and the collapse that follows.
+   */
+  const paneMatrix = paneFrame(pane,);
+  /**
+   * Impact point lifted into world space through the meters-space frame.
+   */
+  const impactWorld = new Vector3(
+    impactLocal.x,
+    impactLocal.y,
+    0,
+  );
+  impactWorld.applyMatrix4(paneMatrix,);
   pane.impactLocal = impactLocal;
   pane.impactVelocity = ballVelocity.clone();
+  pane.sheet
+    .visible = false;
+  if (rim.length === 0) {
+    // The blast radius swallowed the whole pane: skip the rim stage.
+    pane.state = 'shattered';
+    return {
+      state: 'shattered',
+      burst: {
+        stage: 'collapse',
+        cells,
+        paneMatrix,
+        impactWorld,
+        ballVelocity: ballVelocity.clone(),
+      },
+    };
+  }
+  pane.state = 'cracked';
+  pane.rimCells = rim;
   pane.holdUntil = now
     + PANE_TUNING.holdMin
     + (random() * PANE_TUNING.holdExtra);
-  pane.state = 'cracked';
-  /**
-   * Crack texture painted from the exact fracture cells.
-   */
-  const texture = new CanvasTexture(paintCrackWeb({
-    cells,
-    impact: impactLocal,
-    halfWidth: pane.halfWidth,
-    halfHeight: pane.halfHeight,
-  },),);
-  texture.colorSpace = SRGBColorSpace;
-  /**
-   * Additive overlay material owning the crack texture.
-   */
-  const overlayMaterial = new MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    depthWrite: false,
-    blending: AdditiveBlending,
+  buildPaneRim(pane,);
+  attachCrackOverlay({
+    pane,
+    impactLocal,
   },);
-  /**
-   * Additive overlay plane on the player-facing surface.
-   */
-  const overlay = new Mesh(
-    UNIT_PLANE,
-    overlayMaterial,
-  );
-  overlay.scale
-    .set(
-      pane.halfWidth * 2,
-      pane.halfHeight * 2,
-      1,
-    );
-  overlay.position
-    .copy(pane.glass
-      .position,)
-    .add(new Vector3(
-      0,
-      0,
-      (PANE_TUNING.thickness / 2) + PANE_TUNING.overlayLift,
-    ),);
-  pane.group
-    .add(overlay,);
-  pane.overlay = overlay;
-  pane.overlayMaterial = overlayMaterial;
-  return 'cracked';
+  return {
+    state: 'cracked',
+    burst: {
+      stage: 'hole',
+      cells: hole,
+      paneMatrix,
+      impactWorld,
+      ballVelocity: ballVelocity.clone(),
+    },
+  };
 }

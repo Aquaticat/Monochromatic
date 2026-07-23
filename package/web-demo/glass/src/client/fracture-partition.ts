@@ -8,6 +8,7 @@
  * the whole module unit-tests in node.
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   type PaneCell,
@@ -157,6 +158,11 @@ export function partitionCellsByHole(
     tag: partitionCellsByHole.name,
     l,
   },);
+  if (cells.length === 0)
+    return {
+      hole: [],
+      rim: [],
+    };
   /**
    * Cells annotated with centroid distance and their jittered escape
    * radius, deciding membership in one pass.
@@ -198,20 +204,20 @@ export function partitionCellsByHole(
    */
   const nearest = measured.reduce(
     function closer(
-      best: (typeof measured)[number] | undefined,
+      best: (typeof measured)[number],
       entry: (typeof measured)[number],
-    ): (typeof measured)[number] | undefined {
-      return (best === undefined) || (entry.distance < best.distance)
+    ): (typeof measured)[number] {
+      return entry.distance < best.distance
         ? entry
         : best;
     },
-    undefined,
+    nonNullishOrThrow(measured[0],),
   );
   /**
    * Final hole membership, never empty while cells exist.
    */
   const holeSet = new Set(
-    (flying.length > 0 ? flying : (nearest === undefined ? [] : [nearest,]))
+    (flying.length > 0 ? flying : [nearest,])
       .map(function unwrap(entry: { readonly cell: PaneCell; },): PaneCell {
         return entry.cell;
       },),

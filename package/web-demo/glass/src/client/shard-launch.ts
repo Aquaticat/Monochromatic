@@ -26,13 +26,18 @@ export const DEBRIS_TUNING = {
    */
   softCap: 440,
   /**
-   * Seconds a settled shard stays before fading out.
+   * Seconds a settled shard stays before fading out; long, because the
+   * walk passes settled debris and culls it behind the camera first.
    */
-  persistSeconds: 6,
+  persistSeconds: 30,
   /**
    * Seconds a shard may fly before force-fading, settled or not.
    */
-  maxLifeSeconds: 10,
+  maxLifeSeconds: 30,
+  /**
+   * Distance behind the camera at which shards release instantly, meters.
+   */
+  cullBehind: 3,
   /**
    * Seconds the fade-out shrink takes.
    */

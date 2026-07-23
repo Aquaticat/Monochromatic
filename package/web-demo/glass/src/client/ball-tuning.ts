@@ -24,13 +24,10 @@ export const BALL_TUNING = {
    */
   maxLifeSeconds: 5,
   /**
-   * Speed kept when punching through collapsing glass.
+   * Speed kept when punching through glass; high, the way Smash Hit caps
+   * reaction impulses so one ball can smash through several obstacles.
    */
-  punchThroughKeep: 0.62,
-  /**
-   * Normal-direction speed kept when rebounding off cracked glass.
-   */
-  reboundKeep: 0.32,
+  punchThroughKeep: 0.7,
   /**
    * Floor bounce restitution for balls.
    */

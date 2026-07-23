@@ -9,10 +9,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import {
-  Matrix4,
-  Vector3,
-} from 'three/webgpu';
+import { Vector3, } from 'three/webgpu';
 
 import { createAudio, } from './audio.ts';
 import { createBalls, } from './ball.ts';
@@ -26,6 +23,7 @@ import {
   createPanes,
   PANE_TUNING,
 } from './pane.ts';
+import { prewarmPipelines, } from './prewarm.ts';
 import {
   bootstrapScene,
   WORLD_TUNING,
@@ -72,10 +70,6 @@ const LOOP_TUNING = {
    * Milliseconds per second, for the animation-loop timestamp.
    */
   msPerSecond: 1_000,
-  /**
-   * Depth the pipeline-prewarm debris spawns at, far below the corridor.
-   */
-  prewarmDepth: -60,
   /**
    * How far ahead of the camera the slab centers sit, meters.
    */
@@ -203,50 +197,11 @@ async function startDemo(): Promise<void> {
     phase: 0,
     z: 0,
   };
-  //region Pipeline prewarm: compile the debris pipeline before first hit
-  debris.spawnShards({
-    cells: [[
-      {
-        x: -0.04,
-        y: -0.03,
-      },
-      {
-        x: 0.04,
-        y: -0.03,
-      },
-      {
-        x: 0,
-        y: 0.04,
-      },
-    ],],
-    thickness: PANE_TUNING.thickness,
-    paneMatrix: new Matrix4().makeTranslation(
-      0,
-      LOOP_TUNING.prewarmDepth,
-      0,
-    ),
-    impactWorld: new Vector3(
-      0,
-      LOOP_TUNING.prewarmDepth,
-      0,
-    ),
-    ballVelocity: new Vector3(
-      0,
-      0,
-      0,
-    ),
+  prewarmPipelines({
+    debris,
+    fx,
     random,
   },);
-  fx.burst({
-    at: new Vector3(
-      0,
-      LOOP_TUNING.prewarmDepth,
-      0,
-    ),
-    count: 4,
-    speed: 0.5,
-  },);
-  //endregion
   //region Input: pointer throws, first gesture unlocks audio
   stage.addEventListener(
     'pointerdown',
@@ -385,16 +340,11 @@ async function startDemo(): Promise<void> {
       cameraZ: run.z,
     },);
     for (const impact of impacts)
-      if (impact.result === 'cracked') {
+      if (impact.result === 'cracked')
         audio.playCrack();
-        fx.burst({
-          at: impact.impactWorld,
-          count: FX_TUNING.crackSize,
-          speed: 1.6,
-        },);
-      }
     /**
-     * Pane collapses this frame, including expired holds.
+     * Staged shatter events this frame: instant hole bursts from
+     * strikes, plus rim collapses from holds, hits, and body smashes.
      */
     const shatters = panes.update({
       cameraZ: run.z,
@@ -409,20 +359,35 @@ async function startDemo(): Promise<void> {
         ballVelocity: event.ballVelocity,
         random,
       },);
-      fx.burst({
-        at: event.impactWorld,
-        count: FX_TUNING.burstSize,
-        speed: 3.2,
-      },);
-      fx.kickShake();
-      audio.playShatter();
-      run.shattered++;
-      scoreValue.textContent = String(run.shattered,);
+      if (event.stage === 'hole') {
+        // The blast at the impact is the shower moment: big spark
+        // burst, camera shock, and the crash sound, all at strike time.
+        fx.burst({
+          at: event.impactWorld,
+          count: FX_TUNING.burstSize,
+          speed: 3.2,
+        },);
+        fx.kickShake();
+        audio.playShatter();
+      }
+      else {
+        fx.burst({
+          at: event.impactWorld,
+          count: FX_TUNING.crackSize,
+          speed: 1.6,
+        },);
+        audio.playShatter();
+        run.shattered++;
+        scoreValue.textContent = String(run.shattered,);
+      }
     }
     /**
      * Shard floor bounces this frame, for glass ticks.
      */
-    const bounces = debris.update(dt,);
+    const bounces = debris.update({
+      dt,
+      cameraZ: run.z,
+    },);
     if (bounces > 0)
       audio.playTick();
     //endregion

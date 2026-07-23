@@ -17,15 +17,16 @@ import {
   Vector3,
 } from 'three/webgpu';
 
+import type {
+  DebrisSystem,
+  ShardSlot,
+  SpawnShardsInput,
+} from './debris-model.ts';
 import {
   type PaneCell,
   polygonArea,
-  type RandomSource,
 } from './fracture.ts';
-import {
-  type ShardBody,
-  stepShardBody,
-} from './physics.ts';
+import { stepShardBody, } from './physics.ts';
 import { prismFromPolygon, } from './prism.ts';
 import {
   allocateShard,
@@ -36,6 +37,10 @@ import {
   launchShardBody,
 } from './shard-launch.ts';
 
+export {
+  type DebrisSystem,
+  type SpawnShardsInput,
+} from './debris-model.ts';
 export { DEBRIS_TUNING, } from './shard-launch.ts';
 
 /**
@@ -50,112 +55,6 @@ const l = tagged({
   tag: 'debris',
   l: parentLogger,
 },);
-
-/**
- * One live shard: pooled ids plus simulation state.
- */
-type ShardSlot = {
-  /**
-   * BatchedMesh instance id.
-   */
-  readonly instanceId: number;
-  /**
-   * BatchedMesh geometry id, freed together with the instance.
-   */
-  readonly geometryId: number;
-  /**
-   * Simulated rigid state.
-   */
-  readonly body: ShardBody;
-  /**
-   * Current orientation, advanced by the spin rates each frame.
-   */
-  readonly orientation: Quaternion;
-  /**
-   * Seconds since spawn.
-   */
-  age: number;
-  /**
-   * Seconds since settling; NaN while airborne.
-   */
-  settledFor: number;
-  /**
-   * Yaw-randomized lie-flat orientation blended in after settling.
-   */
-  flatTarget?: Quaternion;
-  /**
-   * Random yaw applied to the lie-flat orientation, radians.
-   */
-  readonly flatYaw: number;
-  /**
-   * Resting pivot height once lying flat, meters.
-   */
-  readonly flatHeight: number;
-  /**
-   * Seconds since the fade-out began; NaN while fully alive.
-   */
-  fadingFor: number;
-};
-
-/**
- * One shatter's worth of spawn parameters.
- */
-export type SpawnShardsInput = {
-  /**
-   * Pane-local fracture cells.
-   */
-  readonly cells: readonly PaneCell[];
-  /**
-   * Pane glass thickness in meters.
-   */
-  readonly thickness: number;
-  /**
-   * Pane local-to-world matrix in meters.
-   */
-  readonly paneMatrix: Matrix4;
-  /**
-   * Impact point in world space.
-   */
-  readonly impactWorld: Vector3;
-  /**
-   * Ball velocity at impact in world space.
-   */
-  readonly ballVelocity: Vector3;
-  /**
-   * Uniform random source.
-   */
-  readonly random: RandomSource;
-};
-
-/**
- * Debris system handle.
- */
-export type DebrisSystem = {
-  /**
-   * Turns fracture cells into flying shards.
-   *
-   * @param cells - pane-local fracture cells
-   *
-   * @param thickness - pane glass thickness in meters
-   *
-   * @param paneMatrix - pane local-to-world matrix in meters
-   *
-   * @param impactWorld - impact point in world space
-   *
-   * @param ballVelocity - ball velocity at impact in world space
-   *
-   * @param random - uniform random source
-   */
-  readonly spawnShards: (input: SpawnShardsInput,) => void;
-  /**
-   * Advances all shards one frame.
-   *
-   * @param dt - timestep in seconds
-   *
-   * @returns floor bounces this frame, for impact ticks
-   */
-  readonly update: (dt: number,) => number;
-};
 
 /**
  * Scratch matrix reused across matrix writes to avoid per-frame allocation.
@@ -409,7 +308,16 @@ export function createDebris(
   }
   return {
     spawnShards,
-    update: function update(dt: number,): number {
+    update: function update(
+      input: Readonly<{
+        dt: number;
+        cameraZ: number;
+      }>,
+    ): number {
+      /**
+       * Timestep alias keeping the physics lines short.
+       */
+      const { dt, } = input;
       /**
        * Floor bounces observed this frame, returned for audio ticks.
        * Object-wrapped so the counter mutates without a root `let`.
@@ -425,6 +333,16 @@ export function createDebris(
          */
         const { body, } = slot;
         slot.age += dt;
+        // Shards behind the camera are invisible forever on a forward
+        // walk: release them instantly, no fade needed. Everything the
+        // player can still see stays put; real debris does not evaporate.
+        if (
+          body.pz > (input.cameraZ
+            + DEBRIS_TUNING.cullBehind)
+        ) {
+          finished.push(slot,);
+          continue;
+        }
         if (!Number.isNaN(slot.fadingFor,)) {
           slot.fadingFor += dt;
           if (slot.fadingFor >= DEBRIS_TUNING.fadeSeconds) {
@@ -522,6 +440,9 @@ export function createDebris(
         if (slots.length === 0)
           batched.optimize();
       }
+      // An empty BatchedMesh still issues a draw and warns about missing
+      // vertex attributes; hide it whenever the pool drains.
+      batched.visible = slots.length > 0;
       return tally.bounces;
     },
   };

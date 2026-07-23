@@ -146,7 +146,7 @@ await describe({
         /**
          * Same square with the winding reversed.
          */
-        const reversed = [...square,].reverse();
+        const reversed = square.toReversed();
         /**
          * Point exactly on one square edge.
          */

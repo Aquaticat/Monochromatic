@@ -76,6 +76,9 @@ export const CRACK_TUNING = {
  *
  * @param halfHeight - pane half height in meters
  *
+ * @param omitImpactBlob - set when the impact region is a real hole with
+ * no glass left to whiten
+ *
  * @returns canvas ready to wrap in a texture
  *
  * @throws Error when the 2d canvas context is unavailable
@@ -96,11 +99,13 @@ export function paintCrackWeb(
     impact,
     halfWidth,
     halfHeight,
+    omitImpactBlob,
   }: Readonly<{
     cells: readonly PaneCell[];
     impact: PanePoint;
     halfWidth: number;
     halfHeight: number;
+    omitImpactBlob?: true;
   }>,
 ): HTMLCanvasElement {
   /**
@@ -202,6 +207,10 @@ export function paintCrackWeb(
     context.stroke();
   }
   //region Impact blob: pulverized hot center where glass whitens fully
+  if (omitImpactBlob === true) {
+    innerL.debug(`painted crack web: ${String(cells.length,)} rim cells, hole left clear`,);
+    return canvas;
+  }
   /**
    * Radial gradient for the pulverized center.
    */

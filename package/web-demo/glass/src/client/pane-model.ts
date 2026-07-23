@@ -42,13 +42,17 @@ export const PANE_TUNING = {
    */
   recycleBehind: 4,
   /**
-   * Shortest crack hold before collapse, seconds.
+   * Shortest rim hold after the hole is punched, seconds.
    */
-  holdMin: 0.26,
+  holdMin: 0.4,
   /**
-   * Random extra crack hold, seconds.
+   * Random extra rim hold, seconds.
    */
-  holdExtra: 0.24,
+  holdExtra: 0.45,
+  /**
+   * Blast radius around the impact whose cells fly immediately, meters.
+   */
+  holeRadius: 0.34,
   /**
    * Frame bar cross-section in meters.
    */
@@ -148,7 +152,8 @@ export const PANE_TUNING = {
 } as const;
 
 /**
- * Break stage of one pane.
+ * Break stage of one pane. `cracked` means a strike already blasted the
+ * hole cells out and the surviving rim holds around a real opening.
  */
 export type PaneState = 'intact' | 'cracked' | 'shattered';
 
@@ -185,9 +190,14 @@ export type Pane = {
    */
   state: PaneState;
   /**
-   * Fracture cells computed at crack time, reused for the collapse.
+   * Rim cells still holding after the hole flew, reused for the collapse
+   * and for ball pass-through tests.
    */
-  cells?: readonly PaneCell[];
+  rimCells?: readonly PaneCell[];
+  /**
+   * Merged rim mesh standing in for the sheet while the rim holds.
+   */
+  rimMesh?: Mesh;
   /**
    * Crack overlay mesh alive during the cracked stage.
    */
@@ -214,6 +224,11 @@ export type Pane = {
  * Everything the main loop needs to react to one collapse.
  */
 export type ShatterEvent = {
+  /**
+   * Whether these shards are the instant hole blast or the rim collapse;
+   * the main loop scales effects and scoring by stage.
+   */
+  readonly stage: 'hole' | 'collapse';
   /**
    * Fracture cells to turn into shards.
    */

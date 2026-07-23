@@ -2,14 +2,17 @@
  * Swept collision of one ball segment against the live panes.
  *
  * The whole between-frame segment transforms into each pane's local
- * space, so fast balls cannot tunnel through thin glass. A hit on intact
- * glass cracks the pane and rebounds the ball off the still-holding
- * sheet; a hit on cracked glass collapses it and the ball punches
- * through with most of its speed.
+ * space, so fast balls cannot tunnel through thin glass. Every resolved
+ * hit punches through with most of the ball's speed kept, the way Smash
+ * Hit caps reaction impulses so the ball stays the hero; a segment
+ * crossing a cracked pane inside its blasted-out hole touches nothing
+ * and flies on.
  */
 import { Vector3, } from 'three/webgpu';
 
 import { BALL_TUNING, } from './ball-tuning.ts';
+import type { PaneCell, } from './fracture.ts';
+import { pointInConvexPolygon, } from './fracture-partition.ts';
 import type {
   Pane,
   PaneSystem,
@@ -47,14 +50,14 @@ export type BallImpact = {
 
 /**
  * Sweeps one ball's between-frame segment against every hittable pane
- * and resolves the first strike: crack plus rebound, or collapse plus
- * punch-through.
+ * and resolves the first strike: glass flies and the ball punches
+ * through with most of its speed.
  *
  * @param from - segment start in world space
  *
  * @param to - segment end in world space
  *
- * @param body - ball state to rebound or slow on a hit
+ * @param body - ball state slowed on a hit
  *
  * @param targets - panes a ball can still hit this frame
  *
@@ -62,9 +65,9 @@ export type BallImpact = {
  *
  * @param now - wall-clock seconds
  *
- * @mutates body - `velocity.set(body.vx, body.vy, body.vz)` reads the components; a crack rebound rewrites velocity and pushes the ball off the sheet; a punch-through scales velocity down.
+ * @mutates body - `velocity.set(body.vx, body.vy, body.vz)` reads the components; a punch-through scales velocity down.
  *
- * @mutates targets - `pane.glass.worldToLocal`, `impactWorld.applyMatrix4`, and `normal.transformDirection` read pane transforms through three.js methods the analyzer cannot inspect, and `strike` advances the struck pane's break state.
+ * @mutates targets - `pane.glass.worldToLocal` and `impactWorld.applyMatrix4` read pane transforms through three.js methods the analyzer cannot inspect, and `strike` advances the struck pane's break state.
  *
  * @mutates from - `pane.glass.worldToLocal(from.clone())` is a three.js method the analyzer cannot inspect; it only reads the vector.
  *
@@ -140,6 +143,23 @@ export function sweepBallAgainstPanes(
       y: crossing.y * pane.halfHeight
         * 2,
     };
+    // A cracked pane only keeps glass on its rim cells: a crossing
+    // inside the blasted-out hole touches nothing and the ball flies on.
+    if (pane.state === 'cracked') {
+      /**
+       * Whether surviving rim glass covers the crossing point.
+       */
+      const onRim = (pane.rimCells ?? []).some(
+        function coversCrossing(cell: PaneCell,): boolean {
+          return pointInConvexPolygon({
+            polygon: cell,
+            point: impactLocal,
+          },);
+        },
+      );
+      if (!onRim)
+        continue;
+    }
     /**
      * Ball velocity at impact, world space.
      */
@@ -170,41 +190,9 @@ export function sweepBallAgainstPanes(
     );
     impactWorld.applyMatrix4(pane.glass
       .matrixWorld,);
-    if (result === 'cracked') {
-      // The sheet holds: reflect the ball off the pane normal with most
-      // of its normal speed absorbed by the glass.
-      /**
-       * Pane normal in world space.
-       */
-      const normal = new Vector3(
-        0,
-        0,
-        1,
-      );
-      normal.transformDirection(pane.glass
-        .matrixWorld,);
-      /**
-       * Velocity component along the pane normal.
-       */
-      const along = velocity.dot(normal,);
-      velocity.addScaledVector(
-        normal,
-        (-along) * (1 + BALL_TUNING.reboundKeep),
-      );
-      body.vx = velocity.x;
-      body.vy = velocity.y;
-      body.vz = velocity.z;
-      // Push the ball back to the impact point so it does not lodge
-      // inside the sheet.
-      body.px = impactWorld.x + (normal.x * BALL_TUNING.radius);
-      body.py = impactWorld.y + (normal.y * BALL_TUNING.radius);
-      body.pz = impactWorld.z + (normal.z * BALL_TUNING.radius);
-    }
-    else {
-      body.vx *= BALL_TUNING.punchThroughKeep;
-      body.vy *= BALL_TUNING.punchThroughKeep;
-      body.vz *= BALL_TUNING.punchThroughKeep;
-    }
+    body.vx *= BALL_TUNING.punchThroughKeep;
+    body.vy *= BALL_TUNING.punchThroughKeep;
+    body.vz *= BALL_TUNING.punchThroughKeep;
     return {
       pane,
       result: result === 'cracked' ? 'cracked' : 'shattered',

@@ -108,8 +108,11 @@ export function rimMeshArrays(
       sum: number,
       prism: (typeof prisms)[number],
     ): number {
-      return sum + prism.indices
-        .length;
+      /**
+       * Index count alias keeping the sum a single-line expression.
+       */
+      const { length, } = prism.indices;
+      return sum + length;
     },
     0,
   );
@@ -135,6 +138,10 @@ export function rimMeshArrays(
   };
   for (const prism of prisms) {
     /**
+     * Cell centroid this prism was recentered around, restored here.
+     */
+    const { pivot, } = prism;
+    /**
      * Vertex count this prism contributes.
      */
     const count = prism.positions
@@ -151,10 +158,8 @@ export function rimMeshArrays(
       const source = vertex * XYZ;
       positions.set(
         [
-          nonNullishOrThrow(prism.positions[source],) + prism.pivot
-            .x,
-          nonNullishOrThrow(prism.positions[source + 1],) + prism.pivot
-            .y,
+          nonNullishOrThrow(prism.positions[source],) + pivot.x,
+          nonNullishOrThrow(prism.positions[source + 1],) + pivot.y,
           nonNullishOrThrow(prism.positions[source + 2],),
         ],
         (cursor.vertex + vertex) * XYZ,
