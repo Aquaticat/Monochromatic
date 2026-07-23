@@ -120,10 +120,17 @@ export function unwrapBindingPattern(pattern: ReadonlyRecord,): ReadonlyRecord {
    * Mutable cursor object avoids function-root `let` while walking wrapper nodes iteratively.
    */
   const cursor = { current: pattern, };
-  while ((cursor.current.type === 'AssignmentPattern')
-    || (cursor.current.type === 'RestElement')
-    || (cursor.current.type === 'TSParameterProperty'))
-  {
+  while (
+    (cursor.current
+      .type
+      === 'AssignmentPattern')
+    || (cursor.current
+      .type
+      === 'RestElement')
+    || (cursor.current
+      .type
+      === 'TSParameterProperty')
+  ) {
     /**
      * Current wrapper candidate for this loop iteration.
      */
