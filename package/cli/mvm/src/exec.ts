@@ -1,4 +1,5 @@
 import { join, } from 'node:path';
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -147,7 +148,20 @@ export async function exec(
     arguments: { pid, },
   },);
 
-  while (true) {
+  /**
+   * Latest guest status; the `exited` flag is the polling continuation condition.
+   */
+  const polling: {
+    current: {
+      exited: boolean;
+      exitcode?: number;
+      'out-data'?: string;
+      'err-data'?: string;
+    };
+  } = { current: { exited: false, }, };
+  while (!(polling
+    .current
+    .exited)) {
     /**
      * Raw `guest-exec-status` response polled each iteration until the process exits.
      */
@@ -169,47 +183,44 @@ export async function exec(
       'out-data'?: string;
       'err-data'?: string;
     }; };
-    /**
-     * Inner status payload; unwraps the `return` envelope for ergonomic access.
-     */
-    const status = statusParsed.return;
+    polling.current = statusParsed.return;
 
-    if (!status.exited) {
-      // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
-      await new Promise(function execPollDelay(resolve,) {
-        setTimeout(
-          resolve,
-          POLL_INTERVAL_MS,
-        );
-      },);
-      continue;
+    if (!(polling
+      .current
+      .exited)) {
+      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling delay
+      await wait(POLL_INTERVAL_MS,);
     }
-
-    /**
-     * Decoded stdout text; QMP captures it as base64 so it needs decoding before returning.
-     */
-    const stdout = status['out-data']
-      !== undefined
-      ? decodeBase64(status['out-data'],)
-      : '';
-    /**
-     * Decoded stderr text; mirrors the stdout decode path.
-     */
-    const stderr = status['err-data']
-      !== undefined
-      ? decodeBase64(status['err-data'],)
-      : '';
-    /**
-     * Guest exit code; defaulted to 0 because the agent omits the field on a clean exit.
-     */
-    const exitCode = status.exitcode
-      ?? 0;
-
-    rl.debug(`command exited with code ${String(exitCode,)}`,);
-    return {
-      exitCode,
-      stderr,
-      stdout,
-    };
   }
+
+  /**
+   * Completed inner status payload; unwraps the polling cursor for ergonomic access.
+   */
+  const { current: status, } = polling;
+  /**
+   * Decoded stdout text; QMP captures it as base64 so it needs decoding before returning.
+   */
+  const stdout = status['out-data']
+    !== undefined
+    ? decodeBase64(status['out-data'],)
+    : '';
+  /**
+   * Decoded stderr text; mirrors the stdout decode path.
+   */
+  const stderr = status['err-data']
+    !== undefined
+    ? decodeBase64(status['err-data'],)
+    : '';
+  /**
+   * Guest exit code; defaulted to 0 because the agent omits the field on a clean exit.
+   */
+  const exitCode = status.exitcode
+    ?? 0;
+
+  rl.debug(`command exited with code ${String(exitCode,)}`,);
+  return {
+    exitCode,
+    stderr,
+    stdout,
+  };
 }
