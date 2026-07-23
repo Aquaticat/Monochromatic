@@ -28,7 +28,59 @@ The maximum acceptable runtime for this exact 13-file package task is 10 seconds
 The cold or invalidated-cache case must satisfy the target because the stable warm path already finishes in 1.0 seconds.
 A design that reaches the target only by preserving the current warm cache does not resolve this incident.
 
-## Resolution
+## Final catalog-free update
+
+The completed architecture removes handwritten package,
+ECMAScript,
+DOM,
+and Node effect catalogs.
+It also removes `@mutates` as an opacity-discharge mechanism,
+static plain-data exemptions,
+and bodyless host authorities.
+A reached call now requires exact implementation-derived effects,
+verified runtime isolation,
+or rejection.
+
+Persistent cache schema 4 contains only mechanically derived summaries.
+Process-local final indexes use TypeScript's immutable semantic `Project` snapshot as authority.
+The former `effectProjectSourceSignatures()` configured-source metadata scan no longer runs before every process-index
+lookup.
+An active-overlay regression proves that a refreshed semantic snapshot writes a new final index without closing the
+bridge.
+
+`ForeignBorrowed` no longer triggers a complete source and callable scan.
+A reached inferred candidate uses TypeScript 7.0.2's `Checker.getSignatureUsage()` and walks backwards through exact
+callable owners.
+Each usage must resolve to its own call edge.
+Non-call escapes,
+top-level or excluded callers,
+unavailable queries,
+and mismatched exact edges add an ordinary inbound and remove inferred provenance.
+
+Final Linux x64 measurements over 13 files and 479 rules all reported zero diagnostics:
+
+- cold empty persistent cache: 838 milliseconds in Oxlint and 2.02 seconds wall;
+- warm unchanged state: 844 milliseconds in Oxlint and 1.41 seconds wall;
+- changed source: 835 milliseconds in Oxlint and 2.03 seconds wall;
+- invalidated compiler options: 824 milliseconds in Oxlint and 2.01 seconds wall.
+
+The strict rule cannot soundly self-apply because its implementation necessarily calls bodyless TypeScript handles,
+Oxlint host methods,
+and ECMAScript collections.
+`package/config/oxlint/src/overrides.ts` disables only this rule for its own package;
+every other configured Oxlint rule remains active.
+The strict unit and external-consumer boundaries still execute the rule.
+
+The final package verification processes 91 files rather than the traversal phase's 143 because catalog implementation
+and test files were deleted.
+Build,
+type lint,
+all unit tests,
+semantic-host lifecycle,
+external consumer,
+and package Oxlint pass.
+
+## Traversal-phase resolution
 
 The rule remains an Oxlint JavaScript rule and uses only Oxlint's released JavaScript-plugin boundary.
 No Oxlint or `tsgolint` fork or upstream contribution is involved.
@@ -74,9 +126,9 @@ The 10-second result is an empirical gate on the exact command and workload.
 and a zero-budget regression proves no partial summary is returned.
 The 10-second package-config acceptance target remains a stricter workload-specific gate.
 
-### Final acceptance measurements
+### Traversal-phase acceptance measurements
 
-The final disposable-worktree measurements used commit `656444e0a`.
+The traversal-phase disposable-worktree measurements used commit `656444e0a`.
 The cold command removed both
 `node_modules/.cache/prefer-readonly-parameter-type`
 and the generated Oxlint config before timing the exact user command.
@@ -98,7 +150,7 @@ No earlier lint run or generated summary was required for the result.
 Every case reported zero warnings and zero errors over 13 files with 479 rules.
 The reproduced pre-change cold baseline on commit `6e5cfe99d` was 49.6 seconds in Oxlint.
 
-The final package verification also passed:
+The traversal-phase package verification also passed:
 
 - package build;
 - package type lint;

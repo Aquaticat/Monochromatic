@@ -1,336 +1,212 @@
 # Handover: `prefer-readonly-parameter-type` effect architecture
 
-Living context for deciding whether the project rule can remain fail closed without handwritten effect catalogs,
-meet its lint-latency target,
-and benefit from a native implementation.
-Update this file after material evidence,
-decisions,
-prototypes,
-or commits.
+Living record for the catalog-free,
+fail-closed effect architecture in
+`package/oxlint-plugin/prefer-readonly-parameter-type`.
 
-## Current goal
+## Final decision
 
-Choose an architecture for
-`package/oxlint-plugin/prefer-readonly-parameter-type`
-that:
+Keep the rule as an Oxlint JavaScript plugin using the released JavaScript-plugin boundary and
+TypeScript 7.0.2's `typescript/unstable/sync` semantic API.
+Do not add Rust,
+Node-API,
+`ttsc`,
+or a custom linter distribution.
+Do not fork or contribute to Oxlint or `tsgolint` for this rule.
 
-- enforces honest readonly parameter contracts;
-- fails closed when parameter-reachable effects cannot be established;
-- avoids maintained external-effect catalogs if possible;
-- completes the exact 13-file package lint within 10 seconds,
-  including cold or invalidated-cache execution;
-- remains auditable across workspace source,
-  installed packages,
-  ECMAScript,
-  DOM,
-  and Node boundaries.
+A parameter-reachable call has exactly one accepted outcome:
 
-The selected implementation remains an Oxlint JavaScript rule
-and uses Oxlint's released JavaScript-plugin boundary.
-Demand-driven traversal now satisfies the measured latency requirement.
-Catalog removal and the stronger exact-source-or-isolation guarantee remain separate unfinished work.
+- derive effects from the exact repository-owned or shipped runtime implementation;
+- prove that a separately verified isolated value shares no caller-owned identity or capability;
+- reject the call as opaque.
 
-## User requirements
+Handwritten package,
+ECMAScript,
+DOM,
+and Node effect catalogs are removed.
+`@mutates` is documentation only and cannot discharge unresolved behavior.
+`ForeignBorrowed` records ownership provenance but cannot make an opaque call acceptable.
+Static plain-data typing is not runtime isolation proof.
 
-- Preserve a fail-closed guarantee rather than silently trusting unresolved behavior.
-- Keep the implementation as an Oxlint rule.
-- Never fork or contribute to Oxlint or `tsgolint`.
-- Treat 10 seconds as the maximum acceptable target for:
+## Implemented architecture
 
-  ```bash
-  mise run //package/config/oxlint:lint:oxlint
-  ```
+### Demand-driven effects
 
-  on its 13-file workload.
-- The cold or invalidated path must meet the target because the stable warm path already finishes in 1.0 second.
-- Preserve `/var/home/user/temp/agent/readonly-no-package-catalog-20260722` for inspection.
-- Maintain this handover periodically so context survives conversation compaction.
-
-## Terminology and guarantee boundary
-
-The current rule provides fail-closed effect accounting within an explicitly limited runtime model,
-not a mathematical proof that arbitrary JavaScript cannot mutate an object.
-Unknown calls must be analyzed,
-covered by trusted evidence or authored contracts,
-or reported as `opaqueEffect`.
-
-A stronger catalog-free guarantee should accept a parameter-reachable call only when:
-
-- effects are conservatively derived from exact reachable implementation source;
-- a verified isolation boundary prevents caller-owned identity or capabilities from crossing;
-- or the call is rejected.
-
-Under that stronger reading,
-a handwritten `@mutates` contract may describe an effect already established by analysis,
-but must not discharge an opaque boundary.
-TypeScript `readonly` is not ownership or runtime immutability.
-
-The current `plain-data-classifier.ts` excludes proxy and getter-backed runtime values from its model.
-Any final guarantee must state that limitation or replace it with enforceable admission checks.
-
-## Catalog findings
-
-Tracked catalog maintenance was measured as:
-
-- 26 production files and 3,604 lines;
-- 2,670 lines of catalog-focused tests and evidence validation.
-
-`effect-call-analysis.ts` checks package catalog entries before shipped-implementation inference,
-so handwritten summaries can shadow implementation analysis.
-`external-evidence.unit.test.ts` does not validate shipped content for `api-contract` entries;
-those entries are constrained only by package major.
-
-The native Oxlint rule is not an escape from catalogs.
-Its previous configuration used a 363-name allow-list,
-which merely moved the catalog.
-
-The catalog-removal experiment emptied `PACKAGE_EFFECTS` and produced 10 errors for observational
-`@csstools/css-tokenizer` guards.
-That result demonstrates that catalogs are acceptance mechanisms rather than the source of fail-closed behavior:
-without entries,
-unsupported calls fail instead of passing.
-
-Relevant durable sources:
-
-- `doc/troubleshooting/oxlint-prefer-readonly-package-implementation-inference.md`;
-- `doc/troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md`;
-- `doc/planning/replace-prefer-readonly-parameter-types.md`;
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-call-analysis.ts`;
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/package-effect-catalog.ts`.
-
-## Performance evidence
-
-`doc/troubleshooting/oxlint-prefer-readonly-incremental-cache.md` is the canonical incident record.
-Its measured 13-file run took 62.9 seconds cold and 1.0 second warm.
-
-The cold run opened a semantic project containing 834 source files and built 337 persistent effect-summary entries.
-`effect-summaries.ts` starts from every project source,
-then scans every cache miss before computing a whole-scope fixed point.
-This eager architecture is incompatible with the 10-second cold target.
-
-A standalone probe over
-`package/config/oxlint/src/index.ts`
-measured semantic-project opening at 181.7 milliseconds and closing at 0.4 milliseconds on the current host.
-That single observation is not a bound,
-but it shows that project opening alone did not consume the target.
-The demonstrated dominant path remains whole-project summary construction.
-
-The cold run also produced:
-
-- 21,616 `intrinsic-effect-query` log records;
-- 11,878 failed reads of a `src/package.json` candidate;
-- 8 `spawn ENOMEM` records during external implementation inference.
-
-Any retained architecture should memoize every visited manifest-search directory,
-aggregate repeated debug records,
-and avoid independent TypeScript API processes for each demanded external package.
-
-Latency compliance must be verified at the exact user command boundary with:
-
-- empty persistent cache;
-- analyzer or cache-schema invalidation;
-- relevant source changes;
-- stable warm state.
-
-Moving work into an opportunistic cache,
-a prior lint run,
-or an unmeasured daemon does not satisfy the cold target.
-Budget exhaustion must report incomplete or opaque analysis,
-never assume no effect.
-
-The demand-driven implementation landed in commits `6f473bea6` through `656444e0a`.
-Its exact final measurements at commit `656444e0a` were:
-
-- cold empty state:
-  928 milliseconds in Oxlint and 2.11 seconds wall time;
-- warm unchanged state:
-  918 milliseconds in Oxlint and 1.49 seconds wall time;
-- changed source:
-  924 milliseconds in Oxlint and 2.11 seconds wall time;
-- invalidated compiler-option surface:
-  922 milliseconds in Oxlint and 2.16 seconds wall time.
-
-All cases processed 13 files with 479 rules and reported zero diagnostics.
-The pre-change baseline reproduced at 49.6 seconds.
-
-The implementation loads active sources and follows exact owned callee and callback source identities.
-Schema-3 cache entries bind semantic call edges as well as module edges.
-Missing owned sources,
+`effect-demand-index.ts` starts from callables in each active Oxlint source.
+It follows exact owned callee and callback identities through semantic call edges.
+Missing reached sources,
 missing callable summaries,
-and exhausted explicit analysis budgets fail closed.
-Because `ForeignBorrowed` is declaration-wide,
-encountering explicit foreign provenance still expands the complete owned graph before propagating it.
-That marker-heavy path was not isolated by the 13-file acceptance benchmark.
+and analysis-budget exhaustion fail closed.
+The 120-second budget is a pathological-graph safety ceiling,
+not the latency acceptance target.
 
-Demand-driven scope covers summary traversal,
-not every validation operation.
-`effectProjectSourceSignatures()` still visits configured project membership before process-index reuse.
-The 834-source measured project passes,
-but larger-project latency is not established.
-The 120-second runtime budget is a fail-closed safety ceiling,
-not the 10-second workload gate.
+### Exact package runtime analysis
 
-## Current architectural ranking
+Package analysis resolves the selected conditional export to its shipped JavaScript or TypeScript runtime entry.
+It follows runtime re-exports and iteratively includes declaration-adjacent runtime shadows selected incorrectly by
+the TypeScript project.
+Tests cover conditional exports,
+runtime barrels,
+transitive runtime files,
+declaration and runtime sibling mismatch,
+shipped TypeScript,
+source-map distraction,
+and missing runtime implementation.
+Native and unresolved boundaries remain opaque.
 
-### Demand-driven source proof with exact generated certificates
+### Host opacity
 
-This is now the implemented traversal architecture.
-It starts from callables in each active Oxlint source,
-follows exact owned callees and callbacks,
-and recomputes fixed points only when the reached graph expands.
-The exact 13-file cold,
+TypeScript library declarations establish identity and shape,
+not behavior.
+Parameter-reachable bodyless ECMAScript,
+DOM,
+and Node calls are therefore opaque.
+Removed special cases include global `String`,
+observational collection methods,
+host methods,
+shallow frozen copies retaining nested identity,
+and statically plain structured values.
+
+### Cache model
+
+Persistent cache schema 4 contains only mechanically derived summaries.
+It binds exact source,
+module,
+semantic call,
+compiler-option,
+declaration-surface,
+lockfile,
+analyzer,
+and external implementation identities.
+There is no catalog result origin or documented-uncertainty acceptance state.
+
+Process-local final indexes use TypeScript's immutable semantic `Project` snapshot object as authority.
+The former `effectProjectSourceSignatures()` project-wide metadata scan is removed.
+A regression changes the active overlay without closing the bridge and proves a new snapshot writes a new final index.
+`closeSemanticBridge()` clears every process cache.
+
+### Foreign ownership
+
+A reached inferred `ForeignBorrowed` candidate triggers exact
+`Project.checker.getSignatureUsage()` queries instead of scanning every callable in every source.
+The analysis walks backwards through callable owners.
+Each usage must produce its own exact owned call edge.
+Non-call escapes,
+top-level or excluded callers,
+unavailable usage queries,
+and unresolved exact edges add an ordinary inbound and remove inferred provenance.
+
+The installed TypeScript 7.0.2 API probe returned both calls to a shared helper in 6.3 milliseconds in a configured
+287-source project.
+The unit corpus covers an otherwise unreached ordinary caller and an overload family with a value alias escape beside
+a matching call.
+
+### Self-hosting boundary
+
+The strict effect rule does not apply to its own package.
+Its implementation necessarily uses bodyless TypeScript handles,
+Oxlint host methods,
+and ECMAScript collections.
+Self-application could pass only by restoring forbidden host authorities or by rejecting the implementation itself.
+
+`package/config/oxlint/src/overrides.ts` disables only
+`prefer-readonly-parameter-type/prefer-readonly-parameter-types` under this package.
+Every other configured Oxlint rule remains active.
+The package's semantic corpus and external-consumer tests execute the strict rule directly.
+
+## Removed authority surface
+
+The completed removal deleted 65 files and 10,355 lines from the catalog-oriented implementation and tests.
+The former handwritten surface contained 492 entries:
+
+- 222 ECMAScript entries;
+- 54 DOM entries;
+- 34 Node entries;
+- 182 package entries.
+
+`catalog-free-architecture.unit.test.ts` prevents production catalog,
+host-authority,
+evidence-table,
+plain-data authority modules,
+and removed opacity-discharge identifiers from returning.
+
+## Latency evidence
+
+The exact acceptance command is:
+
+```bash
+mise run //package/config/oxlint:lint:oxlint
+```
+
+The pre-change whole-project implementation reproduced at 49.6 seconds.
+An empty package catalog alone still took 67.5 seconds,
+which proved that catalog deletion without demand-bounded implementation analysis was insufficient.
+
+Final catalog-free Linux x64 measurements process 13 files with 479 rules and zero diagnostics:
+
+- cold empty persistent cache: 838 milliseconds in Oxlint and 2.02 seconds wall;
+- warm unchanged state: 844 milliseconds in Oxlint and 1.41 seconds wall;
+- changed source: 835 milliseconds in Oxlint and 2.03 seconds wall;
+- invalidated compiler options: 824 milliseconds in Oxlint and 2.01 seconds wall.
+
+The changed-source and compiler-option runs used
+`/home/user/temp/agent/readonly-catalog-final-gates-20260723`,
+a disposable worktree.
+No prior daemon,
+background analyzer,
+or hidden precomputation is required for the cold result.
+
+## Verification evidence
+
+The final local boundary checks passed:
+
+- package JavaScript build;
+- package TypeScript lint;
+- complete package unit corpus;
+- semantic-bridge host lifecycle;
+- staged external consumer;
+- package Oxlint with zero warnings and zero errors over 91 current files;
+- exact cold,
 warm,
-changed,
-and invalidated gates all pass.
+changed-source,
+and compiler-option-invalidated latency gates.
 
-Generated summaries are not catalogs when they are reproducible,
-hash-bound to exact source and resolution inputs,
-and contain no handwritten per-callable overrides.
-Whole-project source-signature validation must leave the lint hot path.
+The package file count is now 91 rather than the traversal phase's 143 because catalog production and test files were
+deleted.
 
-### Verified isolation at explicit plain-data boundaries
+GitHub Actions workflow `readonly-semantic-bridge.yml` run `29982799056` passed the built bridge and external
+consumer on Ubuntu,
+macOS 15 arm64,
+and Windows x64 for commit `50240278b`.
 
-Isolation can admit opaque implementations only when no caller-owned identity or capability crosses.
-The admitted domain must reject getters,
-proxies,
-functions,
-callbacks,
-promises,
-ports,
-streams,
-host handles,
-transfer lists,
-`SharedArrayBuffer`,
-and views backed by shared memory.
-`structuredClone()` alone is not a proof because serialization can execute accessors,
-and transfer or shared-memory semantics remain observable.
+## Key commit sequence
 
-### Handwritten dependency manifests
+Traversal and cache foundation:
 
-These are distributed catalogs.
-They can improve ergonomics but surrender independent verification.
-A manifest derived mechanically from exact source belongs to the source-proof option instead.
+- `6f473bea6` implements demand-driven traversal and schema-3 semantic edges;
+- `4bdbc0478` adds fail-closed missing-edge and budget handling;
+- `656444e0a` closes the traversal-phase latency gate.
 
-## Rust and Node-API investigation
+Catalog-free authority:
 
-The current hypothesis is:
-Rust can accelerate parsing,
-graph construction,
-fixed-point propagation,
-hashing,
-and certificate validation,
-but Node-API alone does not fix eager scope or supply TypeScript type semantics.
-A Rust addon that receives the same 337-source workload can still miss the 10-second target.
+- `2bf5f6bc5` removes catalog and evidence modules;
+- `04731605b` removes documented uncertainty and advances schema 4;
+- `5892f9844` follows reached runtime shadow files;
+- `9c3599a09` makes mutable-capable bodyless callables opaque;
+- `903d9addc` removes project-wide final-index source signatures;
+- `32d110bdc` replaces complete foreign source scans with exact signature inbounds;
+- `350caf669` adds the catalog-absence architecture regression;
+- `64a40ca6b` proves snapshot invalidation and exact signature escape fallback;
+- `32a06a75b` documents and configures the self-hosting boundary.
 
-Oxlint JavaScript plugin callbacks are synchronous and routed to the main JavaScript thread through a
-`ThreadsafeFunction`.
-A synchronous Node-API addon can perform native work during that callback,
-but an async addon cannot be awaited by the current rule visitor.
-Native computation therefore removes JavaScript and chatty-RPC overhead;
-it does not automatically add Oxlint worker parallelism.
+## Preserved artifact and cleanup
 
-Current source probes:
+Preserve
+`/var/home/user/temp/agent/readonly-no-package-catalog-20260722`
+for inspection.
+Remove the disposable final-gate worktree after final documentation and measurements are committed.
 
-- Oxc clone:
-  `/home/user/temp/agent/oxc-20260722-napi-eval`,
-  revision `90b8fd143c0085f3fb2d47344c578e23ccc33da7`;
-- TypeScript-Go clone:
-  `/home/user/temp/agent/typescript-go-20260722-napi-eval`,
-  revision `4e25827a509ade0b8f48a690e9538be74fb491a6`;
-- NAPI-RS clone:
-  `/home/user/temp/agent/napi-rs-20260722-eval`,
-  revision `e0b87086eefe0e7efeea6d269e9403c4be4ba9aa`;
-- Neon clone:
-  `/home/user/temp/agent/neon-20260722-eval`,
-  revision `38960e4381d9ad13b551cdf2d261f609167c9bc2`;
-- `tsgolint` clone:
-  `/home/user/temp/agent/tsgolint-20260722-native-eval`,
-  revision `744b737d9743274217b01a54f5ff51bd6857da48`;
-- `ttsc` clone:
-  `/home/user/temp/agent/ttsc-20260722-native-eval`,
-  revision `017b4d808689f57d4e30391844ab897e5f9f3dce`.
-
-Oxc now contains `oxc_type_checker`,
-but its crate documentation says it is a scaffold that performs no type checking.
-A pure Oxc Rust analyzer therefore fails the TypeScript semantic-compatibility gate.
-Oxc's external JavaScript-plugin API also does not expose type-aware rule APIs,
-and external native Rust rules require a custom Oxlint distribution.
-
-TypeScript-Go remains the semantic authority.
-Its sync API exposes individual checker operations over synchronous RPC.
-The earlier reading of TypeScript-Go's `_tools/customlint` as a possible TypeScript extension was wrong:
-that directory registers `golang.org/x/tools/go/analysis` checks for the compiler's own Go source.
-TypeScript-Go issue 2824 states that third-party code cannot be dynamically linked into the server process.
-
-Two direct-checker Go hosts were discovered:
-
-- `tsgolint` executes rules against TypeScript-Go AST and checker objects inside Oxlint's type-aware backend.
-  A project rule requires a fork or upstream contribution,
-  so this path is excluded despite its 396-millisecond rule-disabled baseline.
-- `ttsc` provides a public contributor rule API,
-  including type-aware and project-scoped rules.
-  It avoids modifying either linter but runs through a separate host,
-  and its contributor binary generation must fit the cold target.
-  "Contributor rule" is `ttsc` API terminology;
-  project source would remain local rather than being contributed upstream.
-
-NAPI-RS and Neon both expose Rust through Node-API.
-They are bridge alternatives,
-not semantic engines.
-Their relative ergonomics cannot decide whether the analyzer meets the guarantee or latency target.
-
-## Evaluation decision
-
-Demand-driven TypeScript/JavaScript analysis through Oxlint's released JavaScript-plugin API
-is selected and implemented.
-A separate `ttsc` host and Rust Node-API addon are no longer needed for the measured workload.
-
-The `tsgolint` fork,
-native Oxlint fork,
-and upstream-contribution variants remain excluded by user requirement.
-Pure Oxc Rust remains excluded because its checker performs no type checking.
-
-## Research state and next actions
-
-- Repository precedent search found Rust packages but no existing repo-owned Node-API addon.
-- Current Oxc source says its Rust type checker performs no checking.
-- Current TypeScript-Go source confirms per-operation checker RPC and no dynamic third-party server plugins.
-- `tsgolint` gives rules direct Program and Checker access,
-  but its lack of an external rule API makes it ineligible under the no-fork and no-contribution constraint.
-- `ttsc` exposes supported custom Go contributor rules over TypeScript-Go,
-  including project-scoped state.
-- Current NAPI-RS and Neon source confirms both are Node-API binding frameworks
-  with synchronous and asynchronous surfaces.
-- The required technology vet report now exists at
-  `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`.
-- Demand-driven traversal through the incumbent bridge is implemented and verified.
-- Keep `ttsc` and Rust Node-API rejected unless a future measured workload fails after algorithmic scope is minimized.
-- Monitor the complete-graph `ForeignBorrowed` fallback separately from the 13-file target.
-- Continue the catalog-removal design:
-  exact implementation proof,
-  verified isolation,
-  or rejection remains the intended stronger policy.
-- Preserve fail-closed budget and missing-edge regressions during later cache or traversal changes.
-
-## Existing commits and worktrees
-
-- `ff7b18fe5` records the 10-second acceptance target in the incremental-cache troubleshooting document.
-- `8e3d38882` records the standalone semantic-bridge startup measurement.
-- `5bd26fcc9` creates this living handover.
-- `20b3fe1e5` fixes its line wrapping.
-- `90c7f9d00` records the initial native-analysis technology audit.
-- `55e0b8b51` excludes Oxlint and `tsgolint` forks or upstream contributions from that audit.
-- `c376888c2` records the direct-checker Go findings in this handover.
-- `1590961d4` adds demand-scope regressions.
-- `6f473bea6` implements demand-driven effect traversal and schema-3 semantic edges.
-- `4bdbc0478` adds fail-closed missing-edge and budget handling.
-- `656444e0a` is the final code commit used by the acceptance measurements.
-- `16a58fdf1` records the implementation and TypeScript alias guard in durable docs.
-- `/var/home/user/temp/agent/readonly-no-package-catalog-20260722` contains the package-catalog-removal experiment and
-  must remain intact.
-
-Unrelated worktree changes are concurrent work and must not be modified:
+Unrelated concurrent changes must remain untouched:
 
 - `mise.toml`;
-- `package/module/css-edit.fuzz/src/coverage-driver.ts`;
 - `package/webapp-productivity/done-postcss/data/done.db-wal`.

@@ -111,6 +111,58 @@ not a TypeScript-Go defect.
 before making the synchronous RPC.
 Ordinary symbols stay unchanged.
 
+### Signature usages distinguish calls from value escapes
+
+The catalog-free foreign-ownership fallback needs every inbound use of a reached callable without scanning every
+callable declaration in the configured project.
+The installed synchronous client exposes that operation at
+`node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/dist/api/sync/api.js:711-721`:
+
+```javascript
+getSignatureUsage(signatureDecl) {
+    const data = this.client.apiRequest("getSignatureUsages", {
+        snapshot: this.snapshotId,
+        project: this.project.id,
+        signatureDecl: getNodeId(signatureDecl),
+    });
+    return (data ?? []).map(entry => ({
+        name: new NodeHandle(entry.name, this.project),
+        call: entry.call ? new NodeHandle(entry.call, this.project) : undefined,
+    }));
+}
+```
+
+TypeScript-Go revision `2bd066d87f5bafd315be9f40889d0a60b9e58e0b` implements the query in
+`internal/ls/findallreferences.go:1100-1158`.
+It asks for references across `l.program.GetSourceFiles()` and associates a call only when the climbed reference is the
+call expression's callee:
+
+```go
+sourceFiles := l.program.GetSourceFiles()
+entries := l.GetReferencedSymbolsForNode(ctx, name.Pos(), name, sourceFiles)
+// ...
+called := ast.ClimbPastPropertyAccess(node)
+var callExpr *ast.Node
+if called.Parent != nil && ast.IsCallExpression(called.Parent) && called.Parent.Expression() == called {
+    callExpr = called.Parent
+}
+```
+
+The API session at `internal/api/session.go:3311-3350` resolves the declaration inside the requested snapshot,
+runs this language-service query,
+and returns both name and optional call handles.
+A missing `call` is therefore useful fail-closed evidence:
+the callable escaped through a value reference rather than being invoked at that exact usage.
+
+A live probe over the configured 287-source fixture returned both calls to `readChild` in 6.3 milliseconds.
+An overload probe returned the same direct call plus alias and export value references for each overload declaration;
+the value references had no call handle.
+The production rule accepts only a usage that creates its own exact owned edge.
+Non-call escapes,
+top-level or excluded callers,
+query failures,
+and edge mismatches add an ordinary inbound and remove inferred `ForeignBorrowed` provenance.
+
 ### Unchanged files must reuse their immutable snapshot
 
 TypeScript's installed sync adapter sends every `updateSnapshot` call through synchronous RPC.
@@ -600,6 +652,8 @@ and 6,668 ms.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
 - `Checker.getAliasedSymbol` is called only when `symbol.flags` contains `SymbolFlags.Alias`;
 - ordinary symbols bypass alias resolution without changing identity;
+- `Checker.getSignatureUsage` returns project references with call handles only for exact callee positions;
+- overload declarations expose the same call and value-escape family in the tested fixture;
 - every main or demand-driven external `API` client immediately receives guarded TypeScript 7.0.2 child control;
 - guarded child control forces channel-owned termination to `SIGKILL`;
 - `beforeExit` bridge cleanup closes the native child before TypeScript's `exit` kill handler runs.
@@ -614,7 +668,8 @@ and 6,668 ms.
 - retaining `openFiles` across changed virtual overlays returned stale type text in the built adapter test;
 - a dot-prefixed disposable source directory selected `/dev/null/inferred` rather than the expected configured project;
 - calling `Checker.getAliasedSymbol` with an ordinary symbol panics the native child with
-  `Should only get alias here`.
+  `Should only get alias here`;
+- treating every signature reference as a call is unsound because alias and export value escapes have no call handle.
 
 ## Verified workarounds
 

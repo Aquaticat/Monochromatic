@@ -1,7 +1,8 @@
 # Native effect analysis for `prefer-readonly-parameter-type`
 
-Status: demand-driven traversal implemented and verified through the selected Oxlint JavaScript-rule boundary;
-catalog-free effect authority remains unfinished.
+Status: selected Oxlint JavaScript-rule architecture is catalog free,
+fail closed,
+and verified at consumer and platform boundaries.
 
 Lifecycle phase: monitoring.
 
@@ -13,7 +14,7 @@ under a 10-second cold 13-file lint target.
 
 Started: 2026-07-22.
 
-Last updated: 2026-07-22.
+Last updated: 2026-07-23.
 
 Governing skill commit: `25d237fe220d813f5d10367ad3d487707d48bb42`.
 
@@ -560,11 +561,18 @@ The disposable implementation proved:
   panic,
   or process-lifecycle diagnostics reach stderr.
 
-This phase did not remove handwritten catalogs.
-It also did not rerun the final commit on macOS arm64 or Windows x64.
-Those remain separate gates for the catalog-free authority and release matrix.
+The completed phase removed handwritten package,
+ECMAScript,
+DOM,
+and Node catalogs;
+removed contract and static-plain-data opacity discharge;
+and advanced persistent entries to schema 4.
+GitHub Actions workflow `readonly-semantic-bridge.yml` run `29982799056` passed the built bridge and external consumer
+on Linux,
+macOS 15 arm64,
+and Windows x64 at commit `50240278b`.
 
-Final exact-command measurements at commit `656444e0a` were:
+Traversal-phase exact-command measurements at commit `656444e0a` were:
 
 - cold empty state:
   928 milliseconds in Oxlint and 2.11 seconds wall time;
@@ -581,21 +589,19 @@ type lint,
 unit corpus,
 semantic-bridge host test,
 external-consumer host test,
-and 143-file package Oxlint also passed.
+and traversal-phase 143-file package Oxlint also passed.
+The catalog-free package now has 91 linted files after catalog sources and tests were deleted.
 
 The implementation records callee and callback source identities in schema-3 cache entries,
 binds semantic edges into invalidation closures,
 and rejects missing owned sources or callable summaries.
 A runtime safety ceiling reports `analysis-incomplete` rather than returning partial effects.
-Explicit `ForeignBorrowed` provenance conservatively expands the complete owned graph
-before declaration-wide propagation.
-That marker-heavy path was not isolated by the 13-file benchmark.
-
-Demand-driven scope applies to summary traversal rather than every validation operation.
-`effectProjectSourceSignatures()` still visits configured project membership before process-index reuse.
-The measured 834-source project passes,
-but larger-project latency is not established.
-The 120-second runtime budget is a fail-closed safety ceiling,
+A reached inferred `ForeignBorrowed` candidate now uses TypeScript's exact signature-usage query and walks backwards
+through callable owners.
+Non-call escapes and unresolved exact usage edges add ordinary inbounds.
+The former complete source scan and `effectProjectSourceSignatures()` process-index validation are removed.
+TypeScript's immutable semantic project snapshot is the process-cache authority.
+The 120-second runtime budget remains a fail-closed safety ceiling,
 not the 10-second workload gate.
 
 ## Scoring and sensitivity
@@ -612,10 +618,14 @@ Do not reopen it for eager traversal or missing TypeScript semantics.
 
 ## Recommendation status
 
-Retain the implemented demand-driven Oxlint JavaScript rule for the traversal and latency architecture.
-It does not by itself complete the catalog-free effect-authority goal.
+Retain the implemented catalog-free,
+demand-driven Oxlint JavaScript rule.
+The exact final catalog-free command completes in 2.02 seconds cold,
+1.41 seconds warm,
+2.03 seconds after a source change,
+and 2.01 seconds after compiler-option invalidation on the measured Linux x64 host.
 Do not add Rust,
 Node-API,
 `ttsc`,
-or a custom linter distribution for the measured workload.
+or a custom linter distribution for this workload.
 No path may fork or seek changes to Oxlint or `tsgolint`.
