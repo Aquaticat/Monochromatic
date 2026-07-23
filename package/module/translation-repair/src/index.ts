@@ -37,6 +37,7 @@ export {
 } from './issue-model.ts';
 export {
   categoryFamily,
+  type CategoryRemap,
   ISSUE_CATEGORIES,
   ISSUE_CATEGORY_FAMILIES,
   ISSUE_SEVERITIES,
@@ -47,6 +48,10 @@ export {
   type IssueSeverity,
   remapCategoryLeaf,
 } from './issue-taxonomy.ts';
+export {
+  locateQuote,
+  type QuoteLocation,
+} from './locate-quote.ts';
 export { normalizePunctuation, } from './quote-normalize.ts';
 export {
   type AlignmentFinding,
@@ -81,6 +86,7 @@ export { extractStreamedCompletion, } from './stream-completion.ts';
 export {
   type BenchmarkEntry,
   type CriticBenchmarkResult,
+  MIN_DISPATCH_BUDGET_MS,
   runCriticBenchmark,
 } from './benchmark.ts';
 export {
