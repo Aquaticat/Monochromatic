@@ -162,7 +162,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'SyntheticHttpError',
+      name: SyntheticHttpError.name,
       children: [
         it({
           name: 'carries status and excerpts the body',
