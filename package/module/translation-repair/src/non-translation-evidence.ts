@@ -209,4 +209,99 @@ export function screenNonTranslationVotes(
   };
 }
 
+/**
+ * Document-level dominance verdict over standing per-slice votes.
+ *
+ * @example
+ * ```ts
+ * const dominance: NonTranslationDominance = {
+ *   blocked: true,
+ *   standingChars: 900,
+ *   totalChars: 1_100,
+ * };
+ * ```
+ */
+export type NonTranslationDominance = {
+  /**
+   * Whether standing votes dominate the translation's characters, so the
+   * whole document blocks and returns unchanged.
+   */
+  readonly blocked: boolean;
+
+  /**
+   * Target characters inside slices whose votes stand.
+   */
+  readonly standingChars: number;
+
+  /**
+   * Target characters across every slice considered so far.
+   */
+  readonly totalChars: number;
+};
+
+/**
+ * Rules whether standing non-translation votes dominate a document.
+ * A wholly unrelated pair carries standing votes on most of its
+ * characters; a minority region (an untranslated passage, a divergent
+ * paragraph) degrades only its own slices and must never block the
+ * repairable remainder (settled architecture: degradation is never
+ * document-wide).
+ *
+ * @param slices - per-slice target sizes with their standing verdicts
+ *
+ * @returns Dominance verdict with the character tallies behind it
+ *
+ * @example
+ * ```ts
+ * const dominance = assessNonTranslationDominance({ slices: tallies, },);
+ * if (dominance.blocked) returnUnchanged();
+ * ```
+ */
+export function assessNonTranslationDominance(
+  {
+    slices,
+  }: {
+    readonly slices: readonly {
+      readonly targetChars: number;
+      readonly votesStand: boolean;
+    }[];
+  },
+): NonTranslationDominance {
+  /**
+   * Target characters inside standing-vote slices.
+   */
+  const standingChars = slices
+    .filter(function stands(slice,) {
+      return slice.votesStand;
+    },)
+    .reduce(
+      function addChars(
+        sum,
+        slice,
+      ) {
+        return sum + slice.targetChars;
+      },
+      0,
+    );
+
+  /**
+   * Target characters across every slice.
+   */
+  const totalChars = slices.reduce(
+    function addChars(
+      sum,
+      slice,
+    ) {
+      return sum + slice.targetChars;
+    },
+    0,
+  );
+
+  return {
+    blocked: (standingChars * 2) > totalChars,
+    standingChars,
+    totalChars,
+  };
+}
+
 //endregion Non-translation evidence

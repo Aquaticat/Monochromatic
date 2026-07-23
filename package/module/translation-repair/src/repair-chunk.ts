@@ -1,18 +1,22 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type {
-  AdjudicatedIssue,
-  AdjudicationConfig,
-} from './adjudicate-model.ts';
+import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { screenNonTranslationVotes, } from './non-translation-evidence.ts';
+import {
+  NON_TRANSLATION_BLOCK_VOTES,
+  screenNonTranslationVotes,
+} from './non-translation-evidence.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import {
   parseDocument,
   type RepairDocument,
 } from './parse-document.ts';
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
+} from './repair-contract.ts';
 import {
   runCheckerStage,
   runEditorStage,
@@ -26,113 +30,13 @@ import {
   UNCHANGED_CANDIDATE_ID,
   UNCHANGED_MEASUREMENTS,
 } from './select-candidate.ts';
-import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Chunk repair
 // One chunk pair through the whole loop: critics, aggregation, panel,
 // envelopes, editor, apply gate, checkers, measurement, selection. Every
 // early exit returns the chunk unchanged with whatever issues were decided;
 // the unchanged text always competes and wins by default.
-
-/**
- * Model roster for one repair run, by role.
- *
- * @example
- * ```ts
- * const models: RepairModels = {
- *   criticModelIds: allSeven,
- *   panelModelIds: allSeven,
- *   editorModelId: 'hf:zai-org/GLM-5.2',
- *   checkerModelIds: strongestThree,
- * };
- * ```
- */
-export type RepairModels = {
-  /**
-   * Critic fan-out electorate.
-   */
-  readonly criticModelIds: readonly SyntheticModelId[];
-
-  /**
-   * Fixed adjudication panel.
-   */
-  readonly panelModelIds: readonly SyntheticModelId[];
-
-  /**
-   * Editor voice producing the repaired candidate.
-   */
-  readonly editorModelId: SyntheticModelId;
-
-  /**
-   * Extra rule line appended to the editor system prompt, for prompt
-   * calibration experiments; absent means the baseline prompt.
-   */
-  readonly editorRuleAddendum?: string;
-
-  /**
-   * Resolution checkers proving the repair.
-   */
-  readonly checkerModelIds: readonly SyntheticModelId[];
-};
-
-/**
- * Everything one chunk's repair decided.
- *
- * @example
- * ```ts
- * const outcome = await repairChunk({ ... },);
- * if (outcome.changed) splice(outcome.repairedText,);
- * ```
- */
-export type ChunkRepairOutcome = {
-  /**
-   * Chunk position within the document.
-   */
-  readonly chunkIndex: number;
-
-  /**
-   * Winning chunk text; equals the input when unchanged won.
-   */
-  readonly repairedText: string;
-
-  /**
-   * Whether the repaired candidate demonstrably beat unchanged.
-   */
-  readonly changed: boolean;
-
-  /**
-   * Adjudicated issues of this chunk.
-   */
-  readonly issues: readonly AdjudicatedIssue[];
-
-  /**
-   * Accepted issues the checkers confirmed fixed in the winning text;
-   * empty when unchanged won.
-   */
-  readonly resolvedIssueIds: readonly string[];
-
-  /**
-   * Critics reporting critical non-translation at wire level.
-   */
-  readonly nonTranslationVotes: number;
-
-  /**
-   * Whether deterministic evidence (enough validated content-critique
-   * claims anchored into target text) contradicted the votes;
-   * callers must never block on contradicted votes.
-   */
-  readonly nonTranslationContradicted: boolean;
-
-  /**
-   * Critics heard, for the caller's degradation accounting.
-   */
-  readonly heardCritics: number;
-
-  /**
-   * Stage findings in scorecard-stable wording.
-   */
-  readonly findings: readonly string[];
-};
+// The roster and outcome types live in repair-contract.ts.
 
 /**
  * Count of `mdx-downgraded` findings, the integrity signal:
@@ -257,6 +161,12 @@ export async function repairChunk(
   ];
 
   /**
+   * Whether votes met the block threshold uncontradicted.
+   */
+  const votesStand = (critic.nonTranslationVotes >= NON_TRANSLATION_BLOCK_VOTES)
+    && (!screening.contradicted);
+
+  /**
    * Unchanged outcome shared by every early exit.
    */
   const unchangedOutcome = {
@@ -266,8 +176,26 @@ export async function repairChunk(
     resolvedIssueIds: [],
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: screening.contradicted,
+    nonTranslationStanding: votesStand,
     heardCritics: critic.heardCritics,
   };
+  if (votesStand) {
+    l.warn(
+      `chunk ${String(chunkIndex,)}: ${
+        String(critic.nonTranslationVotes,)
+      } non-translation votes stand; slice ships unchanged`,
+    );
+    return {
+      ...unchangedOutcome,
+      issues: [],
+      findings: [
+        ...criticFindings,
+        `non-translation votes stand (${
+          String(critic.nonTranslationVotes,)
+        }/${String(critic.heardCritics,)} heard); slice unchanged`,
+      ],
+    };
+  }
   if (screening.claims
     .length
     === 0) {
@@ -488,6 +416,7 @@ export async function repairChunk(
     resolvedIssueIds: changed ? resolvedIssueIds : [],
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: screening.contradicted,
+    nonTranslationStanding: votesStand,
     heardCritics: critic.heardCritics,
     findings: [
       ...stageFindings,

@@ -4,7 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { BenchmarkEntry, } from './prepare-entry.ts';
-import type { RepairModels, } from './repair-chunk.ts';
+import type { RepairModels, } from './repair-contract.ts';
 import {
   measureSeedRestoration,
   type SeedRestoration,

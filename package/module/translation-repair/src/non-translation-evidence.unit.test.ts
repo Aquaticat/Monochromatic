@@ -16,6 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  assessNonTranslationDominance,
   assessNonTranslationEvidence,
   type IssueClaim,
   NON_TRANSLATION_BLOCK_VOTES,
@@ -174,6 +175,49 @@ await describe({
             },);
             expect(evidence.contradicted,).toBe(false,);
             expect(evidence.contradictionClaimCount,).toBe(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: assessNonTranslationDominance.name,
+      children: [
+        it({
+          name: 'blocks when standing slices dominate the characters',
+          fn: async () => {
+            const dominance = assessNonTranslationDominance({
+              slices: [
+                { targetChars: 900, votesStand: true, },
+                { targetChars: 200, votesStand: false, },
+              ],
+            },);
+            expect(dominance.blocked,).toBe(true,);
+            expect(dominance.standingChars,).toBe(900,);
+            expect(dominance.totalChars,).toBe(1_100,);
+          },
+        },),
+
+        it({
+          name: 'leaves a minority standing region to per-slice degradation',
+          fn: async () => {
+            const dominance = assessNonTranslationDominance({
+              slices: [
+                { targetChars: 300, votesStand: true, },
+                { targetChars: 900, votesStand: false, },
+              ],
+            },);
+            expect(dominance.blocked,).toBe(false,);
+            expect(dominance.standingChars,).toBe(300,);
+          },
+        },),
+
+        it({
+          name: 'never blocks an empty slice list',
+          fn: async () => {
+            const dominance = assessNonTranslationDominance({ slices: [], },);
+            expect(dominance.blocked,).toBe(false,);
+            expect(dominance.totalChars,).toBe(0,);
           },
         },),
       ],

@@ -87,11 +87,11 @@ export {
   type RepairScorecard,
   runRepairBenchmark,
 } from './repair-benchmark.ts';
+export { repairChunk, } from './repair-chunk.ts';
 export {
   type ChunkRepairOutcome,
-  repairChunk,
   type RepairModels,
-} from './repair-chunk.ts';
+} from './repair-contract.ts';
 export {
   type CheckerStageResult,
   type EditorStageResult,
@@ -105,13 +105,19 @@ export {
   runPanelStage,
 } from './repair-stages.ts';
 export {
+  assessNonTranslationDominance,
   assessNonTranslationEvidence,
   NON_TRANSLATION_BLOCK_VOTES,
   NON_TRANSLATION_CONTRADICTION_MIN,
+  type NonTranslationDominance,
   type NonTranslationEvidence,
   type NonTranslationScreening,
   screenNonTranslationVotes,
 } from './non-translation-evidence.ts';
+export {
+  SLICE_CHAR_BUDGET,
+  subdivideChunkPair,
+} from './slice-pair.ts';
 export {
   type RepairIssueRecord,
   type RepairStatus,
