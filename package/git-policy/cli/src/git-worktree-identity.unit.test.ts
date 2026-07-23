@@ -59,7 +59,8 @@ function overrideEnvironment({
         process.env[key] = original;
         return;
       }
-      delete process.env[key];
+      if (!Reflect.deleteProperty(process.env, key,))
+        throw new Error(`Could not restore absent environment key ${JSON.stringify(key,)}.`,);
     },
   };
 }
