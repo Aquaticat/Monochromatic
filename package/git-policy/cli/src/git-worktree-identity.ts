@@ -111,10 +111,6 @@ type ParsedIdentityMetadata = Readonly<{
    */
   isBare: boolean;
   /**
-   * Git-reported inside-worktree flag.
-   */
-  isInsideWorktree: boolean;
-  /**
    * Raw Git common-directory path.
    */
   commonDir: string;
@@ -176,7 +172,7 @@ async function runIdentityGit({
 /**
  * Parses fixed-order worktree identity metadata.
  *
- * @param output - four-line real-Git metadata output
+ * @param output - three-line real-Git metadata output
  *
  * @returns validated identity metadata
  *
@@ -184,7 +180,7 @@ async function runIdentityGit({
  *
  * @example
  * ```ts
- * parseIdentityMetadata('true\nfalse\n/repo/.git\n/repo/.git\n');
+ * parseIdentityMetadata('false\n/repo/.git\n/repo/.git\n');
  * ```
  */
 function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
@@ -192,7 +188,6 @@ function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
    * Fixed-order metadata fields without terminal line break.
    */
   const [
-    isInsideWorktreeOutput,
     isBareOutput,
     gitDir,
     commonDir,
@@ -207,7 +202,6 @@ function parseIdentityMetadata(output: string,): ParsedIdentityMetadata {
     commonDir,
     gitDir,
     isBare: isBareOutput === 'true',
-    isInsideWorktree: isInsideWorktreeOutput === 'true',
   };
 }
 
@@ -273,7 +267,6 @@ export async function resolveGitWorktreeIdentity({
         preSubcommandArgs,
         invocationCwd,
         metadataArgs: [
-          '--is-inside-work-tree',
           '--is-bare-repository',
           '--git-dir',
           '--git-common-dir',
@@ -296,12 +289,6 @@ export async function resolveGitWorktreeIdentity({
    * Parsed raw paths and repository-shape flags.
    */
   const metadata = parseIdentityMetadata(metadataOutput,);
-  if ((!metadata.isInsideWorktree) && (!metadata.isBare)) {
-    return {
-      kind: 'outside-worktree',
-      effectiveCwd,
-    };
-  }
   /**
    * Canonical administrative paths shared by bare and worktree identities.
    */
