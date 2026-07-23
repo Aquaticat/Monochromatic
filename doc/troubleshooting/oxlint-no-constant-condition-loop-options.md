@@ -54,6 +54,10 @@ an explicit-continuation policy.
 Source was inspected at Oxc tag `apps_v1.74.0`,
 commit `2d4e8d20644e0e7446f0a381894b45ea339a0625`,
 with origin `https://github.com/oxc-project/oxc.git`.
+The exact release source remains available in the
+[pinned rule implementation][oxc-rule-source].
+The [generated Oxlint rule documentation][oxlint-rule-doc]
+publishes the same option contract.
 
 ### The loop option defaults to the while-true exception
 
@@ -144,7 +148,7 @@ The upstream test catalogs make the intent explicit:
 This is documented behavior inherited from ESLint,
 not an Oxlint parsing defect.
 The implementation PR,
-[oxc-project/oxc#10949](https://github.com/oxc-project/oxc/pull/10949),
+[oxc-project/oxc#10949][oxc-pr-10949],
 states that it re-imported ESLint's tests and implemented the three loop-option variants.
 
 ## Verification
@@ -161,6 +165,69 @@ states that it re-imported ESLint's tests and implemented the three loop-option 
    `https://github.com/oxc-project/oxc.git`.
 - Host used for the probe:
    Linux x86-64.
+
+### Workspace inventory harness
+
+The lint-scoped inventory used this root-explicit command:
+
+```bash
+rg --line-number --multiline \
+  --glob '*.ts' \
+  --glob '*.tsx' \
+  --glob '!package-paused/**' \
+  --glob '!package-deprecated/**' \
+  --glob '!**/test-fixture/**' \
+  --glob '!**/perf-test-data/**' \
+  --glob '!**/*.generated.ts' \
+  'while\s*\(\s*true\s*\)' \
+  .
+```
+
+The command returned this lint-scoped catalog:
+
+- `package/config/tofu/src/fetch_ips.ts`:
+   one occurrence.
+- `package/module/css-edit/src/parse-contents.ts`:
+   three occurrences.
+- `package/module/css-edit/src/parse-classify.ts`:
+   two occurrences.
+- `package/cli/mvm/src/exec.ts`:
+   one occurrence.
+- `package/cli/mvm/src/virsh-wait.ts`:
+   two occurrences.
+- `package/cli/mvm/src/template-windows.ts`:
+   one occurrence.
+- `package/cli/mvm/src/backend/hetzner/api.ts`:
+   one occurrence.
+- `package/runtime-error/bun/src/oom.ts`:
+   one occurrence.
+- `package/runtime-error/bun/src/infinite-loop.ts`:
+   one occurrence.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/lockfile-package-eligibility.ts`:
+   one occurrence.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache-identity.ts`:
+   two occurrences.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-project-fingerprint.ts`:
+   one occurrence.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-intrinsic-result-origin.ts`:
+   one occurrence.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/installed-package-identity.ts`:
+   one occurrence.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-query.ts`:
+   one occurrence.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/direct-effect-summary.ts`:
+   one occurrence.
+- `package/dev-script/file-enforcer/src/io/staleness-manifest-lock.ts`:
+   one occurrence.
+- `package/oxlint-plugin/tsdoc/src/ast-access.ts`:
+   one occurrence.
+- `package/module/logger/src/sink/local-storage-store.ts`:
+   one occurrence.
+- `package/module/logger/src/sink/session-storage-store.ts`:
+   one occurrence.
+
+Every catalog entry is executable syntax,
+so the command totals 25 lint-scoped statements without comment filtering.
 
 ### Runnable harness
 
@@ -221,6 +288,8 @@ declare function keepGoing(): boolean;
 
 while (true) {}
 for (; true;) {}
+do {} while (true);
+while (1) {}
 for (;;) {}
 while (keepGoing()) {}
 ```
@@ -237,8 +306,9 @@ Both tasks exit nonzero because each intentionally includes rejected input.
 
 ### Default-option catalog
 
-`mise run probe:default` reports only `sample.ts:4:8`,
-the `for (; true;)` condition.
+`mise run probe:default` reports `sample.ts:4:8`,
+`sample.ts:5:14`,
+and `sample.ts:6:8`.
 
 Patterns accepted cleanly:
 
@@ -246,13 +316,15 @@ Patterns accepted cleanly:
 - `for (;;)`
 - `while (keepGoing())`
 
-Pattern rejected:
+Patterns rejected with `Unexpected constant condition`:
 
 - `for (; true;)`
+- `do {} while (true)`
+- `while (1)`
 
 ### All-option catalog
 
-`mise run probe:all` reports `sample.ts:3:8` and `sample.ts:4:8`.
+`mise run probe:all` reports `sample.ts:3:8` through `sample.ts:6:8`.
 
 Patterns accepted cleanly:
 
@@ -263,8 +335,8 @@ Patterns rejected with `Unexpected constant condition`:
 
 - `while (true)`
 - `for (; true;)`
-
-A second probe also confirmed that `all` rejects `do {} while (true)` and `while (1)`.
+- `do {} while (true)`
+- `while (1)`
 
 ## Verified workarounds
 
@@ -281,8 +353,11 @@ Use the built-in rule rather than adding a literal-only custom rule:
 ```
 
 The harness verifies that this reports `while (true)` and `for (; true;)`.
-It also reports other constant loop expressions,
-which is desirable when the policy is that ordinary loops expose continuation state.
+It also reports other constant loop expressions.
+The option enforces constant condition expressions only.
+It does not guarantee that every ordinary loop exposes continuation state,
+because a conditionless `for (;;)` never reaches the rule's expression analysis.
+An airtight unconditional-loop policy needs an additional rule for that AST shape.
 
 Tradeoffs:
 
@@ -347,7 +422,7 @@ Searches across open and closed Oxc issues and merged pull requests used
  `while true`,
  and `checkLoops` terms.
 They found the implementation PR
-[oxc-project/oxc#10949](https://github.com/oxc-project/oxc/pull/10949),
+[oxc-project/oxc#10949][oxc-pr-10949],
 but no unresolved bug matching this behavior.
 
 ### Constraint 1: Is it really upstream's fault?
@@ -378,7 +453,8 @@ Oxc's `CONTRIBUTING.md` welcomes contributions and permits AI assistance when di
 reviewed,
  tested,
  and understood.
-The complete contribution guide also requests an issue or discussion before architectural changes.
+Oxc's [PR Rules and Policies][oxc-contribution-rules]
+request an issue or discussion before architectural changes.
 No policy forbids a well-tested report,
 but there is no defect to report here.
 
@@ -407,3 +483,8 @@ configurable,
  source-verified,
  and covered by upstream tests.
 Filing would request a policy change rather than report a defect.
+
+[oxc-contribution-rules]: https://oxc.rs/docs/contribute/rules.html#pr-rules
+[oxc-pr-10949]: https://github.com/oxc-project/oxc/pull/10949
+[oxc-rule-source]: https://github.com/oxc-project/oxc/blob/2d4e8d20644e0e7446f0a381894b45ea339a0625/crates/oxc_linter/src/rules/eslint/no_constant_condition.rs
+[oxlint-rule-doc]: https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-constant-condition.html
