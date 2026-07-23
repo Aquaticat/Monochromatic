@@ -27,7 +27,7 @@ export function* ancestorDirectories(
     /**
      * Directory yielded during current iteration.
      */
-    const current = cursor.current;
+    const { current, } = cursor;
     yield current;
     /**
      * Parent used both as next candidate and root-identity check.
