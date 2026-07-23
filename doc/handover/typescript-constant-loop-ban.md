@@ -158,8 +158,8 @@ and stage only explicit paths owned by this task.
    verify constant-loop ban:
   pending after task 8.
 - Task 10,
-   maintain this handover:
-  active while implementation proceeds.
+   create this handover:
+  completed.
 
 Only one task may be actively implemented at a time.
 Update this section whenever a task changes state.
@@ -210,6 +210,10 @@ Research and troubleshooting commits already on `main`:
    reproducible probe and inventory.
 - `9ee37aa29`,
    pinned source and compact inventory.
+- `ba84ca9e8`,
+   initial constant-loop migration handover.
+- `397b24a44`,
+   handover Markdown formatting.
 
 No implementation commit existed when this handover was created.
 
