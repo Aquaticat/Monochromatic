@@ -147,7 +147,7 @@ and outside,
 bare,
 main,
 and linked classification behind
-`resolveGitWorktreeIdentity` in `package/git-policy/cli/src/git-worktree-identity.ts:238-328`.
+`resolveGitWorktreeIdentity` in `package/git-policy/cli/src/git-worktree-identity.ts:290-370`.
 Commit `4b7d8422f9845d85563d0f7a146d928dfc4b8816` also recognizes an explicit `--git-dir` plus `--work-tree` target even
 though Git reports `--is-inside-work-tree=false` from an unrelated launch directory.
 
@@ -199,7 +199,7 @@ Verified on 2026-07-22 with:
 - shared identity refactor commit `3e14beaba75a0d99e01a19cfe53bccce4dd9a3cc`;
 - explicit work-tree identity fix commit `4b7d8422f9845d85563d0f7a146d928dfc4b8816`;
 - fixed bundle SHA-256
-  `cf3bb150014b875e1dc0f89c6c69a74efaa91485c3733d484741f41db88c4db7`.
+  `f8e5a946e49b6926051e9b60ea06fbd777a4ff3210706b1faadce6af38f4a940`.
 
 ### Regression harness
 
