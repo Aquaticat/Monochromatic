@@ -82,9 +82,12 @@ return {
 No invocation-specific Git directory was resolved.
 The observer therefore could not distinguish:
 
-- main worktree: canonical Git directory equals canonical common directory;
-- linked worktree: canonical Git directory differs from canonical common directory;
-- bare repository: no source worktree root.
+- main worktree:
+   canonical Git directory equals canonical common directory;
+- linked worktree:
+   canonical Git directory differs from canonical common directory;
+- bare repository:
+   no source worktree root.
 
 ### Lifecycle locked every observation
 
@@ -234,15 +237,20 @@ Use it only for deliberate inspection.
 
 ## What does not work
 
-- **Explaining only the lock owner.**
+- **Explaining only the lock owner.
+  **
   A live owner explains the timeout mechanism but does not justify main-worktree applicability.
-- **Retrying until contention ends.**
+- **Retrying until contention ends.
+  **
   Retry can succeed while leaving the wrong lifecycle boundary intact.
-- **Increasing the outer command timeout.**
+- **Increasing the outer command timeout.
+  **
   It does not change cli-git's internal acquisition constants or applicability.
-- **Deleting `settlement.lock`.**
+- **Deleting `settlement.lock`.
+  **
   Manual deletion races the live owner and can convert contention into an ownership failure.
-- **Keeping copy tests rooted only in main repositories.**
+- **Keeping copy tests rooted only in main repositories.
+  **
   Those fixtures encoded the bug as expected behavior.
   Copy scenarios now use linked sources,
   while a separate regression test covers main-worktree bypass.
@@ -259,20 +267,26 @@ and searches across open and closed issues and pull requests in
 
 The six constraints resolve as follows:
 
-1. **Is it really upstream's fault?**
+1. **Is it really upstream's fault?
+   **
    No external upstream exists.
    The defect was this repository's applicability boundary.
-2. **Can upstream fix it?**
+2. **Can upstream fix it?
+   **
    The owned implementation was fixed by comparing canonical invocation-specific Git and common directories.
-3. **Are they supporting this use case?**
+3. **Are they supporting this use case?
+   **
    Yes.
    Cli-git already classifies main and linked worktrees for other safeguards.
-4. **Would the repo welcome our contribution?**
+4. **Would the repo welcome our contribution?
+   **
    This is the owning repository,
    with no external contribution or AI-assistance policy boundary involved.
-5. **Will they likely fix it?**
+5. **Will they likely fix it?
+   **
    The fix and regression test are committed locally.
-6. **Have we prototyped a minimal compatible fix?**
+6. **Have we prototyped a minimal compatible fix?
+   **
    Yes.
    The built artifact fails before the gate,
    passes after it,
