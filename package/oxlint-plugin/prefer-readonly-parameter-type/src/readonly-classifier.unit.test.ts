@@ -76,11 +76,11 @@ await describe({
       },
       {
         parameter: 'encodeOnly:',
-        expected: 'honest-readonly',
+        expected: 'opaque-capability',
       },
       {
         parameter: 'projectedController:',
-        expected: 'dishonest-readonly',
+        expected: 'honest-readonly',
       },
       {
         parameter: 'capabilityController:',
