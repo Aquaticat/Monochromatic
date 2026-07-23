@@ -102,10 +102,10 @@ A plain main-worktree `status` therefore created
 acquired `settlement.lock`,
 and became vulnerable to another invocation retaining that lock through the bounded acquisition loop.
 
-### Fix excludes main worktrees before stateful worktree-copy operations
+### Initial fix established behavior but duplicated package knowledge
 
-Commit `230f78959153195cbe01b0497d977dcac84fab71` changes
-`package/git-policy/cli/src/worktree-copy/git-observer.ts:347-376` to resolve both source and invocation-specific Git
+Commit `230f78959153195cbe01b0497d977dcac84fab71` first changed
+`package/git-policy/cli/src/worktree-copy/git-observer.ts` to resolve both source and invocation-specific Git
 administration before reading linked identities:
 
 ```ts
@@ -133,14 +133,59 @@ if ((typeof sourceRoot) === 'string') {
 }
 ```
 
-Only after this gate does the observer read the linked-worktree administrative identity set.
-The lifecycle receives the not-applicable sentinel for a main worktree and forwards real Git without worktree-copy
-recovery,
-locking,
-or post-command synchronization.
+This established correct behavior,
+but keeping `gitDir === commonDir` inside the worktree-copy observer duplicated identity knowledge already needed by
+linked-worktree policy classification.
+That shape was rejected as a shallow caller-local fix.
 
-Linked source worktrees remain applicable because their per-worktree Git directory differs from the common directory.
-Bare repositories retain their explicit empty-source behavior.
+### Shared worktree identity module owns classification
+
+Commit `3e14beaba75a0d99e01a19cfe53bccce4dd9a3cc` moves raw argument parsing,
+exact Git target selection,
+canonical path resolution,
+and outside,
+bare,
+main,
+and linked classification behind
+`resolveGitWorktreeIdentity` in `package/git-policy/cli/src/git-worktree-identity.ts:238-328`.
+Commit `4b7d8422f9845d85563d0f7a146d928dfc4b8816` also recognizes an explicit `--git-dir` plus `--work-tree` target even
+though Git reports `--is-inside-work-tree=false` from an unrelated launch directory.
+
+The shared module owns the identity decision:
+
+```ts
+return {
+  kind: gitDir === commonDir
+    ? 'main-worktree'
+    : 'linked-worktree',
+  commonDir,
+  effectiveCwd,
+  gitDir,
+  worktreeRoot,
+};
+```
+
+Worktree copy now only maps shared identity to its lifecycle decision at
+`package/git-policy/cli/src/worktree-copy/git-observer.ts:105-117`:
+
+```ts
+const identity = await resolveGitWorktreeIdentity({
+  args,
+  gitPath,
+},);
+if (identity.kind === 'outside-worktree')
+  return WORKTREE_COPY_NOT_APPLICABLE;
+if (identity.kind === 'main-worktree')
+  return WORKTREE_COPY_NOT_APPLICABLE;
+```
+
+`package/git-policy/cli/src/effective-target.ts:73-87` consumes the same identity and adds only policy-specific
+allowlisting.
+Only after the worktree-copy gate does the observer read linked administrative identities.
+The lifecycle receives the not-applicable sentinel for a main worktree and forwards real Git without recovery,
+locking,
+or synchronization.
+Linked sources and bare empty-source behavior remain applicable.
 
 ## Verification
 
@@ -151,8 +196,10 @@ Verified on 2026-07-22 with:
 - failing regression commit `8efcf4538799f792976ef0d761c60cd0f248a032`;
 - fix commit `230f78959153195cbe01b0497d977dcac84fab71`;
 - linked-source fixture commit `0ca54c3512879e16d8237ed26dd57fa41ff3dac6`;
+- shared identity refactor commit `3e14beaba75a0d99e01a19cfe53bccce4dd9a3cc`;
+- explicit work-tree identity fix commit `4b7d8422f9845d85563d0f7a146d928dfc4b8816`;
 - fixed bundle SHA-256
-  `8135d032376ecc9dceef5bc67ab30f90e826c80b42c789893d516df7e6e8348c`.
+  `cf3bb150014b875e1dc0f89c6c69a74efaa91485c3733d484741f41db88c4db7`.
 
 ### Regression harness
 

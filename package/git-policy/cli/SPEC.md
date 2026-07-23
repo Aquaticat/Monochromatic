@@ -607,7 +607,14 @@ Remaining errors block before real Git.
 
 ### Linked-worktree ignored-state synchronization
 
-Before forwarding an invocation whose effective global options select a linked worktree or bare repository,
+`resolveGitWorktreeIdentity` is the package-wide seam for replaying effective Git selection and classifying canonical
+outside,
+bare,
+main,
+and linked identity.
+Policy adapters add their own allowlisting after this shared classification.
+
+Before forwarding an invocation whose shared identity selects a linked worktree or bare repository,
 cli-git captures the common Git directory and linked-worktree administrative identity set.
 An invocation targeting the main worktree bypasses administrative observation,
 journal recovery,
