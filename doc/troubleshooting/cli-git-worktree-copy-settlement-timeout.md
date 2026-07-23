@@ -119,18 +119,18 @@ throw new WorktreeCopyError(
 );
 ```
 
-The observed failure therefore means another live cli-git process held the same repository lock throughout
-this retry budget.
+The diagnostic establishes that cli-git's published owner record named a process whose PID and birth identity
+remained live throughout this retry budget.
 It does not,
  by itself,
- mean that `.git` is corrupt or that a stale lock needs manual deletion.
+ identify that process's command or mean that `.git` is corrupt.
 
 The owner record is removed when its process settles.
-The post-incident journal root was empty,
-and a fresh wrapped `git status --short` succeeded.
-That proves the reported incident was transient.
+By the later probe,
+the post-incident journal root was empty and a fresh wrapped `git status --short` succeeded.
+This proves only that the lock was no longer blocking at probe time.
 Because successful disposal removes `owner.json`,
-the exact competing command cannot be identified after the event from the journal alone.
+the original owner process and command cannot be identified after the event from the journal alone.
 
 ## Verification
 
@@ -143,9 +143,15 @@ Verified on 2026-07-22 with:
 - real Git `2.55.0`;
 - Linux process-birth identity from `/proc/<pid>/stat`.
 
-The installed package resolves to the owned source directory
+The installed package resolves to the owned package directory
 `package/git-policy/cli`,
-so the source trace uses this repository rather than a third-party clone.
+so no third-party source clone applies.
+The source excerpts explain the owned implementation.
+The installed bundle independently contains the same retry constants at
+`node_modules/@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs:31920-31924`,
+the live-owner check at `:32146`,
+and the bounded loop and exact diagnostic at `:32213-32224`.
+This bundle inspection avoids assuming that the artifact was built from the current source revision.
 
 ### Runnable contention harness
 
@@ -202,9 +208,29 @@ wrapped status completed in `0.21` seconds and real Git status completed in `0.0
 
 ### Commands that fail
 
-- Any ordinary wrapped invocation in the same effective repository can exit `2` when a live holder remains through
-  all configured acquisition attempts.
+- An ordinary wrapped invocation inside the same effective repository can exit `2` when it has no opt-out or inherited
+  lease and a live holder remains through all configured acquisition attempts.
 - The reproduced `status --short` contender exited `2` while a wrapped alias retained the lock.
+
+## Live owner inspection
+
+The owner can be identified only while the failure is active.
+The following read-only probe was verified against the disposable holder:
+
+```sh
+COMMON_DIR="$(/usr/bin/git rev-parse --path-format=absolute --git-common-dir)"
+OWNER="$COMMON_DIR/cli-git-worktree-copy/v1/settlement.lock/owner.json"
+cat "$OWNER"
+OWNER_PID="$(node --input-type=module -e \
+  "import { readFileSync } from 'node:fs'; console.log(JSON.parse(readFileSync(process.argv[1], 'utf8')).ownerPid);" \
+  "$OWNER")"
+ps --pid "$OWNER_PID" --format pid,ppid,lstart,etime,args
+```
+
+The probe resolved the reproduced record's `ownerPid` to the running cli-git holder command.
+The record can disappear between reads when its owner finishes;
+that race means the contention has settled and the wrapped command can be retried.
+Do not delete `settlement.lock` while the reported PID and birth identity are live.
 
 ## Verified workarounds
 
@@ -253,8 +279,10 @@ The status form returned exit `0` while the holder was live.
 
 Tradeoff:
 this invocation skips worktree-copy observation,
-startup recovery,
+worktree-copy transaction recovery,
 and synchronization.
+It does not bypass policy processing or every other cli-git startup behavior,
+because this return occurs inside `runGitWithWorktreeCopy` after the wrapper has reached that lifecycle.
 Do not use the opt-out for a command or alias that might create a linked worktree when ignored-state copying is wanted.
 
 ### Bypass cli-git for forensic inspection
@@ -264,7 +292,7 @@ Do not use the opt-out for a command or alias that might create a linked worktre
 /usr/bin/git log -6 --oneline --decorate
 ```
 
-Both status forms returned exit `0` while the holder was live.
+The real-Git status form returned exit `0` while the holder was live.
 
 Tradeoff:
 `package/git-policy/cli/README.md:13-22` says an absolute real-Git path bypasses startup transaction recovery,
