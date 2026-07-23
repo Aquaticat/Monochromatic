@@ -221,6 +221,72 @@ markers. Verification: 85 suites pass against dist, oxlint 0/0,
 lint:types exit 0, and the `buildAndTest` task exercises the same
 sequence end to end.
 
+MILESTONE THREE SCOPING PROPOSED (2026-07-23, user "Scope milestone
+3"). Deliberation only; no implementation authorized yet.
+Grounding facts measured this session:
+`derive-seeds.ts` emits only `kind: 'deletion'` seeds while
+`seeded-error.ts` already plants deletion, replacement, and
+insertion; no checkpoint serialization, policy-file seam, or
+dossier (entities, terminology) module exists in src
+("checkpoint" appears only in design comments, and
+`tally-votes.ts` notes adjudication is replayable).
+Options, ranked A > B > C > D:
+- A (RECOMMENDED), real-corpus production pass: run the proven pure
+  fn unseeded over all 92 pinned pairs through the budgeted
+  accumulation loop until every entry carries a final status
+  (repaired, unchanged, or blocked-non-translation; known-hard
+  entries such as BI4PBV produce honest degraded statuses, nothing
+  is excluded). Artifacts (issues with fates, repaired text,
+  findings, status) stay outside the repo because the corpus is
+  UNLICENSED; the handover records content-free tallies only.
+  Headline gate: precision of accepted issues on a human-graded
+  uniform sample (proposed 50 issues at a proposed 0.9 bar, user
+  sets both), because a judge ensemble drawn from the same seven
+  models re-affirming its own panel's acceptances is circular;
+  a zh-anchored judge crosscheck over all accepted issues is the
+  secondary, machine-graded number. Safety invariants: zero
+  deterministic-gate violations, zero regression-majority
+  selections, unchanged or blocked wherever nothing beats the
+  input. Cost extrapolated from the measured DarlinChit
+  full-pipeline datum (523 s, ~8.5 weighted units): 92 entries on
+  the order of 13 hours wall and 800 weighted units spread over
+  days of budgeted runs, inside regeneration; larger entries chunk
+  into more calls, so that extrapolation is a floor.
+  Pro: measures the one unmeasured dimension that matters
+  (real-error precision; milestone one deliberately skipped
+  precision grading), meets the recorded deferral condition
+  ("until the pure fn proves itself"), and produces both the
+  corpus deliverable and the data that would justify B, C, or D.
+  Con: the headline sample needs user grading time, and artifacts
+  must live outside the repo.
+- B, broadened seeded benchmark: derive replacement and insertion
+  seed classes modeled on the real error seed bank (meaning
+  inversion, fabricated specifics, policy-violating additions);
+  grade detection recall, within-region precision, and repair
+  against exact planted truth. Pro: the planting substrate already
+  exists, ground truth is exact, no human grading needed.
+  Con: a synthetic proxy for the same unknown A measures directly,
+  and it spends another accumulation loop before any real-corpus
+  value ships.
+- C, interactive steering driver: checkpoint serialization at
+  stage boundaries plus typed steering operations (approve/strike
+  issue, correct alignment, lock wording, force verdict) per the
+  settled architecture. Pro: designed, and required for real
+  adoption. Con: which steering operations matter is best learned
+  from A's real output, and the consumer form is deliberately
+  open.
+- D, calibration bundle: canary calibration feeding panel weights,
+  MiniMax scheduler weighting, judge-universe exclusion of blocked
+  entries, per-model editor slates. Pro: all are recorded
+  follow-ups. Con: explicitly "none yet requested", no driving
+  number, and the ensemble currently absorbs the quirks.
+Adjacent-pair reasons: A over B because A measures the real error
+distribution and delivers corpus value while B proxies it;
+B over C because B extends a proven harness toward a measurable
+gate while C's requirements stay unknown until real output exists;
+C over D because C has a designed contract while D lacks any
+driving number. AWAITING USER PICK.
+
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
 loop, "spare no expense, only stop when genuinely blocked; back in a
