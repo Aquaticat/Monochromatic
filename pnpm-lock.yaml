@@ -291,6 +291,9 @@ catalogs:
     yaml:
       specifier: '>=3.0.0-1'
       version: 3.0.0-1
+    yuku-analyzer:
+      specifier: '>=0.7.3'
+      version: 0.7.3
     yuku-ast:
       specifier: '>=0.7.3'
       version: 0.7.3
@@ -1103,6 +1106,34 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  package/cli/unused-export:
+    dependencies:
+      '@monochromatic-dev/cli-mutation-test':
+        specifier: workspace:*
+        version: link:../mutation-test
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-1
+      yuku-analyzer:
+        specifier: 'catalog:'
+        version: 0.7.3
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -5019,6 +5050,67 @@ packages:
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==, tarball: https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.10.tgz}
     engines: {node: '>=14.6'}
 
+  '@yuku-analyzer/binding-darwin-arm64@0.7.3':
+    resolution: {integrity: sha512-NxBzm8vwsm1AOUqRut0QWqiNxuCig38aBdh2ZrXxMKs7iMhKkKiwkh18GlxZRW94TujIFmve+rPeCoMzGXAG5w==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-darwin-arm64/-/binding-darwin-arm64-0.7.3.tgz}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@yuku-analyzer/binding-darwin-x64@0.7.3':
+    resolution: {integrity: sha512-du04bCt6iOZethTZdh2qc6axtXkdGWTZdBXHTK/4VH1TYG0VdqcYnc9P8mYndiLVgcIjMU+KzL1mEJNlKSYYXg==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-darwin-x64/-/binding-darwin-x64-0.7.3.tgz}
+    cpu: [x64]
+    os: [darwin]
+
+  '@yuku-analyzer/binding-freebsd-x64@0.7.3':
+    resolution: {integrity: sha512-qDro8+HSfF/4crqUG6P/U2J8k9isJpfihgAW7A6K+YTTzRFCWW5WizU8xuyirqWdtO/Y/zxy5zPxMU671eKSLg==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-freebsd-x64/-/binding-freebsd-x64-0.7.3.tgz}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@yuku-analyzer/binding-linux-arm-gnu@0.7.3':
+    resolution: {integrity: sha512-4o4z8Dk7Vrt5vVVEeuZk3usgNtGbd+pPcuRD3Ux1HCLDZR7kq6RH8wo82jCA7EHKbmaIh+ALi1k3BUwTHabiBg==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-linux-arm-gnu/-/binding-linux-arm-gnu-0.7.3.tgz}
+    cpu: [arm]
+    os: [linux]
+    libc: [glibc]
+
+  '@yuku-analyzer/binding-linux-arm-musl@0.7.3':
+    resolution: {integrity: sha512-AFfUpi5tVJ9/2yFpSsF+vFwvMOjR7rvRTJ4TlKW7ZQBdmt9VwfeXwxAHCZNRwQdXyrwDR++oX3r4wYQ3AM1ZAA==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-linux-arm-musl/-/binding-linux-arm-musl-0.7.3.tgz}
+    cpu: [arm]
+    os: [linux]
+    libc: [musl]
+
+  '@yuku-analyzer/binding-linux-arm64-gnu@0.7.3':
+    resolution: {integrity: sha512-b376pQu2i08DYdue9nR6ZCO4RUJERNNsQNxgGe8eQg06zSPiuG7bJTci9U5jfzOlPsnhQZF1y8t93lmVfEsA+Q==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.7.3.tgz}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@yuku-analyzer/binding-linux-arm64-musl@0.7.3':
+    resolution: {integrity: sha512-DUEw9BhiA1ZbXlq4nRb87TfnsaHdKBIpr1XOyopbJvS+r6WxXF7GUVQBWguMPL8C7GYagPrCH+n9nOO6XA1Rug==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-linux-arm64-musl/-/binding-linux-arm64-musl-0.7.3.tgz}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@yuku-analyzer/binding-linux-x64-gnu@0.7.3':
+    resolution: {integrity: sha512-TwNlQFeyr2CQ9Vr58zBxcwZ1jpRNcWkkUrE/eqVGeEaMCFFFt9sMDPiMwG5rH0/bZRxqtWqJvznLW3sX/dCqLw==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.7.3.tgz}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@yuku-analyzer/binding-linux-x64-musl@0.7.3':
+    resolution: {integrity: sha512-xKy2wW2koctwidwGAQTB+M9rV6UKAYVD/R3DOEsmEkW81hukWRcIWB2iL1/RSSWLHRa8UeCC9vxmWgiZQsxRZQ==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-linux-x64-musl/-/binding-linux-x64-musl-0.7.3.tgz}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@yuku-analyzer/binding-win32-arm64@0.7.3':
+    resolution: {integrity: sha512-13WrbYoGyCSwxErtY3pmrWFOuou4ujr9MRsn4/A7EEawdf4UTZjC5uG3VjBPk9AWpesf0btHX5tgQP39nacPgQ==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-win32-arm64/-/binding-win32-arm64-0.7.3.tgz}
+    cpu: [arm64]
+    os: [win32]
+
+  '@yuku-analyzer/binding-win32-x64@0.7.3':
+    resolution: {integrity: sha512-g6tyxypwCaSx72jASxe/S89VZh83IN5j1RogPLrVhhRpbOW4AdgZ9bFyI0mSn3Qq5zLzqE47wUAlyxF+P8ZSAA==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-win32-x64/-/binding-win32-x64-0.7.3.tgz}
+    cpu: [x64]
+    os: [win32]
+
   '@yuku-codegen/binding-darwin-arm64@0.7.3':
     resolution: {integrity: sha512-hbssEr7iLNCWWdUbEt8cuOjUQ9loI+U/BVmdhNQ4CV1wAFGvWDO3niK9JD2WwTC9iib7E498qgZ3L/xJnoSb3A==, tarball: https://registry.npmjs.org/@yuku-codegen/binding-darwin-arm64/-/binding-darwin-arm64-0.7.3.tgz}
     cpu: [arm64]
@@ -6793,6 +6885,9 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==, tarball: https://registry.npmjs.org/yoctocolors/-/yoctocolors-2.1.2.tgz}
     engines: {node: '>=18'}
 
+  yuku-analyzer@0.7.3:
+    resolution: {integrity: sha512-FyQ/+NR2P3lJiuTApcd2eBDfuTkoiHHfMD1t6HK4rHAIB/fULa8eb+C03rHdcO24QexE20PGysYUYhDUvFdzWQ==, tarball: https://registry.npmjs.org/yuku-analyzer/-/yuku-analyzer-0.7.3.tgz}
+
   yuku-ast@0.7.3:
     resolution: {integrity: sha512-occyAXtcU4hcl5UPEclWwLqz4J1ZAV8Us4LllmTqAe1YjL5aMbh3GCpzHt6O0sOF+dwBI3BZAcFQqbyX1RiaWg==, tarball: https://registry.npmjs.org/yuku-ast/-/yuku-ast-0.7.3.tgz}
 
@@ -7830,6 +7925,39 @@ snapshots:
     optional: true
 
   '@xmldom/xmldom@0.9.10': {}
+
+  '@yuku-analyzer/binding-darwin-arm64@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-darwin-x64@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-freebsd-x64@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-linux-arm-gnu@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-linux-arm-musl@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-linux-arm64-gnu@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-linux-arm64-musl@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-linux-x64-gnu@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-linux-x64-musl@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-win32-arm64@0.7.3':
+    optional: true
+
+  '@yuku-analyzer/binding-win32-x64@0.7.3':
+    optional: true
 
   '@yuku-codegen/binding-darwin-arm64@0.7.3':
     optional: true
@@ -9924,6 +10052,23 @@ snapshots:
   yocto-queue@1.2.2: {}
 
   yoctocolors@2.1.2: {}
+
+  yuku-analyzer@0.7.3:
+    dependencies:
+      '@yuku-toolchain/types': 0.7.3
+      yuku-ast: 0.7.3
+    optionalDependencies:
+      '@yuku-analyzer/binding-darwin-arm64': 0.7.3
+      '@yuku-analyzer/binding-darwin-x64': 0.7.3
+      '@yuku-analyzer/binding-freebsd-x64': 0.7.3
+      '@yuku-analyzer/binding-linux-arm-gnu': 0.7.3
+      '@yuku-analyzer/binding-linux-arm-musl': 0.7.3
+      '@yuku-analyzer/binding-linux-arm64-gnu': 0.7.3
+      '@yuku-analyzer/binding-linux-arm64-musl': 0.7.3
+      '@yuku-analyzer/binding-linux-x64-gnu': 0.7.3
+      '@yuku-analyzer/binding-linux-x64-musl': 0.7.3
+      '@yuku-analyzer/binding-win32-arm64': 0.7.3
+      '@yuku-analyzer/binding-win32-x64': 0.7.3
 
   yuku-ast@0.7.3:
     dependencies:
