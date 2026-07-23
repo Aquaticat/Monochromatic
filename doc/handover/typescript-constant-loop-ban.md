@@ -164,7 +164,10 @@ and stage only explicit paths owned by this task.
   completed.
 - Task 11,
    clear concurrent CSS test blocker:
-  pending.
+  completed after source migration settled.
+- Task 12,
+   resolve PostCSS catalog test drift:
+  pending and blocking task 7.
 
 Only one task may be actively implemented at a time.
 Update this section whenever a task changes state.
@@ -254,13 +257,20 @@ intrinsic,
 and diagnostics unit suites passed during the full run.
 The full task failed only two PostCSS tests because concurrent `package/build-tool/css` edits removed or rewrote
 source those tests inspect.
-Do not change those unrelated files.
+Do not change those unrelated files without explicit scope authorization.
+
+The `package/build-tool/css` source migration later settled,
+but a second full unit rerun produced the same two PostCSS failures:
+
+- Callback summaries no longer match the old expected overload effects.
+- `package/build-tool/css/src/mixin.ts` no longer contains a TypeScript node at the old query offset.
+
+All suites exercising the constant-loop traversal changes passed in both full runs.
 
 ## Next action
 
-Wait for the concurrent `package/build-tool/css` migration to settle,
-then rerun
-`mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit`.
-When it passes,
-complete tasks 11 and 7,
-then start retry and polling migration.
+Obtain scope direction for the unrelated PostCSS catalog test drift.
+If its owning work updates the tests,
+rerun the full prefer-readonly suite and complete task 7.
+If the user authorizes this task to absorb the drift,
+inspect the new build-tool API and update only the affected catalog tests before starting retry and polling migration.
