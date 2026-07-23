@@ -2,6 +2,7 @@ import {
   chmod,
   lstat,
   mkdir,
+  readdir,
   readFile,
   readlink,
   rm,
@@ -38,6 +39,52 @@ await describe({
   name: 'automatic ignored-state worktree copying',
   concurrency: 1,
   children: [
+    it({
+      name: 'does not enter copy lifecycle from main worktree, including worktree creation',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+        /**
+         * Main worktree root that must bypass copy lifecycle.
+         */
+        const repositoryRoot = join(fixture.path, 'repository',);
+        /**
+         * Linked worktree created by forwarded real Git without copied state.
+         */
+        const destinationRoot = join(fixture.path, 'topic',);
+        await initializeRepository(repositoryRoot,);
+        await writeFile(join(repositoryRoot, '.gitignore',), 'state.txt\n',);
+        await commitPaths({
+          repositoryRoot,
+          message: 'ignore local state',
+          paths: ['.gitignore',],
+        },);
+        await writeFile(join(repositoryRoot, 'state.txt',), 'main state\n',);
+
+        requireSuccess(await captureWrapper({
+          cwd: repositoryRoot,
+          args: ['status', '--short',],
+        },),);
+        expect(await readdir(join(repositoryRoot, '.git',),),)
+          .not.toContain('cli-git-worktree-copy',);
+
+        const result = requireSuccess(await captureWrapper({
+          cwd: repositoryRoot,
+          args: [
+            'worktree',
+            'add',
+            '-b',
+            'topic',
+            destinationRoot,
+          ],
+        },),);
+
+        expect(await readdir(destinationRoot,),).not.toContain('state.txt',);
+        expect(copySummaryLines(result.stderr,),).toHaveLength(0,);
+        expect(await readdir(join(repositoryRoot, '.git',),),)
+          .not.toContain('cli-git-worktree-copy',);
+      },
+    },),
+
     it({
       name: 'copies the standard ignore stack, structure, symlinks, and permission bits',
       fn: async () => {
