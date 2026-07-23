@@ -25,6 +25,7 @@ import {
   type Type,
 } from 'typescript/unstable/sync';
 
+import { ancestorDirectories, } from './ancestor-directories.ts';
 import type {
   IntrinsicEffectQuery,
   IntrinsicProvenance,
@@ -114,37 +115,27 @@ function packageRootAndName(fileName: string,): {
    */
   const markerIndex = normalized.lastIndexOf(marker,);
   if (markerIndex === (-1)) {
-    /**
-     * Parent cursor searching nearest workspace package manifest.
-     */
-    const cursor = { directory: dirname(normalized,), };
-    while (true) {
+    for (const directory of ancestorDirectories(dirname(normalized,),)) {
       try {
         /**
          * Candidate workspace manifest narrowed to package identity fields.
          */
         const parsed: unknown = JSON.parse(readFileSync(
-          `${cursor.directory}/package.json`,
+          `${directory}/package.json`,
           'utf8',
         ),);
         if (hasPackageIdentityFields(parsed,)) {
           return {
-            packageRoot: cursor.directory,
+            packageRoot: directory,
             packageName: parsed.name,
           };
         }
       }
       catch (error) {
-        l.debug(`could not read workspace package identity in ${cursor.directory}: ${String(error,)}`,);
+        l.debug(`could not read workspace package identity in ${directory}: ${String(error,)}`,);
       }
-      /**
-       * Parent directory for next manifest probe.
-       */
-      const parent = dirname(cursor.directory,);
-      if (parent === cursor.directory)
-        return NO_PACKAGE_IDENTITY;
-      cursor.directory = parent;
     }
+    return NO_PACKAGE_IDENTITY;
   }
   /**
    * Path beginning with package name after final boundary.

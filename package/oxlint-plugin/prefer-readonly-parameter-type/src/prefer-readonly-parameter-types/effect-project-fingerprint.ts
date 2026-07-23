@@ -19,6 +19,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { Project, } from 'typescript/unstable/sync';
 import type { SourceFile, } from 'typescript/unstable/ast';
 
+import { ancestorDirectories, } from './ancestor-directories.ts';
 import {
   updateHashPlainValue,
   updateHashString,
@@ -124,29 +125,19 @@ const LOCKFILE_SIGNATURE_KEY = '\0pnpm-lockfile';
 function nearestLockfile(
   configFileName: string,
 ): string | typeof LOCKFILE_NOT_FOUND {
-  /**
-   * Mutable ancestor cursor bounded by filesystem root.
-   */
-  const cursor = { current: dirname(configFileName,), };
-  while (true) {
+  for (const directory of ancestorDirectories(dirname(configFileName,),)) {
     /**
      * Candidate pnpm lockfile at current ancestor.
      */
     const candidate = join(
-      cursor.current,
+      directory,
       'pnpm-lock.yaml',
     );
     // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous semantic visitor resolves cache identity before analysis.
     if (existsSync(candidate,))
       return candidate;
-    /**
-     * Parent directory for next bounded ancestor step.
-     */
-    const parent = dirname(cursor.current,);
-    if (parent === cursor.current)
-      return LOCKFILE_NOT_FOUND;
-    cursor.current = parent;
   }
+  return LOCKFILE_NOT_FOUND;
 }
 
 /**

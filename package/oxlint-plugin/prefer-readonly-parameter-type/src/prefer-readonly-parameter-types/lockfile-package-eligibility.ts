@@ -14,6 +14,7 @@ import {
   join,
 } from 'node:path';
 
+import { ancestorDirectories, } from './ancestor-directories.ts';
 import type { InstalledPackageIdentity, } from './installed-package-identity.ts';
 
 /**
@@ -41,29 +42,19 @@ const lockKeysByPath = new Map<string, {
 function nearestPnpmLockfile(
   configFileName: string,
 ): string | typeof PNPM_LOCKFILE_UNAVAILABLE {
-  /**
-   * Mutable ancestor cursor bounded by filesystem root.
-   */
-  const cursor = { current: dirname(configFileName,), };
-  while (true) {
+  for (const directory of ancestorDirectories(dirname(configFileName,),)) {
     /**
      * Candidate lockfile at current ancestor.
      */
     const candidate = join(
-      cursor.current,
+      directory,
       'pnpm-lock.yaml',
     );
     // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous semantic visitor verifies package eligibility before implementation analysis.
     if (existsSync(candidate,))
       return candidate;
-    /**
-     * Parent directory for next bounded ancestor step.
-     */
-    const parent = dirname(cursor.current,);
-    if (parent === cursor.current)
-      return PNPM_LOCKFILE_UNAVAILABLE;
-    cursor.current = parent;
   }
+  return PNPM_LOCKFILE_UNAVAILABLE;
 }
 
 /**

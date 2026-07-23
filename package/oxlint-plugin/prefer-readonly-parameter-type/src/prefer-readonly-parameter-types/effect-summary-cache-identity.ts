@@ -21,6 +21,8 @@ import { fileURLToPath, } from 'node:url';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { version as typescriptVersion, } from 'typescript';
 
+import { ancestorDirectories, } from './ancestor-directories.ts';
+
 /**
  * Persistent cache schema identity.
  *
@@ -63,25 +65,15 @@ export function contentDigest(text: string,): string {
  * @throws Error when package root cannot be found.
  */
 function analyzerPackageRoot(modulePath: string,): string {
-  /**
-   * Mutable ancestor cursor bounded by filesystem root.
-   */
-  const cursor = { current: dirname(modulePath,), };
-  while (true) {
+  for (const directory of ancestorDirectories(dirname(modulePath,),)) {
     // oxlint-disable-next-line no-restricted-syntax/no-sync -- Oxlint rule construction is synchronous and computes this digest once per process.
     if (existsSync(join(
-      cursor.current,
+      directory,
       'package.json',
     )))
-      return cursor.current;
-    /**
-     * Parent directory for next bounded ancestor step.
-     */
-    const parent = dirname(cursor.current,);
-    if (parent === cursor.current)
-      throw new Error(`Cannot find analyzer package root from ${modulePath}.`,);
-    cursor.current = parent;
+      return directory;
   }
+  throw new Error(`Cannot find analyzer package root from ${modulePath}.`,);
 }
 
 /**
@@ -221,25 +213,15 @@ function dependencyRoot(projectKey: string,): string {
    * Original project directory used when no lockfile exists.
    */
   const projectDirectory = dirname(projectKey,);
-  /**
-   * Mutable ancestor cursor bounded by filesystem root.
-   */
-  const cursor = { current: projectDirectory, };
-  while (true) {
+  for (const directory of ancestorDirectories(projectDirectory,)) {
     // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous rule needs deterministic cache root before reporting diagnostics.
     if (existsSync(join(
-      cursor.current,
+      directory,
       'pnpm-lock.yaml',
     )))
-      return cursor.current;
-    /**
-     * Parent directory for next bounded ancestor step.
-     */
-    const parent = dirname(cursor.current,);
-    if (parent === cursor.current)
-      return projectDirectory;
-    cursor.current = parent;
+      return directory;
   }
+  return projectDirectory;
 }
 
 /**

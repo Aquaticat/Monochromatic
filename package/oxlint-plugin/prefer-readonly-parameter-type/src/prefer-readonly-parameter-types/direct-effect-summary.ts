@@ -109,9 +109,7 @@ function declarationDirectlyOwnsNode({
    * Parent cursor seeking nearest callable declaration.
    */
   const cursor: { current: Node; } = { current: node.parent, };
-  while (true) {
-    if (isEffectCallableDeclaration(cursor.current,))
-      return callableKey(cursor.current,) === declarationIdentity;
+  while (!isEffectCallableDeclaration(cursor.current,)) {
     /**
      * Next parent or self-parented source boundary.
      */
@@ -120,6 +118,7 @@ function declarationDirectlyOwnsNode({
       return false;
     cursor.current = parent;
   }
+  return callableKey(cursor.current,) === declarationIdentity;
 }
 
 /**

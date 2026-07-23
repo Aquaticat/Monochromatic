@@ -12,6 +12,8 @@ import {
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { ancestorDirectories, } from './ancestor-directories.ts';
+
 /**
  * Package identity logger.
  */
@@ -120,16 +122,12 @@ function nodeModulesPackageRoot(
 function workspacePackageRoot(
   fileName: string,
 ): string | typeof INSTALLED_PACKAGE_UNAVAILABLE {
-  /**
-   * Mutable ancestor cursor bounded by filesystem root.
-   */
-  const cursor = { current: dirname(fileName,), };
-  while (true) {
+  for (const directory of ancestorDirectories(dirname(fileName,),)) {
     /**
      * Candidate package manifest at current ancestor.
      */
     const manifestPath = join(
-      cursor.current,
+      directory,
       'package.json',
     );
     try {
@@ -143,19 +141,13 @@ function workspacePackageRoot(
       ),);
       /* oxlint-enable no-restricted-syntax/no-sync */
       if (isManifest(parsed,))
-        return cursor.current;
+        return directory;
     }
     catch (error) {
       l.debug(`package manifest probe skipped for ${manifestPath}: ${String(error,)}`,);
     }
-    /**
-     * Parent directory for next bounded step.
-     */
-    const parent = dirname(cursor.current,);
-    if (parent === cursor.current)
-      return INSTALLED_PACKAGE_UNAVAILABLE;
-    cursor.current = parent;
   }
+  return INSTALLED_PACKAGE_UNAVAILABLE;
 }
 
 /**

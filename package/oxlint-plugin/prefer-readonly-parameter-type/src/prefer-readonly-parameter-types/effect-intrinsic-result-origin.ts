@@ -59,23 +59,22 @@ export function intrinsicReceiverParameterIndex({
    * Iterative expression cursor bounded by nested call-expression depth.
    */
   const cursor = { current: node, };
-  while (true) {
+  /**
+   * Direct parameter or local-alias origin at starting expression.
+   */
+  const initialOrigin = parameterIndex({
+    checker,
+    bindingOriginBySymbolId,
+    node: cursor.current,
+  },);
+  if (initialOrigin !== PARAMETER_INDEX_UNAVAILABLE)
+    return initialOrigin;
+  while (isCallExpression(cursor.current,)) {
     /**
-     * Current expression retained for stable TypeScript narrowing.
+     * Current call retained for stable TypeScript narrowing.
      */
     const { current, } = cursor;
-    /**
-     * Direct parameter or local-alias origin at current expression.
-     */
-    const directOrigin = parameterIndex({
-      checker,
-      bindingOriginBySymbolId,
-      node: current,
-    },);
-    if (directOrigin !== PARAMETER_INDEX_UNAVAILABLE)
-      return directOrigin;
-    if ((!isCallExpression(current,))
-      || (!isPropertyAccessExpression(current.expression,)))
+    if (!isPropertyAccessExpression(current.expression,))
       return PARAMETER_INDEX_UNAVAILABLE;
     /**
      * Narrowed intrinsic method access for current call.
@@ -112,6 +111,17 @@ export function intrinsicReceiverParameterIndex({
     if ((effect === NO_INTRINSIC_EFFECT)
       || (effect.receiverValuesReachResult !== true))
       return PARAMETER_INDEX_UNAVAILABLE;
+    /**
+     * Direct parameter or local-alias origin at next receiver expression.
+     */
+    const receiverOrigin = parameterIndex({
+      checker,
+      bindingOriginBySymbolId,
+      node: receiver,
+    },);
+    if (receiverOrigin !== PARAMETER_INDEX_UNAVAILABLE)
+      return receiverOrigin;
     cursor.current = receiver;
   }
+  return PARAMETER_INDEX_UNAVAILABLE;
 }
