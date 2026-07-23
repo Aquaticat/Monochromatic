@@ -49,7 +49,7 @@ export const correctnessRules: DummyRuleMap = {
   //region correctness
 
   // Require every loop condition to expose real continuation state. Oxlint's
-  // default `allExceptWhileTrue` explicitly permits `while (true)`.
+  // default `allExceptWhileTrue` explicitly permits literal-true while loops.
   'eslint/no-constant-condition': [
     'error',
     { checkLoops: 'all', },
