@@ -105,7 +105,14 @@ export {
   runPanelStage,
 } from './repair-stages.ts';
 export {
+  assessNonTranslationEvidence,
   NON_TRANSLATION_BLOCK_VOTES,
+  NON_TRANSLATION_CONTRADICTION_MIN,
+  type NonTranslationEvidence,
+  type NonTranslationScreening,
+  screenNonTranslationVotes,
+} from './non-translation-evidence.ts';
+export {
   type RepairIssueRecord,
   type RepairStatus,
   repairTranslation,
