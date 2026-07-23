@@ -52,10 +52,12 @@ The reduced-grid rank remains the irregular part.
 The decomposition must define a deterministic canonicalization and inverse ordering.
 Applying arbitrary Sudoku symmetry elements is insufficient because general symmetry orbits can have stabilizers.
 
-## T-Doku reduced-grid index
+## Rejected flat T-Doku reduced-grid index
 
 T-Doku commit `af426180dc53aef89b82868e7b3fdfcf42165654`
 implements numbered access to the reduced grids.
+It is retained as a reference enumerator and source of verified counts,
+not as the recommended package index.
 It combines 36,288 normalized top-band configurations with 36,288 normalized left-stack configurations.
 A generated `uint16_t` table stores the number of completions for every pair.
 A sparse checkpoint index locates the neighborhood of a requested reduced rank.
@@ -106,70 +108,149 @@ A one-line early-return prototype passed first-index and final-range probes.
 Diagnosis and upstream-ready issue draft:
 [`doc/troubleshooting/tdoku-final-grid-enumeration.md`](../troubleshooting/tdoku-final-grid-enumeration.md).
 
-## Implementation options
+## Recommended 44-class hierarchy
 
-### Full extracted table
+Ed Russell's `equiv.c` generates the 36,288 normalized top-band configurations,
+partitions them into 44 equivalence classes,
+and records for each class:
+
+- class multiplicity `m`,
+  the number of normalized top-band members;
+- normalized completion count `C`,
+  shared by every member.
+
+The reduced total is:
+
+```text
+sum(m * C) = 3,546,146,300,288
+```
+
+A reduced index first selects a class interval of size `m * C`.
+Within that interval:
+
+```text
+memberIndex = remainder / C
+completionIndex = remainder % C
+```
+
+Each actual top-band member receives one deterministic stored witness mapping it to its class representative.
+Multiple possible witnesses use one fixed tie rule.
+The witness must be encoded as exact Sudoku-preserving coordinate and digit operations,
+not as an informal equivalence claim.
+
+### Representative completion lookup
+
+Only one horizontal count row is needed for each class representative.
+Each row contains completion counts for the 36,288 normalized left-stack configurations.
+The count core therefore requires:
+
+```text
+44 * 36,288 * 2 bytes = 3,193,344 bytes
+```
+
+A prefix total every 64 entries adds `99_792` bytes.
+Lookup selects a prefix block,
+scans at most 64 `uint16_t` counts,
+generates the selected 45-cell structural pattern,
+and enumerates only the residual completion within that pattern.
+
+The representative completion is mapped to the selected member with the inverse witness.
+That mapping must preserve the normalized lower-row orbit used by the outer 72-way restoration.
+A safe witness either normalizes that group under conjugation or carries an explicit invertible correction coordinate.
+A many-to-one re-normalization with no recorded coordinate is forbidden.
+
+### Asset compiler
+
+The offline compiler can derive the compact asset from the released T-Doku counts:
+
+1. Generate all normalized top-band members in deterministic order.
+2. Reproduce Ed Russell's 44-class coloring.
+3. Select one T-Doku horizontal configuration ID for each representative.
+4. Extract only those 44 horizontal rows from `grid.counts`.
+5. Store every member's class ID and canonical transformation witness.
+6. Generate block prefix totals and integrity hashes.
+7. Verify each representative row sum equals Ed Russell's published `C`.
+8. Verify class sizes and `sum(m * C)` against the reduced total.
+
+The runtime asset does not need the original 2.5 GiB count table.
+
+## Alternatives
+
+### Counted canonical-prefix DAG
 
 Pros:
 
-- Exact contiguous unranking.
+- Could share equivalent residual states across representative classes.
+- Supports rank and unrank through the same counted edges.
+- Could reduce residual solver work.
+
+Cons:
+
+- Serialized size is unmeasured.
+- Blank Sudoku has resisted compact generic ZDD representations.
+- Requires a new compiler and canonical residual-state proof.
+
+### Full extracted T-Doku table
+
+Pros:
+
 - Existing source and released data.
-- Measured random-access throughput.
-- Memory mapping avoids loading the full table into JavaScript heap memory.
+- Measured random reduced-grid access.
 
 Cons:
 
 - `471_499_152`-byte download.
 - `2_653_929_102` extracted bytes across both table files.
-- Requires a native or WebAssembly structural enumerator rather than a TypeScript-only implementation.
-
-### Independently compressed table blocks
-
-Pros:
-
-- Preserves exact unranking.
-- Reads and decompresses only the selected count block.
-- Can avoid keeping the extracted count table on disk.
-
-Cons:
-
-- Requires a new random-access asset format and generator.
-- Distribution size and lookup performance are unmeasured.
-- Still depends on precomputed completion counts.
+- Encodes all 36,288 horizontal rows when the class hierarchy needs 44.
 
 ### Completion counts on demand
 
 Pros:
 
-- Avoids the released count-table asset.
-- Keeps the data distribution small.
+- Avoids a generated count asset.
 
 Cons:
 
-- Moves the irregular indexing work back into each lookup.
-- No measured implementation currently meets the package's performance expectation.
-- A decision-diagram alternative has no demonstrated compact representation for all blank-grid solutions.
+- Repeats exact counting during each lookup.
+- No measured implementation meets the requested random-access behavior.
 
 Ranking:
-full extracted table > independently compressed blocks > on-demand counts.
-The extracted table ranks first because it is the only exact approach with working source,
-released data,
-and measured lookup throughput.
-Compressed blocks rank next because they preserve exactness but require implementation and measurement.
-On-demand counting ranks last because it recreates the cost rejected during design review.
+44-class representative rows > counted canonical-prefix DAG > full T-Doku table > on-demand counts.
+The class-row design ranks first because it applies the proven 44-class reduction directly
+and has a calculated `3_193_344`-byte count core.
+The DAG ranks next because it may compress further but has no measured artifact.
+The full table ranks next because it works but stores 824 times as many count entries as the class-row core.
+On-demand counting ranks last because it restores work to every lookup.
 
-## Open decision
+## Proof gates before implementation
 
-Implementation depends on the acceptable data budget.
-The next action is to choose between the measured extracted-table design and an unmeasured block-compressed asset design.
-A small package with no count data cannot simultaneously promise fast lookup,
-full coverage,
-and a one-to-one contiguous index under the evidence gathered so far.
+No package implementation starts until a feasibility harness establishes:
+
+- the 44 classes partition all 36,288 normalized top-band members;
+- every member has a deterministic invertible witness;
+- each witness preserves or explicitly transports the lower 72-way normalization coordinate;
+- every extracted representative row sums to its published class completion count;
+- class blocks sum to `3_546_146_300_288` reduced grids;
+- the outer `9! * 72 * 72` restoration is a true transversal;
+- solver enumeration order is pinned as part of the index format;
+- first,
+  last,
+  class-boundary,
+  member-boundary,
+  left-stack-boundary,
+  and residual-boundary indices round-trip through an independent ranker.
+
+The next action is design validation of the hierarchy,
+not package implementation.
 
 ## Sources
 
 - Bertram Felgenhauer and Frazer Jarvis,
   [Enumerating possible Sudoku grids](http://www.afjarvis.org.uk/sudoku/sudoku.pdf).
+- Ed Russell,
+  [`equiv.c`](http://www.afjarvis.org.uk/sudoku/equiv.c).
+- Frazer Jarvis,
+  [44-class result summary](http://www.afjarvis.org.uk/sudoku/ed44.html).
 - T-Doku,
   [`src/grid_lib.cc`](https://github.com/t-dillon/tdoku/blob/af426180dc53aef89b82868e7b3fdfcf42165654/src/grid_lib.cc).
 - T-Doku,
