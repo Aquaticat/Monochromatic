@@ -1,82 +1,12 @@
 /**
- * CSS @import specifier parsing utilities.
+ * CSS @import specifier classification utilities.
  *
- * Extracts bare specifiers from CSS @import syntax (quoted strings, `url()` wrappers),
- * classifies them as relative or package references, and splits package specifiers
- * into name and subpath components.
+ * Classifies bare specifiers as relative or package references and splits
+ * package specifiers into name and subpath components. Specifier extraction
+ * from `\@import` preludes happens token-level in `import.ts`.
  */
 
 //region Specifier Parsing
-
-/**
- * Strips quotes and `url()` wrapper from a CSS \@import specifier.
- * Handles: `'foo.css'`, `"foo.css"`, `url('foo.css')`, `url("foo.css")`, `url(foo.css)`
- *
- * @param raw - Raw \@import params string
- *
- * @returns Bare specifier without quotes or url() wrapper
- *
- * @example
- * ```ts
- * stripImportSpecifier("url('\@scope/pkg/style.css')") // → '\@scope/pkg/style.css'
- * ```
- */
-export function stripImportSpecifier(raw: string,): string {
-  /**
-   * Trimmed input for consistent handling
-   */
-  const trimmed = raw.trim();
-
-  /**
-   * Length of the "url(" prefix.
-   */
-  const URL_PREFIX_LENGTH = 4;
-
-  // url(...) wrapper
-  if (trimmed.startsWith('url(',)
-    && trimmed
-    .endsWith(')',)) {
-    /**
-     * Inner content of url()
-     */
-    const inner = trimmed
-      .slice(
-        URL_PREFIX_LENGTH,
-        -1,
-      )
-      .trim();
-    // Strip inner quotes if present
-    if ((inner.startsWith("'",)
-      && inner
-      .endsWith("'",))
-      || (inner.startsWith('"',)
-        && inner
-        .endsWith('"',)))
-    {
-      return inner.slice(
-        1,
-        -1,
-      );
-    }
-    return inner;
-  }
-
-  // Quoted string
-  if ((trimmed.startsWith("'",)
-    && trimmed
-    .endsWith("'",))
-    || (trimmed.startsWith('"',)
-      && trimmed
-      .endsWith('"',)))
-  {
-    return trimmed.slice(
-      1,
-      -1,
-    );
-  }
-
-  return trimmed;
-}
 
 /**
  * Whether a specifier looks like a package reference (not relative or absolute).

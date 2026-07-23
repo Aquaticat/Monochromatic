@@ -4,8 +4,8 @@ import { argument, } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
 import {
-  build,
-  type BuildOptions,
+  buildCss,
+  type CssBuildOptions,
 } from './index.ts';
 
 //region CLI: parses args and runs the build
@@ -26,7 +26,7 @@ const parser = object({
 /**
  * Parsed CLI arguments cast to the shared build options type
  */
-const args: BuildOptions = runSync(
+const args: CssBuildOptions = runSync(
   parser,
   {
     programName: 'build-css',
@@ -35,7 +35,7 @@ const args: BuildOptions = runSync(
 );
 
 console.log(`Building CSS: ${args.input} -> ${args.output}`,);
-await build(args,);
+await buildCss(args,);
 console.log('Build complete',);
 
 //endregion CLI

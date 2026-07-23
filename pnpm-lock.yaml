@@ -587,6 +587,9 @@ importers:
 
   package/build-tool/css:
     dependencies:
+      '@monochromatic-dev/module-css-edit':
+        specifier: workspace:*
+        version: link:../../module/css-edit
       '@monochromatic-dev/module-fs-path':
         specifier: workspace:*
         version: link:../../module/fs-path
@@ -596,9 +599,6 @@ importers:
       '@optique/run':
         specifier: 'catalog:'
         version: 1.2.0
-      postcss:
-        specifier: '>=8.5.16'
-        version: 8.5.21
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*

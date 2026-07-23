@@ -1,3 +1,4 @@
+export { asCssSource, } from './brand.ts';
 export type { StringCss, } from './brand.ts';
 export { CssParseError, } from './errors.ts';
 export {
@@ -24,6 +25,9 @@ export {
 export {
   isClosingToken,
   isOpeningToken,
+  isTokenIdent,
+  isTokenString,
+  isTokenURL,
   isTriviaToken,
   rawTextOfTokens,
   tokenData,

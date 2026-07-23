@@ -4,23 +4,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  mkdtemp,
   readFile,
   rm,
+  writeFile,
 } from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import {
-  parse as postcssParse,
-  type Root,
-} from 'postcss';
-import {
-  build,
-  collectMixins,
-  expandApplyRules,
-  expandMixinBodies,
-  mixins,
-} from '@monochromatic-dev/build-tool-css';
 
-//region Test Helpers
+import { buildCss, } from '@monochromatic-dev/build-tool-css';
+
+//region Test helpers
 
 // import.meta.dirname is a Bun-specific API (equivalent to __dirname in CJS)
 /** Root fixture directory for all CSS integration tests */
@@ -37,29 +31,67 @@ const integrationFixtures = [
 ] as const;
 
 /**
- * Parses a CSS string into a PostCSS Root for unit testing mixin functions.
- * @param css - Raw CSS string
- * @returns PostCSS Root node
- */
-function parse(css: string,): Root {
-  return postcssParse(css,);
-}
-
-/**
- * Clears shared mixin state and, when given a per-fixture output path, removes it.
+ * Runs one buildCss invocation inside a disposable temp directory seeded with
+ * the given files, so error-path and dedup tests never touch shared state.
  *
- * @param output - Per-fixture output file to remove; omit for the mixin-only unit tests.
- *   Each integration fixture owns a distinct output path so concurrent fixture describes never race on one file.
+ * @param files - Relative path to file content map seeded into the temp dir.
+ * @returns Built CSS text.
  */
-async function cleanup({ output, }: { output?: string; } = {},): Promise<void> {
-  mixins.clear();
-  if (output !== undefined)
-    await rm(output, { force: true, },);
+async function buildInTempDir({
+  files,
+}: {
+  readonly files: Readonly<Record<string, string>>;
+},): Promise<string> {
+  /**
+   * Disposable directory owning all inputs and the output.
+   */
+  const dir = await mkdtemp(join(
+    tmpdir(),
+    'build-css-test-',
+  ),);
+  /**
+   * Removes the temp directory when the scope exits, error paths included.
+   */
+  await using tempDirGuard = {
+    [Symbol.asyncDispose]: async function removeTempDir(): Promise<void> {
+      await rm(
+        dir,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+  // The guard binding exists solely for its dispose hook.
+  void tempDirGuard;
+
+  await Promise.all(
+    Object.entries(files,).map(
+      async function writeFixture([relativePath, content,],) {
+        await writeFile(
+          join(
+            dir,
+            relativePath,
+          ),
+          content,
+        );
+      },
+    ),
+  );
+  return await buildCss({
+    input: join(
+      dir,
+      'main.css',
+    ),
+    output: join(
+      dir,
+      'out.css',
+    ),
+  },);
 }
 
-//endregion Test Helpers
-
-//region collectMixins
+//endregion Test helpers
 
 const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
   /** Path to the main CSS entry point for this fixture */
@@ -83,13 +115,13 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
   }
 
   return describe({
-    name: `build (${label})`,
+    name: `buildCss (${label})`,
     children: [
       it({
         name: 'builds fixture CSS with import resolution and mixin expansion',
         fn: async () => {
           const output = outputFor('builds',);
-          const result = await build({
+          const result = await buildCss({
             input: fixtureMainCss,
             output,
           },);
@@ -106,7 +138,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           // Mixin content should be inlined
           expect(result,).toContain('display: flex',);
           expect(result,).toContain('font-weight: bold',);
-          await cleanup({ output, },);
+          await rm(output, { force: true, },);
         },
       },),
 
@@ -114,14 +146,14 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
         name: 'writes output file to disk',
         fn: async () => {
           const output = outputFor('writes',);
-          await build({
+          await buildCss({
             input: fixtureMainCss,
             output,
           },);
 
           const written = await readFile(output, 'utf8',);
           expect(written,).toContain('--primary: rebeccapurple',);
-          await cleanup({ output, },);
+          await rm(output, { force: true, },);
         },
       },),
 
@@ -129,7 +161,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
         name: 'expands nested mixin references in build output',
         fn: async () => {
           const output = outputFor('nested',);
-          const result = await build({
+          const result = await buildCss({
             input: fixtureMainCss,
             output,
           },);
@@ -139,7 +171,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           // The flex-center content should appear inside .nested-card
           const nestedCardMatch = result.slice(result.indexOf('.nested-card',),);
           expect(nestedCardMatch,).toContain('display: flex',);
-          await cleanup({ output, },);
+          await rm(output, { force: true, },);
         },
       },),
     ],
@@ -150,181 +182,101 @@ await describe({
   name: '',
   children: [
     describe({
-      name: collectMixins.name,
+      name: buildCss.name,
       children: [
+        //region Import inlining
+
         it({
-          name: 'collects a mixin definition with body',
+          name: 'inlines a duplicate import only once',
           fn: async () => {
-            const root = parse(`
-      @mixin --center {
-        display: flex;
-        align-items: center;
-      }
-    `,);
+            const result = await buildInTempDir({
+              files: {
+                'main.css': "@import './shared.css';\n@import './shared.css';\n.a { top: 0; }",
+                'shared.css': '.shared { color: red; }',
+              },
+            },);
 
-            collectMixins(root,);
-
-            expect(mixins.has('--center',),).toBe(true,);
-            // Definition should be removed from the tree
-            expect(root.toString().trim(),).toBe('',);
-            await cleanup();
+            expect(result.indexOf('.shared',),).toBe(result.lastIndexOf('.shared',),);
+            expect(result,).toContain('.a { top: 0; }',);
           },
         },),
 
         it({
-          name: 'throws on bodyless @mixin (definitions require content)',
+          name: 'inlines through nested imports and keeps a circular pair stable',
           fn: async () => {
-            const root = parse(`
-      .btn { @mixin --touch-target; }
-    `,);
+            const result = await buildInTempDir({
+              files: {
+                'main.css': "@import './one.css';\n.main { top: 0; }",
+                'one.css': "@import './two.css';\n.one { color: red; }",
+                'two.css': "@import './one.css';\n.two { color: blue; }",
+              },
+            },);
 
-            expect(() => {
-              collectMixins(root,);
-            },)
-              .toThrow('mixin definition must include body',);
-            await cleanup();
+            expect(result,).toContain('.one',);
+            expect(result,).toContain('.two',);
+            expect(result,).toContain('.main',);
+            expect(result,).not.toContain('@import',);
           },
         },),
 
         it({
-          name: 'throws on mixed definition followed by bodyless invocation',
+          name: 'reads specifiers from url() with trailing conditions intact',
           fn: async () => {
-            const root = parse(`
-      @mixin --bold { font-weight: bold; }
-      .title { @mixin --bold; }
-    `,);
+            const result = await buildInTempDir({
+              files: {
+                'main.css': "@import url('shared.css') layer(base);\n.a { top: 0; }",
+                'shared.css': '.shared { color: red; }',
+              },
+            },);
 
-            // The bodyless @mixin --bold; inside .title triggers the error
-            expect(() => {
-              collectMixins(root,);
-            },)
-              .toThrow('mixin definition must include body',);
-            await cleanup();
+            expect(result,).toContain('.shared',);
+            expect(result,).not.toContain('@import',);
+          },
+        },),
+
+        //endregion Import inlining
+
+        //region Errors
+
+        it({
+          name: 'throws when a relative import target is missing',
+          fn: async () => {
+            let caught: unknown;
+            try {
+              await buildInTempDir({
+                files: {
+                  'main.css': "@import './nope.css';",
+                },
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('relative path not found',);
           },
         },),
 
         it({
-          name: 'throws on @mixin with empty name',
+          name: 'throws when an import has no string or url() target',
           fn: async () => {
-            const root = parse('@mixin {}',);
-
-            expect(() => {
-              collectMixins(root,);
-            },)
-              .toThrow('@mixin requires a name',);
-            await cleanup();
+            let caught: unknown;
+            try {
+              await buildInTempDir({
+                files: {
+                  'main.css': '@import layer(base);',
+                },
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(String(caught,),).toContain('needs a string or url() target',);
           },
         },),
+
+        //endregion Errors
       ],
     },),
-
-    //endregion collectMixins
-
-    //region expandApplyRules
-
-    describe({
-      name: expandApplyRules.name,
-      children: [
-        it({
-          name: 'expands a simple @apply',
-          fn: async () => {
-            mixins.set('--center', parse('display: flex; align-items: center;',).nodes,);
-
-            const root = parse('.box { @apply --center; }',);
-            expandApplyRules(root,);
-
-            const output = root.toString();
-            expect(output,).toContain('display: flex',);
-            expect(output,).toContain('align-items: center',);
-            await cleanup();
-          },
-        },),
-
-        it({
-          name: 'throws on unknown mixin reference',
-          fn: async () => {
-            const root = parse('.box { @apply --nonexistent; }',);
-
-            expect(() => {
-              expandApplyRules(root,);
-            },)
-              .toThrow('Unknown mixin: --nonexistent',);
-            await cleanup();
-          },
-        },),
-
-        it({
-          name: 'throws on @apply without a name',
-          fn: async () => {
-            const root = parse('.box { @apply ; }',);
-
-            expect(() => {
-              expandApplyRules(root,);
-            },)
-              .toThrow('Mixin name is required',);
-            await cleanup();
-          },
-        },),
-
-        it({
-          name: 'removes @apply for empty mixin',
-          fn: async () => {
-            mixins.set('--empty', [],);
-
-            const root = parse('.box { @apply --empty; color: red; }',);
-            expandApplyRules(root,);
-
-            const output = root.toString();
-            expect(output,).not.toContain('@apply',);
-            expect(output,).toContain('color: red',);
-            await cleanup();
-          },
-        },),
-      ],
-    },),
-
-    //endregion expandApplyRules
-
-    //region expandMixinBodies
-
-    describe({
-      name: expandMixinBodies.name,
-      children: [
-        it({
-          name: 'expands nested @apply in mixin bodies',
-          fn: async () => {
-            // --inner defines styles, --outer references --inner via @apply
-            mixins.set('--inner', parse('display: flex;',).nodes,);
-            mixins.set('--outer', parse('@apply --inner; padding: 1rem;',).nodes,);
-
-            expandMixinBodies();
-
-            const outerNodes = mixins.get('--outer',);
-            const outerStr = (outerNodes ?? []).map(node => node.toString()).join('',);
-            expect(outerStr,).toContain('display: flex',);
-            await cleanup();
-          },
-        },),
-
-        it({
-          name: 'handles deeply nested references',
-          fn: async () => {
-            mixins.set('--a', parse('color: red;',).nodes,);
-            mixins.set('--b', parse('@apply --a; margin: 0;',).nodes,);
-            mixins.set('--c', parse('@apply --b; padding: 0;',).nodes,);
-
-            expandMixinBodies();
-
-            const cNodes = mixins.get('--c',);
-            const cStr = (cNodes ?? []).map(node => node.toString()).join('',);
-            expect(cStr,).toContain('color: red',);
-            await cleanup();
-          },
-        },),
-      ],
-    },),
-
-    //endregion expandMixinBodies
 
     //region build (integration)
 

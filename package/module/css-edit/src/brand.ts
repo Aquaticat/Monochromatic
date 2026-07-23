@@ -14,3 +14,23 @@
 export type StringCss = string & {
   readonly __brand: 'css-document';
 };
+
+/**
+ * Brands arbitrary text as CSS source at a boundary where the caller vouches
+ * for it: file contents, bundler-inlined strings, user-provided text.
+ * Runtime identity; `parseCss` performs the real validation and throws on
+ * text that is not CSS.
+ *
+ * @param source - Text the caller asserts holds CSS.
+ *
+ * @returns Same string, branded.
+ *
+ * @example
+ * ```ts
+ * parseCss({ source: asCssSource('.a { top: 0; }',), },);
+ * ```
+ */
+export function asCssSource(source: string,): StringCss {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- boundary branding; parseCss validates for real
+  return source as StringCss;
+}

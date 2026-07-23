@@ -1,8 +1,5 @@
 /**
- * Custom PostCSS plugin that inlines \@import rules.
- *
- * Replaces `lightningcss` bundling + `oxc-resolver` with a pure-JS
- * implementation that works in both Node/Bun and browser environments.
+ * Monorepo-aware `\@import` inlining over the css-edit CST.
  *
  * Resolution strategy (mirrors CSS conventions):
  * 1. Relative paths (`./foo.css`, `../bar.css`): resolved against the importer
@@ -14,25 +11,57 @@ import {
   dirname,
   isAbsolute,
   resolve,
-  sep,
 } from '@monochromatic-dev/module-fs-path/ts';
 import {
-  type AtRule,
-  parse,
-  type Plugin,
-  type Root,
-} from 'postcss';
+  type CssAtRule,
+  type CssStylesheet,
+  isCssAtRule,
+  isTokenString,
+  isTokenURL,
+  asCssSource,
+  parseCss,
+  rawTextOfTokens,
+  tokenData,
+  transformStylesheet,
+} from '@monochromatic-dev/module-css-edit/ts';
 import {
   existsSync,
   readCssFileSync,
 } from './fs.ts';
 import { resolvePackage, } from './package-resolver.ts';
-import {
-  isPackageSpecifier,
-  stripImportSpecifier,
-} from './specifier.ts';
+import { isPackageSpecifier, } from './specifier.ts';
 
-//region Import Resolution
+//region Specifier extraction
+
+/**
+ * Extracts the import target from an `\@import` prelude using parsed token
+ * data: the first string token (covers `'x.css'` and `url("x.css")`) or URL
+ * token (covers unquoted `url(x.css)`) wins, so trailing conditions such as
+ * `layer(base)` or media queries never corrupt the specifier.
+ *
+ * @param node - Import at-rule.
+ *
+ * @returns Unescaped, unquoted specifier text.
+ *
+ * @throws When the prelude carries no string or url() target.
+ */
+function importSpecifier(node: CssAtRule,): string {
+  for (const token of node.preludeTokens) {
+    if (isTokenString(token,) || isTokenURL(token,))
+      return tokenData(token,)
+        .value;
+  }
+  throw new Error(
+    `@import needs a string or url() target: '@import ${
+      rawTextOfTokens({ tokens: node.preludeTokens, },)
+        .trim()
+    }'`,
+  );
+}
+
+//endregion Specifier extraction
+
+//region Import resolution
 
 /**
  * Resolves a CSS \@import specifier to an absolute file path, falling back to
@@ -116,131 +145,79 @@ function resolveSpecifier({
   },);
 }
 
-//endregion Import Resolution
+//endregion Import resolution
 
-//region PostCSS Plugin
-
-/**
- * PostCSS plugin that inlines \@import rules by resolving and parsing imported files
- * via {@link inlineImports}. Replaces each \@import with the parsed AST of the
- * imported file, then recursively processes nested \@import rules in the
- * inlined content.
- *
- * Tracks already-imported files to prevent circular imports and duplicate inlining.
- */
-export const postcssInlineImport: Plugin = {
-  postcssPlugin: 'postcss-inline-import',
-  Once(root: Root,): void {
-    /**
-     * Set of absolute paths already inlined to prevent circular/duplicate imports
-     */
-    const imported = new Set<string>();
-
-    /**
-     * Source file path for the root stylesheet
-     */
-    const rootFrom = root.source
-      ?.input
-      .file;
-    if (rootFrom !== undefined)
-      imported.add(rootFrom,);
-
-    inlineImports({
-      root,
-      fromFile: rootFrom ?? `${process.cwd()}${sep}input.css`,
-      imported,
-    },);
-  },
-};
+//region Inlining
 
 /**
- * Recursively inlines \@import rules in a PostCSS root: each specifier is
- * resolved via {@link resolveSpecifier} and read with {@link readCssFileSync}.
+ * Recursively inlines `\@import` rules: each specifier resolves via
+ * {@link resolveSpecifier}, the file is read synchronously (in-memory registry
+ * first, `node:fs` fallback), parsed, recursively inlined, and spliced in
+ * place of the `\@import` node. Already-imported files (tracked in `imported`)
+ * splice to nothing, preventing cycles and duplicates.
  *
- * @param root - PostCSS root node to process
+ * @param root - Parsed stylesheet to process.
  *
- * @param fromFile - Absolute path of the file being processed
+ * @param fromFile - Absolute path of the file the stylesheet came from.
  *
- * @param imported - Set of already-imported absolute paths (prevents cycles)
+ * @param imported - Absolute paths already inlined; mutated as files inline.
+ *
+ * @returns Stylesheet with every import replaced by its file's contents.
  *
  * @example
  * ```ts
- * inlineImports({
- *   root: postcssRoot,
+ * inlineCssImports({
+ *   root: parsed.root,
  *   fromFile: '/project/src/main.css',
- *   imported: new Set(),
+ *   imported: new Set(['/project/src/main.css']),
  * });
  * ```
  */
-function inlineImports({
+export function inlineCssImports({
   root,
   fromFile,
   imported,
 }: {
-  readonly root: Root;
+  readonly root: CssStylesheet;
   readonly fromFile: string;
-  imported: Set<string>;
-},): void {
-  // Collect @import nodes first to avoid mutating the tree while walking
-  /**
-   * All \@import at-rules in the current root.
-   */
-  const importNodes: AtRule[] = [];
-  root.walkAtRules(
-    'import',
-    function collectImportNode(node: AtRule,) {
-      importNodes.push(node,);
+  readonly imported: Set<string>;
+},): CssStylesheet {
+  return transformStylesheet({
+    root,
+    visit: function inlineImportNode(node,) {
+      if ((!isCssAtRule(node,)) || (node.name !== 'import'))
+        return node;
+
+      /**
+       * Absolute path of the imported file.
+       */
+      const resolvedPath = resolveSpecifier({
+        specifier: importSpecifier(node,),
+        fromFile,
+      },);
+
+      // Already-inlined files splice to nothing: prevents circular imports
+      // and duplicate content.
+      if (imported.has(resolvedPath,))
+        return [];
+      imported.add(resolvedPath,);
+
+      /**
+       * Imported file parsed and recursively inlined.
+       */
+      const importedRoot = inlineCssImports({
+        root: parseCss({
+          source: asCssSource(readCssFileSync(resolvedPath,),),
+        },)
+          .root,
+        fromFile: resolvedPath,
+        imported,
+      },);
+
+      return importedRoot.children;
     },
-  );
-
-  for (const node of importNodes) {
-    /**
-     * Bare specifier with quotes/url() stripped
-     */
-    const specifier = stripImportSpecifier(node.params,);
-
-    /**
-     * Absolute path to the imported file
-     */
-    const resolvedPath = resolveSpecifier({
-      specifier,
-      fromFile,
-    },);
-
-    // Skip already-imported files (prevents circular imports and duplicates)
-    if (imported.has(resolvedPath,)) {
-      node.remove();
-      continue;
-    }
-    imported.add(resolvedPath,);
-
-    /**
-     * Raw CSS content of the imported file
-     */
-    const content = readCssFileSync(resolvedPath,);
-    /**
-     * Parsed AST of the imported file
-     */
-    const importedRoot = parse(
-      content,
-      { from: resolvedPath, },
-    );
-
-    // Recursively process nested @import rules
-    inlineImports({
-      root: importedRoot,
-      fromFile: resolvedPath,
-      imported,
-    },);
-
-    // Replace the @import node with the inlined content
-    if (importedRoot.nodes
-      .length
-      > 0)
-      node.replaceWith(...importedRoot.nodes,);
-    else
-      node.remove();
-  }
+    pruneTriviaBeforeRemoved: true,
+  },);
 }
 
-//endregion PostCSS Plugin
+//endregion Inlining

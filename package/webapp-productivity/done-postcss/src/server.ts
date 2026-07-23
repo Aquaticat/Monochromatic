@@ -8,7 +8,7 @@
  *
  * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
  */
-import { build as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
+import { buildCss, } from '@monochromatic-dev/build-tool-css/ts';
 import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const/ts';
 import {
   defineHandler,
@@ -124,7 +124,7 @@ function requireParam(
   return value;
 }
 
-await buildCSS({
+await buildCss({
   input: './src/client/styles.css',
   output: './dist/css/styles.css',
 },);

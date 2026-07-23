@@ -2,7 +2,7 @@
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/build-tool-css",
   "private": true,
-  "description": "CSS build tool with @mixin/@apply processing and @import resolution for monorepo packages.",
+  "description": "CSS build tool with @mixin/@apply processing and @import resolution for monorepo packages, byte-preserving via module-css-edit.",
   "type": "module",
   "module": "dist/final/node/index.mjs",
   "exports": {
@@ -31,18 +31,15 @@
     "nano-spawn": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-css-edit": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@optique/core": "catalog:",
-    "@optique/run": "catalog:",
-    "postcss": "catalog:"
+    "@optique/run": "catalog:"
   },
   "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "package/build-tool/css"
-  },
-  "sideEffects": [
-    "./src/process-shim.ts"
-  ]
+  }
 }

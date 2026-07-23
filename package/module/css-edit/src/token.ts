@@ -14,6 +14,13 @@ import {
 } from '@csstools/css-tokenizer';
 
 export type { CSSToken, } from '@csstools/css-tokenizer';
+// Token-kind guards consumers need to interpret prelude and value slices
+// without depending on the tokenizer package directly.
+export {
+  isTokenIdent,
+  isTokenString,
+  isTokenURL,
+} from '@csstools/css-tokenizer';
 
 //region Nesting
 

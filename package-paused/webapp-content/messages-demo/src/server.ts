@@ -14,7 +14,7 @@
  * (tsdown). The server logs a hint if the bundles are missing.
  */
 
-import { build as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
+import { buildCss as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
 import {
   initPromise,
   logger,
