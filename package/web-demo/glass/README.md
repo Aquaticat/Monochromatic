@@ -7,6 +7,71 @@ crack and then shatter physically staged glass panes
 on the three.js WebGPU renderer
 (automatic WebGL2 fallback).
 
+## Status: paused (2026-07-22)
+
+Development is paused.
+The demo runs,
+passes its gates,
+and stages breakage in the Smash Hit mold,
+but it still does not feel like real glass.
+Recorded problems,
+in the maintainer's order:
+
+1.  No momentum calculations.
+    The dynamics are tuned heuristics,
+    not conservation:
+    balls are massless,
+    punch-through keeps a fixed speed fraction regardless of how much
+    glass broke,
+    shard launch speeds are hand-tuned factors
+    (`punchTransfer`, `radialBurst`)
+    rather than momentum shared between ball and shard mass,
+    and balls, shards, and walls never collide with each other.
+    Smash Hit ran a real impulse solver with capped impulses;
+    this demo fakes the aggregate look of one.
+2.  Glass panes aren't thick.
+    Panes and shards read paper-thin:
+    a single 0.012 m thickness everywhere,
+    no visible edge faces at eye level,
+    no green edge tint,
+    no refraction offset through the sheet,
+    so nothing sells mass.
+3.  There's only one type of glass.
+    One material and one break behavior for every pane.
+    Real corridors mix annealed
+    (spider web, daggers),
+    tempered
+    (dices into small cubes),
+    laminated
+    (web that holds and sags on its interlayer),
+    and frosted;
+    variety is itself a realism cue.
+4.  Further problems the maintainer has seen but not yet named;
+    this list is known to be incomplete.
+
+Known gaps already deferred by decision or left unbuilt:
+
+- Audio was explicitly deferred:
+  no reverb bus,
+  thin procedural synthesis,
+  no per-room acoustics.
+- The rim collapses in one wave;
+  no distance-ordered peeling cascade.
+- Shards never re-break,
+  and debris interacts only with the floor.
+- The crack web is an additive glow texture,
+  not refracting crack geometry.
+- Manifestation bands vanish with the sheet on the first hit.
+- WebGPU-backend visuals were never spot-checked on real hardware;
+  all verification ran on the WebGL2 fallback under software
+  rendering.
+
+The package stays in the workspace,
+so lint,
+types,
+and unit tests keep running
+(all green at pause time).
+
 ## What it demonstrates
 
 Breaking glass reads as real through five things this demo stages
