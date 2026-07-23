@@ -22,7 +22,6 @@ import {
   expressionRoot,
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
-import { intrinsicReceiverParameterIndex, } from './effect-intrinsic-result-origin.ts';
 
 /**
  * Registers every identifier bound by one parameter or destructuring pattern.
@@ -134,12 +133,7 @@ export function expressionOrigin({
     if (directOrigin !== PARAMETER_INDEX_UNAVAILABLE)
       return directOrigin;
   }
-  return intrinsicReceiverParameterIndex({
-    project,
-    checker: project.checker,
-    bindingOriginBySymbolId,
-    node,
-  },);
+  return PARAMETER_INDEX_UNAVAILABLE;
 }
 
 /**
