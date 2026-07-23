@@ -7,15 +7,23 @@ Do not keep every external dependency on an unbounded `>=` floor,
 and do not pin every specifier indiscriminately.
 
 - Put exact versions in the default catalog for private application dependencies
-  and build, test, development, and repository tooling dependencies.
+  and build,
+   test,
+   development,
+   and repository tooling dependencies.
 - Keep `workspace:*` for internal workspace dependencies.
 - Give external runtime dependencies emitted by unbundled published packages
-  tested, bounded compatibility ranges.
+  tested,
+   bounded compatibility ranges.
   Keep these separate from exact workspace-tooling entries when one package needs both roles.
 - Give peer dependencies explicit tested compatibility ranges.
   Do not exact-pin peers or treat `*` as a durable compatibility claim.
 - Treat overrides as policy constraints rather than ordinary direct dependencies.
-  A security floor, compatibility cap, removal, substitution, or audited exact artifact
+  A security floor,
+   compatibility cap,
+   removal,
+   substitution,
+   or audited exact artifact
   should use the narrowest specifier that expresses that constraint.
 - Keep committing `pnpm-lock.yaml` and installing it frozen in CI.
 
@@ -46,9 +54,13 @@ Measurements at commit `c30c3a1c3` on 2026-07-23 found:
 
 - 143 active manifests in the root and `package/*/*` workspace set.
 - 442 `catalog:` references and 620 `workspace:*` references.
-- No direct external exact, caret, or tilde specifiers in those manifests.
-- 26 non-catalog peer specifiers, all `*`.
-- 137 default-catalog entries, all `>=` floors.
+- No direct external exact,
+   caret,
+   or tilde specifiers in those manifests.
+- 26 non-catalog peer specifiers,
+   all `*`.
+- 137 default-catalog entries,
+   all `>=` floors.
 - No Renovate or Dependabot configuration.
 
 The existing [`catalog:tighten`](../../package/dev-script/catalog-tighten/README.md) dry run found:
@@ -78,10 +90,14 @@ The current publish workflow's extant npm targets do not declare third-party cat
 That limits immediate downstream impact,
 but other non-private packages do declare them and may become publish targets later.
 A disposable pnpm 11.15.1 pack probe confirmed that catalog value `>=1.2.3`
-was emitted as `>=1.2.3`, while catalog value `4.5.6` was emitted as `4.5.6`.
+was emitted as `>=1.2.3`,
+ while catalog value `4.5.6` was emitted as `4.5.6`.
 
 A targeted search of the catalog tooling and dependency policy files found no relevant
-`TODO`, `FIXME`, skipped test, or unexplained suppression that changes this conclusion.
+`TODO`,
+ `FIXME`,
+ skipped test,
+ or unexplained suppression that changes this conclusion.
 The TypeScript suppressions in `catalog-tighten` are scoped parsing and external-API assertions,
 not exceptions to the version policy.
 
@@ -128,7 +144,8 @@ Cons:
 - Exact published runtime dependencies can force duplicate installations and consumer conflicts.
 - Exact `workspace:` replacements or security constraints would erase useful protocol and policy meaning.
 
-Ranking: role-aware policy > current unbounded floors > pin everything.
+Ranking:
+ role-aware policy > current unbounded floors > pin everything.
 The role-aware policy ranks first because it improves explicit repository upgrades
 without exporting exact pins as universal compatibility contracts.
 The current policy ranks above pinning everything because its consumer ranges remain flexible,
