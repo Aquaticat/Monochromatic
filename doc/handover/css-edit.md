@@ -102,10 +102,10 @@ escaped selectors, custom-property block values.
 
 1. [x] Grilling session: target, placement, API model, rigor, sequencing confirmed.
 2. [x] This handover doc.
-3. [ ] Add `@csstools/css-tokenizer` to pnpm catalog.
-4. [ ] Scaffold `package/module/css-edit` (mirror `jsonc-edit` scaffolding).
-5. [ ] Implement tokenize-wrapper, structure parser, stringify, walk/edit helpers.
-6. [ ] Unit tests per branch plus adversarial corpus; all green.
+3. [x] `@csstools/css-tokenizer` already in pnpm catalog (line found during work; no edit needed).
+4. [x] Scaffold `package/module/css-edit` (mirrors `jsonc-edit`; needed `rolldown.browser.config.ts`).
+5. [x] Implement parse (strict, spec section 5 unified block contents), stringify, transform.
+6. [x] Unit tests per branch plus adversarial corpus; all green against built dist.
 7. [ ] Port `build-tool-css` (import inlining, mixin redesign, applyMixins, shim removal).
 8. [ ] Integration fixtures green (both resolution strategies), CLI verified (VB2).
 9. [ ] Browser verification: done-postcss via agent-browser, then `agent-browser close` (VB5, ABR).
@@ -115,6 +115,25 @@ escaped selectors, custom-property block values.
 13. [ ] Docs: `doc/troubleshooting/css-tooling.md` dated survey section, both READMEs.
 14. [ ] Clean probe scratch dir.
 
+## Implementation notes discovered while building
+
+- Repo lint regime shaped the parser: scan cursors live in named IIFEs
+  (`no-function-root-let`), absence models as discriminated unions or empty
+  arrays (`no-nullish-union`), and the `@csstools/css-tokenizer` guards are
+  catalogued as audited pure reads in
+  `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/csstools-css-tokenizer-package-effect-catalog.ts`
+  (shipped dist sha256 recorded there; unit test beside the other catalog tests).
+- Visitor removal semantics: empty-array result removes; with
+  `pruneTriviaBeforeRemoved` the preceding trivia run keeps comments and loses
+  only whitespace after the last comment, matching postcss removal behavior.
+- CDO/CDC are single tokens; prose between `<!--` and `-->` is NOT a comment
+  and tokenizes as idents (caught by an initially wrong test corpus).
+- When postcss leaves `build-tool-css`, check whether
+  `postcss-package-effect-catalog.ts` still has consumers before retiring it.
+
 ## Commits
 
-(record as they land)
+- `d18af81a1` docs: this handover.
+- `feat(module-css-edit)`: CST implementation.
+- `805e84287` fix/feat: lint remediation + tokenizer effect catalog.
+- `test(module-css-edit)`: unit suites; catalog test passing.
