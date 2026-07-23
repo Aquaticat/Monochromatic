@@ -7,6 +7,7 @@ import type {
 } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { alignDocumentSections, } from './chunk-document.ts';
+import { NON_TRANSLATION_BLOCK_VOTES, } from './non-translation-evidence.ts';
 import { parseDocument, } from './parse-document.ts';
 import {
   type ChunkRepairOutcome,
@@ -18,8 +19,9 @@ import {
 // The batch driver over the whole loop: parse, align into chunk pairs, run
 // each pair through the repair stages, splice winning chunks back into the
 // document. Ensemble-agreed critical non-translation blocks repair and
-// returns the input unchanged (settled architecture); everything else
-// degrades chunk by chunk, never document-wide.
+// returns the input unchanged (settled architecture) unless deterministic
+// evidence contradicts the votes (see non-translation-evidence.ts);
+// everything else degrades chunk by chunk, never document-wide.
 
 /**
  * Logger root for the repair pipeline.
@@ -31,13 +33,6 @@ const l = tagged({ tag: 'translation-repair-pipeline', },);
  * chunk-scale calls complete in well under this.
  */
 const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
-
-/**
- * Wire-level critical non-translation votes that block repair;
- * two independent critics agreeing outranks one model's judgment on a
- * degenerate pair where anchoring is best-effort.
- */
-export const NON_TRANSLATION_BLOCK_VOTES = 2;
 
 /**
  * One adjudicated issue in the whole-document report.
@@ -217,7 +212,10 @@ export async function repairTranslation(
       l: rl,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (outcome.nonTranslationVotes >= NON_TRANSLATION_BLOCK_VOTES) {
+    if (
+      (outcome.nonTranslationVotes >= NON_TRANSLATION_BLOCK_VOTES)
+      && (!outcome.nonTranslationContradicted)
+    ) {
       rl.warn(
         `chunk ${String(pairIndex,)}: ${
           String(outcome.nonTranslationVotes,)

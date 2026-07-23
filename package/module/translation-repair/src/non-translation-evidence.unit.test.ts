@@ -1,0 +1,224 @@
+/**
+ * Tests for the deterministic non-translation contradiction check and
+ * the vote screening built on it:
+ * votes below threshold never contradict, content-critique claims
+ * anchored target-side count toward the floor, missing-translation
+ * categories plus source-only anchors never count, and dismissed votes
+ * take their non-translation claims along with a finding.
+ * Fixtures are cat-themed invention mirroring corpus structure only.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
+  assessNonTranslationEvidence,
+  type IssueClaim,
+  NON_TRANSLATION_BLOCK_VOTES,
+  NON_TRANSLATION_CONTRADICTION_MIN,
+  screenNonTranslationVotes,
+} from '../dist/final/neutral/index.mjs';
+
+/**
+ * Builds one claim with chosen category and span side.
+ */
+function catClaim(
+  {
+    category,
+    side,
+    summary,
+  }: {
+    readonly category: IssueClaim['category'];
+    readonly side: 'source' | 'target';
+    readonly summary: string;
+  },
+): IssueClaim {
+  return {
+    category,
+    severity: 'major',
+    summary,
+    spans: [
+      {
+        side,
+        nodeId: 'block/0',
+        nodeHash: 'hash/whisker',
+        startOffset: 0,
+        endOffset: 4,
+        quotedText: side === 'target' ? 'purr' : '呼噜',
+      },
+    ],
+  };
+}
+
+/**
+ * Content-critique claims at exactly the contradiction floor.
+ */
+const FLOOR_CLAIMS: readonly IssueClaim[] = [
+  ...Array.from({ length: NON_TRANSLATION_CONTRADICTION_MIN, },)
+    .keys(),
+]
+  .map(function toClaim(index,) {
+    return catClaim({
+      category: 'accuracy/mistranslation',
+      side: 'target',
+      summary: `Purring nuance ${String(index,)} is rendered as hissing.`,
+    },);
+  },);
+
+/**
+ * Non-translation claim dismissed together with contradicted votes.
+ */
+const NON_TRANSLATION_CLAIM: IssueClaim = catClaim({
+  category: 'accuracy/non-translation',
+  side: 'target',
+  summary: 'Pages look unrelated.',
+},);
+
+await describe({
+  name: '',
+  children: [
+    describe({
+      name: assessNonTranslationEvidence.name,
+      children: [
+        it({
+          name: 'contradicts votes at threshold when content critique reaches the floor',
+          fn: async () => {
+            const evidence = assessNonTranslationEvidence({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              claims: FLOOR_CLAIMS,
+            },);
+            expect(evidence.contradicted,).toBe(true,);
+            expect(evidence.contradictionClaimCount,).toBe(NON_TRANSLATION_CONTRADICTION_MIN,);
+          },
+        },),
+
+        it({
+          name: 'never contradicts votes below the block threshold',
+          fn: async () => {
+            const evidence = assessNonTranslationEvidence({
+              votes: NON_TRANSLATION_BLOCK_VOTES - 1,
+              claims: FLOOR_CLAIMS,
+            },);
+            expect(evidence.contradicted,).toBe(false,);
+            expect(evidence.contradictionClaimCount,).toBe(NON_TRANSLATION_CONTRADICTION_MIN,);
+          },
+        },),
+
+        it({
+          name: 'stays uncontradicted one claim under the floor',
+          fn: async () => {
+            const evidence = assessNonTranslationEvidence({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              claims: FLOOR_CLAIMS.slice(1,),
+            },);
+            expect(evidence.contradicted,).toBe(false,);
+            expect(evidence.contradictionClaimCount,).toBe(NON_TRANSLATION_CONTRADICTION_MIN - 1,);
+          },
+        },),
+
+        it({
+          name: 'excludes missing-translation categories even when target-anchored',
+          fn: async () => {
+            /**
+             * Claims whose categories evidence missing translation.
+             */
+            const missingTranslationClaims: readonly IssueClaim[] = [
+              catClaim({
+                category: 'accuracy/omission',
+                side: 'target',
+                summary: 'Napping sentence has no counterpart.',
+              },),
+              catClaim({
+                category: 'accuracy/untranslated',
+                side: 'target',
+                summary: 'Whisker paragraph stays untranslated.',
+              },),
+              NON_TRANSLATION_CLAIM,
+            ];
+            const evidence = assessNonTranslationEvidence({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              claims: [
+                ...missingTranslationClaims,
+                ...FLOOR_CLAIMS.slice(1,),
+              ],
+            },);
+            expect(evidence.contradicted,).toBe(false,);
+            expect(evidence.contradictionClaimCount,).toBe(NON_TRANSLATION_CONTRADICTION_MIN - 1,);
+          },
+        },),
+
+        it({
+          name: 'excludes source-only claims from contradiction',
+          fn: async () => {
+            /**
+             * Content-critique claims anchored only in source text.
+             */
+            const sourceOnlyClaims: readonly IssueClaim[] = [
+              ...Array.from({ length: NON_TRANSLATION_CONTRADICTION_MIN, },)
+                .keys(),
+            ]
+              .map(function toClaim(index,) {
+                return catClaim({
+                  category: 'style/awkward-phrasing',
+                  side: 'source',
+                  summary: `Sunbeam clause ${String(index,)} reads stiffly.`,
+                },);
+              },);
+            const evidence = assessNonTranslationEvidence({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              claims: sourceOnlyClaims,
+            },);
+            expect(evidence.contradicted,).toBe(false,);
+            expect(evidence.contradictionClaimCount,).toBe(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: screenNonTranslationVotes.name,
+      children: [
+        it({
+          name: 'dismisses contradicted votes with their claims and a finding',
+          fn: async () => {
+            const screening = screenNonTranslationVotes({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              claims: [
+                NON_TRANSLATION_CLAIM,
+                ...FLOOR_CLAIMS,
+              ],
+            },);
+            expect(screening.contradicted,).toBe(true,);
+            expect(screening.claims,).toEqual(FLOOR_CLAIMS,);
+            expect(screening.findings,).toHaveLength(1,);
+            expect(screening.findings[0],).toContain('non-translation votes contradicted',);
+          },
+        },),
+
+        it({
+          name: 'passes claims through untouched while votes stand',
+          fn: async () => {
+            /**
+             * Claims under the floor, so votes stand.
+             */
+            const standingClaims: readonly IssueClaim[] = [
+              NON_TRANSLATION_CLAIM,
+              ...FLOOR_CLAIMS.slice(1,),
+            ];
+            const screening = screenNonTranslationVotes({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              claims: standingClaims,
+            },);
+            expect(screening.contradicted,).toBe(false,);
+            expect(screening.claims,).toEqual(standingClaims,);
+            expect(screening.findings,).toHaveLength(0,);
+          },
+        },),
+      ],
+    },),
+  ],
+},);

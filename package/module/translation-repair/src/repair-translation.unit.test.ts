@@ -265,5 +265,83 @@ await describe({
         expect(result.repairedText,).toBe(TARGET_TEXT,);
       },
     },),
+
+    it({
+      name: 'proceeds when content critique contradicts non-translation votes',
+      fn: async () => {
+        /**
+         * Substantive wire issues anchoring critique into target text;
+         * three critics each reporting three reach the contradiction
+         * floor while every critic also votes non-translation.
+         * The summaries and category labels are ACKNOWLEDGED ARBITRARY
+         * INVENTION, not coherent review commentary: the scripted stub
+         * never interprets them, and the contradiction assessment only
+         * needs structurally valid claims, meaning closed-taxonomy
+         * categories outside the missing-translation family plus quotes
+         * occurring exactly once per side of the tiny fixture pair.
+         * The quotes reuse whatever unique fragments the fixture offers,
+         * so critique text and quoted text deliberately do not cohere.
+         */
+        const contentCritiqueIssues = [
+          {
+            category: 'style/awkward-phrasing',
+            severity: 'minor',
+            summary: 'Sunbathing clause reads stiffly.',
+            sourceQuote: '在窗台上晒太阳',
+            targetQuote: 'sunbathing on the windowsill',
+          },
+          {
+            category: 'style/register',
+            severity: 'minor',
+            summary: 'Butterfly clause drops the playful register.',
+            sourceQuote: '追蝴蝶',
+            targetQuote: 'hates butterflies',
+          },
+          {
+            category: 'terminology/wrong-term',
+            severity: 'major',
+            summary: 'Doubled cat endearment is flattened.',
+            sourceQuote: '猫猫喜欢',
+            targetQuote: 'The cat loves',
+          },
+        ];
+
+        /** Full run whose non-translation votes stand contradicted. */
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: [
+              {
+                category: 'accuracy/non-translation',
+                severity: 'critical',
+                summary: 'The target is not a translation of the source.',
+                targetQuote: 'The cat loves sunbathing on the windowsill.',
+              },
+              ...contentCritiqueIssues,
+            ],
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        expect(result.status,).not.toBe('blocked-non-translation',);
+        expect(result.findings
+          .some(function mentionsContradiction(finding,) {
+            return finding.includes('non-translation votes contradicted',);
+          },),).toBe(true,);
+        // Dismissed votes take their claims along; no adjudicated issue
+        // may carry the non-translation category.
+        expect(result.issues
+          .some(function carriesNonTranslation(record,) {
+            return record.issue
+              .claims
+              .some(function isNonTranslation(claim,) {
+                return claim.claim
+                  .category
+                  === 'accuracy/non-translation';
+              },);
+          },),).toBe(false,);
+      },
+    },),
   ],
 },);

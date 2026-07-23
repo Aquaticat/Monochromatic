@@ -7,6 +7,7 @@ import type {
 } from './adjudicate-model.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { screenNonTranslationVotes, } from './non-translation-evidence.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import {
   parseDocument,
@@ -114,6 +115,13 @@ export type ChunkRepairOutcome = {
    * Critics reporting critical non-translation at wire level.
    */
   readonly nonTranslationVotes: number;
+
+  /**
+   * Whether deterministic evidence (enough validated content-critique
+   * claims anchored into target text) contradicted the votes;
+   * callers must never block on contradicted votes.
+   */
+  readonly nonTranslationContradicted: boolean;
 
   /**
    * Critics heard, for the caller's degradation accounting.
@@ -224,6 +232,31 @@ export async function repairChunk(
   },);
 
   /**
+   * Vote screening against deterministic evidence; contradicted votes
+   * fall together with their claims.
+   */
+  const screening = screenNonTranslationVotes({
+    votes: critic.nonTranslationVotes,
+    claims: critic.claims,
+  },);
+  if (screening.contradicted) {
+    l.warn(
+      `chunk ${String(chunkIndex,)}: ${
+        String(critic.nonTranslationVotes,)
+      } non-translation votes dismissed: ${screening.findings
+        .join('; ',)}`,
+    );
+  }
+
+  /**
+   * Critic findings plus the contradiction record when votes fell.
+   */
+  const criticFindings = [
+    ...critic.findings,
+    ...screening.findings,
+  ];
+
+  /**
    * Unchanged outcome shared by every early exit.
    */
   const unchangedOutcome = {
@@ -232,23 +265,24 @@ export async function repairChunk(
     changed: false,
     resolvedIssueIds: [],
     nonTranslationVotes: critic.nonTranslationVotes,
+    nonTranslationContradicted: screening.contradicted,
     heardCritics: critic.heardCritics,
   };
-  if (critic.claims
+  if (screening.claims
     .length
     === 0) {
     l.info(`chunk ${String(chunkIndex,)}: no validated claims, unchanged`,);
     return {
       ...unchangedOutcome,
       issues: [],
-      findings: critic.findings,
+      findings: criticFindings,
     };
   }
 
   /**
    * Merge-proposal clusters over the validated claims.
    */
-  const { clusters, } = aggregateClaims({ claims: critic.claims, },);
+  const { clusters, } = aggregateClaims({ claims: screening.claims, },);
 
   /**
    * Panel decision over the clusters.
@@ -269,7 +303,7 @@ export async function repairChunk(
    * Findings across the stages so far.
    */
   const stageFindings = [
-    ...critic.findings,
+    ...criticFindings,
     ...panel.findings,
   ];
 
@@ -453,6 +487,7 @@ export async function repairChunk(
     issues: panel.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
     nonTranslationVotes: critic.nonTranslationVotes,
+    nonTranslationContradicted: screening.contradicted,
     heardCritics: critic.heardCritics,
     findings: [
       ...stageFindings,
