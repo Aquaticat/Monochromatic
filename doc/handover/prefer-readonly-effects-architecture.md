@@ -206,21 +206,35 @@ Current source probes:
   revision `e0b87086eefe0e7efeea6d269e9403c4be4ba9aa`;
 - Neon clone:
   `/home/user/temp/agent/neon-20260722-eval`,
-  revision `38960e4381d9ad13b551cdf2d261f609167c9bc2`.
+  revision `38960e4381d9ad13b551cdf2d261f609167c9bc2`;
+- `tsgolint` clone:
+  `/home/user/temp/agent/tsgolint-20260722-native-eval`,
+  revision `744b737d9743274217b01a54f5ff51bd6857da48`;
+- `ttsc` clone:
+  `/home/user/temp/agent/ttsc-20260722-native-eval`,
+  revision `017b4d808689f57d4e30391844ab897e5f9f3dce`.
 
 Oxc now contains `oxc_type_checker`,
-but its crate documentation calls it experimental and work in progress.
-It is not yet evidence of parity with TypeScript 7 semantics required by this rule,
-including mapped readonly state,
-resolved overloads,
-conditional types,
-and declaration merging.
+but its crate documentation says it is a scaffold that performs no type checking.
+A pure Oxc Rust analyzer therefore fails the TypeScript semantic-compatibility gate.
+Oxc's external JavaScript-plugin API also does not expose type-aware rule APIs,
+and external native Rust rules require a custom Oxlint distribution.
 
 TypeScript-Go remains the semantic authority.
 Its sync API exposes individual checker operations over synchronous RPC.
-Its source also contains `_tools/customlint`,
-which may be a more direct route to running effect analysis beside the Go checker than a Rust addon.
-This route needs source and platform analysis before recommendation.
+The earlier reading of TypeScript-Go's `_tools/customlint` as a possible TypeScript extension was wrong:
+that directory registers `golang.org/x/tools/go/analysis` checks for the compiler's own Go source.
+TypeScript-Go issue 2824 states that third-party code cannot be dynamically linked into the server process.
+
+Two direct-checker Go hosts were discovered:
+
+- `tsgolint` executes rules against TypeScript-Go AST and checker objects inside Oxlint's type-aware backend.
+  A project rule requires a maintained fork,
+  but it shares the exact command whose rule-disabled path measured 396 milliseconds.
+- `ttsc` provides a public contributor rule API,
+  including type-aware and project-scoped rules.
+  It avoids a linter fork but runs through a separate host,
+  and its contributor binary generation must fit the cold target.
 
 NAPI-RS and Neon both expose Rust through Node-API.
 They are bridge alternatives,
@@ -229,33 +243,35 @@ Their relative ergonomics cannot decide whether the analyzer meets the guarantee
 
 ## Evaluation candidates
 
-Continue equal-depth assessment of:
+Prototype in this order:
 
-- demand-driven TypeScript/JavaScript analysis using the existing TypeScript-Go sync API;
-- a Rust Node-API addon using Oxc for syntax and graph work while retaining batched TypeScript-Go semantic facts;
-- analysis implemented beside TypeScript-Go's checker through its custom-lint or API extension surface;
-- a native Oxlint rule or maintained Oxlint fork,
-  if custom native rules can be integrated without losing TypeScript semantic authority.
+1.  project-owned `tsgolint` rule or minimal fork;
+2.  `ttsc` contributor rule;
+3.  demand-driven TypeScript/JavaScript analysis using the existing sync API;
+4.  Rust Node-API addon retaining TypeScript-Go as semantic authority;
+5.  maintained native Oxlint fork;
+6.  pure Oxc Rust analyzer.
 
-Do not recommend a pure Oxc Rust checker until parity is tested against the rule's existing semantic corpus.
-Do not recommend Node-API based on language-speed intuition.
+This is prototype ordering,
+not adoption.
 The decisive evidence is a consumer-boundary prototype on the exact 13-file cold workload.
+Do not recommend Node-API based on language-speed intuition.
 
 ## Research state and next actions
 
 - Repository precedent search found Rust packages but no existing repo-owned Node-API addon.
-- Current Oxc source confirms an experimental Rust type checker and a separate `tsgolint` process integration.
-- Current TypeScript-Go source confirms the sync API's per-operation checker RPC handlers
-  and a custom-lint tool surface.
+- Current Oxc source says its Rust type checker performs no checking.
+- Current TypeScript-Go source confirms per-operation checker RPC and no dynamic third-party server plugins.
+- `tsgolint` gives rules direct Program and Checker access and shares Oxlint's type-aware execution.
+- `ttsc` exposes supported custom Go contributor rules over TypeScript-Go,
+  including project-scoped state.
 - Current NAPI-RS and Neon source confirms both are Node-API binding frameworks
   with synchronous and asynchronous surfaces.
-- External discovery has begun and crossed the substantial-evaluation threshold.
-  Create or update the required technology vet report before making a recommendation.
-- Inspect the exact Oxc native-rule extension boundary,
-  TypeScript-Go custom-lint registration,
-  NAPI-RS and Neon artifact provenance,
-  and platform matrices.
+- The required technology vet report now exists at
+  `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`.
 - Measure current analysis time by phase and synchronous TypeScript RPC count.
+- Prototype direct TypeScript-Go rule execution first,
+  then compare a `ttsc` contributor only if its binary-generation path can satisfy cold latency.
 - Prototype only in a disposable worktree or scratch package,
   never through main-worktree product mutations during this evaluation.
 - The prototype must preserve diagnostics on the semantic corpus and exercise the exact 13-file command with cold state.
@@ -264,6 +280,9 @@ The decisive evidence is a consumer-boundary prototype on the exact 13-file cold
 
 - `ff7b18fe5` records the 10-second acceptance target in the incremental-cache troubleshooting document.
 - `8e3d38882` records the standalone semantic-bridge startup measurement.
+- `5bd26fcc9` creates this living handover.
+- `20b3fe1e5` fixes its line wrapping.
+- `90c7f9d00` records the native-analysis technology audit.
 - `/var/home/user/temp/agent/readonly-no-package-catalog-20260722` contains the package-catalog-removal experiment and
   must remain intact.
 
