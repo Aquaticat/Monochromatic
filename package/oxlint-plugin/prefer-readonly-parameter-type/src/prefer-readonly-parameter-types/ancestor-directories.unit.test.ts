@@ -17,8 +17,8 @@ await describe({
   children: [
     it({
       name: 'yields the start and each ancestor through the filesystem root once',
-      fn() {
-        const root = parse(process.cwd(),).root;
+      fn: async () => {
+        const { root, } = parse(process.cwd(),);
         const start = join(
           root,
           'ancestor-probe-parent',
@@ -33,8 +33,8 @@ await describe({
     },),
     it({
       name: 'yields a root starting point exactly once',
-      fn() {
-        const root = parse(process.cwd(),).root;
+      fn: async () => {
+        const { root, } = parse(process.cwd(),);
         expect([...ancestorDirectories(root,)],).toEqual([root,],);
       },
     },),
