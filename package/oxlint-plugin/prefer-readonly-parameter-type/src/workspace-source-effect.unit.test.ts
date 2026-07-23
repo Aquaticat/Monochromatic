@@ -85,7 +85,7 @@ await describe({
           {
             functionName: 'applyCargoPlan',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
         ],);
       },

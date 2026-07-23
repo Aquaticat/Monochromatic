@@ -39,7 +39,7 @@ import {
 import { effectOriginLocation, } from './effect-origin-location.ts';
 
 /**
- * Classifies one call as callback relation, intrinsic effect, owned edge, or opaque boundary.
+ * Classifies one call as callback invocation, owned source edge, derived package edge, or opaque boundary.
  *
  * @param project - TypeScript project resolving symbols.
  *
