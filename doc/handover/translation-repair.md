@@ -170,6 +170,46 @@ reproducibly fixes. The accumulation loop is CLOSED; run 42 (in
 flight at declaration, old baseline prompt) gets recorded as the
 final baseline-era run when it lands, and no run 43 follows.
 
+PKG COMPLETENESS PASS COMPLETE (2026-07-23, user "Continue." after
+closure; the handover's NEXT AFTER CLOSURE named this phase).
+README refreshed with milestone-two completion and the
+editorRuleAddendum contract knob (commit `479bf5a28`).
+API surface audit (mechanical barrel-versus-module diff, scratchpad
+`api-surface-audit.ts`): three accidental omissions surfaced into
+`index.ts` (commit `0482bb9e6`): `locateQuote` + `QuoteLocation`
+(whole module missed the barrel), `CategoryRemap` (return type of
+public `remapCategoryLeaf`), `MIN_DISPATCH_BUDGET_MS` (parity with
+the public repair floor). The audit's stale flag on `BenchmarkEntry`
+was a false positive: `benchmark.ts` re-exports it from
+`prepare-entry.ts`.
+Coverage gap map (scratchpad `coverage-map.ts`, exported symbol to
+importing test): direct tests added across six commits
+(`6bd1dccb7`, `959b81df8`, `14b3a3fcd`, `235a28583`, `5ca27b00b`,
+`601f3bbb1`) for locateQuote, normalizePunctuation, the JSON
+guards, remapCategoryLeaf, isPanelVoteState, parseModelJson,
+formatUsageNote, extractCompletion + readUsage + SyntheticHttpError
+(every contract-violation detail), armCallDeadline (expiry,
+forwarded abort, pre-aborted caller, disposal), fetchTransport
+(previously zero test references; header copy, GET body omission,
+status passthrough, dependent-signal abort), prepareBenchmarkEntry
+(previously zero test references), all four prompt sheet builders
+(critic, derivability, resolution, restoration judge) with their
+verdict guards, buildFootnoteGraph (both conventions, every
+finding kind), parseMarkdownBody, and a DEFAULT_JUDGE_MODEL_IDS
+catalog-membership invariant.
+Indirect coverage judged adequate per TC2 (branch-named tests in
+callers): repairChunk and the four pipeline stages via
+repair-translation's end-to-end suite (happy, checker-refusal,
+no-issues, non-translation block), exchangeWithRetry and
+attemptStageCall via the client and quorum suites, computeScorecard
+via the benchmark suite.
+Closing verification: 85 unit suites pass, oxlint 0 warnings 0
+errors, lint:types exit 0.
+OPEN QUESTION for the user: this package's test files import
+sibling source, while the repo testing-practices skill mandates
+importing from built `dist`; aligning would touch every test file
+here, so it awaits an explicit decision.
+
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
 loop, "spare no expense, only stop when genuinely blocked; back in a
