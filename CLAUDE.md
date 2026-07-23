@@ -1176,9 +1176,9 @@ AP4:
 
 AP5:
  Client-side bundling packages:
- add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`,
+ add `rolldown.client.config.ts` extending `@monochromatic-dev/config-rolldown/.client.ts`,
  `build:js:client` task,
- `@monochromatic-dev/config-tsdown` devDependency.
+ `@monochromatic-dev/config-rolldown` devDependency.
 
 SGD:
  Dir segments singular;
