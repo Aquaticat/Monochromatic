@@ -351,8 +351,8 @@ await describe({
       },
     },),
     it({
-      name: 'rejects explicit git-dir and work-tree stash from unrelated cwd',
-      fn: async function testExplicitWorkTreeOutsideWorktree(): Promise<void> {
+      name: 'classifies explicit git-dir and work-tree stash as main from unrelated cwd',
+      fn: async function testExplicitMainWorkTreeFromUnrelatedCwd(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
         /** Repository referenced by explicit git global options. */
@@ -368,7 +368,7 @@ await describe({
         await initializeRepository({ repoPath, },);
         await mkdir(launchPath,);
 
-        /** Error thrown because `-C` leaves effective cwd outside worktree. */
+        /** Error proving explicit work-tree target is classified independently from launch cwd. */
         const caught = await catchLinkedWorktreeOnlyError([
           '-C',
           launchPath,
@@ -385,7 +385,7 @@ await describe({
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'Refusing to run from outside a worktree because git stash can revert filesystem state outside what the caller expected',
+          'git stash is rejected in the main git worktree',
         );
       },
     },),
