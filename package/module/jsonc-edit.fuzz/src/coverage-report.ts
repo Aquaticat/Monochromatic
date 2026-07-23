@@ -296,10 +296,15 @@ if ((mode === undefined) || (coverageDir === undefined)
  */
 const current = await aggregate(coverageDir,);
 
-// A stale SOURCE_MARKER makes every projection miss; catching it here keeps
-// write mode from freezing an empty baseline (the repo-wide packages/ to
-// package/ rename broke the gate exactly this way).
-if (Object.keys(current,).length === 0)
+/**
+ * Number of package source files the projection matched. A stale
+ * SOURCE_MARKER makes every projection miss; catching it here keeps write
+ * mode from freezing an empty baseline (the repo-wide packages/ to package/
+ * rename broke this gate exactly this way).
+ */
+const matchedFiles = Object.keys(current,)
+  .length;
+if (matchedFiles === 0)
   throw new Error('coverage projection matched no package source files; SOURCE_MARKER is likely stale',);
 
 if (mode === 'write') {
