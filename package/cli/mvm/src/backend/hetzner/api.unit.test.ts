@@ -12,7 +12,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { waitForAction, } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/api.ts';
+import {
+  fetchAllPages,
+  waitForAction,
+} from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/api.ts';
 import {
   createServer,
   deleteServer,
@@ -110,6 +113,34 @@ await describe({
   name: 'hetzner api client',
   concurrency: 1,
   children: [
+    it({
+      name: 'fetchAllPages follows next-page metadata and preserves item order',
+      fn: async () => {
+        using _t = withToken();
+        using mock = installFetch(function paginatedResponse(call,) {
+          const page = new URL(call.url,)
+            .searchParams
+            .get('page',);
+          return page === '1'
+            ? jsonResponse({
+              servers: [SERVER,],
+              meta: { pagination: { next_page: 2, }, },
+            },)
+            : jsonResponse({
+              servers: [{ ...SERVER, id: 2, },],
+              meta: { pagination: { next_page: null, }, },
+            },);
+        },);
+        const servers = await fetchAllPages<typeof SERVER>({
+          key: 'servers',
+          path: '/servers',
+        },);
+        expect(servers.map(function serverId(server,) {
+          return server.id;
+        },),).toEqual([1, 2,],);
+        expect(mock.calls.length,).toBe(2,);
+      },
+    },),
     it({
       name: 'getMvmServerByName sends bearer auth and label-scoped exact-name query',
       fn: async () => {
