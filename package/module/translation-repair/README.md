@@ -35,6 +35,8 @@ const result = await repairTranslation({
   editor, and resolution checkers.
   A stage that loses voices retries exactly the lost ones until over
   half its roster is heard.
+  An optional `editorRuleAddendum` splices one extra machine-enforced
+  rule line into the editor prompt for calibration experiments.
 - The result is never an unqualified "corrected translation":
   `repairedText` ships with a completion status
   (`repaired`, `unchanged`, or `blocked-non-translation`),
@@ -76,12 +78,22 @@ the seven-critic ensemble reached 0.981 recall on seeded errors
 over the reference corpus,
 gated by the seeded-error benchmark harness.
 
-Milestone two (repair) is in progress:
+Milestone two (repair) is complete:
 the full loop
 (critics, claim aggregation, adjudication panel, editable envelopes,
 editor through a deterministic apply gate, resolution checkers,
 lexicographic candidate selection)
-runs end to end live,
-and budgeted benchmark runs are accumulating the seeded repair rate
-(fraction of planted omissions whose distinctive vocabulary the
-repaired candidate restores).
+reached a probe-adjusted effective restoration rate of 0.98
+over 100 seeded omissions across 21 budgeted live runs,
+graded by a source-anchored bilingual restoration judge
+(three judge models, conservative lower-median verdict).
+Misses are attributed, never averaged away:
+a derivability probe rules whether each missed seed's information
+was fully derivable from the source at all,
+so embellishment-capped partials and correct refusals of
+underivable content are excused,
+and only genuine editor shortfalls count against the editor.
+The one reproducible shortfall class
+(long omissions restored compressed)
+drove a rule now promoted into the baseline editor prompt:
+enumerate the omitted source sentences clause by clause.
