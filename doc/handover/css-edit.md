@@ -125,11 +125,30 @@ escaped selectors, custom-property block values.
    into the bundle; browser consumers must import
    `build-tool-css/ts/expand` directly, recorded in the index TSDoc and README).
    Shadow DOM styles expanded in live browser, no console errors.
-10. [ ] `css-edit.fuzz` sibling: byte-identity fuzz plus differential vs postcss oracle.
-11. [ ] `css-edit.bench` sibling: parse plus stringify vs postcss and css-tree baselines.
-12. [ ] `css-edit.conformance` sibling: css-parsing-tests corpus.
-13. [ ] Docs: `doc/troubleshooting/css-tooling.md` dated survey section, both READMEs.
-14. [ ] Clean probe scratch dir.
+10. [x] `css-edit.fuzz`: round-trip, totality, structural-sharing properties plus
+    postcss differential oracle; clean at 5000 runs. Deferred: a
+    `fuzz:coverage` reachability gate like `jsonc-edit.fuzz`'s.
+11. [x] `css-edit.bench` (mitata, per user direction): raw parse+stringify vs
+    postcss and css-tree, plus `bench:pipeline` vs a replica of the retired
+    postcss mixin pipeline.
+12. [x] `css-edit.conformance`: curated css-parsing-tests-style corpus (30
+    valid, 10 invalid) with fast-check context amplification (per user
+    direction). Repo idiom for `.conformance` sidecars is undefined; filed
+    issue #398.
+13. [x] Docs: css-tooling.md dated survey and migration section; READMEs for
+    css-edit, build-tool-css, and all three sidecars.
+14. [x] Probe scratch dir cleaned.
+
+## Performance findings (2026-07-22, mitata)
+
+- Raw parse+stringify, 94 KB sheet: postcss 1.13x faster than css-edit.
+  Decomposition: the spec tokenizer alone (2.86 ms) exceeds postcss's whole
+  parse (2.59 ms) on 66 KB; css-edit's own structure layer adds ~1 ms,
+  stringify 0.81 ms after the flat-accumulator rewrite.
+  Future optimization target: the upstream tokenizer's per-token tuple plus
+  data-object allocation, or index-range nodes instead of token slices.
+- Mixin pipeline: `expandCssMixins` 1.72x faster than the retired postcss
+  clone-and-fixed-point design, ~40 percent less allocation.
 
 ## Implementation notes discovered while building
 
