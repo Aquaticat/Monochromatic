@@ -319,6 +319,42 @@ export default {
 };
 ```
 
+A standalone probe run from the repository root separated semantic-project opening from summary-index construction:
+
+```bash
+node --input-type=module <<'EOF'
+import { readFileSync } from 'node:fs';
+import { performance } from 'node:perf_hooks';
+import {
+  closeSemanticBridge,
+  openSemanticFile,
+} from './package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs';
+
+const fileName = `${process.cwd()}/package/config/oxlint/src/index.ts`;
+const sourceText = readFileSync(fileName, 'utf8');
+const startedAt = performance.now();
+openSemanticFile({ fileName, sourceText, hasBOM: false });
+const openedAt = performance.now();
+closeSemanticBridge();
+const closedAt = performance.now();
+process.stdout.write(`${JSON.stringify({
+  openMilliseconds: Number((openedAt - startedAt).toFixed(1)),
+  closeMilliseconds: Number((closedAt - openedAt).toFixed(1)),
+  totalMilliseconds: Number((closedAt - startedAt).toFixed(1)),
+})}\n`);
+EOF
+```
+
+It reported:
+
+```json
+{"openMilliseconds":181.7,"closeMilliseconds":0.4,"totalMilliseconds":182.1}
+```
+
+This single probe does not establish a latency bound.
+It does show that semantic-project opening alone did not consume the 10-second target on the measured host.
+The whole-project summary index remains the demonstrated dominant cold path.
+
 ### Working catalog
 
 - Exact task in the disposable worktree,
