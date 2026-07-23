@@ -11,11 +11,14 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Stage quorum
 // A stage that loses voices retries exactly the lost ones on fresh
-// deadlines until over half its roster is heard (user directive: quota
-// regenerates faster than runs spend, so forfeiting voices cheaply leaves
-// capacity unused). Retries stop at quorum, not at a full roster, because
-// each extra round can cost a whole deadline of wall time; a roster still
-// under quorum after every round proceeds with what it has and records the
+// deadlines (user directive: quota regenerates faster than runs spend, so
+// forfeiting voices cheaply leaves capacity unused). The retry target
+// depends on what the stage produces: VOTING stages (panel, checkers)
+// stop at quorum because a majority is a majority, while UNION stages
+// (critics) retry to the full roster because measured convergence is low
+// (67 to 84 percent singleton issues across real-corpus artifacts), so
+// every unheard voice costs its findings nearly one-for-one. A roster
+// still short after every round proceeds with what it has and records the
 // degradation as a finding.
 
 /**
@@ -73,10 +76,12 @@ export type StageGather<ValueT,> = {
 };
 
 /**
- * Fans one prompt out to a roster and retries lost voices to quorum.
+ * Fans one prompt out to a roster and retries lost voices to the stage's
+ * retry target.
  * Each round re-asks only the still-lost models on fresh deadlines;
- * the loop stops as soon as over half the roster is heard, or when the
- * retry rounds are spent.
+ * under `quorum` the loop stops as soon as over half the roster is heard,
+ * under `full-roster` it keeps re-asking while any voice is missing, and
+ * either way it ends when the retry rounds are spent.
  *
  * @param client - injected model client
  *
@@ -99,6 +104,10 @@ export type StageGather<ValueT,> = {
  * @param maxRetryRounds - rounds after the initial fan-out;
  * defaults to {@link STAGE_RETRY_ROUNDS}
  *
+ * @param retryTarget - when retries may stop: `quorum` for voting stages
+ * whose majority suffices, `full-roster` for union stages whose product
+ * shrinks with every unheard voice; defaults to `quorum`
+ *
  * @returns Heard voices plus quorum verdict and degradation findings
  *
  * @example
@@ -118,6 +127,7 @@ export async function gatherStageVoices<ValueT,>(
     stage,
     l,
     maxRetryRounds = STAGE_RETRY_ROUNDS,
+    retryTarget = 'quorum',
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly SyntheticModelId[];
@@ -129,6 +139,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly maxRetryRounds?: number;
+    readonly retryTarget?: 'quorum' | 'full-roster';
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
@@ -156,8 +167,13 @@ export async function gatherStageVoices<ValueT,>(
     for (let round = 0; round <= maxRetryRounds; round += 1) {
       if (pending.length === 0)
         break;
-      if ((round > 0) && (collected.length > quorumFloor))
+      if (
+        (round > 0)
+        && (retryTarget === 'quorum')
+          && (collected.length > quorumFloor)
+      ) {
         break;
+      }
       if (round > 0) {
         l.warn(
           `${stage}: retry round ${String(round,)} for ${String(pending.length,)} lost voices`,
@@ -212,12 +228,28 @@ export async function gatherStageVoices<ValueT,>(
    */
   const quorumMet = voices.length > quorumFloor;
 
+  /**
+   * Roster shortfall wording shared by both degradation findings.
+   */
+  const shortfall = `${stage} ${String(voices.length,)}/${String(modelIds.length,)}`;
+  if (!quorumMet) {
+    return {
+      voices,
+      quorumMet,
+      findings: [`stage-quorum-unmet (${shortfall})`,],
+    };
+  }
+  if ((retryTarget === 'full-roster') && (voices.length < modelIds.length)) {
+    return {
+      voices,
+      quorumMet,
+      findings: [`stage-roster-incomplete (${shortfall})`,],
+    };
+  }
   return {
     voices,
     quorumMet,
-    findings: quorumMet
-      ? []
-      : [`stage-quorum-unmet (${stage} ${String(voices.length,)}/${String(modelIds.length,)})`,],
+    findings: [],
   };
 }
 

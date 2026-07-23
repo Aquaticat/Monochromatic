@@ -1,5 +1,7 @@
 /**
- * Tests for retry-to-quorum voice gathering.
+ * Tests for stage voice gathering under both retry targets:
+ * voting stages stop at quorum, union stages retry to the full roster,
+ * and roster shortfalls surface as distinct findings.
  * Fixtures are cat-themed invention mirroring corpus structure only.
  *
  * @module
@@ -231,6 +233,64 @@ await describe({
         expect(gather.findings,).toContain('stage-quorum-unmet (checker 1/3)',);
         // Initial ask plus every retry round.
         expect(calls['hf:Qwen/Qwen3.6-27B'],).toBe(4,);
+      },
+    },),
+
+    it({
+      name: 'keeps retrying past quorum under a full-roster target',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Gather where two answer at once and one answers on retry. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({
+            failuresByModel: { 'hf:MiniMaxAI/MiniMax-M3': 1, },
+            calls,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:MiniMaxAI/MiniMax-M3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+          retryTarget: 'full-roster',
+        },);
+        expect(gather.voices,).toHaveLength(3,);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.findings,).toHaveLength(0,);
+        // Quorum stood after round zero, yet the lost voice was re-asked.
+        expect(calls['hf:MiniMaxAI/MiniMax-M3'],).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'records roster-incomplete when full-roster rounds end short of everyone',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Gather where one voice never answers despite every round. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({
+            failuresByModel: { 'hf:MiniMaxAI/MiniMax-M3': 99, },
+            calls,
+          },),
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:MiniMaxAI/MiniMax-M3',],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+          retryTarget: 'full-roster',
+        },);
+        expect(gather.voices,).toHaveLength(2,);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.findings,).toContain('stage-roster-incomplete (critic 2/3)',);
+        // Initial ask plus every retry round.
+        expect(calls['hf:MiniMaxAI/MiniMax-M3'],).toBe(4,);
       },
     },),
 

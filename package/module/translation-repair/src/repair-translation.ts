@@ -6,14 +6,21 @@ import type {
   AdjudicationConfig,
 } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { alignDocumentSections, } from './chunk-document.ts';
-import { NON_TRANSLATION_BLOCK_VOTES, } from './non-translation-evidence.ts';
+import {
+  alignDocumentSections,
+  type ChunkPair,
+} from './chunk-document.ts';
+import { assessNonTranslationDominance, } from './non-translation-evidence.ts';
 import { parseDocument, } from './parse-document.ts';
 import {
-  type ChunkRepairOutcome,
-  repairChunk,
-  type RepairModels,
-} from './repair-chunk.ts';
+  SLICE_CHAR_BUDGET,
+  subdivideChunkPair,
+} from './slice-pair.ts';
+import { repairChunk, } from './repair-chunk.ts';
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
+} from './repair-contract.ts';
 
 //region Repair translation
 // The batch driver over the whole loop: parse, align into chunk pairs, run
@@ -126,6 +133,9 @@ export type RepairTranslationResult = {
  *
  * @param perCallTimeoutMs - deadline per exchange
  *
+ * @param sliceCharBudget - target-side characters one paragraph-bound
+ * slice aims for; defaults to {@link SLICE_CHAR_BUDGET}
+ *
  * @returns Repaired candidate plus adjudicated issues and completion status
  *
  * @example
@@ -148,6 +158,7 @@ export async function repairTranslation(
     adjudicationConfig,
     signal,
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
+    sliceCharBudget = SLICE_CHAR_BUDGET,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly sourceText: string;
@@ -156,6 +167,7 @@ export async function repairTranslation(
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
+    readonly sliceCharBudget?: number;
   }>,
 ): Promise<RepairTranslationResult> {
   /**
@@ -181,29 +193,43 @@ export async function repairTranslation(
     .map(function toText(finding,) {
     return `alignment ${finding.kind} (pair ${String(finding.pairIndex,)}: ${finding.detail})`;
   },);
+  /**
+   * Paragraph-bound slice pairs across every aligned section, indexed
+   * globally in document order.
+   */
+  const slices: ChunkPair[] = [];
+  for (const pair of alignment.pairs) {
+    slices.push(...subdivideChunkPair({
+      pair,
+      sourceText,
+      targetText,
+      baseIndex: slices.length,
+      budget: sliceCharBudget,
+    },),);
+  }
   rl.info(
     `${String(alignment.pairs
-      .length,)} chunk pairs, ${
+      .length,)} chunk pairs, ${String(slices.length,)} slices, ${
       String(alignmentFindings.length,)
     } alignment findings`,
   );
 
   /**
-   * Chunk outcomes in pair order; sequential by design (see TSDoc).
+   * Slice outcomes in document order; sequential by design (see TSDoc).
    */
   const outcomes: ChunkRepairOutcome[] = [];
-  for (const [pairIndex, pair,] of alignment.pairs
-    .entries()) {
+  for (const slice of slices) {
     /* oxlint-disable no-await-in-loop -- sequential by design: aggregate concurrency beyond one stream per model collapses throughput on this plan, and each stage already fans out per model inside the chunk */
     /**
-     * Repair outcome of this chunk pair.
+     * Repair outcome of this slice pair.
      */
     const outcome = await repairChunk({
       client,
-      chunkIndex: pairIndex,
-      sourceText: pair.source
+      chunkIndex: slice.target
+        .chunkIndex,
+      sourceText: slice.source
         .text,
-      targetText: pair.target
+      targetText: slice.target
         .text,
       models,
       ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
@@ -212,33 +238,58 @@ export async function repairTranslation(
       l: rl,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (
-      (outcome.nonTranslationVotes >= NON_TRANSLATION_BLOCK_VOTES)
-      && (!outcome.nonTranslationContradicted)
-    ) {
+    outcomes.push(outcome,);
+
+    /**
+     * Dominance verdict over every slice, standing marked where heard;
+     * standing character share only grows, so deciding at the earliest
+     * crossing spends no further quota on a wholly unrelated pair.
+     */
+    const dominance = assessNonTranslationDominance({
+      slices: slices.map(function toTally(
+        sliceRef,
+        sliceIndex,
+      ) {
+        return {
+          targetChars: sliceRef.target
+            .text
+            .length,
+          votesStand: outcomes[sliceIndex]
+            ?.nonTranslationStanding
+            ?? false,
+        };
+      },),
+    },);
+    if (dominance.blocked) {
       rl.warn(
-        `chunk ${String(pairIndex,)}: ${
-          String(outcome.nonTranslationVotes,)
-        } critics call it non-translation; repair blocked, input returned unchanged`,
+        `non-translation dominance (${String(dominance.standingChars,)} of ${
+          String(dominance.totalChars,)
+        } target chars); repair blocked, input returned unchanged`,
       );
       return {
         repairedText: targetText,
         status: 'blocked-non-translation',
-        issues: outcome.issues
-          .map(function toRecord(issue,): RepairIssueRecord {
-          return {
-            chunkIndex: pairIndex,
-            issue,
-            resolved: false,
-          };
+        issues: outcomes.flatMap(function toRecords(done,) {
+          return done.issues
+            .map(function toRecord(issue,): RepairIssueRecord {
+            return {
+              chunkIndex: done.chunkIndex,
+              issue,
+              resolved: false,
+            };
+          },);
         },),
         findings: [
           ...alignmentFindings,
-          ...outcome.findings,
+          ...outcomes.flatMap(function toFindings(done,) {
+            return done.findings;
+          },),
+          `non-translation dominance (${String(dominance.standingChars,)} of ${
+            String(dominance.totalChars,)
+          } target chars)`,
         ],
       };
     }
-    outcomes.push(outcome,);
   }
 
   /**
@@ -254,15 +305,15 @@ export async function repairTranslation(
       right,
     ) {
       /**
-       * Target chunks of both outcomes for their offsets.
+       * Target slices of both outcomes for their offsets.
        */
-      const leftChunk = alignment.pairs[left.chunkIndex]
+      const leftChunk = slices[left.chunkIndex]
         ?.target;
 
       /**
-       * Right-side chunk.
+       * Right-side slice.
        */
-      const rightChunk = alignment.pairs[right.chunkIndex]
+      const rightChunk = slices[right.chunkIndex]
         ?.target;
       return (rightChunk?.startOffset ?? 0) - (leftChunk?.startOffset ?? 0);
     },);
@@ -276,12 +327,12 @@ export async function repairTranslation(
       outcome,
     ): string {
       /**
-       * Target chunk being replaced, present by construction.
+       * Target slice being replaced, present by construction.
        */
-      const chunk = alignment.pairs[outcome.chunkIndex]
+      const chunk = slices[outcome.chunkIndex]
         ?.target;
       if (chunk === undefined)
-        throw new Error(`repair lost chunk ${String(outcome.chunkIndex,)}`,);
+        throw new Error(`repair lost slice ${String(outcome.chunkIndex,)}`,);
       return text.slice(
         0,
         chunk.startOffset,

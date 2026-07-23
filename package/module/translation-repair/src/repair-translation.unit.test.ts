@@ -83,7 +83,8 @@ function countMarker(
  * Stub client scripted per stage; the schema name on the response format
  * names the stage.
  *
- * @param criticIssues - wire issues every critic reports
+ * @param criticIssues - wire issues every critic reports, or a function
+ * choosing issues per request so slices script differently
  *
  * @param checkerVerdict - verdict every checker casts on every issue
  */
@@ -92,7 +93,9 @@ function scriptedClient(
     criticIssues,
     checkerVerdict = 'fixed',
   }: {
-    readonly criticIssues: readonly Record<string, unknown>[];
+    readonly criticIssues:
+      | readonly Record<string, unknown>[]
+      | ((request: ChatJsonRequest<unknown>,) => readonly Record<string, unknown>[]);
     readonly checkerVerdict?: string;
   },
 ): SyntheticClient {
@@ -112,7 +115,11 @@ function scriptedClient(
        * Scripted wire reply for the stage.
        */
       const scripted: unknown = stage === 'critic_report'
-        ? { issues: criticIssues, }
+        ? {
+          issues: (typeof criticIssues) === 'function'
+            ? criticIssues(request as ChatJsonRequest<unknown>,)
+            : criticIssues,
+        }
         : stage === 'panel_ballot'
         ? {
           verdicts: oneBasedNumbers({
@@ -341,6 +348,74 @@ await describe({
                   === 'accuracy/non-translation';
               },);
           },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'degrades a minority standing region per slice instead of blocking',
+      fn: async () => {
+        /**
+         * Original with a large translated section and a small one whose
+         * rendering is gibberish.
+         */
+        const sourceTwoSections = `## 甲
+
+猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶。
+
+## 乙
+
+猫猫的尾巴很长。
+`;
+
+        /**
+         * Translation whose second section is unrelated noise.
+         */
+        const targetTwoSections = `## Alpha
+
+The cat loves sunbathing on the windowsill. The cat hates butterflies.
+
+## Beta
+
+Meow meow meow meow.
+`;
+
+        /** Full run where only the small section draws standing votes. */
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: function perSlice(request,) {
+              /**
+               * User sheet of this critic call.
+               */
+              const sheet = request.messages
+                .at(-1,)
+                ?.content
+                ?? '';
+              if (sheet.includes('Meow meow meow',)) {
+                return [
+                  {
+                    category: 'accuracy/non-translation',
+                    severity: 'critical',
+                    summary: 'This section is not a translation of the source.',
+                    targetQuote: 'Meow meow meow meow.',
+                  },
+                ];
+              }
+              return [MISTRANSLATION_ISSUE,];
+            },
+          },),
+          sourceText: sourceTwoSections,
+          targetText: targetTwoSections,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        expect(result.status,).toBe('repaired',);
+        // The standing region ships unchanged while the rest repairs.
+        expect(result.repairedText,).toContain('Meow meow meow meow.',);
+        expect(result.repairedText,).toContain('The cat also loves chasing butterflies.',);
+        expect(result.findings
+          .some(function mentionsStanding(finding,) {
+            return finding.includes('non-translation votes stand',);
+          },),).toBe(true,);
       },
     },),
   ],
