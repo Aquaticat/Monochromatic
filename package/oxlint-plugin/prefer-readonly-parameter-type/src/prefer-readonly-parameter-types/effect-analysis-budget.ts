@@ -9,9 +9,10 @@ import { performance, } from 'node:perf_hooks';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 /**
- * Default analyzer budget inside 10-second lint command contract.
+ * Default project-wide analyzer budget guarding pathological reachable graphs.
+ * Workload-specific latency gates remain stricter than this safety ceiling.
  */
-const DEFAULT_ANALYSIS_BUDGET_MILLISECONDS = 8_000;
+const DEFAULT_ANALYSIS_BUDGET_MILLISECONDS = 120_000;
 
 /**
  * Cumulative synchronous analysis budget for one exact project index.
