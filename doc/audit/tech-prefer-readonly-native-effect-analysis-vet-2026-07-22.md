@@ -589,6 +589,14 @@ and rejects missing owned sources or callable summaries.
 A runtime safety ceiling reports `analysis-incomplete` rather than returning partial effects.
 Explicit `ForeignBorrowed` provenance conservatively expands the complete owned graph
 before declaration-wide propagation.
+That marker-heavy path was not isolated by the 13-file benchmark.
+
+Demand-driven scope applies to summary traversal rather than every validation operation.
+`effectProjectSourceSignatures()` still visits configured project membership before process-index reuse.
+The measured 834-source project passes,
+but larger-project latency is not established.
+The 120-second runtime budget is a fail-closed safety ceiling,
+not the 10-second workload gate.
 
 ## Scoring and sensitivity
 

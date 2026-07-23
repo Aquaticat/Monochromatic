@@ -160,6 +160,15 @@ missing callable summaries,
 and exhausted explicit analysis budgets fail closed.
 Because `ForeignBorrowed` is declaration-wide,
 encountering explicit foreign provenance still expands the complete owned graph before propagating it.
+That marker-heavy path was not isolated by the 13-file acceptance benchmark.
+
+Demand-driven scope covers summary traversal,
+not every validation operation.
+`effectProjectSourceSignatures()` still visits configured project membership before process-index reuse.
+The 834-source measured project passes,
+but larger-project latency is not established.
+The 120-second runtime budget is a fail-closed safety ceiling,
+not the 10-second workload gate.
 
 ## Current architectural ranking
 

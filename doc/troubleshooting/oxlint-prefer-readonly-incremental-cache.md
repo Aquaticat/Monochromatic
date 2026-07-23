@@ -57,8 +57,19 @@ When a reached summary contains explicit foreign provenance,
 The regression includes a foreign caller and an otherwise unreached ordinary caller of the same helper;
 the helper is not incorrectly classified as wholly foreign.
 This fallback preserves correctness but can cost more than an ordinary demand-only traversal.
+Its marker-heavy worst case was not isolated by the 13-file acceptance benchmark.
 
-Analysis has a project-wide runtime safety ceiling.
+Demand-driven scope applies to effect-summary construction,
+not every cache-validation operation.
+`effectProjectSourceSignatures()` still reads metadata for the configured project's source membership
+before process-index reuse.
+The measured 834-source semantic project satisfies the exact target,
+but this result is not a general bound for larger projects.
+
+Analysis has a 120-second project-wide runtime safety ceiling.
+That ceiling fails closed for pathological graphs;
+it is not the 10-second acceptance limit.
+The 10-second result is an empirical gate on the exact command and workload.
 `effect-analysis-budget.ts` raises `analysis-incomplete` when the ceiling is exhausted,
 and a zero-budget regression proves no partial summary is returned.
 The 10-second package-config acceptance target remains a stricter workload-specific gate.
