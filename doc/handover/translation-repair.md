@@ -319,6 +319,23 @@ Acheron repaired (46 issues, 45 accepted, 45 resolved, 5 findings,
 911 s); AkiraComplex repaired (9/9/9, 1 finding, 479 s);
 AmbeR_the_anpa repaired (23 issues, 22 accepted, 21 resolved,
 3 findings, 620 s). Remaining 89.
+run 002 (2026-07-23, 2064 s): 2 dispatched, 2 completed, 0 failed;
+Anilovr repaired (78 issues, 70 accepted, 69 resolved, 12 findings,
+1420 s, largest issue count of the pass so far); Aniloviraw
+blocked-non-translation (34 issues, 31 accepted, resolution never
+ran, 644 s), and a zero-quota probe rules this the FIRST FALSE
+BLOCK: unlike XIEPT2/shi_Yumiaoya the en page carries zero CJK,
+sizes match (~1.5 KB both sides), front matter and body translate
+line for line on inspection. The log shows 4 of 7 critics cast
+critical non-translation votes on the single chunk while the same
+stage produced 59 claims; so the block logic worked as designed
+(ensemble agreement) but the critic-level non-translation
+classification is noisy on divergence-heavy quote-fragment diary
+content. Decision: measurement continuity, pipeline unchanged
+through the pass; false blocks get probed and tallied per entry,
+and block calibration (for example requiring voters to file no
+substantive claims themselves) is a named post-pass workstream.
+Remaining 87.
 
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
