@@ -7,12 +7,8 @@
 import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
-import { directEffectSummary, } from './direct-effect-summary.ts';
+import { foreignBorrowedDirectSummary, } from './foreign-borrowed-direct-summary.ts';
 import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
-import {
-  type ExternalCallableEffectResolver,
-  EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE,
-} from './external-callable-effect.ts';
 import {
   callableKey,
   collectAstNodes,
@@ -20,17 +16,6 @@ import {
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
-
-/**
- * Rejects external effects during ownership-only graph construction.
- *
- * External implementation details cannot add owned inbound edges inside the
- * current project, so opening their projects would add cost without changing
- * foreign ownership proof.
- */
-const EXTERNAL_EFFECT_UNAVAILABLE: ExternalCallableEffectResolver = function unavailableExternalEffect() {
-  return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
-};
 
 /**
  * Computes foreign parameter identities from every owned inbound call without external package analysis.
@@ -76,10 +61,9 @@ export function completeForeignBorrowedGraph({
       .forEach(function summarizeInboundCallable(declaration,): void {
         summaries.set(
           callableKey(declaration,),
-          directEffectSummary({
+          foreignBorrowedDirectSummary({
             project,
             declaration,
-            externalEffectResolver: EXTERNAL_EFFECT_UNAVAILABLE,
             ...(analysisRoot === undefined) ? {} : { analysisRoot, },
           },),
         );
