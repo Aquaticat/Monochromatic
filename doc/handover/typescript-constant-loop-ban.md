@@ -75,9 +75,9 @@ mise run lint:markdown -- doc/troubleshooting/oxlint-no-constant-condition-loop-
 ## Current inventory
 
 The initial complete scan found 25 lint-scoped executable `while (true)` statements.
-After parser and analysis migration,
-11 executable statements remain.
-The text inventory also finds the explanatory config comment that names the forbidden syntax.
+All 25 lint-scoped executable statements are migrated.
+The text inventory now finds only the explanatory config comment that names the forbidden syntax;
+task 9 will reword that comment before the final scan.
 
 ### Parser and analysis loops
 
@@ -90,26 +90,16 @@ No `while (true)` remains in:
 
 ### Retry, polling, stream, and fixture loops
 
-- `package/module/logger/src/sink/local-storage-store.ts`:
-  one.
-- `package/module/logger/src/sink/session-storage-store.ts`:
-  one.
-- `package/cli/mvm/src/exec.ts`:
-  one.
-- `package/cli/mvm/src/virsh-wait.ts`:
-  two.
-- `package/cli/mvm/src/template-windows.ts`:
-  one.
-- `package/cli/mvm/src/backend/hetzner/api.ts`:
-  one.
-- `package/dev-script/file-enforcer/src/io/staleness-manifest-lock.ts`:
-  one.
-- `package/config/tofu/src/fetch_ips.ts`:
-  one.
-- `package/runtime-error/bun/src/infinite-loop.ts`:
-  one.
-- `package/runtime-error/bun/src/oom.ts`:
-  one.
+All 11 retry,
+polling,
+stream,
+and fixture occurrences are migrated:
+
+- Logger storage retries use owned-entry attempt bounds.
+- MVM pagination and polling use explicit continuation state.
+- File-enforcer lock acquisition uses handle absence as its boundary.
+- Tofu stream consumption uses `ReadableStreamReadResult.done`.
+- Runtime-error fixtures alone preserve deliberate infinity as `for (;;)`.
 
 Re-run the inventory after every migration group:
 
@@ -140,7 +130,10 @@ or rewritten:
   - `csstools-css-tokenizer-package-effect-catalog.unit.test.ts`.
   - `prefer-readonly-parameter-types/csstools-css-tokenizer-package-effect-catalog.ts`.
 
-The concurrent files may change or be committed while this task proceeds.
+The original concurrent files were later committed by their owning work.
+Latest unrelated state includes fuzz coverage work,
+a root `mise.toml` edit,
+and a Done database WAL.
 Re-run `git status --short` before every scoped commit,
 and stage only explicit paths owned by this task.
 
@@ -151,14 +144,13 @@ and stage only explicit paths owned by this task.
   completed.
 - Task 7,
    migrate parser and analysis loops:
-  implementation complete,
-  blocked on task 11 verification.
+  completed.
 - Task 8,
    migrate retry and polling loops:
-  pending after task 7.
+  completed.
 - Task 9,
    verify constant-loop ban:
-  pending after task 8.
+  next.
 - Task 10,
    create this handover:
   completed.
@@ -167,7 +159,7 @@ and stage only explicit paths owned by this task.
   completed after source migration settled.
 - Task 12,
    resolve PostCSS catalog test drift:
-  pending and blocking task 7.
+  completed by owning commit `e2cda4e35`.
 
 Only one task may be actively implemented at a time.
 Update this section whenever a task changes state.
@@ -234,6 +226,23 @@ Research and troubleshooting commits already on `main`:
   `7af601fbe`,
   and `dd30f430d`,
    explicit TSDoc wrapper traversal.
+- `aeba92bdf`,
+  `209d13058`,
+  and `b870b4576`,
+   bounded logger storage retries.
+- `9dfd631d6`,
+  `654a7139c`,
+  `9fc9a8b54`,
+  and `ded751f51`,
+   explicit MVM pagination and polling state.
+- `e7fab0f6e`,
+   multi-page traversal regression coverage.
+- `8b59983fc`,
+   explicit file-enforcer lock acquisition state.
+- `edd2f0273`,
+   explicit Tofu stream completion state.
+- `3913ec8a6`,
+   deliberate runtime-error `for (;;)` fixtures.
 
 Config verification passed:
 
@@ -251,26 +260,31 @@ and TypeScript lint are green.
 `oxlint-plugin-prefer-readonly-parameter-type` build,
 Oxlint,
 and TypeScript lint are green.
-Its traversal,
-cache,
-intrinsic,
-and diagnostics unit suites passed during the full run.
-The full task failed only two PostCSS tests because concurrent `package/build-tool/css` edits removed or rewrote
-source those tests inspect.
-Do not change those unrelated files without explicit scope authorization.
+Its full unit suite passed after owning commit `e2cda4e35` retired stale PostCSS catalog tests.
 
-The `package/build-tool/css` source migration later settled,
-but a second full unit rerun produced the same two PostCSS failures:
+Retry and polling verification passed:
 
-- Callback summaries no longer match the old expected overload effects.
-- `package/build-tool/css/src/mixin.ts` no longer contains a TypeScript node at the old query offset.
-
-All suites exercising the constant-loop traversal changes passed in both full runs.
+- Logger build,
+  Oxlint,
+  and TypeScript lint.
+- MVM build,
+  unit tests,
+  Oxlint,
+  and TypeScript lint.
+- File-enforcer build,
+  unit tests,
+  Oxlint,
+  and TypeScript lint.
+- Tofu local tests,
+  Oxlint,
+  and TypeScript lint.
+- Runtime-error Oxlint and TypeScript lint.
+  Dangerous fixtures were not executed.
 
 ## Next action
 
-Obtain scope direction for the unrelated PostCSS catalog test drift.
-If its owning work updates the tests,
-rerun the full prefer-readonly suite and complete task 7.
-If the user authorizes this task to absorb the drift,
-inspect the new build-tool API and update only the affected catalog tests before starting retry and polling migration.
+Reword the config comment so the text inventory is empty,
+then run final inventory,
+shared-config lint,
+and a disposable Oxlint consumer probe.
+Confirm only the two approved runtime-error files contain `for (;;)`.
