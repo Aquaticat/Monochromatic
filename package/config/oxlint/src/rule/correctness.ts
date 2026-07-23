@@ -48,6 +48,13 @@ export const correctnessRules: DummyRuleMap = {
 
   //region correctness
 
+  // Require every loop condition to expose real continuation state. Oxlint's
+  // default `allExceptWhileTrue` explicitly permits `while (true)`.
+  'eslint/no-constant-condition': [
+    'error',
+    { checkLoops: 'all', },
+  ],
+
   // import/default, import/named, import/namespace aren't enabled because TypeScript already checks for those.
   'import/default': 'off',
   'import/named': 'off',
