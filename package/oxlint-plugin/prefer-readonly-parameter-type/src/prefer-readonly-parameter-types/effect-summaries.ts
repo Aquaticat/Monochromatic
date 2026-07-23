@@ -7,6 +7,7 @@
 import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { createEffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { createDemandDrivenEffectIndex, } from './effect-demand-index.ts';
 import {
   cachedFinalEffectIndex,
@@ -59,9 +60,10 @@ function indexedSourceFileMap({
   readonly fileNames: readonly string[];
   readonly analysisRoot?: string;
 }): ReadonlyMap<string, SourceFile> {
-  return new Map(fileNames.flatMap(function retainIndexedSource(fileName,): readonly (
-    readonly [string, SourceFile]
-  )[] {
+  return new Map(fileNames.flatMap(function retainIndexedSource(fileName,): readonly (readonly [
+    string,
+    SourceFile,
+  ])[] {
     /**
      * Program source matching configured path or exact active wrapper.
      */
@@ -72,15 +74,29 @@ function indexedSourceFileMap({
     if ((sourceFile === undefined) || sourceFile.isDeclarationFile)
       return [];
     if (sourceFile.fileName === activeSourceFile.fileName)
-      return [[sourceFile.fileName, sourceFile,],];
-    if (!project.program.isSourceFileFromExternalLibrary(sourceFile,))
-      return [[sourceFile.fileName, sourceFile,],];
+      return [[
+        sourceFile.fileName,
+        sourceFile,
+      ],];
+    if (!project
+      .program
+      .isSourceFileFromExternalLibrary(sourceFile,))
+      return [[
+        sourceFile.fileName,
+        sourceFile,
+      ],];
     /* Symlink-resolved workspace dependencies classify as external while
      * living at repository paths; their source stays inspectable. */
     if (isWorkspaceSourceFileName(fileName,))
-      return [[sourceFile.fileName, sourceFile,],];
+      return [[
+        sourceFile.fileName,
+        sourceFile,
+      ],];
     if ((analysisRoot !== undefined) && fileName.startsWith(analysisRoot,))
-      return [[sourceFile.fileName, sourceFile,],];
+      return [[
+        sourceFile.fileName,
+        sourceFile,
+      ],];
     return [];
   },),);
 }
@@ -120,6 +136,8 @@ function includeActiveSource({
  *
  * @param analysisRoot - Optional external implementation root included despite library classification.
  *
+ * @param analysisBudgetMilliseconds - Optional disposable fail-closed budget used by tests.
+ *
  * @returns exact declaration summary lookup.
  *
  * @example
@@ -132,21 +150,33 @@ export function buildEffectSummaryIndex({
   activeSourceFile,
   cacheRootOverride,
   analysisRoot,
+  analysisBudgetMilliseconds,
 }: {
   readonly project: Project;
   readonly activeSourceFile: SourceFile;
   readonly cacheRootOverride?: string;
   readonly analysisRoot?: string;
+  readonly analysisBudgetMilliseconds?: number;
 }): EffectSummaryIndex {
+  /**
+   * Cumulative fail-closed budget for project identity and reached analysis.
+   */
+  const analysisBudget = createEffectAnalysisBudget(analysisBudgetMilliseconds,);
+  /**
+   * Start time for project membership and source-signature validation.
+   */
+  const signatureStartedAt = analysisBudget.start();
   /**
    * Process cache identity including optional external analysis scope.
    */
-  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}`;
+  const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}\0${String(analysisBudgetMilliseconds,)}`;
   /**
    * Stable configured project membership including active external overlay.
    */
   const fileNames = [...new Set([
-    ...project.program.getSourceFileNames(),
+    ...project
+      .program
+      .getSourceFileNames(),
     activeSourceFile.fileName,
   ],),].toSorted();
   /**
@@ -174,6 +204,10 @@ export function buildEffectSummaryIndex({
     activeSourceFile,
     fileNames,
   },);
+  analysisBudget.record({
+    startedAt: signatureStartedAt,
+    phase: 'project source signatures',
+  },);
   /**
    * Mutable demand index reusable for unchanged project snapshot.
    */
@@ -192,9 +226,14 @@ export function buildEffectSummaryIndex({
   /**
    * Exact project surfaces and per-source content identities.
    */
+  const fingerprintStartedAt = analysisBudget.start();
   const projectFingerprint = effectProjectFingerprint({
     project,
     activeSourceFile,
+  },);
+  analysisBudget.record({
+    startedAt: fingerprintStartedAt,
+    phase: 'project fingerprint',
   },);
   /**
    * Persistent and process direct-summary identity including scope policy.
@@ -216,6 +255,7 @@ export function buildEffectSummaryIndex({
     scopeKey,
     projectDigest,
     buildIndex: buildEffectSummaryIndex,
+    analysisBudget,
     ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
     ...(analysisRoot === undefined) ? {} : { analysisRoot, },
   },);

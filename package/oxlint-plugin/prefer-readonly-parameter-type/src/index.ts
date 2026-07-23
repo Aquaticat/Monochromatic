@@ -46,6 +46,11 @@ export {
 } from './prefer-readonly-parameter-types/effect-summaries.ts';
 
 export {
+  SemanticBridgeError,
+  type SemanticBridgeFailureReason,
+} from './prefer-readonly-parameter-types/semantic-bridge-error.ts';
+
+export {
   intrinsicCallableEffectQuery,
   intrinsicEffectQuery,
   intrinsicProvenance,

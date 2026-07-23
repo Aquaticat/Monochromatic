@@ -269,15 +269,14 @@ export function callableDeclaration({
      */
     const aliasedSymbol = (symbol !== undefined)
       && ((symbol.flags & SymbolFlags.Alias) !== 0)
-      ? project.checker.getAliasedSymbol(symbol,)
+      ? project
+        .checker
+        .getAliasedSymbol(symbol,)
       : symbol;
     /**
-     * Resolved symbol unless alias target itself is unavailable.
+     * Resolved symbol or absent source symbol.
      */
-    const declarationSymbol = (aliasedSymbol === undefined)
-      || project.checker.isUnknownSymbol(aliasedSymbol,)
-      ? symbol
-      : aliasedSymbol;
+    const declarationSymbol = aliasedSymbol ?? symbol;
     /**
      * Preferred value declaration handle, with first declaration fallback.
      */

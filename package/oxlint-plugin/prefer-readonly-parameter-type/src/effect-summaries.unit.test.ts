@@ -28,6 +28,7 @@ import {
   finalEffectIndexCacheStats,
   NO_EFFECT_SUMMARY,
   openSemanticFile,
+  SemanticBridgeError,
 } from '../dist/final/node/index.mjs';
 
 /** Effect summary semantic fixture. */
@@ -765,6 +766,45 @@ await describe({
       },
     },),
     it({
+      name: 'fails closed when effect analysis budget is exhausted',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Single-source project used to exhaust budget before analysis. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Stable source whose summary must never be assumed after exhaustion. */
+        const inputSource = 'export function inspect(value: { text: string; },): string { return value.text; }\n';
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
+        );
+        writeFileSync(inputPath, inputSource,);
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        let caught: unknown;
+        try {
+          buildEffectSummaryIndex({
+            project: session.project,
+            activeSourceFile: session.sourceFile,
+            cacheRootOverride: join(projectRoot.path, '.effect-cache',),
+            analysisBudgetMilliseconds: 0,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SemanticBridgeError,);
+        expect((caught as SemanticBridgeError).reason,).toBe('analysis-incomplete',);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'scans only sources reached through owned calls and callbacks',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();
@@ -877,6 +917,16 @@ await describe({
           activeSourceFile: session.sourceFile,
           cacheRootOverride: join(projectRoot.path, '.effect-cache',),
         },);
+        /** Active boundary declaration retaining explicit foreign provenance. */
+        const foreignDeclaration = session.nodeAtOffset(foreignSource.indexOf('readForeign',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(foreignDeclaration,))
+          throw new Error('Expected active foreign boundary declaration.',);
+        /** Active boundary summary after complete inbound fallback. */
+        const foreignSummary = index.get(foreignDeclaration,);
+        if (foreignSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected active foreign boundary summary.',);
+        expect([...foreignSummary.foreignBorrowedParameterIndexes,],).toEqual([0,],);
         /** Shared helper source decoded by active semantic project. */
         const helperSource = session.project.program.getSourceFile(helperPath,);
         if (helperSource === undefined)

@@ -142,16 +142,16 @@ export function addOwnedCallEdge({
       },),
     foreignInbound,
     callbackKeys: callbacks
-      .map(function callbackKey(callback,) {
-        return callback === OWNED_CALLABLE_UNAVAILABLE
+      .map(function callbackKey(candidate,) {
+        return candidate === OWNED_CALLABLE_UNAVAILABLE
           ? OWNED_CALLABLE_UNAVAILABLE
-          : callableKey(callback,);
+          : callableKey(candidate,);
       },),
     callbackFileNames: callbacks
-      .map(function callbackFileName(callback,) {
-        return callback === OWNED_CALLABLE_UNAVAILABLE
+      .map(function callbackFileName(candidate,) {
+        return candidate === OWNED_CALLABLE_UNAVAILABLE
           ? OWNED_CALLABLE_UNAVAILABLE
-          : callback.getSourceFile()
+          : candidate.getSourceFile()
             .fileName;
       },),
   },);

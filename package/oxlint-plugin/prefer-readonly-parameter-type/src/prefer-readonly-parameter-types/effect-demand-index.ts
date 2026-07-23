@@ -8,9 +8,16 @@ import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
+import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
 import { propagateEffects, } from './effect-fixed-point-propagation.ts';
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
+import { effectPublicSummary, } from './effect-public-summary.ts';
+import {
+  assertReachedCallSummaries,
+  reachedSourceFileNames,
+  summaryRequiresCompleteInboundGraph,
+} from './effect-reached-edge.ts';
 import {
   LAYERED_SUMMARY_CACHE_MISS,
   pruneDirectSummaryCache,
@@ -47,6 +54,7 @@ type DemandDrivenEffectIndexOptions = {
   readonly cacheRootOverride?: string;
   readonly analysisRoot?: string;
   readonly buildIndex: ExternalEffectIndexBuilder;
+  readonly analysisBudget: EffectAnalysisBudget;
 };
 
 /**
@@ -95,74 +103,6 @@ function sourceIdentity({
 }
 
 /**
- * Collects owned callee and callback source paths from direct summaries.
- *
- * @param fileSummaries - Direct summaries from one reached source.
- *
- * @param indexedFileNames - Exact owned source scope.
- *
- * @returns unique reached source paths in stable order.
- */
-function summaryDependencyFileNames({
-  fileSummaries,
-  indexedFileNames,
-}: {
-  readonly fileSummaries: ReadonlyMap<string, MutableEffectSummary>;
-  readonly indexedFileNames: ReadonlySet<string>;
-}): readonly string[] {
-  /**
-   * Unique semantic call dependencies discovered in current source.
-   */
-  const dependencies = new Set<string>();
-  fileSummaries.forEach(function collectSummaryDependencies(summary,): void {
-    summary.calls
-      .forEach(function collectCallDependencies(edge,): void {
-        if (indexedFileNames.has(edge.calleeFileName,))
-          dependencies.add(edge.calleeFileName,);
-        edge.callbackFileNames
-          .forEach(function collectCallbackFile(fileName,): void {
-            if (((typeof fileName) === 'string')
-              && indexedFileNames.has(fileName,))
-              dependencies.add(fileName,);
-          },);
-      },);
-  },);
-  return [...dependencies,].toSorted();
-}
-
-/**
- * Converts completed mutable summary to public immutable view.
- *
- * @param summary - Completed fixed-point summary.
- *
- * @param foreignParameterIndexes - Guaranteed foreign-owned parameter indexes.
- *
- * @returns copied public effect summary.
- */
-function publicSummary({
-  summary,
-  foreignParameterIndexes,
-}: {
-  readonly summary: MutableEffectSummary;
-  readonly foreignParameterIndexes: ReadonlySet<number>;
-}): CallableEffectSummary {
-  return {
-    mutatedParameterIndexes: new Set([
-      ...summary.mutated,
-      ...summary.invoked,
-      ...summary.documentedUncertain,
-    ],),
-    referentMutatedParameterIndexes: summary.mutated,
-    invokedParameterIndexes: summary.invoked,
-    documentedUncertainParameterIndexes: summary.documentedUncertain,
-    opaqueParameterIndexes: summary.opaque,
-    opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,
-    foreignBorrowedParameterIndexes: foreignParameterIndexes,
-    callbackRelations: [...summary.relations,],
-  };
-}
-
-/**
  * Creates mutable index that expands only from requested callable sources.
  *
  * Foreign ownership is declaration-global rather than path-local.
@@ -181,16 +121,20 @@ function publicSummary({
  * const index = createDemandDrivenEffectIndex(options);
  * ```
  */
-export function createDemandDrivenEffectIndex({
-  project,
-  indexedSourceFiles,
-  projectFingerprint,
-  scopeKey,
-  projectDigest,
-  cacheRootOverride,
-  analysisRoot,
-  buildIndex,
-}: DemandDrivenEffectIndexOptions): EffectSummaryIndex {
+export function createDemandDrivenEffectIndex(
+  options: DemandDrivenEffectIndexOptions,
+): EffectSummaryIndex {
+  const {
+    project,
+    indexedSourceFiles,
+    projectFingerprint,
+    scopeKey,
+    projectDigest,
+    cacheRootOverride,
+    analysisRoot,
+    buildIndex,
+    analysisBudget,
+  } = options;
   /**
    * Exact owned source membership for closure validation.
    */
@@ -271,7 +215,7 @@ export function createDemandDrivenEffectIndex({
       },);
       return {
         fileSummaries: hit.summaries,
-        dependencies: summaryDependencyFileNames({
+        dependencies: reachedSourceFileNames({
           fileSummaries: hit.summaries,
           indexedFileNames,
         },),
@@ -315,7 +259,7 @@ export function createDemandDrivenEffectIndex({
     /**
      * Owned source dependencies discovered through semantic call edges.
      */
-    const dependencies = summaryDependencyFileNames({
+    const dependencies = reachedSourceFileNames({
       fileSummaries,
       indexedFileNames,
     },);
@@ -359,12 +303,24 @@ export function createDemandDrivenEffectIndex({
         continue;
       loadedFileNames.add(current.fileName,);
       expansion.changed = true;
+      analysisBudget.assertAvailable(`source ${current.fileName}`,);
+      /**
+       * Start time for one reached-source cache or semantic analysis.
+       */
+      const sourceStartedAt = analysisBudget.start();
       /**
        * Current source summaries and their semantic dependencies.
        */
       const loaded = loadSource(current,);
+      analysisBudget.record({
+        startedAt: sourceStartedAt,
+        phase: `source ${current.fileName}`,
+      },);
       loaded.fileSummaries
-        .forEach(function addSummary(summary, key,): void {
+        .forEach(function addSummary(
+          summary,
+          key,
+        ): void {
           summaries.set(
             key,
             summary,
@@ -380,14 +336,13 @@ export function createDemandDrivenEffectIndex({
             && (!loadedFileNames.has(fileName,)))
             pending.push(dependency,);
         },);
-      if ((!foreignFallback.required)
-        && [...loaded.fileSummaries.values(),]
-        .some(function hasForeignBoundary(summary,): boolean {
-          return (summary.directForeignBorrowed.size > 0)
-            || summary.calls.some(function hasDirectForeignArgument(edge,): boolean {
-              return edge.directForeignArguments.includes(true,);
-            },);
-        },)) {
+      /**
+       * Whether current source introduces provenance needing complete inbounds.
+       */
+      const requiresCompleteInboundGraph = [...loaded.fileSummaries
+        .values(),]
+        .some(summaryRequiresCompleteInboundGraph,);
+      if ((!foreignFallback.required) && requiresCompleteInboundGraph) {
         foreignFallback.required = true;
         indexedSourceFiles.forEach(function enqueueCompleteInboundGraph(candidate,): void {
           if (!loadedFileNames.has(candidate.fileName,))
@@ -397,18 +352,30 @@ export function createDemandDrivenEffectIndex({
     }
     if (!expansion.changed)
       return;
-    pendingStores.forEach(function persistReachedSource(pending,): void {
+    /**
+     * Start time for cache publication and fixed-point completion.
+     */
+    const finalizationStartedAt = analysisBudget.start();
+    assertReachedCallSummaries(summaries,);
+    pendingStores.forEach(function persistReachedSource(pendingStore,): void {
+      /**
+       * Complete dependency closure after every reached edge is loaded.
+       */
+      const closure = closureResolver.closureFor(
+        pendingStore.sourceFile
+          .fileName,
+      );
       storeCreatedSummariesForSource({
         identity: sourceIdentity({
           project,
           scopeKey,
           projectDigest,
-          sourceFile: pending.sourceFile,
+          sourceFile: pendingStore.sourceFile,
           ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
         },),
-        summaries: pending.summaries,
+        summaries: pendingStore.summaries,
         surfaces: projectFingerprint.surfaces,
-        closure: closureResolver.closureFor(pending.sourceFile.fileName,),
+        closure,
       },);
     },);
     pendingStores.clear();
@@ -418,6 +385,10 @@ export function createDemandDrivenEffectIndex({
     },);
     propagateEffects(summaries,);
     foreignByCallable.current = propagateForeignBorrowed(summaries,);
+    analysisBudget.record({
+      startedAt: finalizationStartedAt,
+      phase: 'fixed-point finalization',
+    },);
   }
 
   return {
@@ -440,10 +411,15 @@ export function createDemandDrivenEffectIndex({
       const summary = summaries.get(key,);
       if (summary === undefined)
         return NO_EFFECT_SUMMARY;
-      return publicSummary({
+      /**
+       * Guaranteed foreign indexes after complete-inbound fallback when needed.
+       */
+      const foreignParameterIndexes = foreignByCallable.current
+        .get(key,)
+        ?? new Set<number>();
+      return effectPublicSummary({
         summary,
-        foreignParameterIndexes: foreignByCallable.current.get(key,)
-          ?? new Set<number>(),
+        foreignParameterIndexes,
       },);
     },
   };

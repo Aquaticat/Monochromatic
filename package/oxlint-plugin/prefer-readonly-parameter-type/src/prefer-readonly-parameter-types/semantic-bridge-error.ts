@@ -17,6 +17,7 @@ export type SemanticBridgeFailureReason =
   | 'project-not-found'
   | 'source-file-not-found'
   | 'node-not-found'
+  | 'analysis-incomplete'
   | 'readonly-capability-unavailable';
 
 /**
