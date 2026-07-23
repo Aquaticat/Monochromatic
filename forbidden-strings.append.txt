@@ -131,3 +131,8 @@
 # CA[0-9]: .NET code-analysis diagnostic family, also California and certificate authority
 # FF[0-9]: Final Fantasy series shorthand family
 /^(?:(?:PR)|(?:TS)|(?:TX)|(?:RE)|(?:PS)|(?:DP)|(?:AS)|(?:CS)|(?:SA)|(?:CA)|(?:FF))[0-9]:/
+
+==> crn-renamed-oxc-comment <==
+# Renamed to ParsedComment when mutation-test moved from oxc-parser to
+# yuku-parser; the old name misattributes the producer of the comment shape.
+OxcComment

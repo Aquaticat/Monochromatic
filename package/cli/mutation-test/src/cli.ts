@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Host CLI entrypoint for the oxc-based mutation tester.
+ * Host CLI entrypoint for the yuku-based mutation tester.
  *
  * @example
  * ```bash

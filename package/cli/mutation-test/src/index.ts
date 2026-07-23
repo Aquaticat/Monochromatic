@@ -1,5 +1,5 @@
 /**
- * Library surface of the oxc-based container-native mutation tester.
+ * Library surface of the yuku-based container-native mutation tester.
  *
  * @example
  * ```ts
@@ -26,7 +26,7 @@ export { spliceReplacement, } from './engine/splice.ts';
 export {
   matchingSuppressions,
   suppressionRules,
-  type OxcComment,
+  type ParsedComment,
   type SuppressionRule,
 } from './engine/suppression.ts';
 export type {
@@ -36,10 +36,7 @@ export type {
   OperatorName,
   Replacement,
 } from './engine/types.ts';
-export {
-  isEstreeNode,
-  walk,
-} from './engine/walk.ts';
+export { isEstreeNode, } from './engine/node-access.ts';
 export { effectiveTimeoutMs, } from './container/mutant-loop.ts';
 export {
   parseCliOptions,

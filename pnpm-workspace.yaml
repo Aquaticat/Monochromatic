@@ -96,9 +96,6 @@ catalog:
   'neovim': '>=5.4.0'
   'openai': '>=6.22.0'
   'opentype.js': '>=2.0.0'
-  'oxc-minify': '>=0.1.1'
-  'oxc-parser': '>=0.139.0'
-  'oxc-resolver': '>=11.17.0'
   'oxlint': '>=1.73.0'
   'oxlint-tsgolint': '>=0.24.0'
   'p-limit': '>=7.3.0'
@@ -148,6 +145,9 @@ catalog:
   'why-is-node-running': '>=3.2.2'
   'woff2-encode-wasm': '>=0.1.1'
   'yaml': '>=3.0.0-1'
+  'yuku-analyzer': '>=0.7.3'
+  'yuku-ast': '>=0.7.3'
+  'yuku-parser': '>=0.7.3'
   'zeptomatch': '>=2.1.0'
 catalogMode: strict
 

@@ -1,5 +1,5 @@
 /**
- * Typed access to oxc ESTree child nodes.
+ * Typed access to ESTree child nodes.
  *
  * @example
  * ```ts
@@ -7,8 +7,31 @@
  * ```
  */
 
-import { isEstreeNode, } from './walk.ts';
 import type { EstreeNode, } from './types.ts';
+
+/**
+ * Returns whether a value looks like an ESTree node.
+ *
+ * Keeps operators structural: they narrow parser output through this
+ * guard instead of depending on the parser's full node union.
+ *
+ * @param value - Candidate value from a node property.
+ *
+ * @returns Whether value carries `type` plus span offsets.
+ *
+ * @example
+ * ```ts
+ * isEstreeNode({ type: 'Literal', start: 0, end: 1 });
+ * // true
+ * ```
+ */
+export function isEstreeNode(value: unknown,): value is EstreeNode {
+  return (value !== null)
+    && ((typeof value) === 'object')
+    && ((typeof (value as { type?: unknown; }).type) === 'string')
+    && ((typeof (value as { start?: unknown; }).start) === 'number')
+    && ((typeof (value as { end?: unknown; }).end) === 'number');
+}
 
 /**
  * Reads one required child node property, throwing on shape mismatch.

@@ -11,7 +11,7 @@
 /**
  * Applies one replacement to source text by UTF-16 string slicing.
  *
- * oxc-parser's JS bindings return UTF-16 string offsets (probe-verified
+ * yuku-parser's JS bindings return UTF-16 string offsets (probe-verified
  * on multibyte and astral characters), so plain string slicing is exact;
  * Buffer-based byte slicing at these offsets would corrupt output.
  *

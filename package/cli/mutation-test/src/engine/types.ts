@@ -46,8 +46,9 @@ export type MutantStatus =
  * Candidate replacement produced by one operator for one AST node,
  * before identity assignment.
  *
- * Offsets are UTF-16 string indices as returned by oxc-parser's JS
- * bindings (probe-verified), so `source.slice(start, end)` is exact.
+ * Offsets are UTF-16 string indices as returned by yuku-parser's JS
+ * bindings (probe-verified on astral characters), so
+ * `source.slice(start, end)` is exact.
  */
 export type Replacement = {
   readonly start: number;
@@ -74,9 +75,9 @@ export type Mutant = {
 };
 
 /**
- * Minimal structural view of an oxc ESTree node used by the walker and
- * operators; oxc-parser has no published node type union, so operators
- * narrow via `type` plus property checks.
+ * Minimal structural view of an ESTree node used by operators; operators
+ * narrow via `type` plus property checks so their code stays independent
+ * of the parser's full node union.
  */
 export type EstreeNode = {
   readonly type: string;

@@ -10,9 +10,15 @@
  */
 
 import {
-  type OxcError,
-  parseSync,
-} from 'oxc-parser';
+  type Diagnostic,
+  langFromPath,
+  type Node,
+  parse,
+} from 'yuku-parser';
+import {
+  is,
+  walk,
+} from 'yuku-ast';
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -21,16 +27,12 @@ import {
   positionAt,
 } from './lines.ts';
 import { mutantId, } from './mutant-id.ts';
+import { isEstreeNode, } from './node-access.ts';
 import { allOperators, } from './operator/index.ts';
 import {
   matchingSuppressions,
   suppressionRules,
-  type OxcComment,
 } from './suppression.ts';
-import {
-  isEstreeNode,
-  walk,
-} from './walk.ts';
 import type {
   Mutant,
   Replacement,
@@ -114,6 +116,34 @@ function toMutant(options: {
 }
 
 /**
+ * Returns whether a node roots a TypeScript type-only subtree.
+ *
+ * The compiler erases these subtrees, so mutants inside them can never
+ * change runtime behaviour; skipping them at walk level saves one
+ * per-mutant compile check each. Runtime-emitting TypeScript constructs
+ * (enums, namespaces, parameter properties) stay walkable.
+ *
+ * @param node - Candidate node from the walk.
+ *
+ * @returns Whether the subtree is compile-time-only.
+ *
+ * @example
+ * ```ts
+ * isTypeErasedRoot(typeAliasDeclarationNode);
+ * // true
+ * ```
+ */
+function isTypeErasedRoot(node: Readonly<Node>,): boolean {
+  return is.TSType(node,)
+    || is.TSTypeAnnotation(node,)
+    || is.TSTypeAliasDeclaration(node,)
+    || is.TSInterfaceDeclaration(node,)
+    || is.TSDeclareFunction(node,)
+    || is.TSTypeParameterDeclaration(node,)
+    || is.TSTypeParameterInstantiation(node,);
+}
+
+/**
  * Enumerates every mutant in one source file.
  *
  * Identical (span, replacement) pairs from overlapping families dedupe;
@@ -136,20 +166,27 @@ export function enumerateMutants(options: {
   readonly source: string;
 },): EnumerationResult {
   /**
-   * Parse result carrying program, comments, and syntax errors.
+   * Parse result carrying program, comments, and diagnostics; yuku-parser
+   * recovers from syntax errors, so severity filtering decides rejection.
    */
-  const parsed = parseSync(
-    options.file,
+  const parsed = parse(
     options.source,
+    { lang: langFromPath(options.file,), },
   );
 
-  if (parsed.errors
-    .length
-    > 0)
+  /**
+   * Error-severity diagnostics; warnings and hints stay non-fatal.
+   */
+  const parseErrors = parsed.diagnostics
+    .filter(function isError(diagnostic: ForeignBorrowed<Diagnostic>,): boolean {
+      return diagnostic.severity === 'error';
+    },);
+
+  if (parseErrors.length > 0)
     throw new Error(
-      `parse of ${options.file} failed: ${parsed.errors
-        .map(function toMessage(error: ForeignBorrowed<OxcError>,): string {
-          return error.message;
+      `parse of ${options.file} failed: ${parseErrors
+        .map(function toMessage(diagnostic: ForeignBorrowed<Diagnostic>,): string {
+          return diagnostic.message;
         },)
         .join('; ',)}`,
     );
@@ -162,7 +199,7 @@ export function enumerateMutants(options: {
    * Parsed suppression rules from the file's comments.
    */
   const rules = suppressionRules({
-    comments: parsed.comments as readonly OxcComment[],
+    comments: parsed.comments,
     table,
   },);
   /**
@@ -170,26 +207,36 @@ export function enumerateMutants(options: {
    */
   const collected: Replacement[] = [];
 
-  /**
-   * Program root validated as a walkable node.
-   */
-  const {program} = parsed;
+  walk(
+    parsed.program,
+    {
+      enter: function visitNode(
+        node: Readonly<Node>,
+        ctx,
+      ): void {
+        if (isTypeErasedRoot(node,)) {
+          ctx.skip();
+          return;
+        }
 
-  if (!isEstreeNode(program,))
-    throw new Error(`parse of ${options.file} produced no walkable program node`,);
+        if (!isEstreeNode(node,))
+          return;
 
-  walk({
-    root: program,
-    visit: function visitNode(entry,): void {
-      for (const operator of allOperators) {
-        collected.push(...operator({
-          node: entry.node,
-          ...(entry.parent === undefined ? {} : { parent: entry.parent, }),
-          source: options.source,
-        },),);
-      }
+        /**
+         * Structural parent view for operators, absent at the walk root.
+         */
+        const { parent, } = ctx;
+
+        for (const operator of allOperators) {
+          collected.push(...operator({
+            node,
+            ...(((parent !== null) && isEstreeNode(parent,)) ? { parent, } : {}),
+            source: options.source,
+          },),);
+        }
+      },
     },
-  },);
+  );
 
   /**
    * Replacements deduped by span plus replacement text.

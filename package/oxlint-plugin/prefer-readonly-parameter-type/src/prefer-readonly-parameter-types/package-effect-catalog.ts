@@ -13,6 +13,7 @@ import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
 import { POSTCSS_PACKAGE_EFFECTS, } from './postcss-package-effect-catalog.ts';
 import { TURSO_PACKAGE_EFFECTS, } from './turso-package-effect-catalog.ts';
 import { TYPESCRIPT_PACKAGE_EFFECTS, } from './typescript-package-effect-catalog.ts';
+import { YUKU_AST_PACKAGE_EFFECTS, } from './yuku-ast-package-effect-catalog.ts';
 
 /**
  * Package effects audited by exact current-lock major.
@@ -31,6 +32,7 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...POSTCSS_PACKAGE_EFFECTS,
   ...TURSO_PACKAGE_EFFECTS,
   ...TYPESCRIPT_PACKAGE_EFFECTS,
+  ...YUKU_AST_PACKAGE_EFFECTS,
   receiverEffect({
     provenance: {
       kind: 'package',

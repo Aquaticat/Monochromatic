@@ -83,9 +83,9 @@ export type SuppressionRule = {
 };
 
 /**
- * Comment shape produced by oxc-parser.
+ * Structural comment shape consumed from yuku-parser output.
  */
-export type OxcComment = {
+export type ParsedComment = {
   readonly value: string;
   readonly start: number;
   readonly end: number;
@@ -156,7 +156,7 @@ function parseDirectiveTail(tail: string,): {
 /**
  * Parses suppression rules out of a file's comments.
  *
- * @param options - oxc comments and the file's line-start table.
+ * @param options - Parsed comments and the file's line-start table.
  *
  * @returns Parsed rules, possibly empty.
  *
@@ -168,7 +168,7 @@ function parseDirectiveTail(tail: string,): {
  * ```
  */
 export function suppressionRules(options: {
-  readonly comments: readonly OxcComment[];
+  readonly comments: readonly ParsedComment[];
   readonly table: readonly number[];
 },): readonly SuppressionRule[] {
   return options.comments

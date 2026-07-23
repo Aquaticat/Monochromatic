@@ -35,8 +35,9 @@
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
     "nano-spawn": "catalog:",
-    "oxc-parser": "catalog:",
-    "p-limit": "catalog:"
+    "p-limit": "catalog:",
+    "yuku-ast": "catalog:",
+    "yuku-parser": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

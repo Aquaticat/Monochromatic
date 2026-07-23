@@ -121,6 +121,24 @@ await describe({
           },
         },),
         it({
+          name: 'type-erased subtrees produce no mutants at all',
+          fn: async () => {
+            expect(enumerateMutants({
+              file: 'src/snippet.ts',
+              source: "export type T = 'a' | 1;\nexport interface I { m(k: 'x',): 'y'; }\nexport declare function g(a: number,): string;\n",
+            },).mutants,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'type arguments skip while value arguments still mutate',
+          fn: async () => {
+            expect(familyReplacements({
+              source: "export const s = identity<'a'>('b',);\n",
+              operator: 'string',
+            },),).toEqual(["''",],);
+          },
+        },),
+        it({
           name: 'template empties and skips tagged templates',
           fn: async () => {
             expect(familyReplacements({
