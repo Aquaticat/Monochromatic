@@ -684,11 +684,16 @@ VRB:
  "audit",
  "investigate",
  "propose"...) request deliberation:
- deliver answer + docs,
+ deliver answer + requested or policy-required docs,
  no fixes.
 Action verbs ("fix",
  "implement",
  "update"...) authorize action.
+
+DRR:
+ Recommendation/review questions do not ratify a decision.
+Create/update `doc/decision/` only after user explicitly accepts or delegates final decision;
+ proposals use `doc/planning/`.
 
 IWT:
  Decision verbs forbid non-document mutations in main worktree (edits,
