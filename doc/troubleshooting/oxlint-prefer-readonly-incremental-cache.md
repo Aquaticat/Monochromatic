@@ -22,6 +22,12 @@ whole-project analysis in the project-owned
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` JavaScript rule.
 An unchanged repeat of the exact mise task in the disposable worktree finished in 1.0 seconds.
 
+## Acceptance target
+
+The maximum acceptable runtime for this exact 13-file package task is 10 seconds.
+The cold or invalidated-cache case must satisfy the target because the stable warm path already finishes in 1.0 seconds.
+A design that reaches the target only by preserving the current warm cache does not resolve this incident.
+
 ## Root cause
 
 ### The package task enables a project-owned semantic rule
