@@ -9,11 +9,15 @@ import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 /**
  * dot-prop implementation audit identity.
  *
- * Audited 2026-07-20 for 10.1.0: `getProperty` validates the object and
- * path shapes, normalizes the path by string parsing or per-element type
- * checks, and follows chained property reads down the object argument.
+ * Re-audited 2026-07-22 for 10.2.0: `getProperty`, `normalizePath`, and
+ * `isObject` are byte-identical to the 10.1.0 audit; the rewritten
+ * `parsePath` scans the immutable path string linearly with local state
+ * only and calls only primitive-string helpers, so the audited member
+ * still mutates nothing and invokes no argument values. The 10.2.0
+ * changes to `setProperty`, `hasProperty`, `stringifyPath`, and
+ * `deepKeys` fall outside the audited member.
  */
-const DOT_PROP_EVIDENCE = 'dot-prop 10.1.0 commit 65b25bad588a3213546e3bc448f94b11a9e417e2 shipped index.js sha256 3b0376bd3942b76ddfb6d8acc16968fb834d7a577a67b22ac37814b4ee05b7be';
+const DOT_PROP_EVIDENCE = 'dot-prop 10.2.0 commit d5d11c71a70bfb643a45d22821ed6d284240fce5 shipped index.js sha256 b4c6d5b46b25510e1a05472a76abdb113b2a120cad2f05b226f5449786a0ddb7';
 
 /**
  * Audited effects for dot-prop path-query calls.

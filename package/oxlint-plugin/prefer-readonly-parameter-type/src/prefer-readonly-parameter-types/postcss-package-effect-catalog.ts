@@ -18,23 +18,27 @@ const POSTCSS_PROVENANCE = {
 /**
  * PostCSS `Node` implementation audit identity.
  *
- * Re-audited 2026-07-20 for 8.5.19: `cloneNode` moved from recursion to an
- * explicit work stack without changing its property enumeration, source
- * retention, or non-mutation of the receiver; audited member bodies in
- * `lib/node.js` are otherwise byte-identical to 8.5.16.
+ * Re-audited 2026-07-22 for 8.5.21: shipped `lib/node.js` is
+ * byte-identical to the 8.5.19 audit (same sha256), so every recorded
+ * effect carries over unchanged. The 8.5.19 re-audit found `cloneNode`
+ * moved from recursion to an explicit work stack without changing its
+ * property enumeration, source retention, or non-mutation of the
+ * receiver.
  */
-const NODE_EVIDENCE = 'postcss 8.5.19 commit 9543b22769bef5bcd47600fbca752204c106cda8 shipped lib/node.js sha256 1cc8d56d0c77783fa7fecf702321129936efa3dc504eb4528042a103fe54770d';
+const NODE_EVIDENCE = 'postcss 8.5.21 commit 28e0daf8f2fe5ba9e19ea3f8c27c8fe176f9419e shipped lib/node.js sha256 1cc8d56d0c77783fa7fecf702321129936efa3dc504eb4528042a103fe54770d';
 
 /**
  * PostCSS `Container` implementation audit identity.
  *
- * Re-audited 2026-07-20 for 8.5.19: `walk` replaced recursive `each` calls
- * with an explicit stack of live per-walk index slots; it still mutates
- * receiver iterator state, still invokes the callback with receiver
- * children, and `walkAtRules` still applies RegExp filters through `test`,
- * so every recorded effect holds.
+ * Re-audited 2026-07-22 for 8.5.21: shipped `lib/container.js` is
+ * byte-identical to the 8.5.19 audit (same sha256), so every recorded
+ * effect carries over unchanged. The 8.5.19 re-audit found `walk`
+ * replaced recursive `each` calls with an explicit stack of live
+ * per-walk index slots while still mutating receiver iterator state,
+ * still invoking the callback with receiver children, and `walkAtRules`
+ * still applying RegExp filters through `test`.
  */
-const CONTAINER_EVIDENCE = 'postcss 8.5.19 commit 9543b22769bef5bcd47600fbca752204c106cda8 shipped lib/container.js sha256 e2fc6a559238ac8186ef56d13d340b7c62c04ba9551e2edc027e761eb393ddd0';
+const CONTAINER_EVIDENCE = 'postcss 8.5.21 commit 28e0daf8f2fe5ba9e19ea3f8c27c8fe176f9419e shipped lib/container.js sha256 e2fc6a559238ac8186ef56d13d340b7c62c04ba9551e2edc027e761eb393ddd0';
 
 /**
  * Audited PostCSS effects used by CSS transformation packages.
