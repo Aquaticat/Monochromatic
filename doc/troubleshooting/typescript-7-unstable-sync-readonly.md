@@ -64,6 +64,53 @@ apiRequest(method, params) {
 This shape fits Oxlint's synchronous JavaScript-rule visitors,
 but the client must be process-scoped and reused rather than recreated per parameter or source file.
 
+### `getAliasedSymbol` accepts alias symbols only
+
+The demand-driven effect work initially called `Checker.getAliasedSymbol` for every resolved symbol.
+An ordinary value symbol caused the native TypeScript-Go process to panic with:
+
+```text
+panic: Should only get alias here
+```
+
+The installed `typescript@7.0.2` package records TypeScript-Go commit
+`2bd066d87f5bafd315be9f40889d0a60b9e58e0b` in `gitHead`.
+At that revision,
+`internal/checker/checker.go:16176-16183` explicitly documents and enforces the precondition:
+
+```go
+// symbol. The function panics if the argument is not a symbol with an alias meaning.
+func (c *Checker) resolveAlias(symbol *ast.Symbol) *ast.Symbol {
+    if symbol.Flags&ast.SymbolFlagsAlias == 0 {
+        panic("Should only get alias here")
+    }
+```
+
+`internal/checker/checker.go:31924-31926` adds no guard in the public checker method:
+
+```go
+func (c *Checker) GetAliasedSymbol(symbol *ast.Symbol) *ast.Symbol {
+    return c.resolveAlias(symbol)
+}
+```
+
+The synchronous API handler also forwards the resolved symbol directly at
+`internal/api/session.go:2552-2572`:
+
+```go
+// handleGetAliasedSymbol resolves an alias symbol to its target.
+func (s *Session) handleGetAliasedSymbol(ctx context.Context, params *CheckerSymbolParams) (*SymbolResponse, error) {
+    // ...
+    aliased := setup.checker.GetAliasedSymbol(symbol)
+```
+
+The panic was therefore consumer misuse,
+not a TypeScript-Go defect.
+`effect-call-resolution.ts` now checks
+`(symbol.flags & SymbolFlags.Alias) !== 0`
+before making the synchronous RPC.
+Ordinary symbols stay unchanged.
+
 ### Unchanged files must reuse their immutable snapshot
 
 TypeScript's installed sync adapter sends every `updateSnapshot` call through synchronous RPC.
@@ -196,7 +243,8 @@ external-library,
 active-source,
 and package-analysis policies.
 Ordinary project sources retain cross-file index reuse because their admitted set is stable.
-Making an external-classified source active changes that set and forces a new index without retaining one full index per active path.
+Making an external-classified source active changes that set and forces a new index
+without retaining one full index per active path.
 A regression creates an installed TypeScript package,
 builds an index that excludes it,
 then proves that making its source active builds a summary for its callable.
@@ -293,7 +341,8 @@ The adapter originally registered another `exit` listener after creating the Typ
 TypeScript's listener ran first,
 sent `SIGTERM`,
 and allowed the native server to print the cancellation error before adapter cleanup ran.
-Accepting or filtering that line was incorrect because successful lint output must not contain unexplained shutdown errors.
+Accepting or filtering that line was incorrect because successful lint output
+must not contain unexplained shutdown errors.
 
 Moving adapter cleanup to `beforeExit` fixed natural one-process shutdown,
 but parallel unit processes still reproduced the line intermittently.
@@ -442,9 +491,80 @@ DeepReadonly<Mutable<string>>
 true
 ```
 
+The alias precondition probe used an ordinary value symbol:
+
+```typescript
+// /tmp/ts7-alias-guard-probe/input.ts
+export const ordinaryValue = 1;
+```
+
+```json
+// /tmp/ts7-alias-guard-probe/tsconfig.json
+{
+  "compilerOptions": { "strict": true },
+  "files": ["input.ts"]
+}
+```
+
+```javascript
+// /tmp/ts7-alias-guard-probe/probe.mjs
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const requireFromRepository = createRequire(`${process.cwd()}/package.json`);
+const { SymbolFlags } = requireFromRepository('typescript/unstable/sync');
+const builtEntry = pathToFileURL(join(
+  process.cwd(),
+  'package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs',
+)).href;
+const { closeSemanticBridge, openSemanticFile } = await import(builtEntry);
+const fileName = '/tmp/ts7-alias-guard-probe/input.ts';
+const sourceText = readFileSync(fileName, 'utf8');
+const session = openSemanticFile({ fileName, sourceText, hasBOM: false });
+const node = session.nodeAtOffset(sourceText.indexOf('ordinaryValue'));
+const symbol = session.project.checker.getSymbolAtLocation(node);
+if (symbol === undefined)
+  throw new Error('Expected ordinary value symbol.');
+console.log(JSON.stringify({
+  flags: symbol.flags,
+  alias: (symbol.flags & SymbolFlags.Alias) !== 0,
+}));
+const resolved = process.env.GUARD_ALIAS === '1'
+  ? ((symbol.flags & SymbolFlags.Alias) !== 0
+    ? session.project.checker.getAliasedSymbol(symbol)
+    : symbol)
+  : session.project.checker.getAliasedSymbol(symbol);
+console.log(JSON.stringify({ resolvedFlags: resolved.flags }));
+closeSemanticBridge();
+```
+
+Run the unsafe and guarded variants from the repository root:
+
+```sh
+node /tmp/ts7-alias-guard-probe/probe.mjs
+GUARD_ALIAS=1 node /tmp/ts7-alias-guard-probe/probe.mjs
+```
+
+The unsafe variant printed the non-alias identity and exited with the native panic:
+
+```text
+{"flags":2,"alias":false}
+Error: panic: Should only get alias here
+```
+
+The guarded variant exited successfully:
+
+```text
+{"flags":2,"alias":false}
+{"resolvedFlags":2}
+```
+
 The published-consumer regression opens the same API without calling `closeSemanticBridge` explicitly.
 It asserts that natural process shutdown produces the semantic result on stdout and an empty stderr stream.
-A full parallel package unit run after the forced-signal fix produced no `context canceled` line on either captured stream.
+A full parallel package unit run after the forced-signal fix
+produced no `context canceled` line on either captured stream.
 A package Oxlint run captured after the fix also contained no cancellation line.
 Final root process `proc_367` ran the single-worker workspace Oxlint task after both client sites were guarded.
 Its stdout and stderr contain zero occurrences of `context canceled`,
@@ -478,6 +598,8 @@ and 6,668 ms.
 - byte-identical sources reuse the current immutable snapshot and decoded `SourceFile` object;
 - temporary `openFiles` discovery followed by `openProjects` and `closeFiles` avoids stale API-open-file semantics.
 - TypeScript source offsets map to exact Oxlint diagnostic locations.
+- `Checker.getAliasedSymbol` is called only when `symbol.flags` contains `SymbolFlags.Alias`;
+- ordinary symbols bypass alias resolution without changing identity;
 - every main or demand-driven external `API` client immediately receives guarded TypeScript 7.0.2 child control;
 - guarded child control forces channel-owned termination to `SIGKILL`;
 - `beforeExit` bridge cleanup closes the native child before TypeScript's `exit` kill handler runs.
@@ -490,9 +612,22 @@ and 6,668 ms.
 - no stable TypeScript 7 API contract covers this use in 7.0.
 - recreating `API` for every linted parameter starts unnecessary native clients and loses snapshot reuse;
 - retaining `openFiles` across changed virtual overlays returned stale type text in the built adapter test;
-- a dot-prefixed disposable source directory selected `/dev/null/inferred` rather than the expected configured project.
+- a dot-prefixed disposable source directory selected `/dev/null/inferred` rather than the expected configured project;
+- calling `Checker.getAliasedSymbol` with an ordinary symbol panics the native child with
+  `Should only get alias here`.
 
 ## Verified workarounds
+
+### Guard alias resolution by `SymbolFlags.Alias`
+
+Before calling `Checker.getAliasedSymbol`,
+require `(symbol.flags & SymbolFlags.Alias) !== 0`.
+Use the original symbol otherwise.
+The direct unsafe and guarded probes in the Verification section reproduced the panic and successful bypass.
+
+Tradeoff:
+callers must retain this precondition at every alias-resolution call site.
+The unstable API does not turn misuse into an ordinary JavaScript argument error.
 
 ### Use the unstable synchronous API with a narrow adapter
 
@@ -515,7 +650,8 @@ Before updating,
 compare current source text with the source already materialized in the immutable snapshot.
 Reuse that project and source when they are identical and no deletion requires invalidation.
 Only clear the decoded-source cache and send `fileChanges` when the source or project lifecycle actually changed.
-Dispose superseded snapshots and close the API client during Node `beforeExit` when the host provides no explicit lifecycle hook.
+Dispose superseded snapshots and close the API client during Node `beforeExit`
+when the host provides no explicit lifecycle hook.
 For TypeScript 7.0.2,
 guard the unstable native-child shape
 and force TypeScript's channel-owned kill operation to use `SIGKILL` before exposing the API to callers.
@@ -570,6 +706,9 @@ and parser-recovery span cases.
   ** it defeats TypeScript's decoded-source retention and adds one synchronous native request per source.
 - **Treating `OXLINT_THREADS=1` as a global process limit:
   ** separately launched package tasks still compete through distinct Oxlint and TypeScript processes.
+- **Calling `getAliasedSymbol` unconditionally:
+  ** TypeScript-Go requires alias meaning and panics for an ordinary symbol.
+  Catching the JavaScript error after the native panic does not restore that semantic request.
 
 ## Upstream filing decision
 
@@ -580,6 +719,15 @@ The unchanged-snapshot performance defect was in this repository's adapter,
 not TypeScript:
 the installed API already retains decoded unchanged sources.
 No upstream performance issue should be filed.
+
+GitHub searches across open and closed TypeScript-Go issues and pull requests for
+`"Should only get alias here"`
+found issue 3256,
+whose captured failures concern unrelated language-server crashes rather than the sync checker API precondition.
+The alias panic investigated here came from this repository calling a documented alias-only operation
+on an ordinary symbol.
+Constraint 1 therefore fails:
+there is no upstream issue or patch to file for this incident.
 
 GitHub issue searches for `"context canceled" API`,
 `SIGTERM sync API close`,
@@ -684,6 +832,7 @@ I verified the result through an Oxlint JavaScript plugin using snapshot updates
 This investigation and draft used AI assistance and was reviewed against the installed package and current Go source.
 ~~~
 
-[adapter-reuse]: ../../package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/typescript-sync-adapter.ts#L282-L308
+[adapter-reuse]:
+  ../../package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/
 [readonly-issue]: https://github.com/microsoft/typescript-go/issues/4080
 [typescript-7-announcement]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/

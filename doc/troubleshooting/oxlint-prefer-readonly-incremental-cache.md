@@ -28,6 +28,74 @@ The maximum acceptable runtime for this exact 13-file package task is 10 seconds
 The cold or invalidated-cache case must satisfy the target because the stable warm path already finishes in 1.0 seconds.
 A design that reaches the target only by preserving the current warm cache does not resolve this incident.
 
+## Resolution
+
+The rule remains an Oxlint JavaScript rule and uses only Oxlint's released JavaScript-plugin boundary.
+No Oxlint or `tsgolint` fork or upstream contribution is involved.
+
+`effect-summaries.ts:148-268` now creates one mutable index for an exact TypeScript project snapshot.
+Each Oxlint visitor adds its active source to that index.
+`effect-demand-index.ts:124-422` scans active-source callables,
+then follows only owned callee and callback source identities recorded on their call edges.
+An unrelated configured source is not summarized merely because it belongs to the TypeScript project.
+
+The persistent format is schema 3.
+`effect-owned-call-edge.ts:131-158` stores exact callee and callback source paths beside callable keys.
+`effect-reached-edge.ts:85-118` rejects an owned edge whose source is outside the indexed snapshot.
+`effect-reached-edge.ts:131-156` also rejects an owned callable key whose loaded source lacks its summary.
+These failures reach Oxlint as `semanticBridgeUnavailable` diagnostics rather than becoming assumed-safe calls.
+
+`effect-dependency-closure.ts:162-185` merges semantic call edges with module dependency edges.
+Fresh entries are published only after every reached source has contributed those edges.
+A global-script call without an import therefore invalidates its caller when the callee source changes.
+The regression lives in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/effect-summary-invalidation.unit.test.ts`.
+
+`ForeignBorrowed` is declaration-wide rather than call-path-local.
+When a reached summary contains explicit foreign provenance,
+`effect-demand-index.ts:343-360` conservatively expands every owned source before propagating it.
+The regression includes a foreign caller and an otherwise unreached ordinary caller of the same helper;
+the helper is not incorrectly classified as wholly foreign.
+This fallback preserves correctness but can cost more than an ordinary demand-only traversal.
+
+Analysis has a project-wide runtime safety ceiling.
+`effect-analysis-budget.ts` raises `analysis-incomplete` when the ceiling is exhausted,
+and a zero-budget regression proves no partial summary is returned.
+The 10-second package-config acceptance target remains a stricter workload-specific gate.
+
+### Final acceptance measurements
+
+The final disposable-worktree measurements used commit `656444e0a`.
+The cold command removed both
+`node_modules/.cache/prefer-readonly-parameter-type`
+and the generated Oxlint config before timing the exact user command.
+No earlier lint run or generated summary was required for the result.
+
+- Cold empty state:
+  928 milliseconds reported by Oxlint,
+  2.11 seconds wall time.
+- Warm unchanged state:
+  918 milliseconds reported by Oxlint,
+  1.49 seconds wall time.
+- Changed `package/config/oxlint/src/index.ts` source:
+  924 milliseconds reported by Oxlint,
+  2.11 seconds wall time.
+- Invalidated compiler-option surface:
+  922 milliseconds reported by Oxlint,
+  2.16 seconds wall time.
+
+Every case reported zero warnings and zero errors over 13 files with 479 rules.
+The reproduced pre-change cold baseline on commit `6e5cfe99d` was 49.6 seconds in Oxlint.
+
+The final package verification also passed:
+
+- package build;
+- package type lint;
+- every package unit test;
+- semantic-bridge host lifecycle test;
+- external-consumer host test;
+- package Oxlint with zero warnings and zero errors over 143 files.
+
 ## Root cause
 
 ### The package task enables a project-owned semantic rule
@@ -231,7 +299,7 @@ and `:508-556` executes `lint_files` before passing `now.elapsed()` to the outpu
 The 62.9-second line therefore includes the synchronous JavaScript callback.
 It cannot be explained by mise after Oxlint exits.
 
-## Invalidation model (cache schema 2)
+## Historical invalidation model (cache schema 2)
 
 Schema 1 addressed entries by a whole-project content digest,
 so editing any file invalidated every entry in the scope
@@ -353,7 +421,7 @@ It reported:
 
 This single probe does not establish a latency bound.
 It does show that semantic-project opening alone did not consume the 10-second target on the measured host.
-The whole-project summary index remains the demonstrated dominant cold path.
+The pre-resolution whole-project summary index was the demonstrated dominant cold path.
 
 ### Working catalog
 

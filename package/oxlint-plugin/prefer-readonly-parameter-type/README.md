@@ -5,7 +5,7 @@ Oxlint JavaScript plugin containing the project-owned
 
 ## Contract
 
-The rule combines TypeScript 7 semantic types with whole-project mutation summaries:
+The rule combines TypeScript 7 semantic types with demand-driven cross-file mutation summaries:
 
 - nonmutating structural data requires an honest deep-readonly type;
 - proven caller-observable effects permit mutable parameter types and make `@mutates` optional;
@@ -56,12 +56,19 @@ The rule combines TypeScript 7 semantic types with whole-project mutation summar
 - inline suppression is prohibited by the companion no-restricted-syntax rule.
 
 CLI diagnostics are authoritative because Oxlint's language server does not execute JavaScript plugins.
-Semantic-plugin state is process-local because Oxlint serializes JavaScript-plugin callbacks on its main JavaScript thread.
+Semantic-plugin state is process-local because Oxlint serializes JavaScript-plugin callbacks
+on its main JavaScript thread.
 Package lint and fix tasks leave Rust worker count at Oxlint's default so native work remains parallel.
 Repository-wide package fanout pins each child to one worker to avoid cross-package oversubscription.
 Process-local final-index reuse assumes Oxlint's input snapshot stays stable for one bridge lifecycle.
+Each active source expands that index through exact owned callee and callback edges only.
+Explicit `ForeignBorrowed` provenance conservatively expands the complete owned graph
+before declaration-wide propagation.
+Missing owned sources,
+missing callable summaries,
+and exhausted analysis budgets fail closed through semantic diagnostics.
 `closeSemanticBridge()` clears every process cache;
-persistent cache entries use complete content fingerprints across later Oxlint processes.
+schema-3 persistent entries validate module and semantic call closures across later Oxlint processes.
 
 ## Ownership marker
 
@@ -144,7 +151,7 @@ digest drift,
 native-only implementations,
 and unlisted APIs remain uncertain.
 See the
-[host intrinsic evidence troubleshooting guide](../../../doc/troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md).
+[host intrinsic evidence troubleshooting guide][host-evidence].
 
 ## Verification
 
@@ -163,3 +170,5 @@ Package acceptance includes:
 - Linux,
   macOS,
   and Windows host bridge workflows.
+
+[host-evidence]: ../../../doc/troubleshooting/oxlint-prefer-readonly-host-intrinsic-evidence.md
