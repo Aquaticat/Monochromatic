@@ -165,7 +165,12 @@ While the holder was live,
 `owner.json` contained its PID and birth identity:
 
 ```json
-{"leaseToken":"e48f2cfc-f85d-464f-9f8d-1e665a2a9d7d","ownerBirthIdentity":"linux:1607979","ownerPid":307549,"schemaVersion":1}
+{
+  "leaseToken": "e48f2cfc-f85d-464f-9f8d-1e665a2a9d7d",
+  "ownerBirthIdentity": "linux:1607979",
+  "ownerPid": 307549,
+  "schemaVersion": 1
+}
 ```
 
 The contender produced:
