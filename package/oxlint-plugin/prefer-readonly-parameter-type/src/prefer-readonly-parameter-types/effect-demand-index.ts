@@ -23,7 +23,6 @@ import {
   type EffectCallableDeclaration,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
-  OWNED_CALLABLE_UNAVAILABLE,
 } from './effect-summary-model.ts';
 import {
   type CallableEffectSummary,
