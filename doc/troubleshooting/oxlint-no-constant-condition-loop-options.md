@@ -31,10 +31,18 @@ A workspace scan on 2026-07-23 found 36 textual `while (true)` matches in TypeSc
 Manual context classification removed three documentation examples,
 leaving 33 executable statements.
 Oxlint's ignore patterns in `package/config/oxlint/src/config-base.ts:58-86`
-exclude paused, deprecated, test-fixture, and generated trees,
+exclude paused,
+ deprecated,
+ test-fixture,
+ and generated trees,
 leaving 25 lint-scoped statements.
 Two are deliberate nontermination or exhaustion fixtures in `package/runtime-error/bun/src/`.
-The other 23 are parser scans, ancestor walks, storage retries, pagination, polling, and stream reads.
+The other 23 are parser scans,
+ ancestor walks,
+ storage retries,
+ pagination,
+ polling,
+ and stream reads.
 
 One lint-scoped `for (;;)` already exists at
 `package/ssg/aquati.cat/src/lib/content.ts:110`.
@@ -72,7 +80,9 @@ The repository's category configuration therefore activates the rule with the de
 
 ### While true returns before constant-expression analysis
 
-`NoConstantCondition::run` dispatches `while`, `do...while`, and `for` statements to `check_loop` at
+`NoConstantCondition::run` dispatches `while`,
+ `do...while`,
+ and `for` statements to `check_loop` at
 `crates/oxc_linter/src/rules/eslint/no_constant_condition.rs:142-181`.
 
 `check_loop` then returns early for a literal `true` in a `while` statement when the default is active.
@@ -141,11 +151,16 @@ states that it re-imported ESLint's tests and implemented the three loop-option 
 
 ### Version and source identity
 
-- Installed npm package: `oxlint@1.74.0`.
-- Release tag: `apps_v1.74.0`.
-- Release commit: `2d4e8d20644e0e7446f0a381894b45ea339a0625`.
-- Source origin: `https://github.com/oxc-project/oxc.git`.
-- Host used for the probe: Linux x86-64.
+- Installed npm package:
+   `oxlint@1.74.0`.
+- Release tag:
+   `apps_v1.74.0`.
+- Release commit:
+   `2d4e8d20644e0e7446f0a381894b45ea339a0625`.
+- Source origin:
+   `https://github.com/oxc-project/oxc.git`.
+- Host used for the probe:
+   Linux x86-64.
 
 ### Runnable harness
 
@@ -273,7 +288,10 @@ Tradeoffs:
 
 - It does not report `for (;;)`.
 - It is broader than a literal-only `while (true)` ban.
-- Moving an internal exit into a loop header can change first-attempt, timeout, EOF, or retry-count semantics.
+- Moving an internal exit into a loop header can change first-attempt,
+   timeout,
+   EOF,
+   or retry-count semantics.
   Migrate and test each loop by behavior class rather than applying a text replacement.
 
 ### Reserve for-ever syntax for deliberate nontermination
@@ -283,7 +301,10 @@ It can represent the two runtime-error fixtures whose purpose is intentional non
 
 Tradeoff:
 this is a policy convention rather than enforcement by `no-constant-condition`.
-Using it for parser, retry, polling, or ancestor-walk migrations would preserve the hidden-continuation problem.
+Using it for parser,
+ retry,
+ polling,
+ or ancestor-walk migrations would preserve the hidden-continuation problem.
 An airtight ban on every unconditional loop header needs an additional project rule for conditionless `for` statements.
 
 ## What does not work
@@ -322,7 +343,9 @@ A custom rule is justified only if the policy also covers the built-in rule's `f
 
 No `.out-of-scope/` entry covers Oxlint loop-condition behavior.
 Searches across open and closed Oxc issues and merged pull requests used
-`no-constant-condition`, `while true`, and `checkLoops` terms.
+`no-constant-condition`,
+ `while true`,
+ and `checkLoops` terms.
 They found the implementation PR
 [oxc-project/oxc#10949](https://github.com/oxc-project/oxc/pull/10949),
 but no unresolved bug matching this behavior.
@@ -344,13 +367,17 @@ not a correction to observed behavior.
 ### Constraint 3: Are they supporting this use case?
 
 Yes.
-The rule documentation exposes `all`, `allExceptWhileTrue`, and `none`,
+The rule documentation exposes `all`,
+ `allExceptWhileTrue`,
+ and `none`,
 and PR #10949 specifically implemented loop configuration.
 
 ### Constraint 4: Would the repository welcome our contribution?
 
 Oxc's `CONTRIBUTING.md` welcomes contributions and permits AI assistance when disclosed,
-reviewed, tested, and understood.
+reviewed,
+ tested,
+ and understood.
 The complete contribution guide also requests an issue or discussion before architectural changes.
 No policy forbids a well-tested report,
 but there is no defect to report here.
@@ -360,7 +387,9 @@ but there is no defect to report here.
 No evidence supports changing the current contract.
 The default and the conditionless-for behavior are locked by tests imported from ESLint.
 Recent rule history through the 1.74.0 release contains configuration-schema,
-generator-yield, diagnostic-text, and visitor changes,
+generator-yield,
+ diagnostic-text,
+ and visitor changes,
 but no move away from those loop semantics.
 
 ### Constraint 6: Have we prototyped a minimal upstream fix?
@@ -374,5 +403,7 @@ The consumer-side `checkLoops: all` configuration already implements the desired
 
 Nothing to add upstream.
 There is no new-issue or additive-comment draft because the behavior is documented,
-configurable, source-verified, and covered by upstream tests.
+configurable,
+ source-verified,
+ and covered by upstream tests.
 Filing would request a policy change rather than report a defect.
