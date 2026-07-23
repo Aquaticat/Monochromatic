@@ -236,7 +236,10 @@ Each envelope revalidates against:
 - recorded content digest of every non-declaration workspace file in the entry's transitive module-dependency
   closure;
 - project membership through a file-list digest;
-- declaration files (`.d.ts`, `.d.mts`, and `.d.cts` content);
+- declaration file contents for:
+    - `.d.ts`
+    - `.d.mts`
+    - `.d.cts`
 - global or module augmentations authored in non-declaration sources;
 - resolved compiler options;
 - governing lockfile content.
@@ -274,12 +277,17 @@ Regression coverage lives in
 
 ### Versions and harness
 
-- Oxlint: `1.74.0`.
-- TypeScript synchronous API: `7.0.2`.
-- Upstream source: Oxc tag `apps_v1.74.0`, commit
-  `2d4e8d20644e0e7446f0a381894b45ea339a0625`.
-- Target: 13 files selected by `package/config/oxlint`.
-- Semantic project: 834 TypeScript source files,
+- Oxlint:
+  `1.74.0`.
+- TypeScript synchronous API:
+  `7.0.2`.
+- Upstream source:
+  Oxc tag `apps_v1.74.0`,
+  commit `2d4e8d20644e0e7446f0a381894b45ea339a0625`.
+- Target:
+  13 files selected by `package/config/oxlint`.
+- Semantic project:
+  834 TypeScript source files,
   with 337 persistent effect-summary entries for the current scope.
 
 The exact user-boundary harness was:
@@ -481,25 +489,31 @@ The issue has no comments.
 
 The six filing constraints for the 62.9-second incident are:
 
-1.  **Is it really upstream's fault?** No.
+1.  **Is it really upstream's fault?**
+    No.
     Oxlint waited correctly for a project-owned synchronous rule.
     The expensive whole-project algorithm,
     cache identity,
     repeated manifest probes,
     and file logging belong to this repository.
-2.  **Can upstream fix it?** Oxlint can improve JavaScript-plugin timing visibility,
+2.  **Can upstream fix it?**
+    Oxlint can improve JavaScript-plugin timing visibility,
     but it cannot make this custom effect analysis cheap without changing the rule's semantics or implementation.
-3.  **Are they supporting this use case?** Oxlint supports JavaScript plugins,
+3.  **Are they supporting this use case?**
+    Oxlint supports JavaScript plugins,
     currently marked alpha.
     Per-rule JavaScript timing is not present in 1.74.0 and is explicitly tracked as future work in issue #19745.
-4.  **Would the repository welcome a contribution?** Yes with review and disclosure.
+4.  **Would the repository welcome a contribution?**
+    Yes with review and disclosure.
     Oxc `CONTRIBUTING.md:12-21` permits AI assistance,
     requires disclosure,
     and requires contributors to understand and test submissions.
-5.  **Will they likely fix it?** The timing capability is accepted as an open issue,
+5.  **Will they likely fix it?**
+    The timing capability is accepted as an open issue,
     but there is no schedule or maintainer commitment in its empty thread.
     The local cold-cache cost is not an upstream fix target.
-6.  **Have we prototyped a minimal upstream fix compatible with their architecture?** No.
+6.  **Have we prototyped a minimal upstream fix compatible with their architecture?**
+    No.
     Constraint 1 fails for the incident,
     so the auto-prototype gate does not trigger.
     The local consumer boundary already provides the cache and owns the remaining optimization targets.
