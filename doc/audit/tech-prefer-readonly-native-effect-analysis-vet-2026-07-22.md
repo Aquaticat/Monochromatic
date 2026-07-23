@@ -625,6 +625,9 @@ and rejects missing owned sources or callable summaries.
 A runtime safety ceiling reports `analysis-incomplete` rather than returning partial effects.
 A reached inferred `ForeignBorrowed` candidate now uses TypeScript's exact signature-usage query and walks backwards
 through callable owners.
+TypeScript-Go searches its project source list per query;
+the rule bounds query count to the demanded backwards closure rather than claiming source-count-independent cost.
+Measured queries completed in 6.3 milliseconds over 287 sources and 6.0 milliseconds over 792 sources.
 Non-call escapes and unresolved exact usage edges add ordinary inbounds.
 The former complete source scan and `effectProjectSourceSignatures()` process-index validation are removed.
 TypeScript's immutable semantic project snapshot is the process-cache authority.

@@ -155,6 +155,9 @@ A missing `call` is therefore useful fail-closed evidence:
 the callable escaped through a value reference rather than being invoked at that exact usage.
 
 A live probe over the configured 287-source fixture returned both calls to `readChild` in 6.3 milliseconds.
+A second exact API query over the current 792-source package-config project completed in 6.0 milliseconds.
+The implementation searches `program.GetSourceFiles()` per query,
+so these measurements are empirical evidence rather than a project-size-independent bound.
 An overload probe returned the same direct call plus alias and export value references for each overload declaration;
 the value references had no call handle.
 The production rule accepts only a usage that creates its own exact owned edge.

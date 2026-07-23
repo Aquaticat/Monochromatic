@@ -89,6 +89,8 @@ A regression changes the active overlay without closing the bridge and proves a 
 
 A reached inferred `ForeignBorrowed` candidate triggers exact
 `Project.checker.getSignatureUsage()` queries instead of scanning every callable in every source.
+TypeScript-Go still searches references across its project source list for each query.
+The rule bounds query count to the demanded backwards callable-owner closure and applies the shared safety budget.
 The analysis walks backwards through callable owners.
 Each usage must produce its own exact owned call edge.
 Non-call escapes,
@@ -98,6 +100,9 @@ and unresolved exact edges add an ordinary inbound and remove inferred provenanc
 
 The installed TypeScript 7.0.2 API probe returned both calls to a shared helper in 6.3 milliseconds in a configured
 287-source project.
+A second query over the current 792-source package-config project completed in 6.0 milliseconds.
+These are empirical query measurements,
+not a project-size-independent bound.
 The unit corpus covers an otherwise unreached ordinary caller and an overload family with a value alias escape beside
 a matching call.
 
@@ -153,9 +158,9 @@ Final catalog-free Linux x64 measurements process 13 files with 479 rules and ze
 - invalidated compiler options:
    824 milliseconds in Oxlint and 2.01 seconds wall.
 
-The changed-source and compiler-option runs used
+The changed-source and compiler-option runs used a disposable worktree at
 `/home/user/temp/agent/readonly-catalog-final-gates-20260723`,
-a disposable worktree.
+which was removed after verification.
 No prior daemon,
 background analyzer,
 or hidden precomputation is required for the cold result.
