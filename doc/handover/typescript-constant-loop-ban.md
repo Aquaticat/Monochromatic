@@ -74,18 +74,19 @@ mise run lint:markdown -- doc/troubleshooting/oxlint-no-constant-condition-loop-
 
 ## Current inventory
 
-The last complete scan found 25 lint-scoped `while (true)` statements.
+The initial complete scan found 25 lint-scoped executable `while (true)` statements.
+After parser and analysis migration,
+11 executable statements remain.
+The text inventory also finds the explanatory config comment that names the forbidden syntax.
 
 ### Parser and analysis loops
 
-- `package/module/css-edit/src/parse-contents.ts`:
-  three.
-- `package/module/css-edit/src/parse-classify.ts`:
-  two.
-- `package/oxlint-plugin/tsdoc/src/ast-access.ts`:
-  one.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/`:
-  eight across ancestor and AST walks.
+All 14 parser and analysis occurrences are migrated.
+No `while (true)` remains in:
+
+- `package/module/css-edit/src/`.
+- `package/oxlint-plugin/tsdoc/src/`.
+- `package/oxlint-plugin/prefer-readonly-parameter-type/src/`.
 
 ### Retry, polling, stream, and fixture loops
 
@@ -150,7 +151,8 @@ and stage only explicit paths owned by this task.
   completed.
 - Task 7,
    migrate parser and analysis loops:
-  next.
+  implementation complete,
+  blocked on task 11 verification.
 - Task 8,
    migrate retry and polling loops:
   pending after task 7.
@@ -160,6 +162,9 @@ and stage only explicit paths owned by this task.
 - Task 10,
    create this handover:
   completed.
+- Task 11,
+   clear concurrent CSS test blocker:
+  pending.
 
 Only one task may be actively implemented at a time.
 Update this section whenever a task changes state.
@@ -218,6 +223,14 @@ Research and troubleshooting commits already on `main`:
    final handover creation state.
 - `0abe1ea7d`,
    shared Oxlint `checkLoops: 'all'` configuration.
+- `f901fe2de` and `4cbf886f1`,
+   bounded CSS parser loops and narrowed trivia cursors.
+- `8aaff507e` and `0c8d0a367`,
+   root-inclusive ancestor traversal plus explicit AST conditions.
+- `fc6535276`,
+  `7af601fbe`,
+  and `dd30f430d`,
+   explicit TSDoc wrapper traversal.
 
 Config verification passed:
 
@@ -227,10 +240,27 @@ mise run //package/config/oxlint:lint:oxlint
 mise run //package/config/oxlint:lint:types
 ```
 
+Parser verification passed for `module-css-edit` and `oxlint-plugin-tsdoc`:
+unit tests,
+Oxlint,
+and TypeScript lint are green.
+
+`oxlint-plugin-prefer-readonly-parameter-type` build,
+Oxlint,
+and TypeScript lint are green.
+Its traversal,
+cache,
+intrinsic,
+and diagnostics unit suites passed during the full run.
+The full task failed only two PostCSS tests because concurrent `package/build-tool/css` edits removed or rewrote
+source those tests inspect.
+Do not change those unrelated files.
+
 ## Next action
 
-Migrate parser and analysis loops in
-`package/module/css-edit`,
-`package/oxlint-plugin/prefer-readonly-parameter-type`,
-and `package/oxlint-plugin/tsdoc`.
-Do not stage the concurrent CSS tokenizer catalog files.
+Wait for the concurrent `package/build-tool/css` migration to settle,
+then rerun
+`mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit`.
+When it passes,
+complete tasks 11 and 7,
+then start retry and polling migration.
