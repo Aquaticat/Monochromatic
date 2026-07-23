@@ -132,13 +132,10 @@ async function installFakeVirsh(mode: FakeVirshMode,): Promise<FakeVirshFixture>
 }
 
 async function readCallCount(fixture: FakeVirshFixture,): Promise<number> {
-  return Number.parseInt(
-    await readFile(
-      fixture.counterPath,
-      'utf8',
-    ),
-    10,
-  );
+  return Math.trunc(Number(await readFile(
+    fixture.counterPath,
+    'utf8',
+  ),),);
 }
 
 await describe({
