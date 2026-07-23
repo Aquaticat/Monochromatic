@@ -285,7 +285,14 @@ distribution and delivers corpus value while B proxies it;
 B over C because B extends a proven harness toward a measurable
 gate while C's requirements stay unknown until real output exists;
 C over D because C has a designed contract while D lacks any
-driving number. AWAITING USER PICK.
+driving number.
+USER PICK (2026-07-23): A, the real-corpus production pass, chosen
+from the ranked options; the proposed defaults (50-issue uniform
+sample, 0.9 precision bar) were accepted without notes.
+MILESTONE THREE IS THE REAL-CORPUS PRODUCTION PASS. Execution
+follows the milestone-two accumulation pattern: budgeted runs,
+per-entry artifacts outside the repo (UNLICENSED corpus) under
+`~/temp/translation-repair-corpus/`, content-free tallies here.
 
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
