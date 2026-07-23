@@ -91,8 +91,10 @@ Verified on 2026-07-22 against:
 - T-Doku commit `af426180dc53aef89b82868e7b3fdfcf42165654`.
 - T-Doku `tables` release asset `tables.tar.xz`,
   published 2020-05-25 and sized `471_499_152` bytes.
-- Extracted `grid.counts`, `2_633_637_888` bytes.
-- Extracted `grid.index`, `20_291_214` bytes.
+- Extracted `grid.counts`,
+   `2_633_637_888` bytes.
+- Extracted `grid.index`,
+   `20_291_214` bytes.
 - Fedora 44 container capped at 4 GiB RAM and 2 CPUs.
 - AVX2 build produced inside the same Fedora container image used for execution.
 
@@ -141,7 +143,8 @@ Output:
 ```
 
 `sample_grids 1000` also completed in every warm-cache benchmark run.
-That command uses `GetGrid`, not `EnumerateGrids`.
+That command uses `GetGrid`,
+ not `EnumerateGrids`.
 
 ### Input that fails before the patch
 
@@ -231,29 +234,40 @@ The first-index and final-range probes verify both continuation and terminal beh
 
 No `.out-of-scope/` entry covers T-Doku or Sudoku enumeration.
 Searches across open and closed T-Doku issues and pull requests for
-`last grid list_grids`, `EnumerateGrids segfault`, and related container-crash terms found no duplicate.
+`last grid list_grids`,
+ `EnumerateGrids segfault`,
+ and related container-crash terms found no duplicate.
 
-1. **Is it really upstream's fault?** Yes.
+1. **Is it really upstream's fault?
+   ** Yes.
    `EnumerateGrids` reads `grid.counts[current_pattern_idx + 1]` after its callback has reduced
    `remaining` to zero.
-2. **Can upstream fix it?** Yes.
+2. **Can upstream fix it?
+   ** Yes.
    The verified guard prevents the read without changing range semantics.
-3. **Are they supporting this use case?** Yes.
+3. **Are they supporting this use case?
+   ** Yes.
    `src/grid_tools.cc:154-159` states that the generated tables map any numbered reduced grid to a
    configuration and solution offset,
    and the command accepts an arbitrary first grid ID and limit.
-4. **Would the repo welcome our contribution?** Yes.
-   The repository has no `CONTRIBUTING.md`, issue template, pull-request template,
+4. **Would the repo welcome our contribution?
+   ** Yes.
+   The repository has no `CONTRIBUTING.md`,
+    issue template,
+    pull-request template,
    or AI-assistance policy.
    External pull requests
    [#1](https://github.com/t-dillon/tdoku/pull/1) and
    [#8](https://github.com/t-dillon/tdoku/pull/8) were merged.
-5. **Will they likely fix it?** Yes, with no contrary upstream signal.
+5. **Will they likely fix it?
+   ** Yes,
+    with no contrary upstream signal.
    The tracker has no rejection of terminal range support.
    The relevant path has not changed since commit
    `cc773883024762971a44dabf7c9eaab16e92b422`,
    but policy treats silence as neutral rather than a failure.
-6. **Have we prototyped a minimal compatible fix?** Yes.
+6. **Have we prototyped a minimal compatible fix?
+   ** Yes.
    The one-line guard was applied in a fresh clone of exact commit `af426180`,
    rebuilt in the Fedora 44 container,
    and verified against both the first index and the final two-grid range.
