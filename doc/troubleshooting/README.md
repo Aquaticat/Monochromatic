@@ -148,6 +148,7 @@ Bash shell and CLI tool quirks that cause confusing behavior:
 - `2>&1 > file` splits stderr and stdout instead of merging them,
    producing interleaved output that misrepresents execution order
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
+- [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
 
 ### [CLI bin entries](cli-bin.md)
 
@@ -201,6 +202,8 @@ For common issues:
   ** → [Redirect ordering splits streams](bash.md#2>&1--file-splits-stderr-and-stdout-producing-interleaved-output)
 - **rg missing files with spaces in paths?
   ** → [Content-vs-filename search confusion](bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
+- **GitHub issue commands fail in the repository's Git wrapper?
+  ** → [Pass explicit repository context](gh-implicit-repository-git-wrapper.md)
 - **`pi update` reintroduces `@google/genai`,
    `koffi`,
    or `protobufjs`?
