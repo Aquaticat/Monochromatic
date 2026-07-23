@@ -4,15 +4,7 @@
  * @module
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  writeFileSync,
-} from 'node:fs';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { dirname, } from 'node:path';
 
 import type { SourceFile, } from 'typescript/unstable/ast';
 import {
@@ -21,19 +13,17 @@ import {
 } from 'typescript/unstable/sync';
 
 import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
-import {
-  contentDigest,
-  effectCacheRoot,
-} from './effect-summary-cache-identity.ts';
+import { externalProjectConfigPath, } from './external-project-config.ts';
+import { externalRuntimeShadowFiles, } from './external-runtime-shadow-files.ts';
 import {
   configureNativeApiChildShutdown,
   nativeApiChild,
 } from './typescript-sync-native-shutdown.ts';
 
 /**
- * Generated external configured-project schema.
+ * Maximum declaration-shadow discovery passes before conservative rejection.
  */
-const EXTERNAL_PROJECT_SCHEMA = 3;
+const MAX_RUNTIME_SHADOW_PASSES = 32;
 
 /**
  * Sentinel when external implementation project cannot be opened.
@@ -81,101 +71,58 @@ function externalSnapshotIdentity({
 }
 
 /**
- * Writes deterministic generated TypeScript config when absent.
+ * Opens one generated configured project without publishing it to process cache.
  *
- * @param consumerProject - Caller project selecting dependency-local cache root.
+ * @param configPath - Generated project configuration.
  *
- * @param packageRoot - Exact package root accepted for source analysis.
+ * @param implementationPath - Exact runtime source required from project.
  *
- * @param implementationPath - Shipped runtime entry.
- *
- * @param implementationDigest - Runtime and source-map content identity.
- *
- * @returns generated config path.
+ * @returns disposable project session or unavailable sentinel.
  */
-function externalConfigPath({
-  consumerProject,
-  packageRoot,
+function openExternalProject({
+  configPath,
   implementationPath,
-  implementationDigest,
 }: {
-  readonly consumerProject: Project;
-  readonly packageRoot: string;
+  readonly configPath: string;
   readonly implementationPath: string;
-  readonly implementationDigest: string;
-}): string {
+}): ExternalImplementationSession | typeof EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE {
   /**
-   * Dependency-local persistent cache root.
+   * Independent TypeScript client for current generated project.
    */
-  const cacheRoot = effectCacheRoot({
-    projectKey: consumerProject.configFileName,
+  const api = new API({ cwd: dirname(configPath,), },);
+  configureNativeApiChildShutdown(nativeApiChild(api,),);
+  /**
+   * Configured project snapshot for shipped implementation.
+   */
+  const snapshot = api.updateSnapshot({
+    openProjects: [configPath,],
   },);
   /**
-   * Exact generated project identity.
+   * Loaded generated project.
    */
-  const projectIdentity = contentDigest(
-    `${String(EXTERNAL_PROJECT_SCHEMA,)}\0${packageRoot}\0${implementationPath}\0${implementationDigest}`,
-  );
+  const project = snapshot.getProject(configPath,);
   /**
-   * Generated project directory.
+   * Shipped implementation source in generated project.
    */
-  const directory = join(
-    cacheRoot,
-    'external-projects',
-    projectIdentity,
-  );
-  /**
-   * Generated TypeScript config path.
-   */
-  const configPath = join(
-    directory,
-    'tsconfig.json',
-  );
-  // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous semantic visitor reuses deterministic package-analysis project when already materialized.
-  if (existsSync(configPath,))
-    return configPath;
-  /**
-   * Deterministic JavaScript-capable TypeScript project config.
-   */
-  const configText = `${JSON.stringify(
-    {
-    compilerOptions: {
-      allowJs: true,
-      checkJs: true,
-      maxNodeModuleJsDepth: 10,
-      noEmit: true,
-      skipLibCheck: true,
-      strict: false,
-      module: 'NodeNext',
-      moduleResolution: 'NodeNext',
-      target: 'ESNext',
-      resolveJsonModule: true,
+  const implementationSource = project?.program
+    .getSourceFile(implementationPath,);
+  if ((project === undefined) || (implementationSource === undefined)) {
+    snapshot.dispose();
+    api.close();
+    return EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE;
+  }
+  return {
+    project,
+    implementationSource,
+    snapshotIdentity: externalSnapshotIdentity({
+      project,
+      implementationSource,
+    },),
+    close(): void {
+      snapshot.dispose();
+      api.close();
     },
-    files: [implementationPath,],
-  },
-    null,
-    2,
-  )}\n`;
-  // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous semantic visitor materializes deterministic package-analysis project before TypeScript snapshot.
-  mkdirSync(
-    directory,
-    { recursive: true, },
-  );
-  try {
-    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Synchronous semantic visitor writes generated package-analysis configuration once.
-    writeFileSync(
-      configPath,
-      configText,
-      { flag: 'wx', },
-    );
-    return configPath;
-  }
-  catch (error) {
-    // oxlint-disable-next-line no-restricted-syntax/no-sync -- Concurrent writer may have atomically materialized identical content-addressed config.
-    if (existsSync(configPath,))
-      return configPath;
-    throw error;
-  }
+  };
 }
 
 /**
@@ -213,65 +160,56 @@ export function openExternalImplementation({
   readonly implementationDigest: string;
 }): ExternalImplementationSession | typeof EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE {
   /**
-   * Generated configured-project path.
+   * Runtime roots discovered from exact entry and declaration-shadowed imports.
    */
-  const configPath = externalConfigPath({
-    consumerProject,
-    packageRoot,
-    implementationPath,
-    implementationDigest,
-  },);
-  /**
-   * Prior process-local session for exact implementation project.
-   */
-  const cached = sessionByConfig.get(configPath,);
-  if (cached !== undefined)
-    return cached;
-  /**
-   * Independent TypeScript API avoids invalidating caller snapshot mid-analysis.
-   */
-  const api = new API({ cwd: dirname(configPath,), },);
-  configureNativeApiChildShutdown(nativeApiChild(api,),);
-  /**
-   * Configured project snapshot for shipped implementation.
-   */
-  const snapshot = api.updateSnapshot({
-    openProjects: [configPath,],
-  },);
-  /**
-   * Loaded generated project.
-   */
-  const project = snapshot.getProject(configPath,);
-  /**
-   * Shipped implementation source in generated project.
-   */
-  const implementationSource = project?.program
-    .getSourceFile(implementationPath,);
-  if ((project === undefined) || (implementationSource === undefined)) {
-    snapshot.dispose();
-    api.close();
-    return EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE;
+  const implementationFiles = { current: [implementationPath,], };
+  for (let pass = 0; pass < MAX_RUNTIME_SHADOW_PASSES; pass++) {
+    /**
+     * Generated configured-project path for current reached roots.
+     */
+    const configPath = externalProjectConfigPath({
+      consumerProject,
+      packageRoot,
+      implementationPath,
+      implementationDigest,
+      implementationFiles: implementationFiles.current,
+    },);
+    /**
+     * Prior process-local final session for exact reached roots.
+     */
+    const cached = sessionByConfig.get(configPath,);
+    if (cached !== undefined)
+      return cached;
+    /**
+     * Current project used to discover declaration-shadowed runtime siblings.
+     */
+    const session = openExternalProject({
+      configPath,
+      implementationPath,
+    },);
+    if (session === EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE)
+      return session;
+    /**
+     * Runtime siblings reached through declarations selected by module resolution.
+     */
+    const nextFiles = [...new Set([
+      ...implementationFiles.current,
+      ...externalRuntimeShadowFiles({
+        project: session.project,
+        packageRoot,
+      },),
+    ],),].toSorted();
+    if (nextFiles.length === implementationFiles.current.length) {
+      sessionByConfig.set(
+        configPath,
+        session,
+      );
+      return session;
+    }
+    session.close();
+    implementationFiles.current = nextFiles;
   }
-  /**
-   * Reusable session closed with semantic bridge lifecycle.
-   */
-  const session: ExternalImplementationSession = {
-    project,
-    implementationSource,
-    snapshotIdentity: externalSnapshotIdentity({
-      project,
-      implementationSource,
-    },),
-    close(): void {
-      snapshot.dispose();
-      api.close();
-    },
-  };
-  sessionByConfig.set(
-    configPath,
-    session,
-  );
-  return session;
+  return EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE;
 }
 
 /**
