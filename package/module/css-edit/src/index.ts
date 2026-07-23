@@ -26,6 +26,7 @@ export {
   isOpeningToken,
   isTriviaToken,
   rawTextOfTokens,
+  tokenData,
 } from './token.ts';
 export type { CSSToken, } from './token.ts';
 export {
