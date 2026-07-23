@@ -22,9 +22,13 @@ import type { MutableEffectSummary, } from './effect-summary-model.ts';
 export function summaryRequiresCompleteInboundGraph(
   summary: MutableEffectSummary,
 ): boolean {
-  if (summary
+  /**
+   * Explicit marker count on current declaration.
+   */
+  const directForeignCount = summary
     .directForeignBorrowed
-    .size > 0)
+    .size;
+  if (directForeignCount > 0)
     return true;
   return summary.calls
     .some(function hasDirectForeignArgument(edge,): boolean {
