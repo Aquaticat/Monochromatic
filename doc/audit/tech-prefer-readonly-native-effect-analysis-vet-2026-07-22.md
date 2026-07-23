@@ -1,9 +1,9 @@
 # Native effect analysis for `prefer-readonly-parameter-type`
 
-Status: targeted evaluation in progress;
-no adoption recommendation until a consumer-boundary prototype passes semantic and latency gates.
+Status: demand-driven traversal implemented and verified through the selected Oxlint JavaScript-rule boundary;
+catalog-free effect authority remains unfinished.
 
-Lifecycle phase: targeted evidence.
+Lifecycle phase: monitoring.
 
 Subject: Prefer-readonly native effect analysis.
 
@@ -53,6 +53,7 @@ or reported as opaque.
 - Fail closed when parameter-reachable effects cannot be derived or isolated.
 - Preserve required TypeScript 7 semantic behavior and the existing rule corpus.
 - Avoid handwritten external-effect catalogs.
+- Keep the implementation as an Oxlint rule.
 - Do not fork or contribute to Oxlint or `tsgolint`.
 - Support repository Linux x64,
   macOS arm64,
@@ -163,10 +164,11 @@ Base category:
 project-owned custom implementation.
 
 Screening:
-serious alternative.
-It already preserves the semantic corpus and platform behavior,
-but the eager whole-project implementation fails the latency hard gate.
-A demand-driven redesign has not been prototyped.
+selected and implemented.
+It preserves the semantic corpus,
+platform behavior,
+and supported Oxlint JavaScript-plugin boundary.
+Demand-driven traversal replaced eager whole-project summary construction.
 
 ### Rust Node-API hybrid
 
@@ -395,8 +397,11 @@ or a maintained TypeScript-Go-derived binary.
 ### Semantic compatibility
 
 - Demand-driven incumbent:
-  pending prototype,
-  with existing corpus as a favorable baseline.
+  pass through package corpus,
+  host lifecycle,
+  external-consumer,
+  package lint,
+  and exact latency verification.
 - Rust Node-API hybrid:
   pending because semantic authority remains TypeScript-Go.
 - Pure Oxc Rust:
@@ -413,9 +418,9 @@ or a maintained TypeScript-Go-derived binary.
 ### Cold latency
 
 - Incumbent eager implementation:
-  fail at 62.9 seconds.
-- Every replacement:
-  pending exact prototype.
+  fail at 62.9 seconds in the original incident and 49.6 seconds in the final pre-change reproduction.
+- Demand-driven Oxlint JavaScript rule:
+  pass at 928 milliseconds of Oxlint time and 2.11 seconds wall time with empty state.
 - Existing Oxlint `tsgolint` path without the project rule:
   measured favorable evidence at 396 milliseconds,
   not proof for the added effect workload.
@@ -525,24 +530,16 @@ Cons:
 - contributor binary generation and cache behavior may violate the cold target;
 - current repository integration and semantic parity are unverified.
 
-## Preliminary ordering for prototype investment
+## Evaluation outcome
 
-This is not an adoption recommendation.
-It orders the viable prototypes:
+Demand-driven analysis through the existing Oxlint JavaScript rule is selected and implemented.
+It preserved the exact linter boundary required by the user
+and passed the traversal-phase semantic and latency gates exercised on Linux x64.
 
-1.  Demand-driven incumbent JavaScript bridge.
-2.  `ttsc` contributor rule.
-3.  Rust Node-API hybrid.
-
-The incumbent bridge precedes `ttsc` because it already preserves diagnostics and the exact Oxlint plugin boundary.
-The measured 181.7-millisecond project opening also shows that eager 337-source indexing,
-not bridge startup alone,
-caused the demonstrated 62.9-second cold path.
-Demand-driven traversal should therefore be tested before replacing the integration.
-
-`ttsc` precedes Rust Node-API because it supplies direct TypeScript-Go checker access through a supported extension API.
-Rust Node-API supplies computation and transport,
-but not TypeScript semantic authority.
+`ttsc` now fails the requirement that this remain an Oxlint rule.
+A Rust Node-API hybrid remains technically loadable through that rule,
+but no measured bottleneck remains that requires its native graph engine.
+It also still lacks independent TypeScript semantic authority.
 
 The `tsgolint` fork,
 native Oxlint fork,
@@ -551,45 +548,66 @@ Pure Oxc Rust is excluded by semantic incompatibility.
 
 ## Prototype gate
 
-No candidate becomes recommendable until one disposable prototype proves:
+The disposable implementation proved:
 
-- the exact existing semantic corpus produces equivalent diagnostics;
-- package implementation inference remains fail closed without handwritten catalogs;
+- the exact existing semantic corpus retains its diagnostics;
+- existing package implementation inference and catalog behavior remain covered by the package corpus;
 - the exact 13-file package command completes within 10 seconds with empty state;
-- analyzer-version,
-  relevant-source,
-  declaration,
-  lockfile,
-  and resolution invalidations remain within the target;
-- budget exhaustion reports opaque analysis rather than passing;
-- Linux x64,
-  macOS arm64,
-  and Windows x64 consumer boundaries load the verified artifact;
+- relevant-source and compiler-option invalidations remain within the target;
+- budget exhaustion reports `analysis-incomplete` rather than passing;
+- the Linux x64 built artifact passes semantic-host and external-consumer boundaries;
 - no bare shutdown,
   panic,
   or process-lifecycle diagnostics reach stderr.
 
-The first prototype should make the incumbent JavaScript bridge demand driven,
-without changing Oxlint or `tsgolint`.
-That tests the demonstrated bottleneck directly:
-remove eager whole-project indexing while preserving the existing semantic and plugin boundaries.
+This phase did not remove handwritten catalogs.
+It also did not rerun the final commit on macOS arm64 or Windows x64.
+Those remain separate gates for the catalog-free authority and release matrix.
 
-If synchronous checker RPC still prevents the target,
-the next prototype should use a project-owned `ttsc` extension invoked by the same Mise task.
-The task's measured user boundary must include `ttsc` program setup and contributor-binary generation.
+Final exact-command measurements at commit `656444e0a` were:
+
+- cold empty state:
+  928 milliseconds in Oxlint and 2.11 seconds wall time;
+- warm unchanged state:
+  918 milliseconds in Oxlint and 1.49 seconds wall time;
+- changed source:
+  924 milliseconds in Oxlint and 2.11 seconds wall time;
+- invalidated compiler-option surface:
+  922 milliseconds in Oxlint and 2.16 seconds wall time.
+
+Every case processed 13 files with 479 rules and reported zero diagnostics.
+The package build,
+type lint,
+unit corpus,
+semantic-bridge host test,
+external-consumer host test,
+and 143-file package Oxlint also passed.
+
+The implementation records callee and callback source identities in schema-3 cache entries,
+binds semantic edges into invalidation closures,
+and rejects missing owned sources or callable summaries.
+A runtime safety ceiling reports `analysis-incomplete` rather than returning partial effects.
+Explicit `ForeignBorrowed` provenance conservatively expands the complete owned graph
+before declaration-wide propagation.
 
 ## Scoring and sensitivity
 
-Scoring is deferred because no finalist has completed runtime and consumer-boundary validation.
-Hard latency and semantic gates cannot be offset by soft points.
-No sensitivity matrix is meaningful before at least two candidates pass those gates.
+Only the demand-driven incumbent passed every traversal-phase hard gate.
+`ttsc` fails the Oxlint-rule requirement,
+and Rust Node-API remains unvalidated and unnecessary for the measured workload.
+A comparative soft score cannot override those hard-gate exits.
+
+Sensitivity remains straightforward:
+if a future measured Oxlint workload fails after demand scope is minimized,
+reopen the Rust hybrid only for a profiled native-computation bottleneck.
+Do not reopen it for eager traversal or missing TypeScript semantics.
 
 ## Recommendation status
 
-No adoption recommendation.
-The recommended next action is a demand-driven rewrite prototype through Oxlint's released JavaScript-plugin boundary.
-Rust can accelerate native effect-engine work,
-but Node-API alone does not address the measured architecture or preserve TypeScript semantics.
-If the supported bridge cannot meet the target,
-a separate `ttsc` extension is the next candidate.
+Retain the implemented demand-driven Oxlint JavaScript rule for the traversal and latency architecture.
+It does not by itself complete the catalog-free effect-authority goal.
+Do not add Rust,
+Node-API,
+`ttsc`,
+or a custom linter distribution for the measured workload.
 No path may fork or seek changes to Oxlint or `tsgolint`.
