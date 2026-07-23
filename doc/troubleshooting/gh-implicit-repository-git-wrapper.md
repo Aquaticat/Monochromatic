@@ -183,9 +183,10 @@ dist/
 target/
 ```
 
-The package has no install lifecycle script.
-Consequently,
-a package-manager install can generate the bin shim without guaranteeing that the ignored target exists.
+The package has no install lifecycle script that builds this target.
+The observed workspace state had a package-manager-generated bin shim while the target was absent,
+so the package itself did not guarantee artifact availability.
+This investigation did not rule out root-level install hooks in every install path.
 A clean build can also expose a short interval after cleaning and before output emission.
 
 For this incident,
@@ -214,6 +215,19 @@ func OverrideBaseRepoFunc(baseRepoFunc func() (ghrepo.Interface, error), overrid
 	}
 	return baseRepoFunc
 }
+```
+
+The `issue` parent command installs this override before registering both `list` and `create`.
+`pkg/cmd/issue/issue.go:43-48` at tag `v2.96.0`:
+
+```go
+cmdutil.EnableRepoOverride(cmd, f)
+
+cmdutil.AddGroup(cmd, "General commands",
+	cmdList.NewCmdList(f, nil),
+	cmdCreate.NewCmdCreate(f, nil),
+	cmdStatus.NewCmdStatus(f, nil),
+)
 ```
 
 This is why an explicit `gh api repos/Aquaticat/Monochromatic/issues` call works:
@@ -366,12 +380,12 @@ found no matching report.
 
 1. **Is it really upstream's fault?
    ** No.
-   GitHub CLI is performing its documented current-repository inference;
+   GitHub CLI is performing the current-repository inference verified in its source and runtime trace;
    the failure comes from this workspace placing a broken `git` shim first on `PATH`.
 2. **Can upstream fix it?
    ** Not as this incident is framed.
    Upstream could redesign repository inference,
-   but bypassing an explicitly selected `git` executable would break the local-context feature rather than repair the local wrapper.
+   but that is unnecessary for this failure because the existing repository override already avoids the broken local executable.
 3. **Are they supporting this use case?
    ** Yes.
    `--repo`,
