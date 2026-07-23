@@ -336,6 +336,42 @@ through the pass; false blocks get probed and tallied per entry,
 and block calibration (for example requiring voters to file no
 substantive claims themselves) is a named post-pass workstream.
 Remaining 87.
+USER DIRECTIVE (2026-07-23, supersedes the measurement-continuity
+freeze recorded above): iteratively improve the system whenever a
+change is highly confident to improve it, and RESTART ALL PASSES
+after each such change; prior pass artifacts are discarded. Standing
+procedure from here: discovery -> high-confidence fix -> unit tests
+-> live sentinel validation where prior behavior is known -> commit
+-> wipe artifacts -> restart pass numbering.
+FIRST ITERATION (commit `6f11683fd`): deterministic contradiction
+screening for non-translation votes. Threshold ideas failed
+measurement first (length ratio: genuine pair Zha_Ke runs 16x en
+over zh while correctly blocked XIEPT2 sits at 6.4x; CJK residue:
+genuine shihai4h carries 6.8 percent versus correctly blocked
+shi_Yumiaoya's 5.1). The surviving discriminator comes from the
+category's own definition (wholly unrelated pair): validated claims
+that critique translated content (category leaf outside omission/
+untranslated/non-translation) and anchor at least one span into the
+TARGET side contradict the votes deterministically. Aniloviraw
+measured 44 such claims (and its panel had ACCEPTED a critical
+non-translation issue, so panel routing alone would not have saved
+it); floor set at 8 (ensemble-scale margin over a seven-critic
+roster). New module `non-translation-evidence.ts`:
+`assessNonTranslationEvidence` (verdict + count) and
+`screenNonTranslationVotes` (dismisses contradicted votes together
+with their non-translation claims pre-aggregation, emitting a
+finding); `repairChunk` screens after the critic stage and exposes
+`nonTranslationContradicted`; `repairTranslation` blocks only on
+uncontradicted votes. NON_TRANSLATION_BLOCK_VOTES moved to the new
+module (barrel path updated). Verification: 87 suites pass against
+dist including the new contradicted-path end-to-end test, oxlint
+0/0 (max-lines remediated by moving screening logic into the new
+module, never by raising the limit), lint:types exit 0.
+LIVE SENTINEL PROBE launched (log
+`~/temp/translation-repair-corpus/sentinel-probe.log`): XIEPT2 and
+shi_Yumiaoya must stay blocked, Aniloviraw must proceed; the pass
+restarts only on ALL PASS. Run 004 was stopped mid-flight (its
+partial artifacts get wiped with the rest at restart).
 run 003 (2026-07-23, 1913 s): 3 dispatched, 3 completed, 0 failed;
 Arita repaired (20 issues, 18 accepted, 17 resolved, 6 findings,
 644 s); ArtsEpiphany unchanged (0 claims from 7/7 critics, 8 s;
