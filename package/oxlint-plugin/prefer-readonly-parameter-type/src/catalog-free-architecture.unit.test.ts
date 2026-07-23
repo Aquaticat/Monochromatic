@@ -38,7 +38,7 @@ await describe({
   children: [
     it({
       name: 'contains no handwritten authority module or removed opacity discharge',
-      fn: () => {
+      fn: async () => {
         /** Production module names under effect implementation. */
         const sourceFileNames = readdirSync(EFFECT_SOURCE_DIRECTORY,)
           .filter(function isTypeScriptSource(fileName,): boolean {
