@@ -66,8 +66,28 @@ await describe({
           cwd: repositoryRoot,
           args: ['status', '--short',],
         },),);
+        requireSuccess(await captureWrapper({
+          cwd: fixture.path,
+          args: [
+            '-C',
+            repositoryRoot,
+            'status',
+            '--short',
+          ],
+        },),);
+        requireSuccess(await captureWrapper({
+          cwd: fixture.path,
+          args: [
+            '--git-dir',
+            join(repositoryRoot, '.git',),
+            '--work-tree',
+            repositoryRoot,
+            'status',
+            '--short',
+          ],
+        },),);
         /**
-         * Main Git entries after status proves no copy root was initialized.
+         * Main Git entries after direct and selected status prove no copy root was initialized.
          */
         const mainGitEntriesAfterStatus = await readdir(join(
           repositoryRoot,
@@ -166,8 +186,10 @@ await describe({
          * Successful built-wrapper worktree creation.
          */
         const result = requireSuccess(await captureWrapper({
-          cwd: repositoryRoot,
+          cwd: fixture.path,
           args: [
+            '-C',
+            repositoryRoot,
             'worktree',
             'add',
             '-b',
