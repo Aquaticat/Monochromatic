@@ -313,6 +313,12 @@ Run 001 launched 2026-07-23 ~14:40 local, log
 `~/temp/translation-repair-corpus/run-001.log`.
 Per-run procedure: read TALLY lines, append content-free run record
 here, commit, push, relaunch until every entry has an artifact.
+Corpus-pass run log (all counts, no content):
+run 001 (2026-07-23, 2009 s): 3 dispatched, 3 completed, 0 failed;
+Acheron repaired (46 issues, 45 accepted, 45 resolved, 5 findings,
+911 s); AkiraComplex repaired (9/9/9, 1 finding, 479 s);
+AmbeR_the_anpa repaired (23 issues, 22 accepted, 21 resolved,
+3 findings, 620 s). Remaining 89.
 
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
