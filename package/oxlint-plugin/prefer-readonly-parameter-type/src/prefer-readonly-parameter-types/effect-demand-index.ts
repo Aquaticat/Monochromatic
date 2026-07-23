@@ -183,9 +183,13 @@ export function createDemandDrivenEffectIndex(
     current: ReadonlyMap<string, ReadonlySet<number>>;
   } = { current: new Map(), };
   /**
-   * Whether explicit foreign provenance requires complete inbound graph.
+   * Callable candidates whose exact signature inbounds were verified.
    */
-  const foreignFallback = { required: false, };
+  const verifiedForeignKeys = new Set<string>();
+  /**
+   * Complete foreign results accumulated from demanded backwards closures.
+   */
+  const completeForeignByCallable = new Map<string, ReadonlySet<number>>();
 
   /**
    * Loads one reached source from cache or exact semantic scan.
@@ -411,21 +415,32 @@ export function createDemandDrivenEffectIndex(
       const partialForeignParameterIndexes = foreignByCallable.current
         .get(key,)
         ?? new Set<number>();
-      if ((!foreignFallback.required) && (partialForeignParameterIndexes.size > 0)) {
-        foreignFallback.required = true;
-        foreignByCallable.current = completeForeignBorrowedGraph({
+      if ((partialForeignParameterIndexes.size > 0)
+        && (!verifiedForeignKeys.has(key,))) {
+        /**
+         * Exact backwards caller closure for current reached candidate.
+         */
+        const completeForeign = completeForeignBorrowedGraph({
           project,
           indexedSourceFiles,
+          rootDeclaration: declaration,
           analysisBudget,
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
+        completeForeign.forEach(function retainCompleteForeign(indexes, callableKeyValue,): void {
+          completeForeignByCallable.set(
+            callableKeyValue,
+            indexes,
+          );
+        },);
+        verifiedForeignKeys.add(key,);
       }
       /**
        * Guaranteed foreign indexes after candidate-triggered complete-inbound proof.
        */
-      const foreignParameterIndexes = foreignByCallable.current
-        .get(key,)
-        ?? new Set<number>();
+      const foreignParameterIndexes = verifiedForeignKeys.has(key,)
+        ? completeForeignByCallable.get(key,) ?? new Set<number>()
+        : partialForeignParameterIndexes;
       return effectPublicSummary({
         summary,
         foreignParameterIndexes,

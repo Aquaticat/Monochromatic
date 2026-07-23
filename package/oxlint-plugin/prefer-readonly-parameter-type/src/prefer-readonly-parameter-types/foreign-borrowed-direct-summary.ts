@@ -24,45 +24,33 @@ import {
   registerBindingOrigin,
 } from './effect-binding-origins.ts';
 import {
-  ALL_PACKAGED_PROPERTIES,
-  callableDeclaration,
-  parameterIndexes,
-} from './effect-call-resolution.ts';
-import { declarationDirectlyOwnsNode, } from './effect-foreign-inbound.ts';
-import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
-import {
   collectAstNodes,
-  isEffectCallableDeclaration,
   type EffectCallableDeclaration,
   type MutableEffectSummary,
-  OWNED_CALLABLE_UNAVAILABLE,
 } from './effect-summary-model.ts';
 import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
+import { addForeignBorrowedCallEdge, } from './foreign-borrowed-call-edge.ts';
 
 /**
- * Creates minimum summary needed by foreign ownership fixed point.
+ * Creates ownership seed needed by foreign ownership fixed point.
  *
  * @param project - TypeScript project resolving owned calls and argument origins.
  *
  * @param declaration - Callable whose inbound edges are required.
  *
- * @param analysisRoot - Optional external package root admitted as owned.
- *
- * @returns direct marker and owned-call facts with empty effect dimensions.
+ * @returns direct marker and binding facts with empty effect dimensions.
  *
  * @example
  * ```ts
- * foreignBorrowedDirectSummary({ project, declaration });
+ * foreignBorrowedOwnershipSeed({ project, declaration });
  * ```
  */
-export function foreignBorrowedDirectSummary({
+export function foreignBorrowedOwnershipSeed({
   project,
   declaration,
-  analysisRoot,
 }: {
   readonly project: Project;
   readonly declaration: EffectCallableDeclaration;
-  readonly analysisRoot?: string;
 }): MutableEffectSummary {
   /**
    * Binding origins seeded by callable parameters.
@@ -140,66 +128,55 @@ export function foreignBorrowedDirectSummary({
     forOfStatements,
     bindingOriginBySymbolId,
   },);
+  return summary;
+}
+
+/**
+ * Creates direct marker and owned-call facts for one callable.
+ *
+ * @param project - TypeScript project resolving owned calls and argument origins.
+ *
+ * @param declaration - Callable whose body calls are summarized.
+ *
+ * @param analysisRoot - Optional external package root admitted as owned.
+ *
+ * @returns ownership summary with every active direct call edge.
+ *
+ * @example
+ * ```ts
+ * foreignBorrowedDirectSummary({ project, declaration });
+ * ```
+ */
+export function foreignBorrowedDirectSummary({
+  project,
+  declaration,
+  analysisRoot,
+}: {
+  readonly project: Project;
+  readonly declaration: EffectCallableDeclaration;
+  readonly analysisRoot?: string;
+}): MutableEffectSummary {
+  /** Marker and alias-origin seed for current callable. */
+  const summary = foreignBorrowedOwnershipSeed({
+    project,
+    declaration,
+  },);
+  /** Callable body absent for source-only signatures. */
+  const body = 'body' in declaration ? declaration.body : undefined;
+  if (body === undefined)
+    return summary;
   activeCallableBodyNodes({
     project,
     body,
-    bindingOriginBySymbolId,
+    bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
   },).forEach(function inspectOwnedCall(node,): void {
     if (!isCallExpression(node,))
       return;
-    /**
-     * Resolved source declaration selected by overload when available.
-     */
-    const resolvedDeclaration = project.checker
-      .getResolvedSignature(node,)
-      ?.declaration
-      ?.resolve(project,);
-    /**
-     * Owned callee selected from signature before expression fallback.
-     */
-    const signatureCallee = (resolvedDeclaration !== undefined)
-      && isEffectCallableDeclaration(resolvedDeclaration,)
-      ? callableDeclaration({
-        project,
-        node: resolvedDeclaration,
-        ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-      },)
-      : OWNED_CALLABLE_UNAVAILABLE;
-    /**
-     * Final owned callee declaration.
-     */
-    const callee = signatureCallee === OWNED_CALLABLE_UNAVAILABLE
-      ? callableDeclaration({
-        project,
-        node: node.expression,
-        ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-      },)
-      : signatureCallee;
-    if (callee === OWNED_CALLABLE_UNAVAILABLE)
-      return;
-    /**
-     * Caller parameter roots corresponding to call arguments.
-     */
-    const allArgumentIndexes = node.arguments.map(function argumentIndexes(argument,): readonly number[] {
-      return parameterIndexes({
-        checker: project.checker,
-        bindingOriginBySymbolId,
-        node: argument,
-        includedPropertyNames: ALL_PACKAGED_PROPERTIES,
-      },);
-    },);
-    addOwnedCallEdge({
+    addForeignBorrowedCallEdge({
       project,
-      checker: project.checker,
-      bindingOriginBySymbolId,
+      declaration,
       call: node,
-      callee,
-      allArgumentIndexes,
       summary,
-      foreignInbound: declarationDirectlyOwnsNode({
-        node,
-        declaration,
-      },),
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },);
   },);
