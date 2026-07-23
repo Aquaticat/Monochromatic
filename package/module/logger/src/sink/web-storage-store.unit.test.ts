@@ -9,55 +9,63 @@ import { createSessionStorageStore, } from './session-storage-store.ts';
 
 type StorageGlobalName = 'localStorage' | 'sessionStorage';
 
-class ControlledStorage implements Storage {
-  readonly #entries = new Map<string, string>();
+type ControlledStorage = Storage & {
+  readonly state: {
+    alwaysFail: boolean;
+    failuresRemaining: number;
+    setCalls: number;
+  };
+  readonly values: () => readonly string[];
+};
 
-  readonly state = {
+function createControlledStorage(): ControlledStorage {
+  const entries = new Map<string, string>();
+  const state = {
     alwaysFail: false,
     failuresRemaining: 0,
     setCalls: 0,
   };
-
-  get length(): number {
-    return this.#entries.size;
-  }
-
-  clear(): void {
-    this.#entries.clear();
-  }
-
-  getItem(key: string,): string | null {
-    return this.#entries.get(key,)
-      ?? null;
-  }
-
-  key(index: number,): string | null {
-    return [...this.#entries.keys()][index]
-      ?? null;
-  }
-
-  removeItem(key: string,): void {
-    this.#entries.delete(key,);
-  }
-
-  setItem(key: string, value: string,): void {
-    this.state.setCalls++;
-    if (this.state.alwaysFail || (this.state.failuresRemaining > 0)) {
-      this.state.failuresRemaining--;
-      throw new DOMException(
-        'fake storage quota reached',
-        'QuotaExceededError',
+  return Object.freeze({
+    state,
+    get length(): number {
+      return entries.size;
+    },
+    clear(): void {
+      entries.clear();
+    },
+    // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Storage.getItem requires exact external Web Storage return type.
+    getItem(key: string,): string | null {
+      return entries.get(key,)
+        ?? null;
+    },
+    // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Storage.key requires exact external Web Storage return type.
+    key(index: number,): string | null {
+      return [...entries.keys()][index]
+        ?? null;
+    },
+    removeItem(key: string,): void {
+      entries.delete(key,);
+    },
+    setItem(key: string, value: string,): void {
+      state.setCalls++;
+      const shouldFail = state.alwaysFail || (state.failuresRemaining > 0);
+      if (state.failuresRemaining > 0)
+        state.failuresRemaining--;
+      if (shouldFail) {
+        throw new DOMException(
+          'fake storage quota reached',
+          'QuotaExceededError',
+        );
+      }
+      entries.set(
+        key,
+        value,
       );
-    }
-    this.#entries.set(
-      key,
-      value,
-    );
-  }
-
-  values(): readonly string[] {
-    return [...this.#entries.values()];
-  }
+    },
+    values(): readonly string[] {
+      return [...entries.values()];
+    },
+  } satisfies ControlledStorage);
 }
 
 function installStorage({
@@ -100,7 +108,7 @@ await describe({
     it({
       name: 'localStorage evicts one owned entry and retries a quota failure',
       fn: async () => {
-        const storage = new ControlledStorage();
+        const storage = createControlledStorage();
         using _installed = installStorage({
           name: 'localStorage',
           storage,
@@ -117,7 +125,7 @@ await describe({
     it({
       name: 'sessionStorage evicts one owned entry and retries a quota failure',
       fn: async () => {
-        const storage = new ControlledStorage();
+        const storage = createControlledStorage();
         using _installed = installStorage({
           name: 'sessionStorage',
           storage,
@@ -134,7 +142,7 @@ await describe({
     it({
       name: 'sessionStorage gives up after its final post-eviction attempt',
       fn: async () => {
-        const storage = new ControlledStorage();
+        const storage = createControlledStorage();
         using _installed = installStorage({
           name: 'sessionStorage',
           storage,
