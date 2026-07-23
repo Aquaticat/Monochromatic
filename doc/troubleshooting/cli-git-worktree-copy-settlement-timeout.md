@@ -9,7 +9,8 @@ cli-git: timed out waiting for active worktree-copy settlement under
 "/var/home/user/Monochromatic/.git".
 ```
 
-The emitting tool is `@monochromatic-dev/git-policy-cli`, not real Git and not the command harness.
+The emitting tool is `@monochromatic-dev/git-policy-cli`,
+ not real Git and not the command harness.
 The exact text occurs at
 `package/git-policy/cli/src/worktree-copy/journal-lock.ts:513-515`:
 
@@ -120,7 +121,9 @@ throw new WorktreeCopyError(
 
 The observed failure therefore means another live cli-git process held the same repository lock throughout
 this retry budget.
-It does not, by itself, mean that `.git` is corrupt or that a stale lock needs manual deletion.
+It does not,
+ by itself,
+ mean that `.git` is corrupt or that a stale lock needs manual deletion.
 
 The owner record is removed when its process settles.
 The post-incident journal root was empty,
@@ -184,10 +187,15 @@ elapsed=1.39 exit=2
 
 ### Commands that work cleanly
 
-- Wrapped `git status --short` with no live holder: exit `0`.
-- Wrapped `git status --no-worktree-copy --short` with a live holder: exit `0`.
-- `/usr/bin/git status --short` with a live holder: exit `0`.
-- Wrapped `git status --short` after terminating the holder: exit `0`, with the stale lock removed automatically.
+- Wrapped `git status --short` with no live holder:
+   exit `0`.
+- Wrapped `git status --no-worktree-copy --short` with a live holder:
+   exit `0`.
+- `/usr/bin/git status --short` with a live holder:
+   exit `0`.
+- Wrapped `git status --short` after terminating the holder:
+   exit `0`,
+   with the stale lock removed automatically.
 
 On the repository under diagnosis,
 wrapped status completed in `0.21` seconds and real Git status completed in `0.03` seconds after contention ended.
@@ -294,21 +302,27 @@ Searches across open and closed issues and pull requests in
 
 The six constraints resolve as follows:
 
-1. **Is it really upstream's fault?** No external upstream exists.
+1. **Is it really upstream's fault?
+   ** No external upstream exists.
    The observed exit follows cli-git's documented repository-wide observation and source-defined bounded lock.
-2. **Can upstream fix it?** A local product change could improve waiting or diagnostics,
+2. **Can upstream fix it?
+   ** A local product change could improve waiting or diagnostics,
    but that would be a project design decision rather than an upstream defect correction.
-3. **Are they supporting this use case?** The README supports automatic worktree state copying and documents the
+3. **Are they supporting this use case?
+   ** The README supports automatic worktree state copying and documents the
    recoverable lock.
    It does not promise indefinite waiting or concurrent read-only progress.
-4. **Would the repo welcome our contribution?** No `CONTRIBUTING.md`,
+4. **Would the repo welcome our contribution?
+   ** No `CONTRIBUTING.md`,
    issue template,
    pull request template,
    or AI-assistance ban was found.
    This is the same owned repository rather than a third-party contribution boundary.
-5. **Will they likely fix it?** There is no issue or maintainer decision requesting different behavior.
+5. **Will they likely fix it?
+   ** There is no issue or maintainer decision requesting different behavior.
    The lock path was introduced by commit `7b63241b3cdd696926852c62905f64a6ebff3040`.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No.
+6. **Have we prototyped a minimal fix compatible with their architecture?
+   ** No.
    Constraints one through five do not establish an upstream bug,
    so the auto-prototype gate does not apply.
 
