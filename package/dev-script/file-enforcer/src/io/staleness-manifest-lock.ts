@@ -143,13 +143,17 @@ export async function acquireManifestLock(manifestPath: string,): Promise<AsyncD
    */
   const deadline = Date.now() + LOCK_TIMEOUT_MS;
 
-  while (true) {
+  /**
+   * Acquired release handle; absence explicitly keeps lock acquisition polling.
+   */
+  const acquisition: { release?: AsyncDisposable; } = {};
+  while (acquisition.release === undefined) {
     try {
       // oxlint-disable-next-line eslint/no-await-in-loop -- lock acquisition must observe each create attempt before deciding whether to retry.
       await mkdir(lockPath,);
       // oxlint-disable-next-line eslint/no-await-in-loop -- owner metadata belongs to the directory acquired by the immediately preceding mkdir.
       await recordLockOwner(lockPath,);
-      return lockReleaseHandle(lockPath,);
+      acquisition.release = lockReleaseHandle(lockPath,);
     }
     catch (lockError: unknown) {
       if (!caughtErrorHasCode({
@@ -170,6 +174,7 @@ export async function acquireManifestLock(manifestPath: string,): Promise<AsyncD
       await wait(LOCK_RETRY_MS,);
     }
   }
+  return acquisition.release;
 }
 
 //endregion Lock acquisition
