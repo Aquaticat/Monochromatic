@@ -124,6 +124,13 @@ function sourceIdentity({
 export function createDemandDrivenEffectIndex(
   options: DemandDrivenEffectIndexOptions,
 ): EffectSummaryIndex {
+  /**
+   * Exact project,
+   * cache,
+   * ownership,
+   * budget,
+   * and recursive external-analysis inputs.
+   */
   const {
     project,
     indexedSourceFiles,
@@ -341,7 +348,9 @@ export function createDemandDrivenEffectIndex(
        */
       const requiresCompleteInboundGraph = [...loaded.fileSummaries
         .values(),]
-        .some(summaryRequiresCompleteInboundGraph,);
+        .some(function requiresCompleteInbound(summary,): boolean {
+          return summaryRequiresCompleteInboundGraph(summary,);
+        },);
       if ((!foreignFallback.required) && requiresCompleteInboundGraph) {
         foreignFallback.required = true;
         indexedSourceFiles.forEach(function enqueueCompleteInboundGraph(candidate,): void {

@@ -22,7 +22,9 @@ import type { MutableEffectSummary, } from './effect-summary-model.ts';
 export function summaryRequiresCompleteInboundGraph(
   summary: MutableEffectSummary,
 ): boolean {
-  if (summary.directForeignBorrowed.size > 0)
+  if (summary
+    .directForeignBorrowed
+    .size > 0)
     return true;
   return summary.calls
     .some(function hasDirectForeignArgument(edge,): boolean {

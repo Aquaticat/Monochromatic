@@ -227,6 +227,9 @@ export function buildEffectSummaryIndex({
    * Exact project surfaces and per-source content identities.
    */
   const fingerprintStartedAt = analysisBudget.start();
+  /**
+   * Exact project surfaces and per-source content identities.
+   */
   const projectFingerprint = effectProjectFingerprint({
     project,
     activeSourceFile,
