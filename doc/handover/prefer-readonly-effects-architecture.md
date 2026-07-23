@@ -166,8 +166,8 @@ host handles,
 transfer lists,
 `SharedArrayBuffer`,
 and views backed by shared memory.
-`structuredClone()` alone is not a proof because serialization can execute accessors and transfer or shared-memory semantics
-remain observable.
+`structuredClone()` alone is not a proof because serialization can execute accessors,
+and transfer or shared-memory semantics remain observable.
 
 ### Handwritten dependency manifests
 
@@ -245,8 +245,10 @@ The decisive evidence is a consumer-boundary prototype on the exact 13-file cold
 
 - Repository precedent search found Rust packages but no existing repo-owned Node-API addon.
 - Current Oxc source confirms an experimental Rust type checker and a separate `tsgolint` process integration.
-- Current TypeScript-Go source confirms the sync API's per-operation checker RPC handlers and a custom-lint tool surface.
-- Current NAPI-RS and Neon source confirms both are Node-API binding frameworks with synchronous and asynchronous surfaces.
+- Current TypeScript-Go source confirms the sync API's per-operation checker RPC handlers
+  and a custom-lint tool surface.
+- Current NAPI-RS and Neon source confirms both are Node-API binding frameworks
+  with synchronous and asynchronous surfaces.
 - External discovery has begun and crossed the substantial-evaluation threshold.
   Create or update the required technology vet report before making a recommendation.
 - Inspect the exact Oxc native-rule extension boundary,
