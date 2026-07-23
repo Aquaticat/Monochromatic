@@ -18,6 +18,7 @@ import {
 } from './lexical-restoration.ts';
 import {
   computeRepairScorecard,
+  DEFAULT_JUDGE_MODEL_IDS,
   type RepairAttemptRecord,
   runRepairBenchmark,
 } from './repair-benchmark.ts';
@@ -29,6 +30,7 @@ import {
   applySeededErrors,
   type SeededErrorSpec,
 } from './seeded-error.ts';
+import { SYNTHETIC_MODELS, } from './synthetic-catalog.ts';
 
 /**
  * Clean fixture translation the seed deletes from.
@@ -440,6 +442,21 @@ await describe({
         },);
         expect(errored.records[0]?.outcomeKind,).toBe('error',);
         expect(errored.records[0]?.detail,).toContain('scripted transport collapse',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'DEFAULT_JUDGE_MODEL_IDS',
+  children: [
+    it({
+      name: 'names only cataloged models, distinctly',
+      fn: async () => {
+        for (const modelId of DEFAULT_JUDGE_MODEL_IDS)
+          expect(SYNTHETIC_MODELS[modelId]?.id,).toBe(modelId,);
+        expect(new Set(DEFAULT_JUDGE_MODEL_IDS,).size,)
+          .toBe(DEFAULT_JUDGE_MODEL_IDS.length,);
       },
     },),
   ],
