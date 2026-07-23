@@ -281,10 +281,14 @@ export function fetchAllPages<T>(
      */
     const items: T[] = [];
     /**
-     * Current page number; advances until the API reports no next page.
+     * Pagination cursor and continuation state; the API advances the page
+     * number and explicitly ends traversal when no next page exists.
      */
-    let page = 1;
-    while (true) {
+    const pagination = {
+      page: 1,
+      hasNextPage: true,
+    };
+    while (pagination.hasNextPage) {
       /**
        * One page of results plus pagination metadata.
        */
@@ -294,7 +298,7 @@ export function fetchAllPages<T>(
         & Readonly<Record<string, readonly T[]>>
       >({
         method: 'GET',
-        path: `${path}${sep}page=${String(page,)}&per_page=${String(PER_PAGE,)}`,
+        path: `${path}${sep}page=${String(pagination.page,)}&per_page=${String(PER_PAGE,)}`,
       },);
       items.push(...(body[key] ?? []),);
       /**
@@ -303,11 +307,12 @@ export function fetchAllPages<T>(
       const next = body.meta
         .pagination
         .next_page;
-      if ((typeof next) !== 'number') {
-        return items;
-      }
-      page = next;
+      if ((typeof next) === 'number')
+        pagination.page = next;
+      else
+        pagination.hasNextPage = false;
     }
+    return items;
   })();
 }
 
