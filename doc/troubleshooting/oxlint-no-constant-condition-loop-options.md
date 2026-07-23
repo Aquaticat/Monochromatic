@@ -55,7 +55,7 @@ Source was inspected at Oxc tag `apps_v1.74.0`,
 commit `2d4e8d20644e0e7446f0a381894b45ea339a0625`,
 with origin `https://github.com/oxc-project/oxc.git`.
 The exact release source remains available in the
-[pinned rule implementation][oxc-rule-source].
+[pinned Oxc release source tree][oxc-release-source].
 The [generated Oxlint rule documentation][oxlint-rule-doc]
 publishes the same option contract.
 
@@ -203,19 +203,22 @@ The command returned this lint-scoped catalog:
    one occurrence.
 - `package/runtime-error/bun/src/infinite-loop.ts`:
    one occurrence.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/lockfile-package-eligibility.ts`:
+Within
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/`:
+
+- `lockfile-package-eligibility.ts`:
    one occurrence.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-summary-cache-identity.ts`:
+- `effect-summary-cache-identity.ts`:
    two occurrences.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-project-fingerprint.ts`:
+- `effect-project-fingerprint.ts`:
    one occurrence.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-intrinsic-result-origin.ts`:
+- `effect-intrinsic-result-origin.ts`:
    one occurrence.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/installed-package-identity.ts`:
+- `installed-package-identity.ts`:
    one occurrence.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/intrinsic-effect-query.ts`:
+- `intrinsic-effect-query.ts`:
    one occurrence.
-- `package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/direct-effect-summary.ts`:
+- `direct-effect-summary.ts`:
    one occurrence.
 - `package/dev-script/file-enforcer/src/io/staleness-manifest-lock.ts`:
    one occurrence.
@@ -486,5 +489,5 @@ Filing would request a policy change rather than report a defect.
 
 [oxc-contribution-rules]: https://oxc.rs/docs/contribute/rules.html#pr-rules
 [oxc-pr-10949]: https://github.com/oxc-project/oxc/pull/10949
-[oxc-rule-source]: https://github.com/oxc-project/oxc/blob/2d4e8d20644e0e7446f0a381894b45ea339a0625/crates/oxc_linter/src/rules/eslint/no_constant_condition.rs
+[oxc-release-source]: https://github.com/oxc-project/oxc/tree/2d4e8d20644e0e7446f0a381894b45ea339a0625
 [oxlint-rule-doc]: https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-constant-condition.html
