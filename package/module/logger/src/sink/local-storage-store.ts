@@ -322,11 +322,14 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
       evictOldest();
     }
 
-    // Side-effecting retry cursor over the mutable `state` object (the repo's
-    // function-root-let-free loop shape): try the current slot, and on a quota
-    // overflow with something owned still present, drop the oldest and retry.
-    // Bounded by the count of owned entries, so it always terminates.
-    while (true) {
+    /**
+     * Write-attempt bound: one try for each entry still available to evict,
+     * followed by one final try after every owned entry has been removed.
+     */
+    const maxWriteAttempts = (prior.entries.length - prior.cursor)
+      + (state.lineCounter - state.oldestIndex)
+      + 1;
+    for (let writeAttempt = 0; writeAttempt < maxWriteAttempts; writeAttempt++) {
       try {
         globalThis.localStorage
           .setItem(
