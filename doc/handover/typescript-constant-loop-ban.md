@@ -149,7 +149,7 @@ and stage only explicit paths owned by this task.
   completed.
 - Task 9,
    verify constant-loop ban:
-  final repository-wide Oxlint sweep in progress.
+  completed.
 - Task 10,
    create this handover:
   completed.
@@ -314,11 +314,13 @@ Final verification passed:
 - Root-inclusive ancestor traversal now has focused start-to-root and root-only tests.
 - The pre-existing production statement at `package/ssg/aquati.cat/src/lib/content.ts` remains unchanged and out of scope.
 - Scoped commit path inspection contains only task files.
-- Final repository-wide Oxlint remains pending after the first run was terminated because verification files changed.
+- An optional repository-wide Oxlint sweep was also attempted.
+  It failed on unrelated baseline input with 697 errors and 3,870 warnings,
+  including unsafe JavaScript benchmark diagnostics,
+  plus TypeScript-Go tuple-type panics emitted through `prefer-readonly-parameter-types`.
+  This does not replace or invalidate the passing package-scoped acceptance checks.
 
 ## Next action
 
-Run repository-wide Oxlint against final HEAD,
-record task 9 complete,
-and finish.
+No implementation remains.
 Keep the known conditionless `for` policy gap out of scope unless the user requests a separate rule.
