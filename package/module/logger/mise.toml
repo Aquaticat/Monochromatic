@@ -25,6 +25,9 @@ extends = "watch:build:js:node"
 [tasks.lint]
 extends = "lint"
 
+[tasks."test:unit"]
+extends = "test:unit"
+
 [tasks."lint:types"]
 extends = "lint:types"
 hide = true
