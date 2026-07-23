@@ -54,12 +54,16 @@ export function addForeignBorrowedCallEdge({
   readonly summary: MutableEffectSummary;
   readonly analysisRoot?: string;
 }): boolean {
-  /** Resolved source declaration selected by overload when available. */
+  /**
+   * Resolved source declaration selected by overload when available.
+   */
   const resolvedDeclaration = project.checker
     .getResolvedSignature(call,)
     ?.declaration
     ?.resolve(project,);
-  /** Owned callee selected from signature before expression fallback. */
+  /**
+   * Owned callee selected from signature before expression fallback.
+   */
   const signatureCallee = (resolvedDeclaration !== undefined)
     && isEffectCallableDeclaration(resolvedDeclaration,)
     ? callableDeclaration({
@@ -68,7 +72,9 @@ export function addForeignBorrowedCallEdge({
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },)
     : OWNED_CALLABLE_UNAVAILABLE;
-  /** Final owned callee declaration. */
+  /**
+   * Final owned callee declaration.
+   */
   const callee = signatureCallee === OWNED_CALLABLE_UNAVAILABLE
     ? callableDeclaration({
       project,
@@ -78,8 +84,11 @@ export function addForeignBorrowedCallEdge({
     : signatureCallee;
   if (callee === OWNED_CALLABLE_UNAVAILABLE)
     return false;
-  /** Caller parameter roots corresponding to exact call arguments. */
-  const allArgumentIndexes = call.arguments.map(function argumentIndexes(argument,): readonly number[] {
+  /**
+   * Caller parameter roots corresponding to exact call arguments.
+   */
+  const allArgumentIndexes = call.arguments
+    .map(function argumentIndexes(argument,): readonly number[] {
     return parameterIndexes({
       checker: project.checker,
       bindingOriginBySymbolId: summary.bindingOriginBySymbolId,

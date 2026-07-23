@@ -5,7 +5,10 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { Node, SourceFile, } from 'typescript/unstable/ast';
+import type {
+  Node,
+  SourceFile,
+} from 'typescript/unstable/ast';
 import { isCallExpression, } from 'typescript/unstable/ast/is';
 import type {
   Project,
@@ -24,12 +27,16 @@ import { addForeignBorrowedCallEdge, } from './foreign-borrowed-call-edge.ts';
 import { foreignBorrowedOwnershipSeed, } from './foreign-borrowed-direct-summary.ts';
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 
-/** Foreign inbound graph logger. */
+/**
+ * Foreign inbound graph logger.
+ */
 const l = tagged({ tag: 'foreign-borrowed-complete-graph', },);
 
-/** Sentinel when TypeScript cannot enumerate signature usage. */
+/**
+ * Sentinel when TypeScript cannot enumerate signature usage.
+ */
 const SIGNATURE_USAGE_UNAVAILABLE: unique symbol = Symbol(
-  'signature usage unavailable',
+  'TypeScript signature usages could not be enumerated',
 );
 
 /**
@@ -48,16 +55,22 @@ function nearestOwnedCallable({
   readonly node: Node;
   readonly indexedSourceFiles: ReadonlyMap<string, SourceFile>;
 }): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
-  /** Parent cursor seeking callable boundary. */
+  /**
+   * Parent cursor seeking callable boundary.
+   */
   const cursor: { current: Node; } = { current: node.parent, };
   while (!isEffectCallableDeclaration(cursor.current,)) {
-    /** Next parent or self-parented source boundary. */
+    /**
+     * Next parent or self-parented source boundary.
+     */
     const { parent, } = cursor.current;
     if (parent === cursor.current)
       return OWNED_CALLABLE_UNAVAILABLE;
     cursor.current = parent;
   }
-  return indexedSourceFiles.has(cursor.current.getSourceFile().fileName,)
+  return indexedSourceFiles.has(cursor.current
+    .getSourceFile()
+    .fileName,)
     ? cursor.current
     : OWNED_CALLABLE_UNAVAILABLE;
 }
@@ -79,7 +92,8 @@ function signatureUsages({
   readonly declaration: EffectCallableDeclaration;
 }): readonly SignatureUsage[] | typeof SIGNATURE_USAGE_UNAVAILABLE {
   try {
-    return project.checker.getSignatureUsage(declaration,);
+    return project.checker
+      .getSignatureUsage(declaration,);
   }
   catch (error) {
     l.error(
@@ -99,8 +113,11 @@ function signatureUsages({
 function unknownInboundSummary(
   declaration: EffectCallableDeclaration,
 ): MutableEffectSummary {
-  /** Callee parameter positions represented by empty ordinary origins. */
-  const parameterIndexes = declaration.parameters.map(function emptyOrigins(): readonly number[] {
+  /**
+   * Callee parameter positions represented by empty ordinary origins.
+   */
+  const parameterIndexes = declaration.parameters
+    .map(function emptyOrigins(): readonly number[] {
     return [];
   },);
   return {
@@ -117,17 +134,21 @@ function unknownInboundSummary(
     relations: [],
     calls: [{
       calleeKey: callableKey(declaration,),
-      calleeFileName: declaration.getSourceFile().fileName,
+      calleeFileName: declaration.getSourceFile()
+        .fileName,
       arguments: parameterIndexes,
       foreignArguments: parameterIndexes,
-      directForeignArguments: declaration.parameters.map(function ordinaryArgument(): boolean {
+      directForeignArguments: declaration.parameters
+        .map(function ordinaryArgument(): boolean {
         return false;
       },),
       foreignInbound: true,
-      callbackKeys: declaration.parameters.map(function unavailableCallback() {
+      callbackKeys: declaration.parameters
+        .map(function unavailableCallback() {
         return OWNED_CALLABLE_UNAVAILABLE;
       },),
-      callbackFileNames: declaration.parameters.map(function unavailableCallbackFile() {
+      callbackFileNames: declaration.parameters
+        .map(function unavailableCallbackFile() {
         return OWNED_CALLABLE_UNAVAILABLE;
       },),
     },],
@@ -148,7 +169,9 @@ function addUnknownInbound({
   readonly summaries: Map<string, MutableEffectSummary>;
   readonly declaration: EffectCallableDeclaration;
 }): void {
-  /** Synthetic caller identity unique to callee. */
+  /**
+   * Synthetic caller identity unique to callee.
+   */
   const syntheticKey = `\0unknown-inbound:${callableKey(declaration,)}`;
   if (summaries.has(syntheticKey,))
     return;
@@ -201,21 +224,33 @@ export function completeForeignBorrowedGraph({
   readonly analysisBudget: EffectAnalysisBudget;
   readonly analysisRoot?: string;
 }): ReadonlyMap<string, ReadonlySet<number>> {
-  /** Ownership summaries in demanded backwards caller closure. */
+  /**
+   * Ownership summaries in demanded backwards caller closure.
+   */
   const summaries = new Map<string, MutableEffectSummary>();
-  /** Callable declarations queued for exact inbound discovery. */
+  /**
+   * Callable declarations queued for exact inbound discovery.
+   */
   const queue: EffectCallableDeclaration[] = [rootDeclaration,];
-  /** Callable identities whose signature usages were enumerated. */
+  /**
+   * Callable identities whose signature usages were enumerated.
+   */
   const visited = new Set<string>();
-  /** Queue cursor avoiding recursive graph traversal. */
+  /**
+   * Queue cursor avoiding recursive graph traversal.
+   */
   const cursor = { current: 0, };
   while (cursor.current < queue.length) {
-    /** Current callable requiring direct facts and every inbound usage. */
+    /**
+     * Current callable requiring direct facts and every inbound usage.
+     */
     const declaration = queue[cursor.current];
     cursor.current++;
     if (declaration === undefined)
       throw new Error('Foreign inbound queue lost current declaration.',);
-    /** Stable current callable identity. */
+    /**
+     * Stable current callable identity.
+     */
     const key = callableKey(declaration,);
     if (visited.has(key,))
       continue;
@@ -230,37 +265,62 @@ export function completeForeignBorrowedGraph({
         },),
       );
     }
-    /** Start time for exact TypeScript signature reference query. */
+    /**
+     * Start time for exact TypeScript signature reference query.
+     */
     const startedAt = analysisBudget.start();
-    /** Every project usage of current callable signature. */
-    const usages = signatureUsages({ project, declaration, },);
+    /**
+     * Every project usage of current callable signature.
+     */
+    const usages = signatureUsages({
+      project,
+      declaration,
+    },);
     analysisBudget.record({
       startedAt,
       phase: `foreign signature usage ${key}`,
     },);
     if (usages === SIGNATURE_USAGE_UNAVAILABLE) {
-      addUnknownInbound({ summaries, declaration, },);
+      addUnknownInbound({
+        summaries,
+        declaration,
+      },);
       continue;
     }
     usages.forEach(function addInboundCaller(usage,): void {
-      /** Resolved call expression or non-call escape marker. */
-      const call = usage.call?.resolve(project,);
+      /**
+       * Resolved call expression or non-call escape marker.
+       */
+      const call = usage.call
+        ?.resolve(project,);
       if (call === undefined) {
-        addUnknownInbound({ summaries, declaration, },);
+        addUnknownInbound({
+          summaries,
+          declaration,
+        },);
         return;
       }
-      /** Nearest callable owner admitted as project-owned source. */
+      /**
+       * Nearest callable owner admitted as project-owned source.
+       */
       const caller = nearestOwnedCallable({
         node: call,
         indexedSourceFiles,
       },);
       if (caller === OWNED_CALLABLE_UNAVAILABLE) {
-        addUnknownInbound({ summaries, declaration, },);
+        addUnknownInbound({
+          summaries,
+          declaration,
+        },);
         return;
       }
-      /** Stable caller identity. */
+      /**
+       * Stable caller identity.
+       */
       const callerKey = callableKey(caller,);
-      /** Caller ownership seed receiving exact current usage edge. */
+      /**
+       * Caller ownership seed receiving exact current usage edge.
+       */
       const callerSummary = summaries.get(callerKey,)
         ?? foreignBorrowedOwnershipSeed({
           project,
@@ -272,12 +332,20 @@ export function completeForeignBorrowedGraph({
       );
       queue.push(caller,);
       if (!isCallExpression(call,)) {
-        addUnknownInbound({ summaries, declaration, },);
+        addUnknownInbound({
+          summaries,
+          declaration,
+        },);
         return;
       }
-      /** Call count before exact usage edge is added. */
-      const priorCallCount = callerSummary.calls.length;
-      /** Whether exact usage resolved to owned callee. */
+      /**
+       * Call count before exact usage edge is added.
+       */
+      const priorCallCount = callerSummary.calls
+        .length;
+      /**
+       * Whether exact usage resolved to owned callee.
+       */
       const added = addForeignBorrowedCallEdge({
         project,
         declaration: caller,
@@ -285,15 +353,24 @@ export function completeForeignBorrowedGraph({
         summary: callerSummary,
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },
       },);
-      /** Exact edge produced for current usage. */
+      /**
+       * Exact edge produced for current usage.
+       */
       const exactEdge = callerSummary.calls[priorCallCount];
       if ((!added)
-        || (callerSummary.calls.length !== priorCallCount + 1)
+        || (callerSummary.calls
+          .length
+          !== (priorCallCount
+          + 1))
         || (exactEdge === undefined)
         || (!exactEdge.foreignInbound)
         || (exactEdge.calleeKey !== key)) {
-        callerSummary.calls.splice(priorCallCount,);
-        addUnknownInbound({ summaries, declaration, },);
+        callerSummary.calls
+          .splice(priorCallCount,);
+        addUnknownInbound({
+          summaries,
+          declaration,
+        },);
       }
     },);
   }

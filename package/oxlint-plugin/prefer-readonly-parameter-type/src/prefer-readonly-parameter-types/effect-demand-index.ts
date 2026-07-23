@@ -427,7 +427,10 @@ export function createDemandDrivenEffectIndex(
           analysisBudget,
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
-        completeForeign.forEach(function retainCompleteForeign(indexes, callableKeyValue,): void {
+        completeForeign.forEach(function retainCompleteForeign(
+          indexes,
+          callableKeyValue,
+        ): void {
           completeForeignByCallable.set(
             callableKeyValue,
             indexes,

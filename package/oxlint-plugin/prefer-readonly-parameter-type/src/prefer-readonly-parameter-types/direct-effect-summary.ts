@@ -175,7 +175,10 @@ export function directEffectSummary({
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined) {
     declaration.parameters
-      .forEach(function rejectBodylessParameter(parameter, parameterIndex,): void {
+      .forEach(function rejectBodylessParameter(
+        parameter,
+        parameterIndex,
+      ): void {
         if (!expressionCanCarryMutableState({
           checker,
           node: parameter.name,
@@ -214,7 +217,8 @@ export function directEffectSummary({
     }
     summary.directOpaque
       .forEach(function seedBodylessOpacity(index,): void {
-        summary.opaque.add(index,);
+        summary.opaque
+          .add(index,);
       },);
     return summary;
   }

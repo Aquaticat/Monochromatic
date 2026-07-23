@@ -11,7 +11,7 @@ import {
 
 /** Effect-analysis production module directory. */
 const EFFECT_SOURCE_DIRECTORY = new URL(
-  './prefer-readonly-parameter-types/',
+  'prefer-readonly-parameter-types/',
   import.meta.url,
 );
 

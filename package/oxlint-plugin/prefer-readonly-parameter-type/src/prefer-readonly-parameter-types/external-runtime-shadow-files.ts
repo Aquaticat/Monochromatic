@@ -22,15 +22,30 @@ type RuntimeShadowRule = {
 const RUNTIME_SHADOW_RULES: readonly RuntimeShadowRule[] = [
   {
     declarationSuffix: '.d.mts',
-    runtimeSuffixes: ['.mjs', '.mts',],
+    runtimeSuffixes: [
+      '.mjs',
+      '.mts',
+    ],
   },
   {
     declarationSuffix: '.d.cts',
-    runtimeSuffixes: ['.cjs', '.cts',],
+    runtimeSuffixes: [
+      '.cjs',
+      '.cts',
+    ],
   },
   {
     declarationSuffix: '.d.ts',
-    runtimeSuffixes: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.jsx', '.tsx',],
+    runtimeSuffixes: [
+      '.js',
+      '.mjs',
+      '.cjs',
+      '.ts',
+      '.mts',
+      '.cts',
+      '.jsx',
+      '.tsx',
+    ],
   },
 ];
 
@@ -78,14 +93,21 @@ export function externalRuntimeShadowFiles({
        */
       const stem = fileName.slice(
         0,
-        fileName.length - rule.declarationSuffix.length,
+        fileName.length
+          - rule.declarationSuffix
+          .length,
       );
       return rule.runtimeSuffixes
         .map(function runtimePath(suffix,): string {
           return `${stem}${suffix}`;
         },)
-        .filter(existsSync,)
-        .slice(0, 1,);
+        .filter(function runtimeFileExists(runtimePath,): boolean {
+          return existsSync(runtimePath,);
+        },)
+        .slice(
+          0,
+          1,
+        );
     },)
     .toSorted();
 }

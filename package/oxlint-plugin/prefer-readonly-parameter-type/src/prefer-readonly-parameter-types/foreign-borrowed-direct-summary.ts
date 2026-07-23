@@ -4,10 +4,11 @@
  * @module
  */
 
-import type {
-  BinaryExpression,
-  ForOfStatement,
-  VariableDeclaration,
+import {
+  type BinaryExpression,
+  type ForOfStatement,
+  SyntaxKind,
+  type VariableDeclaration,
 } from 'typescript/unstable/ast';
 import {
   isBinaryExpression,
@@ -15,7 +16,6 @@ import {
   isForOfStatement,
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
-import { SyntaxKind, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
@@ -56,7 +56,11 @@ export function foreignBorrowedOwnershipSeed({
    * Binding origins seeded by callable parameters.
    */
   const bindingOriginBySymbolId = new Map<number, number>();
-  declaration.parameters.forEach(function registerParameter(parameter, parameterIndex,): void {
+  declaration.parameters
+    .forEach(function registerParameter(
+      parameter,
+      parameterIndex,
+    ): void {
     registerBindingOrigin({
       project,
       name: parameter.name,
@@ -68,7 +72,8 @@ export function foreignBorrowedOwnershipSeed({
    * Explicit foreign marker indexes on current declaration.
    */
   const directForeignBorrowed = new Set<number>();
-  for (const [parameterIndex, parameter,] of declaration.parameters.entries()) {
+  for (const [parameterIndex, parameter,] of declaration.parameters
+    .entries()) {
     if (bindingContainsForeignBorrowed({
       project,
       name: parameter.name,
@@ -79,7 +84,8 @@ export function foreignBorrowedOwnershipSeed({
    * Ownership-only summary with effect dimensions intentionally empty.
    */
   const summary: MutableEffectSummary = {
-    parameterCount: declaration.parameters.length,
+    parameterCount: declaration.parameters
+      .length,
     bindingOriginBySymbolId,
     directMutated: new Set(),
     directInvoked: new Set(),
@@ -113,7 +119,9 @@ export function foreignBorrowedOwnershipSeed({
    */
   const aliasAssignments = allBodyNodes.filter(function aliasAssignment(node,): node is BinaryExpression {
     return isBinaryExpression(node,)
-      && (node.operatorToken.kind === SyntaxKind.EqualsToken);
+      && (node.operatorToken
+        .kind
+        === SyntaxKind.EqualsToken);
   },);
   /**
    * Iterations binding elements reached through parameter-owned iterables.
@@ -156,12 +164,16 @@ export function foreignBorrowedDirectSummary({
   readonly declaration: EffectCallableDeclaration;
   readonly analysisRoot?: string;
 }): MutableEffectSummary {
-  /** Marker and alias-origin seed for current callable. */
+  /**
+   * Marker and alias-origin seed for current callable.
+   */
   const summary = foreignBorrowedOwnershipSeed({
     project,
     declaration,
   },);
-  /** Callable body absent for source-only signatures. */
+  /**
+   * Callable body absent for source-only signatures.
+   */
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined)
     return summary;
@@ -169,7 +181,8 @@ export function foreignBorrowedDirectSummary({
     project,
     body,
     bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
-  },).forEach(function inspectOwnedCall(node,): void {
+  },)
+    .forEach(function inspectOwnedCall(node,): void {
     if (!isCallExpression(node,))
       return;
     addForeignBorrowedCallEdge({

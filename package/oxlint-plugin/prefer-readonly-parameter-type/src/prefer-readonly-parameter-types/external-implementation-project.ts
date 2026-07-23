@@ -199,7 +199,9 @@ export function openExternalImplementation({
         packageRoot,
       },),
     ],),].toSorted();
-    if (nextFiles.length === implementationFiles.current.length) {
+    if (nextFiles.length
+      === implementationFiles.current
+      .length) {
       sessionByConfig.set(
         configPath,
         session,
