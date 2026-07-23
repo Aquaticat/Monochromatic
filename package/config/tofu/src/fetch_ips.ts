@@ -367,22 +367,17 @@ async function run(): Promise<void> {
      */
     let leftover = '';
 
-    while (true) {
+    /**
+     * Current sequential read result; stream completion is the loop boundary.
+     */
+    const readState = { current: await reader.read(), };
+    while (!(readState
+      .current
+      .done)) {
       /**
-       * Next stream read result from sequential pull API.
+       * Current raw chunk from the incomplete stream read.
        */
-      // oxlint-disable-next-line eslint/no-await-in-loop -- ReadableStream readers are sequential pull sources; next read depends on reader state from previous read.
-      const nextRead = await reader.read();
-      /**
-       * Stream completion flag and current raw chunk.
-       */
-      const {
-        done,
-        value,
-      } = nextRead;
-      if (done)
-        break;
-
+      const { value, } = readState.current;
       /**
        * Decoded chunk prefixed with previous leftover so line splits work across read boundaries.
        */
@@ -409,6 +404,8 @@ async function run(): Promise<void> {
         if (network !== NO_MATCHING_NETWORK)
           ips.push(network,);
       }
+      // oxlint-disable-next-line eslint/no-await-in-loop -- ReadableStream readers are sequential pull sources; next read depends on reader state from previous read.
+      readState.current = await reader.read();
     }
 
     /**
