@@ -2,51 +2,45 @@
 
 ## Decision
 
-Use version specifiers according to dependency role.
-Do not keep every external dependency on an unbounded `>=` floor,
-and do not pin every specifier indiscriminately.
+Keep the current `>=` catalog-floor policy.
+Do not migrate the repository's direct dependencies to exact versions.
 
-- Put exact versions in the default catalog for private application dependencies
-  and build,
-   test,
-   development,
-   and repository tooling dependencies.
-- Keep `workspace:*` for internal workspace dependencies.
-- Give external runtime dependencies emitted by unbundled published packages
-  tested,
-   bounded compatibility ranges.
-  Keep these separate from exact workspace-tooling entries when one package needs both roles.
-- Give peer dependencies explicit tested compatibility ranges.
-  Do not exact-pin peers or treat `*` as a durable compatibility claim.
-- Treat overrides as policy constraints rather than ordinary direct dependencies.
-  A security floor,
-   compatibility cap,
-   removal,
-   substitution,
-   or audited exact artifact
-  should use the narrowest specifier that expresses that constraint.
-- Keep committing `pnpm-lock.yaml` and installing it frozen in CI.
+Use exact catalog entries only as documented exceptions
+when one specific artifact is intentionally required.
+Before publishing any package with an unbundled third-party runtime dependency,
+give that dependency a tested bounded compatibility range.
+Keep peer dependencies on tested compatibility ranges rather than exact versions.
 
-This is a policy decision only.
-It does not authorize a bulk manifest rewrite without classifying packed package output first.
+This decision supersedes the initial exact-pin recommendation in commit `af0e0e2c6`.
+That recommendation overvalued protection during lockfile regeneration
+and did not establish a benefit large enough to justify changing the repository's update model.
 
-## Why
+## Deciding reason
 
-Exact catalog values do not materially improve the reproducibility of the current frozen install.
-The committed lockfile already records resolved versions,
-and pnpm 11.15.1 reported that a frozen dry run across all 143 active workspace projects
-would make no changes.
+Exact direct-dependency pins do not satisfy a currently unmet requirement.
 
-Exact values improve a different boundary:
-they prevent a fresh resolution or deliberate lockfile regeneration
-from selecting a newer direct dependency until its catalog entry changes.
-That matters here because [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml)
-sets `resolutionMode: highest` and every default-catalog entry is an unbounded `>=` range.
+The committed [`pnpm-lock.yaml`](../../pnpm-lock.yaml) already records exact versions
+for direct and transitive dependencies.
+CI installs that graph with `--frozen-lockfile`.
+Pnpm 11 also verifies the recorded artifact integrity
+and fails rather than silently accepting a tarball whose bytes no longer match the lockfile.
 
-Ranges still belong at consumer compatibility boundaries.
-Pnpm replaces `catalog:` with the catalog's exact specifier during `pnpm pack` and `pnpm publish`.
-An exact default catalog therefore becomes an exact downstream runtime dependency
-unless publishable packages use a separate compatibility range.
+Changing catalog entries from `>=x.y.z` to `x.y.z` would therefore install
+exactly the same graph during ordinary development and CI.
+It would add a second copy of each direct dependency's selected version,
+but it would not pin transitive dependencies outside the lockfile.
+
+The one additional protection is narrow:
+if the lockfile is deleted or deliberately regenerated,
+an exact catalog entry keeps that direct dependency at one version.
+Its transitive graph can still move within upstream ranges.
+Lockfile deletion or regeneration is already a visible repository change,
+and the complete recovery mechanism is restoring or reviewing the committed lockfile,
+not partially reproducing it through direct pins.
+
+That partial fallback does not justify changing 137 catalog entries,
+replacing the repository's floor-maintenance tool,
+and requiring a catalog edit for every direct update.
 
 ## Repository evidence
 
@@ -54,120 +48,145 @@ Measurements at commit `c30c3a1c3` on 2026-07-23 found:
 
 - 143 active manifests in the root and `package/*/*` workspace set.
 - 442 `catalog:` references and 620 `workspace:*` references.
-- No direct external exact,
-   caret,
-   or tilde specifiers in those manifests.
-- 26 non-catalog peer specifiers,
-   all `*`.
 - 137 default-catalog entries,
    all `>=` floors.
+- 26 non-catalog peer specifiers,
+   all `*`.
 - No Renovate or Dependabot configuration.
+
+A pnpm 11.15.1 frozen dry run covered all 143 workspace projects
+and reported that the lockfile was current and a real install would make no changes.
+This is the ordinary install boundary exact catalog entries would be expected to improve,
+but there was no unresolved version selection at that boundary.
 
 The existing [`catalog:tighten`](../../package/dev-script/catalog-tighten/README.md) dry run found:
 
-- 30 installed versions above their declared floors.
-- 72 installed versions equal to their floors.
+- 30 installed direct versions above their declared floors.
+- 72 installed direct versions equal to their floors.
 - 6 catalog entries present only transitively.
 - 29 catalog entries absent from the active install.
 
-The proposed floor changes included major-version movement,
-such as `execa` 9 to 10 and `@tursodatabase/database` 0.6 to 0.7.
-This shows that the tool records whichever highest version resolved as a new minimum.
-It does not establish that the repository supports the previous minimum,
-nor that a published package supports every future major.
+Those results do not prove that exact pins are needed.
+They show that a deliberate lockfile update selected newer versions
+and that the floor-maintenance tool can report the resulting catalog changes.
+The installed versions remain fixed by the lockfile until another reviewed update occurs.
 
-The committed [`pnpm-lock.yaml`](../../pnpm-lock.yaml) is the parallel reproducibility mechanism.
-CI's [`publish` workflow](../../.github/workflows/publish.yml)
-installs with `--frozen-lockfile`.
-The workspace also delays new releases for one day,
-enforces `trustPolicy: no-downgrade`,
-restricts dependency build scripts,
-and records tarball URLs.
-These controls reduce update and artifact risk,
-but they do not turn an unbounded manifest range into an explicit upgrade decision.
+[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) also configures:
 
-The current publish workflow's extant npm targets do not declare third-party catalog runtime dependencies.
-That limits immediate downstream impact,
-but other non-private packages do declare them and may become publish targets later.
+- `minimumReleaseAge: 1440` with strict enforcement.
+- `trustPolicy: no-downgrade`.
+- An allow-list for dependency build scripts.
+- Tarball URLs in the lockfile.
+- Documented security overrides and package substitutions.
+
+These are the repository's update and supply-chain controls.
+Exact direct pins would not replace any of them.
+
+## Publication boundary
+
+Pnpm replaces `catalog:` with the catalog's specifier during `pnpm pack` and `pnpm publish`.
 A disposable pnpm 11.15.1 pack probe confirmed that catalog value `>=1.2.3`
 was emitted as `>=1.2.3`,
  while catalog value `4.5.6` was emitted as `4.5.6`.
 
-A targeted search of the catalog tooling and dependency policy files found no relevant
-`TODO`,
- `FIXME`,
- skipped test,
- or unexplained suppression that changes this conclusion.
-The TypeScript suppressions in `catalog-tighten` are scoped parsing and external-API assertions,
-not exceptions to the version policy.
+The current publish workflow has 10 configured npm targets.
+Seven still correspond to active packages,
+and none of those seven declares a third-party runtime dependency through the catalog.
+Three configured target names no longer correspond to active package names.
+Therefore published third-party runtime ranges are not a present reason
+for a repository-wide exact-pin migration.
+
+If an unbundled publish target later gains a third-party runtime dependency,
+its packed manifest needs a compatibility review.
+An unbounded `>=` range may claim support for an untested future major,
+while an exact range may overconstrain consumers and produce duplicate installations.
+The correct response is a tested bounded range for that package,
+not exact pins for unrelated private and development dependencies.
+
+## Costs of exact pins
+
+A repository-wide migration would:
+
+- Duplicate every selected direct version between the catalog and lockfile.
+- Require catalog and lockfile edits for every direct dependency update.
+- Remove the current ability to resolve newer eligible direct versions during an intentional refresh.
+- Make `catalog:tighten` ineffective for exact entries
+  after the repository invested in its parser,
+   install-layout support,
+   tests,
+   and portability work.
+- Require a new updater or manual process even though no dependency-update bot is configured.
+- Leave transitive update behavior unchanged outside the lockfile.
+
+These costs are concrete.
+The proposed gain applies only to an incomplete recovery path after discarding the lockfile.
 
 ## Options
 
-### Role-aware exact pins and ranges
+### Keep catalog floors plus the frozen lockfile
 
 Pros:
 
-- Every repository dependency upgrade becomes an explicit catalog and lockfile review.
-- Fresh resolution cannot silently move direct tooling or private runtime dependencies.
-- Published packages retain meaningful consumer compatibility contracts.
-- Workspace links and policy overrides keep their distinct semantics.
+- One complete source of resolved direct and transitive versions.
+- Existing update,
+   security,
+   and `catalog:tighten` workflows remain coherent.
+- Intentional refreshes can adopt eligible updates and expose them in one reviewed lockfile diff.
+- No additional updater is required.
 
 Cons:
 
-- Every dependency must be classified before migration.
-- Exact entries need an owned update process because no dependency updater is configured.
-- Published compatibility ranges need lower-bound and boundary testing.
+- A lockfile regeneration can select newer direct major versions under `resolutionMode: highest`.
+- Future published runtime dependencies require a separate compatibility-range review.
 
-### Keep all catalog entries as unbounded floors
+### Exact-pin private and development dependencies
 
 Pros:
 
-- Existing `catalog:tighten` workflow remains unchanged.
-- Fresh resolution automatically adopts any version above the floor after supply-chain checks pass.
+- Direct dependencies cannot move during lockfile regeneration until the catalog changes.
+- Direct upgrades become explicit in both catalog and lockfile diffs.
 
 Cons:
 
-- A lockfile regeneration can cross major versions without a catalog edit.
-- Published manifests claim compatibility with untested future majors.
-- Tightening from the installed version confuses resolution history with minimum-version support.
+- Ordinary frozen installs do not become more reproducible.
+- Transitive dependencies remain dependent on the lockfile.
+- Version data is duplicated and update maintenance increases.
+- The existing floor-maintenance workflow must be replaced.
 
-### Pin every specifier
+### Exact-pin every dependency role
 
 Pros:
 
-- The rule is mechanically simple.
-- Direct package versions cannot move without manifest edits.
+- One mechanically simple authoring rule.
 
 Cons:
 
 - Exact peer dependencies overconstrain hosts.
-- Exact published runtime dependencies can force duplicate installations and consumer conflicts.
-- Exact `workspace:` replacements or security constraints would erase useful protocol and policy meaning.
+- Exact published runtime dependencies can cause consumer conflicts and duplicate installations.
+- Workspace protocols and policy constraints lose their distinct meaning.
+- It still does not replace the transitive lockfile.
 
 Ranking:
- role-aware policy > current unbounded floors > pin everything.
-The role-aware policy ranks first because it improves explicit repository upgrades
-without exporting exact pins as universal compatibility contracts.
-The current policy ranks above pinning everything because its consumer ranges remain flexible,
-even though they are too broad and its update boundary is implicit.
+ current floors plus frozen lockfile > selective exact direct pins > pin every role.
+The current policy ranks first because it already fixes the complete graph
+and exact direct pins add only partial lockfile-regeneration protection.
+Selective pins rank above pinning every role because documented fragile dependencies
+may legitimately require one artifact,
+while peers and published compatibility contracts do not.
 
-## Migration conditions
+## Conditions for an exact-pin exception
 
-Before changing catalog values:
+An exact catalog entry is justified when all of these hold:
 
-1.  Enumerate actual publish targets and inspect each packed manifest.
-2.  Separate exact repository-only entries from published compatibility entries.
-3.  Define and test peer and published-runtime support windows.
-4.  Replace `catalog:tighten` for exact entries with a stale-version reporter or controlled updater.
-    Never derive a claimed compatibility floor only from the installed version.
-5.  Add an owned dependency-update cadence or automation that runs the relevant package tests
-    and reviews both catalog and lockfile changes.
-6.  Regenerate the lockfile through pnpm and verify a frozen install at the consumer boundary.
+1.  A concrete incompatibility or artifact requirement names the accepted version.
+2.  A range or compatibility cap cannot express the requirement safely.
+3.  The entry carries a comment or linked decision explaining when the pin can be removed.
+4.  The lockfile and relevant consumer tests are updated together.
 
 ## Primary pnpm sources
 
 - [Catalogs and publish-time replacement][pnpm-catalogs]
-- [Settings: lockfiles, resolution mode, save prefix, release age, and trust policy][pnpm-settings]
+- [Settings: lockfiles, resolution mode, release age, and trust policy][pnpm-settings]
 - [Install and frozen-lockfile behavior][pnpm-install]
 - [Supply-chain guidance][pnpm-supply-chain]
 
