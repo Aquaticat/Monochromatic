@@ -59,10 +59,14 @@ and mismatched exact edges add an ordinary inbound and remove inferred provenanc
 
 Final Linux x64 measurements over 13 files and 479 rules all reported zero diagnostics:
 
-- cold empty persistent cache: 838 milliseconds in Oxlint and 2.02 seconds wall;
-- warm unchanged state: 844 milliseconds in Oxlint and 1.41 seconds wall;
-- changed source: 835 milliseconds in Oxlint and 2.03 seconds wall;
-- invalidated compiler options: 824 milliseconds in Oxlint and 2.01 seconds wall.
+- cold empty persistent cache:
+   838 milliseconds in Oxlint and 2.02 seconds wall;
+- warm unchanged state:
+   844 milliseconds in Oxlint and 1.41 seconds wall;
+- changed source:
+   835 milliseconds in Oxlint and 2.03 seconds wall;
+- invalidated compiler options:
+   824 milliseconds in Oxlint and 2.01 seconds wall.
 
 The strict rule cannot soundly self-apply because its implementation necessarily calls bodyless TypeScript handles,
 Oxlint host methods,

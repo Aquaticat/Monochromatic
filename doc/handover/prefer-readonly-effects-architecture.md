@@ -144,10 +144,14 @@ which proved that catalog deletion without demand-bounded implementation analysi
 
 Final catalog-free Linux x64 measurements process 13 files with 479 rules and zero diagnostics:
 
-- cold empty persistent cache: 838 milliseconds in Oxlint and 2.02 seconds wall;
-- warm unchanged state: 844 milliseconds in Oxlint and 1.41 seconds wall;
-- changed source: 835 milliseconds in Oxlint and 2.03 seconds wall;
-- invalidated compiler options: 824 milliseconds in Oxlint and 2.01 seconds wall.
+- cold empty persistent cache:
+   838 milliseconds in Oxlint and 2.02 seconds wall;
+- warm unchanged state:
+   844 milliseconds in Oxlint and 1.41 seconds wall;
+- changed source:
+   835 milliseconds in Oxlint and 2.03 seconds wall;
+- invalidated compiler options:
+   824 milliseconds in Oxlint and 2.01 seconds wall.
 
 The changed-source and compiler-option runs used
 `/home/user/temp/agent/readonly-catalog-final-gates-20260723`,

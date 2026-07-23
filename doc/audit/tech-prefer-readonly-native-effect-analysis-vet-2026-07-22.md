@@ -1,22 +1,28 @@
 # Native effect analysis for `prefer-readonly-parameter-type`
 
-Status: selected Oxlint JavaScript-rule architecture is catalog free,
+Status:
+ selected Oxlint JavaScript-rule architecture is catalog free,
 fail closed,
 and verified at consumer and platform boundaries.
 
-Lifecycle phase: monitoring.
+Lifecycle phase:
+ monitoring.
 
-Subject: Prefer-readonly native effect analysis.
+Subject:
+ Prefer-readonly native effect analysis.
 
 Decision scope:
 choose an implementation architecture for fail-closed `prefer-readonly-parameter-type` effect analysis
 under a 10-second cold 13-file lint target.
 
-Started: 2026-07-22.
+Started:
+ 2026-07-22.
 
-Last updated: 2026-07-23.
+Last updated:
+ 2026-07-23.
 
-Governing skill commit: `25d237fe220d813f5d10367ad3d487707d48bb42`.
+Governing skill commit:
+ `25d237fe220d813f5d10367ad3d487707d48bb42`.
 
 Governing skill SHA-256:
 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
@@ -24,9 +30,11 @@ Governing skill SHA-256:
 Compatibility fingerprint:
 `2a5f32a502953a5e2dcee8ae76de13432a0bb68909b0731e1973659667cff11d`.
 
-Active audit owner: current Pi coding-agent session.
+Active audit owner:
+ current Pi coding-agent session.
 
-Prior compatible report: none found.
+Prior compatible report:
+ none found.
 
 ## Context
 
@@ -124,22 +132,39 @@ The query schedule is frozen after this expansion round.
 
 The web provider returned the following visible result counts:
 
-- Oxc custom native-rule query: 10 results.
-- Oxc JavaScript-plugin query: 10 results.
-- Rust TypeScript-checker query: 10 results.
-- NAPI-RS concurrency query: 10 results.
-- TypeScript-Go API query: 10 results.
-- Rust checker and STC query: 10 results.
-- Node-API binding alternatives query: 10 results.
-- Oxlint plus Node-API query: 10 results.
-- crates.io Node-API query: 10 results.
-- GitHub Node-API topic query: no provider output.
-- npm `oxlint-tsgolint` query: 10 results.
-- TypeScript-Go custom-linter query: 10 results.
-- Oxc checker-parity query: 10 results.
-- STC maintenance query: 10 results.
-- NAPI-RS versus Neon query: 10 results.
-- `node-bindgen` query: 10 results.
+- Oxc custom native-rule query:
+   10 results.
+- Oxc JavaScript-plugin query:
+   10 results.
+- Rust TypeScript-checker query:
+   10 results.
+- NAPI-RS concurrency query:
+   10 results.
+- TypeScript-Go API query:
+   10 results.
+- Rust checker and STC query:
+   10 results.
+- Node-API binding alternatives query:
+   10 results.
+- Oxlint plus Node-API query:
+   10 results.
+- crates.
+  io Node-API query:
+   10 results.
+- GitHub Node-API topic query:
+   no provider output.
+- npm `oxlint-tsgolint` query:
+   10 results.
+- TypeScript-Go custom-linter query:
+   10 results.
+- Oxc checker-parity query:
+   10 results.
+- STC maintenance query:
+   10 results.
+- NAPI-RS versus Neon query:
+   10 results.
+- `node-bindgen` query:
+   10 results.
 
 The searches discovered NAPI-RS,
 Neon,
@@ -273,7 +298,9 @@ exited because `dudykr/stc` is archived and issue 1101 states that the project i
 
 ### Node-API is a transport and ABI boundary
 
-Node.js documentation classifies Node-API as stable and ABI-stable across Node.js versions.
+Node.
+js documentation classifies Node-API as stable and ABI-stable across Node.
+js versions.
 It exposes native functions to JavaScript,
 but it does not provide TypeScript AST or checker semantics.
 NAPI-RS documentation says an ordinary synchronous `#[napi] fn` runs on the JavaScript thread.
