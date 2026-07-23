@@ -147,10 +147,10 @@ and stage only explicit paths owned by this task.
 
 - Task 6,
    enable constant-loop linting:
-  pending.
+  completed.
 - Task 7,
    migrate parser and analysis loops:
-  pending after task 6.
+  next.
 - Task 8,
    migrate retry and polling loops:
   pending after task 7.
@@ -214,12 +214,23 @@ Research and troubleshooting commits already on `main`:
    initial constant-loop migration handover.
 - `397b24a44`,
    handover Markdown formatting.
+- `f4c02781b`,
+   final handover creation state.
+- `0abe1ea7d`,
+   shared Oxlint `checkLoops: 'all'` configuration.
 
-No implementation commit existed when this handover was created.
+Config verification passed:
+
+```bash
+mise run //package/config/oxlint:build
+mise run //package/config/oxlint:lint:oxlint
+mise run //package/config/oxlint:lint:types
+```
 
 ## Next action
 
-Enable `eslint/no-constant-condition` with `checkLoops: 'all'` in
-`package/config/oxlint/src/rule/correctness.ts`,
-commit that scoped config change,
-then begin parser and analysis migrations without staging concurrent files.
+Migrate parser and analysis loops in
+`package/module/css-edit`,
+`package/oxlint-plugin/prefer-readonly-parameter-type`,
+and `package/oxlint-plugin/tsdoc`.
+Do not stage the concurrent CSS tokenizer catalog files.
