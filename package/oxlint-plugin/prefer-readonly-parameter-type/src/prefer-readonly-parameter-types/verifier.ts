@@ -10,7 +10,6 @@ import type {
   Context,
   Fixer,
 } from '@oxlint/plugins';
-import { undocumentedBoundaries, } from './effect-adapter.ts';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
 import { inputUsageSubject, } from './input-diagnostic-description.ts';
@@ -177,21 +176,6 @@ export function verifyReadonlyCallable({
     );
   },);
   /**
-   * Parsed contract echo naming every authored block including names
-   * matching no input;
-   * a silently dropped typo was previously indistinguishable from an
-   * unparsed contract.
-   */
-  const parsedContracts = blocks.length === 0
-    ? 'none'
-    : blocks
-      .map(function echoBlock(block,): string {
-        return targetIndexes.has(block.parameterName,)
-          ? `@mutates ${block.parameterName}`
-          : `@mutates ${block.parameterName} (matches no input name)`;
-      },)
-      .join(', ',);
-  /**
    * Whether callable has analyzable implementation body.
    */
   const hasBody = ('body' in declaration) && (declaration.body !== undefined);
@@ -252,7 +236,7 @@ export function verifyReadonlyCallable({
      */
     const parameterBlocks = blocksByParameter.get(parameterIndex,) ?? [];
     /**
-     * Whether analyzer found proven or documented caller-observable effects.
+     * Whether analyzer found proven caller-observable effects.
      */
     const affected = effectSummary.mutatedParameterIndexes
       .has(parameterIndex,);
@@ -267,12 +251,7 @@ export function verifyReadonlyCallable({
     const opaque = effectSummary.opaqueParameterIndexes
       .has(parameterIndex,);
     /**
-     * Whether unresolved possible effects have complete local documentation.
-     */
-    const documentedUncertain = effectSummary.documentedUncertainParameterIndexes
-      .has(parameterIndex,);
-    /**
-     * Human-readable provenance for unresolved or documented uncertainty.
+     * Human-readable provenance for unresolved uncertainty.
      */
     const uncertainty = uncertaintyBoundaries({
       effectSummary,
@@ -286,20 +265,9 @@ export function verifyReadonlyCallable({
         targetIndexes,
         parameterIndex,
         uncertainty,
-        parsedContracts,
-        undocumentedContractBoundaries: parameterBlocks.length === 0
-          ? []
-          : undocumentedBoundaries({
-            facts: uncertainty.facts,
-            contracts: parameterBlocks,
-          },),
       },),);
       return;
     }
-    /* Inherited documented uncertainty needs no re-documentation: the
-     * boundary function's complete @mutates contract is the audit, exactly
-     * as deleted catalog entries were. Readonly-typed callers still get
-     * uncertainReadonly naming the located boundary. */
     if (mutated
       && (!foreignBorrowed)
       && ((classification.kind === 'honest-readonly')
@@ -316,19 +284,6 @@ export function verifyReadonlyCallable({
       },);
       return;
     }
-    if (documentedUncertain
-      && (!foreignBorrowed)
-      && (classification.kind === 'honest-readonly')) {
-      context.report({
-        loc,
-        messageId: 'uncertainReadonly',
-        data: {
-          parameterName,
-          boundaries: uncertainty.names,
-        },
-      },);
-      return;
-    }
     if ((!mutated) && (!foreignBorrowed)
       && (classification.kind === 'dishonest-readonly')) {
       context.report({
@@ -341,7 +296,6 @@ export function verifyReadonlyCallable({
       },);
     }
     if ((!mutated)
-      && (!documentedUncertain)
       && (!foreignBorrowed)
       && (classification.kind === 'mutable')) {
       /**
@@ -375,8 +329,7 @@ export function verifyReadonlyCallable({
       },);
     }
     if (foreignBorrowed
-      && (!affected)
-      && (!documentedUncertain)) {
+      && (!affected)) {
       reportRedundantForeignBorrowed({
         context,
         project,

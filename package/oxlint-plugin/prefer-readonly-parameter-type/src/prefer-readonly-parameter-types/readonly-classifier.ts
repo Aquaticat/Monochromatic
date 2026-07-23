@@ -14,16 +14,7 @@ import {
   type Type,
 } from 'typescript/unstable/sync';
 
-import {
-  intrinsicEffect,
-  NO_INTRINSIC_EFFECT,
-} from './intrinsic-effect-catalog.ts';
-import {
-  intrinsicEffectQuery,
-  NO_INTRINSIC_QUERY,
-} from './intrinsic-effect-query.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
-import { intrinsicEffectIsObservational, } from './intrinsic-effect-observation.ts';
 import { isForeignBorrowedType, } from './foreign-borrowed-identity.ts';
 import {
   readonlyOwnerName,
@@ -53,26 +44,6 @@ const CHECK_FLAGS_READONLY = 1 << CHECK_FLAGS_READONLY_BIT;
  * Sentinel while recursive type is being classified.
  */
 const CLASSIFICATION_ACTIVE: unique symbol = Symbol('ReadonlyClassification traversal active for type',);
-
-/**
- * Mutable standard data containers with honest readonly projections.
- */
-const PROJECTABLE_MUTABLE_OWNERS: ReadonlySet<string> = new Set([
-  'Array',
-  'Map',
-  'Set',
-  'Int8Array',
-  'Uint8Array',
-  'Uint8ClampedArray',
-  'Int16Array',
-  'Uint16Array',
-  'Int32Array',
-  'Uint32Array',
-  'Float32Array',
-  'Float64Array',
-  'BigInt64Array',
-  'BigUint64Array',
-]);
 
 /**
  * Standard readonly generic collections classified through reachable type arguments.
@@ -366,40 +337,6 @@ export function classifyReadonlyType({
           property,
           declaration,
         );
-        /**
-         * Exact intrinsic lookup query when declaration provenance is recognized.
-         */
-        const query = intrinsicEffectQuery({
-          project,
-          receiverType: current,
-          memberSymbol: property,
-        },);
-        /**
-         * Audited intrinsic mutation effect or no-effect sentinel.
-         */
-        const effect = query === NO_INTRINSIC_QUERY
-          ? NO_INTRINSIC_EFFECT
-          : intrinsicEffect(query,);
-        if (effect !== NO_INTRINSIC_EFFECT) {
-          if (intrinsicEffectIsObservational(effect,))
-            return HONEST_READONLY;
-          if (projectionClaimed) {
-            return {
-              kind: 'dishonest-readonly',
-              reason: `${currentOwner}.${property.name} retains intrinsic mutation capability`,
-            };
-          }
-          if (PROJECTABLE_MUTABLE_OWNERS.has(currentOwner,)) {
-            return {
-              kind: 'mutable',
-              reason: `${currentOwner}.${property.name} mutates projectable data`,
-            };
-          }
-          return {
-            kind: 'opaque-capability',
-            reason: `${currentOwner}.${property.name} is an intrinsic capability`,
-          };
-        }
         /**
          * Call signatures retained by ordinary and mapped method properties.
          */

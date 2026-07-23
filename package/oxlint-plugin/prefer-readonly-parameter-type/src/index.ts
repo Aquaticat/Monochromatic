@@ -13,11 +13,6 @@ export {
 } from './prefer-readonly-parameter-types/readonly-classifier.ts';
 
 export {
-  expressionIsPlainData,
-  typeIsPlainData,
-} from './prefer-readonly-parameter-types/plain-data-classifier.ts';
-
-export {
   closeSemanticBridge,
   initializeSemanticBridge,
   openSemanticFile,
@@ -49,30 +44,6 @@ export {
   SemanticBridgeError,
   type SemanticBridgeFailureReason,
 } from './prefer-readonly-parameter-types/semantic-bridge-error.ts';
-
-export {
-  intrinsicCallableEffectQuery,
-  intrinsicEffectQuery,
-  intrinsicProvenance,
-  NO_INTRINSIC_PROVENANCE,
-  NO_INTRINSIC_QUERY,
-} from './prefer-readonly-parameter-types/intrinsic-effect-query.ts';
-
-export {
-  hostEffectAuthorityAvailable,
-  type HostEffectAuthority,
-} from './prefer-readonly-parameter-types/host-effect-authority.ts';
-
-export {
-  INTRINSIC_EFFECTS,
-  intrinsicEffect,
-  NO_INTRINSIC_EFFECT,
-  type IntrinsicArgumentPropertyInvocation,
-  type IntrinsicEffectEntry,
-  type IntrinsicEffectQuery,
-  type IntrinsicEffectTarget,
-  type IntrinsicProvenance,
-} from './prefer-readonly-parameter-types/intrinsic-effect-catalog.ts';
 
 export {
   findNodeAtOffset,

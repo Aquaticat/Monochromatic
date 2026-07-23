@@ -25,7 +25,6 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
-import { applyVerifiedAdapterContracts, } from './effect-adapter.ts';
 import {
   discoverAliasOrigins,
   expressionOrigin,
@@ -33,7 +32,9 @@ import {
 } from './effect-binding-origins.ts';
 import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import { inspectEffectCall, } from './effect-call-analysis.ts';
+import { addOpaqueEffect, } from './effect-call-resolution.ts';
 import type { ExternalCallableEffectResolver, } from './external-callable-effect.ts';
+import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
   mutationContractsForDeclaration,
@@ -211,30 +212,48 @@ export function directEffectSummary({
    */
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined) {
+    declaration.parameters
+      .forEach(function rejectBodylessParameter(parameter, parameterIndex,): void {
+        if (!expressionCanCarryMutableState({
+          checker,
+          node: parameter.name,
+        },))
+          return;
+        addOpaqueEffect({
+          summary,
+          affectedParameterIndex: parameterIndex,
+          provenance: `bodyless callable ${callableKey(declaration,)}`,
+        },);
+      },);
     /**
-     * Authored bodyless mutation contracts used as conservative call effects.
+     * Authored bodyless mutation contracts remain documentation of known effects.
+     * They never remove unresolved implementation opacity.
      */
     const contracts = mutationContractsForDeclaration({
       declaration,
       sourceFile: declaration.getSourceFile(),
     },);
-    if (contracts === MUTATION_CONTRACT_UNAVAILABLE)
-      return summary;
-    /**
-     * Contract target names mapped to source parameter indexes.
-     */
-    const targetIndexes = mutationTargetIndexes({
-      declaration,
-      sourceFile: declaration.getSourceFile(),
-    },);
-    contracts.blocks
-      .forEach(function seedContract(block,): void {
-      addEffectIndex({
-        target: summary.mutated,
-        value: targetIndexes.get(block.parameterName,)
-          ?? PARAMETER_INDEX_UNAVAILABLE,
+    if (contracts !== MUTATION_CONTRACT_UNAVAILABLE) {
+      /**
+       * Contract target names mapped to source parameter indexes.
+       */
+      const targetIndexes = mutationTargetIndexes({
+        declaration,
+        sourceFile: declaration.getSourceFile(),
       },);
-    },);
+      contracts.blocks
+        .forEach(function seedContract(block,): void {
+        addEffectIndex({
+          target: summary.mutated,
+          value: targetIndexes.get(block.parameterName,)
+            ?? PARAMETER_INDEX_UNAVAILABLE,
+        },);
+      },);
+    }
+    summary.directOpaque
+      .forEach(function seedBodylessOpacity(index,): void {
+        summary.opaque.add(index,);
+      },);
     return summary;
   }
   /**
@@ -335,10 +354,6 @@ export function directEffectSummary({
         },),
       },);
     }
-  },);
-  applyVerifiedAdapterContracts({
-    declaration,
-    summary,
   },);
   summary.directMutated
     .forEach(function seed(index,): void {

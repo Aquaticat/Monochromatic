@@ -11,8 +11,6 @@ import {
   everyBoundaryIsInputMethod,
   inputMethodUsageSubject,
 } from './input-diagnostic-description.ts';
-import { STRING_OBJECT_COERCION_PROVENANCE, } from './string-coercion-effect.ts';
-import { originBoundaryName, } from './effect-origin-location.ts';
 
 /**
  * Sorted uncertainty provenance and display text for one parameter.
@@ -80,13 +78,6 @@ export function uncertaintyBoundaries({
  *
  * @param uncertainty - Sorted upstream boundary description.
  *
- * @param parsedContracts - Echo of every parsed contract block.
- *
- * @param undocumentedContractBoundaries - Plain boundary names no parsed
- * contract explanation documents; empty when no contract targets this
- * parameter, so the coverage note only appears for the
- * present-but-incomplete case the numbered remediations do not single out.
- *
  * @returns unresolved-effect report descriptor.
  *
  * @example
@@ -100,8 +91,6 @@ export function opaqueEffectReport({
   targetIndexes,
   parameterIndex,
   uncertainty,
-  parsedContracts,
-  undocumentedContractBoundaries,
 }: {
   readonly loc: {
     readonly start: {
@@ -117,23 +106,7 @@ export function opaqueEffectReport({
   readonly targetIndexes: ReadonlyMap<string, number>;
   readonly parameterIndex: number;
   readonly uncertainty: UncertaintyBoundaries;
-  readonly parsedContracts: string;
-  readonly undocumentedContractBoundaries: readonly string[];
 },): Parameters<Context['report']>[0] {
-  /**
-   * Number of unresolved provenance facts.
-   */
-  const factCount = uncertainty.facts
-    .length;
-  /**
-   * First provenance fact for singleton-specialization checks.
-   */
-  const [firstFact,] = uncertainty.facts;
-  /**
-   * Whether only exact global String object conversion remains unresolved.
-   */
-  const onlyStringObjectCoercion = (factCount === 1)
-    && (originBoundaryName(firstFact ?? '',) === STRING_OBJECT_COERCION_PROVENANCE);
   /**
    * Whether every unknown call is a method on one current input binding.
    */
@@ -142,27 +115,11 @@ export function opaqueEffectReport({
     targetIndexes,
     parameterIndex,
   },);
-  /**
-   * First undocumented boundary, doubling as a concrete matching example.
-   */
-  const [firstUndocumented,] = undocumentedContractBoundaries;
-  /**
-   * Coverage note for a contract that exists but leaves calls unnamed; the
-   * echoed contract list alone cannot show which calls remain uncovered or
-   * that matching is literal.
-   */
-  const contractCoverage = firstUndocumented === undefined
-    ? ''
-    : `\n\nA @mutates contract for this input was parsed, but its explanation does not mention these calls: ${
-      undocumentedContractBoundaries.join(', ',)
-    }. The rule matches literally: an explanation covers a call once it contains that call's name (for example "${firstUndocumented}"), or a documentation URL (http:// or https://) together with the name after the call's last dot.`;
   return {
     loc,
-    messageId: onlyStringObjectCoercion
-      ? 'stringObjectCoercionEffect'
-      : onlyInputMethods
-        ? 'opaqueMethodEffect'
-        : 'opaqueEffect',
+    messageId: onlyInputMethods
+      ? 'opaqueMethodEffect'
+      : 'opaqueEffect',
     data: {
       inputSubject: onlyInputMethods
         ? inputMethodUsageSubject({
@@ -172,8 +129,6 @@ export function opaqueEffectReport({
         },)
         : inputSubject,
       boundaries: uncertainty.names,
-      parsedContracts,
-      contractCoverage,
     },
   };
 }

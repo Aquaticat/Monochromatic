@@ -14,15 +14,6 @@ import {
   isPropertyAccessExpression,
 } from 'typescript/unstable/ast/is';
 
-import {
-  intrinsicEffect,
-  NO_INTRINSIC_EFFECT,
-} from './intrinsic-effect-catalog.ts';
-import {
-  intrinsicEffectQuery,
-  NO_INTRINSIC_QUERY,
-} from './intrinsic-effect-query.ts';
-import { applyAuditedCallableEffect, } from './effect-imported-callable.ts';
 import { applyExternalEffect, } from './effect-external-application.ts';
 import {
   type ExternalCallableEffectResolver,
@@ -30,8 +21,6 @@ import {
 } from './external-callable-effect.ts';
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import { effectCallName, } from './effect-call-name.ts';
-import { applyIntrinsicEffect, } from './effect-intrinsic-application.ts';
-import { intrinsicReceiverParameterIndex, } from './effect-intrinsic-result-origin.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
@@ -47,11 +36,6 @@ import {
   parameterIndex,
   parameterIndexes,
 } from './effect-call-resolution.ts';
-import {
-  isGlobalStringConversion,
-  STRING_OBJECT_COERCION_PROVENANCE,
-} from './string-coercion-effect.ts';
-import { expressionIsPlainData, } from './plain-data-classifier.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 
 /**
@@ -142,70 +126,6 @@ export function inspectEffectCall({
     return;
   }
 
-  if (applyAuditedCallableEffect({
-    project,
-    checker,
-    bindingOriginBySymbolId,
-    call,
-    summary,
-  },))
-    return;
-
-  if (isPropertyAccessExpression(call.expression,)) {
-    /**
-     * Method receiver expression.
-     */
-    const receiver = call.expression
-      .expression;
-    /**
-     * Current parameter owning receiver, when direct or nested.
-     */
-    const receiverParameterIndex = intrinsicReceiverParameterIndex({
-      project,
-      checker,
-      bindingOriginBySymbolId,
-      node: receiver,
-    },);
-    /**
-     * Semantic receiver type for intrinsic provenance.
-     */
-    const receiverType = checker.getTypeAtLocation(receiver,);
-    /**
-     * Semantic member symbol for exact intrinsic identity.
-     */
-    const memberSymbol = checker.getSymbolAtLocation(call.expression
-      .name,);
-    if ((receiverType !== undefined) && (memberSymbol !== undefined)) {
-      /**
-       * Exact intrinsic lookup query, or unsupported provenance sentinel.
-       */
-      const query = intrinsicEffectQuery({
-        project,
-        receiverType,
-        memberSymbol,
-      },);
-      /**
-       * Catalog effect, or unsupported exact-symbol sentinel.
-       */
-      const effect = query === NO_INTRINSIC_QUERY
-        ? NO_INTRINSIC_EFFECT
-        : intrinsicEffect(query,);
-      if ((effect !== NO_INTRINSIC_EFFECT)
-        && applyIntrinsicEffect({
-          project,
-          checker,
-          bindingOriginBySymbolId,
-          call,
-          receiverType,
-          receiverParameterIndex,
-          effect,
-          summary,
-          foreignInbound,
-        },))
-        return;
-    }
-  }
-
   /**
    * Selected call signature for overload-aware declaration resolution.
    */
@@ -286,13 +206,7 @@ export function inspectEffectCall({
   /**
    * Authored unresolved call target retained for adapter verification.
    */
-  const opaqueProvenance = isGlobalStringConversion({
-    call,
-    checker,
-    project,
-  },)
-    ? STRING_OBJECT_COERCION_PROVENANCE
-    : effectCallName(call.expression,);
+  const opaqueProvenance = effectCallName(call.expression,);
   /**
    * Origin call location naming where each remediation applies.
    */
@@ -327,15 +241,6 @@ export function inspectEffectCall({
         checker,
         node: argument,
       },)))
-      return;
-    /* Exact global String never mutates its input; its only effect class is
-     * coercion hooks, which statically plain data cannot carry. */
-    if ((opaqueProvenance === STRING_OBJECT_COERCION_PROVENANCE)
-      && expressionIsPlainData({
-        checker,
-        project,
-        node: argument,
-      },))
       return;
     indexes.forEach(function opaqueArgumentOrigin(index,): void {
       addOpaqueEffect({
