@@ -1,19 +1,13 @@
 import type { Dirent, } from 'node:fs';
-import {
-  readdir,
-  realpath,
-} from 'node:fs/promises';
+import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
+import { resolveGitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { WorktreeCopyError, } from './errors.ts';
-import {
-  BARE_REPOSITORY_SOURCE,
-  type WorktreeCopyObservation,
-} from './model.ts';
+import type { WorktreeCopyObservation, } from './model.ts';
 
 /**
  * Logger root for linked-worktree registration observation.
@@ -21,38 +15,11 @@ import {
 const l = tagged({ tag: 'cli-git', },);
 
 /**
- * No effective repository existed before real Git ran.
+ * Effective target cannot participate in worktree-copy lifecycle.
  */
 export const WORKTREE_COPY_NOT_APPLICABLE: unique symbol = Symbol(
-  'worktree copy has no effective repository',
+  'worktree copy has no applicable source repository',
 );
-
-/**
- * Removes one Git-produced trailing line break.
- *
- * @param output - captured Git stdout
- *
- * @returns output without terminal LF or CRLF
- *
- * @example
- * ```ts
- * stripGitLine('/repo/.git\n');
- * // => '/repo/.git'
- * ```
- */
-export function stripGitLine(output: string,): string {
-  if (output.endsWith('\r\n',))
-    return output.slice(
-      0,
-      -2,
-    );
-  if (output.endsWith('\n',))
-    return output.slice(
-      0,
-      -1,
-    );
-  return output;
-}
 
 /**
  * Reads linked-worktree administrative directory identities.
@@ -100,204 +67,15 @@ export async function readAdminIds(adminRoot: string,): Promise<ReadonlySet<stri
 }
 
 /**
- * Runs read-only real-Git metadata command with captured streams.
+ * Captures applicable linked-worktree repository and administrative identities.
  *
- * @param gitPath - absolute real-Git executable
+ * Shared identity resolution classifies effective target once for every package
+ * consumer.
+ * Main and outside targets return not-applicable before administrative reads.
+ * Linked worktrees contribute canonical source root;
+ * bare repositories retain empty-source behavior.
  *
- * @param args - exact metadata argv
- *
- * @param cwd - command working directory
- *
- * @returns captured stdout
- *
- * @example
- * ```ts
- * await runMetadataGit({ gitPath: '/usr/bin/git', args: ['--version'], cwd: '/tmp' });
- * ```
- */
-export async function runMetadataGit({
-  gitPath,
-  args,
-  cwd,
-}: Readonly<{
-  gitPath: string;
-  args: readonly string[];
-  cwd: string;
-}>,): Promise<string> {
-  /**
-   * Captured metadata subprocess result.
-   */
-  const result = await nanoSpawn(
-    gitPath,
-    [...args,],
-    {
-      cwd,
-      stderr: 'pipe',
-      stdout: 'pipe',
-    },
-  );
-  return result.stdout;
-}
-
-/**
- * Resolves common directory or repository absence from original global options.
- *
- * @param gitPath - absolute real-Git executable
- *
- * @param preSubcommandArgs - original Git global option region
- *
- * @param invocationCwd - wrapper process working directory
- *
- * @returns canonical common directory, or not-applicable sentinel
- *
- * @example
- * ```ts
- * await resolveCommonDir({ gitPath: '/usr/bin/git', preSubcommandArgs: [], invocationCwd: '/repo' });
- * // => '/repo/.git'
- * ```
- */
-async function resolveCommonDir({
-  gitPath,
-  preSubcommandArgs,
-  invocationCwd,
-}: Readonly<{
-  gitPath: string;
-  preSubcommandArgs: readonly string[];
-  invocationCwd: string;
-}>,): Promise<string | typeof WORKTREE_COPY_NOT_APPLICABLE> {
-  try {
-    /**
-     * Git-reported absolute common directory.
-     */
-    const commonOutput = await runMetadataGit({
-      gitPath,
-      args: [
-        ...preSubcommandArgs,
-        'rev-parse',
-        '--path-format=absolute',
-        '--git-common-dir',
-      ],
-      cwd: invocationCwd,
-    },);
-    /**
-     * Git-reported common path without line terminator.
-     */
-    const commonPath = stripGitLine(commonOutput,);
-    if (commonPath === '')
-      return WORKTREE_COPY_NOT_APPLICABLE;
-    return await realpath(commonPath,);
-  }
-  catch (error: unknown) {
-    if ((error instanceof SubprocessError)
-      || (Error.isError(error,) && ('code' in error)
-        && (error.code === 'ENOENT')))
-      return WORKTREE_COPY_NOT_APPLICABLE;
-    throw error;
-  }
-}
-
-/**
- * Resolves invocation-specific Git administrative directory.
- *
- * @param gitPath - absolute real-Git executable
- *
- * @param preSubcommandArgs - original Git global option region
- *
- * @param invocationCwd - wrapper process working directory
- *
- * @returns canonical invocation-specific Git directory
- *
- * @example
- * ```ts
- * await resolveGitDir({ gitPath: '/usr/bin/git', preSubcommandArgs: [], invocationCwd: '/repo' });
- * // => '/repo/.git'
- * ```
- */
-async function resolveGitDir({
-  gitPath,
-  preSubcommandArgs,
-  invocationCwd,
-}: Readonly<{
-  gitPath: string;
-  preSubcommandArgs: readonly string[];
-  invocationCwd: string;
-}>,): Promise<string> {
-  /**
-   * Git-reported invocation-specific administrative path.
-   */
-  const output = await runMetadataGit({
-    gitPath,
-    args: [
-      ...preSubcommandArgs,
-      'rev-parse',
-      '--path-format=absolute',
-      '--git-dir',
-    ],
-    cwd: invocationCwd,
-  },);
-  return realpath(stripGitLine(output,),);
-}
-
-/**
- * Resolves current source worktree root or bare-repository absence.
- *
- * @param gitPath - absolute real-Git executable
- *
- * @param preSubcommandArgs - original Git global option region
- *
- * @param invocationCwd - wrapper process working directory
- *
- * @returns canonical worktree root, or bare-repository sentinel
- *
- * @example
- * ```ts
- * await resolveSourceRoot({ gitPath: '/usr/bin/git', preSubcommandArgs: [], invocationCwd: '/repo' });
- * // => '/repo'
- * ```
- */
-async function resolveSourceRoot({
-  gitPath,
-  preSubcommandArgs,
-  invocationCwd,
-}: Readonly<{
-  gitPath: string;
-  preSubcommandArgs: readonly string[];
-  invocationCwd: string;
-}>,): Promise<string | typeof BARE_REPOSITORY_SOURCE> {
-  /**
-   * Git-reported bare-repository state.
-   */
-  const bareOutput = await runMetadataGit({
-    gitPath,
-    args: [
-      ...preSubcommandArgs,
-      'rev-parse',
-      '--is-bare-repository',
-    ],
-    cwd: invocationCwd,
-  },);
-  if (stripGitLine(bareOutput,) === 'true')
-    return BARE_REPOSITORY_SOURCE;
-  /**
-   * Git-reported absolute worktree root.
-   */
-  const output = await runMetadataGit({
-    gitPath,
-    args: [
-      ...preSubcommandArgs,
-      'rev-parse',
-      '--path-format=absolute',
-      '--show-toplevel',
-    ],
-    cwd: invocationCwd,
-  },);
-  return realpath(stripGitLine(output,),);
-}
-
-/**
- * Captures effective repository and linked-worktree identities before real Git.
- *
- * @param args - forwarded Git argv
+ * @param args - forwarded Git arguments
  *
  * @param gitPath - absolute real-Git executable
  *
@@ -323,16 +101,12 @@ export async function observeWorktreeRepository({
     subcommandIndex,
   } = parseGlobalOptions(args,);
   /**
-   * Exact original global option region selecting effective repository.
+   * Original global option region selecting effective repository.
    */
   const preSubcommandArgs = args.slice(
     0,
     subcommandIndex,
   );
-  /**
-   * Wrapper process cwd from which Git applies original `-C` options.
-   */
-  const invocationCwd = process.cwd();
   /**
    * Tagged observer logger.
    */
@@ -340,46 +114,27 @@ export async function observeWorktreeRepository({
     tag: observeWorktreeRepository.name,
     l,
   },);
-
   /**
-   * Canonical common directory anchoring administrative identity.
+   * Canonical repository identity shared across package consumers.
    */
-  const commonDir = await resolveCommonDir({
+  const identity = await resolveGitWorktreeIdentity({
     gitPath,
     preSubcommandArgs,
-    invocationCwd,
+    effectiveCwd,
   },);
-  if ((typeof commonDir) === 'symbol') {
+  if (identity.kind === 'outside-worktree') {
     rl.debug('effective invocation has no repository; worktree copy observation is not applicable',);
     return WORKTREE_COPY_NOT_APPLICABLE;
   }
-  /**
-   * Canonical source root or bare-repository sentinel.
-   */
-  const sourceRoot = await resolveSourceRoot({
-    gitPath,
-    preSubcommandArgs,
-    invocationCwd,
-  },);
-  if ((typeof sourceRoot) === 'string') {
-    /**
-     * Invocation-specific Git directory distinguishing main from linked worktree.
-     */
-    const gitDir = await resolveGitDir({
-      gitPath,
-      preSubcommandArgs,
-      invocationCwd,
-    },);
-    if (gitDir === commonDir) {
-      rl.debug('effective invocation targets main worktree; worktree copy observation is not applicable',);
-      return WORKTREE_COPY_NOT_APPLICABLE;
-    }
+  if (identity.kind === 'main-worktree') {
+    rl.debug('effective invocation targets main worktree; worktree copy observation is not applicable',);
+    return WORKTREE_COPY_NOT_APPLICABLE;
   }
   /**
    * Common linked-worktree administrative root.
    */
   const adminRoot = join(
-    commonDir,
+    identity.commonDir,
     'worktrees',
   );
   /**
@@ -387,15 +142,15 @@ export async function observeWorktreeRepository({
    */
   const beforeAdminIds = await readAdminIds(adminRoot,);
   rl.debug(
-    `captured ${String(beforeAdminIds.size,)} linked-worktree identities under ${commonDir}`,
+    `captured ${String(beforeAdminIds.size,)} linked-worktree identities under ${identity.commonDir}`,
   );
   return {
     adminRoot,
     beforeAdminIds,
-    commonDir,
+    commonDir: identity.commonDir,
     effectiveCwd,
-    ...((typeof sourceRoot) === 'symbol'
-      ? {}
-      : { sourceRoot, }),
+    ...(identity.kind === 'linked-worktree'
+      ? { sourceRoot: identity.worktreeRoot, }
+      : {}),
   };
 }

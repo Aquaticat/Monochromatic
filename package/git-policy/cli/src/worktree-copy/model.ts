@@ -1,11 +1,6 @@
 import type { SubprocessError, } from 'nano-spawn';
 
 /**
- * Bare repository has no source worktree filesystem.
- */
-export const BARE_REPOSITORY_SOURCE: unique symbol = Symbol('bare repository has no source worktree',);
-
-/**
  * Supported copied filesystem entry kinds.
  *
  * @example
