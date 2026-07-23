@@ -232,7 +232,6 @@ await describe({
           };
         },);
         closeSemanticBridge();
-
         expect(effects,).toEqual([
           {
             functionName: 'directSemanticEffect',
@@ -251,8 +250,8 @@ await describe({
           },
           {
             functionName: 'crossFileSemanticEffect',
-            mutated: [0,],
-            opaque: [],
+            mutated: [],
+            opaque: [0,],
           },
           {
             functionName: 'callbackSemanticEffect',
@@ -276,8 +275,8 @@ await describe({
           },
           {
             functionName: 'arrayCallbackSemanticEffect',
-            mutated: [0,],
-            opaque: [],
+            mutated: [],
+            opaque: [0,],
           },
           {
             functionName: 'aliasedCallbackSemanticEffect',
@@ -292,27 +291,27 @@ await describe({
           {
             functionName: 'observationalIntrinsicEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'primitiveArraySortObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'textEncoderObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'objectArraySortCallbackEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'plainArrayDefaultSortObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'hookedArrayDefaultSortOpaqueEffect',
@@ -327,12 +326,12 @@ await describe({
           {
             functionName: 'plainArrayOptionalSortObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'observationalValueEffects',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'pathObservationEffect',
@@ -342,17 +341,17 @@ await describe({
           {
             functionName: 'dateObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'fileUrlObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'direntObservationEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'aliasSemanticEffect',
@@ -518,20 +517,16 @@ await describe({
         const summary = index.get(declaration,);
         if (summary === NO_EFFECT_SUMMARY)
           throw new Error('Expected deferred callback effect summary.',);
-        expect([...summary.invokedParameterIndexes,],).toEqual([0,],);
-        expect([...summary.mutatedParameterIndexes,],).toEqual([0,],);
+        expect([...summary.invokedParameterIndexes,],).toEqual([],);
+        expect([...summary.mutatedParameterIndexes,],).toEqual([],);
         expect([...summary.referentMutatedParameterIndexes,],).toEqual([],);
-        expect([...summary.opaqueParameterIndexes,],).toEqual([1,],);
-        expect(summary.callbackRelations,).toEqual([{
-          callbackParameterIndex: 0,
-          callbackArgumentIndex: 0,
-          sourceParameterIndex: 1,
-        },],);
+        expect([...summary.opaqueParameterIndexes,],).toEqual([0, 1,],);
+        expect(summary.callbackRelations,).toEqual([],);
         closeSemanticBridge();
       },
     },),
     it({
-      name: 'treats a fresh frozen copy as separate from caller-owned input',
+      name: 'rejects shallow frozen copy retaining caller-owned nested identity',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();
         /** Disposable configured source path. */
@@ -576,7 +571,7 @@ await describe({
           mutated: [],
           referentMutated: [],
           invoked: [],
-          opaque: [],
+          opaque: [0,],
           callbackRelations: [],
         },);
         closeSemanticBridge();
