@@ -12,6 +12,7 @@
  * is unit-testable in node.
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**
  * Logger root shared by the glass demo client modules.
@@ -46,27 +47,50 @@ export type PaneCell = readonly PanePoint[];
 export type RandomSource = () => number;
 
 /**
+ * Fewest vertices a surviving cell may have; anything smaller is a sliver.
+ */
+const MIN_CELL_VERTICES = 3;
+
+/**
  * Tuning constants for {@link fractureCells}. Grouped as one object so the
  * numbers read as a table rather than scattered magic values.
  */
 export const FRACTURE_TUNING = {
-  /** Fewest radial spokes any web gets; below this the web reads as a star. */
+  /**
+   * Fewest radial spokes any web gets; below this the web reads as a star.
+   */
   spokeCountMin: 12,
-  /** Random extra spokes on top of {@link FRACTURE_TUNING.spokeCountMin}. */
+  /**
+   * Random extra spokes on top of {@link FRACTURE_TUNING.spokeCountMin}.
+   */
   spokeCountExtra: 5,
-  /** Innermost ring radius in meters; sets the pulverized-center scale. */
+  /**
+   * Innermost ring radius in meters; sets the pulverized-center scale.
+   */
   firstRingRadius: 0.055,
-  /** Smallest ring-to-ring growth factor; rings spread geometrically. */
+  /**
+   * Smallest ring-to-ring growth factor; rings spread geometrically.
+   */
   ringGrowthMin: 1.55,
-  /** Random extra growth on top of {@link FRACTURE_TUNING.ringGrowthMin}. */
+  /**
+   * Random extra growth on top of {@link FRACTURE_TUNING.ringGrowthMin}.
+   */
   ringGrowthExtra: 0.35,
-  /** Angular jitter as a fraction of the spoke spacing. */
+  /**
+   * Angular jitter as a fraction of the spoke spacing.
+   */
   angularJitter: 0.22,
-  /** Radial jitter as a fraction of each ring radius. */
+  /**
+   * Radial jitter as a fraction of each ring radius.
+   */
   radialJitter: 0.12,
-  /** Probability of dropping a seed from the outermost two rings. */
+  /**
+   * Probability of dropping a seed from the outermost two rings.
+   */
   outerDropout: 0.4,
-  /** Cells smaller than this area in square meters are discarded as slivers. */
+  /**
+   * Cells smaller than this area in square meters are discarded as slivers.
+   */
   minCellArea: 0.0001,
 } as const;
 
@@ -88,12 +112,17 @@ export function polygonArea(polygon: PaneCell,): number {
    * Doubled signed area summed edge by edge; sign encodes winding.
    */
   const doubled = polygon.reduce(
-    function accumulateEdge(sum: number, vertex: PanePoint, index: number,): number {
+    function accumulateEdge(
+      sum: number,
+      vertex: PanePoint,
+      index: number,
+    ): number {
       /**
        * Edge partner: next vertex, wrapping to close the polygon.
        */
-      const next = polygon[(index + 1) % polygon.length] as PanePoint;
-      return sum + vertex.x * next.y - next.x * vertex.y;
+      const next = nonNullishOrThrow(polygon[(index + 1) % polygon.length],);
+      return (sum + (vertex.x
+        * next.y)) - (next.x * vertex.y);
     },
     0,
   );
@@ -119,7 +148,10 @@ export function polygonCentroid(polygon: PaneCell,): PanePoint {
    * Component-wise vertex sum feeding the mean.
    */
   const total = polygon.reduce(
-    function accumulateVertex(sum: PanePoint, vertex: PanePoint,): PanePoint {
+    function accumulateVertex(
+      sum: PanePoint,
+      vertex: PanePoint,
+    ): PanePoint {
       return {
         x: sum.x + vertex.x,
         y: sum.y + vertex.y,
@@ -183,25 +215,27 @@ export function clipConvexPolygon(
     /**
      * Edge partner: next vertex, wrapping to close the polygon.
      */
-    const next = polygon[(index + 1) % polygon.length] as PanePoint;
+    const next = nonNullishOrThrow(polygon[(index + 1) % polygon.length],);
     /**
      * Signed distance of this vertex from the boundary; non-positive is inside.
      */
-    const hereDistance = vertex.x * normalX + vertex.y * normalY - offset;
+    const hereDistance = ((vertex.x * normalX) + (vertex.y * normalY)) - offset;
     /**
      * Signed distance of the edge partner from the boundary.
      */
-    const nextDistance = next.x * normalX + next.y * normalY - offset;
+    const nextDistance = ((next.x * normalX) + (next.y * normalY)) - offset;
     if (hereDistance <= 0)
       kept.push(vertex,);
-    if (hereDistance <= 0 !== nextDistance <= 0) {
+    if ((hereDistance <= 0) !== (nextDistance <= 0)) {
       /**
        * Interpolation parameter where this edge crosses the boundary.
        */
       const crossing = hereDistance / (hereDistance - nextDistance);
       kept.push({
-        x: vertex.x + (next.x - vertex.x) * crossing,
-        y: vertex.y + (next.y - vertex.y) * crossing,
+        x: vertex.x + ((next.x - vertex.x)
+          * crossing),
+        y: vertex.y + ((next.y - vertex.y)
+          * crossing),
       },);
     }
   }
@@ -223,6 +257,8 @@ export function clipConvexPolygon(
  *
  * @param random - uniform random source, injected for determinism
  *
+ * @mutates random - every draw advances the caller-supplied generator state.
+ *
  * @returns seeds inside the pane, impact point first
  *
  * @example
@@ -241,12 +277,12 @@ export function radialFractureSeeds(
     halfHeight,
     impact,
     random,
-  }: Readonly<{
-    halfWidth: number;
-    halfHeight: number;
-    impact: PanePoint;
-    random: RandomSource;
-  }>,
+  }: {
+    readonly halfWidth: number;
+    readonly halfHeight: number;
+    readonly impact: PanePoint;
+    readonly random: RandomSource;
+  },
 ): PanePoint[] {
   /**
    * Spoke count for this web; fixed per fracture so rings align radially.
@@ -259,9 +295,15 @@ export function radialFractureSeeds(
    */
   const spokeAngles = Array.from(
     { length: spokeCount, },
-    function spokeAngle(ignored: unknown, index: number,): number {
-      return (index + (random() - 1 / 2) * FRACTURE_TUNING.angularJitter * 2)
-        * (Math.PI * 2 / spokeCount);
+    function spokeAngle(
+      _ignored: unknown,
+      index: number,
+    ): number {
+      return (index + ((random() - (1
+        / 2))
+        * FRACTURE_TUNING.angularJitter
+        * 2))
+        * ((Math.PI * 2) / spokeCount);
     },
   );
   /**
@@ -279,7 +321,8 @@ export function radialFractureSeeds(
   for (
     let radius = FRACTURE_TUNING.firstRingRadius;
     radius < maxReach;
-    radius *= FRACTURE_TUNING.ringGrowthMin + random() * FRACTURE_TUNING.ringGrowthExtra
+    radius *= FRACTURE_TUNING.ringGrowthMin + (random()
+      * FRACTURE_TUNING.ringGrowthExtra)
   )
     ringRadii.push(radius,);
   /**
@@ -291,23 +334,29 @@ export function radialFractureSeeds(
      * Whether this ring belongs to the outer two, which thin out so far
      * cells grow even larger than the geometric growth alone gives.
      */
-    const outer = ringIndex >= ringRadii.length - 2;
+    const outer = ringIndex >= (ringRadii.length
+      - 2);
     for (const angle of spokeAngles) {
-      if (outer && random() < FRACTURE_TUNING.outerDropout)
+      if (outer && (random() < FRACTURE_TUNING.outerDropout))
         continue;
       /**
        * Ring radius with per-seed jitter so rings read as cracks, not circles.
        */
       const jitteredRadius = ringRadius
-        * (1 + (random() - 1 / 2) * FRACTURE_TUNING.radialJitter * 2);
+        * (1 + ((random() - (1
+          / 2))
+          * FRACTURE_TUNING.radialJitter
+          * 2));
       /**
        * Candidate seed position before the pane-bounds check.
        */
       const candidate = {
-        x: impact.x + Math.cos(angle,) * jitteredRadius,
-        y: impact.y + Math.sin(angle,) * jitteredRadius,
+        x: impact.x + (Math.cos(angle,)
+          * jitteredRadius),
+        y: impact.y + (Math.sin(angle,)
+          * jitteredRadius),
       };
-      if (Math.abs(candidate.x,) < halfWidth && Math.abs(candidate.y,) < halfHeight)
+      if ((Math.abs(candidate.x,) < halfWidth) && (Math.abs(candidate.y,) < halfHeight))
         seeds.push(candidate,);
     }
   }
@@ -329,6 +378,8 @@ export function radialFractureSeeds(
  *
  * @param random - uniform random source, injected for determinism
  *
+ * @mutates random - seed generation draws advance the caller-supplied generator state.
+ *
  * @returns convex cells covering the pane, slivers dropped
  *
  * @example
@@ -347,12 +398,12 @@ export function fractureCells(
     halfHeight,
     impact,
     random,
-  }: Readonly<{
-    halfWidth: number;
-    halfHeight: number;
-    impact: PanePoint;
-    random: RandomSource;
-  }>,
+  }: {
+    readonly halfWidth: number;
+    readonly halfHeight: number;
+    readonly impact: PanePoint;
+    readonly random: RandomSource;
+  },
 ): PaneCell[] {
   /**
    * Inner logger tagged with this function name for traceable log lines.
@@ -396,25 +447,28 @@ export function fractureCells(
    */
   const cells = seeds
     .map(function cellForSeed(seed: PanePoint,): PaneCell {
-      /**
-       * Region owned by this seed, shrunk bisector by bisector.
-       */
-      let region = paneRect;
-      for (const other of seeds) {
-        if (other === seed || region.length === 0)
-          continue;
-        region = clipConvexPolygon({
-          polygon: region,
-          normalX: other.x - seed.x,
-          normalY: other.y - seed.y,
-          offset: (other.x * other.x + other.y * other.y
-            - seed.x * seed.x - seed.y * seed.y) / 2,
-        },);
-      }
-      return region;
+      // Region owned by this seed, shrunk bisector by bisector.
+      return seeds.reduce(
+        function clipAgainstBisector(
+          region: PaneCell,
+          other: PanePoint,
+        ): PaneCell {
+          if ((other === seed) || (region.length === 0))
+            return region;
+          return clipConvexPolygon({
+            polygon: region,
+            normalX: other.x - seed.x,
+            normalY: other.y - seed.y,
+            offset: (((other.x * other.x) + (other.y * other.y))
+              - (seed.x * seed.x)
+              - (seed.y * seed.y)) / 2,
+          },);
+        },
+        paneRect,
+      );
     },)
     .filter(function keepSubstantial(cell: PaneCell,): boolean {
-      return cell.length >= 3 && polygonArea(cell,) > FRACTURE_TUNING.minCellArea;
+      return (cell.length >= MIN_CELL_VERTICES) && (polygonArea(cell,) > FRACTURE_TUNING.minCellArea);
     },);
   innerL.debug(`fractured pane into ${String(cells.length,)} cells from ${
     String(seeds.length,)

@@ -6,11 +6,33 @@
  * three.js-free and unit-testable; the debris system wraps the arrays in a
  * BufferGeometry.
  */
-import type {
-  PaneCell,
-  PanePoint,
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
+import {
+  type PaneCell,
+  type PanePoint,
+  polygonCentroid,
 } from './fracture.ts';
-import { polygonCentroid, } from './fracture.ts';
+
+/**
+ * Components per position or normal vector in the flat buffers.
+ */
+const XYZ = 3;
+
+/**
+ * Fewest vertices a polygon can have and still enclose area.
+ */
+const MIN_POLYGON_VERTICES = 3;
+
+/**
+ * Vertices each side wall carries so it gets flat outward normals.
+ */
+const WALL_VERTICES = 4;
+
+/**
+ * Indices each side wall emits: two triangles.
+ */
+const WALL_INDICES = 6;
 
 /**
  * Mesh arrays for one shard prism, ready for BufferGeometry attributes.
@@ -18,13 +40,21 @@ import { polygonCentroid, } from './fracture.ts';
  * shard instances rotate around their own center of mass.
  */
 export type PrismMesh = {
-  /** Interleaved xyz vertex positions, meters, shard-local. */
+  /**
+   * Interleaved xyz vertex positions, meters, shard-local.
+   */
   readonly positions: Float32Array;
-  /** Per-vertex unit normals matching {@link PrismMesh.positions}. */
+  /**
+   * Per-vertex unit normals matching {@link PrismMesh.positions}.
+   */
   readonly normals: Float32Array;
-  /** Triangle indices into the vertex arrays. */
+  /**
+   * Triangle indices into the vertex arrays.
+   */
   readonly indices: Uint16Array;
-  /** Centroid the polygon was recentered around, in pane-local meters. */
+  /**
+   * Centroid the polygon was recentered around, in pane-local meters.
+   */
   readonly pivot: PanePoint;
 };
 
@@ -61,7 +91,7 @@ export function prismFromPolygon(
     thickness: number;
   }>,
 ): PrismMesh {
-  if (polygon.length < 3)
+  if (polygon.length < MIN_POLYGON_VERTICES)
     throw new RangeError(`prism needs at least 3 vertices, got ${String(polygon.length,)}`,);
   /**
    * Recenter pivot so the shard spins around its own center of mass.
@@ -87,19 +117,20 @@ export function prismFromPolygon(
   /**
    * Vertex total: front ring, back ring, and 4 vertices per side wall.
    */
-  const vertexTotal = count * 2 + count * 4;
+  const vertexTotal = (count * 2) + (count * WALL_VERTICES);
   /**
    * Index total: two fan faces plus two triangles per side wall.
    */
-  const indexTotal = (count - 2) * 3 * 2 + count * 6;
+  const indexTotal = ((count - 2) * XYZ
+    * 2) + (count * WALL_INDICES);
   /**
    * Position buffer filled block by block below.
    */
-  const positions = new Float32Array(vertexTotal * 3,);
+  const positions = new Float32Array(vertexTotal * XYZ,);
   /**
    * Normal buffer parallel to {@link positions}.
    */
-  const normals = new Float32Array(vertexTotal * 3,);
+  const normals = new Float32Array(vertexTotal * XYZ,);
   /**
    * Index buffer; Uint16 suffices because shard prisms stay tiny.
    */
@@ -112,7 +143,7 @@ export function prismFromPolygon(
         vertex.y,
         half,
       ],
-      index * 3,
+      index * XYZ,
     );
     normals.set(
       [
@@ -120,7 +151,7 @@ export function prismFromPolygon(
         0,
         1,
       ],
-      index * 3,
+      index * XYZ,
     );
     positions.set(
       [
@@ -128,7 +159,7 @@ export function prismFromPolygon(
         vertex.y,
         -half,
       ],
-      (count + index) * 3,
+      (count + index) * XYZ,
     );
     normals.set(
       [
@@ -136,34 +167,36 @@ export function prismFromPolygon(
         0,
         -1,
       ],
-      (count + index) * 3,
+      (count + index) * XYZ,
     );
   }
   /**
-   * Index cursor advanced as faces are emitted.
+   * Index slots taken by one fan face; the back fan and the walls start
+   * at fixed offsets computed from it, so no cursor mutates.
    */
-  let cursor = 0;
-  for (let fan = 1; fan < count - 1; fan++) {
+  const fanIndexCount = (count - 2) * XYZ;
+  for (let fan = 1; fan < (count
+    - 1); fan++) {
     indices.set(
       [
         0,
         fan,
         fan + 1,
       ],
-      cursor,
+      (fan - 1) * XYZ,
     );
-    cursor += 3;
   }
-  for (let fan = 1; fan < count - 1; fan++) {
+  for (let fan = 1; fan < (count
+    - 1); fan++) {
     indices.set(
       [
         count,
-        count + fan + 1,
+        count + fan
+          + 1,
         count + fan,
       ],
-      cursor,
+      fanIndexCount + ((fan - 1) * XYZ),
     );
-    cursor += 3;
   }
   //endregion
   //region Side walls: one quad per edge with a flat outward normal
@@ -171,12 +204,15 @@ export function prismFromPolygon(
     /**
      * Edge partner: next ring vertex, wrapping to close the outline.
      */
-    const next = ring[(index + 1) % count] as PanePoint;
+    const next = nonNullishOrThrow(ring[(index + 1) % count],);
     /**
      * Outward wall normal: edge direction rotated -90 degrees, normalized.
      * Counterclockwise winding puts the outside on this side.
      */
-    const edgeLength = Math.hypot(next.x - vertex.x, next.y - vertex.y,) || 1;
+    const edgeLength = Math.hypot(
+      next.x - vertex.x,
+      next.y - vertex.y,
+    ) || 1;
     /**
      * Wall normal x component after rotation and normalization.
      */
@@ -184,11 +220,11 @@ export function prismFromPolygon(
     /**
      * Wall normal y component after rotation and normalization.
      */
-    const wallY = -(next.x - vertex.x) / edgeLength;
+    const wallY = (-(next.x - vertex.x)) / edgeLength;
     /**
      * First vertex slot of this wall's 4-vertex block.
      */
-    const base = count * 2 + index * 4;
+    const base = (count * 2) + (index * WALL_VERTICES);
     positions.set(
       [
         vertex.x,
@@ -204,16 +240,16 @@ export function prismFromPolygon(
         vertex.y,
         -half,
       ],
-      base * 3,
+      base * XYZ,
     );
-    for (let corner = 0; corner < 4; corner++)
+    for (let corner = 0; corner < WALL_VERTICES; corner++)
       normals.set(
         [
           wallX,
           wallY,
           0,
         ],
-        (base + corner) * 3,
+        (base + corner) * XYZ,
       );
     indices.set(
       [
@@ -221,12 +257,11 @@ export function prismFromPolygon(
         base + 2,
         base + 1,
         base,
-        base + 3,
+        base + (WALL_VERTICES - 1),
         base + 2,
       ],
-      cursor,
+      (fanIndexCount * 2) + (index * WALL_INDICES),
     );
-    cursor += 6;
   }
   //endregion
   return {

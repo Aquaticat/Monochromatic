@@ -13,6 +13,7 @@ import {
 import {
   type BallBody,
   GRAVITY,
+  PANE_MISS,
   paneSegmentCrossing,
   SHARD_CONTACT_TUNING,
   type ShardBody,
@@ -151,14 +152,14 @@ await describe({
          */
         const contact = stepShardBody({
           body: shard,
-          dt: 1 / 1000,
+          dt: 1 / 1_000,
           floorY: 0,
         },);
         expect(contact,).toBe(true,);
         expect(shard.settled,).toBe(false,);
         expect(shard.vy,).toBeGreaterThan(0,);
         expect(shard.vy,).toBeCloseTo(
-          (3 + GRAVITY / 1000) * SHARD_CONTACT_TUNING.restitution,
+          (3 + (GRAVITY / 1_000)) * SHARD_CONTACT_TUNING.restitution,
           6,
         );
         expect(shard.vx,).toBeCloseTo(SHARD_CONTACT_TUNING.tangentialKeep, 10,);
@@ -179,7 +180,7 @@ await describe({
         },);
         stepShardBody({
           body: shard,
-          dt: 1 / 1000,
+          dt: 1 / 1_000,
           floorY: 0,
         },);
         expect(shard.settled,).toBe(true,);
@@ -230,9 +231,11 @@ await describe({
           toZ: -2,
           ...PANE,
         },);
-        expect(hit?.x,).toBeCloseTo(0.5, 10,);
-        expect(hit?.y,).toBeCloseTo(-0.5, 10,);
-        expect(hit?.t,).toBeCloseTo(1 / 2, 10,);
+        if (hit === PANE_MISS)
+          throw new Error('expected a crossing for a through shot',);
+        expect(hit.x,).toBeCloseTo(0.5, 10,);
+        expect(hit.y,).toBeCloseTo(-0.5, 10,);
+        expect(hit.t,).toBeCloseTo(1 / 2, 10,);
       },
     },),
 
@@ -247,7 +250,7 @@ await describe({
           toY: 0,
           toZ: -1,
           ...PANE,
-        },),).toBe(undefined,);
+        },),).toBe(PANE_MISS,);
       },
     },),
 
@@ -262,7 +265,7 @@ await describe({
           toY: 0,
           toZ: 1,
           ...PANE,
-        },),).toBe(undefined,);
+        },),).toBe(PANE_MISS,);
       },
     },),
   ],

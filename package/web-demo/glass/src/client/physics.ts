@@ -20,13 +20,21 @@ export const GRAVITY = 9.81;
  * scattered magic values.
  */
 export const SHARD_CONTACT_TUNING = {
-  /** Vertical velocity kept after a floor bounce (restitution). */
+  /**
+   * Vertical velocity kept after a floor bounce (restitution).
+   */
   restitution: 0.34,
-  /** Horizontal velocity kept after a floor bounce (friction loss). */
+  /**
+   * Horizontal velocity kept after a floor bounce (friction loss).
+   */
   tangentialKeep: 0.72,
-  /** Spin kept after a floor bounce. */
+  /**
+   * Spin kept after a floor bounce.
+   */
   spinKeep: 0.5,
-  /** Bounces slower than this settle instead of bouncing again, m/s. */
+  /**
+   * Bounces slower than this settle instead of bouncing again, m/s.
+   */
   settleSpeed: 0.55,
 } as const;
 
@@ -34,17 +42,29 @@ export const SHARD_CONTACT_TUNING = {
  * Point mass state for a thrown ball.
  */
 export type BallBody = {
-  /** Position x, meters, world space. */
+  /**
+   * Position x, meters, world space.
+   */
   px: number;
-  /** Position y, meters, world space. */
+  /**
+   * Position y, meters, world space.
+   */
   py: number;
-  /** Position z, meters, world space. */
+  /**
+   * Position z, meters, world space.
+   */
   pz: number;
-  /** Velocity x, m/s. */
+  /**
+   * Velocity x, m/s.
+   */
   vx: number;
-  /** Velocity y, m/s. */
+  /**
+   * Velocity y, m/s.
+   */
   vy: number;
-  /** Velocity z, m/s. */
+  /**
+   * Velocity z, m/s.
+   */
   vz: number;
 };
 
@@ -53,15 +73,25 @@ export type BallBody = {
  * settled latch that freezes the body once it comes to rest on the floor.
  */
 export type ShardBody = BallBody & {
-  /** Angular velocity around x, rad/s. */
+  /**
+   * Angular velocity around x, rad/s.
+   */
   wx: number;
-  /** Angular velocity around y, rad/s. */
+  /**
+   * Angular velocity around y, rad/s.
+   */
   wy: number;
-  /** Angular velocity around z, rad/s. */
+  /**
+   * Angular velocity around z, rad/s.
+   */
   wz: number;
-  /** Distance from shard pivot to its lowest point, meters. */
+  /**
+   * Distance from shard pivot to its lowest point, meters.
+   */
   restHeight: number;
-  /** Once true the shard stops integrating and lies still. */
+  /**
+   * Once true the shard stops integrating and lies still.
+   */
   settled: boolean;
 };
 
@@ -135,7 +165,7 @@ export function stepShardBody(
    * Height at which the shard's lowest point touches the floor.
    */
   const contactHeight = floorY + body.restHeight;
-  if (body.py > contactHeight || body.vy > 0)
+  if ((body.py > contactHeight) || (body.vy > 0))
     return false;
   body.py = contactHeight;
   /**
@@ -162,15 +192,27 @@ export function stepShardBody(
 }
 
 /**
+ * Sentinel reported when a movement segment misses the pane: no crossing
+ * inside the rectangle, or no plane crossing at all.
+ */
+export const PANE_MISS: unique symbol = Symbol('swept segment missed the pane rectangle',);
+
+/**
  * Crossing of a movement segment with the pane midplane, in pane-local
  * coordinates.
  */
 export type PaneCrossing = {
-  /** Crossing x in pane-local meters. */
+  /**
+   * Crossing x in pane-local meters.
+   */
   readonly x: number;
-  /** Crossing y in pane-local meters. */
+  /**
+   * Crossing y in pane-local meters.
+   */
   readonly y: number;
-  /** Segment interpolation parameter of the crossing, 0 to 1. */
+  /**
+   * Segment interpolation parameter of the crossing, 0 to 1.
+   */
   readonly t: number;
 };
 
@@ -199,8 +241,8 @@ export type PaneCrossing = {
  *
  * @param halfHeight - pane half height, meters
  *
- * @returns crossing point and parameter, or undefined when the segment
- *   misses the pane
+ * @returns crossing point and parameter, or {@link PANE_MISS} when the
+ *   segment misses the pane
  *
  * @example
  * ```ts
@@ -231,9 +273,9 @@ export function paneSegmentCrossing(
     halfWidth: number;
     halfHeight: number;
   }>,
-): PaneCrossing | undefined {
-  if (fromZ <= 0 === toZ <= 0)
-    return undefined;
+): PaneCrossing | typeof PANE_MISS {
+  if ((fromZ <= 0) === (toZ <= 0))
+    return PANE_MISS;
   /**
    * Interpolation parameter where the segment crosses z = 0.
    */
@@ -241,13 +283,15 @@ export function paneSegmentCrossing(
   /**
    * Crossing x on the pane plane.
    */
-  const x = fromX + (toX - fromX) * t;
+  const x = fromX + ((toX - fromX)
+    * t);
   /**
    * Crossing y on the pane plane.
    */
-  const y = fromY + (toY - fromY) * t;
-  if (Math.abs(x,) > halfWidth || Math.abs(y,) > halfHeight)
-    return undefined;
+  const y = fromY + ((toY - fromY)
+    * t);
+  if ((Math.abs(x,) > halfWidth) || (Math.abs(y,) > halfHeight))
+    return PANE_MISS;
   return {
     x,
     y,

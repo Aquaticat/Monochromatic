@@ -54,7 +54,7 @@ await describe({
         expect(TRIANGLE_PRISM.positions,).toHaveLength(TRIANGLE.length * 6 * 3,);
         expect(TRIANGLE_PRISM.normals,).toHaveLength(TRIANGLE.length * 6 * 3,);
         expect(TRIANGLE_PRISM.indices,).toHaveLength(
-          (TRIANGLE.length - 2) * 3 * 2 + TRIANGLE.length * 6,
+          ((TRIANGLE.length - 2) * 3 * 2) + (TRIANGLE.length * 6),
         );
       },
     },),
@@ -82,13 +82,13 @@ await describe({
          */
         const zs = Array.from(
           { length: TRIANGLE_PRISM.positions.length / 3, },
-          function zAt(ignored: unknown, index: number,): number {
-            return TRIANGLE_PRISM.positions[index * 3 + 2] as number;
+          function zAt(_ignored: unknown, index: number,): number {
+            return TRIANGLE_PRISM.positions[(index * 3) + 2] as number;
           },
         );
         // Float32Array storage rounds 0.005; assert at float32 precision.
         expect(Math.max(...zs,),).toBeCloseTo(THICKNESS / 2, 6,);
-        expect(Math.min(...zs,),).toBeCloseTo(-THICKNESS / 2, 6,);
+        expect(Math.min(...zs,),).toBeCloseTo((-THICKNESS) / 2, 6,);
       },
     },),
 
@@ -103,12 +103,12 @@ await describe({
     it({
       name: 'emits unit-length normals everywhere',
       fn: async function normalsAreUnit(): Promise<void> {
-        for (let vertex = 0; vertex < TRIANGLE_PRISM.normals.length / 3; vertex++)
+        for (let vertex = 0; vertex < (TRIANGLE_PRISM.normals.length / 3); vertex++)
           expect(
             Math.hypot(
               TRIANGLE_PRISM.normals[vertex * 3] as number,
-              TRIANGLE_PRISM.normals[vertex * 3 + 1] as number,
-              TRIANGLE_PRISM.normals[vertex * 3 + 2] as number,
+              TRIANGLE_PRISM.normals[(vertex * 3) + 1] as number,
+              TRIANGLE_PRISM.normals[(vertex * 3) + 2] as number,
             ),
           ).toBeCloseTo(1, 6,);
       },

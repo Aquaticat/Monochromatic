@@ -37,12 +37,13 @@ import {
  */
 function deterministicRandom(seed: number,): RandomSource {
   /**
-   * Generator state advanced on every draw.
+   * Generator state advanced on every draw; object-wrapped so the closure
+   * mutates a property instead of a root binding.
    */
-  let state = seed >>> 0;
+  const state = { value: Math.trunc(Math.abs(seed,),) % (2 ** 32), };
   return function draw(): number {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    return state / 2 ** 32;
+    state.value = ((state.value * 1_664_525) + 1_013_904_223) % (2 ** 32);
+    return state.value / (2 ** 32);
   };
 }
 
@@ -162,7 +163,9 @@ await describe({
     it({
       name: 'ignores winding direction',
       fn: async function ignoresWinding(): Promise<void> {
-        expect(polygonArea([...UNIT_SQUARE,].reverse(),),).toBeCloseTo(1, 10,);
+        expect(
+          polygonArea([...UNIT_SQUARE,].toReversed(),),
+        ).toBeCloseTo(1, 10,);
       },
     },),
   ],
@@ -202,7 +205,7 @@ await describe({
         },);
         expect(polygonArea(half,),).toBeCloseTo(1 / 2, 10,);
         for (const vertex of half)
-          expect(vertex.x,).toBeLessThanOrEqual(1 / 2 + 1e-12,);
+          expect(vertex.x,).toBeLessThanOrEqual((1 / 2) + 1e-12,);
       },
     },),
 
@@ -297,7 +300,7 @@ await describe({
         /**
          * Near-region area for the density comparison, square meters.
          */
-        const nearArea = Math.PI * 0.3 ** 2;
+        const nearArea = Math.PI * (0.3 ** 2);
         /**
          * Whole-pane area: generous upper bound for the far region, which
          * only weakens the assertion.

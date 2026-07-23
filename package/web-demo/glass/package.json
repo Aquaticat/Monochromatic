@@ -7,8 +7,10 @@
   "main": "src/build.ts",
   "version": "0.0.1",
   "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-or-throw": "workspace:*",
     "three": "catalog:"
   },
   "devDependencies": {
