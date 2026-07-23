@@ -25,14 +25,15 @@ that:
   DOM,
   and Node boundaries.
 
-The active question is which supported extension path can meet these requirements
-without modifying either linter upstream.
-This is an architectural evaluation,
-not authorization to implement or adopt a dependency.
+The selected implementation remains an Oxlint JavaScript rule
+and uses Oxlint's released JavaScript-plugin boundary.
+Demand-driven traversal now satisfies the measured latency requirement.
+Catalog removal and the stronger exact-source-or-isolation guarantee remain separate unfinished work.
 
 ## User requirements
 
 - Preserve a fail-closed guarantee rather than silently trusting unresolved behavior.
+- Keep the implementation as an Oxlint rule.
 - Never fork or contribute to Oxlint or `tsgolint`.
 - Treat 10 seconds as the maximum acceptable target for:
 
@@ -137,17 +138,41 @@ or an unmeasured daemon does not satisfy the cold target.
 Budget exhaustion must report incomplete or opaque analysis,
 never assume no effect.
 
+The demand-driven implementation landed in commits `6f473bea6` through `656444e0a`.
+Its exact final measurements at commit `656444e0a` were:
+
+- cold empty state:
+  928 milliseconds in Oxlint and 2.11 seconds wall time;
+- warm unchanged state:
+  918 milliseconds in Oxlint and 1.49 seconds wall time;
+- changed source:
+  924 milliseconds in Oxlint and 2.11 seconds wall time;
+- invalidated compiler-option surface:
+  922 milliseconds in Oxlint and 2.16 seconds wall time.
+
+All cases processed 13 files with 479 rules and reported zero diagnostics.
+The pre-change baseline reproduced at 49.6 seconds.
+
+The implementation loads active sources and follows exact owned callee and callback source identities.
+Schema-3 cache entries bind semantic call edges as well as module edges.
+Missing owned sources,
+missing callable summaries,
+and exhausted explicit analysis budgets fail closed.
+Because `ForeignBorrowed` is declaration-wide,
+encountering explicit foreign provenance still expands the complete owned graph before propagating it.
+
 ## Current architectural ranking
 
 ### Demand-driven source proof with exact generated certificates
 
-This remains the leading semantic design only if a prototype meets the cold target.
-Start from relevant callables in the 13 lint targets,
-follow only edges carrying parameter-derived identity,
-referents,
-callbacks,
-or capabilities,
-and compute fixed points only for reached recursive components.
+This is now the implemented traversal architecture.
+It starts from callables in each active Oxlint source,
+follows exact owned callees and callbacks,
+and recomputes fixed points only when the reached graph expands.
+The exact 13-file cold,
+warm,
+changed,
+and invalidated gates all pass.
 
 Generated summaries are not catalogs when they are reproducible,
 hash-bound to exact source and resolution inputs,
@@ -245,23 +270,16 @@ They are bridge alternatives,
 not semantic engines.
 Their relative ergonomics cannot decide whether the analyzer meets the guarantee or latency target.
 
-## Evaluation candidates
+## Evaluation decision
 
-Prototype in this order:
-
-1.  demand-driven TypeScript/JavaScript analysis using Oxlint's released JavaScript-plugin API;
-2.  project-owned `ttsc` extension composed into the same Mise task;
-3.  Rust Node-API addon retaining TypeScript-Go as semantic authority.
+Demand-driven TypeScript/JavaScript analysis through Oxlint's released JavaScript-plugin API
+is selected and implemented.
+A separate `ttsc` host and Rust Node-API addon are no longer needed for the measured workload.
 
 The `tsgolint` fork,
 native Oxlint fork,
-and upstream-contribution variants are excluded by user requirement.
-Pure Oxc Rust is excluded because its checker performs no type checking.
-
-This is prototype ordering,
-not adoption.
-The decisive evidence is a consumer-boundary prototype on the exact 13-file cold workload.
-Do not recommend Node-API based on language-speed intuition.
+and upstream-contribution variants remain excluded by user requirement.
+Pure Oxc Rust remains excluded because its checker performs no type checking.
 
 ## Research state and next actions
 
@@ -276,12 +294,14 @@ Do not recommend Node-API based on language-speed intuition.
   with synchronous and asynchronous surfaces.
 - The required technology vet report now exists at
   `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`.
-- Measure current analysis time by phase and synchronous TypeScript RPC count.
-- Prototype demand-driven traversal through the incumbent bridge first.
-- Compare a separate `ttsc` extension only if synchronous checker RPC prevents the first prototype from meeting latency.
-- Prototype only in a disposable worktree or scratch package,
-  never through main-worktree product mutations during this evaluation.
-- The prototype must preserve diagnostics on the semantic corpus and exercise the exact 13-file command with cold state.
+- Demand-driven traversal through the incumbent bridge is implemented and verified.
+- Keep `ttsc` and Rust Node-API rejected unless a future measured workload fails after algorithmic scope is minimized.
+- Monitor the complete-graph `ForeignBorrowed` fallback separately from the 13-file target.
+- Continue the catalog-removal design:
+  exact implementation proof,
+  verified isolation,
+  or rejection remains the intended stronger policy.
+- Preserve fail-closed budget and missing-edge regressions during later cache or traversal changes.
 
 ## Existing commits and worktrees
 
@@ -292,6 +312,11 @@ Do not recommend Node-API based on language-speed intuition.
 - `90c7f9d00` records the initial native-analysis technology audit.
 - `55e0b8b51` excludes Oxlint and `tsgolint` forks or upstream contributions from that audit.
 - `c376888c2` records the direct-checker Go findings in this handover.
+- `1590961d4` adds demand-scope regressions.
+- `6f473bea6` implements demand-driven effect traversal and schema-3 semantic edges.
+- `4bdbc0478` adds fail-closed missing-edge and budget handling.
+- `656444e0a` is the final code commit used by the acceptance measurements.
+- `16a58fdf1` records the implementation and TypeScript alias guard in durable docs.
 - `/var/home/user/temp/agent/readonly-no-package-catalog-20260722` contains the package-catalog-removal experiment and
   must remain intact.
 
