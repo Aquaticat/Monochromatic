@@ -120,44 +120,25 @@ export function unwrapBindingPattern(pattern: ReadonlyRecord,): ReadonlyRecord {
    * Mutable cursor object avoids function-root `let` while walking wrapper nodes iteratively.
    */
   const cursor = { current: pattern, };
-  while (true) {
+  while ((cursor.current.type === 'AssignmentPattern')
+    || (cursor.current.type === 'RestElement')
+    || (cursor.current.type === 'TSParameterProperty'))
+  {
     /**
      * Current wrapper candidate for this loop iteration.
      */
     const { current, } = cursor;
-    if (current.type
-      === 'AssignmentPattern') {
-      /**
-       * Binding side of `name = default`.
-       */
-      const { left, } = current;
-      if (!sharedIsRecord(left,))
-        return current;
-      cursor.current = left;
-      continue;
-    }
-    if (current.type
-      === 'RestElement') {
-      /**
-       * Inner binding pattern of `...rest`.
-       */
-      const { argument, } = current;
-      if (!sharedIsRecord(argument,))
-        return current;
-      cursor.current = argument;
-      continue;
-    }
-    if (current.type
-      === 'TSParameterProperty') {
-      /**
-       * Inner parameter of a TS constructor property parameter.
-       */
-      const { parameter, } = current;
-      if (!sharedIsRecord(parameter,))
-        return current;
-      cursor.current = parameter;
-      continue;
-    }
-    return current;
+    /**
+     * Inner binding selected by current wrapper kind.
+     */
+    const inner = current.type === 'AssignmentPattern'
+      ? current.left
+      : current.type === 'RestElement'
+        ? current.argument
+        : current.parameter;
+    if (!sharedIsRecord(inner,))
+      return current;
+    cursor.current = inner;
   }
+  return cursor.current;
 }
