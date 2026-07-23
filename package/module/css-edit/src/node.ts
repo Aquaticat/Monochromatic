@@ -136,6 +136,11 @@ export type CssEditState = {
  * @param node - Node under test.
  *
  * @returns Whether the node is an at-rule.
+ *
+ * @example
+ * ```ts
+ * isCssAtRule({ kind: 'trivia', tokens: [] }); // => false
+ * ```
  */
 export function isCssAtRule(node: CssNode,): node is CssAtRule {
   return node.kind === 'atRule';
@@ -147,6 +152,11 @@ export function isCssAtRule(node: CssNode,): node is CssAtRule {
  * @param node - Node under test.
  *
  * @returns Whether the node is a qualified rule.
+ *
+ * @example
+ * ```ts
+ * isCssRule({ kind: 'trivia', tokens: [] }); // => false
+ * ```
  */
 export function isCssRule(node: CssNode,): node is CssRule {
   return node.kind === 'rule';
@@ -158,6 +168,11 @@ export function isCssRule(node: CssNode,): node is CssRule {
  * @param node - Node under test.
  *
  * @returns Whether the node is a trivia run.
+ *
+ * @example
+ * ```ts
+ * isCssTrivia({ kind: 'trivia', tokens: [] }); // => true
+ * ```
  */
 export function isCssTrivia(node: CssNode,): node is CssTrivia {
   return node.kind === 'trivia';
@@ -169,6 +184,11 @@ export function isCssTrivia(node: CssNode,): node is CssTrivia {
  * @param node - Node under test.
  *
  * @returns Whether the node is a declaration run.
+ *
+ * @example
+ * ```ts
+ * isCssDeclaration({ kind: 'declaration', tokens: [] }); // => true
+ * ```
  */
 export function isCssDeclaration(node: CssNode,): node is CssDeclaration {
   return node.kind === 'declaration';

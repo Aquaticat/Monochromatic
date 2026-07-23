@@ -20,6 +20,7 @@ import {
   isClosingToken,
   isOpeningToken,
   isTriviaToken,
+  tokenData,
 } from './token.ts';
 
 //region Step results
@@ -134,20 +135,21 @@ function consumeAtRule({
     },);
 
   /**
-   * Parsed data slot of the at-keyword token, holding the unescaped name.
+   * Parsed data of the at-keyword token, holding the unescaped name.
    */
-  const [, , , , atData,] = atToken;
+  const atData = tokenData(atToken,);
 
-  /**
-   * Nesting depth relative to the prelude's own level.
-   */
-  let depth = 0;
-  /**
-   * Scan cursor over prelude tokens.
-   */
-  let index = start + 1;
+  return (function scanAtRule(): ConsumedNode<CssAtRule> {
+    /**
+     * Nesting depth relative to the prelude's own level.
+     */
+    let depth = 0;
+    /**
+     * Scan cursor over prelude tokens.
+     */
+    let index = start + 1;
 
-  while (true) {
+    while (true) {
     /**
      * Token at the scan cursor.
      */
@@ -222,7 +224,8 @@ function consumeAtRule({
         },);
     }
     index += 1;
-  }
+    }
+  })();
 }
 
 //endregion At-rule consumer
@@ -244,6 +247,12 @@ function consumeAtRule({
  * when inside a block.
  *
  * @throws CssParseError on a stray `}` at top level or an unclosed block.
+ *
+ * @example
+ * ```ts
+ * consumeContents({ tokens, start: 0, insideBlock: false });
+ * // => { children: [...], nextIndex: 12 }
+ * ```
  */
 export function consumeContents({
   tokens,
@@ -254,6 +263,7 @@ export function consumeContents({
   readonly start: number;
   readonly insideBlock: boolean;
 },): ConsumedContents {
+  return (function scanContents(): ConsumedContents {
   /**
    * Accumulated child nodes in source order.
    */
@@ -373,6 +383,7 @@ export function consumeContents({
     children.push(rule,);
     index = consumed.nextIndex;
   }
+  })();
 }
 
 //endregion Contents consumer

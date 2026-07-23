@@ -12,6 +12,7 @@ import {
   isClosingToken,
   isOpeningToken,
   isTriviaToken,
+  tokenData,
 } from './token.ts';
 
 //region Classification result
@@ -42,6 +43,30 @@ export type ClassifiedRun = {
 //region Declaration shape probe
 
 /**
+ * Result of probing whether a run starts declaration-shaped: `ident`,
+ * optional trivia, `:`. A non-shaped run forces the rule path.
+ */
+type DeclarationShapeProbe = {
+  readonly shaped: false;
+} | {
+  readonly shaped: true;
+  /**
+   * Index of the colon completing the shape.
+   */
+  readonly colonIndex: number;
+  /**
+   * Whether the ident names a custom property (`--` prefix), which may keep
+   * `{}` blocks in its value.
+   */
+  readonly isCustomProperty: boolean;
+};
+
+/**
+ * Probe miss shared by every non-declaration-shaped return path.
+ */
+const NOT_DECLARATION_SHAPED: DeclarationShapeProbe = { shaped: false, };
+
+/**
  * Finds the colon completing a declaration-shaped start (`ident`, optional
  * trivia, `:`), reporting the classification seed for {@link classifyRun}.
  *
@@ -49,8 +74,7 @@ export type ClassifiedRun = {
  *
  * @param start - Index of the run's first token.
  *
- * @returns Colon index and whether the ident names a custom property, or
- * undefined when the run does not start declaration-shaped.
+ * @returns Probe outcome with colon index and custom-property flag when shaped.
  */
 function probeDeclarationShape({
   tokens,
@@ -58,43 +82,44 @@ function probeDeclarationShape({
 }: {
   readonly tokens: readonly CSSToken[];
   readonly start: number;
-},): {
-  readonly colonIndex: number;
-  readonly isCustomProperty: boolean;
-} | undefined {
+},): DeclarationShapeProbe {
   /**
    * Candidate property-name token.
    */
   const first = tokens[start];
   if ((first === undefined) || (!isTokenIdent(first,)))
-    return undefined;
+    return NOT_DECLARATION_SHAPED;
 
-  /**
-   * Cursor scanning past trivia between the ident and a possible colon.
-   */
-  let probe = start + 1;
-  while (true) {
+  return (function scanForColon(): DeclarationShapeProbe {
     /**
-     * Token at the probe cursor.
+     * Cursor scanning past trivia between the ident and a possible colon.
      */
-    const candidate = tokens[probe];
-    if (candidate === undefined)
-      return undefined;
-    if (isTriviaToken(candidate,)) {
-      probe += 1;
-      continue;
+    let probe = start + 1;
+    while (true) {
+      /**
+       * Token at the probe cursor.
+       */
+      const candidate = tokens[probe];
+      if (candidate === undefined)
+        return NOT_DECLARATION_SHAPED;
+      if (isTriviaToken(candidate,)) {
+        probe += 1;
+        continue;
+      }
+      if (!isTokenColon(candidate,))
+        return NOT_DECLARATION_SHAPED;
+      /**
+       * Parsed data of the ident token, holding the unescaped name.
+       */
+      const identData = tokenData(first,);
+      return {
+        shaped: true,
+        colonIndex: probe,
+        isCustomProperty: identData.value
+          .startsWith('--',),
+      };
     }
-    if (!isTokenColon(candidate,))
-      return undefined;
-    /**
-     * Parsed data slot of the ident token, holding the unescaped name.
-     */
-    const [, , , , identData,] = first;
-    return {
-      colonIndex: probe,
-      isCustomProperty: identData.value.startsWith('--',),
-    };
-  }
+  })();
 }
 
 //endregion Declaration shape probe
@@ -133,92 +158,94 @@ export function classifyRun({
   readonly start: number;
 },): ClassifiedRun {
   /**
-   * Declaration seed when the run opens ident-colon; undefined forces the rule path.
+   * Declaration seed when the run opens ident-colon; a miss forces the rule path.
    */
   const declarationShape = probeDeclarationShape({
     tokens,
     start,
   },);
 
-  /**
-   * Nesting depth relative to the run's own level.
-   */
-  let depth = 0;
-  /**
-   * Scan cursor; declaration scanning starts after the colon, rule scanning at the run start.
-   */
-  let index = declarationShape === undefined
-    ? start
-    : declarationShape.colonIndex + 1;
-
-  while (true) {
+  return (function scanRun(): ClassifiedRun {
     /**
-     * Token at the scan cursor.
+     * Nesting depth relative to the run's own level.
      */
-    const token = tokens[index];
-    if ((token === undefined) || isTokenEOF(token,)) {
-      if (declarationShape !== undefined)
-        return {
-          outcome: 'declaration',
-          endExclusive: index,
-        };
-      throw new CssParseError({
-        message: 'qualified rule prelude reached end of input without a block',
-        offset: token === undefined ? 0 : token[2],
-      },);
-    }
+    let depth = 0;
+    /**
+     * Scan cursor; declaration scanning starts after the colon, rule scanning at the run start.
+     */
+    let index = declarationShape.shaped
+      ? declarationShape.colonIndex + 1
+      : start;
 
-    if (depth === 0) {
-      if (isTokenSemicolon(token,)) {
-        if (declarationShape !== undefined)
-          return {
-            outcome: 'declaration',
-            endExclusive: index + 1,
-          };
-        throw new CssParseError({
-          message: 'qualified rule prelude contains a semicolon before any block',
-          offset: token[2],
-        },);
-      }
-      if (isTokenCloseCurly(token,)) {
-        if (declarationShape !== undefined)
+    while (true) {
+      /**
+       * Token at the scan cursor.
+       */
+      const token = tokens[index];
+      if ((token === undefined) || isTokenEOF(token,)) {
+        if (declarationShape.shaped)
           return {
             outcome: 'declaration',
             endExclusive: index,
           };
         throw new CssParseError({
-          message: 'qualified rule prelude reached the end of its block without a block of its own',
-          offset: token[2],
+          message: 'qualified rule prelude reached end of input without a block',
+          offset: token === undefined ? 0 : token[2],
         },);
       }
-      if (isTokenOpenCurly(token,)) {
-        // A top-level `{` in a non-custom declaration value reclassifies the
-        // run as a rule, mirroring the spec's restart-as-rule step.
-        if ((declarationShape === undefined) || (!declarationShape.isCustomProperty))
-          return {
-            outcome: 'rule',
-            blockOpenIndex: index,
-          };
-        depth += 1;
+
+      if (depth === 0) {
+        if (isTokenSemicolon(token,)) {
+          if (declarationShape.shaped)
+            return {
+              outcome: 'declaration',
+              endExclusive: index + 1,
+            };
+          throw new CssParseError({
+            message: 'qualified rule prelude contains a semicolon before any block',
+            offset: token[2],
+          },);
+        }
+        if (isTokenCloseCurly(token,)) {
+          if (declarationShape.shaped)
+            return {
+              outcome: 'declaration',
+              endExclusive: index,
+            };
+          throw new CssParseError({
+            message: 'qualified rule prelude reached the end of its block without a block of its own',
+            offset: token[2],
+          },);
+        }
+        if (isTokenOpenCurly(token,)) {
+          // A top-level `{` in a non-custom declaration value reclassifies the
+          // run as a rule, mirroring the spec's restart-as-rule step.
+          if ((!declarationShape.shaped) || (!declarationShape.isCustomProperty))
+            return {
+              outcome: 'rule',
+              blockOpenIndex: index,
+            };
+          depth += 1;
+          index += 1;
+          continue;
+        }
+        if (isClosingToken(token,))
+          throw new CssParseError({
+            message: 'unbalanced closing token in content run',
+            offset: token[2],
+          },);
+      }
+      else if (isClosingToken(token,)) {
+        depth -= 1;
         index += 1;
         continue;
       }
-      if (isClosingToken(token,))
-        throw new CssParseError({
-          message: 'unbalanced closing token in content run',
-          offset: token[2],
-        },);
-    }
-    else if (isClosingToken(token,)) {
-      depth -= 1;
-      index += 1;
-      continue;
-    }
 
-    if (isOpeningToken(token,))
-      depth += 1;
-    index += 1;
-  }
+      if (isOpeningToken(token,))
+        depth += 1;
+      index += 1;
+    }
+  })();
 }
 
 //endregion Classifier

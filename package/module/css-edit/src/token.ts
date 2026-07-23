@@ -24,6 +24,11 @@ export type { CSSToken, } from '@csstools/css-tokenizer';
  * @param token - Token under test.
  *
  * @returns Whether nesting depth increases at this token.
+ *
+ * @example
+ * ```ts
+ * isOpeningToken(tokenize({ css: '(' })[0]); // => true
+ * ```
  */
 export function isOpeningToken(token: CSSToken,): boolean {
   return isTokenOpenCurly(token,)
@@ -38,6 +43,11 @@ export function isOpeningToken(token: CSSToken,): boolean {
  * @param token - Token under test.
  *
  * @returns Whether nesting depth decreases at this token.
+ *
+ * @example
+ * ```ts
+ * isClosingToken(tokenize({ css: ')' })[0]); // => true
+ * ```
  */
 export function isClosingToken(token: CSSToken,): boolean {
   return isTokenCloseCurly(token,)
@@ -72,6 +82,35 @@ export function isTriviaToken(token: CSSToken,): boolean {
 }
 
 //endregion Trivia
+
+//region Parsed data
+
+/**
+ * Position of the parsed-data slot in the token tuple.
+ */
+const TOKEN_DATA_SLOT = 4;
+
+/**
+ * Reads a token's parsed-data slot (index 4 of the tuple): the unescaped,
+ * unquoted, or numeric interpretation the tokenizer stores beside the raw
+ * representation.
+ *
+ * @param token - Token tuple to read.
+ *
+ * @returns Parsed data typed per the token kind.
+ *
+ * @example
+ * ```ts
+ * tokenData(atKeywordToken).value; // => 'mixin'
+ * ```
+ */
+export function tokenData<const TokenKind extends CSSToken,>(
+  token: TokenKind,
+): TokenKind[typeof TOKEN_DATA_SLOT] {
+  return token[TOKEN_DATA_SLOT];
+}
+
+//endregion Parsed data
 
 //region Raw text
 

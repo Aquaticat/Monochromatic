@@ -1,7 +1,4 @@
-import {
-  type ParseError,
-  tokenize,
-} from '@csstools/css-tokenizer';
+import { tokenize, } from '@csstools/css-tokenizer';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { StringCss, } from './brand.ts';
 import { CssParseError, } from './errors.ts';
@@ -51,17 +48,31 @@ export function parseCss({
     .trace(`parsing ${String(source.length,)} characters`,);
 
   /**
-   * Tokenizer-reported errors; strict mode turns the first into a throw.
+   * Tokenizer-reported failures reduced to the fields strict mode throws with.
    */
-  const tokenizerErrors: ParseError[] = [];
+  const tokenizerErrors: {
+    readonly message: string;
+    readonly offset: number;
+  }[] = [];
   /**
    * Full token array, EOF token included.
    */
   const tokens = tokenize(
     { css: source, },
     {
-      onParseError: function collectTokenizerError(error: ParseError,): void {
-        tokenizerErrors.push(error,);
+      /**
+       * Records one tokenizer failure for the strict-mode throw.
+       *
+       * @param error - Tokenizer diagnostic, read-only view.
+       */
+      onParseError: function collectTokenizerError(error: {
+        readonly message: string;
+        readonly sourceStart: number;
+      },): void {
+        tokenizerErrors.push({
+          message: error.message,
+          offset: error.sourceStart,
+        },);
       },
     },
   );
@@ -73,7 +84,7 @@ export function parseCss({
   if (firstError !== undefined)
     throw new CssParseError({
       message: `tokenizer error: ${firstError.message}`,
-      offset: firstError.sourceStart,
+      offset: firstError.offset,
     },);
 
   /**

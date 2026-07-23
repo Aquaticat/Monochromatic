@@ -4,6 +4,7 @@
  * @module
  */
 
+import { CSS_TOKENIZER_PACKAGE_EFFECTS, } from './csstools-css-tokenizer-package-effect-catalog.ts';
 import { DOT_PROP_PACKAGE_EFFECTS, } from './dot-prop-package-effect-catalog.ts';
 import type { IntrinsicEffectEntry, } from './intrinsic-effect-catalog.ts';
 import { LEZER_PACKAGE_EFFECTS, } from './lezer-package-effect-catalog.ts';
@@ -25,6 +26,7 @@ import { YUKU_AST_PACKAGE_EFFECTS, } from './yuku-ast-package-effect-catalog.ts'
  * migrating off Optique entirely.
  */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
+  ...CSS_TOKENIZER_PACKAGE_EFFECTS,
   ...DOT_PROP_PACKAGE_EFFECTS,
   ...LEZER_PACKAGE_EFFECTS,
   ...NANO_SPAWN_PACKAGE_EFFECTS,

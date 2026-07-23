@@ -107,7 +107,8 @@ export function stringifyCss({
 }: {
   readonly state: CssEditState;
 },): string {
-  return stringifyNodes({ nodes: state.root.children, },);
+  return stringifyNodes({ nodes: state.root
+    .children, },);
 }
 
 //endregion Entry points
