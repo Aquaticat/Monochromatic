@@ -312,11 +312,9 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
     value.directMutated,
     value.directInvoked,
     value.directOpaque,
-    value.directDocumentedUncertain,
     value.mutated,
     value.invoked,
     value.opaque,
-    value.documentedUncertain,
     value.directForeignBorrowed,
   ];
   return effectArrays.every(function validIndexes(indexes,): boolean {

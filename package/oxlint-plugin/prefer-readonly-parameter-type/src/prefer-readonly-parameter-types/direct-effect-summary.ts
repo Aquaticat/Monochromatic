@@ -197,12 +197,10 @@ export function directEffectSummary({
     directMutated: new Set(),
     directInvoked: new Set(),
     directOpaque: new Set(),
-    directDocumentedUncertain: new Set(),
     opaqueProvenanceByParameter: new Map(),
     mutated: new Set(),
     invoked: new Set(),
     opaque: new Set(),
-    documentedUncertain: new Set(),
     directForeignBorrowed,
     relations: [],
     calls: [],
@@ -368,11 +366,6 @@ export function directEffectSummary({
   summary.directOpaque
     .forEach(function seedOpacity(index,): void {
     summary.opaque
-      .add(index,);
-  },);
-  summary.directDocumentedUncertain
-    .forEach(function seedDocumentedUncertainty(index,): void {
-    summary.documentedUncertain
       .add(index,);
   },);
   return summary;

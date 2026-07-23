@@ -49,7 +49,6 @@ export type SerializedEffectSummary = {
   readonly directMutated: readonly number[];
   readonly directInvoked: readonly number[];
   readonly directOpaque: readonly number[];
-  readonly directDocumentedUncertain: readonly number[];
   readonly opaqueProvenanceByParameter: readonly (readonly [
     number,
     readonly string[]
@@ -57,7 +56,6 @@ export type SerializedEffectSummary = {
   readonly mutated: readonly number[];
   readonly invoked: readonly number[];
   readonly opaque: readonly number[];
-  readonly documentedUncertain: readonly number[];
   readonly directForeignBorrowed: readonly number[];
   readonly relations: readonly CallbackRelation[];
   readonly calls: readonly SerializedCallEdge[];
@@ -149,7 +147,6 @@ export function serializeEffectSummaries(
           directMutated: [...summary.directMutated,],
           directInvoked: [...summary.directInvoked,],
           directOpaque: [...summary.directOpaque,],
-          directDocumentedUncertain: [...summary.directDocumentedUncertain,],
           opaqueProvenanceByParameter: [...summary.opaqueProvenanceByParameter
             .entries(),]
             .map(function serializeProvenance([index, facts,],): readonly [
@@ -164,7 +161,6 @@ export function serializeEffectSummaries(
           mutated: [...summary.mutated,],
           invoked: [...summary.invoked,],
           opaque: [...summary.opaque,],
-          documentedUncertain: [...summary.documentedUncertain,],
           directForeignBorrowed: [...summary.directForeignBorrowed,],
           relations: summary.relations
             .map(function copyRelation(relation,) {
@@ -214,7 +210,6 @@ export function deserializeEffectSummaries(
         directMutated: new Set(summary.directMutated,),
         directInvoked: new Set(summary.directInvoked,),
         directOpaque: new Set(summary.directOpaque,),
-        directDocumentedUncertain: new Set(summary.directDocumentedUncertain,),
         opaqueProvenanceByParameter: new Map(summary.opaqueProvenanceByParameter
           .map(function deserializeProvenance([index, facts,],): [
             number,
@@ -228,7 +223,6 @@ export function deserializeEffectSummaries(
         mutated: new Set(summary.mutated,),
         invoked: new Set(summary.invoked,),
         opaque: new Set(summary.opaque,),
-        documentedUncertain: new Set(summary.documentedUncertain,),
         directForeignBorrowed: new Set(summary.directForeignBorrowed,),
         relations: summary.relations
           .map(function copyRelation(relation,) {

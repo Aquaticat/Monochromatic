@@ -76,11 +76,6 @@ export function propagateCallbackRelations({
      */
     const callbackArgumentOpaque = callbackSummary.opaque
       .has(relation.callbackArgumentIndex,);
-    /**
-     * Whether callback argument carries documented uncertainty.
-     */
-    const callbackArgumentDocumented = callbackSummary.documentedUncertain
-      .has(relation.callbackArgumentIndex,);
     for (const sourceCallerIndex of sourceCallerIndexes) {
       /**
        * Whether mutation propagation changed caller summary.
@@ -99,17 +94,9 @@ export function propagateCallbackRelations({
           value: sourceCallerIndex,
         },);
       /**
-       * Whether documented uncertainty changed caller summary.
-       */
-      const documentedChanged = callbackArgumentDocumented
-        && addEffectIndex({
-          target: summary.documentedUncertain,
-          value: sourceCallerIndex,
-        },);
-      /**
        * Whether callback uncertainty provenance changed caller summary.
        */
-      const provenanceChanged = (callbackArgumentOpaque || callbackArgumentDocumented)
+      const provenanceChanged = callbackArgumentOpaque
         && addUncertaintyProvenance({
           target: summary.opaqueProvenanceByParameter,
           parameterIndex: sourceCallerIndex,
@@ -119,7 +106,6 @@ export function propagateCallbackRelations({
         },);
       changed = mutationChanged
         || opaqueChanged
-        || documentedChanged
         || provenanceChanged
         || changed;
     }

@@ -26,11 +26,10 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
 /**
  * Persistent cache schema identity.
  *
- * Schema 2 replaced whole-project digest addressing with per-entry
- * dependency-closure snapshots, so one changed file invalidates only the
- * entries whose recorded closures contain it.
+ * Schema 4 removes documented-uncertainty state because authored contracts
+ * cannot discharge unresolved implementation effects.
  */
-export const EFFECT_CACHE_SCHEMA = 3;
+export const EFFECT_CACHE_SCHEMA = 4;
 
 /**
  * Process memo for analyzer implementation digest.

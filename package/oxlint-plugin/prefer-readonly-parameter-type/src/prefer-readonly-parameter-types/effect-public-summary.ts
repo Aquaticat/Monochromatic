@@ -32,11 +32,9 @@ export function effectPublicSummary({
     mutatedParameterIndexes: new Set([
       ...summary.mutated,
       ...summary.invoked,
-      ...summary.documentedUncertain,
     ],),
     referentMutatedParameterIndexes: summary.mutated,
     invokedParameterIndexes: summary.invoked,
-    documentedUncertainParameterIndexes: summary.documentedUncertain,
     opaqueParameterIndexes: summary.opaque,
     opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,
     foreignBorrowedParameterIndexes: foreignParameterIndexes,

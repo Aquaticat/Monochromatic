@@ -13,7 +13,7 @@ import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance
 /**
  * Mutable effect dimensions propagated per parameter.
  */
-const EFFECT_DIMENSION_COUNT = 4;
+const EFFECT_DIMENSION_COUNT = 3;
 
 /**
  * Empty exclusion set for ordinary effect propagation.
@@ -92,23 +92,11 @@ export function propagateEffects(
               calleeIndexes: calleeSummary.opaque,
               excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
             },) || state.changed;
-            state.changed = propagateCalleeIndexes({
-              target: summary.documentedUncertain,
-              edge,
-              calleeIndexes: calleeSummary.documentedUncertain,
-              excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
-            },) || state.changed;
             state.changed = propagateUncertaintyProvenance({
               summary,
               calleeSummary,
               edge,
               calleeIndexes: calleeSummary.opaque,
-            },) || state.changed;
-            state.changed = propagateUncertaintyProvenance({
-              summary,
-              calleeSummary,
-              edge,
-              calleeIndexes: calleeSummary.documentedUncertain,
             },) || state.changed;
             state.changed = propagateCallbackRelations({
               summaries,

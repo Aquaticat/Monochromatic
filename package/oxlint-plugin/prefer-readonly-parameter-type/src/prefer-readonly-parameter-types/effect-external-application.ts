@@ -72,12 +72,8 @@ export function applyExternalEffect({
           },);
         },);
     },);
-  new Set([
-    ...externalEffect.summary
-      .opaqueParameterIndexes,
-    ...externalEffect.summary
-      .documentedUncertainParameterIndexes,
-  ],)
+  externalEffect.summary
+    .opaqueParameterIndexes
     .forEach(function externalUncertainty(parameter,): void {
       argumentIndexes[parameter]
         ?.forEach(function callerUncertainty(index,): void {

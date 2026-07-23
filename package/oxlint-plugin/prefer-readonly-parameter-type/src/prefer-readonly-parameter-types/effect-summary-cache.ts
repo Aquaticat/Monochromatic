@@ -96,7 +96,6 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
     directMutated: new Set(summary.directMutated,),
     directInvoked: new Set(summary.directInvoked,),
     directOpaque: new Set(summary.directOpaque,),
-    directDocumentedUncertain: new Set(summary.directDocumentedUncertain,),
     opaqueProvenanceByParameter: new Map(
       [...summary.opaqueProvenanceByParameter
         .entries(),]
@@ -113,7 +112,6 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
     mutated: new Set(summary.mutated,),
     invoked: new Set(summary.invoked,),
     opaque: new Set(summary.opaque,),
-    documentedUncertain: new Set(summary.documentedUncertain,),
     directForeignBorrowed: new Set(summary.directForeignBorrowed,),
     relations: [...summary.relations,],
     calls: [...summary.calls,],

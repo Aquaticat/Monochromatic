@@ -23,7 +23,6 @@ export type CallableEffectSummary = {
   readonly mutatedParameterIndexes: ReadonlySet<number>;
   readonly referentMutatedParameterIndexes: ReadonlySet<number>;
   readonly invokedParameterIndexes: ReadonlySet<number>;
-  readonly documentedUncertainParameterIndexes: ReadonlySet<number>;
   readonly opaqueParameterIndexes: ReadonlySet<number>;
   readonly opaqueProvenanceByParameter: ReadonlyMap<number, ReadonlySet<string>>;
   readonly foreignBorrowedParameterIndexes: ReadonlySet<number>;
