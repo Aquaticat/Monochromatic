@@ -385,6 +385,46 @@ failed; Acheron repaired (48 issues, 46 accepted, 45 resolved, 7
 findings, 1012 s); AkiraComplex repaired (9 issues, 8 accepted, 6
 resolved, 3 findings, 491 s). Both reproduce their pass-1 statuses
 with nondeterministic count drift. Remaining 90.
+SECOND ITERATION (2026-07-23, commit `c3ea27b23`), root cause named
+by the user: multi-LLM value is OVERLAPPING coverage (A finds a b c,
+B finds b c d), and each critic satisfices at 10 to 14 claims per
+call regardless of defect density (the user counts 200+ issues on
+Anilovr at first glance versus 33 found). Measured corpus-wide:
+67 to 84 percent singleton issues across all pass-2 artifacts, so
+losing a voice loses its findings nearly one-for-one; the earlier
+full-roster-retry idea survives only as secondary hardening, not
+the fix. Root-cause fix: PARAGRAPH-BOUND SLICES (user decision:
+paragraph-bound, never sentence-bound, because sentence windows
+reward mechanical one-to-one rendering over meaning and emotion).
+`slice-pair.ts` subdivides each aligned section pair into
+budget-bound node runs (never splitting a block node;
+SLICE_CHAR_BUDGET 400 target chars; source budget scales by
+character share so the denser zh side cannot collapse pairing back
+to section scale, a flaw the unit test caught); the whole loop runs
+per slice. Evidence base: on DarlinChit-scale units the ensemble
+produced a 28-member agreement cluster, so small units yield both
+thoroughness and overlap. CONTRACT CHANGE, dominance block: a
+2-vote tiny slice must not block a document, so
+`blocked-non-translation` now fires only when standing-vote slices
+dominate target characters (`assessNonTranslationDominance`);
+minority standing slices ship unchanged with findings (per-slice
+degradation, matching the settled architecture's never-document-wide
+rule). Consequence recorded: shi_Yumiaoya's expected production
+outcome changes from blocked to not-blocked with its untranslated
+region degraded per slice. `repairChunk` early-exits standing-vote
+slices before panel and editor spend (types moved to
+`repair-contract.ts` for the line budget). Secondary: critic stage
+retries to FULL ROSTER (`retryTarget: 'full-roster'` in
+`stage-quorum.ts`), voting stages keep quorum;
+`stage-roster-incomplete` finding records shortfalls. Verification:
+89 suites pass against dist (slicing byte-exactness, dominance,
+per-slice degradation end to end), oxlint 0/0, types clean.
+Sentinel probe 2 launched (four entries: XIEPT2 must block via
+dominance, shi_Yumiaoya must NOT block under the new contract,
+Aniloviraw repaired, Anilovr measures thoroughness against its
+33-issue section-scale baseline with the user's 200+ as reference;
+log `sentinel-probe-2.log`). Pass 3 restarts from zero on ALL PASS
+plus a decisive Anilovr thoroughness gain.
 pass2 run 002 (2026-07-23, 1737 s): 2 dispatched, 2 completed, 0
 failed; Aniloviraw REPAIRED (44 issues, 40 accepted, 40 resolved,
 14 findings, 379 s): the false block reproduced a THIRD time (4
