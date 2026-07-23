@@ -197,6 +197,48 @@ async function resolveCommonDir({
 }
 
 /**
+ * Resolves invocation-specific Git administrative directory.
+ *
+ * @param gitPath - absolute real-Git executable
+ *
+ * @param preSubcommandArgs - original Git global option region
+ *
+ * @param invocationCwd - wrapper process working directory
+ *
+ * @returns canonical invocation-specific Git directory
+ *
+ * @example
+ * ```ts
+ * await resolveGitDir({ gitPath: '/usr/bin/git', preSubcommandArgs: [], invocationCwd: '/repo' });
+ * // => '/repo/.git'
+ * ```
+ */
+async function resolveGitDir({
+  gitPath,
+  preSubcommandArgs,
+  invocationCwd,
+}: Readonly<{
+  gitPath: string;
+  preSubcommandArgs: readonly string[];
+  invocationCwd: string;
+}>,): Promise<string> {
+  /**
+   * Git-reported invocation-specific administrative path.
+   */
+  const output = await runMetadataGit({
+    gitPath,
+    args: [
+      ...preSubcommandArgs,
+      'rev-parse',
+      '--path-format=absolute',
+      '--git-dir',
+    ],
+    cwd: invocationCwd,
+  },);
+  return realpath(stripGitLine(output,),);
+}
+
+/**
  * Resolves current source worktree root or bare-repository absence.
  *
  * @param gitPath - absolute real-Git executable
@@ -312,6 +354,28 @@ export async function observeWorktreeRepository({
     return WORKTREE_COPY_NOT_APPLICABLE;
   }
   /**
+   * Canonical source root or bare-repository sentinel.
+   */
+  const sourceRoot = await resolveSourceRoot({
+    gitPath,
+    preSubcommandArgs,
+    invocationCwd,
+  },);
+  if ((typeof sourceRoot) === 'string') {
+    /**
+     * Invocation-specific Git directory distinguishing main from linked worktree.
+     */
+    const gitDir = await resolveGitDir({
+      gitPath,
+      preSubcommandArgs,
+      invocationCwd,
+    },);
+    if (gitDir === commonDir) {
+      rl.debug('effective invocation targets main worktree; worktree copy observation is not applicable',);
+      return WORKTREE_COPY_NOT_APPLICABLE;
+    }
+  }
+  /**
    * Common linked-worktree administrative root.
    */
   const adminRoot = join(
@@ -322,14 +386,6 @@ export async function observeWorktreeRepository({
    * Existing linked-worktree identities.
    */
   const beforeAdminIds = await readAdminIds(adminRoot,);
-  /**
-   * Canonical source root or bare-repository sentinel.
-   */
-  const sourceRoot = await resolveSourceRoot({
-    gitPath,
-    preSubcommandArgs,
-    invocationCwd,
-  },);
   rl.debug(
     `captured ${String(beforeAdminIds.size,)} linked-worktree identities under ${commonDir}`,
   );
