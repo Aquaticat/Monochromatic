@@ -14,10 +14,7 @@ import {
   cacheFinalEffectIndex,
   FINAL_EFFECT_INDEX_CACHE_MISS,
 } from './effect-final-index-cache.ts';
-import {
-  effectProjectFingerprint,
-  effectProjectSourceSignatures,
-} from './effect-project-fingerprint.ts';
+import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import { contentDigest, } from './effect-summary-cache-identity.ts';
 import {
   collectAstNodes,
@@ -163,10 +160,6 @@ export function buildEffectSummaryIndex({
    */
   const analysisBudget = createEffectAnalysisBudget(analysisBudgetMilliseconds,);
   /**
-   * Start time for project membership and source-signature validation.
-   */
-  const signatureStartedAt = analysisBudget.start();
-  /**
    * Process cache identity including optional external analysis scope.
    */
   const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}\0${String(analysisBudgetMilliseconds,)}`;
@@ -197,24 +190,12 @@ export function buildEffectSummaryIndex({
       .join('\0',),
   );
   /**
-   * Current process snapshot signatures for every semantic source.
-   */
-  const sourceSignatures = effectProjectSourceSignatures({
-    project,
-    activeSourceFile,
-    fileNames,
-  },);
-  analysisBudget.record({
-    startedAt: signatureStartedAt,
-    phase: 'project source signatures',
-  },);
-  /**
-   * Mutable demand index reusable for unchanged project snapshot.
+   * Mutable demand index reusable for exact TypeScript semantic snapshot.
    */
   const cachedIndex = cachedFinalEffectIndex({
+    project,
     projectKey: cacheProjectKey,
     fileListDigest: indexedFileListDigest,
-    sourceSignatures,
   },);
   if (cachedIndex !== FINAL_EFFECT_INDEX_CACHE_MISS) {
     includeActiveSource({
@@ -267,9 +248,9 @@ export function buildEffectSummaryIndex({
     activeSourceFile,
   },);
   cacheFinalEffectIndex({
+    project,
     projectKey: cacheProjectKey,
     fileListDigest: indexedFileListDigest,
-    sourceSignatures,
     index,
   },);
   return index;

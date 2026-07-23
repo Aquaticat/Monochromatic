@@ -4,6 +4,8 @@
  * @module
  */
 
+import type { Project, } from 'typescript/unstable/sync';
+
 import type { EffectSummaryIndex, } from './effect-summary-index.ts';
 
 /**
@@ -14,18 +16,20 @@ export const FINAL_EFFECT_INDEX_CACHE_MISS: unique symbol = Symbol(
 );
 
 /**
- * Final index and source identities for one configured project.
+ * Final index for one included source scope.
  */
 type CachedFinalEffectIndex = {
   readonly fileListDigest: string;
-  readonly sourceSignatures: ReadonlyMap<string, string>;
   readonly index: EffectSummaryIndex;
 };
 
 /**
- * Final indexes bounded by configured projects seen in current process.
+ * Final indexes keyed by TypeScript's immutable semantic snapshot object.
  */
-const finalIndexByProject = new Map<string, CachedFinalEffectIndex>();
+const finalIndexesByProject = new Map<
+  Project,
+  Map<string, CachedFinalEffectIndex>
+>();
 
 /**
  * Process-local fixed-point cache counters.
@@ -44,104 +48,89 @@ export type FinalEffectIndexCacheStats = {
 };
 
 /**
- * Tests whether every project source signature remains unchanged.
+ * Reads final index for exact semantic snapshot and included source scope.
  *
- * @param left - Cached source signatures.
+ * Project identity is TypeScript's immutable snapshot authority. A source,
+ * compiler-option, or graph change creates a different project object, so
+ * validation does not restat every configured source before each parameter.
  *
- * @param right - Current source signatures.
+ * @param project - Immutable TypeScript semantic project snapshot.
  *
- * @returns whether maps contain identical keys and values.
- */
-function sourceSignaturesEqual({
-  left,
-  right,
-}: {
-  readonly left: ReadonlyMap<string, string>;
-  readonly right: ReadonlyMap<string, string>;
-}): boolean {
-  if (left.size !== right.size)
-    return false;
-  for (const [fileName, signature,] of left) {
-    if (right.get(fileName,) !== signature)
-      return false;
-  }
-  return true;
-}
-
-/**
- * Reads final index when project membership and every source remain exact.
+ * @param projectKey - Analysis-root and runtime-budget cache partition.
  *
- * @param projectKey - Configured TypeScript project identity.
- *
- * @param fileListDigest - Current sorted project-file identity.
- *
- * @param sourceSignatures - Current project source snapshot signatures.
+ * @param fileListDigest - Included source-scope identity.
  *
  * @returns reusable final index or miss sentinel.
  *
  * @example
  * ```ts
- * cachedFinalEffectIndex({ projectKey, fileListDigest, sourceSignatures });
+ * cachedFinalEffectIndex({ project, projectKey, fileListDigest });
  * ```
  */
 export function cachedFinalEffectIndex({
+  project,
   projectKey,
   fileListDigest,
-  sourceSignatures,
 }: {
+  readonly project: Project;
   readonly projectKey: string;
   readonly fileListDigest: string;
-  readonly sourceSignatures: ReadonlyMap<string, string>;
 }): EffectSummaryIndex | typeof FINAL_EFFECT_INDEX_CACHE_MISS {
   /**
-   * Prior fixed-point index for configured project.
+   * Prior fixed-point index for exact semantic snapshot and analysis scope.
    */
-  const cached = finalIndexByProject.get(projectKey,);
+  const cached = finalIndexesByProject
+    .get(project,)
+    ?.get(projectKey,);
   if ((cached === undefined)
-    || (cached.fileListDigest !== fileListDigest)
-    || (!sourceSignaturesEqual({
-      left: cached.sourceSignatures,
-      right: sourceSignatures,
-    },)))
+    || (cached.fileListDigest !== fileListDigest))
     return FINAL_EFFECT_INDEX_CACHE_MISS;
   counters.hitCount++;
   return cached.index;
 }
 
 /**
- * Stores final fixed-point index for one exact project snapshot.
+ * Stores final fixed-point index for one semantic snapshot and source scope.
  *
- * @param projectKey - Configured TypeScript project identity.
+ * @param project - Immutable TypeScript semantic project snapshot.
  *
- * @param fileListDigest - Sorted project-file identity.
+ * @param projectKey - Analysis-root and runtime-budget cache partition.
  *
- * @param sourceSignatures - Current project source snapshot signatures.
+ * @param fileListDigest - Included source-scope identity.
  *
  * @param index - Immutable final summary lookup.
  *
  * @example
  * ```ts
- * cacheFinalEffectIndex({ projectKey, fileListDigest, sourceSignatures, index });
+ * cacheFinalEffectIndex({ project, projectKey, fileListDigest, index });
  * ```
  */
 export function cacheFinalEffectIndex({
+  project,
   projectKey,
   fileListDigest,
-  sourceSignatures,
   index,
 }: {
+  readonly project: Project;
   readonly projectKey: string;
   readonly fileListDigest: string;
-  readonly sourceSignatures: ReadonlyMap<string, string>;
   readonly index: EffectSummaryIndex;
 }): void {
-  finalIndexByProject.set(
+  /**
+   * Analysis partitions already cached for exact semantic snapshot.
+   */
+  const snapshotIndexes = finalIndexesByProject.get(project,)
+    ?? new Map<string, CachedFinalEffectIndex>();
+  snapshotIndexes.set(
     projectKey,
     {
       fileListDigest,
-      sourceSignatures: new Map(sourceSignatures,),
       index,
     },
+  );
+  finalIndexesByProject.set(
+    project,
+    snapshotIndexes,
   );
   counters.writeCount++;
 }
@@ -169,7 +158,7 @@ export function finalEffectIndexCacheStats(): FinalEffectIndexCacheStats {
  * ```
  */
 export function clearFinalEffectIndexCache(): void {
-  finalIndexByProject.clear();
+  finalIndexesByProject.clear();
   counters.hitCount = 0;
   counters.writeCount = 0;
 }
