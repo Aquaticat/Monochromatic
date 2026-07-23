@@ -63,6 +63,8 @@ catalog:
   'chai-as-promised': '>=8.0.2'
   'chokidar': '>=5.0.0'
   'crossws': '>=0.4.4'
+  # css-edit.bench baseline parser; not a runtime dependency anywhere.
+  'css-tree': '>=3.2.1'
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
   'dot-prop': '>=10.1.0'

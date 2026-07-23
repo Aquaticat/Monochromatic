@@ -132,6 +132,9 @@ catalogs:
     chokidar:
       specifier: '>=5.0.0'
       version: 5.0.0
+    css-tree:
+      specifier: '>=3.2.1'
+      version: 3.2.1
     csstype:
       specifier: '>=3.2.3'
       version: 3.2.3
@@ -2097,6 +2100,78 @@ importers:
       type-fest:
         specifier: 'catalog:'
         version: 5.8.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/css-edit.bench:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-css-edit':
+        specifier: workspace:*
+        version: link:../css-edit
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      css-tree:
+        specifier: 'catalog:'
+        version: 3.2.1
+      mitata:
+        specifier: 'catalog:'
+        version: 1.0.34
+      postcss:
+        specifier: '>=8.5.16'
+        version: 8.5.21
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/css-edit.conformance:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-css-edit':
+        specifier: workspace:*
+        version: link:../css-edit
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.9.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/css-edit.fuzz:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-const':
+        specifier: workspace:*
+        version: link:../const
+      '@monochromatic-dev/module-css-edit':
+        specifier: workspace:*
+        version: link:../css-edit
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.9.0
+      postcss:
+        specifier: '>=8.5.16'
+        version: 8.5.21
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

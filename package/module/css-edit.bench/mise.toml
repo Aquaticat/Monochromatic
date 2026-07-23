@@ -1,0 +1,15 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks.bench]
+description = "Parse plus stringify benchmark: css-edit vs postcss and css-tree"
+run = "node src/parse.bench.ts"
