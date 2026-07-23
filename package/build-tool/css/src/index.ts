@@ -7,6 +7,11 @@
  * - {@link expandCssMixins}: pure text pipeline for in-memory CSS
  *   (Shadow DOM styles in the browser); no filesystem, no process globals.
  *
+ * Browser bundles must import `expandCssMixins` from
+ * `\@monochromatic-dev/build-tool-css/ts/expand` directly: this index also
+ * re-exports the node-only file pipeline, whose path utilities would pull
+ * node builtins into a client bundle.
+ *
  * @packageDocumentation
  */
 

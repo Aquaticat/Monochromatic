@@ -1,31 +1,29 @@
-# @monochromatic-dev/build-css
+# @monochromatic-dev/build-tool-css
 
-CSS build tool that bundles `@import` statements across monorepo packages and processes custom `@mixin`/`@apply` syntax into expanded CSS.
+CSS build tool that bundles `@import` statements across monorepo packages and
+processes custom `@mixin`/`@apply` syntax into expanded CSS.
 
 ## Why this exists
 
 No single CSS tool handles all three requirements at once:
 
-1. **Monorepo-aware `@import` resolution**:
-    PostCSS only resolves relative paths out of the box,
-    not `node_modules` or package.
-   json `exports`
-2. **Custom `@mixin`/`@apply` processing**:
-    no standard PostCSS plugin provides the mixin semantics this monorepo needs
-3. **Browser-compatible**:
-    the entire pipeline runs in both Node.
-   js and browser environments (no native binary dependencies)
+1.  **Monorepo-aware `@import` resolution**:
+    off-the-shelf CSS tools resolve relative paths only,
+    not `node_modules` or package.json `exports`
+2.  **Custom `@mixin`/`@apply` processing**:
+    no standard plugin provides the mixin semantics this monorepo needs
+3.  **Browser-compatible**:
+    the mixin pipeline runs in both Node.js and browser environments
+    (no native binary dependencies, no process globals)
 
-The package uses only **PostCSS** for all CSS processing:
- AST walking for `@import` inlining,
- `@mixin` collection,
- and `@apply` expansion.
-A custom `@import` plugin handles monorepo-aware resolution (package.
-json `exports`,
- `node_modules`,
- workspace packages).
+Parsing sits on `@monochromatic-dev/module-css-edit`,
+the workspace's byte-preserving CSS CST over the `@csstools/css-tokenizer`
+spec tokenizer.
+Untouched CSS survives byte-exactly, comments and author formatting included.
 
-See [doc/troubleshooting/css-tooling.md](../../../doc/troubleshooting/css-tooling.md) for the full chronicle.
+See [doc/troubleshooting/css-tooling.md](../../../doc/troubleshooting/css-tooling.md)
+for the full tooling chronicle, including the 2026-07 parser survey that led
+here from postcss.
 
 ## Usage
 
@@ -35,16 +33,39 @@ See [doc/troubleshooting/css-tooling.md](../../../doc/troubleshooting/css-toolin
 build-css src/main.css dist/bundle.css
 ```
 
-### Programmatic
+### Build a file (Node)
 
 ```ts
-import { build, } from '@monochromatic-dev/build-css';
+import { buildCss, } from '@monochromatic-dev/build-tool-css';
 
-const css = await build({
+const css = await buildCss({
   input: 'src/main.css',
   output: 'dist/bundle.css',
 },);
 ```
+
+### Expand mixins in memory (browser-safe)
+
+For consumers that already have CSS text in memory,
+such as web components with Shadow DOM styles defined as JavaScript strings:
+
+```ts
+import { expandCssMixins, } from '@monochromatic-dev/build-tool-css/ts';
+import mixinSource from './mixins.css' with { type: 'text', };
+
+const expanded = expandCssMixins({
+  css: `
+    .close { @apply --reset-button; @apply --touch-target; }
+    .pill  { @apply --pill; }
+  `,
+  mixinCss: mixinSource,
+},);
+```
+
+`expandCssMixins` collects definitions from `mixinCss` and from `css` itself
+(inline definitions win on name collision), expands nested references,
+replaces every `@apply`, and strips the definitions from the output.
+No filesystem access, no process globals.
 
 ## CSS syntax
 
@@ -59,6 +80,7 @@ const css = await build({
 ```
 
 Definitions are removed from the output.
+A definition without a name or without structural body content is an error.
 
 ### Mixin application
 
@@ -70,12 +92,16 @@ Definitions are removed from the output.
 ```
 
 `@apply` rules are replaced with the referenced mixin's body.
+Bodies may contain declarations, nested rules
+(with or without `&`), and further `@apply` references.
 
 ### Nested mixins
 
 Mixins can reference other mixins via `@apply`.
-The build expands nested references in multiple passes until stable,
- with a safety limit to detect circular references.
+Each mixin expands exactly once;
+circular references throw `CircularCssMixinError`
+naming the exact reference chain
+(for example `--a -> --b -> --a`).
 
 ```css
 @mixin --card {
@@ -87,11 +113,8 @@ The build expands nested references in multiple passes until stable,
 
 ### Cross-package imports
 
-Imports resolve through a custom PostCSS plugin,
- supporting package.
-json `exports` mappings,
- `node_modules` lookup,
- and direct file paths:
+Imports resolve through package.json `exports` mappings,
+`node_modules` lookup, and direct file paths:
 
 ```css
 /* Via exports field */
@@ -101,125 +124,60 @@ json `exports` mappings,
 @import '@some-package/src/tokens.css';
 ```
 
-## Using mixins in JavaScript (Shadow DOM, runtime)
-
-The `build()` function processes standalone `.css` files on disk.
-For consumers that already have CSS text in memory (such as web components with Shadow DOM styles defined as JavaScript strings),
- use `applyMixins()`:
-
-```ts
-import { applyMixins, } from '@monochromatic-dev/build-css/ts';
-import mixinSource from './mixins.css' with { type: 'text', };
-
-const expanded = applyMixins({
-  cssText: `
-    .close { @apply --reset-button; @apply --touch-target; }
-    .pill  { @apply --pill; }
-  `,
-  mixinCssText: mixinSource,
-},);
-```
-
-`applyMixins({ cssText, mixinCssText })` encapsulates the full pipeline (parse mixin definitions,
- expand nested mixin bodies,
- inline `@apply` rules,
- serialize) and returns the expanded CSS string.
-No filesystem access,
- no postcss import needed by the caller.
-
-### Browser environments
-
-PostCSS references `process.env` without guards.
-Import the provided shim before any build-css import:
-
-```ts
-import '@monochromatic-dev/build-css/ts/process-shim';
-import { applyMixins, } from '@monochromatic-dev/build-css/ts';
-```
+Specifiers are read from parsed tokens,
+so trailing conditions such as `layer(base)` or media queries
+never corrupt the target.
+Each file inlines once; circular imports resolve to nothing on revisit.
 
 ## Build pipeline
 
-1. **Resolve and bundle**:
-    a custom PostCSS plugin walks `@import` statements,
-    resolves specifiers (relative paths,
-    package.
-   json `exports`,
-    bare `node_modules`),
-    and inlines the resolved files
-2. **Collect mixins**:
-    PostCSS walks the bundled AST,
-    extracts `@mixin` definitions into a registry,
-    removes them from the tree
-3. **Expand mixin bodies**:
-    nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
-4. **Inline `@apply`**:
-    remaining `@apply` rules in the document are replaced with cloned mixin body nodes
-5. **Write output**:
+1.  **Resolve and bundle**:
+    `@import` at-rules are resolved
+    (relative paths, package.json `exports`, bare `node_modules` specifiers)
+    and replaced by the parsed contents of their files, recursively
+2.  **Collect mixins**:
+    `@mixin` definitions move into a registry and leave the tree
+3.  **Expand mixin bodies**:
+    nested `@apply` between definitions resolve by memoized recursion
+    with an explicit trail (exact cycle reporting)
+4.  **Inline `@apply`**:
+    document references splice in registry bodies,
+    shared by reference thanks to the immutable CST
+5.  **Write output**:
     final CSS string written to disk
 
 ## Module structure
 
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>`index.ts`</td>
-<td>CLI entry point with argument parsing</td>
-</tr>
-<tr>
-<td>`build.ts`</td>
-<td>Orchestrates the full pipeline; exports `build()` and `applyMixins()`</td>
-</tr>
-<tr>
-<td>`import.ts`</td>
-<td>Custom PostCSS `@import` plugin with monorepo-aware resolution</td>
-</tr>
-<tr>
-<td>`mixin.ts`</td>
-<td>`collectMixins` and `expandApplyRules` (PostCSS walkers)</td>
-</tr>
-<tr>
-<td>`mixin-registry.ts`</td>
-<td>Mixin storage, nested `@apply` expansion, type guards</td>
-</tr>
-<tr>
-<td>`fs.ts`</td>
-<td>Adaptive file reader (in-memory registry with `node:fs` fallback)</td>
-</tr>
-<tr>
-<td>`fs-registry.ts`</td>
-<td>In-memory `Map` for browser-side file storage</td>
-</tr>
-<tr>
-<td>`process-shim.ts`</td>
-<td>Minimal `globalThis.process` shim for browser environments</td>
-</tr>
-</tbody>
-</table>
+- `index.ts`: public surface (`buildCss`, `expandCssMixins`, error classes)
+- `build.ts`: file pipeline orchestration
+- `expand.ts`: in-memory mixin pipeline
+- `import.ts`: `@import` inlining with monorepo-aware resolution
+- `mixin.ts`: mixin collection and expansion engine (internal)
+- `errors.ts`: `UnknownCssMixinError`, `CircularCssMixinError`
+- `package-resolver.ts`: `node_modules` and `exports` resolution
+- `specifier.ts`: specifier classification helpers
+- `fs.ts`: adaptive file reader (in-memory registry with `node:fs` fallback)
+- `fs-registry.ts`: in-memory `Map` for browser-side file storage
+- `cli.ts`: `build-css` binary entry point
 
 ## Testing
 
 ```bash
-# Run all module-test files in this package
-mise run //package/build-tool/css:test:unit
+# Build, then run all module-test files in this package
+mise run //package/build-tool/css:buildAndTest
 ```
 
-Integration tests exercise two CSS import resolution strategies using fixture packages:
+Integration tests exercise two CSS import resolution strategies using fixture
+packages:
 
 - **`exports` field**:
-   `test-css-importing` imports from `test-css-imported` (has `exports` in package.
-  json)
+  `test-css-importing` imports from `test-css-imported`
+  (has `exports` in package.json)
 - **Direct file path**:
-   `test-css-importing-filepath` imports from `test-css-imported-no-exports` (no `exports` field)
+  `test-css-importing-filepath` imports from `test-css-imported-no-exports`
+  (no `exports` field)
 
 Both strategies run identical assertions:
- import resolution,
- mixin removal,
- `@apply` expansion,
- nested mixin inlining,
- and output file writing.
+import resolution, mixin removal, `@apply` expansion,
+nested mixin inlining, and output file writing.
+Error paths and import dedup run on disposable temp directories.

@@ -8,7 +8,10 @@
  * The mixin definitions are imported as a text string (bundled inline
  * by tsdown) so no filesystem access is needed at runtime.
  */
-import { expandCssMixins, } from '@monochromatic-dev/build-tool-css/ts';
+// Browser bundles import the expand module directly: the package index also
+// re-exports the node-only buildCss pipeline, whose module-fs-path imports
+// would drag node builtins into the client bundle.
+import { expandCssMixins, } from '@monochromatic-dev/build-tool-css/ts/expand';
 // tsdown inlines the CSS file content as a string at bundle time
 import mixinSource from './mixins.css' with { type: 'text', };
 
