@@ -76,8 +76,7 @@ mise run lint:markdown -- doc/troubleshooting/oxlint-no-constant-condition-loop-
 
 The initial complete scan found 25 lint-scoped executable `while (true)` statements.
 All 25 lint-scoped executable statements are migrated.
-The text inventory now finds only the explanatory config comment that names the forbidden syntax;
-task 9 will reword that comment before the final scan.
+The final text inventory returns no matches.
 
 ### Parser and analysis loops
 
@@ -150,7 +149,7 @@ and stage only explicit paths owned by this task.
   completed.
 - Task 9,
    verify constant-loop ban:
-  next.
+  completed.
 - Task 10,
    create this handover:
   completed.
@@ -243,6 +242,8 @@ Research and troubleshooting commits already on `main`:
    explicit Tofu stream completion state.
 - `3913ec8a6`,
    deliberate runtime-error `for (;;)` fixtures.
+- `a8f6354bf`,
+   executable-only final text inventory.
 
 Config verification passed:
 
@@ -281,10 +282,20 @@ Retry and polling verification passed:
 - Runtime-error Oxlint and TypeScript lint.
   Dangerous fixtures were not executed.
 
+Final verification passed:
+
+- The lint-scoped `while`-true inventory returns zero matches.
+- Config build,
+  Oxlint,
+  and TypeScript lint pass.
+- A disposable package-consumer fixture exits with status 1 and reports
+  `eslint(no-constant-condition): Unexpected constant condition`.
+- Ordinary migrated sources contain no `for (;;)` statements.
+- The two runtime-error fixtures use `for (;;)` as approved.
+- The pre-existing production statement at `package/ssg/aquati.cat/src/lib/content.ts` remains unchanged and out of scope.
+- Scoped commit path inspection contains only task files.
+
 ## Next action
 
-Reword the config comment so the text inventory is empty,
-then run final inventory,
-shared-config lint,
-and a disposable Oxlint consumer probe.
-Confirm only the two approved runtime-error files contain `for (;;)`.
+No implementation remains.
+Keep the known conditionless `for` policy gap out of scope unless the user requests a separate rule.
