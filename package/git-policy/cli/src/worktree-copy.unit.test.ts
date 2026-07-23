@@ -66,7 +66,14 @@ await describe({
           cwd: repositoryRoot,
           args: ['status', '--short',],
         },),);
-        expect(await readdir(join(repositoryRoot, '.git',),),)
+        /**
+         * Main Git entries after status proves no copy root was initialized.
+         */
+        const mainGitEntriesAfterStatus = await readdir(join(
+          repositoryRoot,
+          '.git',
+        ),);
+        expect(mainGitEntriesAfterStatus,)
           .not.toContain('cli-git-worktree-copy',);
 
         const result = requireSuccess(await captureWrapper({
@@ -82,7 +89,14 @@ await describe({
 
         expect(await readdir(destinationRoot,),).not.toContain('state.txt',);
         expect(copySummaryLines(result.stderr,),).toHaveLength(0,);
-        expect(await readdir(join(repositoryRoot, '.git',),),)
+        /**
+         * Main Git entries after worktree creation prove lifecycle remained bypassed.
+         */
+        const mainGitEntriesAfterCreation = await readdir(join(
+          repositoryRoot,
+          '.git',
+        ),);
+        expect(mainGitEntriesAfterCreation,)
           .not.toContain('cli-git-worktree-copy',);
       },
     },),
