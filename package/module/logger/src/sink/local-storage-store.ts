@@ -326,7 +326,8 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
      * Write-attempt bound: one try for each entry still available to evict,
      * followed by one final try after every owned entry has been removed.
      */
-    const maxWriteAttempts = (prior.entries.length - prior.cursor)
+    const maxWriteAttempts = (prior.entries
+      .length - prior.cursor)
       + (state.lineCounter - state.oldestIndex)
       + 1;
     for (let writeAttempt = 0; writeAttempt < maxWriteAttempts; writeAttempt++) {
