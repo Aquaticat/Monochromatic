@@ -765,6 +765,138 @@ await describe({
       },
     },),
     it({
+      name: 'scans only sources reached through owned calls and callbacks',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Disposable persistent cache separated from fixture source files. */
+        const cacheRoot = join(projectRoot.path, '.effect-cache',);
+        /** Active caller source whose effect closure is demanded. */
+        const inputPath = join(projectRoot.path, 'input.ts',);
+        /** Higher-order helper reached by active caller. */
+        const helperPath = join(projectRoot.path, 'helper.ts',);
+        /** Owned callback reached only through call-edge callback identity. */
+        const callbackPath = join(projectRoot.path, 'callback.ts',);
+        /** Configured source outside demanded effect closure. */
+        const unrelatedPath = join(projectRoot.path, 'unrelated.ts',);
+        /** Active source forwarding caller-owned state to imported callback. */
+        const inputSource = "import { mutate, } from './callback.js';\nimport { invoke, mutateDirect, } from './helper.js';\nexport function demanded(value: { text: string; },): void { mutateDirect(value); invoke(mutate, value); }\n";
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["*.ts"]}\n',
+        );
+        writeFileSync(inputPath, inputSource,);
+        writeFileSync(
+          helperPath,
+          "export function invoke(callback: (value: { text: string; }) => void, value: { text: string; },): void { callback(value); }\nexport function mutateDirect(value: { text: string; },): void { value.text = 'direct'; }\n",
+        );
+        writeFileSync(
+          callbackPath,
+          "export function mutate(value: { text: string; },): void { value.text = 'changed'; }\n",
+        );
+        writeFileSync(
+          unrelatedPath,
+          'export function unrelated(value: { text: string; },): string { return value.text; }\n',
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: inputPath,
+          sourceText: inputSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+          cacheRootOverride: cacheRoot,
+        },);
+        /** Active caller declaration receiving transitive callback effect. */
+        const declaration = session.nodeAtOffset(inputSource.indexOf('demanded',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(declaration,))
+          throw new Error('Expected demanded caller declaration.',);
+        /** Summary proving callback source participated in fixed point. */
+        const summary = index.get(declaration,);
+        if (summary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected demanded caller effect summary.',);
+        /** Cold counters exposing exact demanded callable set. */
+        const stats = effectSummaryCacheStats();
+        expect([...summary.referentMutatedParameterIndexes,],).toEqual([0,],);
+        expect(stats.directSummaryBuildCount,).toBe(5,);
+        expect(stats.persistentCacheWriteCount,).toBe(3,);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
+      name: 'does not infer foreign ownership while an unscanned owned inbound call may exist',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Marker source directory preserving exact semantic identity suffix. */
+        const markerRoot = join(
+          projectRoot.path,
+          'ownership-marker',
+          'foreign-borrowed',
+          'src',
+        );
+        /** Active foreign-boundary source. */
+        const foreignPath = join(projectRoot.path, 'foreign.ts',);
+        /** Shared helper receiving both foreign and owned values. */
+        const helperPath = join(projectRoot.path, 'helper.ts',);
+        /** Unreached ordinary caller disproving helper-wide foreign ownership. */
+        const ownedPath = join(projectRoot.path, 'owned.ts',);
+        /** Active source carrying explicit marker into shared helper. */
+        const foreignSource = "import type { ForeignBorrowed, } from './ownership-marker/foreign-borrowed/src/index.js';\nimport { read, } from './helper.js';\nexport function readForeign(value: ForeignBorrowed<{ text: string; }>,): string { return read(value); }\n";
+        mkdirSync(markerRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["**/*.ts"]}\n',
+        );
+        writeFileSync(
+          join(markerRoot, 'index.ts',),
+          'declare const FOREIGN_BORROWED_MARKER: unique symbol;\nexport type ForeignBorrowed<Value> = Value & { readonly [FOREIGN_BORROWED_MARKER]?: true; };\n',
+        );
+        writeFileSync(foreignPath, foreignSource,);
+        writeFileSync(
+          helperPath,
+          'export function read(value: { text: string; },): string { return value.text; }\n',
+        );
+        writeFileSync(
+          ownedPath,
+          "import { read, } from './helper.js';\nexport function readOwned(value: { text: string; },): string { return read(value); }\n",
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: foreignPath,
+          sourceText: foreignSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+          cacheRootOverride: join(projectRoot.path, '.effect-cache',),
+        },);
+        /** Shared helper source decoded by active semantic project. */
+        const helperSource = session.project.program.getSourceFile(helperPath,);
+        if (helperSource === undefined)
+          throw new Error('Expected shared helper source.',);
+        /** Shared helper declaration whose every inbound must be considered. */
+        const [helperDeclaration,] = helperSource.statements;
+        if ((helperDeclaration === undefined)
+          || (!isFunctionLikeDeclaration(helperDeclaration,)))
+          throw new Error('Expected shared helper declaration.',);
+        /** Helper summary must retain ordinary ownership from unreached caller. */
+        const helperSummary = index.get(helperDeclaration,);
+        if (helperSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected shared helper summary.',);
+        expect([...helperSummary.foreignBorrowedParameterIndexes,],).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'reuses direct scans in process and through persistent cache',
       fn: async () => {
         using cache = disposableCacheDirectory();

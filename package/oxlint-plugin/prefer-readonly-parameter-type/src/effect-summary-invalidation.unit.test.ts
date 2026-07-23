@@ -23,11 +23,8 @@ import {
   openSemanticFile,
 } from '../dist/final/node/index.mjs';
 
-/** Non-declaration fixture sources scanned and persisted on a cold build. */
-const FIXTURE_SOURCE_COUNT = 3;
-
-/** Fixture sources when the runtime-variable dynamic import file joins. */
-const DYNAMIC_FIXTURE_SOURCE_COUNT = FIXTURE_SOURCE_COUNT + 1;
+/** Demand-reachable fixture sources scanned and persisted on a cold build. */
+const FIXTURE_SOURCE_COUNT = 2;
 
 /** Source whose runtime-variable dynamic import must not join any closure. */
 const DYNAMIC_IMPORT_SOURCE = 'export async function loadRuntime(specifier: string,): Promise<unknown> { return import(specifier); }\n';
@@ -151,7 +148,7 @@ function buildFixtureIndex(paths: IncrementalFixturePaths,): FixtureBuildCycle {
 }
 
 /**
- * Runs the cold build cycle and proves every source persisted.
+ * Runs the cold build cycle and proves every reached source persisted.
  *
  * @param paths - Fixture paths naming input and persistent cache root.
  */
@@ -159,7 +156,7 @@ function runColdCycle(paths: IncrementalFixturePaths,): void {
   clearEffectSummaryCache();
   clearFinalEffectIndexCache();
   buildFixtureIndex(paths,);
-  /** Counters after uncached scan of every fixture source. */
+  /** Counters after uncached scan of demand-reachable fixture sources. */
   const coldStats = effectSummaryCacheStats();
   expect(coldStats.persistentSourceCacheHitCount,).toBe(0,);
   expect(coldStats.directSummaryBuildCount,).toBe(FIXTURE_SOURCE_COUNT,);
@@ -209,12 +206,11 @@ await describe({
         writeFileSync(paths.standalonePath, EDITED_STANDALONE_SOURCE,);
         /** Warm counters after editing a file no other closure contains. */
         const { stats, } = runWarmCycle(paths,);
-        /* Schema-1 addressing keyed entries by whole-project digest, so this
-         * exact edit invalidated every entry; incremental closures must keep
-         * both unrelated entries valid and rescan only the edited file. */
-        expect(stats.persistentSourceCacheHitCount,).toBe(2,);
-        expect(stats.directSummaryBuildCount,).toBe(1,);
-        expect(stats.persistentCacheWriteCount,).toBe(1,);
+        /* Unreachable source has no summary entry to invalidate;
+         * both demanded entries remain valid without rescanning edited code. */
+        expect(stats.persistentSourceCacheHitCount,).toBe(FIXTURE_SOURCE_COUNT,);
+        expect(stats.directSummaryBuildCount,).toBe(0,);
+        expect(stats.persistentCacheWriteCount,).toBe(0,);
         releaseCycle();
       },
     },),
@@ -229,11 +225,11 @@ await describe({
         /** Warm cycle after editing the caller's imported implementation. */
         const { session, index, stats, } = runWarmCycle(paths,);
         /* The unchanged caller revalidates against its recorded dependency
-         * closure, so the helper edit must reach it while the standalone
-         * entry survives untouched. */
-        expect(stats.persistentSourceCacheHitCount,).toBe(1,);
-        expect(stats.directSummaryBuildCount,).toBe(2,);
-        expect(stats.persistentCacheWriteCount,).toBe(2,);
+         * closure, so the helper edit invalidates both demanded entries.
+         * Unreachable standalone source has no cache entry to preserve. */
+        expect(stats.persistentSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(FIXTURE_SOURCE_COUNT,);
+        expect(stats.persistentCacheWriteCount,).toBe(FIXTURE_SOURCE_COUNT,);
         /** Unchanged caller declaration resolved in the warm session. */
         const declaration = session.nodeAtOffset(CALLER_SOURCE.indexOf('caller',),)
           .parent;
@@ -260,19 +256,18 @@ await describe({
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
         buildFixtureIndex(paths,);
-        /** Cold counters covering the dynamic-import source. */
+        /** Cold counters excluding unreachable dynamic-import source. */
         const coldStats = effectSummaryCacheStats();
-        expect(coldStats.persistentCacheWriteCount,).toBe(DYNAMIC_FIXTURE_SOURCE_COUNT,);
+        expect(coldStats.persistentCacheWriteCount,).toBe(FIXTURE_SOURCE_COUNT,);
         closeSemanticBridge();
         writeFileSync(paths.standalonePath, EDITED_STANDALONE_SOURCE,);
         /** Warm counters after an edit unrelated to the dynamic importer. */
         const { stats, } = runWarmCycle(paths,);
-        /* A runtime-variable import() contributes no static semantics, so
-         * the dynamic importer must keep a resolved closure instead of a
-         * whole-scope snapshot that any edit would invalidate. */
+        /* Runtime-variable importer is unreachable from active effects,
+         * so neither it nor edited standalone source enters analysis. */
         expect(stats.persistentSourceCacheHitCount,).toBe(FIXTURE_SOURCE_COUNT,);
-        expect(stats.directSummaryBuildCount,).toBe(1,);
-        expect(stats.persistentCacheWriteCount,).toBe(1,);
+        expect(stats.directSummaryBuildCount,).toBe(0,);
+        expect(stats.persistentCacheWriteCount,).toBe(0,);
         releaseCycle();
       },
     },),
