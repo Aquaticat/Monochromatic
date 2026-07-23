@@ -336,6 +336,17 @@ through the pass; false blocks get probed and tallied per entry,
 and block calibration (for example requiring voters to file no
 substantive claims themselves) is a named post-pass workstream.
 Remaining 87.
+run 003 (2026-07-23, 1913 s): 3 dispatched, 3 completed, 0 failed;
+Arita repaired (20 issues, 18 accepted, 17 resolved, 6 findings,
+644 s); ArtsEpiphany unchanged (0 claims from 7/7 critics, 8 s;
+measured: the pair is a 120-byte front-matter stub each side, so
+zero claims is correct, not a silent failure); BI4PBV REPAIRED
+(31 issues, 30 accepted, 28 resolved, 3 findings, 1260 s): the
+milestone-two quarantine entry that forfeited all seven models in
+two independent benchmark runs completed 7/7 on all three chunks
+at first attempt; the spiral was provider weather plus seeded-text
+conditions, and the production pass holds no quarantine list.
+Remaining 84.
 
 RESUME PROCEDURE (historical, loop closed at milestone-two
 declaration). The user ran an unattended milestone-two accumulation
