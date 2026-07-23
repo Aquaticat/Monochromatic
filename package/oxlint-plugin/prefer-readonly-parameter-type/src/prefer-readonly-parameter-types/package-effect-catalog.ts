@@ -11,7 +11,6 @@ import { LEZER_PACKAGE_EFFECTS, } from './lezer-package-effect-catalog.ts';
 import { NANO_SPAWN_PACKAGE_EFFECTS, } from './nano-spawn-package-effect-catalog.ts';
 import { receiverEffect, } from './package-receiver-effect.ts';
 import { PI_PACKAGE_EFFECTS, } from './pi-package-effect-catalog.ts';
-import { POSTCSS_PACKAGE_EFFECTS, } from './postcss-package-effect-catalog.ts';
 import { TURSO_PACKAGE_EFFECTS, } from './turso-package-effect-catalog.ts';
 import { TYPESCRIPT_PACKAGE_EFFECTS, } from './typescript-package-effect-catalog.ts';
 import { YUKU_AST_PACKAGE_EFFECTS, } from './yuku-ast-package-effect-catalog.ts';
@@ -24,6 +23,12 @@ import { YUKU_AST_PACKAGE_EFFECTS, } from './yuku-ast-package-effect-catalog.ts'
  * `runSync` from `@optique/run`, whose shipped implementation reaches
  * `runParser`/`runWith`/`runWithSync` instead), and the repository is
  * migrating off Optique entirely.
+ *
+ * PostCSS entries were removed 2026-07-22: `build-tool-css` migrated to
+ * `@monochromatic-dev/module-css-edit` over `@csstools/css-tokenizer`
+ * (whose guard entries live in the csstools catalog), leaving no repository
+ * code calling the audited postcss members; postcss itself remains only as
+ * a stylelint transitive.
  */
 export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...CSS_TOKENIZER_PACKAGE_EFFECTS,
@@ -31,7 +36,6 @@ export const PACKAGE_EFFECTS: readonly IntrinsicEffectEntry[] = [
   ...LEZER_PACKAGE_EFFECTS,
   ...NANO_SPAWN_PACKAGE_EFFECTS,
   ...PI_PACKAGE_EFFECTS,
-  ...POSTCSS_PACKAGE_EFFECTS,
   ...TURSO_PACKAGE_EFFECTS,
   ...TYPESCRIPT_PACKAGE_EFFECTS,
   ...YUKU_AST_PACKAGE_EFFECTS,

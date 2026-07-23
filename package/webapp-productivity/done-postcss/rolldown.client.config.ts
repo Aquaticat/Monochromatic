@@ -9,10 +9,10 @@ import {
  * Client-side browser bundle config for the Done productivity app.
  * Bundles five page entry points into `dist/client/*.js`.
  * Uses the import-attributes plugin so client code can import
- * pre-built CSS via `with { type: 'text' }`. The postcss stack
- * (nanoid, picocolors, postcss) is undeclared in dependencies,
- * so it bundles by omission; declared server-only deps never enter
- * the client graph.
+ * pre-built CSS via `with { type: 'text' }`. The CSS parsing stack
+ * (`@csstools/css-tokenizer` via workspace css-edit) is undeclared in
+ * dependencies, so it bundles by omission; declared server-only deps
+ * never enter the client graph.
  */
 const config: ClientFlavorConfig = clientConfig({
   input: [

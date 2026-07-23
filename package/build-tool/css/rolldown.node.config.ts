@@ -12,7 +12,8 @@ import {
  * dispatch (runWorkspaceNode) to call the built file directly when present,
  * otherwise `src/cli.ts`, so bootstrap does not depend on pnpm linking the
  * `build-css` shim.
- * node-only (postcss, optique, node fs via module-fs-path).
+ * node-only (optique, node fs via module-fs-path; parsing via the
+ * workspace css-edit CST).
  */
 const config: NodeFlavorConfig = nodeConfig({
   input: [
