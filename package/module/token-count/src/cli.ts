@@ -1,14 +1,19 @@
 #!/usr/bin/env node
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import {
   multiple,
   optional,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import { countFileTokens, } from './client.ts';
@@ -21,6 +26,7 @@ import { countFileTokens, } from './client.ts';
 const PAD_WIDTH = 8;
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for the token-count CLI.
  *
  * @example
@@ -40,6 +46,7 @@ const parser = object({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments
  */
 const args = runSync(

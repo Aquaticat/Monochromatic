@@ -25,13 +25,18 @@
  * ```
  */
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { multiple, } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 import { constants, } from 'node:fs';
 import {
@@ -159,6 +164,7 @@ async function appendLinesToFile({
 //region Parser definition: required --to option and variadic positional text lines
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for the task-append CLI
  */
 const parser = object({
@@ -175,6 +181,7 @@ const parser = object({
 //endregion Parser definition
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments from process.argv
  */
 const args = runSync(

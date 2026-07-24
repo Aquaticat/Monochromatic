@@ -31,19 +31,24 @@
  * ```
  */
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import {
   multiple,
   optional,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import {
   integer,
   string,
 } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 import spawn from 'nano-spawn';
 import dedent from 'string-dedent';
@@ -55,6 +60,7 @@ export {};
 //region Parser definition: defines CLI flags and rest arguments after --
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for the task-command CLI
  */
 const parser = object({
@@ -79,6 +85,7 @@ const parser = object({
 //endregion Parser definition
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments from process.argv
  */
 const args = runSync(

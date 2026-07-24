@@ -9,14 +9,20 @@
 import { spawn, } from 'node:child_process';
 import { randomUUID, } from 'node:crypto';
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import { optional, } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import {
@@ -36,6 +42,7 @@ import { writeInitialSpawnState, } from './state.ts';
 //region Parser
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for spawn-pi command line.
  *
  * @example
@@ -69,6 +76,7 @@ const parser = object({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments from current process invocation.
  */
 const args = runSync(

@@ -3,6 +3,7 @@
 /**
  * `watch-restart` CLI entrypoint.
  *
+ * TODO: deprecate Optique
  * Parses command-line flags via optique, maps them onto
  * {@link StartWatchRestartOptions}, then hands control to
  * {@link startWatchRestart}. On SIGINT or SIGTERM the orchestrator's
@@ -21,19 +22,24 @@
  * ```
  */
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import {
   multiple,
   optional,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import {
   integer,
   string,
 } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 import {
   cliEventToInternal,
@@ -56,6 +62,7 @@ import type {
 } from './types.ts';
 
 /**
+ * TODO: deprecate Optique
  * Module-internal optique parser. Built once at module load. Not
  * exported because spelling its inferred type without leaking
  * optique-internal generics is impractical; consumers go through
@@ -143,6 +150,7 @@ const parser = object({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Runs the optique parser against a synthetic argv and returns the
  * {@link ParsedArgs} shape.
  *

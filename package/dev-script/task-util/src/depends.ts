@@ -32,16 +32,21 @@
  * ```
  */
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import {
   multiple,
   optional,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 import dedent from 'string-dedent';
 
@@ -57,6 +62,7 @@ export {};
 //region Parser definition
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for the task-depends CLI
  */
 const parser = object({
@@ -100,6 +106,7 @@ const parser = object({
 //region Argument validation
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments from process.argv
  */
 const rawArgs = runSync(
@@ -110,6 +117,7 @@ const rawArgs = runSync(
   },
 );
 
+// TODO: deprecate Optique
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so `multiple(optional(...))` yields `(string | undefined)[]` for omitted options; this helper mirrors that upstream type to strip the absent entries */
 /**
  * Filters absent values produced by `multiple(optional(...))` when an option is omitted.
@@ -154,6 +162,7 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
  * ```
  */
 type ValidateTimeStrategyOptions = {
+  // TODO: deprecate Optique
   /* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so an omitted `--*-time-strategy` arrives here as `undefined`; this field mirrors that upstream type */
   /**
    * Raw value from optique (`undefined` when option is omitted)

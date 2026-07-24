@@ -1,5 +1,8 @@
+// TODO: deprecate Optique
 import { argument, } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 import {
   cp,
@@ -11,6 +14,7 @@ import {
 } from 'node:path';
 
 /**
+ * TODO: deprecate Optique
  * Parsed positional path argument from process.argv.
  *
  * @example
