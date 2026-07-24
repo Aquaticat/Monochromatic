@@ -473,7 +473,32 @@ Anilovr REPAIRED, 130 issues in 2681 s.
 THOROUGHNESS GATE MET: Anilovr 130 issues versus its 33-issue
 section-scale baseline, a 3.9x gain moving decisively toward the
 user's first-glance estimate of 200+; per-entry wall time roughly
-doubled (1358 s to 2681 s), the expected slicing cost. The user's concurrent
+doubled (1358 s to 2681 s), the expected slicing cost.
+CURRENT-TIP GATE (2026-07-23, Anilovr re-run on the union-widened,
+quorum-retry tip, log `gate-anilovr-union.log`): PASS, repaired,
+121 issues in 2547 s. Consolidation from 130 is the union working
+(3 MIXED-FAMILY merged issues, structurally impossible before the
+widening), not lost findings.
+UNDER-MERGE CHECK, offline and zero quota: singleton share rose to
+89 percent at slice scale, so near-miss anchoring was measured
+directly. Same-slice issue pairs by nearest-span gap: 361
+overlapping (proposed and SPLIT by the panel, its conservative
+disposal working), 309 within 1 to 20 chars, 324 within 21 to 60.
+Sampling the 1-to-20 band showed every pair is a genuinely
+DISTINCT defect on adjacent text (untranslated Esperanto phrase
+beside an added sentence; preposition error beside a CJK
+quotation-mark convention issue; heading mistranslation beside a
+nuance shift), so proximity inside a small slice is adjacency, not
+duplication. Widening the merge neighborhood would OVER-merge.
+Verdict: the union algorithm is sound at slice scale and the high
+singleton share reflects real defect density; no further union
+iteration warranted on current evidence.
+PASS 3 STARTED (2026-07-23) from zero on the union-widened,
+quorum-retry, paragraph-sliced tip; pass-2 artifacts and attempts
+wiped, 92 pending, logs `pass3-run-NNN.log`. Expect roughly double
+the per-entry wall time of pass 2 and several times its issue
+counts. Pass 3 is one iteration, not a finished product: any
+further improvement clearing the confidence bar restarts it again. The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
 TEaR; the guarded-envelope composition is the unusual part; its
