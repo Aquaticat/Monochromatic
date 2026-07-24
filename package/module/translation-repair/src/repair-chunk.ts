@@ -5,14 +5,12 @@ import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
-  NON_TRANSLATION_BLOCK_VOTES,
+  nonTranslationVotesStand,
   screenNonTranslationVotes,
 } from './non-translation-evidence.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
-import {
-  parseDocument,
-  type RepairDocument,
-} from './parse-document.ts';
+import { downgradeCount, } from './downgrade-count.ts';
+import { parseDocument, } from './parse-document.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
@@ -37,30 +35,6 @@ import {
 // early exit returns the chunk unchanged with whatever issues were decided;
 // the unchanged text always competes and wins by default.
 // The roster and outcome types live in repair-contract.ts.
-
-/**
- * Count of `mdx-downgraded` findings, the integrity signal:
- * a patch that forces markdown fallback broke document grammar.
- *
- * @param document - parsed document under inspection
- *
- * @returns Downgrade finding count
- *
- * @example
- * ```ts
- * downgradeCount({ document, },);
- * ```
- */
-function downgradeCount(
-  { document, }: { readonly document: RepairDocument; },
-): number {
-  return document
-    .parseFindings
-    .filter(function isDowngrade(finding,) {
-      return finding.kind === 'mdx-downgraded';
-    },)
-    .length;
-}
 
 /**
  * Runs one chunk pair through the whole repair loop.
@@ -163,8 +137,10 @@ export async function repairChunk(
   /**
    * Whether votes met the block threshold uncontradicted.
    */
-  const votesStand = (critic.nonTranslationVotes >= NON_TRANSLATION_BLOCK_VOTES)
-    && (!screening.contradicted);
+  const votesStand = nonTranslationVotesStand({
+    votes: critic.nonTranslationVotes,
+    contradicted: screening.contradicted,
+  },);
 
   /**
    * Unchanged outcome shared by every early exit.
