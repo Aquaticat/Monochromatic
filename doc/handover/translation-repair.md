@@ -821,6 +821,34 @@ written so Anilovr stays pending, but its attempt count went to 1, so the
 fewest-attempts order now processes the 87 zero-attempt entries first and
 retries Anilovr later (hopefully a calmer API window). Still 4/92 settled.
 Run 005 launched.
+PASS 6 RUN 005 (2026-07-24, tip `9c86aebf1`, hard cap hit): Arita
+status=ERROR, aborted at 2700003ms, 0 processed. This one is SYSTEMATIC,
+not transient: the earlier live probe showed Arita legitimately takes
+4110s (~68 min) for its 12 slices, which exceeds the 45-min cap, so Arita
+can never settle as configured. Still 4/92 settled.
+CORPUS-PASS BUDGET FIX (2026-07-24, commit `5b74bd7b2`): two problems
+surfaced. (1) The hard ceiling was armed ONCE for the whole loop, so its
+abort signal was shared -- an entry starting near the soft budget got only
+the sliver left before the cap. Fixed: a fresh `armCallDeadline` per entry
+(disposed via `using`, since try/finally is lint-banned), so each entry
+gets its full budget regardless of start time. (2) 45 min was too tight;
+raised HARD_CAP to 90 min (per entry), clearing every entry up to ~16
+slices at the measured ~5.5 min/slice. Driver-only; repair results and the
+4 settled artifacts unaffected, so NO restart. Verified: format/lint/types
+0/0 and a `--plan` run (zero quota) shows hard=5400000ms.
+LARGE-ENTRY TAIL (2026-07-24, deterministic slice survey
+slice-distribution.mjs): the corpus slice-count distribution is
+median 8 but long-tailed -- aiyysk 77 slices, hulicaijia 65, shihai4h 45,
+interrgned 43, NIGHT81473140 41, Xu_Yushu 35, XingZ60 31, Dethelly 24;
+total 1129 slices over 92 entries. At ~5.5 min/slice the biggest need
+multiple HOURS end to end, so ~10 entries cannot complete in ANY bounded
+single-run cap. The 90-min cap settles the ~80 smaller entries; the tail
+needs slice-level RESUMABILITY (cache completed slices, resume across
+runs) -- a change to the pure function's contract (inject a slice cache,
+like the client is injected). Flagged to the user as a decision before
+building. Meanwhile run 006 relaunches so the bulk keeps settling; huge
+entries waste one 90-min attempt then deprioritize (attempts already 1 for
+Anilovr/Arita).
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
