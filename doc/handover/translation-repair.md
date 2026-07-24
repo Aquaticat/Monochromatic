@@ -714,6 +714,12 @@ regression elsewhere. Acheron alone ate the 25-min soft budget, so the
 top-of-loop check stopped new entries after it; the two artifacts persist,
 attempts.json carries {Acheron:1, AkiraComplex:1}. No new high-confidence
 fix surfaced; loop continues, launching run 002 on the same tip.
+PASS 5 RUN 002 (2026-07-24, tip `94b031cae`, 2088s wall, soft budget hit):
+1 dispatched, 1 completed, 0 failed. AmbeR_the_anpa repaired (49 issues,
+45 accepted, 44 resolved, 6 findings, 2088s) -- a single large document
+that overran the 25-min soft budget on its own, so no second entry
+dispatched. 3/92 settled. No new fix surfaced; run 003 launched on tip
+`94b031cae` (same, since only the handover moved).
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
