@@ -572,6 +572,18 @@ CLN:
  not `git clone`,
  unless commit history matters.
 
+TMP:
+ `${HOME}/temp` (incl `${HOME}/temp/agent/`) is ephemeral;
+ assume cleanup wipes it anytime.
+ Keep only reconstructable scaffolding there,
+ nothing irreplaceable.
+
+NMD:
+ Durable state that must stay uncommitted (UNLICENSED-derived artifacts,
+ run caches) goes in `node_modules/.monochromatic/`:
+ gitignored,
+ and survives `${HOME}/temp` cleanup.
+
 BOP:
  `~` in Bash output = display substitution for home dir by `bash-output-filter` hook (display-only).
 Skip filter via blocklist trigger:
