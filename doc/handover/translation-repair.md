@@ -642,6 +642,40 @@ intervening commits are docs, the worktree move, and this source promotion, none
 touching pipeline logic), so this continues pass 4 accumulation. The persisted
 `attempts.json` survived, so entries attempted-but-never-settled by the wiped
 runs (e.g. Acheron) now sort after the untouched zero-attempt entries.
+PASS 4 RUN 002 (2026-07-24, tip `92f7b2c55`, 2110s wall, soft budget hit):
+processed 2 of 92, artifacts 2/92. `AmbeR_the_anpa` repaired (61 issues, 58
+accepted, 58 resolved, 0 findings, 2028s ~34min ALONE, consuming the whole soft
+budget; the top-of-loop soft check stopped new entries after it). `AkiraComplex`
+blocked-non-translation (0 issues, 4 findings, 62s) is a VERIFIED FALSE BLOCK:
+its en page is a faithful translation of the zh (checked directly against the
+pinned corpus). Findings were `empty-quote (source)` x2, `non-translation votes
+stand (2/7 heard); slice unchanged`, `non-translation dominance (561 of 590
+target chars)`. Root cause: only 2 of 7 critics were HEARD on the dominant
+slice and both voted non-translation, meeting the ABSOLUTE
+`NON_TRANSLATION_BLOCK_VOTES=2` threshold (`non-translation-evidence.ts`); 5
+silent critics gave no counter-signal, so a bare 2 votes blocked despite no real
+ensemble agreement. Likely trigger: the page opens with an English epigraph that
+is English in BOTH zh and en source, so a slice reads as "source == target, not
+a translation" to a critic. HIGH-CONFIDENCE ISSUE, fix deferred for careful
+calibration (do not just lower/raise the constant blindly): the severe block
+(discards all repair, returns input) must require genuine ensemble agreement,
+not a bare count a low-participation slice can satisfy. Candidate fixes, each
+with a tension to resolve against the KNOWN TRUE-POSITIVE case (zh cat story vs
+"Meow meow meow": GLM + gpt-oss + Qwen, i.e. 3 of 7, all flagged
+non-translation, one failing to anchor): (1) require a MINIMUM critics-heard
+count on the slice before any block (2/7 heard is too few to make a severe call;
+degrade instead) -- cleanest, targets the failure mode directly, needs the
+minimum chosen so the 3/7 true case still blocks when those 3 are among the
+heard; (2) require non-translation votes as a fraction of the FULL roster
+treating silent critics as not-non-translation (e.g. >= 3) -- must not exceed 3
+or it breaks the true case; (3) both. The English-epigraph-in-both trigger is a
+second, orthogonal seam (a slice whose source and target are identical English
+should never count as non-translation evidence). NEXT ACTION: design and land
+this with full context, add unit tests over the participation cases, validate on
+`AkiraComplex` (expect: no longer blocked) via `sentinel-probe -- AkiraComplex`
+plus the true-positive fixture, then restart the pass. Accumulation is PAUSED
+(run 003 not launched) because a fix+restart discards further runs; resume only
+if choosing progress-under-current-pipeline over the fix.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
