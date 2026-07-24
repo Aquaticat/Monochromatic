@@ -547,8 +547,21 @@ Risk if systematic: preserved CJK in English pages is exactly the
 `accuracy/untranslated` signal the non-translation detector reads,
 so unchecked spread could interact with blocking. Resolution is a
 values question about memorial presentation (the quote is the
-person's own last words), not a measurable one, so it goes to the
-user; pass 4 waits for the answer rather than risk a third discard. The user's concurrent
+person's own last words), not a measurable one, so it went to the
+user.
+USER PICK (2026-07-23): render source-language text into English
+like ordinary prose; only genuinely third languages get
+preserve-plus-gloss, including inside quotations and stylized
+multilingual lines. Rejected alternatives recorded: preserve CJK
+with a gloss everywhere, and a quoted-blockquote-only carve-out.
+SCOPING FIX (commit `4b8fd64c8`): both prompts now carry the
+explicit negative, "The ORIGINAL's own language is never such a
+phrase", with the quotation and stylized-line cases named so the
+exception cannot spread; prompt tests assert it in both files.
+Verification: 91 suites, oxlint 0/0, types clean. Second policy
+gate running on Anilovr (log `gate-anilovr-policy2.log`) to prove
+the tightening keeps the Esperanto gloss while rendering the CJK
+clause; pass 4 starts from zero once it lands. The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
 TEaR; the guarded-envelope composition is the unusual part; its
