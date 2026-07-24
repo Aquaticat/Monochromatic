@@ -62,6 +62,23 @@ await describe({
       },
     },),
     it({
+      name: 'states the emotional-completeness and foreign-phrase policy',
+      fn: async () => {
+        /**
+         * System instructions under policy probing.
+         */
+        const system = MESSAGES[0]?.content ?? '';
+        // Naturalness outranks literalness, in both directions:
+        // non-literal renderings are not defects, lost feeling is.
+        expect(system,).toContain('not word-for-word correspondence',);
+        expect(system,).toContain('Never report a defect merely because a rendering is not literal',);
+        expect(system,).toContain('style/emotional-flattening',);
+        // Foreign phrases keep their wording and gain a meaning beside it.
+        expect(system,).toContain('policy/foreign-phrase-gloss',);
+        expect(system,).toContain('keep that phrase in its original wording AND give its meaning alongside',);
+      },
+    },),
+    it({
       name: 'fences both documents verbatim on the user sheet',
       fn: async () => {
         /**
