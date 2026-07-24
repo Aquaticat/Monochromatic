@@ -150,6 +150,9 @@ await describe({
         // Foreign phrases keep their wording and gain a meaning beside it.
         expect(system,).toContain('in that original wording, and put its meaning alongside it',);
         expect(system,).toContain('Never replace such a phrase with its meaning alone',);
+        // The exception must not swallow the source language itself.
+        expect(system,).toContain('The ORIGINAL\'s own language is never such a phrase',);
+        expect(system,).toContain('Only the genuinely foreign phrase keeps its own wording',);
       },
     },),
 
