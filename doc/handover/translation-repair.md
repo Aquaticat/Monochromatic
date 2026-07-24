@@ -803,6 +803,11 @@ PASS 6 RUN 002 (2026-07-24, tip `edc7959bf`, 2620s wall, soft budget hit):
 accepted, 28 resolved, 1 finding, 698s); AmbeR_the_anpa repaired (44
 issues, 42 accepted, 42 resolved, 4 findings, 1923s). Both in earlier
 passes too; no blocks under lockstep. 3/92 settled. Run 003 launched.
+PASS 6 RUN 003 (2026-07-24, tip `8459fd92d`, 1764s wall, soft budget hit):
+1 dispatched, 1 completed, 0 failed. Aniloviraw repaired (52 issues, 52
+accepted, all 52 resolved, 10 findings, 1764s) -- the original
+contradiction-screen false-block entry, repairing cleanly again. 4/92
+settled. Run 004 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
