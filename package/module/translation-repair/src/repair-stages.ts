@@ -123,10 +123,11 @@ export async function runCriticStage(
   },);
 
   /**
-   * Heard critics after full-roster retries: the critic union is the
-   * product, and measured convergence is low (67 to 84 percent
-   * singleton issues on real corpus entries), so every unheard voice
-   * would cost its findings nearly one-for-one.
+   * Heard critics after retry-to-quorum. Full-roster retries were tried
+   * and reverted (user decision 2026-07-23): live probing showed critics
+   * answer 7/7 on the first round nearly always, paragraph slicing plus
+   * panel-judged merging carry the thoroughness burden, and waiting on a
+   * complete roster stalls runs when a voice genuinely wedges.
    */
   const gather = await gatherStageVoices({
     client,
@@ -138,7 +139,6 @@ export async function runCriticStage(
     validate: isCriticReportWire,
     stage: 'critic',
     l,
-    retryTarget: 'full-roster',
   },);
 
   /**
