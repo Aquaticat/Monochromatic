@@ -695,6 +695,15 @@ keep `repair-chunk.ts` under the 300-line budget. Verified: build, format 0/0,
 lint, types, unit tests all green. Live sentinel-probe on AkiraComplex is the
 final confirmation before restart. This makes the restarted pass a NEW pass
 (pipeline behavior changed); prior pass-4 artifacts are discarded.
+FIX CONFIRMED LIVE (2026-07-24): `sentinel-probe -- AkiraComplex` returned
+status=repaired (21 issues, 21 accepted, 1 finding, 421s), up from
+blocked-non-translation: the false block is gone end-to-end. Artifacts and
+`attempts.json` wiped for a clean restart. PASS 5 RUN 001 launched on tip
+`b3fdf6e4c` (log `pass5-run-001.log`); this is the current accumulation pass
+under the three-vote non-translation block. Loop continues per task 30: record
+each run's tallies content-free, commit, launch the next, until all 92 settle,
+landing any further verified high-confidence fix immediately (restarting) per
+the standing rule.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
