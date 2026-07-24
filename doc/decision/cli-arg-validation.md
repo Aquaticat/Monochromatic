@@ -9,8 +9,8 @@ Accepted,
 
 Optique was adopted as the CLI argument parser before this document existed.
 The choice is recorded informally in `PHILOSOPHY.tool-choices.md:26`
-(`@optique/core`, <!-- TODO: deprecate Optique -->
- `@optique/run`: <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> (`@optique/core`,
+<!-- TODO: deprecate Optique --> `@optique/run`:
  npm `dev` tag for 1.
 x) but never had a dedicated
 decision doc covering value-level validation.
@@ -21,9 +21,9 @@ Current state when this decision was made:
   `package/cli/fy/`,
    `package/cli/mvm/`,
    `package/cli/vmsync/`.
-  All three rely on `@optique/core/valueparser`'s built-in primitives <!-- TODO: deprecate Optique -->
+  <!-- TODO: deprecate Optique --> All three rely on `@optique/core/valueparser`'s built-in primitives
   (`string({metavar})`,
-   `integer()`) and `@optique/core/constructs`' <!-- TODO: deprecate Optique -->
+   <!-- TODO: deprecate Optique --> `integer()`) and `@optique/core/constructs`'
   `map()` for shape transforms.
 - Three CLIs are not on Optique:
   `package/git-policy/cli/`,
@@ -51,7 +51,7 @@ Current state when this decision was made:
   `package/ssg/aquati.cat/`,
    but never in a CLI package.
 
-`@optique/valibot` is Optique's adapter that lets a Valibot schema act as <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> `@optique/valibot` is Optique's adapter that lets a Valibot schema act as
 an Optique `ValueParser`.
  Adopting it gives the CLIs access to the
 Valibot rule surface (`v.url`,
@@ -66,12 +66,12 @@ errors surfaced through Optique's standard error-rendering path.
 
 ## Decision
 
-Use `@optique/valibot` **selectively**: <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> Use `@optique/valibot` **selectively**:
  reach for it only when a value
 parser needs validation beyond the type built-in primitives already
 provide.
  Default to the plain `string()` and `integer()` primitives from
-`@optique/core/valueparser` for parsers that accept any well-typed value <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> `@optique/core/valueparser` for parsers that accept any well-typed value
 (names,
  freeform paths,
  generic identifiers).
@@ -89,7 +89,7 @@ Decision rule for new value parsers:
    email,
   custom `transform` into a non-string type):
    use
-  `valibot(v.pipe(v.string(), ...))` from `@optique/valibot`. <!-- TODO: deprecate Optique -->
+  <!-- TODO: deprecate Optique --> `valibot(v.pipe(v.string(), ...))` from `@optique/valibot`.
 - The parser needs a non-string output type (number,
    Date,
    parsed
@@ -123,7 +123,7 @@ Out-of-scope for this decision:
    The plain
   primitives stay;
    only new shape-constrained parsers reach for
-  `@optique/valibot`. <!-- TODO: deprecate Optique -->
+  <!-- TODO: deprecate Optique --> `@optique/valibot`.
 
 ## Rejected alternatives
 
@@ -173,7 +173,7 @@ Valibot at the catalog level.
  Introducing a second validation library
 for one subsystem creates a long-term split where contributors must
 remember which library applies in which package.
- The `@optique/zod` <!-- TODO: deprecate Optique -->
+ <!-- TODO: deprecate Optique --> The `@optique/zod`
 adapter exists,
  but the case for swapping the workspace's validation
 default is out of scope for this decision;
@@ -182,12 +182,12 @@ decision doc against `PHILOSOPHY.tool-choices.md:27`.
 
 ## Vendor and dependency notes
 
-### `@optique/valibot` audit <!-- TODO: deprecate Optique -->
+### <!-- TODO: deprecate Optique --> `@optique/valibot` audit
 
 Verified 2026-05-18 via `gh api repos/dahlia/optique`,
-`https://registry.npmjs.org/@optique/valibot/latest`, <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> `https://registry.npmjs.org/@optique/valibot/latest`,
  and
-`https://api.npmjs.org/downloads/point/last-week/@optique/valibot`: <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> `https://api.npmjs.org/downloads/point/last-week/@optique/valibot`:
 
 - License:
    MIT.
@@ -197,7 +197,7 @@ Verified 2026-05-18 via `gh api repos/dahlia/optique`,
   (3315 contributions vs second contributor's 2).
    Same author as
   LogTape and Fedify;
-   bus factor identical to `@optique/core` (already <!-- TODO: deprecate Optique -->
+   <!-- TODO: deprecate Optique --> bus factor identical to `@optique/core` (already
   accepted).
 - Release:
    1.1.0 at HEAD,
@@ -205,9 +205,9 @@ Verified 2026-05-18 via `gh api repos/dahlia/optique`,
    first npm publish
   2025-08-19.
 - Weekly downloads:
-   3 078 (`@optique/valibot`) vs 15 832 <!-- TODO: deprecate Optique -->
-  (`@optique/core`), <!-- TODO: deprecate Optique -->
-   16 398 (`@optique/run`). <!-- TODO: deprecate Optique -->
+   <!-- TODO: deprecate Optique --> 3 078 (`@optique/valibot`) vs 15 832
+  <!-- TODO: deprecate Optique --> (`@optique/core`),
+   <!-- TODO: deprecate Optique --> 16 398 (`@optique/run`).
    Adapter usage is roughly
   1:5 against the core packages.
 - Unpacked size:
@@ -232,7 +232,7 @@ Verified 2026-05-18 via `gh api repos/dahlia/optique`,
 ### Compatibility with the Node CLI baseline
 
 All Optique CLIs use `#!/usr/bin/env node`.
- `@optique/valibot` declares <!-- TODO: deprecate Optique -->
+ <!-- TODO: deprecate Optique --> `@optique/valibot` declares
 engines `node>=20.0.0`,
  `bun>=1.2.0`,
  `deno>=2.3.0`.
@@ -244,8 +244,8 @@ Node ESM resolver picks the ESM entry.
 
 ### Catalog management
 
-Add `@optique/valibot` to `pnpm-workspace.yaml`'s `catalog:` block <!-- TODO: deprecate Optique -->
-alongside the existing `@optique/core` and `@optique/run` entries when <!-- TODO: deprecate Optique -->
+<!-- TODO: deprecate Optique --> Add `@optique/valibot` to `pnpm-workspace.yaml`'s `catalog:` block
+<!-- TODO: deprecate Optique --> alongside the existing `@optique/core` and `@optique/run` entries when
 the first CLI adopts it.
  Track its version on the same `dev` tag as the
 sibling Optique packages until they all move to a stable major.
