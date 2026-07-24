@@ -730,6 +730,15 @@ gpt-oss-120b) hit the 240s deadline together on a single slice at
 gracefully via quorum, and the entry still repaired. Reads as an API-side
 slowdown burst, not a code fault -- logged, no fix triggered. 4/92 settled.
 Run 004 launched on tip `0384097b7`.
+PASS 5 RUN 004 (2026-07-24, tip `5f60a1b55`, 2540s wall, near hard cap):
+1 dispatched, 1 completed, 0 failed. Anilovr repaired (95 issues, 95
+accepted, ALL 95 resolved, 34 findings, 2540s) -- the largest document
+yet by issue count, running ~42 min, just under the 45-min hard cap. Two
+critic timeouts (Nemotron-3, gpt-oss-120b) on one slice, again absorbed
+by quorum with no effect on the outcome. A perfect 95/95 accept-and-
+resolve is a strong signal but exactly the kind of number the milestone-
+three human grade exists to check, not to trust on its own. 5/92 settled.
+Run 005 launched on tip `5f60a1b55`.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
