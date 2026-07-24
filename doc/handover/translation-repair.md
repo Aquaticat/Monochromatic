@@ -790,6 +790,14 @@ corpus, but the ONLY confirmed end-to-end outcome change is Arita
 while any issue-set or quality effect is unmeasured and waits on the
 milestone-three human grade. Survey scripts in the session scratchpad
 (nodecount-survey.mjs, drift-survey.mjs) reproduce the counts.
+PASS 6 RUN 001 (2026-07-24, tip `973ca8235`, 1556s wall, soft budget hit):
+1 dispatched, 1 completed, 0 failed. Acheron repaired (46 issues, 45
+accepted, 44 resolved, 4 findings, 1556s). Data point on the corrected
+slicing: Acheron is in the drifted set, and its numbers moved from pass-5
+old-slicing (56 issues, 55 accepted, 54 resolved, 18 findings) to 46/45/44
+with findings down 18->4. Factual: the issue set changed and finding-noise
+dropped under 1:1 alignment; whether that is higher quality is for the
+grade, not this delta. 1/92 settled. Run 002 launched on tip `6a58ababf`.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
