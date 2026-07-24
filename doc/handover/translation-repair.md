@@ -808,6 +808,19 @@ PASS 6 RUN 003 (2026-07-24, tip `8459fd92d`, 1764s wall, soft budget hit):
 accepted, all 52 resolved, 10 findings, 1764s) -- the original
 contradiction-screen false-block entry, repairing cleanly again. 4/92
 settled. Run 004 launched.
+PASS 6 RUN 004 (2026-07-24, tip `f08bd3996`, hard cap hit): Anilovr
+status=ERROR, aborted at 2700002ms (the 45-min HARD_CAP), 0 processed.
+Diagnosis (NOT a regression, NOT a fix trigger): the log shows transport
+`terminated` failures with retries plus two critic timeout bursts, and
+only 6 of 7 slices finished in 45 min -- a bad API window at ~20:27Z, not
+a workload change. Deterministic slice-count check (anilovr-slices.mjs)
+proves it: Anilovr produces 7 slices under BOTH old and lockstep code
+(delta=0; Arita +1, Acheron/AmbeR 0), and it repaired fine in pass-5 run
+004 at 2540s with those same 7 slices. Self-heals by design: no artifact
+written so Anilovr stays pending, but its attempt count went to 1, so the
+fewest-attempts order now processes the 87 zero-attempt entries first and
+retries Anilovr later (hopefully a calmer API window). Still 4/92 settled.
+Run 005 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
