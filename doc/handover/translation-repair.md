@@ -559,9 +559,19 @@ explicit negative, "The ORIGINAL's own language is never such a
 phrase", with the quotation and stylized-line cases named so the
 exception cannot spread; prompt tests assert it in both files.
 Verification: 91 suites, oxlint 0/0, types clean. Second policy
-gate running on Anilovr (log `gate-anilovr-policy2.log`) to prove
-the tightening keeps the Esperanto gloss while rendering the CJK
-clause; pass 4 starts from zero once it lands. The user's concurrent
+gate on Anilovr (log `gate-anilovr-policy2.log`): PASS, repaired,
+92 issues, 2795 s. Both goals confirmed and no over-correction:
+the Esperanto stays glossed (4 gloss claims, gloss retained
+`//La homa mondo devus esti detruita// (The human world should be
+destroyed)`), and the stylized quote's Chinese clause now renders
+to English ("I will wait for you at Betelgeuse"). Whole-page CJK
+went 6 to 0: the editor also romanized two proper names the input
+carried in characters (方方 to Fang Fang, 铃木真依 to Mai Suzuki),
+flagged as one `accuracy/untranslated` and resolved. That is
+consistent with the render-source-into-English pick, not a new
+over-application, and it clears the non-translation-detector
+interaction entirely (no residual CJK to read as untranslated).
+PASS 4 starting from zero on this tip. The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
 TEaR; the guarded-envelope composition is the unusual part; its
