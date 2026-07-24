@@ -132,20 +132,35 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Where work lives
 
-- Worktree `.claude/worktrees/translation-repair`, branch `translation-repair`.
+- Worktree `${HOME}/worktrees/translation-repair`, branch `translation-repair`.
+  Moved 2026-07-24 (`git worktree move`) out of the old in-repo
+  `.claude/worktrees/translation-repair`, which risked the same stray-cleanup loss
+  as `${HOME}/temp`; it now sits alongside the repo's other worktrees under
+  `${HOME}/worktrees/`. After the move, run `mise trust` at the new path.
 - Use `/usr/bin/git` for commits in this worktree for this session (user authorization):
   the policy shim fails because the `forbidden-strings` scanner is a gitignored Rust build artifact
   (`package/cli/forbidden-strings/target/release/`) absent from fresh worktrees.
 - `.env.local.json` copied from main worktree;
   `TRANSLATION_REPAIR_SYNTHETIC_API_KEY` resolves through mise sops (verified by name, never print values).
-- Corpus-pass driver, sentinel probe, per-entry artifacts, attempts map, and run logs
-  live in `node_modules/.monochromatic/translation-repair-runs/` (gitignored, durable):
-  gitignored so UNLICENSED-corpus-derived artifacts can never be committed, and outside
-  `${HOME}/temp` so cleanup cannot wipe them (AGENTS.md rules TMP and NMD).
-  Driver is `corpus-pass-driver.mjs`, probe is `sentinel-probe.mjs`; both are `.mjs`, not `.ts`,
-  because Node refuses TypeScript type-stripping for files under `node_modules`.
-  Run under mise so sops injects the key: `mise x -- node <path>.mjs`; the driver's
-  `--plan` flag verifies imports, corpus reads, filtering, and client construction at zero quota.
+- Corpus-pass driver and sentinel probe are COMMITTED SOURCE (2026-07-24, user
+  directive "driver and probe should be source code") under
+  `package/module/translation-repair/src/corpus-run/`:
+  `run-config.ts` (shared roster, budgets, corpus pin, worktree/runs-dir
+  resolvers, client factory), `corpus-pass.ts` (full-corpus accumulation pass),
+  `sentinel-probe.ts` (named-entry validation). They import the pipeline from
+  SIBLING SOURCE and are `import.meta.main`-guarded, following the repo's
+  executable-in-src pattern (e.g. `package/dev-script/watch-restart/src/cli.ts`);
+  no hardcoded dist path. Run via mise tasks (package `mise.toml`):
+  `mise run //package/module/translation-repair:corpus-pass` (append `-- --plan`
+  for the zero-quota setup check that verifies imports, corpus reads, filtering,
+  ordering, key injection, and client construction), and
+  `mise run //package/module/translation-repair:sentinel-probe -- <id>...`.
+  Only the RUN OUTPUTS stay gitignored and out of git: per-entry artifacts,
+  `attempts.json`, and run logs live in
+  `node_modules/.monochromatic/translation-repair-runs/` (gitignored so
+  UNLICENSED-corpus-derived artifacts can never be committed, and outside
+  `${HOME}/temp` so cleanup cannot wipe them; AGENTS.md rules TMP and NMD).
+  Override that dir with `TRANSLATION_REPAIR_RUNS_DIR`.
 - Commits on branch:
   `16864f509` scaffold,
   `70aaaf557` catalog remark/MDX parser stack,
@@ -602,6 +617,25 @@ scaffolding) and NMD (durable uncommittable state goes in
 `1831230e0`. Pass 4 run 001 relaunched on that tip; the pipeline itself
 is unchanged from `63baaa686`, so accumulation resumes exactly where it
 would have.
+WORKTREE MOVE AND SOURCE PROMOTION (2026-07-24): the user flagged that a
+worktree under the repo's `.claude/` risks the same stray-cleanup loss as
+`${HOME}/temp`, so the worktree moved via `git worktree move` from
+`.claude/worktrees/translation-repair` to `${HOME}/worktrees/translation-repair`
+(same filesystem, a rename; HEAD and all run outputs moved with it; `mise trust`
+re-run at the new path). Then, per "driver and probe should be source code" and
+"put them under src/<category>", the driver and probe were promoted from
+gitignored `.mjs` scaffolding to committed TypeScript under
+`src/corpus-run/` (`run-config.ts`, `corpus-pass.ts`, `sentinel-probe.ts`),
+importing the pipeline from sibling source, `import.meta.main`-guarded, run via
+new package mise tasks `corpus-pass` and `sentinel-probe`. Only run OUTPUTS stay
+gitignored in `node_modules/.monochromatic/translation-repair-runs/`. See "Where
+work lives". As of this handover write the format+lint+types verification of the
+new source is still running in the background (task `bk0njp7x8`); NOT yet
+confirmed green, and the old `.mjs` copies under
+`node_modules/.monochromatic/translation-repair-runs/` are pending deletion once
+the new source passes `--plan`. Pass 4 was stopped for the move and has not been
+relaunched yet; relaunch is via `mise run
+//package/module/translation-repair:corpus-pass` after verification.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
