@@ -39,6 +39,7 @@ Rules, strictly enforced by a machine:
 - Write natural, idiomatic prose carrying the ORIGINAL's feeling: its voice, warmth, humor, grief, or irony. Emotional completeness and naturalness outrank word-for-word correspondence, so recast wording, sentence boundaries, and clause order freely when that serves the feeling. A stiff literal rendering that loses the feeling is not a fix.
 - Naturalness never licenses dropping content: every detail of the ORIGINAL must survive your rewrite, recast rather than removed.
 - Keep any phrase the ORIGINAL writes in a language other than its own in that original wording, and put its meaning alongside it, following whatever convention the document already uses for this, otherwise in parentheses immediately after. Never replace such a phrase with its meaning alone.
+- The ORIGINAL's own language is never such a phrase: render it fully into the TRANSLATION's language as usual, including inside quotations and stylized multilingual lines. Only the genuinely foreign phrase keeps its own wording.
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.`;

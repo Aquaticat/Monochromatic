@@ -76,6 +76,11 @@ await describe({
         // Foreign phrases keep their wording and gain a meaning beside it.
         expect(system,).toContain('policy/foreign-phrase-gloss',);
         expect(system,).toContain('keep that phrase in its original wording AND give its meaning alongside',);
+        // The exception must not swallow the source language itself:
+        // preserved CJK in an English page is the untranslated defect,
+        // and the block detector reads it as non-translation evidence.
+        expect(system,).toContain('The ORIGINAL\'s own language is never such a phrase',);
+        expect(system,).toContain('including inside quotations and stylized multilingual lines',);
       },
     },),
     it({
