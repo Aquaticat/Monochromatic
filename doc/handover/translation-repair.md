@@ -629,13 +629,19 @@ gitignored `.mjs` scaffolding to committed TypeScript under
 importing the pipeline from sibling source, `import.meta.main`-guarded, run via
 new package mise tasks `corpus-pass` and `sentinel-probe`. Only run OUTPUTS stay
 gitignored in `node_modules/.monochromatic/translation-repair-runs/`. See "Where
-work lives". As of this handover write the format+lint+types verification of the
-new source is still running in the background (task `bk0njp7x8`); NOT yet
-confirmed green, and the old `.mjs` copies under
-`node_modules/.monochromatic/translation-repair-runs/` are pending deletion once
-the new source passes `--plan`. Pass 4 was stopped for the move and has not been
-relaunched yet; relaunch is via `mise run
-//package/module/translation-repair:corpus-pass` after verification.
+work lives". Only run OUTPUTS stay gitignored in
+`node_modules/.monochromatic/translation-repair-runs/`.
+RESOLVED (2026-07-24, commit `92f7b2c55`): the new source is green (format,
+oxlint 0/0, types), `--plan` runs through the mise task (pending 92, tdor
+excluded, client constructs, zero quota), the old `.mjs` copies are deleted, and
+`buildAndTest` passes so the library is unregressed by the addition. Pass 4 run
+002 relaunched via `mise run //package/module/translation-repair:corpus-pass`
+(log `node_modules/.monochromatic/translation-repair-runs/pass4-run-002.log`) on
+tip `92f7b2c55`; the pipeline behavior is unchanged from `63baaa686` (the
+intervening commits are docs, the worktree move, and this source promotion, none
+touching pipeline logic), so this continues pass 4 accumulation. The persisted
+`attempts.json` survived, so entries attempted-but-never-settled by the wiped
+runs (e.g. Acheron) now sort after the untouched zero-attempt entries.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
