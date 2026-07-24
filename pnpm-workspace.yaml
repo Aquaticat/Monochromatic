@@ -39,7 +39,9 @@ catalog:
   '@mdx-js/mdx': '>=3.1.1'
   '@mitata/counters': '>=0.0.8'
   '@msgpack/msgpack': '>=3.0.0-beta2'
+  # TODO: deprecate Optique
   '@optique/core': '>=1.1.1'
+  # TODO: deprecate Optique
   '@optique/run': '>=1.1.1'
   '@oxlint/plugins': '>=1.73.0'
   '@playwright/test': '>=1.61.1'

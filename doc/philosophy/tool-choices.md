@@ -33,8 +33,8 @@ JSR's npm compatibility bridge (`npm.jsr.io`) has chronic quality issues:
 
 JSR packages that have npm equivalents are referenced by their npm versions:
 
-- `@optique/core`,
-   `@optique/run`:
+- `@optique/core`, <!-- TODO: deprecate Optique -->
+   `@optique/run`: <!-- TODO: deprecate Optique -->
    published to both npm and JSR (use npm `dev` tag for 1.
   x)
 - `valibot`:
