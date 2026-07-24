@@ -138,6 +138,14 @@ consumers and deployment are deliberately out of scope for now.
   (`package/cli/forbidden-strings/target/release/`) absent from fresh worktrees.
 - `.env.local.json` copied from main worktree;
   `TRANSLATION_REPAIR_SYNTHETIC_API_KEY` resolves through mise sops (verified by name, never print values).
+- Corpus-pass driver, sentinel probe, per-entry artifacts, attempts map, and run logs
+  live in `node_modules/.monochromatic/translation-repair-runs/` (gitignored, durable):
+  gitignored so UNLICENSED-corpus-derived artifacts can never be committed, and outside
+  `${HOME}/temp` so cleanup cannot wipe them (AGENTS.md rules TMP and NMD).
+  Driver is `corpus-pass-driver.mjs`, probe is `sentinel-probe.mjs`; both are `.mjs`, not `.ts`,
+  because Node refuses TypeScript type-stripping for files under `node_modules`.
+  Run under mise so sops injects the key: `mise x -- node <path>.mjs`; the driver's
+  `--plan` flag verifies imports, corpus reads, filtering, and client construction at zero quota.
 - Commits on branch:
   `16864f509` scaffold,
   `70aaaf557` catalog remark/MDX parser stack,
@@ -571,7 +579,30 @@ flagged as one `accuracy/untranslated` and resolved. That is
 consistent with the render-source-into-English pick, not a new
 over-application, and it clears the non-translation-detector
 interaction entirely (no residual CJK to read as untranslated).
-PASS 4 starting from zero on this tip. The user's concurrent
+PASS 4 starting from zero on this tip.
+INCIDENT AND RECOVERY (2026-07-24): the user accidentally ran
+`rm -rf ${HOME}/temp`, wiping the old out-of-repo run dir
+`${HOME}/temp/translation-repair-corpus/` (driver, sentinel probe,
+all pass-4 artifacts, and `pass4-run-001.log`) mid-run. Nothing
+irreplaceable was lost: the pipeline code, this handover, and every
+recorded decision live in git, and the corpus was never in `${HOME}/temp`
+(it reads live via `git show` at the pinned SHA from
+`${HOME}/one-among-us/data`, verified readable post-incident). Only
+regenerable scaffolding and one interrupted pass's artifacts went with it.
+Recovery: rebuilt the driver and probe grounded in the module's exported
+API (`listCorpusPeople`, `readCorpusFile`, `createSyntheticClient`,
+`repairTranslation`), not memory; relocated them plus artifacts to the
+durable gitignored dir `node_modules/.monochromatic/translation-repair-runs/`
+(user's suggestion; see "Where work lives"). Verified at zero quota with
+`--plan`: pending 92 (tdor excluded by the complete-pair filter, no
+hardcoded exclusion), key injected, client constructs. Added AGENTS.md
+rules TMP (`${HOME}/temp` is ephemeral, keep only reconstructable
+scaffolding) and NMD (durable uncommittable state goes in
+`node_modules/.monochromatic/`), regenerated CLAUDE.md, commit
+`1831230e0`. Pass 4 run 001 relaunched on that tip; the pipeline itself
+is unchanged from `63baaa686`, so accumulation resumes exactly where it
+would have.
+The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
 TEaR; the guarded-envelope composition is the unusual part; its
