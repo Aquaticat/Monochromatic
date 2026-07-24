@@ -704,6 +704,16 @@ under the three-vote non-translation block. Loop continues per task 30: record
 each run's tallies content-free, commit, launch the next, until all 92 settle,
 landing any further verified high-confidence fix immediately (restarting) per
 the standing rule.
+PASS 5 RUN 001 (2026-07-24, tip `b3fdf6e4c`, 1906s wall, soft budget hit):
+2 dispatched, 2 completed, 0 failed. Acheron repaired (56 issues, 55
+accepted, 54 resolved, 18 findings, 1464s); AkiraComplex repaired (13
+issues, 13 accepted, 12 resolved, 1 finding, 442s). AkiraComplex is the
+headline: the three-vote block holds in the full pass exactly as the probe
+predicted -- the once-false-blocked slice now repairs cleanly, no
+regression elsewhere. Acheron alone ate the 25-min soft budget, so the
+top-of-loop check stopped new entries after it; the two artifacts persist,
+attempts.json carries {Acheron:1, AkiraComplex:1}. No new high-confidence
+fix surfaced; loop continues, launching run 002 on the same tip.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
