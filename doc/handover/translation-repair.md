@@ -459,12 +459,17 @@ nearly every probe slice (one critic retry fired in the whole log),
 so the revert costs little; the REAL wall-time sink is the panel,
 where the same four voices hit the full 240 s deadline slice after
 slice before the retry recovers them. The full-roster mechanism
-stays in stage-quorum.ts, tested but unused. Probe interim results
-(pre-union dist, internally consistent): XIEPT2 PASS blocked in
-565 s via dominance early exit; shi_Yumiaoya PASS as REPAIRED with
-79 issues (slicing took it from 7-claim scale; untranslated-region
-slices degraded per slice under standing votes, the new contract
-live); Aniloviraw and Anilovr pending. The user's concurrent
+stays in stage-quorum.ts, tested but unused. SENTINEL PROBE 2: ALL PASS
+(2026-07-23, pre-union dist, log `sentinel-probe-2.log`, artifacts
+under `probe/`). XIEPT2 blocked in 565 s via dominance early exit
+(0 issues, 24 findings); shi_Yumiaoya REPAIRED with 79 issues under
+the new contract (untranslated-region slices degraded per slice);
+Aniloviraw REPAIRED, 69 issues (up from 44 at section scale);
+Anilovr REPAIRED, 130 issues in 2681 s.
+THOROUGHNESS GATE MET: Anilovr 130 issues versus its 33-issue
+section-scale baseline, a 3.9x gain moving decisively toward the
+user's first-glance estimate of 200+; per-entry wall time roughly
+doubled (1358 s to 2681 s), the expected slicing cost. The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
 TEaR; the guarded-envelope composition is the unusual part; its
