@@ -676,6 +676,25 @@ this with full context, add unit tests over the participation cases, validate on
 plus the true-positive fixture, then restart the pass. Accumulation is PAUSED
 (run 003 not launched) because a fix+restart discards further runs; resume only
 if choosing progress-under-current-pipeline over the fix.
+USER PICK (2026-07-24): "Always land the fix now then restart." This is a
+STANDING refinement of the improve-and-restart directive: context pressure is
+NOT a reason to defer a verified high-confidence fix; land it, do not park it for
+a fresh session. Recorded so future sessions do not re-offer "defer".
+FIX LANDED (2026-07-24, commit `342f9caa5`): `NON_TRANSLATION_BLOCK_VOTES` raised
+2 -> 3 in `non-translation-evidence.ts`. Three wire votes is genuine ensemble
+agreement and, because three votes cannot come from fewer than three critics
+heard, folds a participation floor into the count so a low-participation slice
+(AkiraComplex's 2/7) can never block; three is the observed true-positive floor
+(cat/"meow" drew three) and errs safe (a missed block attempts repair with issues
+still surfaced; a false block discards a faithful translation whole). The block
+decision was extracted from an inline expression in `repair-chunk.ts` into a
+named, exported `nonTranslationVotesStand({votes, contradicted})` with regression
+unit tests (2 votes below floor do not stand; 3 uncontradicted stand; 3
+contradicted do not). `downgradeCount` moved to sibling `downgrade-count.ts` to
+keep `repair-chunk.ts` under the 300-line budget. Verified: build, format 0/0,
+lint, types, unit tests all green. Live sentinel-probe on AkiraComplex is the
+final confirmation before restart. This makes the restarted pass a NEW pass
+(pipeline behavior changed); prior pass-4 artifacts are discarded.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
