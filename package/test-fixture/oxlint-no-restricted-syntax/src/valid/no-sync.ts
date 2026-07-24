@@ -1,6 +1,7 @@
 // Fixture: non-Node Sync-named APIs should not be banned by the project no-sync rule.
 // Expected: zero no-restricted-syntax(no-sync) violations.
 
+// TODO: deprecate Optique
 import { parseSync, } from '@optique/core/parser';
 
 const parser = {};
@@ -30,6 +31,7 @@ const localParser = {
   },
 };
 
+// TODO: deprecate Optique
 void parseSync(
   parser,
   args,

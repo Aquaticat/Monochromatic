@@ -12,6 +12,7 @@ const config: NodeFlavorConfig = nodeConfig({
   external: await nodeExternal({
     alwaysBundle: [
       '@monochromatic-dev/**',
+      // TODO: deprecate Optique
       '@optique/**',
       'nano-spawn',
     ],

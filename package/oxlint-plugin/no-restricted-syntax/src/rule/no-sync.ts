@@ -22,6 +22,7 @@ import { getNodeSyncCalleeName, } from './no-sync.provenance.ts';
  * readFileSync(path);
  *
  * // Good
+ * // TODO: deprecate Optique
  * import { parseSync } from '\@optique/core/parser';
  * parseSync(parser, args);
  * ```

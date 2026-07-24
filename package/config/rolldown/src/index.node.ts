@@ -53,6 +53,7 @@ export const NODE_ALWAYS_EXTERNAL: readonly string[] = [
  *
  * @example
  * ```ts
+ * // TODO: deprecate Optique
  * external: await nodeExternal({ alwaysBundle: ['\@monochromatic-dev/**', '\@optique/**',], },),
  * ```
  */

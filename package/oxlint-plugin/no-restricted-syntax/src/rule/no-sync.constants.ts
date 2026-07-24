@@ -151,6 +151,7 @@ const NODE_BUILTIN_SOURCE_ROOT_SET: ReadonlySet<string> = new Set(
  * @example
  * ```ts
  * isNodeBuiltinSource({ source: 'node:fs' }); // true
+ * // TODO: deprecate Optique
  * isNodeBuiltinSource({ source: '\@optique/core/parser' }); // false
  * ```
  */
