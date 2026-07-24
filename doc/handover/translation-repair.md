@@ -493,11 +493,45 @@ duplication. Widening the merge neighborhood would OVER-merge.
 Verdict: the union algorithm is sound at slice scale and the high
 singleton share reflects real defect density; no further union
 iteration warranted on current evidence.
-PASS 3 STARTED (2026-07-23) from zero on the union-widened,
-quorum-retry, paragraph-sliced tip; pass-2 artifacts and attempts
-wiped, 92 pending, logs `pass3-run-NNN.log`. Expect roughly double
-the per-entry wall time of pass 2 and several times its issue
-counts. Pass 3 is one iteration, not a finished product: any
+PASS 3 STARTED then STOPPED after two entries (2026-07-23): the
+translation-policy directive below landed while it ran, so its
+artifacts were discarded rather than spend quota on a superseded
+prompt.
+
+TRANSLATION POLICY, USER DIRECTIVE (2026-07-23, commit
+`4bab4412c`). Two standing rules, now baseline prompt policy (the
+architecture always held that policy files are optional and the
+system must work without them; these are the first policy rules
+the user has stated directly):
+1. A phrase the ORIGINAL writes in a language other than its own
+   keeps that original wording in the TRANSLATION and carries its
+   meaning ALONGSIDE, side by side. Never replaced by meaning
+   alone, never left bare. New category
+   `policy/foreign-phrase-gloss`, distinct from
+   `accuracy/untranslated` because the remedy differs: gloss beside
+   preserved wording, not replacement. Prompted by a real finding
+   on Anilovr, where a critic flagged an Esperanto line as
+   `accuracy/untranslated`, whose remedy would have destroyed the
+   original wording.
+2. Prioritize emotional completeness and naturalness over
+   one-to-one meaning correspondence. Critics must not report
+   non-literal renderings as defects, and must report flattened
+   voice, warmth, humor, irony, grief, or intimacy as the new
+   `style/emotional-flattening`; stiff literal renderings are
+   `style/awkward-phrasing` even when every word matches. Editors
+   recast wording, sentence boundaries, and clause order freely to
+   serve the feeling. Two guards keep this from becoming license:
+   "Naturalness never licenses dropping content" pairs with the
+   existing clause-enumeration rule, and "Never introduce content
+   the ORIGINAL does not support" stays (milestone two measured
+   embellishment as a real failure mode).
+Taxonomy growth is safe: `remapCategoryLeaf` derives owners from
+the category list, so no exhaustive map needed updating.
+Verification: 91 suites pass, oxlint 0/0, types clean; the prompt
+suites now assert both policies in both directions.
+POLICY GATE running on Anilovr (the entry holding the Esperanto
+line), log `gate-anilovr-policy.log`. Pass 4 starts from zero once
+it lands. Each pass is one iteration, not a finished product: any
 further improvement clearing the confidence bar restarts it again. The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
