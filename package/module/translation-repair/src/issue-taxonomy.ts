@@ -66,12 +66,24 @@ export const ISSUE_CATEGORIES = [
   'terminology/wrong-term',
   'style/register',
   'style/awkward-phrasing',
+  // Facts survive but feeling does not: voice, warmth, humor, irony, or
+  // intimacy flattened out of the rendering. First-class because this
+  // corpus is memorial writing, where emotional fidelity is the point
+  // (user directive: prioritize emotional completeness and naturalness
+  // over one-to-one meaning correspondence).
+  'style/emotional-flattening',
   'locale-convention/quotation-marks',
   'locale-convention/date-format',
   'locale-convention/number-format',
   'policy/sensitive-content',
   'policy/pronoun',
   'policy/link-convention',
+  // A phrase the original writes in a third language stays in its own
+  // wording in the translation AND carries its meaning alongside, so the
+  // reader gets both the texture and the sense (user directive). Distinct
+  // from `accuracy/untranslated`, whose remedy is replacement: this one's
+  // remedy is a gloss beside preserved wording.
+  'policy/foreign-phrase-gloss',
   'extension/suspected-source-error',
   'extension/interpretive-ambiguity',
   'extension/alignment-error',

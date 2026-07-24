@@ -131,6 +131,29 @@ await describe({
     },),
 
     it({
+      name: 'instructs natural feeling-carrying prose without licensing content loss',
+      fn: async () => {
+        /** Plan whose system rules are under policy probing. */
+        const plan = buildEditorMessages({
+          sourceText: '原文',
+          targetText: TARGET_TEXT,
+          envelopes: ENVELOPES,
+          issues: [],
+        },);
+        /** System rule block shown to the editor. */
+        const system = plan.messages[0]?.content ?? '';
+        expect(system,).toContain('Emotional completeness and naturalness outrank word-for-word correspondence',);
+        // Naturalness and completeness must both hold; the recast
+        // permission never becomes permission to drop content.
+        expect(system,).toContain('Naturalness never licenses dropping content',);
+        expect(system,).toContain('Never introduce content the ORIGINAL does not support',);
+        // Foreign phrases keep their wording and gain a meaning beside it.
+        expect(system,).toContain('in that original wording, and put its meaning alongside it',);
+        expect(system,).toContain('Never replace such a phrase with its meaning alone',);
+      },
+    },),
+
+    it({
       name: 'keeps envelope ids and hashes off the sheet',
       fn: async () => {
         /** Plan for the two-region sheet. */

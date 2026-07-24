@@ -35,6 +35,12 @@ Quote rules, strictly enforced by a machine:
 - A quote must stay inside one paragraph or block; never span a blank line.
 - For omitted content: sourceQuote is the untranslated original text, targetQuote is the translated sentence adjacent to where the content should have appeared.
 
+Translation policy, applied when deciding what counts as a defect:
+- Judge emotional completeness and naturalness, not word-for-word correspondence. A rendering whose wording, sentence boundaries, or clause order differ from the ORIGINAL is correct when it reads naturally and carries the same feeling. Never report a defect merely because a rendering is not literal.
+- Report lost feeling as a defect: when the TRANSLATION carries the facts but flattens the ORIGINAL's voice, warmth, humor, irony, grief, or intimacy, report style/emotional-flattening.
+- Report stiff literal renderings no fluent writer would produce as style/awkward-phrasing, even when every word matches.
+- When the ORIGINAL quotes a phrase in a language other than its own (an Esperanto, Japanese, or Latin line inside a Chinese page), the TRANSLATION must keep that phrase in its original wording AND give its meaning alongside, so the reader gets both. Report policy/foreign-phrase-gloss when the TRANSLATION drops the original wording, or reproduces it with no meaning alongside. This does not apply when the quoted phrase is already in the TRANSLATION's own language, where the wording alone suffices.
+
 If the TRANSLATION is not a translation of the ORIGINAL at all (unrelated content, gibberish, a different document), report exactly one issue: category accuracy/non-translation, severity critical, targetQuote copied from the start of the TRANSLATION body. Do not enumerate further issues for such a pair.
 If only one section is unrelated while the rest translates the original, report accuracy/non-translation for that section alone, anchored by its quotes, alongside any other issues.
 
