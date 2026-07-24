@@ -112,6 +112,7 @@ export {
   type NonTranslationDominance,
   type NonTranslationEvidence,
   type NonTranslationScreening,
+  nonTranslationVotesStand,
   screenNonTranslationVotes,
 } from './non-translation-evidence.ts';
 export {

@@ -21,6 +21,7 @@ import {
   type IssueClaim,
   NON_TRANSLATION_BLOCK_VOTES,
   NON_TRANSLATION_CONTRADICTION_MIN,
+  nonTranslationVotesStand,
   screenNonTranslationVotes,
 } from '../dist/final/neutral/index.mjs';
 
@@ -260,6 +261,43 @@ await describe({
             expect(screening.contradicted,).toBe(false,);
             expect(screening.claims,).toEqual(standingClaims,);
             expect(screening.findings,).toHaveLength(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: nonTranslationVotesStand.name,
+      children: [
+        it({
+          // AkiraComplex regression: a faithful translation drew two
+          // non-translation votes from only two of seven critics heard on an
+          // English-epigraph slice. Two votes are one under the floor, so the
+          // slice must not stand and the document must not block.
+          name: 'does not stand one vote under the floor (AkiraComplex false block)',
+          fn: async () => {
+            expect(nonTranslationVotesStand({
+              votes: NON_TRANSLATION_BLOCK_VOTES - 1,
+              contradicted: false,
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'stands at the floor when uncontradicted',
+          fn: async () => {
+            expect(nonTranslationVotesStand({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              contradicted: false,
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'does not stand at the floor once contradicted',
+          fn: async () => {
+            expect(nonTranslationVotesStand({
+              votes: NON_TRANSLATION_BLOCK_VOTES,
+              contradicted: true,
+            },),).toBe(false,);
           },
         },),
       ],
