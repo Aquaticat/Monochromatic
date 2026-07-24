@@ -470,9 +470,11 @@ prior-art survey landed as doc/research/translation-repair-prior-art.md
 TEaR; the guarded-envelope composition is the unusual part; its
 cautions (ensemble-checked is not independently-verified, seeded
 numbers need human-graded evaluation for real-world claims) match
-milestone three's human-graded gate. OPEN CHOICE for the user:
-panel wall-time strategy (keep full deadlines; shorten voting-stage
-deadlines; or race voting stages to quorum with straggler aborts).
+milestone three's human-graded gate. USER PICK (2026-07-23): keep full deadlines and retry-to-quorum as
+is; no adjudication-quality change before the precision gate, the
+accumulation loop absorbs the wall time. Racing to quorum and
+deadline shortening stay recorded as rejected-for-now options,
+revisitable if graded evidence changes the tradeoff.
 pass2 run 002 (2026-07-23, 1737 s): 2 dispatched, 2 completed, 0
 failed; Aniloviraw REPAIRED (44 issues, 40 accepted, 40 resolved,
 14 findings, 379 s): the false block reproduced a THIRD time (4
