@@ -6,6 +6,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { armCallDeadline, } from '../call-deadline.ts';
 import {
   CorpusReadError,
   listCorpusPeople,
@@ -26,8 +27,8 @@ import {
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
 // one entry at a time: skips entries that already have an artifact, orders the
 // rest fewest-attempts-first, and stops starting new entries at the soft budget
-// while a hard ceiling aborts any in-flight exchange. Each settled entry writes
-// one JSON artifact and one TALLY line. Run it with `mise run
+// while a per-entry hard ceiling aborts an entry that overruns. Each settled
+// entry writes one JSON artifact and one TALLY line. Run it with `mise run
 // //package/module/translation-repair:corpus-pass` (append `-- --plan` for a
 // zero-quota setup check).
 
@@ -42,9 +43,17 @@ const MS_PER_MINUTE = 60_000;
 const SOFT_BUDGET_MINUTES = 25;
 
 /**
- * Minutes of wall time after which every in-flight exchange aborts.
+ * Minutes of wall time ONE entry may run before its exchanges abort.
+ * Per entry, not per run: the ceiling was previously armed once for the
+ * whole loop, so an entry that started near the soft budget got only the
+ * remaining sliver, and Arita (12 slices, ~68 min) could never finish. A
+ * fresh timer per entry gives each its full budget regardless of start
+ * time; 90 clears every entry up to ~16 slices with margin at the measured
+ * ~5.5 min/slice while still bounding a runaway. Entries larger than that
+ * (aiyysk 77 slices, hulicaijia 65, ...) still exceed any single-run
+ * ceiling and need slice-level resumability, tracked separately.
  */
-const HARD_CAP_MINUTES = 45;
+const HARD_CAP_MINUTES = 90;
 
 /**
  * Soft budget in milliseconds.
@@ -315,19 +324,10 @@ async function runCorpusPass(): Promise<void> {
   const start = Date.now();
 
   /**
-   * Aborts every in-flight exchange at the hard ceiling.
+   * Shared base signal each entry's deadline forwards from; the driver
+   * never aborts it, so only a per-entry timeout ever fires.
    */
-  const controller = new AbortController();
-
-  /**
-   * Timer arming the hard-ceiling abort; cleared when the loop ends.
-   */
-  const hardTimer = setTimeout(
-    function abortAtCap() {
-      controller.abort();
-    },
-    HARD_CAP_MS,
-  );
+  const neverAbort = new AbortController().signal;
 
   for (const entry of pending) {
     /**
@@ -338,9 +338,6 @@ async function runCorpusPass(): Promise<void> {
       console.log(`SOFT budget reached after ${String(elapsed,)}ms; not starting new entries`,);
       break;
     }
-    if (controller.signal
-      .aborted)
-      break;
 
     attempts[entry.id] = (attempts[entry.id] ?? 0) + 1;
     /* oxlint-disable-next-line no-await-in-loop -- attempt count persists before each attempt so a crash still records it; sequential by design */
@@ -357,6 +354,17 @@ async function runCorpusPass(): Promise<void> {
      * Start time of this entry, for its duration.
      */
     const t0 = Date.now();
+
+    /**
+     * Per-entry hard-cap deadline. Disposal at the loop-iteration end
+     * defuses the timer and detaches its listener; the repo bans
+     * try/finally, so cleanup rides on `using` instead.
+     */
+    using deadline = armCallDeadline({
+      signal: neverAbort,
+      timeoutMs: HARD_CAP_MS,
+      label: entry.id,
+    },);
     try {
       /**
        * Repair result for this entry.
@@ -367,7 +375,7 @@ async function runCorpusPass(): Promise<void> {
         sourceText: entry.sourceText,
         targetText: entry.targetText,
         models: RUN_MODELS,
-        signal: controller.signal,
+        signal: deadline.callSignal,
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       },);
 
@@ -442,7 +450,7 @@ async function runCorpusPass(): Promise<void> {
       /**
        * Whether the hard-ceiling abort fired.
        */
-      const { aborted, } = controller.signal;
+      const { aborted, } = deadline.callSignal;
 
       /**
        * Trimmed failure text for the TALLY line.
@@ -455,12 +463,8 @@ async function runCorpusPass(): Promise<void> {
         )
         : String(error,);
       console.log(`TALLY ${entry.id} status=ERROR ms=${String(durationMs,)} aborted=${String(aborted,)} error=${message}`,);
-      if (aborted)
-        break;
     }
   }
-
-  clearTimeout(hardTimer,);
 
   /**
    * Artifacts present after this run, against the pair target.
