@@ -776,6 +776,20 @@ regression)` added; format/lint/types/unit all green. Live confirmation:
 `sentinel-probe -- Arita` returned status=repaired (123 issues, 114
 accepted, 7 findings, 4110s) with 0 non-translation votes on every critic
 stage -- the false block gone end-to-end.
+ARITA FIX BLAST RADIUS (2026-07-24, deterministic corpus survey, zero
+quota): across the 92 usable entries, 182 of 284 aligned chunk-pairs
+(64%) carry equal node counts and so take the lockstep path; replaying the
+old independent-budget grouping, 68 of those 182 pairs -- spread over 46
+of the 92 entries -- had divergent per-side run boundaries, i.e. the old
+code actually mis-sliced them. Most drifted entries still REPAIRED before
+(Acheron, AkiraComplex, BI4PBV are in the drifted set) because partial
+drift only mispairs some slices; Arita was the pathological all-slices
+case that blocked. So the fix corrects slicing on 68 pairs across half the
+corpus, but the ONLY confirmed end-to-end outcome change is Arita
+(block->repair); alignment is now provably more correct on those pairs,
+while any issue-set or quality effect is unmeasured and waits on the
+milestone-three human grade. Survey scripts in the session scratchpad
+(nodecount-survey.mjs, drift-survey.mjs) reproduce the counts.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
