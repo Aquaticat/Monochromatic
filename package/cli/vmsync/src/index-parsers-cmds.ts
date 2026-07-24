@@ -7,18 +7,24 @@
  * @module
  */
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import {
   map,
   optional,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import type { Parser, } from '@optique/core/parser';
+// TODO: deprecate Optique
 import {
   argument,
   command,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import {
   integer,
   string,
@@ -27,6 +33,7 @@ import {
 import type { VmsyncArgs, } from './index-parsers.ts';
 
 /**
+ * TODO: deprecate Optique
  * Subcommand parser producing VmsyncArgs.
  * Uses `any` for TState because Parser is invariant in TState
  * and the deeply-nested state types are opaque implementation details.
@@ -37,6 +44,7 @@ type SubcommandParser = Parser<'sync', VmsyncArgs, any>;
 //region Shared value parsers
 
 /**
+ * TODO: deprecate Optique
  * Value parser for VM name arguments, displayed as NAME in help.
  */
 const name = string({
@@ -44,6 +52,7 @@ const name = string({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Value parser for file path arguments, displayed as PATH in help.
  */
 const path = string({
@@ -51,6 +60,7 @@ const path = string({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Value parser for memory strings, displayed as MEMORY in help.
  */
 const memoryValue = string({
@@ -58,6 +68,7 @@ const memoryValue = string({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Value parser for CPU count, displayed as CPUS in help.
  */
 const cpusValue = integer({
@@ -70,6 +81,7 @@ const cpusValue = integer({
 //region Subcommand parsers
 
 /**
+ * TODO: deprecate Optique
  * Parser for `import <path> [--name NAME]`, producing an `import` {@link VmsyncArgs}.
  */
 export const importCmd: SubcommandParser = command(
@@ -90,6 +102,7 @@ export const importCmd: SubcommandParser = command(
     function toImportArgs(
       v: {
         readonly imagePath: string;
+        // TODO: deprecate Optique
         // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors @optique/core optional() output, which yields `TValue | undefined` for an absent option; converted to an absent property below
         readonly name: string | undefined;
       },
@@ -112,6 +125,7 @@ export const importCmd: SubcommandParser = command(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parser for `boot <name>`, producing a `boot` {@link VmsyncArgs}.
  */
 export const bootCmd: SubcommandParser = command(
@@ -133,6 +147,7 @@ export const bootCmd: SubcommandParser = command(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parser for `sync <name>`, producing a `sync` {@link VmsyncArgs}.
  */
 export const syncCmd: SubcommandParser = command(
@@ -154,6 +169,7 @@ export const syncCmd: SubcommandParser = command(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parser for `status <name>`, producing a `status` {@link VmsyncArgs}.
  */
 export const statusCmd: SubcommandParser = command(
@@ -175,6 +191,7 @@ export const statusCmd: SubcommandParser = command(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parser for `list`, producing a `list` {@link VmsyncArgs}.
  */
 export const listCmd: SubcommandParser = command(
@@ -193,6 +210,7 @@ export const listCmd: SubcommandParser = command(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`, producing a `config` {@link VmsyncArgs}.
  */
 export const configCmd: SubcommandParser = command(
@@ -222,8 +240,10 @@ export const configCmd: SubcommandParser = command(
     function toConfigArgs(
       v: {
         readonly name: string;
+        // TODO: deprecate Optique
         // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors @optique/core optional() output, which yields `TValue | undefined` for an absent option; converted to absent properties below
         readonly memory: string | undefined;
+        // TODO: deprecate Optique
         // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors @optique/core optional() output, which yields `TValue | undefined` for an absent option; converted to absent properties below
         readonly cpus: number | undefined;
       },

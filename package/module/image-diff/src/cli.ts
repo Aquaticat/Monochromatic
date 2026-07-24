@@ -21,7 +21,9 @@
  * @packageDocumentation
  */
 
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import { parser, } from './cli-parsers.ts';
@@ -29,6 +31,7 @@ import { handleCompare, } from './cli.compare.ts';
 import { handleEmbed, } from './cli.embed.ts';
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI result from process.argv.
  */
 const args = runSync(

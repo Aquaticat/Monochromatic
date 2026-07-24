@@ -7,18 +7,24 @@
  * @module
  */
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import {
   map,
   optional,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import type { Parser, } from '@optique/core/parser';
+// TODO: deprecate Optique
 import {
   argument,
   command,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import {
   choice,
   string,
@@ -27,6 +33,7 @@ import {
 import type { ImageDiffArgs, } from './cli-parsers.ts';
 
 /**
+ * TODO: deprecate Optique
  * Subcommand parser producing ImageDiffArgs.
  * Uses `any` for TState because Parser is invariant in TState
  * and the deeply-nested state types are opaque implementation details.
@@ -37,6 +44,7 @@ type SubcommandParser = Parser<'sync', ImageDiffArgs, any>;
 //region Shared value parsers
 
 /**
+ * TODO: deprecate Optique
  * Recognized provider names.
  */
 const providerValue = choice(
@@ -48,6 +56,7 @@ const providerValue = choice(
 );
 
 /**
+ * TODO: deprecate Optique
  * Recognized embedding model names across providers.
  */
 const modelValue = choice(
@@ -60,6 +69,7 @@ const modelValue = choice(
 );
 
 /**
+ * TODO: deprecate Optique
  * Value parser for image arguments (file path or URL); URL vs path resolved at runtime.
  */
 const imageValue = string({ metavar: 'IMAGE', },);
@@ -69,6 +79,7 @@ const imageValue = string({ metavar: 'IMAGE', },);
 //region Subcommand parsers
 
 /**
+ * TODO: deprecate Optique
  * Parser for `compare <imageA> <imageB> [--provider PROVIDER] [--model MODEL]`.
  */
 export const compareCmd: SubcommandParser = command(
@@ -113,6 +124,7 @@ export const compareCmd: SubcommandParser = command(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parser for `embed <image> [--provider PROVIDER] [--model MODEL]`.
  */
 export const embedCmd: SubcommandParser = command(
