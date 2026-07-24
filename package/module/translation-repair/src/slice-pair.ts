@@ -166,13 +166,126 @@ function totalRunChars(
 }
 
 /**
+ * Groups two equal-length node lists in lockstep, extending a slice to the
+ * next shared index only while BOTH sides stay within their budgets.
+ * Equal node counts mean the section's paragraphs already correspond one
+ * to one -- the alignment established that -- so grouping the sides
+ * together preserves the correspondence exactly. Grouping each side
+ * independently (different budgets) instead lets the run counts diverge and
+ * the pairing drift: the Arita off-by-one, where a tiny heading node
+ * merged with its body on the dense original but isolated on the longer
+ * translation, shifted every later slice by one and read as whole-document
+ * non-translation. Neither run ever splits a node; the budgets only group
+ * small adjacent nodes, and a single node over budget forms its own slice.
+ *
+ * @param sourceNodes - original-side block nodes in document order
+ *
+ * @param targetNodes - translation-side block nodes, one per source node
+ *
+ * @param sourceBudget - characters an original-side run aims for
+ *
+ * @param targetBudget - characters a translation-side run aims for
+ *
+ * @returns Paired node runs partitioning both sides in shared index windows
+ *
+ * @example
+ * ```ts
+ * const runs = groupNodesLockstep({
+ *   sourceNodes: pair.source.nodes,
+ *   targetNodes: pair.target.nodes,
+ *   sourceBudget: 150,
+ *   targetBudget: 400,
+ * },);
+ * ```
+ */
+function groupNodesLockstep(
+  {
+    sourceNodes,
+    targetNodes,
+    sourceBudget,
+    targetBudget,
+  }: {
+    readonly sourceNodes: readonly DocumentNode[];
+    readonly targetNodes: readonly DocumentNode[];
+    readonly sourceBudget: number;
+    readonly targetBudget: number;
+  },
+): readonly {
+  readonly sourceRun: readonly DocumentNode[];
+  readonly targetRun: readonly DocumentNode[];
+}[] {
+  /**
+   * Completed paired runs in document order.
+   */
+  const runs: {
+    sourceRun: DocumentNode[];
+    targetRun: DocumentNode[];
+  }[] = [];
+
+  /**
+   * Original-side characters accumulated in the open run.
+   */
+  let openSourceChars = 0;
+
+  /**
+   * Translation-side characters accumulated in the open run.
+   */
+  let openTargetChars = 0;
+  for (const [index, sourceNode,] of sourceNodes.entries()) {
+    /**
+     * Translation node sharing this index, present by equal length.
+     */
+    const targetNode = targetNodes[index];
+    /* v8 ignore next 2 -- @preserve equal lengths guarantee a partner */
+    if (targetNode === undefined)
+      throw new Error('unreachable: lockstep runs over equal node counts',);
+
+    /**
+     * Original-side span length of this node.
+     */
+    const sourceChars = sourceNode.endOffset - sourceNode.startOffset;
+
+    /**
+     * Translation-side span length of this node.
+     */
+    const targetChars = targetNode.endOffset - targetNode.startOffset;
+
+    /**
+     * Currently open paired run, when any index was grouped already.
+     */
+    const open = runs.at(-1,);
+    if (
+      (open === undefined)
+      || ((openSourceChars + sourceChars) > sourceBudget)
+        || ((openTargetChars + targetChars) > targetBudget)
+    ) {
+      runs.push({
+        sourceRun: [sourceNode,],
+        targetRun: [targetNode,],
+      },);
+      openSourceChars = sourceChars;
+      openTargetChars = targetChars;
+      continue;
+    }
+    open.sourceRun
+      .push(sourceNode,);
+    open.targetRun
+      .push(targetNode,);
+    openSourceChars += sourceChars;
+    openTargetChars += targetChars;
+  }
+  return runs;
+}
+
+/**
  * Subdivides one aligned section pair into paragraph-bound slice pairs.
- * Each side groups into budget-bound node runs, then runs pair
- * monotonically: equal counts pair by index, unequal counts merge the
- * wider side greedily by cumulative character fraction (the same
- * Gale-Church-style pacing section alignment uses). Paragraph-count
- * mismatch within a section is ordinary translation freedom, so
- * subdivision emits no findings.
+ * When both sides carry the same node count their paragraphs correspond
+ * one to one, so the sides group in lockstep and pair by shared index,
+ * never drifting. Only a genuine paragraph-count mismatch falls back to
+ * independent budget grouping with the wider side merged greedily by
+ * cumulative character fraction (the same Gale-Church-style pacing section
+ * alignment uses). Paragraph-count mismatch within a section is ordinary
+ * translation freedom, so subdivision emits no findings.
  *
  * @param pair - aligned section pair to subdivide
  *
@@ -232,6 +345,44 @@ export function subdivideChunkPair(
           )),
     ),
   );
+  if (
+    (pair.source
+      .nodes
+      .length
+      === pair.target
+      .nodes
+      .length)
+    && (pair.source
+      .nodes
+      .length
+      > 0)
+  ) {
+    return groupNodesLockstep({
+      sourceNodes: pair.source
+        .nodes,
+      targetNodes: pair.target
+        .nodes,
+      sourceBudget,
+      targetBudget: budget,
+    },)
+      .map(function toSlice(
+        run,
+        sliceOffset,
+      ): ChunkPair {
+        return {
+          source: runToChunk({
+            run: run.sourceRun,
+            documentText: sourceText,
+            chunkIndex: baseIndex + sliceOffset,
+          },),
+          target: runToChunk({
+            run: run.targetRun,
+            documentText: targetText,
+            chunkIndex: baseIndex + sliceOffset,
+          },),
+        };
+      },);
+  }
 
   /**
    * Source-side node runs within the scaled budget.

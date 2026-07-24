@@ -56,6 +56,81 @@ The kitten chases butterflies in the yard at night.
 `;
 
 /**
+ * Builds a marked paragraph of an exact character length: an `M{index}`
+ * tag that both sides' corresponding paragraphs carry, padded to size with
+ * cat-themed filler. Equal-length marker tags let a slice's source and
+ * target marker sets be compared for drift.
+ */
+function markedParagraph(
+  {
+    index,
+    size,
+  }: {
+    readonly index: number;
+    readonly size: number;
+  },
+): string {
+  /**
+   * Marker tag matching paragraphs share across the two sides.
+   */
+  const tag = `M${String(index,)} `;
+  return tag
+    + 'cat '
+      .repeat(Math.ceil((size - tag.length) / 'cat '.length,),)
+      .slice(
+        0,
+        size - tag.length,
+      );
+}
+
+/**
+ * Joins marked paragraphs of the given span sizes into one document, so a
+ * source and target built from equal-length size lists share paragraph
+ * count and marker order while diverging in per-paragraph length.
+ */
+function markedDocument(
+  { sizes, }: { readonly sizes: readonly number[]; },
+): string {
+  return `${sizes
+    .map(function toParagraph(
+      size,
+      index,
+    ) {
+      return markedParagraph({ index, size, },);
+    },)
+    .join('\n\n',)}\n`;
+}
+
+/**
+ * Marker indices the equal-count lockstep fixtures carry, in order.
+ */
+const LOCKSTEP_MARKERS = [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+];
+
+/**
+ * Extracts the ordered marker tags a slice side contains, by substring
+ * presence so no inline regex is needed.
+ */
+function sliceMarkers(
+  { text, }: { readonly text: string; },
+): string {
+  return LOCKSTEP_MARKERS
+    .filter(function present(index,) {
+      return text.includes(`M${String(index,)} `,);
+    },)
+    .map(function toTag(index,) {
+      return `M${String(index,)}`;
+    },)
+    .join(',',);
+}
+
+/**
  * Builds the single aligned section pair of a fixture document pair.
  */
 function alignedPair(
@@ -192,6 +267,56 @@ await describe({
         expect(slices.at(-1,)?.target
           .endOffset,).toBe(pair.target
           .endOffset,);
+      },
+    },),
+
+    it({
+      name: 'pairs equal node counts in lockstep without off-by-one drift (Arita regression)',
+      fn: async () => {
+        /**
+         * Dense original: small adjacent nodes merge on odd boundaries.
+         */
+        const source = markedDocument({ sizes: [35, 10, 10, 35, 10, 10,], },);
+
+        /**
+         * Longer translation: same paragraph count, mirrored sizes so the
+         * independent-budget grouping would merge on even boundaries and
+         * drift the pairing by one (the Arita non-translation false block).
+         */
+        const target = markedDocument({ sizes: [10, 10, 35, 10, 10, 35,], },);
+        const pair = alignedPair({
+          source,
+          target,
+        },);
+        // Equal paragraph counts are the lockstep precondition.
+        expect(pair.source
+          .nodes
+          .length,).toBe(pair.target
+          .nodes
+          .length,);
+
+        const slices = subdivideChunkPair({
+          pair,
+          sourceText: source,
+          targetText: target,
+          baseIndex: 0,
+          budget: 40,
+        },);
+
+        /**
+         * Ordered markers gathered across every slice's original side.
+         */
+        const covered: string[] = [];
+        for (const slice of slices) {
+          // Corresponding paragraphs stay in the same slice: no drift.
+          expect(sliceMarkers({ text: slice.source
+            .text, },),).toBe(sliceMarkers({ text: slice.target
+            .text, },),);
+          covered.push(sliceMarkers({ text: slice.source
+            .text, },),);
+        }
+        // Every marker is covered exactly once, in document order.
+        expect(covered.join(',',),).toBe('M0,M1,M2,M3,M4,M5',);
       },
     },),
 
