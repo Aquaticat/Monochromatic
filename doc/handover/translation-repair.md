@@ -739,6 +739,55 @@ by quorum with no effect on the outcome. A perfect 95/95 accept-and-
 resolve is a strong signal but exactly the kind of number the milestone-
 three human grade exists to check, not to trust on its own. 5/92 settled.
 Run 005 launched on tip `5f60a1b55`.
+PASS 5 RUN 005 (2026-07-24, tip `20a66e58b`, 1769s wall, soft budget hit):
+3 dispatched, 3 completed, 0 failed. BI4PBV repaired (42 issues, 38
+accepted, 37 resolved, 16 findings, 1498s). ArtsEpiphany unchanged (0
+issues, 15s) -- correct: a 120-char placeholder stub whose desc is blank
+by intent and whose source equals its target, nothing to repair. Arita
+BLOCKED-non-translation (0 issues, 14 findings, 255s) -- the FIRST block
+under the three-vote regime, and it demanded investigation before the
+loop could continue.
+ARITA DIAGNOSIS (2026-07-24): a FALSE block, but from a slice-alignment
+defect, not the vote threshold. Arita is a genuine translation (rich zh
+biography, faithful en). Deterministic node dump proved both sides carry
+exactly 13 nodes corresponding 1:1, yet `subdivideChunkPair` mis-paired
+them with a one-paragraph drift, so critics correctly read each mismatched
+slice as non-translation and 6-7 of 7 voted -- genuine ensemble agreement
+on genuinely mispaired input. Root cause: the slicer grouped each side
+independently with different budgets (source scaled ~150, target 400);
+small adjacent nodes merged at different indices per side, run counts
+diverged (12 vs 11), and the character-fraction merge pulled an extra
+source run into slice 0, shifting every later slice by one. This is the
+common case (translations preserve paragraph structure), so the defect
+likely mis-sliced many entries subtly; Arita was pathological because the
+drift made EVERY slice a mismatch.
+ARITA FIX (2026-07-24, commit `7a5117727`): `groupNodesLockstep` -- when
+both sides carry equal node counts, group them together, extending a slice
+to the next shared index only while BOTH sides stay within budget, so
+slice N always holds the same node indices on both sides. Genuine
+paragraph-count mismatch still falls back to the existing monotone merge.
+Correct by construction for the equal-count case; surgical (unequal counts
+untouched). Verified deterministically: an engineered equal-count marker
+fixture drifted under the old code (src[M0] vs tgt[M0,M1]) and pairs 1:1
+under the new; the real Arita content now slices 1:1 (简介/Introduction,
+intro/intro, band/band ... every slice a true pair). Unit test
+`pairs equal node counts in lockstep without off-by-one drift (Arita
+regression)` added; format/lint/types/unit all green. Live confirmation:
+`sentinel-probe -- Arita` returned status=repaired (123 issues, 114
+accepted, 7 findings, 4110s) with 0 non-translation votes on every critic
+stage -- the false block gone end-to-end.
+PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
+pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
+Note lessons banked while landing this: run package tasks ONLY by scoped
+name (`//package/module/translation-repair:<task>`) -- a bare `mise run
+build`/`test` from the worktree root fans out to the whole monorepo
+(cargo/podman/rust), spikes load, and OOM-kills scoped work; and a lint
+`no-regex` rule blocks inline `String#match` regex (used substring checks
+instead). PASS 6 RUN 001 launched on tip after the handover commit under
+the lockstep slicing fix. Loop continues per task 30: record each run's
+tallies content-free, commit, launch the next, until all 92 settle,
+landing any further verified high-confidence fix immediately (restarting)
+per the standing rule.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
