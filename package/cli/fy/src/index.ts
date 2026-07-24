@@ -1,12 +1,18 @@
 #!/usr/bin/env node
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import {
   map,
   multiple,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import { argument, } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { run, } from '@optique/run';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -28,16 +34,19 @@ export {};
 //region Arg parsing: positional: <specifier> <export> [args...]
 
 /**
+ * TODO: deprecate Optique
  * Value parser for the import specifier, displayed as SPECIFIER in help
  */
 const specifierParser = string({ metavar: 'SPECIFIER', },);
 
 /**
+ * TODO: deprecate Optique
  * Value parser for the export name, displayed as EXPORT in help
  */
 const exportParser = string({ metavar: 'EXPORT', },);
 
 /**
+ * TODO: deprecate Optique
  * Value parser for trailing call arguments, displayed as ARG in help
  */
 const argParser = string({ metavar: 'ARG', },);
@@ -52,6 +61,7 @@ type CliArgs = {
 };
 
 /**
+ * TODO: deprecate Optique
  * Top-level parser: <specifier> <export> [args...]
  */
 const parser = map(
@@ -66,6 +76,7 @@ const parser = map(
 );
 
 /**
+ * TODO: deprecate Optique
  * Parsed result from process.argv
  */
 const args = run(

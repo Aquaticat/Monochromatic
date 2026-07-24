@@ -1,7 +1,11 @@
 #!/usr/bin/env node
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { argument, } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 import {
   buildCss,
@@ -11,6 +15,7 @@ import {
 //region CLI: parses args and runs the build
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for the CSS build tool CLI.
  *
  * @example
@@ -24,6 +29,7 @@ const parser = object({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments cast to the shared build options type
  */
 const args: CssBuildOptions = runSync(

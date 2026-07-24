@@ -19,14 +19,20 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import { optional, } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import { string, } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import {
@@ -40,6 +46,7 @@ import {
 import { splitWhitespace, } from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
 
 /**
+ * TODO: deprecate Optique
  * Optique parser for the spawn-claude CLI.
  *
  * @example
@@ -75,6 +82,7 @@ const parser = object({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments from the spawn-claude command invocation.
  */
 const args = runSync(

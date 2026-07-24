@@ -6,7 +6,9 @@
  * @module
  */
 
+// TODO: deprecate Optique
 import { or, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import type { Parser, } from '@optique/core/parser';
 
 import {
@@ -53,6 +55,7 @@ export type VmsyncArgs =
 
 /* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
 /**
+ * TODO: deprecate Optique
  * Combined top-level parser across all subcommands: {@link importCmd}, {@link bootCmd},
  * {@link syncCmd}, {@link statusCmd}, {@link listCmd}, and {@link configCmd}.
  *

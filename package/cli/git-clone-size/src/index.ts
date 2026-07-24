@@ -1,20 +1,26 @@
 #!/usr/bin/env node
+// TODO: deprecate Optique
 import { object, } from '@optique/core/constructs';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import {
   optional,
   withDefault,
 } from '@optique/core/modifiers';
+// TODO: deprecate Optique
 import {
   argument,
   flag,
   option,
 } from '@optique/core/primitives';
+// TODO: deprecate Optique
 import {
   choice,
   integer,
   string,
 } from '@optique/core/valueparser';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import {
@@ -43,6 +49,7 @@ export {};
 //region Arg parsing
 
 /**
+ * TODO: deprecate Optique
  * Top-level argument parser: an optional SOURCE positional plus tuning flags.
  */
 const parser = object({
@@ -88,6 +95,7 @@ const parser = object({
 },);
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI arguments.
  */
 const args = runSync(

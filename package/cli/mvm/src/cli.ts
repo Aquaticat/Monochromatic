@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import type { ReadonlyDeep, } from 'type-fest';
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import {
@@ -53,6 +55,7 @@ const doubleDashIndex = rawArgs.indexOf('--',);
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
+ * TODO: deprecate Optique
  * Captured backend value (`''` when `--backend` is absent) and the args handed
  * to the optique parser, after stripping infrastructure flags from the
  * mvm-owned prefix. Tokens at or past the `--` boundary are preserved verbatim.
@@ -119,6 +122,7 @@ const {
 //region Dispatch: parse argv, select the backend, and route to the operation
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI result from process.argv
  */
 const args = runSync(

@@ -6,7 +6,9 @@
  * @module
  */
 
+// TODO: deprecate Optique
 import { message, } from '@optique/core/message';
+// TODO: deprecate Optique
 import { runSync, } from '@optique/run';
 
 import { bootVm, } from './boot.ts';
@@ -50,6 +52,7 @@ const doubleDashIndex = rawArgs.indexOf('--',);
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
+ * TODO: deprecate Optique
  * Process argv with infrastructure flags removed only from the vmsync-owned prefix.
  * The logger caches its own `process.argv` check at module load time
  * (before this runs), so stripping here only affects the \@optique parser.
@@ -66,6 +69,7 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
 //region Dispatch: parse argv and route to the appropriate handler
 
 /**
+ * TODO: deprecate Optique
  * Parsed CLI result from process.argv.
  */
 const args = runSync(
