@@ -451,6 +451,28 @@ Verification: 89 suites pass, oxlint 0/0, types clean. The running
 sentinel probe loaded the pre-union dist at process start and stays
 internally consistent; Anilovr gets one re-run on the final
 pipeline for the thoroughness gate before pass 3.
+FULL-ROSTER CRITIC RETRIES REVERTED (2026-07-23, commit
+`78317a93c`, user decision "we shouldn't retry everything until ALL
+respond" after the probe ran 70 minutes). Measurement vindicated
+the concern only partially: critics answered 7/7 first-round in
+nearly every probe slice (one critic retry fired in the whole log),
+so the revert costs little; the REAL wall-time sink is the panel,
+where the same four voices hit the full 240 s deadline slice after
+slice before the retry recovers them. The full-roster mechanism
+stays in stage-quorum.ts, tested but unused. Probe interim results
+(pre-union dist, internally consistent): XIEPT2 PASS blocked in
+565 s via dominance early exit; shi_Yumiaoya PASS as REPAIRED with
+79 issues (slicing took it from 7-claim scale; untranslated-region
+slices degraded per slice under standing votes, the new contract
+live); Aniloviraw and Anilovr pending. The user's concurrent
+prior-art survey landed as doc/research/translation-repair-prior-art.md
+(commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
+TEaR; the guarded-envelope composition is the unusual part; its
+cautions (ensemble-checked is not independently-verified, seeded
+numbers need human-graded evaluation for real-world claims) match
+milestone three's human-graded gate. OPEN CHOICE for the user:
+panel wall-time strategy (keep full deadlines; shorten voting-stage
+deadlines; or race voting stages to quorum with straggler aborts).
 pass2 run 002 (2026-07-23, 1737 s): 2 dispatched, 2 completed, 0
 failed; Aniloviraw REPAIRED (44 issues, 40 accepted, 40 resolved,
 14 findings, 379 s): the false block reproduced a THIRD time (4
