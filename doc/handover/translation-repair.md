@@ -720,6 +720,16 @@ PASS 5 RUN 002 (2026-07-24, tip `94b031cae`, 2088s wall, soft budget hit):
 that overran the 25-min soft budget on its own, so no second entry
 dispatched. 3/92 settled. No new fix surfaced; run 003 launched on tip
 `94b031cae` (same, since only the handover moved).
+PASS 5 RUN 003 (2026-07-24, tip `0384097b7`, 1806s wall, soft budget hit):
+1 dispatched, 1 completed, 0 failed. Aniloviraw repaired (26 issues, 26
+accepted, 25 resolved, 13 findings, 1806s) -- the once-false-blocked
+divergence-heavy pair, repairing cleanly again. One transient event: five
+of seven critics (Qwen3.6-27B, Kimi-K2.7-Code, MiniMax-M3, Nemotron-3,
+gpt-oss-120b) hit the 240s deadline together on a single slice at
+10:14:54Z; that slice heard only two critics, the pipeline degraded
+gracefully via quorum, and the entry still repaired. Reads as an API-side
+slowdown burst, not a code fault -- logged, no fix triggered. 4/92 settled.
+Run 004 launched on tip `0384097b7`.
 The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
