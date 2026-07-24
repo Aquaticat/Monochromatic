@@ -529,10 +529,26 @@ Taxonomy growth is safe: `remapCategoryLeaf` derives owners from
 the category list, so no exhaustive map needed updating.
 Verification: 91 suites pass, oxlint 0/0, types clean; the prompt
 suites now assert both policies in both directions.
-POLICY GATE running on Anilovr (the entry holding the Esperanto
-line), log `gate-anilovr-policy.log`. Pass 4 starts from zero once
-it lands. Each pass is one iteration, not a finished product: any
-further improvement clearing the confidence bar restarts it again. The user's concurrent
+POLICY GATE, Anilovr (2026-07-23, log
+`gate-anilovr-policy.log`): PASS, repaired, 114 issues, 2608 s.
+The policy fired as designed: 5 `policy/foreign-phrase-gloss` and
+5 `style/emotional-flattening` claims, ZERO `accuracy/untranslated`
+(the miscategorization that prompted the directive is gone), and
+the Esperanto line ships preserved with its meaning beside it:
+`//La homa mondo devus esti detruita (The human world should be
+destroyed)//`. Exactly the requested side-by-side shape.
+ONE OVER-APPLICATION MEASURED: the same stylized quote kept its
+CJK clause with a gloss (`我会在参宿四上等你 (I will wait for you at
+Betelgeuse)`), but Chinese is the ORIGINAL's own language, not a
+foreign phrase, so the rule does not cover it. Scope is bounded:
+whole-page CJK went 6 to 15 chars, one phrase, one line; the only
+other CJK line holds proper names already present in the input.
+Risk if systematic: preserved CJK in English pages is exactly the
+`accuracy/untranslated` signal the non-translation detector reads,
+so unchecked spread could interact with blocking. Resolution is a
+values question about memorial presentation (the quote is the
+person's own last words), not a measurable one, so it goes to the
+user; pass 4 waits for the answer rather than risk a third discard. The user's concurrent
 prior-art survey landed as doc/research/translation-repair-prior-art.md
 (commits `650fc5827`, `059ce44e8`): closest precedents MQM-APE and
 TEaR; the guarded-envelope composition is the unusual part; its
