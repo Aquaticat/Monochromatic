@@ -233,7 +233,7 @@ dossier (entities, terminology) module exists in src
 Options, ranked A > B > C > D:
 - A (RECOMMENDED), real-corpus production pass: run the proven pure
   fn unseeded over all 92 pinned pairs through the budgeted
-  accumulation loop until every entry carries a final status
+  accumulation loop until every entry carries a settled status
   (repaired, unchanged, or blocked-non-translation; known-hard
   entries such as BI4PBV produce honest degraded statuses, nothing
   is excluded). Artifacts (issues with fates, repaired text,
@@ -449,8 +449,12 @@ defect" splinters exactly as today, no regression; per-sub-group
 disposal is the recorded refinement if graded evidence demands it.
 Verification: 89 suites pass, oxlint 0/0, types clean. The running
 sentinel probe loaded the pre-union dist at process start and stays
-internally consistent; Anilovr gets one re-run on the final
-pipeline for the thoroughness gate before pass 3.
+internally consistent; Anilovr gets one re-run on the
+current-tip pipeline for the thoroughness gate before pass 3.
+NAMING RULE (user directive 2026-07-23): never call any pipeline,
+gate, or artifact "final"; the system is early in polishing and
+every pass is one iteration among many. Say current-tip,
+this-iteration, or name the commit.
 FULL-ROSTER CRITIC RETRIES REVERTED (2026-07-23, commit
 `78317a93c`, user decision "we shouldn't retry everything until ALL
 respond" after the probe ran 70 minutes). Measurement vindicated
