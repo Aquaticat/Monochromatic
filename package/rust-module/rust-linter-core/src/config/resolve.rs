@@ -22,7 +22,7 @@ use globset::{Glob, GlobSet, GlobSetBuilder};
 /// Imports the command-line severity overrides applied last.
 use crate::config::cli_override::CliOverride;
 /// Imports the on-disk configuration shapes being merged.
-use crate::config::file::{ConfigFile, Options, Override, RuleSetting};
+use crate::config::file::{ConfigFile, Options, Override, PatternConfig, RuleSetting};
 /// Imports the configured-severity and category types.
 use crate::severity::{Category, RuleSeverity};
 
@@ -79,6 +79,9 @@ pub struct LinterConfig {
     //           the whole point of passing it.
     /// Command-line severity flags, in the order they appeared in argv.
     cli_overrides: Vec<CliOverride>,
+
+    /// Declarative pattern rules, kept so the runner can build rules from them.
+    pub patterns: Vec<PatternConfig>,
 }
 
 /// One override with its globs already compiled.
@@ -129,6 +132,7 @@ impl LinterConfig {
             rules: merged.rules,
             overrides,
             cli_overrides: Vec::new(),
+            patterns: merged.patterns,
         });
     }
 
@@ -162,6 +166,18 @@ impl LinterConfig {
         // Layer 2: an explicit category setting replaces that default.
         if let Some(configured) = self.categories.get(&category) {
             severity = *configured;
+        }
+
+        // Layer 2b: a configured pattern rule carries its own severity, which
+        // stands in for the category default. Without this a pattern rule would
+        // sit in the restriction category, be off by default, and do nothing
+        // until enabled a second time in the `rules` table.
+        if let Some(configured) = self
+            .patterns
+            .iter()
+            .find(|candidate| return candidate.id == rule_id)
+        {
+            severity = configured.severity;
         }
 
         // Layer 3: a setting naming this rule directly, by either spelling.
@@ -239,6 +255,11 @@ pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
     let mut overrides = base.overrides;
     overrides.extend(nearer.overrides);
 
+    // Pattern rules concatenate like any other sequence, so a package config
+    // adds rules to the repository-wide set rather than replacing it.
+    let mut patterns = base.patterns;
+    patterns.extend(nearer.patterns);
+
     // Maps merge key by key, so a nearer config restates only what it changes.
     let mut categories = base.categories;
     categories.extend(nearer.categories);
@@ -264,6 +285,7 @@ pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
         categories,
         rules,
         overrides,
+        patterns,
     };
 }
 

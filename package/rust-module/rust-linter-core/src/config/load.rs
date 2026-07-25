@@ -198,6 +198,28 @@ fn load_with_trail(path: &Path, trail: &mut Vec<PathBuf>) -> Result<ConfigFile, 
 pub fn discover(start: &Path, root: Option<&Path>) -> Vec<PathBuf> {
     let mut found = Vec::new();
 
+    // What:     `start.canonicalize().unwrap_or_else(..)` resolves the path to
+    //           an absolute one, following symlinks and removing `.` segments.
+    // Why:      The walk below climbs by `.parent()`, and a relative start makes
+    //           that produce nonsense: the parent of `.` is `""`, and
+    //           `"".join("rust-linter.toml")` names the SAME FILE as
+    //           `"./rust-linter.toml"`. Discovery then found one config twice and
+    //           merged it into itself. Map-shaped keys merge idempotently, so
+    //           nothing showed it until pattern rules, which concatenate, began
+    //           reporting every finding twice.
+    let absolute = start
+        .canonicalize()
+        .unwrap_or_else(|_| return start.to_path_buf());
+    let start = absolute.as_path();
+
+    // The boundary has to be canonical too, or comparing it against the
+    // canonical walk would never match.
+    let canonical_root = root.map(|path| {
+        return path
+            .canonicalize()
+            .unwrap_or_else(|_| return path.to_path_buf());
+    });
+
     // What:     `let mut current = Some(start);` then a `while let` loop. `while
     //           let Some(directory) = current` runs as long as the binding
     //           matches, which walks the ancestor chain until `parent()` runs out.
@@ -212,10 +234,11 @@ pub fn discover(start: &Path, root: Option<&Path>) -> Vec<PathBuf> {
 
         // Stop at the boundary the caller named, so discovery never escapes the
         // repository into a developer's home directory.
-        if let Some(boundary) = root
-            && directory == boundary {
-                break;
-            }
+        if let Some(boundary) = &canonical_root
+            && directory == boundary.as_path()
+        {
+            break;
+        }
 
         current = directory.parent();
     }

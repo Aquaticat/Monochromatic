@@ -55,6 +55,64 @@ pub struct ConfigFile {
 
     /// Per-glob reconfiguration, applied in order after everything above.
     pub overrides: Vec<Override>,
+
+    // What:     `patterns: Vec<PatternConfig>`, written as repeated
+    //           `[[pattern]]` tables.
+    // Why:      Declarative rules live in the configuration rather than in Rust,
+    //           which is the half of decision D4 that lets a repository add a
+    //           rule without rebuilding the binary.
+    /// Declarative pattern rules, each matched structurally against the source.
+    #[serde(rename = "pattern")]
+    pub patterns: Vec<PatternConfig>,
+}
+
+// What:     `pub struct PatternConfig { .. }` is one `[[pattern]]` table.
+// Why:      A pattern rule is a rule like any other, so it needs an id, a
+//           severity and a message. What makes it declarative is that its logic
+//           is a Rust snippet rather than compiled code.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type PatternConfig = { id: string; match: string; message: string; fix?: string };
+// ```
+/// One declarative pattern rule, as written in configuration.
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+pub struct PatternConfig {
+    /// Rule id this pattern reports under.
+    pub id: String,
+
+    // What:     `#[serde(rename = "match")]` maps the TOML key `match` onto a
+    //           differently named field.
+    // Why:      `match` is a Rust KEYWORD, so it cannot be a field name. The
+    //           configuration should still say `match`, because that is what the
+    //           key means to whoever writes it.
+    /// Rust snippet matched structurally against the source.
+    #[serde(rename = "match")]
+    pub pattern: String,
+
+    /// Message reported when the pattern matches.
+    pub message: String,
+
+    /// Replacement snippet, making this rule fixable when present.
+    pub fix: Option<String>,
+
+    /// Remediation hint shown under the message.
+    pub help: Option<String>,
+
+    // What:     `#[serde(default = "default_pattern_severity")]` names a function
+    //           supplying the value when the key is absent.
+    // Why:      A pattern rule someone bothered to write should run. Left to the
+    //           category default it would be off, and the author would have to
+    //           enable it in a second place to get any effect.
+    /// Severity this pattern reports at.
+    #[serde(default = "default_pattern_severity")]
+    pub severity: RuleSeverity,
+}
+
+/// Return the severity a pattern rule takes when its config omits one.
+fn default_pattern_severity() -> RuleSeverity {
+    return RuleSeverity::Error;
 }
 
 /// Run-wide switches that are not about any single rule.

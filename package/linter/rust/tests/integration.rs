@@ -1053,3 +1053,102 @@ fn unused_directive_flags_conflict() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+// What:     The end-to-end proof that a declarative rule works: configured in
+//           TOML, matched structurally, reported, then repaired.
+// Why:      Every piece of this was unit-tested separately, and none of that
+//           says the pieces agree. The rule id has to survive config parsing,
+//           registration and severity resolution; the span has to survive the
+//           matcher; and the rewrite has to survive the fix pipeline.
+/// A pattern rule configured in TOML reports, and its rewrite repairs.
+#[test]
+fn configured_pattern_rule_reports_and_repairs() {
+    let root = directive_probe(
+        "pattern",
+        "//! Docs.\n\n/// Docs.\npub fn a(thing: Option<u8>) -> u8 {\n    thing.unwrap()\n}\n",
+    );
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[[pattern]]\nid = \"no-unwrap\"\nmatch = \"META_X.unwrap()\"\nfix = 'META_X.expect(\"reason\")'\nmessage = \"no unwrap\"\n",
+    )
+    .expect("write config");
+
+    let (code, stdout) = run_in(&root, &["src"]);
+    assert!(
+        stdout.contains("pattern(no-unwrap)"),
+        "the configured rule reports under its own plugin: {stdout}"
+    );
+    assert_eq!(
+        stdout.lines().count(),
+        1,
+        "exactly once, not once per discovered config: {stdout}"
+    );
+    assert_eq!(code, 1, "and fails the run");
+
+    // A pattern rewrite is registered as a Suggestion, so plain --fix must not
+    // apply it: nothing checks that a hand-written replacement means the same
+    // thing as what it replaces.
+    let _ = run_in(&root, &["--fix", "src"]);
+    let after_fix = std::fs::read_to_string(root.join("src/w.rs")).expect("read back");
+    assert!(
+        after_fix.contains("thing.unwrap()"),
+        "--fix alone must not apply a suggestion: {after_fix}"
+    );
+
+    let _ = run_in(&root, &["--fix-suggestions", "src"]);
+    let after_suggestions = std::fs::read_to_string(root.join("src/w.rs")).expect("read back");
+    assert!(
+        after_suggestions.contains("thing.expect(\"reason\")"),
+        "--fix-suggestions applies it: {after_suggestions}"
+    );
+
+    let (clean_code, clean_stdout) = run_in(&root, &["src"]);
+    assert!(clean_stdout.is_empty(), "clean afterwards: {clean_stdout}");
+    assert_eq!(clean_code, 0, "and exits zero");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+// What:     A directive silencing a pattern rule, which is the first rule that
+//           permits suppression at all.
+// Why:      Both compiled-in rules refuse it, so until pattern rules existed the
+//           directive engine had no beneficiary and its suppressing path was
+//           only ever exercised by a unit test with a stubbed closure.
+/// A justified directive suppresses a pattern rule, and an unjustified one does not.
+#[test]
+fn directive_suppresses_a_pattern_rule() {
+    let root = directive_probe(
+        "pattern-suppress",
+        "//! Docs.\n\n/// Docs.\npub fn a(thing: Option<u8>) -> u8 {\n    // rust-linter-disable-next-line no-unwrap -- checked by the caller\n    thing.unwrap()\n}\n",
+    );
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[[pattern]]\nid = \"no-unwrap\"\nmatch = \"META_X.unwrap()\"\nmessage = \"no unwrap\"\n",
+    )
+    .expect("write config");
+
+    let (code, stdout) = run_in(&root, &["src"]);
+    assert!(stdout.is_empty(), "the directive silences it: {stdout}");
+    assert_eq!(code, 0, "and the run is clean");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// A pattern rule whose match snippet does not parse is a fatal config error.
+#[test]
+fn unparseable_pattern_is_fatal() {
+    let root = directive_probe("bad-pattern", "//! Docs.\n");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[[pattern]]\nid = \"broken\"\nmatch = \"fn fn fn ((\"\nmessage = \"x\"\n",
+    )
+    .expect("write config");
+
+    let (code, _stdout) = run_in(&root, &["src"]);
+
+    // Exit 2, the same code every other configuration error uses. Matching
+    // nothing all run would be the silent alternative.
+    assert_eq!(code, 2, "a malformed pattern is a setup error");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

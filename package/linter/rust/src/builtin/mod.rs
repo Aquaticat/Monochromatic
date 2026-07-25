@@ -49,3 +49,6 @@ pub mod require_rustdoc;
 /// Unit tests for the require-rustdoc rule.
 #[cfg(test)]
 mod require_rustdoc_tests;
+
+/// The rule that runs declarative pattern rules from configuration.
+pub mod pattern_rule;

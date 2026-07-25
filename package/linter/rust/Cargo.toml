@@ -39,6 +39,12 @@ path = "src/main.rs"
 # unrelated types.
 monochromatic-rust-linter-core = { path = "../../rust-module/rust-linter-core", version = "0.1.0" }
 
+# Structural pattern matching, for the declarative rules configured as
+# `[[pattern]]` tables. Its `ra_ap_syntax` pin must match the one below for the
+# same reason the core crate's must: all three pass `SyntaxNode` values across
+# their boundaries.
+monochromatic-rust-linter-pattern = { path = "../../rust-module/rust-linter-pattern", version = "0.1.0" }
+
 # `anyhow` carries application-level setup errors for the compatibility entry point.
 anyhow = "1"
 # `clap` owns argv parsing, generated help/version output, and validation for the

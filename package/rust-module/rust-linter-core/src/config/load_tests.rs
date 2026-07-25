@@ -300,3 +300,41 @@ fn loader_clears_extends_after_resolving() {
         loaded.extends
     );
 }
+
+// What:     A test that discovery returns each config file exactly once, driven
+//           from a RELATIVE start path.
+// Why:      It did not. `discover` climbed by `.parent()`, and the parent of `.`
+//           is `""`, so `"".join("rust-linter.toml")` named the same file as
+//           `"./rust-linter.toml"` and every config was loaded twice. Map-shaped
+//           keys merge idempotently, so nothing showed it until pattern rules,
+//           which concatenate, started reporting every finding twice.
+/// Discovery from a relative path finds each config once, not twice.
+#[test]
+fn relative_start_does_not_find_the_same_config_twice() {
+    let temp = tempfile::tempdir().expect("temp dir");
+    write(temp.path(), CONFIG_FILE_NAME, "[rules]\n\"a\" = \"error\"\n");
+
+    // `set_current_dir` makes the relative start meaningful. The guard restores
+    // it afterwards so one test cannot strand the others in a deleted directory.
+    let original = std::env::current_dir().expect("current dir");
+    std::env::set_current_dir(temp.path()).expect("enter temp dir");
+
+    let found = discover(Path::new("."), None);
+
+    std::env::set_current_dir(original).expect("restore dir");
+
+    // `.filter(..).count()` counts how many discovered paths name this file, by
+    // file name rather than by full path, because the two spellings that caused
+    // the bug differ only in their prefix.
+    let matching = found
+        .iter()
+        .filter(|path| {
+            return path.file_name().and_then(|name| return name.to_str()) == Some(CONFIG_FILE_NAME);
+        })
+        .count();
+
+    assert_eq!(
+        matching, 1,
+        "one config file should be discovered once: {found:?}"
+    );
+}
