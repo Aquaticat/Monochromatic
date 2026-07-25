@@ -9,17 +9,7 @@
  * @module
  */
 
-//region Judge policy
-
-/**
- * Fixed count of newest major-version families eligible for judge selection.
- *
- * @example
- * ```typescript
- * findFastestInMajorVersions({ models, majorVersions: JUDGE_MODEL_MAJOR_VERSIONS, });
- * ```
- */
-export const JUDGE_MODEL_MAJOR_VERSIONS = 1;
+//region Judge timeout
 
 /**
  * Maximum duration of one complete judge attempt.

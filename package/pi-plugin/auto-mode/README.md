@@ -191,9 +191,8 @@ gracefully rather than throwing.
 
 ## Judge model selection
 
-Automatic judge selection considers every provider in Pi's effective model scope,
-keeps the newest major-version family,
-then ranks candidates by local speed-name heuristic:
+Automatic judge selection ranks every candidate in Pi's effective model scope
+by local speed-name heuristic:
 `highspeed` or `high-speed` > `fast` > `luna` > `flash` or `spark` > `terra` >
 `turbo` > `nano` > `mini` > `haiku` > `lite` or `light` > no signal.
 When no speed signal separates candidates,

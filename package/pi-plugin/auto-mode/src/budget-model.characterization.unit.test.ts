@@ -16,7 +16,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { findBudgetModel, } from './budget-model.ts';
-import { JUDGE_MODEL_MAJOR_VERSIONS, } from './constants.ts';
 
 //region Fixtures
 
@@ -318,12 +317,6 @@ await describe({
         expect((caught as Error).message,).toContain(
           'no fast judge models with API keys found across any provider',
         );
-      },
-    },),
-    it({
-      name: 'uses fixed major-version family count',
-      fn: async function testFixedMajorVersionCount() {
-        expect(JUDGE_MODEL_MAJOR_VERSIONS,).toBe(1,);
       },
     },),
     it({

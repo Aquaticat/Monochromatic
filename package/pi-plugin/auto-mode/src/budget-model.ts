@@ -11,7 +11,6 @@ import type {
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   compareModelSpeed,
-  findFastestInMajorVersions,
   NO_AUTH,
   resolveEffectiveScope,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
@@ -19,7 +18,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { resolveBudgetAuth, } from './budget-model-auth.ts';
 import { NoBudgetModelError, } from './budget-model-error.ts';
 import { budgetModelSlug, } from './budget-model-identity.ts';
-import { JUDGE_MODEL_MAJOR_VERSIONS, } from './constants.ts';
 import type { BudgetModel, } from './types.ts';
 
 //region Model shape guards
@@ -214,54 +212,22 @@ async function findBudgetModel(
   );
 
   /**
-   * Candidate groups partitioned by provider before version-family filtering.
+   * Every scoped candidate globally ranked by speed, cost, then model version.
    */
-  const modelsByProvider = Map.groupBy(
-    allModels,
+  const sortedCandidates = allModels.toSorted(
     /**
-     * Extract provider identity for candidate grouping.
+     * Rank cross-provider candidates by fixed speed policy.
      *
-     * @param model - scoped registry model
+     * @param left - candidate on left side of comparison
      *
-     * @returns provider identity
+     * @param right - candidate on right side of comparison
+     *
+     * @returns sort order
      */
-    function modelProvider(model: ForeignBorrowed<Model<Api>>,) {
-      return model.provider;
+    function candidatesBySpeed(left, right,) {
+      return compareModelSpeed({ left, right, },);
     },
   );
-  /**
-   * Every provider's eligible newest-family candidates, globally ranked by speed.
-   */
-  const sortedCandidates = [...modelsByProvider.values(),]
-    .flatMap(
-      /**
-       * Keep fixed count of newest major-version families from one provider.
-       *
-       * @param providerModels - models sharing provider identity
-       *
-       * @returns eligible provider candidates
-       */
-      function providerCandidates(providerModels,) {
-        return findFastestInMajorVersions({
-          models: providerModels,
-          majorVersions: JUDGE_MODEL_MAJOR_VERSIONS,
-        },);
-      },
-    )
-    .toSorted(
-      /**
-       * Rank cross-provider candidates by fixed speed policy.
-       *
-       * @param left - candidate on left side of comparison
-       *
-       * @param right - candidate on right side of comparison
-       *
-       * @returns sort order
-       */
-      function candidatesBySpeed(left, right,) {
-        return compareModelSpeed({ left, right, },);
-      },
-    );
 
   for (const model of sortedCandidates) {
     /* oxlint-disable no-await-in-loop -- sequential auth walk stops at first authenticated candidate. */
