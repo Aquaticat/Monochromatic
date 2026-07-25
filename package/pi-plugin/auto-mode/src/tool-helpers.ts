@@ -14,12 +14,18 @@
 
 import { createHash, } from 'node:crypto';
 
-import {
-  isToolCallEventType,
-  type ToolCallEvent,
-} from '@earendil-works/pi-coding-agent';
+import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { RELEVANT_TOOLS, } from './constants.ts';
+import {
+  isBashToolEvent,
+  isEditToolEvent,
+  isFindToolEvent,
+  isGrepToolEvent,
+  isLsToolEvent,
+  isReadToolEvent,
+  isWriteToolEvent,
+} from './tool-event.ts';
 
 /**
  * Hash algorithm used for approval fingerprints.
@@ -30,6 +36,147 @@ const APPROVAL_FINGERPRINT_HASH_ALGORITHM = 'sha256';
  * Digest encoding used for approval fingerprints.
  */
 const APPROVAL_FINGERPRINT_HASH_ENCODING = 'hex';
+
+/**
+ * Width of JSON Unicode escape in hexadecimal digits.
+ */
+const JSON_UNICODE_ESCAPE_WIDTH = 4;
+
+/**
+ * First UTF-16 high-surrogate code unit.
+ */
+const HIGH_SURROGATE_START = 0xD8_00;
+
+/**
+ * Last UTF-16 high-surrogate code unit.
+ */
+const HIGH_SURROGATE_END = 0xDB_FF;
+
+/**
+ * First UTF-16 low-surrogate code unit.
+ */
+const LOW_SURROGATE_START = 0xDC_00;
+
+/**
+ * Last UTF-16 low-surrogate code unit.
+ */
+const LOW_SURROGATE_END = 0xDF_FF;
+
+/**
+ * First non-control Unicode code unit.
+ */
+const CONTROL_CHARACTER_LIMIT = 0x20;
+
+/**
+ * Encode one UTF-16 code unit as JSON Unicode escape.
+ *
+ * @param codeUnit - UTF-16 code unit requiring escaping.
+ *
+ * @returns Six-character JSON escape.
+ *
+ * @example
+ * ```typescript
+ * jsonUnicodeEscape(0); // '\\u0000'
+ * ```
+ */
+function jsonUnicodeEscape(codeUnit: number,): string {
+  return `\\u${codeUnit
+    .toString(16,)
+    .padStart(
+      JSON_UNICODE_ESCAPE_WIDTH,
+      '0',
+    )}`;
+}
+
+/**
+ * Quote string using well-formed JSON escaping.
+ *
+ * Iteration preserves valid surrogate pairs and escapes lone surrogates so
+ * output remains valid Unicode JSON.
+ *
+ * @param value - String value to quote.
+ *
+ * @returns JSON string token.
+ *
+ * @example
+ * ```typescript
+ * quoteJsonString('line\n'); // '"line\\n"'
+ * ```
+ */
+function quoteJsonString(value: string,): string {
+  /**
+   * Encoded token segments, including surrounding quotes.
+   */
+  const segments: string[] = ['"',];
+  for (let index = 0; index < value.length; index += 1) {
+    /**
+     * Current UTF-16 unit as string.
+     */
+    const unit = value.charAt(index,);
+    if (unit === '"') {
+      segments[segments.length] = String.raw`\"`;
+      continue;
+    }
+    if (unit === '\\') {
+      segments[segments.length] = String.raw`\\`;
+      continue;
+    }
+    if (unit === '\b') {
+      segments[segments.length] = String.raw`\b`;
+      continue;
+    }
+    if (unit === '\t') {
+      segments[segments.length] = String.raw`\t`;
+      continue;
+    }
+    if (unit === '\n') {
+      segments[segments.length] = String.raw`\n`;
+      continue;
+    }
+    if (unit === '\f') {
+      segments[segments.length] = String.raw`\f`;
+      continue;
+    }
+    if (unit === '\r') {
+      segments[segments.length] = String.raw`\r`;
+      continue;
+    }
+    /**
+     * Numeric UTF-16 code unit for control and surrogate handling.
+     */
+    // oxlint-disable-next-line unicorn/prefer-code-point -- Well-formed JSON escaping must identify unpaired UTF-16 surrogate code units.
+    const codeUnit = value.charCodeAt(index,);
+    if (codeUnit < CONTROL_CHARACTER_LIMIT) {
+      segments[segments.length] = jsonUnicodeEscape(codeUnit,);
+      continue;
+    }
+    if ((codeUnit >= HIGH_SURROGATE_START)
+      && (codeUnit <= HIGH_SURROGATE_END)) {
+      /**
+       * Possible paired low surrogate immediately after current unit.
+       */
+      // oxlint-disable-next-line unicorn/prefer-code-point -- Pair validation needs following UTF-16 code unit rather than combined code point.
+      const nextCodeUnit = value.charCodeAt(index + 1,);
+      if ((nextCodeUnit >= LOW_SURROGATE_START)
+        && (nextCodeUnit <= LOW_SURROGATE_END)) {
+        segments[segments.length] = unit;
+        segments[segments.length] = value.charAt(index + 1,);
+        index += 1;
+        continue;
+      }
+      segments[segments.length] = jsonUnicodeEscape(codeUnit,);
+      continue;
+    }
+    if ((codeUnit >= LOW_SURROGATE_START)
+      && (codeUnit <= LOW_SURROGATE_END)) {
+      segments[segments.length] = jsonUnicodeEscape(codeUnit,);
+      continue;
+    }
+    segments[segments.length] = unit;
+  }
+  segments[segments.length] = '"';
+  return segments.join('',);
+}
 
 /**
  * Serialize JSON-compatible data with sorted object keys.
@@ -43,8 +190,6 @@ const APPROVAL_FINGERPRINT_HASH_ENCODING = 'hex';
  *
  * @returns canonical JSON string
  *
- * @mutates value - `JSON.stringify` and recursive `stableSerialize` calls can invoke caller-owned hooks
- *
  * @example
  * ```typescript
  * stableSerialize({ b: 2, a: 1 }); // '{"a":1,"b":2}'
@@ -54,87 +199,65 @@ function stableSerialize(
   value: unknown,
 ): string {
   if (Array.isArray(value,)) {
-    return `[${
-      value
-        .map(
-          /**
-           * Serializes one caller-reachable array item.
-           *
-           * @param item - Item read from supplied array.
-           *
-           * @returns Canonical JSON text for item.
-           *
-           * @mutates item - `stableSerialize` and nested `JSON.stringify` can invoke caller-owned hooks.
-           */
-          function serializeArrayItem(item: unknown,) {
-          return item === undefined
-            ? 'null'
-            : stableSerialize(item,);
-          },
-        )
-        .join(',',)
-    }]`;
+    /**
+     * Canonical text for array items in source order.
+     */
+    const serializedItems: string[] = [];
+    for (const item of value) {
+      serializedItems[serializedItems.length] = item === undefined
+        ? 'null'
+        : stableSerialize(item,);
+    }
+    return `[${serializedItems.join(',',)}]`;
   }
 
-  if ((value === null) || ((typeof value) !== 'object')) {
-    return JSON.stringify(value,)
-      ?? 'null';
-  }
+  if (value === null)
+    return 'null';
+  if ((typeof value) === 'string')
+    return quoteJsonString(value,);
+  if ((typeof value) === 'number')
+    return Number.isFinite(value,)
+      ? String(value,)
+      : 'null';
+  if ((typeof value) === 'boolean')
+    return value ? 'true' : 'false';
+  if ((typeof value) !== 'object')
+    return 'null';
 
   /**
    * Object value narrowed to JSON-like record for key sorting.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Tool inputs are JSON-compatible plain objects after arrays, null, and primitives are handled; this narrows values for Object.entries without changing runtime data.
   const record = value as Readonly<Record<string, unknown>>;
-  return `{${
-    Object
-      .entries(record,)
-      .filter(function keepsJsonObjectEntry(entry,) {
-        /**
-         * Entry value tested against JSON.stringify object omission semantics.
-         */
-        const [, entryValue,] = entry;
-        return entryValue !== undefined;
-      },)
-      .toSorted(function compareEntryKeys(
-        leftEntry,
-        rightEntry,
-      ) {
-        /**
-         * Left object key.
-         */
-        const [leftKey,] = leftEntry;
-        /**
-         * Right object key.
-         */
-        const [rightKey,] = rightEntry;
-        return leftKey.localeCompare(rightKey,);
-      },)
-      .map(
-        /**
-         * Serializes one caller-reachable object entry.
-         *
-         * @param entry - Key and value produced by object enumeration.
-         *
-         * @returns Canonical JSON property text.
-         *
-         * @mutates entry - `stableSerialize` and nested `JSON.stringify` can invoke caller-owned hooks.
-         */
-        function serializeObjectEntry(
-          entry: ForeignBorrowed<readonly [
-            string,
-            unknown,
-          ]>,
-        ) {
-          /**
-           * Object key and value serialized into canonical key order.
-           */
-          const [entryKey, entryValue,] = entry;
-          return `${JSON.stringify(entryKey,)}:${stableSerialize(entryValue,)}`;
-        },
-      )
-      .join(',',)
-  }}`;
+  /**
+   * Entries sorted by key before recursive value serialization.
+   */
+  const sortedEntries = Object
+    .entries(record,)
+    .toSorted(function compareEntryKeys(
+      leftEntry,
+      rightEntry,
+    ) {
+      /**
+       * Left object key.
+       */
+      const [leftKey,] = leftEntry;
+      /**
+       * Right object key.
+       */
+      const [rightKey,] = rightEntry;
+      return leftKey.localeCompare(rightKey,);
+    },);
+  /**
+   * Canonical JSON property texts, excluding undefined values.
+   */
+  const serializedEntries: string[] = [];
+  for (const [entryKey, entryValue,] of sortedEntries) {
+    if (entryValue !== undefined) {
+      serializedEntries[serializedEntries.length] = `${quoteJsonString(entryKey,)}:${stableSerialize(entryValue,)}`;
+    }
+  }
+  return `{${serializedEntries.join(',',)}}`;
 }
 
 /**
@@ -151,8 +274,6 @@ function stableSerialize(
  *
  * @returns serialized call identity for approval reuse
  *
- * @mutates event - `stableSerialize` can invoke caller-owned hooks reachable from tool input
- *
  * @example
  * ```typescript
  * const identity = buildApprovalFingerprintIdentity({ event, cwd: '/repo' });
@@ -167,17 +288,14 @@ function buildApprovalFingerprintIdentity(
     readonly cwd: string;
   },
 ): string {
-  if (isToolCallEventType(
-    'read',
-    event,
-  )) {
-    return `{"cwd":${JSON.stringify(cwd,)},"input":${stableSerialize({
+  if (isReadToolEvent(event,)) {
+    return `{"cwd":${quoteJsonString(cwd,)},"input":${stableSerialize({
       path: event.input
         .path,
-    },)},"toolName":${JSON.stringify(event.toolName,)}}`;
+    },)},"toolName":${quoteJsonString(event.toolName,)}}`;
   }
 
-  return `{"cwd":${JSON.stringify(cwd,)},"input":${stableSerialize(event.input,)},"toolName":${JSON.stringify(event.toolName,)}}`;
+  return `{"cwd":${quoteJsonString(cwd,)},"input":${stableSerialize(event.input,)},"toolName":${quoteJsonString(event.toolName,)}}`;
 }
 
 /**
@@ -197,8 +315,6 @@ function buildApprovalFingerprintIdentity(
  * @param cwd - current extension working directory
  *
  * @returns SHA-256 digest for the guarded tool call
- *
- * @mutates event - canonical serialization can invoke caller-owned hooks reachable from tool input
  *
  * @example
  * ```typescript
@@ -237,7 +353,7 @@ function buildApprovalFingerprint(
  * serializeToolInputForJudge({ path: 'src/index.ts', content: 'export {};\n' });
  * ```
  */
-const serializeToolInputForJudge = stableSerialize;
+const serializeToolInputForJudge: (value: unknown) => string = stableSerialize;
 
 /**
  * Extract text content from a tool call event.
@@ -255,26 +371,23 @@ const serializeToolInputForJudge = stableSerialize;
 function extractToolText(
   event: ForeignBorrowed<ToolCallEvent>,
 ): string {
-  if (isToolCallEventType(
-    'write',
-    event,
-  )) {
+  if (isWriteToolEvent(event,)) {
     return event.input
       .content;
   }
-  if (isToolCallEventType(
-    'edit',
-    event,
-  )) {
-    return event
-      .input
-      .edits
-      .map(
-        function extractNewText(e: Readonly<{ readonly newText: string; }>,) {
-          return e.newText;
-        },
-      )
-      .join('\n',);
+  if (isEditToolEvent(event,)) {
+    /**
+     * Replacement texts in edit order.
+     */
+    const newTexts: string[] = [];
+    /**
+     * Edit hunks from narrowed built-in input.
+     */
+    const { edits, } = event.input;
+    for (const edit of edits) {
+      newTexts[newTexts.length] = edit.newText;
+    }
+    return newTexts.join('\n',);
   }
   return '';
 }
@@ -294,31 +407,19 @@ function extractToolText(
 function getFilePath(
   event: ForeignBorrowed<ToolCallEvent>,
 ): string {
-  if (isToolCallEventType(
-    'read',
-    event,
-  )) {
+  if (isReadToolEvent(event,)) {
     return event.input
       .path;
   }
-  if (isToolCallEventType(
-    'write',
-    event,
-  )) {
+  if (isWriteToolEvent(event,)) {
     return event.input
       .path;
   }
-  if (isToolCallEventType(
-    'edit',
-    event,
-  )) {
+  if (isEditToolEvent(event,)) {
     return event.input
       .path;
   }
-  if (isToolCallEventType(
-    'grep',
-    event,
-  )) {
+  if (isGrepToolEvent(event,)) {
     return event.input
       .path
       ?? '';
@@ -343,54 +444,33 @@ function getFilePath(
 function describeAction(
   event: ForeignBorrowed<ToolCallEvent>,
 ): string {
-  if (isToolCallEventType(
-    'bash',
-    event,
-  )) {
+  if (isBashToolEvent(event,)) {
     return `bash: ${event.input
       .command}`;
   }
-  if (isToolCallEventType(
-    'read',
-    event,
-  )) {
+  if (isReadToolEvent(event,)) {
     return `read ${event.input
       .path}`;
   }
-  if (isToolCallEventType(
-    'write',
-    event,
-  )) {
+  if (isWriteToolEvent(event,)) {
     return `write ${event.input
       .path}`;
   }
-  if (isToolCallEventType(
-    'edit',
-    event,
-  )) {
+  if (isEditToolEvent(event,)) {
     return `edit ${event.input
       .path}`;
   }
-  if (isToolCallEventType(
-    'grep',
-    event,
-  )) {
+  if (isGrepToolEvent(event,)) {
     return `grep ${event.input
       .path
       ?? ''}`;
   }
-  if (isToolCallEventType(
-    'find',
-    event,
-  )) {
+  if (isFindToolEvent(event,)) {
     return `find ${event.input
       .path
       ?? ''}`;
   }
-  if (isToolCallEventType(
-    'ls',
-    event,
-  )) {
+  if (isLsToolEvent(event,)) {
     return `ls ${event.input
       .path
       ?? ''}`;

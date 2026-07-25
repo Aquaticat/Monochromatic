@@ -76,6 +76,23 @@ await describe({
       },
     },),
     it({
+      name: 'preserves JSON control and surrogate escaping',
+      fn: async function preservesJsonControlAndSurrogateEscaping(): Promise<void> {
+        /** Write call covering every custom string-escaping branch. */
+        const event = toolCallEvent({
+          toolName: 'write',
+          input: {
+            content: '\0\b\t\n\f\r"\\\uD800😀\uDC00',
+            path: '/repo/control',
+          },
+        },);
+
+        expect(serializeToolInputForJudge(event.input,),).toBe(
+          String.raw`{"content":"\u0000\b\t\n\f\r\"\\\ud800😀\udc00","path":"/repo/control"}`,
+        );
+      },
+    },),
+    it({
       name: 'preserves every edit hunk as JSON',
       fn: async function preservesEveryEditHunkAsJson(): Promise<void> {
         /** Edit call whose old and new text must remain visible to judge. */
