@@ -147,6 +147,55 @@ pub struct Cli {
     )]
     pub deny: Vec<String>,
 
+    /// Worker threads to lint with.
+    // `Option` distinguishes an explicit count from "decide for me", which is
+    // what lets the default follow the machine rather than a hardcoded number.
+    #[arg(
+        long = "threads",
+        value_name = "INT",
+        help = "Number of threads to use; 1 uses a single CPU core"
+    )]
+    pub threads: Option<usize>,
+
+    /// File supplying ignore patterns, in gitignore syntax.
+    #[arg(
+        long = "ignore-path",
+        value_name = "PATH",
+        help = "File to read ignore patterns from"
+    )]
+    pub ignore_path: Option<String>,
+
+    /// Extra ignore patterns, repeatable.
+    #[arg(
+        long = "ignore-pattern",
+        value_name = "PAT",
+        action = clap::ArgAction::Append,
+        help = "Pattern of files to ignore, in addition to configured ones"
+    )]
+    pub ignore_pattern: Vec<String>,
+
+    /// Lint files that would otherwise be ignored.
+    #[arg(
+        long = "no-ignore",
+        help = "Disable all ignore files and ignore patterns"
+    )]
+    pub no_ignore: bool,
+
+    /// Exit zero when no files matched.
+    #[arg(
+        long = "no-error-on-unmatched-pattern",
+        help = "Do not exit with an error when no files are selected for linting"
+    )]
+    pub no_error_on_unmatched_pattern: bool,
+
+    /// Debug output, comma separated: files, timings.
+    #[arg(
+        long = "debug",
+        value_name = "OPTIONS",
+        help = "Debug output, comma separated: files prints the file list and exits, timings reports per-rule time"
+    )]
+    pub debug: Option<String>,
+
     /// Apply safe repairs in place.
     #[arg(long = "fix", help = "Fix as many issues as possible")]
     pub fix: bool,

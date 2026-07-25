@@ -32,8 +32,16 @@ use crate::severity::Category;
 //   check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void;
 // }
 // ```
+// What:     `pub trait Rule: Send + Sync` names two SUPERTRAITS: a type may only
+//           implement `Rule` if it is also safe to send between threads and to
+//           share between them by reference.
+// Why:      The runner lints files in parallel, handing every worker a borrow of
+//           the same rule set. Rust will not compile that unless the trait says
+//           so, and the requirement is real rather than ceremonial: a rule
+//           holding interior mutability without synchronisation would race. In
+//           practice a rule is stateless and this costs its author nothing.
 /// Shared interface implemented by every lint rule.
-pub trait Rule {
+pub trait Rule: Send + Sync {
     // What:     `fn id(&self) -> &'static str;`. A signature with no body, so
     //           implementors must supply one. `&self` borrows the rule read-only;
     //           `&'static str` is a borrowed string living for the whole program,

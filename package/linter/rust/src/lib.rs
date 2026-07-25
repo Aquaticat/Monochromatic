@@ -15,6 +15,8 @@
 pub mod cli;
 /// Path-based exemptions, re-exporting the shared settings record.
 pub mod config;
+/// Finding the files to lint, and the flags that shape that set.
+pub mod discover;
 /// Registry of the rules this binary compiles in.
 pub mod rule;
 /// Built-in lint rule implementations.
@@ -78,9 +80,6 @@ use clap::Parser;
 // ```ts
 // import { walk } from "<gitignore-aware walker>";
 // ```
-/// Imports gitignore-aware directory walker.
-use ignore::WalkBuilder;
-
 // What:     `use anyhow::Result;` imports `anyhow`'s one-parameter result alias.
 // Why:      Preserve the compatibility entry point's fallible shape without a
 //           string-only error channel.
@@ -120,6 +119,8 @@ use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 /// Imports enabled-rule registry and rule trait.
 use crate::rule::{all_rules, Rule};
+/// Imports file discovery and the resolved worker-thread count.
+use crate::discover::{collect_rust_files, thread_count};
 
 // What:     `use monochromatic_rust_linter_core::config::...` reaches the core
 //           crate directly rather than through this crate's re-export, because
@@ -232,7 +233,24 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // ```ts
     // const files = collectRustFiles(cli.paths);
     // ```
-    let files = collect_rust_files(&cli.paths);
+    let files = collect_rust_files(cli);
+
+    // `--debug=files` prints what would be linted and stops, which is how a user
+    // answers "why is this file not being checked" without reading the config.
+    if debug_wants(cli, "files") {
+        for file in &files {
+            println!("{file}");
+        }
+
+        return 0;
+    }
+
+    // An empty file set is an error by default, because it usually means a typo
+    // in a path rather than a repository with no Rust in it.
+    if files.is_empty() && !cli.no_error_on_unmatched_pattern {
+        eprintln!("rust-linter: no files matched the given paths");
+        return 2;
+    }
 
     // What:     `let rules = all_rules();`. The enabled rule set as
     //           `Vec<Box<dyn Rule>>` (heap-boxed trait objects).
@@ -300,18 +318,7 @@ pub fn run_cli(cli: &Cli) -> i32 {
         }
     }
 
-    for file in &files {
-        // What:     `lint_file(file, &config, &rules, &mut diagnostics);`. Lends
-        //           the file path and config read-only, the rules slice read-only,
-        //           and the diagnostics vector MUTABLY so the callee can push.
-        // Why:      Run all rules against this one file.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // lintFile(file, config, rules, diagnostics);
-        // ```
-        lint_file(file, cli, &linter, &rules, &mut diagnostics);
-    }
+    lint_all(&files, cli, &linter, &rules, &mut diagnostics);
 
     // What:     `let warnings = diagnostics.iter().filter(..).count();` counts
     //           findings at warning severity. `.iter()` borrows each element,
@@ -401,6 +408,93 @@ fn exit_code_for(cli: &Cli, config_deny_warnings: bool, warnings: usize, errors:
 // ```ts
 // function collectRustFiles(paths: string[]): string[] { /* ... */ }
 // ```
+
+// What:     `fn debug_wants(cli: &Cli, option: &str) -> bool`. Answers whether a
+//           comma-separated `--debug` list names one option.
+// Why:      oxlint takes `--debug=files,timings` as one flag rather than two, so
+//           the list is split here rather than by clap.
+/// Report whether the --debug list names a given option.
+fn debug_wants(cli: &Cli, option: &str) -> bool {
+    // `.is_some_and(..)` is true only when the option is present AND the closure
+    // accepts, which reads better than nesting an `if let` around a search.
+    return cli
+        .debug
+        .as_ref()
+        .is_some_and(|list| return list.split(',').any(|entry| return entry.trim() == option));
+}
+
+// What:     `fn lint_all(..)`. Splits the files across threads, lints each chunk
+//           on its own thread, then concatenates the results in chunk order.
+// Why:      Linting is per file and shares nothing, so it parallelises without
+//           locking. Concatenating in CHUNK order rather than completion order
+//           is what keeps output identical run to run: a linter whose findings
+//           shuffle between runs cannot be diffed in CI.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function lintAll(files, cli, linter, rules, out): void
+// ```
+/// Lint every file, in parallel when more than one thread was asked for.
+fn lint_all(
+    files: &[String],
+    cli: &Cli,
+    linter: &LinterConfig,
+    rules: &[Box<dyn Rule>],
+    out: &mut Vec<Diagnostic>,
+) {
+    let threads = thread_count(cli);
+
+    // One thread means no scope, no chunking and no join: a small package should
+    // not pay for machinery it does not use.
+    if threads <= 1 || files.len() <= 1 {
+        for file in files {
+            lint_file(file, cli, linter, rules, out);
+        }
+
+        return;
+    }
+
+    // `.div_ceil(..)` rounds up, so the chunks cover every file rather than
+    // leaving a remainder for nobody.
+    let chunk_size = files.len().div_ceil(threads);
+
+    // What:     `std::thread::scope(..)` starts threads GUARANTEED to finish
+    //           before it returns, which is what lets them borrow `linter` and
+    //           `rules` rather than needing owned copies behind an `Arc`.
+    //           Threads spawned any other way could outlive those borrows, and
+    //           Rust rejects that at compile time.
+    // Why:      No locking and no reference counting, because nothing is shared
+    //           mutably: each thread writes only into its own vector.
+    let collected: Vec<Vec<Diagnostic>> = std::thread::scope(|scope| {
+        let handles: Vec<_> = files
+            .chunks(chunk_size)
+            .map(|chunk| {
+                return scope.spawn(move || {
+                    let mut local = Vec::new();
+                    for file in chunk {
+                        lint_file(file, cli, linter, rules, &mut local);
+                    }
+
+                    return local;
+                });
+            })
+            .collect();
+
+        return handles
+            .into_iter()
+            .map(|handle| {
+                // `.unwrap_or_default()` covers a worker that panicked: the run
+                // continues with that chunk's findings missing, rather than the
+                // whole process dying on a poisoned join.
+                return handle.join().unwrap_or_default();
+            })
+            .collect();
+    });
+
+    for chunk in collected {
+        out.extend(chunk);
+    }
+}
 
 // What:     `fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String>`.
 //           Returns the merged, glob-compiled configuration, or a message
@@ -562,88 +656,6 @@ fn fix_file(
     return total;
 }
 
-/// Expand file and directory arguments into Rust source file paths.
-fn collect_rust_files(paths: &[String]) -> Vec<String> {
-    // What:     `let mut files: Vec<String> = Vec::new();`. Accumulator for results.
-    // Why:      Collect every discovered file path.
-    let mut files: Vec<String> = Vec::new();
-
-    // What:     `for path in paths`. Iterate the requested paths (borrowed).
-    // Why:      Handle each path argument.
-    for path in paths {
-        // What:     `let start = Path::new(path);`. Wrap the string as a `&Path`.
-        // Why:      Use path queries like `is_file`.
-        let start = Path::new(path);
-
-        // What:     `if start.is_file()`. Filesystem check: is this an existing file?
-        // Why:      A directly named file is linted as-is, not walked.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (isFile(start)) { files.push(path); } else { /* walk */ }
-        // ```
-        if start.is_file() {
-            // What:     `files.push(path.clone());`. Own a copy of the path string.
-            // Why:      Keep the explicitly named file.
-            files.push(path.clone());
-        } else {
-            // What:     `for entry in WalkBuilder::new(start).build().flatten()`.
-            //           Build a sequential gitignore-aware walker rooted at `start`.
-            //           Its items are `Result<DirEntry, Error>`; `.flatten()` keeps
-            //           only the `Ok` entries and silently drops walk errors (such as
-            //           an unreadable directory), so one bad entry never aborts the
-            //           run. `entry` is therefore a plain `DirEntry`.
-            // Why:      Find files recursively while honouring `.gitignore` (so
-            //           `target/` is skipped), tolerating per-entry errors.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // for (const entry of walk(start)) { /* unreadable entries skipped */ }
-            // ```
-            for entry in WalkBuilder::new(start).build().flatten() {
-                // What:     `let entry_path = entry.path();`. The `&Path` of this entry.
-                // Why:      Test its kind and extension.
-                let entry_path = entry.path();
-
-                // What:     `let is_rs = entry_path.extension().and_then(|e|
-                //           e.to_str()) == Some("rs");`. `.extension()` returns
-                //           `Option<&OsStr>` (the bit after the last dot, or None).
-                //           `.and_then(|e| e.to_str())` converts it to `Option<&str>`.
-                //           Comparing to `Some("rs")` is true only when the extension
-                //           is exactly `rs`.
-                // Why:      Keep only Rust source files.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // const isRs = entryPath.endsWith(".rs");
-                // ```
-                let is_rs = entry_path.extension().and_then(|e| return e.to_str()) == Some("rs");
-
-                // What:     `if entry_path.is_file() && is_rs`. Only real files with
-                //           the `.rs` extension qualify. `&&` is logical AND.
-                // Why:      Directories named `*.rs` (rare) must not slip in.
-                if entry_path.is_file() && is_rs {
-                    // What:     `files.push(entry_path.to_string_lossy().into_owned());`.
-                    //           `.to_string_lossy()` turns the path into a `Cow<str>`
-                    //           (borrowed when valid UTF-8, owned with replacement
-                    //           chars otherwise); `.into_owned()` forces an owned
-                    //           `String`.
-                    // Why:      Store an owned path string in the results.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // files.push(String(entryPath));
-                    // ```
-                    files.push(entry_path.to_string_lossy().into_owned());
-                }
-            }
-        }
-    }
-
-    // What:     `return files`. Moves the accumulated vector out to the caller.
-    // Why:      Hand the file list back.
-    return files
-}
 
 // What:     `fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>],
 //           out: &mut Vec<Diagnostic>)`. Read-only borrows of the path, config,

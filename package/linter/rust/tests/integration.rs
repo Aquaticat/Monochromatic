@@ -1204,3 +1204,125 @@ fn plugins_key_gates_each_package() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+// What:     A probe tree with a directory that ignore flags can exclude.
+// Why:      Every discovery flag is about which files reach the linter, so the
+//           tree needs at least two places for them to distinguish.
+/// Build a throwaway tree with a src and a gen directory.
+fn discovery_probe(name: &str) -> std::path::PathBuf {
+    let root = std::env::temp_dir().join(format!(
+        "rust-linter-discovery-{}-{name}",
+        std::process::id()
+    ));
+
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).expect("create src");
+    std::fs::create_dir_all(root.join("gen")).expect("create gen");
+    std::fs::write(root.join("src/a.rs"), "fn a() {}\n").expect("write src");
+    std::fs::write(root.join("gen/b.rs"), "fn b() {}\n").expect("write gen");
+
+    return root;
+}
+
+/// `--debug=files` lists what would be linted and stops.
+#[test]
+fn debug_files_lists_and_exits() {
+    let root = discovery_probe("debug-files");
+
+    let (code, stdout) = run_in(&root, &["--debug=files", "."]);
+
+    assert!(stdout.contains("a.rs"), "lists src: {stdout}");
+    assert!(stdout.contains("b.rs"), "lists gen: {stdout}");
+    assert!(
+        !stdout.contains("require-rustdoc"),
+        "and reports no findings, having stopped: {stdout}"
+    );
+    assert_eq!(code, 0, "listing is not a failure");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--ignore-pattern` removes files from the walk.
+#[test]
+fn ignore_pattern_excludes_files() {
+    let root = discovery_probe("ignore-pattern");
+
+    let (_code, stdout) = run_in(&root, &["--debug=files", "--ignore-pattern", "gen/**", "."]);
+
+    assert!(stdout.contains("a.rs"), "src survives: {stdout}");
+    assert!(!stdout.contains("b.rs"), "gen is excluded: {stdout}");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--ignore-path` reads patterns from a file.
+#[test]
+fn ignore_path_reads_patterns_from_a_file() {
+    let root = discovery_probe("ignore-path");
+    std::fs::write(root.join(".lintignore"), "gen/\n").expect("write ignore file");
+
+    let (_code, stdout) = run_in(&root, &["--debug=files", "--ignore-path", ".lintignore", "."]);
+
+    assert!(stdout.contains("a.rs"), "src survives: {stdout}");
+    assert!(!stdout.contains("b.rs"), "gen is excluded: {stdout}");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// An empty file set is a fatal error unless the flag says otherwise.
+#[test]
+fn no_matching_files_is_fatal_by_default() {
+    let root = discovery_probe("unmatched");
+    std::fs::create_dir_all(root.join("empty")).expect("create empty");
+
+    let (code, _stdout) = run_in(&root, &["empty"]);
+    assert_eq!(code, 2, "usually a typo in a path, so it fails");
+
+    let (allowed, _stdout) = run_in(&root, &["--no-error-on-unmatched-pattern", "empty"]);
+    assert_eq!(allowed, 0, "unless the caller said it is expected");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+// What:     The same tree linted at four thread counts, asserting the output is
+//           byte-identical.
+// Why:      Findings are collected per thread and concatenated, and concatenating
+//           in COMPLETION order rather than chunk order would shuffle them
+//           between runs. A linter whose output reorders cannot be diffed in CI,
+//           and the failure would be intermittent, which is the worst kind.
+/// Output is identical whatever the thread count.
+#[test]
+fn thread_count_does_not_change_output() {
+    let root = discovery_probe("threads");
+
+    // Enough files that more than one chunk is actually formed.
+    for index in 0..12 {
+        std::fs::write(
+            root.join(format!("src/f{index}.rs")),
+            format!("fn f{index}() {{}}\n"),
+        )
+        .expect("write file");
+    }
+
+    let (_code, single) = run_in(&root, &["--threads", "1", "."]);
+    let (_code, several) = run_in(&root, &["--threads", "4", "."]);
+    let (_code, many) = run_in(&root, &["--threads", "16", "."]);
+
+    assert_eq!(single, several, "one thread and four agree");
+    assert_eq!(single, many, "one thread and sixteen agree");
+    assert!(!single.is_empty(), "and there was something to compare");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// A thread count of zero is treated as one rather than doing no work.
+#[test]
+fn zero_threads_still_lints() {
+    let root = discovery_probe("zero-threads");
+
+    let (_code, stdout) = run_in(&root, &["--threads", "0", "."]);
+
+    assert!(!stdout.is_empty(), "zero is clamped to one: {stdout}");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

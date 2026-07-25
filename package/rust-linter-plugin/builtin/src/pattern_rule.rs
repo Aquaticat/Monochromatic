@@ -17,7 +17,7 @@ use monochromatic_rust_linter_core::fix::{Edit, Fix, FixKind};
 /// Imports the on-disk shape of one configured pattern rule.
 use monochromatic_rust_linter_core::config::file::PatternConfig;
 /// Imports the pattern cascade, matcher and rewrite renderer.
-use monochromatic_rust_linter_pattern::fragment::{parse as parse_fragment, Fragment};
+use monochromatic_rust_linter_pattern::fragment::parse as parse_fragment;
 use monochromatic_rust_linter_pattern::matcher::find_all;
 use monochromatic_rust_linter_pattern::rewrite::{render, unbound_metavariables};
 
@@ -37,8 +37,15 @@ pub struct PatternRule {
     /// Rule id, as configured.
     id: String,
 
-    /// Parsed pattern snippet.
-    pattern: Fragment,
+    // What:     The pattern is held as TEXT and re-parsed in `check`, rather
+    //           than parsed once at build time and stored.
+    // Why:      Forced by threading. rowan's `SyntaxNode` is deliberately not
+    //           `Send` or `Sync`: it holds a `NonNull` into a tree with
+    //           non-atomic reference counts. A rule must be shareable across
+    //           worker threads, so it cannot hold one. Snippets are a few tokens
+    //           long, so re-parsing costs far less than the file being linted.
+    /// Pattern snippet, re-parsed per file because a syntax tree is not `Sync`.
+    pattern: String,
 
     /// Message reported when the pattern matches.
     message: String,
@@ -64,17 +71,19 @@ impl PatternRule {
     /// Build a runnable rule from one configured pattern.
     pub fn build(configured: &PatternConfig) -> Result<Self, String> {
         // A snippet that does not parse is a configuration error worth naming.
-        // Reporting it at startup beats silently matching nothing all run.
-        let Some(pattern) = parse_fragment(&configured.pattern) else {
+        // Reporting it at startup beats silently matching nothing all run. The
+        // parsed tree is discarded here: this call is a validation, and `check`
+        // parses again per file for the threading reason above.
+        if parse_fragment(&configured.pattern).is_none() {
             return Err(format!(
                 "pattern rule \"{}\": the `match` snippet is not parseable Rust: {}",
                 configured.id, configured.pattern,
             ));
-        };
+        }
 
         return Ok(Self {
             id: configured.id.clone(),
-            pattern,
+            pattern: configured.pattern.clone(),
             message: configured.message.clone(),
             fix: configured.fix.clone(),
             help: configured.help.clone(),
@@ -122,7 +131,14 @@ impl Rule for PatternRule {
 
     /// Report every place the configured pattern matches.
     fn check(&self, context: &LintContext, _config: &Config, out: &mut Vec<Diagnostic>) {
-        for found in find_all(&self.pattern.root, context.syntax_node()) {
+        // `build` already proved this parses, so an absent result here would be
+        // a bug rather than bad configuration. Returning quietly is still better
+        // than panicking mid-run.
+        let Some(pattern) = parse_fragment(&self.pattern) else {
+            return;
+        };
+
+        for found in find_all(&pattern.root, context.syntax_node()) {
             let range = found.node.text_range();
             let offset = usize::from(range.start());
             let span = context.span_at_offset(offset, usize::from(range.len()));
