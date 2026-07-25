@@ -30,8 +30,9 @@ import {
 //region Corpus pass
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
 // one entry at a time: skips entries that already have an artifact, orders the
-// rest fewest-attempts-first, and stops starting new entries at the soft budget
-// while a per-entry hard ceiling aborts an entry that overruns. Each settled
+// rest with the small size band deprioritized (then fewest-attempts-first), and
+// stops starting new entries at the soft budget while a per-entry hard ceiling
+// aborts an entry that overruns. Each settled
 // entry writes one JSON artifact and one TALLY line. Run it with `mise run
 // //package/module/translation-repair:corpus-pass` (append `-- --plan` for a
 // zero-quota setup check).
@@ -73,6 +74,17 @@ const HARD_CAP_MS = HARD_CAP_MINUTES * MS_PER_MINUTE;
  * Complete zh/en pairs present at the pinned commit; the run target.
  */
 const CORPUS_PAIR_TARGET = 92;
+
+/**
+ * Page-source byte size below which an entry sits in the small band. The
+ * corpus page.md sizes fall into rough tertiles with the lower cut near
+ * 1.8 KiB. Small entries finish inside one run while large ones consume it,
+ * so early settling over-represents the small band (9 of the first 12); to
+ * keep the eventual 50-issue sample representative of the medium and large
+ * bands, the pass sorts small entries last. Deprioritization only, not
+ * exclusion: a small entry still settles once the larger bands are served.
+ */
+const SMALL_PAGE_BYTES = 1_843;
 
 /**
  * Characters of an error message kept in a TALLY line.
@@ -294,12 +306,43 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Pending entries, fewest attempts first so flaky ones deprioritize.
+   * Encoder measuring page-source byte size once per entry.
    */
-  const pending = eligible.toSorted(function byAttempts(
+  const sizer = new TextEncoder();
+
+  /**
+   * Ids whose page source is under the small-band cut. Held in a set so the
+   * comparator is a lookup rather than re-encoding text on every compare.
+   */
+  const smallIds = new Set(
+    eligible
+      .filter(function isSmall(entry,) {
+        return sizer.encode(entry.sourceText,)
+          .length
+          < SMALL_PAGE_BYTES;
+      },)
+      .map(function toId(entry,) {
+        return entry.id;
+      },),
+  );
+
+  /**
+   * Pending entries: the small band sorts last, then fewest attempts first so
+   * flaky ones deprioritize within a band.
+   */
+  const pending = eligible.toSorted(function byBandThenAttempts(
     a,
     b,
   ) {
+    /**
+     * Negative when only `a` is small (so `b`, in a larger band, sorts
+     * first), positive when only `b` is; zero leaves both in the same band
+     * for the attempt tiebreak below.
+     */
+    const bandDelta = Number(smallIds.has(a.id,),)
+      - Number(smallIds.has(b.id,),);
+    if (bandDelta !== 0)
+      return bandDelta;
     return (attempts[a.id] ?? 0) - (attempts[b.id] ?? 0);
   },);
 

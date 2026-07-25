@@ -909,6 +909,30 @@ resolved, 5 findings, 1182s); DarlinChit repaired (46 issues, 40 accepted,
 was killed by a transient harness hiccup right after the run-009 commit
 landed; relaunched standalone. Going forward: commit foreground, launch
 corpus-pass as its own background command.) Run 011 launched.
+COVERAGE-BAR DECISION (2026-07-25, user-approved): task 30's completion bar
+changed from "all 92 settled" to STRATIFIED REPRESENTATIVE COVERAGE
+(~10/10/10 across small/medium/large size bands). Rationale: the M3 gate is
+human-graded precision on a uniform 50-issue sample; 12 settled entries
+already yield hundreds of accepted issues, so sample SIZE was satisfied long
+ago and the full-92 pass was never load-bearing for it. What the gate needs
+is a REPRESENTATIVE sample, and the pool was skewed small -- 9 small / 2
+medium / 1 large by page.md byte-size tertiles (small <=1.8KB, medium
+1.8-3.6KB, large >=3.6KB up to 40.7KB), with the single large entry sitting
+at the bottom of its band. The heavily-sliced large tail -- exactly where
+the lockstep slicing fix most affects precision -- was un-sampled. Target:
+~10 settled per band (need ~1 small, ~8 medium, ~9 large), large picks
+spread across the band; then draw the 50-issue sample STRATIFIED by band.
+The skew is a throughput artifact: small entries finish inside one run while
+large ones consume it, so equal wall-clock settles many small + few large.
+DRIVER FIX (same day, DRIVER-ONLY so NO restart/wipe -- repair outputs per
+entry are identical): corpus-pass now sorts the small band LAST in `pending`
+(`SMALL_PAGE_BYTES=1843`, measuring page-source bytes via TextEncoder),
+then fewest-attempts within a band, so run budget flows to medium+large;
+small still settles once larger bands are served (deprioritize, not
+exclude). Verified format/lint/types 0/0/0 and `--plan` first-5 pending all
+non-small (Everythings99 1859B .. Huasheng 7397B). Run 011 was already in
+flight on the old order and finishes normally; run 012 onward uses the new
+order. Task 30 subject/description updated to match.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
