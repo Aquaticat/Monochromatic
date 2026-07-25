@@ -10,20 +10,16 @@ import type {
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
-  budgetModelSlug,
-  NoBudgetModelError,
+  compareModelSpeed,
+  findFastestInMajorVersions,
+  NO_AUTH,
   resolveEffectiveScope,
-  selectBudgetModel,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import {
-  hasRegistryBudgetAuth,
-  resolveBudgetAuth,
-} from './budget-model-auth.ts';
-import {
-  JUDGE_MODEL_MAJOR_VERSIONS,
-  JUDGE_MODEL_STRATEGY,
-} from './constants.ts';
+import { resolveBudgetAuth, } from './budget-model-auth.ts';
+import { NoBudgetModelError, } from './budget-model-error.ts';
+import { budgetModelSlug, } from './budget-model-identity.ts';
+import { JUDGE_MODEL_MAJOR_VERSIONS, } from './constants.ts';
 import type { BudgetModel, } from './types.ts';
 
 //region Model shape guards
@@ -127,9 +123,9 @@ function assertModelApiList(
  * Validates the active model and registry with {@link assertModelApi} and
  * {@link assertModelApiList}, then {@link resolveEffectiveScope} narrows
  * automatic candidates to Pi's effective scoped models.
- * {@link selectBudgetModel} walks those candidates fastest-first using
- * {@link hasRegistryBudgetAuth} and {@link resolveBudgetAuth}, and returns
- * the first candidate the registry can authenticate.
+ * The fixed cross-provider policy walks those candidates fastest-first using
+ * {@link resolveBudgetAuth} and returns the first candidate the registry can
+ * authenticate.
  *
  * @param ctx - pi extension context
  *
@@ -172,10 +168,6 @@ async function findBudgetModel(
    */
   const rawActiveModel: unknown = ctx.model;
   assertModelApi(rawActiveModel,);
-  /**
-   * Active model after runtime shape validation.
-   */
-  const activeModel = rawActiveModel;
   /**
    * Effective Pi scope that constrains automatic judge selection.
    */
@@ -221,45 +213,80 @@ async function findBudgetModel(
     },
   );
 
-  return await selectBudgetModel<Model<Api>>({
-    activeModel,
+  /**
+   * Candidate groups partitioned by provider before version-family filtering.
+   */
+  const modelsByProvider = Map.groupBy(
     allModels,
-    strategy: JUDGE_MODEL_STRATEGY,
-    majorVersions: JUDGE_MODEL_MAJOR_VERSIONS,
     /**
-     * Resolves auth for one automatically selected model.
+     * Extract provider identity for candidate grouping.
      *
-     * @param model - Registry model selected by strategy.
+     * @param model - scoped registry model
      *
-     * @returns Resolved auth or no-auth sentinel.
-     *
-     * @mutates model - `resolveBudgetAuth` can invoke model hooks and command-backed auth.
+     * @returns provider identity
      */
-    async resolveAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
-      return await resolveBudgetAuth({
-        ctx,
-        model,
-      },);
+    function modelProvider(model: ForeignBorrowed<Model<Api>>,) {
+      return model.provider;
     },
+  );
+  /**
+   * Every provider's eligible newest-family candidates, globally ranked by speed.
+   */
+  const sortedCandidates = [...modelsByProvider.values(),]
+    .flatMap(
+      /**
+       * Keep fixed count of newest major-version families from one provider.
+       *
+       * @param providerModels - models sharing provider identity
+       *
+       * @returns eligible provider candidates
+       */
+      function providerCandidates(providerModels,) {
+        return findFastestInMajorVersions({
+          models: providerModels,
+          majorVersions: JUDGE_MODEL_MAJOR_VERSIONS,
+        },);
+      },
+    )
+    .toSorted(
+      /**
+       * Rank cross-provider candidates by fixed speed policy.
+       *
+       * @param left - candidate on left side of comparison
+       *
+       * @param right - candidate on right side of comparison
+       *
+       * @returns sort order
+       */
+      function candidatesBySpeed(left, right,) {
+        return compareModelSpeed({ left, right, },);
+      },
+    );
+
+  for (const model of sortedCandidates) {
+    /* oxlint-disable no-await-in-loop -- sequential auth walk stops at first authenticated candidate. */
     /**
-     * Checks registry auth availability for one candidate model.
-     *
-     * @param model - Registry model inspected by auth storage.
-     *
-     * @returns Whether registry auth is available.
-     *
-     * @mutates model - registry auth reads can invoke caller-owned model hooks.
+     * Host registry credentials for current candidate.
      */
-    hasConfiguredAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
-      return hasRegistryBudgetAuth({
-        ctx,
+    const auth = await resolveBudgetAuth({
+      ctx,
+      model,
+    },);
+    /* oxlint-enable no-await-in-loop */
+    if (auth !== NO_AUTH) {
+      return {
         model,
-      },);
-    },
-  },);
+        auth,
+      };
+    }
+  }
+
+  throw new NoBudgetModelError(
+    'no fast judge models with API keys found across any provider',
+  );
 }
 
 //endregion Public API
 
-export { NoBudgetModelError, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+export { NoBudgetModelError, } from './budget-model-error.ts';
 export { findBudgetModel, };

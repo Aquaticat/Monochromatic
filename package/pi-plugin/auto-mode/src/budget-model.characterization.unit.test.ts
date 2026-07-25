@@ -16,10 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { findBudgetModel, } from './budget-model.ts';
-import {
-  JUDGE_MODEL_MAJOR_VERSIONS,
-  JUDGE_MODEL_STRATEGY,
-} from './constants.ts';
+import { JUDGE_MODEL_MAJOR_VERSIONS, } from './constants.ts';
 
 //region Fixtures
 
@@ -29,17 +26,17 @@ const ACTIVE_INPUT = 10;
 /** Active model output token price. */
 const ACTIVE_OUTPUT = 20;
 
-/** Same-provider budget input token price. */
-const SAME_PROVIDER_INPUT = 1;
+/** OpenAI budget input token price. */
+const OPENAI_BUDGET_INPUT = 1;
 
-/** Same-provider budget output token price. */
-const SAME_PROVIDER_OUTPUT = 2;
+/** OpenAI budget output token price. */
+const OPENAI_BUDGET_OUTPUT = 2;
 
-/** Any-provider budget input token price. */
-const ANY_PROVIDER_INPUT = 0.25;
+/** Anthropic budget input token price. */
+const ANTHROPIC_BUDGET_INPUT = 0.25;
 
-/** Any-provider budget output token price. */
-const ANY_PROVIDER_OUTPUT = 1;
+/** Anthropic budget output token price. */
+const ANTHROPIC_BUDGET_OUTPUT = 1;
 
 /** Fixture context budget. */
 const CONTEXT_WINDOW = 128_000;
@@ -100,7 +97,7 @@ function modelFixture(
   } satisfies Model<Api>;
 }
 
-/** Active model fixture used as same-provider reference. */
+/** Active model fixture retained for host context. */
 const activeModel = modelFixture({
   provider: 'openai',
   id: 'gpt-4o',
@@ -108,32 +105,32 @@ const activeModel = modelFixture({
   outputCost: ACTIVE_OUTPUT,
 },);
 
-/** Same-provider budget candidate fixture. */
-const sameProviderBudgetModel = modelFixture({
+/** OpenAI budget candidate fixture. */
+const openAiBudgetModel = modelFixture({
   provider: 'openai',
   id: 'gpt-4o-mini',
-  inputCost: SAME_PROVIDER_INPUT,
-  outputCost: SAME_PROVIDER_OUTPUT,
+  inputCost: OPENAI_BUDGET_INPUT,
+  outputCost: OPENAI_BUDGET_OUTPUT,
 },);
 
-/** Same-provider fast candidate fixture. */
-const sameProviderFastModel = modelFixture({
+/** OpenAI fast candidate fixture. */
+const openAiFastModel = modelFixture({
   provider: 'openai',
   id: 'gpt-4o-highspeed',
   inputCost: ACTIVE_INPUT,
   outputCost: ACTIVE_OUTPUT,
 },);
 
-/** Any-provider budget candidate fixture. */
-const anyProviderBudgetModel = modelFixture({
+/** Anthropic budget candidate fixture. */
+const anthropicBudgetModel = modelFixture({
   provider: 'anthropic',
   id: 'claude-4-haiku',
-  inputCost: ANY_PROVIDER_INPUT,
-  outputCost: ANY_PROVIDER_OUTPUT,
+  inputCost: ANTHROPIC_BUDGET_INPUT,
+  outputCost: ANTHROPIC_BUDGET_OUTPUT,
 },);
 
-/** Any-provider fast candidate fixture. */
-const anyProviderFastModel = modelFixture({
+/** Moonshot fast candidate fixture. */
+const moonshotFastModel = modelFixture({
   provider: 'moonshotai',
   id: 'kimi-k2.7-code-highspeed',
   inputCost: ACTIVE_INPUT,
@@ -143,10 +140,10 @@ const anyProviderFastModel = modelFixture({
 /** All registry models used by budget tests. */
 const allModels = [
   activeModel,
-  sameProviderBudgetModel,
-  sameProviderFastModel,
-  anyProviderBudgetModel,
-  anyProviderFastModel,
+  openAiBudgetModel,
+  openAiFastModel,
+  anthropicBudgetModel,
+  moonshotFastModel,
 ] as const;
 
 /**
@@ -197,9 +194,6 @@ function contextFixture(
     },
     getAvailable() {
       return allModels;
-    },
-    hasConfiguredAuth(model: Model<Api>,) {
-      return authenticated.has(slugFor(model,),);
     },
     async getApiKeyAndHeaders(model: Model<Api>,) {
       return authenticated.has(slugFor(model,),)
@@ -255,14 +249,14 @@ await describe({
         const budgetModel = await findBudgetModel({
           ctx: contextFixture({
             authenticatedSlugs: [
-              slugFor(sameProviderFastModel,),
-              slugFor(anyProviderBudgetModel,),
+              slugFor(openAiFastModel,),
+              slugFor(anthropicBudgetModel,),
             ],
-            scopedModels: [anyProviderBudgetModel,],
+            scopedModels: [anthropicBudgetModel,],
           },),
         },);
 
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderBudgetModel,),);
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(anthropicBudgetModel,),);
       },
     },),
     it({
@@ -271,41 +265,41 @@ await describe({
         const budgetModel = await findBudgetModel({
           ctx: contextFixture({
             authenticatedSlugs: [
-              slugFor(sameProviderBudgetModel,),
-              slugFor(sameProviderFastModel,),
+              slugFor(openAiBudgetModel,),
+              slugFor(openAiFastModel,),
             ],
           },),
-          excludedModelSlugs: [slugFor(sameProviderFastModel,),],
+          excludedModelSlugs: [slugFor(openAiFastModel,),],
         },);
 
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderBudgetModel,),);
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(openAiBudgetModel,),);
       },
     },),
     it({
-      name: 'keeps any-provider model choice for fixed fixtures',
-      fn: async function testAnyProviderSelection() {
+      name: 'selects authenticated model across providers',
+      fn: async function testCrossProviderSelection() {
         const budgetModel = await findBudgetModel({
           ctx: contextFixture({
-            authenticatedSlugs: [slugFor(anyProviderBudgetModel,),],
+            authenticatedSlugs: [slugFor(anthropicBudgetModel,),],
           },),
         },);
 
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderBudgetModel,),);
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(anthropicBudgetModel,),);
       },
     },),
     it({
-      name: 'selects speed-named any-provider candidate before cheaper model',
-      fn: async function testAnyProviderFastSelection() {
+      name: 'selects speed-named cross-provider candidate before cheaper model',
+      fn: async function testCrossProviderFastSelection() {
         const budgetModel = await findBudgetModel({
           ctx: contextFixture({
             authenticatedSlugs: [
-              slugFor(anyProviderBudgetModel,),
-              slugFor(anyProviderFastModel,),
+              slugFor(anthropicBudgetModel,),
+              slugFor(moonshotFastModel,),
             ],
           },),
         },);
 
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderFastModel,),);
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(moonshotFastModel,),);
       },
     },),
     it({
@@ -314,8 +308,8 @@ await describe({
         const caught = await captureError(async function selectOutsideScope() {
           return await findBudgetModel({
             ctx: contextFixture({
-              authenticatedSlugs: [slugFor(sameProviderFastModel,),],
-              scopedModels: [sameProviderBudgetModel,],
+              authenticatedSlugs: [slugFor(openAiFastModel,),],
+              scopedModels: [openAiBudgetModel,],
             },),
           },);
         },);
@@ -327,9 +321,8 @@ await describe({
       },
     },),
     it({
-      name: 'uses fixed cross-provider selection policy',
-      fn: async function testFixedSelectionPolicy() {
-        expect(JUDGE_MODEL_STRATEGY,).toBe('any-provider',);
+      name: 'uses fixed major-version family count',
+      fn: async function testFixedMajorVersionCount() {
         expect(JUDGE_MODEL_MAJOR_VERSIONS,).toBe(1,);
       },
     },),

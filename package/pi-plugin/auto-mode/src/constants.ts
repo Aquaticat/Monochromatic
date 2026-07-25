@@ -12,23 +12,11 @@
 //region Judge policy
 
 /**
- * Fixed judge-model selection strategy.
- *
- * Every provider represented in Pi's effective model scope remains eligible.
- *
- * @example
- * ```typescript
- * selectBudgetModel({ strategy: JUDGE_MODEL_STRATEGY, });
- * ```
- */
-export const JUDGE_MODEL_STRATEGY = 'any-provider';
-
-/**
  * Fixed count of newest major-version families eligible for judge selection.
  *
  * @example
  * ```typescript
- * selectBudgetModel({ majorVersions: JUDGE_MODEL_MAJOR_VERSIONS, });
+ * findFastestInMajorVersions({ models, majorVersions: JUDGE_MODEL_MAJOR_VERSIONS, });
  * ```
  */
 export const JUDGE_MODEL_MAJOR_VERSIONS = 1;

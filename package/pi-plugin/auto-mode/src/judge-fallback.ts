@@ -5,12 +5,10 @@
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import {
-  budgetModelSlug,
-  NoBudgetModelError,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { runReviewWithFallback, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
+import { NoBudgetModelError, } from './budget-model-error.ts';
+import { budgetModelSlug, } from './budget-model-identity.ts';
 import type {
   BudgetModel,
   Verdict,

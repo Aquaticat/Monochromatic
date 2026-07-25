@@ -108,38 +108,6 @@ async function resolveBudgetAuth(
   }
 }
 
-/**
- * Check whether registry reports available auth for a model.
- *
- * @param ctx - pi extension context exposing model registry
- *
- * @param model - model to check
- *
- * @returns whether registry auth is available
- *
- * @mutates model - registry auth reads can invoke caller-owned model accessors or proxy traps
- *
- * @example
- * ```typescript
- * hasRegistryBudgetAuth({ ctx, model });
- * ```
- */
-function hasRegistryBudgetAuth(
-  {
-    ctx,
-    model,
-  }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
-    readonly model: ForeignBorrowed<Model<Api>>;
-  },
-): boolean {
-  return ctx.modelRegistry
-    .hasConfiguredAuth(model,);
-}
-
 //endregion Registry auth adapters
 
-export {
-  hasRegistryBudgetAuth,
-  resolveBudgetAuth,
-};
+export { resolveBudgetAuth, };

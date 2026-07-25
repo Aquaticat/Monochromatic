@@ -13,11 +13,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  budgetModelSlug,
-  NoBudgetModelError,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
-
+import { NoBudgetModelError, } from './budget-model-error.ts';
+import { budgetModelSlug, } from './budget-model-identity.ts';
 import { callJudgeWithFallback, } from './judge-fallback.ts';
 import { callJudge, } from './judge.ts';
 import type {
