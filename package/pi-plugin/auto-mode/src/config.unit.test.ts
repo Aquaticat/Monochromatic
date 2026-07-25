@@ -5,12 +5,18 @@
  * and system prompt construction.
  */
 
+import { mkdtemp, } from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { compilePatterns, } from './config.ts';
+import {
+  compilePatterns,
+  loadMergedConfig,
+} from './config.ts';
 import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   BASE_SYSTEM_PROMPT,
@@ -28,6 +34,30 @@ await describe({
       },
     },),
 
+    it({
+      name: 'uses defaults when no global or project config exists',
+      fn: async function testAbsentConfigDefaults() {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'auto-mode-config-test-',
+        ),);
+        const config = await loadMergedConfig({
+          cwd: join(
+            root,
+            'project',
+          ),
+          home: join(
+            root,
+            'home',
+          ),
+        },);
+
+        expect(config.enabled,).toBe(true,);
+        expect(config.commands,).toEqual([],);
+        expect(config.patterns,).toEqual([],);
+        expect(config.judgeModel.strategy,).toBe('any-provider',);
+      },
+    },),
     it({
       name: 'DEFAULT_DENY_GUIDANCE mentions propose_trust',
       fn: async () => {

@@ -253,17 +253,17 @@ async function findBudgetModel(
   const rawScopedJudgeModels: unknown = judgeModelScope
     .entries
     .map(
-    /**
-     * Extract model record from one effective-scope entry.
-     *
-     * @param entry - scoped Pi model entry
-     *
-     * @returns Pi model selected by scope
-     */
-    function mapScopedJudgeModel(
-      entry: ForeignBorrowed<(typeof judgeModelScope.entries)[number]>,
-    ) {
-      return entry.model;
+      /**
+       * Extract model record from one effective-scope entry.
+       *
+       * @param entry - scoped Pi model entry
+       *
+       * @returns Pi model selected by scope
+       */
+      function mapScopedJudgeModel(
+        entry: ForeignBorrowed<(typeof judgeModelScope.entries)[number]>,
+      ) {
+        return entry.model;
       },
     );
   assertModelApiList(rawScopedJudgeModels,);

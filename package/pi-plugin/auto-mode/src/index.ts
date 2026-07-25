@@ -144,7 +144,10 @@ async function initializeAutoMode(
   /**
    * Resolved configuration; downstream handlers and the system prompt are derived from this.
    */
-  const config = await loadMergedConfig(process.cwd(),);
+  const config = await loadMergedConfig({
+    cwd: process.cwd(),
+    home,
+  },);
 
   if (!config.enabled) {
     innerL.debug('auto-mode disabled in config; not registering handlers',);

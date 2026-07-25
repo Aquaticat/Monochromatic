@@ -48,6 +48,20 @@ const l = tagged({
   l: parentLogger,
 },);
 
+/**
+ * File-system locations consulted while loading auto-mode configuration.
+ */
+type AutoModeConfigLookup = {
+  /**
+   * Current working directory for project configuration.
+   */
+  readonly cwd: string;
+  /**
+   * Account home directory for optional global configuration.
+   */
+  readonly home?: string;
+};
+
 //region Public API
 
 /**
@@ -59,15 +73,20 @@ const l = tagged({
  *
  * @param cwd - the current working directory
  *
+ * @param home - account home directory containing optional global configuration
+ *
  * @returns the merged runtime config
  *
  * @example
  * ```typescript
- * const config = loadMergedConfig(process.cwd());
+ * const config = loadMergedConfig({ cwd: process.cwd(), });
  * ```
  */
 async function loadMergedConfig(
-  cwd: string,
+  {
+    cwd,
+    home,
+  }: AutoModeConfigLookup,
 ): Promise<MergedConfig> {
   /**
    * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
@@ -80,7 +99,7 @@ async function loadMergedConfig(
   /**
    * Validated global config (or `GLOBAL_DEFAULTS` when the file is absent).
    */
-  const global = await loadGlobalConfig();
+  const global = await loadGlobalConfig({ home, },);
   /**
    * Project config lookup result; `found` discriminates whether a project-level file exists.
    */
@@ -234,9 +253,13 @@ const PROJECT_DEFAULTS: ProjectConfig = {
  *
  * @returns the absolute path to the global config file
  */
-function globalConfigPath(): string {
+function globalConfigPath(
+  {
+    home = homedir(),
+  }: Readonly<Pick<AutoModeConfigLookup, 'home'>>,
+): string {
   return join(
-    homedir(),
+    home,
     '.pi',
     'agent',
     'extensions',
@@ -351,11 +374,13 @@ function compilePatterns(
  *
  * @returns the parsed global config
  */
-async function loadGlobalConfig(): Promise<AutoModeConfig> {
+async function loadGlobalConfig(
+  options: Readonly<Pick<AutoModeConfigLookup, 'home'>>,
+): Promise<AutoModeConfig> {
   /**
    * Absolute path to `~/.pi/agent/extensions/pi-auto-mode.json`.
    */
-  const path = globalConfigPath();
+  const path = globalConfigPath(options,);
   /**
    * Parsed JSON contents, or `undefined` when the file is absent so the caller can fall back to defaults.
    */
