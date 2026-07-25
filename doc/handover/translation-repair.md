@@ -992,6 +992,21 @@ resolved, 59 findings); settled in ONE run just under the 90-min cap, no
 abort, cache empty after. Large settled 2->3 (a large entry that fits the
 single-run budget -- only the biggest large entries, >~6-12KB, need resume).
 Bands now 9 small / 3 medium / 3 large. Run 015 launched.
+PASS 6 RUN 015 (2026-07-25, tip `3a119f095`, 5194s wall ~87 min): 1 settled,
+16/92. Huasheng repaired (7397B/large, 235 issues, 227 accepted, 226
+resolved, 40 findings); settled in ONE run right at the 90-min cap ceiling.
+Large settled 3->4 (all four are mid-large 5.2-7.4KB; entries above ~7.4KB
+will start capping and needing resume). Bands now 9 small / 3 medium / 4
+large. OPERATIONAL NOTE: run 015's FIRST launch was chained onto the commit
+with a bare `&` (untracked) -- no completion notification, and the tracked
+watcher I added was itself killed after ~1 min. Fixed by killing the
+untracked run (0 slices lost, killed mid-first-chunk on GLaDOSister; its
+empty cache dir removed) and relaunching run 015 as its own
+`run_in_background` task. GLaDOSister carries a wasted attempt=1 from that
+kill, so it sorts one slot behind the 0-attempt entries (harmless, still a
+needed medium). RULE: launch corpus-pass ONLY as a standalone tracked
+background command, never a bare `&` chained after another command. Run 016
+launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
