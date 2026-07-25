@@ -196,7 +196,7 @@ function getReusableApproval(
  *
  * @returns formatted context summary string
  *
- * @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
+ * @mutates ctx - `buildContextEntries` may update host-owned session caches while producing visible transcript entries
  *
  * @example
  * ```typescript
@@ -208,7 +208,7 @@ function buildContext(
 ): string {
   return buildVisibleContext(
     ctx.sessionManager
-      .getBranch(),
+      .buildContextEntries(),
   );
 }
 

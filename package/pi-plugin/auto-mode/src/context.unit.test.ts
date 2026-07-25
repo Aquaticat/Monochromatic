@@ -205,6 +205,9 @@ function contextFromBranch(
       getBranch() {
         return branch;
       },
+      buildContextEntries() {
+        return branch;
+      },
     },
   } as unknown as ExtensionContext;
 }
