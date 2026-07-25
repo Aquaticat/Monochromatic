@@ -1,5 +1,7 @@
 //! Runtime settings handed to rules, and the configuration layer behind them.
 
+/// Severity overrides accumulated from the command line.
+pub mod cli_override;
 /// The shape of one `rust-linter.toml` on disk.
 pub mod file;
 /// Reading configuration from disk, resolving `extends` and nested discovery.
@@ -69,6 +71,9 @@ pub fn default_config() -> ConfigFile {
         .expect("the built-in default.toml must parse; this is a bug in this crate");
 }
 
+/// Unit tests for command-line severity overrides.
+#[cfg(test)]
+mod cli_override_tests;
 /// Unit tests for configuration merging and rule resolution.
 #[cfg(test)]
 mod resolve_tests;

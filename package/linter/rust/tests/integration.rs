@@ -769,3 +769,144 @@ fn invalid_config_exits_two() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// `-A all` silences every rule.
+#[test]
+fn allow_all_silences_everything() {
+    let root = config_probe("allow-all");
+
+    let (code, stdout) = run_in(&root, &["--max", "2", "-A", "all", "src"]);
+
+    assert!(stdout.is_empty(), "nothing should be reported: {stdout}");
+    assert_eq!(code, 0, "a fully allowed run is clean");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+// What:     Two tests differing only in the ORDER of the same two flags, and
+//           asserting opposite results.
+// Why:      Left-to-right accumulation is the behaviour, and it is exactly what
+//           clap's derive cannot express: it hands back one vector per flag with
+//           no record of how they interleaved. Without these two tests, a
+//           regression to per-flag grouping would pass everything else.
+/// `-A all -D <rule>` re-enables exactly the named rule.
+#[test]
+fn allow_all_then_deny_one_reenables_that_rule() {
+    let root = config_probe("allow-then-deny");
+
+    let (code, stdout) = run_in(&root, &["--max", "2", "-A", "all", "-D", "max-lines", "src"]);
+
+    assert!(
+        stdout.contains("max-lines"),
+        "the later -D should win for this rule: {stdout}"
+    );
+    assert!(
+        !stdout.contains("require-rustdoc"),
+        "the earlier -A all should still hold for every other rule: {stdout}"
+    );
+    assert_eq!(code, 1, "a re-enabled error rule fails the run");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `-D all -A <rule>` silences exactly the named rule, the mirror of the above.
+#[test]
+fn deny_all_then_allow_one_silences_that_rule() {
+    let root = config_probe("deny-then-allow");
+
+    let (_code, stdout) = run_in(&root, &["--max", "2", "-D", "all", "-A", "max-lines", "src"]);
+
+    assert!(
+        !stdout.contains("max-lines"),
+        "the later -A should win for this rule: {stdout}"
+    );
+    assert!(
+        stdout.contains("require-rustdoc"),
+        "every other rule stays denied: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// Demoting a category to warning reports it as such and stops failing the run.
+#[test]
+fn warn_category_demotes_severity_and_exit_code() {
+    let root = config_probe("warn-category");
+
+    let (code, stdout) = run_in(&root, &["--max", "2", "-W", "pedantic", "src"]);
+
+    assert!(
+        stdout.contains("warn[max-lines]"),
+        "the finding should be labelled a warning: {stdout}"
+    );
+    assert_eq!(code, 0, "warnings alone do not fail the run");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--deny-warnings` makes an otherwise clean warning run fail.
+#[test]
+fn deny_warnings_fails_a_warning_only_run() {
+    let root = config_probe("deny-warnings");
+
+    let (code, _stdout) = run_in(
+        &root,
+        &["--max", "2", "-W", "pedantic", "--deny-warnings", "src"],
+    );
+
+    assert_eq!(code, 1, "denied warnings fail the run");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--quiet` hides warnings while leaving errors and the exit code alone.
+#[test]
+fn quiet_hides_warnings_only() {
+    let root = config_probe("quiet");
+
+    let (_code, warned) = run_in(&root, &["--max", "2", "-W", "pedantic", "--quiet", "src"]);
+    assert!(warned.is_empty(), "warnings are hidden by --quiet: {warned}");
+
+    let (code, errored) = run_in(&root, &["--max", "2", "--quiet", "src"]);
+    assert!(
+        errored.contains("max-lines"),
+        "errors are still shown: {errored}"
+    );
+    assert_eq!(code, 1, "and still fail the run");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--silent` prints nothing but still fails on errors.
+#[test]
+fn silent_prints_nothing_but_still_fails() {
+    let root = config_probe("silent");
+
+    let (code, stdout) = run_in(&root, &["--max", "2", "--silent", "src"]);
+
+    assert!(stdout.is_empty(), "nothing printed: {stdout}");
+    assert_eq!(code, 1, "but the run still fails");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--max-warnings` fails only once the threshold is exceeded.
+#[test]
+fn max_warnings_threshold_decides_the_exit_code() {
+    let root = config_probe("max-warnings");
+
+    // The probe file yields five findings, all demoted to warnings here.
+    let (over, _) = run_in(
+        &root,
+        &["--max", "2", "-W", "pedantic", "--max-warnings", "3", "src"],
+    );
+    assert_eq!(over, 1, "more warnings than the threshold fails");
+
+    let (under, _) = run_in(
+        &root,
+        &["--max", "2", "-W", "pedantic", "--max-warnings", "10", "src"],
+    );
+    assert_eq!(under, 0, "fewer warnings than the threshold passes");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

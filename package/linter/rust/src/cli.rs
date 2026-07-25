@@ -22,6 +22,9 @@
 // ```
 use clap::Parser;
 
+/// Imports the ordered severity overrides rebuilt after parsing.
+use monochromatic_rust_linter_core::config::cli_override::CliOverride;
+
 // The `--max` default used to be read from `Config::with_defaults()` here.
 // It is no longer a clap default at all: the flag is optional, and the fallback
 // lives in `resolve_max_lines` in lib.rs, where the whole precedence chain of
@@ -51,19 +54,6 @@ use clap::Parser;
 )]
 pub struct Cli {
     /// Maximum nonblank, noncomment code lines allowed per file.
-    // What:     `#[arg(...)] pub max_lines: usize` declares a long option named
-    //           `--max` whose value is parsed as `usize`. `usize` is the unsigned
-    //           integer type sized for this machine (siblings: `u32`, `u64`,
-    //           `i32`, `i64`). `default_value_t = Config::with_defaults().max_lines`
-    //           asks clap to use the repository default when the flag is absent.
-    // Why:      The max-lines rule compares counts stored as `usize`, so parsing
-    //           directly into `usize` avoids casts and rejects negative input.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // // @option("--max", { default: Config.withDefaults().maxLines })
-    // maxLines: number;
-    // ```
     // What:     `pub max_lines: Option<usize>` with NO `default_value_t`.
     //           `Option` distinguishes "the user passed --max" from "the user
     //           did not", which a plain `usize` with a default cannot: clap
@@ -115,6 +105,86 @@ pub struct Cli {
     )]
     pub disable_nested_config: bool,
 
+    // What:     Three `Vec<String>` fields with `action = ArgAction::Append`, so
+    //           the flag may be repeated and every occurrence is kept rather
+    //           than the last winning.
+    // Why:      oxlint accumulates these left to right, so `-A all -D no-unwrap`
+    //           enables exactly one rule and `-D all -A no-unwrap` disables
+    //           exactly one. Keeping only the last occurrence would make both
+    //           mean the same thing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // allow: string[];
+    // ```
+    /// Rules or categories to silence, accumulated in command-line order.
+    #[arg(
+        short = 'A',
+        long = "allow",
+        value_name = "NAME",
+        action = clap::ArgAction::Append,
+        help = "Allow the rule or category, suppressing the lint"
+    )]
+    pub allow: Vec<String>,
+
+    /// Rules or categories to warn on, accumulated in command-line order.
+    #[arg(
+        short = 'W',
+        long = "warn",
+        value_name = "NAME",
+        action = clap::ArgAction::Append,
+        help = "Report the rule or category as a warning"
+    )]
+    pub warn: Vec<String>,
+
+    /// Rules or categories to fail on, accumulated in command-line order.
+    #[arg(
+        short = 'D',
+        long = "deny",
+        value_name = "NAME",
+        action = clap::ArgAction::Append,
+        help = "Report the rule or category as an error"
+    )]
+    pub deny: Vec<String>,
+
+    /// Report only errors, hiding warnings.
+    #[arg(
+        long = "quiet",
+        help = "Disable reporting on warnings, only errors are reported"
+    )]
+    pub quiet: bool,
+
+    /// Print no diagnostics at all, exit code only.
+    #[arg(long = "silent", help = "Do not display any diagnostics")]
+    pub silent: bool,
+
+    /// Make warnings fail the run.
+    #[arg(
+        long = "deny-warnings",
+        help = "Ensure warnings produce a non-zero exit code"
+    )]
+    pub deny_warnings: bool,
+
+    /// Warning count above which the run fails.
+    // `Option` distinguishes an unset threshold from a threshold of zero, which
+    // are different things: zero means "no warnings allowed at all".
+    #[arg(
+        long = "max-warnings",
+        value_name = "INT",
+        help = "Warning threshold above which the run exits non-zero"
+    )]
+    pub max_warnings: Option<usize>,
+
+    // What:     `#[arg(skip)]` marks a field clap must NOT parse, leaving it at
+    //           its type's default. It is filled in after parsing instead.
+    // Why:      The three flags above interleave in argv, and their relative
+    //           order IS the behaviour. clap's derive gives each field its own
+    //           vector with no record of how they interleaved, so the ordered
+    //           list is rebuilt from `ArgMatches::indices_of` in `parse_cli`.
+    /// Severity overrides in true command-line order, filled in after parsing.
+    #[arg(skip)]
+    pub severity_overrides: Vec<CliOverride>,
+
     /// File or directory paths to lint.
     // What:     `#[arg(...)] pub paths: Vec<String>` declares repeated positional
     //           arguments. `Vec<String>` is an owned, growable array of owned UTF-8
@@ -137,4 +207,95 @@ pub struct Cli {
         help = "Rust file or directory path to lint"
     )]
     pub paths: Vec<String>,
+}
+
+// What:     `pub fn parse_cli() -> Cli`. Parses argv through clap, then fills in
+//           the one field clap cannot: the interleaved order of the severity
+//           flags. `Cli::command()` returns clap's builder-form command, and
+//           `.get_matches()` runs it, exiting the process on `--help` or bad
+//           input exactly as `Cli::parse()` would.
+// Why:      `-A all -D no-unwrap` and `-D no-unwrap -A all` mean different
+//           things, and clap's derive hands back one vector per flag with no
+//           record of how they interleaved. `ArgMatches::indices_of` does have
+//           that record, so the ordered list is rebuilt from it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function parseCli(): Cli { const m = command().getMatches(); /* ... */ }
+// ```
+/// Parse command-line arguments, including the ordered severity overrides.
+pub fn parse_cli() -> Cli {
+    // `CommandFactory` supplies `command()`, and `FromArgMatches` supplies
+    // `from_arg_matches`. Both are traits: in Rust a method only exists on a
+    // type once the trait declaring it is in scope, which is why importing them
+    // is what makes the two calls below compile. Imported here rather than at
+    // the top of the file because this function is their only use.
+    /// Imports the clap traits supplying `command` and `from_arg_matches`.
+    use clap::{CommandFactory, FromArgMatches};
+
+    let matches = Cli::command().get_matches();
+
+    // What:     `.unwrap_or_else(|error| error.exit())` prints clap's own
+    //           message and exits the process, which is what the derive's
+    //           `parse()` does internally.
+    // Gotcha:   No `return` on that closure, unlike every other closure in this
+    //           crate. `error.exit()` has return type `!`, Rust's "never" type,
+    //           meaning it does not come back at all. Writing `return` before it
+    //           makes the `return` itself unreachable, which the compiler warns
+    //           about.
+    let mut cli = Cli::from_arg_matches(&matches).unwrap_or_else(|error| error.exit());
+
+    cli.severity_overrides = collect_severity_overrides(&matches);
+
+    return cli;
+}
+
+// What:     `fn collect_severity_overrides(matches: &clap::ArgMatches) ->
+//           Vec<CliOverride>`. Reads the three flags back out of clap's match
+//           result together with the argv position of each occurrence.
+// Why:      Position is the whole point. Sorting by it restores the order the
+//           user actually typed, across all three flags.
+/// Rebuild the severity flags in true command-line order.
+fn collect_severity_overrides(matches: &clap::ArgMatches) -> Vec<CliOverride> {
+    /// Imports the configured-severity vocabulary the flags map onto.
+    use monochromatic_rust_linter_core::severity::RuleSeverity;
+
+    // What:     An array of `(&str, RuleSeverity)` PAIRS, iterated below. A
+    //           tuple groups values positionally without naming a struct.
+    // Why:      The three flags differ only in which severity they set, so the
+    //           reading logic is written once and driven by this table.
+    let flags = [
+        ("allow", RuleSeverity::Off),
+        ("warn", RuleSeverity::Warn),
+        ("deny", RuleSeverity::Error),
+    ];
+
+    let mut collected: Vec<(usize, CliOverride)> = Vec::new();
+
+    for (id, severity) in flags {
+        // Both lookups answer `Option`, absent when the flag never appeared.
+        let values = matches.get_many::<String>(id);
+        let indices = matches.indices_of(id);
+
+        // `if let (Some(a), Some(b)) = (x, y)` destructures a tuple of two
+        // `Option`s, running the block only when BOTH are present.
+        if let (Some(values), Some(indices)) = (values, indices) {
+            // `.zip(..)` walks two iterators in lockstep, pairing each argv
+            // position with the value found there.
+            for (index, value) in indices.zip(values) {
+                collected.push((index, CliOverride::parse(value, severity)));
+            }
+        }
+    }
+
+    // `.sort_by_key(..)` orders by argv position, interleaving the three flags
+    // back into the sequence the user typed.
+    collected.sort_by_key(|(index, _)| return *index);
+
+    // `.into_iter()` consumes the vector so the overrides are moved out rather
+    // than copied; `.map(..)` drops the now-redundant index.
+    return collected
+        .into_iter()
+        .map(|(_, entry)| return entry)
+        .collect();
 }

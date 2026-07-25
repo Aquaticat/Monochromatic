@@ -19,6 +19,8 @@ use std::path::Path;
 /// Imports the glob matcher used for ignore patterns and override scoping.
 use globset::{Glob, GlobSet, GlobSetBuilder};
 
+/// Imports the command-line severity overrides applied last.
+use crate::config::cli_override::CliOverride;
 /// Imports the on-disk configuration shapes being merged.
 use crate::config::file::{ConfigFile, Options, Override, RuleSetting};
 /// Imports the configured-severity and category types.
@@ -68,6 +70,15 @@ pub struct LinterConfig {
     //           map: resolution walks them front to back and the last match wins.
     /// Overrides in declaration order, each with its globs compiled.
     overrides: Vec<CompiledOverride>,
+
+    // What:     Command-line overrides, kept separate from the file ones rather
+    //           than appended to them.
+    // Why:      They are a different shape (no globs, so they apply everywhere)
+    //           and they apply strictly after every file layer. `-D correctness`
+    //           on the command line beats what any config file said, which is
+    //           the whole point of passing it.
+    /// Command-line severity flags, in the order they appeared in argv.
+    cli_overrides: Vec<CliOverride>,
 }
 
 /// One override with its globs already compiled.
@@ -117,6 +128,7 @@ impl LinterConfig {
             categories: merged.categories,
             rules: merged.rules,
             overrides,
+            cli_overrides: Vec::new(),
         });
     }
 
@@ -172,7 +184,33 @@ impl LinterConfig {
             }
         }
 
+        // Layer 5: command-line flags, which beat every file layer. They
+        // accumulate left to right, so `-A all -D no-unwrap` enables exactly one
+        // rule and `-D all -A no-unwrap` disables exactly one.
+        for entry in &self.cli_overrides {
+            if entry.matches(plugin, rule_id, category) {
+                severity = entry.severity;
+            }
+        }
+
         return ResolvedRule { severity, options };
+    }
+
+    // What:     `pub fn with_cli_overrides(mut self, overrides: Vec<CliOverride>)
+    //           -> Self`. Takes OWNERSHIP of the configuration, stores the flags,
+    //           and hands it back, so the call chains onto `compile`.
+    // Why:      The flags are known only after argv is parsed, while compiling
+    //           the globs happens when the files are read. Keeping them separate
+    //           means neither step has to wait for the other.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // withCliOverrides(overrides: CliOverride[]): LinterConfig
+    // ```
+    /// Attach command-line severity flags, returning the config for chaining.
+    pub fn with_cli_overrides(mut self, overrides: Vec<CliOverride>) -> Self {
+        self.cli_overrides = overrides;
+        return self;
     }
 }
 

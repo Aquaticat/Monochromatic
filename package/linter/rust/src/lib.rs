@@ -259,46 +259,75 @@ pub fn run_cli(cli: &Cli) -> i32 {
         lint_file(file, cli.max_lines, &linter, &rules, &mut diagnostics);
     }
 
-    // What:     `for diagnostic in &diagnostics { println!("{}", diagnostic.render()); }`.
-    //           Borrow each finding and print its rendered line to standard output.
-    //           `println!` is the formatting print macro (the `!`).
-    // Why:      Show the user every violation.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // for (const d of diagnostics) console.log(renderDiagnostic(d));
-    // ```
-    for diagnostic in &diagnostics {
-        println!("{}", diagnostic.render());
-    }
-
-    // What:     `let any_error = diagnostics.iter().any(|d| d.severity ==
-    //           Severity::Error);`. `.iter()` borrows each element; `.any(closure)`
-    //           returns true if the closure is true for at least one. `|d| ...` is
-    //           the closure, `d` is a `&Diagnostic`.
-    // Why:      Decide the exit code: any error-severity finding means failure.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const anyError = diagnostics.some(d => d.severity === "error");
-    // ```
-    let any_error = diagnostics
+    // What:     `let warnings = diagnostics.iter().filter(..).count();` counts
+    //           findings at warning severity. `.iter()` borrows each element,
+    //           `.filter(closure)` keeps the ones the closure accepts, and
+    //           `.count()` consumes what is left into a number.
+    // Why:      Both `--max-warnings` and `--deny-warnings` need this count, and
+    //           computing it once keeps the two decisions from drifting apart.
+    let warnings = diagnostics
         .iter()
-        .any(|d| return d.severity == Severity::Error);
+        .filter(|diagnostic| return diagnostic.severity == Severity::Warn)
+        .count();
 
-    // What:     `if any_error { 1 } else { 0 }`. The whole `if/else` is the tail
-    //           expression, so it is returned as the process status number.
-    // Why:      1 signals "lint violations found", 0 signals "clean".
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return anyError ? 1 : 0;
-    // ```
-    if any_error {
-        return 1
-    } else {
-        return 0
+    let errors = diagnostics
+        .iter()
+        .filter(|diagnostic| return diagnostic.severity == Severity::Error)
+        .count();
+
+    // `--silent` prints nothing at all; `--quiet` prints errors only. Neither
+    // touches the exit code, so a silent run still fails when it should.
+    if !cli.silent {
+        for diagnostic in &diagnostics {
+            if cli.quiet && diagnostic.severity == Severity::Warn {
+                continue;
+            }
+
+            println!("{}", diagnostic.render());
+        }
     }
+
+    return exit_code_for(cli, linter.options.deny_warnings, warnings, errors);
+}
+
+// What:     `fn exit_code_for(..) -> i32`. Turns the run's tallies into the
+//           process status.
+// Why:      Three separate switches can each fail a run that produced no errors,
+//           and deciding them in one function is what makes the precedence
+//           legible rather than emergent from the order of some `if`s.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function exitCodeFor(cli: Cli, denyWarnings: boolean, warnings: number, errors: number): number
+// ```
+/// Decide the process exit status from the run's warning and error counts.
+fn exit_code_for(cli: &Cli, config_deny_warnings: bool, warnings: usize, errors: usize) -> i32 {
+    // Any error fails, whatever the warning settings say.
+    if errors > 0 {
+        return 1;
+    }
+
+    // The flag and the configured option are both honoured, and the flag cannot
+    // turn the option off, matching how `deny-warnings` merges between files.
+    if (cli.deny_warnings || config_deny_warnings) && warnings > 0 {
+        return 1;
+    }
+
+    // `if let Some(threshold) = ..` runs only when a threshold was set. Zero is
+    // meaningful and distinct from absent, which is why this is an `Option`
+    // rather than a number defaulting to zero.
+    // What:     `if let Some(threshold) = .. && warnings > threshold`. A let
+    //           binding and a boolean test joined by `&&` in one condition; the
+    //           binding is in scope for the test to its right.
+    // Why:      Written as two nested `if`s clippy objects, and it reads as one
+    //           condition anyway: there is a threshold AND it was exceeded.
+    if let Some(threshold) = cli.max_warnings
+        && warnings > threshold
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 // What:     `fn collect_rust_files(paths: &[String]) -> Vec<String>`. Borrow the
@@ -347,7 +376,11 @@ fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String> {
 
     // Compiling the globs is the last step, and the first place a malformed
     // pattern is noticed.
-    return LinterConfig::compile(merged).map_err(|error| format!("invalid glob in config: {error}"));
+    // `.map(..)` runs only on success, attaching the ordered command-line flags
+    // to the compiled configuration so resolution applies them last.
+    return LinterConfig::compile(merged)
+        .map(|compiled| return compiled.with_cli_overrides(cli.severity_overrides.clone()))
+        .map_err(|error| return format!("invalid glob in config: {error}"));
 }
 
 
@@ -572,6 +605,25 @@ fn lint_file(
             max_lines: resolve_max_lines(max_lines_override, resolved.options.as_ref()),
         };
 
+        // What:     `let before = out.len();` then re-reading the slice after
+        //           `check`. Records how many findings existed beforehand, so
+        //           the ones this rule just added can be identified by position.
+        // Why:      The rule hardcodes a severity it cannot know: whether this
+        //           finding is a warning or an error is a configuration answer,
+        //           resolved above. Stamping it here means no rule has to
+        //           remember, and none can get it wrong.
+        let before = out.len();
+
         rule.check(&context, &config, out);
+
+        // `.as_diagnostic()` is absent only for `Off`, and an off rule never
+        // reaches here, so anything absent would be a resolution bug rather
+        // than a state to paper over.
+        if let Some(reported) = resolved.severity.as_diagnostic() {
+            // `&mut out[before..]` borrows just the newly pushed tail mutably.
+            for diagnostic in &mut out[before..] {
+                diagnostic.severity = reported;
+            }
+        }
     }
 }

@@ -1,31 +1,12 @@
 //! Binary entry point for the rust-linter CLI.
 
-/// Imports clap's parser trait so `Cli::parse()` is available in `main`.
-// What:     `use clap::Parser;` brings the `Parser` trait into this binary. Rust
-//           only lets trait methods such as `Cli::parse()` be called when the
-//           trait is in scope. `::` is Rust's namespace separator.
-// Why:      `main` should let clap read real process arguments, print help or
-//           parse errors, and exit on invalid CLI input.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { parseArgs } from "some-cli-parser";
-// ```
-use clap::Parser;
+// What:     Neither `clap::Parser` nor `Cli` is imported here any more.
+// Why:      `main` used to call `Cli::parse()`, which needs the `Parser` trait in
+//           scope. It now calls `parse_cli()`, which runs the same clap parse and
+//           additionally records the order the -A/-W/-D flags appeared in. Going
+//           through `Cli::parse()` here left that ordering empty, so every
+//           severity flag the user passed was silently ignored.
 
-/// Imports the clap-backed CLI struct from the library crate.
-// What:     `use monochromatic_rust_linter::cli::Cli;` pulls the exported `Cli`
-//           type out of this crate's library half. Cargo exposes the library name
-//           with underscores even though the package name uses hyphens.
-// Why:      The binary needs the parser declaration before it can run the linter.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Cli } from "./cli";
-// ```
-use monochromatic_rust_linter::cli::Cli;
-
-/// Imports the library run loop.
 // What:     `use monochromatic_rust_linter::run_cli;` pulls in the function that
 //           lints files after clap has parsed arguments. Keeping the run loop in
 //           the library lets tests and other callers exercise it without starting
@@ -37,7 +18,11 @@ use monochromatic_rust_linter::cli::Cli;
 // ```ts
 // import { runCli } from "./lib";
 // ```
+/// Imports the library run loop.
 use monochromatic_rust_linter::run_cli;
+
+/// Imports the argv parser that also records severity-flag ordering.
+use monochromatic_rust_linter::cli::parse_cli;
 
 /// Imports Rust's typed process exit status.
 // What:     `use std::process::ExitCode;` imports the standard wrapper around an
@@ -73,17 +58,20 @@ fn main() -> ExitCode {
         )
         .with_writer(std::io::stderr)
         .init();
-    // What:     `let cli = Cli::parse();` calls the clap-generated parser. `::` is
-    //           Rust's namespace operator. `parse()` reads real process argv; on
-    //           `--help`, `--version`, or invalid arguments, clap prints the right
-    //           message and exits the process before this function continues.
-    // Why:      Replace the old hand-written argv scanner with clap's parser.
+    // What:     `let cli = parse_cli();` runs clap's parser and then fills in the
+    //           one field clap cannot supply. Reading real process argv, it
+    //           prints and exits on `--help`, `--version`, or invalid arguments
+    //           before this function continues.
+    // Why:      `parse_cli` rather than `Cli::parse`, because the interleaved
+    //           order of the -A/-W/-D flags is behaviour, and clap's derive does
+    //           not record it. Going through `Cli::parse()` here left that field
+    //           empty, so every severity flag the user passed was ignored.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const cli = parseArgs(process.argv.slice(2));
+    // const cli = parseCli();
     // ```
-    let cli = Cli::parse();
+    let cli = parse_cli();
 
     // What:     `let code = run_cli(&cli);` lends the parsed options to the library
     //           run loop. The `&` means read-only borrow: `main` keeps ownership,

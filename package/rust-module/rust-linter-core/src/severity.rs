@@ -12,6 +12,9 @@
 /// Imports the deserialization trait these config types derive.
 use serde::Deserialize;
 
+/// Imports the reported-severity type configured severities convert into.
+use crate::diagnostic::Severity;
+
 // What:     `#[derive(Deserialize)]` with `#[serde(rename_all = "kebab-case")]`
 //           generates the code that reads this type from TOML, matching variants
 //           against lowercase hyphenated spellings rather than the Rust names.
@@ -66,6 +69,27 @@ impl RuleSeverity {
     /// Report whether a rule at this severity runs at all.
     pub fn is_enabled(&self) -> bool {
         return *self != RuleSeverity::Off;
+    }
+
+    // What:     `pub fn as_diagnostic(&self) -> Option<Severity>`. Converts a
+    //           CONFIGURED severity into a REPORTED one. The two are different
+    //           types on purpose: config has three states and a finding has two,
+    //           because a rule that is off produces no finding to label.
+    // Why:      `Option` is what makes that mismatch explicit. Collapsing `Off`
+    //           onto some reported severity would invent a finding for a rule
+    //           the user turned off.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // asDiagnostic(): Severity | undefined
+    // ```
+    /// Convert to the severity a finding is reported at, absent when off.
+    pub fn as_diagnostic(&self) -> Option<Severity> {
+        return match self {
+            RuleSeverity::Off => None,
+            RuleSeverity::Warn => Some(Severity::Warn),
+            RuleSeverity::Error => Some(Severity::Error),
+        };
     }
 }
 
