@@ -8,10 +8,7 @@
  * @module
  */
 
-import {
-  isToolCallEventType,
-  type ToolCallEvent,
-} from '@earendil-works/pi-coding-agent';
+import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   hasFlag,
@@ -44,6 +41,10 @@ import {
   getFilePath,
   isRelevantTool,
 } from './tool-helpers.ts';
+import {
+  isBashToolEvent,
+  isReadToolEvent,
+} from './tool-event.ts';
 import type {
   BashAnalysis,
   SignalContext,
@@ -91,10 +92,7 @@ async function shouldFlag(
     readonly bashAllowlistedDirs?: readonly string[];
   },
 ): Promise<boolean> {
-  if (isToolCallEventType(
-    'bash',
-    event,
-  )) {
+  if (isBashToolEvent(event,)) {
     /**
      * Parsed bash AST used to walk individual commands and their redirect targets.
      */
@@ -123,10 +121,7 @@ async function shouldFlag(
   /**
    * Skill directory allowlist applied only to read-tool activation, not writes or shell commands.
    */
-  const pathAllowlistedDirs = isToolCallEventType(
-    'read',
-    event,
-  )
+  const pathAllowlistedDirs = isReadToolEvent(event,)
     ? readAllowlistedDirs
     : [];
   if (
@@ -228,36 +223,20 @@ async function bashSignals(
     }
     if (hasRootTarget(cmd,))
       return true;
-    if ((cmd.name
-      === 'chmod')
-      && cmd
-      .args
-      .includes('777',))
-      return true;
-    if ((cmd.name
-      === 'chmod')
-      && cmd
-      .args
-      .some(
-      function hasSetuid(a,) {
-        return a.includes('u+s',)
-          || a
-          .includes('g+s',);
-      },
-    )) {
-      return true;
+    if (cmd.name === 'chmod') {
+      for (const argument of cmd.args) {
+        if ((argument === '777')
+          || argument.includes('u+s',)
+          || argument.includes('g+s',))
+          return true;
+      }
     }
 
-    if ((cmd.name
-      === 'dd')
-      && cmd
-      .args
-      .some(
-      function hasOfEquals(a,) {
-        return a.startsWith('of=',);
-      },
-    )) {
-      return true;
+    if (cmd.name === 'dd') {
+      for (const argument of cmd.args) {
+        if (argument.startsWith('of=',))
+          return true;
+      }
     }
 
     if (cmd.name
@@ -265,12 +244,12 @@ async function bashSignals(
       return true;
     if (ENV_DUMP_COMMANDS.has(cmd.name,))
       return true;
-    if ((cmd.name
-      === 'export')
-      && cmd
-      .args
-      .includes('-p',))
-      return true;
+    if (cmd.name === 'export') {
+      for (const argument of cmd.args) {
+        if (argument === '-p')
+          return true;
+      }
+    }
 
     if (INTERPRETER_COMMANDS.has(cmd.name,)
       && hasInlineCode({
@@ -280,61 +259,69 @@ async function bashSignals(
       return true;
     }
 
-    if (
-      (cmd.name
-        === 'docker')
-      && (cmd.args
-        .includes('-e',)
-        || cmd
-        .args
-        .includes('--env-file',))
-    ) {
-      return true;
+    if (cmd.name === 'docker') {
+      for (const argument of cmd.args) {
+        if ((argument === '-e') || (argument === '--env-file'))
+          return true;
+      }
     }
   }
 
   /**
-   * Whether any path-shaped command word has a signal not covered by trusted temp policy.
+   * Concurrent path-signal work for every parsed command.
    */
-  const commandPathSignalDecisions = await Promise.all(
-    analysis
-      .commands
-      .map(async function commandHasUnallowedPathSignal(cmd,) {
-        /**
-         * Path-shaped arguments plus redirect targets, each tested for sensitive paths below.
-         */
-        const files = [
-          ...cmd.args
-            .filter(function pathShapedArgument(argument,) {
-              return looksLikePath(argument,);
-            },),
-          ...cmd.redirectTargets,
-        ];
-        /**
-         * Path signal decisions for this command's file-like words.
-         */
-        const fileSignalDecisions = await Promise.all(
-          files.map(async function fileHasUnallowedPathSignal(f,) {
-            if (!(await pathSignals({
-              filePath: f,
-              ctx,
-            },))) {
-              return false;
-            }
-            return !(await isTrustedAgentTempBashPathAllowed({
-              filePath: f,
-              ctx,
-              trustedAgentTempDirs,
-              command: cmd,
-              allowProjectDotenvCredentialSource,
-            },));
-          },),
-        );
-        return fileSignalDecisions.some(Boolean,);
-      },),
-  );
-  if (commandPathSignalDecisions.some(Boolean,))
-    return true;
+  const commandPathSignalPromises: Promise<boolean>[] = [];
+  for (const command of analysis.commands) {
+    commandPathSignalPromises[commandPathSignalPromises.length] = (async function commandHasUnallowedPathSignal(): Promise<boolean> {
+      /**
+       * Path-shaped arguments plus redirect targets.
+       */
+      const files: string[] = [];
+      for (const argument of command.args) {
+        if (looksLikePath(argument,))
+          files[files.length] = argument;
+      }
+      for (const redirectTarget of command.redirectTargets)
+        files[files.length] = redirectTarget;
+      /**
+       * Concurrent path decisions for current command's file-like words.
+       */
+      const fileSignalPromises: Promise<boolean>[] = [];
+      for (const filePath of files) {
+        fileSignalPromises[fileSignalPromises.length] = (async function fileHasUnallowedPathSignal(): Promise<boolean> {
+          if (!(await pathSignals({
+            filePath,
+            ctx,
+          },)))
+            return false;
+          return !(await isTrustedAgentTempBashPathAllowed({
+            filePath,
+            ctx,
+            trustedAgentTempDirs,
+            command,
+            allowProjectDotenvCredentialSource,
+          },));
+        })();
+      }
+      /**
+       * Current command's path decisions after every independent check.
+       */
+      const fileSignalDecisions = await Promise.all(fileSignalPromises,);
+      for (const decision of fileSignalDecisions) {
+        if (decision)
+          return true;
+      }
+      return false;
+    })();
+  }
+  /**
+   * Per-command path decisions after every independent check.
+   */
+  const commandPathSignalDecisions = await Promise.all(commandPathSignalPromises,);
+  for (const decision of commandPathSignalDecisions) {
+    if (decision)
+      return true;
+  }
 
   if (hasNetworkCommand(analysis,)
     && hasSecretParamRefs(analysis,))
@@ -351,15 +338,11 @@ async function bashSignals(
     return true;
   }
 
-  if (analysis.isPipeline
-    && analysis
-    .commands
-    .some(
-    function isEnvDump(c,) {
-      return ENV_DUMP_COMMANDS.has(c.name,);
-    },
-  )) {
-    return true;
+  if (analysis.isPipeline) {
+    for (const command of analysis.commands) {
+      if (ENV_DUMP_COMMANDS.has(command.name,))
+        return true;
+    }
   }
 
   return false;
