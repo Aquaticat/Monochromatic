@@ -1,3 +1,4 @@
+import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { IssueClaim, } from './issue-model.ts';
 
 //region Non-translation evidence
@@ -254,6 +255,54 @@ export function nonTranslationVotesStand(
 }
 
 /**
+ * Whether a settled slice anchors confirmed good-translation content: it is
+ * not a standing non-translation and carries at least one accepted issue that
+ * critiques translated target text (a claim outside the missing-translation
+ * leaves anchoring a target span). Such an anchor proves the paired document
+ * is a translation being critiqued, not a wholly unrelated pairing. Callers
+ * guard slices not yet settled; an unsettled slice anchors nothing.
+ *
+ * @param outcome - the slice's settled repair outcome
+ *
+ * @returns True when the slice proves translated content
+ *
+ * @example
+ * ```ts
+ * const anchors = sliceAnchorsTranslation({ outcome, },);
+ * ```
+ */
+export function sliceAnchorsTranslation(
+  { outcome, }: { readonly outcome: ChunkRepairOutcome; },
+): boolean {
+  if (outcome.nonTranslationStanding)
+    return false;
+  return outcome.issues
+    .some(function critiquesTarget(issue,) {
+      if (issue.status !== 'accepted')
+        return false;
+      return issue.claims
+        .some(function anchorsTargetContent(member,) {
+          /**
+           * Leaf segment of the member claim's category slug.
+           */
+          const leaf = member.claim
+            .category
+            .slice(member.claim
+              .category
+              .lastIndexOf('/',)
+              + 1,);
+          if (MISSING_TRANSLATION_LEAVES.has(leaf,))
+            return false;
+          return member.claim
+            .spans
+            .some(function onTarget(span,) {
+              return span.side === 'target';
+            },);
+        },);
+    },);
+}
+
+/**
  * Document-level dominance verdict over standing per-slice votes.
  *
  * @example
@@ -290,8 +339,18 @@ export type NonTranslationDominance = {
  * paragraph) degrades only its own slices and must never block the
  * repairable remainder (settled architecture: degradation is never
  * document-wide).
+ * A confirmed good-translation anchor anywhere vetoes the block outright,
+ * even when standing chars dominate: such an anchor proves the document IS a
+ * translation, so a standing-char majority then means asymmetric extra
+ * content (image/screenshot translations with no source-markdown counterpart)
+ * rather than an unrelated pairing. Every real-corpus block this session was
+ * this false shape (Aniloviraw, AkiraComplex, Arita, Mio all held clean
+ * anchors); the only true positive (a wholly unrelated invented pair) held
+ * none, so the anchor veto separates them without a tuned threshold and keeps
+ * the calibrated err-toward-not-blocking direction.
  *
- * @param slices - per-slice target sizes with their standing verdicts
+ * @param slices - per-slice target sizes with their standing and anchor
+ * verdicts
  *
  * @returns Dominance verdict with the character tallies behind it
  *
@@ -308,6 +367,7 @@ export function assessNonTranslationDominance(
     readonly slices: readonly {
       readonly targetChars: number;
       readonly votesStand: boolean;
+      readonly anchorsTranslation: boolean;
     }[];
   },
 ): NonTranslationDominance {
@@ -341,8 +401,17 @@ export function assessNonTranslationDominance(
     0,
   );
 
+  /**
+   * Whether any settled slice anchors confirmed translated content, which
+   * vetoes the block however the standing chars fall.
+   */
+  const anchored = slices
+    .some(function anchors(slice,) {
+      return slice.anchorsTranslation;
+    },);
+
   return {
-    blocked: (standingChars * 2) > totalChars,
+    blocked: ((standingChars * 2) > totalChars) && (!anchored),
     standingChars,
     totalChars,
   };

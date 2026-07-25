@@ -16,13 +16,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  type AdjudicatedIssue,
   assessNonTranslationDominance,
   assessNonTranslationEvidence,
+  type ChunkRepairOutcome,
   type IssueClaim,
   NON_TRANSLATION_BLOCK_VOTES,
   NON_TRANSLATION_CONTRADICTION_MIN,
   nonTranslationVotesStand,
   screenNonTranslationVotes,
+  sliceAnchorsTranslation,
 } from '../dist/final/neutral/index.mjs';
 
 /**
@@ -79,6 +82,60 @@ const NON_TRANSLATION_CLAIM: IssueClaim = catClaim({
   side: 'target',
   summary: 'Pages look unrelated.',
 },);
+
+/**
+ * Wraps one claim as an adjudicated issue with the chosen decision, for
+ * exercising the anchor probe over a slice's settled issues.
+ */
+function catIssue(
+  {
+    claim,
+    status,
+  }: {
+    readonly claim: IssueClaim;
+    readonly status: AdjudicatedIssue['status'];
+  },
+): AdjudicatedIssue {
+  return {
+    issueId: `issue/${status}/${claim.category}`,
+    status,
+    severity: claim.severity,
+    claims: [
+      {
+        claimId: 'claim/whisker',
+        claim,
+      },
+    ],
+    tallies: {},
+  };
+}
+
+/**
+ * Builds one settled slice outcome carrying the given issues and standing
+ * verdict; only the fields the anchor probe reads carry meaning.
+ */
+function catOutcome(
+  {
+    issues,
+    nonTranslationStanding,
+  }: {
+    readonly issues: readonly AdjudicatedIssue[];
+    readonly nonTranslationStanding: boolean;
+  },
+): ChunkRepairOutcome {
+  return {
+    chunkIndex: 0,
+    repairedText: 'purr',
+    changed: false,
+    issues,
+    resolvedIssueIds: [],
+    nonTranslationVotes: nonTranslationStanding ? NON_TRANSLATION_BLOCK_VOTES : 0,
+    nonTranslationContradicted: false,
+    nonTranslationStanding,
+    heardCritics: 7,
+    findings: [],
+  };
+}
 
 await describe({
   name: '',
@@ -185,12 +242,12 @@ await describe({
       name: assessNonTranslationDominance.name,
       children: [
         it({
-          name: 'blocks when standing slices dominate the characters',
+          name: 'blocks when standing slices dominate and none anchors translation',
           fn: async () => {
             const dominance = assessNonTranslationDominance({
               slices: [
-                { targetChars: 900, votesStand: true, },
-                { targetChars: 200, votesStand: false, },
+                { targetChars: 900, votesStand: true, anchorsTranslation: false, },
+                { targetChars: 200, votesStand: false, anchorsTranslation: false, },
               ],
             },);
             expect(dominance.blocked,).toBe(true,);
@@ -200,12 +257,29 @@ await describe({
         },),
 
         it({
+          name: 'never blocks when a clean-translation anchor survives a standing majority (Mio regression)',
+          fn: async () => {
+            const dominance = assessNonTranslationDominance({
+              slices: [
+                { targetChars: 900, votesStand: true, anchorsTranslation: false, },
+                { targetChars: 200, votesStand: false, anchorsTranslation: true, },
+              ],
+            },);
+            // Standing chars dominate (900 of 1100), yet a confirmed
+            // translation anchor proves the pair is a translation with
+            // asymmetric extra content, so repair must proceed.
+            expect(dominance.blocked,).toBe(false,);
+            expect(dominance.standingChars,).toBe(900,);
+          },
+        },),
+
+        it({
           name: 'leaves a minority standing region to per-slice degradation',
           fn: async () => {
             const dominance = assessNonTranslationDominance({
               slices: [
-                { targetChars: 300, votesStand: true, },
-                { targetChars: 900, votesStand: false, },
+                { targetChars: 300, votesStand: true, anchorsTranslation: false, },
+                { targetChars: 900, votesStand: false, anchorsTranslation: false, },
               ],
             },);
             expect(dominance.blocked,).toBe(false,);
@@ -219,6 +293,122 @@ await describe({
             const dominance = assessNonTranslationDominance({ slices: [], },);
             expect(dominance.blocked,).toBe(false,);
             expect(dominance.totalChars,).toBe(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: sliceAnchorsTranslation.name,
+      children: [
+        it({
+          name: 'anchors on a non-standing slice with an accepted target content critique',
+          fn: async () => {
+            const outcome = catOutcome({
+              issues: [
+                catIssue({
+                  claim: catClaim({
+                    category: 'accuracy/mistranslation',
+                    side: 'target',
+                    summary: 'A purr is rendered as a hiss.',
+                  },),
+                  status: 'accepted',
+                },),
+              ],
+              nonTranslationStanding: false,
+            },);
+            expect(sliceAnchorsTranslation({ outcome, },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'does not anchor when the slice is a standing non-translation',
+          fn: async () => {
+            const outcome = catOutcome({
+              issues: [
+                catIssue({
+                  claim: catClaim({
+                    category: 'accuracy/mistranslation',
+                    side: 'target',
+                    summary: 'A purr is rendered as a hiss.',
+                  },),
+                  status: 'accepted',
+                },),
+              ],
+              nonTranslationStanding: true,
+            },);
+            expect(sliceAnchorsTranslation({ outcome, },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'does not anchor on a missing-translation leaf even target-side',
+          fn: async () => {
+            const outcome = catOutcome({
+              issues: [
+                catIssue({
+                  claim: catClaim({
+                    category: 'accuracy/omission',
+                    side: 'target',
+                    summary: 'A whole whisker of content is dropped.',
+                  },),
+                  status: 'accepted',
+                },),
+              ],
+              nonTranslationStanding: false,
+            },);
+            expect(sliceAnchorsTranslation({ outcome, },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'does not anchor on a source-only content critique',
+          fn: async () => {
+            const outcome = catOutcome({
+              issues: [
+                catIssue({
+                  claim: catClaim({
+                    category: 'accuracy/mistranslation',
+                    side: 'source',
+                    summary: 'The source phrasing itself is odd.',
+                  },),
+                  status: 'accepted',
+                },),
+              ],
+              nonTranslationStanding: false,
+            },);
+            expect(sliceAnchorsTranslation({ outcome, },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'does not anchor on a rejected content critique',
+          fn: async () => {
+            const outcome = catOutcome({
+              issues: [
+                catIssue({
+                  claim: catClaim({
+                    category: 'accuracy/mistranslation',
+                    side: 'target',
+                    summary: 'A purr is rendered as a hiss.',
+                  },),
+                  status: 'rejected',
+                },),
+              ],
+              nonTranslationStanding: false,
+            },);
+            expect(sliceAnchorsTranslation({ outcome, },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'does not anchor on a non-standing slice with no accepted issues',
+          fn: async () => {
+            const outcome = catOutcome({
+              issues: [],
+              nonTranslationStanding: false,
+            },);
+            expect(sliceAnchorsTranslation({ outcome, },),).toBe(false,);
           },
         },),
       ],
