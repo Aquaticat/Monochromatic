@@ -1,4 +1,4 @@
-# TypeSlayer 0.1.32 fails TypeScript 7.0.2 trace generation at an unexported compiler subpath
+# TypeSlayer 0.1.32 fails TypeScript 7.0.2 trace generation and rejects native trace events
 
 ## Symptom
 
@@ -8,6 +8,27 @@ TypeScript checks the selected project:
 ```text
 Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './bin/tsc' is not defined by "exports" in
 /var/home/user/Monochromatic/node_modules/typescript/package.json
+```
+
+After the initial TypeScript 7 compatibility fork bypassed that error and normalized checker shards,
+loading a trace for `package/cli/fy/tsconfig.json` exposed another failure:
+
+```text
+trace.json event[67] error: missing field `args`
+```
+
+The captured event is valid JSON emitted by TypeScript 7:
+
+```json
+{
+  "pid": 1,
+  "tid": 1,
+  "ph": "X",
+  "cat": "program",
+  "ts": 8670.875,
+  "name": "processTypeReferences",
+  "dur": 1928.208
+}
 ```
 
 The observed environment was:
@@ -220,6 +241,68 @@ The fork implementation disables `process.execve` for trace generation,
  forcing the synchronous child-process fallback and preserving the parent process long enough to normalize outputs.
 It also retains an exit hook for compiler launchers that call `process.exit()` directly.
 
+### Native `processTypeReferences` events may omit `args`
+
+TypeScript 7 intentionally starts automatic type-reference tracing with a nil argument map.
+At TypeScript commit `2bd066d87f5bafd315be9f40889d0a60b9e58e0b`,
+`internal/compiler/filesparser.go:171-175` contains:
+
+```go
+func (t *parseTask) loadAutomaticTypeDirectives(loader *fileLoader) {
+    if loader.opts.Tracing != nil {
+        defer loader.opts.Tracing.Push(tracing.PhaseProgram, "processTypeReferences", nil, false)()
+    }
+```
+
+The trace event's argument field uses zero-value omission in
+`internal/tracing/tracing.go:80-89`:
+
+```go
+type traceEvent struct {
+    PID  int            `json:"pid"`
+    TID  int            `json:"tid"`
+    PH   string         `json:"ph"`
+    Cat  string         `json:"cat"`
+    TS   float64        `json:"ts"`
+    Name string         `json:"name,omitzero"`
+    S    string         `json:"s,omitzero"`
+    Dur  *float64       `json:"dur,omitzero"`
+    Args map[string]any `json:"args,omitzero"`
+}
+```
+
+The sampled event retains that nil map at `internal/tracing/tracing.go:318-321`:
+
+```go
+tid := tr.threadIDLocked(args)
+tr.traceContent.WriteString(",\n")
+tr.writeEvent(traceEvent{PID: 1, TID: tid, PH: "X", Cat: string(phase), TS: startMicros, Name: name, Dur: &dur, Args: args})
+```
+
+Upstream TypeSlayer 0.1.32 instead requires a count payload in
+`packages/typeslayer/src-tauri/src/validate/trace_json.rs:513-521`:
+
+```rust
+#[serde(rename = "processTypeReferences")]
+ProcessTypeReferences {
+    #[serde(flatten)]
+    common: EventCommon,
+    cat: String,
+    ph: EventPhase,
+    dur: f64,
+    args: CountArgs,
+},
+```
+
+Serde therefore reports the missing field before TypeSlayer can ingest the trace.
+The earlier hypothesis that normalization dropped `args` was wrong:
+the TypeScript source passes nil,
+the serializer omits zero-valued arguments,
+and the captured JSON is complete.
+Inventing a count would misrepresent compiler output.
+The compatibility fix makes only this event's `CountArgs` optional,
+which preserves TypeScript 6 counts when present and accepts TypeScript 7's omission.
+
 ## Verification
 
 ### Versions and source
@@ -363,7 +446,7 @@ types_3.json
 
 The implementation was committed and pushed to
 [`Aquaticat/typeslayer`](https://github.com/Aquaticat/typeslayer) `main` at
-`3089dd964855c89eedf0505a3dac7a985ec51946`.
+`0319832ff6d8bd5343371501a6b403e04acc33b2`.
 It:
 
 - resolves each compiler through the executable declared in its package manifest rather than a private subpath;
@@ -371,6 +454,7 @@ It:
 - reads TypeScript 7's `legend.json` and checker-specific type shards;
 - assigns each checker a contiguous global type-ID range and remaps every recorded type relationship;
 - remaps checker-tagged trace type IDs and adapts TypeScript 7 event shapes to TypeSlayer's existing Rust schema;
+- accepts a missing count on native `processTypeReferences` events while preserving counts emitted by older compilers;
 - writes a synthetic `types.json` and normalized `trace.json` for the existing loader,
    analyzer,
    graph,
@@ -390,6 +474,30 @@ A built Tauri application was exercised through its real UI against disposable c
    `tsc.cpuprofile`,
    `analyze-trace.json`,
    and `type-graph.json` artifacts all completed.
+
+The captured missing-args event is a regression fixture in
+`packages/typeslayer/src-tauri/src/validate/trace_json.rs:1287-1335`.
+Before the schema fix,
+this targeted command failed with `missing field 'args'`:
+
+```bash
+cargo test process_type_references_accepts_missing_args --jobs 1 -- --nocapture
+```
+
+After changing `ProcessTypeReferences.args` to `Option<CountArgs>`,
+the targeted test passed.
+The complete Rust suite passed all 32 tests,
+and the production Tauri release build completed.
+Repository linting,
+formatting,
+TypeScript checks,
+and all 14 JavaScript tests also passed.
+
+The rebuilt globally linked application then loaded the exact trace that had failed at event 67.
+Its log recorded `trace.json` as loaded rather than reporting a schema error.
+A fresh UI generation against `package/cli/fy/tsconfig.json` loaded 341 type entries and 2,601 trace events,
+generated analysis and graph artifacts,
+and rendered 340 searchable types with 160 relationships.
 
 TypeScript 7.0.2 accepts `--generateCpuProfile` but its native compiler produced no V8 profile file in direct and UI
 verification.
@@ -436,14 +544,14 @@ After producing a release binary,
 the verified global installation sequence is:
 
 ```bash
-version=0.1.32-aquaticat.3089dd9
+version=0.1.32-aquaticat.0319832
 prefix="$HOME/.local/share/mise/linked/npm-typeslayer/$version"
 
 mkdir --parents "$prefix/bin" "$prefix/share/typeslayer"
 install --mode=0755 \
   --target-directory="$prefix/bin" \
   packages/typeslayer/src-tauri/target/release/typeslayer
-printf '%s\n' 3089dd964855c89eedf0505a3dac7a985ec51946 \
+printf '%s\n' 0319832ff6d8bd5343371501a6b403e04acc33b2 \
   > "$prefix/share/typeslayer/BUILD-COMMIT"
 
 mise link --force "npm:typeslayer@$version" "$prefix"
@@ -454,10 +562,13 @@ mise config set \
 mise which typeslayer
 ```
 
-This keeps the registry-installed 0.1.32 directory available for rollback while selecting the linked fork globally.
-Verification selected the linked `0.1.32-aquaticat.3089dd9` version from the global mise config,
+This keeps the registry-installed 0.1.32 directory and the earlier linked fork available for rollback while selecting
+the repaired fork globally.
+Verification selected the linked `0.1.32-aquaticat.0319832` version from the global mise config,
 resolved `typeslayer` to that prefix,
-and matched its SHA-256 digest to the release build.
+and matched its SHA-256 digest,
+`754a10a86c082edf3c0b88abd6dd9fe0c4439210f81ca97331e3b9b7aaee24df`,
+to the release build.
 The globally resolved command launched the production Tauri UI without a Vite development server.
 
 The linked build is local rather than registry-reproducible:
@@ -469,10 +580,17 @@ and relinking it.
 
 Works cleanly:
 
-- The built `Aquaticat/typeslayer` fork with TypeScript 7.0.2 and TypeScript 6.0.2.
+- The built `Aquaticat/typeslayer` fork at `0319832ff6d8bd5343371501a6b403e04acc33b2` with TypeScript 7.0.2 and
+  TypeScript 6.0.2.
+- A native `processTypeReferences` event with no `args` field under the repaired Rust schema.
 - TypeSlayer's `require('typescript/bin/tsc')` pattern with TypeScript 6.0.2.
 - TypeScript 6.0.2 trace generation with the `trace.json` plus `types.json` layout TypeSlayer expects.
 - Direct TypeScript 7.0.2 CLI invocation through `node_modules/typescript/bin/tsc`.
+
+Fails with `missing field 'args'`:
+
+- A TypeScript 7 trace containing a native `processTypeReferences` event without `args` under upstream 0.1.32 or the
+  earlier compatibility fork at `3089dd964855c89eedf0505a3dac7a985ec51946`.
 
 Fails with `ERR_PACKAGE_PATH_NOT_EXPORTED`:
 
@@ -562,6 +680,10 @@ That UI route was not exercised and is therefore not recorded as a verified work
   trace and type schemas have not been validated end to end against TypeScript 7 output.
 - **Treating this as a pnpm layout bug.
   ** A plain Node `require()` in a minimal fixture reproduces the same export error.
+- **Treating the missing `args` field as truncation or normalizer corruption.
+  ** TypeScript 7 passes nil to the trace event and uses `omitzero` for the serialized field.
+- **Adding a synthetic `{ "count": 0 }` argument in the normalizer.
+  ** Zero is not present in the compiler output and would turn absence into an invented measurement.
 
 ## Upstream filing artifact
 
@@ -593,7 +715,8 @@ The six filing constraints resolve as follows:
 2. **Can upstream fix it?
    ** Yes.
     TypeSlayer can invoke the package's declared executable rather than a private subpath,
-   then teach its loader and graph model to consume `legend.json` and checker-specific type files.
+   teach its loader and graph model to consume `legend.json` and checker-specific type files,
+   and model omitted native event arguments as optional.
 3. **Are they supporting this use case?
    ** No for the native compiler in this release.
     TypeSlayer 0.1.32 shipped on 2026-03-23,
@@ -623,8 +746,9 @@ The six filing constraints resolve as follows:
    ** Yes.
     The `Aquaticat/typeslayer` fork resolves declared package executables,
    normalizes checker-sharded types and trace IDs into TypeSlayer's existing internal model,
-    preserves TypeScript 6,
-   and passed built-application UI verification with both compilers.
+   models the native event's count as optional,
+   preserves TypeScript 6,
+   and passed regression tests plus built-application UI verification.
 
 Constraint 3 still fails for the unmodified upstream 0.1.32 release,
  so default policy remains not to file the draft as a
@@ -658,6 +782,15 @@ There is a second incompatibility after resolving the executable by absolute pat
 (`microsoft/typescript-go` `internal/tracing/tracing.go:413-432,466-478`). TypeSlayer fixes
 `TYPES_JSON_FILENAME` to `types.json` and reads that exact file in
 `packages/typeslayer/src-tauri/src/commands/generate.rs:31-55`.
+
+There is a third incompatibility after normalizing that layout.
+TypeScript 7 calls `processTypeReferences` tracing with nil arguments in
+`internal/compiler/filesparser.go:171-175`,
+and its `traceEvent.Args` field uses `json:"args,omitzero"` in
+`internal/tracing/tracing.go:80-89`.
+TypeSlayer requires `CountArgs` for this event in
+`packages/typeslayer/src-tauri/src/validate/trace_json.rs:513-521`,
+so Serde rejects the valid native event with `missing field 'args'`.
 
 ## Reproduction
 
@@ -704,8 +837,9 @@ types.json
    subpath. Preserve the existing Node memory-option behavior and Yarn PnP path.
 2. Detect `legend.json`, load every referenced `types_N.json` file, and preserve `checkerId` while correlating trace
    events with type IDs.
-3. Add integration fixtures for TypeScript 6's single `types.json` layout and TypeScript 7's default multi-checker and
-   `--singleThreaded` layouts.
+3. Make the `processTypeReferences` count optional rather than fabricating a value when TypeScript 7 omits `args`.
+4. Add integration fixtures for TypeScript 6's single `types.json` layout and TypeScript 7's default multi-checker,
+   `--singleThreaded`, and missing-event-argument layouts.
 
 ## Boundary-level fallback
 
