@@ -252,7 +252,11 @@ The initial source investigation used read-only third-party clones:
   `$HOME/temp/agent/typeslayer-2026-07-25`;
 - `https://github.com/microsoft/typescript-go.git`,
    checked out at tag `typescript/v7.0.2` under
-  `$HOME/temp/agent/typescript-go-2026-07-25`.
+  `$HOME/temp/agent/typescript-go-2026-07-25`;
+- `https://github.com/jdx/mise.git`,
+   checked out at tag `v2026.7.0`,
+   commit `857b73f6a6b39a3bc90c44119a1e86ee11bd7273`,
+   under `$HOME/temp/agent/mise-2026-07-25`.
 
 The implementation used a separate clone of `https://github.com/Aquaticat/typeslayer.git` under
 `$HOME/temp/agent/typeslayer-aquaticat-2026-07-25`.
@@ -394,6 +398,68 @@ trace analysis,
 type search,
 and the type graph work with TypeScript 7.
 
+### Global fork installation through mise
+
+Mise 2026.7.0's npm backend accepts registry version specifications,
+not source URLs.
+`src/backend/npm.rs:243-247` states this directly:
+
+```rust
+/// NPM installs packages from npm registry using version specs (e.g., eslint@8.0.0).
+/// It doesn't support installing from direct URLs, so lockfile URLs are not applicable.
+fn supports_lockfile_url(&self) -> bool {
+    false
+}
+```
+
+Every package-manager branch then constructs `package@version` rather than preserving a source specification.
+For example,
+the pnpm branch at `src/backend/npm.rs:418-424` uses:
+
+```rust
+let mut cmd = CmdLineRunner::new("pnpm")
+    .arg("add")
+    .arg("--global")
+    .arg(format!("{}@{}", self.tool_name(), tv.version))
+```
+
+Mise's supported boundary for a locally compiled tool is `mise link`.
+`src/cli/link.rs:11-13` describes that command:
+
+```rust
+/// Symlinks a tool version into mise
+///
+/// Use this for adding installs either custom compiled outside mise or built with a different tool.
+```
+
+After producing a release binary,
+the verified global installation sequence is:
+
+```bash
+version=0.1.32-aquaticat.3089dd9
+prefix="$HOME/.local/share/mise/linked/npm-typeslayer/$version"
+
+mkdir --parents "$prefix/bin" "$prefix/share/typeslayer"
+install --mode=0755 \
+  --target-directory="$prefix/bin" \
+  packages/typeslayer/src-tauri/target/release/typeslayer
+printf '%s\n' 3089dd964855c89eedf0505a3dac7a985ec51946 \
+  > "$prefix/share/typeslayer/BUILD-COMMIT"
+
+mise link --force "npm:typeslayer@$version" "$prefix"
+mise config set \
+  --file "$HOME/.config/mise/config.toml" \
+  'tools.npm:typeslayer' \
+  "$version"
+mise which typeslayer
+```
+
+This keeps the registry-installed 0.1.32 directory available for rollback while selecting the linked fork globally.
+The linked build is local rather than registry-reproducible:
+upgrading requires rebuilding a newer fork commit,
+staging it under a new version label,
+and relinking it.
+
 ### Behavior catalog
 
 Works cleanly:
@@ -464,6 +530,9 @@ That UI route was not exercised and is therefore not recorded as a verified work
 
 ## What does not work
 
+- **Passing the fork's Git URL to mise's npm backend.
+  ** Mise 2026.7.0 supports npm registry versions rather than direct source URLs.
+   Build the fork and register its install prefix with `mise link` instead.
 - **Selecting a different package in this monorepo.
   ** The selected packages still resolve the workspace's TypeScript
   7.0.2 catalog installation.
