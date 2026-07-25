@@ -127,7 +127,14 @@ Recorded as they are answered.
 ### D1. Scope of the four expensive subsystems
 
 Custom plugin loading, autofix, LSP, semantic/type-aware analysis.
-Status: asked.
+Status: ANSWERED 2026-07-25.
+In scope: autofix pipeline, custom plugin loading, language server.
+Out of scope: semantic and type-aware analysis.
+Consequence: the `Rule` trait must carry fix edits from the start,
+rule registration needs a runtime seam rather than `all_rules()`,
+and diagnostics must be servable incrementally over LSP.
+No dependency on `ra_ap_hir`, `ra_ap_ide`, or a rustc driver;
+`ra_ap_syntax` stays the only parser.
 
 ### D2. Inline disable directives
 
@@ -149,11 +156,42 @@ Status: not yet asked.
 
 ### D4. Plugin mechanism
 
-Only live if D1 keeps plugin loading.
-Candidates to research before presenting (EPR):
-compile-time registry, Cargo features, dylint-style cdylib,
-WASM host, declarative pattern rules over `ra_ap_syntax`.
-Status: not yet asked.
+Status: ANSWERED 2026-07-25.
+Chosen: compile-time Rust rule crates PLUS a declarative pattern language
+evaluated from the config.
+Neither path loads code at runtime.
+
+Rejected, with the evidence that rejected each:
+
+- dylint (`trailofbits/dylint`).
+  Requires `#![feature(rustc_private)]` and pins each lint library to a specific
+  nightly toolchain, then rebuilds the linted package with that same toolchain.
+  This repo has no `rust-toolchain.toml`, and
+  `package/linter/rust/Cargo.toml:56` records verification on stable 1.96.0.
+- JS/TypeScript runtime plugins, the literal oxlint design.
+  `node_modules/oxlint/bin/oxlint` is a three-line Node shim over napi bindings
+  (`@oxlint/binding-*`), and `dist/plugins.js` loads JS plugins into that same
+  Node process, passing the AST over shared `ArrayBuffer`/`Uint8Array` buffers.
+  Copying it means an AST serialization protocol, a runtime lifecycle, and a
+  Node dependency inside a standalone Rust binary.
+  `doc/troubleshooting/oxlint-js-plugin-lazy-child-enomem.md` records this
+  repo already hitting a 276-second run and `spawn ENOMEM` from that design.
+- WASM plugins via wasmtime or extism.
+  Same serialization boundary as the JS option without matching the repo's
+  authoring language;
+  `rg` for `wasmtime|extism|wasm-bindgen|wasm32` across the repo's TOML and JSON
+  finds nothing outside `node_modules`.
+
+Consequences:
+
+- `plugins` in the config names compiled-in rule crates and namespaces their
+  rule ids as `plugin/rule-name`, matching oxlint's `eslint(no-debugger)` code
+  shape in JSON output.
+- The config format must be able to express pattern rules, which raises the
+  stakes on D3.
+- `AGENTS.md` SYB applies to the pattern language:
+  it must not become an invented comment-string DSL for relations the syntax
+  tree already expresses.
 
 ### D5. Crate layout and delivery increments
 
