@@ -964,6 +964,22 @@ first real test. Watch run 012 for: Dethelly starts near-instantly, no
 critic/panel/editor/checker calls on the 13 cached chunks, continuation on
 chunk 13+, a settle, then `slice-cache/Dethelly/` GONE. Only after seeing
 that is resumability end-to-end validated. Run 012 launched.
+PASS 6 RUN 012 (2026-07-25, tip `90809eeed`, 3958s wall ~66 min): 1 settled,
+13/92. RESUMABILITY END-TO-END VALIDATED IN PRODUCTION. Resume-first put
+Dethelly at the front (START/--plan confirmed); the log shows `6 chunk
+pairs, 24 slices`, the 13 cached slices (chunks 0-12) skipped with ZERO
+stage/model logs, the FIRST critic stage firing at chunk 13, then
+continuation through slice 23, then TALLY status=repaired (391 issues, 373
+accepted, 364 resolved, 100 findings). Post-settle the `Dethelly.json`
+artifact is present AND `slice-cache/Dethelly/` is GONE (cache root empty):
+the full skip->continue->settle->discard cycle observed. Both halves now
+proven -- persist-on-abort (run 011) and resume+discard (run 012). The
+resume-first ordering also proved correct: run 012 processed only Dethelly
+(it started past the 25-min soft budget) and ended. Dethelly is large-band,
+so large settled 1->2 (Chinatsu_Suzuki ~5.2KB, Dethelly ~6.2KB -- both
+mid-large; bigger large entries still needed for band spread). Run 013
+launched (no resumable entries remain, so it picks the first non-small
+0-attempt entry by band order).
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
