@@ -386,6 +386,17 @@ on the reasoning that re-explaining a concept at every occurrence adds volume
 without adding comprehension in any language, not just here.
 Existing full-density files stay valid because they exceed the requirement.
 
+## Status: implementation complete
+
+Every work item has landed.
+Four packages, 220 tests, clippy and the linter's own dogfood run clean on all
+of them.
+
+The `README.md` correction recorded above is done:
+the file claimed `require-rustdoc` had no fixtures carve-out, which was wrong,
+and it listed module paths that no longer exist.
+Both are fixed in the rewrite.
+
 ## Status: design confirmed, implementation started
 
 Shared understanding reached 2026-07-25.
