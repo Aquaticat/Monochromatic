@@ -1041,6 +1041,38 @@ first launch killed at START, 0 loss, empty MTF_0615 cache dir removed):
 resolved, 23 findings); one run, no cap. Medium settled 5->6. Bands now 9
 small / 6 medium / 6 large (need ~1 small, ~4 medium, ~4 large). Run 020
 launched.
+PASS 6 RUN 020 (2026-07-25, tip `55b0dd444`, 2257s wall ~38 min): 1 settled,
+Mio status=blocked-non-translation (93 accepted issues, 0 resolved). FALSE
+BLOCK discovered and fixed (commit `398007d4c`). Mio's en page is a faithful
+translation that ALSO translates its embedded images -- WeChat chat logs,
+Twitter posts, and a final chat that the zh page.md carries only as
+`<PhotoScroll>` photos, so that translated-image text has NO zh-markdown
+counterpart. Its slices correctly drew non-translation votes (chunks
+5,6,8-12, all 7/7), and at 5342 of 7778 target chars (69%) they tripped the
+bare char-majority dominance rule and discarded the whole document, even
+though chunks 0,1,2,7 are clean repaired translations. VERIFIED SYSTEMIC via
+a scan of all 22 artifacts: Futajuhuacha and Huasheng each carry 8 standing
+slices too (same as Mio) and only escaped because their standing chars
+stayed under half; every entry with standing slices also has clean chunks
+(Mio 5, Futajuhuacha 11, Huasheng 13, Dethelly 22, Kotori 10). This is the
+4TH real-corpus non-translation block this session (Aniloviraw, AkiraComplex,
+Arita, Mio) and ALL FOUR WERE FALSE; the only true positive ever is the
+invented cat/"meow" pair. Discriminator: every false block held confirmed
+good-translation content; the true positive held none. FIX (advisor-guided,
+document-dominance layer ONLY): added `sliceAnchorsTranslation` (a
+non-standing slice carrying an accepted target-anchored content critique) and
+`assessNonTranslationDominance` now vetoes the block whenever ANY slice
+anchors translation -- a threshold-free discriminator from 4-false-vs-1-true,
+keeping the calibrated err-toward-not-blocking direction. Because the change
+only flips the block branch and only toward NOT blocking, every "repaired"
+entry is provably unchanged; ONLY Mio is stale (no full wipe, slicing
+untouched so caches stay valid). Deterministic tests pass (Mio-shape
+dominance regression + six anchor-probe cases); format/lint/types/build 0.
+Live Mio re-validation running (sentinel-probe `bcgzdo82q`), must flip
+blocked->repaired like Arita; on confirm, delete the stale Mio.json and
+resume accumulation (Mio re-settles as repaired). Surface the 4/4-false-block
+pattern in the milestone writeup -- it is a real finding about this feature's
+value on this all-real-translation corpus.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
