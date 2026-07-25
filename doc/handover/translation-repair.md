@@ -1138,6 +1138,30 @@ user is never handed a sheet that shifts underneath them. Still pending: task 31
 judge crosscheck (secondary machine number, quota-heavy, held until now); task
 33 gate must report precision PER BAND (the payoff of stratifying) plus the
 plain real/50>=0.9 headline.
+M3 SAFETY-INVARIANT PRE-CHECK (2026-07-25, task 33 prep, advisor-directed
+"check what the artifacts actually record before building a checker; if they
+don't, say so, don't fabricate"). Finding: the artifacts record `status`,
+`repairedText`, `findings`, and the issue fates -- enough to verify STATUS/TEXT
+CONSISTENCY, but NOT the "zero deterministic-gate violations" or "zero
+regression-majority selections" invariants directly (no envelope/patch-op or
+candidate-comparison data is serialized; `findings` are model-noise diagnostics
+like ambiguous-quote / quote-not-found / missing-verdict, not gate violations).
+Those two invariants are guaranteed BY CONSTRUCTION (fail-closed patch +
+resolution gates; `selectRepairCandidate` keeps UNCHANGED as the floor so a
+repaired status means a candidate strictly beat the input) and covered by the
+apply-patch / select-candidate / tally-resolution unit tests -- so task 33 will
+CITE those, not re-measure from artifacts. What IS artifact+corpus-verifiable,
+run now over the 24 settled (compared `repairedText` vs the pinned
+`page.en.md`): 23 repaired ALL genuinely changed (0 identical-to-input, i.e. no
+hollow repairs), 1 unchanged BYTE-IDENTICAL to input (correct), 0 blocked (the
+non-translation anchor-veto fix holds in the pool), 0 anomalies. Status dist
+23 repaired / 1 unchanged / 0 blocked; 417 findings all model-noise shapes.
+This is the "unchanged/repaired wherever the input is/ isn't beaten" invariant,
+clean. Judge crosscheck (task 31) explicitly DEFERRED by advisor until human
+grades exist to calibrate the judge against (building it now calibrates against
+nothing); the 50-vs-2132 scope is then sequential (same-50 agreement first, and
+the 2132-wide run is a user quota call, not autonomous) and the headline gate
+does not depend on it.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
