@@ -933,6 +933,37 @@ exclude). Verified format/lint/types 0/0/0 and `--plan` first-5 pending all
 non-small (Everythings99 1859B .. Huasheng 7397B). Run 011 was already in
 flight on the old order and finishes normally; run 012 onward uses the new
 order. Task 30 subject/description updated to match.
+PASS 6 RUN 011 (2026-07-25, tip `e032fa453`, hit the per-entry 90-min cap):
+0 settled, still 12/92. Dethelly (6171B, large band) processed 13
+chunks/slices then aborted at the hard ceiling (TALLY status=ERROR
+aborted=true, Timeout). FIRST cap-abort since resumability landed: all 13
+finished slices persisted to `slice-cache/Dethelly/` and the cache was
+correctly RETAINED on abort (discard is success-only). This exposed an
+ordering flaw -- `attempts[Dethelly]` incremented to 1 and the within-band
+tiebreak was fewest-attempts-first, so Dethelly sorted BEHIND every
+0-attempt non-small entry; run 012 would have started a fresh entry and
+left the 13 cached slices idle, and every big-large entry would take one
+partial attempt with none finishing, starving exactly the entries that most
+need resume and defeating the "large spread across band" goal.
+RESUME-FIRST FIX (driver-only, no restart): added `listResumableEntries`
+(slice-cache-store.ts) returning ids whose cache dir holds >=1 finished
+slice; corpus-pass now sorts those FIRST (before band, before attempts) so
+an in-flight large document finishes before a fresh one starts. Safe against
+livelock because `repairChunk` never throws -- every failure path (votes
+stand / no claims / no envelopes / no surviving ops / lost voices) returns
+an unchanged outcome that gets persisted, and a cap-abort always completes
+>=1 new slice; the only residual (a deterministic pure-function throw at
+some slice) would surface as a repeated same-entry ERROR and is caught by
+per-run inspection, not silently absorbed. Verified format/lint/types 0/0/0
+and `--plan` first=Dethelly,Everythings99,... (resumable sorts first).
+VERIFICATION CAVEAT (do NOT overstate): only the PERSIST-on-abort half of
+resumability is proven in production (the 13 files exist). The RESUME half
+-- next run reads them back, skips them with ZERO model calls, continues on
+new slices, settles, and DISCARDS the cache -- has never run. Run 012 is its
+first real test. Watch run 012 for: Dethelly starts near-instantly, no
+critic/panel/editor/checker calls on the 13 cached chunks, continuation on
+chunk 13+, a settle, then `slice-cache/Dethelly/` GONE. Only after seeing
+that is resumability end-to-end validated. Run 012 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped

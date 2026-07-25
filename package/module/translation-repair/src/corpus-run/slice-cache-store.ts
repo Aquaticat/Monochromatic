@@ -118,6 +118,71 @@ async function loadResumedSlices(
 }
 
 /**
+ * Lists entries under the slice-cache root that carry at least one finished
+ * slice, so the pass can resume an in-flight document to completion before
+ * starting fresh ones. A settled entry (directory discarded) or one that
+ * aborted before finishing any slice (empty directory) contributes nothing.
+ *
+ * @param dir - slice-cache root holding one subdirectory per entry
+ *
+ * @returns Set of entry ids carrying resumable progress, empty when none
+ *
+ * @example
+ * ```ts
+ * const resumable = await listResumableEntries({ dir: sliceCacheDir, },);
+ * ```
+ */
+export async function listResumableEntries(
+  { dir, }: { readonly dir: string; },
+): Promise<Set<string>> {
+  /**
+   * Entry ids with one or more finished slices on disk.
+   */
+  const resumable = new Set<string>();
+
+  /**
+   * Per-entry subdirectory names under the cache root.
+   */
+  let ids: readonly string[] = [];
+  try {
+    ids = await readdir(dir,);
+  }
+  catch (error) {
+    // An absent cache root (ENOENT) means no in-flight documents; anything
+    // else is a real fault and must surface.
+    if (!(Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT')))
+      throw error;
+    return resumable;
+  }
+
+  for (const id of ids) {
+    try {
+      /**
+       * File names inside this entry's cache directory.
+       */
+      /* oxlint-disable-next-line no-await-in-loop -- small one-time setup scan over per-entry dirs */
+      const names = await readdir(join(
+        dir,
+        id,
+      ),);
+      if (names.some(function isSliceFile(name,) {
+        return name.endsWith(JSON_SUFFIX,);
+      },))
+        resumable.add(id,);
+    }
+    catch (error) {
+      // A non-directory child (ENOTDIR) or one removed mid-scan (ENOENT)
+      // simply carries no resumable slices; other faults are real.
+      if (!(Error.isError(error,) && ('code' in error)
+        && ((error.code === 'ENOENT') || (error.code === 'ENOTDIR'))))
+        throw error;
+    }
+  }
+  return resumable;
+}
+
+/**
  * Opens an entry's slice cache: ensures its directory exists, loads any
  * finished slices, and returns a write-through cache for the pipeline.
  *
