@@ -115,10 +115,10 @@ type SkillPromptEvent = {
  *
  * @example
  * ```typescript
- * await initializeAutoMode({ pi, home: '/account-home' });
+ * initializeAutoMode({ pi, home: '/account-home' });
  * ```
  */
-async function initializeAutoMode(
+function initializeAutoMode(
   {
     pi,
     home = homedir(),
@@ -128,7 +128,7 @@ async function initializeAutoMode(
     readonly home?: string;
     readonly historicalAgentTempDir?: string;
   },
-): Promise<void> {
+): void {
   /**
    * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
    */
@@ -530,10 +530,10 @@ async function initializeAutoMode(
  * // { "packages": ["./packages/pi-plugin/auto-mode"] }
  * ```
  */
-export default async function autoMode(
+export default function autoMode(
   pi: ForeignBorrowed<ExtensionAPI>,
-): Promise<void> {
-  await initializeAutoMode({ pi, },);
+): void {
+  initializeAutoMode({ pi, },);
 }
 
 export { initializeAutoMode, };
