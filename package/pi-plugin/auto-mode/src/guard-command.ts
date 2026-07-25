@@ -12,6 +12,7 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
 /**
@@ -47,18 +48,14 @@ function registerGuardCommand(
        *
        * @param ctx - Active Pi command context.
        *
-       * @returns Nothing.
+       * @returns settled completion after synchronous command updates
        *
        * @mutates ctx - `ctx.ui.notify` changes displayed Pi notification state.
        */
-      async handler(
+      handler(
         args: string,
         ctx: ForeignHostCapability<ExtensionContext>,
-      ) {
-        /**
-         * Dynamically imported context helper; lazy to keep startup cost low when /guard is never used.
-         */
-        const { getTrustDirectives, } = await import('./context.ts');
+      ): Promise<void> {
         /**
          * Trimmed argument string; empty string falls through to the list-directives branch.
          */
@@ -89,7 +86,7 @@ function registerGuardCommand(
               }`,
             );
           }
-          return;
+          return Promise.resolve();
         }
         if (trimmed === 'reset') {
           pi.appendEntry(
@@ -98,7 +95,7 @@ function registerGuardCommand(
           );
           ctx.ui
             .notify('Trust directives cleared for this session.',);
-          return;
+          return Promise.resolve();
         }
         pi.appendEntry(
           TRUST_ENTRY_TYPE,
@@ -106,6 +103,7 @@ function registerGuardCommand(
         );
         ctx.ui
           .notify(`Trust directive added: ${trimmed}`,);
+        return Promise.resolve();
       },
     },
   );
