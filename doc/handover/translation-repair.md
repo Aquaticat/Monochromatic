@@ -1012,6 +1012,25 @@ PASS 6 RUN 016 (2026-07-25, tip `8eddd3906`, 4016s wall ~67 min): 1 settled,
 76 resolved, 11 findings); one run, no cap. Large settled 4->5 (all five
 still lower-large 3.9-7.4KB; bigger large entries still ahead). Bands now 9
 small / 3 medium / 5 large. Run 017 launched.
+PASS 6 RUN 017 (2026-07-25, tip `7719f975f`, ~77 min effective on the third
+launch): 2 settled, 19/92. KILL SAGA + resume-across-external-kill validated.
+Run 017's first launch (tracked) ran ~16 min on Katerina, finishing chunks
+0-2, then was KILLED (external, non-resource: load ~1.3, 33Gi free, no OOM);
+Katerina's 3 slices persisted. Relaunch died at START (~1 min, another
+transient kill), zero progress, 3 slices intact. THIRD launch survived ~77
+min and settled TWO entries: Katerina RESUMED (`8 slices`, first completion
+`chunk 3` -- the 3 cached chunks skipped with zero model calls, so resume is
+now proven across an EXTERNAL KILL, not just a cap-abort; ~18 min, 70 issues
+66 accepted 65 resolved) then Kotori fresh (~59 min, 138 issues 129 accepted
+126 resolved). Both are medium (Katerina 2.2KB, Kotori 2.4KB), so medium
+3->5. LESSON: the intermittent background-task kills seen this session (runs
+010/011 first launches, a watcher, run 017 x2) are HARMLESS under
+resumability -- each costs at most the in-flight slice; on a `killed`
+notification just relaunch and resume-first continues the entry. Recomputed
+band totals over all 19 settled: small 9/30 (need ~1), medium 5/31 (need
+~5), large 5/31 (need ~5); large still all lower-band 3.8-7.2KB, bigger
+large entries (9-40KB, will cap and need multi-run resume) still ahead. Run
+018 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
