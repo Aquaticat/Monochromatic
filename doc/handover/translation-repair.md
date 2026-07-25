@@ -1031,6 +1031,10 @@ band totals over all 19 settled: small 9/30 (need ~1), medium 5/31 (need
 ~5), large 5/31 (need ~5); large still all lower-band 3.8-7.2KB, bigger
 large entries (9-40KB, will cap and need multi-run resume) still ahead. Run
 018 launched.
+PASS 6 RUN 018 (2026-07-25, tip `0fa06bd7e`, 3096s wall ~52 min): 1 settled,
+20/92. LCG_Akiball repaired (large, 89 issues, 83 accepted, 82 resolved, 8
+findings); one run, no cap. Large settled 5->6. Bands now 9 small / 5 medium
+/ 6 large (need ~1 small, ~5 medium, ~4 large). Run 019 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
