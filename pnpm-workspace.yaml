@@ -236,6 +236,12 @@ overrides:
   # (last commit 2022-05).
   # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
   'argparse': '-'
+  # Patch GHSA-mh99-v99m-4gvg / CVE-2026-14257: <=5.0.7 bounds the number of
+  # expand() results but not their length, so a chain of brace groups can
+  # exhaust memory and crash the process with an uncatchable OOM. Only
+  # transitive consumer is minimatch@10.2.5 (`brace-expansion: ^5.0.5`);
+  # patch-level bump is range-compatible.
+  'brace-expansion': '>=5.0.8'
   # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
   # the native binary; each invocation pays the Node startup cost (multiple
   # seconds in this workspace, vs sub-100ms for the native binary directly).
