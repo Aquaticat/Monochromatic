@@ -16,6 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { findBudgetModel, } from './budget-model.ts';
+import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
 
 //region Fixtures
 
@@ -181,8 +182,10 @@ function slugFor(
 function contextFixture(
   {
     authenticatedSlugs,
+    scopedModels = allModels,
   }: {
     readonly authenticatedSlugs: readonly string[];
+    readonly scopedModels?: readonly Model<Api>[];
   },
 ): ExtensionContext {
   /** Authenticated model slugs for O(1) lookup. */
@@ -190,6 +193,9 @@ function contextFixture(
   /** Minimal registry surface used by budget-model helpers. */
   const modelRegistry = {
     getAll() {
+      return allModels;
+    },
+    getAvailable() {
       return allModels;
     },
     hasConfiguredAuth(model: Model<Api>,) {
@@ -213,6 +219,9 @@ function contextFixture(
   return {
     model: activeModel,
     modelRegistry,
+    getScopedModels() {
+      return scopedModels;
+    },
   } as unknown as ExtensionContext;
 }
 
@@ -245,6 +254,22 @@ async function captureError(
 await describe({
   name: findBudgetModel.name,
   children: [
+    it({
+      name: 'uses scoped models across providers by default',
+      fn: async function testScopedCrossProviderSelection() {
+        const budgetModel = await findBudgetModel({
+          ctx: contextFixture({
+            authenticatedSlugs: [
+              slugFor(sameProviderFastModel,),
+              slugFor(anyProviderBudgetModel,),
+            ],
+            scopedModels: [anyProviderBudgetModel,],
+          },),
+        },);
+
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderBudgetModel,),);
+      },
+    },),
     it({
       name: 'keeps same-provider model choice for fixed fixtures',
       fn: async function testSameProviderSelection() {
@@ -354,6 +379,48 @@ await describe({
         },);
 
         expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderFastModel,),);
+      },
+    },),
+    it({
+      name: 'keeps configured override outside scope',
+      fn: async function testScopedOverrideSelection() {
+        const budgetModel = await findBudgetModel({
+          ctx: contextFixture({
+            authenticatedSlugs: [slugFor(sameProviderFastModel,),],
+            scopedModels: [anyProviderBudgetModel,],
+          },),
+          options: {
+            modelOverride: slugFor(sameProviderFastModel,),
+            strategy: 'any-provider',
+            majorVersions: MAJOR_VERSIONS,
+          },
+        },);
+
+        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderFastModel,),);
+      },
+    },),
+    it({
+      name: 'does not widen an unauthenticated scope to registry models',
+      fn: async function testUnauthenticatedScopedSelection() {
+        const caught = await captureError(async function selectOutsideScope() {
+          return await findBudgetModel({
+            ctx: contextFixture({
+              authenticatedSlugs: [slugFor(sameProviderFastModel,),],
+              scopedModels: [sameProviderBudgetModel,],
+            },),
+          },);
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'no fast judge models with API keys found across any provider',
+        );
+      },
+    },),
+    it({
+      name: 'defaults to any-provider selection',
+      fn: async function testDefaultStrategy() {
+        expect(JUDGE_MODEL_DEFAULTS.strategy,).toBe('any-provider',);
       },
     },),
     it({

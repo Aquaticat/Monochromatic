@@ -13,14 +13,15 @@
 
 /**
  * Default judge-model selection used when no global config is set
- * and when `findBudgetModel` is called with no options.
+ * and when `findBudgetModel` is called with no options. It considers every
+ * provider represented in Pi's effective model scope.
  *
  * Single source of truth: referenced by {@link loadMergedConfig} (for the
  * config-file fallback), by {@link GLOBAL_DEFAULTS} (for the global
  * defaults), and by {@link findBudgetModel} (for the no-options call).
  */
 export const JUDGE_MODEL_DEFAULTS = {
-  strategy: 'same-provider',
+  strategy: 'any-provider',
   majorVersions: 1,
 } as const;
 

@@ -207,14 +207,14 @@ gracefully rather than throwing.
   "instructions": "Allow terraform commands in this project",
   "judgeModel": {
     "modelOverride": "openai/gpt-4o-mini",
-    "strategy": "same-provider",
+    "strategy": "any-provider",
     "majorVersions": 1
   },
   "judgeTimeoutMs": 10000
 }
 ```
 
-The `judgeModel` defaults to `{strategy: "same-provider", majorVersions: 1}` when the config is absent
+The `judgeModel` defaults to `{strategy: "any-provider", majorVersions: 1}` when the config is absent
 or `judgeModel` is unset;
  defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
 the loader,
@@ -226,6 +226,19 @@ then ranks candidates by local speed-name heuristic:
 `turbo` > `nano` > `mini` > `haiku` > `lite` or `light` > no signal.
 When no speed signal separates candidates,
  selection falls back to input cost and version.
+
+### Effective scoped model set
+
+Automatic selection only considers Pi's effective scoped models:
+
+1. Live scope exposed by Pi's extension context.
+2. Startup `--models` patterns.
+3. Merged global and project `enabledModels` settings.
+4. Authenticated registry models when Pi has no scope restriction.
+
+The default strategy ranks candidates from every provider in that set.
+Set `strategy` to `same-provider` to restrict that automatic selection to the active model's provider.
+A configured `modelOverride` remains an explicit registry-wide choice and can select a model outside the scope.
 
 ## Skill read allowlist
 

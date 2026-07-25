@@ -13,6 +13,7 @@ import {
   budgetModelSlug,
   NoBudgetModelError,
   resolveBudgetModelOverride,
+  resolveEffectiveScope,
   selectBudgetModel,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -129,9 +130,10 @@ function assertModelApiList(
  * {@link resolveBudgetModelOverride}, backed by {@link findBudgetOverrideModel}
  * and {@link resolveBudgetAuth}. Otherwise validates the active model and
  * registry with {@link assertModelApi} and {@link assertModelApiList}, then
- * {@link selectBudgetModel} walks candidate models fastest-first, using
- * {@link hasConfiguredBudgetAuth} and {@link resolveBudgetAuth}, and returns
- * the first candidate the registry can authenticate.
+ * {@link resolveEffectiveScope} narrows automatic candidates to Pi's effective
+ * scoped models. {@link selectBudgetModel} walks those candidates fastest-first,
+ * using {@link hasConfiguredBudgetAuth} and {@link resolveBudgetAuth}, and
+ * returns the first candidate the registry can authenticate.
  *
  * @param ctx - pi extension context
  *
@@ -143,7 +145,7 @@ function assertModelApiList(
  *
  * @returns budget model with auth credentials
  *
- * @mutates ctx - registry selection can invoke model accessors and command-backed auth capabilities
+ * @mutates ctx - scope resolution and registry selection can invoke model accessors and command-backed auth capabilities
  *
  * @mutates options - override and strategy reads can invoke caller-owned accessors or proxy traps
  *
@@ -230,7 +232,7 @@ async function findBudgetModel(
     throw new NoBudgetModelError('no active model set',);
 
   /**
-   * Active model handed in by host so same-provider selection has a reference provider.
+   * Active model handed in by host so an explicit same-provider strategy has a reference provider.
    */
   const rawActiveModel: unknown = ctx.model;
   assertModelApi(rawActiveModel,);
@@ -239,16 +241,35 @@ async function findBudgetModel(
    */
   const activeModel = rawActiveModel;
   /**
-   * Registry models narrowed to auto-mode's pi model shape for shared selection callbacks.
+   * Effective Pi scope that constrains automatic judge selection.
    */
-  const rawAllModels: unknown = ctx.modelRegistry
-    .getAll();
-  assertModelApiList(rawAllModels,);
+  const judgeModelScope = await resolveEffectiveScope<Model<Api>>({
+    ctx,
+    errorPrefix: 'auto-mode',
+  },);
   /**
-   * Registry models after runtime shape validation, excluding models whose
+   * Models selected by Pi's scope, narrowed to auto-mode's pi model shape.
+   */
+  const rawScopedJudgeModels: unknown = judgeModelScope.entries.map(
+    /**
+     * Extract model record from one effective-scope entry.
+     *
+     * @param entry - scoped Pi model entry
+     *
+     * @returns Pi model selected by scope
+     */
+    function mapScopedJudgeModel(
+      entry: ForeignBorrowed<(typeof judgeModelScope.entries)[number]>,
+    ) {
+      return entry.model;
+    },
+  );
+  assertModelApiList(rawScopedJudgeModels,);
+  /**
+   * Scoped models after runtime shape validation, excluding models whose
    * completed judge attempts already failed.
    */
-  const allModels = rawAllModels.filter(
+  const allModels = rawScopedJudgeModels.filter(
     /**
      * Excludes models whose previous judge attempts failed.
      *
