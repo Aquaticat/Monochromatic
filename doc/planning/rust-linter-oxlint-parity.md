@@ -376,6 +376,21 @@ edit `.agents/skills/dum-dum-non-ts/SKILL.md`, which is the source that
 file-enforcer mirrors into `.claude/skills/` and `.factory/skills/`,
 and define the scope of "first occurrence" explicitly as per file.
 
+Blast radius surfaced and accepted 2026-07-25.
+The skill fires on every non-TypeScript general-purpose language it lists,
+so the amendment is GLOBAL, not scoped to this linter:
+it changes the convention for the other fourteen Rust packages,
+the Kotlin linter rule set, and the music-player Android port.
+The user chose global amendment over a linter-only carve-out,
+on the reasoning that re-explaining a concept at every occurrence adds volume
+without adding comprehension in any language, not just here.
+Existing full-density files stay valid because they exceed the requirement.
+
+## Status: design confirmed
+
+Shared understanding reached 2026-07-25.
+Implementation authorized, starting at work item 1, core crate extraction.
+
 ## Further items adopted without asking
 
 Settled after the questions above, because each has one defensible answer:
