@@ -23,8 +23,15 @@ import type {
   Verdict,
 } from './types.ts';
 
-/** Auto-mode fallback logger. */
+/**
+ * Auto-mode fallback logger.
+ */
 const l = tagged({ tag: 'auto-mode-judge-fallback', },);
+
+/**
+ * Sentinel for unavailable second fallback judge.
+ */
+const NO_SECOND_FALLBACK: unique symbol = Symbol('second fallback judge unavailable',);
 
 /**
  * Request data shared by every candidate attempt.
@@ -44,23 +51,41 @@ const l = tagged({ tag: 'auto-mode-judge-fallback', },);
  * ```
  */
 type JudgeReviewRequest = {
-  /** Human-readable action under review. */
+  /**
+   * Human-readable action under review.
+   */
   readonly action: string;
-  /** Complete current tool input encoded as JSON. */
+  /**
+   * Complete current tool input encoded as JSON.
+   */
   readonly actionInput: string;
-  /** Agent working directory. */
+  /**
+   * Agent working directory.
+   */
   readonly cwd: string;
-  /** Recent session activity. */
+  /**
+   * Recent session activity.
+   */
   readonly recentContext: string;
-  /** Active trust directives. */
+  /**
+   * Active trust directives.
+   */
   readonly trustDirectives: readonly string[];
-  /** Complete candidate-attempt timeout. */
+  /**
+   * Complete candidate-attempt timeout.
+   */
   readonly timeoutMs: number;
-  /** Auto-mode judge rubric. */
+  /**
+   * Auto-mode judge rubric.
+   */
   readonly systemPrompt: string;
-  /** Sibling batch decisions. */
+  /**
+   * Sibling batch decisions.
+   */
   readonly batchContext: readonly BatchEntry[];
-  /** Optional data-only deterministic provider seam. */
+  /**
+   * Optional data-only deterministic provider seam.
+   */
   readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
 };
 
@@ -73,9 +98,13 @@ type JudgeReviewRequest = {
  * ```
  */
 type JudgeAttemptSuccess = {
-  /** Canonical selected judge identity. */
+  /**
+   * Canonical selected judge identity.
+   */
   readonly identity: string;
-  /** Strict judge verdict. */
+  /**
+   * Strict judge verdict.
+   */
   readonly verdict: Verdict;
 };
 
@@ -112,7 +141,9 @@ async function runFallbackAttempt(
     readonly diagnostics: string[];
   },
 ): Promise<JudgeAttemptSuccess> {
-  /** Canonical identity used for logs and audit. */
+  /**
+   * Canonical identity used for logs and audit.
+   */
   const identity = budgetModelSlug(judge.model,);
   l.debug(`starting fallback reviewer ${identity}`,);
   try {
@@ -126,11 +157,16 @@ async function runFallbackAttempt(
     };
   }
   catch (error) {
-    /** Candidate-labeled normalized error. */
+    /**
+     * Candidate-labeled normalized error.
+     */
     const diagnostic = `${identity}: ${caughtValueText(error,)}`;
-    diagnostics.push(diagnostic,);
+    diagnostics[diagnostics.length] = diagnostic;
     l.error(`fallback reviewer failed: ${diagnostic}`,);
-    throw new Error(diagnostic, { cause: error, },);
+    throw new Error(
+      diagnostic,
+      { cause: error, },
+    );
   }
 }
 
@@ -169,11 +205,17 @@ async function callJudgeWithFallback(
     readonly request: ForeignBorrowed<JudgeReviewRequest>;
   },
 ): Promise<Verdict> {
-  /** Initial canonical judge identity. */
+  /**
+   * Initial canonical judge identity.
+   */
   const firstIdentity = budgetModelSlug(firstJudge.model,);
-  /** Candidate identities whose transports started. */
+  /**
+   * Candidate identities whose transports started.
+   */
   const attemptedCandidateIdentities: string[] = [firstIdentity,];
-  /** Normalized selection and transport failures. */
+  /**
+   * Normalized selection and transport failures.
+   */
   const diagnostics: string[] = [];
   try {
     return await callJudge({
@@ -183,13 +225,18 @@ async function callJudgeWithFallback(
     },);
   }
   catch (error) {
-    diagnostics.push(`${firstIdentity}: ${caughtValueText(error,)}`,);
+    diagnostics[diagnostics.length] = `${firstIdentity}: ${caughtValueText(error,)}`;
     l.error(`initial reviewer failed: ${diagnostics[0]}`,);
   }
 
-  /** First distinct fallback, or availability exhaustion. */
+  /**
+   * First distinct fallback, or availability exhaustion.
+   */
   const firstFallbackResult = await (async function resolveFirstFallback(): Promise<
-    | { readonly available: true; readonly judge: BudgetModel; }
+    | {
+      readonly available: true;
+      readonly judge: BudgetModel
+    }
     | { readonly available: false; }
   > {
     try {
@@ -223,14 +270,27 @@ async function callJudgeWithFallback(
       ],
     },);
   }
-  /** First distinct fallback judge. */
+  /**
+   * First distinct fallback judge.
+   */
   const firstFallback = firstFallbackResult.judge;
-  /** First fallback canonical identity. */
+  /**
+   * First fallback canonical identity.
+   */
   const firstFallbackIdentity = budgetModelSlug(firstFallback.model,);
-  /** Exclusions used to seek optional second distinct fallback. */
-  const secondExclusions = [firstIdentity, firstFallbackIdentity,];
-  /** Optional second distinct fallback judge. */
-  const secondFallback = await (async function resolveSecondFallback(): Promise<BudgetModel | undefined> {
+  /**
+   * Exclusions used to seek optional second distinct fallback.
+   */
+  const secondExclusions = [
+    firstIdentity,
+    firstFallbackIdentity,
+  ];
+  /**
+   * Optional second distinct fallback judge.
+   */
+  const secondFallback = await (async function resolveSecondFallback(): Promise<
+    BudgetModel | typeof NO_SECOND_FALLBACK
+  > {
     try {
       return await findBudgetModel({
         ctx,
@@ -239,7 +299,7 @@ async function callJudgeWithFallback(
     }
     catch (error) {
       if (error instanceof NoBudgetModelError)
-        return undefined;
+        return NO_SECOND_FALLBACK;
       throw new ReviewUnavailableError({
         attemptedCandidateIdentities,
         diagnostics: [
@@ -252,7 +312,9 @@ async function callJudgeWithFallback(
   })();
 
   attemptedCandidateIdentities.push(firstFallbackIdentity,);
-  /** Concurrent fallback attempts started before first await. */
+  /**
+   * Concurrent fallback attempts started before first await.
+   */
   const fallbackAttempts: Promise<JudgeAttemptSuccess>[] = [
     runFallbackAttempt({
       judge: firstFallback,
@@ -260,7 +322,7 @@ async function callJudgeWithFallback(
       diagnostics,
     },),
   ];
-  if (secondFallback !== undefined) {
+  if ((typeof secondFallback) !== 'symbol') {
     attemptedCandidateIdentities.push(budgetModelSlug(secondFallback.model,),);
     fallbackAttempts.push(runFallbackAttempt({
       judge: secondFallback,
@@ -269,7 +331,9 @@ async function callJudgeWithFallback(
     },),);
   }
   try {
-    /** First fulfilled strict verdict; rejected transports do not settle race. */
+    /**
+     * First fulfilled strict verdict; rejected transports do not settle race.
+     */
     const winner = await Promise.any(fallbackAttempts,);
     l.debug(`fallback reviewer race winner: ${winner.identity}`,);
     return winner.verdict;

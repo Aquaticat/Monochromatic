@@ -131,7 +131,9 @@ async function callJudge(
    * Cancellation deadline shared by initial request and every JSON retry.
    */
   const signal = structuredReviewSignal({ timeoutMs, },);
-  /** Initial forced-tool provider response. */
+  /**
+   * Initial forced-tool provider response.
+   */
   const initial = await runStructuredToolRequest({
     model,
     auth,
@@ -146,7 +148,9 @@ async function callJudge(
   },);
   if (initial.kind === 'toolCall')
     return parseVerdict(initial.arguments,);
-  /** Caller-specific direct-JSON retry prompt. */
+  /**
+   * Caller-specific direct-JSON retry prompt.
+   */
   const retryPrompt = {
     systemPrompt: buildJsonRetrySystemPrompt({ systemPrompt, },),
     userContent: buildJsonRetryUserContent({
@@ -154,7 +158,9 @@ async function callJudge(
       firstAttemptTextContent: initial.textContent,
     },),
   };
-  /** Unknown retry value retained only until strict verdict parsing. */
+  /**
+   * Unknown retry value retained only until strict verdict parsing.
+   */
   const value = await runStructuredJsonRetries({
     model,
     auth,

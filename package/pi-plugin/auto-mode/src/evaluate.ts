@@ -350,7 +350,7 @@ async function evaluate(
  *
  * @mutates excludedModelSlugs - model exclusion iteration can invoke caller-owned hooks
  */
-async function resolveJudgeModel(
+function resolveJudgeModel(
   {
     ctx,
     excludedModelSlugs = [],

@@ -288,11 +288,11 @@ await describe({
           testTransport: transport,
         },);
         /** Final reviewer request snapshot captured immediately before dispatch. */
-        const request = transport.requests[0];
+        const [request,] = transport.requests;
         if (request === undefined)
           throw new Error('Expected reviewer provider request snapshot.',);
         /** Exact user message sent to reviewer provider. */
-        const message = request.context.messages[0];
+        const [message,] = request.context.messages;
         if (message === undefined)
           throw new Error('Expected reviewer user message.',);
         expect(message.content,).toContain(WRITE_ACTION_INPUT_FIXTURE,);
@@ -325,10 +325,8 @@ await describe({
         },);
         expect(verdict.verdict,).toBe('ask',);
         expect(transport.requests,).toHaveLength(2,);
-        /** Forced-tool request snapshot. */
-        const first = transport.requests[0];
-        /** Direct-JSON retry request snapshot. */
-        const retry = transport.requests[1];
+        /** Forced-tool and direct-JSON retry request snapshots. */
+        const [first, retry,] = transport.requests;
         if ((first === undefined) || (retry === undefined))
           throw new Error('Expected forced and retry request snapshots.',);
         expect(first.context.toolNames,).toEqual(['render_verdict',],);
