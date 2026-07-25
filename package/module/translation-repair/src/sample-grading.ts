@@ -1,9 +1,3 @@
-import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import type {
-  IssueCategory,
-  IssueSeverity,
-} from './issue-taxonomy.ts';
-
 //region Sample grading model
 // The milestone-three headline gate is precision of accepted issues on a
 // human-graded sample, because a judge ensemble drawn from the same seven
@@ -106,14 +100,19 @@ export type GradingCandidate = {
   readonly issueId: string;
 
   /**
-   * Category of the issue's primary claim.
+   * Category of the issue's primary claim, as a plain string: this is a
+   * display field on a human sheet, so it is never narrowed to the closed
+   * taxonomy. Keeping it a string means the parser never has to skip an
+   * off-taxonomy accepted issue, which would silently bias the precision
+   * denominator.
    */
-  readonly category: IssueCategory;
+  readonly category: string;
 
   /**
-   * Adjudicated severity of the issue.
+   * Adjudicated severity of the issue, as a plain display string for the same
+   * reason as {@link GradingCandidate.category}.
    */
-  readonly severity: IssueSeverity;
+  readonly severity: string;
 
   /**
    * One-sentence statement of the primary claimed defect.
@@ -129,6 +128,72 @@ export type GradingCandidate = {
    * Distinct en target quotes the issue anchors, in first-seen order.
    */
   readonly targetQuotes: readonly string[];
+};
+
+/**
+ * One anchored span the grading extraction reads: which document side it
+ * points into and the exact text it quotes.
+ */
+export type GradableSpan = {
+  /**
+   * Document side the span points into.
+   */
+  readonly side: 'source' | 'target';
+
+  /**
+   * Exact text the span quotes; empty for an insertion anchor.
+   */
+  readonly quotedText: string;
+};
+
+/**
+ * One member claim the grading extraction reads.
+ */
+export type GradableClaim = {
+  /**
+   * Category slug of the claim, kept a plain string (see
+   * {@link GradingCandidate.category}).
+   */
+  readonly category: string;
+
+  /**
+   * One-sentence statement of the claimed defect.
+   */
+  readonly summary: string;
+
+  /**
+   * Anchored spans the claim cites.
+   */
+  readonly spans: readonly GradableSpan[];
+};
+
+/**
+ * The minimal accepted-issue shape the grading extraction reads: identity,
+ * severity, and member claims. A full pipeline `AdjudicatedIssue` satisfies it
+ * structurally, and so does an issue parsed back from a run artifact, so the
+ * extractor is decoupled from the pipeline's richer internal shape.
+ */
+export type GradableIssue = {
+  /**
+   * Adjudicated-issue identity, also the draw's shuffle key.
+   */
+  readonly issueId: string;
+
+  /**
+   * Adjudicated severity, kept a plain string (see
+   * {@link GradingCandidate.severity}).
+   */
+  readonly severity: string;
+
+  /**
+   * Member claims, primary first.
+   */
+  readonly claims: readonly {
+    /**
+     * The member claim.
+     */
+    readonly claim: GradableClaim;
+  }[];
 };
 
 /**
@@ -170,7 +235,7 @@ function sideQuotes(
     issue,
     side,
   }: {
-    readonly issue: AdjudicatedIssue;
+    readonly issue: GradableIssue;
     readonly side: 'source' | 'target';
   },
 ): readonly string[] {
@@ -222,7 +287,7 @@ export function extractGradingCandidate(
     entryId,
     band,
   }: {
-    readonly issue: AdjudicatedIssue;
+    readonly issue: GradableIssue;
     readonly entryId: string;
     readonly band: SizeBand;
   },
@@ -241,7 +306,7 @@ export function extractGradingCandidate(
     issueId: issue.issueId,
     category: primary?.claim
       .category
-      ?? 'extension/alignment-error',
+      ?? '(uncategorized)',
     severity: issue.severity,
     summary: primary?.claim
       .summary

@@ -116,6 +116,11 @@ export {
   screenNonTranslationVotes,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
+export {
+  ArtifactParseError,
+  type ParsedArtifact,
+  parseSettledArtifact,
+} from './artifact-read.ts';
 export { formatGradingSheet, } from './grading-sheet.ts';
 export {
   allocateBandQuota,
@@ -128,6 +133,9 @@ export {
   DEFAULT_SAMPLE_SEED,
   DEFAULT_SAMPLE_SIZE,
   extractGradingCandidate,
+  type GradableClaim,
+  type GradableIssue,
+  type GradableSpan,
   type GradingCandidate,
   MEDIUM_BAND_MAX_BYTES,
   SIZE_BANDS,
