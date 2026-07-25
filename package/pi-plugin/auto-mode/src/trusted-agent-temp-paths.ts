@@ -151,10 +151,11 @@ async function isExistingPathUnderTrustedAgentTemp(
     return false;
 
   /**
-   * Trusted-root containment decisions for the canonical path.
+   * Concurrent canonicalization and containment work for trusted roots.
    */
-  const containmentDecisions = await Promise.all(
-    trustedAgentTempDirs.map(async function trustedDirContainsPath(trustedDir,) {
+  const containmentPromises: Promise<boolean>[] = [];
+  for (const trustedDir of trustedAgentTempDirs) {
+    containmentPromises[containmentPromises.length] = (async function trustedDirContainsPath(): Promise<boolean> {
       /**
        * Canonical trusted root used to block symlink escapes.
        */
@@ -167,9 +168,17 @@ async function isExistingPathUnderTrustedAgentTemp(
           resolved: canonicalPath,
           dir: canonicalTrustedDir,
         },);
-    },),
-  );
-  return containmentDecisions.some(Boolean,);
+    })();
+  }
+  /**
+   * Trusted-root containment decisions for current canonical path.
+   */
+  const containmentDecisions = await Promise.all(containmentPromises,);
+  for (const containsPath of containmentDecisions) {
+    if (containsPath)
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -206,16 +215,16 @@ async function isProjectDotenvCredentialExtractionPath(
     !== 'grep')
     return false;
 
-  if (!command
-    .args
-    .some(
-      function argIsSecretName(argument,) {
-        return SECRET_VAR_PATTERN.test(argument,);
-      },
-    )) {
-    return false;
+  /**
+   * Secret-looking arguments proving grep selects credential names.
+   */
+  const secretNameArguments: string[] = [];
+  for (const argument of command.args) {
+    if (SECRET_VAR_PATTERN.test(argument,))
+      secretNameArguments[secretNameArguments.length] = argument;
   }
-
+  if (secretNameArguments.length === 0)
+    return false;
   return await isExistingProjectDotenvPath({
     filePath,
     ctx,

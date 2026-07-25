@@ -139,18 +139,25 @@ async function isNonSecretTrustedAgentTempGlobPath(
     return false;
 
   /**
-   * Trusted-root containment decisions for the canonical glob parent.
+   * Concurrent containment work for every trusted root.
    */
-  const containmentDecisions = await Promise.all(
-    trustedAgentTempDirs.map(function trustedDirContainsGlobParent(trustedDir,) {
-      return trustedDirContainsCanonicalPath({
-        canonicalPath: canonicalParent,
-        cwd: ctx.cwd,
-        trustedDir,
-      },);
-    },),
-  );
-  return containmentDecisions.some(Boolean,);
+  const containmentPromises: Promise<boolean>[] = [];
+  for (const trustedDir of trustedAgentTempDirs) {
+    containmentPromises[containmentPromises.length] = trustedDirContainsCanonicalPath({
+      canonicalPath: canonicalParent,
+      cwd: ctx.cwd,
+      trustedDir,
+    },);
+  }
+  /**
+   * Trusted-root containment decisions for current canonical glob parent.
+   */
+  const containmentDecisions = await Promise.all(containmentPromises,);
+  for (const containsParent of containmentDecisions) {
+    if (containsParent)
+      return true;
+  }
+  return false;
 }
 
 //endregion Glob paths

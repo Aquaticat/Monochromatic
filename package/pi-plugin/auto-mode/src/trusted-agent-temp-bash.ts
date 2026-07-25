@@ -149,26 +149,27 @@ async function hasTrustedAgentTempCredentialHandoff(
     return false;
 
   /**
-   * Commands that could hand a credential to a helper path.
+   * Concurrent helper checks for credential-bearing commands.
    */
-  const credentialCommands = analysis
-    .commands
-    .filter(function commandHasSecretAssignment(command,) {
-      return commandContainsSecretAssignment(command,);
-    },);
-  /**
-   * Trusted-helper invocation decisions for credential-bearing commands.
-   */
-  const helperDecisions = await Promise.all(
-    credentialCommands.map(function commandHandsCredentialToTrustedHelper(command,) {
-      return commandInvokesTrustedAgentTempHelper({
+  const helperPromises: Promise<boolean>[] = [];
+  for (const command of analysis.commands) {
+    if (commandContainsSecretAssignment(command,)) {
+      helperPromises[helperPromises.length] = commandInvokesTrustedAgentTempHelper({
         command,
         ctx,
         trustedAgentTempDirs,
       },);
-    },),
-  );
-  return helperDecisions.some(Boolean,);
+    }
+  }
+  /**
+   * Trusted-helper invocation decisions for credential-bearing commands.
+   */
+  const helperDecisions = await Promise.all(helperPromises,);
+  for (const decision of helperDecisions) {
+    if (decision)
+      return true;
+  }
+  return false;
 }
 
 //endregion Public API
@@ -194,17 +195,13 @@ async function hasTrustedAgentTempCredentialHandoff(
 function commandContainsSecretAssignment(
   command: CommandInfo,
 ): boolean {
-  return commandWords(command,)
-    .flatMap(
-      function wordAssignmentNames(word,) {
-        return extractShellAssignmentNames(word,);
-      },
-    )
-    .some(
-    function isSecretAssignment(name,) {
-      return SECRET_VAR_PATTERN.test(name,);
-    },
-  );
+  for (const word of commandWords(command,)) {
+    for (const assignmentName of extractShellAssignmentNames(word,)) {
+      if (SECRET_VAR_PATTERN.test(assignmentName,))
+        return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -222,17 +219,15 @@ function commandContainsSecretAssignment(
 function commandWords(
   command: CommandInfo,
 ): readonly string[] {
-  return [
-    command.name,
-    ...command
-      .envAssignments
-      .map(
-        function renderAssignment(assignment,) {
-          return `${assignment.name}=${assignment.value}`;
-        },
-      ),
-    ...command.args,
-  ];
+  /**
+   * Rendered command words in shell order.
+   */
+  const words: string[] = [command.name,];
+  for (const assignment of command.envAssignments)
+    words[words.length] = `${assignment.name}=${assignment.value}`;
+  for (const argument of command.args)
+    words[words.length] = argument;
+  return words;
 }
 
 /**
@@ -275,54 +270,66 @@ async function commandInvokesTrustedAgentTempHelper(
 
   if (TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS.has(command.name,)) {
     /**
-     * Direct script-runner argument path decisions.
+     * Concurrent path checks for direct script-runner arguments.
      */
-    const argumentDecisions = await Promise.all(
-      command
-        .args
-        .map(function argumentIsTrustedHelperPath(argument,) {
-          return isExistingPathUnderTrustedAgentTemp({
-            filePath: argument,
-            ctx,
-            trustedAgentTempDirs,
-          },);
-        },),
-    );
-    return argumentDecisions.some(Boolean,);
-  }
-
-  /**
-   * Argument indexes for runner words inside wrapper commands.
-   */
-  const runnerIndexes = [...command
-    .args
-    .entries(),]
-    .filter(function entryHasRunnerArgument(entry,) {
-      return TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS.has(entry[1],);
-    },)
-    .map(function pickEntryIndex(entry,) {
-      return entry[0];
-    },);
-  /**
-   * Arguments after runner words that could be helper paths.
-   */
-  const followingArguments = runnerIndexes.flatMap(function followingArgumentsAfterRunner(index,) {
-    return command.args
-      .slice(index + 1,);
-  },);
-  /**
-   * Trusted-helper decisions for arguments following runner words.
-   */
-  const followingArgumentDecisions = await Promise.all(
-    followingArguments.map(function followingArgumentIsTrustedHelperPath(followingArgument,) {
-      return isExistingPathUnderTrustedAgentTemp({
-        filePath: followingArgument,
+    const argumentPromises: Promise<boolean>[] = [];
+    for (const argument of command.args) {
+      argumentPromises[argumentPromises.length] = isExistingPathUnderTrustedAgentTemp({
+        filePath: argument,
         ctx,
         trustedAgentTempDirs,
       },);
-    },),
-  );
-  return followingArgumentDecisions.some(Boolean,);
+    }
+    /**
+     * Direct script-runner argument path decisions.
+     */
+    const argumentDecisions = await Promise.all(argumentPromises,);
+    for (const decision of argumentDecisions) {
+      if (decision)
+        return true;
+    }
+    return false;
+  }
+
+  /**
+   * Concurrent trusted-path checks for arguments after nested runner words.
+   */
+  const followingArgumentPromises: Promise<boolean>[] = [];
+  /**
+   * Wrapper command arguments searched for nested runners and helper paths.
+   */
+  const { args, } = command;
+  for (let runnerIndex = 0; runnerIndex < args.length; runnerIndex += 1) {
+    /**
+     * Possible runner command at current wrapper argument position.
+     */
+    const runnerArgument = args[runnerIndex];
+    if ((runnerArgument === undefined)
+      || (!TRUSTED_AGENT_TEMP_SCRIPT_RUNNERS.has(runnerArgument,)))
+      continue;
+    for (let argumentIndex = runnerIndex + 1; argumentIndex < args.length; argumentIndex += 1) {
+      /**
+       * Possible helper path after nested runner word.
+       */
+      const followingArgument = args[argumentIndex];
+      if (followingArgument !== undefined) {
+        followingArgumentPromises[followingArgumentPromises.length] = isExistingPathUnderTrustedAgentTemp({
+          filePath: followingArgument,
+          ctx,
+          trustedAgentTempDirs,
+        },);
+      }
+    }
+  }
+  /**
+   * Trusted-helper decisions for arguments following runner words.
+   */
+  const followingArgumentDecisions = await Promise.all(followingArgumentPromises,);
+  for (const decision of followingArgumentDecisions) {
+    if (decision)
+      return true;
+  }
+  return false;
 }
 
 //endregion Credential handoff detection
