@@ -1115,6 +1115,14 @@ continues from slice 22+ rather than restarting (degrade-and-persist + the
 cap-abort-completes->=1-slice guarantee make this monotonic). First entry to
 exercise the hard cap this pass; the biggest large entries will need multi-run
 resume. Run 025 launched to resume it.
+PASS 6 RUN 025 (2026-07-25, tip `72128f17b`, 4978s wall ~83 min): 1 settled,
+25/92. NIGHT81473140 RESUMED and settled repaired (LARGE, 12301B; 123 issues,
+105 accepted, 105 resolved, 42 findings) -- run 024's 22 cached slices skipped
+with zero model calls, the remaining 19 of 41 total processed to settlement
+inside the hard cap. First PRODUCTION proof of the multi-run-resume path
+settling a hard-cap-aborted large entry end-to-end (earlier resume validation
+was Dethelly, which had not hit the cap). Large settled 6->7. Bands now 9 small
+/ 9 medium / 7 large (large needs ~3 more for the ~10 bar). Run 026 launched.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
