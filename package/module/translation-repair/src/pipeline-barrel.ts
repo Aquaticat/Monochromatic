@@ -114,6 +114,7 @@ export {
   type NonTranslationScreening,
   nonTranslationVotesStand,
   screenNonTranslationVotes,
+  sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
 export {
   SLICE_CHAR_BUDGET,

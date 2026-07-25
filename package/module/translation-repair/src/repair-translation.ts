@@ -11,7 +11,10 @@ import {
   type ChunkPair,
 } from './chunk-document.ts';
 import { hashContent, } from './document-node.ts';
-import { assessNonTranslationDominance, } from './non-translation-evidence.ts';
+import {
+  assessNonTranslationDominance,
+  sliceAnchorsTranslation,
+} from './non-translation-evidence.ts';
 import { parseDocument, } from './parse-document.ts';
 import {
   SLICE_CHAR_BUDGET,
@@ -321,13 +324,17 @@ export async function repairTranslation(
         sliceRef,
         sliceIndex,
       ) {
+        /**
+         * This slice's settled outcome, absent until it is processed.
+         */
+        const sliceOutcome = outcomes[sliceIndex];
         return {
           targetChars: sliceRef.target
             .text
             .length,
-          votesStand: outcomes[sliceIndex]
-            ?.nonTranslationStanding
-            ?? false,
+          votesStand: sliceOutcome?.nonTranslationStanding ?? false,
+          anchorsTranslation: (sliceOutcome !== undefined)
+            && sliceAnchorsTranslation({ outcome: sliceOutcome, },),
         };
       },),
     },);
