@@ -54,16 +54,29 @@ There is no dynamic loading:
 ## The Rule trait
 
 ```rust
-pub trait Rule {
+pub trait Rule: Send + Sync {
     fn id(&self) -> &'static str;
     fn plugin(&self) -> &'static str { "builtin" }
+    fn category(&self) -> Category;
     fn allows_suppression(&self) -> bool;
     fn check(&self, context: &LintContext, config: &Config, out: &mut Vec<Diagnostic>);
 }
 ```
 
+`Send + Sync` is required because the runner lints files in parallel,
+ handing every worker a borrow of the same rule set.
+It is a real constraint rather than ceremony,
+ since a rule holding unsynchronised interior mutability would race,
+ but a rule is normally stateless and it costs nothing.
+It does mean a rule cannot store a parsed syntax tree:
+ rowan's `SyntaxNode` is deliberately neither,
+ so anything tree-shaped is held as text and parsed per file.
+
 `plugin` has a default because rules compiled into the linter itself all report
 the same one.
+`category` has none:
+ a default would quietly file every new rule under one group,
+ so configuration aimed at that group would sweep in rules nobody meant to enable.
 `allows_suppression` deliberately has no default.
 Whether a rule may be silenced by an inline directive is a policy decision,
  and a default would let a rule author inherit one without noticing.
@@ -93,6 +106,10 @@ TOML was chosen so the binary stays standalone,
 
 ```toml
 extends = ["../shared/rust-linter.toml"]
+
+# Which files are linted at all. An absent or empty include list means every
+# file; excludes are subtracted from whatever the includes admit.
+include-patterns = ["**/src/**"]
 ignore-patterns = ["**/generated/**"]
 
 [options]
@@ -108,6 +125,11 @@ pedantic = "warn"
 [rules."builtin/max-lines"]
 severity = "error"
 max = 300
+
+# A rule can carry its own file scope, which applies to THAT RULE only.
+# Other rules are unaffected.
+include = ["**/src/**"]
+exclude = ["**/src/vendored/**"]
 
 [[overrides]]
 files = ["**/*_tests.rs"]
@@ -137,6 +159,22 @@ For each file and each rule,
 2.  an explicit `[categories]` entry
 3.  an explicit `[rules]` entry
 4.  every matching `[[overrides]]` entry, in declaration order
+5.  the winning layer's own `include` and `exclude`, which can only turn a rule
+    off, never on
+6.  `-A`, `-W` and `-D` from the command line, which beat every file layer
+
+### Three ways to scope, and when to use which
+
+- `include-patterns` and `ignore-patterns` decide which files are linted **at
+  all**. A file excluded here is never read.
+- A rule's own `include` and `exclude` scope **that rule**, leaving every other
+  rule applying wherever it otherwise would.
+- `[[overrides]]` reconfigure **a set of rules** for a set of paths, and are the
+  right tool when several rules change together.
+
+A rule's scope belongs to the setting that won, not to the rule name globally,
+ so an `[[overrides]]` entry restating a rule with a different `include`
+ replaces the outer scope rather than intersecting with it.
 
 ### Two places this deliberately differs from oxlint
 

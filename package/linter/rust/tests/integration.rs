@@ -1425,3 +1425,82 @@ fn print_config_shows_the_merged_result() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// A global include list restricts the run, and excludes subtract from it.
+#[test]
+fn include_and_exclude_patterns_shape_the_run() {
+    let root = discovery_probe("include-exclude");
+    std::fs::create_dir_all(root.join("src/generated")).expect("create generated");
+    std::fs::write(root.join("src/generated/g.rs"), "fn g() {}\n").expect("write generated");
+
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "include-patterns = [\"**/src/**\"]\nignore-patterns = [\"**/generated/**\"]\n",
+    )
+    .expect("write config");
+
+    let (_code, stdout) = run_in(&root, &["."]);
+
+    assert!(stdout.contains("src/a.rs"), "included: {stdout}");
+    assert!(!stdout.contains("gen/b.rs"), "outside the include list: {stdout}");
+    assert!(
+        !stdout.contains("generated/g.rs"),
+        "included then excluded: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+// What:     Two rules where only one is scoped, driven through the real binary.
+// Why:      This is what "per rule" has to mean. A scope applied to the run as a
+//           whole would silence the unscoped rule too, and the unit test cannot
+//           catch that because it resolves rules one at a time.
+/// A rule's own include list scopes that rule and no other.
+fn scoped_rule_probe() -> std::path::PathBuf {
+    let root = discovery_probe("rule-scope");
+    std::fs::write(root.join("src/a.rs"), "fn a() {}\nfn b() {}\nfn c() {}\n").expect("write src");
+    std::fs::write(root.join("gen/b.rs"), "fn a() {}\nfn b() {}\nfn c() {}\n").expect("write gen");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[rules.\"builtin/require-rustdoc\"]\nseverity = \"error\"\ninclude = [\"**/src/**\"]\n\n[rules.\"builtin/max-lines\"]\nseverity = \"error\"\nmax = 2\n",
+    )
+    .expect("write config");
+
+    return root;
+}
+
+/// Scoping one rule leaves the others applying everywhere.
+#[test]
+fn rule_scope_applies_per_rule() {
+    let root = scoped_rule_probe();
+
+    let (_code, stdout) = run_in(&root, &["."]);
+
+    // The scoped rule fires only inside its include list.
+    assert!(
+        stdout.contains("require-rustdoc") && stdout.contains("src/a.rs"),
+        "the scoped rule fires in src: {stdout}"
+    );
+
+    // The unscoped rule fires in both places, which is the assertion that
+    // separates a per-rule scope from a run-wide one.
+    let max_lines_in_gen = stdout
+        .lines()
+        .filter(|line| return line.contains("max-lines") && line.contains("gen/b.rs"))
+        .count();
+    assert_eq!(
+        max_lines_in_gen, 1,
+        "the unscoped rule still fires outside the other rule's scope: {stdout}"
+    );
+
+    let rustdoc_in_gen = stdout
+        .lines()
+        .filter(|line| return line.contains("require-rustdoc") && line.contains("gen/b.rs"))
+        .count();
+    assert_eq!(
+        rustdoc_in_gen, 0,
+        "and the scoped rule does not: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}

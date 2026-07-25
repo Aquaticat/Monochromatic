@@ -406,3 +406,151 @@ fn settings_merge_per_plugin() {
     assert!(merged.settings_for("builtin").is_some(), "base survives");
     assert!(merged.settings_for("pattern").is_some(), "nearer adds");
 }
+
+// What:     An include list, checked to ADMIT rather than to exclude.
+// Why:      An empty `GlobSet` matches nothing, so a configuration that names no
+//           includes must be handled separately rather than tested against an
+//           empty matcher. Getting that wrong lints nothing at all, silently.
+/// With no include list, every path is admitted.
+#[test]
+fn absent_include_list_admits_everything() {
+    let linter = compile("");
+
+    assert!(!linter.is_ignored(Path::new("src/lib.rs")), "src admitted");
+    assert!(!linter.is_ignored(Path::new("vendor/x.rs")), "vendor too");
+}
+
+/// An include list restricts the run to what it names.
+#[test]
+fn include_patterns_restrict_the_run() {
+    let linter = compile("include-patterns = [\"**/src/**\"]\n");
+
+    assert!(!linter.is_ignored(Path::new("a/src/lib.rs")), "included");
+    assert!(linter.is_ignored(Path::new("a/vendor/x.rs")), "not included");
+}
+
+/// Excludes subtract from whatever the includes admit.
+#[test]
+fn excludes_subtract_from_includes() {
+    let linter = compile(
+        "include-patterns = [\"**/src/**\"]\nignore-patterns = [\"**/generated/**\"]\n",
+    );
+
+    assert!(!linter.is_ignored(Path::new("a/src/lib.rs")), "included");
+    assert!(
+        linter.is_ignored(Path::new("a/src/generated/x.rs")),
+        "included then excluded"
+    );
+}
+
+/// A rule's own include list scopes only that rule.
+#[test]
+fn rule_include_scopes_that_rule() {
+    let linter = compile(
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\ninclude = [\"**/src/**\"]\n",
+    );
+
+    assert_eq!(
+        severity_of(&linter, "a/src/lib.rs", "max-lines"),
+        RuleSeverity::Error,
+        "inside the rule's scope"
+    );
+    assert_eq!(
+        severity_of(&linter, "a/vendor/x.rs", "max-lines"),
+        RuleSeverity::Off,
+        "outside it"
+    );
+}
+
+// What:     Two rules, one scoped and one not.
+// Why:      This is what "per rule" means, and it is the assertion that would
+//           fail if a rule's scope were applied to the run as a whole.
+/// Scoping one rule leaves the others alone.
+#[test]
+fn rule_scope_does_not_affect_other_rules() {
+    let linter = compile(
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\ninclude = [\"**/src/**\"]\n\n[rules.\"builtin/require-rustdoc\"]\nseverity = \"error\"\n",
+    );
+
+    assert_eq!(
+        severity_of(&linter, "a/vendor/x.rs", "max-lines"),
+        RuleSeverity::Off,
+        "the scoped rule is off outside its scope"
+    );
+    assert_eq!(
+        severity_of(&linter, "a/vendor/x.rs", "require-rustdoc"),
+        RuleSeverity::Error,
+        "the unscoped rule is unaffected"
+    );
+}
+
+/// A rule's own exclude list carves paths out of it.
+#[test]
+fn rule_exclude_carves_paths_out() {
+    let linter = compile(
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\nexclude = [\"**/generated/**\"]\n",
+    );
+
+    assert_eq!(
+        severity_of(&linter, "a/src/lib.rs", "max-lines"),
+        RuleSeverity::Error,
+        "ordinary path"
+    );
+    assert_eq!(
+        severity_of(&linter, "a/generated/x.rs", "max-lines"),
+        RuleSeverity::Off,
+        "excluded path"
+    );
+}
+
+/// An exclude beats an include when both match.
+#[test]
+fn rule_exclude_beats_include() {
+    let linter = compile(
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\ninclude = [\"**/src/**\"]\nexclude = [\"**/src/generated/**\"]\n",
+    );
+
+    assert_eq!(
+        severity_of(&linter, "a/src/lib.rs", "max-lines"),
+        RuleSeverity::Error,
+        "included"
+    );
+    assert_eq!(
+        severity_of(&linter, "a/src/generated/x.rs", "max-lines"),
+        RuleSeverity::Off,
+        "included then excluded"
+    );
+}
+
+// What:     An override restating a rule with its own scope.
+// Why:      The scope belongs to the SETTING that won, not to the rule name
+//           globally. An override's scope must replace the outer one rather
+//           than being intersected with it, or a narrower override could never
+//           widen what an outer setting scoped away.
+/// An override's scope replaces the outer setting's rather than combining.
+#[test]
+fn override_scope_replaces_the_outer_one() {
+    let linter = compile(
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\ninclude = [\"**/src/**\"]\n\n[[overrides]]\nfiles = [\"**/vendor/**\"]\n\n[overrides.rules.\"builtin/max-lines\"]\nseverity = \"error\"\ninclude = [\"**/vendor/**\"]\n",
+    );
+
+    assert_eq!(
+        severity_of(&linter, "a/vendor/x.rs", "max-lines"),
+        RuleSeverity::Error,
+        "the override's own scope admits this path"
+    );
+}
+
+/// A rule scope is found by either spelling of the rule name.
+#[test]
+fn rule_scope_resolves_by_either_spelling() {
+    let linter = compile(
+        "[rules.\"max-lines\"]\nseverity = \"error\"\ninclude = [\"**/src/**\"]\n",
+    );
+
+    assert_eq!(
+        severity_of(&linter, "a/vendor/x.rs", "max-lines"),
+        RuleSeverity::Off,
+        "the bare spelling's scope still applies"
+    );
+}

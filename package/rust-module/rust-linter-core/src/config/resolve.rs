@@ -64,6 +64,15 @@ pub struct LinterConfig {
     /// Severity and options per rule, from the merged files.
     rules: BTreeMap<String, RuleSetting>,
 
+    /// Compiled include and exclude globs for the rules above, keyed by name.
+    rule_scopes: BTreeMap<String, CompiledScope>,
+
+    /// Compiled matcher for the files a run is restricted to, when it is.
+    include: GlobSet,
+
+    /// Whether an include list was given, since an empty set matches nothing.
+    has_include: bool,
+
     // What:     `Vec<CompiledOverride>` is a growable array of overrides whose
     //           globs are already compiled.
     // Why:      Overrides apply in order, so they stay a sequence rather than a
@@ -90,6 +99,44 @@ pub struct LinterConfig {
     settings: BTreeMap<String, toml::Table>,
 }
 
+// What:     `struct CompiledScope { .. }` is one rule's include and exclude
+//           globs, compiled.
+// Why:      Compiling per resolve call would mean rebuilding a matcher once per
+//           rule per file. Compiling once at load time is the difference between
+//           one compile and several thousand.
+/// One rule's file scope, with its globs compiled.
+#[derive(Debug)]
+struct CompiledScope {
+    /// Files this rule applies to; empty means wherever it is otherwise enabled.
+    include: GlobSet,
+
+    /// Whether an include list was given at all, since an empty set matches nothing.
+    has_include: bool,
+
+    /// Files this rule does not apply to.
+    exclude: GlobSet,
+}
+
+/// Scope matching for one rule.
+impl CompiledScope {
+    /// Report whether this rule applies to the given path.
+    fn covers(&self, path: &Path) -> bool {
+        // An exclude always wins, whatever the include list says.
+        if self.exclude.is_match(path) {
+            return false;
+        }
+
+        // No include list means no restriction. An empty `GlobSet` matches
+        // nothing, so testing it without this guard would disable every rule
+        // that did not name an include.
+        if !self.has_include {
+            return true;
+        }
+
+        return self.include.is_match(path);
+    }
+}
+
 /// One override with its globs already compiled.
 #[derive(Debug)]
 struct CompiledOverride {
@@ -101,6 +148,9 @@ struct CompiledOverride {
 
     /// Rule settings this override imposes.
     rules: BTreeMap<String, RuleSetting>,
+
+    /// Compiled include and exclude globs for those settings, keyed by name.
+    rule_scopes: BTreeMap<String, CompiledScope>,
 }
 
 /// Merging and resolution over a fully loaded configuration.
@@ -121,6 +171,9 @@ impl LinterConfig {
         // The `?` operator unwraps an `Ok` or returns the `Err` from this whole
         // function, which is how errors travel without exceptions.
         let ignore = build_glob_set(&merged.ignore_patterns)?;
+        let include = build_glob_set(&merged.include_patterns)?;
+        let has_include = !merged.include_patterns.is_empty();
+        let rule_scopes = compile_scopes(&merged.rules)?;
 
         // What:     `let mut overrides = Vec::new();` then a `for` loop pushing
         //           into it. `mut` is required to mutate a binding at all;
@@ -136,6 +189,9 @@ impl LinterConfig {
             ignore,
             categories: merged.categories,
             rules: merged.rules,
+            rule_scopes,
+            include,
+            has_include,
             overrides,
             cli_overrides: Vec::new(),
             patterns: merged.patterns,
@@ -144,9 +200,25 @@ impl LinterConfig {
         });
     }
 
+    // What:     `pub fn is_ignored(&self, path: &Path) -> bool`. Answers for both
+    //           lists: a path is out if an ignore pattern matches it, OR if an
+    //           include list exists and does not.
+    // Why:      Excludes subtract from whatever the includes admit, which is the
+    //           order a reader expects: say what you lint, then carve out the
+    //           exceptions.
     /// Report whether a path is excluded from the run entirely.
     pub fn is_ignored(&self, path: &Path) -> bool {
-        return self.ignore.is_match(path);
+        if self.ignore.is_match(path) {
+            return true;
+        }
+
+        // An empty `GlobSet` matches nothing, so an absent include list has to
+        // be checked separately rather than tested against an empty matcher.
+        if self.has_include && !self.include.is_match(path) {
+            return true;
+        }
+
+        return false;
     }
 
     // What:     `pub fn resolve(&self, path: &Path, plugin: &str, rule_id: &str,
@@ -188,12 +260,21 @@ impl LinterConfig {
             severity = configured.severity;
         }
 
+        // What:     `scope` tracks the file scope of whichever layer last won,
+        //           alongside the severity and options it supplied.
+        // Why:      A rule's `include`/`exclude` belongs to the SETTING that
+        //           won, not to the rule name globally. An override restating a
+        //           rule with a different scope must replace the outer one
+        //           rather than being intersected with it.
+        let mut scope: Option<&CompiledScope> = None;
+
         // Layer 3: a setting naming this rule directly, by either spelling.
         if let Some(setting) = lookup_rule(&self.rules, plugin, rule_id) {
             severity = setting.severity();
             // `.cloned()` copies the borrowed table into an owned one, needed
             // because the answer outlives this borrow of the config.
             options = setting.options().cloned();
+            scope = lookup_scope(&self.rule_scopes, plugin, rule_id);
         }
 
         // Layer 4: every matching override, in order, so the last one wins.
@@ -205,7 +286,18 @@ impl LinterConfig {
             if let Some(setting) = lookup_rule(&entry.rules, plugin, rule_id) {
                 severity = setting.severity();
                 options = setting.options().cloned();
+                scope = lookup_scope(&entry.rule_scopes, plugin, rule_id);
             }
+        }
+
+        // The winning layer's own file scope, applied before the command-line
+        // flags below. A rule scoped away from this path does not run, but an
+        // explicit `-D rule` on the command line still turns it back on: the
+        // flag is a deliberate instruction and the scope is a default.
+        if let Some(scope) = scope
+            && !scope.covers(path)
+        {
+            severity = RuleSeverity::Off;
         }
 
         // Layer 5: command-line flags, which beat every file layer. They
@@ -289,6 +381,9 @@ impl LinterConfig {
 pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
     // Sequences concatenate, base first, so a nearer config adds to the ignore
     // list and appends overrides that therefore win by running later.
+    let mut include_patterns = base.include_patterns;
+    include_patterns.extend(nearer.include_patterns);
+
     let mut ignore_patterns = base.ignore_patterns;
     ignore_patterns.extend(nearer.ignore_patterns);
 
@@ -333,6 +428,7 @@ pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
 
     return ConfigFile {
         extends,
+        include_patterns,
         ignore_patterns,
         options: merge_options(base.options, nearer.options),
         categories,
@@ -388,12 +484,34 @@ fn lookup_rule<'a>(
     return rules.get(rule_id);
 }
 
+// What:     `fn lookup_scope<'a>(..) -> Option<&'a CompiledScope>`. The scope
+//           counterpart of `lookup_rule`, matching the same two spellings.
+// Why:      A rule named `builtin/max-lines` in one place and `max-lines` in
+//           another must find its scope either way, or the scope would silently
+//           not apply.
+/// Find a rule's compiled scope by its qualified name, then its bare one.
+fn lookup_scope<'a>(
+    scopes: &'a BTreeMap<String, CompiledScope>,
+    plugin: &str,
+    rule_id: &str,
+) -> Option<&'a CompiledScope> {
+    let qualified = format!("{plugin}/{rule_id}");
+    if let Some(scope) = scopes.get(&qualified) {
+        return Some(scope);
+    }
+
+    return scopes.get(rule_id);
+}
+
 /// Compile one override's include and exclude globs.
 fn compile_override(entry: Override) -> Result<CompiledOverride, globset::Error> {
+    let rule_scopes = compile_scopes(&entry.rules)?;
+
     return Ok(CompiledOverride {
         files: build_glob_set(&entry.files)?,
         exclude_files: build_glob_set(&entry.exclude_files)?,
         rules: entry.rules,
+        rule_scopes,
     });
 }
 
@@ -401,6 +519,38 @@ fn compile_override(entry: Override) -> Result<CompiledOverride, globset::Error>
 //           `&[String]` is a borrowed VIEW of an array, which accepts a `Vec`
 //           without taking it.
 // Why:      One matcher per pattern list, compiled once.
+// What:     `fn compile_scopes(..) -> Result<BTreeMap<String, CompiledScope>, globset::Error>`.
+//           Compiles the include and exclude globs of every rule in one table.
+// Why:      Both the top-level `rules` table and each override's carry them, so
+//           the work is written once and called twice.
+/// Compile the file scope of every rule in one settings table.
+fn compile_scopes(
+    rules: &BTreeMap<String, RuleSetting>,
+) -> Result<BTreeMap<String, CompiledScope>, globset::Error> {
+    let mut scopes = BTreeMap::new();
+
+    for (name, setting) in rules {
+        let (include, exclude) = setting.scope();
+
+        // A rule that named neither needs no scope entry at all, which keeps the
+        // lookup in `resolve` cheap for the common case.
+        if include.is_empty() && exclude.is_empty() {
+            continue;
+        }
+
+        scopes.insert(
+            name.clone(),
+            CompiledScope {
+                include: build_glob_set(include)?,
+                has_include: !include.is_empty(),
+                exclude: build_glob_set(exclude)?,
+            },
+        );
+    }
+
+    return Ok(scopes);
+}
+
 /// Compile a list of glob patterns into a single matcher.
 fn build_glob_set(patterns: &[String]) -> Result<GlobSet, globset::Error> {
     let mut builder = GlobSetBuilder::new();

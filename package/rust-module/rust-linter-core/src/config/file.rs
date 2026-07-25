@@ -41,6 +41,14 @@ pub struct ConfigFile {
     /// Paths to configuration files this one inherits from, nearest last.
     pub extends: Vec<String>,
 
+    // What:     `include_patterns: Vec<String>`, EMPTY meaning "every file".
+    // Why:      An empty include list has to mean no restriction rather than no
+    //           files, or a configuration that says nothing about includes would
+    //           lint nothing at all. Excludes are subtracted from whatever this
+    //           admits.
+    /// Globs a file must match to be linted; empty means every file.
+    pub include_patterns: Vec<String>,
+
     /// Globs of files never linted, whatever the rules say.
     pub ignore_patterns: Vec<String>,
 
@@ -211,6 +219,19 @@ impl RuleSetting {
             RuleSetting::Detailed(detailed) => Some(&detailed.options),
         };
     }
+
+    // What:     `pub fn scope(&self) -> (&[String], &[String])`. Returns the
+    //           include and exclude globs as a TUPLE of borrowed slices.
+    // Why:      A bare setting has neither, and answering with two empty slices
+    //           rather than an `Option` means the caller compiles the same way
+    //           for both spellings.
+    /// Return this rule's include and exclude globs, empty when configured bare.
+    pub fn scope(&self) -> (&[String], &[String]) {
+        return match self {
+            RuleSetting::Bare(_) => (&[], &[]),
+            RuleSetting::Detailed(detailed) => (&detailed.include, &detailed.exclude),
+        };
+    }
 }
 
 // What:     No `deny_unknown_fields` here, unlike every other config struct.
@@ -223,6 +244,21 @@ impl RuleSetting {
 pub struct DetailedRule {
     /// Severity this rule reports at.
     pub severity: RuleSeverity,
+
+    // What:     `include` and `exclude` are declared as NAMED fields, so serde
+    //           takes them before `#[serde(flatten)]` below sweeps the rest into
+    //           the options table.
+    // Why:      Scoping belongs to the rule rather than to a separate
+    //           `[[overrides]]` block. Writing `include` beside a rule's
+    //           severity keeps the rule and the files it applies to in one
+    //           place, which is what a reader looking at that rule wants to see.
+    /// Globs this rule applies to; empty means wherever it is otherwise enabled.
+    #[serde(default)]
+    pub include: Vec<String>,
+
+    /// Globs this rule does not apply to, subtracted from `include`.
+    #[serde(default)]
+    pub exclude: Vec<String>,
 
     // What:     `#[serde(flatten)]` folds every remaining key of the table into
     //           this field instead of requiring them under a nested `options`

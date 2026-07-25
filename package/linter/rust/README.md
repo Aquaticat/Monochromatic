@@ -86,12 +86,39 @@ In brief:
  `rules`,
  `categories`,
  `options`,
+ `include-patterns`,
  `ignore-patterns`,
  `plugins`,
  `settings`,
  `extends`,
  glob `overrides`,
  and `[[pattern]]` tables.
+
+### Scoping
+
+Three levels, from widest to narrowest:
+
+```toml
+# Which files are linted at all.
+include-patterns = ["**/src/**"]
+ignore-patterns  = ["**/generated/**"]
+
+# Which files ONE rule applies to, leaving other rules alone.
+[rules."builtin/require-rustdoc"]
+severity = "error"
+include  = ["**/src/**"]
+exclude  = ["**/src/vendored/**"]
+
+# Which files a SET of rules is reconfigured for.
+[[overrides]]
+files = ["**/*_tests.rs"]
+
+[overrides.rules]
+"builtin/max-lines" = "off"
+```
+
+An absent or empty include list means every file,
+ and excludes are subtracted from whatever the includes admit.
 
 ### Declarative rules
 
