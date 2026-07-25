@@ -325,6 +325,32 @@ function buildContext(
 //region Internal helpers
 
 /**
+ * Locate latest user activity line.
+ *
+ * @param activityLines - Chronological activity lines.
+ *
+ * @returns Latest user-line index, or negative one when absent.
+ *
+ * @example
+ * ```typescript
+ * latestUserActivityIndex(['[tool] one', '[user] run']); // 1
+ * ```
+ */
+function latestUserActivityIndex(
+  activityLines: readonly string[],
+): number {
+  for (let index = activityLines.length - 1; index >= 0; index -= 1) {
+    /**
+     * Candidate activity line at current reverse cursor.
+     */
+    const activityLine = activityLines[index];
+    if ((activityLine !== undefined) && activityLine.startsWith('[user] ',))
+      return index;
+  }
+  return -1;
+}
+
+/**
  * Select judge-context activity lines.
  *
  * Keeps the larger of:
@@ -346,11 +372,7 @@ function selectContextActivityLines(
   /**
    * Activity-line index of latest user message, or -1 when none exists.
    */
-  const lastUserActivityIndex = activityLines.findLastIndex(
-    function isUserActivityLine(activityLine,) {
-      return activityLine.startsWith('[user] ',);
-    },
-  );
+  const lastUserActivityIndex = latestUserActivityIndex(activityLines,);
   /**
    * Earliest line included by the recent-activity floor.
    */
@@ -368,7 +390,19 @@ function selectContextActivityLines(
       lastUserActivityIndex,
       recentFloorStart,
     );
-  return activityLines.slice(selectedStart,);
+  /**
+   * Owned copy from selected start through newest activity.
+   */
+  const selectedLines: string[] = [];
+  for (let index = selectedStart; index < activityLines.length; index += 1) {
+    /**
+     * Selected source line, absent only for malformed sparse runtime input.
+     */
+    const activityLine = activityLines[index];
+    if (activityLine !== undefined)
+      selectedLines[selectedLines.length] = activityLine;
+  }
+  return selectedLines;
 }
 
 /**
@@ -386,20 +420,15 @@ function extractUserText(
 ): string {
   if ((typeof content) === 'string')
     return content;
-  return content
-    .filter(
-      function isText(c,) {
-        return c.type
-          === 'text';
-      },
-    )
-    .map(
-      function getText(c,) {
-        return c.text
-          ?? '';
-      },
-    )
-    .join(' ',);
+  /**
+   * Text block values in message order.
+   */
+  const textValues: string[] = [];
+  for (const block of content) {
+    if (block.type === 'text')
+      textValues[textValues.length] = block.text ?? '';
+  }
+  return textValues.join(' ',);
 }
 
 /**
@@ -462,22 +491,17 @@ function bashDetail(
   }[],
 ): string {
   /**
-   * Flattened text content from all text blocks, used to derive the last line.
+   * Text block values in result order.
    */
-  const text = content
-    .filter(
-      function hasText(c,) {
-        return c.type
-          === 'text';
-      },
-    )
-    .map(
-      function getText(c,) {
-        return c.text
-          ?? '';
-      },
-    )
-    .join('',);
+  const textSegments: string[] = [];
+  for (const block of content) {
+    if (block.type === 'text')
+      textSegments[textSegments.length] = block.text ?? '';
+  }
+  /**
+   * Flattened text content from all text blocks.
+   */
+  const text = textSegments.join('',);
   /**
    * Last non-empty trimmed line of bash output, the most informative suffix.
    */
