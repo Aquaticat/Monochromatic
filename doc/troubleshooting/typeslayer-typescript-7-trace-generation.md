@@ -25,9 +25,10 @@ pnpm 11.15.1
   'typescript': '>=7.0.2'
 ```
 
-The failure applies across selected packages because TypeSlayer deliberately runs the compiler that resolves from the
-selected project.
- Packages in this workspace resolve the catalog's TypeScript 7.0.2 installation.
+The failure applies to each selected active package because TypeSlayer deliberately runs the compiler that resolves
+from the selected project.
+A `createRequire()` survey from every `package/*/*/package.json` directory found that all 142 active package roots
+resolve the same TypeScript 7.0.2 manifest.
 
 ## Root cause
 
@@ -219,6 +220,23 @@ independent output-format mismatch.
 - Runtime:
    `Node.js` 26.5.0.
 
+### Source clone boundary
+
+The source investigation used read-only third-party clones:
+
+- `https://github.com/dimitropoulos/typeslayer.git`,
+   checked out at tag `typeslayer-v0.1.32` under
+  `$HOME/temp/agent/typeslayer-2026-07-25`;
+- `https://github.com/microsoft/typescript-go.git`,
+   checked out at tag `typescript/v7.0.2` under
+  `$HOME/temp/agent/typescript-go-2026-07-25`.
+
+Both clones were created with `gh repo clone` after preparing the private `$HOME/temp/agent` scratch root.
+No upstream source file was modified.
+The compiler-entrypoint experiment changed only the command used against an installed package,
+ and the fixture traces
+were written under the same private scratch root.
+
 ### Minimal resolver harness
 
 From this repository:
@@ -346,9 +364,15 @@ Use a disposable analysis checkout or fixture whose `typescript` dependency is e
 ```
 
 After installing that fixture,
- TypeSlayer's existing compiler command resolves and produces the two files its loader
-expects.
- The full compiler invocation and output layout were verified in the Trace-layout harness.
+ the exact compiler command TypeSlayer constructs resolves and produces the two files its
+loader expects.
+The full compiler invocation and output layout were verified in the Trace-layout harness.
+This verification stops at TypeSlayer's compiler-process and output-file boundary.
+The desktop UI,
+ CPU-profile generation,
+ and rendering were not exercised end to end,
+so this is a verified fallback for the reported trace-generation failure rather than proof that every TypeSlayer
+module works with the fixture.
 
 Tradeoffs:
 
@@ -363,11 +387,8 @@ Tradeoffs:
 
 TypeSlayer's own FAQ documents importing an existing `trace.json` plus `types.json` pair through
 `Raw Data | trace.json`,
- followed by regenerating its analyzed trace and type graph.
- That route can consume the verified
-TypeScript 6 pair without asking TypeSlayer to launch the compiler.
- The UI upload itself was not exercised in this
-investigation.
+followed by regenerating its analyzed trace and type graph.
+That UI route was not exercised and is therefore not recorded as a verified workaround here.
 
 ## What does not work
 
@@ -377,11 +398,11 @@ investigation.
 - **Reinstalling or updating the mise tool.
   ** TypeSlayer 0.1.32 was both the installed release and npm's current
   `latest` release during verification.
-- **Changing only Node.
-  ** The error follows the TypeScript 7 export map.
-   Node's documented export encapsulation applies
-  across supported Node releases,
-   and the same TypeScript 7 error class has been reported under Node 24.
+- **Using another TypeScript-7-compatible Node release.
+  ** This was rejected from the deciding package rules rather than a local runtime matrix.
+   TypeScript 7 requires Node 16.20 or newer,
+   while Node has enforced unlisted `exports` subpaths since Node 12.
+   No Node version that satisfies TypeScript 7's engine requirement makes `typescript/bin/tsc` public.
 - **Changing the deep import to `typescript/lib/tsc.js`.
   ** TypeScript 7 does not export that subpath either.
 - **Bypassing the export map with an absolute path.
@@ -428,13 +449,15 @@ The six filing constraints resolve as follows:
     TypeSlayer can invoke the package's declared executable rather than a private subpath,
    then teach its loader and graph model to consume `legend.json` and checker-specific type files.
 3. **Are they supporting this use case?
-   ** No documented TypeScript 7 support was found.
-    TypeSlayer 0.1.32 shipped on
-   2026-03-23,
+   ** No for the native compiler in this release.
+    TypeSlayer 0.1.32 shipped on 2026-03-23,
     before TypeScript 7.0.2 shipped on 2026-07-08.
-    Its FAQ explicitly says the native compiler available at
-   that release did not yet generate the traces TypeSlayer required.
-    This constraint fails.
+    More directly,
+    `packages/typeslayer/src/components/customize-flags-dialog.tsx:213-220` warns that the native `tsgo` compiler in
+   this TypeSlayer version cannot generate the required traces and asks users not to report that combination.
+    TypeScript 7 later added trace generation under the standard `tsc` package name,
+    but TypeSlayer 0.1.32 contains no corresponding claim or trace-format support.
+    This constraint fails for version 0.1.32.
 4. **Would the repo welcome our contribution?
    ** Yes.
     The README invites contributions and imposes only its commit-message
