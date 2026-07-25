@@ -15,7 +15,10 @@ import {
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  * Logger root for auto-mode after removing the package log shim.
@@ -62,7 +65,7 @@ async function resolveBudgetAuth(
     ctx,
     model,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly model: ForeignBorrowed<Model<Api>>;
   },
 ): Promise<BudgetModelAuth | typeof NO_AUTH> {

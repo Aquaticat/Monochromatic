@@ -16,7 +16,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { askUser, } from './ask-user.ts';
 import { findBudgetModel, } from './budget-model.ts';
@@ -132,8 +132,8 @@ async function evaluate(
     approvalFingerprint,
     batchContext,
   }: {
-    readonly pi: ForeignBorrowed<ExtensionAPI>;
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly systemPrompt: string;
     readonly action: string;
     readonly actionInput: string;
@@ -355,7 +355,7 @@ function resolveJudgeModel(
     ctx,
     excludedModelSlugs = [],
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {

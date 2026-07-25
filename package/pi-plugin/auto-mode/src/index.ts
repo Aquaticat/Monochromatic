@@ -17,7 +17,10 @@ import type {
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { updateWidget, } from './ask-user.ts';
 import {
@@ -125,7 +128,7 @@ function initializeAutoMode(
     home = homedir(),
     historicalAgentTempDir = HISTORICAL_AGENT_TEMP_DIR,
   }: {
-    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
     readonly home?: string;
     readonly historicalAgentTempDir?: string;
   },
@@ -203,7 +206,7 @@ function initializeAutoMode(
        * @mutates ctx - `announceBypassToggle` changes displayed Pi state.
        */
       handler(
-        ctx: ForeignBorrowed<ExtensionContext>,
+        ctx: ForeignHostCapability<ExtensionContext>,
       ) {
         bypassEnabled = !bypassEnabled;
         innerL.warn(
@@ -240,7 +243,7 @@ function initializeAutoMode(
      */
     function handleSessionStart(
       _event: unknown,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ) {
       bypassEnabled = findLatestBypassEnabled({ ctx, },);
       updateBypassStatus({
@@ -265,7 +268,7 @@ function initializeAutoMode(
      */
     function handleSessionTree(
       _event: unknown,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ) {
       bypassEnabled = findLatestBypassEnabled({ ctx, },);
       updateBypassStatus({
@@ -314,7 +317,7 @@ function initializeAutoMode(
      */
     function handleAgentStart(
       _event: unknown,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ) {
       currentTurnBatch = [];
       denialInCurrentTurn = false;
@@ -352,7 +355,7 @@ function initializeAutoMode(
      */
     function handleAgentEnd(
       _event: unknown,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ) {
       if (flowVerdicts.length
         > 0) {
@@ -382,7 +385,7 @@ function initializeAutoMode(
      */
     async function handleToolCall(
       event: ForeignBorrowed<ToolCallEvent>,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ) {
       if (bypassEnabled) {
         /**
@@ -535,7 +538,7 @@ function initializeAutoMode(
  * ```
  */
 export default function autoMode(
-  pi: ForeignBorrowed<ExtensionAPI>,
+  pi: ForeignHostCapability<ExtensionAPI>,
 ): void {
   initializeAutoMode({ pi, },);
 }

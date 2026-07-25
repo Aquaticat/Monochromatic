@@ -15,7 +15,10 @@ import type {
 import nanoSpawn from 'nano-spawn';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { formatModelBlockReason, } from './model-feedback.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
@@ -205,8 +208,8 @@ async function askUser(
     reflectExplanationOnDeny = false,
     notificationInvoker,
   }: {
-    readonly pi: ForeignBorrowed<ExtensionAPI>;
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly action: string;
     readonly approvalFingerprint?: string;
     readonly explanation: string;
@@ -346,7 +349,7 @@ function updateWidget(
     ctx,
     verdicts,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly verdicts: readonly {
       readonly action: string;
       readonly verdict: string;

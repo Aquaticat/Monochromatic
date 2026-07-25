@@ -7,7 +7,10 @@
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   ReviewUnavailableError,
   type ScriptedStructuredReviewTransport,
@@ -201,7 +204,7 @@ async function callJudgeWithFallback(
     request,
   }: {
     readonly firstJudge: ForeignBorrowed<BudgetModel>;
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly request: ForeignBorrowed<JudgeReviewRequest>;
   },
 ): Promise<Verdict> {

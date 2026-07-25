@@ -17,7 +17,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { Type, } from 'typebox';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
@@ -105,7 +105,7 @@ const trustReasonParameterSchema = Type.Optional(
  * ```
  */
 function registerProposeTrust(
-  pi: ForeignBorrowed<ExtensionAPI>,
+  pi: ForeignHostCapability<ExtensionAPI>,
 ): void {
   pi.registerTool({
     name: 'propose_trust',
@@ -146,7 +146,7 @@ function registerProposeTrust(
       params: ProposeTrustParams,
       _signal: unknown,
       _onUpdate: unknown,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ): Promise<ProposeTrustResult> {
       /**
        * Per-call sub-logger so branches are visible without logging rule text.
@@ -222,6 +222,8 @@ function registerProposeTrust(
  *
  * @returns whether active directives already contain proposed rule
  *
+ * @mutates ctx - session branch lookup may update host-owned session caches
+ *
  * @example
  * ```typescript
  * isActiveTrustRule({ ctx, rule: 'Allow .env file access' });
@@ -232,7 +234,7 @@ function isActiveTrustRule(
     ctx,
     rule,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly rule: string;
   },
 ): boolean {

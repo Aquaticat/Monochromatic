@@ -14,7 +14,10 @@ import {
   scoreModelSpeed,
   resolveEffectiveScope,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { resolveBudgetAuth, } from './budget-model-auth.ts';
 import { NoBudgetModelError, } from './budget-model-error.ts';
 import { budgetModelSlug, } from './budget-model-identity.ts';
@@ -151,7 +154,7 @@ async function findBudgetModel(
     ctx,
     excludedModelSlugs = [],
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {

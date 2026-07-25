@@ -11,7 +11,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
 /**
@@ -33,7 +33,7 @@ function registerGuardCommand(
   {
     pi,
   }: {
-    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
   },
 ): void {
   pi.registerCommand(
@@ -53,7 +53,7 @@ function registerGuardCommand(
        */
       async handler(
         args: string,
-        ctx: ForeignBorrowed<ExtensionContext>,
+        ctx: ForeignHostCapability<ExtensionContext>,
       ) {
         /**
          * Dynamically imported context helper; lazy to keep startup cost low when /guard is never used.

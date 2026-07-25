@@ -13,7 +13,7 @@ import type {
   ExtensionContext,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   isTrustEntry,
@@ -64,13 +64,15 @@ type ReusableApproval =
  *
  * @returns array of active trust directive strings
  *
+ * @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
+ *
  * @example
  * ```typescript
  * const directives = getTrustDirectives(ctx);
  * ```
  */
 function getTrustDirectives(
-  ctx: ForeignBorrowed<ExtensionContext>,
+  ctx: ForeignHostCapability<ExtensionContext>,
 ): string[] {
   /**
    * Accumulator for currently-active trust directives.
@@ -106,6 +108,8 @@ function getTrustDirectives(
  *
  * @returns reusable approval metadata, or a negative result
  *
+ * @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
+ *
  * @example
  * ```typescript
  * const approval = getReusableApproval({
@@ -122,7 +126,7 @@ function getReusableApproval(
     action,
     approvalFingerprint,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly action: string;
     readonly approvalFingerprint: string;
   },
@@ -200,13 +204,15 @@ const NO_PENDING_VERDICT = Symbol('pending verdict entry absent from context',);
  *
  * @returns formatted context summary string
  *
+ * @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
+ *
  * @example
  * ```typescript
  * const context = buildContext(ctx);
  * ```
  */
 function buildContext(
-  ctx: ForeignBorrowed<ExtensionContext>,
+  ctx: ForeignHostCapability<ExtensionContext>,
 ): string {
   /**
    * Full session branch snapshot, scanned forward below.

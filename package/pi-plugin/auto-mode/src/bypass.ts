@@ -11,7 +11,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 //region Constants
 
@@ -203,6 +203,8 @@ function isBypassToggleEntry(
  *
  * @returns latest bypass state, or disabled when no toggle exists
  *
+ * @mutates ctx - `getBranch` may update host-owned session caches while producing branch snapshot
+ *
  * @example
  * ```typescript
  * const enabled = findLatestBypassEnabled({ ctx });
@@ -212,7 +214,7 @@ function findLatestBypassEnabled(
   {
     ctx,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
   },
 ): boolean {
   /**
@@ -267,7 +269,7 @@ function updateBypassStatus(
     ctx,
     enabled,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly enabled: boolean;
   },
 ): void {
@@ -297,7 +299,7 @@ function appendBypassToggleEntry(
     pi,
     enabled,
   }: {
-    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
     readonly enabled: boolean;
   },
 ): void {
@@ -330,7 +332,7 @@ function appendBypassAllowEntry(
     pi,
     action,
   }: {
-    readonly pi: ForeignBorrowed<ExtensionAPI>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
     readonly action: string;
   },
 ): void {
@@ -363,7 +365,7 @@ function announceBypassToggle(
     ctx,
     enabled,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly enabled: boolean;
   },
 ): void {
