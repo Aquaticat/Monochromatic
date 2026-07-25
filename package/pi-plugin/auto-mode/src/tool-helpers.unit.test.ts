@@ -71,7 +71,7 @@ await describe({
         },);
 
         expect(serializeToolInputForJudge(event.input,),).toBe(
-          '{"content":"export const value = \\"quoted\\";\\n","path":"/repo/config.ts"}',
+          String.raw`{"content":"export const value = \"quoted\";\n","path":"/repo/config.ts"}`,
         );
       },
     },),
@@ -97,7 +97,7 @@ await describe({
         },);
 
         expect(serializeToolInputForJudge(event.input,),).toBe(
-          '{"edits":[{"newText":"after\\n","oldText":"before\\n"},{"newText":"export const mode = \\"new\\";","oldText":"export const mode = \\"old\\";"}],"path":"/repo/config.ts"}',
+          String.raw`{"edits":[{"newText":"after\n","oldText":"before\n"},{"newText":"export const mode = \"new\";","oldText":"export const mode = \"old\";"}],"path":"/repo/config.ts"}`,
         );
       },
     },),
