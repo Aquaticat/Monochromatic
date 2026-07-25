@@ -148,7 +148,7 @@ pub fn run_cli_from_env() -> Result<i32> {
 
     // What:     `Ok(run_cli(&cli))` constructs the success variant of `Result` and
     //           lends the parsed options to `run_cli`. The `&` is a read-only
-    //           borrow, and the tail expression is returned.
+    //           borrow.
     // Why:      Keep the old `Result`-returning API while delegating all work to
     //           the clap-backed run loop.
     //
@@ -156,7 +156,7 @@ pub fn run_cli_from_env() -> Result<i32> {
     // ```ts
     // return runCli(cli);
     // ```
-    Ok(run_cli(&cli))
+    return Ok(run_cli(&cli))
 }
 
 // What:     `pub fn run_cli(cli: &Cli) -> i32`. The library entry point. `&Cli` is
@@ -262,7 +262,7 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // ```
     let any_error = diagnostics
         .iter()
-        .any(|d| d.severity == Severity::Error);
+        .any(|d| return d.severity == Severity::Error);
 
     // What:     `if any_error { 1 } else { 0 }`. The whole `if/else` is the tail
     //           expression, so it is returned as the process status number.
@@ -273,9 +273,9 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // return anyError ? 1 : 0;
     // ```
     if any_error {
-        1
+        return 1
     } else {
-        0
+        return 0
     }
 }
 
@@ -342,7 +342,7 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
                 // ```ts
                 // const isRs = entryPath.endsWith(".rs");
                 // ```
-                let is_rs = entry_path.extension().and_then(|e| e.to_str()) == Some("rs");
+                let is_rs = entry_path.extension().and_then(|e| return e.to_str()) == Some("rs");
 
                 // What:     `if entry_path.is_file() && is_rs`. Only real files with
                 //           the `.rs` extension qualify. `&&` is logical AND.
@@ -365,9 +365,9 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
         }
     }
 
-    // What:     `files`. Tail expression: return the collected paths.
+    // What:     `return files`. Moves the accumulated vector out to the caller.
     // Why:      Hand the file list back.
-    files
+    return files
 }
 
 // What:     `fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>],

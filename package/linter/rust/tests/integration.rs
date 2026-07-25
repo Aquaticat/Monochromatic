@@ -142,7 +142,7 @@ fn run_with_stderr(args: &[&str]) -> (i32, String, String) {
     // ```ts
     // return { code, stdout, stderr };
     // ```
-    (code, stdout, stderr)
+    return (code, stdout, stderr)
 }
 
 // What:     `fn run(args: &[&str]) -> (i32, String)`. Smaller wrapper around
@@ -175,7 +175,7 @@ fn run(args: &[&str]) -> (i32, String) {
     // ```ts
     // return { code, stdout };
     // ```
-    (code, stdout)
+    return (code, stdout)
 }
 
 // What:     `fn run_relocated(fixture_rel: &str, extra_args: &[&str]) -> (i32, String)`.
@@ -243,7 +243,7 @@ fn run_relocated(fixture_rel: &str, extra_args: &[&str]) -> (i32, String) {
     // ```
     let basename = std::path::Path::new(fixture_rel)
         .file_name()
-        .and_then(|n| n.to_str())
+        .and_then(|n| return n.to_str())
         .expect("fixture basename");
 
     // What:     `let temp_path = std::env::temp_dir().join(format!(
@@ -341,7 +341,7 @@ fn run_relocated(fixture_rel: &str, extra_args: &[&str]) -> (i32, String) {
     // ```ts
     // return { code, stdout };
     // ```
-    (code, stdout)
+    return (code, stdout)
 }
 
 // What:     `#[test] fn over_budget_exits_nonzero() { ... }`. Run the binary with a

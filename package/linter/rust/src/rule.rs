@@ -39,7 +39,7 @@ pub fn all_rules() -> Vec<Box<dyn Rule>> {
     // Why:      Two DIFFERENT concrete types in one array need that first cast,
     //           or the element type cannot be inferred. Adding a rule is one more
     //           boxed entry here.
-    vec![
+    return vec![
         Box::new(crate::builtin::max_lines::MaxLines) as Box<dyn Rule>,
         Box::new(crate::builtin::require_rustdoc::RequireRustdoc),
     ]

@@ -90,8 +90,7 @@ pub struct MaxLines;
 /// Rule trait implementation for the max-lines check.
 impl Rule for MaxLines {
     // What:     `fn id(&self) -> &'static str { "max-lines" }`. Returns the fixed
-    //           rule id. The string literal is the tail expression, so it is
-    //           returned. `&'static str` is a program-lifetime borrowed string.
+    //           rule id. `&'static str` is a program-lifetime borrowed string.
     // Why:      Identify this rule in diagnostics and (later) config.
     //
     // In TS you'd write (pseudocode):
@@ -100,7 +99,7 @@ impl Rule for MaxLines {
     // ```
     /// Return max-lines rule identifier.
     fn id(&self) -> &'static str {
-        "max-lines"
+        return "max-lines"
     }
 
     // What:     `fn allows_suppression(&self) -> bool { false }`. The trait gives
@@ -116,7 +115,7 @@ impl Rule for MaxLines {
     // ```
     /// Refuse inline suppression, per the never-disable policy for this rule.
     fn allows_suppression(&self) -> bool {
-        false
+        return false
     }
 
     // What:     `fn check(&self, context: &LintContext, config: &Config, out: &mut
@@ -224,7 +223,7 @@ impl Rule for MaxLines {
         // which is the honest answer when the offending line is past the end.
         let span = context
             .line_span(line)
-            .unwrap_or_else(|| Span::at(0, line, 1));
+            .unwrap_or_else(|| return Span::at(0, line, 1));
 
         out.push(Diagnostic::new(
             "builtin",

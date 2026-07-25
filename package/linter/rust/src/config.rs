@@ -66,7 +66,7 @@ pub fn max_lines_exempt(path: &Path) -> bool {
     // const name = path.basename(p);
     // if (name) { /* ... */ }
     // ```
-    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+    if let Some(name) = path.file_name().and_then(|n| return n.to_str()) {
         // What:     `if name == "build.rs" { return true; }`. Plain string
         //           equality and an early return.
         // Why:      The cargo build script is configuration-like; exempt it (it
@@ -151,7 +151,7 @@ pub fn max_lines_exempt(path: &Path) -> bool {
         }
     }
 
-    // What:     `false`. Bare tail expression: nothing matched, so the file is not
+    // What:     `return false`. Nothing matched, so the file is not
     //           exempt.
     // Why:      Default to enforcing the budget.
     //
@@ -159,7 +159,7 @@ pub fn max_lines_exempt(path: &Path) -> bool {
     // ```ts
     // return false;
     // ```
-    false
+    return false
 }
 
 // What:     `pub fn missing_rustdoc_exempt(path: &Path) -> bool`. Borrows a path
@@ -193,7 +193,7 @@ pub fn missing_rustdoc_exempt(path: &Path) -> bool {
     // const name = path.basename(p);
     // if (name) { /* ... */ }
     // ```
-    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+    if let Some(name) = path.file_name().and_then(|n| return n.to_str()) {
         // What:     `if name == "build.rs" { return true; }`. Plain string equality
         //           and an early return.
         // Why:      The cargo build script is generated glue, not documented API.
@@ -277,7 +277,7 @@ pub fn missing_rustdoc_exempt(path: &Path) -> bool {
         }
     }
 
-    // What:     `false`. Bare tail expression: nothing matched, so the file is not
+    // What:     `return false`. Nothing matched, so the file is not
     //           exempt.
     // Why:      Default to requiring rustdoc.
     //
@@ -285,5 +285,5 @@ pub fn missing_rustdoc_exempt(path: &Path) -> bool {
     // ```ts
     // return false;
     // ```
-    false
+    return false
 }

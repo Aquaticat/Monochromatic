@@ -87,14 +87,14 @@ fn run_rule(source: &str, path: &str) -> Vec<Diagnostic> {
     // ```
     RequireRustdoc.check(&context, &config, &mut out);
 
-    // What:     `out`. Tail expression: return the findings.
+    // What:     `return out`. Hand back the findings.
     // Why:      Let each test assert on them.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return out;
     // ```
-    out
+    return out
 }
 
 // What:     `fn item_findings(source: &str, path: &str) -> Vec<Diagnostic>`. Like
@@ -121,9 +121,9 @@ fn item_findings(source: &str, path: &str) -> Vec<Diagnostic> {
     // ```ts
     // return runRule(source, path).filter(d => d.message !== FILE_MESSAGE);
     // ```
-    run_rule(source, path)
+    return run_rule(source, path)
         .into_iter()
-        .filter(|d| d.message != FILE_MESSAGE)
+        .filter(|d| return d.message != FILE_MESSAGE)
         .collect()
 }
 

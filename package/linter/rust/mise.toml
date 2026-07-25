@@ -14,6 +14,14 @@ run = "cargo check"
 description = "Run clippy with warnings denied"
 run = "cargo clippy --release -- -D warnings"
 
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+# Mirrors the sibling task in package/rust-module/rust-linter-core and
+# package/rust-module/forbidden-regex. This crate denies `implicit_return`, and
+# the fix for it is machine-applicable, so the whole class is remediated here
+# rather than by loosening the lint.
+run = "cargo clippy --fix --allow-dirty --allow-staged --all-targets"
+
 [tasks.test]
 description = "cargo nextest run"
 run = "cargo nextest run --release"

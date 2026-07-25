@@ -61,15 +61,15 @@ fn code_lines(source: &str) -> usize {
     // ```
     let context = LintContext::new("fixture.rs".to_string(), source.to_string());
 
-    // What:     `context.code_line_count()`. Tail expression: the classifier's
-    //           result is returned.
+    // What:     `return context.code_line_count()`. Hands back the classifier's
+    //           count for the parsed source.
     // Why:      That count is what every classifier test asserts on.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return context.codeLineCount();
     // ```
-    context.code_line_count()
+    return context.code_line_count()
 }
 
 // What:     `struct Case { source: &'static str, expected: usize }`. A record
@@ -244,14 +244,14 @@ fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic> {
     // ```
     MaxLines.check(&context, &config, &mut out);
 
-    // What:     `out`. Tail expression: return the collected findings.
+    // What:     `return out`. Hand back the collected findings.
     // Why:      Let each test assert on them.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return out;
     // ```
-    out
+    return out
 }
 
 // What:     `#[test] fn over_budget_reports_one_error() { ... }`. A snippet with 3

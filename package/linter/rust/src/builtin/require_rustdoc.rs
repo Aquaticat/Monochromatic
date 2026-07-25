@@ -148,7 +148,7 @@ fn kind_is_documented(kind: SyntaxKind) -> bool {
     // ```ts
     // return KIND_LABELS.some(pair => pair[0] === kind);
     // ```
-    KIND_LABELS.iter().any(|pair| pair.0 == kind)
+    return KIND_LABELS.iter().any(|pair| return pair.0 == kind)
 }
 
 // What:     `fn file_uses_cxx_qt(root: &SyntaxNode) -> bool`. Scans the file's tokens
@@ -180,11 +180,11 @@ fn file_uses_cxx_qt(root: &SyntaxNode) -> bool {
     // ```ts
     // return [...root.descendantsWithTokens()].some(el => el.isToken && el.kind === "ident" && ...);
     // ```
-    root.descendants_with_tokens().any(|element| match element {
+    return root.descendants_with_tokens().any(|element| match element {
         NodeOrToken::Token(token) => {
-            token.kind() == SyntaxKind::IDENT && matches!(token.text(), "cxx_qt" | "cxx_qt_lib")
+            return token.kind() == SyntaxKind::IDENT && matches!(token.text(), "cxx_qt" | "cxx_qt_lib")
         }
-        NodeOrToken::Node(_) => false,
+        NodeOrToken::Node(_) => return false,
     })
 }
 
@@ -216,11 +216,11 @@ fn is_trait_impl_assoc_item(node: &SyntaxNode) -> bool {
     // ```ts
     // return Impl.cast(node.parent?.kind === "assoc_item_list" ? node.parent.parent : undefined)?.trait !== undefined;
     // ```
-    node.parent()
-        .filter(|parent| parent.kind() == SyntaxKind::ASSOC_ITEM_LIST)
-        .and_then(|list| list.parent())
+    return node.parent()
+        .filter(|parent| return parent.kind() == SyntaxKind::ASSOC_ITEM_LIST)
+        .and_then(|list| return list.parent())
         .and_then(Impl::cast)
-        .is_some_and(|impl_block| impl_block.trait_().is_some())
+        .is_some_and(|impl_block| return impl_block.trait_().is_some())
 }
 
 // What:     `fn requires_rustdoc(node: &SyntaxNode, uses_cxx_qt: bool) -> bool`. The
@@ -273,7 +273,7 @@ fn requires_rustdoc(node: &SyntaxNode, uses_cxx_qt: bool) -> bool {
         return false;
     }
 
-    // What:     `true`. Bare tail expression: every listed kind always needs docs
+    // What:     `return true`. Every listed kind always needs docs
     //           (macros are not in the table, so they never reach here).
     // Why:      Default to requiring documentation.
     //
@@ -281,7 +281,7 @@ fn requires_rustdoc(node: &SyntaxNode, uses_cxx_qt: bool) -> bool {
     // ```ts
     // return true;
     // ```
-    true
+    return true
 }
 
 // What:     `fn has_doc_comment(node: &SyntaxNode) -> bool`. Reports whether the
@@ -300,7 +300,7 @@ fn has_doc_comment(node: &SyntaxNode) -> bool {
     //           the file/module). `.next()` pulls the first doc comment, if any;
     //           `.is_some()` turns "found one" into a bool. The iterator filters by
     //           rust-analyzer's `Comment::is_doc`, which matches `///`, `//!`, and
-    //           `/** */` but NOT plain `//` or `/* */`. Tail expression.
+    //           `/** */` but NOT plain `//` or `/* */`.
     // Why:      This is the linchpin: every item in this repo already has a plain
     //           `// What:` block, so the rule is only meaningful because `//` is
     //           excluded and only true doc comments count.
@@ -309,7 +309,7 @@ fn has_doc_comment(node: &SyntaxNode) -> bool {
     // ```ts
     // return DocCommentIter.fromSyntaxNode(node).next() !== undefined;
     // ```
-    DocCommentIter::from_syntax_node(node).next().is_some()
+    return DocCommentIter::from_syntax_node(node).next().is_some()
 }
 
 // What:     `fn item_name(node: &SyntaxNode) -> Option<String>`. Returns the item's
@@ -330,7 +330,7 @@ fn item_name(node: &SyntaxNode) -> Option<String> {
     //           the first `NAME` child as `Option<SyntaxNode>`. `.map(|child|
     //           child.text().to_string())` turns that node into its source text as
     //           an owned `String` (sibling: borrowed `&str`; we own it because the
-    //           diagnostic outlives this node borrow). Tail expression.
+    //           diagnostic outlives this node borrow).
     // Why:      A named item has exactly one `NAME` child holding its identifier;
     //           nameless items have none, yielding `None`.
     //
@@ -339,9 +339,9 @@ fn item_name(node: &SyntaxNode) -> Option<String> {
     // const nameNode = node.children().find(c => c.kind === SyntaxKind.NAME);
     // return nameNode?.text;
     // ```
-    node.children()
-        .find(|child| child.kind() == SyntaxKind::NAME)
-        .map(|child| child.text().to_string())
+    return node.children()
+        .find(|child| return child.kind() == SyntaxKind::NAME)
+        .map(|child| return child.text().to_string())
 }
 
 // What:     `fn kind_label(kind: SyntaxKind) -> &'static str`. Looks up the human
@@ -359,17 +359,17 @@ fn kind_label(kind: SyntaxKind) -> &'static str {
     //           .unwrap_or("item")`. Find the matching row, take its label (the
     //           tuple's second field), or substitute the generic `"item"` if
     //           somehow absent (it never is: callers only ask for listed kinds).
-    //           Tail expression.
+    //           Returned directly.
     // Why:      One lookup against the same source-of-truth table.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return KIND_LABELS.find(pair => pair[0] === kind)?.[1] ?? "item";
     // ```
-    KIND_LABELS
+    return KIND_LABELS
         .iter()
-        .find(|pair| pair.0 == kind)
-        .map(|pair| pair.1)
+        .find(|pair| return pair.0 == kind)
+        .map(|pair| return pair.1)
         .unwrap_or("item")
 }
 
@@ -413,7 +413,7 @@ fn describe_missing(node: &SyntaxNode) -> String {
         // ```ts
         // return `Missing rustdoc on ${label} "${name}".`;
         // ```
-        format!("Missing rustdoc on {label} \"{name}\".")
+        return format!("Missing rustdoc on {label} \"{name}\".")
     } else {
         // What:     `format!("Missing rustdoc on {label}.")`. Same, without a name.
         // Why:      Nameless nodes (impl, use, tuple field, file) have no
@@ -423,7 +423,7 @@ fn describe_missing(node: &SyntaxNode) -> String {
         // ```ts
         // return `Missing rustdoc on ${label}.`;
         // ```
-        format!("Missing rustdoc on {label}.")
+        return format!("Missing rustdoc on {label}.")
     }
 }
 
@@ -449,7 +449,7 @@ pub struct RequireRustdoc;
 /// Rule trait implementation for rustdoc enforcement.
 impl Rule for RequireRustdoc {
     // What:     `fn id(&self) -> &'static str { "require-rustdoc" }`. Returns the
-    //           fixed rule id. The string literal is the tail expression.
+    //           fixed rule id.
     // Why:      Identify this rule in diagnostics, mirroring the TS `require-tsdoc`.
     //
     // In TS you'd write (pseudocode):
@@ -458,7 +458,7 @@ impl Rule for RequireRustdoc {
     // ```
     /// Return require-rustdoc rule identifier.
     fn id(&self) -> &'static str {
-        "require-rustdoc"
+        return "require-rustdoc"
     }
 
     // What:     The trait leaves this method without a default body, so every
@@ -469,7 +469,7 @@ impl Rule for RequireRustdoc {
     //           this rule is therefore itself reported rather than obeyed.
     /// Refuse inline suppression, per the never-disable policy for this rule.
     fn allows_suppression(&self) -> bool {
-        false
+        return false
     }
 
     // What:     `fn check(&self, context: &LintContext, _config: &Config, out: &mut
