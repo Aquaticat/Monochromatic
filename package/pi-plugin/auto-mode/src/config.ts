@@ -376,6 +376,8 @@ function compilePatterns(
  * so migrating from pi-safeguard (which only set `judgeModel.majorVersions`)
  * works without manually adding all fields.
  *
+ * @param options - optional account home override for global configuration lookup
+ *
  * @returns the parsed global config
  */
 async function loadGlobalConfig(
