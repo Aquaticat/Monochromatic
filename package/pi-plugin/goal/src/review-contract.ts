@@ -8,10 +8,7 @@ import type {
   Tool,
   TSchema,
 } from '@earendil-works/pi-ai';
-import type {
-  StructuredReviewContract,
-  StructuredReviewPrompt,
-} from '@monochromatic-dev/pi-shared-model-review/ts';
+import type { StructuredReviewPrompt, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
   ESTIMATED_CHARACTERS_PER_TOKEN,
@@ -388,26 +385,37 @@ function buildBudgetedGoalReviewPrompt(
 }
 
 /**
- * Goal verdict contract used by shared structured transport.
+ * Build caller-specific direct-JSON retry prompt after omitted reviewer tool.
+ *
+ * @param initialPrompt - original goal review request
+ *
+ * @param firstAttemptTextContent - non-tool text from initial response
+ *
+ * @returns prompt preserving original rubric and evidence
+ *
+ * @example
+ * ```ts
+ * buildGoalJsonRetryPrompt({ initialPrompt, firstAttemptTextContent: '' });
+ * ```
  */
-const GOAL_REVIEW_CONTRACT: StructuredReviewContract<GoalReviewVerdict> = {
-  toolName: GOAL_REVIEW_TOOL_NAME,
-  tool: GOAL_REVIEW_TOOL,
-  parse: parseGoalReviewVerdict,
-  buildJsonRetryPrompt({
+function buildGoalJsonRetryPrompt(
+  {
     initialPrompt,
     firstAttemptTextContent,
-  },) {
-    return {
-      systemPrompt: initialPrompt.systemPrompt,
-      userContent: `${initialPrompt.userContent}\n\nThe forced tool was omitted. Return only JSON with exactly {"approved": boolean, "feedback": string}. Prior text, if any: ${JSON.stringify(firstAttemptTextContent,)}`,
-    };
+  }: {
+    readonly initialPrompt: StructuredReviewPrompt;
+    readonly firstAttemptTextContent: string;
   },
-};
+): StructuredReviewPrompt {
+  return {
+    systemPrompt: initialPrompt.systemPrompt,
+    userContent: `${initialPrompt.userContent}\n\nThe forced tool was omitted. Return only JSON with exactly {"approved": boolean, "feedback": string}. Prior text, if any: ${JSON.stringify(firstAttemptTextContent,)}`,
+  };
+}
 
 export {
   buildBudgetedGoalReviewPrompt,
-  GOAL_REVIEW_CONTRACT,
+  buildGoalJsonRetryPrompt,
   GOAL_REVIEW_SYSTEM_PROMPT,
   GOAL_REVIEW_TOOL,
   GOAL_REVIEW_TOOL_NAME,

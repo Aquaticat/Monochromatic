@@ -11,8 +11,10 @@ import type {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
-  runStructuredReviewAttempt,
-  type StructuredReviewStream,
+  runStructuredJsonRetries,
+  runStructuredToolRequest,
+  type ScriptedStructuredReviewTransport,
+  structuredReviewSignal,
 } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
@@ -64,7 +66,7 @@ const l = tagged({
  *
  * @param batchContext - sibling actions evaluated in current turn
  *
- * @param streamSimpleFn - injected provider stream for tests
+ * @param testTransport - optional data-only deterministic provider seam
  *
  * @returns auto-mode verdict
  *
@@ -72,14 +74,14 @@ const l = tagged({
  *
  * @mutates auth - shared provider transport may inspect resolved auth headers
  *
- * @mutates streamSimpleFn - injected provider capability may change captured state
+ * @mutates testTransport - deterministic seam advances script and records request snapshots
  *
  * @example
  * ```ts
  * const verdict = await callJudge({ model, auth, action, actionInput: '{"path":"src/index.ts"}', cwd, recentContext, trustDirectives: [], timeoutMs: 10_000, systemPrompt, batchContext: [] });
  * ```
  */
-function callJudge(
+async function callJudge(
   {
     model,
     auth,
@@ -91,7 +93,7 @@ function callJudge(
     timeoutMs,
     systemPrompt,
     batchContext,
-    streamSimpleFn,
+    testTransport,
   }: {
     readonly model: ForeignBorrowed<Model<Api>>;
     readonly auth: ForeignBorrowed<BudgetModelAuth>;
@@ -103,7 +105,7 @@ function callJudge(
     readonly timeoutMs: number;
     readonly systemPrompt: string;
     readonly batchContext: readonly BatchEntry[];
-    readonly streamSimpleFn?: ForeignBorrowed<StructuredReviewStream>;
+    readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
   },
 ): Promise<Verdict> {
   /**
@@ -125,35 +127,43 @@ function callJudge(
     trustDirectives,
     batchContext,
   },);
-  return runStructuredReviewAttempt({
+  /**
+   * Cancellation deadline shared by initial request and every JSON retry.
+   */
+  const signal = structuredReviewSignal({ timeoutMs, },);
+  /** Initial forced-tool provider response. */
+  const initial = await runStructuredToolRequest({
     model,
     auth,
     prompt: {
       systemPrompt,
       userContent,
     },
-    contract: {
-      toolName: VERDICT_TOOL.name,
-      tool: VERDICT_TOOL,
-      parse: parseVerdict,
-      buildJsonRetryPrompt({
-        initialPrompt,
-        firstAttemptTextContent,
-      },) {
-        return {
-          systemPrompt: buildJsonRetrySystemPrompt({
-            systemPrompt: initialPrompt.systemPrompt,
-          },),
-          userContent: buildJsonRetryUserContent({
-            userContent: initialPrompt.userContent,
-            firstAttemptTextContent,
-          },),
-        };
-      },
-    },
-    timeoutMs,
-    ...(streamSimpleFn === undefined ? {} : { stream: streamSimpleFn, }),
+    signal,
+    toolName: VERDICT_TOOL.name,
+    tool: VERDICT_TOOL,
+    ...(testTransport === undefined ? {} : { testTransport, }),
   },);
+  if (initial.kind === 'toolCall')
+    return parseVerdict(initial.arguments,);
+  /** Caller-specific direct-JSON retry prompt. */
+  const retryPrompt = {
+    systemPrompt: buildJsonRetrySystemPrompt({ systemPrompt, },),
+    userContent: buildJsonRetryUserContent({
+      userContent,
+      firstAttemptTextContent: initial.textContent,
+    },),
+  };
+  /** Unknown retry value retained only until strict verdict parsing. */
+  const value = await runStructuredJsonRetries({
+    model,
+    auth,
+    prompt: retryPrompt,
+    signal,
+    expectedToolName: VERDICT_TOOL.name,
+    ...(testTransport === undefined ? {} : { testTransport, }),
+  },);
+  return parseVerdict(value,);
 }
 
 export { callJudge, };

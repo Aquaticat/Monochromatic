@@ -1,11 +1,10 @@
 /**
- * Complete structured reviewer transport attempt.
+ * Callback-free structured reviewer request transport.
  *
  * @module
  */
 
 import type {
-  AssistantMessageEventStream,
   Context,
   SimpleStreamOptions,
   Tool,
@@ -14,11 +13,19 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { streamStructuredReview, } from './provider-streams.ts';
-import { collectStructuredReviewValue, } from './stream-collection.ts';
+import {
+  collectDirectJson,
+  collectStructuredStream,
+  EmptyStructuredReviewTextError,
+} from './stream-collection.ts';
 import { toolChoiceForApi, } from './tool-choice.ts';
 import type {
-  StructuredReviewAttemptOptions,
+  StructuredReviewAuth,
+  StructuredReviewInitialResult,
+  StructuredReviewJsonRequest,
   StructuredReviewPrompt,
+  StructuredReviewRequest,
+  StructuredReviewToolRequest,
 } from './types.ts';
 
 /**
@@ -35,7 +42,10 @@ const l = tagged({
 },);
 
 /**
- * Build cancellation signal covering caller abort and attempt timeout.
+ * Build cancellation signal covering caller abort and complete attempt timeout.
+ *
+ * Caller creates this once and shares it across forced-tool and JSON requests,
+ * preserving one deadline across complete candidate attempt.
  *
  * @param signal - optional caller cancellation signal
  *
@@ -43,14 +53,14 @@ const l = tagged({
  *
  * @returns composed abort signal
  *
- * @mutates signal - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain supplied caller signal
+ * @mutates signal - DOM dependent-signal relations can retain caller signal
  *
  * @example
  * ```ts
- * attemptSignal({ timeoutMs: 10_000 });
+ * structuredReviewSignal({ timeoutMs: 10_000 });
  * ```
  */
-function attemptSignal(
+function structuredReviewSignal(
   {
     signal,
     timeoutMs,
@@ -72,17 +82,17 @@ function attemptSignal(
 }
 
 /**
- * Build Pi AI stream options without widening absent auth fields.
+ * Build Pi AI stream options without widening absent fields.
  *
- * @param auth - caller-resolved provider credentials
+ * @param auth - resolved provider credentials
  *
  * @param signal - complete attempt cancellation signal
  *
- * @param toolChoice - optional provider-specific forced tool selector
+ * @param toolChoice - optional provider-specific forced selector
  *
  * @param maxOutputTokens - optional output cap
  *
- * @returns stream options
+ * @returns final provider stream options
  *
  * @example
  * ```ts
@@ -95,22 +105,20 @@ function buildAttemptStreamOptions(
     signal,
     toolChoice,
     maxOutputTokens,
-  }: Pick<StructuredReviewAttemptOptions<unknown>, 'auth' | 'maxOutputTokens'> & {
+  }: {
+    readonly auth: ForeignBorrowed<StructuredReviewAuth>;
     readonly signal: AbortSignal;
     readonly toolChoice?: unknown;
+    readonly maxOutputTokens?: number;
   },
 ): SimpleStreamOptions {
-  /**
-   * Stream options assembled from present caller fields.
-   */
-  const options: SimpleStreamOptions = {
+  return {
     signal,
     ...(auth.apiKey === undefined ? {} : { apiKey: auth.apiKey, }),
     ...(auth.headers === undefined ? {} : { headers: { ...auth.headers, }, }),
     ...(toolChoice === undefined ? {} : { toolChoice, }),
     ...(maxOutputTokens === undefined ? {} : { maxTokens: maxOutputTokens, }),
   };
-  return options;
 }
 
 /**
@@ -118,7 +126,7 @@ function buildAttemptStreamOptions(
  *
  * @param prompt - reviewer system and user content
  *
- * @param tool - optional structured tool for initial attempt
+ * @param tool - optional structured tool for initial request
  *
  * @returns Pi AI provider context
  *
@@ -131,10 +139,10 @@ function contextForPrompt(
   {
     prompt,
     tool,
-  }: {
+  }: ForeignBorrowed<Readonly<{
     readonly prompt: StructuredReviewPrompt;
     readonly tool?: Readonly<Tool>;
-  },
+  }>>,
 ): Context {
   return {
     systemPrompt: prompt.systemPrompt,
@@ -148,170 +156,143 @@ function contextForPrompt(
 }
 
 /**
- * Run one complete forced-tool and direct-JSON reviewer attempt.
+ * Dispatch one direct-JSON request and parse its text object.
  *
- * @param model - selected reviewer model
+ * @param request - callback-free request data
  *
- * @param auth - resolved provider credentials
+ * @returns unknown JSON object for caller-owned strict parsing
  *
- * @param prompt - initial reviewer prompt
+ * @mutates request - provider consumes model, auth, signal, and test transport capabilities
  *
- * @param contract - structured verdict contract
- *
- * @param timeoutMs - timeout across complete candidate attempt
- *
- * @param maxOutputTokens - optional provider output cap
- *
- * @param signal - optional caller cancellation signal
- *
- * @param stream - optional injected provider stream
- *
- * @returns strictly parsed caller verdict
- *
- * @mutates model - provider stream may inspect or retain selected model data
- *
- * @mutates contract - parser and retry-prompt callbacks may update caller-owned captured state
- *
- * @mutates signal - `AbortSignal.any` may retain supplied caller signal
- *
- * @mutates stream - injected provider stream may update caller-owned captured state
- *
- * @throws when transport or caller contract fails
+ * @throws {@link EmptyStructuredReviewTextError} when provider emits no text
  *
  * @example
  * ```ts
- * const verdict = await runStructuredReviewAttempt(options);
+ * await runDirectJsonRequest(request);
  * ```
  */
-async function runStructuredReviewAttempt<TVerdict,>(
-  {
-    model,
-    auth,
-    prompt: reviewPrompt,
-    contract,
-    timeoutMs,
-    maxOutputTokens,
-    signal: callerSignal,
+async function runDirectJsonRequest(
+  request: ForeignBorrowed<StructuredReviewJsonRequest>,
+): Promise<unknown> {
+  /** Final direct-JSON provider options. */
+  const options = buildAttemptStreamOptions({
+    auth: request.auth,
+    signal: request.signal,
+    ...(request.maxOutputTokens === undefined
+      ? {}
+      : { maxOutputTokens: request.maxOutputTokens, }),
+  },);
+  /** Direct-JSON provider stream. */
+  const stream = await streamStructuredReview({
+    model: request.model,
+    context: contextForPrompt({ prompt: request.prompt, },),
+    options,
+    ...(request.testTransport === undefined
+      ? {}
+      : { testTransport: request.testTransport, }),
+  },);
+  return collectDirectJson({
     stream,
-  }: StructuredReviewAttemptOptions<TVerdict>,
-): Promise<TVerdict> {
-  /**
-   * Per-call logger carrying selected reviewer identity.
-   */
+    expectedToolName: request.expectedToolName,
+  },);
+}
+
+/**
+ * Run initial forced-tool request without caller-specific parsing or retry logic.
+ *
+ * @param request - model, auth, prompt, tool, signal, and optional test script data
+ *
+ * @returns tool arguments or omitted-tool text
+ *
+ * @mutates request - provider consumes model, auth, signal, and test transport capabilities
+ *
+ * @example
+ * ```ts
+ * const result = await runStructuredToolRequest(request);
+ * ```
+ */
+async function runStructuredToolRequest(
+  request: ForeignBorrowed<StructuredReviewToolRequest>,
+): Promise<StructuredReviewInitialResult> {
+  /** Per-call logger carrying selected reviewer identity. */
   const innerL = tagged({
-    tag: runStructuredReviewAttempt.name,
+    tag: runStructuredToolRequest.name,
     l,
   },);
   innerL.debug(
-    `starting structured attempt with ${model.provider}/${model.id} using ${contract.toolName}`,
+    `starting structured request with ${request.model.provider}/${request.model.id} using ${request.toolName}`,
   );
-  /**
-   * Composed cancellation signal shared by every retry.
-   */
-  const signal = attemptSignal({
-    ...(callerSignal === undefined ? {} : { signal: callerSignal, }),
-    timeoutMs,
-  },);
-
-  /**
-   * Dispatch one provider stream through injected or production adapter.
-   *
-   * @param prompt - provider prompt
-   *
-   * @param streamOptions - provider options
-   *
-   * @param tool - optional forced structured tool
-   *
-   * @returns reviewer event stream
-   *
-   * @mutates prompt - provider consumes caller prompt data
-   *
-   * @mutates streamOptions - provider observes signal and auth capabilities
-   *
-   * @example
-   * ```ts
-   * dispatch({ prompt: reviewPrompt, streamOptions });
-   * ```
-   */
-  function dispatch(
-    {
-      prompt,
-      streamOptions,
-      tool,
-    }: ForeignBorrowed<Readonly<{
-      readonly prompt: ForeignBorrowed<StructuredReviewPrompt>;
-      readonly streamOptions: ForeignBorrowed<SimpleStreamOptions>;
-      readonly tool?: ForeignBorrowed<Tool>;
-    }>>,
-  ): AssistantMessageEventStream {
-    /**
-     * Provider context for selected prompt.
-     */
-    const context = contextForPrompt({
-      prompt,
-      ...(tool === undefined ? {} : { tool, }),
-    },);
-    return streamStructuredReview({
-      ...(stream === undefined ? {} : { stream, }),
-      model,
-      context,
-      options: streamOptions,
-    },);
-  }
-
-  /**
-   * Initial forced-tool event stream.
-   */
-  const toolCallStream = dispatch({
-    prompt: reviewPrompt,
-    tool: contract.tool,
-    streamOptions: buildAttemptStreamOptions({
-      auth,
-      signal,
-      toolChoice: toolChoiceForApi({
-        api: model.api,
-        toolName: contract.toolName,
-      },),
-      ...(maxOutputTokens === undefined
-        ? {}
-        : { maxOutputTokens, }),
+  /** Initial forced-tool provider options. */
+  const options = buildAttemptStreamOptions({
+    auth: request.auth,
+    signal: request.signal,
+    toolChoice: toolChoiceForApi({
+      api: request.model.api,
+      toolName: request.toolName,
     },),
+    ...(request.maxOutputTokens === undefined
+      ? {}
+      : { maxOutputTokens: request.maxOutputTokens, }),
   },);
-
-  /**
-   * Unknown structured value collected from tool or JSON retry.
-   */
-  const value = await collectStructuredReviewValue({
-    toolCallStream,
-    expectedToolName: contract.toolName,
-    createJsonRetryStream({ firstAttemptTextContent, },) {
-      /**
-       * Caller-specific retry prompt preserving original rubric.
-       */
-      const retryPrompt = contract.buildJsonRetryPrompt({
-        initialPrompt: reviewPrompt,
-        firstAttemptTextContent,
-      },);
-      return dispatch({
-        prompt: retryPrompt,
-        streamOptions: buildAttemptStreamOptions({
-          auth,
-          signal,
-          ...(maxOutputTokens === undefined
-            ? {}
-            : { maxOutputTokens, }),
-        },),
-      },);
-    },
+  /** Initial forced-tool event stream. */
+  const stream = await streamStructuredReview({
+    model: request.model,
+    context: contextForPrompt({
+      prompt: request.prompt,
+      tool: request.tool,
+    },),
+    options,
+    ...(request.testTransport === undefined
+      ? {}
+      : { testTransport: request.testTransport, }),
   },);
-  /**
-   * Strict caller parser owns verdict semantics.
-   */
-  const verdict = contract.parse(value,);
-  innerL.debug(
-    `structured attempt completed with ${model.provider}/${model.id}`,
-  );
-  return verdict;
+  /** Unparsed initial provider result. */
+  const result = await collectStructuredStream({
+    stream,
+    expectedToolName: request.toolName,
+  },);
+  if (result.kind === 'noToolCall')
+    innerL.warn(`reviewer omitted ${request.toolName}; caller must retry with direct JSON`,);
+  return result;
 }
 
-export { runStructuredReviewAttempt, };
+/**
+ * Run one direct-JSON request, retrying once only when first response is empty.
+ *
+ * Caller builds prompt from initial omitted-tool text before calling this function.
+ *
+ * @param request - model, auth, complete retry prompt, signal, and optional script data
+ *
+ * @returns unknown JSON object for caller-owned strict parsing
+ *
+ * @mutates request - provider consumes model, auth, signal, and test transport capabilities
+ *
+ * @example
+ * ```ts
+ * const value = await runStructuredJsonRetries(request);
+ * ```
+ */
+async function runStructuredJsonRetries(
+  request: ForeignBorrowed<StructuredReviewJsonRequest>,
+): Promise<unknown> {
+  try {
+    return await runDirectJsonRequest(request,);
+  }
+  catch (error) {
+    if (!(error instanceof EmptyStructuredReviewTextError))
+      throw error;
+    /** Per-call logger for bounded empty-output retry. */
+    const innerL = tagged({
+      tag: runStructuredJsonRetries.name,
+      l,
+    },);
+    innerL.warn('first direct JSON retry was empty; retrying direct JSON once more',);
+    return runDirectJsonRequest(request,);
+  }
+}
+
+export {
+  runStructuredJsonRetries,
+  runStructuredToolRequest,
+  structuredReviewSignal,
+};

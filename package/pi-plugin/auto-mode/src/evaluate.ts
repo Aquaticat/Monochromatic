@@ -19,6 +19,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { askUser, } from './ask-user.ts';
+import { findBudgetModel, } from './budget-model.ts';
 import { JUDGE_TIMEOUT_MS, } from './constants.ts';
 import {
   buildContext,
@@ -26,7 +27,6 @@ import {
   getTrustDirectives,
 } from './context.ts';
 import { callJudgeWithFallback, } from './judge-fallback.ts';
-import { callJudge, } from './judge.ts';
 import { formatModelBlockReason, } from './model-feedback.ts';
 import {
   type BatchEntry,
@@ -250,51 +250,16 @@ async function evaluate(
      */
     const verdict = await callJudgeWithFallback({
       firstJudge: judge,
-      /**
-       * Resolves one fallback outside prior model attempts.
-       *
-       * @param excludedModelSlugs - Completed model attempts excluded from selection.
-       *
-       * @returns Authenticated fallback judge.
-       *
-       * @mutates excludedModelSlugs - `resolveJudgeModel` iterates supplied exclusion capability.
-       */
-      resolveFallbackJudge({
-        excludedModelSlugs,
-      }: {
-        readonly excludedModelSlugs: ForeignBorrowed<readonly string[]>;
-      },) {
-        return resolveJudgeModel({
-          ctx,
-          excludedModelSlugs,
-        },);
-      },
-      /**
-       * Runs one complete judge transport attempt.
-       *
-       * @param selectedJudge - Authenticated model used by provider transport.
-       *
-       * @returns Structured judge verdict.
-       *
-       * @mutates selectedJudge - `callJudge` can invoke model and auth hooks through provider transport.
-       */
-      callJudgeAttempt({
-        judge: selectedJudge,
-      }: {
-        readonly judge: ForeignBorrowed<BudgetModel>;
-      },) {
-        return callJudge({
-          model: selectedJudge.model,
-          auth: selectedJudge.auth,
-          action,
-          actionInput,
-          cwd: ctx.cwd,
-          recentContext,
-          trustDirectives,
-          timeoutMs: JUDGE_TIMEOUT_MS,
-          systemPrompt,
-          batchContext,
-        },);
+      ctx,
+      request: {
+        action,
+        actionInput,
+        cwd: ctx.cwd,
+        recentContext,
+        trustDirectives,
+        timeoutMs: JUDGE_TIMEOUT_MS,
+        systemPrompt,
+        batchContext,
       },
     },);
 
@@ -394,10 +359,6 @@ async function resolveJudgeModel(
     readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {
-  /**
-   * Dynamically imported budget-model finder; lazy to keep startup cost low when judging is rare.
-   */
-  const { findBudgetModel, } = await import('./budget-model.ts');
   return findBudgetModel({
     ctx,
     excludedModelSlugs,

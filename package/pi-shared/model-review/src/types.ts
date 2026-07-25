@@ -1,21 +1,19 @@
 /**
- * Public contracts for shared structured model review.
+ * Public data contracts for shared structured model review.
  *
  * @module
  */
 
 import type {
   Api,
+  AssistantMessageEvent,
   Model,
-  ProviderStreams,
   Tool,
 } from '@earendil-works/pi-ai';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-//region Structured attempt contracts
-
 /**
- * Provider credentials resolved by a caller before review transport.
+ * Provider credentials resolved before review transport.
  *
  * @example
  * ```ts
@@ -23,13 +21,9 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
  * ```
  */
 type StructuredReviewAuth = {
-  /**
-   * Provider API key when required.
-   */
+  /** Provider API key when required. */
   readonly apiKey?: string;
-  /**
-   * Provider headers when required.
-   */
+  /** Provider headers when required. */
   readonly headers?: Readonly<Record<string, string>>;
 };
 
@@ -45,201 +39,223 @@ type StructuredReviewAuth = {
  * ```
  */
 type StructuredReviewPrompt = {
-  /**
-   * Reviewer system instructions.
-   */
+  /** Reviewer system instructions. */
   readonly systemPrompt: string;
-  /**
-   * Reviewer user-message body.
-   */
+  /** Reviewer user-message body. */
   readonly userContent: string;
 };
 
 /**
- * Inputs available when a caller builds direct-JSON retry instructions.
+ * Initial forced-tool response before caller-specific parsing or retry policy.
  *
  * @example
  * ```ts
- * contract.buildJsonRetryPrompt({ initialPrompt, firstAttemptTextContent: '' });
+ * if (result.kind === 'toolCall') parseVerdict(result.arguments);
  * ```
  */
-type StructuredReviewPromptInput = {
-  /**
-   * Original structured-tool prompt.
-   */
-  readonly initialPrompt: StructuredReviewPrompt;
-  /**
-   * Text returned when initial response omitted forced tool.
-   */
-  readonly firstAttemptTextContent: string;
-};
+type StructuredReviewInitialResult =
+  | {
+    /** Expected tool-call discriminant. */
+    readonly kind: 'toolCall';
+    /** Unknown arguments retained for caller-owned strict parsing. */
+    readonly arguments: unknown;
+  }
+  | {
+    /** Missing-tool discriminant. */
+    readonly kind: 'noToolCall';
+    /** Finalized text used to construct caller-specific retry instructions. */
+    readonly textContent: string;
+  };
 
 /**
- * Caller-owned structured verdict contract.
+ * Isolated model identity recorded at provider request seam.
  *
  * @example
  * ```ts
- * const contract: StructuredReviewContract<Verdict> = {
- *   toolName: 'submit_verdict',
- *   tool,
- *   parse: parseVerdict,
- *   buildJsonRetryPrompt,
+ * const model: StructuredReviewModelSnapshot = {
+ *   api: 'openai-responses',
+ *   id: 'reviewer',
+ *   provider: 'openai',
  * };
  * ```
  */
-type StructuredReviewContract<TVerdict,> = {
-  /**
-   * Exact tool name expected from structured response.
-   */
-  readonly toolName: string;
-  /**
-   * Pi AI tool exposed only to reviewer.
-   */
-  readonly tool: Tool;
-  /**
-   * Strict parser converting unknown tool or JSON data to verdict.
-   */
-  readonly parse: (value: unknown) => TVerdict;
-  /**
-   * Caller-specific prompt used after omitted structured tool.
-   */
-  readonly buildJsonRetryPrompt: (
-    input: StructuredReviewPromptInput,
-  ) => StructuredReviewPrompt;
+type StructuredReviewModelSnapshot = {
+  /** Selected provider API. */
+  readonly api: Api;
+  /** Selected model identifier. */
+  readonly id: string;
+  /** Selected provider identifier. */
+  readonly provider: string;
 };
 
 /**
- * Stream function seam used by production provider dispatch and deterministic tests.
+ * Isolated message recorded at provider request seam.
  *
  * @example
  * ```ts
- * const stream: StructuredReviewStream = provider.streamSimple;
+ * const message: StructuredReviewMessageSnapshot = {
+ *   role: 'user',
+ *   content: 'Evidence',
+ *   timestamp: 1,
+ * };
  * ```
  */
-type StructuredReviewStream = ProviderStreams['streamSimple'];
+type StructuredReviewMessageSnapshot = {
+  /** Message role sent to provider. */
+  readonly role: 'user';
+  /** Exact text sent to provider. */
+  readonly content: string;
+  /** Request message timestamp. */
+  readonly timestamp: number;
+};
 
 /**
- * Complete options for one structured reviewer candidate.
+ * Isolated context recorded immediately before provider dispatch.
  *
  * @example
  * ```ts
- * await runStructuredReviewAttempt({ model, auth, prompt, contract, timeoutMs: 10_000 });
+ * const context: StructuredReviewContextSnapshot = {
+ *   systemPrompt: 'Judge.',
+ *   messages: [],
+ *   toolNames: [],
+ * };
  * ```
  */
-type StructuredReviewAttemptOptions<TVerdict,> = {
-  /**
-   * Selected reviewer model.
-   */
+type StructuredReviewContextSnapshot = {
+  /** Exact provider system prompt. */
+  readonly systemPrompt: string;
+  /** Exact primitive message projection. */
+  readonly messages: readonly StructuredReviewMessageSnapshot[];
+  /** Tool names exposed for this request. */
+  readonly toolNames: readonly string[];
+};
+
+/**
+ * Isolated stream options recorded immediately before provider dispatch.
+ *
+ * @example
+ * ```ts
+ * const options: StructuredReviewOptionsSnapshot = { hasSignal: true };
+ * ```
+ */
+type StructuredReviewOptionsSnapshot = {
+  /** Provider API key when present. */
+  readonly apiKey?: string;
+  /** Isolated provider headers when present. */
+  readonly headers?: Readonly<Record<string, string | null>>;
+  /** Whether cancellation signal reached provider seam. */
+  readonly hasSignal: boolean;
+  /** Provider output cap when present. */
+  readonly maxTokens?: number;
+  /** Primitive forced-tool selector type when present. */
+  readonly toolChoiceType?: string;
+  /** Forced tool name when provider selector carries one. */
+  readonly toolChoiceName?: string;
+};
+
+/**
+ * Complete isolated provider request snapshot used by deterministic tests.
+ *
+ * @example
+ * ```ts
+ * testTransport.requests[0]?.context.messages[0]?.content;
+ * ```
+ */
+type StructuredReviewRequestSnapshot = {
+  /** Selected provider identity. */
+  readonly model: StructuredReviewModelSnapshot;
+  /** Final provider context. */
+  readonly context: StructuredReviewContextSnapshot;
+  /** Final provider stream options. */
+  readonly options: StructuredReviewOptionsSnapshot;
+};
+
+/**
+ * Data-only deterministic provider seam.
+ *
+ * Production callers omit this value. Tests provide ordered streams and inspect
+ * isolated request snapshots without passing executable callbacks into review code.
+ *
+ * @example
+ * ```ts
+ * const transport: ScriptedStructuredReviewTransport = {
+ *   nextResponseIndex: 0,
+ *   responses: [stream],
+ *   requests: [],
+ * };
+ * ```
+ */
+type ScriptedStructuredReviewTransport = {
+  /** Index consumed by next request. */
+  nextResponseIndex: number;
+  /** Ordered deterministic response streams. */
+  readonly responses: readonly ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>[];
+  /** Isolated requests captured in dispatch order. */
+  requests: StructuredReviewRequestSnapshot[];
+};
+
+/**
+ * Shared request fields for one candidate attempt.
+ *
+ * @example
+ * ```ts
+ * const request: StructuredReviewRequest = { model, auth, prompt, signal };
+ * ```
+ */
+type StructuredReviewRequest = {
+  /** Selected reviewer model. */
   readonly model: ForeignBorrowed<Model<Api>>;
-  /**
-   * Resolved reviewer credentials.
-   */
+  /** Resolved reviewer credentials. */
   readonly auth: ForeignBorrowed<StructuredReviewAuth>;
-  /**
-   * Initial structured-tool prompt.
-   */
+  /** Request-specific reviewer prompt. */
   readonly prompt: StructuredReviewPrompt;
-  /**
-   * Goal-agnostic verdict contract.
-   */
-  readonly contract: ForeignBorrowed<StructuredReviewContract<TVerdict>>;
-  /**
-   * Timeout covering forced-tool and JSON retries.
-   */
-  readonly timeoutMs: number;
-  /**
-   * Optional provider output cap.
-   */
+  /** Cancellation signal shared across initial request and retries. */
+  readonly signal: AbortSignal;
+  /** Optional provider output cap. */
   readonly maxOutputTokens?: number;
-  /**
-   * Optional caller cancellation signal.
-   */
-  readonly signal?: AbortSignal;
-  /**
-   * Injected stream adapter for deterministic tests.
-   */
-  readonly stream?: ForeignBorrowed<StructuredReviewStream>;
-};
-
-//endregion Structured attempt contracts
-
-//region Fallback orchestration contracts
-
-/**
- * Valid review paired with candidate identity and attempt audit.
- *
- * @example
- * ```ts
- * if (result.usedFallback) console.log(result.candidateIdentity);
- * ```
- */
-type ReviewWithFallbackResult<TCandidate, TVerdict,> = {
-  /**
-   * Parsed valid verdict.
-   */
-  readonly verdict: TVerdict;
-  /**
-   * Candidate that supplied verdict.
-   */
-  readonly candidate: TCandidate;
-  /**
-   * Canonical identity of winning candidate.
-   */
-  readonly candidateIdentity: string;
-  /**
-   * Whether winning candidate came from fallback race.
-   */
-  readonly usedFallback: boolean;
-  /**
-   * Candidate identities whose transports started.
-   */
-  readonly attemptedCandidateIdentities: readonly string[];
+  /** Optional data-only deterministic provider seam. */
+  readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
 };
 
 /**
- * Options for one initial reviewer plus bounded availability fallback.
+ * Initial forced-tool request fields.
  *
  * @example
  * ```ts
- * await runReviewWithFallback({ firstCandidate, candidateIdentity, resolveFallback, runAttempt });
+ * await runStructuredToolRequest({ ...request, toolName: tool.name, tool });
  * ```
  */
-type ReviewWithFallbackOptions<TCandidate, TVerdict,> = {
-  /**
-   * Initially selected candidate.
-   */
-  readonly firstCandidate: TCandidate;
-  /**
-   * Stable canonical identity function.
-   */
-  readonly candidateIdentity: (candidate: TCandidate) => string;
-  /**
-   * Resolve one candidate outside supplied exclusions.
-   */
-  readonly resolveFallback: (
-    options: { readonly excludedCandidateIdentities: readonly string[]; },
-  ) => Promise<TCandidate>;
-  /**
-   * Run complete transport and strict parsing for one candidate.
-   */
-  readonly runAttempt: (
-    options: { readonly candidate: TCandidate; },
-  ) => Promise<TVerdict>;
-  /**
-   * Classify resolver failure as exhausted candidate availability.
-   */
-  readonly isCandidateUnavailable: (error: unknown) => boolean;
+type StructuredReviewToolRequest = StructuredReviewRequest & {
+  /** Exact tool name expected from provider. */
+  readonly toolName: string;
+  /** Sole structured verdict tool exposed to provider. */
+  readonly tool: ForeignBorrowed<Tool>;
 };
 
-//endregion Fallback orchestration contracts
+/**
+ * Direct-JSON retry request fields.
+ *
+ * @example
+ * ```ts
+ * await runStructuredJsonRetries({ ...request, expectedToolName: 'submit_review' });
+ * ```
+ */
+type StructuredReviewJsonRequest = StructuredReviewRequest & {
+  /** Expected tool name tolerated if provider emits one during JSON retry. */
+  readonly expectedToolName: string;
+};
 
 export type {
-  ReviewWithFallbackOptions,
-  ReviewWithFallbackResult,
-  StructuredReviewAttemptOptions,
+  ScriptedStructuredReviewTransport,
   StructuredReviewAuth,
-  StructuredReviewContract,
+  StructuredReviewContextSnapshot,
+  StructuredReviewInitialResult,
+  StructuredReviewJsonRequest,
+  StructuredReviewMessageSnapshot,
+  StructuredReviewModelSnapshot,
+  StructuredReviewOptionsSnapshot,
   StructuredReviewPrompt,
-  StructuredReviewPromptInput,
-  StructuredReviewStream,
+  StructuredReviewRequest,
+  StructuredReviewRequestSnapshot,
+  StructuredReviewToolRequest,
 };

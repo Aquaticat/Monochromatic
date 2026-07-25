@@ -8,23 +8,9 @@ import type {
   AssistantMessageEvent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { extractStructuredJson, } from './json.ts';
-
-/**
- * Shared package logger.
- */
-const parentLogger = tagged({ tag: 'model-review', },);
-
-/**
- * Stream-collection logger.
- */
-const l = tagged({
-  tag: 'stream-collection',
-  l: parentLogger,
-},);
 
 /**
  * Sentinel for stream without tool call.
@@ -192,81 +178,9 @@ async function collectDirectJson(
   return extractStructuredJson(result.textContent,);
 }
 
-/**
- * Collect forced tool response and run bounded direct-JSON retries when omitted.
- *
- * @param toolCallStream - initial forced-tool stream
- *
- * @param expectedToolName - exact structured tool name
- *
- * @param createJsonRetryStream - lazy direct-JSON stream factory
- *
- * @returns unknown structured data for caller parser
- *
- * @mutates toolCallStream - async iteration consumes initial stream
- *
- * @mutates createJsonRetryStream - retry factory may update captured transport state
- *
- * @example
- * ```ts
- * await collectStructuredReviewValue({ toolCallStream, expectedToolName, createJsonRetryStream });
- * ```
- */
-async function collectStructuredReviewValue(
-  {
-    toolCallStream,
-    expectedToolName,
-    createJsonRetryStream,
-  }: {
-    readonly toolCallStream: ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>;
-    readonly expectedToolName: string;
-    readonly createJsonRetryStream: ForeignBorrowed<(
-      options: { readonly firstAttemptTextContent: string; },
-    ) => AsyncIterable<AssistantMessageEvent>>;
-  },
-): Promise<unknown> {
-  /**
-   * Initial reviewer response.
-   */
-  const initialResult = await collectStructuredStream({
-    stream: toolCallStream,
-    expectedToolName,
-  },);
-  if (initialResult.kind === 'toolCall')
-    return initialResult.arguments;
-
-  /**
-   * Per-call logger for transport fallback decisions.
-   */
-  const innerL = tagged({
-    tag: collectStructuredReviewValue.name,
-    l,
-  },);
-  innerL.warn(
-    `reviewer omitted ${expectedToolName}; retrying with direct JSON`,
-  );
-  try {
-    return await collectDirectJson({
-      stream: createJsonRetryStream({
-        firstAttemptTextContent: initialResult.textContent,
-      },),
-      expectedToolName,
-    },);
-  }
-  catch (error) {
-    if (!(error instanceof EmptyStructuredReviewTextError))
-      throw error;
-    innerL.warn('first direct JSON retry was empty; retrying direct JSON once more',);
-    return collectDirectJson({
-      stream: createJsonRetryStream({
-        firstAttemptTextContent: initialResult.textContent,
-      },),
-      expectedToolName,
-    },);
-  }
-}
-
 export {
-  collectStructuredReviewValue,
+  collectDirectJson,
+  collectStructuredStream,
   EmptyStructuredReviewTextError,
 };
+export type { CollectedStructuredStream, };
