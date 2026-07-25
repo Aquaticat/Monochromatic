@@ -893,6 +893,12 @@ completed, 0 failed. Chinatsu_Suzuki repaired (77 issues, 77 accepted, all
 the old 45-min per-run cap but fits the 90-min per-entry budget; the cap
 fix earned its keep. 8/92 settled. Run 008 launched WITH resumability
 active (tip after the resumability commits).
+PASS 6 RUN 008 (2026-07-24, tip `ed5936126`, 3079s wall, resumability
+live): 1 dispatched, 1 completed, 0 failed. Considerate_cat repaired (50
+issues, 41 accepted, 40 resolved, 11 findings, 3079s). Resumability
+cleanup verified in production: the slice-cache dir is empty after the run
+because the settled entry's cache was discarded as designed. 9/92 settled.
+Run 009 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
