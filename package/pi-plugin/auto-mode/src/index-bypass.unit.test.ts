@@ -261,7 +261,7 @@ function getBypassShortcut(
     readonly shortcuts: ShortcutMap;
   },
 ): HandlerFn {
-  /** Shortcut registration stored under the configured bypass shortcut. */
+  /** Shortcut registration stored under the fixed bypass shortcut. */
   const shortcut = shortcuts.get(BYPASS_SHORTCUT,);
   if (shortcut === undefined)
     throw new Error('bypass shortcut not registered',);

@@ -28,17 +28,13 @@ import {
   findLatestBypassEnabled,
   updateBypassStatus,
 } from './bypass.ts';
-import { loadMergedConfig, } from './config.ts';
 import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
 import { evaluate, } from './evaluate.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { registerGuardCommand, } from './guard-command.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
-import {
-  type MergedConfig,
-  shouldFlag,
-} from './signals.ts';
-import { buildSystemPrompt, } from './system-prompt.ts';
+import { shouldFlag, } from './signals.ts';
+import { JUDGE_SYSTEM_PROMPT, } from './system-prompt.ts';
 import { agentTempAllowlistedDirs, } from './temp-allowlist.ts';
 import {
   buildApprovalFingerprint,
@@ -100,7 +96,6 @@ type SkillPromptEvent = {
  *
  * Subscribes to agent lifecycle events to implement the
  * flagger-judge-user pipeline:
- * - {@link loadMergedConfig} and {@link buildSystemPrompt} resolve config and the judge system prompt
  * - {@link registerGuardCommand} and {@link registerProposeTrust} register the `/guard` command and `propose_trust` tool
  * - {@link findLatestBypassEnabled} and {@link updateBypassStatus} restore and surface bypass state
  * - {@link appendBypassToggleEntry} and {@link announceBypassToggle} record and announce bypass toggles
@@ -141,24 +136,7 @@ async function initializeAutoMode(
     tag: initializeAutoMode.name,
     l,
   },);
-  /**
-   * Resolved configuration; downstream handlers and the system prompt are derived from this.
-   */
-  const config = await loadMergedConfig({
-    cwd: process.cwd(),
-    home,
-  },);
-
-  if (!config.enabled) {
-    innerL.debug('auto-mode disabled in config; not registering handlers',);
-    return;
-  }
-
   innerL.debug('auto-mode active; registering handlers',);
-  /**
-   * Static judge system prompt; recomputed at startup so config edits take effect on relaunch.
-   */
-  const systemPrompt = buildSystemPrompt(config,);
 
   //region /guard command
 
@@ -464,7 +442,6 @@ async function initializeAutoMode(
       const flagged = await shouldFlag({
         event,
         ctx: signalCtx,
-        config,
         readAllowlistedDirs,
         bashAllowlistedDirs,
       },)
@@ -492,8 +469,7 @@ async function initializeAutoMode(
       return evaluate({
         pi,
         ctx,
-        config,
-        systemPrompt,
+        systemPrompt: JUDGE_SYSTEM_PROMPT,
         action,
         approvalFingerprint,
         batchContext,

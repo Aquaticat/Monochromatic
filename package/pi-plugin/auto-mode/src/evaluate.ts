@@ -19,6 +19,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { askUser, } from './ask-user.ts';
+import { JUDGE_TIMEOUT_MS, } from './constants.ts';
 import {
   buildContext,
   getReusableApproval,
@@ -27,11 +28,9 @@ import {
 import { callJudgeWithFallback, } from './judge-fallback.ts';
 import { callJudge, } from './judge.ts';
 import { formatModelBlockReason, } from './model-feedback.ts';
-import type { MergedConfig, } from './signals.ts';
 import {
   type BatchEntry,
   type BudgetModel,
-  type BudgetModelOptions,
   type EvaluateResult,
   VERDICT_ENTRY_TYPE,
   type GuardDecision,
@@ -108,8 +107,6 @@ function decisionForDenyVerdict(
  *
  * @mutates ctx - context, auth, and user-prompt paths can change controlled Pi state
  *
- * @mutates config - judge selection can read caller-owned configuration hooks
- *
  * @mutates batchContext - judge context construction can read caller-owned entry hooks
  *
  * @example
@@ -117,7 +114,6 @@ function decisionForDenyVerdict(
  * const result = await evaluate({
  *   pi,
  *   ctx,
- *   config,
  *   systemPrompt: prompt,
  *   action: "bash: sudo rm -rf /",
  *   approvalFingerprint: "abc123",
@@ -129,7 +125,6 @@ async function evaluate(
   {
     pi,
     ctx,
-    config,
     systemPrompt,
     action,
     approvalFingerprint,
@@ -137,7 +132,6 @@ async function evaluate(
   }: {
     readonly pi: ForeignBorrowed<ExtensionAPI>;
     readonly ctx: ForeignBorrowed<ExtensionContext>;
-    readonly config: MergedConfig;
     readonly systemPrompt: string;
     readonly action: string;
     readonly approvalFingerprint: string;
@@ -204,10 +198,7 @@ async function evaluate(
       try {
         return {
           ok: true,
-          judge: await resolveJudgeModel({
-            ctx,
-            config,
-          },),
+          judge: await resolveJudgeModel({ ctx, },),
         };
       }
       catch (err) {
@@ -272,7 +263,6 @@ async function evaluate(
       },) {
         return resolveJudgeModel({
           ctx,
-          config,
           excludedModelSlugs,
         },);
       },
@@ -297,7 +287,7 @@ async function evaluate(
           cwd: ctx.cwd,
           recentContext,
           trustDirectives,
-          timeoutMs: config.judgeTimeoutMs,
+          timeoutMs: JUDGE_TIMEOUT_MS,
           systemPrompt,
           batchContext,
         },);
@@ -379,12 +369,9 @@ async function evaluate(
 }
 
 /**
- * Resolve a judge model from the budget model options, built with
- * {@link toBudgetModelOptions} and resolved with {@link findBudgetModel}.
+ * Resolve a judge model with {@link findBudgetModel}.
  *
  * @param ctx - extension context
- *
- * @param config - the merged runtime config
  *
  * @param excludedModelSlugs - judge models whose completed attempts already failed
  *
@@ -392,18 +379,14 @@ async function evaluate(
  *
  * @mutates ctx - `findBudgetModel` can invoke registry and command-backed auth capabilities
  *
- * @mutates config - model option projection can read caller-owned configuration hooks
- *
  * @mutates excludedModelSlugs - model exclusion iteration can invoke caller-owned hooks
  */
 async function resolveJudgeModel(
   {
     ctx,
-    config,
     excludedModelSlugs = [],
   }: {
     readonly ctx: ForeignBorrowed<ExtensionContext>;
-    readonly config: MergedConfig;
     readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {
@@ -413,40 +396,8 @@ async function resolveJudgeModel(
   const { findBudgetModel, } = await import('./budget-model.ts');
   return findBudgetModel({
     ctx,
-    options: toBudgetModelOptions(config,),
     excludedModelSlugs,
   },);
-}
-
-/**
- * Extract budget model options from config.
- *
- * @param config - the merged runtime config
- *
- * @returns budget model options
- */
-function toBudgetModelOptions(
-  config: MergedConfig,
-): BudgetModelOptions {
-  /**
-   * Judge-model block destructured so the per-field reads below stay single-identifier.
-   */
-  const {
-    strategy,
-    majorVersions,
-    modelOverride,
-  } = config.judgeModel;
-  /**
-   * Budget-model options, with `modelOverride` re-attached only when the judge config pinned one.
-   */
-  const opts: BudgetModelOptions = {
-    strategy,
-    majorVersions,
-    ...(modelOverride !== undefined
-      ? { modelOverride, }
-      : {}),
-  };
-  return opts;
 }
 
 export {

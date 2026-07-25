@@ -12,21 +12,19 @@ import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   budgetModelSlug,
   NoBudgetModelError,
-  resolveBudgetModelOverride,
   resolveEffectiveScope,
   selectBudgetModel,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
-  findBudgetOverrideModel,
-  hasConfiguredBudgetAuth,
+  hasRegistryBudgetAuth,
   resolveBudgetAuth,
 } from './budget-model-auth.ts';
-import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
-import type {
-  BudgetModel,
-  BudgetModelOptions,
-} from './types.ts';
+import {
+  JUDGE_MODEL_MAJOR_VERSIONS,
+  JUDGE_MODEL_STRATEGY,
+} from './constants.ts';
+import type { BudgetModel, } from './types.ts';
 
 //region Model shape guards
 
@@ -126,18 +124,14 @@ function assertModelApiList(
 /**
  * Find the fastest available model for the judge.
  *
- * If `options.modelOverride` is set, resolves it through
- * {@link resolveBudgetModelOverride}, backed by {@link findBudgetOverrideModel}
- * and {@link resolveBudgetAuth}. Otherwise validates the active model and
- * registry with {@link assertModelApi} and {@link assertModelApiList}, then
- * {@link resolveEffectiveScope} narrows automatic candidates to Pi's effective
- * scoped models. {@link selectBudgetModel} walks those candidates fastest-first,
- * using {@link hasConfiguredBudgetAuth} and {@link resolveBudgetAuth}, and
- * returns the first candidate the registry can authenticate.
+ * Validates the active model and registry with {@link assertModelApi} and
+ * {@link assertModelApiList}, then {@link resolveEffectiveScope} narrows
+ * automatic candidates to Pi's effective scoped models.
+ * {@link selectBudgetModel} walks those candidates fastest-first using
+ * {@link hasRegistryBudgetAuth} and {@link resolveBudgetAuth}, and returns
+ * the first candidate the registry can authenticate.
  *
  * @param ctx - pi extension context
- *
- * @param options - optional budget-model configuration
  *
  * @param excludedModelSlugs - models whose completed attempts must not be selected again
  *
@@ -146,8 +140,6 @@ function assertModelApiList(
  * @returns budget model with auth credentials
  *
  * @mutates ctx - scope resolution and registry selection can invoke model accessors and command-backed auth capabilities
- *
- * @mutates options - override and strategy reads can invoke caller-owned accessors or proxy traps
  *
  * @mutates excludedModelSlugs - iteration can invoke caller-owned iterator hooks
  *
@@ -159,72 +151,16 @@ function assertModelApiList(
 async function findBudgetModel(
   {
     ctx,
-    options,
     excludedModelSlugs = [],
   }: {
     readonly ctx: ForeignBorrowed<ExtensionContext>;
-    readonly options?: BudgetModelOptions;
     readonly excludedModelSlugs?: readonly string[];
   },
 ): Promise<BudgetModel> {
   /**
-   * Options with defaults applied so strategy branches read fields unconditionally.
-   */
-  const opts: BudgetModelOptions = options ?? { ...JUDGE_MODEL_DEFAULTS, };
-  /**
    * Canonical slugs excluded after earlier judge attempts exhausted their retries.
    */
   const excludedSlugs = new Set(excludedModelSlugs,);
-
-  if (opts.modelOverride
-    !== undefined) {
-    /**
-     * Canonical-looking configured override slug used to skip a failed pinned
-     * model without resolving its auth again.
-     */
-    const configuredOverrideSlug = (typeof opts.modelOverride) === 'string'
-      ? opts.modelOverride
-      : opts.modelOverride
-        .model;
-    if (!excludedSlugs.has(configuredOverrideSlug,)) {
-      /**
-       * Configured override remains first choice, but an override that already
-       * failed gives way to automatic selection for fallback.
-       */
-      const overrideModel = await resolveBudgetModelOverride({
-        override: opts.modelOverride,
-        findModel(
-          {
-            provider,
-            modelId,
-          },
-        ) {
-          return findBudgetOverrideModel({
-            ctx,
-            provider,
-            modelId,
-          },);
-        },
-        /**
-         * Resolves auth for configured override model.
-         *
-         * @param model - Registry model selected by override resolver.
-         *
-         * @returns Resolved auth or no-auth sentinel.
-         *
-         * @mutates model - `resolveBudgetAuth` can invoke model hooks and command-backed auth.
-         */
-        async resolveAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
-          return await resolveBudgetAuth({
-            ctx,
-            model,
-          },);
-        },
-      },);
-      if (!excludedSlugs.has(budgetModelSlug(overrideModel.model,),))
-        return overrideModel;
-    }
-  }
 
   if ((ctx.model
     === undefined) || (ctx.model
@@ -232,7 +168,7 @@ async function findBudgetModel(
     throw new NoBudgetModelError('no active model set',);
 
   /**
-   * Active model handed in by host so an explicit same-provider strategy has a reference provider.
+   * Active model handed in by host for shared selection context.
    */
   const rawActiveModel: unknown = ctx.model;
   assertModelApi(rawActiveModel,);
@@ -288,8 +224,8 @@ async function findBudgetModel(
   return await selectBudgetModel<Model<Api>>({
     activeModel,
     allModels,
-    strategy: opts.strategy,
-    majorVersions: opts.majorVersions,
+    strategy: JUDGE_MODEL_STRATEGY,
+    majorVersions: JUDGE_MODEL_MAJOR_VERSIONS,
     /**
      * Resolves auth for one automatically selected model.
      *
@@ -306,16 +242,16 @@ async function findBudgetModel(
       },);
     },
     /**
-     * Checks auth configuration for one candidate model.
+     * Checks registry auth availability for one candidate model.
      *
      * @param model - Registry model inspected by auth storage.
      *
-     * @returns Whether auth is configured.
+     * @returns Whether registry auth is available.
      *
-     * @mutates model - `hasConfiguredBudgetAuth` reads can invoke caller-owned model hooks.
+     * @mutates model - registry auth reads can invoke caller-owned model hooks.
      */
     hasConfiguredAuth({ model, }: { readonly model: ForeignBorrowed<Model<Api>>; },) {
-      return hasConfiguredBudgetAuth({
+      return hasRegistryBudgetAuth({
         ctx,
         model,
       },);

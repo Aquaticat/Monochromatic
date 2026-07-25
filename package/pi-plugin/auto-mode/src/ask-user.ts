@@ -75,7 +75,7 @@ type AskNotificationInvoker = ForeignBorrowed<(
 ) => Promise<void>>;
 
 /**
- * Invoke the configured terminal notification command.
+ * Invoke the fixed terminal notification command.
  *
  * The argument vector avoids shell interpretation of action text. A missing
  * notification utility is handled by {@link notifyAsk}, so approval remains

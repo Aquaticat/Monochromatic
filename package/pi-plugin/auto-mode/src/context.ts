@@ -329,7 +329,7 @@ function buildContext(
  *
  * Keeps the larger of:
  * - the activity span from latest user message through now
- * - the newest configured floor of activity lines
+ * - the newest fixed floor of activity lines
  *
  * @param activityLines - chronological activity lines built from session branch
  *

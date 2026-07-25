@@ -9,21 +9,39 @@
  * @module
  */
 
-//region Judge-model defaults
+//region Judge policy
 
 /**
- * Default judge-model selection used when no global config is set
- * and when `findBudgetModel` is called with no options. It considers every
- * provider represented in Pi's effective model scope.
+ * Fixed judge-model selection strategy.
  *
- * Single source of truth: referenced by {@link loadMergedConfig} (for the
- * config-file fallback), by {@link GLOBAL_DEFAULTS} (for the global
- * defaults), and by {@link findBudgetModel} (for the no-options call).
+ * Every provider represented in Pi's effective model scope remains eligible.
+ *
+ * @example
+ * ```typescript
+ * selectBudgetModel({ strategy: JUDGE_MODEL_STRATEGY, });
+ * ```
  */
-export const JUDGE_MODEL_DEFAULTS = {
-  strategy: 'any-provider',
-  majorVersions: 1,
-} as const;
+export const JUDGE_MODEL_STRATEGY = 'any-provider';
+
+/**
+ * Fixed count of newest major-version families eligible for judge selection.
+ *
+ * @example
+ * ```typescript
+ * selectBudgetModel({ majorVersions: JUDGE_MODEL_MAJOR_VERSIONS, });
+ * ```
+ */
+export const JUDGE_MODEL_MAJOR_VERSIONS = 1;
+
+/**
+ * Maximum duration of one complete judge attempt.
+ *
+ * @example
+ * ```typescript
+ * callJudge({ timeoutMs: JUDGE_TIMEOUT_MS, });
+ * ```
+ */
+export const JUDGE_TIMEOUT_MS = 10_000;
 
 //endregion
 

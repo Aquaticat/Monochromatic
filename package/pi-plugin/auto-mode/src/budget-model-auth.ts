@@ -12,7 +12,6 @@ import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   type BudgetModelAuth,
   NO_AUTH,
-  NO_OVERRIDE_MODEL,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -110,22 +109,22 @@ async function resolveBudgetAuth(
 }
 
 /**
- * Check whether registry reports configured auth for a model.
+ * Check whether registry reports available auth for a model.
  *
  * @param ctx - pi extension context exposing model registry
  *
  * @param model - model to check
  *
- * @returns whether auth is configured
+ * @returns whether registry auth is available
  *
- * @mutates model - `hasConfiguredAuth` reads can invoke caller-owned model accessors or proxy traps
+ * @mutates model - registry auth reads can invoke caller-owned model accessors or proxy traps
  *
  * @example
  * ```typescript
- * hasConfiguredBudgetAuth({ ctx, model });
+ * hasRegistryBudgetAuth({ ctx, model });
  * ```
  */
-function hasConfiguredBudgetAuth(
+function hasRegistryBudgetAuth(
   {
     ctx,
     model,
@@ -138,52 +137,9 @@ function hasConfiguredBudgetAuth(
     .hasConfiguredAuth(model,);
 }
 
-/**
- * Find an override model in auto-mode's registry.
- *
- * @param ctx - pi extension context exposing model registry
- *
- * @param provider - provider slug
- *
- * @param modelId - model id
- *
- * @returns matched model, or {@link NO_OVERRIDE_MODEL} when missing
- *
- * @example
- * ```typescript
- * findBudgetOverrideModel({ ctx, provider: 'openai', modelId: 'gpt-4o-mini' });
- * ```
- */
-function findBudgetOverrideModel(
-  {
-    ctx,
-    provider,
-    modelId,
-  }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
-    readonly provider: string;
-    readonly modelId: string;
-  },
-): Model<Api> | typeof NO_OVERRIDE_MODEL {
-  /* oxlint-disable unicorn/no-array-method-this-argument -- ModelRegistry.find is not Array.find. */
-  /**
-   * Registry-resolved model record, when present.
-   */
-  const model = ctx.modelRegistry
-    .find(
-      provider,
-      modelId,
-    );
-  /* oxlint-enable unicorn/no-array-method-this-argument */
-  return (model === undefined) || (model === null)
-    ? NO_OVERRIDE_MODEL
-    : model;
-}
-
 //endregion Registry auth adapters
 
 export {
-  findBudgetOverrideModel,
-  hasConfiguredBudgetAuth,
+  hasRegistryBudgetAuth,
   resolveBudgetAuth,
 };

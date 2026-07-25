@@ -14,12 +14,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { askUser, } from './ask-user.ts';
-import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
 import {
   decisionForDenyVerdict,
   evaluate,
 } from './evaluate.ts';
-import type { MergedConfig, } from './signals.ts';
 import {
   VERDICT_ENTRY_TYPE,
   type VerdictData,
@@ -42,15 +40,6 @@ type MockBranchEntry = {
   /** Optional custom entry payload. */
   readonly data?: unknown;
 };
-
-/** Runtime config that is sufficient when evaluate short-circuits before judging. */
-const TEST_CONFIG = {
-  enabled: true,
-  commands: [],
-  patterns: [],
-  judgeModel: JUDGE_MODEL_DEFAULTS,
-  judgeTimeoutMs: 10_000,
-} satisfies MergedConfig;
 
 /** Approval fingerprint for read .env fixtures. */
 const READ_ENV_APPROVAL_FINGERPRINT = 'read-env-fingerprint';
@@ -244,7 +233,6 @@ await describe({
               },),
             ],
           },),
-          config: TEST_CONFIG,
           systemPrompt: 'judge prompt',
           action: 'read .env',
           approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
@@ -310,7 +298,6 @@ await describe({
           ctx: contextFromBranch({
             branch: branchFromAppendedEntries({ entries: approvalEntries, },),
           },),
-          config: TEST_CONFIG,
           systemPrompt: 'judge prompt',
           action: 'read .env',
           approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,

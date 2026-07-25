@@ -3163,9 +3163,6 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
-      valibot:
-        specifier: 'catalog:'
-        version: 1.4.2(typescript@7.0.2)
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'

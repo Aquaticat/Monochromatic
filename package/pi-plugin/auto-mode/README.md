@@ -124,8 +124,8 @@ that model runs alone.
  This is an availability fallback,
  not consensus,
 so the winning fallback is timing-dependent when models disagree.
- A configured model override is the first choice,
-but automatic selection supplies the fallback contenders after that override fails.
+ After the first selected model fails,
+automatic selection supplies the fallback contenders.
  If no fallback model can be selected or all complete attempts fail,
 auto-mode asks the user as before.
 
@@ -167,11 +167,6 @@ gracefully rather than throwing.
 <td>Logs error, falls back to ask-user</td>
 </tr>
 <tr>
-<td>Config validation</td>
-<td>(none in upstream)</td>
-<td>Valibot (Standard-Schema-compatible)</td>
-</tr>
-<tr>
 <td>Budget model</td>
 <td>Separate `pi-budget-model` package</td>
 <td>Inlined `budget-model.ts`</td>
@@ -194,35 +189,10 @@ gracefully rather than throwing.
 </tbody>
 </table>
 
-## Configuration
+## Judge model selection
 
-- Global:
-   `~/.pi/agent/extensions/pi-auto-mode.json`
-- Project:
-   `.pi/extensions/pi-auto-mode.json` (additive only)
-
-```json
-{
-  "enabled": true,
-  "commands": ["terraform", ["docker", "compose"]],
-  "patterns": ["production"],
-  "instructions": "Allow terraform commands in this project",
-  "judgeModel": {
-    "modelOverride": "openai/gpt-4o-mini",
-    "strategy": "any-provider",
-    "majorVersions": 1
-  },
-  "judgeTimeoutMs": 10000
-}
-```
-
-The `judgeModel` defaults to `{strategy: "any-provider", majorVersions: 1}` when the config is absent
-or `judgeModel` is unset;
- defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from
-the loader,
- the global defaults,
- and the judge-model selector.
-Automatic judge selection first keeps the configured major-version families,
+Automatic judge selection considers every provider in Pi's effective model scope,
+keeps the newest major-version family,
 then ranks candidates by local speed-name heuristic:
 `highspeed` or `high-speed` > `fast` > `luna` > `flash` or `spark` > `terra` >
 `turbo` > `nano` > `mini` > `haiku` > `lite` or `light` > no signal.
@@ -238,9 +208,7 @@ Automatic selection only considers Pi's effective scoped models:
 3. Merged global and project `enabledModels` settings.
 4. Authenticated registry models when Pi has no scope restriction.
 
-The default strategy ranks candidates from every provider in that set.
-Set `strategy` to `same-provider` to restrict that automatic selection to the active model's provider.
-A configured `modelOverride` remains an explicit registry-wide choice and can select a model outside the scope.
+The fixed strategy ranks candidates from every provider in that set.
 
 ## Skill read allowlist
 

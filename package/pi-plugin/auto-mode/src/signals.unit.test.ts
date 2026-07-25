@@ -2,7 +2,7 @@
  * Tests for signal flagging.
  *
  * Covers path signals (with the isSystemPath fix), bash signals,
- * content signals, text signals, and user command matching.
+ * content signals, and text signals.
  */
 
 import {
@@ -37,9 +37,7 @@ import {
 } from './path-signals.ts';
 import {
   bashSignals,
-  type CommandMatcher,
   hasFlag,
-  matchUserCommands,
   shouldFlag,
 } from './signals.ts';
 import type { SignalContext, } from './types.ts';
@@ -924,64 +922,6 @@ await describe({
       name: 'does not flag text without matches',
       fn: async () => {
         expect(textSignals({ text: 'run apt-get install', },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'matches user-configured patterns',
-      fn: async () => {
-        expect(textSignals({
-          text: 'deploy to production',
-          config: {
-            enabled: true,
-            // oxlint-disable-next-line no-restricted-syntax/no-regex -- test fixture: textSignals consumes user-configured RegExp[] from config; this literal IS the test's pattern.
-            patterns: [/production/u,],
-            commands: [],
-            judgeModel: { strategy: 'same-provider', majorVersions: 1, },
-            judgeTimeoutMs: 10_000,
-          },
-        },),)
-          .toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: matchUserCommands.name,
-  children: [
-    it({
-      name: 'matches string matcher',
-      fn: async () => {
-        const analysis = analyzeBashCommand('terraform plan',);
-        const matchers: CommandMatcher[] = ['terraform',];
-        expect(matchUserCommands({ analysis, matchers, },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'matches array matcher with subcommand',
-      fn: async () => {
-        const analysis = analyzeBashCommand('docker compose up',);
-        const matchers: CommandMatcher[] = [['docker', 'compose',],];
-        expect(matchUserCommands({ analysis, matchers, },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'does not match wrong subcommand',
-      fn: async () => {
-        const analysis = analyzeBashCommand('docker run hello',);
-        const matchers: CommandMatcher[] = [['docker', 'compose',],];
-        expect(matchUserCommands({ analysis, matchers, },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'does not match when no matchers provided',
-      fn: async () => {
-        const analysis = analyzeBashCommand('ls -la',);
-        expect(matchUserCommands({ analysis, matchers: [], },),).toBe(false,);
       },
     },),
   ],

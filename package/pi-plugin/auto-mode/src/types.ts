@@ -12,11 +12,7 @@ import type {
   Api,
   Model,
 } from '@earendil-works/pi-ai';
-import type {
-  BudgetModel as SharedBudgetModel,
-  BudgetModelOverride,
-  BudgetModelStrategy,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+import type { BudgetModel as SharedBudgetModel, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type {
   ShellCommandAnalysis,
   ShellCommandInfo,
@@ -347,37 +343,6 @@ type BashAnalysis = ShellCommandAnalysis;
  */
 type BudgetModel = SharedBudgetModel<Model<Api>>;
 
-/**
- * Strategy for finding a budget model.
- */
-type ModelStrategy = BudgetModelStrategy;
-
-/**
- * Pinned-model override for the judge.
- */
-type ModelOverride = BudgetModelOverride;
-
-/**
- * Configured judge-model selection.
- *
- * Carries either a pinned override or a strategy plus its tuning
- * parameters. The same shape is used by {@link MergedConfig}'s `judgeModel`,
- * {@link BudgetModelOptions}, and the YAML/JSON config schema.
- */
-type JudgeModelConfig = {
-  readonly modelOverride?: ModelOverride;
-  readonly strategy: ModelStrategy;
-  /**
-   * How many major version families to search.
-   */
-  readonly majorVersions: number;
-};
-
-/**
- * Budget-model find options (shape used by {@link findBudgetModel}).
- */
-type BudgetModelOptions = JudgeModelConfig;
-
 //endregion
 
 //region Batch types
@@ -474,15 +439,11 @@ export type {
   BashAnalysis,
   BatchEntry,
   BudgetModel,
-  BudgetModelOptions,
   CommandInfo,
   EnvAssignment,
   EvaluateResult,
   FlowVerdict,
   GuardDecision,
-  JudgeModelConfig,
-  ModelOverride,
-  ModelStrategy,
   SignalContext,
   Verdict,
   VerdictData,

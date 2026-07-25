@@ -1,7 +1,5 @@
 /**
- * Judge system prompt: the base instructions sent to the judge model
- * plus the helper that appends user/project instructions, and the
- * default deny guidance shown to the agent when an action is blocked.
+ * Fixed judge system prompt and deny guidance.
  *
  * @module
  */
@@ -16,13 +14,12 @@ const DEFAULT_DENY_GUIDANCE =
   'This action was blocked by the security guardrail. Consider a different approach, ask the user to run the command directly, or use the propose_trust tool to request permission for this session.';
 
 /**
- * Base system prompt for the judge.
+ * System prompt for the judge.
  *
  * Defines the judge's role, verdict semantics, and circumvention
- * detection strategy. User/project instructions are appended
- * at runtime.
+ * detection strategy.
  */
-const BASE_SYSTEM_PROMPT =
+const JUDGE_SYSTEM_PROMPT =
   `You are a security guardrail for an AI coding agent. You evaluate actions before they execute.
 
 Your job: decide if the action is safe to proceed WITHOUT interrupting the user.
@@ -52,57 +49,7 @@ If a previous action was denied and the agent is now attempting the same goal vi
 
 Be pragmatic. Developers work with these files and commands constantly. Err toward approve for typical dev workflows.`;
 
-/**
- * Build the full judge system prompt, starting from {@link BASE_SYSTEM_PROMPT}
- * with optional user/project instructions appended.
- *
- * @param config - optional instructions from global and project config
- *
- * @returns the complete system prompt
- *
- * @example
- * ```typescript
- * buildSystemPrompt({ globalInstructions: "Allow terraform" });
- * ```
- */
-function buildSystemPrompt(
-  config: {
-    readonly globalInstructions?: string;
-    readonly projectInstructions?: string;
-  },
-): string {
-  /**
-   * Accumulator seeded with the base prompt; conditional `push` calls below append optional sections before joining.
-   */
-  const parts = [BASE_SYSTEM_PROMPT,];
-
-  if (
-    (config.globalInstructions
-      !== undefined)
-    && (config.globalInstructions
-      !== '')
-  ) {
-    parts.push(
-      `\n\nUser instructions (global):\n${config.globalInstructions}`,
-    );
-  }
-
-  if (
-    (config.projectInstructions
-      !== undefined)
-    && (config.projectInstructions
-      !== '')
-  ) {
-    parts.push(
-      `\n\nProject instructions:\n${config.projectInstructions}`,
-    );
-  }
-
-  return parts.join('',);
-}
-
 export {
-  BASE_SYSTEM_PROMPT,
-  buildSystemPrompt,
   DEFAULT_DENY_GUIDANCE,
+  JUDGE_SYSTEM_PROMPT,
 };

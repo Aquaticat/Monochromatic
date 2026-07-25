@@ -16,7 +16,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { findBudgetModel, } from './budget-model.ts';
-import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
+import {
+  JUDGE_MODEL_MAJOR_VERSIONS,
+  JUDGE_MODEL_STRATEGY,
+} from './constants.ts';
 
 //region Fixtures
 
@@ -37,9 +40,6 @@ const ANY_PROVIDER_INPUT = 0.25;
 
 /** Any-provider budget output token price. */
 const ANY_PROVIDER_OUTPUT = 1;
-
-/** Major-version count used by budget selection fixtures. */
-const MAJOR_VERSIONS = 1;
 
 /** Fixture context budget. */
 const CONTEXT_WINDOW = 128_000;
@@ -209,11 +209,6 @@ function contextFixture(
         }
         : { ok: false, };
     },
-    find(provider: string, id: string,) {
-      return allModels.find(function matchesModel(model,) {
-        return (model.provider === provider) && (model.id === id);
-      },);
-    },
   };
 
   return {
@@ -271,41 +266,6 @@ await describe({
       },
     },),
     it({
-      name: 'keeps same-provider model choice for fixed fixtures',
-      fn: async function testSameProviderSelection() {
-        const budgetModel = await findBudgetModel({
-          ctx: contextFixture({
-            authenticatedSlugs: [slugFor(sameProviderBudgetModel,),],
-          },),
-          options: {
-            strategy: 'same-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
-        },);
-
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderBudgetModel,),);
-      },
-    },),
-    it({
-      name: 'selects speed-named same-provider candidate before cheaper model',
-      fn: async function testSameProviderFastSelection() {
-        const budgetModel = await findBudgetModel({
-          ctx: contextFixture({
-            authenticatedSlugs: [
-              slugFor(sameProviderBudgetModel,),
-              slugFor(sameProviderFastModel,),
-            ],
-          },),
-          options: {
-            strategy: 'same-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
-        },);
-
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderFastModel,),);
-      },
-    },),
-    it({
       name: 'excludes failed model when selecting fallback',
       fn: async function testFailedModelExclusion() {
         const budgetModel = await findBudgetModel({
@@ -315,31 +275,6 @@ await describe({
               slugFor(sameProviderFastModel,),
             ],
           },),
-          options: {
-            strategy: 'same-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
-          excludedModelSlugs: [slugFor(sameProviderFastModel,),],
-        },);
-
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderBudgetModel,),);
-      },
-    },),
-    it({
-      name: 'falls back from failed configured override to automatic selection',
-      fn: async function testFailedOverrideFallback() {
-        const budgetModel = await findBudgetModel({
-          ctx: contextFixture({
-            authenticatedSlugs: [
-              slugFor(sameProviderBudgetModel,),
-              slugFor(sameProviderFastModel,),
-            ],
-          },),
-          options: {
-            modelOverride: slugFor(sameProviderFastModel,),
-            strategy: 'same-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
           excludedModelSlugs: [slugFor(sameProviderFastModel,),],
         },);
 
@@ -353,10 +288,6 @@ await describe({
           ctx: contextFixture({
             authenticatedSlugs: [slugFor(anyProviderBudgetModel,),],
           },),
-          options: {
-            strategy: 'any-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
         },);
 
         expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderBudgetModel,),);
@@ -372,31 +303,9 @@ await describe({
               slugFor(anyProviderFastModel,),
             ],
           },),
-          options: {
-            strategy: 'any-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
         },);
 
         expect(slugFor(budgetModel.model,),).toBe(slugFor(anyProviderFastModel,),);
-      },
-    },),
-    it({
-      name: 'keeps configured override outside scope',
-      fn: async function testScopedOverrideSelection() {
-        const budgetModel = await findBudgetModel({
-          ctx: contextFixture({
-            authenticatedSlugs: [slugFor(sameProviderFastModel,),],
-            scopedModels: [anyProviderBudgetModel,],
-          },),
-          options: {
-            modelOverride: slugFor(sameProviderFastModel,),
-            strategy: 'any-provider',
-            majorVersions: MAJOR_VERSIONS,
-          },
-        },);
-
-        expect(slugFor(budgetModel.model,),).toBe(slugFor(sameProviderFastModel,),);
       },
     },),
     it({
@@ -418,9 +327,10 @@ await describe({
       },
     },),
     it({
-      name: 'defaults to any-provider selection',
-      fn: async function testDefaultStrategy() {
-        expect(JUDGE_MODEL_DEFAULTS.strategy,).toBe('any-provider',);
+      name: 'uses fixed cross-provider selection policy',
+      fn: async function testFixedSelectionPolicy() {
+        expect(JUDGE_MODEL_STRATEGY,).toBe('any-provider',);
+        expect(JUDGE_MODEL_MAJOR_VERSIONS,).toBe(1,);
       },
     },),
     it({
@@ -429,16 +339,12 @@ await describe({
         const caught = await captureError(async function selectWithoutAuth() {
           return await findBudgetModel({
             ctx: contextFixture({ authenticatedSlugs: [], },),
-            options: {
-              strategy: 'same-provider',
-              majorVersions: MAJOR_VERSIONS,
-            },
           },);
         },);
 
         expect(caught,).toBeInstanceOf(Error,);
         expect((caught as Error).message,).toContain(
-          'no API key available for fastest models in provider "openai"',
+          'no fast judge models with API keys found across any provider',
         );
       },
     },),

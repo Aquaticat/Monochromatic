@@ -1,10 +1,9 @@
 /**
  * Main flagger and bash signal detection.
  *
- * Contains shouldFlag (the main entry point), bashSignals,
- * and the MergedConfig type. Path signals are in path-signals.ts,
- * content/text signals in content-signals.ts, and tool event
- * helpers in tool-helpers.ts.
+ * Contains shouldFlag (the main entry point) and bashSignals.
+ * Path signals are in path-signals.ts, content/text signals in
+ * content-signals.ts, and tool event helpers in tool-helpers.ts.
  *
  * @module
  */
@@ -24,10 +23,6 @@ import {
   isMutatingCommand,
 } from './bash-helpers.ts';
 import { analyzeBashCommand, } from './command-parser.ts';
-import {
-  type CommandMatcher,
-  matchUserCommands,
-} from './command-matchers.ts';
 import { looksLikePath, } from './command-refs.ts';
 import {
   ENV_DUMP_COMMANDS,
@@ -51,29 +46,8 @@ import {
 } from './tool-helpers.ts';
 import type {
   BashAnalysis,
-  JudgeModelConfig,
   SignalContext,
 } from './types.ts';
-
-//region Public types
-
-/**
- * Merged config with compiled patterns.
- *
- * Contains all operational settings needed at runtime,
- * built from global and project config layers.
- */
-export type MergedConfig = {
-  readonly enabled: boolean;
-  readonly commands: readonly CommandMatcher[];
-  readonly patterns: readonly RegExp[];
-  readonly globalInstructions?: string;
-  readonly projectInstructions?: string;
-  readonly judgeModel: JudgeModelConfig;
-  readonly judgeTimeoutMs: number;
-};
-
-//endregion
 
 //region Main entry point
 
@@ -102,13 +76,11 @@ async function shouldFlag(
   {
     event,
     ctx,
-    config,
     readAllowlistedDirs = [],
     bashAllowlistedDirs = [],
   }: {
     readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly ctx: SignalContext;
-    readonly config?: MergedConfig;
     /**
      * Directories whose contents are safe for read-tool skill activation.
      */
@@ -131,7 +103,6 @@ async function shouldFlag(
     if (await bashSignals({
       analysis,
       ctx,
-      ...(config !== undefined ? { config, } : {}),
       trustedAgentTempDirs: bashAllowlistedDirs,
     },)) {
       return true;
@@ -139,7 +110,6 @@ async function shouldFlag(
     if (textSignals({
       text: event.input
         .command,
-      ...(config !== undefined ? { config, } : {}),
     },)) {
       return true;
     }
@@ -177,10 +147,7 @@ async function shouldFlag(
   if (text !== '') {
     if (contentSignals(text,))
       return true;
-    if (textSignals({
-      text,
-      ...(config !== undefined ? { config, } : {}),
-    },)) {
+    if (textSignals({ text, },)) {
       return true;
     }
   }
@@ -203,8 +170,7 @@ async function shouldFlag(
  * are tested with {@link pathSignals} and excused by
  * {@link isTrustedAgentTempBashPathAllowed}. Finally checks
  * {@link hasNetworkCommand} combined with {@link hasSecretParamRefs} or
- * {@link hasSensitiveSource}, and user-configured matchers with
- * {@link matchUserCommands}.
+ * {@link hasSensitiveSource}.
  *
  * @returns `true` if any bash signal fires
  *
@@ -218,12 +184,10 @@ async function bashSignals(
   {
     analysis,
     ctx,
-    config,
     trustedAgentTempDirs = [],
   }: {
     readonly analysis: BashAnalysis;
     readonly ctx: SignalContext;
-    readonly config?: MergedConfig;
     /**
      * Private agent temp directories trusted for bash helper execution.
      */
@@ -398,23 +362,13 @@ async function bashSignals(
     return true;
   }
 
-  if (config?.commands
-    && matchUserCommands({
-    analysis,
-    matchers: config.commands,
-  },)) {
-    return true;
-  }
-
   return false;
 }
 
 //endregion
 
 export { hasFlag, } from './bash-helpers.ts';
-export { matchUserCommands, } from './command-matchers.ts';
 export {
   bashSignals,
   shouldFlag,
 };
-export type { CommandMatcher, } from './command-matchers.ts';

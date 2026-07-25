@@ -809,7 +809,7 @@ Copying that policy would let retries,
 provider support,
 timeout handling,
 and fallback races drift.
-Depending directly on auto-mode's extension entry point would couple one deployable plugin to another plugin's command and configuration surface.
+Depending directly on auto-mode's extension entry point would couple one deployable plugin to another plugin's command and security-policy surface.
 
 Create reusable Pi infrastructure instead:
 
