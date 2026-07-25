@@ -16,6 +16,7 @@ import { isJsonRecord, } from '../json-guard.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
   discardSliceCache,
+  listResumableEntries,
   openSliceCache,
 } from './slice-cache-store.ts';
 import {
@@ -30,7 +31,8 @@ import {
 //region Corpus pass
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
 // one entry at a time: skips entries that already have an artifact, orders the
-// rest with the small size band deprioritized (then fewest-attempts-first), and
+// rest to resume cached progress first, then deprioritize the small size band
+// (then fewest-attempts-first), and
 // stops starting new entries at the soft budget while a per-entry hard ceiling
 // aborts an entry that overruns. Each settled
 // entry writes one JSON artifact and one TALLY line. Run it with `mise run
@@ -327,13 +329,32 @@ async function runCorpusPass(): Promise<void> {
   );
 
   /**
-   * Pending entries: the small band sorts last, then fewest attempts first so
-   * flaky ones deprioritize within a band.
+   * Ids with cached slices from an earlier aborted run. These resume first so
+   * an in-flight large document finishes before a fresh entry starts, rather
+   * than every large entry taking one partial attempt while none settles.
+   * `repairChunk` degrades-and-persists (no throw on a lost quorum) and a
+   * cap-abort always completes at least one new slice, so resume-first cannot
+   * livelock on a stuck slice; a deterministic slice throw would surface as a
+   * repeated same-entry ERROR across runs and is handled by inspection.
    */
-  const pending = eligible.toSorted(function byBandThenAttempts(
+  const resumableIds = await listResumableEntries({ dir: sliceCacheDir, },);
+
+  /**
+   * Pending entries: cached progress resumes first, then the small band sorts
+   * last, then fewest attempts first so flaky ones deprioritize within a band.
+   */
+  const pending = eligible.toSorted(function byResumeThenBandThenAttempts(
     a,
     b,
   ) {
+    /**
+     * Negative when only `a` has cached progress (so it resumes first),
+     * positive when only `b` does; zero when neither or both do.
+     */
+    const resumeDelta = Number(resumableIds.has(b.id,),)
+      - Number(resumableIds.has(a.id,),);
+    if (resumeDelta !== 0)
+      return resumeDelta;
     /**
      * Negative when only `a` is small (so `b`, in a larger band, sorts
      * first), positive when only `b` is; zero leaves both in the same band
