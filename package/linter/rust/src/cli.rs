@@ -147,6 +147,24 @@ pub struct Cli {
     )]
     pub deny: Vec<String>,
 
+    /// Apply safe repairs in place.
+    #[arg(long = "fix", help = "Fix as many issues as possible")]
+    pub fix: bool,
+
+    /// Apply repairs that may change behaviour.
+    #[arg(
+        long = "fix-suggestions",
+        help = "Apply auto-fixable suggestions; may change program behavior"
+    )]
+    pub fix_suggestions: bool,
+
+    /// Apply repairs that may change behaviour and may be wrong.
+    #[arg(
+        long = "fix-dangerously",
+        help = "Apply dangerous fixes and suggestions"
+    )]
+    pub fix_dangerously: bool,
+
     /// Report directives that suppress nothing.
     #[arg(
         long = "report-unused-disable-directives",

@@ -1,5 +1,11 @@
 //! Edits a rule proposes, and how much trust each one carries.
 
+/// Applying proposed repairs to a file's text.
+pub mod apply;
+/// Unit tests for applying repairs.
+#[cfg(test)]
+mod apply_tests;
+
 // What:     `use crate::span::Span;` imports a type from this same crate.
 //           `crate::` means "from the root of this crate", never from an external
 //           dependency; a dependency would be named directly, as `ra_ap_syntax::`.

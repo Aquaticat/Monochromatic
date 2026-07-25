@@ -145,6 +145,11 @@ use monochromatic_rust_linter_core::directive::{apply::apply, parse as parse_dir
 /// Imports the configured-severity type the unused-directive report uses.
 use monochromatic_rust_linter_core::severity::RuleSeverity;
 
+/// Imports the repair applier and its fixpoint cap.
+use monochromatic_rust_linter_core::fix::apply::{apply as apply_fixes, MAX_PASSES};
+/// Imports the trust levels gating which repairs a run may apply.
+use monochromatic_rust_linter_core::fix::FixKind;
+
 /// Parse real process arguments with clap, then run the linter.
 // What:     `pub fn run_cli_from_env() -> Result<i32>` preserves the old
 //           public entry-point shape. `Result<i32>` can still represent a
@@ -254,6 +259,18 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // ```ts
     // for (const file of files) { lintFile(file, config, rules, diagnostics); }
     // ```
+    // What:     A repair pass BEFORE the reporting pass, when a fix flag was
+    //           given. Each file is rewritten until it stops changing.
+    // Why:      Only unrepaired findings should be reported, which oxlint states
+    //           as "only unfixed issues are reported in the output". Reporting
+    //           first would name problems that no longer exist by the time the
+    //           user reads them.
+    if let Some(ceiling) = fix_ceiling(cli) {
+        for file in &files {
+            fix_file(file, cli, &linter, &rules, ceiling);
+        }
+    }
+
     for file in &files {
         // What:     `lint_file(file, &config, &rules, &mut diagnostics);`. Lends
         //           the file path and config read-only, the rules slice read-only,
@@ -438,6 +455,83 @@ fn resolve_max_lines(override_value: Option<usize>, options: Option<&toml::Table
     return Config::with_defaults().max_lines;
 }
 
+
+
+// What:     `fn fix_ceiling(cli: &Cli) -> Option<FixKind>`. Resolves the three
+//           fix flags into one ceiling, absent when none was passed.
+// Why:      The flags are cumulative in trust rather than exclusive:
+//           `--fix-dangerously` implies everything `--fix` would do. Deciding
+//           that here means the applier only ever sees one ceiling.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function fixCeiling(cli: Cli): FixKind | undefined
+// ```
+/// Resolve how much trust this run's repairs need, absent when not fixing.
+fn fix_ceiling(cli: &Cli) -> Option<FixKind> {
+    if cli.fix_dangerously {
+        return Some(FixKind::Dangerous);
+    }
+
+    if cli.fix_suggestions {
+        return Some(FixKind::Suggestion);
+    }
+
+    if cli.fix {
+        return Some(FixKind::Safe);
+    }
+
+    return None;
+}
+
+// What:     `fn fix_file(..) -> usize`. Rewrites one file until no further
+//           repair applies, returning how many were applied in total.
+// Why:      Repairs cascade: fixing one problem can reveal another the same rule
+//           now reports. A single pass would leave the file half repaired, and
+//           the user would have to run the linter again to find out.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function fixFile(path, cli, linter, rules, ceiling): number
+// ```
+/// Repair one file repeatedly until it stops changing.
+fn fix_file(
+    path: &str,
+    cli: &Cli,
+    linter: &LinterConfig,
+    rules: &[Box<dyn Rule>],
+    ceiling: FixKind,
+) -> usize {
+    let mut total = 0;
+
+    // `0..MAX_PASSES` is a bounded loop: two rules that undo each other would
+    // otherwise spin forever, and a linter that hangs is worse than one that
+    // leaves a file imperfectly repaired.
+    for _pass in 0..MAX_PASSES {
+        let mut findings = Vec::new();
+        lint_file(path, cli, linter, rules, &mut findings);
+
+        let Ok(source) = fs::read_to_string(path) else {
+            return total;
+        };
+
+        let outcome = apply_fixes(&source, &findings, ceiling);
+        if outcome.applied == 0 {
+            return total;
+        }
+
+        // Written only once the whole pass succeeded, so a file is never left
+        // holding a partially applied set of repairs.
+        if fs::write(path, &outcome.source).is_err() {
+            tracing::warn!(path, "cannot write repaired file");
+            return total;
+        }
+
+        total += outcome.applied;
+    }
+
+    return total;
+}
 
 /// Expand file and directory arguments into Rust source file paths.
 fn collect_rust_files(paths: &[String]) -> Vec<String> {
