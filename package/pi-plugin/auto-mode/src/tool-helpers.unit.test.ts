@@ -75,6 +75,32 @@ await describe({
         );
       },
     },),
+    it({
+      name: 'preserves every edit hunk as JSON',
+      fn: async function preservesEveryEditHunkAsJson(): Promise<void> {
+        /** Edit call whose old and new text must remain visible to judge. */
+        const event = toolCallEvent({
+          toolName: 'edit',
+          input: {
+            path: '/repo/config.ts',
+            edits: [
+              {
+                oldText: 'before\n',
+                newText: 'after\n',
+              },
+              {
+                oldText: 'export const mode = "old";',
+                newText: 'export const mode = "new";',
+              },
+            ],
+          },
+        },);
+
+        expect(serializeToolInputForJudge(event,),).toBe(
+          '{"path":"/repo/config.ts","edits":[{"oldText":"before\\n","newText":"after\\n"},{"oldText":"export const mode = \\"old\\";","newText":"export const mode = \\"new\\";"}]}',
+        );
+      },
+    },),
   ],
 },);
 
