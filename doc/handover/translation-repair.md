@@ -1085,6 +1085,11 @@ resolved, 56 findings) under the anchor-veto fix -- the false block is gone
 in the actual artifact pool, not just the probe. Picked first because its
 attempts were reset to 0. Medium settled 6->7. Bands now 9 small / 7 medium
 / 6 large (need ~1 small, ~3 medium, ~4 large). Run 022 launched.
+PASS 6 RUN 022 (2026-07-25, tip `3e905b1f3`, 1864s wall ~31 min): 1 settled,
+23/92. Mizuki_Yuuki repaired (medium, 59 issues, 58 accepted, 58 resolved, 6
+findings); one run, no cap. Medium settled 7->8. Bands now 9 small / 8
+medium / 6 large (need ~1 small, ~2 medium, ~4 large). Large lags because its
+bigger entries (9-40KB) need multi-run resume. Run 023 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
