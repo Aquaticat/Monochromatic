@@ -887,6 +887,12 @@ Content-hash keys already self-invalidate on a slicing change, but wipe all
 three anyway. Verified format/lint/types/unit 0 and `--plan` runs. Run 007
 was already in flight on pre-resumability code (per-entry cap, no cache);
 it finishes normally, then run 008 launches with resumability.
+PASS 6 RUN 007 (2026-07-24, tip `c4cfe103b`, 3119s wall): 1 dispatched, 1
+completed, 0 failed. Chinatsu_Suzuki repaired (77 issues, 77 accepted, all
+77 resolved, 4 findings, 3119s ~52 min) -- an entry that would have hit
+the old 45-min per-run cap but fits the 90-min per-entry budget; the cap
+fix earned its keep. 8/92 settled. Run 008 launched WITH resumability
+active (tip after the resumability commits).
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
