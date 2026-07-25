@@ -101,13 +101,17 @@ function assertModelApi(
 function assertModelApiList(
   value: unknown,
 ): asserts value is readonly Model<Api>[] {
-  if ((!Array.isArray(value,))
-    || (!value.every(function registryModelHasShape(model,) {
-      return isModelApi(model,);
-    },))) {
+  if (!Array.isArray(value,)) {
     throw new NoBudgetModelError(
       'budget model selection received an invalid registry model shape',
     );
+  }
+  for (const model of value) {
+    if (!isModelApi(model,)) {
+      throw new NoBudgetModelError(
+        'budget model selection received an invalid registry model shape',
+      );
+    }
   }
 }
 
@@ -225,9 +229,9 @@ async function findBudgetModel(
      * @returns sort order
      */
     function candidatesBySpeed(
-      left,
-      right,
-    ) {
+      left: ForeignBorrowed<Model<Api>>,
+      right: ForeignBorrowed<Model<Api>>,
+    ): number {
       /**
        * Higher speed-name score sorts first.
        */
