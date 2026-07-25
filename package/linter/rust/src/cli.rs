@@ -147,6 +147,10 @@ pub struct Cli {
     )]
     pub deny: Vec<String>,
 
+    /// Start the language server on stdio.
+    #[arg(long = "lsp", help = "Start the language server")]
+    pub lsp: bool,
+
     /// Print the resolved configuration and exit.
     #[arg(
         long = "print-config",

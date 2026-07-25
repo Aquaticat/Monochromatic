@@ -361,6 +361,8 @@ dependencies = [
  "monochromatic-rust-linter-pattern",
  "monochromatic-rust-linter-plugin-builtin",
  "ra_ap_syntax",
+ "serde",
+ "serde_json",
  "tracing",
  "tracing-subscriber",
 ]

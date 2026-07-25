@@ -56,6 +56,12 @@ mod severity_tests;
 // ```
 /// Re-exports the TOML types appearing in this crate's public API.
 pub use toml;
+
+/// Re-exports the JSON types the output format and the language server use.
+pub use serde_json;
+
+/// Re-exports the serialization traits consumers derive for their own records.
+pub use serde;
 /// Source positions and the labelled spans a diagnostic points at.
 pub mod span;
 

@@ -19,6 +19,8 @@ pub mod config;
 pub mod discover;
 /// The commands that report on the linter rather than lint anything.
 pub mod introspect;
+/// The language server, serving diagnostics to an editor.
+pub mod lsp;
 /// Registry of the rules this binary compiles in.
 pub mod rule;
 /// Built-in lint rule implementations.
@@ -37,7 +39,9 @@ pub mod builtin;
 // export * as context from "@monochromatic-dev/rust-linter-core/context";
 // ```
 /// Per-file parsed context and the diagnostic model, from the core crate.
-pub use monochromatic_rust_linter_core::{context, diagnostic, fix, severity, span, toml};
+pub use monochromatic_rust_linter_core::{
+    context, diagnostic, fix, serde, serde_json, severity, span, toml,
+};
 
 // What:     `use std::fs;` imports the standard filesystem module (we call
 //           `fs::read_to_string`).
@@ -312,6 +316,12 @@ pub fn run_cli(cli: &Cli) -> i32 {
 
     }
 
+    // `--lsp` hands the same configuration and rule set to the server, so an
+    // editor and a terminal cannot disagree about what the rules are.
+    if cli.lsp {
+        return crate::lsp::serve(cli, &linter, &rules);
+    }
+
     // `--rules` needs the rule set, which is only complete once configured
     // pattern rules have been built, so it runs after that.
     if cli.rules {
@@ -579,7 +589,7 @@ fn load_config_file(cli: &Cli) -> Result<ConfigFile, String> {
 }
 
 
-// What:     `fn resolve_max_lines(override_value: Option<usize>, options:
+// What:     `pub fn resolve_max_lines(override_value: Option<usize>, options:
 //           Option<&toml::Table>) -> usize`. Two optional inputs, one definite
 //           answer.
 // Why:      Precedence has to live in exactly one place. `--max` beats a
