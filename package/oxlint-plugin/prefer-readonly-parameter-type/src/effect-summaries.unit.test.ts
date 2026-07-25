@@ -150,6 +150,7 @@ await describe({
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'observationalIntrinsicEffect',
+          'arrayBrandObservationEffect',
           'primitiveArraySortObservationEffect',
           'textEncoderObservationEffect',
           'objectArraySortCallbackEffect',
@@ -292,6 +293,11 @@ await describe({
             functionName: 'observationalIntrinsicEffect',
             mutated: [],
             opaque: [0,],
+          },
+          {
+            functionName: 'arrayBrandObservationEffect',
+            mutated: [],
+            opaque: [],
           },
           {
             functionName: 'primitiveArraySortObservationEffect',

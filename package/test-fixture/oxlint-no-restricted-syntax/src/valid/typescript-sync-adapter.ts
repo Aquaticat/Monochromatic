@@ -410,6 +410,17 @@ export function observationalIntrinsicEffect(state: readonly unknown[],): boolea
 }
 
 /**
+ * Checks array branding through exact TypeScript default-library intrinsic.
+ *
+ * @param state - Candidate array value.
+ *
+ * @returns Whether value carries array brand.
+ */
+export function arrayBrandObservationEffect(state: readonly unknown[],): boolean {
+  return Array.isArray(state,);
+}
+
+/**
  * Sorts primitive array copy through audited nonmutating intrinsic.
  *
  * @param values - Primitive numbers copied and sorted without receiver mutation.

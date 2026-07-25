@@ -21,6 +21,7 @@ import {
 } from './external-callable-effect.ts';
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import { effectCallName, } from './effect-call-name.ts';
+import { isDefaultLibraryArrayBrandDeclaration, } from './effect-default-library-array-brand.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
@@ -136,6 +137,12 @@ export function inspectEffectCall({
   const resolvedDeclaration = resolvedSignature
     ?.declaration
     ?.resolve(project,);
+  if ((resolvedDeclaration !== undefined)
+    && isDefaultLibraryArrayBrandDeclaration({
+      project,
+      declaration: resolvedDeclaration,
+    },))
+    return;
   /**
    * Owned callee declaration selected by signature or symbol fallback.
    */
