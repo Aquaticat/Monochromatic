@@ -343,17 +343,20 @@ function buildApprovalFingerprint(
 }
 
 /**
- * Judge-facing name for canonical JSON-compatible input serialization.
+ * Serialize complete judge-facing JSON-compatible tool input.
  *
- * The alias preserves every current tool-input field while keeping the generic
- * serializer reusable for approval fingerprints.
+ * @param value - Current tool input to preserve.
+ *
+ * @returns Canonical JSON containing every input field.
  *
  * @example
  * ```typescript
  * serializeToolInputForJudge({ path: 'src/index.ts', content: 'export {};\n' });
  * ```
  */
-const serializeToolInputForJudge: (value: unknown) => string = stableSerialize;
+function serializeToolInputForJudge(value: unknown,): string {
+  return stableSerialize(value,);
+}
 
 /**
  * Extract text content from a tool call event.
