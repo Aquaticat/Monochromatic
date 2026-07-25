@@ -386,10 +386,50 @@ on the reasoning that re-explaining a concept at every occurrence adds volume
 without adding comprehension in any language, not just here.
 Existing full-density files stay valid because they exceed the requirement.
 
-## Status: design confirmed
+## Status: design confirmed, implementation started
 
 Shared understanding reached 2026-07-25.
-Implementation authorized, starting at work item 1, core crate extraction.
+
+### Landed
+
+- Skill amendment (`.agents/skills/dum-dum-non-ts/SKILL.md`), commit `6ea3f0be1`.
+  Comment density is now full-block on a concept's first occurrence per file.
+- Work item 1, core crate extraction, commit `6d399e303`.
+  `package/rust-module/rust-linter-core` holds `Rule`, `LintContext`, `Config`,
+  and the diagnostic, span and fix model.
+  `crate::config`, `crate::context`, `crate::diagnostic` and `crate::rule` stay
+  valid paths in the CLI crate through re-export, so no rule or test was
+  rewritten.
+  Verified: 22 existing linter tests pass unchanged, 29 new core tests,
+  clippy and dogfood clean on both packages.
+- Column defect found and fixed immediately after.
+  Both rules built their span from a line number, and a line-based span can
+  only report column 1.
+  That was invisible before, because the old `Diagnostic` had no column, but
+  the new one promises oxlint's `labels[].span.column`.
+  Added `LintContext::span_at_offset`, which resolves a real line and column and
+  clamps length to the starting line;
+  `require-rustdoc` already had the offset in scope and now uses it.
+  `max-lines` keeps the line-based span, where column 1 is truthful.
+  Two regression tests assert an indented item reports column 5, not 1.
+
+### Known debt, owned
+
+`package/linter/rust` fails its own `lint:clippy` gate on `implicit_return`:
+45 errors measured at the pristine commit before this work, 37 after the
+extraction.
+Pre-existing, not introduced here, but work item 2 rewrites `src/config.rs`
+where many of them live.
+The package ships a `format:clippy` task and the fixes are machine-applicable,
+so clearing it is remediation rather than loosening a rule (LN7 not engaged).
+
+### Not pushed
+
+Auto-push has been failing since `origin/main` gained two security-patch
+commits mid-session.
+The local branch also carries three commits authored by concurrent work in
+`package/pi-plugin/` and `package/pi-shared/`, so rebasing is not this task's
+call to make.
 
 ## Further items adopted without asking
 
