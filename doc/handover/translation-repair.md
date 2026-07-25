@@ -1090,6 +1090,22 @@ PASS 6 RUN 022 (2026-07-25, tip `3e905b1f3`, 1864s wall ~31 min): 1 settled,
 findings); one run, no cap. Medium settled 7->8. Bands now 9 small / 8
 medium / 6 large (need ~1 small, ~2 medium, ~4 large). Large lags because its
 bigger entries (9-40KB) need multi-run resume. Run 023 launched.
+PASS 6 RUN 023 (2026-07-25, tip `1d670bc17`, 2596s wall ~43 min): 1 settled,
+24/92. MushroomGuuuu repaired (MEDIUM band, 1934B zh source; 69 issues, 62
+accepted, 62 resolved, 8 findings, 7 chunks); one run, exceeded 25-min soft
+budget but settled within 90-min hard cap. Medium settled 8->9. Bands now 9
+small / 9 medium / 6 large (small & medium at the ~10 bar; large needs ~4).
+Advisor call (Opus 4.8): do NOT add ordering to force large -- runs are free
+background work (user waived quota), 6 large already yields ample large-band
+accepted issues (MushroomGuuuu alone 62 >> the ~17 a stratified 50-sample
+needs), so large=~10 is document-diversity polish, not sample-sufficiency;
+also `corpus-pass` takes only `--plan`, no entry-id targeting arg, so forcing
+large would mean new code through the lint gauntlet for negative ROI. Decision:
+run naturally (eligible order interleaves medium/large; resume-first finishes
+any that abort; no stall risk), and redirect ACTIVE effort to tasks 31/32
+(judge crosscheck + stratified sample tooling) which are unblocked against the
+24 already-settled entries -- only the final draw waits on band fill. Run 024
+launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
