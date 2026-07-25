@@ -197,6 +197,29 @@ incomplete.
  but a real trace exposed the second,
 independent output-format mismatch.
 
+### TypeScript 7 replaces the Node launcher process when possible
+
+TypeScript 7's `node_modules/typescript/lib/tsc.js:8-19` uses `process.execve()` on non-Windows Node releases that
+provide it:
+
+```javascript
+if (process.platform !== "win32" && typeof process.execve === "function") {
+  try {
+    process.execve(exe, [exe, ...process.argv.slice(2)]);
+  } catch {
+    // Fall through.
+  }
+}
+
+execFileSync(exe, process.argv.slice(2), { stdio: "inherit" });
+```
+
+Successful `execve()` replaces the Node process,
+ so normalization sequenced after `require()` never runs.
+The fork implementation disables `process.execve` for trace generation,
+ forcing the synchronous child-process fallback and preserving the parent process long enough to normalize outputs.
+It also retains an exit hook for compiler launchers that call `process.exit()` directly.
+
 ## Verification
 
 ### Versions and source
@@ -222,7 +245,7 @@ independent output-format mismatch.
 
 ### Source clone boundary
 
-The source investigation used read-only third-party clones:
+The initial source investigation used read-only third-party clones:
 
 - `https://github.com/dimitropoulos/typeslayer.git`,
    checked out at tag `typeslayer-v0.1.32` under
@@ -231,11 +254,15 @@ The source investigation used read-only third-party clones:
    checked out at tag `typescript/v7.0.2` under
   `$HOME/temp/agent/typescript-go-2026-07-25`.
 
-Both clones were created with `gh repo clone` after preparing the private `$HOME/temp/agent` scratch root.
-No upstream source file was modified.
-The compiler-entrypoint experiment changed only the command used against an installed package,
- and the fixture traces
-were written under the same private scratch root.
+The implementation used a separate clone of `https://github.com/Aquaticat/typeslayer.git` under
+`$HOME/temp/agent/typeslayer-aquaticat-2026-07-25`.
+That clone retained `dimitropoulos/typeslayer` as its read-only `upstream` remote;
+changes were committed and pushed only to the authorized `Aquaticat/typeslayer` `origin`.
+
+All clones were created with `gh repo clone` after preparing the private `$HOME/temp/agent` scratch root.
+Fixture traces,
+build artifacts,
+and UI data were written under private scratch roots.
 
 ### Minimal resolver harness
 
@@ -328,10 +355,50 @@ types_2.json
 types_3.json
 ```
 
+### Verified fork implementation
+
+The implementation was committed and pushed to
+[`Aquaticat/typeslayer`](https://github.com/Aquaticat/typeslayer) `main` at
+`3089dd964855c89eedf0505a3dac7a985ec51946`.
+It:
+
+- resolves each compiler through the executable declared in its package manifest rather than a private subpath;
+- preserves legacy TypeScript 6 output unchanged;
+- reads TypeScript 7's `legend.json` and checker-specific type shards;
+- assigns each checker a contiguous global type-ID range and remaps every recorded type relationship;
+- remaps checker-tagged trace type IDs and adapts TypeScript 7 event shapes to TypeSlayer's existing Rust schema;
+- writes a synthetic `types.json` and normalized `trace.json` for the existing loader,
+   analyzer,
+   graph,
+   raw-data,
+   and query modules.
+
+A built Tauri application was exercised through its real UI against disposable compiler fixtures:
+
+- TypeScript 7.0.2 generated and rendered 35,333 types and 28,635 relations.
+   Rust loaded 35,334 vector
+  entries including its index-zero sentinel and 676 normalized trace events.
+   `analyze-trace.json` and
+  `type-graph.json` were generated successfully.
+- TypeScript 6.0.2 generated and rendered 30,563 types and 25,479 relations.
+   Its legacy `trace.json`,
+  `types.json`,
+   `tsc.cpuprofile`,
+   `analyze-trace.json`,
+   and `type-graph.json` artifacts all completed.
+
+TypeScript 7.0.2 accepts `--generateCpuProfile` but its native compiler produced no V8 profile file in direct and UI
+verification.
+The fork documents that SpeedScope still requires a JavaScript-based compiler;
+trace analysis,
+type search,
+and the type graph work with TypeScript 7.
+
 ### Behavior catalog
 
 Works cleanly:
 
+- The built `Aquaticat/typeslayer` fork with TypeScript 7.0.2 and TypeScript 6.0.2.
 - TypeSlayer's `require('typescript/bin/tsc')` pattern with TypeScript 6.0.2.
 - TypeScript 6.0.2 trace generation with the `trace.json` plus `types.json` layout TypeSlayer expects.
 - Direct TypeScript 7.0.2 CLI invocation through `node_modules/typescript/bin/tsc`.
@@ -351,8 +418,8 @@ Runs the compiler but remains incompatible with TypeSlayer's loader:
 
 ## Verified workarounds
 
-No end-to-end TypeSlayer 0.1.32 workaround was verified.
-The desktop UI and every generated artifact would need to succeed before this section could claim one.
+No end-to-end workaround for the unmodified upstream TypeSlayer 0.1.32 build was verified.
+The fork implementation in the Verification section is an end-to-end verified replacement build.
 
 ### Verified compiler-process remediation, not an end-to-end workaround
 
@@ -370,13 +437,14 @@ After installing that fixture,
  the exact compiler command TypeSlayer constructs resolves and produces the two files its
 loader expects.
 The full compiler invocation and output layout were verified in the Trace-layout harness.
-This verification stops at TypeSlayer's compiler-process and output-file boundary.
-The desktop UI,
- CPU-profile generation,
- and rendering were not exercised end to end,
-This remediates the reported `ERR_PACKAGE_PATH_NOT_EXPORTED` boundary and produces the trace filenames TypeSlayer
-expects.
-It is not a verified end-to-end TypeSlayer workaround.
+For the unmodified upstream build,
+this verification stops at TypeSlayer's compiler-process and output-file boundary.
+The later fork verification exercised the TypeScript 6 path through trace generation,
+CPU profiling,
+analysis,
+graph generation,
+and rendered type search.
+This remains a boundary-level remediation for upstream 0.1.32 rather than an upstream end-to-end workaround.
 
 Tradeoffs:
 
@@ -478,18 +546,17 @@ The six filing constraints resolve as follows:
     no matching issue or pull request exists,
     and the relevant TypeSlayer source has not changed since 0.1.32.
 6. **Have we prototyped a minimal fix compatible with their architecture?
-   ** No. A compiler-entrypoint prototype passed
-   `--version` but failed the real compatibility requirement because TypeScript 7 writes a different trace layout.
-    A
-   complete fix must cover both boundaries and needs schema tests against multiple checker shards.
+   ** Yes.
+    The `Aquaticat/typeslayer` fork resolves declared package executables,
+   normalizes checker-sharded types and trace IDs into TypeSlayer's existing internal model,
+    preserves TypeScript 6,
+   and passed built-application UI verification with both compilers.
 
-Constraint 3 fails,
- so the auto-prototype requirement does not trigger.
- The incomplete entrypoint-only experiment is
-recorded under What does not work rather than retained as a candidate patch.
- Default policy is not to file.
- The draft
-remains a record to revisit once TypeSlayer claims TypeScript 7 support or a complete multi-shard prototype exists.
+Constraint 3 still fails for the unmodified upstream 0.1.32 release,
+ so default policy remains not to file the draft as a
+bug report.
+The fork is implementation evidence that can support a future feature contribution if upstream begins accepting
+TypeScript 7 compatibility work.
 
 ### Draft issue, do not file as-is
 
