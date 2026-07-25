@@ -37,6 +37,12 @@ const MAX_TOKENS = 4_096;
 /** Complete adapter-test timeout. */
 const JUDGE_TIMEOUT_MS = 10_000;
 
+/** File body that must reach judge provider context unchanged. */
+const WRITE_CONTENT_FIXTURE = 'export const judgeCanInspectThisBody = true;\n';
+
+/** JSON tool input carrying {@link WRITE_CONTENT_FIXTURE}. */
+const WRITE_ACTION_INPUT_FIXTURE = `{"path":"/project/src/example.ts","content":"export const judgeCanInspectThisBody = true;\\n"}`;
+
 /**
  * Provider API cases proving auto-mode wrapper preserves shared tool choice.
  */
@@ -258,6 +264,67 @@ await describe({
           reason: 'safe',
           guidance: '',
         },);
+      },
+    },),
+    it({
+      name: 'includes complete write input in provider request',
+      fn: async function includesCompleteWriteInputInProviderRequest(): Promise<void> {
+        /** Provider contexts captured at final reviewer transport boundary. */
+        const contexts: Context[] = [];
+        /**
+         * Forced-tool provider fixture capturing final request context.
+         *
+         * @param _model - Unused fixture model.
+         *
+         * @param context - Final provider context under test.
+         *
+         * @returns Valid render-verdict event stream.
+         */
+        function captureContextStream(
+          _model: Model<Api>,
+          context: Context,
+        ): AssistantMessageEventStream {
+          contexts.push(context,);
+          return events([{
+            type: 'toolcall_end',
+            contentIndex: 0,
+            toolCall: {
+              type: 'toolCall',
+              id: 'verdict-write-input',
+              name: 'render_verdict',
+              arguments: {
+                verdict: 'approve',
+                reason: 'safe',
+                guidance: '',
+              },
+            },
+            partial: {} as never,
+          },],) as never;
+        }
+
+        await callJudge({
+          model: MODEL,
+          auth: { apiKey: 'test-key', },
+          action: 'write /project/src/example.ts',
+          actionInput: WRITE_ACTION_INPUT_FIXTURE,
+          cwd: '/project',
+          recentContext: '',
+          trustDirectives: [],
+          timeoutMs: JUDGE_TIMEOUT_MS,
+          systemPrompt: 'Use render_verdict.',
+          batchContext: [],
+          streamSimpleFn: captureContextStream,
+        },);
+
+        /** Final reviewer provider context captured by fixture stream. */
+        const [context,] = contexts;
+        if (context === undefined)
+          throw new Error('Expected reviewer provider context.',);
+        /** User message sent to reviewer provider. */
+        const [message,] = context.messages;
+        if ((message === undefined) || ((typeof message.content) !== 'string'))
+          throw new Error('Expected string reviewer user message.',);
+        expect(message.content,).toContain(WRITE_CONTENT_FIXTURE,);
       },
     },),
     it({
