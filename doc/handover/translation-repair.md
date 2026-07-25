@@ -862,6 +862,31 @@ cost). Plan: inject an optional slice cache into repairTranslation (keyed
 by deterministic slice content hash), persist each completed slice, resume
 across runs; driver supplies a disk-backed cache under the runs dir. Build
 next, additive so the bulk keeps running on current code meanwhile.
+RESUMABILITY LANDED (2026-07-24, commit `bfc3f6449`): `SliceCache`
+(`{ resumed: ReadonlyMap<hash, ChunkRepairOutcome>, persist(key,
+serialized) }`) injected optionally into `repairTranslation`; the slice
+loop keys each slice by `hashContent([chunkIndex, sourceText,
+targetText])`, reuses a resumed outcome (zero model calls) or computes then
+persists it. Driver helper `corpus-run/slice-cache-store.ts`
+(openSliceCache / discardSliceCache) writes one JSON per slice under
+`node_modules/.monochromatic/translation-repair-runs/slice-cache/<entry>/`,
+guards each file (a half-write recomputes), and drops the dir on settle. A
+huge entry (aiyysk 77 slices) now completes over several 90-min attempts
+instead of losing all work each abort -- it deprioritizes between attempts
+but caches ~16 more slices each. Persist takes a SERIALIZED STRING, not the
+outcome object, because the repo BANS disabling
+prefer-readonly-parameter-types (rule no-disable-prefer-readonly-
+parameter-types); a string param sidesteps it, the pipeline owns
+serialization, the driver writes bytes. Additive and result-preserving
+(unit test: the resumed run makes 0 model calls and reproduces the fresh
+result), so settled artifacts stay valid and NO restart.
+RESTART NOTE (IMPORTANT): the slice-cache stores repairChunk OUTCOMES, so a
+PIPELINE change makes it stale. The restart/wipe routine now clears THREE
+things together: `artifacts/`, `attempts.json`, AND `slice-cache/`.
+Content-hash keys already self-invalidate on a slicing change, but wipe all
+three anyway. Verified format/lint/types/unit 0 and `--plan` runs. Run 007
+was already in flight on pre-resumability code (per-entry cap, no cache);
+it finishes normally, then run 008 launches with resumability.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
