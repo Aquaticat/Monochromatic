@@ -61,10 +61,22 @@ action and fingerprint disables reuse,
 decisions.
 
 The flagger and judge are strictly separated:
- the flagger never provides reasons,
-the judge sees only raw action plus context.
+ the flagger never provides reasons.
+The judge receives the concise action summary,
+the complete current tool input encoded as untrusted JSON data,
+and recent session context.
+The complete input is request-only and is not added to verdict session entries.
 
 ### Judge context
+
+Every flagged action sends its complete current tool input to the judge without
+auto-mode content truncation.
+For `write`,
+this includes the full proposed file body.
+For `edit`,
+this includes every `oldText` and `newText` hunk.
+JSON encoding keeps model-generated content in an explicit data grammar and the
+prompt labels it as untrusted data rather than instructions.
 
 The recent activity sent to the judge uses the larger of the latest user-message
 activity span and the newest five rendered activity lines.
