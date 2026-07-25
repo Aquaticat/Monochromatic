@@ -980,6 +980,12 @@ so large settled 1->2 (Chinatsu_Suzuki ~5.2KB, Dethelly ~6.2KB -- both
 mid-large; bigger large entries still needed for band spread). Run 013
 launched (no resumable entries remain, so it picks the first non-small
 0-attempt entry by band order).
+PASS 6 RUN 013 (2026-07-25, tip `54eb8c323`, 1529s wall ~25 min): 1 settled,
+14/92. Everythings99 repaired (32 issues, 31 accepted, 31 resolved, 1
+finding); settled in one run, no cap, cache empty after. First non-small
+0-attempt entry by the new band order (1859B, bottom of the medium band),
+so medium settled 2->3. Bands now 9 small / 3 medium / 2 large. Run 014
+launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
