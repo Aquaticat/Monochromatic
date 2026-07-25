@@ -1,19 +1,22 @@
 //! Require-rustdoc rule implementation.
 
-// What:     `use crate::config::{missing_rustdoc_exempt, Config};` imports the
-//           skip predicate and the settings struct from this crate's config
-//           module. `crate::` means "from the root of this same crate", not an
-//           external dependency.
-// Why:      The rule skips test/fixture/build files via the predicate, and its
-//           `check` signature must name the `Config` type even though this rule
-//           reads no settings.
+// What:     `use crate::config::Config;` imports the settings struct from this
+//           crate's config module. `crate::` means "from the root of this same
+//           crate", not an external dependency.
+// Why:      The `check` signature must name the `Config` type even though this
+//           rule reads no settings from it. It no longer imports a skip
+//           predicate: which files it runs on is resolved from configuration by
+//           the runner, before `check` is called.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { missingRustdocExempt, Config } from "../config";
+// import { Config } from "../config";
 // ```
-/// Imports require-rustdoc configuration and exemption predicate.
-use crate::config::{missing_rustdoc_exempt, Config};
+/// Imports require-rustdoc configuration.
+use crate::config::Config;
+
+/// Imports the category grouping this rule declares itself into.
+use crate::severity::Category;
 
 // What:     `use crate::context::LintContext;` imports the per-file bundle type.
 // Why:      The rule reads the parsed tree and path from it.
@@ -74,16 +77,6 @@ use ra_ap_syntax::ast::{DocCommentIter, Impl};
 // ```
 /// Imports syntax node, kind, node-or-token, and the AST cast trait.
 use ra_ap_syntax::{AstNode, NodeOrToken, SyntaxKind, SyntaxNode};
-
-// What:     `use std::path::Path;` imports the borrowed-path type.
-// Why:      The exemption check takes a `&Path`; we build one from the path string.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import path from "node:path";
-// ```
-/// Imports path helper used by exemption checks.
-use std::path::Path;
 
 // What:     `const KIND_LABELS: &[(SyntaxKind, &str)] = &[ ... ];`. A compile-time
 //           table pairing every node kind that must carry rustdoc with the human
@@ -472,6 +465,15 @@ impl Rule for RequireRustdoc {
         return false
     }
 
+    // Why:      Pedantic, the same category as `max-lines`. A documentation
+    //           requirement is strict rather than a correctness claim, and
+    //           filing it here keeps it off by category default so enabling it
+    //           stays an explicit choice in configuration.
+    /// Return the pedantic category.
+    fn category(&self) -> Category {
+        return Category::Pedantic
+    }
+
     // What:     `fn check(&self, context: &LintContext, _config: &Config, out: &mut
     //           Vec<Diagnostic>)`. Read-only borrows of the file context and config
     //           (the leading `_` on `_config` marks it intentionally unused: this
@@ -485,28 +487,6 @@ impl Rule for RequireRustdoc {
     // ```
     /// Append diagnostics for undocumented nonexempt syntax nodes.
     fn check(&self, context: &LintContext, _config: &Config, out: &mut Vec<Diagnostic>) {
-        // What:     `let path = Path::new(&context.path);`. Wrap the borrowed path
-        //           string as a `&Path` without copying.
-        // Why:      The exemption check works on path segments.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const p = ctx.path;
-        // ```
-        let path = Path::new(&context.path);
-
-        // What:     `if missing_rustdoc_exempt(path) { return; }`. Bail out early on
-        //           test, fixture, fuzz, and build-script files.
-        // Why:      Throwaway code is off-policy, mirroring oxlint's TSDoc skips.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (missingRustdocExempt(p)) return;
-        // ```
-        if missing_rustdoc_exempt(path) {
-            return;
-        }
-
         // What:     `let uses_cxx_qt = file_uses_cxx_qt(context.syntax_node());`.
         //           Detect once whether this file references cxx-qt. `syntax_node()`
         //           already returns `&SyntaxNode`, so no extra `&` is needed.

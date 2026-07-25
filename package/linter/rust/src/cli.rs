@@ -79,6 +79,37 @@ pub struct Cli {
     )]
     pub max_lines: usize,
 
+    /// Configuration file to use instead of discovering one.
+    // What:     `pub config: Option<String>`. `Option<T>` says the value may be
+    //           absent; clap leaves it `None` when the flag is not passed.
+    //           Rust has no `null`, so absence is in the type.
+    // Why:      Passing `--config` replaces discovery entirely, which is what
+    //           makes a run reproducible from one named file.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // config?: string;
+    // ```
+    #[arg(
+        short = 'c',
+        long = "config",
+        value_name = "FILE",
+        help = "Configuration file to use instead of discovering one"
+    )]
+    pub config: Option<String>,
+
+    /// Stop discovering configuration files in ancestor directories.
+    // What:     `pub disable_nested_config: bool`. A flag with no value; clap
+    //           sets it true when present. Its name uses snake_case here and
+    //           kebab-case on the command line, which clap converts.
+    // Why:      Discovery walks upward from the working directory, and a caller
+    //           that wants only the built-in defaults needs a way to say so.
+    #[arg(
+        long = "disable-nested-config",
+        help = "Do not discover configuration files in ancestor directories"
+    )]
+    pub disable_nested_config: bool,
+
     /// File or directory paths to lint.
     // What:     `#[arg(...)] pub paths: Vec<String>` declares repeated positional
     //           arguments. `Vec<String>` is an owned, growable array of owned UTF-8

@@ -30,7 +30,11 @@ use std::path::Path;
 // ```ts
 // import { maxLinesExempt, Config, LintContext, Diagnostic, Severity, Rule, MaxLines } from "...";
 // ```
-use crate::config::{max_lines_exempt, Config};
+use crate::config::{default_config, Config};
+/// Imports the compiled configuration that exemption resolution runs against.
+use crate::config::resolve::LinterConfig;
+/// Imports the category the rules under test declare themselves into.
+use crate::severity::Category;
 use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::Rule;
@@ -151,45 +155,114 @@ fn classifier_counts_code_lines() {
     }
 }
 
-// What:     `#[test] fn exemptions_match_oxlint_overrides() { ... }`. Checks the
-//           path-based skip predicate.
-// Why:      Tests, `*_tests.rs`, fuzz, `build.rs`, and the `fixture/`, `fixture/`,
-//           `test-fixture/`, `invalid/` sample directories must be exempt; ordinary
-//           source must not be.
+// What:     A test that resolves the SHIPPED default configuration rather than
+//           calling a predicate. The two predicates this replaced,
+//           `max_lines_exempt` and `missing_rustdoc_exempt`, are gone; the same
+//           policy is now the glob `overrides` in the core crate's default.toml.
+// Why:      These exemptions are the behaviour users depend on, and they had to
+//           survive being re-expressed as configuration. Every path below was
+//           asserted by the predicate test this replaces, so a regression in the
+//           glob translation fails here.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// it("exempts tests/fuzz/fixture/build.rs", () => { ... });
+// it("default config exempts tests/fuzz/fixture/build.rs", () => { ... });
 // ```
 #[test]
 fn exemptions_match_oxlint_overrides() {
-    // What:     `assert!(condition, "msg")`. `assert!` fails the test if the
-    //           boolean is false. `Path::new(...)` wraps the literal as a `&Path`.
-    //           Each line checks one exempt path shape.
-    // Why:      Lock in every exemption category.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // expect(maxLinesExempt("a/tests/foo.rs")).toBe(true);
-    // ```
-    assert!(max_lines_exempt(Path::new("a/tests/foo.rs")), "tests/ dir");
-    assert!(max_lines_exempt(Path::new("a/b/engine_tests.rs")), "*_tests.rs");
-    assert!(max_lines_exempt(Path::new("a/fuzz/target.rs")), "fuzz/ dir");
-    assert!(max_lines_exempt(Path::new("build.rs")), "build.rs");
-    assert!(max_lines_exempt(Path::new("a/fixture/x.rs")), "fixture/ dir");
-    assert!(max_lines_exempt(Path::new("a/fixture/x.rs")), "fixture/ dir");
-    assert!(max_lines_exempt(Path::new("a/test-fixture/x.rs")), "test-fixture/ dir");
-    assert!(max_lines_exempt(Path::new("a/invalid/x.rs")), "invalid/ dir");
+    // `LinterConfig::compile` turns the parsed defaults into compiled globs.
+    // `.expect(..)` unwraps or fails the test, which is right here: a malformed
+    // glob in the shipped defaults is a bug in this crate, not a user error.
+    let linter =
+        LinterConfig::compile(default_config()).expect("the built-in default.toml must compile");
 
-    // What:     `assert!(!max_lines_exempt(...))`. The leading `!` negates: assert
-    //           the path is NOT exempt.
-    // Why:      Ordinary source files must be enforced.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // expect(maxLinesExempt("src/lib.rs")).toBe(false);
-    // ```
-    assert!(!max_lines_exempt(Path::new("src/lib.rs")), "ordinary source");
+    // What:     `let exempt = |path: &str| { .. };` binds a CLOSURE, Rust's
+    //           arrow function, to a name. It captures `linter` by borrow, so
+    //           every call reuses the one compiled configuration.
+    // Why:      Each assertion below is about one path; the resolution call
+    //           would otherwise be noise repeated nine times.
+    let exempt = |path: &str| {
+        return !linter
+            .resolve(Path::new(path), "builtin", "max-lines", Category::Pedantic)
+            .severity
+            .is_enabled();
+    };
+
+    assert!(exempt("a/tests/foo.rs"), "tests/ dir");
+    assert!(exempt("a/b/engine_tests.rs"), "*_tests.rs");
+    assert!(exempt("a/fuzz/target.rs"), "fuzz/ dir");
+    assert!(exempt("build.rs"), "build.rs at the root");
+    assert!(exempt("a/build.rs"), "nested build.rs");
+    assert!(exempt("a/fixture/x.rs"), "fixture/ dir");
+    assert!(exempt("a/test-fixture/x.rs"), "test-fixture/ dir");
+    assert!(exempt("a/invalid/x.rs"), "invalid/ dir");
+
+    // The leading `!` negates. Ordinary source must still be enforced, which is
+    // the assertion that catches an over-broad glob turning the rule off for
+    // everything.
+    assert!(!exempt("src/lib.rs"), "ordinary source");
+    assert!(!exempt("a/b/engine.rs"), "ordinary nested source");
+}
+
+// What:     The same resolution, for the other rule.
+// Why:      README.md claims require-rustdoc has no fixtures carve-out. It is
+//           wrong: the predicate it replaced exempted them, and the integration
+//           test `undocumented_fixture_in_place_is_exempt` depends on that. This
+//           pins the real behaviour so the README can be corrected against it.
+#[test]
+fn require_rustdoc_shares_the_same_exemptions() {
+    let linter =
+        LinterConfig::compile(default_config()).expect("the built-in default.toml must compile");
+
+    let exempt = |path: &str| {
+        return !linter
+            .resolve(
+                Path::new(path),
+                "builtin",
+                "require-rustdoc",
+                Category::Pedantic,
+            )
+            .severity
+            .is_enabled();
+    };
+
+    assert!(exempt("a/tests/foo.rs"), "tests/ dir");
+    assert!(exempt("a/b/engine_tests.rs"), "*_tests.rs");
+    assert!(exempt("a/fuzz/target.rs"), "fuzz/ dir");
+    assert!(exempt("build.rs"), "build.rs");
+    assert!(exempt("a/fixture/x.rs"), "fixture/ dir, contrary to README.md");
+
+    assert!(!exempt("src/lib.rs"), "ordinary source");
+}
+
+// What:     A test that the shipped budget is the documented one.
+// Why:      The 300 moved out of a Rust literal into default.toml, where a typo
+//           would silently loosen the budget for every package.
+#[test]
+fn default_config_carries_the_documented_budget() {
+    let linter =
+        LinterConfig::compile(default_config()).expect("the built-in default.toml must compile");
+
+    let resolved = linter.resolve(
+        Path::new("src/lib.rs"),
+        "builtin",
+        "max-lines",
+        Category::Pedantic,
+    );
+
+    // The default config configures `max`, so an absent options table is a
+    // regression rather than a legitimate state.
+    let options = resolved.options.expect("max-lines should carry options");
+
+    // `.get("max")` answers `Option<&toml::Value>`; `.and_then(..)` runs the
+    // conversion only when present, and `as_integer` answers `Option<i64>`
+    // because the configured value might have been of some other TOML type.
+    let max = options
+        .get("max")
+        .and_then(crate::toml::Value::as_integer)
+        .expect("max should be an integer");
+
+    assert_eq!(max, 300, "the shipped budget");
 }
 
 // What:     `fn run_rule(source: &str, max: usize, path: &str) -> Vec<Diagnostic>`.
@@ -305,22 +378,29 @@ fn under_budget_is_clean() {
     assert!(found.is_empty(), "under budget should report nothing");
 }
 
-// What:     `#[test] fn exempt_path_is_skipped_even_over_budget() { ... }`. An
-//           over-budget snippet on an exempt path must still report nothing.
-// Why:      Exemptions win over the budget.
+// What:     A test asserting the rule does NOT filter by path. It used to assert
+//           the opposite, because the rule called `max_lines_exempt` itself.
+// Why:      Exemption moved out of the rule and into configuration. Pinning the
+//           new division of responsibility matters as much as pinning the old
+//           one did: a rule that quietly re-added its own path check would make
+//           the `overrides` layer a liar, and no other test would notice.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// it("skips exempt paths", () => { ... });
+// it("reports regardless of path; the runner decides", () => { ... });
 // ```
 #[test]
-fn exempt_path_is_skipped_even_over_budget() {
-    // What:     `let found = run_rule(..., 2, "src/foo_tests.rs");`. Three code
-    //           lines, tiny budget, but an exempt `*_tests.rs` path.
-    // Why:      Confirm the exemption short-circuits before counting matters.
+fn rule_itself_does_not_filter_by_path() {
+    // Three code lines, a budget of two, on a path the default config exempts.
     let found = run_rule("fn a() {\n    let x = 1;\n}\n", 2, "src/foo_tests.rs");
 
-    // What:     `assert!(found.is_empty());`. No findings despite being over budget.
-    // Why:      Exempt files are never reported.
-    assert!(found.is_empty(), "exempt path must not be reported");
+    // The rule reports, because the rule only knows about budgets. Silencing it
+    // for this path is `exemptions_match_oxlint_overrides`'s subject, and the
+    // end-to-end result is covered by the `exempt_file_is_skipped` integration
+    // test, which drives the real binary.
+    assert_eq!(
+        found.len(),
+        1,
+        "the rule reports on any path it is handed: {found:?}",
+    );
 }

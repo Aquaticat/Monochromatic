@@ -29,11 +29,28 @@ name = "monochromatic_rust_linter_core"
 path = "src/lib.rs"
 
 [dependencies]
+# `serde` derives the config deserializers; `toml` is the config file format
+# chosen in doc/planning/rust-linter-oxlint-parity.md decision D3, so the binary
+# reads its configuration with no external runtime. Issue #400 tracks revisiting
+# that format.
+serde = { version = "1", features = ["derive"] }
+toml = "1"
+
+# `globset` compiles the `files`, `exclude-files` and `ignore-patterns` globs
+# into a single matcher. It is BurntSushi's, the same family as the `ignore`
+# walker the CLI already uses, so glob semantics match between the two.
+globset = "0.4"
+
 # `ra_ap_syntax` is rust-analyzer's own lossless syntax-tree crate. Pinned to
 # EXACTLY the same version the CLI crate pins, because the two share `SyntaxNode`
 # values across the crate boundary: a version skew would make them two unrelated
 # types that do not unify. Re-pin both together, never one alone.
 ra_ap_syntax = "=0.0.335"
+
+[dev-dependencies]
+# `tempfile` gives each config-loading test its own throwaway directory, so a
+# test that writes rust-linter.toml files never touches the developer's tree.
+tempfile = "3"
 
 [profile.release]
 lto = true

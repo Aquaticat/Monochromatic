@@ -315,37 +315,50 @@ fn documented_file_is_clean() {
     assert!(found.is_empty(), "documented empty file should be clean: {found:?}");
 }
 
-// What:     `#[test] fn exempt_paths_are_skipped() { ... }`. Test, fixture, and
-//           fuzz paths short-circuit before any check.
-// Why:      Throwaway code is off-policy.
+// What:     A test asserting the rule does NOT filter by path. It used to assert
+//           the opposite, because the rule called `missing_rustdoc_exempt`.
+// Why:      Exemption moved out of the rule and into configuration, and the new
+//           division deserves the same protection the old one had. A rule that
+//           quietly re-added its own path check would make the `overrides` layer
+//           a liar, and nothing else would catch it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// it("skips test/fixture/fuzz paths", () => { ... });
+// it("reports regardless of path; the runner decides", () => { ... });
 // ```
 #[test]
-fn exempt_paths_are_skipped() {
-    // What:     Seven `assert!(run_rule(..., exempt_path).is_empty(), ...)` checks.
-    //           An undocumented fn on each exempt path must produce nothing.
-    // Why:      Confirm the exemption short-circuits the whole rule for test, fuzz,
-    //           and fixture/invalid sample paths. The `fixture/`, `fixture/`,
-    //           `test-fixture/`, and `invalid/` directories hold the linter's own
-    //           deliberate negative samples (such as `fixture/undocumented.rs`),
-    //           so requiring rustdoc on them would defeat their purpose; this
-    //           mirrors oxlint's `ignorePatterns`.
-    assert!(run_rule("fn a() {}\n", "src/foo_tests.rs").is_empty(), "*_tests.rs");
-    assert!(run_rule("fn a() {}\n", "a/tests/x.rs").is_empty(), "tests/ dir");
-    assert!(run_rule("fn a() {}\n", "a/fuzz/x.rs").is_empty(), "fuzz/ dir");
-    assert!(run_rule("fn a() {}\n", "a/fixture/x.rs").is_empty(), "fixture/ dir");
-    assert!(run_rule("fn a() {}\n", "a/fixture/x.rs").is_empty(), "fixture/ dir");
-    assert!(run_rule("fn a() {}\n", "a/test-fixture/x.rs").is_empty(), "test-fixture/ dir");
-    assert!(run_rule("fn a() {}\n", "a/invalid/x.rs").is_empty(), "invalid/ dir");
+fn rule_itself_does_not_filter_by_path() {
+    // Every path here is exempted by the shipped default configuration, and the
+    // rule reports on all of them, because the rule only knows about missing
+    // documentation. Which of these are actually silenced is
+    // `require_rustdoc_shares_the_same_exemptions`'s subject, and the
+    // end-to-end result is covered by the `undocumented_fixture_in_place_is_exempt`
+    // integration test, which drives the real binary.
+    let exempt_paths = [
+        "src/foo_tests.rs",
+        "a/tests/x.rs",
+        "a/fuzz/x.rs",
+        "a/fixture/x.rs",
+        "a/test-fixture/x.rs",
+        "a/invalid/x.rs",
+    ];
 
-    // What:     `assert!(!run_rule(..., path).is_empty(), ...)`. The leading `!`
-    //           negates: an ordinary source path must still be linted.
-    // Why:      Guard against the exemption being too broad; production source
-    //           outside the exempt directories must keep requiring rustdoc.
-    assert!(!run_rule("fn a() {}\n", "src/lib.rs").is_empty(), "ordinary source linted");
+    // What:     `for path in exempt_paths`. Iterates the fixed-size array by
+    //           value; `&str` is `Copy`, so nothing is moved out from under it.
+    // Why:      One assertion shape, six paths.
+    for path in exempt_paths {
+        assert!(
+            !run_rule("fn a() {}\n", path).is_empty(),
+            "the rule reports on any path it is handed: {path}",
+        );
+    }
+
+    // Ordinary source is no different, which is the point: the rule draws no
+    // distinction at all any more.
+    assert!(
+        !run_rule("fn a() {}\n", "src/lib.rs").is_empty(),
+        "ordinary source linted",
+    );
 }
 
 // What:     `#[test] fn macros_are_never_flagged() { ... }`. Macros are excluded

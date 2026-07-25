@@ -1,16 +1,19 @@
 //! Max-lines rule implementation.
 
-// What:     `use crate::config::{max_lines_exempt, Config};` imports two names
-//           from this crate's config module: the exemption predicate and the
-//           settings struct.
-// Why:      The rule needs the budget (from `Config`) and the skip check.
+// What:     `use crate::config::Config;` imports the settings struct.
+// Why:      The rule needs the budget. It no longer needs an exemption
+//           predicate: which files it runs on is resolved from configuration by
+//           the runner, before `check` is ever called.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { maxLinesExempt, Config } from "../config";
+// import { Config } from "../config";
 // ```
-/// Imports max-lines configuration and exemption predicate.
-use crate::config::{max_lines_exempt, Config};
+/// Imports max-lines configuration.
+use crate::config::Config;
+
+/// Imports the category grouping this rule declares itself into.
+use crate::severity::Category;
 
 // What:     `use crate::span::Span;` reaches the source-range type through this
 //           crate's re-export of the core crate's module.
@@ -54,16 +57,6 @@ use crate::diagnostic::{Diagnostic, Severity};
 // ```
 /// Imports rule trait implemented by this rule.
 use crate::rule::Rule;
-
-// What:     `use std::path::Path;` imports the borrowed-path type.
-// Why:      The exemption check takes a `&Path`; we build one from the path string.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import path from "node:path";
-// ```
-/// Imports path helper used by exemption checks.
-use std::path::Path;
 
 // What:     `pub struct MaxLines;`. A UNIT struct: a type with no fields, written
 //           without braces. It carries no data; it exists only to implement the
@@ -118,6 +111,15 @@ impl Rule for MaxLines {
         return false
     }
 
+    // What:     `fn category(&self) -> Category { Category::Pedantic }`.
+    // Why:      Pedantic is where oxlint files its own `eslint/max-lines`,
+    //           verified against that rule's documentation page rather than
+    //           guessed, so `-D pedantic` reaches the same rule in both linters.
+    /// Return the pedantic category, matching oxlint's own eslint/max-lines.
+    fn category(&self) -> Category {
+        return Category::Pedantic
+    }
+
     // What:     `fn check(&self, context: &LintContext, config: &Config, out: &mut
     //           Vec<Diagnostic>)`. Read-only borrows of the file context and
     //           config; a mutable borrow of the shared findings vector to push into.
@@ -129,29 +131,10 @@ impl Rule for MaxLines {
     // ```
     /// Append a diagnostic when a nonexempt file exceeds configured budget.
     fn check(&self, context: &LintContext, config: &Config, out: &mut Vec<Diagnostic>) {
-        // What:     `let path = Path::new(&context.path);`. `Path::new` wraps the
-        //           borrowed string (`&context.path`, a `&String` that coerces to
-        //           `&str`) as a `&Path` without copying.
-        // Why:      The exemption check works on path segments, which `Path` exposes.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const p = ctx.path;
-        // ```
-        let path = Path::new(&context.path);
-
-        // What:     `if max_lines_exempt(path) { return; }`. Calls the predicate
-        //           and bails out early when the file is exempt.
-        // Why:      Tests, fuzz harnesses, fixtures, and build scripts are
-        //           off-budget, mirroring oxlint's overrides.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (maxLinesExempt(p)) return;
-        // ```
-        if max_lines_exempt(path) {
-            return;
-        }
+        // No exemption check here any more. Which files this rule runs on is a
+        // configuration question now, answered by the glob `overrides` in
+        // rust-linter.toml and resolved by the runner before `check` is called.
+        // The rule's job is to check the file it was handed.
 
         // What:     `let count = context.code_line_count();`. Reads how many code
         //           lines (blanks and comments already excluded) the file has.

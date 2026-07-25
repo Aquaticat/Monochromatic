@@ -25,6 +25,27 @@ pub mod diagnostic;
 pub mod fix;
 /// The interface every lint rule implements.
 pub mod rule;
+/// Configured severities and the categories they can be set through.
+pub mod severity;
+/// Unit tests for configured severities and categories.
+#[cfg(test)]
+mod severity_tests;
+
+// What:     `pub use toml;` re-exports an entire DEPENDENCY CRATE under this
+//           crate's own root, so consumers reach it as
+//           `monochromatic_rust_linter_core::toml`.
+// Why:      `toml::Table` appears in this crate's public API, on
+//           `ResolvedRule::options`. A consumer that reads a rule's options
+//           needs the same `toml` types, and re-exporting them means it gets the
+//           exact version this crate was built against rather than declaring its
+//           own dependency that could drift to a different one.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as toml from "toml";
+// ```
+/// Re-exports the TOML types appearing in this crate's public API.
+pub use toml;
 /// Source positions and the labelled spans a diagnostic points at.
 pub mod span;
 

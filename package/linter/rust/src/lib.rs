@@ -33,7 +33,7 @@ pub mod builtin;
 // export * as context from "@monochromatic-dev/rust-linter-core/context";
 // ```
 /// Per-file parsed context and the diagnostic model, from the core crate.
-pub use monochromatic_rust_linter_core::{context, diagnostic, fix, span};
+pub use monochromatic_rust_linter_core::{context, diagnostic, fix, severity, span, toml};
 
 // What:     `use std::fs;` imports the standard filesystem module (we call
 //           `fs::read_to_string`).
@@ -121,6 +121,22 @@ use crate::diagnostic::{Diagnostic, Severity};
 /// Imports enabled-rule registry and rule trait.
 use crate::rule::{all_rules, Rule};
 
+// What:     `use monochromatic_rust_linter_core::config::...` reaches the core
+//           crate directly rather than through this crate's re-export, because
+//           these are used here rather than republished.
+// Why:      The runner owns loading and merging; rules never see any of it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { loadFor, defaultConfig, merge, LinterConfig } from "...core/config";
+// ```
+/// Imports configuration discovery and `extends` resolution.
+use monochromatic_rust_linter_core::config::load::{load_file, load_for};
+/// Imports configuration merging and the compiled, resolvable configuration.
+use monochromatic_rust_linter_core::config::resolve::{merge, LinterConfig};
+/// Imports the built-in configuration compiled into the core crate.
+use monochromatic_rust_linter_core::config::default_config;
+
 /// Parse real process arguments with clap, then run the linter.
 // What:     `pub fn run_cli_from_env() -> Result<i32>` preserves the old
 //           public entry-point shape. `Result<i32>` can still represent a
@@ -173,9 +189,28 @@ pub fn run_cli_from_env() -> Result<i32> {
 // ```
 /// Run the linter from already-parsed command-line options.
 pub fn run_cli(cli: &Cli) -> i32 {
+    // What:     `let linter = match load_linter_config(cli) { Ok(v) => v, Err(m)
+    //           => { .. return 2; } };`. A `match` on a `Result`, binding the
+    //           success value or reporting the failure and exiting.
+    // Why:      A broken config is a fatal setup error, not a lint finding, so it
+    //           exits 2 the way an unparseable `--max` already does.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let linter; try { linter = loadLinterConfig(cli); } catch (e) { ...; return 2; }
+    // ```
+    let linter = match load_linter_config(cli) {
+        Ok(loaded) => loaded,
+        Err(message) => {
+            eprintln!("rust-linter: {message}");
+            return 2;
+        }
+    };
+
     // What:     `let config = Config { max_lines: cli.max_lines };`. Builds the
     //           settings struct from clap's parsed budget.
-    // Why:      Rules read the budget from here.
+    // Why:      Rules read the budget from here. `--max` still wins over the
+    //           configured value, so the documented invocation keeps working.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -234,7 +269,7 @@ pub fn run_cli(cli: &Cli) -> i32 {
         // ```ts
         // lintFile(file, config, rules, diagnostics);
         // ```
-        lint_file(file, &config, &rules, &mut diagnostics);
+        lint_file(file, &config, &linter, &rules, &mut diagnostics);
     }
 
     // What:     `for diagnostic in &diagnostics { println!("{}", diagnostic.render()); }`.
@@ -287,6 +322,47 @@ pub fn run_cli(cli: &Cli) -> i32 {
 // ```ts
 // function collectRustFiles(paths: string[]): string[] { /* ... */ }
 // ```
+
+// What:     `fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String>`.
+//           Returns the merged, glob-compiled configuration, or a message
+//           describing why it could not be built.
+// Why:      Three layers stack here, and the order is the whole behaviour: the
+//           built-in defaults compiled into the core crate sit at the bottom,
+//           then whatever configuration governs the working directory, then an
+//           explicit `--config` if one was given. Nearer always wins.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function loadLinterConfig(cli: Cli): LinterConfig // throws a message string
+// ```
+/// Build the merged configuration governing this run.
+fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String> {
+    // Layer 1: the policy compiled into the binary, so a checkout with no
+    // configuration behaves exactly as the hardcoded predicates used to.
+    let mut merged = default_config();
+
+    // Layer 2: discovered files, unless the user asked for exactly one config.
+    // `.is_none()` is true when the `Option` holds no value, meaning no
+    // `--config` was passed.
+    if cli.config.is_none() && !cli.disable_nested_config {
+        // `.map_err(|error| error.to_string())?` turns the typed load failure
+        // into the message string this function promises, then propagates it.
+        let discovered = load_for(Path::new("."), None).map_err(|error| return error.to_string())?;
+        merged = merge(merged, discovered);
+    }
+
+    // Layer 3: an explicit `--config`, which wins over everything.
+    // `if let Some(path) = &cli.config` borrows the inner value when present.
+    if let Some(path) = &cli.config {
+        let explicit = load_file(Path::new(path)).map_err(|error| return error.to_string())?;
+        merged = merge(merged, explicit);
+    }
+
+    // Compiling the globs is the last step, and the first place a malformed
+    // pattern is noticed.
+    return LinterConfig::compile(merged).map_err(|error| format!("invalid glob in config: {error}"));
+}
+
 /// Expand file and directory arguments into Rust source file paths.
 fn collect_rust_files(paths: &[String]) -> Vec<String> {
     // What:     `let mut files: Vec<String> = Vec::new();`. Accumulator for results.
@@ -380,7 +456,21 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
 // function lintFile(path: string, config: Config, rules: Rule[], out: Diagnostic[]): void { /* ... */ }
 // ```
 /// Read one file and apply every enabled rule to it.
-fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec<Diagnostic>) {
+fn lint_file(
+    path: &str,
+    config: &Config,
+    linter: &LinterConfig,
+    rules: &[Box<dyn Rule>],
+    out: &mut Vec<Diagnostic>,
+) {
+    // What:     `if linter.is_ignored(Path::new(path)) { return; }`. Checks the
+    //           merged `ignore-patterns` globs before reading the file at all.
+    // Why:      An ignored file should cost nothing, not be parsed and then
+    //           discarded rule by rule.
+    if linter.is_ignored(Path::new(path)) {
+        return;
+    }
+
     // What:     `let source = match fs::read_to_string(path) { Ok(text) => text,
     //           Err(error) => { eprintln!(...); return; } };`. `fs::read_to_string`
     //           returns `Result<String, io::Error>`. The `match` binds the file
@@ -423,6 +513,20 @@ fn lint_file(path: &str, config: &Config, rules: &[Box<dyn Rule>], out: &mut Vec
     // for (const rule of rules) rule.check(context, config, out);
     // ```
     for rule in rules {
+        // What:     `let resolved = linter.resolve(..)`. Asks the merged config
+        //           what severity this rule runs at for THIS file, walking the
+        //           category default, the `rules` table, and every matching
+        //           `overrides` entry in order.
+        // Why:      This is where the two deleted exemption predicates went. A
+        //           rule that is off for this path never runs, which is both
+        //           cheaper and the only way a user can change the answer.
+        let resolved = linter.resolve(Path::new(path), rule.plugin(), rule.id(), rule.category());
+
+        // `.is_enabled()` is false only for `Off`, so a warn-level rule still runs.
+        if !resolved.severity.is_enabled() {
+            continue;
+        }
+
         // What:     `rule.check(&context, config, out);`. Call the trait method,
         //           lending the context read-only and forwarding the mutable
         //           findings buffer. `config` and `out` are already references

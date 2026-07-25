@@ -83,6 +83,93 @@ oxlint tooling,
  `package/dev-script/task-util/src/oxlint-wrapper.ts` and its siblings,
  read this linter's output without changes.
 
+## Configuration
+
+The linter reads `rust-linter.toml`.
+TOML was chosen so the binary stays standalone,
+ with no Node,
+ no JVM and no external evaluator;
+ issue #400 tracks revisiting that.
+
+```toml
+extends = ["../shared/rust-linter.toml"]
+ignore-patterns = ["**/generated/**"]
+
+[options]
+deny-warnings = true
+max-warnings = 0
+
+[categories]
+pedantic = "warn"
+
+[rules]
+"builtin/require-rustdoc" = "error"
+
+[rules."builtin/max-lines"]
+severity = "error"
+max = 300
+
+[[overrides]]
+files = ["**/*_tests.rs"]
+exclude-files = ["**/keep_checking_me_tests.rs"]
+
+[overrides.rules]
+"builtin/max-lines" = "off"
+```
+
+A rule is written either as a bare severity or as a table carrying its options
+beside `severity`.
+Severities are `off`,
+ `warn` and `error`;
+ oxlint's `allow` and `deny` are accepted as aliases of the first and last.
+A rule may be named with or without its plugin prefix,
+ and the qualified spelling wins when both appear.
+
+### Resolution order
+
+For each file and each rule,
+ in order,
+ with the last one to speak winning:
+
+1.  the rule's category default,
+    which is `error` for `correctness` and `off` for everything else,
+    matching oxlint
+2.  an explicit `[categories]` entry
+3.  an explicit `[rules]` entry
+4.  every matching `[[overrides]]` entry, in declaration order
+
+### Two places this deliberately differs from oxlint
+
+`extends` here is a full merge.
+oxlint's merges rules only,
+ dropping `categories`,
+ `env`,
+ `ignorePatterns`,
+ `overrides` and `plugins`,
+ which is why this repository's own `oxlint.config.ts` spreads its base rather
+ than extending it.
+Reproducing that would be copying a bug.
+
+Nested configuration layers rather than replaces.
+A package-level `rust-linter.toml` is merged on top of the ones above it,
+ so a package restates only what it changes.
+Since `lint:rust` fans out per package,
+ the alternative would silently drop repository-wide policy for any package that
+ carried a config at all.
+
+### Built-in defaults
+
+`default.toml` is compiled into the binary by `include_str!` and sits beneath
+every discovered file.
+It carries the exemptions that used to be hardcoded Rust predicates:
+ `tests/`,
+ `*_tests.rs`,
+ `fuzz/`,
+ `build.rs`,
+ and the `fixture/`,
+ `test-fixture/` and `invalid/` sample directories.
+Both shipped rules are exempted in all of them.
+
 ## Fix kinds
 
 `FixKind` mirrors oxlint's three trust levels:

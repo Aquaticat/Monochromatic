@@ -14,6 +14,8 @@ use crate::config::Config;
 use crate::context::LintContext;
 /// Imports the finding record every rule emits.
 use crate::diagnostic::Diagnostic;
+/// Imports the category grouping every rule declares itself into.
+use crate::severity::Category;
 
 // What:     `pub trait Rule { .. }`. A trait is a set of methods a type must
 //           provide, which is Rust's version of a TS `interface`. Unlike an
@@ -49,6 +51,19 @@ pub trait Rule {
     fn plugin(&self) -> &'static str {
         return "builtin"
     }
+
+    // What:     Another required method, with no default body.
+    // Why:      A category is how `-D pedantic` or a `[categories]` table can
+    //           reach a rule at all. A default would quietly file every new rule
+    //           under one group, so config aimed at that group would sweep in
+    //           rules nobody meant to enable.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // category(): Category;
+    // ```
+    /// Return the category this rule belongs to.
+    fn category(&self) -> Category;
 
     // What:     No default body, deliberately, unlike `plugin` above.
     // Why:      Whether a rule may be silenced inline is a policy decision, and a
