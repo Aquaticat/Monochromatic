@@ -114,7 +114,8 @@ use the same safety context,
 
 Model fallback:
  if the selected judge model still fails after its transport attempts,
-auto-mode excludes that model and resolves up to two distinct authenticated fallback models before sending any request.
+auto-mode excludes that model and resolves up to two distinct authenticated fallback models
+before sending any request.
  It runs every selected complete judge attempt concurrently;
 the first valid structured verdict settles the guard decision.
  When only one fallback model can be selected,
