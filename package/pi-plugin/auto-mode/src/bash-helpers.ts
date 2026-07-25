@@ -63,37 +63,25 @@ function hasFlag(
     readonly flags: readonly string[];
   },
 ): boolean {
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- latched mid-iteration after seeing `--`; pulling into reduce hurts readability without changing behaviour */
-  /**
-   * Latch flipped on `--`; subsequent args are treated as positional and ignored by the matcher.
-   */
-  let pastEndOfOptions = false;
-  /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  return args.some(
-    function checkArg(a,) {
-      if (pastEndOfOptions)
-        return false;
-      if (a === '--') {
-        pastEndOfOptions = true;
-        return false;
+  for (const arg of args) {
+    if (arg === '--')
+      return false;
+    if (!arg.startsWith('-',))
+      continue;
+    if (arg.startsWith('--',)) {
+      for (const flag of flags) {
+        if (arg === `--${LONG_FLAGS[flag]
+          ?? flag}`)
+          return true;
       }
-      if (!a.startsWith('-',))
-        return false;
-      if (a.startsWith('--',)) {
-        return flags.some(
-          function matchLongFlag(f,) {
-            return a === `--${LONG_FLAGS[f]
-              ?? f}`;
-          },
-        );
-      }
-      return flags.some(
-        function matchShortFlag(f,) {
-          return a.includes(f,);
-        },
-      );
-    },
-  );
+      continue;
+    }
+    for (const flag of flags) {
+      if (arg.includes(flag,))
+        return true;
+    }
+  }
+  return false;
 }
 
 /** Check if any target in the command is the root directory.
@@ -154,11 +142,13 @@ function hasInlineCode(
   if (flags.length
     === 0)
     return true;
-  return flags.some(
-    function flagPresent(f,) {
-      return args.includes(f,);
-    },
-  );
+  for (const flag of flags) {
+    for (const arg of args) {
+      if (arg === flag)
+        return true;
+    }
+  }
+  return false;
 }
 
 /** Check if the analysis contains any command listed in {@link NETWORK_COMMANDS}.
@@ -179,12 +169,11 @@ function hasInlineCode(
 function hasNetworkCommand(
   analysis: BashAnalysis,
 ): boolean {
-  return analysis.commands
-    .some(
-    function isNetworkCmd(c,) {
-      return NETWORK_COMMANDS.has(c.name,);
-    },
-  );
+  for (const command of analysis.commands) {
+    if (NETWORK_COMMANDS.has(command.name,))
+      return true;
+  }
+  return false;
 }
 
 /** Check if the analysis contains references matching {@link SECRET_VAR_PATTERN}.
@@ -205,12 +194,11 @@ function hasNetworkCommand(
 function hasSecretParamRefs(
   analysis: BashAnalysis,
 ): boolean {
-  return analysis.allParamRefs
-    .some(
-    function isSecretRef(ref,) {
-      return SECRET_VAR_PATTERN.test(ref,);
-    },
-  );
+  for (const parameterReference of analysis.allParamRefs) {
+    if (SECRET_VAR_PATTERN.test(parameterReference,))
+      return true;
+  }
+  return false;
 }
 
 /** Check if the analysis contains sensitive source files via {@link pathSignals}.
@@ -232,19 +220,24 @@ async function hasSensitiveSource(
   },
 ): Promise<boolean> {
   /**
-   * Path signal decisions for all file-like arguments and redirect targets.
+   * Concurrent path signal work for every file-like argument and redirect target.
    */
-  const signalDecisions = await Promise.all(
-    analysis
-      .allFiles
-      .map(function fileHasPathSignal(f,) {
-        return pathSignals({
-          filePath: f,
-          ctx,
-        },);
-      },),
-  );
-  return signalDecisions.some(Boolean,);
+  const signalPromises: Promise<boolean>[] = [];
+  for (const filePath of analysis.allFiles) {
+    signalPromises[signalPromises.length] = pathSignals({
+      filePath,
+      ctx,
+    },);
+  }
+  /**
+   * Path signal decisions after all independent checks settle.
+   */
+  const signalDecisions = await Promise.all(signalPromises,);
+  for (const decision of signalDecisions) {
+    if (decision)
+      return true;
+  }
+  return false;
 }
 
 export {
