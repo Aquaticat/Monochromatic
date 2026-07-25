@@ -292,6 +292,40 @@ This is the SYB-compliant answer:
 the pattern is written in the destination language rather than in an invented
 DSL describing it.
 
+#### Verified against the real parser
+
+The recorded shape was tested, not assumed, in a throwaway worktree against
+`ra_ap_syntax` 0.0.335 (`git worktree add`, removed afterwards, per IWT/THR).
+Result: there is no single parse entry point that accepts all three snippet
+shapes, so the format needs a fragment strategy.
+
+- `META_X.unwrap()` through `SourceFile::parse`: 5 errors, root `ERROR`.
+- `META_X.unwrap()` through `ast::Expr::parse`: 0 errors, root
+  `METHOD_CALL_EXPR`.
+- `META_X.expect("TODO: explain")` through `ast::Expr::parse`: 0 errors,
+  root `METHOD_CALL_EXPR`.
+- `#[test] fn META_F() {}` through `SourceFile::parse`: 0 errors,
+  `SOURCE_FILE > FN > ATTR`.
+- `#[test] fn META_F() {}` through `ast::Expr::parse`: 1 error, root `ERROR`.
+- `let META_A = 1;` fails BOTH entry points, because a statement is neither an
+  item nor an expression.
+  Wrapping it as `fn __probe() { let META_A = 1; }` parses with 0 errors,
+  giving `STMT_LIST > LET_STMT`;
+  the same wrapper recovers `EXPR_STMT` and `FOR_EXPR`.
+
+Resolved design, verified rather than guessed:
+the matcher auto-detects fragment kind by cascade,
+trying item (`SourceFile::parse`), then expression (`ast::Expr::parse`),
+then statement (wrapped in a synthetic function body),
+and taking the first parse that reports zero errors.
+No fragment-kind key is needed in the TOML.
+
+Also confirmed by the same probe:
+the ast-grep `$X` spelling does not work here.
+`$X.unwrap()` yields 1 error through the expression entry point and 6 through
+the file entry point, so the identifier-shaped `META_X` encoding is load
+bearing, not stylistic.
+
 Available for the text-predicate half where one is needed:
 `package/rust-module/forbidden-regex`,
 the in-house linear-time engine with fuzz and bench harnesses,
@@ -374,7 +408,77 @@ Not decisions, but design work that lands with the code:
   `extends`, `ignorePatterns` and `options`.
 - Metavariable semantics: binding, reuse within a pattern, repetition,
   and whether `not-inside` takes one pattern or a list.
-- Whether `ra_ap_syntax` parses each pattern snippet cleanly enough to match
-  structurally, verified with real snippets before the matcher is written.
 - Directive syntax and its rule-name grammar.
 - Which of the ten output formats share a serializer.
+
+Two forks that look mechanical but are not,
+so they are named here rather than left to be discovered:
+
+- `extends` semantics.
+  `oxlint.config.ts:7` documents that oxlint's `extends` merges rules ONLY:
+  `categories`, `env`, `ignorePatterns`, `overrides` and `plugins` are not
+  inherited, which is exactly why the root config spreads `base` instead of
+  extending it.
+  So "adopt `extends`" has two readings, bug-compatible partial merge or full
+  merge, and they differ in observable behaviour.
+- Nested config composition.
+  The root `lint:rust` task fans out per package, so a package-level
+  `rust-linter.toml` and the root one must compose in a defined order.
+  oxlint's answer is nested config discovery with `--disable-nested-config`;
+  whether a package config replaces or layers over the root one needs deciding.
+
+## Known holes in the parity claim
+
+Named so the final claim is checkable rather than asserted:
+
+- `settings`, oxlint's plugin-level configuration distinct from per-rule
+  options, has no analogue in this design yet.
+  Plugin crates will want one.
+- Per-plugin CLI toggles (`--import-plugin`, `--disable-unicorn-plugin` and
+  friends) have no counterpart;
+  the design has a `plugins` config key with no CLI equivalent.
+- `--tsconfig` is not applicable to a Rust linter and is explicitly out.
+- `--type-aware` and `--type-check` are out by decision D1.
+- `--rules` produces no output at all in oxlint 1.75.0 as invoked here:
+  both stdout and stderr are empty at exit 0.
+  Parity therefore means implementing what the flag is documented to do,
+  listing every registered rule, not reproducing what it currently does.
+
+## Work breakdown
+
+Per TSK, separate items with independently verifiable completion criteria,
+rather than one umbrella task:
+
+1.  Core crate extraction: rule trait carrying fixes, lint context, diagnostic
+    model with spans and labels. Verified by the two existing rules passing
+    unchanged against the new trait.
+2.  TOML config layer: `rules`, `categories`, `options`, `ignorePatterns`,
+    glob `overrides`, `extends`, nested discovery. Verified by the hardcoded
+    exemptions in `src/config.rs` being deleted and reexpressed as overrides
+    with identical behaviour on the existing fixtures.
+3.  Severity and CLI accumulation: `-A`/`-W`/`-D` over rules and categories,
+    `--quiet`, `--deny-warnings`, `--max-warnings`, `--silent`.
+    Verified by exit-code tests per combination.
+4.  Output formats: all ten, with JSON matching oxlint's schema field for field.
+    Verified by feeding the JSON to the existing `oxlint-wrapper.ts` tooling.
+5.  Directive engine: parsing, justification enforcement, per-rule
+    suppressibility, `--report-unused-disable-directives` and its severity
+    variant. Verified by a fixture where a directive targets a
+    non-suppressible rule.
+6.  Autofix pipeline: fix model, three fix kinds, applier, fixpoint iteration.
+    Verified end to end through a pattern rule with a `fix` snippet.
+7.  Pattern matcher crate: fragment cascade, metavariable binding, structural
+    match, rewrite emission. Verified against the probe cases recorded above.
+8.  Plugin registry: rule crates as packages, namespaced ids, `plugins` config
+    key. Verified by moving one built-in rule out into its own package.
+9.  Parallel runner and discovery flags: `--threads`, `build_parallel()`,
+    `--ignore-path`, `--ignore-pattern`, `--no-ignore`,
+    `--no-error-on-unmatched-pattern`, `--debug=files,timings`.
+    Verified by timing a full 310-file run against the sequential baseline.
+10. Language server: `--lsp`, incremental document sync, code actions from the
+    fix model. Verified in an editor, not by piped test input (VB3).
+11. Introspection: `--print-config`, `--rules`, `--init`.
+    Verified by round-tripping `--init` output back through the config loader.
+12. Documentation: `README.md` rewritten, including the stale module list at
+    `README.md:211` which still names `src/rule/max_lines.rs` although the file
+    has been `src/builtin/max_lines.rs` for some time.
