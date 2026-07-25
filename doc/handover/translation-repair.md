@@ -1068,11 +1068,17 @@ only flips the block branch and only toward NOT blocking, every "repaired"
 entry is provably unchanged; ONLY Mio is stale (no full wipe, slicing
 untouched so caches stay valid). Deterministic tests pass (Mio-shape
 dominance regression + six anchor-probe cases); format/lint/types/build 0.
-Live Mio re-validation running (sentinel-probe `bcgzdo82q`), must flip
-blocked->repaired like Arita; on confirm, delete the stale Mio.json and
-resume accumulation (Mio re-settles as repaired). Surface the 4/4-false-block
-pattern in the milestone writeup -- it is a real finding about this feature's
-value on this all-real-translation corpus.
+Live Mio re-validation CONFIRMED (sentinel-probe `bcgzdo82q`, ~47 min):
+PROBE Mio status=repaired (84 issues, 82 accepted, 45 findings) -- flipped
+blocked->repaired exactly like Arita. The log shows the correct shape: chunks
+0,1,2,3,4,7 repaired (clean anchors), chunks 5,6,8-15 still ship unchanged
+per-slice (10 standing, even MORE than run 020's 8, yet no document block
+because the anchors veto it). Stale Mio.json deleted and Mio's attempts entry
+reset to 0 so it re-settles as a fair medium candidate during accumulation;
+settled dropped to 21/92 (9 small / 6 medium / 6 large). Accumulation resumed
+at run 021 (NO pass restart or wipe -- only Mio was stale). Surface the
+4/4-false-block pattern in the milestone writeup -- it is a real finding about
+this feature's value on this all-real-translation corpus.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
