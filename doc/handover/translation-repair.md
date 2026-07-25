@@ -1079,6 +1079,12 @@ settled dropped to 21/92 (9 small / 6 medium / 6 large). Accumulation resumed
 at run 021 (NO pass restart or wipe -- only Mio was stale). Surface the
 4/4-false-block pattern in the milestone writeup -- it is a real finding about
 this feature's value on this all-real-translation corpus.
+PASS 6 RUN 021 (2026-07-25, tip `5baaa37c2`, 2829s wall ~47 min): 1 settled,
+22/92. Mio RE-SETTLED status=repaired (88 issues, 87 accepted, ALL 87
+resolved, 56 findings) under the anchor-veto fix -- the false block is gone
+in the actual artifact pool, not just the probe. Picked first because its
+attempts were reset to 0. Medium settled 6->7. Bands now 9 small / 7 medium
+/ 6 large (need ~1 small, ~3 medium, ~4 large). Run 022 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
