@@ -15,6 +15,7 @@ import {
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type ChunkRepairOutcome,
   type RepairModels,
   repairTranslation,
   type SyntheticClient,
@@ -348,6 +349,103 @@ await describe({
                   === 'accuracy/non-translation';
               },);
           },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'resumes cached slices without recomputing them',
+      fn: async () => {
+        /**
+         * Structured-call counter shared with the wrapping client.
+         */
+        const calls = { count: 0, };
+
+        /**
+         * Base client repairing the planted mistranslation.
+         */
+        const base = scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },);
+
+        /**
+         * Client counting every structured call it serves.
+         */
+        const counting: SyntheticClient = {
+          chatText: base.chatText,
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            calls.count += 1;
+            return base.chatJson(request,);
+          },
+          quotas: base.quotas,
+        };
+
+        /**
+         * Serialized slice outcomes the first run persists, keyed by hash.
+         */
+        const store = new Map<string, string>();
+
+        /**
+         * First run computes and persists every slice.
+         */
+        const first = await repairTranslation({
+          client: counting,
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async (
+              key,
+              serialized,
+            ) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        expect(calls.count,).toBeGreaterThan(0,);
+        expect(store.size,).toBeGreaterThan(0,);
+
+        /**
+         * Resume map parsed from the persisted slices, as the driver does.
+         */
+        const resumed = new Map<string, ChunkRepairOutcome>(
+          [...store.entries(),].map(([key, serialized,],) =>
+            [key, JSON.parse(serialized,) as ChunkRepairOutcome,] as const),
+        );
+
+        /**
+         * Structured calls made before the resumed run began.
+         */
+        const callsBeforeResume = calls.count;
+
+        /**
+         * Second run resumes every slice from the cache.
+         */
+        const second = await repairTranslation({
+          client: counting,
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+          sliceCache: {
+            resumed,
+            persist: async () => {
+              throw new Error('a fully cached run must not persist',);
+            },
+          },
+        },);
+        // A fully cached document makes no further model call.
+        expect(calls.count,).toBe(callsBeforeResume,);
+        // The resumed result matches the fresh one.
+        expect(second.repairedText,).toBe(first.repairedText,);
+        expect(second.status,).toBe(first.status,);
+        expect(second.issues
+          .length,).toBe(first.issues
+          .length,);
       },
     },),
 

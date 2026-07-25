@@ -124,6 +124,7 @@ export {
   type RepairStatus,
   repairTranslation,
   type RepairTranslationResult,
+  type SliceCache,
 } from './repair-translation.ts';
 export {
   buildRestorationJudgeMessages,

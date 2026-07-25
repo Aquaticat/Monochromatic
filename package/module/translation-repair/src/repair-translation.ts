@@ -10,6 +10,7 @@ import {
   alignDocumentSections,
   type ChunkPair,
 } from './chunk-document.ts';
+import { hashContent, } from './document-node.ts';
 import { assessNonTranslationDominance, } from './non-translation-evidence.ts';
 import { parseDocument, } from './parse-document.ts';
 import {
@@ -81,6 +82,41 @@ export type RepairStatus =
   | 'blocked-non-translation';
 
 /**
+ * Cross-run slice cache making a large document resumable: completed slice
+ * outcomes keyed by a deterministic hash of the slice's index and text, so
+ * a run aborted at the hard cap resumes from the last finished slice
+ * instead of recomputing from scratch. Injected like the client, so the
+ * result stays a function of inputs and the resumed outcomes; `persist` is
+ * a write-through side effect that never feeds back into the result.
+ *
+ * @example
+ * ```ts
+ * const cache: SliceCache = {
+ *   resumed: new Map(),
+ *   persist: async (key, outcome,) => writeSliceFile(key, outcome,),
+ * };
+ * ```
+ */
+export type SliceCache = {
+  /**
+   * Outcomes finished on an earlier run, keyed by slice hash; a hit skips
+   * every model call for that slice.
+   */
+  readonly resumed: ReadonlyMap<string, ChunkRepairOutcome>;
+
+  /**
+   * Persists one freshly computed slice's serialized outcome under its hash
+   * key before the next slice starts, so an abort leaves finished slices
+   * recoverable. The pipeline owns the serialization; the driver writes
+   * exactly these bytes and parses them back into {@link resumed} next run.
+   */
+  readonly persist: (
+    key: string,
+    serialized: string,
+  ) => Promise<void>;
+};
+
+/**
  * Output contract of the batch driver.
  *
  * @example
@@ -136,6 +172,9 @@ export type RepairTranslationResult = {
  * @param sliceCharBudget - target-side characters one paragraph-bound
  * slice aims for; defaults to {@link SLICE_CHAR_BUDGET}
  *
+ * @param sliceCache - optional cross-run cache; resumes finished slices
+ * and persists newly finished ones so a large document survives aborts
+ *
  * @returns Repaired candidate plus adjudicated issues and completion status
  *
  * @example
@@ -159,6 +198,7 @@ export async function repairTranslation(
     signal,
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
     sliceCharBudget = SLICE_CHAR_BUDGET,
+    sliceCache,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly sourceText: string;
@@ -168,6 +208,7 @@ export async function repairTranslation(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly sliceCharBudget?: number;
+    readonly sliceCache?: SliceCache;
   }>,
 ): Promise<RepairTranslationResult> {
   /**
@@ -219,11 +260,32 @@ export async function repairTranslation(
    */
   const outcomes: ChunkRepairOutcome[] = [];
   for (const slice of slices) {
+    /**
+     * Cross-run key for this slice: its index and both texts, so a slicing
+     * change or a content change misses the cache and recomputes.
+     */
+    const sliceKey = hashContent({
+      content: JSON.stringify([
+        slice.target
+          .chunkIndex,
+        slice.source
+          .text,
+        slice.target
+          .text,
+      ],),
+    },);
+
+    /**
+     * Outcome finished on an earlier run, when this slice is cached.
+     */
+    const resumed = sliceCache?.resumed
+      .get(sliceKey,);
+
     /* oxlint-disable no-await-in-loop -- sequential by design: aggregate concurrency beyond one stream per model collapses throughput on this plan, and each stage already fans out per model inside the chunk */
     /**
-     * Repair outcome of this slice pair.
+     * Repair outcome of this slice pair, recomputed only when not resumed.
      */
-    const outcome = await repairChunk({
+    const outcome = resumed ?? await repairChunk({
       client,
       chunkIndex: slice.target
         .chunkIndex,
@@ -237,6 +299,15 @@ export async function repairTranslation(
       perCallTimeoutMs,
       l: rl,
     },);
+    if (resumed === undefined)
+      await sliceCache?.persist(
+        sliceKey,
+        JSON.stringify(
+          outcome,
+          undefined,
+          2,
+        ),
+      );
     /* oxlint-enable no-await-in-loop */
     outcomes.push(outcome,);
 
