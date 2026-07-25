@@ -227,6 +227,36 @@ function buildApprovalFingerprint(
 }
 
 /**
+ * Serialize complete current tool input for judge inspection.
+ *
+ * JSON encoding keeps model-generated file contents in one explicit data
+ * grammar while preserving every write body and edit hunk.
+ *
+ * @param event - tool call whose input is under review
+ *
+ * @returns complete tool input encoded as JSON
+ *
+ * @throws {@link Error} when host tool input cannot be represented as JSON
+ *
+ * @mutates event - `JSON.stringify` can invoke caller-owned serialization hooks reachable from tool input
+ *
+ * @example
+ * ```typescript
+ * serializeToolInputForJudge(writeEvent);
+ * // => '{"path":"src/index.ts","content":"export {};\\n"}'
+ * ```
+ */
+function serializeToolInputForJudge(
+  event: ForeignBorrowed<ToolCallEvent>,
+): string {
+  /** Complete JSON representation passed only to judge request construction. */
+  const serializedInput = JSON.stringify(event.input,);
+  if (serializedInput === undefined)
+    throw new Error('Tool input could not be serialized for judge inspection.',);
+  return serializedInput;
+}
+
+/**
  * Extract text content from a tool call event.
  *
  * @param event - the tool call event
@@ -413,4 +443,5 @@ export {
   extractToolText,
   getFilePath,
   isRelevantTool,
+  serializeToolInputForJudge,
 };
