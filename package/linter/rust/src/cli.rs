@@ -22,17 +22,10 @@
 // ```
 use clap::Parser;
 
-/// Imports default linter settings for clap's default flag values.
-// What:     `use crate::config::Config;` imports the settings struct from this
-//           same crate. `crate::` means "start from this package's library root".
-// Why:      The `--max` default below must share the same source of truth as the
-//           run loop's normal configuration.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Config } from "./config";
-// ```
-use crate::config::Config;
+// The `--max` default used to be read from `Config::with_defaults()` here.
+// It is no longer a clap default at all: the flag is optional, and the fallback
+// lives in `resolve_max_lines` in lib.rs, where the whole precedence chain of
+// flag, then config, then built-in default is decided in one place.
 
 /// Parsed command-line options for `rust-linter`.
 // What:     `#[derive(Parser, Debug, PartialEq)]` asks Rust to generate three
@@ -71,13 +64,25 @@ pub struct Cli {
     // // @option("--max", { default: Config.withDefaults().maxLines })
     // maxLines: number;
     // ```
+    // What:     `pub max_lines: Option<usize>` with NO `default_value_t`.
+    //           `Option` distinguishes "the user passed --max" from "the user
+    //           did not", which a plain `usize` with a default cannot: clap
+    //           would fill in 300 either way.
+    // Why:      That distinction is the whole precedence rule. `--max` must beat
+    //           a configured `max`, but an absent `--max` must not, and with a
+    //           default value every run looked like an explicit 300 and silently
+    //           overrode every configured budget.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // maxLines?: number;
+    // ```
     #[arg(
         long = "max",
         value_name = "LINES",
-        default_value_t = Config::with_defaults().max_lines,
-        help = "Maximum code lines allowed per file"
+        help = "Maximum code lines allowed per file (overrides config; default 300)"
     )]
-    pub max_lines: usize,
+    pub max_lines: Option<usize>,
 
     /// Configuration file to use instead of discovering one.
     // What:     `pub config: Option<String>`. `Option<T>` says the value may be

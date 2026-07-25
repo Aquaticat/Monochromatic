@@ -170,7 +170,16 @@ fn load_with_trail(path: &Path, trail: &mut Vec<PathBuf>) -> Result<ConfigFile, 
     // shared base, is not mistaken for a cycle.
     trail.pop();
 
-    return Ok(merge(merged, parsed));
+    // What:     `let mut resolved = merge(merged, parsed);` then clearing the
+    //           key. `merge` CONCATENATES `extends` rather than dropping it,
+    //           because it is a public function that must not lose data.
+    // Why:      This is the one place that knows the chain has been walked, so
+    //           this is the only place entitled to say so. Leaving the key set
+    //           would make a caller re-resolve a chain already resolved.
+    let mut resolved = merge(merged, parsed);
+    resolved.extends = Vec::new();
+
+    return Ok(resolved);
 }
 
 // What:     `pub fn discover(start: &Path, root: Option<&Path>) -> Vec<PathBuf>`.

@@ -207,19 +207,6 @@ pub fn run_cli(cli: &Cli) -> i32 {
         }
     };
 
-    // What:     `let config = Config { max_lines: cli.max_lines };`. Builds the
-    //           settings struct from clap's parsed budget.
-    // Why:      Rules read the budget from here. `--max` still wins over the
-    //           configured value, so the documented invocation keeps working.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const config = { maxLines: cli.maxLines };
-    // ```
-    let config = Config {
-        max_lines: cli.max_lines,
-    };
-
     // What:     `let files = collect_rust_files(&cli.paths);`. Lends the parsed
     //           path vector and gets back an owned `Vec<String>` of `.rs` files.
     //           The `&` is a read-only borrow, so `cli` keeps owning the paths.
@@ -269,7 +256,7 @@ pub fn run_cli(cli: &Cli) -> i32 {
         // ```ts
         // lintFile(file, config, rules, diagnostics);
         // ```
-        lint_file(file, &config, &linter, &rules, &mut diagnostics);
+        lint_file(file, cli.max_lines, &linter, &rules, &mut diagnostics);
     }
 
     // What:     `for diagnostic in &diagnostics { println!("{}", diagnostic.render()); }`.
@@ -361,6 +348,44 @@ fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String> {
     // Compiling the globs is the last step, and the first place a malformed
     // pattern is noticed.
     return LinterConfig::compile(merged).map_err(|error| format!("invalid glob in config: {error}"));
+}
+
+
+// What:     `fn resolve_max_lines(override_value: Option<usize>, options:
+//           Option<&toml::Table>) -> usize`. Two optional inputs, one definite
+//           answer.
+// Why:      Precedence has to live in exactly one place. `--max` beats a
+//           configured `max`, which beats the built-in default. Before this
+//           existed, clap filled `--max` with 300 on every run, so an explicit
+//           `max` in a config file parsed, resolved, and was then silently
+//           ignored by the rule.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function resolveMaxLines(overrideValue?: number, options?: TomlTable): number
+// ```
+/// Resolve the code-line budget from the flag, the config, then the default.
+fn resolve_max_lines(override_value: Option<usize>, options: Option<&toml::Table>) -> usize {
+    // An explicit flag wins outright.
+    if let Some(value) = override_value {
+        return value;
+    }
+
+    // `.and_then(..)` chains lookups that may each come back absent: the table,
+    // then the `max` key, then its integer form. Any absence short-circuits to
+    // `None` and falls through to the default below.
+    let configured = options
+        .and_then(|table| return table.get("max"))
+        .and_then(toml::Value::as_integer);
+
+    if let Some(value) = configured {
+        // A negative or absurd budget is a config error, not a reason to panic.
+        // `try_into()` answers a `Result`, and `.unwrap_or(..)` falls back to the
+        // default rather than crashing on a value that cannot be a count.
+        return usize::try_from(value).unwrap_or_else(|_| return Config::with_defaults().max_lines);
+    }
+
+    return Config::with_defaults().max_lines;
 }
 
 /// Expand file and directory arguments into Rust source file paths.
@@ -458,7 +483,7 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
 /// Read one file and apply every enabled rule to it.
 fn lint_file(
     path: &str,
-    config: &Config,
+    max_lines_override: Option<usize>,
     linter: &LinterConfig,
     rules: &[Box<dyn Rule>],
     out: &mut Vec<Diagnostic>,
@@ -537,6 +562,16 @@ fn lint_file(
         // ```ts
         // rule.check(context, config, out);
         // ```
-        rule.check(&context, config, out);
+        // What:     `let config = Config { max_lines: resolve_max_lines(..) };`.
+        //           Built per rule per file, not once per run.
+        // Why:      A rule's options come from whichever config layer won for
+        //           THIS path, and `overrides` can give one directory a different
+        //           budget than another. A single config built up front could not
+        //           express that.
+        let config = Config {
+            max_lines: resolve_max_lines(max_lines_override, resolved.options.as_ref()),
+        };
+
+        rule.check(&context, &config, out);
     }
 }

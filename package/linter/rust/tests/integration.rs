@@ -598,3 +598,174 @@ fn undocumented_fixture_in_place_is_exempt() {
     assert_eq!(code, 0, "in-place fixture should be exempt and exit 0; stdout: {stdout}");
     assert!(stdout.is_empty(), "exempt fixture should print nothing: {stdout}");
 }
+
+// What:     `fn run_in(directory: &Path, args: &[&str]) -> (i32, String)`. Runs
+//           the binary with its WORKING DIRECTORY set to `directory`, unlike the
+//           helpers above, which run wherever the test harness happens to be.
+// Why:      Configuration discovery walks upward from the working directory, so
+//           a test about configuration has to control it. `.current_dir(..)` on
+//           the command builder is what sets it for the child only, leaving the
+//           test process where it was.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function runIn(dir: string, args: string[]): [number, string]
+// ```
+/// Run the linter with its working directory set, returning exit code and stdout.
+fn run_in(directory: &std::path::Path, args: &[&str]) -> (i32, String) {
+    let binary = env!("CARGO_BIN_EXE_rust-linter");
+
+    let output = std::process::Command::new(binary)
+        .current_dir(directory)
+        .args(args)
+        .output()
+        .expect("spawn rust-linter");
+
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+
+    return (code, stdout);
+}
+
+// What:     `fn config_probe(name: &str) -> std::path::PathBuf`. Builds a
+//           throwaway directory holding one three-line source file, and hands
+//           back its path.
+// Why:      Each configuration test needs its own tree, and reusing one would
+//           make the tests order-dependent. The process id keeps concurrent runs
+//           from colliding.
+/// Build a throwaway package tree with one three-code-line source file.
+fn config_probe(name: &str) -> std::path::PathBuf {
+    let root = std::env::temp_dir().join(format!(
+        "rust-linter-config-{}-{name}",
+        std::process::id()
+    ));
+
+    // Remove any leftover from a previous run before rebuilding it.
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).expect("create probe tree");
+    std::fs::write(
+        root.join("src/wide.rs"),
+        "fn a() {}\nfn b() {}\nfn c() {}\n",
+    )
+    .expect("write probe source");
+
+    return root;
+}
+
+// What:     A test that a configured `max` actually changes the budget.
+// Why:      It did not, until this test existed. `--max` carried a clap default
+//           of 300, so every run looked like an explicit flag and silently beat
+//           whatever the configuration said. The rule read the flag, the
+//           configured value was parsed and resolved and then thrown away, and
+//           nothing noticed because no test drove the binary with a config file.
+/// A configured max-lines budget takes effect when no flag is passed.
+#[test]
+fn configured_max_takes_effect_without_a_flag() {
+    let root = config_probe("max-effect");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\nmax = 2\n",
+    )
+    .expect("write config");
+
+    let (code, stdout) = run_in(&root, &["src"]);
+
+    assert_eq!(code, 1, "over the configured budget should exit 1: {stdout}");
+    assert!(
+        stdout.contains("limit is 2"),
+        "the configured budget should be the one enforced: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// An explicit `--max` still overrides a configured budget.
+#[test]
+fn max_flag_overrides_configured_budget() {
+    let root = config_probe("max-override");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[rules.\"builtin/max-lines\"]\nseverity = \"error\"\nmax = 2\n",
+    )
+    .expect("write config");
+
+    let (_code, stdout) = run_in(&root, &["--max", "10", "src"]);
+
+    assert!(
+        !stdout.contains("max-lines"),
+        "the flag should win over the configured budget: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// With no configuration at all, the built-in budget applies.
+#[test]
+fn absent_config_falls_back_to_the_built_in_budget() {
+    let root = config_probe("max-default");
+
+    let (_code, stdout) = run_in(&root, &["src"]);
+
+    assert!(
+        !stdout.contains("max-lines"),
+        "three lines is well under the built-in 300: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// A glob override in a real config file turns a rule off.
+#[test]
+fn config_override_turns_a_rule_off() {
+    let root = config_probe("override-off");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[[overrides]]\nfiles = [\"**/src/**\"]\n\n[overrides.rules]\n\"builtin/require-rustdoc\" = \"off\"\n",
+    )
+    .expect("write config");
+
+    let (_code, stdout) = run_in(&root, &["src"]);
+
+    assert!(
+        !stdout.contains("require-rustdoc"),
+        "the override should silence the rule: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// Discovery can be switched off, restoring the built-in defaults.
+#[test]
+fn disable_nested_config_ignores_a_discovered_file() {
+    let root = config_probe("disable-nested");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[[overrides]]\nfiles = [\"**/src/**\"]\n\n[overrides.rules]\n\"builtin/require-rustdoc\" = \"off\"\n",
+    )
+    .expect("write config");
+
+    let (_code, stdout) = run_in(&root, &["--disable-nested-config", "src"]);
+
+    assert!(
+        stdout.contains("require-rustdoc"),
+        "with discovery off, the built-in defaults apply again: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// A broken configuration file is a fatal setup error, not a lint finding.
+#[test]
+fn invalid_config_exits_two() {
+    let root = config_probe("invalid-config");
+    std::fs::write(root.join("rust-linter.toml"), "ignorePatterns = [\"x\"]\n")
+        .expect("write config");
+
+    let (code, _stdout) = run_in(&root, &["src"]);
+
+    // The key is `ignore-patterns`; the camelCase spelling is oxlint's. Exit 2
+    // is the same code an unparseable --max already uses.
+    assert_eq!(code, 2, "a misspelled config key should be fatal");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

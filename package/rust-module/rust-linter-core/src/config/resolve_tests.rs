@@ -275,3 +275,44 @@ fn merge_lets_nearer_options_win() {
         "an option the nearer file said nothing about is inherited"
     );
 }
+
+// What:     A test that `merge` does not silently drop `extends`.
+// Why:      It did. The key was cleared unconditionally, on the reasoning that
+//           the chain was already resolved by the time anything merged. That
+//           holds inside the loader and nowhere else, and `merge` is public: any
+//           caller merging two parsed-but-unloaded configurations would have
+//           lost whatever the base said it extended, with no error. Losing data
+//           quietly is the one thing a config merge must never do. The loader
+//           now clears the key explicitly, once it has actually walked the chain.
+/// Merging preserves the `extends` of both inputs rather than dropping them.
+#[test]
+fn merge_preserves_extends_from_both_sides() {
+    let base = parse("extends = [\"base-parent.toml\"]\n");
+    let nearer = parse("extends = [\"nearer-parent.toml\"]\n");
+
+    let merged = merge(base, nearer);
+
+    assert_eq!(
+        merged.extends,
+        vec![
+            "base-parent.toml".to_string(),
+            "nearer-parent.toml".to_string()
+        ],
+        "both sides' extends survive, base first"
+    );
+}
+
+/// Merging a config that extends onto one that does not keeps the key.
+#[test]
+fn merge_keeps_extends_when_only_one_side_has_it() {
+    let base = parse("extends = [\"base-parent.toml\"]\n");
+    let nearer = parse("[rules]\n\"a\" = \"error\"\n");
+
+    let merged = merge(base, nearer);
+
+    assert_eq!(
+        merged.extends,
+        vec!["base-parent.toml".to_string()],
+        "the base's extends is not dropped by a nearer file that has none"
+    );
+}

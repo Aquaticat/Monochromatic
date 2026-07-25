@@ -281,3 +281,22 @@ fn load_errors_name_their_file() {
         "the message must name the file: {rendered}"
     );
 }
+
+/// The loader clears `extends` once it has resolved the chain.
+#[test]
+fn loader_clears_extends_after_resolving() {
+    let temp = tempfile::tempdir().expect("temp dir");
+    write(temp.path(), "base.toml", "[rules]\n\"a\" = \"error\"\n");
+    write(temp.path(), CONFIG_FILE_NAME, "extends = [\"base.toml\"]\n");
+
+    let loaded = load_file(&temp.path().join(CONFIG_FILE_NAME)).expect("config should load");
+
+    // `merge` preserves `extends`, so only the loader may clear it, and only
+    // after walking the chain. A loaded config still carrying the key would make
+    // any later merge re-resolve a chain that is already resolved.
+    assert!(
+        loaded.extends.is_empty(),
+        "a loaded config reports no pending extends: {:?}",
+        loaded.extends
+    );
+}

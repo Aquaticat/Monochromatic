@@ -208,10 +208,19 @@ pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
     let mut rules = base.rules;
     rules.extend(nearer.rules);
 
+    // What:     `extends` concatenates like any other sequence, rather than
+    //           being cleared.
+    // Why:      This function is public and merges two arbitrary `ConfigFile`s,
+    //           which may not have been through the loader. Dropping the key
+    //           here would silently discard whatever the base said it extended,
+    //           and silence is the one thing a config merge must never do.
+    //           `load_with_trail` clears the key explicitly once it HAS resolved
+    //           the chain, which is the only place that knows the chain is done.
+    let mut extends = base.extends;
+    extends.extend(nearer.extends);
+
     return ConfigFile {
-        // `extends` is already resolved by the time anything merges, so the
-        // merged result carries none: keeping it would re-run the chain.
-        extends: Vec::new(),
+        extends,
         ignore_patterns,
         options: merge_options(base.options, nearer.options),
         categories,
