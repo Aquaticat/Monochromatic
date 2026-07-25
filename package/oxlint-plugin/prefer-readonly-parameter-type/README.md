@@ -9,9 +9,10 @@ The rule combines TypeScript 7 semantic types with demand-driven,
 cross-file effect summaries.
 Every call reached from caller-owned state has one accepted outcome:
 
-- the exact repository-owned or shipped package implementation proves its effects;
-- a separately verified isolated value shares no caller-owned identity or capability;
-- the rule rejects the call as opaque.
+- exact repository-owned or source-map-resolved shipped implementation proves its effects;
+- separately verified isolated value shares no caller-owned identity or capability;
+- exact `ForeignHostCapability` marker plus `@mutates` contract bounds runtime-owned host behavior after inference fails;
+- rule rejects call as opaque.
 
 Missing source,
 missing callable summaries,
@@ -25,7 +26,7 @@ proxies,
 hooks,
 functions,
 or host capabilities.
-`@mutates` documents known behavior but cannot make unresolved behavior safe.
+`@mutates` alone documents known behavior but cannot make unresolved behavior safe.
 
 TypeScript declarations establish callable identity and type shape,
 not runtime behavior.
@@ -46,6 +47,8 @@ No package,
 ECMAScript,
 DOM,
 or Node effect catalog participates in acceptance.
+Exact host authority is carried by source types at each accepted boundary,
+not by method-name or package-name tables inside analyzer.
 
 Unresolved diagnostics name affected inputs and reached calls,
 then list the proof-preserving remediation paths.
@@ -93,6 +96,13 @@ One ordinary or unresolved path restores normal readonly enforcement.
 Move such work to an implementation-known boundary,
 pass its primitive result,
 or provide verified isolation.
+
+When source and source-map inference cannot resolve exact runtime implementation,
+`ForeignHostCapability<T>` can mark exact runtime-owned capability.
+The marker has exact declaration identity,
+also carries foreign ownership,
+and admits unresolved behavior only with corresponding `@mutates` contract.
+Same-named local aliases remain opaque.
 
 See the
 [foreign-provenance guide](../../../doc/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md).

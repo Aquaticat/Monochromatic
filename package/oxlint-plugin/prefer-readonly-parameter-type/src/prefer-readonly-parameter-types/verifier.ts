@@ -12,6 +12,7 @@ import type {
 } from '@oxlint/plugins';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
+import { bindingContainsForeignHostCapability, } from './foreign-host-capability-classifier.ts';
 import { inputUsageSubject, } from './input-diagnostic-description.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
@@ -224,6 +225,13 @@ export function verifyReadonlyCallable({
     const foreignBorrowed = effectSummary.foreignBorrowedParameterIndexes
       .has(parameterIndex,);
     /**
+     * Whether exact marker explicitly authorizes opaque host capability use.
+     */
+    const foreignHostCapability = bindingContainsForeignHostCapability({
+      project,
+      name: parameter.name,
+    },);
+    /**
      * Report location spanning parameter binding.
      */
     const loc = semanticLocation({
@@ -238,20 +246,28 @@ export function verifyReadonlyCallable({
      */
     const parameterBlocks = blocksByParameter.get(parameterIndex,) ?? [];
     /**
-     * Whether analyzer found proven caller-observable effects.
-     */
-    const affected = effectSummary.mutatedParameterIndexes
-      .has(parameterIndex,);
-    /**
-     * Whether analyzer proved mutation of referent rather than invocation alone.
-     */
-    const mutated = effectSummary.referentMutatedParameterIndexes
-      .has(parameterIndex,);
-    /**
      * Whether analyzer found unresolved external effect.
      */
     const opaque = effectSummary.opaqueParameterIndexes
       .has(parameterIndex,);
+    /**
+     * Whether explicit host marker and contract bound unresolved behavior.
+     */
+    const acceptedHostOpacity = opaque
+      && foreignHostCapability
+      && (parameterBlocks.length > 0);
+    /**
+     * Whether analyzer found caller-observable or explicitly bounded host effects.
+     */
+    const affected = effectSummary.mutatedParameterIndexes
+      .has(parameterIndex,)
+      || acceptedHostOpacity;
+    /**
+     * Whether analyzer proved or explicit host authority admits referent mutation.
+     */
+    const mutated = effectSummary.referentMutatedParameterIndexes
+      .has(parameterIndex,)
+      || acceptedHostOpacity;
     /**
      * Human-readable provenance for unresolved uncertainty.
      */
@@ -260,7 +276,17 @@ export function verifyReadonlyCallable({
       parameterIndex,
     },);
 
-    if (opaque) {
+    if (opaque
+      && foreignHostCapability
+      && (parameterBlocks.length === 0)) {
+      context.report({
+        loc,
+        messageId: 'hostCapabilityContractRequired',
+        data: { parameterName, },
+      },);
+      return;
+    }
+    if (opaque && (!acceptedHostOpacity)) {
       context.report(opaqueEffectReport({
         loc,
         inputSubject,

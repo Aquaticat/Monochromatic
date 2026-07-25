@@ -4,6 +4,11 @@
 declare const FOREIGN_BORROWED_MARKER: unique symbol;
 
 /**
+ * Project-owned marker key for explicitly audited opaque host capabilities.
+ */
+declare const FOREIGN_HOST_CAPABILITY_MARKER: unique symbol;
+
+/**
  * Marks mutable handle whose ownership and parameter type are dictated by foreign interface.
  *
  * Type remains assignable to and from original foreign contract.
@@ -21,4 +26,27 @@ declare const FOREIGN_BORROWED_MARKER: unique symbol;
  */
 export type ForeignBorrowed<Value> = Value & {
   readonly [FOREIGN_BORROWED_MARKER]?: true;
+};
+
+/**
+ * Marks foreign host capability whose implementation cannot be inspected.
+ *
+ * Use only at runtime boundaries after source or source-map inference fails.
+ * Readonly parameter analysis accepts unresolved effects reaching this marker
+ * only when callable documents corresponding `@mutates` contract.
+ *
+ * Type remains assignable to and from original foreign contract.
+ *
+ * @typeParam Value - Host capability type imposed by runtime interface.
+ *
+ * @example
+ * ```ts
+ * function register(api: ForeignHostCapability<ExtensionAPI>): void {
+ *   api.registerCommand({ name: 'example', handler() {} });
+ * }
+ * ```
+ */
+export type ForeignHostCapability<Value> = Value & {
+  readonly [FOREIGN_BORROWED_MARKER]?: true;
+  readonly [FOREIGN_HOST_CAPABILITY_MARKER]?: true;
 };

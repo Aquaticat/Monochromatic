@@ -3,7 +3,10 @@
 Zero-runtime TypeScript ownership marker used by semantic readonly analysis.
 
 ```typescript
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 function inspectNode(node: ESTree.Node,): void {
   void node.type;
@@ -31,10 +34,18 @@ or every internal helper.
 The semantic rule propagates guaranteed provenance through those paths.
 A helper parameter inherits foreign provenance only when every owned inbound call supplies wholly foreign mutable state.
 
+`ForeignHostCapability<T>` is narrower authority for runtime-owned capabilities whose exact implementation remains unavailable
+after source and source-map inference.
+It also carries foreign ownership.
+Use it only on host boundary inputs such as an extension runtime API or native cancellation capability.
+Every callable whose unresolved behavior is admitted by this marker must document possible caller-observable effects with
+`@mutates`.
+An ordinary `ForeignBorrowed<T>` never admits unresolved behavior.
+
 Workspace consumers import the package's `/ts` subpath so cross-package resolution targets TypeScript source.
 Do not import the package root from another workspace package.
 
-The package contains one type declaration,
+The package contains type declarations,
 no runtime code,
 and no runtime dependencies.
 

@@ -164,9 +164,32 @@ children: [
       },),).toBe(false,);
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
-          'An @mutates block documents known effects but cannot make an unresolved implementation safe.',
+          'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
         );
       },).length,).toBe(13,);
+    },
+  },),
+  it({
+    name: 'admits exact contracted host capability only after ordinary inference fails',
+    fn: async () => {
+      expect(await lintReadonly('readonly-host-capability-valid.ts',),).toEqual([],);
+    },
+  },),
+  it({
+    name: 'requires host contract and rejects same-named marker lookalike',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-host-capability-invalid.ts',);
+      expect(diagnostics.length,).toBe(2,);
+      expect(diagnostics.some(function missingContract(diagnostic,): boolean {
+        return diagnostic.message.includes(
+          'uses ForeignHostCapability for unresolved runtime behavior but lacks corresponding @mutates contract',
+        );
+      },),).toBe(true,);
+      expect(diagnostics.some(function shadowedAliasRemainsOpaque(diagnostic,): boolean {
+        return diagnostic.message.startsWith(
+          'The function input named "controller" is used as the object for these method calls: controller.abort [',
+        );
+      },),).toBe(true,);
     },
   },),
   it({
@@ -284,7 +307,8 @@ children: [
           + '\n1. Include the exact repository-owned implementation in the nearest tsconfig.json so the rule can inspect it.'
           + '\n2. Pass only primitive values or a separately verified isolated snapshot that shares no caller-owned identity or capability.'
           + '\n3. Remove or replace the call so no caller-owned input reaches unresolved code.'
-          + '\n\nAn @mutates block documents known effects but cannot make an unresolved implementation safe.',
+          + '\n4. After source and source-map inference are exhausted, mark exact runtime-owned host input as ForeignHostCapability and document its possible effects with @mutates.'
+          + '\n\nAn @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
       ),).toBe(true,);
       expect(messages.some(function destructuredInput(message,): boolean {
         return message.startsWith(
@@ -311,7 +335,7 @@ children: [
       if (incompleteContractMessage === undefined)
         throw new Error('Expected incomplete-contract uncertainty diagnostic.',);
       expect(incompleteContractMessage.includes(
-        'An @mutates block documents known effects but cannot make an unresolved implementation safe.',
+        'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
       ),).toBe(true,);
       /** Global String remains an ordinary unresolved bodyless host call. */
       const stringMessage = messages.find(function stringCoercion(message,): boolean {
@@ -322,7 +346,7 @@ children: [
       if (stringMessage === undefined)
         throw new Error('Expected global String object coercion diagnostic.',);
       expect(stringMessage.includes(
-        'An @mutates block documents known effects but cannot make an unresolved implementation safe.',
+        'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
       ),).toBe(true,);
       expect(messages.some(function incompleteStringContract(message,): boolean {
         return message.startsWith(

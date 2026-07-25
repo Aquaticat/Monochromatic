@@ -79,7 +79,8 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nResolve the call by one of these proof-pre
   + '\n1. Include the exact repository-owned implementation in the nearest tsconfig.json so the rule can inspect it.'
   + '\n2. Pass only primitive values or a separately verified isolated snapshot that shares no caller-owned identity or capability.'
   + '\n3. Remove or replace the call so no caller-owned input reaches unresolved code.'
-  + '\n\nAn @mutates block documents known effects but cannot make an unresolved implementation safe.';
+  + '\n4. After source and source-map inference are exhausted, mark exact runtime-owned host input as ForeignHostCapability and document its possible effects with @mutates.'
+  + '\n\nAn @mutates block alone documents known effects but cannot make an unresolved implementation safe.';
 
 /**
  * Prefers readonly parameters and requires documentation for unresolved effects.
@@ -101,6 +102,8 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
     messages: {
       shouldBeReadonly: 'Parameter "{{parameterName}}" should be readonly: {{reason}}.',
       staleMutatesTag: 'Parameter "{{parameterName}}" has stale @mutates contract.',
+      hostCapabilityContractRequired:
+        'Parameter "{{parameterName}}" uses ForeignHostCapability for unresolved runtime behavior but lacks corresponding @mutates contract.',
       redundantForeignBorrowed:
         'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects any classification: the underlying type is already deeply readonly and no effect reaches this parameter. Remove the marker, or mark the genuinely mutable foreign type instead.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,

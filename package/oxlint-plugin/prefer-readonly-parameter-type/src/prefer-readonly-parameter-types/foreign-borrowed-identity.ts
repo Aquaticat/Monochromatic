@@ -34,7 +34,9 @@ export function isForeignBorrowedType({
    * Authored alias symbol retained by generic marker instantiation.
    */
   const alias = type.getAliasSymbol();
-  if ((alias === undefined) || (alias.name !== 'ForeignBorrowed'))
+  if ((alias === undefined)
+    || ((alias.name !== 'ForeignBorrowed')
+      && (alias.name !== 'ForeignHostCapability')))
     return false;
   return alias.declarations
     .some(function markerDeclaration(handle,): boolean {
