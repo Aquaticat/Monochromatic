@@ -26,6 +26,17 @@
 /// Imports rust-analyzer syntax tree types used to parse and classify Rust source.
 use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxKind, SyntaxNode};
 
+// What:     `use crate::span::Span;` imports from this same crate; `crate::`
+//           means "from this crate's root", never from a dependency.
+// Why:      `line_span` hands rules a ready-made source range to underline.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Span } from "./span";
+// ```
+/// Imports the source-range type returned by line lookups.
+use crate::span::Span;
+
 // What:     `pub struct LintContext { ... }` is the per-file bundle handed to
 //           every rule: the file path, its full source text, and the precomputed
 //           set of line numbers that contain real code.
@@ -164,7 +175,7 @@ impl LintContext {
         // ```ts
         // return { path, source, codeLines, syntax, lineStarts };
         // ```
-        Self {
+        return Self {
             path,
             source,
             code_lines,
@@ -191,7 +202,7 @@ impl LintContext {
         // ```ts
         // return this.codeLines.length;
         // ```
-        self.code_lines.len()
+        return self.code_lines.len()
     }
 
     // What:     `pub fn code_line_at(&self, index: usize) -> Option<usize>`.
@@ -220,7 +231,7 @@ impl LintContext {
         // ```ts
         // return this.codeLines[i];
         // ```
-        self.code_lines.get(index).copied()
+        return self.code_lines.get(index).copied()
     }
 
     // What:     `pub fn syntax_node(&self) -> &SyntaxNode`. Borrows self read-only
@@ -245,7 +256,7 @@ impl LintContext {
         // ```ts
         // return this.syntax;
         // ```
-        &self.syntax
+        return &self.syntax
     }
 
     // What:     `pub fn line_at_offset(&self, offset: usize) -> usize`. Maps a byte
@@ -272,7 +283,61 @@ impl LintContext {
         // ```ts
         // return lineIndex(offset, this.lineStarts) + 1;
         // ```
-        line_index(offset, &self.line_starts) + 1
+        return line_index(offset, &self.line_starts) + 1
+    }
+
+    // What:     `pub fn line_span(&self, line: usize) -> Option<Span>`. Takes a
+    //           one-based line number and answers with `Option<Span>`, the type
+    //           that says "this may be absent": either `Some(span)` or `None`.
+    //           Rust has no `null`, so a line past the end of the file is
+    //           expressed in the type rather than as a sentinel number.
+    // Why:      Rules know which LINE they object to, but a diagnostic needs a
+    //           byte range to underline. Without this, every rule would have to
+    //           reach into the private line-start table itself.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // lineSpan(line: number): Span | undefined
+    // ```
+    /// Return the span covering one whole line, excluding its line break.
+    pub fn line_span(&self, line: usize) -> Option<Span> {
+        // Guard underflow first. Line numbers are one-based, and `usize` is
+        // UNSIGNED, so `line - 1` at line 0 wraps to a huge number rather than
+        // going negative.
+        if line == 0 {
+            return None;
+        }
+
+        // What:     `let start = *self.line_starts.get(line - 1)?;`. `.get(i)`
+        //           returns `Option<&usize>` instead of panicking the way `[i]`
+        //           would. The trailing `?` unwraps it, returning `None` from
+        //           this whole function when the entry is absent. The leading `*`
+        //           dereferences the borrow into a plain number.
+        // Why:      An out-of-range line answers "absent" rather than crashing
+        //           the linter on a rule's arithmetic slip.
+        let start = *self.line_starts.get(line - 1)?;
+
+        // The next line's start is where this one ends; the final line ends at
+        // the end of the source. `.copied()` turns `Option<&usize>` into
+        // `Option<usize>`; `.unwrap_or(..)` supplies that fallback.
+        let next_start = self
+            .line_starts
+            .get(line)
+            .copied()
+            .unwrap_or(self.source.len());
+
+        // Trim the trailing newline so the underline covers text rather than the
+        // break. `saturating_sub` clamps at zero instead of wrapping, which
+        // matters on an empty final line where `next_start` equals `start`.
+        let ends_with_break = next_start > start && self.source[start..next_start].ends_with('\n');
+        let end = if ends_with_break {
+            next_start.saturating_sub(1)
+        } else {
+            next_start
+        };
+
+        // Column 1: by construction this span starts at the line's first byte.
+        return Some(Span::new(start, end.saturating_sub(start), line, 1))
     }
 }
 
@@ -340,7 +405,7 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
     // ```ts
     // return starts;
     // ```
-    starts
+    return starts
 }
 
 // What:     `fn line_index(offset: usize, line_starts: &[usize]) -> usize`. Maps a
@@ -370,7 +435,7 @@ fn line_index(offset: usize, line_starts: &[usize]) -> usize {
     // let count = 0; for (const s of lineStarts) if (s <= offset) count++;
     // return count - 1;
     // ```
-    line_starts.partition_point(|&s| s <= offset) - 1
+    return line_starts.partition_point(|&s| return s <= offset) - 1
 }
 
 // What:     `fn compute_code_lines(node: &SyntaxNode, line_starts: &[usize]) ->
@@ -575,5 +640,5 @@ fn compute_code_lines(node: &SyntaxNode, line_starts: &[usize]) -> Vec<usize> {
     // ```ts
     // return result;
     // ```
-    result
+    return result
 }

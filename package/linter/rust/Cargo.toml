@@ -31,6 +31,14 @@ name = "rust-linter"
 path = "src/main.rs"
 
 [dependencies]
+# The shared foundation: `Rule`, `LintContext`, `Config`, and the diagnostic and
+# fix model. Rule packages depend on this crate alone, never on this CLI, which
+# is what lets a rule live outside the binary that runs it. Its `ra_ap_syntax`
+# pin must stay identical to the one below, because the two crates pass
+# `SyntaxNode` values across the boundary and a version skew would make them two
+# unrelated types.
+monochromatic-rust-linter-core = { path = "../../rust-module/rust-linter-core", version = "0.1.0" }
+
 # `anyhow` carries application-level setup errors for the compatibility entry point.
 anyhow = "1"
 # `clap` owns argv parsing, generated help/version output, and validation for the

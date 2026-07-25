@@ -1,4 +1,8 @@
-//! Configuration defaults and path-based lint exemptions.
+//! Path-based lint exemptions, over the shared configuration model.
+//!
+//! The exemptions here are hardcoded predicates, which is what the glob
+//! `overrides` layer replaces. Until that lands they stay the only way to turn a
+//! rule off for a path.
 
 // What:     `use std::path::{Component, Path};` imports two standard-library
 //           types for filesystem paths:
@@ -14,53 +18,21 @@
 /// Imports filesystem path types used by exemption predicates.
 use std::path::{Component, Path};
 
-// What:     `pub struct Config { pub max_lines: usize }` is the linter's settings
-//           record. `usize` is the pointer-wide unsigned integer (siblings:
-//           `u32`/`u64`); used because it is a count compared against a line
-//           count.
-// Why:      Hold tunable knobs; today just the per-file code-line budget.
+// What:     `pub use other_crate::path::Type;` re-exports a name from a
+//           DEPENDENCY under this crate's own path. Plain `use` would import it
+//           for this file only; the `pub` makes `crate::config::Config` a valid
+//           path for every other module here, and for outside consumers.
+// Why:      The settings record now lives in `monochromatic-rust-linter-core`, so
+//           rule packages can depend on it without depending on this CLI crate.
+//           Re-exporting it under the path it already had means no rule, test, or
+//           consumer had to be rewritten when it moved.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type Config = { maxLines: number };
+// export { Config } from "@monochromatic-dev/rust-linter-core/config";
 // ```
-/// Runtime settings shared by all lint rules.
-pub struct Config {
-    /// Maximum nonblank, noncomment Rust code lines allowed per enforced file.
-    pub max_lines: usize,
-}
-
-// What:     `impl Config { ... }` attaches a constructor of default settings.
-// Why:      One source of truth for the defaults that mirror oxlint.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function withDefaults(): Config { return { maxLines: 300 }; }
-// ```
-/// Constructors for runtime linter settings.
-impl Config {
-    // What:     `pub fn with_defaults() -> Self`. Returns a fresh `Config` (no
-    //           `self` parameter, so it is an associated function / static method).
-    // Why:      Default the budget to 300, matching oxlint's eslint/max-lines.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // static withDefaults(): Config { return { maxLines: 300 }; }
-    // ```
-    /// Build repository-default linter settings.
-    pub fn with_defaults() -> Self {
-        // What:     `Self { max_lines: 300 }`. Builds the struct; the literal 300
-        //           is the budget. Tail expression, so it is returned.
-        // Why:      300 code lines (blanks and comments already excluded) is the
-        //           same generous budget oxlint uses for TypeScript.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return { maxLines: 300 };
-        // ```
-        Self { max_lines: 300 }
-    }
-}
+/// Re-exports the shared settings record under this crate's original path.
+pub use monochromatic_rust_linter_core::config::Config;
 
 // What:     `pub fn max_lines_exempt(path: &Path) -> bool`. Borrows a path
 //           read-only and answers whether the max-lines rule should skip it.

@@ -46,6 +46,18 @@ use crate::diagnostic::{Diagnostic, Severity};
 /// Imports rule trait implemented by this rule.
 use crate::rule::Rule;
 
+// What:     `use crate::span::Span;` reaches the source-range type through this
+//           crate's re-export of the core crate's module.
+// Why:      A diagnostic points at a range, and this rule builds that range from
+//           the line of the item missing its documentation.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Span } from "./span";
+// ```
+/// Imports the source-range type carried by every diagnostic label.
+use crate::span::Span;
+
 // What:     `use ra_ap_syntax::ast::{DocCommentIter, Impl};`. `DocCommentIter` is
 //           rust-analyzer's iterator over an item's doc comments; `Impl` is the
 //           typed AST view of an `impl` block.
@@ -461,6 +473,17 @@ impl Rule for RequireRustdoc {
         "require-rustdoc"
     }
 
+    // What:     The trait leaves this method without a default body, so every
+    //           rule states its own answer rather than inheriting one.
+    // Why:      `false`, because AGENTS.md RDC requires rustdoc on every
+    //           documentable item and says never to disable the check: the remedy
+    //           for an undocumented item is to document it. A directive aimed at
+    //           this rule is therefore itself reported rather than obeyed.
+    /// Refuse inline suppression, per the never-disable policy for this rule.
+    fn allows_suppression(&self) -> bool {
+        false
+    }
+
     // What:     `fn check(&self, context: &LintContext, _config: &Config, out: &mut
     //           Vec<Diagnostic>)`. Read-only borrows of the file context and config
     //           (the leading `_` on `_config` marks it intentionally unused: this
@@ -589,15 +612,24 @@ impl Rule for RequireRustdoc {
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // out.push({ ruleId: "require-rustdoc", severity: "error", message, path: ctx.path, line });
+            // out.push(Diagnostic.create("builtin", "require-rustdoc", "error", message, ctx.path, span));
             // ```
-            out.push(Diagnostic {
-                rule_id: "require-rustdoc",
-                severity: Severity::Error,
+            // `.unwrap_or_else(closure)` computes the fallback lazily and only
+            // when the lookup came back absent, unlike `.unwrap_or(value)` which
+            // builds it either way. Falling back to the file's start is the
+            // honest answer when the item's line is past the end.
+            let span = context
+                .line_span(line)
+                .unwrap_or_else(|| Span::at(0, line, 1));
+
+            out.push(Diagnostic::new(
+                "builtin",
+                "require-rustdoc",
+                Severity::Error,
                 message,
-                path: context.path.clone(),
-                line,
-            });
+                context.path.clone(),
+                span,
+            ));
         }
     }
 }

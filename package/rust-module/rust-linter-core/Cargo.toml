@@ -1,0 +1,45 @@
+[package]
+name = "monochromatic-rust-linter-core"
+version = "0.1.0"
+authors = ["Aquaticat"]
+categories = ["development-tools"]
+documentation = "https://docs.rs/monochromatic-rust-linter-core"
+edition = "2024"
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/rust-module/rust-linter-core"
+include = [
+  "src/**/*.rs",
+  "Cargo.toml",
+  "Cargo.lock",
+  "README.md",
+  "LICENSES/*.txt",
+]
+keywords = ["lint", "linter", "rust", "diagnostics", "autofix"]
+license = "LGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/Aquaticat/Monochromatic.git"
+description = "Rule trait, lint context, diagnostic and fix model shared by monochromatic-rust-linter and its rule packages."
+
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+
+[lib]
+name = "monochromatic_rust_linter_core"
+path = "src/lib.rs"
+
+[dependencies]
+# `ra_ap_syntax` is rust-analyzer's own lossless syntax-tree crate. Pinned to
+# EXACTLY the same version the CLI crate pins, because the two share `SyntaxNode`
+# values across the crate boundary: a version skew would make them two unrelated
+# types that do not unify. Re-pin both together, never one alone.
+ra_ap_syntax = "=0.0.335"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+
+# Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
+# Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
+[workspace]

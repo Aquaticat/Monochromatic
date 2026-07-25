@@ -329,9 +329,17 @@ dependencies = [
  "anyhow",
  "clap",
  "ignore",
+ "monochromatic-rust-linter-core",
  "ra_ap_syntax",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "monochromatic-rust-linter-core"
+version = "0.1.0"
+dependencies = [
+ "ra_ap_syntax",
 ]
 
 [[package]]

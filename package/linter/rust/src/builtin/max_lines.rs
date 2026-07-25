@@ -12,6 +12,18 @@
 /// Imports max-lines configuration and exemption predicate.
 use crate::config::{max_lines_exempt, Config};
 
+// What:     `use crate::span::Span;` reaches the source-range type through this
+//           crate's re-export of the core crate's module.
+// Why:      A diagnostic points at a range, and this rule builds that range from
+//           the line whose budget it objects to.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Span } from "./span";
+// ```
+/// Imports the source-range type carried by every diagnostic label.
+use crate::span::Span;
+
 // What:     `use crate::context::LintContext;` imports the per-file bundle type.
 // Why:      The rule reads code-line data from it.
 //
@@ -89,6 +101,22 @@ impl Rule for MaxLines {
     /// Return max-lines rule identifier.
     fn id(&self) -> &'static str {
         "max-lines"
+    }
+
+    // What:     `fn allows_suppression(&self) -> bool { false }`. The trait gives
+    //           this method no default body, so every rule has to answer.
+    // Why:      `false`, because AGENTS.md MXL and MXR say the budget is never
+    //           disabled: the remedy for an over-budget file is to split it, not
+    //           to comment the rule away. A directive aimed at this rule is
+    //           therefore itself reported rather than obeyed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // allowsSuppression(): boolean { return false; }
+    // ```
+    /// Refuse inline suppression, per the never-disable policy for this rule.
+    fn allows_suppression(&self) -> bool {
+        false
     }
 
     // What:     `fn check(&self, context: &LintContext, config: &Config, out: &mut
@@ -188,14 +216,23 @@ impl Rule for MaxLines {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // out.push({ ruleId: "max-lines", severity: "error", message, path: ctx.path, line });
+        // out.push(Diagnostic.create("builtin", "max-lines", "error", message, ctx.path, span));
         // ```
-        out.push(Diagnostic {
-            rule_id: "max-lines",
-            severity: Severity::Error,
+        // `.unwrap_or_else(closure)` supplies a fallback only when the lookup came
+        // back absent, computing it lazily rather than eagerly the way
+        // `.unwrap_or(value)` would. The fallback points at the file's start,
+        // which is the honest answer when the offending line is past the end.
+        let span = context
+            .line_span(line)
+            .unwrap_or_else(|| Span::at(0, line, 1));
+
+        out.push(Diagnostic::new(
+            "builtin",
+            "max-lines",
+            Severity::Error,
             message,
-            path: context.path.clone(),
-            line,
-        });
+            context.path.clone(),
+            span,
+        ));
     }
 }

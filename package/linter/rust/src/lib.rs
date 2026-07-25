@@ -13,16 +13,27 @@
 // ```
 /// Clap-backed command-line parser module.
 pub mod cli;
-/// Runtime configuration and exemption predicates.
+/// Path-based exemptions, re-exporting the shared settings record.
 pub mod config;
-/// Per-file parsed context shared by lint rules.
-pub mod context;
-/// Diagnostic payload and rendering types.
-pub mod diagnostic;
-/// Rule trait and enabled-rule registry.
+/// Registry of the rules this binary compiles in.
 pub mod rule;
 /// Built-in lint rule implementations.
 pub mod builtin;
+
+// What:     `pub use dependency::{a, b};` re-exports two MODULES, not types, from
+//           a dependency under this crate's own root. After this, `crate::context`
+//           and `crate::diagnostic` resolve exactly as they did when the files
+//           lived here, so no rule or test needed rewriting when they moved.
+// Why:      The context and diagnostic models moved to
+//           `monochromatic-rust-linter-core` so rule packages can depend on them
+//           without depending on this CLI crate.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as context from "@monochromatic-dev/rust-linter-core/context";
+// ```
+/// Per-file parsed context and the diagnostic model, from the core crate.
+pub use monochromatic_rust_linter_core::{context, diagnostic, fix, span};
 
 // What:     `use std::fs;` imports the standard filesystem module (we call
 //           `fs::read_to_string`).
