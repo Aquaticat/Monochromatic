@@ -7,16 +7,14 @@
 import type {
   Api,
   AssistantMessageEvent,
-  AssistantMessageEventStream,
-  Context,
   Model,
-  SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { ScriptedStructuredReviewTransport, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
   toolChoiceForApi,
@@ -40,9 +38,7 @@ const JUDGE_TIMEOUT_MS = 10_000;
 /** JSON tool input carrying file content that must reach judge provider context unchanged. */
 const WRITE_ACTION_INPUT_FIXTURE = `{"path":"/project/src/example.ts","content":"export const judgeCanInspectThisBody = true;\\n"}`;
 
-/**
- * Provider API cases proving auto-mode wrapper preserves shared tool choice.
- */
+/** Provider API cases proving auto-mode wrapper preserves shared tool choice. */
 const TOOL_CHOICE_CASES: readonly {
   readonly api: string;
   readonly expected: unknown;
@@ -59,7 +55,7 @@ const TOOL_CHOICE_CASES: readonly {
   { api: 'custom-api', expected: 'any', },
 ];
 
-/** Fixture model consumed by injected stream only. */
+/** Fixture model consumed by deterministic script only. */
 const MODEL = {
   id: 'test-model',
   name: 'Test model',
@@ -79,16 +75,6 @@ const MODEL = {
 } satisfies Model<Api>;
 
 /**
- * Captured provider call used by retry characterization.
- */
-type CapturedStreamCall = {
-  /** Reviewer provider context. */
-  readonly context: Context;
-  /** Provider options when supplied. */
-  readonly options?: SimpleStreamOptions;
-};
-
-/**
  * Build async event stream from fixed events.
  *
  * @param entries - ordered provider events
@@ -97,7 +83,7 @@ type CapturedStreamCall = {
  *
  * @example
  * ```ts
- * events([{ type: 'text_end', content: '{}', contentIndex: 0, partial: {} } as never]);
+ * events([]);
  * ```
  */
 async function* events(
@@ -108,25 +94,78 @@ async function* events(
 }
 
 /**
- * Read provider-specific tool choice absent from base simple-options type.
+ * Build valid render-verdict stream.
  *
- * @param options - captured provider options
+ * @param verdict - fixture verdict value
  *
- * @returns tool choice or undefined
+ * @returns one-event reviewer stream
  *
  * @example
  * ```ts
- * toolChoiceOption(options);
+ * verdictStream('approve');
  * ```
  */
-function toolChoiceOption(
-  { options, }: Pick<CapturedStreamCall, 'options'>,
-): unknown {
-  if (options === undefined)
-    return undefined;
-  if ('toolChoice' in options)
-    return options.toolChoice;
-  return undefined;
+function verdictStream(
+  verdict: 'approve' | 'deny' | 'ask',
+): AsyncIterable<AssistantMessageEvent> {
+  return events([{
+    type: 'toolcall_end',
+    contentIndex: 0,
+    toolCall: {
+      type: 'toolCall',
+      id: 'verdict-1',
+      name: 'render_verdict',
+      arguments: {
+        verdict,
+        reason: verdict === 'approve' ? 'safe' : 'needs user',
+        guidance: '',
+      },
+    },
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build finalized text stream.
+ *
+ * @param content - final provider text
+ *
+ * @returns one-event reviewer stream
+ *
+ * @example
+ * ```ts
+ * textStream('{}');
+ * ```
+ */
+function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
+  return events([{
+    type: 'text_end',
+    contentIndex: 0,
+    content,
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build deterministic data transport.
+ *
+ * @param responses - ordered response streams
+ *
+ * @returns mutable script state
+ *
+ * @example
+ * ```ts
+ * scriptedTransport([verdictStream('approve')]);
+ * ```
+ */
+function scriptedTransport(
+  responses: readonly AsyncIterable<AssistantMessageEvent>[],
+): ScriptedStructuredReviewTransport {
+  return {
+    nextResponseIndex: 0,
+    responses,
+    requests: [],
+  };
 }
 
 await describe({
@@ -137,9 +176,7 @@ await describe({
     return it({
       name: `projects ${api}`,
       fn: async () => {
-        /** Shared projection returned through auto-mode wrapper. */
-        const result = toolChoiceForApi(api,);
-        expect(result,).toEqual(expected,);
+        expect(toolChoiceForApi(api,),).toEqual(expected,);
       },
     },);
   },),
@@ -200,16 +237,8 @@ await describe({
           reason: 'dangerous',
           guidance: 'use dry run',
         },);
-        expect(parseVerdict({},),).toEqual({
-          verdict: 'ask',
-          reason: '',
-          guidance: '',
-        },);
-        expect(parseVerdict({
-          verdict: 'permit',
-          reason: 'n/a',
-          guidance: '',
-        },).reason,).toContain('permit',);
+        expect(parseVerdict({},),).toEqual({ verdict: 'ask', reason: '', guidance: '', },);
+        expect(parseVerdict({ verdict: 'permit', reason: 'n/a', guidance: '', },).reason,).toContain('permit',);
       },
     },),
   ],
@@ -221,29 +250,9 @@ await describe({
     it({
       name: 'preserves forced-tool verdict path',
       fn: async () => {
-        /**
-         * Forced-tool provider fixture.
-         *
-         * @returns valid render_verdict event stream
-         */
-        function forcedToolStream(): AssistantMessageEventStream {
-          return events([{
-            type: 'toolcall_end',
-            contentIndex: 0,
-            toolCall: {
-              type: 'toolCall',
-              id: 'verdict-1',
-              name: 'render_verdict',
-              arguments: {
-                verdict: 'approve',
-                reason: 'safe',
-                guidance: '',
-              },
-            },
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Adapter verdict from shared forced-tool transport. */
+        /** Deterministic forced-tool transport. */
+        const transport = scriptedTransport([verdictStream('approve',),],);
+        /** Adapter verdict from forced-tool transport. */
         const verdict = await callJudge({
           model: MODEL,
           auth: { apiKey: 'test-key', },
@@ -255,51 +264,16 @@ await describe({
           timeoutMs: JUDGE_TIMEOUT_MS,
           systemPrompt: 'Use render_verdict.',
           batchContext: [],
-          streamSimpleFn: forcedToolStream,
+          testTransport: transport,
         },);
-        expect(verdict,).toEqual({
-          verdict: 'approve',
-          reason: 'safe',
-          guidance: '',
-        },);
+        expect(verdict,).toEqual({ verdict: 'approve', reason: 'safe', guidance: '', },);
       },
     },),
     it({
-      name: 'includes complete write input in provider request',
-      fn: async function includesCompleteWriteInputInProviderRequest(): Promise<void> {
-        /** Provider contexts captured at final reviewer transport boundary. */
-        const contexts: Context[] = [];
-        /**
-         * Forced-tool provider fixture capturing final request context.
-         *
-         * @param _model - Unused fixture model.
-         *
-         * @param context - Final provider context under test.
-         *
-         * @returns Valid render-verdict event stream.
-         */
-        function captureContextStream(
-          _model: Model<Api>,
-          context: Context,
-        ): AssistantMessageEventStream {
-          contexts.push(context,);
-          return events([{
-            type: 'toolcall_end',
-            contentIndex: 0,
-            toolCall: {
-              type: 'toolCall',
-              id: 'verdict-write-input',
-              name: 'render_verdict',
-              arguments: {
-                verdict: 'approve',
-                reason: 'safe',
-                guidance: '',
-              },
-            },
-            partial: {} as never,
-          },],) as never;
-        }
-
+      name: 'includes complete write input in final provider request context',
+      fn: async () => {
+        /** Deterministic provider seam capturing isolated request snapshot. */
+        const transport = scriptedTransport([verdictStream('approve',),],);
         await callJudge({
           model: MODEL,
           auth: { apiKey: 'test-key', },
@@ -311,61 +285,28 @@ await describe({
           timeoutMs: JUDGE_TIMEOUT_MS,
           systemPrompt: 'Use render_verdict.',
           batchContext: [],
-          streamSimpleFn: captureContextStream,
+          testTransport: transport,
         },);
-
-        /** Final reviewer provider context captured by fixture stream. */
-        const [context,] = contexts;
-        if (context === undefined)
-          throw new Error('Expected reviewer provider context.',);
-        /** User message sent to reviewer provider. */
-        const [message,] = context.messages;
-        if ((message === undefined) || ((typeof message.content) !== 'string'))
-          throw new Error('Expected string reviewer user message.',);
+        /** Final reviewer request snapshot captured immediately before dispatch. */
+        const request = transport.requests[0];
+        if (request === undefined)
+          throw new Error('Expected reviewer provider request snapshot.',);
+        /** Exact user message sent to reviewer provider. */
+        const message = request.context.messages[0];
+        if (message === undefined)
+          throw new Error('Expected reviewer user message.',);
         expect(message.content,).toContain(WRITE_ACTION_INPUT_FIXTURE,);
       },
     },),
     it({
       name: 'preserves omitted-tool direct-JSON retry prompts and options',
       fn: async () => {
-        /** Captured shared transport calls. */
-        const calls: CapturedStreamCall[] = [];
-        /**
-         * Omitted-tool then direct-JSON provider fixture.
-         *
-         * @param _model - unused fixture model
-         *
-         * @param context - captured reviewer context
-         *
-         * @param options - captured auth and tool-choice options
-         *
-         * @returns current attempt event stream
-         */
-        function retryStream(
-          _model: Model<Api>,
-          context: Context,
-          options?: SimpleStreamOptions,
-        ): AssistantMessageEventStream {
-          calls.push({
-            context,
-            ...(options === undefined ? {} : { options, }),
-          },);
-          if (calls.length === 1) {
-            return events([{
-              type: 'text_end',
-              contentIndex: 0,
-              content: 'I did not use the tool.',
-              partial: {} as never,
-            },],) as never;
-          }
-          return events([{
-            type: 'text_end',
-            contentIndex: 0,
-            content: '{"verdict":"ask","reason":"needs user","guidance":""}',
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Adapter verdict from shared JSON retry transport. */
+        /** Omitted-tool then direct-JSON provider script. */
+        const transport = scriptedTransport([
+          textStream('I did not use the tool.',),
+          textStream('{"verdict":"ask","reason":"needs user","guidance":""}',),
+        ],);
+        /** Adapter verdict from direct-JSON retry transport. */
         const verdict = await callJudge({
           model: MODEL,
           auth: {
@@ -380,19 +321,21 @@ await describe({
           timeoutMs: JUDGE_TIMEOUT_MS,
           systemPrompt: 'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
           batchContext: [],
-          streamSimpleFn: retryStream,
+          testTransport: transport,
         },);
         expect(verdict.verdict,).toBe('ask',);
-        expect(calls,).toHaveLength(2,);
-        /** Forced-tool and direct-JSON retry calls in transport order. */
-        const [first, retry,] = calls;
+        expect(transport.requests,).toHaveLength(2,);
+        /** Forced-tool request snapshot. */
+        const first = transport.requests[0];
+        /** Direct-JSON retry request snapshot. */
+        const retry = transport.requests[1];
         if ((first === undefined) || (retry === undefined))
-          throw new Error('expected forced and retry calls',);
-        expect(first.context.tools,).toHaveLength(1,);
-        expect(toolChoiceOption(first,),).toBe('required',);
-        expect(first.options?.apiKey,).toBe('test-key',);
-        expect(retry.context.tools,).toBeUndefined();
-        expect(toolChoiceOption(retry,),).toBeUndefined();
+          throw new Error('Expected forced and retry request snapshots.',);
+        expect(first.context.toolNames,).toEqual(['render_verdict',],);
+        expect(first.options.toolChoiceType,).toBe('required',);
+        expect(first.options.apiKey,).toBe('test-key',);
+        expect(retry.context.toolNames,).toEqual([],);
+        expect(retry.options.toolChoiceType,).toBeUndefined();
         expect(retry.context.systemPrompt,).toContain('Retry mode:',);
         expect(retry.context.systemPrompt,).not.toContain('Do not respond with text; use the tool.',);
       },

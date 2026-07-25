@@ -1,18 +1,13 @@
 /**
- * Built-artifact tests for structured reviewer transport.
+ * Built-artifact tests for callback-free structured reviewer transport.
  *
  * @module
  */
 
-import { once, } from 'node:events';
-
 import type {
   Api,
   AssistantMessageEvent,
-  AssistantMessageEventStream,
-  Context,
   Model,
-  SimpleStreamOptions,
   Tool,
 } from '@earendil-works/pi-ai';
 import {
@@ -22,10 +17,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  extractStructuredJson,
-  runStructuredReviewAttempt,
-  toolChoiceForApi,
-  type StructuredReviewContract,
+  runStructuredJsonRetries,
+  runStructuredToolRequest,
+  type ScriptedStructuredReviewTransport,
+  structuredReviewSignal,
 } from '../dist/final/node/index.mjs';
 
 /** Fixture reviewer context window. */
@@ -37,22 +32,7 @@ const MAX_TOKENS = 16_384;
 /** Test timeout that does not govern transport behavior. */
 const TEST_TIMEOUT_MS = 10_000;
 
-/**
- * Strict fixture verdict.
- *
- * @example
- * ```ts
- * const verdict: FixtureVerdict = { approved: true, feedback: 'complete' };
- * ```
- */
-type FixtureVerdict = {
-  /** Approval decision. */
-  readonly approved: boolean;
-  /** Reviewer feedback. */
-  readonly feedback: string;
-};
-
-/** Fixture model consumed only by injected streams. */
+/** Fixture model consumed only by scripted transport. */
 const MODEL = {
   id: 'reviewer',
   name: 'Reviewer',
@@ -86,46 +66,6 @@ const TOOL = {
 } satisfies Tool;
 
 /**
- * Strictly parse fixture verdict.
- *
- * @param value - unknown provider output
- *
- * @returns validated fixture verdict
- *
- * @throws when either required field is absent or mistyped
- *
- * @example
- * ```ts
- * parseFixtureVerdict({ approved: true, feedback: 'done' });
- * ```
- */
-function parseFixtureVerdict(value: unknown,): FixtureVerdict {
-  if ((value === null) || ((typeof value) !== 'object'))
-    throw new Error('fixture verdict must be object',);
-  if ((!('approved' in value)) || ((typeof value.approved) !== 'boolean'))
-    throw new Error('fixture verdict approved must be boolean',);
-  if ((!('feedback' in value)) || ((typeof value.feedback) !== 'string'))
-    throw new Error('fixture verdict feedback must be string',);
-  return {
-    approved: value.approved,
-    feedback: value.feedback,
-  };
-}
-
-/** Fixture caller-owned structured contract. */
-const CONTRACT: StructuredReviewContract<FixtureVerdict> = {
-  toolName: TOOL.name,
-  tool: TOOL,
-  parse: parseFixtureVerdict,
-  buildJsonRetryPrompt({ initialPrompt, firstAttemptTextContent, },) {
-    return {
-      systemPrompt: `${initialPrompt.systemPrompt}\nReturn direct JSON.`,
-      userContent: `${initialPrompt.userContent}\nFirst response: ${firstAttemptTextContent}`,
-    };
-  },
-};
-
-/**
  * Build one async event stream from fixed event list.
  *
  * @param events - ordered provider events
@@ -134,7 +74,7 @@ const CONTRACT: StructuredReviewContract<FixtureVerdict> = {
  *
  * @example
  * ```ts
- * eventStream([{ type: 'text_end', content: '{}', contentIndex: 0, partial: {} } as never]);
+ * eventStream([]);
  * ```
  */
 async function* eventStream(
@@ -142,6 +82,80 @@ async function* eventStream(
 ): AsyncIterable<AssistantMessageEvent> {
   for (const event of events)
     yield event;
+}
+
+/**
+ * Build finalized text event stream.
+ *
+ * @param content - finalized provider text
+ *
+ * @returns one-event stream
+ *
+ * @example
+ * ```ts
+ * textStream('{}');
+ * ```
+ */
+function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
+  return eventStream([{
+    type: 'text_end',
+    contentIndex: 0,
+    content,
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build expected tool-call event stream.
+ *
+ * @param argumentsValue - unknown structured arguments
+ *
+ * @param toolName - emitted tool name
+ *
+ * @returns one-event stream
+ *
+ * @example
+ * ```ts
+ * toolStream({ approved: true });
+ * ```
+ */
+function toolStream(
+  argumentsValue: unknown,
+  toolName = TOOL.name,
+): AsyncIterable<AssistantMessageEvent> {
+  return eventStream([{
+    type: 'toolcall_end',
+    contentIndex: 0,
+    toolCall: {
+      type: 'toolCall',
+      id: 'review-1',
+      name: toolName,
+      arguments: argumentsValue as never,
+    },
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build deterministic data transport.
+ *
+ * @param responses - ordered response streams
+ *
+ * @returns mutable script state
+ *
+ * @example
+ * ```ts
+ * scriptedTransport([textStream('{}')]);
+ * ```
+ */
+function scriptedTransport(
+  responses: readonly AsyncIterable<AssistantMessageEvent>[],
+): ScriptedStructuredReviewTransport {
+  return {
+    nextResponseIndex: 0,
+    responses,
+    requests: [],
+  };
 }
 
 /**
@@ -153,7 +167,7 @@ async function* eventStream(
  *
  * @example
  * ```ts
- * const error = await captureError(async () => { throw new Error('x'); });
+ * await captureError(async () => { throw new Error('x'); });
  * ```
  */
 async function captureError(action: () => Promise<unknown>,): Promise<unknown> {
@@ -167,357 +181,174 @@ async function captureError(action: () => Promise<unknown>,): Promise<unknown> {
 }
 
 await describe({
-  name: runStructuredReviewAttempt.name,
+  name: runStructuredToolRequest.name,
   children: [
     it({
-      name: 'returns strict verdict from forced tool',
+      name: 'returns expected tool arguments and records final provider request snapshot',
       fn: async () => {
-        /**
-         * Injected provider stream returning expected tool.
-         *
-         * @returns forced-tool event stream
-         */
-        function fixtureStream(): AssistantMessageEventStream {
-          return eventStream([{
-            type: 'toolcall_end',
-            contentIndex: 0,
-            toolCall: {
-              type: 'toolCall',
-              id: 'review-1',
-              name: TOOL.name,
-              arguments: {
-                approved: true,
-                feedback: 'complete',
-              },
-            },
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Parsed review verdict. */
-        const verdict = await runStructuredReviewAttempt({
+        /** Deterministic provider transport. */
+        const transport = scriptedTransport([
+          toolStream({ approved: true, feedback: 'complete', },),
+        ],);
+        /** Initial structured result. */
+        const result = await runStructuredToolRequest({
           model: MODEL,
-          auth: {},
+          auth: { apiKey: 'fixture-key', },
           prompt: {
             systemPrompt: 'Judge.',
             userContent: 'Evidence.',
           },
-          contract: CONTRACT,
-          timeoutMs: TEST_TIMEOUT_MS,
-          stream: fixtureStream,
+          signal: structuredReviewSignal({ timeoutMs: TEST_TIMEOUT_MS, },),
+          toolName: TOOL.name,
+          tool: TOOL,
+          maxOutputTokens: 512,
+          testTransport: transport,
         },);
-        expect(verdict,).toEqual({
-          approved: true,
-          feedback: 'complete',
+        expect(result,).toEqual({
+          kind: 'toolCall',
+          arguments: { approved: true, feedback: 'complete', },
+        },);
+        expect(transport.requests,).toHaveLength(1,);
+        /** Captured final provider request. */
+        const request = transport.requests[0];
+        if (request === undefined)
+          throw new Error('Expected captured provider request.',);
+        expect(request.model,).toEqual({
+          api: MODEL.api,
+          id: MODEL.id,
+          provider: MODEL.provider,
+        },);
+        expect(request.context.systemPrompt,).toBe('Judge.',);
+        expect(request.context.toolNames,).toEqual([TOOL.name,],);
+        expect(request.context.messages[0]?.role,).toBe('user',);
+        expect(request.context.messages[0]?.content,).toBe('Evidence.',);
+        expect(request.options,).toMatchObject({
+          apiKey: 'fixture-key',
+          hasSignal: true,
+          maxTokens: 512,
+          toolChoiceType: 'required',
         },);
       },
     },),
     it({
-      name: 'rejects unexpected tool',
+      name: 'returns omitted-tool text and rejects unexpected tool name',
       fn: async () => {
-        /**
-         * Provider stream returning wrong tool.
-         *
-         * @returns unexpected-tool event stream
-         */
-        function wrongToolStream(): AssistantMessageEventStream {
-          return eventStream([{
-            type: 'toolcall_end',
-            contentIndex: 0,
-            toolCall: {
-              type: 'toolCall',
-              id: 'wrong-1',
-              name: 'different_tool',
-              arguments: {},
-            },
-            partial: {} as never,
-          },],) as never;
-        }
+        /** Omitted-tool scripted transport. */
+        const omittedTransport = scriptedTransport([textStream('tool omitted',),],);
+        /** Omitted-tool result. */
+        const omitted = await runStructuredToolRequest({
+          model: MODEL,
+          auth: {},
+          prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
+          signal: structuredReviewSignal({ timeoutMs: TEST_TIMEOUT_MS, },),
+          toolName: TOOL.name,
+          tool: TOOL,
+          testTransport: omittedTransport,
+        },);
+        expect(omitted,).toEqual({ kind: 'noToolCall', textContent: 'tool omitted', },);
+
         /** Unexpected-tool failure. */
-        const error = await captureError(async function runWrongTool() {
-          return runStructuredReviewAttempt({
+        const error = await captureError(async function runUnexpectedTool() {
+          return runStructuredToolRequest({
             model: MODEL,
             auth: {},
             prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-            contract: CONTRACT,
-            timeoutMs: TEST_TIMEOUT_MS,
-            stream: wrongToolStream,
+            signal: structuredReviewSignal({ timeoutMs: TEST_TIMEOUT_MS, },),
+            toolName: TOOL.name,
+            tool: TOOL,
+            testTransport: scriptedTransport([toolStream({}, 'different_tool',),],),
           },);
         },);
         expect(error,).toBeInstanceOf(Error,);
         expect((error as Error).message,).toContain('different_tool',);
       },
     },),
-    it({
-      name: 'retries omitted tool with direct JSON',
-      fn: async () => {
-        /** Stream-call count distinguishes forced and direct transport. */
-        const calls: unknown[] = [];
-        /**
-         * Provider stream returning omission then JSON.
-         *
-         * @param _model - unused fixture model
-         *
-         * @param context - captured provider context
-         *
-         * @param _options - unused provider options
-         *
-         * @returns reviewer event stream
-         */
-        function retryStream(
-          _model: Model<Api>,
-          context: Context,
-          _options?: SimpleStreamOptions,
-        ): AssistantMessageEventStream {
-          calls.push(context,);
-          if (calls.length === 1) {
-            return eventStream([{
-              type: 'text_end',
-              contentIndex: 0,
-              content: 'tool omitted',
-              partial: {} as never,
-            },],) as never;
-          }
-          return eventStream([{
-            type: 'text_end',
-            contentIndex: 0,
-            content: '{"approved":false,"feedback":"missing evidence"}',
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Parsed direct-JSON verdict. */
-        const verdict = await runStructuredReviewAttempt({
-          model: MODEL,
-          auth: {},
-          prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-          contract: CONTRACT,
-          timeoutMs: TEST_TIMEOUT_MS,
-          stream: retryStream,
-        },);
-        expect(verdict.approved,).toBe(false,);
-        expect(verdict.feedback,).toBe('missing evidence',);
-        expect(calls,).toHaveLength(2,);
-      },
-    },),
-    it({
-      name: 'retries direct JSON once more only after empty text',
-      fn: async () => {
-        /** Stream-call count across forced and direct attempts. */
-        const calls: unknown[] = [];
-        /**
-         * Provider stream returning omitted, empty, then valid output.
-         *
-         * @param _model - unused fixture model
-         *
-         * @param context - captured provider context
-         *
-         * @param _options - unused provider options
-         *
-         * @returns reviewer event stream
-         */
-        function emptyRetryStream(
-          _model: Model<Api>,
-          context: Context,
-          _options?: SimpleStreamOptions,
-        ): AssistantMessageEventStream {
-          calls.push(context,);
-          if (calls.length < 3) {
-            return eventStream([{
-              type: 'text_end',
-              contentIndex: 0,
-              content: calls.length === 1 ? 'tool omitted' : '',
-              partial: {} as never,
-            },],) as never;
-          }
-          return eventStream([{
-            type: 'text_end',
-            contentIndex: 0,
-            content: 'prefix {"approved":true,"feedback":"third response"} suffix',
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Parsed final retry verdict. */
-        const verdict = await runStructuredReviewAttempt({
-          model: MODEL,
-          auth: {},
-          prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-          contract: CONTRACT,
-          timeoutMs: TEST_TIMEOUT_MS,
-          stream: emptyRetryStream,
-        },);
-        expect(verdict.feedback,).toBe('third response',);
-        expect(calls,).toHaveLength(3,);
-      },
-    },),
-    it({
-      name: 'propagates timeout and caller abort signals',
-      fn: async () => {
-        /**
-         * Provider stream that rejects only after supplied signal aborts.
-         *
-         * @param _model - unused fixture model
-         *
-         * @param _context - unused provider context
-         *
-         * @param options - provider options carrying attempt signal
-         *
-         * @returns event stream that rejects on abort
-         */
-        function abortingStream(
-          _model: Model<Api>,
-          _context: Context,
-          options?: SimpleStreamOptions,
-        ): AssistantMessageEventStream {
-          /** Attempt signal supplied to provider. */
-          const attemptAbortSignal = options?.signal;
-          if (attemptAbortSignal === undefined)
-            throw new Error('missing attempt signal',);
-          /**
-           * Narrowed attempt signal retained by nested async generator.
-           */
-          const signalForAttempt: AbortSignal = attemptAbortSignal;
-          /**
-           * Wait for attempt abort and reject stream with signal reason.
-           *
-           * @returns async abort-aware event stream
-           */
-          async function* abortAfterSignal(): AsyncIterable<AssistantMessageEvent> {
-            if (!signalForAttempt.aborted)
-              await once(signalForAttempt, 'abort',);
-            yield {
-              type: 'text_end',
-              contentIndex: 0,
-              content: '',
-              partial: {} as never,
-            };
-            throw signalForAttempt.reason;
-          }
-          return abortAfterSignal() as never;
-        }
+  ],
+},);
 
-        /** Timeout-triggered transport failure. */
-        const timeoutError = await captureError(async function waitForTimeout() {
-          return runStructuredReviewAttempt({
+await describe({
+  name: runStructuredJsonRetries.name,
+  children: [
+    it({
+      name: 'parses direct JSON and records request without tools',
+      fn: async () => {
+        /** Direct-JSON scripted transport. */
+        const transport = scriptedTransport([
+          textStream('{"approved":false,"feedback":"missing evidence"}',),
+        ],);
+        /** Unknown parsed direct JSON value. */
+        const value = await runStructuredJsonRetries({
+          model: MODEL,
+          auth: {},
+          prompt: { systemPrompt: 'Judge JSON.', userContent: 'Retry.', },
+          signal: structuredReviewSignal({ timeoutMs: TEST_TIMEOUT_MS, },),
+          expectedToolName: TOOL.name,
+          testTransport: transport,
+        },);
+        expect(value,).toEqual({ approved: false, feedback: 'missing evidence', },);
+        /** Captured direct-JSON request. */
+        const request = transport.requests[0];
+        if (request === undefined)
+          throw new Error('Expected captured direct-JSON request.',);
+        expect(request.context.systemPrompt,).toBe('Judge JSON.',);
+        expect(request.context.toolNames,).toEqual([],);
+        expect(request.context.messages[0]?.role,).toBe('user',);
+        expect(request.context.messages[0]?.content,).toBe('Retry.',);
+      },
+    },),
+    it({
+      name: 'retries empty text once and rejects malformed final text',
+      fn: async () => {
+        /** Empty then valid direct-JSON transport. */
+        const transport = scriptedTransport([
+          textStream('',),
+          textStream('prefix {"approved":true,"feedback":"second"} suffix',),
+        ],);
+        /** Parsed second direct-JSON response. */
+        const value = await runStructuredJsonRetries({
+          model: MODEL,
+          auth: {},
+          prompt: { systemPrompt: 'Judge JSON.', userContent: 'Retry.', },
+          signal: structuredReviewSignal({ timeoutMs: TEST_TIMEOUT_MS, },),
+          expectedToolName: TOOL.name,
+          testTransport: transport,
+        },);
+        expect(value,).toEqual({ approved: true, feedback: 'second', },);
+        expect(transport.requests,).toHaveLength(2,);
+
+        /** Malformed direct-JSON failure. */
+        const error = await captureError(async function runMalformedJson() {
+          return runStructuredJsonRetries({
             model: MODEL,
             auth: {},
-            prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-            contract: CONTRACT,
-            timeoutMs: 1,
-            stream: abortingStream,
+            prompt: { systemPrompt: 'Judge JSON.', userContent: 'Retry.', },
+            signal: structuredReviewSignal({ timeoutMs: TEST_TIMEOUT_MS, },),
+            expectedToolName: TOOL.name,
+            testTransport: scriptedTransport([textStream('not structured',),],),
           },);
         },);
-        expect(timeoutError,).toBeDefined();
+        expect(error,).toBeInstanceOf(Error,);
+      },
+    },),
+  ],
+},);
 
-        /** Caller cancellation already active before transport. */
+await describe({
+  name: structuredReviewSignal.name,
+  children: [
+    it({
+      name: 'propagates already-active caller cancellation',
+      fn: async () => {
+        /** Already-aborted caller cancellation. */
         const controller = new AbortController();
         controller.abort(new Error('caller cancelled review',),);
-        /** Caller-abort transport failure. */
-        const abortError = await captureError(async function runCallerAbort() {
-          return runStructuredReviewAttempt({
-            model: MODEL,
-            auth: {},
-            prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-            contract: CONTRACT,
-            timeoutMs: TEST_TIMEOUT_MS,
-            signal: controller.signal,
-            stream: abortingStream,
-          },);
+        /** Composite cancellation signal. */
+        const signal = structuredReviewSignal({
+          signal: controller.signal,
+          timeoutMs: TEST_TIMEOUT_MS,
         },);
-        expect(abortError,).toBeInstanceOf(Error,);
-        expect((abortError as Error).message,).toBe('caller cancelled review',);
-      },
-    },),
-    it({
-      name: 'rejects malformed JSON and strict contract mismatch',
-      fn: async () => {
-        /**
-         * Malformed direct JSON provider stream.
-         *
-         * @returns malformed text event stream
-         */
-        function malformedStream(): AssistantMessageEventStream {
-          return eventStream([{
-            type: 'text_end',
-            contentIndex: 0,
-            content: 'not structured',
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Malformed output failure. */
-        const malformedError = await captureError(async function runMalformed() {
-          return runStructuredReviewAttempt({
-            model: MODEL,
-            auth: {},
-            prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-            contract: CONTRACT,
-            timeoutMs: TEST_TIMEOUT_MS,
-            stream: malformedStream,
-          },);
-        },);
-        expect(malformedError,).toBeInstanceOf(Error,);
-
-        /**
-         * Contract-invalid forced-tool stream.
-         *
-         * @returns invalid structured event stream
-         */
-        function invalidContractStream(): AssistantMessageEventStream {
-          return eventStream([{
-            type: 'toolcall_end',
-            contentIndex: 0,
-            toolCall: {
-              type: 'toolCall',
-              id: 'invalid-1',
-              name: TOOL.name,
-              arguments: { approved: 'yes', feedback: 'wrong type', },
-            },
-            partial: {} as never,
-          },],) as never;
-        }
-        /** Strict parser failure. */
-        const contractError = await captureError(async function runInvalidContract() {
-          return runStructuredReviewAttempt({
-            model: MODEL,
-            auth: {},
-            prompt: { systemPrompt: 'Judge.', userContent: 'Evidence.', },
-            contract: CONTRACT,
-            timeoutMs: TEST_TIMEOUT_MS,
-            stream: invalidContractStream,
-          },);
-        },);
-        expect(contractError,).toBeInstanceOf(Error,);
-        expect((contractError as Error).message,).toContain('approved must be boolean',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: extractStructuredJson.name,
-  children: [
-    it({
-      name: 'preserves braces inside quoted feedback',
-      fn: async () => {
-        /** Parsed JSON object with brace-bearing string. */
-        const parsed = extractStructuredJson(
-          'prefix {"approved":true,"feedback":"keeps } and { inside"} suffix',
-        ) as FixtureVerdict;
-        expect(parsed.feedback,).toBe('keeps } and { inside',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: toolChoiceForApi.name,
-  children: [
-    it({
-      name: 'uses caller tool name for Anthropic and required for OpenAI',
-      fn: async () => {
-        expect(toolChoiceForApi({ api: 'anthropic-messages', toolName: TOOL.name, },),).toEqual({
-          type: 'tool',
-          name: TOOL.name,
-        },);
-        expect(toolChoiceForApi({ api: 'openai-responses', toolName: TOOL.name, },),).toBe('required',);
+        expect(signal.aborted,).toBe(true,);
+        expect((signal.reason as Error).message,).toBe('caller cancelled review',);
       },
     },),
   ],

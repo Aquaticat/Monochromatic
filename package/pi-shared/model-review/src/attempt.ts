@@ -171,10 +171,12 @@ function contextForPrompt(
  * await runDirectJsonRequest(request);
  * ```
  */
-async function runDirectJsonRequest(
+function runDirectJsonRequest(
   request: ForeignBorrowed<StructuredReviewJsonRequest>,
 ): Promise<unknown> {
-  /** Final direct-JSON provider options. */
+  /**
+   * Final direct-JSON provider options.
+   */
   const options = buildAttemptStreamOptions({
     auth: request.auth,
     signal: request.signal,
@@ -182,8 +184,10 @@ async function runDirectJsonRequest(
       ? {}
       : { maxOutputTokens: request.maxOutputTokens, }),
   },);
-  /** Direct-JSON provider stream. */
-  const stream = await streamStructuredReview({
+  /**
+   * Direct-JSON provider stream.
+   */
+  const stream = streamStructuredReview({
     model: request.model,
     context: contextForPrompt({ prompt: request.prompt, },),
     options,
@@ -214,28 +218,37 @@ async function runDirectJsonRequest(
 async function runStructuredToolRequest(
   request: ForeignBorrowed<StructuredReviewToolRequest>,
 ): Promise<StructuredReviewInitialResult> {
-  /** Per-call logger carrying selected reviewer identity. */
+  /**
+   * Per-call logger carrying selected reviewer identity.
+   */
   const innerL = tagged({
     tag: runStructuredToolRequest.name,
     l,
   },);
   innerL.debug(
-    `starting structured request with ${request.model.provider}/${request.model.id} using ${request.toolName}`,
+    `starting structured request with ${request.model
+      .provider}/${request.model
+        .id} using ${request.toolName}`,
   );
-  /** Initial forced-tool provider options. */
+  /**
+   * Initial forced-tool provider options.
+   */
   const options = buildAttemptStreamOptions({
     auth: request.auth,
     signal: request.signal,
     toolChoice: toolChoiceForApi({
-      api: request.model.api,
+      api: request.model
+        .api,
       toolName: request.toolName,
     },),
     ...(request.maxOutputTokens === undefined
       ? {}
       : { maxOutputTokens: request.maxOutputTokens, }),
   },);
-  /** Initial forced-tool event stream. */
-  const stream = await streamStructuredReview({
+  /**
+   * Initial forced-tool event stream.
+   */
+  const stream = streamStructuredReview({
     model: request.model,
     context: contextForPrompt({
       prompt: request.prompt,
@@ -246,7 +259,9 @@ async function runStructuredToolRequest(
       ? {}
       : { testTransport: request.testTransport, }),
   },);
-  /** Unparsed initial provider result. */
+  /**
+   * Unparsed initial provider result.
+   */
   const result = await collectStructuredStream({
     stream,
     expectedToolName: request.toolName,
@@ -281,7 +296,9 @@ async function runStructuredJsonRetries(
   catch (error) {
     if (!(error instanceof EmptyStructuredReviewTextError))
       throw error;
-    /** Per-call logger for bounded empty-output retry. */
+    /**
+     * Per-call logger for bounded empty-output retry.
+     */
     const innerL = tagged({
       tag: runStructuredJsonRetries.name,
       l,

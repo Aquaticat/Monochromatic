@@ -10,22 +10,22 @@ import type {
   Context,
   Model,
 } from '@earendil-works/pi-ai';
-import { streamSimple as streamAnthropicMessages, } from '@earendil-works/pi-ai/api/anthropic-messages';
-import { streamSimple as streamAzureOpenAIResponses, } from '@earendil-works/pi-ai/api/azure-openai-responses';
-import { streamSimple as streamBedrockConverse, } from '@earendil-works/pi-ai/api/bedrock-converse-stream';
-import { streamSimple as streamGoogleGenerativeAI, } from '@earendil-works/pi-ai/api/google-generative-ai';
-import { streamSimple as streamGoogleVertex, } from '@earendil-works/pi-ai/api/google-vertex';
-import { streamSimple as streamMistralConversations, } from '@earendil-works/pi-ai/api/mistral-conversations';
-import { streamSimple as streamOpenAICodexResponses, } from '@earendil-works/pi-ai/api/openai-codex-responses';
-import { streamSimple as streamOpenAICompletions, } from '@earendil-works/pi-ai/api/openai-completions';
-import { streamSimple as streamOpenAIResponses, } from '@earendil-works/pi-ai/api/openai-responses';
+import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
+import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
+import { bedrockConverseStreamApi, } from '@earendil-works/pi-ai/api/bedrock-converse-stream.lazy';
+import { googleGenerativeAIApi, } from '@earendil-works/pi-ai/api/google-generative-ai.lazy';
+import { googleVertexApi, } from '@earendil-works/pi-ai/api/google-vertex.lazy';
+import { mistralConversationsApi, } from '@earendil-works/pi-ai/api/mistral-conversations.lazy';
+import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
+import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
+import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  assertModelUsesApi,
   isolateReviewContext,
   isolateReviewModel,
   isolateReviewOptions,
-  modelUsesApi,
   type ReviewSimpleStreamOptions,
 } from './provider-data.ts';
 import type {
@@ -43,13 +43,21 @@ import type {
  * ```
  */
 type StructuredReviewStreamRequest = {
-  /** Selected reviewer model. */
+  /**
+   * Selected reviewer model.
+   */
   readonly model: ForeignBorrowed<Model<Api>>;
-  /** Final provider context. */
+  /**
+   * Final provider context.
+   */
   readonly context: ForeignBorrowed<Context>;
-  /** Final provider stream options. */
+  /**
+   * Final provider stream options.
+   */
   readonly options: ForeignBorrowed<ReviewSimpleStreamOptions>;
-  /** Optional deterministic data seam. */
+  /**
+   * Optional deterministic data seam.
+   */
   readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
 };
 
@@ -73,7 +81,9 @@ const SUPPORTED_APIS = 'anthropic-messages, azure-openai-responses, bedrock-conv
 function snapshotContext(
   context: ForeignBorrowed<Context>,
 ): StructuredReviewRequestSnapshot['context'] {
-  /** Isolated user-message snapshots. */
+  /**
+   * Isolated user-message snapshots.
+   */
   const messages: StructuredReviewMessageSnapshot[] = [];
   for (const message of context.messages) {
     if ((message.role !== 'user') || ((typeof message.content) !== 'string')) {
@@ -87,7 +97,9 @@ function snapshotContext(
       timestamp: message.timestamp,
     },);
   }
-  /** Isolated tool-name snapshots. */
+  /**
+   * Isolated tool-name snapshots.
+   */
   const toolNames: string[] = [];
   for (const tool of context.tools ?? [])
     toolNames.push(tool.name,);
@@ -113,9 +125,13 @@ function snapshotContext(
 function snapshotOptions(
   options: ForeignBorrowed<ReviewSimpleStreamOptions>,
 ): StructuredReviewRequestSnapshot['options'] {
-  /** Provider-specific tool selector. */
+  /**
+   * Provider-specific tool selector.
+   */
   const { toolChoice, } = options;
-  /** Primitive selector type when present. */
+  /**
+   * Primitive selector type when present.
+   */
   const toolChoiceType = (typeof toolChoice) === 'string'
     ? toolChoice
     : ((toolChoice !== null)
@@ -124,7 +140,9 @@ function snapshotOptions(
       && ((typeof toolChoice.type) === 'string'))
       ? toolChoice.type
       : undefined;
-  /** Primitive selector tool name when present. */
+  /**
+   * Primitive selector tool name when present.
+   */
   const toolChoiceName = ((toolChoice !== null)
     && ((typeof toolChoice) === 'object')
     && ('name' in toolChoice)
@@ -176,9 +194,13 @@ function scriptedStructuredReviewStream(
     readonly options: ForeignBorrowed<ReviewSimpleStreamOptions>;
   },
 ): AsyncIterable<AssistantMessageEvent> {
-  /** Script index consumed by this request. */
+  /**
+   * Script index consumed by this request.
+   */
   const index = transport.nextResponseIndex;
-  /** Scripted response selected before state advances. */
+  /**
+   * Scripted response selected before state advances.
+   */
   const response = transport.responses[index];
   if (response === undefined)
     throw new Error(`Scripted structured review has no response at index ${index}`,);
@@ -198,8 +220,8 @@ function scriptedStructuredReviewStream(
 /**
  * Dispatch one stream through concrete implementation matching selected API.
  *
- * Static concrete imports expose exact shipped runtime exports to package
- * implementation analysis without callback or retained-provider indirection.
+ * Static lazy-provider imports avoid authored dynamic imports and retained-provider
+ * capabilities. Isolated request data crosses each lazy stream boundary.
  *
  * @param model - selected reviewer model
  *
@@ -226,14 +248,14 @@ function scriptedStructuredReviewStream(
  * await streamStructuredReview({ model, context, options });
  * ```
  */
-async function streamStructuredReview(
+function streamStructuredReview(
   {
     model,
     context,
     options,
     testTransport,
   }: ForeignBorrowed<Readonly<StructuredReviewStreamRequest>>,
-): Promise<AsyncIterable<AssistantMessageEvent>> {
+): AsyncIterable<AssistantMessageEvent> {
   if (testTransport !== undefined) {
     return scriptedStructuredReviewStream({
       transport: testTransport,
@@ -242,69 +264,145 @@ async function streamStructuredReview(
       options,
     },);
   }
-  /** Isolated provider context used only beyond external package boundary. */
+  /**
+   * Isolated provider context used only beyond external package boundary.
+   */
   const providerContext = isolateReviewContext(context,);
-  /** Isolated provider options used only beyond external package boundary. */
+  /**
+   * Isolated provider options used only beyond external package boundary.
+   */
   const providerOptions = isolateReviewOptions(options,);
-  if (modelUsesApi({ model, api: 'anthropic-messages', },)) {
-    return streamAnthropicMessages(
-      isolateReviewModel(model,),
+  if (model.api === 'anthropic-messages') {
+    /**
+     * Model narrowed by exact Anthropic API assertion.
+     */
+    const selected = {
+      model,
+      api: 'anthropic-messages',
+    } as const;
+    assertModelUsesApi(selected,);
+    return anthropicMessagesApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'azure-openai-responses', },)) {
-    return streamAzureOpenAIResponses(
-      isolateReviewModel(model,),
+  if (model.api === 'azure-openai-responses') {
+    /**
+     * Model narrowed by exact Azure OpenAI API assertion.
+     */
+    const selected = {
+      model,
+      api: 'azure-openai-responses',
+    } as const;
+    assertModelUsesApi(selected,);
+    return azureOpenAIResponsesApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'bedrock-converse-stream', },)) {
-    return streamBedrockConverse(
-      isolateReviewModel(model,),
+  if (model.api === 'bedrock-converse-stream') {
+    /**
+     * Model narrowed by exact Bedrock API assertion.
+     */
+    const selected = {
+      model,
+      api: 'bedrock-converse-stream',
+    } as const;
+    assertModelUsesApi(selected,);
+    return bedrockConverseStreamApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'google-generative-ai', },)) {
-    return streamGoogleGenerativeAI(
-      isolateReviewModel(model,),
+  if (model.api === 'google-generative-ai') {
+    /**
+     * Model narrowed by exact Google Generative AI assertion.
+     */
+    const selected = {
+      model,
+      api: 'google-generative-ai',
+    } as const;
+    assertModelUsesApi(selected,);
+    return googleGenerativeAIApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'google-vertex', },)) {
-    return streamGoogleVertex(
-      isolateReviewModel(model,),
+  if (model.api === 'google-vertex') {
+    /**
+     * Model narrowed by exact Google Vertex API assertion.
+     */
+    const selected = {
+      model,
+      api: 'google-vertex',
+    } as const;
+    assertModelUsesApi(selected,);
+    return googleVertexApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'mistral-conversations', },)) {
-    return streamMistralConversations(
-      isolateReviewModel(model,),
+  if (model.api === 'mistral-conversations') {
+    /**
+     * Model narrowed by exact Mistral API assertion.
+     */
+    const selected = {
+      model,
+      api: 'mistral-conversations',
+    } as const;
+    assertModelUsesApi(selected,);
+    return mistralConversationsApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'openai-codex-responses', },)) {
-    return streamOpenAICodexResponses(
-      isolateReviewModel(model,),
+  if (model.api === 'openai-codex-responses') {
+    /**
+     * Model narrowed by exact OpenAI Codex API assertion.
+     */
+    const selected = {
+      model,
+      api: 'openai-codex-responses',
+    } as const;
+    assertModelUsesApi(selected,);
+    return openAICodexResponsesApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'openai-completions', },)) {
-    return streamOpenAICompletions(
-      isolateReviewModel(model,),
+  if (model.api === 'openai-completions') {
+    /**
+     * Model narrowed by exact OpenAI Completions API assertion.
+     */
+    const selected = {
+      model,
+      api: 'openai-completions',
+    } as const;
+    assertModelUsesApi(selected,);
+    return openAICompletionsApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );
   }
-  if (modelUsesApi({ model, api: 'openai-responses', },)) {
-    return streamOpenAIResponses(
-      isolateReviewModel(model,),
+  if (model.api === 'openai-responses') {
+    /**
+     * Model narrowed by exact OpenAI Responses API assertion.
+     */
+    const selected = {
+      model,
+      api: 'openai-responses',
+    } as const;
+    assertModelUsesApi(selected,);
+    return openAIResponsesApi().streamSimple(
+      isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
     );

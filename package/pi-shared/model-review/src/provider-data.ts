@@ -53,7 +53,9 @@ function isolateReviewModel<const TApi extends Api,>(
    * Isolated pricing tiers.
    */
   const tiers: NonNullable<Model<TApi>['cost']['tiers']> = [];
-  for (const tier of model.cost.tiers ?? []) {
+  for (const tier of model.cost
+    .tiers
+    ?? []) {
     tiers.push({
       input: tier.input,
       output: tier.output,
@@ -74,10 +76,14 @@ function isolateReviewModel<const TApi extends Api,>(
       : { thinkingLevelMap: { ...model.thinkingLevelMap, }, }),
     input,
     cost: {
-      input: model.cost.input,
-      output: model.cost.output,
-      cacheRead: model.cost.cacheRead,
-      cacheWrite: model.cost.cacheWrite,
+      input: model.cost
+        .input,
+      output: model.cost
+        .output,
+      cacheRead: model.cost
+        .cacheRead,
+      cacheWrite: model.cost
+        .cacheWrite,
       ...(tiers.length === 0 ? {} : { tiers, }),
     },
     contextWindow: model.contextWindow,
@@ -185,35 +191,43 @@ function isolateReviewOptions(
 }
 
 /**
- * Narrow model by exact API discriminant.
+ * Assert model carries exact API discriminant.
  *
- * @param model - selected model
+ * @param input - selected model and expected API literal
  *
- * @param api - expected API literal
+ * @returns nothing
  *
- * @returns whether model carries exact API
+ * @throws when model API differs from expected literal
  *
  * @example
  * ```ts
- * if (modelUsesApi({ model, api: 'openai-responses' })) model.api;
+ * const input = { model, api: 'openai-responses' } as const;
+ * assertModelUsesApi(input);
  * ```
  */
-function modelUsesApi<const TApi extends Api,>(
-  {
-    model,
-    api,
-  }: {
+function assertModelUsesApi<const TApi extends Api,>(
+  input: {
     readonly model: ForeignBorrowed<Model<Api>>;
     readonly api: TApi;
   },
-): model is Model<TApi> {
-  return model.api === api;
+): asserts input is {
+  readonly model: ForeignBorrowed<Model<TApi>>;
+  readonly api: TApi;
+} {
+  if (input.model
+    .api
+    !== input.api) {
+    throw new Error(
+      `Expected review model API ${input.api} but received ${input.model
+        .api}`,
+    );
+  }
 }
 
 export {
   isolateReviewContext,
   isolateReviewModel,
   isolateReviewOptions,
-  modelUsesApi,
+  assertModelUsesApi,
 };
 export type { ReviewSimpleStreamOptions, };

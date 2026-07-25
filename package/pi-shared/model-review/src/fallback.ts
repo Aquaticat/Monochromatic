@@ -27,7 +27,9 @@ function joinText(
     readonly separator: string;
   },
 ): string {
-  /** Joined primitive output. */
+  /**
+   * Joined primitive output.
+   */
   const output = { value: '', };
   for (const value of values) {
     output.value = output.value === ''
@@ -49,9 +51,13 @@ function joinText(
  * ```
  */
 class ReviewUnavailableError extends Error {
-  /** Candidate identities whose transports started. */
+  /**
+   * Candidate identities whose transports started.
+   */
   readonly attemptedCandidateIdentities: readonly string[];
-  /** Normalized transport, parsing, and selection diagnostics. */
+  /**
+   * Normalized transport, parsing, and selection diagnostics.
+   */
   readonly diagnostics: readonly string[];
 
   /**
@@ -86,7 +92,10 @@ class ReviewUnavailableError extends Error {
       `Structured review unavailable after attempts by ${joinText({
         values: attemptedCandidateIdentities,
         separator: ', ',
-      },)}: ${joinText({ values: diagnostics, separator: '; ', },)}`,
+      },)}: ${joinText({
+        values: diagnostics,
+        separator: '; ',
+      },)}`,
       ...(cause === undefined ? [] : [{ cause, },]),
     );
     this.name = 'ReviewUnavailableError';

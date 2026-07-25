@@ -21,9 +21,13 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
  * ```
  */
 type StructuredReviewAuth = {
-  /** Provider API key when required. */
+  /**
+   * Provider API key when required.
+   */
   readonly apiKey?: string;
-  /** Provider headers when required. */
+  /**
+   * Provider headers when required.
+   */
   readonly headers?: Readonly<Record<string, string>>;
 };
 
@@ -39,9 +43,13 @@ type StructuredReviewAuth = {
  * ```
  */
 type StructuredReviewPrompt = {
-  /** Reviewer system instructions. */
+  /**
+   * Reviewer system instructions.
+   */
   readonly systemPrompt: string;
-  /** Reviewer user-message body. */
+  /**
+   * Reviewer user-message body.
+   */
   readonly userContent: string;
 };
 
@@ -55,15 +63,23 @@ type StructuredReviewPrompt = {
  */
 type StructuredReviewInitialResult =
   | {
-    /** Expected tool-call discriminant. */
+    /**
+     * Expected tool-call discriminant.
+     */
     readonly kind: 'toolCall';
-    /** Unknown arguments retained for caller-owned strict parsing. */
+    /**
+     * Unknown arguments retained for caller-owned strict parsing.
+     */
     readonly arguments: unknown;
   }
   | {
-    /** Missing-tool discriminant. */
+    /**
+     * Missing-tool discriminant.
+     */
     readonly kind: 'noToolCall';
-    /** Finalized text used to construct caller-specific retry instructions. */
+    /**
+     * Finalized text used to construct caller-specific retry instructions.
+     */
     readonly textContent: string;
   };
 
@@ -80,11 +96,17 @@ type StructuredReviewInitialResult =
  * ```
  */
 type StructuredReviewModelSnapshot = {
-  /** Selected provider API. */
+  /**
+   * Selected provider API.
+   */
   readonly api: Api;
-  /** Selected model identifier. */
+  /**
+   * Selected model identifier.
+   */
   readonly id: string;
-  /** Selected provider identifier. */
+  /**
+   * Selected provider identifier.
+   */
   readonly provider: string;
 };
 
@@ -101,11 +123,17 @@ type StructuredReviewModelSnapshot = {
  * ```
  */
 type StructuredReviewMessageSnapshot = {
-  /** Message role sent to provider. */
+  /**
+   * Message role sent to provider.
+   */
   readonly role: 'user';
-  /** Exact text sent to provider. */
+  /**
+   * Exact text sent to provider.
+   */
   readonly content: string;
-  /** Request message timestamp. */
+  /**
+   * Request message timestamp.
+   */
   readonly timestamp: number;
 };
 
@@ -122,11 +150,17 @@ type StructuredReviewMessageSnapshot = {
  * ```
  */
 type StructuredReviewContextSnapshot = {
-  /** Exact provider system prompt. */
+  /**
+   * Exact provider system prompt.
+   */
   readonly systemPrompt: string;
-  /** Exact primitive message projection. */
+  /**
+   * Exact primitive message projection.
+   */
   readonly messages: readonly StructuredReviewMessageSnapshot[];
-  /** Tool names exposed for this request. */
+  /**
+   * Tool names exposed for this request.
+   */
   readonly toolNames: readonly string[];
 };
 
@@ -139,17 +173,29 @@ type StructuredReviewContextSnapshot = {
  * ```
  */
 type StructuredReviewOptionsSnapshot = {
-  /** Provider API key when present. */
+  /**
+   * Provider API key when present.
+   */
   readonly apiKey?: string;
-  /** Isolated provider headers when present. */
-  readonly headers?: Readonly<Record<string, string | null>>;
-  /** Whether cancellation signal reached provider seam. */
+  /**
+   * Isolated provider headers when present.
+   */
+  readonly headers?: Readonly<Record<string, unknown>>;
+  /**
+   * Whether cancellation signal reached provider seam.
+   */
   readonly hasSignal: boolean;
-  /** Provider output cap when present. */
+  /**
+   * Provider output cap when present.
+   */
   readonly maxTokens?: number;
-  /** Primitive forced-tool selector type when present. */
+  /**
+   * Primitive forced-tool selector type when present.
+   */
   readonly toolChoiceType?: string;
-  /** Forced tool name when provider selector carries one. */
+  /**
+   * Forced tool name when provider selector carries one.
+   */
   readonly toolChoiceName?: string;
 };
 
@@ -162,11 +208,17 @@ type StructuredReviewOptionsSnapshot = {
  * ```
  */
 type StructuredReviewRequestSnapshot = {
-  /** Selected provider identity. */
+  /**
+   * Selected provider identity.
+   */
   readonly model: StructuredReviewModelSnapshot;
-  /** Final provider context. */
+  /**
+   * Final provider context.
+   */
   readonly context: StructuredReviewContextSnapshot;
-  /** Final provider stream options. */
+  /**
+   * Final provider stream options.
+   */
   readonly options: StructuredReviewOptionsSnapshot;
 };
 
@@ -186,11 +238,17 @@ type StructuredReviewRequestSnapshot = {
  * ```
  */
 type ScriptedStructuredReviewTransport = {
-  /** Index consumed by next request. */
+  /**
+   * Index consumed by next request.
+   */
   nextResponseIndex: number;
-  /** Ordered deterministic response streams. */
+  /**
+   * Ordered deterministic response streams.
+   */
   readonly responses: readonly ForeignBorrowed<AsyncIterable<AssistantMessageEvent>>[];
-  /** Isolated requests captured in dispatch order. */
+  /**
+   * Isolated requests captured in dispatch order.
+   */
   requests: StructuredReviewRequestSnapshot[];
 };
 
@@ -203,17 +261,29 @@ type ScriptedStructuredReviewTransport = {
  * ```
  */
 type StructuredReviewRequest = {
-  /** Selected reviewer model. */
+  /**
+   * Selected reviewer model.
+   */
   readonly model: ForeignBorrowed<Model<Api>>;
-  /** Resolved reviewer credentials. */
+  /**
+   * Resolved reviewer credentials.
+   */
   readonly auth: ForeignBorrowed<StructuredReviewAuth>;
-  /** Request-specific reviewer prompt. */
+  /**
+   * Request-specific reviewer prompt.
+   */
   readonly prompt: StructuredReviewPrompt;
-  /** Cancellation signal shared across initial request and retries. */
+  /**
+   * Cancellation signal shared across initial request and retries.
+   */
   readonly signal: AbortSignal;
-  /** Optional provider output cap. */
+  /**
+   * Optional provider output cap.
+   */
   readonly maxOutputTokens?: number;
-  /** Optional data-only deterministic provider seam. */
+  /**
+   * Optional data-only deterministic provider seam.
+   */
   readonly testTransport?: ForeignBorrowed<ScriptedStructuredReviewTransport>;
 };
 
@@ -226,9 +296,13 @@ type StructuredReviewRequest = {
  * ```
  */
 type StructuredReviewToolRequest = StructuredReviewRequest & {
-  /** Exact tool name expected from provider. */
+  /**
+   * Exact tool name expected from provider.
+   */
   readonly toolName: string;
-  /** Sole structured verdict tool exposed to provider. */
+  /**
+   * Sole structured verdict tool exposed to provider.
+   */
   readonly tool: ForeignBorrowed<Tool>;
 };
 
@@ -241,7 +315,9 @@ type StructuredReviewToolRequest = StructuredReviewRequest & {
  * ```
  */
 type StructuredReviewJsonRequest = StructuredReviewRequest & {
-  /** Expected tool name tolerated if provider emits one during JSON retry. */
+  /**
+   * Expected tool name tolerated if provider emits one during JSON retry.
+   */
   readonly expectedToolName: string;
 };
 

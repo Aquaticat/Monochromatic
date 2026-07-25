@@ -6,6 +6,7 @@
 
 import type {
   Api,
+  AssistantMessageEvent,
   Model,
 } from '@earendil-works/pi-ai';
 import type {
@@ -20,6 +21,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { ScriptedStructuredReviewTransport, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
   buildBudgetedGoalReviewPrompt,
@@ -154,6 +156,89 @@ function reviewerCandidate(model: Model<Api>,): GoalReviewerCandidate {
     systemPrompt: 'Review independently.',
     userContent: 'Evidence.',
     transcriptTruncated: false,
+  };
+}
+
+/**
+ * Build async event stream from fixed reviewer events.
+ *
+ * @param entries - ordered reviewer events
+ *
+ * @returns async event stream
+ */
+async function* reviewerEvents(
+  entries: readonly AssistantMessageEvent[],
+): AsyncIterable<AssistantMessageEvent> {
+  for (const entry of entries)
+    yield entry;
+}
+
+/**
+ * Build goal review tool-call stream.
+ *
+ * @param approved - strict approval value
+ *
+ * @param feedback - strict feedback value
+ *
+ * @returns one-event reviewer stream
+ */
+function goalVerdictStream(
+  {
+    approved,
+    feedback,
+  }: {
+    readonly approved: boolean;
+    readonly feedback: string;
+  },
+): AsyncIterable<AssistantMessageEvent> {
+  return reviewerEvents([{
+    type: 'toolcall_end',
+    contentIndex: 0,
+    toolCall: {
+      type: 'toolCall',
+      id: 'goal-review',
+      name: 'submit_goal_review',
+      arguments: { approved, feedback, },
+    },
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build unexpected-tool reviewer failure.
+ *
+ * @param id - failure identity
+ *
+ * @returns one-event reviewer stream
+ */
+function goalFailureStream(id: string,): AsyncIterable<AssistantMessageEvent> {
+  return reviewerEvents([{
+    type: 'toolcall_end',
+    contentIndex: 0,
+    toolCall: {
+      type: 'toolCall',
+      id,
+      name: `unexpected_${id}`,
+      arguments: {},
+    },
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build deterministic reviewer transport data.
+ *
+ * @param responses - ordered response streams
+ *
+ * @returns mutable script state
+ */
+function goalReviewTransport(
+  responses: readonly AsyncIterable<AssistantMessageEvent>[],
+): ScriptedStructuredReviewTransport {
+  return {
+    nextResponseIndex: 0,
+    responses,
+    requests: [],
   };
 }
 
@@ -586,35 +671,41 @@ await describe({
           },),),
         ];
         /** Initial valid denial transport starts only first candidate. */
-        const directStarts: string[] = [];
+        const directTransport = goalReviewTransport([
+          goalVerdictStream({
+            approved: false,
+            feedback: 'More evidence required.',
+          },),
+        ],);
         const direct = await runGoalReviewerPool({
           pool: { candidates, diagnostics: [], },
-          async attempt({ candidate, },) {
-            directStarts.push(candidate.model.id,);
-            return { approved: false, feedback: 'More evidence required.', };
-          },
+          testTransport: directTransport,
         },);
         expect(direct.verdict.approved,).toBe(false,);
-        expect(directStarts,).toEqual(['first',],);
+        expect(directTransport.requests.map(function requestModel(request,) {
+          return request.model.id;
+        },),).toEqual(['first',],);
         /** Failed initial then two selected fallback transports. */
-        const fallbackStarts: string[] = [];
+        const fallbackTransport = goalReviewTransport([
+          goalFailureStream('initial',),
+          goalVerdictStream({
+            approved: false,
+            feedback: 'Integration evidence missing.',
+          },),
+          goalFailureStream('fallback-fail',),
+        ],);
         const fallback = await runGoalReviewerPool({
           pool: { candidates, diagnostics: [], },
-          async attempt({ candidate, },) {
-            fallbackStarts.push(candidate.model.id,);
-            if (candidate.model.id === 'first')
-              throw new Error('initial transport failed',);
-            if (candidate.model.id === 'fallback-deny')
-              return { approved: false, feedback: 'Integration evidence missing.', };
-            throw new Error('fallback transport failed',);
-          },
+          testTransport: fallbackTransport,
         },);
         expect(fallback.verdict,).toEqual({
           approved: false,
           feedback: 'Integration evidence missing.',
         },);
         expect(fallback.reviewerIdentity,).toBe('review/fallback-deny',);
-        expect(fallbackStarts,).toEqual([
+        expect(fallbackTransport.requests.map(function requestModel(request,) {
+          return request.model.id;
+        },),).toEqual([
           'first',
           'fallback-deny',
           'fallback-fail',
