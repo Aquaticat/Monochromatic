@@ -444,10 +444,12 @@ types_3.json
 
 ### Verified fork implementation
 
-The implementation was committed and pushed to
-[`Aquaticat/typeslayer`](https://github.com/Aquaticat/typeslayer) `main` at
+The production fix was committed and pushed to
+[`Aquaticat/typeslayer`](https://github.com/Aquaticat/typeslayer) at
 `0319832ff6d8bd5343371501a6b403e04acc33b2`.
-It:
+The verified fork head is `ac48c6e074852fc1c4d8d6556029cf693ab6979b`,
+which adds the retained-count regression test without changing production code.
+The implementation:
 
 - resolves each compiler through the executable declared in its package manifest rather than a private subpath;
 - preserves legacy TypeScript 6 output unchanged;
@@ -475,8 +477,8 @@ A built Tauri application was exercised through its real UI against disposable c
    `analyze-trace.json`,
    and `type-graph.json` artifacts all completed.
 
-The captured missing-args event is a regression fixture in
-`packages/typeslayer/src-tauri/src/validate/trace_json.rs:1287-1335`.
+The captured missing-args event and its retained-count companion are regression fixtures in
+`packages/typeslayer/src-tauri/src/validate/trace_json.rs:1287-1400`.
 Before the schema fix,
 this targeted command failed with `missing field 'args'`:
 
@@ -486,7 +488,10 @@ cargo test process_type_references_accepts_missing_args --jobs 1 -- --nocapture
 
 After changing `ProcessTypeReferences.args` to `Option<CountArgs>`,
 the targeted test passed.
-The complete Rust suite passed all 32 tests,
+A companion test supplies `{ "args": { "count": 4 } }`,
+round-trips the typed event,
+and confirms that the count remains four.
+The complete Rust suite passed all 33 tests,
 and the production Tauri release build completed.
 Repository linting,
 formatting,
@@ -580,8 +585,10 @@ and relinking it.
 
 Works cleanly:
 
-- The built `Aquaticat/typeslayer` fork at `0319832ff6d8bd5343371501a6b403e04acc33b2` with TypeScript 7.0.2 and
-  TypeScript 6.0.2.
+- The built `Aquaticat/typeslayer` production fix at `0319832ff6d8bd5343371501a6b403e04acc33b2` with TypeScript 7.0.2
+  and TypeScript 6.0.2.
+- The test-only follow-up at `ac48c6e074852fc1c4d8d6556029cf693ab6979b`,
+  whose complete Rust suite passes 33 tests.
 - A native `processTypeReferences` event with no `args` field under the repaired Rust schema.
 - TypeSlayer's `require('typescript/bin/tsc')` pattern with TypeScript 6.0.2.
 - TypeScript 6.0.2 trace generation with the `trace.json` plus `types.json` layout TypeSlayer expects.
