@@ -1235,6 +1235,10 @@ VUB:
  After building/deploying/installing artifact,
  verify by exercising it the way an end user would.
 
+JVC:
+ Judge context uses complete user-visible messages for larger of latest five messages or span from latest user message;
+ never summarize or truncate prior tool inputs or results.
+
 VB1:
  Server:
  confirm correct responses,
