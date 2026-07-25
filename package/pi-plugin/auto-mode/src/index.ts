@@ -378,8 +378,6 @@ function initializeAutoMode(
      *
      * @returns Optional Pi block decision.
      *
-     * @mutates event - approval fingerprint serialization can invoke caller-owned input hooks.
-     *
      * @mutates ctx - evaluation can invoke registry, session, and UI capabilities.
      */
     async function handleToolCall(
@@ -471,7 +469,10 @@ function initializeAutoMode(
        */
       const batchContext = [...currentTurnBatch,];
 
-      return evaluate({
+      /**
+       * Block-or-allow result after judge and any user decision complete.
+       */
+      const result = await evaluate({
         pi,
         ctx,
         systemPrompt: JUDGE_SYSTEM_PROMPT,
@@ -479,42 +480,39 @@ function initializeAutoMode(
         actionInput,
         approvalFingerprint,
         batchContext,
-      },)
-        .then(
-          function handleResult(result,) {
-            /**
-             * Block-or-allow decision and the optional flow verdict the judge produced.
-             */
-            const {
-              decision,
-              flowVerdict,
-            } = result;
-            if (flowVerdict !== undefined) {
-              flowVerdicts.push(flowVerdict,);
-              updateWidget({
-                ctx,
-                verdicts: flowVerdicts,
-              },);
-            }
+      },);
+      /**
+       * Block-or-allow decision and optional flow verdict produced by judge.
+       */
+      const {
+        decision,
+        flowVerdict,
+      } = result;
+      if (flowVerdict !== undefined) {
+        flowVerdicts[flowVerdicts.length] = flowVerdict;
+        updateWidget({
+          ctx,
+          verdicts: flowVerdicts,
+        },);
+      }
 
-            currentTurnBatch.push({
-              action,
-              verdict: decision.block ? 'deny' : 'approve',
-            },);
+      currentTurnBatch[currentTurnBatch.length] = {
+        action,
+        verdict: decision.block ? 'deny' : 'approve',
+      };
 
-            if (decision.block)
-              denialInCurrentTurn = true;
+      if (decision.block)
+        denialInCurrentTurn = true;
 
-            denialInPreviousTurn = false;
+      denialInPreviousTurn = false;
 
-            if (decision.block)
-              return {
-                block: true,
-                reason: decision.reason,
-              };
-            return undefined;
-          },
-        );
+      if (decision.block) {
+        return {
+          block: true,
+          reason: decision.reason,
+        };
+      }
+      return undefined;
     },
   );
 
