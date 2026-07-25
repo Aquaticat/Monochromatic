@@ -413,23 +413,40 @@ Shared understanding reached 2026-07-25.
   `max-lines` keeps the line-based span, where column 1 is truthful.
   Two regression tests assert an indented item reports column 5, not 1.
 
+- Work item 2, TOML config layer, commit `faf502e14`.
+  `rust-linter.toml` with `rules`, `categories`, `options`, `ignore-patterns`,
+  glob `overrides` carrying `files` and `exclude-files`, `extends` chains with
+  cycle detection, and nested discovery.
+  The two exemption predicates are deleted;
+  their policy lives in a `default.toml` compiled into the binary.
+  Both named forks resolved:
+  `extends` is a FULL merge, unlike oxlint's rules-only one,
+  and a nested config LAYERS over its ancestors rather than replacing them.
+  Rules now declare a category;
+  `max-lines` is pedantic, verified against oxlint's own documentation page.
+  Verified: 67 core and 26 linter tests, plus the real binary exercised on a
+  throwaway tree confirming a config file turns `max-lines` off while
+  `require-rustdoc` keeps reporting, and `--disable-nested-config` restores the
+  default.
+- Clippy debt cleared, commit `9459b3216`.
+  The linter crate now passes its own `lint:clippy` gate, and gained the
+  `format:clippy` task its sibling Rust packages already had.
+
+### Correction to the record
+
+`README.md` claims `require-rustdoc` has no fixtures carve-out.
+It is wrong.
+The predicate it replaced exempted `fixture/`, `test-fixture/` and `invalid/`
+for BOTH rules, and the integration test
+`undocumented_fixture_in_place_is_exempt` depends on that.
+`default.toml` reproduces the real behaviour and
+`require_rustdoc_shares_the_same_exemptions` pins it.
+The README is corrected in work item 12.
+
 ### Known debt, owned
 
-`package/linter/rust` fails its own `lint:clippy` gate on `implicit_return`:
-45 errors measured at the pristine commit before this work, 37 after the
-extraction.
-Pre-existing, not introduced here, but work item 2 rewrites `src/config.rs`
-where many of them live.
-The package ships a `format:clippy` task and the fixes are machine-applicable,
-so clearing it is remediation rather than loosening a rule (LN7 not engaged).
-
-### Not pushed
-
-Auto-push has been failing since `origin/main` gained two security-patch
-commits mid-session.
-The local branch also carries three commits authored by concurrent work in
-`package/pi-plugin/` and `package/pi-shared/`, so rebasing is not this task's
-call to make.
+None outstanding.
+The `implicit_return` debt recorded here earlier is cleared.
 
 ## Further items adopted without asking
 
