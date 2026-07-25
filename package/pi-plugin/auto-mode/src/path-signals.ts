@@ -217,25 +217,34 @@ async function isAllowlistedPath(
     return false;
 
   /**
-   * Per-allowlist containment decisions for this canonical target.
+   * Concurrent canonicalization and containment work for allowlisted roots.
    */
-  const containmentDecisions = await Promise.all(
-    allowlistedDirs.map(async function allowlistedDirContainsCanonicalPath(dir,) {
+  const containmentPromises: Promise<boolean>[] = [];
+  for (const allowlistedDir of allowlistedDirs) {
+    containmentPromises[containmentPromises.length] = (async function containsCanonicalPath(): Promise<boolean> {
       /**
        * Canonical allowlisted root; missing roots fail closed.
        */
       const canonicalDir = await tryRealpath(nodePath.resolve(
         cwd,
-        dir,
+        allowlistedDir,
       ),);
       return (canonicalDir !== REALPATH_UNAVAILABLE)
         && isUnder({
           resolved: canonicalResolved,
           dir: canonicalDir,
         },);
-    },),
-  );
-  return containmentDecisions.some(Boolean,);
+    })();
+  }
+  /**
+   * Per-allowlist containment decisions for current canonical target.
+   */
+  const containmentDecisions = await Promise.all(containmentPromises,);
+  for (const containsTarget of containmentDecisions) {
+    if (containsTarget)
+      return true;
+  }
+  return false;
 }
 
 /**
