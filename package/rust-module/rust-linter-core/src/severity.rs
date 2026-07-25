@@ -1,6 +1,6 @@
 //! Configured severities and the rule categories they can be set through.
 
-// What:     `use serde::Deserialize;` imports a DERIVE MACRO's trait from an
+// What:     `use serde::{Deserialize, Serialize};` imports a DERIVE MACRO's trait from an
 //           external dependency. Naming a crate directly, with no `crate::`
 //           prefix, is what marks it external rather than part of this crate.
 // Why:      The config file is TOML, and these types are read straight out of it.
@@ -9,8 +9,8 @@
 // ```ts
 // import { Deserialize } from "serde";
 // ```
-/// Imports the deserialization trait these config types derive.
-use serde::Deserialize;
+/// Imports the serialization traits these config types derive.
+use serde::{Deserialize, Serialize};
 
 /// Imports the reported-severity type configured severities convert into.
 use crate::diagnostic::Severity;
@@ -25,7 +25,7 @@ use crate::diagnostic::Severity;
 // type RuleSeverity = "off" | "warn" | "error";
 // ```
 /// Severity a rule is configured at, or `Off` when it does not run.
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum RuleSeverity {
     /// Rule does not run at all.
@@ -104,7 +104,7 @@ impl RuleSeverity {
 // type Category = "correctness" | "suspicious" | /* ... */ | "nursery";
 // ```
 /// Group a rule belongs to, settable as a unit from config or command line.
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Category {
     /// Code that is outright wrong or useless.

@@ -13,7 +13,7 @@
 use std::collections::BTreeMap;
 
 /// Imports the deserialization trait every config type derives.
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Imports the configured-severity and category types.
 use crate::severity::{Category, RuleSeverity};
@@ -31,7 +31,7 @@ use crate::severity::{Category, RuleSeverity};
 // type ConfigFile = { extends?: string[]; rules?: Record<string, RuleSetting>; /* ... */ };
 // ```
 /// One configuration file, exactly as written on disk.
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
 pub struct ConfigFile {
     // What:     `extends: Vec<String>`. Paths, resolved relative to the file that
@@ -93,7 +93,7 @@ pub struct ConfigFile {
 // type PatternConfig = { id: string; match: string; message: string; fix?: string };
 // ```
 /// One declarative pattern rule, as written in configuration.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct PatternConfig {
     /// Rule id this pattern reports under.
@@ -133,7 +133,7 @@ fn default_pattern_severity() -> RuleSeverity {
 }
 
 /// Run-wide switches that are not about any single rule.
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Options {
     /// Make warnings fail the run.
@@ -162,7 +162,7 @@ pub struct Options {
 // type RuleSetting = RuleSeverity | { severity: RuleSeverity; [option: string]: unknown };
 // ```
 /// How one rule is configured: a bare severity, or a severity plus options.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum RuleSetting {
     /// `"builtin/max-lines" = "error"`.
@@ -219,7 +219,7 @@ impl RuleSetting {
 //           flattened options table is for. A rule's option names belong to that
 //           rule, so this layer cannot know which are valid.
 /// A rule configured with options beside its severity.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DetailedRule {
     /// Severity this rule reports at.
     pub severity: RuleSeverity,
@@ -236,7 +236,7 @@ pub struct DetailedRule {
 }
 
 /// One glob-scoped reconfiguration of the rules above it.
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Override {
     /// Globs this override applies to.

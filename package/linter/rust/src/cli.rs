@@ -147,6 +147,21 @@ pub struct Cli {
     )]
     pub deny: Vec<String>,
 
+    /// Print the resolved configuration and exit.
+    #[arg(
+        long = "print-config",
+        help = "Print the configuration that would be used, then exit"
+    )]
+    pub print_config: bool,
+
+    /// List every registered rule and exit.
+    #[arg(long = "rules", help = "List all the rules that are currently registered")]
+    pub rules: bool,
+
+    /// Write a starter configuration file and exit.
+    #[arg(long = "init", help = "Write a starter rust-linter.toml, then exit")]
+    pub init: bool,
+
     /// Worker threads to lint with.
     // `Option` distinguishes an explicit count from "decide for me", which is
     // what lets the default follow the machine rather than a hardcoded number.

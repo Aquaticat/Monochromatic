@@ -1326,3 +1326,102 @@ fn zero_threads_still_lints() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// `--init` writes a starter configuration that the linter can then read.
+#[test]
+fn init_writes_a_usable_starter_config() {
+    let root = discovery_probe("init");
+    let _ = std::fs::remove_file(root.join("rust-linter.toml"));
+
+    let (code, stdout) = run_in(&root, &["--init"]);
+    assert_eq!(code, 0, "init succeeds: {stdout}");
+
+    // The starter has to be valid input to this very linter. A sample config
+    // that does not parse is worse than none at all.
+    let (lint_code, lint_stdout) = run_in(&root, &["."]);
+    assert_ne!(lint_code, 2, "the starter config parses: {lint_stdout}");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+// What:     `--init` run twice.
+// Why:      Running it in a directory that already has a configuration is far
+//           more likely to be a mistake than an intention, and silently
+//           replacing someone's rules would be unrecoverable.
+/// `--init` refuses to overwrite an existing configuration.
+#[test]
+fn init_refuses_to_overwrite() {
+    let root = discovery_probe("init-twice");
+    std::fs::write(root.join("rust-linter.toml"), "# mine\n").expect("write config");
+
+    let (code, _stdout) = run_in(&root, &["--init"]);
+
+    assert_eq!(code, 2, "refuses");
+    let kept = std::fs::read_to_string(root.join("rust-linter.toml")).expect("read back");
+    assert_eq!(kept, "# mine\n", "and leaves the existing file alone");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+// What:     `--rules` listing configured pattern rules alongside compiled-in ones.
+// Why:      oxlint documents this flag as listing every registered rule, and its
+//           own implementation prints nothing at all: both streams empty at exit
+//           zero, measured against 1.75.0. This asserts the documented behaviour,
+//           including that a rule from configuration appears, which is the half a
+//           compiled-in list would miss.
+/// `--rules` lists compiled-in and configured rules alike.
+#[test]
+fn rules_lists_every_registered_rule() {
+    let root = discovery_probe("rules");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[[pattern]]\nid = \"no-unwrap\"\nmatch = \"META_X.unwrap()\"\nmessage = \"no unwrap\"\n",
+    )
+    .expect("write config");
+
+    let (code, stdout) = run_in(&root, &["--rules", "."]);
+
+    assert_eq!(code, 0, "listing is not a failure");
+    assert!(stdout.contains("builtin(max-lines)"), "compiled in: {stdout}");
+    assert!(
+        stdout.contains("pattern(no-unwrap)"),
+        "and configured: {stdout}"
+    );
+    assert!(
+        stdout.contains("never suppressed"),
+        "with the suppressibility a directive depends on: {stdout}"
+    );
+    assert!(
+        !stdout.contains("require-rustdoc\":"),
+        "and reports no findings, having stopped: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// `--print-config` shows the merged configuration, not one file.
+#[test]
+fn print_config_shows_the_merged_result() {
+    let root = discovery_probe("print-config");
+    std::fs::write(
+        root.join("rust-linter.toml"),
+        "[rules]\n\"builtin/max-lines\" = \"warn\"\n",
+    )
+    .expect("write config");
+
+    let (code, stdout) = run_in(&root, &["--print-config", "."]);
+
+    assert_eq!(code, 0, "printing is not a failure");
+    assert!(
+        stdout.contains("\"builtin/max-lines\" = \"warn\""),
+        "the file's own setting: {stdout}"
+    );
+    // The built-in defaults are compiled in rather than written anywhere, so
+    // their presence is what proves this is the MERGED result.
+    assert!(
+        stdout.contains("require-rustdoc"),
+        "merged with the built-in defaults: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}

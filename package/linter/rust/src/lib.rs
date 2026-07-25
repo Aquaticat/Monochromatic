@@ -17,6 +17,8 @@ pub mod cli;
 pub mod config;
 /// Finding the files to lint, and the flags that shape that set.
 pub mod discover;
+/// The commands that report on the linter rather than lint anything.
+pub mod introspect;
 /// Registry of the rules this binary compiles in.
 pub mod rule;
 /// Built-in lint rule implementations.
@@ -137,6 +139,8 @@ use monochromatic_rust_linter_core::config::load::{load_file, load_for};
 use monochromatic_rust_linter_core::config::resolve::{merge, LinterConfig};
 /// Imports the built-in configuration compiled into the core crate.
 use monochromatic_rust_linter_core::config::default_config;
+/// Imports the on-disk configuration shape --print-config renders.
+use monochromatic_rust_linter_core::config::file::ConfigFile;
 
 /// Imports the JSONL renderer, this linter's only output format.
 use monochromatic_rust_linter_core::format::render as render_jsonl;
@@ -216,6 +220,12 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // ```ts
     // let linter; try { linter = loadLinterConfig(cli); } catch (e) { ...; return 2; }
     // ```
+    // `--init` writes a starter configuration and stops. It runs before the
+    // config is even loaded, because the whole point is that there is not one.
+    if cli.init {
+        return crate::introspect::init(cli);
+    }
+
     let linter = match load_linter_config(cli) {
         Ok(loaded) => loaded,
         Err(message) => {
@@ -233,6 +243,19 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // ```ts
     // const files = collectRustFiles(cli.paths);
     // ```
+    // `--print-config` answers "what is actually in effect here", which needs
+    // the merged configuration and nothing else.
+    if cli.print_config {
+        return match load_config_file(cli) {
+            Ok(merged) => crate::introspect::print_config(&merged),
+            Err(message) => {
+                eprintln!("rust-linter: {message}");
+                2
+            }
+        };
+    }
+
+
     let files = collect_rust_files(cli);
 
     // `--debug=files` prints what would be linted and stops, which is how a user
@@ -286,6 +309,13 @@ pub fn run_cli(cli: &Cli) -> i32 {
                 return 2;
             }
         }
+
+    }
+
+    // `--rules` needs the rule set, which is only complete once configured
+    // pattern rules have been built, so it runs after that.
+    if cli.rules {
+        return crate::introspect::print_rules(&rules);
     }
 
     // What:     `let mut diagnostics: Vec<Diagnostic> = Vec::new();`. An empty,
@@ -510,6 +540,20 @@ fn lint_all(
 // ```
 /// Build the merged configuration governing this run.
 fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String> {
+    // Split from the merge below so `--print-config` can show the merged file
+    // before its globs are compiled: compiling turns patterns into matchers,
+    // which cannot be printed back out as configuration.
+    let merged = load_config_file(cli)?;
+
+    // `.map(..)` runs only on success, attaching the ordered command-line flags
+    // to the compiled configuration so resolution applies them last.
+    return LinterConfig::compile(merged)
+        .map(|compiled| return compiled.with_cli_overrides(cli.severity_overrides.clone()))
+        .map_err(|error| return format!("invalid glob in config: {error}"));
+}
+
+/// Load and merge every configuration governing this run, before compiling it.
+fn load_config_file(cli: &Cli) -> Result<ConfigFile, String> {
     // Layer 1: the policy compiled into the binary, so a checkout with no
     // configuration behaves exactly as the hardcoded predicates used to.
     let mut merged = default_config();
@@ -531,13 +575,7 @@ fn load_linter_config(cli: &Cli) -> Result<LinterConfig, String> {
         merged = merge(merged, explicit);
     }
 
-    // Compiling the globs is the last step, and the first place a malformed
-    // pattern is noticed.
-    // `.map(..)` runs only on success, attaching the ordered command-line flags
-    // to the compiled configuration so resolution applies them last.
-    return LinterConfig::compile(merged)
-        .map(|compiled| return compiled.with_cli_overrides(cli.severity_overrides.clone()))
-        .map_err(|error| return format!("invalid glob in config: {error}"));
+    return Ok(merged);
 }
 
 
