@@ -1106,6 +1106,38 @@ any that abort; no stall risk), and redirect ACTIVE effort to tasks 31/32
 (judge crosscheck + stratified sample tooling) which are unblocked against the
 24 already-settled entries -- only the final draw waits on band fill. Run 024
 launched.
+M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
++ `be6912575`): the stratified precision-sample toolchain is now landed and
+green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
+grading.ts` (band cuts 1843/3686 B matching accumulation; `classifyBand`;
+`GradableIssue`/`GradableClaim`/`GradableSpan` -- a MINIMAL input shape a real
+`AdjudicatedIssue` and an artifact-parsed issue both satisfy; `extractGrading-
+Candidate` dedupes source/target quotes, primary claim first), `sample-draw.ts`
+(`allocateBandQuota` even-split-under-availability round-robin; `drawStratified-
+Sample` sha256-hex-keyed deterministic draw, round-robin ACROSS entries within
+a band so one issue-heavy entry never dominates), `grading-sheet.ts` (Y/N grade
+box per issue with zh source + en target quotes + claim), and `artifact-read.ts`
+(`parseSettledArtifact`: a MEASUREMENT INSTRUMENT not a lenient deserializer --
+structural-guards-only, THROWS `ArtifactParseError` on a malformed ACCEPTED
+issue rather than skipping it, since a silent drop biases the precision
+denominator; non-accepted issues excluded as out-of-denominator; category/
+severity kept plain strings so no off-taxonomy value is ever a drop reason).
+Advisor (Opus 4.8) shaped the parser-as-instrument stance + the string-not-
+union call. Thin `corpus-run/draw-sample.ts` (mise task `draw-sample`; `--final`
+writes the gate sheet, default writes a PRELIMINARY one) reconciles each
+artifact's parsed accepted count against its recorded `acceptedCount` and aborts
+loudly on mismatch. PRELIMINARY draw over the 24 settled: pool 2132 accepted
+(337 small / 714 medium / 1081 large; entries 9/9/6), 50 drawn 17/17/16.
+Validated the sheet is HUMAN-GRADABLE from quotes alone across all bands and
+multi-claim issues (e.g. "确认脑死亡" -> "confirmed to be dead"; multi-claim
+renders quotes joined by ` · `) -- no corpus open needed to judge Y/N. Sheet
+lives OUTSIDE the repo (`node_modules/.monochromatic/.../grading-sheet-
+preliminary.md`) since it quotes UNLICENSED corpus text; NEVER committed. FINAL
+draw (`draw-sample -- --final`) runs ONCE after the large band fills, so the
+user is never handed a sheet that shifts underneath them. Still pending: task 31
+judge crosscheck (secondary machine number, quota-heavy, held until now); task
+33 gate must report precision PER BAND (the payoff of stratifying) plus the
+plain real/50>=0.9 headline.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
