@@ -849,6 +849,19 @@ like the client is injected). Flagged to the user as a decision before
 building. Meanwhile run 006 relaunches so the bulk keeps settling; huge
 entries waste one 90-min attempt then deprioritize (attempts already 1 for
 Anilovr/Arita).
+PASS 6 RUN 006 (2026-07-24, tip `47ba504a3`, 3034s wall): 3 dispatched, 3
+completed, 0 failed. ArtsEpiphany unchanged (0 issues, 8s, the placeholder
+stub again); BI4PBV repaired (38 issues, 37 accepted, 36 resolved, 5
+findings, 1437s); Barron12312 repaired (49 issues, 46 accepted, 46
+resolved, 2 findings, 1590s). The per-entry cap did its job -- three
+entries packed before the soft budget instead of one blocking the run.
+7/92 settled. Run 007 launched.
+USER PICK (2026-07-24): the large-entry tail is solved with SLICE-LEVEL
+RESUMABILITY (chosen over a very high atomic cap or reducing per-slice
+cost). Plan: inject an optional slice cache into repairTranslation (keyed
+by deterministic slice content hash), persist each completed slice, resume
+across runs; driver supplies a disk-backed cache under the runs dir. Build
+next, additive so the bulk keeps running on current code meanwhile.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
