@@ -10,7 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { buildApprovalFingerprint, } from './tool-helpers.ts';
+import {
+  buildApprovalFingerprint,
+  serializeToolInputForJudge,
+} from './tool-helpers.ts';
 
 /** Test working directory for approval fingerprint fixtures. */
 const TEST_CWD = '/repo';
@@ -51,6 +54,29 @@ function toolCallEvent(
     input,
   } as unknown as ToolCallEvent;
 }
+
+await describe({
+  name: serializeToolInputForJudge.name,
+  children: [
+    it({
+      name: 'preserves complete write content as JSON',
+      fn: async function preservesCompleteWriteContentAsJson(): Promise<void> {
+        /** Write call whose full content must remain visible to judge. */
+        const event = toolCallEvent({
+          toolName: 'write',
+          input: {
+            path: '/repo/config.ts',
+            content: 'export const value = "quoted";\n',
+          },
+        },);
+
+        expect(serializeToolInputForJudge(event,),).toBe(
+          '{"path":"/repo/config.ts","content":"export const value = \\"quoted\\";\\n"}',
+        );
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: buildApprovalFingerprint.name,
