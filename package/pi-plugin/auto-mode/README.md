@@ -121,7 +121,8 @@ the first valid structured verdict settles the guard decision.
  When only one fallback model can be selected,
 that model runs alone.
  A rejected contender does not settle the race while another contender can still return a verdict.
- This is an availability fallback, not consensus,
+ This is an availability fallback,
+ not consensus,
 so the winning fallback is timing-dependent when models disagree.
  A configured model override is the first choice,
 but automatic selection supplies the fallback contenders after that override fails.
