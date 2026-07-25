@@ -917,3 +917,139 @@ fn max_warnings_threshold_decides_the_exit_code() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+// What:     `fn directive_probe(name: &str, source: &str) -> std::path::PathBuf`.
+//           Builds a throwaway tree holding one source file with directives in it.
+// Why:      Directive behaviour is only meaningful end to end, because parsing,
+//           resolution and the rule registry all have to agree on what a rule is
+//           called before a directive can match one.
+/// Build a throwaway package tree holding one directive-bearing source file.
+fn directive_probe(name: &str, source: &str) -> std::path::PathBuf {
+    let root = std::env::temp_dir().join(format!(
+        "rust-linter-directive-{}-{name}",
+        std::process::id()
+    ));
+
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).expect("create probe tree");
+    std::fs::write(root.join("src/w.rs"), source).expect("write probe source");
+
+    return root;
+}
+
+// What:     The end-to-end form of the guarantee AGENTS.md MXL, MXR and RDC
+//           state: those two rules are never disabled.
+// Why:      A unit test proves the applier refuses. This proves the whole
+//           binary does, with the real rule registry deciding suppressibility,
+//           which is where a rule that changed its answer would show up.
+/// A directive aimed at require-rustdoc is refused, and reported.
+#[test]
+fn directive_on_a_non_suppressible_rule_is_refused_end_to_end() {
+    let root = directive_probe(
+        "refused",
+        "//! Module docs.\n\n// rust-linter-disable-next-line require-rustdoc -- please\npub fn b() {}\n",
+    );
+
+    let (code, stdout) = run_in(&root, &["src"]);
+
+    assert!(
+        stdout.contains("builtin(require-rustdoc)"),
+        "the finding survives the directive: {stdout}"
+    );
+    assert!(
+        stdout.contains("builtin(invalid-disable-directive)"),
+        "and the directive itself is reported: {stdout}"
+    );
+    assert_eq!(code, 1, "the run still fails");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// A directive spelled inside a string literal suppresses nothing.
+#[test]
+fn directive_inside_a_string_is_not_obeyed() {
+    let root = directive_probe(
+        "in-string",
+        "//! Module docs.\n\n/// Docs.\npub fn a() -> &'static str {\n    \"// rust-linter-disable-next-line require-rustdoc -- nope\"\n}\n\npub fn b() {}\n",
+    );
+
+    let (_code, stdout) = run_in(&root, &["src"]);
+
+    assert!(
+        stdout.contains("Missing rustdoc on function \\\"b\\\"."),
+        "the undocumented fn is still reported: {stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// Unused directives are silent unless the report is switched on.
+#[test]
+fn unused_directive_report_is_opt_in() {
+    let source = "//! Module docs.\n\n// rust-linter-disable-next-line max-lines -- nothing here\n/// Docs.\npub fn a() {}\n";
+    let root = directive_probe("unused", source);
+
+    let (_code, quiet) = run_in(&root, &["src"]);
+    assert!(
+        !quiet.contains("unused-disable-directive"),
+        "silent by default: {quiet}"
+    );
+
+    let (_code, loud) = run_in(&root, &["--report-unused-disable-directives", "src"]);
+    assert!(
+        loud.contains("builtin(unused-disable-directive)"),
+        "reported when asked: {loud}"
+    );
+    assert!(
+        loud.contains("\"severity\":\"warn\""),
+        "at warning severity by default: {loud}"
+    );
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// The severity-carrying flag chooses the severity of the unused report.
+#[test]
+fn unused_directive_severity_is_configurable() {
+    let source = "//! Module docs.\n\n// rust-linter-disable-next-line max-lines -- nothing here\n/// Docs.\npub fn a() {}\n";
+    let root = directive_probe("unused-severity", source);
+
+    let (code, stdout) = run_in(
+        &root,
+        &["--report-unused-disable-directives-severity", "error", "src"],
+    );
+
+    assert!(
+        stdout.contains("builtin(unused-disable-directive)"),
+        "reported: {stdout}"
+    );
+    assert!(
+        stdout.contains("\"severity\":\"error\""),
+        "at the requested severity: {stdout}"
+    );
+    assert_eq!(code, 1, "an error-level unused directive fails the run");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+/// The two unused-directive flags cannot be combined.
+#[test]
+fn unused_directive_flags_conflict() {
+    let root = directive_probe("conflict", "//! Module docs.\n");
+
+    let (code, _stdout) = run_in(
+        &root,
+        &[
+            "--report-unused-disable-directives",
+            "--report-unused-disable-directives-severity",
+            "warn",
+            "src",
+        ],
+    );
+
+    // clap rejects conflicting flags with exit 2, the same code it uses for any
+    // other invalid command line.
+    assert_eq!(code, 2, "clap should reject the pair");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

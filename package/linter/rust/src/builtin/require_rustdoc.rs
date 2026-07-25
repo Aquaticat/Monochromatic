@@ -432,6 +432,43 @@ fn describe_missing(node: &SyntaxNode) -> String {
 /// Rule enforcing rustdoc on documentable Rust items.
 pub struct RequireRustdoc;
 
+// What:     `fn declaration_offset(node: &SyntaxNode) -> usize`. Walks the
+//           node's tokens and returns the offset of the first that is not
+//           trivia, falling back to the node's own start when it has none.
+// Why:      A node's range INCLUDES the comments and blank lines attached above
+//           it, which are not part of the declaration a reader is being pointed
+//           at. Skipping them makes the reported position the `fn`, `struct` or
+//           `use` keyword itself, and it is also what lets a
+//           `disable-next-line` directive above an item land on the line before
+//           the finding rather than on the same one.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function declarationOffset(node: SyntaxNode): number
+// ```
+/// Return the offset of a node's first non-trivia token.
+fn declaration_offset(node: &SyntaxNode) -> usize {
+    // `.descendants_with_tokens()` walks nodes AND tokens in source order, so
+    // the first token it yields is the node's first byte.
+    for element in node.descendants_with_tokens() {
+        if let NodeOrToken::Token(token) = element {
+            let kind = token.kind();
+
+            // Comments and whitespace are trivia. Attributes are NOT skipped:
+            // `#[derive(..)]` is part of the declaration a reader sees.
+            if kind == SyntaxKind::COMMENT || kind == SyntaxKind::WHITESPACE {
+                continue;
+            }
+
+            return usize::from(token.text_range().start());
+        }
+    }
+
+    // A node with no tokens cannot occur in a parsed file, but falling back is
+    // cheaper than a panic in a linter's own reporting path.
+    return usize::from(node.text_range().start());
+}
+
 // What:     `impl Rule for RequireRustdoc { ... }`. Provides the trait's methods.
 // Why:      So the runner can hold it as a `Box<dyn Rule>` and call `check`.
 //
@@ -548,7 +585,14 @@ impl Rule for RequireRustdoc {
             // ```ts
             // const offset = node.range.start;
             // ```
-            let offset = usize::from(node.text_range().start());
+            // `declaration_offset` rather than `node.text_range().start()`:
+            // rust-analyzer attaches a preceding comment to the item that
+            // follows it, so an item's own range STARTS at the comment above
+            // it. Reporting that offset pointed the finding at the comment
+            // rather than the declaration, and made a `disable-next-line`
+            // directive above an item look like it sat on the same line as the
+            // finding it governs, so the directive never matched.
+            let offset = declaration_offset(&node);
 
             // What:     `let length = usize::from(node.text_range().len());`.
             //           `usize::from(..)` converts rust-analyzer's `TextSize`

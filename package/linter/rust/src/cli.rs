@@ -147,6 +147,26 @@ pub struct Cli {
     )]
     pub deny: Vec<String>,
 
+    /// Report directives that suppress nothing.
+    #[arg(
+        long = "report-unused-disable-directives",
+        help = "Report directive comments that suppress nothing"
+    )]
+    pub report_unused_disable_directives: bool,
+
+    /// Report directives that suppress nothing, at a chosen severity.
+    // What:     A second flag doing the same job as the one above, but carrying
+    //           a severity. `conflicts_with` makes clap reject both at once.
+    // Why:      oxlint ships exactly this pair, and says only one may be used at
+    //           a time. Accepting both would leave the severity ambiguous.
+    #[arg(
+        long = "report-unused-disable-directives-severity",
+        value_name = "SEVERITY",
+        conflicts_with = "report_unused_disable_directives",
+        help = "Report unused directives at a chosen severity: off, warn or error"
+    )]
+    pub report_unused_disable_directives_severity: Option<String>,
+
     /// Report only errors, hiding warnings.
     #[arg(
         long = "quiet",

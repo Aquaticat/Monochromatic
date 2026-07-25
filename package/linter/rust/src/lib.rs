@@ -140,6 +140,11 @@ use monochromatic_rust_linter_core::config::default_config;
 /// Imports the JSONL renderer, this linter's only output format.
 use monochromatic_rust_linter_core::format::render as render_jsonl;
 
+/// Imports directive parsing and the suppression applier.
+use monochromatic_rust_linter_core::directive::{apply::apply, parse as parse_directives};
+/// Imports the configured-severity type the unused-directive report uses.
+use monochromatic_rust_linter_core::severity::RuleSeverity;
+
 /// Parse real process arguments with clap, then run the linter.
 // What:     `pub fn run_cli_from_env() -> Result<i32>` preserves the old
 //           public entry-point shape. `Result<i32>` can still represent a
@@ -259,7 +264,7 @@ pub fn run_cli(cli: &Cli) -> i32 {
         // ```ts
         // lintFile(file, config, rules, diagnostics);
         // ```
-        lint_file(file, cli.max_lines, &linter, &rules, &mut diagnostics);
+        lint_file(file, cli, &linter, &rules, &mut diagnostics);
     }
 
     // What:     `let warnings = diagnostics.iter().filter(..).count();` counts
@@ -529,7 +534,7 @@ fn collect_rust_files(paths: &[String]) -> Vec<String> {
 /// Read one file and apply every enabled rule to it.
 fn lint_file(
     path: &str,
-    max_lines_override: Option<usize>,
+    cli: &Cli,
     linter: &LinterConfig,
     rules: &[Box<dyn Rule>],
     out: &mut Vec<Diagnostic>,
@@ -583,6 +588,13 @@ fn lint_file(
     // ```ts
     // for (const rule of rules) rule.check(context, config, out);
     // ```
+    // What:     `let mut file_findings = Vec::new();` rather than pushing
+    //           straight into `out`.
+    // Why:      Directives are per file, and applying them needs this file's
+    //           findings on their own. Pushing into the shared buffer first
+    //           would mean picking them back out by index afterwards.
+    let mut file_findings: Vec<Diagnostic> = Vec::new();
+
     for rule in rules {
         // What:     `let resolved = linter.resolve(..)`. Asks the merged config
         //           what severity this rule runs at for THIS file, walking the
@@ -615,7 +627,7 @@ fn lint_file(
         //           budget than another. A single config built up front could not
         //           express that.
         let config = Config {
-            max_lines: resolve_max_lines(max_lines_override, resolved.options.as_ref()),
+            max_lines: resolve_max_lines(cli.max_lines, resolved.options.as_ref()),
         };
 
         // What:     `let before = out.len();` then re-reading the slice after
@@ -625,18 +637,73 @@ fn lint_file(
         //           finding is a warning or an error is a configuration answer,
         //           resolved above. Stamping it here means no rule has to
         //           remember, and none can get it wrong.
-        let before = out.len();
+        let before = file_findings.len();
 
-        rule.check(&context, &config, out);
+        rule.check(&context, &config, &mut file_findings);
 
         // `.as_diagnostic()` is absent only for `Off`, and an off rule never
         // reaches here, so anything absent would be a resolution bug rather
         // than a state to paper over.
         if let Some(reported) = resolved.severity.as_diagnostic() {
-            // `&mut out[before..]` borrows just the newly pushed tail mutably.
-            for diagnostic in &mut out[before..] {
+            // `&mut file_findings[before..]` borrows just the new tail mutably.
+            for diagnostic in &mut file_findings[before..] {
                 diagnostic.severity = reported;
             }
         }
     }
+
+    // What:     `let directives = parse_directives(&context);` then applying
+    //           them. Parsing walks the file's COMMENT tokens, not its lines.
+    // Why:      The lexer is what tells a real comment from the same characters
+    //           inside a string literal, so a directive spelled inside a string
+    //           cannot silence anything.
+    let directives = parse_directives(&context);
+
+    // The closure answers whether a rule permits suppression at all. It is
+    // built here because the rule registry lives in this crate, while the
+    // applier lives in core and must not depend on it.
+    let suppressible = |plugin: &str, rule_id: &str| {
+        return rules
+            .iter()
+            .find(|rule| return rule.plugin() == plugin && rule.id() == rule_id)
+            .is_some_and(|rule| return rule.allows_suppression());
+    };
+
+    let outcome = apply(
+        &directives,
+        file_findings,
+        path,
+        unused_directive_severity(cli, linter),
+        &suppressible,
+    );
+
+    out.extend(outcome.kept);
+    out.extend(outcome.directive_problems);
+}
+
+// What:     `fn unused_directive_severity(cli: &Cli, linter: &LinterConfig) ->
+//           Option<RuleSeverity>`. Resolves the two flags and the config option
+//           into one answer, absent when unused directives are not reported.
+// Why:      Three inputs can turn this on, and deciding it in one place is what
+//           keeps their precedence legible.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function unusedDirectiveSeverity(cli: Cli, linter: LinterConfig): RuleSeverity | undefined
+// ```
+/// Resolve whether, and at what severity, unused directives are reported.
+fn unused_directive_severity(cli: &Cli, linter: &LinterConfig) -> Option<RuleSeverity> {
+    // The severity-carrying flag wins, and an unparseable value is treated as
+    // absent rather than silently defaulting to some severity.
+    if let Some(text) = &cli.report_unused_disable_directives_severity {
+        return RuleSeverity::parse(text);
+    }
+
+    // The bare flag reports at warning level, matching oxlint.
+    if cli.report_unused_disable_directives {
+        return Some(RuleSeverity::Warn);
+    }
+
+    // Otherwise the configured option decides, and says nothing by default.
+    return linter.options.report_unused_disable_directives;
 }

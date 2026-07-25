@@ -21,6 +21,11 @@ pub mod config;
 pub mod context;
 /// Severity levels and the finding record rules emit.
 pub mod diagnostic;
+/// Inline suppression directives and how they are applied.
+pub mod directive;
+/// Unit tests for directive parsing and application.
+#[cfg(test)]
+mod directive_tests;
 /// Edits a rule proposes, and the trust level each carries.
 pub mod fix;
 /// Output formats, one per way of printing the same findings.
