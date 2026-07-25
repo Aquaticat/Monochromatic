@@ -132,8 +132,15 @@ A line is **concept-introducing** if it is any of:
    etc.
   These exist precisely because the language lacks `null` / `throw`.
    Every
-  appearance is concept-introducing for a TS reader — **including bare
-  one-token tails like `Ok(rules)` or `None`**.
+  appearance is concept-introducing for a TS reader,
+   **including bare
+  one-token tails like `Ok(rules)` or `None`**,
+   so every appearance carries a
+  comment.
+   How long that comment is depends on whether this is the concept's
+  first appearance in the file;
+   see "Full block on a concept's first
+  occurrence in each file".
 - a **type-conversion or wrapper-unwrap method call**:
    `.to_string()`,
   `.to_owned()`,
@@ -234,23 +241,50 @@ arithmetic whose TS equivalent is character-identical (`x + 1`),
 re-assignments to an already-commented variable using only TS-native
 operators.
 
-**Comment every recurrence.
-** Do not drop the comment block on the second,
-third,
- or tenth appearance of the same pattern (`?`,
+**Full block on a concept's first occurrence in each file.
+** The first time a concept appears in a file (`?`,
  `Some(...)`,
 `.to_string()`,
- `&` arguments,
+ an `&` argument,
  `match r { Ok(_) => ..., Err(_) => ... }`,
-…) unless the user has explicitly said "you can stop commenting X in this
-file".
- Repetition is the cost;
- clarity is the deliverable.
- If a file
-becomes unreadable from the comment density,
+…),
+ give it the entire What / Why / TypeScript-pseudocode block.
+
+**Later occurrences of that same concept in that same file take one short
+line.
+** Say what this particular line does and move on.
+ Do not restate the
+concept itself:
+ the reader met it above,
+ in this same file.
+
+The scope is **per file**,
+ not per package,
+ not per session,
+ and not per
+crate.
+ A new file starts over at full density,
+ because a reader may open it
+first and has no obligation to have read any sibling.
+
+Two concepts are **the same** when the explanation would be the same sentence.
+`Ok(...)` and `Err(...)` are one concept.
+ `.to_string()` and `.clone()` are
+two,
+ because one converts a type and the other duplicates ownership.
+ When
+in doubt,
+ treat them as different and write the full block.
+
+What this trades away is repetition of the *explanation*,
+ not clarity,
+ which
+is still the deliverable.
+ If a file becomes unreadable from the comment
+density,
  **make the file smaller**,
- do
-not thin out the comments.
+ do not thin out the first-occurrence
+blocks.
 
 ## Comment template
 
@@ -712,10 +746,11 @@ struct Rule { index: usize, src: String, regex: Regex }
   `.unwrap_or(...)`,
    `.ok()`,
    `.clone()`,
-   `?`) because it appeared a few
-  lines up.
-   **Comment every recurrence** until the user explicitly says
-  to stop.
+   `?`) on its **first**
+  appearance in a file because it appeared a few lines up in a different file.
+   The first-occurrence rule is scoped per file;
+   later occurrences within
+  that same file do take the short form.
 - Naming a type without **naming its siblings and justifying the choice**.
   `usize` without "(not `u32`/`u64`/`i64`)";
    `String` without "(not
