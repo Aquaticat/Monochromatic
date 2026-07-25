@@ -196,7 +196,7 @@ by local speed-name heuristic:
 `highspeed` or `high-speed` > `fast` > `luna` > `flash` or `spark` > `terra` >
 `turbo` > `nano` > `mini` > `haiku` > `lite` or `light` > no signal.
 When no speed signal separates candidates,
- selection falls back to input cost and version.
+ selection falls back to input cost.
 
 ### Effective scoped model set
 

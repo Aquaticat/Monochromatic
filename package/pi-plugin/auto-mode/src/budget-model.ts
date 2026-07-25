@@ -10,8 +10,8 @@ import type {
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
-  compareModelSpeed,
   NO_AUTH,
+  scoreModelSpeed,
   resolveEffectiveScope,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -212,7 +212,7 @@ async function findBudgetModel(
   );
 
   /**
-   * Every scoped candidate globally ranked by speed, cost, then model version.
+   * Every scoped candidate globally ranked by speed, then input cost.
    */
   const sortedCandidates = allModels.toSorted(
     /**
@@ -228,10 +228,17 @@ async function findBudgetModel(
       left,
       right,
     ) {
-      return compareModelSpeed({
-        left,
-        right,
-      },);
+      /**
+       * Higher speed-name score sorts first.
+       */
+      const speedDifference = scoreModelSpeed(right,)
+        - scoreModelSpeed(left,);
+      if (speedDifference !== 0)
+        return speedDifference;
+      return left.cost
+        .input
+        - right.cost
+        .input;
     },
   );
 
