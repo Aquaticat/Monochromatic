@@ -41,6 +41,11 @@ toml = "1"
 # walker the CLI already uses, so glob semantics match between the two.
 globset = "0.4"
 
+# `serde_json` serializes the json, gitlab and sarif output formats. Hand-rolled
+# JSON would have to get string escaping exactly right for every message, and a
+# rule message can contain quotes, backslashes and newlines.
+serde_json = "1"
+
 # `ra_ap_syntax` is rust-analyzer's own lossless syntax-tree crate. Pinned to
 # EXACTLY the same version the CLI crate pins, because the two share `SyntaxNode`
 # values across the crate boundary: a version skew would make them two unrelated

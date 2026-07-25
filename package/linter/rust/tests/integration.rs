@@ -835,9 +835,16 @@ fn warn_category_demotes_severity_and_exit_code() {
 
     let (code, stdout) = run_in(&root, &["--max", "2", "-W", "pedantic", "src"]);
 
+    // The output is JSONL, so the assertion reads the record rather than
+    // matching a rendered line. `"severity":"warn"` is the field a consumer
+    // would branch on.
     assert!(
-        stdout.contains("warn[max-lines]"),
+        stdout.contains("\"severity\":\"warn\""),
         "the finding should be labelled a warning: {stdout}"
+    );
+    assert!(
+        stdout.contains("builtin(max-lines)"),
+        "and should name the rule: {stdout}"
     );
     assert_eq!(code, 0, "warnings alone do not fail the run");
 

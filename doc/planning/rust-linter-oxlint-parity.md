@@ -509,6 +509,19 @@ Named so the final claim is checkable rather than asserted:
 - Per-plugin CLI toggles (`--import-plugin`, `--disable-unicorn-plugin` and
   friends) have no counterpart;
   the design has a `plugins` config key with no CLI equivalent.
+- **Output formats.** oxlint ships ten (`default`, `agent`, `json`, `github`,
+  `gitlab`, `unix`, `checkstyle`, `junit`, `sarif`, `stylish`).
+  This linter emits JSONL only, and has no `--format` flag at all.
+  Decided by the user on 2026-07-25, mid-implementation:
+  all ten had been written and verified against oxlint's real output when the
+  scope was cut back to JSONL.
+  The per-record field set is still oxlint's diagnostic object
+  (`message`, `code`, `severity`, `causes`, `filename`, `labels[].span`,
+  `related`, optional `url` and `help`), so a consumer reads one JSONL line
+  exactly as it reads one element of oxlint's `diagnostics` array.
+  Verified: the repository's own oxlint parser,
+  `package-deprecated/mcp/nvim/src/oxlint-parse.ts`,
+  reads these records unmodified.
 - `--tsconfig` is not applicable to a Rust linter and is explicitly out.
 - `--type-aware` and `--type-check` are out by decision D1.
 - `--rules` produces no output at all in oxlint 1.75.0 as invoked here:
@@ -531,8 +544,9 @@ rather than one umbrella task:
 3.  Severity and CLI accumulation: `-A`/`-W`/`-D` over rules and categories,
     `--quiet`, `--deny-warnings`, `--max-warnings`, `--silent`.
     Verified by exit-code tests per combination.
-4.  Output formats: all ten, with JSON matching oxlint's schema field for field.
-    Verified by feeding the JSON to the existing `oxlint-wrapper.ts` tooling.
+4.  Output: JSONL only, one record per line, each carrying oxlint's diagnostic
+    field set. Verified by feeding the records to the repository's existing
+    oxlint parser. Superseded the original plan of all ten formats.
 5.  Directive engine: parsing, justification enforcement, per-rule
     suppressibility, `--report-unused-disable-directives` and its severity
     variant. Verified by a fixture where a directive targets a

@@ -205,6 +205,28 @@ impl Diagnostic {
         return self.labels.first().map_or(1, |label| return label.span.line)
     }
 
+    // What:     `pub fn column(&self) -> usize`. Reads the primary label's
+    //           column, the sibling of `line` above.
+    // Why:      Every renderer prints `line:column`, and reaching through
+    //           `labels[0]` at each of them would panic on an unlabelled finding.
+    /// Return the one-based column of the primary label, or 1 when unlabelled.
+    pub fn column(&self) -> usize {
+        return self.labels.first().map_or(1, |label| return label.span.column);
+    }
+
+    /// Return the primary label's span end line, for renderers that report ranges.
+    pub fn end_line(&self) -> usize {
+        return self.labels.first().map_or(1, |label| return label.span.line);
+    }
+
+    /// Return the primary label's end column, for renderers that report ranges.
+    pub fn end_column(&self) -> usize {
+        return self
+            .labels
+            .first()
+            .map_or(1, |label| return label.span.column + label.span.length);
+    }
+
     /// Return the reported code in oxlint's `plugin(rule)` form.
     pub fn code(&self) -> String {
         // `format!` is the macro, marked by its `!`, that builds an owned String

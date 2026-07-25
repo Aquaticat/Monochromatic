@@ -23,6 +23,11 @@ pub mod context;
 pub mod diagnostic;
 /// Edits a rule proposes, and the trust level each carries.
 pub mod fix;
+/// Output formats, one per way of printing the same findings.
+pub mod format;
+/// Unit tests for the output formats.
+#[cfg(test)]
+mod format_tests;
 /// The interface every lint rule implements.
 pub mod rule;
 /// Configured severities and the categories they can be set through.

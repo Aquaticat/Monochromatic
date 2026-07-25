@@ -137,6 +137,9 @@ use monochromatic_rust_linter_core::config::resolve::{merge, LinterConfig};
 /// Imports the built-in configuration compiled into the core crate.
 use monochromatic_rust_linter_core::config::default_config;
 
+/// Imports the JSONL renderer, this linter's only output format.
+use monochromatic_rust_linter_core::format::render as render_jsonl;
+
 /// Parse real process arguments with clap, then run the linter.
 // What:     `pub fn run_cli_from_env() -> Result<i32>` preserves the old
 //           public entry-point shape. `Result<i32>` can still represent a
@@ -275,16 +278,25 @@ pub fn run_cli(cli: &Cli) -> i32 {
         .filter(|diagnostic| return diagnostic.severity == Severity::Error)
         .count();
 
-    // `--silent` prints nothing at all; `--quiet` prints errors only. Neither
-    // touches the exit code, so a silent run still fails when it should.
-    if !cli.silent {
-        for diagnostic in &diagnostics {
-            if cli.quiet && diagnostic.severity == Severity::Warn {
-                continue;
-            }
+    // `--quiet` drops warnings before rendering. `.cloned()` copies the kept
+    // findings into an owned vector, because the renderer takes a slice.
+    let shown: Vec<Diagnostic> = if cli.quiet {
+        diagnostics
+            .iter()
+            .filter(|diagnostic| return diagnostic.severity != Severity::Warn)
+            .cloned()
+            .collect()
+    } else {
+        diagnostics.clone()
+    };
 
-            println!("{}", diagnostic.render());
-        }
+    // `--silent` suppresses the report entirely, without touching the exit code.
+    //
+    // `print!` rather than `println!`: the renderer already ends every record
+    // with a newline, and a clean run prints nothing at all rather than a blank
+    // line, which is what makes the output safe to pipe straight into `jq`.
+    if !cli.silent {
+        print!("{}", render_jsonl(&shown));
     }
 
     return exit_code_for(cli, linter.options.deny_warnings, warnings, errors);
@@ -420,6 +432,7 @@ fn resolve_max_lines(override_value: Option<usize>, options: Option<&toml::Table
 
     return Config::with_defaults().max_lines;
 }
+
 
 /// Expand file and directory arguments into Rust source file paths.
 fn collect_rust_files(paths: &[String]) -> Vec<String> {
