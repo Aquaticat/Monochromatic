@@ -902,6 +902,13 @@ Run 009 launched.
 PASS 6 RUN 009 (2026-07-24, tip `7c3cca379`, 1634s wall): 1 dispatched, 1
 completed, 0 failed. CuspariaKLSY repaired (74 issues, 70 accepted, all 70
 resolved, 6 findings, 1634s). 10/92 settled. Run 010 launched.
+PASS 6 RUN 010 (2026-07-24, tip `d1d2f2c52`, 2505s wall): 2 dispatched, 2
+completed, 0 failed. CutOceanHeyFis1 repaired (19 issues, 19 accepted, 18
+resolved, 5 findings, 1182s); DarlinChit repaired (46 issues, 40 accepted,
+40 resolved, 20 findings, 1323s). 12/92 settled. (Run 010's first launch
+was killed by a transient harness hiccup right after the run-009 commit
+landed; relaunched standalone. Going forward: commit foreground, launch
+corpus-pass as its own background command.) Run 011 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
