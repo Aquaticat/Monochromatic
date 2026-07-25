@@ -224,8 +224,14 @@ async function findBudgetModel(
      *
      * @returns sort order
      */
-    function candidatesBySpeed(left, right,) {
-      return compareModelSpeed({ left, right, },);
+    function candidatesBySpeed(
+      left,
+      right,
+    ) {
+      return compareModelSpeed({
+        left,
+        right,
+      },);
     },
   );
 
