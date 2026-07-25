@@ -20,9 +20,11 @@ run = "cargo clippy --fix --allow-dirty --allow-staged"
 
 [tasks."lint:rust"]
 description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
-# The linter consumes this crate, so linting with it is a build-order cycle only
-# in appearance: cargo builds the linter from its own manifest, which depends on
-# this crate's source as it stands on disk.
+# This looks like a cycle and is not one. The linter depends on this crate, and
+# this task runs the linter over this crate. Cargo resolves it in one direction:
+# it builds the linter from the linter's own manifest, reading this crate's
+# source as it stands on disk, then runs the resulting binary over that same
+# source. Nothing here depends on the linter having already been built.
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]

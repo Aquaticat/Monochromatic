@@ -457,3 +457,47 @@ fn cxx_qt_carveout_is_narrow() {
         "non-cxx-qt trait-impl method still flagged: {plain_trait_impl:?}",
     );
 }
+
+// What:     A test that reads the span, not just the message. Every other test
+//           in this file asserts on counts and text.
+// Why:      The finding's span is what the JSON, unix, and github output formats
+//           will report. A span built from the item's LINE can only ever say
+//           column 1, so this pins the column to the item's real position and
+//           fails if the rule ever goes back through a line-based lookup.
+/// An indented item reports the column it starts at, not column 1.
+#[test]
+fn indented_item_reports_its_real_column() {
+    // The inner `fn b` sits four spaces into its line, inside a documented mod.
+    let found = item_findings("//! m\n/// outer\nmod outer {\n    fn b() {}\n}\n", "src/x.rs");
+
+    assert_eq!(found.len(), 1, "only the inner fn is undocumented: {found:?}");
+
+    // `.labels[0]` is the primary label; the rule always emits exactly one.
+    let span = found[0].labels[0].span;
+
+    assert_eq!(span.line, 4, "the inner fn is on line 4");
+    assert_eq!(span.column, 5, "four spaces in, counted one-based");
+    assert!(
+        span.length > 0,
+        "the label should underline the declaration, not collapse to a caret",
+    );
+}
+
+/// A finding's underline never runs past the line its item starts on.
+#[test]
+fn multi_line_item_underline_stays_on_one_line() {
+    // A function whose body spans three lines; its text range covers all of them.
+    let found = item_findings("//! m\nfn wide() {\n    let a = 1;\n}\n", "src/x.rs");
+
+    assert_eq!(found.len(), 1, "one undocumented fn: {found:?}");
+
+    let span = found[0].labels[0].span;
+
+    assert_eq!(span.line, 2, "starts on line 2");
+    assert_eq!(
+        span.length, 11,
+        // `{{` escapes a literal brace: assert_eq! parses this as a format
+        // string, so a bare `{` would be read as an interpolation slot.
+        "clamped to the `fn wide() {{` line rather than the whole body",
+    );
+}

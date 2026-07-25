@@ -46,18 +46,6 @@ use crate::diagnostic::{Diagnostic, Severity};
 /// Imports rule trait implemented by this rule.
 use crate::rule::Rule;
 
-// What:     `use crate::span::Span;` reaches the source-range type through this
-//           crate's re-export of the core crate's module.
-// Why:      A diagnostic points at a range, and this rule builds that range from
-//           the line of the item missing its documentation.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Span } from "./span";
-// ```
-/// Imports the source-range type carried by every diagnostic label.
-use crate::span::Span;
-
 // What:     `use ra_ap_syntax::ast::{DocCommentIter, Impl};`. `DocCommentIter` is
 //           rust-analyzer's iterator over an item's doc comments; `Impl` is the
 //           typed AST view of an `impl` block.
@@ -582,15 +570,19 @@ impl Rule for RequireRustdoc {
             // ```
             let offset = usize::from(node.text_range().start());
 
-            // What:     `let line = context.line_at_offset(offset);`. Convert the
-            //           byte offset to the 1-based line number containing it.
-            // Why:      Diagnostics point at a human line number.
+            // What:     `let length = usize::from(node.text_range().len());`.
+            //           `usize::from(..)` converts rust-analyzer's `TextSize`
+            //           newtype into a plain number. `.len()` is the node's full
+            //           byte width, which for an item spans its entire body.
+            // Why:      `span_at_offset` clamps this to the end of the line the
+            //           item starts on, so the underline covers the declaration
+            //           rather than every line of a long function.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const line = ctx.lineAtOffset(offset);
+            // const length = node.range.end - node.range.start;
             // ```
-            let line = context.line_at_offset(offset);
+            let length = usize::from(node.text_range().len());
 
             // What:     `let message = describe_missing(&node);`. Build the
             //           human-readable message for this undocumented node.
@@ -614,13 +606,10 @@ impl Rule for RequireRustdoc {
             // ```ts
             // out.push(Diagnostic.create("builtin", "require-rustdoc", "error", message, ctx.path, span));
             // ```
-            // `.unwrap_or_else(closure)` computes the fallback lazily and only
-            // when the lookup came back absent, unlike `.unwrap_or(value)` which
-            // builds it either way. Falling back to the file's start is the
-            // honest answer when the item's line is past the end.
-            let span = context
-                .line_span(line)
-                .unwrap_or_else(|| Span::at(0, line, 1));
+            // Built from the item's own offset rather than from its line, so the
+            // reported column is where the item actually starts. Going through
+            // `line_span` here would report column 1 for every finding.
+            let span = context.span_at_offset(offset, length);
 
             out.push(Diagnostic::new(
                 "builtin",

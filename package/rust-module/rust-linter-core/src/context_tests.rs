@@ -103,6 +103,57 @@ fn empty_trailing_line_has_zero_length() {
     assert_eq!(span.offset, 10, "positioned at the end of the source");
 }
 
+/// An offset mid-line reports the column it actually sits at, not column 1.
+#[test]
+fn span_at_offset_reports_the_real_column() {
+    let context = context_for("fn a() {}\n    fn b() {}\n");
+
+    // Offset 14 is the `f` of the indented `fn b`, four spaces into line 2.
+    let span = context.span_at_offset(14, 9);
+
+    assert_eq!(span.line, 2, "second line");
+    assert_eq!(span.column, 5, "four spaces in, counted one-based");
+    assert_eq!(span.offset, 14, "offset round-trips");
+}
+
+/// The first byte of a file is column 1 on line 1.
+#[test]
+fn span_at_offset_starts_at_column_one() {
+    let context = context_for("fn a() {}\n");
+
+    let span = context.span_at_offset(0, 2);
+
+    assert_eq!(span.line, 1, "first line");
+    assert_eq!(span.column, 1, "first column");
+    assert_eq!(span.length, 2, "short length passes through unclamped");
+}
+
+/// A range longer than its line is clamped, so an underline stays on one line.
+#[test]
+fn span_at_offset_clamps_to_the_starting_line() {
+    let context = context_for("fn a() {\n    body();\n}\n");
+
+    // Ask for the whole item, which runs to the closing brace on line 3.
+    let span = context.span_at_offset(0, 22);
+
+    assert_eq!(span.line, 1, "starts on line 1");
+    assert_eq!(
+        span.length, 8,
+        "clamped to the first line's text, excluding its newline"
+    );
+}
+
+/// An offset past the end of the source resolves rather than panicking.
+#[test]
+fn span_at_offset_survives_an_offset_past_the_end() {
+    let context = context_for("fn a() {}\n");
+
+    let span = context.span_at_offset(500, 3);
+
+    assert_eq!(span.length, 0, "nothing left to underline past the end");
+    assert_eq!(span.offset, 500, "offset still round-trips");
+}
+
 /// An empty source still answers for its single line.
 #[test]
 fn empty_source_has_one_line() {

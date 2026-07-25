@@ -337,7 +337,61 @@ impl LintContext {
         };
 
         // Column 1: by construction this span starts at the line's first byte.
+        // A rule that knows a finer position must use `span_at_offset` instead,
+        // or every diagnostic it emits will claim column 1.
         return Some(Span::new(start, end.saturating_sub(start), line, 1))
+    }
+
+    // What:     `pub fn span_at_offset(&self, offset: usize, length: usize) ->
+    //           Span`. Returns a `Span` directly rather than an `Option<Span>`,
+    //           unlike `line_span` above, because any byte offset resolves to
+    //           some line even when it sits past the end of the source.
+    // Why:      A rule that knows exactly where its finding starts should report
+    //           that position, not the start of the line containing it.
+    //           `line_span` can only ever answer column 1, so a rule holding a
+    //           real offset must not go through it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // spanAtOffset(offset: number, length: number): Span
+    // ```
+    /// Resolve a byte range into a span, clamped to the line it starts on.
+    pub fn span_at_offset(&self, offset: usize, length: usize) -> Span {
+        // Zero-based index of the line this offset falls on.
+        let index = line_index(offset, &self.line_starts);
+
+        // Where that line begins. `.copied()` turns `Option<&usize>` into
+        // `Option<usize>`; the fallback covers an empty line table.
+        let line_start = self.line_starts.get(index).copied().unwrap_or(0);
+
+        // Columns are one-based and counted in bytes. `saturating_sub` clamps at
+        // zero rather than wrapping, which an offset before the line start would
+        // otherwise do, `usize` being unsigned.
+        let column = offset.saturating_sub(line_start) + 1;
+
+        // Where the line ends, so an underline never runs past it. A span that
+        // spilled onto later lines would make a multi-line item underline its
+        // whole body, which is noise rather than information.
+        let line_end = self
+            .line_starts
+            .get(index + 1)
+            .copied()
+            .unwrap_or(self.source.len());
+
+        // Drop the trailing line break from the clamp, so the underline covers
+        // text rather than the newline that ends it.
+        let text_end = if line_end > line_start && self.source[line_start..line_end].ends_with('\n')
+        {
+            line_end.saturating_sub(1)
+        } else {
+            line_end
+        };
+
+        // `.min(other)` keeps whichever is smaller, so a long item is truncated
+        // at the end of its first line while a short one is untouched.
+        let clamped = length.min(text_end.saturating_sub(offset));
+
+        return Span::new(offset, clamped, index + 1, column)
     }
 }
 
