@@ -1106,6 +1106,15 @@ any that abort; no stall risk), and redirect ACTIVE effort to tasks 31/32
 (judge crosscheck + stratified sample tooling) which are unblocked against the
 24 already-settled entries -- only the final draw waits on band fill. Run 024
 launched.
+PASS 6 RUN 024 (2026-07-25, tip `87c13c925`, hit the 90-min HARD cap): 0
+settled, still 24/92. NIGHT81473140 (LARGE, 12301B zh, the 9-40KB tail)
+aborted at the hard cap after completing 22 cached slices; status=ERROR
+aborted=true, attempts=1. This is the resume-first path working as designed --
+the 22 finished slices persist, so run 025 resume-first-picks NIGHT81473140 and
+continues from slice 22+ rather than restarting (degrade-and-persist + the
+cap-abort-completes->=1-slice guarantee make this monotonic). First entry to
+exercise the hard cap this pass; the biggest large entries will need multi-run
+resume. Run 025 launched to resume it.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
