@@ -1007,6 +1007,11 @@ kill, so it sorts one slot behind the 0-attempt entries (harmless, still a
 needed medium). RULE: launch corpus-pass ONLY as a standalone tracked
 background command, never a bare `&` chained after another command. Run 016
 launched.
+PASS 6 RUN 016 (2026-07-25, tip `8eddd3906`, 4016s wall ~67 min): 1 settled,
+17/92. Jennife80677612 repaired (3859B/large-bottom, 84 issues, 78 accepted,
+76 resolved, 11 findings); one run, no cap. Large settled 4->5 (all five
+still lower-large 3.9-7.4KB; bigger large entries still ahead). Bands now 9
+small / 3 medium / 5 large. Run 017 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
