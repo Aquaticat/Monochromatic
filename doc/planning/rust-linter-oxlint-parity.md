@@ -189,7 +189,37 @@ Root config formats already in use:
 `*.toml` (`clippy`, `bunfig`, `mise`),
 and `*.json` (`dprint`, `node.config`, `socket`, `tsconfig`).
 
-Status: asked.
+Status: ANSWERED 2026-07-25.
+Chosen: TOML, read natively by the Rust binary, for now.
+Follow-up tracked in issue #400,
+"Revisit rust-linter config format after oxlint parity lands
+(Pkl, JSONC, or rendered TypeScript)".
+
+Pkl was considered and set aside for this pass.
+Facts that shaped that:
+
+- The repo deliberately retired Pkl in issue #357,
+  "build(cli-git): retire hk and Pkl after policy parity",
+  which removed root `hk.pkl`, the `apple/pkl` mise tool declaration, and
+  `.idea/pklSettings.xml`.
+  No `pkl` binary is installed on this machine and `mise.toml` declares none.
+- Rust cannot embed a Pkl evaluator.
+  `rpkl` (0.8.0, June 2026, 34 percent doc coverage) spawns `pkl server` and
+  exchanges MessagePack over stdio.
+  Pkl native binaries cover macOS amd64/aarch64, Linux amd64/aarch64,
+  Alpine amd64, and Windows amd64.
+  So "config is Pkl" would have meant either a generated-JSON build step or a
+  runtime dependency on the `pkl` executable.
+
+Consequences:
+
+- The binary stays standalone: no Node, no JVM, no `pkl`, no generated artifact.
+- oxlint's published `configuration_schema.json` is not reusable as-is;
+  the TOML tree has to express the same concepts
+  (`rules`, `categories`, `overrides`, `extends`, `ignorePatterns`, `options`)
+  in TOML's array-of-tables shape.
+- Pattern rules benefit: TOML multi-line literal strings avoid the escaping
+  that JSON would have forced.
 
 ### D4. Plugin mechanism
 
@@ -229,6 +259,44 @@ Consequences:
 - `AGENTS.md` SYB applies to the pattern language:
   it must not become an invented comment-string DSL for relations the syntax
   tree already expresses.
+
+### D6. Pattern-rule language
+
+Status: ANSWERED 2026-07-25.
+Chosen: patterns are written as Rust snippets with metavariables, matched
+structurally against the `ra_ap_syntax` CST, in the style of ast-grep and
+semgrep.
+Metavariables are encoded as ordinary identifiers (`META_X`) so the snippet
+parses as valid Rust;
+ast-grep's `$X` spelling is not assumed to parse under `ra_ap_syntax` and was
+not adopted.
+A `fix` snippet in the same form supplies the rewrite, so pattern rules
+participate in the autofix pipeline decided in D1.
+
+Accepted shape:
+
+```toml
+[[pattern]]
+id      = "no-unwrap"
+match   = "META_X.unwrap()"
+fix     = 'META_X.expect("TODO: explain")'
+message = "unwrap() panics; name the invariant"
+
+not-inside = """
+#[test]
+fn META_F() {}
+"""
+```
+
+This is the SYB-compliant answer:
+the pattern is written in the destination language rather than in an invented
+DSL describing it.
+
+Available for the text-predicate half where one is needed:
+`package/rust-module/forbidden-regex`,
+the in-house linear-time engine with fuzz and bench harnesses,
+already consumed by `package/cli/forbidden-strings` over a path dependency.
+Using it rather than `regex` satisfies RG2 and RG3 by construction.
 
 ### D5. Crate layout and delivery increments
 
