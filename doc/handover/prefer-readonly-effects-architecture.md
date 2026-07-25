@@ -14,18 +14,22 @@ Node-API,
 or a custom linter distribution.
 Do not fork or contribute to Oxlint or `tsgolint` for this rule.
 
-A parameter-reachable call has exactly one accepted outcome:
+A parameter-reachable call has one accepted outcome:
 
-- derive effects from the exact repository-owned or shipped runtime implementation;
-- prove that a separately verified isolated value shares no caller-owned identity or capability;
-- reject the call as opaque.
+- derive effects from exact repository-owned or source-map-resolved shipped runtime implementation;
+- prove separately verified isolated value shares no caller-owned identity or capability;
+- after implementation inference fails,
+  bind runtime-owned host capability through exact `ForeignHostCapability` marker and corresponding `@mutates` contract;
+- reject call as opaque.
 
 Handwritten package,
 ECMAScript,
 DOM,
 and Node effect catalogs are removed.
-`@mutates` is documentation only and cannot discharge unresolved behavior.
-`ForeignBorrowed` records ownership provenance but cannot make an opaque call acceptable.
+`@mutates` alone cannot discharge unresolved behavior.
+`ForeignBorrowed` records ownership provenance but cannot make opaque call acceptable.
+`ForeignHostCapability` is explicit source authority,
+not analyzer catalog entry.
 Static plain-data typing is not runtime isolation proof.
 
 ## Implemented architecture
@@ -60,12 +64,18 @@ TypeScript library declarations establish identity and shape,
 not behavior.
 Parameter-reachable bodyless ECMAScript,
 DOM,
-and Node calls are therefore opaque.
+and Node calls remain opaque by default.
 Removed special cases include global `String`,
 observational collection methods,
-host methods,
 shallow frozen copies retaining nested identity,
 and statically plain structured values.
+
+When source and source-map inference cannot recover exact implementation,
+`ForeignHostCapability<T>` can authorize exact runtime-owned input.
+Analyzer recognizes exact project declaration identity,
+requires corresponding `@mutates` contract,
+and rejects same-named aliases.
+This boundary covers Pi extension interfaces implemented by private closure factories and native `AbortSignal.any`.
 
 ### Cache model
 
@@ -78,7 +88,8 @@ declaration-surface,
 lockfile,
 analyzer,
 and external implementation identities.
-There is no catalog result origin or documented-uncertainty acceptance state.
+There is no catalog result origin or package-member authority table.
+Explicit host authority remains visible in source parameter type and mutation contract.
 
 Process-local final indexes use TypeScript's immutable semantic `Project` snapshot object as authority.
 The former `effectProjectSourceSignatures()` project-wide metadata scan is removed.

@@ -1,297 +1,181 @@
-# Pi extension methods change host state without assigning the API input
+# Pi extension methods cross opaque host capability boundaries
 
 ## Symptom
 
-The project readonly rule originally reported this uncertainty:
+The semantic readonly rule reported unresolved effects for Pi extension calls such as:
 
 ```text
-The function input named "pi" is used by these calls: pi.appendEntry, pi.registerTool.
+pi.on
+pi.appendEntry
+pi.registerCommand
+pi.registerShortcut
+pi.registerTool
+ctx.ui.notify
+ctx.ui.select
+ctx.ui.setStatus
+ctx.ui.setWidget
+ctx.sessionManager.getBranch
+ctx.modelRegistry.getApiKeyAndHeaders
+ctx.abort
 ```
 
-That message did not say these expressions are method calls.
-It also did not explain that a method can change state without assigning a new value to `pi`.
+These calls do not assign a new value to `pi` or `ctx`.
+They can still change state held by the Pi runtime,
+retain callbacks,
+invoke supplied behavior,
+or update caches behind those capabilities.
 
-## What the installed API declares
+## Installed implementation evidence
 
-The installed Pi `0.80.6` declaration at
-`node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/types.d.ts`
-declares the registration and append members with method syntax:
+The installed `@earendil-works/pi-coding-agent` version is `0.82.0`.
+Its declarations expose `ExtensionAPI` and `ExtensionContext` as interfaces in
+`node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/types.d.ts`.
+Those declarations describe type shape but contain no executable bodies.
 
-```ts
-on(event: "before_agent_start", handler: ExtensionHandler<BeforeAgentStartEvent, BeforeAgentStartEventResult>): void;
+The runtime implementation is distributed across private factories and runtime classes.
+For example,
+`dist/core/extensions/loader.js` creates the extension API object and implements registration methods by updating
+extension maps or delegating to active runtime services.
+`SessionManager.getBranch`,
+UI operations,
+model-registry authentication,
+and cancellation live in other runtime modules.
 
-registerTool<TParams extends TSchema = TSchema, TDetails = unknown, TState = any>(
-  tool: ToolDefinition<TParams, TDetails, TState>,
-): void;
+The shipped JavaScript has adjacent source maps.
+`dist/core/extensions/loader.js.map` identifies `src/core/extensions/loader.ts` and embeds its source text.
+That evidence is sufficient to inspect the private factory,
+but it does not provide a direct exported runtime callable corresponding to the public `ExtensionAPI` interface method.
+The method closes over private `extension` and `runtime` state rather than receiving that state as ordinary parameters.
 
-appendEntry<T = unknown>(customType: string, data?: T): void;
-```
+## Why source-map inference stops here
 
-No assignment such as `pi.on = value` or `pi.registerTool = value` is needed for these calls to change state.
-Assignment would replace a property on the API object.
-Calling a method can instead change data held behind the API capability.
+`prefer-readonly-parameter-type` first resolves locked package exports and analyzes exact shipped implementations.
+This succeeds for directly exported Pi AI provider callables.
+It fails closed for Pi extension interface methods because all of these conditions hold:
 
-## What the installed implementation changes
+- selected declaration belongs to bodyless public interface;
+- declaration owner is a type-only export;
+- executable method is nested inside private factory return object;
+- method effects reach captured private state represented by receiver capability;
+- no exact exported callable identity connects interface member to private closure method.
 
-The installed extension loader at
-`node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/extensions/loader.js`
-implements `on` by appending the handler to `extension.handlers`:
+A local wrapper does not improve proof.
+The wrapper still calls the same bodyless interface method and only relocates the unresolved receiver.
+A class,
+global,
+or closure that stores the capability hides provenance without proving effects.
 
-```js
-on(event, handler) {
-  runtime.assertActive();
-  const list = extension.handlers.get(event) ?? [];
-  list.push(handler);
-  extension.handlers.set(event, list);
-}
-```
-
-The same loader implements `registerTool` by updating `extension.tools` and refreshing the tool registry:
-
-```js
-registerTool(tool) {
-  runtime.assertActive();
-  extension.tools.set(tool.name, {
-    definition: tool,
-    sourceInfo: extension.sourceInfo,
-  });
-  runtime.refreshTools();
-}
-```
-
-The same loader delegates `appendEntry` to the active runtime.
-The installed agent session at
-`node_modules/.pnpm/@earendil-works+pi-coding-agent@0.80.6/node_modules/@earendil-works/pi-coding-agent/dist/core/agent-session.js`
-appends a custom session entry and emits an `entry_appended` event:
-
-```js
-appendEntry: (customType, data) => {
-  const entryId = this.sessionManager.appendCustomEntry(customType, data);
-  const entry = this.sessionManager.getEntry(entryId);
-  if (entry) {
-    this._emit({ type: "entry_appended", entry });
-  }
-}
-```
-
-The installed loader at `dist/core/extensions/loader.js:192` to `213`
-also stores commands and message renderers in extension maps:
-
-```js
-registerCommand(name, options) {
-  extension.commands.set(name, { name, sourceInfo: extension.sourceInfo, ...options });
-}
-registerMessageRenderer(customType, renderer) {
-  extension.messageRenderers.set(customType, renderer);
-}
-```
-
-The same loader at `dist/core/extensions/loader.js:192` to `213`
-stores shortcuts as well as commands and message renderers in extension maps.
-The loader at lines `228` to `266`
-delegates `sendMessage` to runtime message handling and `setActiveTools` to session tool-state replacement.
-By contrast,
-`getActiveTools` calls `AgentSession.getActiveToolNames()`.
-`dist/core/agent-session.js:591` to `593` returns a newly mapped array of primitive names.
-
-The installed `Theme` implementation at `dist/modes/interactive/theme/theme.js:254` to `267`
-reads its color maps in `fg` and delegates primitive text to Chalk in `bold`.
-`dist/core/session-manager.js:881` to `890` shows that `SessionManager.getBranch` creates a fresh path array
-without changing session state.
-`ExtensionCommandContext.waitForIdle` only waits for current streaming to finish.
-`dist/modes/interactive/interactive-mode.js:1651` to `1657` binds `ExtensionUIContext.notify`
-to `showExtensionNotify`.
-That implementation delegates to status,
-warning,
-or error UI updates at lines `1886` to `1896`.
-The same interactive-mode source binds `select`,
-`setStatus`,
-and `setWidget` to selector and rendered UI state transitions.
-`dist/core/agent-session.js:1874` to `1880` shows that `ExtensionContext.abort` invokes active abort handling.
-`dist/core/model-registry.js:505` to `527` shows that `getAll` and `find` are registry observations,
-while `hasConfiguredAuth` reads supplied model fields without refreshing auth.
-`dist/core/model-registry.js:553` to `579` shows that `ModelRegistry.getApiKeyAndHeaders` is effectful
-because auth resolution can execute command-backed configuration.
-Its reads from the supplied model can also invoke caller-owned accessors or proxy traps,
-so the catalog retains the model argument as an affected input.
-
-These methods therefore have different exact effects even though none reassigns the local capability binding.
+Full contextual factory inference would need to prove interface return type,
+returned object member identity,
+captured variable ownership,
+and every transitive runtime call.
+The analyzer does not claim that proof when any link is absent.
 
 ## Resolution
 
-`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/pi-package-effect-catalog.ts`
-now records exact receiver effects for:
+Source and source-map implementation inference remains first.
+When it cannot resolve exact runtime implementation,
+callers may use `ForeignHostCapability<T>` from
+`@monochromatic-dev/ownership-marker-foreign-borrowed/ts`.
 
-- package `@earendil-works/pi-coding-agent`;
-- package major `0`;
-- owner type `ExtensionAPI`;
-- mutating `ExtensionAPI` members `appendEntry`,
-  `on`,
-  `registerCommand`,
-  `registerMessageRenderer`,
-  `registerShortcut`,
-  `registerTool`,
-  `sendMessage`,
-  `setActiveTools`,
-  and `setThinkingLevel`;
-- observational `ExtensionAPI` members `getActiveTools` and `getThinkingLevel`;
-- observational `Theme.bold`,
-  `Theme.fg`,
-  `SessionManager.getBranch`,
-  and `ExtensionCommandContext.waitForIdle`;
-- mutating `ExtensionContext.abort`;
-- mutating `ExtensionUIContext.notify`,
-  `select`,
-  `setStatus`,
-  and `setWidget`,
-  with supplied selector and widget inputs retained when applicable;
-- observational `ModelRegistry.find` and `ModelRegistry.getAll`;
-- model-input effects for `ModelRegistry.hasConfiguredAuth`;
-- receiver and model-input effects for `ModelRegistry.getApiKeyAndHeaders`,
-  because auth resolution can inspect that supplied object and run command-backed configuration;
-- observational package callable `isToolCallEventType`.
+The marker is accepted only through its exact project-owned declaration identity.
+A same-named local alias remains opaque.
+Optional unions are traversed by semantic type identity,
+so `ForeignHostCapability<AbortSignal> | undefined` retains exact authority without string matching.
 
-Imported callable catalog targets can name exact option fields.
-The shared model-selection entries target only `ctx` for `resolveEffectiveScope`
-and `scope` plus `modelRegistry` for `resolveRequestedModel`.
-They do not mark unrelated values stored in either options bag.
+An unresolved effect reaches acceptance only when both conditions hold:
 
-`package/pi-plugin/auto-mode/src/register-propose-trust.ts` documents the known state changes with:
+- affected parameter contains exact `ForeignHostCapability` marker;
+- callable has corresponding `@mutates` contract.
+
+Example:
 
 ```ts
-@mutates pi - `pi.registerTool` changes registered tools; deferred `pi.appendEntry` calls append accepted trust state.
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+/**
+ * Registers extension behavior.
+ *
+ * @param pi - Pi-owned extension capability.
+ *
+ * @mutates pi - Registration updates host-owned extension state.
+ */
+function register(
+  pi: ForeignHostCapability<ExtensionAPI>,
+): void {
+  pi.on('agent_start', handleAgentStart,);
+}
 ```
 
-`package/pi-plugin/current-time-context/src/index.ts` documents its registration effect with:
+`ForeignHostCapability<T>` also carries ordinary foreign ownership.
+It does not make an unmarked argument safe,
+weaken package implementation inference,
+or add package and method names to analyzer.
 
-```ts
-@mutates pi - `pi.on` stores the `before_agent_start` event registration in the Pi host
-```
+Native `AbortSignal.any` uses the same fallback because TypeScript default-library declarations provide no inspectable
+host implementation.
+`structuredReviewSignal` marks only caller-provided signal as host capability and documents possible dependent-signal
+retention.
 
-`package/pi-plugin/thinking-default/src/index.ts` documents registration and active-level updates,
-without inventing a mutation effect for `getThinkingLevel`:
+## Static provider imports
 
-```ts
-@mutates pi - `pi.on` registers lifecycle handlers and `pi.setThinkingLevel` changes active host state
-```
+Reviewer dispatch uses static imports of Pi AI `.lazy` provider modules.
+There is no authored runtime `import()` in model-review provider dispatch.
+The `.lazy` modules preserve Pi AI optional-provider loading behavior without forcing every provider SDK to be installed
+when model-review module loads.
 
-Unknown method calls now receive a method-specific diagnostic.
-It states that methods can change data in their object or controlled system without assigning to the input.
-The diagnostic lists every supported remediation:
-
-1. remove or rewrite the call;
-2. include repository source in the nearest TypeScript project;
-3. audit the exact external call and add a tested catalogue entry;
-4. document every possibly changed input with `@mutates` in the current or a dedicated function.
+Auto-mode `/guard` handling also statically imports `getTrustDirectives`.
+The built auto-mode artifact no longer emits Rolldown's ineffective dynamic-import warning.
 
 ## Verification
 
-The following checks passed:
+The following checks pass:
 
 ```text
 mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types
 mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:oxlint
-mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
 mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit
-mise run //package/pi-plugin/current-time-context:lint:oxlint
-mise run //package/pi-plugin/current-time-context:test:unit
-mise run //package/pi-plugin/current-time-context:verify:extension
-mise run //package/pi-shared/model-selection:lint:oxlint
-mise run //package/pi-shared/model-selection:test:unit
-mise run //package/pi-plugin/advisor:lint:oxlint
-mise run //package/pi-plugin/advisor:test:unit
-mise run //package/pi-plugin/advisor:verify:extension
+mise run //package/ownership-marker/foreign-borrowed:lint:types
+mise run //package/ownership-marker/foreign-borrowed:lint:oxlint
+mise run //package/pi-shared/model-review:build
+mise run //package/pi-shared/model-review:lint:types
+mise run //package/pi-shared/model-review:lint:oxlint
+mise run //package/pi-shared/model-review:test:unit
+mise run //package/pi-plugin/auto-mode:build
 mise run //package/pi-plugin/auto-mode:lint:types
 mise run //package/pi-plugin/auto-mode:lint:oxlint
-mise run //package/pi-plugin/auto-mode:build:js:node
 mise run //package/pi-plugin/auto-mode:test:unit
+mise run //package/pi-plugin/goal:build
+mise run //package/pi-plugin/goal:lint:types
+mise run //package/pi-plugin/goal:test:unit
 ```
 
-The intrinsic test resolves `appendEntry` and `registerTool` through real Pi declaration provenance.
-`package/oxlint-plugin/prefer-readonly-parameter-type/src/pi-package-effect-catalog.unit.test.ts`
-opens real Advisor sources through the TypeScript bridge and verifies exact package provenance,
-owner,
-member,
-and targets for every added Pi method.
-The rule-level invalid fixture also proves that direct callback invocation without a contract
-reports the missing callback contract.
-The current continuation separates that invoked-capability fact from referent mutation.
-A pure or throwing owned callback no longer makes its function object or captured readonly input dishonest merely
-because another helper invokes it.
-Unknown or externally supplied callbacks still require an honest invocation contract because they can change captured
-state,
-schedule work,
-or exercise another capability.
-Package-local Oxlint accepts the documented effects in current-time-context,
-Advisor,
-shared model selection,
-and auto-mode.
-Those package checks passed before the invoked-capability refinement.
-After that refinement,
-the plugin's type check,
-Oxlint check,
-and complete unit suite pass.
-The unit assertion now expects 11 diagnostics rather than the obsolete referent-mutation count of 12.
-
-The subsequent root `mise run lint:oxlint` sweep completed its Oxlint run in `259.1` seconds.
-It returned status `1` because the repository still had `3,803` warnings and `1,714` errors across all rules,
-not because the semantic bridge crashed.
-The replacement rule reported `1,049` migration diagnostics,
-no semantic bridge failure marker,
-and no remaining Advisor or shared model-selection diagnostic.
-
-## Verified workarounds
-
-Use `ForeignBorrowed<T>` for Pi-owned capabilities without claiming immutability.
-Pair every mutating or effectful exact call with `@mutates` at each forwarding boundary.
-Use `ReadonlyDeep<T>` only for structural message and result data whose nested projection remains assignable.
-
-This keeps host callback and registration effects visible.
-Its tradeoff is contract propagation through local wrappers that forward the same capability.
+Auto-mode and model-review Oxlint each report zero warnings and zero errors.
+The rule tests prove exact marker acceptance,
+missing-contract rejection,
+same-named alias rejection,
+optional-union recognition,
+and catalog-free architecture.
 
 ## What does not work
 
-- `ReadonlyDeep<ExtensionAPI>` retains mutating methods and therefore makes a dishonest immutability claim.
-- Treating every method as observational misses registration,
-  message,
+- `ReadonlyDeep<ExtensionAPI>` keeps mutating methods and makes a dishonest immutability claim.
+- `ForeignBorrowed<ExtensionAPI>` records ownership but does not authorize unresolved behavior.
+- Local wrappers only move the bodyless call.
+- Global,
+  class,
+  or closure capability retention hides provenance without proof.
+- Method-name or package-name effect tables become handwritten authorities and drift from installed implementation.
+- `@mutates` alone documents a claim but cannot authorize unresolved implementation.
+- Treating all host methods as observational misses registration,
   UI,
-  active-tool,
-  and command-backed-auth effects.
-- Treating every method as mutating creates false contracts for `getActiveTools`,
-  `getBranch`,
-  `waitForIdle`,
-  and primitive theme formatting.
-- Treating direct callback invocation as observational misses changes to captured state,
-  invoked capabilities,
-  and deferred work.
-- Treating callback invocation as proof that the function object or every captured value was mutated creates false
-  dishonest-readonly findings for pure and throwing local callbacks.
-- Keeping direct callback invocation opaque rejects a verified local wrapper even after its exact relation
-  to supplied callback capability is documented.
-  The distinct invoked-capability effect preserves the contract without inventing referent mutation.
-- Checking only method names can match unrelated owners.
-  Exact package major,
-  owner type,
-  member,
-  and implementation evidence are all required.
+  cancellation,
+  and command-backed authentication effects.
+- Treating all methods as mutating without explicit boundary authority weakens fail-closed analysis globally.
 
-## Upstream filing artifact
+## Upstream filing decision
 
-### Upstream filing decision
-
-1. **Is it really upstream's fault?
-   ** No.
-   Pi methods are behaving according to their host-capability roles.
-2. **Can upstream fix it?
-   ** No applicable Pi defect was found.
-3. **Are they supporting this use case?
-   ** Pi supports extensions and exposes the methods needed by these plugins.
-4. **Would the repo welcome our contribution?
-   ** Not applicable because no upstream defect is present.
-5. **Will they likely fix it?
-   ** Not applicable because no behavior change is requested.
-6. **Have we prototyped a minimal fix compatible with their architecture?
-   ** Yes.
-   The project-owned exact effect catalog and `ForeignBorrowed<T>` contracts pass package tests.
-
-Nothing should be filed upstream.
+No Pi defect was found.
+The runtime methods behave as host capabilities are expected to behave.
+The mismatch is between bodyless public declarations and repository ownership proof requirements,
+so the resolution belongs in project marker and analyzer policy rather than an upstream behavior change.
