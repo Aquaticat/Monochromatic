@@ -298,8 +298,83 @@ the in-house linear-time engine with fuzz and bench harnesses,
 already consumed by `package/cli/forbidden-strings` over a path dependency.
 Using it rather than `regex` satisfies RG2 and RG3 by construction.
 
-### D5. Crate layout and delivery increments
+### D5. Crate layout
 
-Constrained by MXR (300 code lines per `.rs`, no disable) and RDC, against a
-crate whose current comment convention costs roughly 150 lines per predicate.
-Status: not yet asked.
+Status: ANSWERED 2026-07-25.
+Chosen: separate repo packages joined by path dependencies.
+
+- A core library package under `package/rust-module/`:
+  rule trait, lint context, config model, run engine, diagnostics, fix model.
+- A pattern-matcher package beside it:
+  snippet parsing, metavariable binding, structural matching, rewrite emission.
+- `package/linter/rust` keeps the CLI binary, the built-in rules, and the
+  language server.
+- Rule plugin crates are their own packages.
+
+Reproduces the shape the repo already uses:
+`package/rust-module/forbidden-regex` is a library package consumed by
+`package/cli/forbidden-strings` over a `../../rust-module/forbidden-regex`
+path dependency.
+No Cargo workspace is introduced, so the invariant in
+`doc/planning/cargo-toml-file-enforcer.md` ("the no-workspace architecture is
+deliberate", fifteen standalone `Cargo.toml` files) holds unchanged.
+
+New crate names must be checked against `forbidden-strings.append.local.txt`
+before use (NCD), and each new package needs its own `Cargo.toml`, `mise.toml`,
+`README.md` and `LICENSES/` tree (AP1 to AP3, PKG).
+
+### D7. Comment convention at this scale
+
+Measured: `package/linter/rust/src` is 625 code lines carrying 2501 comment
+lines, a ratio of 4.00, because `.agents/skills/dum-dum-non-ts/SKILL.md`
+requires a What/Why/TypeScript-pseudocode block above every
+concept-introducing line, down to bare `Ok(...)` and `None` tails and every
+`&` borrow.
+
+Status: ANSWERED 2026-07-25.
+Chosen: full density on the first occurrence of a concept in a file;
+later occurrences of that same concept in that file take an ordinary short
+comment.
+
+This requires amending the skill rather than quietly deviating from it (GAP).
+The amendment is a deliverable of this work, not a side effect:
+edit `.agents/skills/dum-dum-non-ts/SKILL.md`, which is the source that
+file-enforcer mirrors into `.claude/skills/` and `.factory/skills/`,
+and define the scope of "first occurrence" explicitly as per file.
+
+## Further items adopted without asking
+
+Settled after the questions above, because each has one defensible answer:
+
+- The hardcoded exemption predicates in `src/config.rs`
+  (`max_lines_exempt`, `missing_rustdoc_exempt`) are deleted and reexpressed as
+  glob `overrides` in the TOML config,
+  which is what oxlint does for the same rules in
+  `package/config/oxlint/src/overrides.ts`.
+- Rule options move into config.
+  `--max` survives as a convenience override of the `max-lines` option so
+  existing invocations and the documented mise task keep working.
+- The language server is a `--lsp` flag on the same binary, as in oxlint,
+  not a separate binary.
+- Fix kinds match oxlint's three: safe fix, suggestion, dangerous.
+- The default renderer targets the same visual output oxlint produces,
+  whose JSON shape (`labels[].span` with `offset`/`length`/`line`/`column`)
+  is miette's.
+- Delivery is staged commits on `main` under auto-push (APG, GCE),
+  each leaving `mise run //package/linter/rust:test` and the dogfood task green,
+  rather than one large landing.
+- The crate dogfoods itself, so every new `.rs` file obeys MXR's 300 code-line
+  cap with no disable, and RDC rustdoc on every item.
+
+## Deferred to implementation
+
+Not decisions, but design work that lands with the code:
+
+- The exact TOML tree expressing `rules`, `categories`, `overrides`,
+  `extends`, `ignorePatterns` and `options`.
+- Metavariable semantics: binding, reuse within a pattern, repetition,
+  and whether `not-inside` takes one pattern or a list.
+- Whether `ra_ap_syntax` parses each pattern snippet cleanly enough to match
+  structurally, verified with real snippets before the matcher is written.
+- Directive syntax and its rule-name grammar.
+- Which of the ten output formats share a serializer.
