@@ -151,7 +151,7 @@ use monochromatic_rust_linter_core::fix::apply::{apply as apply_fixes, MAX_PASSE
 use monochromatic_rust_linter_core::fix::FixKind;
 
 /// Imports the rule that runs declarative patterns from configuration.
-use crate::builtin::pattern_rule::PatternRule;
+use crate::builtin::pattern_rule::{PatternRule, PLUGIN as PATTERN_PLUGIN};
 
 /// Parse real process arguments with clap, then run the linter.
 // What:     `pub fn run_cli_from_env() -> Result<i32>` preserves the old
@@ -248,9 +248,17 @@ pub fn run_cli(cli: &Cli) -> i32 {
     // Why:      Compiled-in rules are known at build time, but pattern rules are
     //           read from `rust-linter.toml`, so the set is only complete once
     //           the configuration has been loaded.
-    let mut rules = all_rules();
+    let mut rules = all_rules(&linter);
 
-    for configured in &linter.patterns {
+    // The pattern plugin is gated like any other: `plugins = ["builtin"]` turns
+    // configured pattern rules off without the author having to delete them.
+    let patterns: &[_] = if linter.plugin_enabled(PATTERN_PLUGIN) {
+        &linter.patterns
+    } else {
+        &[]
+    };
+
+    for configured in patterns {
         match PatternRule::build(configured) {
             Ok(built) => rules.push(Box::new(built)),
             Err(message) => {

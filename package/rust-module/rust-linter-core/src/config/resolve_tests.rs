@@ -316,3 +316,93 @@ fn merge_keeps_extends_when_only_one_side_has_it() {
         "the base's extends is not dropped by a nearer file that has none"
     );
 }
+
+/// With no plugins key, every compiled-in plugin runs.
+#[test]
+fn absent_plugins_key_enables_everything() {
+    let linter = compile("");
+
+    assert!(linter.plugin_enabled("builtin"), "builtin runs");
+    assert!(linter.plugin_enabled("pattern"), "pattern runs");
+    assert!(linter.plugin_enabled("anything"), "so does anything else");
+}
+
+// What:     A present `plugins` list, checked to be the COMPLETE set rather than
+//           an addition to the default one.
+// Why:      Absent and empty have to mean different things: saying nothing
+//           enables everything the binary ships, and `plugins = []` turns every
+//           rule off. A plain `Vec` could not tell those apart, which is why the
+//           field is an `Option`.
+/// A present plugins list is the complete set.
+#[test]
+fn present_plugins_key_is_the_complete_set() {
+    let linter = compile("plugins = [\"builtin\"]\n");
+
+    assert!(linter.plugin_enabled("builtin"), "named plugin runs");
+    assert!(!linter.plugin_enabled("pattern"), "unnamed plugin does not");
+}
+
+/// An empty plugins list turns everything off.
+#[test]
+fn empty_plugins_key_disables_everything() {
+    let linter = compile("plugins = []\n");
+
+    assert!(!linter.plugin_enabled("builtin"), "nothing runs");
+    assert!(!linter.plugin_enabled("pattern"), "nothing at all");
+}
+
+/// The plugin set replaces rather than concatenating when configs merge.
+#[test]
+fn merging_replaces_the_plugin_set() {
+    let base = parse("plugins = [\"builtin\", \"pattern\"]\n");
+    let nearer = parse("plugins = [\"builtin\"]\n");
+
+    let merged = LinterConfig::compile(merge(base, nearer)).expect("compiles");
+
+    // Concatenating would make it impossible to NARROW an inherited set, which
+    // is the main reason a package would state one.
+    assert!(merged.plugin_enabled("builtin"), "kept");
+    assert!(!merged.plugin_enabled("pattern"), "narrowed away, not re-added");
+}
+
+/// A config that says nothing about plugins inherits the set above it.
+#[test]
+fn merging_inherits_an_unstated_plugin_set() {
+    let base = parse("plugins = [\"builtin\"]\n");
+    let nearer = parse("[rules]\n\"a\" = \"error\"\n");
+
+    let merged = LinterConfig::compile(merge(base, nearer)).expect("compiles");
+
+    assert!(!merged.plugin_enabled("pattern"), "the base's set still holds");
+}
+
+/// Plugin settings are readable per plugin.
+#[test]
+fn settings_are_read_per_plugin() {
+    let linter = compile("[settings.builtin]\nsome-key = 7\n");
+
+    let settings = linter.settings_for("builtin").expect("settings present");
+    assert_eq!(
+        settings
+            .get("some-key")
+            .and_then(toml::Value::as_integer),
+        Some(7),
+        "the plugin's own table is readable"
+    );
+    assert!(
+        linter.settings_for("pattern").is_none(),
+        "a plugin that configured none has none"
+    );
+}
+
+/// Settings merge per plugin rather than wholesale.
+#[test]
+fn settings_merge_per_plugin() {
+    let base = parse("[settings.builtin]\nkept = 1\n");
+    let nearer = parse("[settings.pattern]\nadded = 2\n");
+
+    let merged = LinterConfig::compile(merge(base, nearer)).expect("compiles");
+
+    assert!(merged.settings_for("builtin").is_some(), "base survives");
+    assert!(merged.settings_for("pattern").is_some(), "nearer adds");
+}

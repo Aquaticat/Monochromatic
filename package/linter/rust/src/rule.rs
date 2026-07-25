@@ -1,14 +1,13 @@
-//! Registry of the rules this binary compiles in.
+//! Registry of the rules this binary composes.
 //!
-//! The `Rule` trait itself lives in `monochromatic-rust-linter-core`, so a rule
-//! package depends on that crate alone. This module only answers "which rules
-//! does this binary ship".
+//! The rules themselves live in rule packages now, not here. This module only
+//! answers "which packages does this binary compose, and are they enabled".
 
 // What:     `pub use other_crate::path::Item;` re-exports a name from a
 //           DEPENDENCY under this crate's own path, so `crate::rule::Rule` keeps
-//           resolving for every rule and test that already used it. A plain `use`
-//           without `pub` would import it for this file only.
-// Why:      The trait moved to the core crate; the path it is reached by did not.
+//           resolving for every consumer that already used it.
+// Why:      The trait lives in the core crate; the path it is reached by here
+//           did not change when it moved.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -17,30 +16,28 @@
 /// Re-exports the rule interface under this crate's original path.
 pub use monochromatic_rust_linter_core::rule::Rule;
 
-// What:     `pub fn all_rules() -> Vec<Box<dyn Rule>>`. `Box<dyn Rule>` is a
-//           heap-allocated trait object: an owning pointer to a value whose
-//           concrete type is known only at runtime but which implements `Rule`.
-//           `dyn` marks dynamic dispatch. Siblings: `Rc<dyn Rule>` and
-//           `Arc<dyn Rule>`, which share ownership instead of holding it alone.
-// Why:      Different rule types have different sizes, so they are boxed to sit
-//           in one `Vec` together; the runner iterates it and calls `check`.
+/// Imports the compiled configuration deciding which plugins are enabled.
+use monochromatic_rust_linter_core::config::resolve::LinterConfig;
+
+// What:     `pub fn all_rules(linter: &LinterConfig) -> Vec<Box<dyn Rule>>`.
+//           Takes the configuration, unlike the old no-argument version.
+// Why:      Which plugins run is a configuration question now. A plugin the
+//           config disabled contributes no rules at all, rather than
+//           contributing rules that are then resolved to off one by one.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function allRules(): Rule[] { return [new MaxLines(), new RequireRustdoc()]; }
+// function allRules(linter: LinterConfig): Rule[]
 // ```
-/// Build the set of rules compiled into this binary.
-pub fn all_rules() -> Vec<Box<dyn Rule>> {
-    // What:     `vec![Box::new(..) as Box<dyn Rule>, Box::new(..)]`. `vec!` is a
-    //           macro, marked by its `!`, that builds a `Vec`. `Box::new(value)`
-    //           moves the value onto the heap. The `as Box<dyn Rule>` on the
-    //           first entry discards its concrete type so the array's element
-    //           type is the trait object; the second then coerces to match.
-    // Why:      Two DIFFERENT concrete types in one array need that first cast,
-    //           or the element type cannot be inferred. Adding a rule is one more
-    //           boxed entry here.
-    return vec![
-        Box::new(crate::builtin::max_lines::MaxLines) as Box<dyn Rule>,
-        Box::new(crate::builtin::require_rustdoc::RequireRustdoc),
-    ]
+/// Build the rules this binary composes, honouring the enabled plugin set.
+pub fn all_rules(linter: &LinterConfig) -> Vec<Box<dyn Rule>> {
+    let mut rules: Vec<Box<dyn Rule>> = Vec::new();
+
+    // Each rule package answers for its own rules, so adding one there needs no
+    // change here beyond composing the package.
+    if linter.plugin_enabled(monochromatic_rust_linter_plugin_builtin::PLUGIN) {
+        rules.extend(monochromatic_rust_linter_plugin_builtin::rules());
+    }
+
+    return rules;
 }

@@ -38,7 +38,7 @@ use crate::severity::Category;
 use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::Rule;
-use crate::builtin::max_lines::MaxLines;
+use crate::max_lines::MaxLines;
 
 // What:     `fn code_lines(source: &str) -> usize`. Helper that builds a
 //           `LintContext` for a fixed fake path and returns its code-line count.

@@ -39,6 +39,11 @@ path = "src/main.rs"
 # unrelated types.
 monochromatic-rust-linter-core = { path = "../../rust-module/rust-linter-core", version = "0.1.0" }
 
+# The rules this binary ships with. They live in their own package, depending
+# on core and on nothing else from the linter, which is what proves a rule can
+# be authored without depending on the binary that runs it.
+monochromatic-rust-linter-plugin-builtin = { path = "../../rust-linter-plugin/builtin", version = "0.1.0" }
+
 # Structural pattern matching, for the declarative rules configured as
 # `[[pattern]]` tables. Its `ra_ap_syntax` pin must match the one below for the
 # same reason the core crate's must: all three pass `SyntaxNode` values across

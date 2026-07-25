@@ -24,7 +24,7 @@ use crate::config::Config;
 use crate::context::LintContext;
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::rule::Rule;
-use crate::builtin::require_rustdoc::RequireRustdoc;
+use crate::require_rustdoc::RequireRustdoc;
 
 // What:     `const FILE_MESSAGE: &str = "Missing rustdoc on file.";`. The exact
 //           message emitted for a file whose root carries no `//!` module doc.

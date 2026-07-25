@@ -82,6 +82,12 @@ pub struct LinterConfig {
 
     /// Declarative pattern rules, kept so the runner can build rules from them.
     pub patterns: Vec<PatternConfig>,
+
+    /// Plugins whose rules run, absent when every compiled-in plugin runs.
+    plugins: Option<Vec<String>>,
+
+    /// Per-plugin configuration, keyed by plugin name.
+    settings: BTreeMap<String, toml::Table>,
 }
 
 /// One override with its globs already compiled.
@@ -133,6 +139,8 @@ impl LinterConfig {
             overrides,
             cli_overrides: Vec::new(),
             patterns: merged.patterns,
+            plugins: merged.plugins,
+            settings: merged.settings,
         });
     }
 
@@ -223,6 +231,38 @@ impl LinterConfig {
     // ```ts
     // withCliOverrides(overrides: CliOverride[]): LinterConfig
     // ```
+    // What:     `pub fn plugin_enabled(&self, plugin: &str) -> bool`.
+    // Why:      An absent `plugins` key enables every compiled-in plugin, which
+    //           is what a configuration that says nothing about plugins means. A
+    //           present one is the complete set, so naming `["builtin"]` turns
+    //           every other plugin off.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // pluginEnabled(plugin: string): boolean
+    // ```
+    /// Report whether a plugin's rules run at all.
+    pub fn plugin_enabled(&self, plugin: &str) -> bool {
+        // `.as_ref()` borrows the inner vector rather than moving it out of the
+        // `Option`, and `.is_none_or(..)` is true when absent OR when the
+        // closure accepts, which is exactly "unset means all".
+        return self
+            .plugins
+            .as_ref()
+            .is_none_or(|named| return named.iter().any(|entry| return entry == plugin));
+    }
+
+    // What:     `pub fn settings_for(&self, plugin: &str) -> Option<&toml::Table>`.
+    //           Hands back a BORROWED view rather than a copy.
+    // Why:      This is oxlint's `settings`, the parity hole the planning
+    //           document named. A plugin reads its own table; this layer cannot
+    //           type it, because it does not know what any plugin's settings
+    //           mean.
+    /// Return one plugin's settings table, absent when it configured none.
+    pub fn settings_for(&self, plugin: &str) -> Option<&toml::Table> {
+        return self.settings.get(plugin);
+    }
+
     /// Attach command-line severity flags, returning the config for chaining.
     pub fn with_cli_overrides(mut self, overrides: Vec<CliOverride>) -> Self {
         self.cli_overrides = overrides;
@@ -260,6 +300,19 @@ pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
     let mut patterns = base.patterns;
     patterns.extend(nearer.patterns);
 
+    // Settings merge per plugin, so a package config restates only the plugin
+    // whose settings it changes.
+    let mut settings = base.settings;
+    settings.extend(nearer.settings);
+
+    // What:     `nearer.plugins.or(base.plugins)` keeps the nearer list when
+    //           present and inherits otherwise.
+    // Why:      The plugin set REPLACES rather than concatenating, unlike every
+    //           other sequence here. A config that names its plugins is stating
+    //           the whole set it wants; appending to an inherited list would
+    //           make it impossible to narrow one.
+    let plugins = nearer.plugins.or(base.plugins);
+
     // Maps merge key by key, so a nearer config restates only what it changes.
     let mut categories = base.categories;
     categories.extend(nearer.categories);
@@ -286,6 +339,8 @@ pub fn merge(base: ConfigFile, nearer: ConfigFile) -> ConfigFile {
         rules,
         overrides,
         patterns,
+        plugins,
+        settings,
     };
 }
 

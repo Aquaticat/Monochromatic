@@ -64,6 +64,23 @@ pub struct ConfigFile {
     /// Declarative pattern rules, each matched structurally against the source.
     #[serde(rename = "pattern")]
     pub patterns: Vec<PatternConfig>,
+
+    // What:     `plugins: Option<Vec<String>>`, ABSENT meaning "every compiled-in
+    //           plugin", rather than an empty vector meaning that.
+    // Why:      Absent and empty are different intentions: saying nothing should
+    //           enable everything the binary ships, while `plugins = []` should
+    //           turn every rule off. A bare `Vec` could not tell them apart.
+    /// Plugins whose rules run, absent when every compiled-in plugin runs.
+    pub plugins: Option<Vec<String>>,
+
+    // What:     `settings: BTreeMap<String, toml::Table>`. Untyped tables, one
+    //           per plugin name.
+    // Why:      This is oxlint's `settings`: configuration belonging to a plugin
+    //           as a whole rather than to any one of its rules. It cannot be
+    //           typed here, because this layer does not know what any plugin's
+    //           settings mean; the plugin reads its own table.
+    /// Per-plugin configuration, keyed by plugin name.
+    pub settings: BTreeMap<String, toml::Table>,
 }
 
 // What:     `pub struct PatternConfig { .. }` is one `[[pattern]]` table.

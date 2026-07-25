@@ -1152,3 +1152,55 @@ fn unparseable_pattern_is_fatal() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+// What:     The `plugins` key exercised through the real binary, in all four
+//           states.
+// Why:      Gating happens in two different places, because compiled-in rules
+//           come from a package registry while pattern rules are built from
+//           config. Only an end-to-end check proves both honour the same key.
+/// The plugins key decides which packages contribute rules.
+#[test]
+fn plugins_key_gates_each_package() {
+    let root = directive_probe(
+        "plugins",
+        "pub fn a(t: Option<u8>) -> u8 {\n    t.unwrap()\n}\n",
+    );
+
+    let write_config = |plugins: &str| {
+        std::fs::write(
+            root.join("rust-linter.toml"),
+            format!(
+                "{plugins}\n[[pattern]]\nid = \"no-unwrap\"\nmatch = \"META_X.unwrap()\"\nmessage = \"no unwrap\"\n"
+            ),
+        )
+        .expect("write config");
+    };
+
+    write_config("");
+    let (_code, all) = run_in(&root, &["src"]);
+    assert!(all.contains("builtin("), "builtin runs by default: {all}");
+    assert!(all.contains("pattern("), "so does pattern: {all}");
+
+    write_config("plugins = [\"builtin\"]");
+    let (_code, only_builtin) = run_in(&root, &["src"]);
+    assert!(only_builtin.contains("builtin("), "named plugin runs");
+    assert!(
+        !only_builtin.contains("pattern("),
+        "unnamed plugin does not: {only_builtin}"
+    );
+
+    write_config("plugins = [\"pattern\"]");
+    let (_code, only_pattern) = run_in(&root, &["src"]);
+    assert!(only_pattern.contains("pattern("), "named plugin runs");
+    assert!(
+        !only_pattern.contains("builtin("),
+        "unnamed plugin does not: {only_pattern}"
+    );
+
+    write_config("plugins = []");
+    let (code, none) = run_in(&root, &["src"]);
+    assert!(none.is_empty(), "an empty set runs nothing: {none}");
+    assert_eq!(code, 0, "and the run is clean");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

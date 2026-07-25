@@ -503,12 +503,16 @@ so they are named here rather than left to be discovered:
 
 Named so the final claim is checkable rather than asserted:
 
-- `settings`, oxlint's plugin-level configuration distinct from per-rule
-  options, has no analogue in this design yet.
-  Plugin crates will want one.
+- `settings`, oxlint's plugin-level configuration, is implemented.
+  A `[settings.<plugin>]` table is readable by that plugin through
+  `LinterConfig::settings_for`;
+  the layer does not type it, because it cannot know what any plugin's settings
+  mean.
 - Per-plugin CLI toggles (`--import-plugin`, `--disable-unicorn-plugin` and
-  friends) have no counterpart;
-  the design has a `plugins` config key with no CLI equivalent.
+  friends) have no counterpart.
+  The `plugins` config key does the same job from configuration:
+  absent enables every compiled-in plugin, and a present list is the complete
+  set, so `plugins = []` turns every rule off.
 - **Output formats.** oxlint ships ten (`default`, `agent`, `json`, `github`,
   `gitlab`, `unix`, `checkstyle`, `junit`, `sarif`, `stylish`).
   This linter emits JSONL only, and has no `--format` flag at all.
