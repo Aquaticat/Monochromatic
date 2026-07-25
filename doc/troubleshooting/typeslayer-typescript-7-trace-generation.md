@@ -351,7 +351,10 @@ Runs the compiler but remains incompatible with TypeSlayer's loader:
 
 ## Verified workarounds
 
-### Run the analysis with the actual TypeScript 6.0.2 package named `typescript`
+No end-to-end TypeSlayer 0.1.32 workaround was verified.
+The desktop UI and every generated artifact would need to succeed before this section could claim one.
+
+### Verified compiler-process remediation, not an end-to-end workaround
 
 Use a disposable analysis checkout or fixture whose `typescript` dependency is exactly 6.0.2:
 
@@ -371,8 +374,9 @@ This verification stops at TypeSlayer's compiler-process and output-file boundar
 The desktop UI,
  CPU-profile generation,
  and rendering were not exercised end to end,
-so this is a verified fallback for the reported trace-generation failure rather than proof that every TypeSlayer
-module works with the fixture.
+This remediates the reported `ERR_PACKAGE_PATH_NOT_EXPORTED` boundary and produces the trace filenames TypeSlayer
+expects.
+It is not a verified end-to-end TypeSlayer workaround.
 
 Tradeoffs:
 
@@ -562,8 +566,10 @@ types.json
 3. Add integration fixtures for TypeScript 6's single `types.json` layout and TypeScript 7's default multi-checker and
    `--singleThreaded` layouts.
 
-## Workaround
+## Boundary-level fallback
 
-Run TypeSlayer against an actual `typescript@6.0.2` package in a disposable analysis checkout. This uses the classic
-compiler and therefore does not profile TypeScript 7's native performance.
+Run TypeSlayer's compiler command against an actual `typescript@6.0.2` package in a disposable analysis checkout.
+This resolves the reported package-path failure and emits the expected trace filenames,
+but the TypeSlayer UI flow was not verified end to end.
+It uses the classic compiler and therefore does not profile TypeScript 7's native performance.
 ~~~
