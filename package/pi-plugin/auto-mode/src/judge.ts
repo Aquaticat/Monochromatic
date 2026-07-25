@@ -50,6 +50,8 @@ const l = tagged({
  *
  * @param action - human-readable action under review
  *
+ * @param actionInput - complete current tool input encoded as JSON
+ *
  * @param cwd - agent working directory
  *
  * @param recentContext - recent session activity
@@ -74,7 +76,7 @@ const l = tagged({
  *
  * @example
  * ```ts
- * const verdict = await callJudge({ model, auth, action, cwd, recentContext, trustDirectives: [], timeoutMs: 10_000, systemPrompt, batchContext: [] });
+ * const verdict = await callJudge({ model, auth, action, actionInput: '{"path":"src/index.ts"}', cwd, recentContext, trustDirectives: [], timeoutMs: 10_000, systemPrompt, batchContext: [] });
  * ```
  */
 function callJudge(
@@ -82,6 +84,7 @@ function callJudge(
     model,
     auth,
     action,
+    actionInput = '',
     cwd,
     recentContext,
     trustDirectives,
@@ -93,6 +96,7 @@ function callJudge(
     readonly model: ForeignBorrowed<Model<Api>>;
     readonly auth: ForeignBorrowed<BudgetModelAuth>;
     readonly action: string;
+    readonly actionInput?: string;
     readonly cwd: string;
     readonly recentContext: string;
     readonly trustDirectives: readonly string[];
@@ -115,6 +119,7 @@ function callJudge(
    */
   const userContent = buildUserContent({
     action,
+    actionInput,
     cwd,
     recentContext,
     trustDirectives,
