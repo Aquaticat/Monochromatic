@@ -1131,6 +1131,11 @@ findings). Medium settled 9->10, hitting the ~10 bar. This is the advisor-
 sanctioned natural-ordering medium over-coverage (extra medium is data, not
 waste; no ordering change to force large). Bands now 9 small / 10 medium / 7
 large (large needs ~3 more). Run 027 launched.
+PASS 6 RUN 027 (2026-07-25, tip `bbaea33dd`, hit the 90-min HARD cap): 0
+settled, still 26/92. Susiethegamer (LARGE, 4557B, heavily sliced -- 19 slices
+across 2 chunk pairs) aborted at the hard cap ONE slice short: 18 of 19 cached.
+Run 028 resume-first-picks it and should finish the last slice plus document
+assembly to settle quickly. Run 028 launched.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
