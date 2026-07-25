@@ -1,25 +1,20 @@
 /**
  * Session context builder for the judge prompt.
  *
- * Walks the session branch and selects the larger of the latest user-message
- * activity span and the recent-activity floor, building a structured summary
- * that the judge can use to understand recent activity and detect
- * circumvention.
+ * Walks session branch and preserves complete user-visible messages from
+ * larger of newest message floor and span beginning at latest user message.
  *
  * @module
  */
 
-import type {
-  ExtensionContext,
-  SessionMessageEntry,
-} from '@earendil-works/pi-coding-agent';
+import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   isTrustEntry,
   isVerdictEntry,
   type VerdictData,
 } from './types.ts';
+import { buildVisibleContext, } from './visible-context.ts';
 
 /**
  * Reusable approval lookup result.
@@ -184,21 +179,18 @@ function getReusableApproval(
 }
 
 /**
- * Sentinel marking that no verdict entry is awaiting its tool call during the
- * {@link buildContext} scan.
- */
-const NO_PENDING_VERDICT = Symbol('pending verdict entry absent from context',);
-
-/**
- * Build a context summary for the LLM judge.
+ * Build complete user-visible session-message context for LLM judge.
  *
- * Includes the larger of the latest user-message activity span and the
- * recent-activity floor, selected by {@link selectContextActivityLines}.
- * Renders user lines with {@link extractUserText}, tool-call lines with
- * {@link summarizeToolCall}, and a bash-only detail suffix with
- * {@link bashDetail}.
- * Includes verdict outcomes for denied/asked actions so the
- * judge can detect circumvention.
+ * Includes larger of newest message floor and complete span from latest user
+ * message. Message data uses same Pi session-entry projection as interactive
+ * transcript and preserves complete visible text,
+ * thinking,
+ * tool inputs,
+ * tool outputs,
+ * images,
+ * custom messages,
+ * direct Bash execution,
+ * and summaries.
  *
  * @param ctx - extension context with session access
  *
@@ -214,314 +206,11 @@ const NO_PENDING_VERDICT = Symbol('pending verdict entry absent from context',);
 function buildContext(
   ctx: ForeignHostCapability<ExtensionContext>,
 ): string {
-  /**
-   * Full session branch snapshot, scanned forward below.
-   */
-  const branch = ctx.sessionManager
-    .getBranch();
-
-  /**
-   * Accumulator for activity lines in chronological order.
-   */
-  const activityLines: string[] = [];
-  /**
-   * Queue of in-flight tool calls awaiting their matching toolResult.
-   */
-  const pendingCalls: {
-    name: string;
-    summary: string;
-  }[] = [];
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- forward-scan state machine tracking pendingVerdict across message-entry pairs */
-  /**
-   * Verdict attached to the next tool call; the {@link NO_PENDING_VERDICT}
-   * sentinel when none is pending.
-   */
-  let pendingVerdict: VerdictData | typeof NO_PENDING_VERDICT = NO_PENDING_VERDICT;
-  /* oxlint-enable no-restricted-syntax/no-function-root-let */
-
-  for (const entry of branch) {
-    // Branch entry under inspection during the forward summary build.
-    if (entry === undefined)
-      continue;
-
-    if (isVerdictEntry(entry,)) {
-      pendingVerdict = entry.data;
-      continue;
-    }
-
-    if (entry.type
-      !== 'message')
-      continue;
-    /**
-     * Narrowed message payload after the entry-type guard.
-     */
-    const msg = (entry as SessionMessageEntry).message;
-
-    if (msg.role
-      === 'user') {
-      /**
-       * Plain-text rendering of the user message used for the activity line.
-       */
-      const text = extractUserText(msg.content,);
-      activityLines.push(`[user] ${text}`,);
-      continue;
-    }
-
-    if (msg.role
-      === 'assistant') {
-      for (const block of msg.content) {
-        if (block.type
-          === 'toolCall') {
-          pendingCalls.push({
-            name: block.name,
-            summary: summarizeToolCall({
-              name: block.name,
-              args: block.arguments,
-            },),
-          },);
-        }
-      }
-      continue;
-    }
-
-    if (msg.role
-      === 'toolResult') {
-      /**
-       * Tool call paired with this result, removed from the pending queue.
-       */
-      const call = pendingCalls.shift();
-      /**
-       * Display string for the call: stored summary, or fallback to tool name.
-       */
-      const callStr = call?.summary
-        ?? msg
-        .toolName;
-
-      if ((pendingVerdict !== NO_PENDING_VERDICT) && (pendingVerdict.verdict
-        !== 'approve')) {
-        activityLines.push(
-          `[tool] ${callStr} → ${pendingVerdict.verdict} (${pendingVerdict.reason})`,
-        );
-      }
-      else {
-        /**
-         * "error" / "ok" suffix derived from the result's error flag.
-         */
-        const outcome = msg.isError ? 'error' : 'ok';
-        /**
-         * Optional bash-only detail suffix appended after the outcome.
-         */
-        const detail = msg.toolName
-          === 'bash'
-          ? bashDetail(msg.content,)
-          : '';
-        activityLines.push(`[tool] ${callStr} → ${outcome}${detail}`,);
-      }
-      pendingVerdict = NO_PENDING_VERDICT;
-    }
-  }
-
-  /**
-   * Final activity lines selected by max(latest-user span, recent floor).
-   */
-  return selectContextActivityLines(activityLines,)
-    .join('\n',);
-}
-
-//region Internal helpers
-
-/**
- * Locate latest user activity line.
- *
- * @param activityLines - Chronological activity lines.
- *
- * @returns Latest user-line index, or negative one when absent.
- *
- * @example
- * ```typescript
- * latestUserActivityIndex(['[tool] one', '[user] run']); // 1
- * ```
- */
-function latestUserActivityIndex(
-  activityLines: readonly string[],
-): number {
-  for (let index = activityLines.length - 1; index >= 0; index -= 1) {
-    /**
-     * Candidate activity line at current reverse cursor.
-     */
-    const activityLine = activityLines[index];
-    if ((activityLine !== undefined) && activityLine.startsWith('[user] ',))
-      return index;
-  }
-  return -1;
-}
-
-/**
- * Select judge-context activity lines.
- *
- * Keeps the larger of:
- * - the activity span from latest user message through now
- * - the newest fixed floor of activity lines
- *
- * @param activityLines - chronological activity lines built from session branch
- *
- * @returns selected chronological activity lines for judge context
- *
- * @example
- * ```typescript
- * selectContextActivityLines(['[tool] one', '[user] run', '[tool] two']);
- * ```
- */
-function selectContextActivityLines(
-  activityLines: readonly string[],
-): readonly string[] {
-  /**
-   * Activity-line index of latest user message, or -1 when none exists.
-   */
-  const lastUserActivityIndex = latestUserActivityIndex(activityLines,);
-  /**
-   * Earliest line included by the recent-activity floor.
-   */
-  const recentFloorStart = Math.max(
-    0,
-    activityLines.length
-      - CONTEXT_ACTIVITY_FLOOR,
+  return buildVisibleContext(
+    ctx.sessionManager
+      .getBranch(),
   );
-  /**
-   * Start line for max(latest-user span, recent floor).
-   */
-  const selectedStart = lastUserActivityIndex === (-1)
-    ? recentFloorStart
-    : Math.min(
-      lastUserActivityIndex,
-      recentFloorStart,
-    );
-  /**
-   * Owned copy from selected start through newest activity.
-   */
-  const selectedLines: string[] = [];
-  for (let index = selectedStart; index < activityLines.length; index += 1) {
-    /**
-     * Selected source line, absent only for malformed sparse runtime input.
-     */
-    const activityLine = activityLines[index];
-    if (activityLine !== undefined)
-      selectedLines[selectedLines.length] = activityLine;
-  }
-  return selectedLines;
 }
-
-/**
- * Extract text from user message content.
- *
- * @param content - the message content (string or array)
- *
- * @returns concatenated text content
- */
-function extractUserText(
-  content: string | readonly {
-    readonly type: string;
-    readonly text?: string;
-  }[],
-): string {
-  if ((typeof content) === 'string')
-    return content;
-  /**
-   * Text block values in message order.
-   */
-  const textValues: string[] = [];
-  for (const block of content) {
-    if (block.type === 'text')
-      textValues[textValues.length] = block.text ?? '';
-  }
-  return textValues.join(' ',);
-}
-
-/**
- * Summarize a tool call for the judge context.
- *
- * @returns a one-line summary string
- *
- * @example
- * ```typescript
- * summarizeToolCall({ name: 'bash', args: { command: 'ls -la' } });
- * // => 'bash: ls -la'
- * ```
- */
-function summarizeToolCall(
-  {
-    name,
-    args,
-  }: {
-    readonly name: string;
-    readonly args: Readonly<Record<string, unknown>>;
-  },
-): string {
-  if (name === 'bash') {
-    return `bash: ${
-      (typeof args.command) === 'string'
-        ? args.command
-        : ''
-    }`;
-  }
-  if ([
-    'read',
-    'write',
-    'edit',
-    'grep',
-    'find',
-    'ls',
-  ]
-    .includes(name,))
-  {
-    return `${name} ${
-      (typeof args.path) === 'string'
-        ? args.path
-        : ''
-    }`;
-  }
-  return name;
-}
-
-/**
- * Extract a brief detail from bash tool result content.
- *
- * @param content - the tool result content blocks
- *
- * @returns a detail suffix, or empty string
- */
-function bashDetail(
-  content: readonly {
-    readonly type: string;
-    readonly text?: string;
-  }[],
-): string {
-  /**
-   * Text block values in result order.
-   */
-  const textSegments: string[] = [];
-  for (const block of content) {
-    if (block.type === 'text')
-      textSegments[textSegments.length] = block.text ?? '';
-  }
-  /**
-   * Flattened text content from all text blocks.
-   */
-  const text = textSegments.join('',);
-  /**
-   * Last non-empty trimmed line of bash output, the most informative suffix.
-   */
-  const lastLine = text.trim()
-    .split('\n',)
-    .pop()
-    ?.trim()
-    ?? '';
-  if (lastLine === '')
-    return '';
-  return ` | ${lastLine}`;
-}
-
-//endregion
 
 export {
   buildContext,

@@ -56,7 +56,7 @@ const l = tagged({
  *
  * @param cwd - agent working directory
  *
- * @param recentContext - recent session activity
+ * @param recentContext - complete selected user-visible messages encoded as JSON
  *
  * @param trustDirectives - active approved trust directives
  *

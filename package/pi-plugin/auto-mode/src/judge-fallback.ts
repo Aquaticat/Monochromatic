@@ -67,7 +67,7 @@ type JudgeReviewRequest = {
    */
   readonly cwd: string;
   /**
-   * Recent session activity.
+   * Complete selected user-visible session messages as canonical JSON.
    */
   readonly recentContext: string;
   /**

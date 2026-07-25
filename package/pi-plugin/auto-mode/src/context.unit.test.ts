@@ -1,8 +1,10 @@
 /**
  * Tests for judge context construction.
  *
- * Covers activity capping, user-message preservation, and untruncated text
- * emitted into the recent-activity prompt section.
+ * Covers visible-message windows,
+ * complete transcript data,
+ * hidden provider metadata,
+ * and reusable approvals.
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -11,23 +13,23 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   buildContext,
   getReusableApproval,
-} from './context.ts';
-import {
   VERDICT_ENTRY_TYPE,
   type VerdictData,
-} from './types.ts';
+} from '../dist/final/node/index.mjs';
 
 //region Test fixtures
 
 /** Number of repeated tokens in long-message fixtures. */
 const LONG_TEXT_REPEAT_COUNT = 80;
 
-/** Number of bash tool activities generated for cap tests. */
+/** Number of bash tool activities generated for window tests. */
 const BASH_ACTIVITY_COUNT = 6;
+
+/** Minimum newest visible messages retained by context window. */
+const EXPECTED_MESSAGE_FLOOR = 5;
 
 /** Approval fingerprint for read .env fixtures. */
 const READ_ENV_APPROVAL_FINGERPRINT = 'read-env-fingerprint';
@@ -43,14 +45,38 @@ type MockTextBlock = {
   readonly text: string;
 };
 
+/** Image block shape consumed by {@link buildContext}. */
+type MockImageBlock = {
+  /** Message block discriminator. */
+  readonly type: 'image';
+  /** Complete encoded image data. */
+  readonly data: string;
+  /** Image media type. */
+  readonly mimeType: string;
+};
+
+/** Thinking block shape consumed by {@link buildContext}. */
+type MockThinkingBlock = {
+  /** Assistant block discriminator. */
+  readonly type: 'thinking';
+  /** Complete visible reasoning text. */
+  readonly thinking: string;
+  /** Provider-only signature that judge context must omit. */
+  readonly thinkingSignature?: string;
+};
+
 /** Tool-call block shape consumed by {@link buildContext}. */
 type MockToolCallBlock = {
   /** Assistant block discriminator. */
   readonly type: 'toolCall';
+  /** Tool-call identifier. */
+  readonly id?: string;
   /** Tool name. */
   readonly name: string;
   /** Tool arguments. */
   readonly arguments: Readonly<Record<string, unknown>>;
+  /** Provider-only signature that judge context must omit. */
+  readonly thoughtSignature?: string;
 };
 
 /** Message shapes used by the context scanner. */
@@ -59,23 +85,47 @@ type MockMessage =
     /** User-message role. */
     readonly role: 'user';
     /** User content. */
-    readonly content: string | readonly MockTextBlock[];
+    readonly content: string | readonly (MockTextBlock | MockImageBlock)[];
   }
   | {
     /** Assistant-message role. */
     readonly role: 'assistant';
-    /** Assistant tool-call blocks. */
-    readonly content: readonly MockToolCallBlock[];
+    /** Assistant visible blocks. */
+    readonly content: readonly (MockTextBlock | MockThinkingBlock | MockToolCallBlock)[];
+    /** Assistant stop reason. */
+    readonly stopReason?: string;
+    /** Visible assistant error text. */
+    readonly errorMessage?: string;
   }
   | {
     /** Tool-result role. */
     readonly role: 'toolResult';
+    /** Tool-call identifier. */
+    readonly toolCallId?: string;
     /** Tool name reported by Pi. */
     readonly toolName: string;
     /** Whether tool execution errored. */
     readonly isError: boolean;
     /** Tool result content. */
-    readonly content: readonly MockTextBlock[];
+    readonly content: readonly (MockTextBlock | MockImageBlock)[];
+    /** Renderer-visible tool details. */
+    readonly details?: unknown;
+  }
+  | {
+    /** Direct Bash execution role. */
+    readonly role: 'bashExecution';
+    /** Executed command. */
+    readonly command: string;
+    /** Complete command output. */
+    readonly output: string;
+    /** Process exit status. */
+    readonly exitCode?: number;
+    /** Cancellation state. */
+    readonly cancelled: boolean;
+    /** Output truncation state. */
+    readonly truncated: boolean;
+    /** Full output path shown by Pi when output is truncated. */
+    readonly fullOutputPath?: string;
   };
 
 /** Branch-entry shapes used by the context scanner. */
@@ -93,6 +143,42 @@ type MockBranchEntry =
     readonly customType: typeof VERDICT_ENTRY_TYPE;
     /** Verdict data attached to next tool result. */
     readonly data: VerdictData;
+  }
+  | {
+    /** Visible custom-message entry discriminator. */
+    readonly type: 'custom_message';
+    /** Custom renderer identity. */
+    readonly customType: string;
+    /** Complete custom content. */
+    readonly content: string | readonly (MockTextBlock | MockImageBlock)[];
+    /** Renderer-visible details. */
+    readonly details?: unknown;
+    /** Whether Pi displays message. */
+    readonly display: boolean;
+    /** Session timestamp consumed by Pi projection. */
+    readonly timestamp: string;
+  }
+  | {
+    /** Compaction entry discriminator. */
+    readonly type: 'compaction';
+    /** Complete compaction summary. */
+    readonly summary: string;
+    /** First retained session entry identifier. */
+    readonly firstKeptEntryId: string;
+    /** Token count represented by summary. */
+    readonly tokensBefore: number;
+    /** Session timestamp consumed by Pi projection. */
+    readonly timestamp: string;
+  }
+  | {
+    /** Branch-summary entry discriminator. */
+    readonly type: 'branch_summary';
+    /** Source branch entry identifier. */
+    readonly fromId: string;
+    /** Complete branch summary. */
+    readonly summary: string;
+    /** Session timestamp consumed by Pi projection. */
+    readonly timestamp: string;
   };
 
 /**
@@ -190,6 +276,7 @@ function assistantToolCall(
  * @param toolName - tool name
  * @param output - tool output text
  * @param isError - whether tool execution errored
+ * @param details - renderer-visible tool details
  *
  * @returns tool-result message entry
  *
@@ -203,10 +290,12 @@ function toolResult(
     toolName,
     output,
     isError = false,
+    details,
   }: {
     readonly toolName: string;
     readonly output: string;
     readonly isError?: boolean;
+    readonly details?: unknown;
   },
 ): MockBranchEntry {
   return {
@@ -221,6 +310,7 @@ function toolResult(
           text: output,
         },
       ],
+      ...(details === undefined ? {} : { details, }),
     },
   };
 }
@@ -278,6 +368,43 @@ function verdictEntry(
   };
 }
 
+/**
+ * Minimal parsed visible-message shape used for window assertions.
+ */
+type ParsedVisibleMessage = {
+  /** Message role discriminator. */
+  readonly role: string;
+};
+
+/**
+ * Parse and validate canonical visible-message context.
+ *
+ * @param context - JSON context emitted by {@link buildContext}.
+ *
+ * @returns validated visible messages.
+ */
+function parseVisibleMessages(
+  context: string,
+): readonly ParsedVisibleMessage[] {
+  /** Parsed context at untrusted JSON boundary. */
+  const parsed: unknown = JSON.parse(context,);
+  if (!Array.isArray(parsed,))
+    throw new Error('Expected judge context to contain JSON message array.',);
+  /** Validated message entries. */
+  const messages: ParsedVisibleMessage[] = [];
+  for (const rawMessage of parsed) {
+    /** Current untrusted array element. */
+    const message: unknown = rawMessage;
+    if (((typeof message) !== 'object')
+      || (message === null)
+      || (!('role' in message))
+      || ((typeof message.role) !== 'string'))
+      throw new Error('Expected judge context message with string role.',);
+    messages[messages.length] = { role: message.role, };
+  }
+  return messages;
+}
+
 //endregion Test fixtures
 
 await describe({
@@ -293,14 +420,225 @@ await describe({
           contextFromBranch({ branch: [userMessage(longUserText,),], },),
         );
 
-        expect(context,).toBe(`[user] ${longUserText}`);
+        expect(context,).toBe(`[{"content":"${longUserText}","role":"user"}]`);
         expect(context.includes('…',),).toBe(false,);
       },
     },),
 
     it({
-      name: 'keeps entire latest-user span when it exceeds five lines',
-      fn: async function testKeepsEntireLatestUserSpanWhenItExceedsFiveLines(): Promise<void> {
+      name: 'keeps complete visible inputs and outputs from prior tool messages',
+      fn: async function testKeepsCompleteVisibleToolMessages(): Promise<void> {
+        /** Context containing unflagged write, observed Bash output, and pending flagged execution. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              assistantToolCall({
+                name: 'write',
+                args: {
+                  path: 'cat.txt',
+                  content: 'meow',
+                },
+              },),
+              toolResult({
+                toolName: 'write',
+                output: 'Wrote cat.txt',
+              },),
+              assistantToolCall({
+                name: 'bash',
+                args: { command: 'cat dog.txt', },
+              },),
+              toolResult({
+                toolName: 'bash',
+                output: 'observed output\nwoof',
+                details: { source: 'complete tool details', },
+              },),
+              assistantToolCall({
+                name: 'bash',
+                args: { command: './cat.txt', },
+              },),
+            ],
+          },),
+        );
+
+        expect(context,).toContain('meow',);
+        expect(context,).toContain('cat dog.txt',);
+        expect(context,).toContain(String.raw`observed output\nwoof`,);
+        expect(context,).toContain('./cat.txt',);
+        expect(context,).toContain('complete tool details',);
+      },
+    },),
+
+    it({
+      name: 'preserves visible assistant reasoning and image data without provider signatures',
+      fn: async function testPreservesVisibleAssistantAndImages(): Promise<void> {
+        /** Context containing every visible assistant block and user image. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              {
+                type: 'message',
+                message: {
+                  role: 'user',
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'Inspect image.',
+                    },
+                    {
+                      type: 'image',
+                      data: 'complete-image-data',
+                      mimeType: 'image/png',
+                    },
+                  ],
+                },
+              },
+              {
+                type: 'message',
+                message: {
+                  role: 'assistant',
+                  content: [
+                    {
+                      type: 'thinking',
+                      thinking: 'complete visible reasoning',
+                      thinkingSignature: 'hidden-thinking-signature',
+                    },
+                    {
+                      type: 'text',
+                      text: 'Complete assistant response.',
+                    },
+                    {
+                      type: 'toolCall',
+                      id: 'tool-call-id',
+                      name: 'read',
+                      arguments: { path: 'cat.txt', },
+                      thoughtSignature: 'hidden-tool-signature',
+                    },
+                  ],
+                  stopReason: 'toolUse',
+                },
+              },
+              {
+                type: 'message',
+                message: {
+                  role: 'assistant',
+                  content: [],
+                  stopReason: 'error',
+                  errorMessage: 'complete visible assistant error',
+                },
+              },
+            ],
+          },),
+        );
+
+        expect(context,).toContain('complete-image-data',);
+        expect(context,).toContain('complete visible reasoning',);
+        expect(context,).toContain('Complete assistant response.',);
+        expect(context,).toContain('cat.txt',);
+        expect(context,).toContain('complete visible assistant error',);
+        expect(context.includes('hidden-thinking-signature',),).toBe(false,);
+        expect(context.includes('hidden-tool-signature',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'preserves direct Bash, visible custom, compaction, and branch summaries',
+      fn: async function testPreservesOtherVisibleMessages(): Promise<void> {
+        /** Context containing Pi-specific visible transcript message roles. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              userMessage('retain complete visible span',),
+              {
+                type: 'message',
+                message: {
+                  role: 'bashExecution',
+                  command: 'printf direct',
+                  output: 'complete direct output',
+                  exitCode: 0,
+                  cancelled: false,
+                  truncated: true,
+                  fullOutputPath: '/tmp/full-output',
+                },
+              },
+              {
+                type: 'custom_message',
+                customType: 'visible-note',
+                content: 'complete custom content',
+                details: { visibleDetail: 'complete detail', },
+                display: true,
+                timestamp: '2026-07-25T00:00:00.000Z',
+              },
+              {
+                type: 'custom_message',
+                customType: 'hidden-note',
+                content: 'hidden custom content',
+                display: false,
+                timestamp: '2026-07-25T00:00:00.000Z',
+              },
+              {
+                type: 'compaction',
+                summary: 'complete compaction summary',
+                firstKeptEntryId: 'kept',
+                tokensBefore: 42,
+                timestamp: '2026-07-25T00:00:00.000Z',
+              },
+              {
+                type: 'branch_summary',
+                fromId: 'branch-source',
+                summary: 'complete branch summary',
+                timestamp: '2026-07-25T00:00:00.000Z',
+              },
+            ],
+          },),
+        );
+
+        expect(context,).toContain('printf direct',);
+        expect(context,).toContain('complete direct output',);
+        expect(context,).toContain('/tmp/full-output',);
+        expect(context,).toContain('complete custom content',);
+        expect(context,).toContain('complete detail',);
+        expect(context,).toContain('complete compaction summary',);
+        expect(context,).toContain('complete branch summary',);
+        expect(context.includes('hidden custom content',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'keeps guard verdict beside complete corresponding tool result',
+      fn: async function testKeepsGuardVerdictWithToolResult(): Promise<void> {
+        /** Context containing complete tool data and preceding guard verdict. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              userMessage('inspect guarded operation',),
+              assistantToolCall({
+                name: 'bash',
+                args: { command: 'deploy production', },
+              },),
+              verdictEntry({
+                action: 'bash: deploy production',
+                verdict: 'user-deny',
+                reason: 'Deployment not approved.',
+              },),
+              toolResult({
+                toolName: 'bash',
+                output: 'blocked result',
+                isError: true,
+              },),
+            ],
+          },),
+        );
+
+        expect(context,).toContain('deploy production',);
+        expect(context,).toContain('blocked result',);
+        expect(context,).toContain('user-deny',);
+        expect(context,).toContain('Deployment not approved.',);
+      },
+    },),
+
+    it({
+      name: 'keeps entire latest-user span when it exceeds five messages',
+      fn: async function testKeepsEntireLatestUserSpanWhenItExceedsFiveMessages(): Promise<void> {
         /** Generated activities after the latest user message. */
         const generatedActivities = Array.from(
           { length: BASH_ACTIVITY_COUNT, },
@@ -320,10 +658,10 @@ await describe({
             ],
           },),
         );
-        /** Activity lines sent to the judge. */
-        const lines = context.split('\n',);
+        /** Complete messages sent to judge. */
+        const messages = parseVisibleMessages(context,);
 
-        expect(lines,).toHaveLength(BASH_ACTIVITY_COUNT + 1,);
+        expect(messages,).toHaveLength((BASH_ACTIVITY_COUNT * 2) + 1,);
         expect(context.includes('old request',),).toBe(false,);
         expect(context.includes('new request',),).toBe(true,);
         expect(context.includes('result 1',),).toBe(true,);
@@ -332,11 +670,11 @@ await describe({
     },),
 
     it({
-      name: 'backfills to five newest lines when latest-user span is shorter',
-      fn: async function testBackfillsToFiveNewestLinesWhenLatestUserSpanIsShorter(): Promise<void> {
+      name: 'backfills to five newest messages when latest-user span is shorter',
+      fn: async function testBackfillsToFiveNewestMessagesWhenLatestUserSpanIsShorter(): Promise<void> {
         /** Generated activities before the latest user message. */
         const olderActivities = Array.from(
-          { length: CONTEXT_ACTIVITY_FLOOR, },
+          { length: EXPECTED_MESSAGE_FLOOR, },
           function createActivity(_, activityIndex,) {
             return bashActivity(activityIndex + 1,);
           },
@@ -352,21 +690,21 @@ await describe({
             ],
           },),
         );
-        /** Activity lines sent to the judge. */
-        const lines = context.split('\n',);
+        /** Complete messages sent to judge. */
+        const messages = parseVisibleMessages(context,);
 
-        expect(lines,).toHaveLength(CONTEXT_ACTIVITY_FLOOR,);
+        expect(messages,).toHaveLength(EXPECTED_MESSAGE_FLOOR,);
         expect(context.includes('old request',),).toBe(false,);
-        expect(context.includes('result 1',),).toBe(false,);
-        expect(context.includes('result 2',),).toBe(true,);
+        expect(context.includes('result 3',),).toBe(false,);
+        expect(context.includes('result 4',),).toBe(true,);
         expect(context.includes('result 5',),).toBe(true,);
-        expect(context.endsWith('[user] new request',),).toBe(true,);
+        expect(messages.at(-1,)?.role,).toBe('user',);
       },
     },),
 
     it({
-      name: 'uses newest five lines when no user message exists',
-      fn: async function testUsesNewestFiveLinesWhenNoUserMessageExists(): Promise<void> {
+      name: 'uses newest five messages when no user message exists',
+      fn: async function testUsesNewestFiveMessagesWhenNoUserMessageExists(): Promise<void> {
         /** Generated activities without any user-message anchor. */
         const generatedActivities = Array.from(
           { length: BASH_ACTIVITY_COUNT, },
@@ -379,12 +717,12 @@ await describe({
         const context = buildContext(
           contextFromBranch({ branch: generatedActivities, },),
         );
-        /** Activity lines sent to the judge. */
-        const lines = context.split('\n',);
+        /** Complete messages sent to judge. */
+        const messages = parseVisibleMessages(context,);
 
-        expect(lines,).toHaveLength(CONTEXT_ACTIVITY_FLOOR,);
-        expect(context.includes('result 1',),).toBe(false,);
-        expect(context.includes('result 2',),).toBe(true,);
+        expect(messages,).toHaveLength(EXPECTED_MESSAGE_FLOOR,);
+        expect(context.includes('result 3',),).toBe(false,);
+        expect(context.includes('result 4',),).toBe(true,);
         expect(context.includes('result 6',),).toBe(true,);
       },
     },),
@@ -411,8 +749,8 @@ await describe({
           },),
         );
 
-        expect(context,).toContain(finalLine,);
-        expect(context.endsWith(finalLine,),).toBe(true,);
+        expect(context,).toContain(`first line\\n${finalLine}`,);
+        expect(context.includes('suffix',),).toBe(true,);
       },
     },),
   ],

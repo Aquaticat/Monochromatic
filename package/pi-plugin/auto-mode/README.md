@@ -78,18 +78,28 @@ this includes every `oldText` and `newText` hunk.
 JSON encoding keeps model-generated content in an explicit data grammar and the
 prompt labels it as untrusted data rather than instructions.
 
-The recent activity sent to the judge uses the larger of the latest user-message
-activity span and the newest five rendered activity lines.
- Short latest-user
-spans backfill older activity until the five-line floor is reached when enough
-history exists;
- longer latest-user spans are not capped.
- Messages are not
-abbreviated.
+The recent context sent to judge uses larger of complete span from latest user
+message and newest five user-visible messages.
+Short latest-user spans backfill older messages until five-message floor is reached when enough history exists;
+longer latest-user spans are not capped.
 
-For bash tool results,
- the context line includes the execution outcome and the
-full final non-empty line of bash output.
+Each selected message is encoded as canonical untrusted JSON without auto-mode summarization or truncation.
+Projection preserves complete user text and images,
+assistant text and visible reasoning,
+tool-call names and full arguments,
+tool-result text,
+images,
+renderer details and error state,
+direct Bash commands and output,
+visible custom messages,
+compaction summaries,
+and branch summaries.
+Guard verdict is attached to corresponding tool result for circumvention context.
+Provider-only signatures,
+token usage,
+timestamps,
+provider metadata,
+and hidden custom messages are excluded because they are not visible transcript content.
 
 ### Shared review infrastructure
 

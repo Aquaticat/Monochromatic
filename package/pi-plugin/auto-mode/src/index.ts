@@ -544,3 +544,11 @@ export default function autoMode(
 }
 
 export { initializeAutoMode, };
+export {
+  buildContext,
+  getReusableApproval,
+} from './context.ts';
+export {
+  type VerdictData,
+  VERDICT_ENTRY_TYPE,
+} from './types.ts';

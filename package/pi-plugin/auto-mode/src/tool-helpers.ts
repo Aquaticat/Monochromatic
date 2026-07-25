@@ -343,6 +343,22 @@ function buildApprovalFingerprint(
 }
 
 /**
+ * Serialize complete untrusted JSON-compatible data for judge prompt.
+ *
+ * @param value - Request-only data to preserve.
+ *
+ * @returns Canonical JSON containing every data field.
+ *
+ * @example
+ * ```typescript
+ * serializeUntrustedDataForJudge({ role: 'user', content: 'Run tests.' });
+ * ```
+ */
+function serializeUntrustedDataForJudge(value: unknown,): string {
+  return stableSerialize(value,);
+}
+
+/**
  * Serialize complete judge-facing JSON-compatible tool input.
  *
  * @param value - Current tool input to preserve.
@@ -355,7 +371,7 @@ function buildApprovalFingerprint(
  * ```
  */
 function serializeToolInputForJudge(value: unknown,): string {
-  return stableSerialize(value,);
+  return serializeUntrustedDataForJudge(value,);
 }
 
 /**
@@ -510,4 +526,5 @@ export {
   getFilePath,
   isRelevantTool,
   serializeToolInputForJudge,
+  serializeUntrustedDataForJudge,
 };

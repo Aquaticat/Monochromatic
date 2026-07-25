@@ -236,7 +236,7 @@ async function evaluate(
   const { judge, } = judgeResult;
 
   /**
-   * Recent session activity rendered as a string for the judge prompt.
+   * Complete selected user-visible messages encoded as canonical JSON.
    */
   const recentContext = buildContext(ctx,);
   /**
