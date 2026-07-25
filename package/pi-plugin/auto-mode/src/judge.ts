@@ -84,7 +84,7 @@ function callJudge(
     model,
     auth,
     action,
-    actionInput = '',
+    actionInput,
     cwd,
     recentContext,
     trustDirectives,
@@ -96,7 +96,7 @@ function callJudge(
     readonly model: ForeignBorrowed<Model<Api>>;
     readonly auth: ForeignBorrowed<BudgetModelAuth>;
     readonly action: string;
-    readonly actionInput?: string;
+    readonly actionInput: string;
     readonly cwd: string;
     readonly recentContext: string;
     readonly trustDirectives: readonly string[];

@@ -40,6 +40,7 @@ import {
   buildApprovalFingerprint,
   describeAction,
   isRelevantTool,
+  serializeToolInputForJudge,
 } from './tool-helpers.ts';
 import type {
   BatchEntry,
@@ -455,6 +456,10 @@ function initializeAutoMode(
        */
       const action = describeAction(event,);
       /**
+       * Complete JSON-encoded tool input passed only to judge request construction.
+       */
+      const actionInput = serializeToolInputForJudge(event,);
+      /**
        * Stable identity for exact same-session approval reuse.
        */
       const approvalFingerprint = buildApprovalFingerprint({
@@ -471,6 +476,7 @@ function initializeAutoMode(
         ctx,
         systemPrompt: JUDGE_SYSTEM_PROMPT,
         action,
+        actionInput,
         approvalFingerprint,
         batchContext,
       },)

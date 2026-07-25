@@ -281,6 +281,7 @@ await describe({
               model: judge.model,
               auth: judge.auth,
               action: 'bash: echo hi',
+              actionInput: '{"command":"echo hi"}',
               cwd: '/project',
               recentContext: '',
               trustDirectives: [],

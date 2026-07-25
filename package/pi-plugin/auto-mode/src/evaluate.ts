@@ -116,6 +116,7 @@ function decisionForDenyVerdict(
  *   ctx,
  *   systemPrompt: prompt,
  *   action: "bash: sudo rm -rf /",
+ *   actionInput: '{"command":"sudo rm -rf /"}',
  *   approvalFingerprint: "abc123",
  *   batchContext: [],
  * });
@@ -127,6 +128,7 @@ async function evaluate(
     ctx,
     systemPrompt,
     action,
+    actionInput,
     approvalFingerprint,
     batchContext,
   }: {
@@ -134,6 +136,7 @@ async function evaluate(
     readonly ctx: ForeignBorrowed<ExtensionContext>;
     readonly systemPrompt: string;
     readonly action: string;
+    readonly actionInput: string;
     readonly approvalFingerprint: string;
     readonly batchContext: readonly BatchEntry[];
   },
@@ -284,6 +287,7 @@ async function evaluate(
           model: selectedJudge.model,
           auth: selectedJudge.auth,
           action,
+          actionInput,
           cwd: ctx.cwd,
           recentContext,
           trustDirectives,

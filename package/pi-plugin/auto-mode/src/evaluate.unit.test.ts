@@ -235,6 +235,7 @@ await describe({
           },),
           systemPrompt: 'judge prompt',
           action: 'read .env',
+          actionInput: '{"path":".env"}',
           approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
           batchContext: [],
         },);
@@ -300,6 +301,7 @@ await describe({
           },),
           systemPrompt: 'judge prompt',
           action: 'read .env',
+          actionInput: '{"path":".env"}',
           approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
           batchContext: [],
         },);
