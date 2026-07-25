@@ -15,6 +15,10 @@ import {
 import { isJsonRecord, } from '../json-guard.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
+  discardSliceCache,
+  openSliceCache,
+} from './slice-cache-store.ts';
+import {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
@@ -206,6 +210,14 @@ async function runCorpusPass(): Promise<void> {
   );
 
   /**
+   * Root of per-entry slice caches making large documents resumable.
+   */
+  const sliceCacheDir = join(
+    runsDir,
+    'slice-cache',
+  );
+
+  /**
    * Persisted attempt-count map path.
    */
   const attemptsPath = join(
@@ -351,6 +363,22 @@ async function runCorpusPass(): Promise<void> {
     );
 
     /**
+     * Per-entry slice-cache directory; earlier runs' finished slices live
+     * here so a large document resumes instead of restarting.
+     */
+    const entryCacheDir = join(
+      sliceCacheDir,
+      entry.id,
+    );
+
+    /**
+     * Cross-run cache resuming finished slices and persisting new ones as
+     * each slice completes.
+     */
+    /* oxlint-disable-next-line no-await-in-loop -- per-entry setup, sequential by design */
+    const sliceCache = await openSliceCache({ dir: entryCacheDir, },);
+
+    /**
      * Start time of this entry, for its duration.
      */
     const t0 = Date.now();
@@ -377,6 +405,7 @@ async function runCorpusPass(): Promise<void> {
         models: RUN_MODELS,
         signal: deadline.callSignal,
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+        sliceCache,
       },);
 
       /**
@@ -440,6 +469,11 @@ async function runCorpusPass(): Promise<void> {
           .length,)} accepted=${String(accepted.length,)} resolved=${String(resolved.length,)} findings=${String(result.findings
             .length,)} ms=${String(durationMs,)}`,
       );
+
+      // The entry settled, so its slice cache is spent; drop it to keep the
+      // cache directory bounded to in-flight large documents.
+      /* oxlint-disable-next-line no-await-in-loop -- per-entry cleanup, sequential by design */
+      await discardSliceCache({ dir: entryCacheDir, },);
     }
     catch (error) {
       /**
