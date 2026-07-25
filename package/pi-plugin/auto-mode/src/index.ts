@@ -458,7 +458,7 @@ function initializeAutoMode(
       /**
        * Complete JSON-encoded tool input passed only to judge request construction.
        */
-      const actionInput = serializeToolInputForJudge(event,);
+      const actionInput = serializeToolInputForJudge(event.input,);
       /**
        * Stable identity for exact same-session approval reuse.
        */

@@ -70,8 +70,8 @@ await describe({
           },
         },);
 
-        expect(serializeToolInputForJudge(event,),).toBe(
-          '{"path":"/repo/config.ts","content":"export const value = \\"quoted\\";\\n"}',
+        expect(serializeToolInputForJudge(event.input,),).toBe(
+          '{"content":"export const value = \\"quoted\\";\\n","path":"/repo/config.ts"}',
         );
       },
     },),
@@ -96,8 +96,8 @@ await describe({
           },
         },);
 
-        expect(serializeToolInputForJudge(event,),).toBe(
-          '{"path":"/repo/config.ts","edits":[{"oldText":"before\\n","newText":"after\\n"},{"oldText":"export const mode = \\"old\\";","newText":"export const mode = \\"new\\";"}]}',
+        expect(serializeToolInputForJudge(event.input,),).toBe(
+          '{"edits":[{"newText":"after\\n","oldText":"before\\n"},{"newText":"export const mode = \\"new\\";","oldText":"export const mode = \\"old\\";"}],"path":"/repo/config.ts"}',
         );
       },
     },),
