@@ -37,10 +37,7 @@ const MAX_TOKENS = 4_096;
 /** Complete adapter-test timeout. */
 const JUDGE_TIMEOUT_MS = 10_000;
 
-/** File body that must reach judge provider context unchanged. */
-const WRITE_CONTENT_FIXTURE = 'export const judgeCanInspectThisBody = true;\n';
-
-/** JSON tool input carrying {@link WRITE_CONTENT_FIXTURE}. */
+/** JSON tool input carrying file content that must reach judge provider context unchanged. */
 const WRITE_ACTION_INPUT_FIXTURE = `{"path":"/project/src/example.ts","content":"export const judgeCanInspectThisBody = true;\\n"}`;
 
 /**
@@ -324,7 +321,7 @@ await describe({
         const [message,] = context.messages;
         if ((message === undefined) || ((typeof message.content) !== 'string'))
           throw new Error('Expected string reviewer user message.',);
-        expect(message.content,).toContain(WRITE_CONTENT_FIXTURE,);
+        expect(message.content,).toContain(WRITE_ACTION_INPUT_FIXTURE,);
       },
     },),
     it({
