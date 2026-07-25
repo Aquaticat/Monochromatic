@@ -355,16 +355,17 @@ function updateWidget(
   },
 ): void {
   /**
-   * Count of `denied` verdicts, surfaced in the widget summary line.
+   * Denied verdicts retained only to derive widget count.
    */
-  const denied = verdicts
-    .filter(
-      function isDenied(v,) {
-        return v.verdict
-          === 'denied';
-      },
-    )
-    .length;
+  const deniedVerdicts: typeof verdicts[number][] = [];
+  for (const verdict of verdicts) {
+    if (verdict.verdict === 'denied')
+      deniedVerdicts[deniedVerdicts.length] = verdict;
+  }
+  /**
+   * Count of `denied` verdicts surfaced in widget summary line.
+   */
+  const denied = deniedVerdicts.length;
 
   if (denied === 0) {
     ctx.ui
