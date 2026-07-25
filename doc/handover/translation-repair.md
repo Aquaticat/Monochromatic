@@ -986,6 +986,12 @@ finding); settled in one run, no cap, cache empty after. First non-small
 0-attempt entry by the new band order (1859B, bottom of the medium band),
 so medium settled 2->3. Bands now 9 small / 3 medium / 2 large. Run 014
 launched.
+PASS 6 RUN 014 (2026-07-25, tip `a70cb3592`, 4867s wall ~81 min): 1 settled,
+15/92. Futajuhuacha repaired (5448B/large, 248 issues, 243 accepted, 238
+resolved, 59 findings); settled in ONE run just under the 90-min cap, no
+abort, cache empty after. Large settled 2->3 (a large entry that fits the
+single-run budget -- only the biggest large entries, >~6-12KB, need resume).
+Bands now 9 small / 3 medium / 3 large. Run 015 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
