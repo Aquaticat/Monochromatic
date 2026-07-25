@@ -1035,6 +1035,12 @@ PASS 6 RUN 018 (2026-07-25, tip `0fa06bd7e`, 3096s wall ~52 min): 1 settled,
 20/92. LCG_Akiball repaired (large, 89 issues, 83 accepted, 82 resolved, 8
 findings); one run, no cap. Large settled 5->6. Bands now 9 small / 5 medium
 / 6 large (need ~1 small, ~5 medium, ~4 large). Run 019 launched.
+PASS 6 RUN 019 (2026-07-25, tip `5063a3740`, 4254s wall ~71 min effective;
+first launch killed at START, 0 loss, empty MTF_0615 cache dir removed):
+1 settled, 21/92. MeowBot233 repaired (medium, 206 issues, 198 accepted, 198
+resolved, 23 findings); one run, no cap. Medium settled 5->6. Bands now 9
+small / 6 medium / 6 large (need ~1 small, ~4 medium, ~4 large). Run 020
+launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
