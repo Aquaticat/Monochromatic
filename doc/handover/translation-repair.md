@@ -899,6 +899,9 @@ issues, 41 accepted, 40 resolved, 11 findings, 3079s). Resumability
 cleanup verified in production: the slice-cache dir is empty after the run
 because the settled entry's cache was discarded as designed. 9/92 settled.
 Run 009 launched.
+PASS 6 RUN 009 (2026-07-24, tip `7c3cca379`, 1634s wall): 1 dispatched, 1
+completed, 0 failed. CuspariaKLSY repaired (74 issues, 70 accepted, all 70
+resolved, 6 findings, 1634s). 10/92 settled. Run 010 launched.
 PASS 6 (2026-07-24): pipeline behavior changed (slicing), so the restarted
 pass is a NEW pass; prior pass-5 artifacts and attempts.json discarded.
 Note lessons banked while landing this: run package tasks ONLY by scoped
