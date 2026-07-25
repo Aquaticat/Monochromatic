@@ -210,7 +210,7 @@ await describe({
         },);
         expect(transport.requests,).toHaveLength(1,);
         /** Captured final provider request. */
-        const request = transport.requests[0];
+        const [request,] = transport.requests;
         if (request === undefined)
           throw new Error('Expected captured provider request.',);
         expect(request.model,).toEqual({
@@ -287,7 +287,7 @@ await describe({
         },);
         expect(value,).toEqual({ approved: false, feedback: 'missing evidence', },);
         /** Captured direct-JSON request. */
-        const request = transport.requests[0];
+        const [request,] = transport.requests;
         if (request === undefined)
           throw new Error('Expected captured direct-JSON request.',);
         expect(request.context.systemPrompt,).toBe('Judge JSON.',);

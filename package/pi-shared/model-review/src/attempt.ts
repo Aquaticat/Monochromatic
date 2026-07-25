@@ -10,7 +10,10 @@ import type {
   Tool,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { streamStructuredReview, } from './provider-streams.ts';
 import {
@@ -64,10 +67,10 @@ function structuredReviewSignal(
   {
     signal,
     timeoutMs,
-  }: ForeignBorrowed<Readonly<{
-    signal?: AbortSignal;
-    timeoutMs: number;
-  }>>,
+  }: {
+    readonly signal?: ForeignHostCapability<AbortSignal>;
+    readonly timeoutMs: number;
+  },
 ): AbortSignal {
   /**
    * Timeout-only abort signal.

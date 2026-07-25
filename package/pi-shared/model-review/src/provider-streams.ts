@@ -281,7 +281,8 @@ function streamStructuredReview(
       api: 'anthropic-messages',
     } as const;
     assertModelUsesApi(selected,);
-    return anthropicMessagesApi().streamSimple(
+    return anthropicMessagesApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -296,7 +297,8 @@ function streamStructuredReview(
       api: 'azure-openai-responses',
     } as const;
     assertModelUsesApi(selected,);
-    return azureOpenAIResponsesApi().streamSimple(
+    return azureOpenAIResponsesApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -311,7 +313,8 @@ function streamStructuredReview(
       api: 'bedrock-converse-stream',
     } as const;
     assertModelUsesApi(selected,);
-    return bedrockConverseStreamApi().streamSimple(
+    return bedrockConverseStreamApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -326,7 +329,8 @@ function streamStructuredReview(
       api: 'google-generative-ai',
     } as const;
     assertModelUsesApi(selected,);
-    return googleGenerativeAIApi().streamSimple(
+    return googleGenerativeAIApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -341,7 +345,8 @@ function streamStructuredReview(
       api: 'google-vertex',
     } as const;
     assertModelUsesApi(selected,);
-    return googleVertexApi().streamSimple(
+    return googleVertexApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -356,7 +361,8 @@ function streamStructuredReview(
       api: 'mistral-conversations',
     } as const;
     assertModelUsesApi(selected,);
-    return mistralConversationsApi().streamSimple(
+    return mistralConversationsApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -371,7 +377,8 @@ function streamStructuredReview(
       api: 'openai-codex-responses',
     } as const;
     assertModelUsesApi(selected,);
-    return openAICodexResponsesApi().streamSimple(
+    return openAICodexResponsesApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -386,7 +393,8 @@ function streamStructuredReview(
       api: 'openai-completions',
     } as const;
     assertModelUsesApi(selected,);
-    return openAICompletionsApi().streamSimple(
+    return openAICompletionsApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
@@ -401,7 +409,8 @@ function streamStructuredReview(
       api: 'openai-responses',
     } as const;
     assertModelUsesApi(selected,);
-    return openAIResponsesApi().streamSimple(
+    return openAIResponsesApi()
+      .streamSimple(
       isolateReviewModel(selected.model,),
       providerContext,
       providerOptions,
