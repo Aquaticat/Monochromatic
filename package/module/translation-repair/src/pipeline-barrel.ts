@@ -116,6 +116,24 @@ export {
   screenNonTranslationVotes,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
+export { formatGradingSheet, } from './grading-sheet.ts';
+export {
+  allocateBandQuota,
+  drawStratifiedSample,
+} from './sample-draw.ts';
+export {
+  type BandQuota,
+  classifyBand,
+  DEFAULT_PRECISION_BAR,
+  DEFAULT_SAMPLE_SEED,
+  DEFAULT_SAMPLE_SIZE,
+  extractGradingCandidate,
+  type GradingCandidate,
+  MEDIUM_BAND_MAX_BYTES,
+  SIZE_BANDS,
+  type SizeBand,
+  SMALL_BAND_MAX_BYTES,
+} from './sample-grading.ts';
 export {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
