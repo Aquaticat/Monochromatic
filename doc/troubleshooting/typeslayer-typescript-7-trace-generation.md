@@ -455,6 +455,11 @@ mise which typeslayer
 ```
 
 This keeps the registry-installed 0.1.32 directory available for rollback while selecting the linked fork globally.
+Verification selected the linked `0.1.32-aquaticat.3089dd9` version from the global mise config,
+resolved `typeslayer` to that prefix,
+and matched its SHA-256 digest to the release build.
+The globally resolved command launched the production Tauri UI without a Vite development server.
+
 The linked build is local rather than registry-reproducible:
 upgrading requires rebuilding a newer fork commit,
 staging it under a new version label,
