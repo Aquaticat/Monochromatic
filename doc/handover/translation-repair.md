@@ -1123,6 +1123,14 @@ inside the hard cap. First PRODUCTION proof of the multi-run-resume path
 settling a hard-cap-aborted large entry end-to-end (earlier resume validation
 was Dethelly, which had not hit the cap). Large settled 6->7. Bands now 9 small
 / 9 medium / 7 large (large needs ~3 more for the ~10 bar). Run 026 launched.
+PASS 6 RUN 026 (2026-07-25, tip `5b0f818877`, 2731s wall ~46 min; a first
+launch was KILLED ~2 min in on Proselyte093 with 0 slices done -- intermittent
+non-resource kill, empty cache dir removed, relaunched): 1 settled, 26/92.
+SS3B_0016 repaired (MEDIUM, 2040B; 139 issues, 135 accepted, 135 resolved, 6
+findings). Medium settled 9->10, hitting the ~10 bar. This is the advisor-
+sanctioned natural-ordering medium over-coverage (extra medium is data, not
+waste; no ordering change to force large). Bands now 9 small / 10 medium / 7
+large (large needs ~3 more). Run 027 launched.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
