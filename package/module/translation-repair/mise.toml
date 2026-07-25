@@ -42,3 +42,7 @@ run = "node src/corpus-run/corpus-pass.ts"
 [tasks."sentinel-probe"]
 description = "Run named corpus entries through the pipeline to validate a change (pass ids after --)"
 run = "node src/corpus-run/sentinel-probe.ts"
+
+[tasks."draw-sample"]
+description = "Draw the stratified precision sample from settled artifacts into a grading sheet outside the repo (append -- --final for the gate sheet)"
+run = "node src/corpus-run/draw-sample.ts"
