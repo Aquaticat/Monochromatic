@@ -99,7 +99,11 @@ async function loadMergedConfig(
   /**
    * Validated global config (or `GLOBAL_DEFAULTS` when the file is absent).
    */
-  const global = await loadGlobalConfig({ home, },);
+  const global = await loadGlobalConfig(
+    home === undefined
+      ? {}
+      : { home, },
+  );
   /**
    * Project config lookup result; `found` discriminates whether a project-level file exists.
    */
