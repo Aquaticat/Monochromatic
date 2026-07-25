@@ -48,10 +48,15 @@ export function isDefaultLibraryArrayBrandDeclaration({
   readonly declaration: Node;
 }): boolean {
   if ((!isMethodSignatureDeclaration(declaration,))
-    || (!isIdentifier(declaration.name,))
-    || (declaration
-      .name
-      .text !== ARRAY_BRAND_METHOD_NAME)
+    || (!isIdentifier(declaration.name,)))
+    return false;
+  /**
+   * Selected method name after declaration-shape narrowing.
+   */
+  const declarationName = declaration
+    .name
+    .text;
+  if ((declarationName !== ARRAY_BRAND_METHOD_NAME)
     || (!project
       .program
       .isSourceFileDefaultLibrary(declaration.getSourceFile(),)))
@@ -60,9 +65,13 @@ export function isDefaultLibraryArrayBrandDeclaration({
    * Default-library interface selected as method owner.
    */
   const owner = declaration.parent;
-  return isInterfaceDeclaration(owner,)
-    && isIdentifier(owner.name,)
-    && (owner
-      .name
-      .text === ARRAY_CONSTRUCTOR_INTERFACE_NAME);
+  if ((!isInterfaceDeclaration(owner,)) || (!isIdentifier(owner.name,)))
+    return false;
+  /**
+   * Selected owner name after interface-shape narrowing.
+   */
+  const ownerName = owner
+    .name
+    .text;
+  return ownerName === ARRAY_CONSTRUCTOR_INTERFACE_NAME;
 }
