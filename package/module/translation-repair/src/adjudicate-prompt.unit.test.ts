@@ -93,6 +93,24 @@ await describe({
   name: buildAdjudicationMessages.name,
   children: [
     it({
+      name: 'requires a claim be checked against its own quoted evidence',
+      fn: async () => {
+        /** Panelist system instructions. */
+        const system = buildAdjudicationMessages({
+          sourceText: '猫猫在中午打盹。',
+          targetText: 'The cat naps at noon.',
+          clusters: CLUSTERS,
+        },)
+          .messages[0]
+          ?.content ?? '';
+        // A claim alleging an omission its own target quote contains survived
+        // adjudication in the graded sample.
+        expect(system,).toContain('check the claim against its OWN quoted evidence',);
+        expect(system,).toContain('already carries it',);
+        expect(system,).toContain('however confidently it is worded',);
+      },
+    },),
+    it({
       name: 'numbers claims globally and maps ids in prompt order',
       fn: async () => {
         /** Plan for the two-cluster sheet. */

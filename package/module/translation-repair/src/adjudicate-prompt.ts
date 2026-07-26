@@ -29,6 +29,8 @@ For EVERY claim, cast exactly one vote:
 - source-defect: the ORIGINAL itself is wrong at the claimed spot (typo, corruption), so the translation must not be "corrected" toward it
 - abstain: you cannot judge this claim at all
 
+Before voting supported, check the claim against its OWN quoted evidence, which is the cheapest way a claim fails. A claim that something is missing is contradicted when the quoted TRANSLATION text already carries it, even in different words; a claim that something was added is contradicted when the quoted ORIGINAL text already carries it. Vote unsupported whenever the claim's own quotes refute it, however confidently it is worded.
+
 Optionally re-grade a supported claim's severity: one of ${ISSUE_SEVERITIES.join(', ',)}.
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
 
