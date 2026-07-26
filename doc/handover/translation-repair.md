@@ -1136,6 +1136,13 @@ settled, still 26/92. Susiethegamer (LARGE, 4557B, heavily sliced -- 19 slices
 across 2 chunk pairs) aborted at the hard cap ONE slice short: 18 of 19 cached.
 Run 028 resume-first-picks it and should finish the last slice plus document
 assembly to settle quickly. Run 028 launched.
+PASS 6 RUN 028 (2026-07-25, tip `0bf98e61a`, 5605s wall): 1 settled, 27/92.
+Susiethegamer RESUMED and settled repaired in ~3.4 min (its last 1 of 19 slices
++ document assembly; 187 issues, 179 accepted, 179 resolved, 56 findings) --
+clean proof the resume path finishes a one-slice-short hard-cap abort cheaply.
+Large settled 7->8. The run then started TianqiChen666 (LARGE, 6746B, 23 slices
+/ 3 chunk pairs), which hit the hard cap at 16 of 23 cached; run 029 resumes it.
+Bands now 9 small / 10 medium / 8 large (large needs ~2 more). Run 029 launched.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
