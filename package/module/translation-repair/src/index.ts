@@ -184,6 +184,15 @@ export {
   QuotaShapeError,
   type QuotaSnapshot,
 } from './synthetic-quota.ts';
+export { drainBody, } from './stream-drain.ts';
+export {
+  armIdleGuard,
+  type IdleGuard,
+  STREAM_FIRST_BYTE_MS,
+  STREAM_IDLE_MS,
+  type StreamProgress,
+  StreamStalledError,
+} from './stream-idle-guard.ts';
 export {
   fetchTransport,
   type ModelTransport,
