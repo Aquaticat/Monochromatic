@@ -1161,6 +1161,25 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PASS 7 RUN 007 (2026-07-26): Dethelly ABORTED at the 90 min hard cap
+(status=ERROR, aborted=true), 11 of its 24 slices cached. Recoverable by
+design: resume-first ordering picks it up next run and progress is monotonic.
+NOT A GENERAL SLOWDOWN, measured rather than assumed. Across the five entries
+settled in BOTH rounds, round two is FASTER in total: 172.9 min -> 151.4 min,
+ratio 0.88 (Acheron 0.67, AkiraComplex 0.72, Chinatsu_Suzuki 0.85,
+Considerate_cat 0.88; only AmbeR_the_anpa slower at 1.13). So the added prompt
+policy and identity block did not cost throughput.
+DETHELLY IS ENTRY-SPECIFIC AND UNEXPLAINED. Round one: 24 slices in 66 min
+(2.75 min/slice), 373 accepted, settled in ONE run. Round two: 11 of the SAME
+24 slices in 90 min (8.2 min/slice). Slice count is identical, so the aligner
+did not fragment it. Candidates that a single run cannot separate: transient
+API throughput, or a slice pairing that now generates much longer output. DO
+NOT record a cause without evidence; whether it recurs on resume is the
+diagnostic. Dethelly was already round one's slowest entry and its heaviest by
+accepted count, so it is the expected place for a cap to bite first.
+PASS 7 RUN 006 (2026-07-26, tip `2441b4150`, 2709298 ms): 1 settled, 7/92
+(large 2 / medium 3 / small 2). Considerate_cat status=repaired (27 issues, 25
+accepted, 23 resolved).
 PASS 7 RUN 005 (2026-07-26, tip `61487a893`, 1543107 ms): TWO settled (small
 entries are fast), 6/92 = large 2 / medium 2 / small 2. Acheron
 status=repaired (19 issues, 17 accepted, 1041617 ms) and AkiraComplex
