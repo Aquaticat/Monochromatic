@@ -43,8 +43,16 @@ export const DEFAULT_PRECISION_BAR = 0.9;
  * Default draw seed. Fixing it makes the draw deterministic: the same
  * candidate pool and seed always produce the same sample, so a draw can be
  * reproduced and audited.
+ *
+ * The seed MUST change whenever a graded sample is used to change the
+ * pipeline. Re-drawing with the seed the grades came from partially
+ * re-selects the very items a human already judged, so the next measurement
+ * would be scored partly on its own calibration set and would read better
+ * than the pipeline is. The suffix records which measurement round a seed
+ * belongs to; the first round's seed was `milestone-three-precision`, whose
+ * fifty grades produced the identity, alignment, and policy fixes.
  */
-export const DEFAULT_SAMPLE_SEED = 'milestone-three-precision';
+export const DEFAULT_SAMPLE_SEED = 'milestone-three-precision-round-two';
 
 /**
  * One of the three page-size bands the corpus stratifies into.
