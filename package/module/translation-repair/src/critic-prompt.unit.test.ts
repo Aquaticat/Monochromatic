@@ -84,6 +84,26 @@ await describe({
       },
     },),
     it({
+      name: 'states that the original is not golden and obligatory differences are not defects',
+      fn: async () => {
+        /**
+         * System instructions under policy probing.
+         */
+        const system = MESSAGES[0]?.content ?? '';
+        // A translation repairing a deficiency in the original is doing its
+        // job; the graded sample scored five false positives that were really
+        // this, where the critic treated the source as the standard.
+        expect(system,).toContain('The ORIGINAL is not golden',);
+        // Each language forces choices the other leaves open, so meeting the
+        // translation's own requirements is never an addition or omission.
+        expect(system,).toContain('is REQUIRED, not added',);
+        expect(system,).toContain('Punctuation and quotation conventions differ',);
+        // A distinction English cannot mark cannot be dropped by the
+        // translation, so it must not be reported as an omission.
+        expect(system,).toContain('cannot be carried over',);
+      },
+    },),
+    it({
       name: 'fences both documents verbatim on the user sheet',
       fn: async () => {
         /**
