@@ -1,5 +1,8 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { drainBody, } from './stream-drain.ts';
+import { armIdleGuard, } from './stream-idle-guard.ts';
+
 //region Transport abstraction
 // The one seam between the client and the network: tests inject a fake transport
 // with recorded replies, drivers use the fetch-backed default. Keeping the seam at
@@ -118,10 +121,21 @@ export async function fetchTransport(
   } = exchange;
 
   /**
-   * Dependent signal derived locally so the platform request never holds the
-   * caller's own signal handle.
+   * Silence guard for this exchange. Armed before the request so its window
+   * also covers a provider that never sends response headers.
    */
-  const dependentSignal = AbortSignal.any([signal,],);
+  using guard = armIdleGuard({ label: url, },);
+
+  /**
+   * Dependent signal derived locally so the platform request never holds the
+   * caller's own signal handle. The guard rides along so a stalled stream
+   * tears the request down without touching the caller's signal, which is what
+   * lets the retry layer treat it as transient.
+   */
+  const dependentSignal = AbortSignal.any([
+    signal,
+    guard.signal,
+  ],);
 
   /**
    * Raw fetch response; body is read as text so callers decide how to parse.
@@ -146,7 +160,11 @@ export async function fetchTransport(
 
   return {
     status: response.status,
-    bodyText: await response.text(),
+    bodyText: await drainBody({
+      response,
+      guard,
+      callerSignal: signal,
+    },),
   };
 }
 
