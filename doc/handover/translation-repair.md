@@ -1161,6 +1161,33 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+M3 FIXES A-F ALL LANDED (2026-07-26), and PASS 7 is the re-measure. Commits:
+`ef6b75052` (A identity), `1790ec037` (B1 container unwrapping), `1aa8a0904`
+(B2 monotone alignment), `7c4502580` (D source-not-golden), `a76aacae6` (E
+context + community usage), `f6aee711a` (C self-contradiction), `f0821647f` (F
+anchor naming). Every one: build/format/lint 0-0, types clean, full suite 0
+FAIL. What each addresses in the graded sample: A=3 FPs, B=5 FPs (the largest
+cluster), C=1, D=5, E=3, F=1 ungradable item.
+FIX C and D and E are PROMPT changes, not gates. C was explicitly NOT built as
+a deterministic check (advisor-confirmed): the case is cross-language semantic
+overlap that no deterministic check catches without translating, and a lexical
+approximation would silently reject real omissions, trading recall for
+precision. Same reasoning for F: the unanchored-claim case is SURFACED on the
+sheet, not gated, since rejecting such claims would trade recall for precision
+before any measurement shows the trade is worth it.
+ROUND-TWO SEED CHANGED: `DEFAULT_SAMPLE_SEED` is now
+`milestone-three-precision-round-two`. Re-drawing under the round-one seed
+would partially re-select the fifty items the user already graded, so the next
+measurement would be scored partly on its own calibration set and read better
+than the pipeline is. The constant's TSDoc now states this rule so a future
+session cannot reuse a burned seed by accident.
+ROUND-ONE EVIDENCE ARCHIVED, NOT DELETED: `artifacts/` (6.4M), `attempts.json`
+and `slice-cache/` moved to
+`node_modules/.monochromatic/translation-repair-runs/round-one-archive/`, with
+`gate-verdict.md` and `grading-sheet.md` copied in beside them. The segmentation
+fixes change slicing, so every cached slice is stale and a fresh pass is
+required; the archive keeps the graded pool and its verdict auditable. All of
+it stays OUTSIDE git (UNLICENSED corpus content).
 M3 FIX A LANDED (2026-07-26, commit `ef6b75052`, task 36): critics now receive
 the identity BOTH pages declare. `parse-document.ts` had been putting
 `frontMatter` on `RepairDocument` since forever, and a grep proved NO downstream
