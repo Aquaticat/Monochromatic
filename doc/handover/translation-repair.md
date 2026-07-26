@@ -1161,6 +1161,49 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PASS 7 RUN 013 (2026-07-26, tip `065ab5bcf`, 15521985 ms ~259 min): FIVE
+settled, 15/92, bands 5 small / 5 medium / 5 large, dead even and halfway to the
+~10/10/10 bar. Futajuhuacha repaired at last (LARGE, 214 issues, 211 accepted,
+210 resolved, 43 findings) in 1266924 ms once runs 011 and 012 had cached 18 of
+its 22 slices; then ArtsEpiphany (SMALL, status=unchanged, ZERO issues, 11509 ms,
+the first entry the pipeline found nothing to say about), GLaDOSister (87/83/82,
+13 findings), BI4PBV (20/20/20, 4 findings), Jennife80677612 (51/50/49, 6
+findings). Huasheng aborted at the hard cap and carries cached slices for a
+later run. The soft-budget change (`54b3b6853`) is what did this: runs 010 to
+012 settled one, zero, and zero entries respectively, and one launch now settles
+five.
+UNCENSORED CALL TIMING, THE MEASUREMENT THE DEADLINE QUESTION NEEDED. Run 013
+sampled every model call: 748 succeeded and 35 were killed at the 240 s
+deadline, a censoring rate of 4.5 percent. Time to first byte over the 748 runs
+min 412 ms, p25 2807 ms, p50 45_837 ms, p75 118_770 ms, p90 163_296 ms, p95
+182_867 ms, p99 218_976 ms, max 235_151 ms. By threshold: 45.3 percent take at
+least 60 s, 24.6 percent at least 120 s, 13.9 percent at least 150 s, 6.1
+percent at least 180 s, 2.0 percent at least 210 s, and 0 reach 240 s, the last
+only because 240 s is where they are cut.
+READING: this is a right-censored heavy tail with real density right up to the
+boundary and NO cliff before it, which is the signature of a distribution being
+clipped rather than of connections hanging. A call finishing at 245 s would be
+unremarkable next to the 15 observed between 210 s and 235 s. So the 35 killed
+calls are most likely slow-but-real, and THE USER'S HYPOTHESIS IS SUPPORTED:
+240 s does truncate genuine work.
+RECONCILING IT WITH THE CORRELATED-BATCH EVIDENCE, which looked contradictory:
+run 013 lost 35 calls across only 7 retry rounds, so timeouts still arrive about
+five at a time rather than independently. Both hold at once if the provider
+slows ALL concurrent calls together under load, so a batch crosses 240 s
+together. That explains correlation without requiring hangs, and it still means
+a longer deadline would let those calls through. It also means the extra waiting
+lands precisely during congested periods.
+WHY NOT RAISE IT IMMEDIATELY ANYWAY: the guard fired ZERO times in run 013, and
+it did not exist for the first ten entries, so all 15 settled entries share one
+call-timing configuration (240 s total deadline, no silence aborting). The pool
+is currently CLEAN despite the earlier mixed-cohort worry, and raising the
+deadline now is what would split it. Voice loss under 240 s is also mild right
+now: 81 of 85 stages heard a full 7/7, with two critic stages at 5/7 and two
+panel stages at 6/7, so the retry ladder is absorbing most of the censoring.
+MID-STREAM GAPS, for the record: p50 64 ms, p90 673 ms, p99 9455 ms, max
+28_116 ms, and nothing at or above 30 s. The retired 30 s window would have had
+a 1.07x margin against the observed maximum, tighter still than the 1.2x that
+condemned it.
 THE IDLE GUARD DOES NOT WORK ON THIS PROVIDER, AND THE USER'S DEADLINE
 HYPOTHESIS IS NOW THE BETTER-SUPPORTED ONE (2026-07-26, commit `68f11f602`).
 A full sentinel probe on Aniloviraw settled it, and it reverses three claims
