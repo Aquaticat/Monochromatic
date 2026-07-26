@@ -1161,6 +1161,84 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+M3 GATE VERDICT: FAILED (2026-07-26, task 33, user-graded). The user graded all
+50 items of the final sheet in place, with free-text rationale rather than bare
+Y/N. Tally: 28 clear Y, 16 clear N, 6 partial/ungradable. Bands are contiguous in
+the sheet (items 1-17 small, 18-34 medium, 35-50 large; verified mechanically).
+PRECISION vs the 0.9 bar -- strict (partials against) 28/50 = 0.56; partials
+excluded 28/44 = 0.64; generous (both "Yes-ish" as Y) 30/46 = 0.65; ABSOLUTE
+CEILING, every partial credited as a true positive, 34/50 = 0.68. Per band,
+partials excluded: small 9/15 = 0.60, medium 8/14 = 0.57 (10/16 = 0.63 counting
+the "Yes-ish" pair, which enter denominator as well as numerator), large 11/15 =
+0.73. The bar needs 45/50, so the gate fails by 22 points AT ITS CEILING: no
+reading of the ambiguous grades can move the verdict, and it is not sampling
+noise. Precision is roughly FLAT across bands, so entry size is not the driver
+and the stratification bought a null result -- worth knowing, not a wasted
+control. NOT a sheet-context artifact: only items 12, 16, 48 read as context-
+starved and all three are already excluded as partials; each of the 16 clear N
+grades carries a substantive rationale (frontmatter, segmentation, obligatory
+English grammar) that more context would not overturn.
+ROOT CAUSES of the 16 clear false positives, ranked: (1) SEGMENTATION/ALIGNMENT,
+5 items (18, 38, 40, 41, 46) -- the user named it directly ("this is a segmenting
+error in our system/pipeline"); the zh span and en span compared were never a
+translation pair, so the model correctly reports a difference between mismatched
+texts. This also inflates severity: the sample's two most severe false positives
+(40 critical, 46 major) are BOTH alignment failures. (2) FRONTMATTER NOT
+CONSULTED, 3 items (7, 14, 19) -- names and aliases are declared in each page's
+frontmatter but the pipeline feeds body text only, so a correct sourced English
+name reads as an unsubstantiated substitution; cheap and unambiguous to fix,
+since the data is in a file we already read. (3) LEGITIMATE CROSS-LANGUAGE
+ASYMMETRY, 5 items (2, 10, 17, 23, 29) -- English obligatorily encodes what
+Chinese leaves implicit (subject pronouns, quotation marks, plural address) and
+the model scores that obligation as an addition or loss; the user's framing on
+item 2 is the durable one: THE SOURCE TEXT IS NOT GOLDEN, so a translation that
+repairs a source deficiency is not a defect. (4) DOMAIN/LOCAL CONTEXT, 3 items
+(15, 24, 31) -- community slang the model did not know, and word choices judged
+in isolation when the adjacent half-sentence licenses them; common shape is
+judging a span with too little of its neighbourhood.
+OTHER SIGNALS: addition-class claims have no gradable source context (item 16
+ungradable, zh side rendered `(none)`); checked the code rather than guessing --
+`sideQuotes` in `sample-grading.ts` drops empty quote strings, so `(none)` means
+no non-empty source span existed, which for an `accuracy/addition` claim is
+semantically CORRECT (an insertion anchors to an empty point). So this is a SHEET
+gap, not an accept-gate bug: the grader needs a window of surrounding source text
+around the insertion point. Affects 1/50. Self-contradicting claims survive
+adjudication (item 48 alleges an omission its own quoted target contains). And
+some true positives are NOT actionable (items 6, 8, 44: utterance-final
+particles, poetic imagery) -- real precision wins that predict no repair gain, so
+precision alone overstates deliverable value.
+SAFETY INVARIANTS CHECKED CLEAN -- the gate failed on precision, NOT safety.
+Every `repaired` entry genuinely differs from its input and the single
+`unchanged` entry is byte-identical, measured over the artifact pool with 0
+anomalies; 0 entries blocked; the degrade-and-persist design in `repairChunk`
+means no failure path throws, so a bad slice costs coverage, never corruption;
+splice-back stays conservative (only clean-anchor chunks, standing slices ship
+unchanged per-slice).
+NON-TRANSLATION BLOCK, 0/4 ON GENUINE INPUTS (the finding flagged at run 021 for
+the milestone writeup, now surfaced): all 4 real-corpus blocks this session
+(Aniloviraw, AkiraComplex, Arita, Mio) were FALSE; the only true positive the
+feature ever produced is the invented cat/"meow" probe pair. Discriminator holds
+(false blocks all carried confirmed good-translation content, the true positive
+carried none), which is what the `sliceAnchorsTranslation` veto encodes. On an
+all-real-translation corpus this is a finding about the feature's VALUE here, not
+just its threshold.
+CONSEQUENCES FOR THE RE-MEASURE: (a) it needs a NEW draw seed -- `DEFAULT_SAMPLE_
+SEED` is the fixed constant `'milestone-three-precision'`, so re-drawing with it
+over a changed pool would partially RE-SELECT the just-graded items and
+contaminate the result; this sheet is burned as a calibration set. (b) fixing
+segmentation invalidates the cached slices, so the re-measure needs a fresh
+accumulation pass, not a re-draw over the current artifacts. TASK 31 (judge
+crosscheck) STAYS DEFERRED, on a NEW rationale -- the old "wait until human
+grades exist" expired the moment they arrived; the live reason is that 8 of the
+16 clear false positives come from input the PIPELINE assembles, so a crosscheck
+now would measure a pipeline about to change. Full quoted detail, which cannot be
+committed (UNLICENSED corpus text), lives beside the sheet at
+`node_modules/.monochromatic/translation-repair-runs/gate-verdict.md`.
+FIX LIST, ranked by sample yield, NOT started (the user's turn was a report, and
+scope is theirs to set): segmentation/alignment (5) > frontmatter (3) > accept-
+gate rules for self-contradicting claims (1) > judge context widening for the
+asymmetry and domain classes (8 combined, but these need prompt/knowledge work
+rather than plumbing, so they are the expensive tail).
 TASK 30 COMPLETE + FINAL SHEET DRAWN (2026-07-25, advisor-confirmed). Advisor:
 declare the bar MET at 9/11/9 -- the parity argument is decisive (small is
 structurally pinned at 9 by the driver deprioritization and is already accepted
