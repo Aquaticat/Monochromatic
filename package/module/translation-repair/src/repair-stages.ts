@@ -80,6 +80,9 @@ export type CriticStageResult = {
  *
  * @param documents - parsed chunk pair claims anchor against
  *
+ * @param identityContext - declared names from both sides' front matter,
+ * carried whole-document because chunk text never contains front matter
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -100,6 +103,7 @@ export async function runCriticStage(
     sourceText,
     targetText,
     documents,
+    identityContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -109,6 +113,7 @@ export async function runCriticStage(
     readonly sourceText: string;
     readonly targetText: string;
     readonly documents: Readonly<Record<DocumentSide, AnchorTarget>>;
+    readonly identityContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -120,6 +125,7 @@ export async function runCriticStage(
   const messages = buildCriticMessages({
     sourceText,
     targetText,
+    ...(identityContext === undefined ? {} : { identityContext, }),
   },);
 
   /**

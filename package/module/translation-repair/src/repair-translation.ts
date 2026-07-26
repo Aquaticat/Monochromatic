@@ -11,6 +11,7 @@ import {
   type ChunkPair,
 } from './chunk-document.ts';
 import { hashContent, } from './document-node.ts';
+import { collectIdentityLines, } from './identity-context.ts';
 import {
   assessNonTranslationDominance,
   sliceAnchorsTranslation,
@@ -223,11 +224,43 @@ export async function repairTranslation(
   },);
 
   /**
+   * Whole original document, parsed once and reused for both alignment and
+   * the identity block chunk text cannot supply.
+   */
+  const sourceDocument = parseDocument({ text: sourceText, },);
+
+  /**
+   * Whole translation document, parsed once for the same two uses.
+   */
+  const targetDocument = parseDocument({ text: targetText, },);
+
+  /**
+   * Declared names and handles from both sides' front matter. Front matter is
+   * document-level while critics see chunk text, so this is the only path by
+   * which a declared correspondence reaches them. Empty when neither side
+   * declares anything.
+   */
+  const identityLines = collectIdentityLines({
+    sourceData: sourceDocument.frontMatter
+      ?.data,
+    targetData: targetDocument.frontMatter
+      ?.data,
+  },);
+
+  /**
+   * Identity block spread into the chunk call, omitted entirely when nothing
+   * is declared so the prompt never carries an empty heading.
+   */
+  const identityFragment = identityLines.length === 0
+    ? {}
+    : { identityContext: identityLines.join('\n',), };
+
+  /**
    * Aligned chunk pairs covering both documents totally.
    */
   const alignment = alignDocumentSections({
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: targetText, },),
+    source: sourceDocument,
+    target: targetDocument,
   },);
 
   /**
@@ -298,6 +331,7 @@ export async function repairTranslation(
         .text,
       models,
       ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
+      ...identityFragment,
       signal,
       perCallTimeoutMs,
       l: rl,
