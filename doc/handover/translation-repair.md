@@ -1161,6 +1161,33 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PASS 7 RUN 001 (2026-07-26, tip `c911b31a6`, 2171621 ms ~36 min): 1 settled,
+1/92. AmbeR_the_anpa status=repaired (41 issues, 41 accepted, 41 resolved, 4
+findings, 6 chunks). Same entry in round one: 44 issues, 42 accepted, 42
+resolved, 4 findings, 7 chunks. Observable deltas: chunk count 7->6 (the
+aligner pairs differently), severity lost its lone `critical` and lone
+`neutral`, and the category mix moved (accuracy/mistranslation 27->18,
+accuracy/omission 11->15, accuracy/addition now 5). NOT EVIDENCE OF A
+PRECISION CHANGE and must not be recorded as one: nothing here is graded, the
+seven models are individually unreliable so counts move run to run regardless,
+and this is a single entry. It is also a WEAK test of the fixes by construction
+-- AmbeR_the_anpa contributed no CLEAR false positive to the graded fifty (its
+two sampled items were the "Yes-ish" Bilibili gloss and a true positive), so
+nothing here was expected to change. Only a graded round-two sample answers the
+question.
+ENTRY ORDER IS DETERMINISTIC AND MATCHES ROUND ONE's queue: `corpus-pass.ts`
+sorts with a STABLE `toSorted` on resumable-first, then non-small-before-small,
+then fewest-attempts. With the archive in place no id is resumable and every
+attempt count is 0, so two of three keys are identically zero and ordering
+collapses to the band split, with stability preserving the pinned-commit
+listing order inside each group (`--plan` confirms:
+first=AmbeR_the_anpa,Anilovr,Arita,Chinatsu_Suzuki,Considerate_cat). So round
+two starts from the same queue round one did; an earlier claim in this session
+that it would settle a DIFFERENT set was wrong. Divergence is confined to the
+tail, where changed slice counts shift which entries fit inside each run's
+soft budget. Consequence: do NOT add entry-id pinning to the driver for
+comparability; if the settled sets diverge, compare precision on the
+INTERSECTION, which is computable from the artifacts after the fact.
 M3 FIXES A-F ALL LANDED (2026-07-26), and PASS 7 is the re-measure. Commits:
 `ef6b75052` (A identity), `1790ec037` (B1 container unwrapping), `1aa8a0904`
 (B2 monotone alignment), `7c4502580` (D source-not-golden), `a76aacae6` (E
