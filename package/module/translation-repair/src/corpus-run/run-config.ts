@@ -67,8 +67,34 @@ export const RUN_MODELS: RepairModels = {
 
 /**
  * Deadline granted to one model exchange during a corpus run.
+ *
+ * Was 240_000, which measurably clipped real work. Run 013 sampled every call
+ * unfiltered: 748 succeeded and 35 were cut at the deadline, a 4.5 percent
+ * censoring rate, while the surviving time-to-first-byte distribution ran p50
+ * 45_837 ms, p90 163_296 ms, p99 218_976 ms, and max 235_151 ms. Fifteen calls
+ * landed in the last 25 seconds before the cut, so the distribution had real
+ * density right up to the boundary with NO cliff ahead of it. That is the
+ * signature of clipping, not of connections hanging: a call completing at
+ * 245_000 ms would be unremarkable beside the ones observed at 235_151 ms.
+ *
+ * Timeouts still arrive in correlated batches, about five per retry round,
+ * which once looked like evidence of hangs. It reconciles if the provider slows
+ * every concurrent call together under load, so a batch crosses the deadline
+ * together. That explains the correlation without hangs, and it means the added
+ * waiting falls during congested periods specifically.
+ *
+ * 360_000 is chosen against the measurement rather than as a round multiple: it
+ * clears the observed p99 by 64 percent and the observed maximum by 53 percent,
+ * while keeping a worst-case stage bounded. `STAGE_RETRY_ROUNDS` allows four
+ * deadlines in one stage, so this caps a pathological stage near 24 minutes
+ * against the 90 minute per-entry ceiling, where 480_000 would put it past 32.
+ * Raising it should also REDUCE retry rounds by losing fewer voices, so the
+ * worst case gets rarer as well as no worse.
+ *
+ * Sampling stays unfiltered, so the next run reports how much tail still gets
+ * clipped at 360_000 and this can be tuned on evidence again.
  */
-export const RUN_PER_CALL_TIMEOUT_MS = 240_000;
+export const RUN_PER_CALL_TIMEOUT_MS = 360_000;
 
 /**
  * Call-timing knobs an artifact was produced under, so a pool spanning more
@@ -103,14 +129,23 @@ export type RunCallConfig = {
 /**
  * Call-timing configuration stamped into every artifact this pass writes.
  *
- * The pool it labels is deliberately MIXED: the user chose to keep the ten
- * entries settled before the stream idle guard landed rather than discard that
- * compute, accepting that panel completeness changed underneath the pool. The
- * stamp is what keeps that choice analyzable instead of merely accepted:
- * precision can be split by cohort at analysis time, so the confound becomes a
- * number rather than an unknown. Artifacts written before this field existed
- * carry no `callConfig` at all, and that ABSENCE identifies the pre-guard
- * cohort exactly.
+ * The pool it labels is deliberately MIXED, by a decision the user made twice:
+ * keep already-settled entries rather than discard the compute, and let the
+ * stamp make the cost measurable instead of merely accepted. Precision can be
+ * split by cohort at analysis time, so a confound becomes a number rather than
+ * an unknown.
+ *
+ * Three cohorts exist in the round-two pool, and the first two are equivalent
+ * for call timing even though they look different:
+ *
+ * -   Ten entries with NO `callConfig` field at all, settled before the field
+ *     existed. Their absence identifies them exactly.
+ * -   Five entries stamped `perCallTimeoutMs: 240_000`, from run 013. The
+ *     stream idle guard existed during this run but fired ZERO times, so these
+ *     five ran under the same effective timing as the ten above. Treat the
+ *     fifteen as ONE cohort.
+ * -   Entries stamped `perCallTimeoutMs: 360_000` and later, which are the
+ *     first to run without the deadline clipping roughly 4.5 percent of calls.
  *
  * Deliberately not surfaced on the grading sheet: a grader who could see which
  * cohort an issue came from would be a worse instrument than one who could not.
