@@ -13,6 +13,10 @@ import {
   readCorpusFile,
 } from '../corpus-source.ts';
 import { isJsonRecord, } from '../json-guard.ts';
+import {
+  rankWithinBands,
+  smallBandIds,
+} from './band-order.ts';
 import { repairTranslation, } from '../repair-translation.ts';
 import {
   discardSliceCache,
@@ -31,8 +35,8 @@ import {
 //region Corpus pass
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit,
 // one entry at a time: skips entries that already have an artifact, orders the
-// rest to resume cached progress first, then deprioritize the small size band
-// (then fewest-attempts-first), and
+// rest to resume cached progress first, then interleave the size bands by
+// within-band rank so coverage fills evenly (then fewest-attempts-first), and
 // stops starting new entries at the soft budget while a per-entry hard ceiling
 // aborts an entry that overruns. Each settled
 // entry writes one JSON artifact and one TALLY line. Run it with `mise run
@@ -76,17 +80,6 @@ const HARD_CAP_MS = HARD_CAP_MINUTES * MS_PER_MINUTE;
  * Complete zh/en pairs present at the pinned commit; the run target.
  */
 const CORPUS_PAIR_TARGET = 92;
-
-/**
- * Page-source byte size below which an entry sits in the small band. The
- * corpus page.md sizes fall into rough tertiles with the lower cut near
- * 1.8 KiB. Small entries finish inside one run while large ones consume it,
- * so early settling over-represents the small band (9 of the first 12); to
- * keep the eventual 50-issue sample representative of the medium and large
- * bands, the pass sorts small entries last. Deprioritization only, not
- * exclusion: a small entry still settles once the larger bands are served.
- */
-const SMALL_PAGE_BYTES = 1_843;
 
 /**
  * Characters of an error message kept in a TALLY line.
@@ -313,20 +306,28 @@ async function runCorpusPass(): Promise<void> {
   const sizer = new TextEncoder();
 
   /**
-   * Ids whose page source is under the small-band cut. Held in a set so the
-   * comparator is a lookup rather than re-encoding text on every compare.
+   * Every eligible entry reduced to its id and page-source byte size, measured
+   * once so ordering never re-encodes text on a compare.
    */
-  const smallIds = new Set(
-    eligible
-      .filter(function isSmall(entry,) {
-        return sizer.encode(entry.sourceText,)
-          .length
-          < SMALL_PAGE_BYTES;
-      },)
-      .map(function toId(entry,) {
-        return entry.id;
-      },),
-  );
+  const sized = eligible.map(function toSized(entry,) {
+    return {
+      id: entry.id,
+      sourceBytes: sizer.encode(entry.sourceText,)
+        .length,
+    };
+  },);
+
+  /**
+   * Ids whose page source is under the small-band cut.
+   */
+  const smallIds = smallBandIds({ entries: sized, },);
+
+  /**
+   * Each entry's rank within its own size band, so ordering interleaves the
+   * bands instead of draining one before starting the next. Rationale for
+   * interleaving lives in `band-order.ts`.
+   */
+  const bandRank = rankWithinBands({ entries: sized, },);
 
   /**
    * Ids with cached slices from an earlier aborted run. These resume first so
@@ -340,8 +341,11 @@ async function runCorpusPass(): Promise<void> {
   const resumableIds = await listResumableEntries({ dir: sliceCacheDir, },);
 
   /**
-   * Pending entries: cached progress resumes first, then the small band sorts
-   * last, then fewest attempts first so flaky ones deprioritize within a band.
+   * Pending entries: cached progress resumes first, then the bands interleave
+   * by within-band rank so coverage fills evenly, then the larger band leads
+   * within one rank (a large entry may need a second run, so starting it
+   * earlier costs nothing), then fewest attempts first so flaky ones
+   * deprioritize.
    */
   const pending = eligible.toSorted(function byResumeThenBandThenAttempts(
     a,
@@ -356,9 +360,18 @@ async function runCorpusPass(): Promise<void> {
     if (resumeDelta !== 0)
       return resumeDelta;
     /**
-     * Negative when only `a` is small (so `b`, in a larger band, sorts
-     * first), positive when only `b` is; zero leaves both in the same band
-     * for the attempt tiebreak below.
+     * Difference in within-band rank. Interleaving on this fills every band
+     * at the same pace, so the tenth entry of each band arrives at roughly
+     * the same time rather than one band starving.
+     */
+    const rankDelta = (bandRank.get(a.id,) ?? 0) - (bandRank.get(b.id,) ?? 0);
+    if (rankDelta !== 0)
+      return rankDelta;
+
+    /**
+     * Within one rank, the larger band goes first: a large entry may need a
+     * second run to settle, so starting it earlier costs nothing and lets it
+     * resume sooner.
      */
     const bandDelta = Number(smallIds.has(a.id,),)
       - Number(smallIds.has(b.id,),);
