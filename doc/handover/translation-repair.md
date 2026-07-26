@@ -1161,6 +1161,42 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PASS 7 RUN 005 (2026-07-26, tip `61487a893`, 1543107 ms): TWO settled (small
+entries are fast), 6/92 = large 2 / medium 2 / small 2. Acheron
+status=repaired (19 issues, 17 accepted, 1041617 ms) and AkiraComplex
+status=repaired (13 issues, 13 accepted, 501485 ms). The corrected band
+ranking worked: the starved small band led this run.
+ACCEPTED COUNTS ARE FALLING SHARPLY, and the pattern has a natural control.
+Across the four entries settled in BOTH rounds: 192 -> 111 accepted, ratio
+0.58. Per entry:
+AmbeR_the_anpa 42 -> 41 (-2%), Acheron 45 -> 17 (-62%), AkiraComplex 28 -> 13
+(-54%), Chinatsu_Suzuki 77 -> 40 (-48%).
+THE CONTROL IS THE INTERESTING PART: AmbeR_the_anpa is the one of the four that
+contributed NO clear false positive to the graded fifty, and it is the one that
+barely moved. The three that carried a known false positive (Acheron item 7
+identity, AkiraComplex item 16 unanchored, Chinatsu_Suzuki item 40 critical
+PhotoScroll) all dropped by half or more. That is the shape a targeted fix
+should produce, and it is not what indiscriminate suppression would look like.
+ARITHMETIC CONSISTENCY, NOT PROOF: round one's graded precision was 0.56 to
+0.68, so of 192 accepted roughly 107 to 131 were true positives; 111 survive.
+That is consistent with the fixes removing mostly false positives, but it
+assumes the removal was perfectly targeted, which only grading can establish.
+Do not quote the ratio as a precision measurement.
+RECALL IS NOW THE OPEN RISK AND THE GATE DOES NOT COVER IT. The M3 headline
+gate is PRECISION ONLY, so a pipeline that suppressed real defects along with
+false ones would still pass it. Before declaring milestone three, either add a
+recall check (the seeded-defect benchmark already in this package is the
+natural instrument: `repair-benchmark.ts` measures restoration of KNOWN
+injected defects, so it is unaffected by the precision sample) or state
+explicitly that recall is unmeasured this round. Flag to the user; do not
+decide it unilaterally.
+FIX A AND F SIGNALS on their target entries, keyword-counted not graded:
+Acheron identity-mentioning accepted claims 27 -> 4 (the regex matches any
+summary containing name/alias/Acheron, so treat as indicative only);
+AkiraComplex accepted claims carrying NO source span 5 -> 0, and Acheron 2 ->
+0. The unanchored drop was NOT gated by fix F, which only labels the case on
+the sheet, so it is a side effect of the alignment and prompt changes and must
+not be attributed to F.
 FIX B CONFIRMED ON THE ENTRY IT WAS BUILT FOR (2026-07-26). Chinatsu_Suzuki
 re-settled in pass 7 run 004, and it is the container-nesting entry whose en
 page collapses its gallery into one `<details>`. Round one vs round two,
