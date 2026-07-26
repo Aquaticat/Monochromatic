@@ -17,6 +17,7 @@ import {
   parseMarkdownBody,
   parseMdxBody,
 } from './parse-mdx.ts';
+import { flattenContainers, } from './unwrap-container.ts';
 
 //region Document parsing
 // Composition of the deterministic core: front matter split, tolerant parse
@@ -231,10 +232,15 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
       : { frontMatter: split.frontMatter, }),
     // Node text stays sliced from the ORIGINAL body, keeping every quote,
     // hash, and anchor consistent with the document's canonical text.
+    // Disclosure containers flatten first so a page nesting blocks exposes the
+    // same top-level structure as a counterpart that does not; chunking and
+    // alignment walk top-level blocks only.
     nodes: buildDocumentNodes({
-      children: parsed
-        .root
-        .children,
+      children: flattenContainers({
+        children: parsed
+          .root
+          .children,
+      },),
       bodyText: split.body,
       bodyOffset: split.bodyOffset,
     },),
