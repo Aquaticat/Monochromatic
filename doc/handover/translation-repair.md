@@ -1161,6 +1161,30 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+TASK 30 COMPLETE + FINAL SHEET DRAWN (2026-07-25, advisor-confirmed). Advisor:
+declare the bar MET at 9/11/9 -- the parity argument is decisive (small is
+structurally pinned at 9 by the driver deprioritization and is already accepted
+as "~10"; by parity large=9 is "~10"; every band is within 1 of 10, a face-value
+satisfaction of an APPROXIMATE bar). Sufficiency was long past (the earlier
+6-large call); 9->10 large is a cosmetic digit whose pursuit risks a medium-
+over-coverage spiral (next pick is a coin flip; a miss = medium 12 for zero
+gain). STOP accumulation; the 29-entry pool is a frozen snapshot. FINAL draw run
+`draw-sample -- --final` -> `grading-sheet.md` (NOT preliminary), pool 2871
+accepted (337 small / 921 medium / 1613 large), 50 drawn. Sanity checks all
+pass: allocation exactly 17 small / 17 medium / 16 large = 50; reconcile clean
+(every artifact's parsed accepted == its recorded acceptedCount, so the sample
+is not short); large-band items render gradably across the settled large tail
+(NIGHT81473140 / Jennife80677612 / Susiethegamer etc.); no preliminary banner.
+Sheet lives OUTSIDE the repo (UNLICENSED corpus quotes) at
+`node_modules/.monochromatic/translation-repair-runs/grading-sheet.md`; NEVER
+committed. Task 30 (accumulation) DONE: 29/92 settled = 9 small / 11 medium / 9
+large, statuses 28 repaired / 1 unchanged / 0 blocked. Now the genuine surface-
+to-user point: the headline gate needs the USER to grade the 50 issues Y/N (real
+defect vs false positive) against the 0.9 precision bar. Task 31 (judge
+crosscheck) stays DEFERRED until those grades exist; task 33 (gate verdict: per-
+band + overall precision vs 0.9, plus the safety invariants pre-checked clean)
+waits on the grades. Do NOT build ahead of grading -- the bottleneck is now
+entirely the user's grading time.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
