@@ -20,12 +20,15 @@ const l = tagged({ tag: 'translation-repair', },);
  * every exchange would bury the run output; at or above it the sample is what
  * `STREAM_IDLE_MS` has to be tuned against.
  */
-const NOTABLE_GAP_MS = 20_000;
+const NOTABLE_GAP_MS = 5_000;
 
 /**
- * Time to first byte worth naming in the run log, for the same reason.
+ * Time to first byte worth naming in the run log, for the same reason. Set
+ * below the measured healthy range (84 s at the fastest) so the run log
+ * accumulates the distribution the windows are tuned against rather than only
+ * its extreme.
  */
-const NOTABLE_FIRST_BYTE_MS = 60_000;
+const NOTABLE_FIRST_BYTE_MS = 30_000;
 
 /**
  * Drains a response body chunk by chunk, telling the guard about each arrival
