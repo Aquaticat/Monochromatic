@@ -21,24 +21,38 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // of the stall escalating into another whole stage round.
 
 /**
- * Silence allowed before the first body byte. Generous on purpose: this window
- * also covers the model ingesting a large prompt, which produces no output yet
- * is real work. It stays under the per-call total deadline so the guard, not
- * the deadline, is what normally fires.
+ * Silence allowed before the first body byte.
+ *
+ * These calls are slow to start and then fast to finish. A sentinel probe
+ * measured healthy time-to-first-byte at 84, 104, 122, 132, 135, and 147
+ * seconds, so this window is nearly the whole per-call deadline and cannot
+ * discriminate much: a first-byte stall and a healthy 147 s wait look alike
+ * until one of them ends. An earlier 150 s value here would have killed that
+ * 147 s call with under 3 seconds to spare.
+ *
+ * It therefore sits just under the 240 s total deadline: enough to name the
+ * failure phase in the log, not enough to pretend the guard can tell a
+ * first-byte stall from slow thinking. Whether the observed stalls are
+ * first-byte or mid-stream is what the phase in {@link StreamStalledError}
+ * exists to settle.
  */
-export const STREAM_FIRST_BYTE_MS = 150_000;
+export const STREAM_FIRST_BYTE_MS = 210_000;
 
 /**
- * Silence allowed between body bytes once the stream is flowing. A token
- * stream that has gone a full minute without emitting anything is stalled
- * rather than thinking.
+ * Silence allowed between body bytes once the stream is flowing.
  *
- * Chosen conservatively rather than measured: nothing recorded inter-chunk gaps
- * before this module existed, because the transport drained the whole body as
- * text in one call. {@link StreamProgress} is logged on every exchange so the
- * observed distribution can tighten this.
+ * This is where the guard actually discriminates. Across six probe streams
+ * carrying up to 745_015 characters, the largest gap between chunks was 733 ms,
+ * and four of the six stayed under 130 ms: once a body starts it does not
+ * pause. Thirty seconds is roughly forty times the worst observed gap, so it
+ * cannot plausibly fire on a healthy stream, while catching a mid-stream death
+ * eight times sooner than the total deadline would.
+ *
+ * Six streams from one entry is a small sample; every exchange past the
+ * notable thresholds logs its {@link StreamProgress}, so this can tighten as
+ * the distribution fills in.
  */
-export const STREAM_IDLE_MS = 60_000;
+export const STREAM_IDLE_MS = 30_000;
 
 /**
  * Logger root for the stream guard.
