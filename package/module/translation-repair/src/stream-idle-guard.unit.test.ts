@@ -75,12 +75,15 @@ await describe({
       name: 'idle window constants',
       children: [
         it({
-          name: 'keeps the first-byte window under the per-call deadline so the guard fires first',
+          name: 'keeps both windows above the per-call deadline so the guard measures without killing',
           fn: async () => {
-            // 240_000 is the corpus run's per-call total deadline; a guard that
-            // did not fire first would never be the thing that catches a stall.
-            expect(STREAM_FIRST_BYTE_MS,).toBeLessThan(240_000,);
-            expect(STREAM_IDLE_MS,).toBeLessThan(STREAM_FIRST_BYTE_MS,);
+            // 240_000 is the corpus run's per-call total deadline. The probe
+            // found 34 of 34 stalls were first-byte and none mid-stream, and
+            // that healthy first-byte silence reaches at least 147.5s, so a
+            // silence window cannot tell a stalled call from a working one.
+            // Windows above the deadline leave the deadline as the only kill.
+            expect(STREAM_FIRST_BYTE_MS,).toBeGreaterThan(240_000,);
+            expect(STREAM_IDLE_MS,).toBeGreaterThan(240_000,);
           },
         },),
       ],
