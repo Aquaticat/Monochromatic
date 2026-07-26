@@ -1161,6 +1161,35 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+BAND ORDERING FIXED MID-PASS (2026-07-26, commit `a0fb61f6d`). The ~10/10/10
+bar was UNREACHABLE on a fresh pass and runs 001-002 exposed it by settling two
+mediums and nothing else. Measured corpus band split: 31 small / 32 medium / 29
+large. The driver sorted the small band LAST, so the first small entry could
+only start after all 61 non-small settled: at the 36-57 min per entry measured
+here, over a day of compute before the small band opens at all. Round one only
+reached small=9 because those entries had settled in earlier passes; archiving
+`attempts.json` and the artifacts wiped that inheritance, turning a mild skew
+correction into a starved band.
+FIX: order is now resume-first -> INTERLEAVE bands by within-band rank ->
+larger band leads within a rank -> fewest attempts. This keeps the original
+intent (small entries finish inside one run while large ones consume it, so
+early settling over-represents small) but solves it symmetrically, reaching ten
+per band in ~30 entries instead of ~71. Band logic extracted to
+`corpus-run/band-order.ts` to keep the driver under max-lines (never disabled).
+VERIFIED on `--plan`: first=Arita(large), Considerate_cat(medium),
+Acheron(small), Chinatsu_Suzuki(large), Everythings99(medium).
+OVERLAP WITH ROUND ONE IS NOT HIGH, correcting an earlier claim in this
+session. Anilovr is second in the fresh queue yet was NOT among round one's 29,
+so round one's settled set was never the head of this queue; it was shaped by
+its own pass-4/5/6 attempt history. Round two's ORDER is deterministic, but it
+does not reproduce round one's SET. Compare precision on the actual
+intersection once the bands fill; do not assume it.
+PASS 7 RUN 003 (2026-07-26, tip `a0fb61f6d`, 3443744 ms ~57 min): 1 settled,
+3/92 (large 1 / medium 2 / small 0). Arita status=repaired (86 issues, 85
+accepted, 85 resolved, 5 findings). First run under the interleaved ordering.
+PASS 7 RUN 002 (2026-07-26, tip `60a0ad3a6`, 2789962 ms ~46 min): 1 settled,
+2/92. Anilovr status=repaired (81 issues, 78 accepted, 77 resolved, 8
+findings).
 PASS 7 RUN 001 (2026-07-26, tip `c911b31a6`, 2171621 ms ~36 min): 1 settled,
 1/92. AmbeR_the_anpa status=repaired (41 issues, 41 accepted, 41 resolved, 4
 findings, 6 chunks). Same entry in round one: 44 issues, 42 accepted, 42
