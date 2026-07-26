@@ -1161,6 +1161,51 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+STREAM IDLE GUARD LANDED, AND IT PARTLY REOPENS THE DEADLINE QUESTION
+(2026-07-26, commits `cacc1fa8b` guard plus drain, `3cf83fab1` tests,
+`b59a81329` retune, `8b2c3670f` correction). User chose "land now, keep the 10
+settled" over the recommendation to finish round two first, so the round-two
+pool now spans two configurations by explicit decision. Mitigation, so the cost
+is measurable instead of merely accepted: every artifact from here carries
+`callConfig` (`RUN_CALL_CONFIG` in `run-config.ts`), and its ABSENCE identifies
+the ten pre-guard entries exactly, so round-two precision can be split by cohort
+at analysis time. Deliberately NOT shown on the grading sheet, since a grader
+who can see the cohort is a worse instrument.
+DESIGN: `armIdleGuard` (`stream-idle-guard.ts`) aborts on silence rather than
+elapsed time, armed BEFORE the request so it also covers a provider that never
+sends headers. It aborts its OWN controller, never the caller's, which is what
+makes `attemptExchange` treat the failure as transient so `exchangeWithRetry`
+re-dispatches at transport level on a ~1 s backoff instead of the stall
+escalating into another stage round. `drainBody` (`stream-drain.ts`) replaces
+`response.text()` with a `getReader` loop that timestamps chunks and still hands
+the concatenated text to the existing reassembler, so parsing behavior above the
+transport seam is unchanged.
+A CENSORED SAMPLE WAS BRIEFLY MISTAKEN FOR THE HEALTHY RANGE, corrected in
+`8b2c3670f`; the reasoning trap is worth keeping. A sentinel probe logged six
+healthy calls reaching first byte at 84, 104, 122, 132, 135, and 147 s, and
+those were written into two docblocks and a commit body as "the measured healthy
+range". They cannot be: the drain only logged exchanges slower than its own
+60 s notability filter, so everything faster was absent BY CONSTRUCTION. Pass-7
+stage timings refute it independently, since a stage ends only when its slowest
+voice returns and the tenth percentile of succeeding rounds is 9 s, which no
+84 s first byte allows. The six bound the healthy tail at 147 s or more and say
+nothing else. Commit `b59a81329`'s message still carries the overstatement and
+is not amended per GCA.
+CONSEQUENCE FOR THE USER'S HYPOTHESIS: the healthy first-byte tail reaches at
+least 147 s against a 240 s deadline, a much narrower margin than the earlier
+framing implied, and the shape of that tail above 147 s is UNKNOWN. So whether
+240 s cuts into real work is OPEN, not settled. The retry-recovery evidence
+below still stands on its own, and the two are not in conflict: a fresh dispatch
+recovering 7/7 in a median 88 s is evidence about what re-asking achieves, not
+about where the healthy tail ends.
+WHAT THE GUARD IS AND IS NOT WORTH: its mid-stream window is well founded, since
+the largest gap across six streams carrying up to 745_015 characters was 733 ms,
+so 30 s cannot plausibly fire on a healthy stream. But those gaps come from
+streams that SUCCEEDED and say nothing about how a dying stream behaves. If the
+real failure mode is first-byte silence, the guard buys almost nothing and the
+9.4 percent ceiling is untouched. The `phase` on `StreamStalledError`
+(`first-byte` or `body`) is the instrument that settles it, and ONE corpus run
+answers it. Do not build further on the guard before reading that phase.
 RAISING THE 240 s PER-CALL DEADLINE WOULD MAKE THE SYSTEM SLOWER, MEASURED
 (2026-07-26, user hypothesis "I suspect increasing the 240s deadline could make
 the system overall faster"). The hypothesis has a real mechanism behind it:
