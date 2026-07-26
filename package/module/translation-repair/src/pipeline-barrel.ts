@@ -123,6 +123,11 @@ export {
 } from './artifact-read.ts';
 export { formatGradingSheet, } from './grading-sheet.ts';
 export {
+  collectIdentityLines,
+  type DeclaredIdentity,
+  extractDeclaredIdentity,
+} from './identity-context.ts';
+export {
   allocateBandQuota,
   drawStratifiedSample,
 } from './sample-draw.ts';

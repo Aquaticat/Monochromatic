@@ -51,6 +51,10 @@ import {
  *
  * @param adjudicationConfig - tally thresholds and weights
  *
+ * @param identityContext - declared names from both sides' front matter,
+ * passed down from the whole document because chunk text carries no front
+ * matter of its own
+ *
  * @param signal - caller abort honored by every exchange
  *
  * @param perCallTimeoutMs - deadline per exchange
@@ -72,6 +76,7 @@ export async function repairChunk(
     targetText,
     models,
     adjudicationConfig,
+    identityContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -82,6 +87,7 @@ export async function repairChunk(
     readonly targetText: string;
     readonly models: RepairModels;
     readonly adjudicationConfig?: AdjudicationConfig;
+    readonly identityContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -104,6 +110,7 @@ export async function repairChunk(
     sourceText,
     targetText,
     documents,
+    ...(identityContext === undefined ? {} : { identityContext, }),
     signal,
     perCallTimeoutMs,
     l,

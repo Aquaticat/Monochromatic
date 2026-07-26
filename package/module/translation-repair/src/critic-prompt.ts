@@ -42,6 +42,12 @@ Translation policy, applied when deciding what counts as a defect:
 - When the ORIGINAL quotes a phrase in a language other than its own (an Esperanto, Japanese, or Latin line inside a Chinese page), the TRANSLATION must keep that phrase in its original wording AND give its meaning alongside, so the reader gets both. Report policy/foreign-phrase-gloss when the TRANSLATION drops the original wording, or reproduces it with no meaning alongside. This does not apply when the quoted phrase is already in the TRANSLATION's own language, where the wording alone suffices.
 - The ORIGINAL's own language is never such a phrase. Text written in the ORIGINAL's language belongs in the TRANSLATION fully rendered into the TRANSLATION's language, including inside quotations and stylized multilingual lines; report accuracy/untranslated when it survives unrendered.
 
+Declared identity, when an IDENTITY block precedes the documents:
+- That block reproduces what the two documents' own metadata declares about names, alternate handles, and place names. Those declarations are AUTHORITATIVE evidence, not guesses.
+- A name, handle, or place name in the TRANSLATION that matches a declared value is CORRECT, even when it corresponds to the ORIGINAL neither phonetically nor semantically. Transliteration across Chinese, Japanese, and English readings is normal here. Never report such a rendering as a wrong term, an unsubstantiated substitution, a fabrication, or an addition.
+- Likewise, the TRANSLATION carrying only its own declared name where the ORIGINAL carries its own is not an omission of the original name.
+- The identity block is evidence about naming ONLY. It never licenses a defect in the surrounding prose.
+
 If the TRANSLATION is not a translation of the ORIGINAL at all (unrelated content, gibberish, a different document), report exactly one issue: category accuracy/non-translation, severity critical, targetQuote copied from the start of the TRANSLATION body. Do not enumerate further issues for such a pair.
 If only one section is unrelated while the rest translates the original, report accuracy/non-translation for that section alone, anchored by its quotes, alongside any other issues.
 
@@ -55,6 +61,10 @@ An empty issues array is a valid answer when the translation is faithful.`;
  *
  * @param targetText - translation under review, front matter included
  *
+ * @param identityContext - declared names and handles from both sides' front
+ * matter; omitted when neither side declares any, so the block never appears
+ * empty
+ *
  * @returns Messages ready for `chatJson`
  *
  * @example
@@ -66,11 +76,24 @@ export function buildCriticMessages(
   {
     sourceText,
     targetText,
+    identityContext,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
+    readonly identityContext?: string;
   },
 ): readonly ChatMessage[] {
+  /**
+   * Identity block plus its fence, or nothing at all when undeclared.
+   * Placed BEFORE the documents so the declarations are read as given facts
+   * rather than as a footnote to evidence already weighed.
+   */
+  const identityBlock = ((identityContext === undefined) || (identityContext.length === 0))
+    ? ''
+    : `${FENCE} IDENTITY ${FENCE}
+${identityContext}
+`;
+
   return [
     {
       role: 'system',
@@ -78,7 +101,7 @@ export function buildCriticMessages(
     },
     {
       role: 'user',
-      content: `${FENCE} ORIGINAL ${FENCE}
+      content: `${identityBlock}${FENCE} ORIGINAL ${FENCE}
 ${sourceText}
 ${FENCE} TRANSLATION ${FENCE}
 ${targetText}
