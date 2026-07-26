@@ -12,9 +12,14 @@ import {
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
-import { isJsonRecord, } from '../json-guard.ts';
 import {
+  type AttemptMap,
+  readAttemptMap,
+} from './attempt-store.ts';
+import {
+  countSettledPerBand,
   rankWithinBands,
+  type SizedEntry,
   smallBandIds,
 } from './band-order.ts';
 import { repairTranslation, } from '../repair-translation.ts';
@@ -92,11 +97,6 @@ const ERROR_MESSAGE_CAP = 200;
 const PLAN_PREVIEW_COUNT = 5;
 
 /**
- * Attempt counts keyed by entry id, for fewest-attempts-first ordering.
- */
-type AttemptMap = Record<string, number>;
-
-/**
  * One eligible corpus pair with its text loaded.
  */
 type CorpusPair = {
@@ -130,60 +130,6 @@ type CorpusPair = {
  */
 function isArtifactFile(name: string,): boolean {
   return name.endsWith('.json',);
-}
-
-/**
- * Reads the persisted attempt map, tolerating a missing or malformed file so a
- * corrupt cache never aborts a run.
- *
- * @param attemptsPath - location of the attempts JSON
- *
- * @returns Entry-id to attempt-count map, empty when absent or unreadable
- *
- * @example
- * ```ts
- * const attempts = await readAttemptMap('/runs/attempts.json',);
- * ```
- */
-async function readAttemptMap(attemptsPath: string,): Promise<AttemptMap> {
-  try {
-    /**
-     * Parsed JSON of unknown shape until guarded.
-     */
-    const parsed: unknown = JSON.parse(await readFile(
-      attemptsPath,
-      'utf8',
-    ),);
-    if (!isJsonRecord(parsed,))
-      return {};
-
-    return Object.fromEntries(
-      Object.entries(parsed,)
-        .map(function toCount(
-          [id, value,]: readonly [
-            string,
-            unknown,
-          ],
-        ): readonly [
-          string,
-          number,
-        ] {
-          return [
-            id,
-            (typeof value) === 'number' ? value : 0,
-          ];
-        },),
-    );
-  }
-  catch (error) {
-    // Missing (ENOENT) or malformed (SyntaxError) cache resets to empty;
-    // any other read fault is real and must surface.
-    if ((Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      || (error instanceof SyntaxError))
-      return {};
-    throw error;
-  }
 }
 
 /**
@@ -262,12 +208,23 @@ async function runCorpusPass(): Promise<void> {
   const people = await listCorpusPeople({ pin: RUN_CORPUS_PIN, },);
 
   /**
+   * Encoder measuring page-source byte size once per entry.
+   */
+  const sizer = new TextEncoder();
+
+  /**
    * Complete unsettled pairs; a missing side (only `tdor` here) drops out.
    */
   const eligible: CorpusPair[] = [];
+
+  /**
+   * Already-settled entries reduced to their sizes. Ordering needs these:
+   * ranking runs over the REMAINING entries, so without knowing what each band
+   * already settled every run would restart each band at rank zero and hand
+   * itself to the same band forever.
+   */
+  const settled: SizedEntry[] = [];
   for (const id of people) {
-    if (done.has(id,))
-      continue;
     try {
       /**
        * Original zh page text for this entry.
@@ -277,6 +234,19 @@ async function runCorpusPass(): Promise<void> {
         pin: RUN_CORPUS_PIN,
         relPath: `people/${id}/page.md`,
       },);
+
+      /**
+       * Page-source size deciding this entry's band.
+       */
+      const sourceBytes = sizer.encode(sourceText,)
+        .length;
+      if (done.has(id,)) {
+        settled.push({
+          id,
+          sourceBytes,
+        },);
+        continue;
+      }
 
       /**
        * Translated en page text for this entry.
@@ -301,11 +271,6 @@ async function runCorpusPass(): Promise<void> {
   }
 
   /**
-   * Encoder measuring page-source byte size once per entry.
-   */
-  const sizer = new TextEncoder();
-
-  /**
    * Every eligible entry reduced to its id and page-source byte size, measured
    * once so ordering never re-encodes text on a compare.
    */
@@ -327,7 +292,10 @@ async function runCorpusPass(): Promise<void> {
    * bands instead of draining one before starting the next. Rationale for
    * interleaving lives in `band-order.ts`.
    */
-  const bandRank = rankWithinBands({ entries: sized, },);
+  const bandRank = rankWithinBands({
+    entries: sized,
+    settledPerBand: countSettledPerBand({ entries: settled, },),
+  },);
 
   /**
    * Ids with cached slices from an earlier aborted run. These resume first so

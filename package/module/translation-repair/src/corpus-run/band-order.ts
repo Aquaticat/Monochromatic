@@ -125,10 +125,26 @@ export function smallBandIds(
  * ```
  */
 export function rankWithinBands(
-  { entries, }: { readonly entries: readonly SizedEntry[]; },
+  {
+    entries,
+    settledPerBand,
+  }: {
+    readonly entries: readonly SizedEntry[];
+    readonly settledPerBand: ReadonlyMap<string, number>;
+  },
 ): ReadonlyMap<string, number> {
   return new Map(
     BANDS.flatMap(function rankBand(band,) {
+      /**
+       * How many of this band already settled. Ranking runs over the
+       * REMAINING entries only, so without this offset every run restarts each
+       * band at zero and the within-rank tiebreak hands every run to the same
+       * band, reproducing the starvation this ordering exists to prevent.
+       * Offsetting by the settled count makes the rank an entry's position in
+       * its band's whole fill order, so the band that is furthest behind
+       * always leads.
+       */
+      const settled = settledPerBand.get(band,) ?? 0;
       return entries
         .filter(function inBand(entry,) {
           return bandOf({ sourceBytes: entry.sourceBytes, },) === band;
@@ -139,9 +155,38 @@ export function rankWithinBands(
         ) {
           return [
             entry.id,
-            index,
+            settled + index,
           ] as const;
         },);
+    },),
+  );
+}
+
+/**
+ * Counts settled entries per band, the offset {@link rankWithinBands} needs to
+ * keep ordering fair across runs.
+ *
+ * @param entries - already-settled entries with their page sizes
+ *
+ * @returns Band name to settled count
+ *
+ * @example
+ * ```ts
+ * const settled = countSettledPerBand({ entries: done, },);
+ * ```
+ */
+export function countSettledPerBand(
+  { entries, }: { readonly entries: readonly SizedEntry[]; },
+): ReadonlyMap<string, number> {
+  return new Map(
+    BANDS.map(function countBand(band,) {
+      return [
+        band,
+        entries.filter(function inBand(entry,) {
+          return bandOf({ sourceBytes: entry.sourceBytes, },) === band;
+        },)
+          .length,
+      ] as const;
     },),
   );
 }
