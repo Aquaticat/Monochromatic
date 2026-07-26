@@ -57,12 +57,12 @@ await describe({
             /**
              * Blocks the flat page exposes.
              */
-            const flat = parseDocument({ text: FLAT_PAGE, },).nodes;
+            const { nodes: flat, } = parseDocument({ text: FLAT_PAGE, },);
 
             /**
              * Blocks the nested page exposes once containers flatten.
              */
-            const nested = parseDocument({ text: NESTED_PAGE, },).nodes;
+            const { nodes: nested, } = parseDocument({ text: NESTED_PAGE, },);
 
             // The nested page carries one extra block: its summary, which the
             // flat counterpart has no equivalent for.
@@ -82,9 +82,9 @@ await describe({
             /**
              * Page whose only block is a childless component.
              */
-            const nodes = parseDocument({
+            const { nodes, } = parseDocument({
               text: "<PhotoScroll photos={['a.webp']} />\n",
-            },).nodes;
+            },);
 
             expect(nodes,).toHaveLength(1,);
             expect(nodes.at(0,)
@@ -98,7 +98,7 @@ await describe({
             /**
              * Promoted blocks must take the container's exact place.
              */
-            const nodes = parseDocument({ text: NESTED_PAGE, },).nodes;
+            const { nodes, } = parseDocument({ text: NESTED_PAGE, },);
 
             expect(nodes.at(0,)
               ?.kind,).toBe('heading',);
@@ -114,7 +114,7 @@ await describe({
              * Every node's text must still equal its own offset slice, the
              * invariant offset-based splicing depends on.
              */
-            const nodes = parseDocument({ text: NESTED_PAGE, },).nodes;
+            const { nodes, } = parseDocument({ text: NESTED_PAGE, },);
 
             for (const node of nodes) {
               expect(
@@ -134,7 +134,7 @@ await describe({
              * Wrapper tags must survive as inter-block text so splicing keeps
              * the document well formed.
              */
-            const nodes = parseDocument({ text: NESTED_PAGE, },).nodes;
+            const { nodes, } = parseDocument({ text: NESTED_PAGE, },);
 
             for (const node of nodes) {
               expect(node.text,).not.toContain('<details>',);
@@ -150,7 +150,7 @@ await describe({
              * The work stack re-inspects promoted children, so depth is not
              * limited to one level.
              */
-            const nodes = parseDocument({
+            const { nodes, } = parseDocument({
               text: `<details>
 <summary>Outer</summary>
 
@@ -163,7 +163,7 @@ await describe({
 
 </details>
 `,
-            },).nodes;
+            },);
 
             expect(
               nodes.some(function isQuote(node,) {

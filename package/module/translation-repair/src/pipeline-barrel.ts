@@ -121,6 +121,14 @@ export {
   type ParsedArtifact,
   parseSettledArtifact,
 } from './artifact-read.ts';
+export {
+  scorePairing,
+  tokenize,
+} from './align-blocks.ts';
+export {
+  alignBlocks,
+  type AlignmentStep,
+} from './align-blocks-walk.ts';
 export { formatGradingSheet, } from './grading-sheet.ts';
 export {
   collectIdentityLines,
