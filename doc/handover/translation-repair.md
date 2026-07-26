@@ -1161,6 +1161,59 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+M3 FIX A LANDED (2026-07-26, commit `ef6b75052`, task 36): critics now receive
+the identity BOTH pages declare. `parse-document.ts` had been putting
+`frontMatter` on `RepairDocument` since forever, and a grep proved NO downstream
+consumer ever read it -- so critics judged names with the declaration withheld.
+New `identity-context.ts`: `extractDeclaredIdentity` (reads `name` top-level,
+`alias`/`location` under `info`, the pinned corpus's shape; non-string and blank
+values REJECTED rather than coerced, since a coerced value would enter the
+prompt as an authoritative correspondence) and `collectIdentityLines` (pairs
+both sides per field, keeps one-sided declarations because "sourced metadata,
+not invention" is exactly the judgment that failed). Returns a LIST, not
+`string | undefined`: repo rule `no-restricted-syntax(no-nullish-union)` forbids
+nullish unions, and its decision procedure picks the empty-collection branch
+here. Prompt policy added: declarations are AUTHORITATIVE for naming, cover
+transliteration across Chinese/Japanese/English readings, and NEVER license a
+defect in surrounding prose; `desc` free prose deliberately excluded.
+VERIFIED at the real boundary on all three failing entries: the block now
+carries 委委-fairy/Acheron, 岁月封华/Suigetsu Houka, and Toka_ls's 瞳華 alias.
+12 new unit tests, full suite green (100 PASS, 0 FAIL), lint 0/0, types clean.
+Threading note: `exactOptionalPropertyTypes` rejects re-passing a destructured
+optional, so each hop uses the codebase's conditional-spread idiom.
+M3 FIX B DIAGNOSIS (2026-07-26, task 37, read from the real corpus at the user's
+instruction -- do NOT re-derive this from artifacts alone). The "segmentation"
+cluster is THREE distinct causes, and the earlier "it's plumbing" framing was
+wrong:
+(1) INDEX DRIFT INSIDE A SECTION. `slice-pair.ts` `groupNodesLockstep` pairs by
+shared index whenever both sides have equal node counts, and the comment at its
+docblock states the assumption outright: "When both sides carry the same node
+count their paragraphs correspond one to one ... never drifting." Susiethegamer
+DISPROVES it: zh 32 nodes, en 32 nodes, yet at index 6 the en drops the zh
+lead-in paragraph (a "her sister said to Susie:" line) and starts the blockquote
+directly, so zh[7] blockquote is the true partner of en[6]. Everything from
+index 6 on is paired off by one; equal totals hid it because the en regains a
+node later. Equal count does NOT imply correspondence.
+(2) CONTAINER NESTING. Chinatsu_Suzuki is zh 25 nodes vs en 17: the en wraps its
+entire trailing gallery in ONE `<details><summary>Original</summary>` element,
+which is a single top-level `mdxJsxFlowElement` holding 11 blocks the zh carries
+at top level. Inside it the en preserves the ORIGINAL CHINESE verbatim (in
+traditional characters) beside the PhotoScrolls. Consequences: the 5 PhotoScroll
+"omissions" are false (they are present, nested), and the preserved Chinese will
+also trip the prompt's own `accuracy/untranslated` rule, which is a false
+positive generator by design. Huasheng carries `<details>` on BOTH sides
+(matched and translated), so ITS finding is misalignment, not convention.
+(3) ENTITY IDENTITY, not segmentation at all. Susiethegamer item 41's real
+defect claim is that the en attributes a game to "Nekomaki" where the zh says
+姐姐 (sister) -- but Nekomaki IS the sister. That is fix A's territory, and it
+shows the graded "segmenting" labels are the user's shorthand, not a diagnosis.
+Node counts measured: Chinatsu_Suzuki 25/17, Huasheng 39/44, MeowBot233 55/64,
+Dethelly 53/55, Susiethegamer 32/32.
+CONSEQUENCE: masking non-prose MDX nodes (the cheap fix considered first) would
+NOT fix this and would delete real content, since the en `<details>` blocks hold
+prose. The real fix is a monotone sequence alignment tolerant of insertions and
+deletions, plus unwrapping container elements so both sides expose comparable
+top-level structure.
 M3 GATE VERDICT: FAILED (2026-07-26, task 33, user-graded). The user graded all
 50 items of the final sheet in place, with free-text rationale rather than bare
 Y/N. Tally: 28 clear Y, 16 clear N, 6 partial/ungradable. Bands are contiguous in
