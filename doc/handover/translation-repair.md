@@ -1161,6 +1161,46 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+THE IDLE GUARD DOES NOT WORK ON THIS PROVIDER, AND THE USER'S DEADLINE
+HYPOTHESIS IS NOW THE BETTER-SUPPORTED ONE (2026-07-26, commit `68f11f602`).
+A full sentinel probe on Aniloviraw settled it, and it reverses three claims
+made earlier the same day.
+FIRST, EVERY STALL IS FIRST-BYTE. The probe recorded 34 stalls and 34 of 34
+carried phase `first-byte`; NOT ONE was `body`. Mid-stream death, the failure
+mode the guard was built to catch, did not occur at all. Long first-byte silence
+is normal operation here: across 32 successful streams, time to first byte ran
+p50 95.6 s, p75 123 s, p90 134 s, max 147.5 s. No silence window can separate
+"stalled and silent" from "working and silent" when working looks like that.
+SECOND, THE MID-STREAM WINDOW WAS UNSAFE, and its safety argument was the
+clearest reasoning error of the day. It was justified on six streams whose
+largest inter-chunk gap was 733 ms, described as a 40x margin under a 30 s
+window. At 32 streams the gap distribution reads p50 86 ms, p90 3833 ms, max
+24_673 ms, with three streams past 20 s. The real margin was about 1.2x. A
+maximum over a handful of samples is not a bound, and treating it as one
+inverted a safety claim.
+THIRD, THE GUARD COST THROUGHPUT rather than saving it: the probe took 45.8 min
+against the 23.9 min the same entry took ungarded in run 009, which is what
+killing 34 in-flight calls and re-dispatching them buys. Result comparison
+against that run: 29 issues / 28 accepted / 5 findings versus 27 / 27 / 6, so
+the drain is not proven behavior-neutral, though the pipeline is stochastic
+across seven models and run-to-run variance is expected regardless.
+REMEDY: both windows now sit ABOVE the 240 s per-call deadline so the guard
+never fires. It is retained purely as instrumentation, because the incremental
+drain is what made any of this observable, and the total deadline is once again
+the only thing that kills a call. NO ARTIFACT EVER SETTLED UNDER THE ACTIVE
+GUARD, so nothing in the pool is contaminated by it; runs 011 and 012 both spent
+their whole budget on Futajuhuacha without settling anything.
+WHAT THIS MEANS FOR THE OPEN QUESTION: healthy first-byte reaches at least
+147.5 s against a 240 s deadline, and that 147.5 s is the GUARD'S OWN SHADOW,
+not the true tail, because the 150 s window aborted anything slower instead of
+recording it. So the true healthy tail is unmeasured and may well cross 240 s.
+The user's hypothesis that the deadline is truncating real work is now the
+better-supported reading, and the retry evidence does not contradict it. Stream
+sampling is therefore UNFILTERED from `68f11f602` on (`NOTABLE_FIRST_BYTE_MS`
+and `NOTABLE_GAP_MS` both 0, one log line per model call), because any positive
+threshold censors exactly the tail the question turns on. The next corpus run
+yields the first uncensored time-to-first-byte distribution; read it before
+deciding the deadline.
 STREAM IDLE GUARD LANDED, AND IT PARTLY REOPENS THE DEADLINE QUESTION
 (2026-07-26, commits `cacc1fa8b` guard plus drain, `3cf83fab1` tests,
 `b59a81329` retune, `8b2c3670f` correction). User chose "land now, keep the 10
