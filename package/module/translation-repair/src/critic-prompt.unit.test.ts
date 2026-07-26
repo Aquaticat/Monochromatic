@@ -84,6 +84,22 @@ await describe({
       },
     },),
     it({
+      name: 'requires spans be judged in context and community usage be respected',
+      fn: async () => {
+        /**
+         * System instructions under policy probing.
+         */
+        const system = MESSAGES[0]?.content ?? '';
+        // A word choice licensed by an adjacent clause read as a wrong term
+        // when the critic judged the span alone.
+        expect(system,).toContain('never in isolation',);
+        expect(system,).toContain('licensed by a neighbouring clause',);
+        // Community shorthand read literally became a fabricated identity.
+        expect(system,).toContain('in-group vocabulary',);
+        expect(system,).toContain('on the strength of a literal reading alone',);
+      },
+    },),
+    it({
       name: 'states that the original is not golden and obligatory differences are not defects',
       fn: async () => {
         /**
