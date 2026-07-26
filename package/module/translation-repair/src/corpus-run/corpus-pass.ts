@@ -56,8 +56,21 @@ const MS_PER_MINUTE = 60_000;
 
 /**
  * Minutes of wall time after which no new entry starts.
+ *
+ * Was 25, which throttled the whole accumulation to about one entry per launch.
+ * The interaction that caused it: `BANDS` puts the large band first within a
+ * rank, so a run starts a large entry, that entry alone runs past 25 minutes,
+ * and this check then refuses to start anything else. Runs 010 and 011 both
+ * show exactly that, one settling a single entry and one settling none.
+ *
+ * Four hours lets a run chain several entries instead. It is scheduling only:
+ * it changes when a run stops starting work, never what the pipeline finds, so
+ * unlike the per-call deadline it can move without splitting the pool into
+ * incomparable cohorts. The per-entry hard cap still bounds any single runaway,
+ * and slice-level resumability means an entry cut by that cap resumes on the
+ * next run rather than restarting.
  */
-const SOFT_BUDGET_MINUTES = 25;
+const SOFT_BUDGET_MINUTES = 240;
 
 /**
  * Minutes of wall time ONE entry may run before its exchanges abort.
