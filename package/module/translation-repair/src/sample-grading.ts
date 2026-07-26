@@ -128,7 +128,40 @@ export type GradingCandidate = {
    * Distinct en target quotes the issue anchors, in first-seen order.
    */
   readonly targetQuotes: readonly string[];
+
+  /**
+   * Why the source side carries no quote, when it carries none. An addition
+   * claim legitimately anchors to an EMPTY insertion point, so a bare
+   * `(none)` conflated two different situations: a claim anchored at a real
+   * place that has no text there, and a claim with no source anchor at all.
+   * The second asserts something is absent from the original while pointing
+   * at nothing in it, which a grader cannot check.
+   */
+  readonly sourceAnchor: SourceAnchorKind;
 };
+
+/**
+ * How an issue's source side is anchored.
+ *
+ * @example
+ * ```ts
+ * const anchor: SourceAnchorKind = 'insertion-point';
+ * ```
+ */
+export type SourceAnchorKind =
+  /**
+   * The issue quotes source text, which the sheet shows.
+   */
+  | 'quoted'
+  /**
+   * The issue anchors an empty span: a real place in the original with no
+   * text at it, which is how an insertion is correctly anchored.
+   */
+  | 'insertion-point'
+  /**
+   * The issue anchors nothing in the original at all.
+   */
+  | 'unanchored';
 
 /**
  * One anchored span the grading extraction reads: which document side it
@@ -217,6 +250,44 @@ export function classifyBand(
   if (sourceBytes < MEDIUM_BAND_MAX_BYTES)
     return 'medium';
   return 'large';
+}
+
+/**
+ * Classifies how an issue anchors its source side, distinguishing a correctly
+ * anchored insertion from a claim that points at nothing in the original.
+ *
+ * @param issue - the adjudicated issue whose spans are inspected
+ *
+ * @returns Which anchor kind the source side has
+ *
+ * @example
+ * ```ts
+ * const anchor = classifySourceAnchor({ issue, },);
+ * ```
+ */
+export function classifySourceAnchor(
+  { issue, }: { readonly issue: GradableIssue; },
+): SourceAnchorKind {
+  /**
+   * Every span pointing into the original.
+   */
+  const sourceSpans = issue.claims
+    .flatMap(function claimSpans(member,) {
+      return member.claim
+        .spans
+        .filter(function onSource(span,) {
+          return span.side === 'source';
+        },);
+    },);
+  if (sourceSpans.length === 0)
+    return 'unanchored';
+  return sourceSpans.some(function hasText(span,) {
+    return span.quotedText
+      .length
+      > 0;
+  },)
+    ? 'quoted'
+    : 'insertion-point';
 }
 
 /**
@@ -311,6 +382,7 @@ export function extractGradingCandidate(
     summary: primary?.claim
       .summary
       ?? '(no claim summary)',
+    sourceAnchor: classifySourceAnchor({ issue, },),
     sourceQuotes: sideQuotes({
       issue,
       side: 'source',

@@ -51,9 +51,35 @@ function renderCandidate(
     `- entry: ${candidate.entryId} · band: ${candidate.band}`,
     `- category: ${candidate.category} · severity: ${candidate.severity}`,
     `- claim: ${candidate.summary}`,
-    `- zh source: ${quoteLine(candidate.sourceQuotes,)}`,
+    `- zh source: ${sourceLine(candidate,)}`,
     `- en target: ${quoteLine(candidate.targetQuotes,)}`,
   ].join('\n',);
+}
+
+/**
+ * Renders the source line, naming why there is no quote when there is none.
+ * A bare `(none)` made an ungradable item look like a rendering glitch: an
+ * addition correctly anchors to an empty insertion point, whereas a claim
+ * anchoring nothing at all asserts an absence while pointing at nothing, which
+ * a grader cannot check and should be told about.
+ *
+ * @param candidate - the sampled candidate
+ *
+ * @returns Display line for the original side
+ *
+ * @example
+ * ```ts
+ * const line = sourceLine(candidate,);
+ * ```
+ */
+function sourceLine(candidate: GradingCandidate,): string {
+  if (candidate.sourceQuotes
+    .length
+    > 0)
+    return quoteLine(candidate.sourceQuotes,);
+  return candidate.sourceAnchor === 'insertion-point'
+    ? '(insertion point: the claim anchors a position in the original, which has no text at it)'
+    : '(NO source anchor: the claim points at nothing in the original, so nothing here can confirm it)';
 }
 
 /**
