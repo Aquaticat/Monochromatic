@@ -40,6 +40,7 @@ function catCandidate(
     category: 'accuracy/omission',
     severity: 'minor',
     summary: 'A purr is dropped from the greeting.',
+    sourceAnchor: 'quoted',
     sourceQuotes: ['呼噜',],
     targetQuotes: [],
   };
@@ -222,6 +223,44 @@ await describe({
             },);
             expect(candidate.targetQuotes,).toEqual(['hiss',],);
             expect(candidate.sourceQuotes,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'tells an unanchored claim apart from a correctly anchored insertion',
+          fn: async () => {
+            // A bare "(none)" on the sheet conflated these, which made one
+            // graded item ungradable for the wrong reason.
+            /**
+             * Claim anchoring a real position in the original that holds no
+             * text, which is how an insertion is correctly anchored.
+             */
+            const insertion = extractGradingCandidate({
+              issue: catIssue({
+                issueId: 'adjudicated/insertion',
+                category: 'accuracy/addition',
+                summary: 'Fabricated hiss inserted.',
+                spans: [['source', '',], ['target', 'hiss',],],
+              },),
+              entryId: 'Kitten',
+              band: 'large',
+            },);
+
+            /**
+             * Claim pointing at nothing in the original at all.
+             */
+            const unanchored = extractGradingCandidate({
+              issue: catIssue({
+                issueId: 'adjudicated/unanchored',
+                category: 'accuracy/addition',
+                summary: 'Fabricated hiss inserted.',
+                spans: [['target', 'hiss',],],
+              },),
+              entryId: 'Kitten',
+              band: 'large',
+            },);
+
+            expect(insertion.sourceAnchor,).toBe('insertion-point',);
+            expect(unanchored.sourceAnchor,).toBe('unanchored',);
           },
         },),
       ],
