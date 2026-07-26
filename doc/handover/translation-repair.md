@@ -1161,6 +1161,22 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+FIX B CONFIRMED ON THE ENTRY IT WAS BUILT FOR (2026-07-26). Chinatsu_Suzuki
+re-settled in pass 7 run 004, and it is the container-nesting entry whose en
+page collapses its gallery into one `<details>`. Round one vs round two,
+accepted issues: PhotoScroll-referencing issues 13 -> 0, critical 7 -> 2,
+accuracy/addition 34 -> 4, total accepted 77 -> 40.
+WHY THIS ONE COUNTS as evidence where the AmbeR_the_anpa comparison did not:
+the 13 PhotoScroll claims were exactly the graded false positive (sheet item
+40, `accuracy/omission` CRITICAL) and its siblings; the change is CATEGORICAL
+(to exactly zero, not a smaller number); and the mechanism is DETERMINISTIC --
+unwrapping makes those blocks peers on both sides, so the critic no longer sees
+a component present on one side and absent on the other. This is not
+model-noise variation.
+WHAT IT STILL DOES NOT SHOW: accepted fell 77 -> 40, and some of that drop
+could be genuine defects no longer reported (recall loss), which only grading
+can separate from the intended removal of misalignment artifacts. Do NOT quote
+the accepted-count drop as a precision improvement.
 BAND ORDERING FIXED MID-PASS (2026-07-26, commit `a0fb61f6d`). The ~10/10/10
 bar was UNREACHABLE on a fresh pass and runs 001-002 exposed it by settling two
 mediums and nothing else. Measured corpus band split: 31 small / 32 medium / 29
