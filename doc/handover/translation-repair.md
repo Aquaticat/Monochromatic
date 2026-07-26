@@ -1143,6 +1143,14 @@ clean proof the resume path finishes a one-slice-short hard-cap abort cheaply.
 Large settled 7->8. The run then started TianqiChen666 (LARGE, 6746B, 23 slices
 / 3 chunk pairs), which hit the hard cap at 16 of 23 cached; run 029 resumes it.
 Bands now 9 small / 10 medium / 8 large (large needs ~2 more). Run 029 launched.
+PASS 6 RUN 029 (2026-07-25, tip `d39a8b7d8`, 1796s wall ~30 min): 1 settled,
+28/92. TianqiChen666 RESUMED and settled repaired (LARGE, 6746B; remaining 7 of
+23 slices + document assembly; 256 issues, 248 accepted, 241 resolved, 47
+findings). Large settled 8->9. Bands now 9 small / 10 medium / 9 large -- all
+three bands at/around the ~10 bar; large needs ~1 more to reach 10. Run 030
+launched; once large hits ~10 the ~10/10/10 coverage bar (task 30) is met and
+the FINAL draw (`draw-sample -- --final`, task 32) runs once against the filled
+pool.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
