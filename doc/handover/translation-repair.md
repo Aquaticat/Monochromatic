@@ -1151,6 +1151,16 @@ three bands at/around the ~10 bar; large needs ~1 more to reach 10. Run 030
 launched; once large hits ~10 the ~10/10/10 coverage bar (task 30) is met and
 the FINAL draw (`draw-sample -- --final`, task 32) runs once against the filled
 pool.
+PASS 6 RUN 030 (2026-07-25, tip `8419cf316`, 3121s wall ~52 min): 1 settled,
+29/92. Toka_ls repaired (MEDIUM, 3660B -- 26 bytes under the 3686 large cut; 74
+issues, 72 accepted, 71 resolved, 21 findings). Medium settled 10->11. Bands now
+9 small / 11 medium / 9 large. DECISION POINT (task 30): small is driver-
+deprioritized and pinned at 9 (it only grows once non-small is exhausted, so it
+will NOT reach a literal 10 by natural accumulation), large just reached 9,
+medium over-covers at 11. If small=9 counts as "~10" (it must, given the
+deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
+10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
+or push one more for large=10. No run 031 launched pending that call.
 M3 SAMPLE TOOLING BUILT + VALIDATED (2026-07-25, task 32, commits `bf4860250`
 + `be6912575`): the stratified precision-sample toolchain is now landed and
 green (build/format 0-0/types/tests). Pure, unit-tested modules: `sample-
