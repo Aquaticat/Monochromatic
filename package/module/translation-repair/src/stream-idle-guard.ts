@@ -21,46 +21,43 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // of the stall escalating into another whole stage round.
 
 /**
- * Silence allowed before the first body byte.
+ * Silence allowed before the first body byte, set ABOVE the 240 s per-call
+ * deadline so it never fires. The guard measures; the total deadline is what
+ * kills.
  *
- * A sentinel probe logged six healthy calls reaching first byte at 84, 104,
- * 122, 132, 135, and 147 seconds. Those six are a CENSORED SAMPLE, not the
- * healthy range: the drain only logged an exchange whose first byte passed the
- * then-active 60 s notability threshold, so everything faster is missing by
- * construction. Pass-7 stage rounds independently confirm faster calls exist,
- * since a stage ends only when its slowest voice returns and the tenth
- * percentile of succeeding rounds is 9 seconds, which no 84 s first byte
- * allows.
+ * A full sentinel probe settled why. Of the stalls it recorded, 34 of 34 were
+ * `first-byte` and NOT ONE was `body`, so silence-based aborting has no
+ * discriminating power against the failure mode that actually occurs: on this
+ * provider, long first-byte silence IS normal operation. Across 32 successful
+ * streams, time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max 147.5 s.
+ * A window cannot separate "stalled and silent" from "working and silent" when
+ * working looks like that.
  *
- * What the six do establish is that the healthy tail reaches at least 147 s.
- * An earlier 150 s value here would have killed that call with under 3 seconds
- * to spare, so this sits just under the 240 s total deadline instead. How much
- * further the healthy tail runs is UNKNOWN, and until it is known nobody can
- * say whether 240 s cuts into real work; the phase recorded in
- * {@link StreamStalledError} is what will settle whether the observed stalls
- * are first-byte or mid-stream.
+ * The 147.5 s maximum is also the guard's own shadow rather than the true tail,
+ * because the window was 150 s while those samples were collected, so anything
+ * slower was aborted instead of recorded. The probe took 45.8 minutes against
+ * the 23.9 minutes the same entry took without a guard, which is what killing
+ * 34 in-progress calls and re-dispatching them costs.
  */
-export const STREAM_FIRST_BYTE_MS = 210_000;
+export const STREAM_FIRST_BYTE_MS = 600_000;
 
 /**
- * Silence allowed between body bytes once the stream is flowing.
+ * Silence allowed between body bytes once flowing, also set above the per-call
+ * deadline so it never fires, for two independent reasons.
  *
- * This is where the guard can discriminate. Across six probe streams carrying
- * up to 745_015 characters, the largest gap between chunks was 733 ms, and four
- * of the six stayed under 130 ms: once a body starts it does not pause. Thirty
- * seconds is roughly forty times the worst observed gap, so it cannot plausibly
- * fire on a healthy stream, while catching a mid-stream death eight times
- * sooner than the total deadline would.
+ * First, it has nothing to catch: 34 of 34 recorded stalls were `first-byte`
+ * and none were `body`, so mid-stream death was not a failure mode that
+ * occurred at all.
  *
- * Note what that evidence does and does not cover: those gaps come from streams
- * that SUCCEEDED, so they bound healthy behavior and say nothing about how a
- * dying stream behaves. If the real failure mode turns out to be first-byte
- * silence rather than mid-stream death, this window never fires and the guard
- * leaves the timeout cost untouched. Six streams from one entry is also a small
- * sample; every exchange past the notable thresholds logs its
- * {@link StreamProgress}, so this can tighten as the distribution fills in.
+ * Second, an earlier 30 s value here was justified by a six-stream sample whose
+ * largest gap was 733 ms, called forty times the worst observation. At 32
+ * streams that reads p50 86 ms, p90 3833 ms, and max 24_673 ms, with three
+ * streams past 20 s. The real margin was about 1.2x, not 40x, so the window was
+ * close to killing healthy streams rather than comfortably clear of them. The
+ * lesson generalizes past this constant: a maximum over a handful of samples is
+ * not a bound, and treating it as one turned a safety claim upside down.
  */
-export const STREAM_IDLE_MS = 30_000;
+export const STREAM_IDLE_MS = 600_000;
 
 /**
  * Logger root for the stream guard.

@@ -20,17 +20,24 @@ const l = tagged({ tag: 'translation-repair', },);
  * every exchange would bury the run output; at or above it the sample is what
  * `STREAM_IDLE_MS` has to be tuned against.
  */
-const NOTABLE_GAP_MS = 5_000;
+const NOTABLE_GAP_MS = 0;
 
 /**
- * Time to first byte worth naming in the run log, for the same reason. The
- * previous 60 s threshold censored its own sample: every logged call was slower
- * than the filter, so the log could only ever show a tail and was briefly
- * mistaken for the healthy range. Lowering it widens what the distribution
- * covers, and it remains a filter, so anything faster than this is still
- * absent by construction.
+ * Time to first byte worth naming in the run log.
+ *
+ * Zero, meaning every exchange is sampled, because any positive threshold
+ * censors the very distribution the sample exists to describe. A 60 s value
+ * here produced a log in which every entry was slower than 60 s, which was then
+ * briefly mistaken for the healthy range; a 30 s value would have made the same
+ * mistake available at 30 s. The open question these samples must answer is
+ * whether the 240 s per-call deadline truncates real work, and that question is
+ * about the shape of the whole distribution, most of all its tail, so nothing
+ * may be filtered out ahead of seeing it.
+ *
+ * The cost is one log line per model call. That is the price of an honest
+ * denominator.
  */
-const NOTABLE_FIRST_BYTE_MS = 30_000;
+const NOTABLE_FIRST_BYTE_MS = 0;
 
 /**
  * Drains a response body chunk by chunk, telling the guard about each arrival
