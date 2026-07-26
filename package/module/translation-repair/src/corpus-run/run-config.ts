@@ -9,6 +9,10 @@ import {
   type CorpusPin,
 } from '../corpus-source.ts';
 import type { RepairModels, } from '../repair-contract.ts';
+import {
+  STREAM_FIRST_BYTE_MS,
+  STREAM_IDLE_MS,
+} from '../stream-idle-guard.ts';
 import type { SyntheticModelId, } from '../synthetic-catalog.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 
@@ -65,6 +69,57 @@ export const RUN_MODELS: RepairModels = {
  * Deadline granted to one model exchange during a corpus run.
  */
 export const RUN_PER_CALL_TIMEOUT_MS = 240_000;
+
+/**
+ * Call-timing knobs an artifact was produced under, so a pool spanning more
+ * than one configuration can still be analyzed per cohort.
+ *
+ * @example
+ * ```ts
+ * const config: RunCallConfig = {
+ *   perCallTimeoutMs: 240_000,
+ *   streamFirstByteMs: 150_000,
+ *   streamIdleMs: 60_000,
+ * };
+ * ```
+ */
+export type RunCallConfig = {
+  /**
+   * Total-duration deadline one model exchange was granted.
+   */
+  readonly perCallTimeoutMs: number;
+
+  /**
+   * Silence allowed before a stream's first byte.
+   */
+  readonly streamFirstByteMs: number;
+
+  /**
+   * Silence allowed between a stream's bytes once flowing.
+   */
+  readonly streamIdleMs: number;
+};
+
+/**
+ * Call-timing configuration stamped into every artifact this pass writes.
+ *
+ * The pool it labels is deliberately MIXED: the user chose to keep the ten
+ * entries settled before the stream idle guard landed rather than discard that
+ * compute, accepting that panel completeness changed underneath the pool. The
+ * stamp is what keeps that choice analyzable instead of merely accepted:
+ * precision can be split by cohort at analysis time, so the confound becomes a
+ * number rather than an unknown. Artifacts written before this field existed
+ * carry no `callConfig` at all, and that ABSENCE identifies the pre-guard
+ * cohort exactly.
+ *
+ * Deliberately not surfaced on the grading sheet: a grader who could see which
+ * cohort an issue came from would be a worse instrument than one who could not.
+ */
+export const RUN_CALL_CONFIG: RunCallConfig = {
+  perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+  streamFirstByteMs: STREAM_FIRST_BYTE_MS,
+  streamIdleMs: STREAM_IDLE_MS,
+};
 
 /**
  * Pinned corpus read location: the user's local clone at the benchmark commit.
