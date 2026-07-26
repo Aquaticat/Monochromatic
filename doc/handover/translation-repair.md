@@ -1161,6 +1161,56 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+RAISING THE 240 s PER-CALL DEADLINE WOULD MAKE THE SYSTEM SLOWER, MEASURED
+(2026-07-26, user hypothesis "I suspect increasing the 240s deadline could make
+the system overall faster"). The hypothesis has a real mechanism behind it:
+`stage-quorum.ts` grants `STAGE_RETRY_ROUNDS = 3` after the initial fan-out, so
+one stage can burn four consecutive deadlines, and a call killed at 240 s is NOT
+retried by `exchangeWithRetry` (a deadline aborts `exchange.signal`, and
+`attemptExchange` rethrows caller aborts untouched rather than treating them as
+transient), so the recovery happens one level up at the stage. Deadline-induced
+waste is therefore real. It is also bounded: across the twelve pass-7 logs,
+14 rounds of 417 timed out, each costing exactly the full 240 s, totalling 56 of
+598 wall minutes, or 9.4 percent. That 9.4 percent is the CEILING on any
+speed-up from eliminating timeouts entirely.
+WHAT THE TIMED-OUT ROUNDS ACTUALLY ARE: correlated stalls, not slow generation.
+Every timed-out round lost 4, 5, 6, or 7 of its 7 voices at once; NOT ONE lost
+just one or two, which is the shape model-specific slowness would take. The
+decisive measurement is the retry that follows. Of 13 retry rounds, 12 recovered
+to a full 7/7, and their durations were 27, 48, 57, 67, 81, 84, 88, 90, 173,
+175, 213, 233 s, with only the thirteenth spending 240 s and settling at 5/7.
+Median 88 s. The same voices that could not answer inside 240 s answered inside
+88 s on a fresh dispatch. That refutes the competing "these are the big-prompt
+rounds where all seven genuinely need longer" reading, which predicts the retry
+times out too. A fresh dispatch clears the condition, so the wait is not
+buying generation progress.
+COUNTERFACTUAL, stated as arithmetic on those measurements rather than as a
+claim about unrun configurations: one stall event today costs 240 s wasted plus
+an 88 s median retry, about 328 s. At a 480 s deadline the stalled call still
+does not answer, so it costs about 568 s, roughly 73 percent worse per event and
+about +9 percent on total run time. The deadline is also already well placed
+against healthy work: succeeding rounds run p50 60 s, p90 187 s, p99 240 s, so
+240 s sits just above the healthy tail and lowering it flatly would start
+killing real generations.
+THE CHANGE THE INTUITION IS ACTUALLY POINTING AT is an IDLE deadline instead of
+a total-duration one. `armCallDeadline` arms a plain total-duration timer inside
+the limiter slot (`call-deadline.ts`), so a healthy long generation and a dead
+stream are indistinguishable to it. An idle timer, aborting after N seconds with
+no bytes, would catch the correlated stalls in N seconds instead of 240 and
+would never kill a healthy long generation, improving BOTH throughput and voice
+retention. Implementable but NOT free: `stream-completion.ts` reassembles from a
+whole drained `bodyText`, so the transport currently has no per-chunk arrival
+time and would need a `getReader` loop that timestamps chunks and still hands
+the concatenated text to the existing reassembler, preserving parsing behavior.
+The saving estimate assumes stalls emit no bytes at all rather than trickling,
+which the whole-text drain means NOBODY HAS VERIFIED yet; verify before quoting
+a number.
+BLOCKED ON A USER CALL, not on analysis: `RUN_PER_CALL_TIMEOUT_MS` is the one
+budget that changes what the pipeline finds, and all round-two entries so far
+were produced under 240 s, so touching it mid-accumulation leaves a
+mixed-configuration corpus and the round-two precision number stops being
+comparable to round one. Speed versus measurement validity is the user's
+tradeoff to make.
 PANEL-SIZE CONFOUND CHECKED AND CLEARED (2026-07-26), before any round-two
 sheet is drawn. The seven models drop voices under the 240 s per-call deadline,
 so a chunk can be adjudicated short-handed; if round two lost voices at a
