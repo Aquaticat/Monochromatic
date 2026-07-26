@@ -1169,14 +1169,28 @@ settled in BOTH rounds, round two is FASTER in total: 172.9 min -> 151.4 min,
 ratio 0.88 (Acheron 0.67, AkiraComplex 0.72, Chinatsu_Suzuki 0.85,
 Considerate_cat 0.88; only AmbeR_the_anpa slower at 1.13). So the added prompt
 policy and identity block did not cost throughput.
-DETHELLY IS ENTRY-SPECIFIC AND UNEXPLAINED. Round one: 24 slices in 66 min
-(2.75 min/slice), 373 accepted, settled in ONE run. Round two: 11 of the SAME
-24 slices in 90 min (8.2 min/slice). Slice count is identical, so the aligner
-did not fragment it. Candidates that a single run cannot separate: transient
-API throughput, or a slice pairing that now generates much longer output. DO
-NOT record a cause without evidence; whether it recurs on resume is the
-diagnostic. Dethelly was already round one's slowest entry and its heaviest by
-accepted count, so it is the expected place for a cap to bite first.
+DETHELLY IS ENTRY-SPECIFIC AND REPRODUCIBLE. Round one: 24 slices in 66 min
+(2.75 min/slice), 373 accepted, settled in ONE run. Round two run 007: 11 of
+the SAME 24 slices in 90 min (8.2 min/slice). Run 008 resumed and reached 23 of
+24, so 12 more slices in another 90 min (7.5 min/slice). Slice count is
+identical across rounds, so the aligner did not fragment it.
+TRANSIENT API THROUGHPUT IS NOW RULED OUT: the rate reproduced across two
+independent runs hours apart, at 8.2 then 7.5 min/slice against round one's
+2.75. The remaining hypothesis is that the slices now carry DIFFERENT CONTENT
+-- the aligner pairs different blocks, so the models face different (and
+plausibly more real) work than the misaligned pairings gave them. That is
+consistent with the whole point of the fix, but it is a hypothesis, not a
+measurement; confirming it needs a per-slice timing comparison that nothing
+currently records.
+OPERATIONAL CONSEQUENCE: the 90 min HARD_CAP_MINUTES was calibrated at ~5.5
+min/slice for entries up to ~16 slices. At 7.5 to 8.2 min/slice a 24-slice
+entry needs three runs instead of one. Resume makes that correct but slow.
+Entries far larger (aiyysk 77 slices, hulicaijia 65) were already known to
+exceed any single-run ceiling. If more large entries start needing three runs,
+raising the cap is the cheap lever, but do NOT raise it without first checking
+that per-slice time is genuinely higher rather than one entry being unusual.
+Dethelly was already round one's slowest entry and its heaviest by accepted
+count, so it is the expected place for a cap to bite first.
 PASS 7 RUN 006 (2026-07-26, tip `2441b4150`, 2709298 ms): 1 settled, 7/92
 (large 2 / medium 3 / small 2). Considerate_cat status=repaired (27 issues, 25
 accepted, 23 resolved).
