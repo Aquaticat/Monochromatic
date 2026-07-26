@@ -23,34 +23,42 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /**
  * Silence allowed before the first body byte.
  *
- * These calls are slow to start and then fast to finish. A sentinel probe
- * measured healthy time-to-first-byte at 84, 104, 122, 132, 135, and 147
- * seconds, so this window is nearly the whole per-call deadline and cannot
- * discriminate much: a first-byte stall and a healthy 147 s wait look alike
- * until one of them ends. An earlier 150 s value here would have killed that
- * 147 s call with under 3 seconds to spare.
+ * A sentinel probe logged six healthy calls reaching first byte at 84, 104,
+ * 122, 132, 135, and 147 seconds. Those six are a CENSORED SAMPLE, not the
+ * healthy range: the drain only logged an exchange whose first byte passed the
+ * then-active 60 s notability threshold, so everything faster is missing by
+ * construction. Pass-7 stage rounds independently confirm faster calls exist,
+ * since a stage ends only when its slowest voice returns and the tenth
+ * percentile of succeeding rounds is 9 seconds, which no 84 s first byte
+ * allows.
  *
- * It therefore sits just under the 240 s total deadline: enough to name the
- * failure phase in the log, not enough to pretend the guard can tell a
- * first-byte stall from slow thinking. Whether the observed stalls are
- * first-byte or mid-stream is what the phase in {@link StreamStalledError}
- * exists to settle.
+ * What the six do establish is that the healthy tail reaches at least 147 s.
+ * An earlier 150 s value here would have killed that call with under 3 seconds
+ * to spare, so this sits just under the 240 s total deadline instead. How much
+ * further the healthy tail runs is UNKNOWN, and until it is known nobody can
+ * say whether 240 s cuts into real work; the phase recorded in
+ * {@link StreamStalledError} is what will settle whether the observed stalls
+ * are first-byte or mid-stream.
  */
 export const STREAM_FIRST_BYTE_MS = 210_000;
 
 /**
  * Silence allowed between body bytes once the stream is flowing.
  *
- * This is where the guard actually discriminates. Across six probe streams
- * carrying up to 745_015 characters, the largest gap between chunks was 733 ms,
- * and four of the six stayed under 130 ms: once a body starts it does not
- * pause. Thirty seconds is roughly forty times the worst observed gap, so it
- * cannot plausibly fire on a healthy stream, while catching a mid-stream death
- * eight times sooner than the total deadline would.
+ * This is where the guard can discriminate. Across six probe streams carrying
+ * up to 745_015 characters, the largest gap between chunks was 733 ms, and four
+ * of the six stayed under 130 ms: once a body starts it does not pause. Thirty
+ * seconds is roughly forty times the worst observed gap, so it cannot plausibly
+ * fire on a healthy stream, while catching a mid-stream death eight times
+ * sooner than the total deadline would.
  *
- * Six streams from one entry is a small sample; every exchange past the
- * notable thresholds logs its {@link StreamProgress}, so this can tighten as
- * the distribution fills in.
+ * Note what that evidence does and does not cover: those gaps come from streams
+ * that SUCCEEDED, so they bound healthy behavior and say nothing about how a
+ * dying stream behaves. If the real failure mode turns out to be first-byte
+ * silence rather than mid-stream death, this window never fires and the guard
+ * leaves the timeout cost untouched. Six streams from one entry is also a small
+ * sample; every exchange past the notable thresholds logs its
+ * {@link StreamProgress}, so this can tighten as the distribution fills in.
  */
 export const STREAM_IDLE_MS = 30_000;
 

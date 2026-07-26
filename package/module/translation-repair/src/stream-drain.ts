@@ -23,10 +23,12 @@ const l = tagged({ tag: 'translation-repair', },);
 const NOTABLE_GAP_MS = 5_000;
 
 /**
- * Time to first byte worth naming in the run log, for the same reason. Set
- * below the measured healthy range (84 s at the fastest) so the run log
- * accumulates the distribution the windows are tuned against rather than only
- * its extreme.
+ * Time to first byte worth naming in the run log, for the same reason. The
+ * previous 60 s threshold censored its own sample: every logged call was slower
+ * than the filter, so the log could only ever show a tail and was briefly
+ * mistaken for the healthy range. Lowering it widens what the distribution
+ * covers, and it remains a filter, so anything faster than this is still
+ * absent by construction.
  */
 const NOTABLE_FIRST_BYTE_MS = 30_000;
 
