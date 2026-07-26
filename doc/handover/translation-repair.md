@@ -1161,6 +1161,60 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PANEL-SIZE CONFOUND CHECKED AND CLEARED (2026-07-26), before any round-two
+sheet is drawn. The seven models drop voices under the 240 s per-call deadline,
+so a chunk can be adjudicated short-handed; if round two lost voices at a
+different rate than round one, a precision delta would be partly a panel-size
+artifact rather than a measure of fixes A-F. Measured over every `critic stage:`
+and `panel stage:` line. Round one (pass 4 + 5 + 6): 56 short-handed of 724
+stages, 7.7 percent, worst case 4/7 on six stages. Round two (pass 7 to date):
+10 of 205, 4.9 percent, worst case 5/7 and no 4/7 at all. Round two therefore
+runs with marginally BETTER panel coverage, so the confound cannot manufacture
+an improvement of the size the gate needs; it is small and points the optimistic
+way, which is the direction that must be disclosed rather than corrected for.
+Degraded chunks STAY in the precision denominator: the 0.9 bar is for the
+pipeline as it actually runs on seven unreliable flat-rate models, not for a
+full-panel ideal, so excluding them would measure a pipeline that does not
+exist. Report the rate alongside the round-two verdict.
+PASS 7 RUN 011 (2026-07-26, 5400002 ms = the full 90 min): ZERO settled, still
+10/92. Futajuhuacha (LARGE, 5448 B, 3 chunk pairs, 22 slices) ABORTED at the
+hard cap having adjudicated chunks 0 through 10, and 11 of its 22 slices are
+cached. Recoverable exactly as Dethelly was: resume-first ordering picks it up
+next run and slice progress is monotone. Three of those 11 chunks ran
+short-handed (chunk 3 critic 6/7, chunk 5 critic 5/7, chunk 7 panel 5/7) out of
+26 logged per-call timeouts, the rest of which retried back to 7/7.
+THROUGHPUT BOTTLENECK IDENTIFIED: `SOFT_BUDGET_MINUTES = 25` in
+`corpus-pass.ts`, not the 90 min hard cap. Because `BANDS` puts large first
+within a rank, a run starts a large entry, that entry alone exceeds 25 minutes,
+and the soft-budget check then refuses to start anything else, so a run settles
+at most one entry. Runs 010 and 011 both show it. The hard cap costs nothing but
+launch round-trips now that slice resumability exists, so raising IT is not the
+lever; its docblock note that large entries "need slice-level resumability,
+tracked separately" is STALE, that work landed. Reaching 10/10/10 needs about 20
+more entries, which at one entry per launch is roughly 27 launches and 27 to 40
+hours of wall clock. Raising the soft budget is measurement-neutral (it changes
+only when a run stops starting entries, never what the pipeline finds) and
+chains several entries per launch. Apply it between runs, never during one.
+DO NOT touch `RUN_PER_CALL_TIMEOUT_MS` (240 s): it is the one budget that
+changes what the pipeline finds, and all ten settled round-two entries were
+produced under it, so moving it would leave a mixed-configuration corpus and the
+round-two number would mean nothing.
+PASS 7 RUN 010 (2026-07-26, tip `d9ecde7fc`, 1594033 ms ~27 min): 1 settled,
+10/92. Everythings99 repaired (MEDIUM, 21 issues, 20 accepted, 20 resolved, 2
+findings). Bands 3 small / 4 medium / 3 large.
+PASS 7 RUN 009 (2026-07-26, tip `a3cf36dbf`, 1634756 ms ~27 min): TWO settled,
+9/92. Dethelly repaired at last (LARGE, 270 issues, 260 accepted, 257 resolved,
+36 findings) in only 200917 ms ~3.3 min because runs 007 and 008 had already
+cached 23 of its 24 slices; then Aniloviraw repaired (SMALL, 27 issues, 27
+accepted, 27 resolved, 6 findings). Bands 3 small / 3 medium / 3 large, dead
+even, which confirms the `countSettledPerBand` rank-offset fix (`61487a893`)
+does what the band-starvation bug needed.
+PASS 7 RUN 008 (2026-07-26, tip `afe844305`, 5400006 ms): ZERO settled, 7/92.
+Dethelly ABORTED at the hard cap a second time, reaching 23 of 24 slices. Two
+consecutive full-budget aborts on the same entry rule out transient API
+throughput as the cause; the remaining hypothesis is that this entry's slices
+are individually more expensive, which run 009's 3.3 min finish for the last
+slice is consistent with but does not prove.
 PASS 7 RUN 007 (2026-07-26): Dethelly ABORTED at the 90 min hard cap
 (status=ERROR, aborted=true), 11 of its 24 slices cached. Recoverable by
 design: resume-first ordering picks it up next run and progress is monotonic.
