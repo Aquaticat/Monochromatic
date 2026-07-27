@@ -11,7 +11,8 @@ Every call reached from caller-owned state has one accepted outcome:
 
 - exact repository-owned or source-map-resolved shipped implementation proves its effects;
 - separately verified isolated value shares no caller-owned identity or capability;
-- default-library read-only view member cannot restructure its receiver,
+- default-library collection member's effect on its receiver's structure is derivable from the paired
+  read-only view,
   and every caller-supplied observer it hands receiver state to is owned source whose own effects propagate;
 - exact `ForeignHostCapability` marker plus `@mutates` contract bounds runtime-owned host behavior after inference fails;
 - rule rejects call as opaque.
@@ -40,8 +41,29 @@ and shallow frozen copies retaining nested caller identity.
 
 Collection members are split rather than rejected wholesale.
 Membership of a default-library `Readonly*` interface is upstream's own statement that the member leaves the
-receiver's structure intact,
-so what remains to prove is only which user code the member can run over receiver state.
+receiver's structure intact.
+A mutable collection is read the same way, by pairing it with `Readonly` plus its own name:
+TypeScript builds each view by removing exactly the mutators,
+so a member the paired view also declares preserves the receiver's structure,
+and a member the view omits restructures it and reports a mutation rather than an unknown effect.
+A collection with no paired view,
+`WeakMap`,
+`WeakSet`,
+a typed array,
+or any host interface,
+stays opaque.
+
+The two questions stay independent,
+because a member can restructure its receiver and run user code over it in the same call:
+`Map.getOrInsertComputed` inserts and invokes a caller-supplied factory,
+and `Array.sort(comparator)` reorders and invokes the comparator.
+A restructuring member whose reachable user code cannot be derived reports its mutation
+and stays opaque as well,
+so a bare `Array.sort()`,
+`push`,
+and `clear` are each mutated and opaque rather than accepted.
+
+What remains to prove is which user code the member can run over receiver state.
 The member's instantiated signature answers that:
 it names the argument positions receiving the receiver or its type arguments,
 and an observer at such a position is analyzed as ordinary owned source whose effects propagate to the receiver.
