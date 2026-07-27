@@ -50,9 +50,14 @@ that pushes turns `values.includes(marker)` into a call taking a one-element arr
 So the table now names two channels instead of asserting one flat property.
 
 `MEMBER_CHANNEL_INTERNAL_SLOT` covers members that read and write internal slots and touch no property of the
-receiver, which is every `Map` and `Set` entry. Verified: an own `size` accessor installed on the receiver stays
-untouched by `Map.prototype.get` and `Map.prototype.has`. These reach no user code, and the claim is exactly
-that.
+receiver, which is every `Map` and `Set` entry. These reach no user code, and the claim is exactly that.
+
+The probe establishes less than that sentence, and the gap is stated rather than glossed. It installs an own
+`size` accessor and finds it untouched, so these members provably do not read `size`; it does not enumerate every
+property. The receiver is a real `Map` or `Set` rather than a general trap, and a `Proxy` cannot substitute,
+because these members reject a receiver lacking the internal slot. So the broad claim rests on the specification
+while the probe guards the one channel it watches against drift. That is weaker than the `Array` half, where the
+channel being claimed is exactly the one the probe observes.
 
 `MEMBER_CHANNEL_RECEIVER_INDEX` covers members whose only user-code channel is own-index access on their own
 receiver, which is every `Array` entry. This does not claim they run nothing. It claims their channel is no
@@ -103,6 +108,17 @@ the member. An earlier version recorded a rejected indexed write as `index-set`,
 admits, meaning any `TypeError` at all would have read as ordinary evidence. Nothing reaches that path now:
 every instrumented index carries a recording setter, so writes are accepted.
 
+Each tripwire is also asserted to fire, which two of the four were not at first. `species` and element coercion
+had controls from the start; `index-set` and `property-read` had none, so an instrumentation that quietly stopped
+working would have made every write claim and every internal-slot claim vacuous while the suite stayed green.
+`fill` supplies the first, being a listed member whose channel is therefore observed rather than merely permitted,
+and a direct `size` read supplies the second.
+
+Arguments distinguish two roles for the same reason. A lookup or removal is passed a value the receiver already
+holds, or it exercises only the miss path; an insertion is passed one the receiver does not hold, or it exercises
+only the overwrite path. `add` on an existing member and `set` on an existing key both skipped insertion entirely
+before this, which is the work most likely to reach somewhere unexpected.
+
 Iterator members are excluded for a separate reason. `keys`, `values` and `entries` reach nothing when they are
 called, and the read happens later when the iterator advances. Measured: `Array.prototype.values` fires no hook
 until `next()`, which fires the indexed getter. Nothing in the model separates creating an iterator from
@@ -119,6 +135,12 @@ pins the table's total entry count, checked against what the production module a
 member fails the build at the point where this document and the probe requirement become unavoidable. Verified
 both ways: an unregistered `effect-scratch-authority.ts` fails the guard by name, and adding `slice` to the table
 fails the pin at 34 against 33 and the probe with `Array.slice reached species`.
+
+The pin is a literal in the guard, and the first version got this wrong in a way worth recording, because it
+looked correct. It imported `VERIFIED_MEMBER_CHANNEL_COUNT` for the pinned value, which pinned that constant
+against itself: a commit editing the table and the constant together passed the guard untouched, while the guard's
+own comment claimed an author had to change a number there. Verified after the fix by editing both and watching
+the guard fail at 34 against 33.
 
 What the guard cannot do is verify that the enforcement is any good; checking that a test file exists beside an
 authority would be a rubber stamp, satisfiable by an empty file. It converts a silent addition into a deliberate

@@ -8,8 +8,15 @@
  * Member reaching no user code at all, reading and writing internal slots only.
  *
  * `Map.prototype.get` consults `[[MapData]]`, never a property of its receiver, so
- * no accessor, no `Proxy` trap and no coercion hook can observe the call. Verified
- * by installing an own accessor on the receiver and finding it untouched.
+ * no accessor and no coercion hook can observe the call.
+ *
+ * What the probe establishes is narrower than that sentence, and the gap is worth
+ * stating. It installs an own `size` accessor and finds it untouched, which shows
+ * these members do not read `size`; it does not enumerate every property, because the
+ * receiver is a real `Map` or `Set` rather than a general trap, and a `Proxy` cannot
+ * stand in for one since these members reject a receiver without the internal slot.
+ * So the broad claim rests on the specification, and the probe guards against drift
+ * in the one channel it watches.
  */
 export const MEMBER_CHANNEL_INTERNAL_SLOT: unique symbol = Symbol(
   'collection member reads internal slots and reaches no user code',

@@ -28,23 +28,33 @@ const RECEIVER_INDEX_HITS: ReadonlySet<string> = new Set([
 /**
  * Arguments satisfying each probed member's required parameters.
  *
+ * Two roles, deliberately distinct. A lookup or removal needs a value the receiver
+ * already holds, or it exercises only the miss path. An insertion needs one the
+ * receiver does not hold, or it exercises only the overwrite path: `add` on a member
+ * already in the set and `set` on a key already in the map both skip insertion
+ * entirely, which is the work most likely to reach somewhere unexpected.
+ *
  * @param memberName - Member being invoked.
  *
- * @param element - Recording element usable as a key, value, or search target.
+ * @param element - Recording value the receiver already holds.
+ *
+ * @param fresh - Recording value the receiver does not hold.
  *
  * @returns argument list for the call.
  *
  * @example
  * ```ts
- * probeArguments({ memberName: 'with', element, });
+ * probeArguments({ memberName: 'with', element, fresh, });
  * ```
  */
 function probeArguments({
   memberName,
   element,
+  fresh,
 }: {
   readonly memberName: string;
   readonly element: unknown;
+  readonly fresh: unknown;
 },): readonly unknown[] {
   /**
    * Members needing an index, a key, or a value to be meaningful.
@@ -54,17 +64,17 @@ function probeArguments({
     includes: [element,],
     indexOf: [element,],
     lastIndexOf: [element,],
-    with: [0, element,],
-    toSpliced: [0, 0,],
-    push: [element,],
-    unshift: [element,],
-    fill: [element,],
-    copyWithin: [0, 0,],
+    with: [0, fresh,],
+    toSpliced: [0, 1, fresh,],
+    push: [fresh,],
+    unshift: [fresh,],
+    fill: [fresh,],
+    copyWithin: [0, 1,],
     get: [element,],
     has: [element,],
-    set: [element, element,],
+    set: [fresh, fresh,],
     delete: [element,],
-    add: [element,],
+    add: [fresh,],
   };
   return byMember[memberName] ?? [];
 }
@@ -102,7 +112,11 @@ function instrumentedReceiver({
 }: {
   readonly ownerName: string;
   readonly hits: ProbeHits;
-},): { readonly receiver: unknown; readonly element: unknown; } {
+},): {
+  readonly receiver: unknown;
+  readonly element: unknown;
+  readonly fresh: unknown;
+} {
   /**
    * Builds an element recording any coercion a member performs on it.
    *
@@ -134,6 +148,10 @@ function instrumentedReceiver({
    * Element passed as the caller-supplied key or value argument.
    */
   const element = recordingElement({ order: 1, },);
+  /**
+   * Value the receiver does not hold, so an insertion actually inserts.
+   */
+  const fresh = recordingElement({ order: 3, },);
   /**
    * Second element, so a member reading past the position it writes still reads one.
    *
@@ -195,6 +213,7 @@ function instrumentedReceiver({
     return {
       receiver,
       element,
+      fresh,
     };
   }
   Object.defineProperty(receiver, 'size', {
@@ -207,6 +226,7 @@ function instrumentedReceiver({
   return {
     receiver,
     element,
+    fresh,
   };
 }
 
@@ -235,7 +255,7 @@ function reachedHooks({
    * Hooks reached by this single invocation.
    */
   const hits: ProbeHits = [];
-  const { receiver, element, } = instrumentedReceiver({
+  const { receiver, element, fresh, } = instrumentedReceiver({
     ownerName,
     hits,
   },);
@@ -252,6 +272,7 @@ function reachedHooks({
       .apply(receiver, [...probeArguments({
         memberName,
         element,
+        fresh,
       },),],);
   }
   catch (error: unknown) {
@@ -330,6 +351,26 @@ await describe({
           ownerName: 'Array',
           memberName: 'toSorted',
         },).includes('element-coercion',),).toBe(true,);
+        /* The remaining two tripwires need controls of their own, and had none. Both
+         * are instrumentation this suite would otherwise trust without evidence: a
+         * `property-read` that never fires makes every internal-slot claim vacuous,
+         * and an `index-set` that never fires does the same for every write. `fill`
+         * is a listed member, so this doubles as proof its channel is observed rather
+         * than merely permitted. */
+        expect(reachedHooks({
+          ownerName: 'Array',
+          memberName: 'fill',
+        },).includes('index-set',),).toBe(true,);
+        /**
+         * Hooks reached by reading a `Map` property directly, with no member involved.
+         */
+        const propertyHits: ProbeHits = [];
+        const { receiver, } = instrumentedReceiver({
+          ownerName: 'Map',
+          hits: propertyHits,
+        },);
+        void (receiver as ReadonlyMap<unknown, unknown>).size;
+        expect(propertyHits,).toEqual(['property-read',],);
       },
     },),
     it({

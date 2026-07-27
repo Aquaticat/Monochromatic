@@ -39,9 +39,12 @@ const FORBIDDEN_MODULE_NAME_FRAGMENTS = [
  *
  * The pinned count is what gives the registry teeth. Checking that some test file
  * exists beside an authority would be a rubber stamp, satisfiable by an empty test.
- * Pinning the entry total means adding a member cannot pass unnoticed: the author
- * must change a number here, which is the point at which the decision document and
- * the engine-probe requirement become unavoidable.
+ *
+ * That count is a literal here on purpose. An earlier version imported
+ * `VERIFIED_MEMBER_CHANNEL_COUNT` for it, which pinned that constant against itself
+ * and enforced nothing: editing the table and the constant in one commit passed the
+ * guard untouched, while this comment claimed an author had to change a number here.
+ * A literal makes the claim true, at the cost of one more place to edit deliberately.
  *
  * This cannot verify that the enforcement is any good, and no test in this
  * repository could. It converts a silent addition into a deliberate one.
@@ -56,7 +59,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
     {
       decision: 'doc/decision/prefer-readonly-member-channel-authority.md',
       enforcedBy: 'effect-member-channel-authority.unit.test.ts',
-      entryCount: VERIFIED_MEMBER_CHANNEL_COUNT,
+      entryCount: 33,
     },
   ],
 ],);
@@ -98,22 +101,33 @@ await describe({
         /* Every registered authority must still be present, so deleting one along
          * with its enforcement cannot quietly leave the registry describing a module
          * that no longer exists. */
-        for (const [fileName, { enforcedBy, entryCount, },] of PERMITTED_AUTHORITY_MODULES) {
+        for (const [fileName, { enforcedBy, },] of PERMITTED_AUTHORITY_MODULES) {
           expect(sourceFileNames.includes(fileName,),).toBe(true,);
           expect(
             readdirSync(new URL('./', import.meta.url,),)
               .includes(enforcedBy,),
           ).toBe(true,);
-          expect(entryCount > 0,).toBe(true,);
         }
-        /* The pinned total must match the table the production module actually
-         * exports, so growth fails here rather than passing silently. */
+        /** Registry entry for the one permitted authority. */
+        const memberChannelRegistration = PERMITTED_AUTHORITY_MODULES.get(
+          'effect-member-channel-authority.ts',
+        );
+        if (memberChannelRegistration === undefined)
+          throw new Error(
+            'Expected the member-channel authority to stay registered, since the registry is what permits it.',
+          );
+        /* Both the table and the constant the module exports must match the literal
+         * above, so growth fails here even when a commit edits table and constant
+         * together. */
         expect(
           [...MEMBER_CHANNELS_BY_INTERFACE.values(),]
             .reduce(function sumEntries(total, members,): number {
               return total + members.size;
             }, 0,),
-        ).toBe(VERIFIED_MEMBER_CHANNEL_COUNT,);
+        ).toBe(memberChannelRegistration.entryCount,);
+        expect(VERIFIED_MEMBER_CHANNEL_COUNT,).toBe(
+          memberChannelRegistration.entryCount,
+        );
         /** Production effect source combined for removed identifier checks. */
         const sourceText = sourceFileNames
           .map(function readSource(fileName,): string {
