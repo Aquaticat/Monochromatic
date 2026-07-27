@@ -99,7 +99,16 @@ The persistent format is schema 3.
 `effect-owned-call-edge.ts:131-158` stores exact callee and callback source paths beside callable keys.
 `effect-reached-edge.ts:85-118` rejects an owned edge whose source is outside the indexed snapshot.
 `effect-reached-edge.ts:131-156` also rejects an owned callable key whose loaded source lacks its summary.
-These failures reach Oxlint as `semanticBridgeUnavailable` diagnostics rather than becoming assumed-safe calls.
+These failures no longer reach Oxlint as diagnostics.
+A failure inside the rule,
+ the bridge,
+ or the upstream API is not a fact about the file being
+linted,
+ so blaming that file with a lint issue misattributes it;
+the rule logs a warning naming the file instead.
+Nothing becomes an assumed-safe call either way,
+ because the catch wraps the whole
+verification and no offer is made from a partial state.
 
 `effect-dependency-closure.ts:162-185` merges semantic call edges with module dependency edges.
 Fresh entries are published only after every reached source has contributed those edges.

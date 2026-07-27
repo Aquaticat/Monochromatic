@@ -1,10 +1,14 @@
 # typescript-go 7.0.2 panics serializing a tuple-flagged type, aborting a whole Oxlint semantic program
 
-A repository-wide `mise run lint:oxlint` loses the analysis of one program when the
+A repository-wide `mise run lint:oxlint` loses the readonly analysis of one file when the
 TypeScript API server panics inside its type-serialization path.
-The rule reports nothing further for that program,
- so its files are silently unanalyzed
-while the run continues and exits as if only ordinary findings were produced.
+The loss is reported rather than silent:
+ the rule catches the failure and emits
+`Readonly semantic analysis unavailable` for that file,
+ carrying the panic text.
+So this costs coverage,
+ not soundness;
+ no offer is made for the file on partial information.
 
 ## Symptom
 
@@ -15,10 +19,15 @@ During `mise run lint:oxlint` at the repository root:
 ```
 
 The message is followed by a Go stack and then `Error running tsgolint: "exit status: exit status: 2"`.
-The surrounding diagnostics show the run was working through
-`package/module/test/src/expect-matchers.ts` at the time,
- near `toHaveLastReturnedWith`,
-a matcher that reads sinon spy call records.
+The report is attached to `package/webapp-productivity/rss/src/index.ts`,
+ at `1:1`,
+ which is the file whose analysis is lost.
+
+An earlier reading of mine named `package/module/test/src/expect-matchers.ts` instead,
+ inferred from diagnostics printed near the panic in an interleaved log.
+That was wrong,
+ and it is why the reproduction below looked unavailable for so long:
+ every narrowing attempt probed the wrong package.
 
 The panic is not caused by anything in this repository's rule changes.
 It appears in all five workspace sweeps taken while investigating an unrelated soundness
@@ -218,6 +227,19 @@ A future version is worth retesting the same way:
  install,
  sweep,
  and grep the output for `semantic rule failed`.
+
+## What we do about it
+
+An internal failure no longer reports a lint issue.
+The rule catches it,
+ logs a warning naming the file,
+ and leaves that file without readonly analysis for the run.
+The reasoning is attribution:
+ a panic inside the upstream API is not a fact about the linted file,
+ so putting an error on that file blames an author who can do nothing about it.
+One consequence worth knowing:
+ a file that panics no longer fails the lint,
+ so the warning is the only signal.
 
 ## Verified workarounds
 

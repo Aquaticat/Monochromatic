@@ -111,7 +111,6 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
-      semanticBridgeUnavailable: 'Readonly semantic analysis unavailable: {{reason}}.',
     },
   },
   /**
@@ -128,7 +127,7 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
-      Program(node: ForeignBorrowed<ESTree.Program>,): void {
+      Program(_node: ForeignBorrowed<ESTree.Program>,): void {
         if (!isEnforcedTypeScriptSource(context.filename,))
           return;
         /**
@@ -189,19 +188,24 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
           },);
         }
         catch (error) {
-          // Stack frames go to the log, not to the report below: locating a
-          // crash site inside the rule needs frames, and a message alone has
-          // repeatedly proven insufficient for that.
-          rl.error(`semantic rule failed: ${caughtValueStack(error,)}`,);
-          context.report({
-            node,
-            messageId: 'semanticBridgeUnavailable',
-            data: {
-              reason: error instanceof SemanticBridgeError
-                ? `${error.reason}: ${error.message}`
-                : String(error,),
-            },
-          },);
+          /* Every failure reaching here is internal: this rule's own invariants, the
+           * semantic bridge, or an upstream panic marshalled back through the API. None of
+           * them is a fact about the file being linted, so reporting one as a lint issue
+           * blames the wrong code and puts an error on a file whose author can do nothing
+           * about it. It goes to the log as a warning instead, with frames, because
+           * locating a crash site inside the rule needs frames and a message alone has
+           * repeatedly proven insufficient.
+           *
+           * The file gets no readonly analysis this run, and no offer either: this catch
+           * wraps the whole verification, so nothing was reported from a partial state.
+           * `doc/troubleshooting/typescript-go-tuple-type-panic.md` is the live example. */
+          rl.warn(
+            `semantic rule failed, so ${context.filename} has no readonly analysis this run: ${
+              error instanceof SemanticBridgeError
+                ? `${error.reason}: ${caughtValueStack(error,)}`
+                : caughtValueStack(error,)
+            }`,
+          );
         }
       },
     };
