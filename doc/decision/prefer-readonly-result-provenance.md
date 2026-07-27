@@ -126,6 +126,56 @@ already carried once for the member-channel authority: the registry entry looked
 enforcement and enforced nothing.
 Both comparisons now exist for both authorities.
 
+## Landed increment: the expression resolver
+
+`effect-expression-provenance.ts` is the single resolver both origin extractors now
+delegate to. Before it, `expressionOrigins` and `rootParameterOrigins` each stripped
+property and element access to an identifier and stopped, so they agreed by coincidence
+and both stopped at a call.
+
+`effect-member-result-relation.ts` validates an authority entry by `Type` identity
+against the recorded receiver position, traversing union constituents.
+That traversal is what reaches the entries at all, for the reason recorded above.
+
+### Workspace effect, measured
+
+1,405 findings to 1,424, the first movement in this task.
+Offers unchanged at 35; `is used by these calls` 499 to 512; `is used as the object`
+588 to 583.
+
+Diffing sorted diagnostic sets: 22 lines removed, 41 added, and 41 minus 22 equals the
+19-finding delta exactly, so 22 existing findings gained causes and 19 are new.
+
+The new findings are true positives, and the largest class is not about member results at
+all. `??` was the gap:
+
+```ts
+// package/module/kv-store/src/create-sync-store.ts:111
+const policies = config.eviction ?? [];
+const lruPolicy = policies.find(function isLru(p,) { /* ... */ },);
+```
+
+`policies` can hold `config.eviction`, so `config` reaches that call.
+`expressionRoot` strips property access but not a `BinaryExpression`, so before this
+change the whole initializer resolved to nothing and `policies` carried no origin.
+Every alias established through `??` was invisible, which is why handling
+value-selecting operators was not an incidental detail of following call results.
+
+### What the diagnostic tests could not see
+
+A parameter mutated through a call result also still carries that call's receiver
+opacity, and opacity dominates the message, so the fixture emits the same seven
+diagnostics whether attribution works or not.
+`attributes a mutation reached through a verified member result to its receiver` in
+`effect-summaries.unit.test.ts` asserts `mutatedParameterIndexes` directly for the bound,
+chained and element-write forms, with the read-only lookup as the control.
+
+Measured mutation: dropping the call branch from `provenanceSuccessors` fails that
+assertion with `expected [] to deeply equal [ +0 ]` while the fixture diagnostic count
+stays at seven.
+The message-level suite passed identically with the resolver disabled, which is why the
+summary assertion exists.
+
 ## Remaining work
 
 1. An iterative expression provenance resolver, work-stack rather than recursive per
