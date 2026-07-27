@@ -154,6 +154,28 @@ Agreed sequence: land the rule at `error` first, then migrate,
 using the rule's own output as the worklist.
 No allowlist and no `warn` stage;
 a `warn` parking lot would conflict with LN8.
+Staged registration, holding the rule out of standard lint until the tree passes, was raised and declined.
+
+Each symbol widened to satisfy the rule carries a TSDoc `@internal` tag.
+The repo already uses that tag in 13 files
+and models it in `package/oxlint-plugin/tsdoc/src/tsdoc-doc-model.ts`.
+`stripInternal` is set nowhere,
+so annotated declarations still reach `.d.mts` and type imports in tests keep resolving.
+
+Widening exports does not create false unused-export findings.
+`package/cli/unused-export/src/resolve.ts` defines `DIST_MARKER = '/dist/final/'`
+and maps built-dist imports back to source precisely so test usage counts.
+That marker is hardcoded to `dist/final`,
+so imports under `dist/app` do not map back;
+this affects the 4 Electron test files.
+
+### Why internal modules are in scope at all
+
+The policy is empirical, not aesthetic.
+Defects have previously survived the test suite by existing only in built output.
+An internal module tested through source therefore proves nothing about what ships.
+This is why proposals to let internal unit tests import source were declined:
+they reintroduce the exact failure mode the convention exists to prevent.
 
 Consequence to accept knowingly:
 from the moment the rule registers until migration completes,
@@ -214,6 +236,37 @@ accepted because it is the established local term for the artifact a package eve
 -   Repointing the 30 `src/`-declaring manifests at `dist`.
     Correct in spirit but couples this rule's delivery to a manifest migration,
     and several of those packages ship source deliberately.
+
+## External review outcomes
+
+An external model reviewed this design. Its findings resolved as follows.
+
+Sustained and folded into this document:
+count reconciliation into exhaustive categories;
+normalized path matching in place of `dist/final` substring matching;
+subjecting allowlisted helper modules to the same restriction, closing the re-export laundering path;
+scoping the declaration-availability claim to measurement;
+and dropping the claim that relative artifact imports validate the export map.
+
+Raised and declined by the owner, with reasons recorded here:
+letting internal unit tests import source, and emitting a private test artifact,
+both rejected because defects have previously survived tests by living only in built output;
+staged registration, rejected in favour of immediate enforcement.
+
+Rebutted with measurement:
+
+-   The claim that accepting any file under `dist/final` makes the rule looser than the migration it demands.
+    True in the abstract, unreachable in practice, because the build bundles rather than preserving modules.
+-   The claim that relative imports of JSON, CSS, SQL, and similar assets would be caught unintentionally.
+    No such import exists in any test file;
+    the single apparent match is text inside a template literal.
+
+Open for implementation, not design:
+precise resolution semantics for conditional and wildcard exports,
+`bin` string versus object forms,
+symlinks,
+manifest parse failures,
+and `.js` specifiers corresponding to `.ts` sources.
 
 ## Side findings, out of scope here
 
