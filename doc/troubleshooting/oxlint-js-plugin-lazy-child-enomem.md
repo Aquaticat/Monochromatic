@@ -199,6 +199,101 @@ The cold and warm timings are separate facts.
 Persistent effect summaries intentionally make later unchanged runs faster.
 No code or effect analysis was removed to obtain them.
 
+### Follow-up zram snapshot
+
+A follow-up check on 2026-07-27 found the 16 GiB zram swap almost full while `free` reported
+18 to 23 GiB available memory across successive snapshots.
+These values describe different resources and are not contradictory.
+
+The host configuration caps `/dev/zram0` at 16 GiB and selects `zstd`:
+
+```toml
+# /etc/systemd/zram-generator.conf
+[zram0]
+compression-algorithm=zstd
+zram-size = min(ram / 2, 16384)
+```
+
+`zramctl` reported 15.5 GiB of uncompressed data occupying 11.2 GiB of physical RAM,
+including allocator overhead:
+
+```text
+NAME       DISKSIZE  DATA COMPR TOTAL ALGORITHM
+/dev/zram0      16G 15.5G 11.1G 11.2G zstd
+```
+
+The running OGC kernel source at tag `v7.1.3-ogc5`,
+commit `2abd6857d30a0c0e0a7fb0d49b734c06b2451b2a`,
+explains both numbers.
+`Documentation/admin-guide/blockdev/zram.rst:8-12` says zram keeps compressed pages in RAM:
+
+```text
+The zram module creates RAM-based block devices named /dev/zram<id>
+(<id> = 0, 1, ...). Pages written to these disks are compressed and stored
+in memory itself.
+```
+
+`Documentation/admin-guide/blockdev/zram.rst:260-273` defines `orig_data_size` as uncompressed data
+and `mem_used_total` as physical allocation including fragmentation and metadata.
+The full 16 GiB device therefore consumed 11.2 GiB of RAM in this snapshot,
+not another 16 GiB outside RAM.
+
+`Documentation/filesystems/proc.rst:1125-1133` defines `MemAvailable` as an estimate containing
+free memory, reclaimable slab, and reclaimable file-cache pages:
+
+```text
+MemAvailable
+              An estimate of how much memory is available for starting new
+              applications, without swapping. Calculated from MemFree,
+              SReclaimable, the size of the file LRU lists, and the low
+              watermarks in each zone.
+```
+
+The initial snapshot had 7.2 GiB free and 17 GiB in buffer and cache.
+Much of the reported 23 GiB was therefore reclaimable cache rather than unused RAM.
+
+The swapped pages had an identifiable owner.
+PID 7319, `/home/user/AppImages/odytty.appimage`, had run since 2026-07-23 and reported:
+
+```text
+VmRSS:   6655708 kB
+VmSwap: 11931316 kB
+```
+
+That process alone held 74.7 percent of the private anonymous swap attributed through
+`/proc/*/status` in the snapshot.
+`Documentation/filesystems/proc.rst:268-269` confirms that `VmSwap` counts anonymous private data,
+not shared-memory swap.
+The process's cgroup had no configured memory or swap maximum and recorded no cgroup OOM event.
+This identifies the holder but does not establish whether its memory growth was intended.
+
+Linux does not proactively read all of those pages back merely because file cache later becomes reclaimable.
+`mm/memory.c:4795-4892` enters `do_swap_page()` for a page fault and starts swap-in there:
+
+```c
+vm_fault_t do_swap_page(struct vm_fault *vmf)
+{
+    // ...
+    folio = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE, vmf);
+}
+```
+
+The host's `vm.swappiness=60` also permits reclaim to balance swap-backed pages against file cache.
+`Documentation/admin-guide/sysctl/vm.rst:985-998` defines that balance and names 60 as the default.
+The immediate `vmstat` sample showed no new swap-out,
+and both current memory-pressure stall averages were zero.
+The full device was retained state from prior reclaim,
+not evidence of current global memory exhaustion.
+
+This snapshot can reduce headroom for the earlier `spawn ENOMEM`,
+but it does not replace the demonstrated ordering cause.
+`Documentation/admin-guide/sysctl/vm.rst:836-842` says the active `vm.overcommit_memory=0` mode
+rejects obvious overcommits after comparing a request against memory plus swap.
+A full zram device leaves little free swap for that heuristic,
+while `MemAvailable` is not a promise that an arbitrary child-process request will succeed.
+Starting the TypeScript child before Oxlint's allocator reservations remained the controlled change
+that made the same child startup succeed.
+
 ## Verified workarounds
 
 ### Start the semantic child while loading the plugin
@@ -248,12 +343,18 @@ It is not the package-task default.
 - Adding false `@mutates` contracts or effect-catalog entries would weaken semantic guarantees and would not change child startup.
 - Removing runtime-verifier code would hide the workload that exposed the problem without fixing the allocator and child ordering.
 - Treating the 969-millisecond failed run as a performance win would silently skip the project-owned semantic rule.
+- Treating full zram as proof of current RAM exhaustion confuses occupied swap slots with `MemAvailable`,
+  which includes reclaimable cache.
+- Treating the follow-up snapshot as proof that full swap caused the earlier `ENOMEM` ignores the successful
+  startup-order experiment and lacks a memory snapshot from the failing system call.
 
 ## Upstream filing decision
 
 No `.out-of-scope/` entry matches Oxlint,
 JavaScript plugins,
 or allocator behavior.
+The zram follow-up matches the running kernel's documented behavior,
+so it does not warrant a Linux issue.
 
 The duplicate search found upstream
 [issue 20331](https://github.com/oxc-project/oxc/issues/20331)
