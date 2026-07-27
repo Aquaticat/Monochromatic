@@ -3006,3 +3006,47 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   CONSTANT is a hazard whenever a human writes into the artifact, because the
   file silently changes owner from the program to the person. Look for the same
   shape anywhere else a runner writes a fixed name a human then edits.
+- RUNS DIR SITS INSIDE THE `rm -rf` BLAST RADIUS (found 2026-07-27, mitigated,
+  root cause still open). `resolveRunsDir` defaults under
+  `node_modules/.monochromatic/translation-repair-runs/`, and the repo ships
+  `//:fix:reinstall`, whose body is literally
+  `rmSync('node_modules', { recursive: true, force: true })` followed by
+  `pnpm install`. One invocation of a task described only as "Clean reinstall to
+  work around registry or resolution issues" destroys round one's graded sheet
+  and its free-text rationale, `gate-verdict.md`, every settled artifact, the
+  attempts map, and the slice cache. "Outside git" was the actual requirement;
+  "inside node_modules" was never implied by it.
+  MITIGATION IN PLACE: the whole runs dir (12 MB) is copied to
+  `${HOME}/.local/share/monochromatic/translation-repair-runs-backup`, mode 700,
+  outside the repo entirely. Refresh it after any batch of entries settles. It
+  quotes UNLICENSED corpus, so it is never committable, wherever it lives.
+  ROOT CAUSE DELIBERATELY NOT FIXED YET: changing the `resolveRunsDir` default
+  mid-accumulation would point the next launch at an empty directory, which
+  reads as zero settled entries and silently re-runs the entire corpus. Relocate
+  only between runs, by moving the directory AND setting
+  `TRANSLATION_REPAIR_RUNS_DIR` together, never by editing the default alone.
+- `--final` IS NOW ONE-SHOT by design, so do not fire it early. The first
+  `--final` draw freezes round two's sheet, and a later draw refuses even if
+  more entries have settled since. Use the preliminary path for every validation
+  draw and run `--final` exactly once, after accumulation is done. When the
+  refusal appears, the correct response is to rename the existing sheet
+  deliberately, never to reach for a force-shaped workaround: the refusal is the
+  feature.
+- COHORT-SPLIT PROMISE RETRACTED (2026-07-27, `run-config.ts`). The stamp's
+  docblock claimed precision could be split by call-timing cohort at analysis
+  time, making the mixed pool "a number rather than an unknown". It cannot. At
+  the coverage bar the pool is about 30 entries split near evenly, so 50 graded
+  items give roughly 25 per cohort and a standard error near 8 points; the
+  binding constraint is human grading effort, not compute, so the several
+  hundred per cohort that would resolve a meaningful difference is unavailable.
+  Report the mixed pool QUALITATIVELY alongside the panel-coverage sub-rates.
+  Note this weakens the stated basis of the user's twice-made "keep the settled
+  entries" decision, so it is surfaced rather than quietly adjusted; it does not
+  change what to do, since discarding the compute was rejected both times.
+- UNGRADED OBSERVATION, first quantitative sign fixes A-F changed behavior at
+  all: accepted issues per entry fell from 99 (round one, 2871 over 29 entries)
+  to 75 (round two, 1731 over 23), a 24 percent drop, in the direction the fixes
+  intended. NOT EVIDENCE OF PRECISION and must not be recorded as such: nothing
+  here is graded, fewer accepted issues is equally consistent with the fixes
+  suppressing true positives, and the two pools cover different entries. It
+  earns a mention only because it is measurable now and the graded answer is not.
