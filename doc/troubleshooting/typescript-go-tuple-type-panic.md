@@ -307,10 +307,28 @@ There is no sequence of API calls that reads the construct safely.
 What is available is a smaller blast radius.
 The failure currently costs the whole file,
  because the catch wraps the whole run.
-Catching per callable inside the index build,
- and marking that callable's summary fully opaque,
- would keep the rest of the file analyzed and stay fail-closed.
-That is unbuilt.
+That is built.
+A callable whose summary cannot be built is omitted from the index with a warning naming
+the cause,
+ rather than aborting the run for its whole file.
+Omission is fail-closed on both sides:
+ callers of an absent callee take opacity,
+ which also fixed a defect of its own,
+ since propagation previously returned silently there and turned an unresolved callee into
+ a no-effect one.
+The rule skips verifying an omitted callable rather than reporting against code whose
+author cannot act on it.
+
+Measured at workspace scale by diagnostic position,
+ which is what distinguishes the two
+states.
+Before,
+ the only diagnostic in `package/webapp-productivity/rss/src/index.ts` sat at `1:1`,
+ the bail-out report standing in for the file's whole analysis.
+After,
+ it sits at `171:39`,
+ a real finding in the body,
+ and the sweep carries two omission warnings naming the callables that were dropped.
 
 ## Verified workarounds
 
