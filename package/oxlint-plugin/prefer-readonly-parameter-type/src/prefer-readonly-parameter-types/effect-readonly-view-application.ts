@@ -513,7 +513,7 @@ export function recordReadonlyViewApplications({
       node: receiver,
     },)
     ? rootParameterOrigins({
-      checker,
+      project,
       bindingOriginBySymbolId,
       node: receiver,
     },)

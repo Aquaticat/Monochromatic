@@ -90,7 +90,7 @@ export function addForeignBorrowedCallEdge({
   const allArgumentIndexes = call.arguments
     .map(function argumentIndexes(argument,): readonly number[] {
     return parameterIndexes({
-      checker: project.checker,
+      project,
       bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
       node: argument,
       includedPropertyNames: ALL_PACKAGED_PROPERTIES,
@@ -98,7 +98,6 @@ export function addForeignBorrowedCallEdge({
   },);
   addOwnedCallEdge({
     project,
-    checker: project.checker,
     bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
     call,
     callee,

@@ -6,7 +6,7 @@
 
 import type { CallExpression, } from 'typescript/unstable/ast';
 import { isPropertyAccessExpression, } from 'typescript/unstable/ast/is';
-import type { Checker, } from 'typescript/unstable/sync';
+import type { Project, } from 'typescript/unstable/sync';
 
 import {
   addOpaqueEffect,
@@ -31,7 +31,7 @@ import {
  * inside the array it returns. An earlier attempt discharged both at once with a
  * single early return, which silently stopped reporting that escape.
  *
- * @param checker - TypeScript checker resolving receiver and argument types.
+ * @param project - TypeScript project resolving receiver and argument types.
  *
  * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
  *
@@ -47,24 +47,28 @@ import {
  *
  * @example
  * ```ts
- * recordOpaqueBoundary({ checker, bindingOriginBySymbolId, call, allArgumentIndexes, summary, receiverDerived: false, });
+ * recordOpaqueBoundary({ project, bindingOriginBySymbolId, call, allArgumentIndexes, summary, receiverDerived: false, });
  * ```
  */
 export function recordOpaqueBoundary({
-  checker,
+  project,
   bindingOriginBySymbolId,
   call,
   allArgumentIndexes,
   summary,
   receiverDerived,
 }: {
-  readonly checker: Checker;
+  readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly allArgumentIndexes: readonly (readonly number[])[];
   readonly summary: MutableEffectSummary;
   readonly receiverDerived: boolean;
 },): void {
+  /**
+   * Checker for the project resolving this call.
+   */
+  const { checker, } = project;
   /**
    * Authored unresolved call target retained for adapter verification.
    */
@@ -88,7 +92,7 @@ export function recordOpaqueBoundary({
    */
   const receiverOrigins: ParameterOrigins = receiverClaimOutstanding
     ? rootParameterOrigins({
-      checker,
+      project,
       bindingOriginBySymbolId,
       node: call.expression
         .expression,

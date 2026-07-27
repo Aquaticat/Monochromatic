@@ -93,7 +93,7 @@ export function inspectEffectCall({
    */
   const callbackParameterOrigins = isIdentifier(call.expression,)
     ? rootParameterOrigins({
-      checker,
+      project,
       bindingOriginBySymbolId,
       node: call.expression,
     },)
@@ -112,7 +112,7 @@ export function inspectEffectCall({
          * Source parameter passed to callback argument, when direct.
          */
         const sourceParameterIndexes = parameterIndexes({
-          checker,
+          project,
           bindingOriginBySymbolId,
           node: argument,
           includedPropertyNames: ALL_PACKAGED_PROPERTIES,
@@ -200,7 +200,7 @@ export function inspectEffectCall({
   const allArgumentIndexes = call.arguments
     .map(function argumentIndex(argument,): readonly number[] {
       return parameterIndexes({
-        checker,
+        project,
         bindingOriginBySymbolId,
         node: argument,
         includedPropertyNames: ALL_PACKAGED_PROPERTIES,
@@ -228,7 +228,6 @@ export function inspectEffectCall({
   if (callee !== OWNED_CALLABLE_UNAVAILABLE) {
     addOwnedCallEdge({
       project,
-      checker,
       bindingOriginBySymbolId,
       call,
       callee,
@@ -241,7 +240,7 @@ export function inspectEffectCall({
   }
 
   recordOpaqueBoundary({
-    checker,
+    project,
     bindingOriginBySymbolId,
     call,
     allArgumentIndexes,

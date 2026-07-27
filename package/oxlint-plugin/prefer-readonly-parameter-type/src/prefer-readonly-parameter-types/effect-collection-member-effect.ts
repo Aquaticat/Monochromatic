@@ -195,7 +195,7 @@ export function recordCollectionMemberEffect({
         node: receiver,
       },)
       ? rootParameterOrigins({
-        checker,
+        project,
         bindingOriginBySymbolId,
         node: receiver,
       },)

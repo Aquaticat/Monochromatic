@@ -6,10 +6,7 @@
 
 import type { CallExpression, } from 'typescript/unstable/ast';
 import { isIdentifier, } from 'typescript/unstable/ast/is';
-import type {
-  Checker,
-  Project,
-} from 'typescript/unstable/sync';
+import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import {
@@ -34,8 +31,6 @@ import {
  *
  * @param project - TypeScript project resolving callbacks and provenance.
  *
- * @param checker - TypeScript checker resolving argument origins.
- *
  * @param bindingOriginBySymbolId - Current callable binding origins.
  *
  * @param call - Owned call expression.
@@ -54,12 +49,11 @@ import {
  *
  * @example
  * ```ts
- * addOwnedCallEdge({ project, checker, bindingOriginBySymbolId, call, callee, allArgumentIndexes, summary, foreignInbound });
+ * addOwnedCallEdge({ project, bindingOriginBySymbolId, call, callee, allArgumentIndexes, summary, foreignInbound });
  * ```
  */
 export function addOwnedCallEdge({
   project,
-  checker,
   bindingOriginBySymbolId,
   call,
   callee,
@@ -69,7 +63,6 @@ export function addOwnedCallEdge({
   analysisRoot,
 }: {
   readonly project: Project;
-  readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly callee: EffectCallableDeclaration;
@@ -107,7 +100,7 @@ export function addOwnedCallEdge({
        */
       const parameter = callee.parameters[argumentIndex];
       return parameterIndexes({
-        checker,
+        project,
         bindingOriginBySymbolId,
         node: argument,
         includedPropertyNames: (parameter !== undefined)

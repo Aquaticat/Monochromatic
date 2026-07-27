@@ -18,11 +18,8 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
-import {
-  expressionRoot,
-  NO_PARAMETER_ORIGIN,
-  type ParameterOrigins,
-} from './effect-summary-model.ts';
+import { expressionValueOrigins, } from './effect-expression-provenance.ts';
+import type { ParameterOrigins, } from './effect-summary-model.ts';
 
 /**
  * Registers every identifier bound by one parameter or destructuring pattern.
@@ -109,6 +106,8 @@ export function registerBindingOrigin({
 /**
  * Resolves every parameter origin represented by expression root.
  *
+ * {@inheritDoc expressionValueOrigins}
+ *
  * @param project - TypeScript project resolving root symbol.
  *
  * @param bindingOriginBySymbolId - Known parameter and alias origins.
@@ -131,21 +130,11 @@ export function expressionOrigins({
   readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly node: Node;
 },): ParameterOrigins {
-  /**
-   * Root node after property and element access removal.
-   */
-  const root = expressionRoot(node,);
-  if (!isIdentifier(root,))
-    return NO_PARAMETER_ORIGIN;
-  /**
-   * Root symbol used for direct parameter or alias lookup.
-   */
-  const symbol = project.checker
-    .getSymbolAtLocation(root,);
-  if (symbol === undefined)
-    return NO_PARAMETER_ORIGIN;
-  return bindingOriginBySymbolId.get(symbol.id,)
-    ?? NO_PARAMETER_ORIGIN;
+  return expressionValueOrigins({
+    project,
+    bindingOriginBySymbolId,
+    node,
+  },);
 }
 
 /**

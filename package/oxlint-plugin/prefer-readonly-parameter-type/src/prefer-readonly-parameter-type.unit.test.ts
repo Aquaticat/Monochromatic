@@ -336,14 +336,20 @@ children: [
     },
   },),
   it({
-    name: 'reports every member-result escape as receiver opacity while result provenance is unmodelled',
+    name: 'attributes a member result to its receiver while every sink stays unmodelled',
     fn: async () => {
-      /* A characterization test, not a statement of intent. Nothing records that a
-       * call result aliases its receiver, so each of these seven functions lands on
-       * the opaque boundary at the lookup itself. Result provenance is meant to
-       * change all seven, and `doc/decision/prefer-readonly-binding-origin-accumulation.md`
-       * names it as the next step. Pinning the current answers means that change
-       * shows up here as a reviewable diff rather than passing unnoticed. */
+      /* Where result provenance has reached, measured rather than intended.
+       *
+       * The resolver now follows a verified member result to its receiver, so an
+       * escaping result is attributed: `escapingLookupEffect` reports the
+       * `JSON.stringify` its looked-up value reaches, where before it reported the
+       * lookup and never named the escape at all.
+       *
+       * The count has not moved, and that is the design rather than a shortfall.
+       * Discharging a receiver's opacity is sound only once every sink a tracked
+       * result can reach is attributed or reported, and returns, property stores,
+       * container insertions and closure captures are not yet.
+       * `doc/decision/prefer-readonly-result-provenance.md` records that ordering. */
       const diagnostics = await lintReadonly('readonly-result-provenance-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
@@ -361,19 +367,23 @@ children: [
           return message.includes(`method calls: ${call} [`,);
         },).length;
       }
-      /* One per function, every one on the lookup rather than on what the result
-       * reaches: five `Map.get` receivers, one over an array of rows, one `at`. */
-      expect(namingCall('facts.get',),).toBe(5,);
+      /* Still one diagnostic per function, and still on the lookup for every case
+       * whose result stays inside the callable, because those receivers keep their
+       * opacity until discharge is licensed. Four `Map.get` receivers now, down from
+       * five: the escaping one moved. */
+      expect(namingCall('facts.get',),).toBe(4,);
       expect(namingCall('rows.get',),).toBe(1,);
       expect(namingCall('values.at',),).toBe(1,);
-      /* `escapingLookupEffect` hands its looked-up value to `JSON.stringify`, and no
-       * diagnostic mentions that call, because the escaping value carries no origin
-       * for the argument analysis to attribute. Provenance must make this appear. */
-      expect(messages.some(function namesEscape(message,): boolean {
+      /* The one that moved. `escapingLookupEffect` hands its looked-up value to
+       * `JSON.stringify`, and the report now names that call rather than the lookup,
+       * which is only possible because the value carries `facts` as an origin for the
+       * argument analysis to find. Removing the call case from
+       * `provenanceSuccessors` puts this back to naming `facts.get`. */
+      expect(messages.filter(function namesEscape(message,): boolean {
         return message.includes('JSON.stringify',);
-      },),).toBe(false,);
-      /* And no parameter is offered read-only, not even `readOnlyLookupEffect`'s,
-       * which only reads. Provenance must make that one an offer. */
+      },).length,).toBe(1,);
+      /* And no parameter is offered read-only yet, not even `readOnlyLookupEffect`'s,
+       * which only reads: that awaits the discharge, not the attribution. */
       expect(messages.filter(function offers(message,): boolean {
         return message.includes('should be readonly',);
       },),).toEqual([],);

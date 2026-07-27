@@ -21,6 +21,7 @@ import {
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
+import { expressionValueOrigins, } from './effect-expression-provenance.ts';
 import {
   expressionCanCarryMutableState,
   receiverElementsArePrimitive,
@@ -43,50 +44,43 @@ import {
 export const ALL_PACKAGED_PROPERTIES: unique symbol = Symbol('all packaged call argument properties',);
 
 /**
- * Maps expression root symbol to every callable parameter it can hold.
+ * Maps an expression to every callable parameter its value can be reached from.
  *
- * @param checker - TypeScript checker resolving root symbol.
+ * {@inheritDoc expressionValueOrigins}
+ *
+ * @param project - TypeScript project resolving symbols and signatures.
  *
  * @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
  *
- * @param node - Expression whose root may be parameter.
+ * @param node - Expression whose value may carry parameter state.
  *
- * @returns parameter origins, empty when root is not parameter-derived.
+ * @returns parameter origins, empty when value is not parameter-derived.
  *
  * @example
  * ```ts
- * rootParameterOrigins({ checker, bindingOriginBySymbolId, node });
+ * rootParameterOrigins({ project, bindingOriginBySymbolId, node });
  * ```
  */
 export function rootParameterOrigins({
-  checker,
+  project,
   bindingOriginBySymbolId,
   node,
 }: {
-  readonly checker: Checker;
+  readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly node: Node;
 },): ParameterOrigins {
-  /**
-   * Root expression node before symbol resolution.
-   */
-  const root = expressionRoot(node,);
-  if (!isIdentifier(root,))
-    return NO_PARAMETER_ORIGIN;
-  /**
-   * Root symbol resolved in current project.
-   */
-  const symbol = checker.getSymbolAtLocation(root,);
-  if (symbol === undefined)
-    return NO_PARAMETER_ORIGIN;
-  return bindingOriginBySymbolId.get(symbol.id,)
-    ?? NO_PARAMETER_ORIGIN;
+  return expressionValueOrigins({
+    project,
+    bindingOriginBySymbolId,
+    node,
+  },);
 }
 
 /**
  * Collects every caller parameter origin packaged inside one call argument.
  *
- * @param checker - TypeScript checker resolving root symbols.
+ * @param project - TypeScript project resolving root symbols and signatures.
  *
  * @param bindingOriginBySymbolId - Local binding symbols mapped to source parameters.
  *
@@ -99,7 +93,7 @@ export function rootParameterOrigins({
  * @example
  * ```ts
  * parameterIndexes({
- *   checker,
+ *   project,
  *   bindingOriginBySymbolId,
  *   node,
  *   includedPropertyNames: ALL_PACKAGED_PROPERTIES,
@@ -107,16 +101,20 @@ export function rootParameterOrigins({
  * ```
  */
 export function parameterIndexes({
-  checker,
+  project,
   bindingOriginBySymbolId,
   node,
   includedPropertyNames,
 }: {
-  readonly checker: Checker;
+  readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly node: Node;
   readonly includedPropertyNames: ReadonlySet<string> | typeof ALL_PACKAGED_PROPERTIES;
 },): readonly number[] {
+  /**
+   * Checker for the project resolving this argument structure.
+   */
+  const { checker, } = project;
   /**
    * Unique origins discovered through bounded argument structure.
    */
@@ -132,7 +130,7 @@ export function parameterIndexes({
      * Direct parameter origins at current expression root.
      */
     const direct = rootParameterOrigins({
-      checker,
+      project,
       bindingOriginBySymbolId,
       node: current,
     },);
