@@ -4,6 +4,7 @@
  * @module
  */
 
+import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   Context,
@@ -188,7 +189,10 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
           },);
         }
         catch (error) {
-          rl.error(`semantic rule failed: ${String(error,)}`,);
+          // Stack frames go to the log, not to the report below: locating a
+          // crash site inside the rule needs frames, and a message alone has
+          // repeatedly proven insufficient for that.
+          rl.error(`semantic rule failed: ${caughtValueStack(error,)}`,);
           context.report({
             node,
             messageId: 'semanticBridgeUnavailable',
