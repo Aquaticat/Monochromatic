@@ -3101,3 +3101,21 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   starts, so "how many more runs does this need" is a log lookup and a division,
   never a guess from byte size. An earlier draft of this note guessed from the
   12 KB figure and got it wrong.
+- BAND ORDERING IS COMPUTED ONCE PER RUN, so a long run can overshoot a band.
+  `rankWithinBands` and `resumableIds` are both evaluated at run START and the
+  `pending` array is sorted once; nothing re-ranks as entries settle DURING the
+  run. Observed in run 018, which started at 8 small / 9 medium / 8 large and
+  settled five entries: by the time it picked MocaKawai (medium), the live
+  counts were 10 / 10 / 9 and a large entry should have led, but the frozen
+  ordering still had medium ahead. Result was 10 / 11 / 9 instead of 10 / 10
+  / 10.
+  Same cause, second symptom: an entry that a run leaves partly cached does NOT
+  resume later in that SAME run, because `resumableIds` predates its cache
+  directory. Susiethegamer aborted at the hard cap with 12 of 17 slices, and run
+  018 went on to other entries rather than returning to it.
+  NOT WORTH FIXING for this milestone, and the reason is not laziness: the
+  ordering self-corrects on the next launch, both symptoms cost at most one
+  entry of drift, and re-ranking mid-loop would make the processing order depend
+  on completion times, which is a new nondeterminism in the thing that decides
+  what gets measured. Prefer the stale-but-deterministic order. Revisit only if
+  runs get long enough that intra-run drift exceeds one entry per band.
