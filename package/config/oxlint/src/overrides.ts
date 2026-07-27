@@ -257,9 +257,17 @@ const nonUnitTestRuleOverride = {
 
 /**
  * The effect rule cannot soundly use its own strict opacity policy to prove
- * ECMAScript collections, TypeScript semantic handles, or Oxlint's host context.
- * Self-application would require precisely the handwritten host authorities the
- * rule forbids. Other rules remain active for its implementation and tests.
+ * TypeScript semantic handles or Oxlint's host context. Self-application would
+ * require precisely the handwritten host authorities the rule forbids. Other
+ * rules remain active for its implementation and tests.
+ *
+ * ECMAScript collections were a third ground and no longer are. Read-only view
+ * receivers now derive through `doc/decision/prefer-readonly-effect-model-split.md`.
+ * The exemption still covers the whole package because the remaining two grounds
+ * reach 52 of its 96 source files, and because the 37 files free of the semantic
+ * API hold their fixed point in mutable `Set` and `Map`, whose members stay
+ * opaque until they are derived too. Narrowing this glob is tracked against that
+ * work, not available yet.
  */
 const readonlyEffectSelfHostingOverride = {
   files: [
