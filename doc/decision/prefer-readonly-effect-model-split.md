@@ -62,8 +62,18 @@ Discharged only by analysis, never by assumption:
 - When the caller supplies the observing function, that function is owned source with its own summary.
   Its effects propagate to the receiver through a relation derived from the member's own generic signature.
 
-  Do not assume a parameter position. Resolve the receiver's element type from the `Readonly*` instantiation,
-  then take every callback parameter whose type is that element type. Position varies by member:
+  Do not assume a parameter position, and do not read the observer's own annotations. Take the member's
+  instantiated signature, find the callback type it declares for the observer's position, and select the
+  parameters of that callback type whose types are the receiver or any of its type arguments.
+
+  Two later corrections are folded in here. Reading only the first type argument takes the key rather than the
+  value for `ReadonlyMap<K, V>`, so all of them count. Reading the observer's own parameter types works only
+  when the observer is contextually typed by the member: a by-reference observer, `states.map(render)`,
+  annotates its parameter independently, giving a structurally identical but distinct type that matches
+  nothing, and discharging on that empty match silently dropped a real mutation. The member's signature is
+  authoritative because the member, not the observer, decides what each argument position receives.
+
+  Position varies by member:
   `forEach(callbackfn: (value: T, index: number, array: readonly T[]) => void)` carries the element at
   parameter 0, while
   `reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, ...) => U, initialValue: U)`
@@ -76,8 +86,12 @@ Discharged only by analysis, never by assumption:
   ever touching an element parameter. Matching elements alone would miss that entirely.
 
   The relation is read from the declaration's types, not asserted. Measured in TypeScript 7.0.2, the
-  instantiated callback parameter types are reference-identical to the receiver's type argument, so identity
-  comparison suffices and a failed match is a missed discharge rather than a false one.
+  instantiated callback parameter types inside the member's signature are reference-identical to the
+  receiver's type arguments, so identity comparison suffices there.
+
+  A failed match must never by itself discharge. Within the member's signature an unmatched position genuinely
+  receives no receiver state, but a position the signature does not describe at all, including an optional
+  observer whose type is a union with `undefined` until unwrapped, proves nothing and leaves the call opaque.
 - When the member observes elements with no caller-supplied function, nothing is discharged.
   `join` coerces elements through `String`, `toSorted()` without a comparator runs the default comparator,
   and `toLocaleString` likewise. These stay opaque.
@@ -158,6 +172,12 @@ correct. `package/module/caught-value` still reports its two, unchanged, and ser
 Reaching zero is not the goal and would indicate the guarantee had been abandoned.
 
 ## Acceptance
+
+Every position rule above carries a fixture that fails when that rule alone is dropped, verified by mutating
+the matcher and observing the expected failure rather than by assuming coverage:
+`reduceElementParameterEffect` for element-at-1, `forEachWholeArrayEffect` for the receiver position,
+`readonlyMapCallbackEffect` for type arguments past the first and for a view other than `ReadonlyArray`, and
+`referencedObserverEffect` for a by-reference observer. All four expect `mutated: [0]`.
 
 The audited fixtures decide correctness, and all must keep their current expectations:
 
