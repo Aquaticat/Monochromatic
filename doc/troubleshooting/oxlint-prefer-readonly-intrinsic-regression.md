@@ -190,6 +190,10 @@ the second keeps propagating, which is what the audited tests require.
 That is a change to what counts as proof, so it belongs in the audit
 (`doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`), not in a drive-by patch.
 
+This diagnosis held. The model split was drafted as a decision, amended four times as probing contradicted the
+draft, then implemented. The recognizer described here was reinstated unchanged in substance; what unblocked it
+was the model change, exactly as this section predicted.
+
 ## What does not work
 
 - Treating the findings as defects in the linted package. `caught-value` reports two errors over 38 lines whose
@@ -206,10 +210,33 @@ That is a change to what counts as proof, so it belongs in the audit
   tree stays current mixes two architectures and produced misleading results. A full historical checkout is the
   only sound bisect, and one attempt hit `spawn ENOMEM` on a host whose 15 GiB swap was fully consumed.
 
-## Options, none applied
+## Resolution
 
-No fix is applied here. `AGENTS.md` `LN7` forbids loosening lint rules without prior approval, and all three
-plausible resolutions are policy decisions rather than mechanical cleanups.
+The third option was chosen and implemented. `doc/decision/prefer-readonly-effect-model-split.md` records the
+decision, the derivation verified against TypeScript 7.0.2, and the measured results.
+
+The model now carries two claims instead of one opacity flag. Receiver structure is discharged by membership of
+a default-library `Readonly*` interface; reachable user code is discharged only by analyzing the
+caller-supplied observer, related to the receiver through the member's own instantiated signature. Summaries
+gained an `elementApplications` relation, because the existing call-edge propagation skips callees without
+summaries and a default-library member never has one.
+
+Measured over 2,694 files afterwards: 1,364 findings for this rule. That is not a matched before-and-after
+against the 1,661 in this document's title, since concurrent work changed the workspace between the runs; the
+decision document explains why and records the mechanism verification that does hold on real code.
+
+`caught-value` still reports its two errors. Those are argument-side findings on `String` and `Error.isError`,
+which can invoke getters, proxy traps or `toJSON`, so they are the rule being correct rather than the
+regression this document describes.
+
+One question this resolution does not settle: `readonlyEffectSelfHostingOverride` in
+`package/config/oxlint/src/overrides.ts` still exempts only the rule's own directory. Whether it should now
+narrow further, widen, or stay is a policy decision under `LN7` and needs approval.
+
+## Options as they stood
+
+`AGENTS.md` `LN7` forbids loosening lint rules without prior approval, and all three plausible resolutions were
+policy decisions rather than mechanical cleanups.
 
 - Widen the exemption. The rationale already written into `readonlyEffectSelfHostingOverride` applies verbatim to
   every package. Broadening `files` to the workspace turns the rule off in practice, which is honest about the
@@ -218,6 +245,7 @@ plausible resolutions are policy decisions rather than mechanical cleanups.
   external-effect catalog may be trusted, so it reopens the decision the audit closed.
 - Finish the migration. Give the rule a derivation path for default-library declarations, so intrinsics resolve
   without a handwritten catalog. Largest option, and the only one that keeps both the guarantee and the audit.
+  This is the one that was taken.
 
 ## Upstream filing decision
 
