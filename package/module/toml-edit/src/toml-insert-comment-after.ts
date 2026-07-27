@@ -10,6 +10,10 @@ import type {
 } from './document.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
+import {
+  isStrictPrefix,
+  segmentsEqual,
+} from './path-prefix.ts';
 import type {
   TomlEditState,
   TomlPath,
@@ -82,8 +86,8 @@ function setTrailing(
     if ((block.kind
       === 'keyvalue')
       && segmentsEqual({
-        segs: block.keySegments,
-        path,
+        left: block.keySegments,
+        right: path,
       },)) {
       /**
        * Key-value carrying the inserted trailing comment.
@@ -101,8 +105,8 @@ function setTrailing(
       === 'table')
       && (block.tableKind
         === 'standard')
-      && strictPrefix({
-        header: block.headerSegments,
+      && isStrictPrefix({
+        candidate: block.headerSegments,
         path,
       },)) {
       /**
@@ -125,52 +129,4 @@ function setTrailing(
     }
   }
   return NOT_FOUND;
-}
-
-/**
- * True when `segs` equals `path` segment-wise.
- *
- * @returns Resulting boolean.
- */
-function segmentsEqual(
-  {
-    segs,
-    path,
-  }: {
-    readonly segs: readonly (string | number)[];
-    readonly path: TomlPath;
-  },
-): boolean {
-  return (segs.length
-    === path.length)
-    && segs.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === path[i];
-    },);
-}
-
-/**
- * True when `header` is a strict prefix of `path`.
- *
- * @returns Resulting boolean.
- */
-function strictPrefix(
-  {
-    header,
-    path,
-  }: {
-    readonly header: readonly (string | number)[];
-    readonly path: TomlPath;
-  },
-): boolean {
-  return (header.length
-    < path.length)
-    && header.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === path[i];
-    },);
 }

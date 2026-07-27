@@ -7,6 +7,10 @@
 import type { Block, } from './document.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
+import {
+  isStrictPrefix,
+  segmentsEqual,
+} from './path-prefix.ts';
 import type {
   TomlEditState,
   TomlPath,
@@ -104,8 +108,8 @@ function insertFillerBefore(
       === 'table')
       && (block.tableKind
         === 'standard')
-      && strictPrefix({
-        header: block.headerSegments,
+      && isStrictPrefix({
+        candidate: block.headerSegments,
         path,
       },)) {
       /**
@@ -155,36 +159,8 @@ function matchesExact(
       ? block.headerSegments
       : null;
   return (segs !== null)
-    && (segs.length
-      === path.length)
-    && segs.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === path[i];
-    },);
-}
-
-/**
- * True when `header` is a strict prefix of `path`.
- *
- * @returns Resulting boolean.
- */
-function strictPrefix(
-  {
-    header,
-    path,
-  }: {
-    readonly header: readonly (string | number)[];
-    readonly path: TomlPath;
-  },
-): boolean {
-  return (header.length
-    < path.length)
-    && header.every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === path[i];
+    && segmentsEqual({
+      left: segs,
+      right: path,
     },);
 }
