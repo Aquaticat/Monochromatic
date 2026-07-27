@@ -30,6 +30,16 @@ export const MEMBER_CHANNEL_INTERNAL_SLOT: unique symbol = Symbol(
  * and this rule already treats a plain indexed read as a pure read, so admitting
  * these members widens nothing: the assumption is pre-existing, not introduced here.
  *
+ * "Own-index access" is wider than `Get` and `Set`, and an earlier version of this
+ * comment named only those two, which made the channel look narrower than the members
+ * in it. Measured against a fully trapped receiver: `indexOf`, `lastIndexOf`,
+ * `unshift`, `copyWithin`, `reverse` and `shift` reach `has`, and `pop` and `shift`
+ * reach `deleteProperty`. Every one of those is still inside the baseline, because the
+ * baseline is what this rule accepts on a parameter, not what an implementation was
+ * guessed to do: `0 in values` keeps a read-only offer, and `delete values[0]` reports
+ * a plain mutation. `effect-member-channel-traps.unit.test.ts` derives that baseline
+ * executably and fails any member reaching outside it.
+ *
  * The assumption is worth naming, because it is load-bearing and unsound in the
  * exotic case. Measured: an accessor installed at index 0 that pushes during its
  * getter turns `includes` into a call that restructures its own receiver, taking a

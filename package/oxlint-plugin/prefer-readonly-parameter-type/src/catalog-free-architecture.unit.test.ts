@@ -51,14 +51,17 @@ const FORBIDDEN_MODULE_NAME_FRAGMENTS = [
  */
 const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
   readonly decision: string;
-  readonly enforcedBy: string;
+  readonly enforcedBy: readonly string[];
   readonly entryCount: number;
 }> = new Map([
   [
     'effect-member-channel-authority.ts',
     {
       decision: 'doc/decision/prefer-readonly-member-channel-authority.md',
-      enforcedBy: 'effect-member-channel-authority.unit.test.ts',
+      enforcedBy: [
+        'effect-member-channel-authority.unit.test.ts',
+        'effect-member-channel-traps.unit.test.ts',
+      ],
       entryCount: 33,
     },
   ],
@@ -101,12 +104,13 @@ await describe({
         /* Every registered authority must still be present, so deleting one along
          * with its enforcement cannot quietly leave the registry describing a module
          * that no longer exists. */
+        /** Test module names beside this guard. */
+        const testFileNames = readdirSync(new URL('./', import.meta.url,),);
         for (const [fileName, { enforcedBy, },] of PERMITTED_AUTHORITY_MODULES) {
           expect(sourceFileNames.includes(fileName,),).toBe(true,);
-          expect(
-            readdirSync(new URL('./', import.meta.url,),)
-              .includes(enforcedBy,),
-          ).toBe(true,);
+          enforcedBy.forEach(function enforcementPresent(testFileName,): void {
+            expect(testFileNames.includes(testFileName,),).toBe(true,);
+          },);
         }
         /** Registry entry for the one permitted authority. */
         const memberChannelRegistration = PERMITTED_AUTHORITY_MODULES.get(
