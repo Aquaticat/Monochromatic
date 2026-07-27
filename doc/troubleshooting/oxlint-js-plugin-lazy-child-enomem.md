@@ -280,6 +280,37 @@ not shared-memory swap.
 The process's cgroup had no configured memory or swap maximum and recorded no cgroup OOM event.
 This identifies the holder but does not establish whether its memory growth was intended.
 
+Ordinary unbounded scrollback does not explain this allocation.
+The installed OdyTTY `v0.9.1` source at commit `b02dd78e7ff10ebc7a2dd75cb3e853223c073f0a`
+already defaults to 10,000 retained lines.
+`src/settings.rs:1413-1418` says:
+
+```rust
+/// Scrollback retention cap in logical lines (SCROLLBACK-CAP). Default
+/// `10000.0`. Bounds steady-state memory so unbounded output cannot OOM the
+/// process.
+/// `0` means unbounded. Live-reloadable; lowering it trims history immediately.
+pub scrollback_lines: f32,
+```
+
+`src/native/mod.rs:376-378` applies the cap before terminal output arrives:
+
+```rust
+// Bound scrollback memory from the start so the very first session is capped
+// before any output streams in (`0` = unbounded). See SCROLLBACK-CAP.
+model.set_scrollback_limit(settings.scrollback_limit());
+```
+
+The active `/home/user/.config/odytty/odytty.conf` has no scrollback override,
+so that default applies.
+`/proc/7319/smaps` instead showed three writable anonymous mappings with sizes of approximately
+6.0 GiB,
+9.1 GiB,
+and 1.8 GiB.
+Two were almost entirely swapped and one was almost entirely resident.
+This proves the retained allocation is inside OdyTTY,
+but it does not identify the responsible OdyTTY subsystem or prove a leak.
+
 Linux does not proactively read all of those pages back merely because file cache later becomes reclaimable.
 `mm/memory.c:4795-4892` enters `do_swap_page()` for a page fault and starts swap-in there:
 
@@ -306,6 +337,27 @@ A full zram device leaves little free swap for that heuristic,
 while `MemAvailable` is not a promise that an arbitrary child-process request will succeed.
 Starting the TypeScript child before Oxlint's allocator reservations remained the controlled change
 that made the same child startup succeed.
+
+### Next controlled check
+
+The OdyTTY user unit contained 548 tasks during the follow-up,
+including active terminals and this diagnostic session.
+Restarting that unit without a checkpoint would terminate those processes and the measurement channel.
+
+The next controlled check is therefore a planned restart of the same OdyTTY `v0.9.1` binary at a safe session boundary,
+followed immediately by fresh `VmRSS`,
+`VmSwap`,
+zram,
+and memory-pressure baselines.
+Keeping the version fixed distinguishes accumulated process state from a version change.
+OdyTTY `v0.9.6` is available,
+but its release notes do not identify a confirmed fix for these mappings;
+update only after the same-version baseline if causal isolation matters.
+
+Do not use `swapoff` as the first recovery action.
+It forces cold pages toward RAM without releasing the OdyTTY allocations that own them.
+Do not add a cgroup cap to the current OdyTTY unit either,
+because a limit breach could kill unrelated terminal jobs in the same 548-task cgroup.
 
 ## Verified workarounds
 
@@ -360,6 +412,9 @@ It is not the package-task default.
   which includes reclaimable cache.
 - Treating the follow-up snapshot as proof that full swap caused the earlier `ENOMEM` ignores the successful
   startup-order experiment and lacks a memory snapshot from the failing system call.
+- Attributing the OdyTTY allocation to unbounded scrollback contradicts its active 10,000-line default cap.
+- Restarting OdyTTY and updating it in the same experiment would hide which change cleared the mappings.
+- Running `swapoff` before releasing the dominant holder moves its cold pages without removing its allocation.
 
 ## Upstream filing decision
 
@@ -368,6 +423,8 @@ JavaScript plugins,
 or allocator behavior.
 The zram follow-up matches the running kernel's documented behavior,
 so it does not warrant a Linux issue.
+The OdyTTY mapping owner remains unidentified and has no minimal reproduction,
+so it does not yet warrant an OdyTTY issue draft.
 
 The duplicate search found upstream
 [issue 20331](https://github.com/oxc-project/oxc/issues/20331)
