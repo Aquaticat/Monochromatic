@@ -1161,6 +1161,23 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PASS 7 RUN 015 (2026-07-27, tip `a03997506`): KILLED EXTERNALLY at about 2 h
+38 min, not finished and not aborted by its own budget. Two settled before it
+died, 21/92, bands 7 small / 7 medium / 7 large. LCG_Akiball repaired (59
+issues, 56 accepted, 8 findings, resuming cached slices), CuspariaKLSY (59/57/57,
+4 findings). MTF_0615 hit the 90 min entry cap and cached its slices. A further
+entry was mid-flight, having just logged `chunk 0: repaired, 24/24`, and its
+finished slices are cached too, so nothing is lost.
+CAUSE UNKNOWN AND NOT RESOURCE EXHAUSTION: mise reported `sh exited with
+non-zero status: no exit status`, which is death by signal, and the journal
+shows no OOM kill or memory error in the window. Treat a killed run as ordinary
+weather: slice caching makes progress monotone, so the next run resumes.
+PROCESS-CHECK TRAP worth keeping: `pgrep --full 'corpus-pass'` reports a live
+process even when none exists, because the pattern matches the very shell
+command running the search. Confirm with `pgrep --full --list-full
+'node.*corpus-pass\.ts'` or a `ps` listing filtered against grep itself before
+concluding a run survived; the false positive nearly caused a duplicate launch
+to be withheld on the strength of a phantom.
 PASS 7 RUN 014 (2026-07-26, tip `6a381eb3c`, 15401163 ms ~257 min): FOUR
 settled, 19/92, bands 6 small / 7 medium / 6 large. Huasheng repaired (LARGE,
 249 issues, 245 accepted, 240 resolved, 33 findings, resuming its cached
