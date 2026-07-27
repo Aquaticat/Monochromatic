@@ -60,15 +60,54 @@ What user code can this call run, and what does it do to values reachable from t
 Discharged only by analysis, never by assumption:
 
 - When the caller supplies the observing function, that function is owned source with its own summary.
-  Its effects propagate to the receiver through a relation derived from the member's own generic signature:
-  `ReadonlyArray<T>.forEach(callbackfn: (value: T, ...) => void)` states that the callback's first parameter
-  is the receiver's element type, so element identities demonstrably flow from receiver to callback.
+  Its effects propagate to the receiver through a relation derived from the member's own generic signature.
+
+  Do not assume a parameter position. Resolve the receiver's element type from the `Readonly*` instantiation,
+  then take every callback parameter whose type is that element type. Position varies by member:
+  `forEach(callbackfn: (value: T, index: number, array: readonly T[]) => void)` carries the element at
+  parameter 0, while
+  `reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, ...) => U, initialValue: U)`
+  carries the accumulator at 0 and the element at 1. A comparator passed to `toSorted` carries it at both 0
+  and 1. Matching by type rather than index handles all of them, and misreading `reduce` as element-at-0
+  would map element flow onto the accumulator and silently discharge a real effect.
+
   The relation is read from the declaration's types, not asserted.
 - When the member observes elements with no caller-supplied function, nothing is discharged.
   `join` coerces elements through `String`, `toSorted()` without a comparator runs the default comparator,
   and `toLocaleString` likewise. These stay opaque.
 - Deep readonly-ness of the element type discharges nothing on its own. That is the static plain-data
   exemption the catalog-free architecture removed, and it stays removed.
+
+### Mechanism for claim B
+
+The existing propagation machinery cannot carry this relation, so the split adds one.
+
+`propagateEffects` skips any edge whose callee has no summary
+(`effect-fixed-point-propagation.ts`, the `calleeSummary === undefined` guard), and a default-library member
+never has one. `CallbackRelation` is also the wrong shape: it maps a callee's own parameter to a callback
+that callee invokes, which `propagateCallbackRelations` then resolves in the caller. The relation needed here
+runs from the receiver's *elements* to a callback the caller passes directly, with no owned callee anywhere.
+
+So the caller's summary gains `elementApplications`, recorded when a call satisfies claim A:
+
+```ts
+export type ElementApplication = {
+  readonly receiverParameterIndex: number;
+  readonly callbackKey: string;
+  readonly callbackParameterIndexes: readonly number[];
+};
+```
+
+Its propagation step runs per summary rather than per call edge, resolves `callbackKey` against `summaries`,
+and writes into the existing dimensions: a callback mutating any element parameter marks the receiver
+`mutated`, and one leaving any element parameter opaque marks the receiver `opaque` and carries the
+provenance. This mirrors `propagateCallbackRelations` exactly, which is the precedent for element mutation
+surfacing as `mutated` rather than `opaque`.
+
+Because it writes only to dimensions that already exist, `EFFECT_DIMENSION_COUNT` stays at three and the
+fixed-point bit budget remains a correct termination bound. The field is JSON-safe, so serialization is
+mechanical; a cache written before this change lacks the field, fails structural validation, and is
+recomputed, which is the fail-closed outcome.
 
 ## What this does not change
 
@@ -98,8 +137,16 @@ Reaching zero is not the goal and would indicate the guarantee had been abandone
 
 The audited fixtures decide correctness, and all must keep their current expectations:
 
-- `arrayCallbackSemanticEffect` stays `opaque: [0]`. Its callback assigns `state.value`, so claim B fails
-  through propagation rather than through the coarse receiver bit.
+- `arrayCallbackSemanticEffect` keeps reporting an effect on parameter 0, but the dimension changes from
+  `opaque: [0]` to `mutated: [0]`. Its callback assigns `state.value`, which is a proven mutation rather
+  than an unresolved call, and `propagateCallbackRelations` already routes exactly this shape to `mutated`.
+  The sibling fixture `aliasedCallbackSemanticEffect` is the same mutation reached through an owned callee
+  and expects `mutated: [0]` today, so the split makes the two agree instead of splitting them by
+  coincidence of routing. Its `@mutates states` contract holds either way.
+
+  This corrects an error in the first draft of this decision, which asserted the fixture would stay
+  `opaque: [0]`. Under the split, keeping it opaque would mean the analyzer had failed to resolve a callback
+  it demonstrably resolved.
 - `objectArraySortCallbackEffect` stays `opaque: [0]`. Its comparator calls `localeCompare`, itself
   unresolved, so opacity propagates from the callback.
 - `readonly-static-plain-data-invalid.ts` keeps four diagnostics. `join` and `toSorted()` supply no observer.
