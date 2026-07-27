@@ -26,6 +26,7 @@
 import type { Node, } from 'typescript/unstable/ast';
 import {
   isIdentifier,
+  isShorthandPropertyAssignment,
   isTypeNode,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -86,8 +87,18 @@ export function packagedCallableOrigins({
         return;
       /**
        * Symbol this occurrence resolves to.
+       *
+       * A shorthand property's name resolves to the property, not to the local it reads,
+       * so the value symbol has to be asked for separately. `parameterIndexes` already
+       * does this for shorthand properties it walks directly; without it here, a
+       * parameter named only as `{ row }` inside an accessor body contributes nothing.
+       * `accessorShorthandEffect` in the call-edge fixture measured that.
        */
-      const symbol = checker.getSymbolAtLocation(node,);
+      const symbol = isShorthandPropertyAssignment(node.parent,)
+          && (node.parent
+            .name === node)
+        ? checker.getShorthandAssignmentValueSymbol(node.parent,)
+        : checker.getSymbolAtLocation(node,);
       if (symbol === undefined)
         return;
       /**

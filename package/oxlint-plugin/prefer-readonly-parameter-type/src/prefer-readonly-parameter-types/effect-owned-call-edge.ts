@@ -16,6 +16,7 @@
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
+import { isIdentifier, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
@@ -68,6 +69,21 @@ export function addOwnedCallEdge({
   readonly foreignInbound: boolean;
   readonly analysisRoot?: string;
 }): void {
+  /* An explicit `this` parameter occupies a formal index while receiving no argument, so
+   * every per-argument array has to start one slot later or propagation reads the wrong
+   * formal. `explicitThisEffect` in the call-edge fixture measured the off-by-one: the
+   * callee recorded its write on formal one, the caller's only argument sat at edge zero,
+   * and the write reached nobody. */
+  const formalOffset = calleeHasThisParameter({ callee, },) ? 1 : 0;
+  /**
+   * Placeholder entries aligning argument arrays with formal parameter indexes.
+   */
+  const formalPadding = Array.from(
+    { length: formalOffset, },
+    function emptyFormal(): readonly number[] {
+      return [];
+    },
+  );
   /**
    * Owned callback declarations paired with argument positions.
    */
@@ -88,28 +104,77 @@ export function addOwnedCallEdge({
      * The two stay separate fields because they answer different questions, and a
      * per-property effect model would give the first one a narrower answer that is
      * measured rather than authored. Until then, narrowing either would drop origins. */
-    arguments: allArgumentIndexes,
-    foreignArguments: allArgumentIndexes,
-    directForeignArguments: call.arguments
-      .map(function foreignArgument(argument,): boolean {
-        return expressionContainsForeignBorrowed({
-          project,
-          node: argument,
-        },);
+    arguments: [
+      ...formalPadding,
+      ...allArgumentIndexes,
+    ],
+    foreignArguments: [
+      ...formalPadding,
+      ...allArgumentIndexes,
+    ],
+    directForeignArguments: [
+      ...formalPadding.map(function unmarkedFormal(): boolean {
+        return false;
       },),
+      ...call.arguments
+        .map(function foreignArgument(argument,): boolean {
+          return expressionContainsForeignBorrowed({
+            project,
+            node: argument,
+          },);
+        },),
+    ],
     foreignInbound,
-    callbackKeys: callbacks
-      .map(function callbackKey(candidate,) {
-        return candidate === OWNED_CALLABLE_UNAVAILABLE
-          ? OWNED_CALLABLE_UNAVAILABLE
-          : callableKey(candidate,);
+    callbackKeys: [
+      ...formalPadding.map(function unavailableFormalCallback(): typeof OWNED_CALLABLE_UNAVAILABLE {
+        return OWNED_CALLABLE_UNAVAILABLE;
       },),
-    callbackFileNames: callbacks
-      .map(function callbackFileName(candidate,) {
-        return candidate === OWNED_CALLABLE_UNAVAILABLE
-          ? OWNED_CALLABLE_UNAVAILABLE
-          : candidate.getSourceFile()
-            .fileName;
+      ...callbacks
+        .map(function callbackKey(candidate,) {
+          return candidate === OWNED_CALLABLE_UNAVAILABLE
+            ? OWNED_CALLABLE_UNAVAILABLE
+            : callableKey(candidate,);
+        },),
+    ],
+    callbackFileNames: [
+      ...formalPadding.map(function unavailableFormalFileName(): typeof OWNED_CALLABLE_UNAVAILABLE {
+        return OWNED_CALLABLE_UNAVAILABLE;
       },),
+      ...callbacks
+        .map(function callbackFileName(candidate,) {
+          return candidate === OWNED_CALLABLE_UNAVAILABLE
+            ? OWNED_CALLABLE_UNAVAILABLE
+            : candidate.getSourceFile()
+              .fileName;
+        },),
+    ],
   },);
+}
+
+/**
+ * Tests whether a callee declares an explicit `this` parameter.
+ *
+ * @param callee - Callable declaration whose formals are inspected.
+ *
+ * @returns whether formal index zero receives no argument.
+ *
+ * @example
+ * ```ts
+ * calleeHasThisParameter({ callee });
+ * ```
+ */
+function calleeHasThisParameter({
+  callee,
+}: {
+  readonly callee: EffectCallableDeclaration;
+},): boolean {
+  /**
+   * First declared formal, absent for a callable taking nothing.
+   */
+  const first = callee.parameters[0];
+  if (first === undefined)
+    return false;
+  return isIdentifier(first.name,)
+    && (first.name
+      .getText() === 'this');
 }

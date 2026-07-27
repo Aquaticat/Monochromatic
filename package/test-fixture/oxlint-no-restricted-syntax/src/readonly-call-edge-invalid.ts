@@ -313,6 +313,19 @@ class Writer extends Reader {
 }
 
 /**
+ * Handler whose declared type is the reading base and whose value writes.
+ *
+ * Exported so the writing override is reachable, which is what makes the dispatch
+ * hazard concrete rather than hypothetical.
+ *
+ * @example
+ * ```ts
+ * polymorphicEffect(writingHandler, { label: '' });
+ * ```
+ */
+export const writingHandler: Reader = new Writer();
+
+/**
  * Calls a method that a subclass overrides with a writing implementation.
  *
  * @param handler - Handler whose runtime type may be the writing subclass.
