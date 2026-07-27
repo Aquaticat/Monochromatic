@@ -27,6 +27,7 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
 import {
+  bindingOriginsFor,
   discoverAliasOrigins,
   expressionOrigins,
   registerBindingOrigin,
@@ -138,6 +139,29 @@ export function directEffectSummary({
       bindingOriginBySymbolId,
     },);
   },);
+  /* A default initializer naming an earlier parameter makes the two aliases. Omitting the
+   * argument, or passing `undefined`, means a write through the later name reaches the
+   * earlier parameter's value, so both indexes have to answer for it. Registered after
+   * every parameter has its own index, because an initializer can only name a parameter
+   * declared before it. `mutateDefaultAlias` in the call-edge fixture measured the gap: it
+   * recorded a write on the aliasing formal alone and offered the aliased one readonly. */
+  declaration.parameters
+    .forEach(function registerDefaultAlias(parameter,): void {
+      if (parameter.initializer === undefined)
+        return;
+      addEffectIndexes({
+        target: bindingOriginsFor({
+          project,
+          name: parameter.name,
+          bindingOriginBySymbolId,
+        },),
+        values: expressionOrigins({
+          project,
+          bindingOriginBySymbolId,
+          node: parameter.initializer,
+        },),
+      },);
+    },);
   /**
    * Parameter indexes explicitly carrying exact foreign ownership marker.
    */
@@ -227,10 +251,26 @@ export function directEffectSummary({
       },);
     return summary;
   }
+  /* Parameter initializers run on entry and can do anything a body statement can, so they
+   * belong to the callable's own effects. A walk bounded by the body never saw them, and
+   * `defaultInitializerEffect` in the call-edge fixture reached a mutating call from an
+   * initializer and was offered readonly for the parameter it wrote. */
+  /**
+   * Nodes of every parameter initializer, which run on entry before the body.
+   */
+  const parameterInitializerNodes = declaration.parameters
+    .flatMap(function initializerNodes(parameter,): readonly Node[] {
+      return parameter.initializer === undefined
+        ? []
+        : collectAstNodes(parameter.initializer,);
+    },);
   /**
    * Complete body nodes used to discover origins before escape selection.
    */
-  const allBodyNodes = collectAstNodes(body,);
+  const allBodyNodes = [
+    ...parameterInitializerNodes,
+    ...collectAstNodes(body,),
+  ];
   /**
    * Variable declarations that may alias parameter-reachable state.
    */
@@ -261,12 +301,20 @@ export function directEffectSummary({
   },);
   /**
    * Body nodes selected after aliases expose caller-reachable closure storage.
+   *
+   * Parameter initializers join the selected set unconditionally rather than through the
+   * closure selection, because they are not nested callables: they run on entry every time
+   * the argument is omitted, so nothing about them is deferred or conditional on a
+   * closure being invoked.
    */
-  const bodyNodes = activeCallableBodyNodes({
-    project,
-    body,
-    bindingOriginBySymbolId,
-  },);
+  const bodyNodes = [
+    ...parameterInitializerNodes,
+    ...activeCallableBodyNodes({
+      project,
+      body,
+      bindingOriginBySymbolId,
+    },),
+  ];
   bodyNodes.forEach(function inspect(node,): void {
     if (isBinaryExpression(node,)
       && isAssignmentOperator(node.operatorToken

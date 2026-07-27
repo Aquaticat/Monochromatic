@@ -451,7 +451,7 @@ children: [
     },
   },),
   it({
-    name: 'still offers a written parameter for five measured call-edge shapes',
+    name: 'still offers a written parameter for two measured call-edge shapes',
     fn: async () => {
       /* A ledger, not an approval. Every offer counted here except three names a
        * parameter some callee writes, and each is tracked as its own task with the
@@ -464,10 +464,6 @@ children: [
        * Unsound, by parameter and cause:
        * `row` in `setterPairEffect`, whose callee assigns through a setter that writes the
        * assigned value.
-       * `primary` in `mutateDefaultAlias` and `row` in `defaultAliasEffect`, the two sides
-       * of a default that aliases an earlier formal.
-       * `row` in `defaultInitializerEffect`, where the write is reached from a parameter
-       * initializer rather than a body.
        * `row` in `polymorphicEffect`, where static resolution finds a reading base method
        * and the reachable override writes.
        *
@@ -493,19 +489,20 @@ children: [
       }
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(8,);
-      expect(offersFor('row',),).toBe(5,);
+      },).length,).toBe(5,);
+      expect(offersFor('row',),).toBe(3,);
       expect(offersFor('first',),).toBe(1,);
       expect(offersFor('value',),).toBe(1,);
-      expect(offersFor('primary',),).toBe(1,);
-      /* The four shapes already fixed, kept as the controls that stop this case from
-       * passing on a fixture the rule never reached. An explicit `this` parameter used to
-       * shift every later formal index. A parameter named only by a shorthand inside an
-       * accessor body used to contribute no origin. A rest formal collecting a later
-       * actual, and one spread actual covering two formals, both used to break the
-       * relation between syntactic argument position and formal index. Each would add a
-       * `row` offer if reverted. */
+      /* The seven shapes already fixed, kept as the controls that stop this case from
+       * passing on a fixture the rule never reached. An explicit `this` parameter shifting
+       * every later formal index. A parameter named only by a shorthand inside an accessor
+       * body. A rest formal collecting a later actual, and one spread actual covering two
+       * formals, both breaking the relation between argument position and formal index. A
+       * default aliasing an earlier formal, from both sides. A write reached from a
+       * parameter initializer rather than a body. Reverting any of them raises the counts
+       * above, and reverting the default-alias work also restores a `primary` offer. */
       expect(offersFor('handler',),).toBe(0,);
+      expect(offersFor('primary',),).toBe(0,);
     },
   },),
   it({

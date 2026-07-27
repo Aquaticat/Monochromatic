@@ -350,3 +350,58 @@ export function discoverAliasOrigins({
     },);
   }
 }
+
+/**
+ * Returns the mutable origin set of one binding name, creating it when absent.
+ *
+ * Used where a binding's origins have to grow after its own index is registered, such as a
+ * parameter whose default initializer names an earlier parameter.
+ *
+ * @param project - TypeScript project resolving binding symbol.
+ *
+ * @param name - Binding name whose origin set is wanted.
+ *
+ * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
+ *
+ * @returns mutable origin set for that binding, empty and unattached when unresolved.
+ *
+ * @mutates bindingOriginBySymbolId - Attaches an origin set for a newly seen binding.
+ *
+ * @example
+ * ```ts
+ * bindingOriginsFor({ project, name, bindingOriginBySymbolId });
+ * ```
+ */
+export function bindingOriginsFor({
+  project,
+  name,
+  bindingOriginBySymbolId,
+}: {
+  readonly project: Project;
+  readonly name: Node;
+  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
+},): Set<number> {
+  if (!isIdentifier(name,))
+    /* A binding pattern spreads over several symbols, so there is no single set to grow.
+     * Defaults inside patterns are not represented here. */
+    return new Set<number>();
+  /**
+   * Symbol declared by this binding name.
+   */
+  const symbol = project.checker
+    .getSymbolAtLocation(name,);
+  if (symbol === undefined)
+    return new Set<number>();
+  /**
+   * Existing origin set for the symbol, created when this is its first mention.
+   */
+  const existing = bindingOriginBySymbolId.get(symbol.id,);
+  if (existing !== undefined)
+    return existing;
+  /**
+   * Fresh set attached for the symbol.
+   */
+  const created = new Set<number>();
+  bindingOriginBySymbolId.set(symbol.id, created,);
+  return created;
+}
