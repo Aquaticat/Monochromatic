@@ -105,12 +105,38 @@ for the repository owner.
   A first attempt at this measurement was discarded rather than reported: it overlapped the rebuilds used to
   verify the fixtures, so the run could have loaded a deliberately broken plugin.
 
+## Which members actually run user code
+
+Measured, not recalled. An earlier pass in this document's own history classified six members wrongly from
+memory, which is why the table below exists and why the numbers after it were recomputed.
+
+Probed by calling each member on an `Array`, `Map` or `Set` subclass whose `Symbol.species` getter records a
+hit, holding an element whose `toString` and `valueOf` record hits:
+
+- Consult `Symbol.species`, so they call a user-chosen constructor: `slice`, `concat`, `flat`, `filter`, `map`.
+- Coerce elements, so they call user `toString` or `valueOf`: `join`, `toString`, `toLocaleString`, and
+  `toSorted` when no comparator is supplied.
+- Run nothing: `at`, `includes`, `indexOf`, `lastIndexOf`, `with`, `toReversed`, `toSpliced`, `keys`, `values`,
+  `entries`, `Map.get`, `Map.has`, `Set.has`, and the `Map` and `Set` iterator members.
+
+The six corrected from recall are `includes`, `indexOf`, `lastIndexOf`, `with`, `toReversed` and `toSpliced`.
+All six run no user code, where an earlier reading in this work had them coercing elements.
+
+Two consequences. `map` and `filter` needed the species repair recorded in
+`doc/decision/prefer-readonly-effect-model-split.md`. And the split between findings the rule reports
+correctly and findings it reports only from conservatism is not what a first pass over member names suggested,
+so any policy decision resting on that split has to use this table.
+
 ## The share that stays unfixable
 
-Of the 1,300 findings, 222 are receiver-side findings whose every named member is observer-free, so no code
-change and no derivation available here can satisfy them. That is 17.1 percent, up from 16.2 percent before
-this change: the count held at roughly 222 while the derivable findings around it cleared, which is the
-predicted direction.
+Superseded, pending remeasurement. The figures in this section were computed before the species repair in
+`doc/decision/prefer-readonly-effect-model-split.md`, which re-reports `map`, `filter`, `slice`, `concat` and
+`flat` over non-primitive element types. They are kept because the shape of the argument still holds, but no
+count here should be quoted until the rerun lands.
+
+As measured on the pre-repair build: of 1,300 findings, 222 were receiver-side findings whose every named
+member is observer-free, 17.1 percent, up from 16.2 percent before that change, the count holding while the
+derivable findings around it cleared.
 
 The distribution matters more than the share, and it is what decides the policy question.
 
