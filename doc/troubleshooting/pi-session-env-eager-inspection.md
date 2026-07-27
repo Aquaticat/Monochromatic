@@ -164,7 +164,45 @@ The behavior is harmless in content:
   Tradeoff:
   prompt-level shaping,
   not a guarantee;
-  effectiveness against the baked-in guideline is unverified until the next eager session runs.
+  it argues with the baked-in guideline instead of removing it,
+  and effectiveness against the baked-in guideline is unverified until the next eager session runs.
+- Rewrite the guideline with an extension.
+  Pi's `before_agent_start` event fires after prompt submission and before the agent loop on
+  every turn,
+  and lets an extension replace the chained system prompt (`docs/extensions.md:520`,
+  the `prompt-customizer.ts` example).
+  A single file under `~/.pi/agent/extensions/` removes the trigger text before the model sees it:
+
+  ```ts
+  // ~/.pi/agent/extensions/pi-env-guideline-override.ts
+  import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+
+  const GUIDELINE = "Inspect PI_* environment variables for current model and session details.";
+  const REPLACEMENT =
+  	"When asked which model, provider, or reasoning level is running, read the PI_* environment " +
+  	"variables of the bash tool; do not inspect them otherwise.";
+
+  export default function (pi: ExtensionAPI) {
+  	pi.on("before_agent_start", async (event) => {
+  		if (!event.systemPrompt.includes(GUIDELINE)) return;
+  		return { systemPrompt: event.systemPrompt.replace(GUIDELINE, REPLACEMENT) };
+  	});
+  }
+  ```
+
+  Rewording instead of deleting keeps the documented on-demand use
+  (reading `PI_*` when asked which model or provider is running).
+  Applying the same rewrite on every turn keeps the prompt prefix stable,
+  so provider prompt caching is unaffected.
+  Tradeoffs:
+  one small file to maintain;
+  if upstream changes the guideline wording the `includes` check stops matching,
+  which fails safe (the original behavior returns,
+  nothing breaks).
+  Status:
+  drafted from the documented `before_agent_start` contract but not yet installed or exercised
+  in this workspace,
+  so unlike the entries above it is unverified.
 
 There is no user-facing setting to disable the injection:
  `exposeSessionEnvironment: false` exists only on the extension-facing `createBashTool()` API
