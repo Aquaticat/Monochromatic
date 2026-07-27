@@ -115,6 +115,10 @@ fixed-point bit budget remains a correct termination bound. The field is JSON-sa
 mechanical; a cache written before this change lacks the field, fails structural validation, and is
 recomputed, which is the fail-closed outcome.
 
+That rebuild was measured rather than assumed. Two consecutive `mise run lint:oxlint` runs over the same 2,694
+files took 547.8 seconds and then 196.0 seconds, against an 11 MB cache directory written before the change.
+The first run paid to recompute every summary the new field invalidated; the second reused them.
+
 ## What this does not change
 
 The four removals recorded in `doc/planning/replace-prefer-readonly-parameter-types.md` all stand:
