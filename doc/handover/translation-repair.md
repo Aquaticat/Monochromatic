@@ -2967,3 +2967,15 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   monotone merging with findings, never refusing). Motivation stands:
   run 4 proved whole large documents exceed the 65_536-token output
   ceiling on thinking models, and small units complete in ~30 s.
+- Band FILTERING in `corpus-pass.ts` (skip bands already at the ~10 quota so no
+  run spends ~75 min settling a band that is already full): REJECTED as
+  redundant, not as wrong in intent. `rankWithinBands` already offsets each
+  band's rank by `countSettledPerBand`, so a band that is ahead is
+  automatically deprioritized by exactly its lead. Verified against live
+  counts at 7 small / 8 medium / 7 large: medium's first pending entry ranks 8
+  while small's and large's rank 7, so medium cannot be started until the other
+  two catch up. Confirmed in flight rather than only on paper, since run 017
+  picked MTF_0615 (5229 B, LARGE), a band that is behind. Adding a filter on
+  top would be a second mechanism for one invariant and a place for the two to
+  disagree. The one path that DOES bypass the offset is resume-first, which is
+  intended: finishing a cached large document beats starting a fresh anything.
