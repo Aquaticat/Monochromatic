@@ -1682,6 +1682,19 @@ the child then will not read the repo \`CLAUDE.md\`,
 and Claude Code's cwd handling is unreliable.
 
 Use \`pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<your question>"\` for a strong model's opinion.
+Call it in addition to the advisor tool, never instead:
+whenever you are about to call advisor, launch sol on the same question too, then continue working.
+Advisor reads the whole transcript and catches what you skipped;
+sol reads only what you paste and catches what you got wrong.
+Neither substitutes for the other.
+
+Paste the actual source into sol's prompt:
+whole files, or \`tail -n\`-style excerpts when a file is long.
+Never send a prose description of code sol could read instead.
+Measured: prose-only runs returned plausible-sounding advice that missed defects the source-bearing run of the same question found immediately,
+because every bug had already survived the description.
+Include the question, the repo-relative paths, and every file the answer depends on.
+
 Launch it in the background and continue other work;
 the completion notification arrives on its own.
 Runs take several minutes and the output file stays completely empty until the answer lands in one final flush,
