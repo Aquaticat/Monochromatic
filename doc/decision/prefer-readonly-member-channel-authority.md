@@ -86,9 +86,22 @@ coercion doubles as argument coercion. Coercion of an index argument is delibera
 `Symbol.toPrimitive` can arrive there in typed code.
 
 The probe also asserts its own tripwires fire, using members the table deliberately excludes: `slice` must reach
-species and `join` must reach element coercion. Without those controls a probe that silently stopped
-instrumenting would report a clean run for every member, and the table would look verified while proving
-nothing.
+species, and `join` and a bare `toSorted()` must reach element coercion. Without those controls a probe that
+silently stopped instrumenting would report a clean run for every member, and the table would look verified while
+proving nothing.
+
+The receiver holds two elements with both indices instrumented, and that detail is load-bearing rather than
+incidental. With one element, two probes were vacuous: `with(0, element)` replaces the only index and so never
+reads one, and a bare `toSorted()` never compares a pair, which is why its control assertion could not be
+written at first. Measured on two elements, `with` reaches `index-get`, `toSorted` reaches element coercion,
+`fill` reaches `index-set` twice, and `copyWithin` reaches both. `push` still reaches nothing, because it writes
+past the instrumented indices, so its own-index claim remains an upper bound rather than an observation, which
+is the safe direction.
+
+A throw is recorded as its own hook that no channel admits, so an unexpected one fails the assertion and names
+the member. An earlier version recorded a rejected indexed write as `index-set`, which the own-index channel
+admits, meaning any `TypeError` at all would have read as ordinary evidence. Nothing reaches that path now:
+every instrumented index carries a recording setter, so writes are accepted.
 
 Iterator members are excluded for a separate reason. `keys`, `values` and `entries` reach nothing when they are
 called, and the read happens later when the iterator advances. Measured: `Array.prototype.values` fires no hook

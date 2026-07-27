@@ -1,3 +1,4 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   describe,
   expect,
@@ -103,18 +104,44 @@ function instrumentedReceiver({
   readonly hits: ProbeHits;
 },): { readonly receiver: unknown; readonly element: unknown; } {
   /**
-   * Element recording any coercion a member performs on it.
+   * Builds an element recording any coercion a member performs on it.
+   *
+   * @param order - Sort key, so a default comparator has something to order by.
+   *
+   * @returns recording element.
+   *
+   * @example
+   * ```ts
+   * recordingElement({ order: 1, });
+   * ```
    */
-  const element = {
-    toString(): string {
-      hits.push('element-coercion',);
-      return 'probe';
-    },
-    valueOf(): number {
-      hits.push('element-coercion',);
-      return 1;
-    },
-  };
+  function recordingElement({ order, }: { readonly order: number; },): {
+    readonly toString: () => string;
+    readonly valueOf: () => number;
+  } {
+    return {
+      toString(): string {
+        hits.push('element-coercion',);
+        return `probe-${order}`;
+      },
+      valueOf(): number {
+        hits.push('element-coercion',);
+        return order;
+      },
+    };
+  }
+  /**
+   * Element passed as the caller-supplied key or value argument.
+   */
+  const element = recordingElement({ order: 1, },);
+  /**
+   * Second element, so a member reading past the position it writes still reads one.
+   *
+   * A one-element receiver made two probes vacuous. `with(0, element)` replaces the
+   * only index and so never reads one, and a bare `toSorted()` never compares a pair,
+   * which is why its control assertion could not be written. Both are exercised now.
+   */
+  const other = recordingElement({ order: 2, },);
   /**
    * Constructor stand-in whose species getter records consultation.
    */
@@ -125,31 +152,45 @@ function instrumentedReceiver({
     },
   };
   /**
-   * Receiver holding one recording element, instrumented per collection kind.
+   * Receiver holding two recording elements, instrumented per collection kind.
    *
    * `ArraySpeciesCreate` reads `constructor` off the receiver and then `@@species`
    * off that, so an own property suffices and no subclass is needed.
    */
   const receiver: unknown = ownerName.endsWith('Map',)
-    ? new Map([[element, element,],],)
+    ? new Map([
+      [element, element,],
+      [other, other,],
+    ],)
     : ownerName.endsWith('Set',)
-    ? new Set([element,],)
-    : [element,];
+    ? new Set([
+      element,
+      other,
+    ],)
+    : [
+      element,
+      other,
+    ];
   Object.defineProperty(receiver, 'constructor', {
     value: speciesRecorder,
     configurable: true,
   },);
   if (Array.isArray(receiver,)) {
-    Object.defineProperty(receiver, 0, {
-      get(): unknown {
-        hits.push('index-get',);
-        return element;
-      },
-      set(): void {
-        hits.push('index-set',);
-      },
-      configurable: true,
-      enumerable: true,
+    [
+      element,
+      other,
+    ].forEach(function instrumentIndex(indexElement, index,): void {
+      Object.defineProperty(receiver, index, {
+        get(): unknown {
+          hits.push('index-get',);
+          return indexElement;
+        },
+        set(): void {
+          hits.push('index-set',);
+        },
+        configurable: true,
+        enumerable: true,
+      },);
     },);
     return {
       receiver,
@@ -159,7 +200,7 @@ function instrumentedReceiver({
   Object.defineProperty(receiver, 'size', {
     get(): number {
       hits.push('property-read',);
-      return 1;
+      return 2;
     },
     configurable: true,
   },);
@@ -214,11 +255,13 @@ function reachedHooks({
       },),],);
   }
   catch (error: unknown) {
-    // An accessor-only index rejects a write, which is itself evidence the member
-    // reached that index. Record the attempt rather than let the throw hide it.
-    hits.push('index-set',);
-    if (!(error instanceof TypeError))
-      throw error;
+    // No channel admits `threw`, so a throw fails the assertion and names the member
+    // instead of passing quietly. An earlier version recorded `index-set` here, which
+    // the own-index channel admits, so any TypeError at all would have looked like
+    // ordinary evidence of an indexed write. Nothing should reach this: each
+    // instrumented index carries a recording setter, so a write is accepted rather
+    // than rejected.
+    hits.push(`threw:${caughtValueText(error,)}`,);
   }
   return [...new Set(hits,),];
 }
@@ -280,10 +323,13 @@ await describe({
           ownerName: 'Array',
           memberName: 'join',
         },).includes('element-coercion',),).toBe(true,);
-        /* A bare `toSorted()` coerces through its default comparator too, but only
-         * once it has a pair to compare, and the probe receiver holds one element.
-         * `join` covers the same channel on one element, so the pair case is left to
-         * the measurement in the decision document rather than asserted here. */
+        /* A bare `toSorted()` reaches the same channel through its default comparator,
+         * which needs a pair to compare. That is why the receiver holds two elements:
+         * with one, this assertion could not be written at all. */
+        expect(reachedHooks({
+          ownerName: 'Array',
+          memberName: 'toSorted',
+        },).includes('element-coercion',),).toBe(true,);
       },
     },),
     it({
