@@ -75,11 +75,15 @@ export function taskNameOfHeader({ line, }: {
    * Task name, still carrying quotes when the name needed them.
    */
   const quoted = header.slice(TASK_TABLE_PREFIX.length,);
-  if (quoted.startsWith('"',) && quoted.endsWith('"',) && (quoted.length >= 2))
+  if (quoted.startsWith('"',)
+    && quoted.endsWith('"',)
+    && (quoted.length >= 2))
+  {
     return quoted.slice(
       1,
       -1,
     );
+  }
   return quoted;
 }
 

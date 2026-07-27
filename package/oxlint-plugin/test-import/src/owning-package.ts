@@ -38,7 +38,7 @@ const MANIFEST_FILE = 'package.json';
  * Sentinel meaning no ancestor directory holds a named manifest.
  */
 export const PACKAGE_UNRESOLVED: unique symbol = Symbol(
-  'no ancestor directory holds a named package manifest',
+  'no package.json carrying a name exists above this file',
 );
 
 /**
@@ -153,6 +153,7 @@ function readPackageAt({ directory, }: {
  * Records one lookup result for every directory the walk passed through.
  *
  * @param visited - directories walked past before the result was known
+ *
  * @param result - resolved package facts or the unresolved sentinel
  *
  * @returns same result, so callers can return the call directly

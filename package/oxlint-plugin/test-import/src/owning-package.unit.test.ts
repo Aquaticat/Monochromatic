@@ -20,6 +20,7 @@ const FIXTURE_ROOT = resolve(
  * Resolves the owning package of a file inside one fixture case.
  *
  * @param caseName - nested pseudo-package directory name
+ *
  * @param fileName - file inside that case's `src`
  *
  * @returns owning package facts, or the unresolved sentinel

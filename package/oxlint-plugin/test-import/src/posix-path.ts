@@ -51,6 +51,7 @@ export function toPosixPath({ path, }: {
  * and after a build.
  *
  * @param base - directory the specifier is relative to
+ *
  * @param specifier - relative specifier from an import declaration
  *
  * @returns normalized absolute path
@@ -88,6 +89,7 @@ export function resolvePosix({
  * `/repo/dist-extra` from counting as being under `/repo/dist`.
  *
  * @param directory - normalized absolute directory
+ *
  * @param path - normalized absolute path to test
  *
  * @returns true when path is directory itself or lies beneath it
@@ -119,6 +121,7 @@ export function isUnderDirectory({
  * Tests whether a normalized path sits under any of the given directories.
  *
  * @param directories - normalized absolute directories
+ *
  * @param path - normalized absolute path to test
  *
  * @returns true when any directory contains path

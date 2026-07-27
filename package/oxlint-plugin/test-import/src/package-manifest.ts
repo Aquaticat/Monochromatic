@@ -65,14 +65,33 @@ export function isPackageManifest(value: unknown,): value is PackageManifest {
 }
 
 /**
+ * Narrows an unknown value to an inspectable non-null object.
+ *
+ * Takes a positional parameter because a type predicate cannot reference a
+ * destructured binding.
+ *
+ * @param value - candidate manifest subtree
+ *
+ * @returns true when the value has enumerable fields worth walking
+ *
+ * @example
+ * ```ts
+ * isRecordLike({ default: './a.mjs' });
+ * ```
+ */
+function isRecordLike(value: unknown,): value is Record<string, unknown> {
+  return ((typeof value) === 'object') && (value !== null);
+}
+
+/**
  * Collects every string leaf of one `exports` subtree.
  *
  * Conditional exports nest objects and arrays to arbitrary depth, so the walk
  * uses an explicit work stack rather than recursion.
  *
- * @param root - `exports` value, one condition subtree, `main`, or `bin`
+ * @param node - `exports` value, one condition subtree, `main`, or `bin`
  *
- * @returns every string target found beneath root, in discovery order
+ * @returns every string target found beneath node, in discovery order
  *
  * @example
  * ```ts
@@ -103,10 +122,14 @@ export function stringTargets({ node, }: {
       continue;
     }
     if (Array.isArray(current,)) {
-      pending.push(...current,);
+      /**
+       * Array fallbacks re-typed as unknown; `Array.isArray` widens to `any[]`.
+       */
+      const fallbacks = current as unknown[];
+      pending.push(...fallbacks,);
       continue;
     }
-    if (((typeof current) === 'object') && (current !== null))
+    if (isRecordLike(current,))
       pending.push(...Object.values(current,),);
   }
   return targets;
@@ -183,8 +206,11 @@ export function shippingTargets({ manifest, }: {
  * ```
  */
 function isSubpathMap(node: unknown,): node is Record<string, unknown> {
-  if (((typeof node) !== 'object') || (node === null) || Array.isArray(node,))
+  if ((!isRecordLike(node,))
+    || Array.isArray(node,))
+  {
     return false;
+  }
   /**
    * Declared keys, used to tell a subpath map from a condition map.
    */

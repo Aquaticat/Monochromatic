@@ -55,8 +55,11 @@ export type ImportOutcome =
  * the export map itself.
  *
  * @param specifier - literal specifier text from the import declaration
+ *
  * @param containingDirectory - directory of the file holding the import
+ *
  * @param owner - package that owns the file holding the import
+ *
  * @param fixturePatterns - configured fixture globs
  *
  * @returns verdict for this specifier
@@ -116,8 +119,11 @@ export function classifyImport({
  * classifies the same before and after a build.
  *
  * @param specifier - relative specifier text
+ *
  * @param containingDirectory - directory of the file holding the import
+ *
  * @param owner - package that owns the file holding the import
+ *
  * @param fixturePatterns - configured fixture globs
  *
  * @returns verdict for this specifier

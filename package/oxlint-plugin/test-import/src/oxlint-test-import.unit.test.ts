@@ -33,6 +33,7 @@ const CASE_ROOT = resolve(
  * Runs the rule over one fixture file through a real oxlint process.
  *
  * @param caseName - nested pseudo-package directory name
+ *
  * @param fileName - file inside that case's `src`
  *
  * @returns diagnostics this plugin emitted for that file

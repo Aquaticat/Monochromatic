@@ -110,6 +110,7 @@ function backtrack({ cursor, }: {
  * no input drives it beyond pattern length times text length.
  *
  * @param pattern - single pattern segment, `*` wildcards allowed
+ *
  * @param text - single path segment to test
  *
  * @returns pattern position reached, equal to pattern length only on a full match
@@ -165,6 +166,7 @@ function scanSegment({
  * Matches one path segment against one pattern segment.
  *
  * @param pattern - single pattern segment, `*` wildcards allowed
+ *
  * @param text - single path segment to test
  *
  * @returns true when the pattern covers the whole segment
@@ -200,6 +202,7 @@ function matchSegment({
  * every later mismatch makes it swallow one more path segment.
  *
  * @param patternSegments - pattern split on separators
+ *
  * @param pathSegments - path split on separators
  *
  * @returns pattern position reached, with trailing `**` runs already consumed
@@ -260,6 +263,7 @@ function scanSegments({
  * pattern spelling works regardless of host separator.
  *
  * @param pattern - glob supporting `**` segment and `*` character wildcards
+ *
  * @param path - normalized absolute path to test
  *
  * @returns true when the pattern covers the path exactly
@@ -296,6 +300,7 @@ export function matchesGlob({
  * Tests one path against a list of glob patterns.
  *
  * @param patterns - glob patterns to try in order
+ *
  * @param path - normalized absolute path to test
  *
  * @returns true when any pattern covers the path

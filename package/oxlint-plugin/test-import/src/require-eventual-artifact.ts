@@ -31,6 +31,13 @@ import {
 import { toPosixPath, } from './posix-path.ts';
 
 /**
+ * Sentinel meaning the linter offered a file this rule does not inspect.
+ */
+const FILE_OUT_OF_SCOPE: unique symbol = Symbol(
+  'linted path outside the artifact-boundary check, such as ordinary source or a buildless package',
+);
+
+/**
  * Everything one checked file needs before its imports can be classified.
  */
 type CheckedFileContext = {
@@ -66,8 +73,7 @@ function readFixturePatterns(options: readonly unknown[],): readonly string[] {
   /**
    * First element of the options array, where the option object conventionally sits.
    */
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- Array.isArray on readonly unknown[] widens to any[]; the element shape is re-checked below.
-  const [first,] = options;
+  const first: unknown = options[0];
   if (((typeof first) !== 'object') || (first === null))
     return DEFAULT_FIXTURE_PATTERNS;
   if (!('fixturePatterns' in first))
@@ -91,9 +97,10 @@ function readFixturePatterns(options: readonly unknown[],): readonly string[] {
  * that an artifact exists to import in the first place.
  *
  * @param fileName - absolute path reported by the linter
+ *
  * @param fixturePatterns - configured fixture globs
  *
- * @returns file context, or undefined when the file is out of scope
+ * @returns file context, or {@link FILE_OUT_OF_SCOPE} when the file is not inspected
  *
  * @example
  * ```ts
@@ -112,22 +119,22 @@ function checkedFileContext({
    * Configured fixture globs.
    */
   readonly fixturePatterns: readonly string[];
-},): CheckedFileContext | undefined {
+},): CheckedFileContext | typeof FILE_OUT_OF_SCOPE {
   if (!isCheckedFile({
     patterns: fixturePatterns,
     path: toPosixPath({ path: fileName, },),
   },))
-    return undefined;
+    return FILE_OUT_OF_SCOPE;
 
   /**
    * Package owning the file, absent when no ancestor holds a named manifest.
    */
   const owner = owningPackage({ fileName, },);
   if (owner === PACKAGE_UNRESOLVED)
-    return undefined;
+    return FILE_OUT_OF_SCOPE;
   // A package that builds nothing ships nothing, so the rule is vacuous there.
   if (!owner.buildsArtifact)
-    return undefined;
+    return FILE_OUT_OF_SCOPE;
 
   return {
     owner,
@@ -172,12 +179,10 @@ export const requireEventualArtifact: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      relativeSource:
-        'Test imports `{{specifier}}`, which resolves to package source rather than built output. '
+      relativeSource: 'Test imports `{{specifier}}`, which resolves to package source rather than built output. '
         + 'Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. '
         + 'If the symbol is not exported yet, export it from the package entry and mark it `@internal`.',
-      ownSourceSubpath:
-        'Test imports `{{specifier}}`, its own package\'s source through the `/ts` subpath. '
+      ownSourceSubpath: 'Test imports `{{specifier}}`, its own package\'s source through the `/ts` subpath. '
         + 'The `/ts` subpath exists for reaching another package\'s source; within a package, import the built artifact or the package\'s own bare name.',
     },
     schema: [
@@ -223,15 +228,15 @@ export const requireEventualArtifact: CreateOnceRule = {
     const fixturePatterns = readFixturePatterns(options ?? [],);
 
     return {
-      before(): false | undefined {
+      before() {
         // Skipping the whole traversal is what keeps the rule cheap on the
         // vast majority of files, which are neither tests nor test helpers.
-        return checkedFileContext({
+        if (checkedFileContext({
           fileName: context.filename,
           fixturePatterns,
-        },) === undefined
-          ? false
-          : undefined;
+        },) === FILE_OUT_OF_SCOPE)
+          return false;
+        return undefined;
       },
       ImportDeclaration(node: ForeignBorrowed<ESTree.ImportDeclaration>,): void {
         /**
@@ -242,13 +247,14 @@ export const requireEventualArtifact: CreateOnceRule = {
           fileName: context.filename,
           fixturePatterns,
         },);
-        if (fileContext === undefined)
+        if (fileContext === FILE_OUT_OF_SCOPE)
           return;
 
         /**
          * Literal specifier text of this import declaration.
          */
-        const specifier = node.source
+        const specifier = node
+          .source
           .value;
         if ((typeof specifier) !== 'string')
           return;

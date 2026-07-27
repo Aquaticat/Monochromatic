@@ -67,6 +67,7 @@ export function isTestFile({ path, }: {
  * two spellings of the same target cannot classify differently.
  *
  * @param patterns - configured fixture globs
+ *
  * @param path - normalized absolute path
  *
  * @returns true when any configured glob covers the path
@@ -99,6 +100,7 @@ export function isFixtureModule({
  * Tests whether the rule inspects a file at all.
  *
  * @param patterns - configured fixture globs
+ *
  * @param path - normalized absolute path of the file under lint
  *
  * @returns true for test and benchmark files and for fixture or helper modules

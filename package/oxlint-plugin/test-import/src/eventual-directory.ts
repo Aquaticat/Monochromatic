@@ -46,6 +46,7 @@ const BUILD_ROOT = 'dist';
  * Computes the directories whose contents count as the package's eventual artifact.
  *
  * @param packageRoot - normalized absolute package root
+ *
  * @param manifest - parsed manifest of that package
  *
  * @returns normalized absolute directories, always including the default artifact root
