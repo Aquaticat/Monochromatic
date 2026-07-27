@@ -82,6 +82,20 @@ export type CallbackRelation = {
 };
 
 /**
+ * One caller-supplied observer reaching state behind a read-only view receiver.
+ *
+ * Recorded when a call satisfies the receiver-structure claim: the member
+ * belongs to a default-library read-only view, so it cannot restructure the
+ * receiver, and the only remaining question is what the observer does with the
+ * receiver state handed to it.
+ */
+export type ElementApplication = {
+  readonly receiverParameterIndex: number;
+  readonly callbackKey: string;
+  readonly callbackParameterIndexes: readonly number[];
+};
+
+/**
  * One owned call edge with caller-relative argument roots.
  */
 export type CallEdge = {
@@ -114,6 +128,7 @@ export type MutableEffectSummary = {
   readonly opaque: Set<number>;
   readonly directForeignBorrowed: ReadonlySet<number>;
   readonly relations: CallbackRelation[];
+  readonly elementApplications: ElementApplication[];
   readonly calls: CallEdge[];
 };
 

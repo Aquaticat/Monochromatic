@@ -137,6 +137,7 @@ function unknownInboundSummary(
     opaque: new Set(),
     directForeignBorrowed: new Set(),
     relations: [],
+    elementApplications: [],
     calls: [{
       calleeKey: callableKey(declaration,),
       calleeFileName: declaration.getSourceFile()

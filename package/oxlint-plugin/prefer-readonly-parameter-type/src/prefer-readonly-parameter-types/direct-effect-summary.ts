@@ -167,6 +167,7 @@ export function directEffectSummary({
     opaque: new Set(),
     directForeignBorrowed,
     relations: [],
+    elementApplications: [],
     calls: [],
   };
   /**

@@ -239,6 +239,34 @@ function isCallbackRelation({
 }
 
 /**
+ * Tests one serialized element-flow relation.
+ *
+ * @param value - Parsed JSON value.
+ *
+ * @param parameterCount - Exclusive callable parameter-index limit.
+ *
+ * @returns whether relation identity and indexes are valid.
+ */
+function isElementApplication({
+  value,
+  parameterCount,
+}: {
+  readonly value: unknown;
+  readonly parameterCount: number;
+}): boolean {
+  return isRecord(value,)
+    && isIndex({
+      value: value.receiverParameterIndex,
+      upperBound: parameterCount,
+    },)
+    && isCacheString(value.callbackKey,)
+    && isParameterIndexes({
+      value: value.callbackParameterIndexes,
+      parameterCount: MAX_CALLABLE_ARITY,
+    },);
+}
+
+/**
  * Tests opaque provenance entries.
  *
  * @param value - Parsed JSON value.
@@ -335,6 +363,17 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
     .every(function validRelation(relation,): boolean {
       return isCallbackRelation({
         value: relation,
+        parameterCount,
+      },);
+    },)
+    && Array.isArray(value.elementApplications,)
+    && (value.elementApplications
+      .length
+      <= MAX_CALLABLE_ARITY)
+    && value.elementApplications
+    .every(function validApplication(application,): boolean {
+      return isElementApplication({
+        value: application,
         parameterCount,
       },);
     },)

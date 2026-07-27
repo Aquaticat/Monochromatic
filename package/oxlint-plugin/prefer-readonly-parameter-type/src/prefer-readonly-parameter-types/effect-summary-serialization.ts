@@ -7,6 +7,7 @@
 import {
   type CallbackRelation,
   type CallEdge,
+  type ElementApplication,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
 } from './effect-summary-model.ts';
@@ -58,6 +59,7 @@ export type SerializedEffectSummary = {
   readonly opaque: readonly number[];
   readonly directForeignBorrowed: readonly number[];
   readonly relations: readonly CallbackRelation[];
+  readonly elementApplications: readonly ElementApplication[];
   readonly calls: readonly SerializedCallEdge[];
 };
 
@@ -166,6 +168,15 @@ export function serializeEffectSummaries(
             .map(function copyRelation(relation,) {
             return { ...relation, };
           },),
+          elementApplications: summary.elementApplications
+            .map(function copyApplication(application,): ElementApplication {
+            return {
+              ...application,
+              callbackParameterIndexes: [
+                ...application.callbackParameterIndexes,
+              ],
+            };
+          },),
           calls: summary.calls
             .map(function serializeCall(edge,): SerializedCallEdge {
             return {
@@ -227,6 +238,15 @@ export function deserializeEffectSummaries(
         relations: summary.relations
           .map(function copyRelation(relation,) {
           return { ...relation, };
+        },),
+        elementApplications: summary.elementApplications
+          .map(function copyApplication(application,): ElementApplication {
+          return {
+            ...application,
+            callbackParameterIndexes: [
+              ...application.callbackParameterIndexes,
+            ],
+          };
         },),
         calls: summary.calls
           .map(function deserializeCall(edge,): CallEdge {

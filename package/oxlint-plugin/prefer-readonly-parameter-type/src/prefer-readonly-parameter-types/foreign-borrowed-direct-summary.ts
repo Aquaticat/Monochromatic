@@ -96,6 +96,7 @@ export function foreignBorrowedOwnershipSeed({
     opaque: new Set(),
     directForeignBorrowed,
     relations: [],
+    elementApplications: [],
     calls: [],
   };
   /**

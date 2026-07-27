@@ -5,6 +5,7 @@
  */
 
 import { propagateCallbackRelations, } from './effect-callback-relation.ts';
+import { propagateElementApplications, } from './effect-element-application.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
 import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
@@ -66,6 +67,12 @@ export function propagateEffects(
        * @mutates summary - Adds callee and callback effects.
        */
       function propagateSummary(summary,): void {
+        // Read-only view members carry no summary, so their element flow
+        // propagates per summary instead of along a call edge.
+        state.changed = propagateElementApplications({
+          summaries,
+          summary,
+        },) || state.changed;
         summary.calls
           .forEach(function propagateCall(edge,): void {
             /**

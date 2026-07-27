@@ -22,6 +22,8 @@ import {
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import { isDefaultLibraryArrayBrandDeclaration, } from './effect-default-library-array-brand.ts';
+import { isDefaultLibraryReadonlyViewDeclaration, } from './effect-default-library-readonly-view.ts';
+import { recordReadonlyViewApplications, } from './effect-readonly-view-application.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
@@ -141,6 +143,23 @@ export function inspectEffectCall({
     && isDefaultLibraryArrayBrandDeclaration({
       project,
       declaration: resolvedDeclaration,
+    },))
+    return;
+  if ((resolvedDeclaration !== undefined)
+    && isPropertyAccessExpression(call.expression,)
+    && isDefaultLibraryReadonlyViewDeclaration({
+      project,
+      declaration: resolvedDeclaration,
+    },)
+    && recordReadonlyViewApplications({
+      project,
+      checker,
+      bindingOriginBySymbolId,
+      call,
+      receiver: call.expression
+        .expression,
+      summary,
+      ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },))
     return;
   /**
