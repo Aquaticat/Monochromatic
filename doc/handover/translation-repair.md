@@ -3078,3 +3078,19 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   is about 0.12, so those are not distinguishable, but "flat" overstates what
   n=15 per band can show. The band comparison is underpowered in the same way
   the timing-cohort split is; say "not distinguishable", never "flat".
+- DETACHED LAUNCH CONFIRMED AS THE FIX for the run kills (2026-07-27). Run 017,
+  launched with `setsid nohup mise run ... > log 2>&1 < /dev/null & disown`, ran
+  4.79 hours and exited NORMALLY on its own soft budget
+  (`DONE processed=4 of pending=71; artifacts=25/92 elapsed=17247028ms`). The two
+  runs before it, launched as harness background tasks, were killed by signal at
+  2h38m and about 2 minutes with the signature
+  `sh exited with non-zero status: no exit status` and no OOM evidence. A run
+  that survives 4.79 hours in its own session, after two died in the harness
+  session at unrelated ages, is what the process-group explanation predicts.
+  Keep launching this way; do NOT chain a launch with a commit in one call,
+  which is what made an earlier kill look like a failed commit task.
+- NIGHT81473140 (12301 B, LARGE, the biggest entry attempted so far) hit the
+  90 min per-entry hard cap in run 017 with 26 slices cached, so it did not
+  settle. Recoverable exactly as Dethelly and Futajuhuacha were: resume-first
+  ordering picks it up next run and slice progress is monotone. Expect it to
+  need more than one further run at 12 KB.
