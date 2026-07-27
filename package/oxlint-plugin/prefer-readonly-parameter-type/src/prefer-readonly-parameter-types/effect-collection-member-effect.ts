@@ -22,6 +22,11 @@ import {
 } from './effect-default-library-readonly-view.ts';
 import { rootParameterOrigins, } from './effect-call-resolution.ts';
 import {
+  callResultReceiver,
+  RESULT_NOT_RECEIVER_STATE,
+} from './effect-member-result-relation.ts';
+import { resultEscapesCallable, } from './effect-result-escape.ts';
+import {
   expressionCanCarryMutableState,
   resultExposesMutableState,
 } from './effect-primitive-origin.ts';
@@ -94,11 +99,13 @@ function receiverClaimAnswerable({
   checker,
   call,
   declaration,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
   readonly call: CallExpression;
   readonly declaration: Node;
+  readonly body?: Node;
 },): boolean {
   if (!memberChannelIsVerifiedNarrow({
     project,
@@ -111,10 +118,27 @@ function receiverClaimAnswerable({
   const resultType = checker.getTypeAtLocation(call,);
   if (resultType === undefined)
     return false;
-  return !resultExposesMutableState({
+  if (!resultExposesMutableState({
     checker,
     type: resultType,
-  },);
+  },))
+    return true;
+  /* The result carries state, which used to end the matter. Provenance now tracks that
+   * state, so the opacity report is redundant while every use of the result is one the
+   * analysis attributes, and it is still required for any use that leaves. Without a
+   * body there is nothing to scan, so nothing can be shown non-escaping. */
+  if (body === undefined)
+    return false;
+  return (callResultReceiver({
+      project,
+      checker,
+      call,
+    },) !== RESULT_NOT_RECEIVER_STATE)
+    && (!resultEscapesCallable({
+      project,
+      body,
+      call,
+    },));
 }
 
 /**
@@ -166,6 +190,7 @@ export function recordCollectionMemberEffect({
   declaration,
   summary,
   analysisRoot,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -175,6 +200,7 @@ export function recordCollectionMemberEffect({
   readonly declaration: Node;
   readonly summary: MutableEffectSummary;
   readonly analysisRoot?: string;
+  readonly body?: Node;
 },): CollectionCallCoverage {
   /**
    * What this member does to the receiver's own structure.
@@ -224,6 +250,7 @@ export function recordCollectionMemberEffect({
       checker,
       call,
       declaration,
+      ...(body === undefined) ? {} : { body, },
     },)
     ? COLLECTION_CALL_RECEIVER_DERIVED
     : COLLECTION_CALL_UNDERIVED;

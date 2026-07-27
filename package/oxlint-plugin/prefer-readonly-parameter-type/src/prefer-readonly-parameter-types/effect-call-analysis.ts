@@ -8,7 +8,10 @@ import type {
   Checker,
   Project,
 } from 'typescript/unstable/sync';
-import type { CallExpression, } from 'typescript/unstable/ast';
+import type {
+  CallExpression,
+  Node,
+} from 'typescript/unstable/ast';
 import { isIdentifier, } from 'typescript/unstable/ast/is';
 
 import { applyExternalEffect, } from './effect-external-application.ts';
@@ -79,6 +82,7 @@ export function inspectEffectCall({
   foreignInbound,
   analysisRoot,
   externalEffectResolver,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -88,6 +92,7 @@ export function inspectEffectCall({
   readonly foreignInbound: boolean;
   readonly analysisRoot?: string;
   readonly externalEffectResolver: ExternalCallableEffectResolver;
+  readonly body?: Node;
 },): void {
   /**
    * Parameters the direct callee identifier can hold, when it is a callback.
@@ -173,6 +178,7 @@ export function inspectEffectCall({
       declaration: resolvedDeclaration,
       summary,
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+      ...(body === undefined) ? {} : { body, },
     },)
     : COLLECTION_CALL_UNDERIVED;
   if (collectionCoverage === COLLECTION_CALL_DERIVED)

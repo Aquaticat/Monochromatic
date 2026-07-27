@@ -347,6 +347,7 @@ export function directEffectSummary({
         summary,
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         externalEffectResolver,
+        body,
         foreignInbound: declarationDirectlyOwnsNode({
           node,
           declaration,

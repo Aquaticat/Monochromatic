@@ -269,7 +269,7 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(6,);
+      expect(messages.length,).toBe(5,);
       /* A generic instantiation is not evidence the call built the value. `reduce`
        * returning the accumulator it was handed has result type `string[]` over
        * `string[][]`, a type reference whose only argument is primitive, which the
@@ -311,11 +311,17 @@ children: [
           'The function input named "values" is used as the object for these method calls: values.find [',
         );
       },),).toBe(true,);
-      expect(messages.some(function accessorResultStaysOpaque(message,): boolean {
-        return message.startsWith(
-          'The function input named "values" is used as the object for these method calls: values.at [',
-        );
-      },),).toBe(true,);
+      /* `at` no longer reports, and that is the hole this rule was carrying rather than
+       * a discharge granted on trust. `interiorEscapeEffect` writes through the element
+       * `values.at(0)` hands back, and result provenance now tracks that element as
+       * receiver state, so the write is recorded against `values` directly. The opacity
+       * report existed precisely because nothing tracked the alias; with the alias
+       * tracked it is redundant, and `effect-summaries.unit.test.ts` asserts the
+       * mutation that replaced it. Removing the escape check in
+       * `receiverClaimAnswerable` puts this message back. */
+      expect(messages.some(function accessorResultReported(message,): boolean {
+        return message.includes('values.at [',);
+      },),).toBe(false,);
       /* No collection parameter may be offered as read-only while its elements are
        * rewritten through a result, which is what `values[0].label` mutation already
        * suppresses. The one offer here is on `kept`, an observer parameter whose own
@@ -354,7 +360,7 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(10,);
+      expect(messages.length,).toBe(5,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -366,10 +372,12 @@ children: [
       expect(messages.filter(function offersComputedReceiver(message,): boolean {
         return message.startsWith('Parameter "values" should be readonly',);
       },),).toEqual([],);
-      /* And the computed lookup is now visible at all. It reported nothing whatsoever
-       * before, summary measured `mutated=[] opaque=[]`. */
-      expect(messages.filter(function reportsComputedLookup(message,): boolean {
-        return message.includes(`facts['get']`,);
+      /* The computed lookup is visible, and now discharged: its report has moved to the
+       * computed `set` that retains a caller-owned value, which is the argument claim
+       * rather than the receiver claim. It reported nothing whatsoever before
+       * `memberCallReceiver`, summary measured `mutated=[] opaque=[]`. */
+      expect(messages.filter(function reportsComputedStore(message,): boolean {
+        return message.includes(`facts['set']`,);
       },).length,).toBe(1,);
       /**
        * Counts messages naming one call as the unresolved receiver operation.
@@ -383,17 +391,31 @@ children: [
           return message.includes(`method calls: ${call} [`,);
         },).length;
       }
-      /* Still one diagnostic per function, and still on the lookup for every case
-       * whose result stays inside the callable, because those receivers keep their
-       * opacity until discharge is licensed. Five `Map.get` receivers: the escaping
-       * one moved to naming its sink, and the asserted one joined. */
-      expect(namingCall('facts.get',),).toBe(5,);
-      expect(namingCall('rows.get',),).toBe(1,);
-      /* The union-valued receiver, whose result constituents are two object types plus
-       * absence while its held position is the union itself. Flattening only the result
-       * side left this unattributed; the summary test asserts it is credited now. */
-      expect(namingCall('records.get',),).toBe(1,);
-      expect(namingCall('values.at',),).toBe(1,);
+      /* Two `Map.get` receivers left, down from five, and which two is the whole point.
+       * A lookup whose result is used only in attributed positions is discharged: the
+       * mutation is recorded against the receiver's parameter and the opacity report
+       * that stood in for the untracked alias is gone.
+       *
+       * What remains reports for a reason the tracking does not remove.
+       * `returnedLookupEffect` hands its result out of the callable, and until callers
+       * substitute through `returnedParameterIndexes` that is a use nothing follows.
+       * `boundLookupMutationEffect` keeps a report on its `facts.set`, an argument claim
+       * about storing a caller-owned value, not a receiver claim. */
+      expect(namingCall('facts.get',),).toBe(1,);
+      /* The chained mutation keeps its report for a different reason worth separating:
+       * `facts.get(key)?.add('recorded')` discharges the lookup, and the reported call
+       * is the `add`, whose own result is the receiver it was called on. That is a
+       * distinct relation from "a value the receiver held", nothing in the result
+       * authority proves it, and it fails closed rather than being assumed. */
+      expect(messages.filter(function reportsChainedAdd(message,): boolean {
+        return message.includes('facts.get(key,).add',);
+      },).length,).toBe(1,);
+      /* Discharged, each verified by a mutation assertion in
+       * `effect-summaries.unit.test.ts` rather than by the absence of a message here:
+       * the destructured row, the union-valued lookup, and the array element. */
+      expect(namingCall('rows.get',),).toBe(0,);
+      expect(namingCall('records.get',),).toBe(0,);
+      expect(namingCall('values.at',),).toBe(0,);
       /* The one that moved. `escapingLookupEffect` hands its looked-up value to
        * `JSON.stringify`, and the report now names that call rather than the lookup,
        * which is only possible because the value carries `facts` as an origin for the

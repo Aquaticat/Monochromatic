@@ -234,6 +234,10 @@ await describe({
          * nothing. Measured: flattening one side only empties this while leaving every
          * other case here passing. */
         expect(unionValued,).toEqual([0,],);
+        /* The destructured extraction, asserted here because its diagnostic is gone:
+           the lookup discharged once every use of the row was attributed, so only the
+           summary shows the mutation that replaced the report. */
+        expect(mutatedIndexes('destructuredLookupMutationEffect',),).toEqual([0,],);
         /* Computed member access records the same facts as property access, because
          * which of the two the author wrote has no runtime bearing on what receives
          * the call. Both were entirely unrecorded before `memberCallReceiver`, and
