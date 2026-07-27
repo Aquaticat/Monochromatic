@@ -68,6 +68,16 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
     },
   ],
   [
+    'effect-default-library-reader-authority.ts',
+    {
+      decision: 'doc/decision/prefer-readonly-default-library-readers.md',
+      enforcedBy: [
+        'effect-default-library-reader.unit.test.ts',
+      ],
+      entryCount: 4,
+    },
+  ],
+  [
     'effect-result-provenance-authority.ts',
     {
       decision: 'doc/decision/prefer-readonly-result-provenance.md',

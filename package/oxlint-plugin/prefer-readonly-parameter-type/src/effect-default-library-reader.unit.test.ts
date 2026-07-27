@@ -1,0 +1,160 @@
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { VERIFIED_READER_COUNT, } from './prefer-readonly-parameter-types/effect-default-library-reader-authority.ts';
+
+/** Trap names a proxy records while a reader runs over it. */
+type TrapHits = string[];
+
+/**
+ * Builds a fully trapped object recording every operation a reader performs on it.
+ *
+ * Every trap is instrumented, not only the ones expected, because the point is to catch a
+ * reader reaching somewhere unlisted rather than to confirm it reaches where it should.
+ *
+ * @param hits - Accumulator receiving trap names in call order.
+ *
+ * @returns proxy standing in for a caller-owned object.
+ *
+ * @example
+ * ```ts
+ * trappedObject({ hits: [] });
+ * ```
+ */
+function trappedObject({ hits, }: { readonly hits: TrapHits; },): Record<string, unknown> {
+  /**
+   * Ordinary target holding one data property.
+   */
+  const target: Record<string, unknown> = { first: 'value', };
+  return new Proxy(target, {
+    get(receiver, property, value,): unknown {
+      hits.push('get',);
+      return Reflect.get(receiver, property, value,);
+    },
+    set(receiver, property, value,): boolean {
+      hits.push('set',);
+      return Reflect.set(receiver, property, value,);
+    },
+    has(receiver, property,): boolean {
+      hits.push('has',);
+      return Reflect.has(receiver, property,);
+    },
+    deleteProperty(receiver, property,): boolean {
+      hits.push('deleteProperty',);
+      return Reflect.deleteProperty(receiver, property,);
+    },
+    ownKeys(receiver,): ArrayLike<string | symbol> {
+      hits.push('ownKeys',);
+      return Reflect.ownKeys(receiver,);
+    },
+    getOwnPropertyDescriptor(receiver, property,): PropertyDescriptor | undefined {
+      hits.push('getOwnPropertyDescriptor',);
+      return Reflect.getOwnPropertyDescriptor(receiver, property,);
+    },
+    defineProperty(receiver, property, descriptor,): boolean {
+      hits.push('defineProperty',);
+      return Reflect.defineProperty(receiver, property, descriptor,);
+    },
+    getPrototypeOf(receiver,): object | null {
+      hits.push('getPrototypeOf',);
+      return Reflect.getPrototypeOf(receiver,);
+    },
+    setPrototypeOf(receiver, prototype,): boolean {
+      hits.push('setPrototypeOf',);
+      return Reflect.setPrototypeOf(receiver, prototype,);
+    },
+  },);
+}
+
+/**
+ * Traps that would mean a reader is not a reader.
+ */
+const WRITING_TRAPS: readonly string[] = [
+  'set',
+  'deleteProperty',
+  'defineProperty',
+  'setPrototypeOf',
+];
+
+await describe({
+  name: 'default-library reader authority',
+  concurrency: 1,
+  children: [
+    it({
+      name: 'reaches no writing trap on the value it reads',
+      fn: async () => {
+        /* Executable evidence for the claim the authority makes, rather than a restatement
+         * of it. A reader that ever reached a writing trap would be mutating a
+         * caller-owned value while this rule reports it as read-only, which is the exact
+         * failure the registry exists to prevent going unnoticed. */
+        for (const run of [
+          function readEntries(value: Record<string, unknown>,): unknown {
+            return Object.entries(value,);
+          },
+          function readValues(value: Record<string, unknown>,): unknown {
+            return Object.values(value,);
+          },
+          function readKeys(value: Record<string, unknown>,): unknown {
+            return Object.keys(value,);
+          },
+          function readHasOwn(value: Record<string, unknown>,): unknown {
+            return Object.hasOwn(value, 'first',);
+          },
+        ]) {
+          /** Traps this reader reached. */
+          const hits: TrapHits = [];
+          run(trappedObject({ hits, },),);
+          expect(hits.length > 0,).toBe(true,);
+          expect(
+            hits.filter(function isWriting(trap,): boolean {
+              return WRITING_TRAPS.includes(trap,);
+            },),
+          ).toEqual([],);
+        }
+      },
+    },),
+    it({
+      name: 'collects its keys before reading any value',
+      fn: async () => {
+        /* The narrowing claim in `MEMBER_CHANNEL_OWN_PROPERTY`: an accessor firing during
+         * the walk cannot add or remove entries from the result, because the key list is
+         * taken first. Measured by trap order rather than asserted. */
+        /** Traps reached while entries runs. */
+        const hits: TrapHits = [];
+        Object.entries(trappedObject({ hits, },),);
+        /** Position of the first key enumeration. */
+        const firstOwnKeys = hits.indexOf('ownKeys',);
+        /** Position of the first value read. */
+        const firstGet = hits.indexOf('get',);
+        expect(firstOwnKeys,).toBe(0,);
+        expect(firstGet > firstOwnKeys,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'separates results that carry the operand from results that cannot',
+      fn: async () => {
+        /* The distinction the authority turns on, checked against the runtime rather than
+         * against the table restating itself. `entries` hands back the very object the
+         * operand held, so a write through it reaches the operand; `keys` hands back
+         * freshly built strings, which cannot carry anything. */
+        /** Object whose value is an identifiable reference. */
+        const held = { label: 'held', };
+        /** Operand holding that reference. */
+        const operand = { first: held, };
+        expect(Object.entries(operand,)[0]?.[1] === held,).toBe(true,);
+        expect(Object.values(operand,)[0] === held,).toBe(true,);
+        expect(Object.keys(operand,)
+          .every(function isString(key,): boolean {
+            return (typeof key) === 'string';
+          },),).toBe(true,);
+        /* The table's size, pinned so a reader added without evidence fails here as well
+         * as in the architecture registry. The sentinels themselves need no assertion:
+         * they are distinct symbols and the compiler rejects comparing them. */
+        expect(VERIFIED_READER_COUNT,).toBe(4,);
+      },
+    },),
+  ],
+},);

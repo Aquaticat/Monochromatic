@@ -207,7 +207,12 @@ children: [
     name: 'rejects static plain-data claims without runtime isolation',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-static-plain-data-invalid.ts',);
-      expect(diagnostics.length,).toBe(4,);
+      /* Three, down from four, because `enumeratePlainRecord` returns
+       * `Object.entries(record).length` and that reader is now derived. Its own doc calls
+       * it an enumeration "without a hook-class effect", so recognizing it is the fixture
+       * author's stated intent rather than a weakening. No offer appeared with the report
+       * removed, which is the check that matters: this file emits none. */
+      expect(diagnostics.length,).toBe(3,);
       expect(diagnostics.every(function unresolvedBoundary(diagnostic,): boolean {
         return diagnostic.message.includes('cannot inspect enough of those calls',);
       },),).toBe(true,);
@@ -217,6 +222,13 @@ children: [
     name: 'keeps hook-capable inputs and descriptor mutation fail-closed',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-plain-data-invalid.ts',);
+      /* Still three, and that is the point of this case rather than an absence of change.
+       * Deriving the Object readers did not touch it, because both survivors are outside
+       * what that derivation admits: `Object.freeze` is not a reader at all, and
+       * `enumerateReadonlyMapEntries` enumerates a `ReadonlyMap`, whose properties are
+       * methods rather than data. The audit that removed the plain-data catalog left an
+       * operand like that fail-closed, and the reader authority's structural data-only
+       * gate keeps it that way. */
       expect(diagnostics.length,).toBe(3,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;

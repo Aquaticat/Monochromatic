@@ -27,6 +27,11 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
+  NOT_A_VERIFIED_READER,
+  READER_RESULT_CARRIES_OPERAND,
+  verifiedReaderCall,
+} from './effect-default-library-reader-authority.ts';
+import {
   callResultReceiver,
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
@@ -196,6 +201,28 @@ function provenanceSuccessors({
    * Checker for the project resolving this call.
    */
   const { checker, } = project;
+  /* A verified reader's result holds the values it read, so provenance runs to the value
+   * it was given rather than to its receiver, which is a global. */
+  /**
+   * Declaration this call resolves to, when one does.
+   */
+  const readerDeclaration = checker.getResolvedSignature(node,)
+    ?.declaration
+    ?.resolve(project,);
+  if (readerDeclaration !== undefined) {
+    /**
+     * Verified reader and the value it reads, when this call is one.
+     */
+    const reader = verifiedReaderCall({
+      project,
+      checker,
+      call: node,
+      declaration: readerDeclaration,
+    },);
+    if ((reader !== NOT_A_VERIFIED_READER)
+      && (reader.resultRelation === READER_RESULT_CARRIES_OPERAND))
+      return [reader.operand,];
+  }
   /**
    * Receiver whose state this call's result is verified to be, when any.
    */

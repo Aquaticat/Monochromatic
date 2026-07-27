@@ -45,7 +45,13 @@ import {
   memberCallReceiver,
   NO_MEMBER_RECEIVER,
 } from './effect-member-call-receiver.ts';
+import {
+  NOT_A_VERIFIED_READER,
+  READER_RESULT_FRESH,
+  verifiedReaderCall,
+} from './effect-default-library-reader-authority.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
+import { resultEscapesCallable, } from './effect-result-escape.ts';
 
 /**
  * Classifies one call as callback invocation, owned source edge, derived package edge, or opaque boundary.
@@ -160,6 +166,36 @@ export function inspectEffectCall({
       declaration: resolvedDeclaration,
     },))
     return;
+  /* A default-library reader takes its caller-owned value as an argument rather than as a
+   * receiver, so the collection path below never reaches it and every value handed to one
+   * took an opaque boundary. A reader neither writes nor is handed a callback, so the only
+   * question left is what its result shares with what it read. */
+  if (resolvedDeclaration !== undefined) {
+    /**
+     * Verified reader and the value it reads, when this call is one.
+     */
+    const reader = verifiedReaderCall({
+      project,
+      checker,
+      call,
+      declaration: resolvedDeclaration,
+    },);
+    if (reader !== NOT_A_VERIFIED_READER) {
+      if (reader.resultRelation === READER_RESULT_FRESH)
+        /* Nothing of the operand comes back, so no later use can reach it. */
+        return;
+      if ((body !== undefined)
+        && (!resultEscapesCallable({
+          project,
+          body,
+          call,
+        },)))
+        /* The result carries the operand's values, and every use of it is one this
+         * analysis attributes, so tracking replaces the boundary exactly as it does for a
+         * verified collection member. A use that leaves keeps the boundary. */
+        return;
+    }
+  }
   /**
    * Expression the call was made on, however the member was named.
    */
