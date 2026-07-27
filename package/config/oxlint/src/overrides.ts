@@ -268,18 +268,36 @@ const nonUnitTestRuleOverride = {
  * `doc/decision/prefer-readonly-member-channel-authority.md`.
  *
  * The exemption still covers the whole package because the remaining two grounds
- * reach 52 of its 96 source files, and because what blocks the rest is now one
- * named thing rather than collections generally. Measured on the modules that
- * import no semantic API: `effect-element-application.ts` and
- * `effect-callback-relation.ts` report exactly one finding each, both
- * `summaries.get`, and `effect-fixed-point-propagation.ts` reports two, both
- * `opaqueProvenanceByParameter.get`. Every one is a `Map.get` whose value type
- * carries state, which the member-channel decision deliberately keeps opaque:
- * nothing tracks a call result as an alias of the receiver, and this code does
- * mutate what those lookups return.
+ * reach 52 of its 96 source files, and because what blocks the rest is now a
+ * short named list rather than collections generally.
  *
- * So narrowing waits on result provenance, a summary fact recording that a call
- * result is reachable from the receiver's parameter, not on a wider authority.
+ * Measured on the three modules that import no semantic API, by linting them
+ * with this override removed: four findings, at
+ * `effect-element-application.ts:39`, `effect-callback-relation.ts:35`, and
+ * `effect-fixed-point-propagation.ts:37` and `:69`.
+ *
+ * An earlier revision of this comment described each finding by one cause and
+ * concluded "every one is a `Map.get`". That was measured too narrowly. Each
+ * finding names a list, and across the four the distinct causes are
+ * `summaries.get`, `target.get`, `opaqueProvenanceByParameter.get`,
+ * `target.set`, and `summaries.values`. Re-measured under the pre-accumulation
+ * binding-origin behavior to confirm the wider lists are not a consequence of
+ * that change: identical.
+ *
+ * Two separate things therefore block narrowing, not one:
+ *
+ * 1. Result provenance, a summary fact recording that a call result is reachable
+ *    from the receiver's parameter. This covers every `.get` cause, and
+ *    `target.set` once the value it stores carries a known origin, because the
+ *    code mutates what those lookups return and nothing tracks the alias.
+ * 2. Iterator members. `summaries.values` sits in `DEFERRED_MEMBER_NAMES`, where
+ *    `doc/decision/prefer-readonly-member-channel-authority.md` leaves creation
+ *    and consumption unseparated, so it stays unproven no matter what result
+ *    provenance does. It is a cause of the `:37` finding, which therefore cannot
+ *    clear on result provenance alone.
+ *
+ * Neither is a wider authority, which remains the thing this exemption is not
+ * waiting for.
  */
 const readonlyEffectSelfHostingOverride = {
   files: [
