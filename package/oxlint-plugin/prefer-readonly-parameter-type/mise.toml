@@ -33,6 +33,7 @@ extends = "lint:types"
 
 [tasks."test:unit"]
 extends = "test:unit"
+depends = ["build"]
 
 [tasks."test:semantic-bridge-host"]
 description = "Exercise built semantic bridge lifecycle on current host"
