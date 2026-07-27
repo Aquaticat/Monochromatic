@@ -1,0 +1,113 @@
+# Split receiver-structure from reachable-user-code in the readonly effect model
+
+Status: accepted, implementation pending.
+
+Decided: 2026-07-27.
+
+Amends: `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`.
+
+Evidence: `doc/troubleshooting/oxlint-prefer-readonly-intrinsic-regression.md`.
+
+## Problem
+
+`prefer-readonly-parameter-type/prefer-readonly-parameter-types` reports 1,661 findings across the workspace,
+almost all on ordinary ECMAScript intrinsics. `package/module/caught-value` is 38 lines whose only calls are
+`Error.isError` and `String`, and it reports two.
+
+The audit requires that an unresolved effect be derived, contained by a verified isolation boundary,
+or reported as opaque. Intrinsics can be neither derived nor isolated, so they are reported as opaque.
+The commit that recognised this, `32a06a75b`, exempted only the rule's own directory,
+though its stated reason applies to every package.
+
+A recognizer that reads TypeScript's read-only collection views was built and reverted.
+It is not that the recognizer was wrong; it is that the summary has nowhere to put its conclusion.
+
+## Root cause in the model
+
+`MutableEffectSummary` carries three dimensions per parameter: `mutated`, `invoked`, `opaque`.
+A single `opaque` bit answers two different questions at once:
+
+- Does the callee mutate the structure passed in?
+- Can the callee cause user code to run with access to what the parameter reaches?
+
+For `blocks.filter(predicate)` where `blocks: readonly Block[]` the honest answers differ.
+The first is no, provably. The second is yes, and the interesting part is exactly what that user code does.
+Collapsing both into one bit forces the analyzer to report the parameter as wholly unusable,
+which is why idiomatic code that the rule itself pushes toward, `readonly T[]` plus `filter`,
+produces findings no code change can satisfy.
+
+## Decision
+
+Split the question into two claims. A receiver is clean only when both are discharged.
+
+### Claim A, receiver structure
+
+Does the member mutate the collection or object identity passed as the receiver?
+
+Discharged by membership of a default-library `Readonly*` interface, proved through the semantic project
+with `isSourceFileDefaultLibrary`. TypeScript declares a read-only view beside each mutable collection and
+places on it exactly the operations that remain available once the holder may not mutate the value.
+Membership is therefore upstream's own assertion, read off the resolved declaration.
+
+Verified against TypeScript 7.0.2: `ReadonlyArray`, `ReadonlyMap`, `ReadonlySet` and `ReadonlySetLike` are the
+whole matching set, and none declares a mutator. The prefix is upstream's convention, so no member list is
+authored here and a view added later is covered without an edit.
+
+### Claim B, reachable user code
+
+What user code can this call run, and what does it do to values reachable from the receiver?
+
+Discharged only by analysis, never by assumption:
+
+- When the caller supplies the observing function, that function is owned source with its own summary.
+  Its effects propagate to the receiver through a relation derived from the member's own generic signature:
+  `ReadonlyArray<T>.forEach(callbackfn: (value: T, ...) => void)` states that the callback's first parameter
+  is the receiver's element type, so element identities demonstrably flow from receiver to callback.
+  The relation is read from the declaration's types, not asserted.
+- When the member observes elements with no caller-supplied function, nothing is discharged.
+  `join` coerces elements through `String`, `toSorted()` without a comparator runs the default comparator,
+  and `toLocaleString` likewise. These stay opaque.
+- Deep readonly-ness of the element type discharges nothing on its own. That is the static plain-data
+  exemption the catalog-free architecture removed, and it stays removed.
+
+## What this does not change
+
+The four removals recorded in `doc/planning/replace-prefer-readonly-parameter-types.md` all stand:
+handwritten catalogs, `@mutates` as a discharge mechanism, static plain-data exemptions,
+and bodyless host authorities. Nothing here trusts a member list or a hand-authored effect.
+
+Fail-closed remains the default. The split adds one derivable discharge path and one derivable propagation
+path; every case that cannot use them reports exactly as it does now.
+
+## Consequences, predicted
+
+These are predictions to be checked against measurement, not results.
+
+- Receiver-side findings on callback-taking members should clear: `map` (164), `filter` (70), `some` (25),
+  `flatMap` (25), `every` (25), `forEach` (23), `reduce` (15), `find` (14) across the workspace.
+- Receiver-side findings on implicit-coercion members should remain: `join` (44), `toSorted` (11).
+- Members with no caller-supplied function and no coercion, `get` (35), `has` (27), `slice` (46), `at` (15),
+  should remain, because claim B has no evidence to work from. This is a known conservative gap.
+- Argument-side findings, 763 of the 1,661, are untouched. `String`, `Object.entries`, `JSON.stringify` and
+  `Error.isError` can each invoke getters, proxy traps or `toJSON`, so those findings are the rule being
+  correct and will survive.
+
+Reaching zero is not the goal and would indicate the guarantee had been abandoned.
+
+## Acceptance
+
+The audited fixtures decide correctness, and all must keep their current expectations:
+
+- `arrayCallbackSemanticEffect` stays `opaque: [0]`. Its callback assigns `state.value`, so claim B fails
+  through propagation rather than through the coarse receiver bit.
+- `objectArraySortCallbackEffect` stays `opaque: [0]`. Its comparator calls `localeCompare`, itself
+  unresolved, so opacity propagates from the callback.
+- `readonly-static-plain-data-invalid.ts` keeps four diagnostics. `join` and `toSorted()` supply no observer.
+- `readonly-catalog-free-invalid.ts` keeps 21.
+
+`applyCargoPlan` in `workspace-source-effect.unit.test.ts` is expected to change from `opaque: [0]` to
+`opaque: []`. Its only relevant calls are `plan.blocks.filter(...)` and `plan.enforcements.reduce(...)`,
+whose callbacks reach only owned functions already proven effect-free. That expectation is a snapshot of the
+coarse model rather than a policy, and updating it is part of this change.
+
+Performance must stay inside the audit's existing gate: a cold 13-file package lint under 10 seconds.
