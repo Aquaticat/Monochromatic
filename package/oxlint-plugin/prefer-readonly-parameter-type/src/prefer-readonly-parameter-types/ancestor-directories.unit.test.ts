@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ancestorDirectories, } from './ancestor-directories.ts';
+import { ancestorDirectories, } from '../../dist/final/node/index.mjs';
 
 await describe({
   name: ancestorDirectories.name,

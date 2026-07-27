@@ -87,3 +87,10 @@ export {
   MEMBER_CHANNELS_BY_INTERFACE,
   VERIFIED_MEMBER_CHANNEL_COUNT,
 } from './prefer-readonly-parameter-types/effect-member-channel-authority.ts';
+
+/**
+ * Ancestor directory walk, exported so its test can exercise built output.
+ *
+ * @internal
+ */
+export { ancestorDirectories, } from './prefer-readonly-parameter-types/ancestor-directories.ts';
