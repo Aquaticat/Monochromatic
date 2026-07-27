@@ -1,0 +1,54 @@
+{
+  "name": "@monochromatic-dev/oxlint-plugin-test-import",
+  "version": "0.0.1",
+  "private": false,
+  "keywords": [
+    "oxlint",
+    "test",
+    "import",
+    "monochromatic"
+  ],
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
+    "@oxlint/plugins": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-test-support": "workspace:*",
+    "@types/node": "catalog:",
+    "type-fest": "catalog:"
+  },
+  "type": "module",
+  "files": [
+    "src",
+    "dist/final",
+    "LICENSES"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/oxlint-plugin/test-import"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "description": "Oxlint JS plugin requiring test files to import their own package's built artifact instead of its source.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
