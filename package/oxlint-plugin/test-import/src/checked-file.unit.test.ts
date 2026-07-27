@@ -96,14 +96,14 @@ await describe({
           },
         },),
         it({
-          name: 'accepts helper and harness suffixes',
+          name: 'rejects helper and harness suffixes, which name package behavior',
           fn: async () => {
             expect([
               matchesDefault(`${DIR}/tree-helpers.ts`,),
               matchesDefault(`${DIR}/render-harness.ts`,),
             ],).toEqual([
-              true,
-              true,
+              false,
+              false,
             ],);
           },
         },),
@@ -145,12 +145,21 @@ await describe({
           },
         },),
         it({
-          name: 'checks a helper module too, closing the re-export laundering path',
+          name: 'checks a test support module too, closing the re-export laundering path',
+          fn: async () => {
+            expect(isCheckedFile({
+              patterns: DEFAULT_FIXTURE_PATTERNS,
+              path: `${DIR}/test-support.ts`,
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'leaves a helper-suffixed module alone, since it is package behavior',
           fn: async () => {
             expect(isCheckedFile({
               patterns: DEFAULT_FIXTURE_PATTERNS,
               path: `${DIR}/tree-helpers.ts`,
-            },),).toBe(true,);
+            },),).toBe(false,);
           },
         },),
         it({

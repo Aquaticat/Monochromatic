@@ -64,13 +64,23 @@ so a specifier naming a not-yet-built artifact classifies identically before and
 
 ## Exemptions
 
-Test-only fixtures and helpers are not package behavior.
-The `fixturePatterns` option holds globs naming them, defaulting to a list derived from conventions in use.
+Test-only fixtures and support modules are not package behavior.
+The `fixturePatterns` option holds globs naming them.
 Matching runs against resolved target paths, never raw specifier text.
 
-Allowlisted helper modules are themselves subject to the rule.
-Without that, a test could import a permitted helper that re-exports straight from source,
+Allowlisted modules are themselves subject to the rule.
+Without that, a test could import a permitted module that re-exports straight from source,
 bypassing the rule with no change to the test's own import.
+
+That second consequence is why every glob must identify test-only code by name alone.
+A glob catching package behavior fails twice over:
+it exempts real behavior from tests,
+and it reports ordinary source for importing its own siblings.
+`*-helpers.ts` and `*-harness.ts` are absent from the defaults for exactly that reason.
+Measured across this repository,
+all 22 files carrying those suffixes are imported by package behavior
+and none are test-only;
+the suffix describes what a module does, not who may load it.
 
 A package declaring no build task in its `mise.toml` is exempt entirely.
 Such a package ships no artifact, so the rule is vacuous there rather than merely inconvenient.
@@ -105,7 +115,7 @@ export default defineConfig({
   rules: {
     'test-import/require-eventual-artifact': [
       'error',
-      { fixturePatterns: ['**/fixture.*', '**/*-helpers.ts', '**/support/**'] },
+      { fixturePatterns: ['**/fixture.*', '**/test-support.ts', '**/support/**'] },
     ],
   },
 });

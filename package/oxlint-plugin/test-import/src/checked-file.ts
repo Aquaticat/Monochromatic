@@ -25,9 +25,21 @@ const BENCH_SUFFIX = '.bench.ts';
 /**
  * Globs naming test-only modules that are not package behavior.
  *
+ * Every entry must identify test-only code by name alone, because a match has
+ * two consequences: the module is exempt as an import target, and the module is
+ * itself inspected. A glob that also catches package behavior therefore fails
+ * twice over, exempting real behavior from tests while reporting ordinary
+ * source for importing its own siblings.
+ *
  * The three literal `test-` names are listed individually rather than as a
  * `test-*` prefix glob, which would also match real package behavior such as
  * `package/cli/mutation-test/src/container/test-run.ts` and silently exempt it.
+ *
+ * `*-helpers.ts` and `*-harness.ts` are deliberately absent. Measured across
+ * this repository, all 22 files carrying those suffixes are imported by
+ * package behavior (`cli-helpers.ts` by `cli.ts`, `render-helpers.ts` by four
+ * i18n modules, `tasks-helpers.ts` by three database modules) and none are
+ * test-only. The suffix describes what a module does, not who may load it.
  */
 export const DEFAULT_FIXTURE_PATTERNS: readonly string[] = [
   '**/fixture.*',
@@ -35,8 +47,6 @@ export const DEFAULT_FIXTURE_PATTERNS: readonly string[] = [
   '**/test-support.ts',
   '**/test-setup.ts',
   '**/test-fixtures.ts',
-  '**/*-helpers.ts',
-  '**/*-harness.ts',
 ];
 
 /**

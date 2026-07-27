@@ -107,11 +107,11 @@ await describe({
       },
     },),
     it({
-      name: 'checks helper modules themselves, closing the re-export laundering path',
+      name: 'checks allowlisted modules themselves, closing the re-export laundering path',
       fn: async () => {
         expect((await lintCase({
           caseName: 'standard',
-          fileName: 'laundering-helpers.ts',
+          fileName: 'test-support.ts',
         },)).length,).toBe(1,);
       },
     },),

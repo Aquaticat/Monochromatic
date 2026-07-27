@@ -89,9 +89,15 @@ await describe({
       },
     },),
     it({
-      name: 'allows a relative import of a test-only helper',
+      name: 'allows a relative import of a test-only support module',
       fn: async () => {
-        expect(verdictFor('./tree-helpers.ts',),).toBe('allowed',);
+        expect(verdictFor('./test-support.ts',),).toBe('allowed',);
+      },
+    },),
+    it({
+      name: 'rejects a helper-suffixed module, which the default list treats as package behavior',
+      fn: async () => {
+        expect(verdictFor('./tree-helpers.ts',),).toBe('relative-source',);
       },
     },),
     it({

@@ -4,8 +4,14 @@ Proposal for `@monochromatic-dev/oxlint-plugin-test-import`,
 whose single rule `require-eventual-artifact` bans test files from importing their own package's source
 instead of the built artifact that package ships.
 
-Status: design agreed through a grilling interview, awaiting final confirmation before implementation.
-Nothing has been built yet.
+Status: implemented and registered.
+The package, its rule, its fixture package, and its unit tests are in the tree,
+and `@monochromatic-dev/config-oxlint` enables the rule at `error`.
+Migration of the 697 reported sites has not started.
+
+One decision changed during implementation, on measurement rather than preference:
+the `**/*-helpers.ts` and `**/*-harness.ts` fixture globs were removed from the default allowlist.
+The reasoning is recorded under "Fixture allowlist".
 
 ## Problem
 
@@ -78,16 +84,29 @@ Default list, derived from conventions actually in use:
 **/test-support.ts
 **/test-setup.ts
 **/test-fixtures.ts
-**/*-helpers.ts
-**/*-harness.ts
 ```
-
-This covers the 38 helper import sites found across 11 inconsistent naming conventions.
 
 The three literal `test-` names are listed individually rather than as a `**/test-*.ts` prefix glob.
 A prefix glob would also match `package/cli/mutation-test/src/container/test-run.ts`,
 which is real package behavior imported by `mutant-loop.ts` and `main.ts`,
 and would silently exempt it.
+
+`**/*-helpers.ts` and `**/*-harness.ts` were in the agreed list and were removed during implementation,
+on measurement rather than preference.
+Because an allowlist match both exempts a module as an import target and puts that module under the rule,
+a glob catching package behavior fails in both directions at once:
+it exempts real behavior from tests, and it reports ordinary source for importing its own siblings.
+Of the 23 files in this repository carrying those two suffixes,
+22 are imported by package behavior and none are test-only.
+`cli-helpers.ts` is imported by `cli.ts`,
+`render-helpers.ts` by four i18n modules,
+`tasks-helpers.ts` by three database modules.
+Keeping the globs produced 19 files of reported production code that had done nothing wrong.
+The suffix describes what a module does, not who may load it.
+
+The earlier claim that the list "covers the 38 helper import sites found across 11 inconsistent naming
+conventions" counted names without checking whether those helpers were package behavior. They are.
+The option remains configurable, so restoring either glob is a one-line config change.
 
 Allowlisted helper modules are themselves subject to the same source-import restriction.
 Without that, a test can import a permitted helper that re-exports directly from source,
@@ -123,23 +142,35 @@ Adding the dynamic form later is a small change.
 
 ## Migration
 
-Final scope after the fixture allowlist and the buildless-package exemption:
+Measured by running the implemented rule across `package/`,
+which supersedes the pre-implementation estimates:
 
--   557 test files total
--   178 already clean
--   35 exempt because their package builds nothing
--   344 violating, across 54 packages, at 662 import sites
+-   697 violation sites across 357 files in 58 packages
+-   686 sites are relative imports of package source
+-   11 sites are the package's own `/ts` subpath
+-   353 of the files are `.test.ts` or `.bench.ts`
+-   4 are allowlisted test-support modules, in scope because the rule checks them too
+
+The pre-implementation estimate was 662 sites across 344 files in 54 packages.
+It was produced by a line-based scanner rather than the rule's own AST walk,
+and it did not count allowlisted modules,
+which the anti-laundering clause brings into scope.
+
+Largest concentrations by violating file count:
+`git-policy/cli` 42,
+`dev-script/file-enforcer` 36,
+`module/toml-edit` 24,
+`pi-plugin/auto-mode` 19,
+`module/logger` 16.
+
+Stage-one categorization below predates implementation and is retained
+as the shape of the work rather than as a current count.
 
 Stage one, before any exemption, found 721 sites in three exhaustive categories:
 
 -   259 target a module already reachable from the package's public entry, so the fix is a path rewrite.
 -   411 target an internal module, so the fix is exporting that symbol, which XPT permits, or restructuring the test.
 -   51 sit in packages having no `src/index.ts`, so no public entry exists to measure reachability against.
-
-Stage two applies the fixture allowlist and the buildless-package exemption,
-removing 59 sites to reach the 662 figure.
-The clean-file count moves from 174 to 178 across the same two stages,
-the difference being files whose only violations were fixture or helper imports.
 
 The 411 group is the dominant cost and the reason this is not a mechanical migration.
 `package/git-policy/cli` alone accounts for 88 of those sites.
@@ -279,7 +310,28 @@ and `.js` specifiers corresponding to `.ts` sources.
     By the stated principle that no package should ship `src/*`, these are misconfigurations.
     Separate cleanup.
 
+## Implementation notes
+
+Resolution is purely lexical:
+nothing is read from disk for an import target and no extension probing happens,
+so a specifier naming a not-yet-built artifact classifies identically before and after a build.
+This settles the review's concern that diagnostics could depend on whether a build preceded the lint.
+
+The rule gates itself on `context.filename` and is registered globally rather than through an override.
+Two reasons.
+Allowlisted modules are not `.test.ts` files, yet must be checked,
+so an override keyed on the test glob could not reach them.
+And oxlint resolves overrides last-match-wins with options replaced,
+so a generated block would be position sensitive.
+
+Package identity, build-task presence, and artifact directories are memoized per directory.
+They are properties of a package rather than of the file under lint,
+so unlike per-file visitor state they must not be cleared between files.
+
+The 30 packages declaring `src/` entries never collide with the own-bare-name allowance in practice:
+measured across every test file, no bare self-reference occurs in a package whose `.` export points into `src/`.
+
 ## Next action
 
-Await confirmation, then scaffold the package per AP1 to AP4,
-implement the rule, unit test every branch per TCV, and register it in `@monochromatic-dev/config-oxlint`.
+Migrate the 697 reported sites, using the rule's own output as the worklist.
+Widened exports carry a TSDoc `@internal` tag.

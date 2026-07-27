@@ -1,9 +1,6 @@
 /**
  * Package behavior reached only through source, so importing it is rejected.
  *
- * The filename deliberately avoids the `*-helpers.ts` allowlist glob: this is
- * real package behavior, not a test-only helper.
- *
  * @module
  */
 
