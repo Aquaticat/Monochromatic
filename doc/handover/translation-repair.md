@@ -1161,6 +1161,19 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+LAUNCH CORPUS RUNS DETACHED, NOT AS HARNESS BACKGROUND TASKS (2026-07-27).
+Two consecutive runs died by signal with the same mise signature, `sh exited
+with non-zero status: no exit status`: run 015 at about 2 h 38 min and run 016
+after roughly four seconds of work. Neither was resource exhaustion (63.9 GB
+total with 26.9 GB available, no OOM kill and no memory-pressure entry in the
+journal), and both had been launched as harness background tasks, so the signal
+is reaching the task's process group rather than arising in the run.
+REMEDY: launch through `setsid nohup ... < /dev/null &` from the worktree, which
+puts the run in its own session where a process-group signal cannot reach it.
+Run 017 launched this way survived. The cost is that the harness no longer
+reports completion, so pair the launch with a monitor over the log; check
+liveness with `kill -0 <pid>` on the recorded pid rather than by matching the
+command name, which self-matches (see the trap recorded for run 015).
 PASS 7 RUN 015 (2026-07-27, tip `a03997506`): KILLED EXTERNALLY at about 2 h
 38 min, not finished and not aborted by its own budget. Two settled before it
 died, 21/92, bands 7 small / 7 medium / 7 large. LCG_Akiball repaired (59
