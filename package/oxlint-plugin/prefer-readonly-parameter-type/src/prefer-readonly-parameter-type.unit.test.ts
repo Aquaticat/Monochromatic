@@ -345,9 +345,10 @@ children: [
       /* The whole expected set, pinned rather than probed by absence. Every other
        * claim in this case is that some parameter is *not* offered, which a fixture
        * nothing linted would satisfy too, so `readAliasEffect` is the control that
-       * proves the file reached the rule. Reverting `registerBindingOrigin` to
-       * overwrite origins must fail this assertion, by offering a parameter whose
-       * annotation then fails to compile. */
+       * proves the file reached the rule. Measured with `registerBindingOrigin`
+       * reverted to overwriting origins and the package rebuilt: this fixture emits
+       * three messages instead of one, adding offers for `second` and `shadowed`.
+       * The `second` offer is the unsound one, whose annotation fails to compile. */
       expect(messages,).toEqual([
         'Parameter "values" should be readonly: mutable Array has ReadonlyArray projection.',
       ],);

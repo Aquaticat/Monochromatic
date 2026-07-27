@@ -92,8 +92,8 @@ cursor.push({ label: 'appended', },);
 
 Only `reached` can be what the alias holds when the mutation runs,
 yet both parameters are credited and `shadowed` loses a read-only offer it deserves.
-Measured: neither parameter is offered.
-Overwrite happened to get this shape right, by keeping only the last write,
+Measured: neither parameter is offered, and under overwrite `shadowed` was offered.
+So overwrite got this shape right, by keeping only the last write,
 and got the branching shape wrong.
 
 That trade is deliberate and asymmetric.
@@ -148,10 +148,18 @@ bumped for behavior changes.
 
 The mutation test: reverting the accumulator lookup in `registerBindingOrigin` to a fresh
 set, so origins overwrite again, must fail that assertion.
-Measured, with overwrite restored and the package rebuilt, against the fixture as it stood
-with only the two alias cases in it:
-the rule emitted exactly
-`Parameter "second" should be readonly: mutable Array has ReadonlyArray projection.`
+Measured, with overwrite restored and the package rebuilt, the fixture emits three messages
+where accumulation emits one:
+
+```text
+Parameter "values" should be readonly: mutable Array has ReadonlyArray projection.
+Parameter "shadowed" should be readonly: mutable Array has ReadonlyArray projection.
+Parameter "second" should be readonly: mutable Array has ReadonlyArray projection.
+```
+
+The `second` offer is the unsound one this decision removes.
+The `shadowed` offer is the precision overwrite happened to have and accumulation gives up.
+The `values` offer is the control, which survives both branches, as it must to be a control.
 
 `readAliasEffect` is that control.
 Every other claim in the case is that some parameter is *not* offered,
