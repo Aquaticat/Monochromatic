@@ -20,10 +20,13 @@ import {
   EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE,
 } from './external-callable-effect.ts';
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
-import { effectCallName, } from './effect-call-name.ts';
 import { isDefaultLibraryArrayBrandDeclaration, } from './effect-default-library-array-brand.ts';
-import { recordCollectionMemberEffect, } from './effect-collection-member-effect.ts';
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  COLLECTION_CALL_DERIVED,
+  COLLECTION_CALL_RECEIVER_DERIVED,
+  COLLECTION_CALL_UNDERIVED,
+  recordCollectionMemberEffect,
+} from './effect-collection-member-effect.ts';
 import {
   addEffectIndex,
   isEffectCallableDeclaration,
@@ -32,13 +35,12 @@ import {
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
 import {
-  addOpaqueEffect,
   ALL_PACKAGED_PROPERTIES,
   callableDeclaration,
   parameterIndex,
   parameterIndexes,
 } from './effect-call-resolution.ts';
-import { effectOriginLocation, } from './effect-origin-location.ts';
+import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
 
 /**
  * Classifies one call as callback invocation, owned source edge, derived package edge, or opaque boundary.
@@ -144,9 +146,12 @@ export function inspectEffectCall({
       declaration: resolvedDeclaration,
     },))
     return;
-  if ((resolvedDeclaration !== undefined)
-    && isPropertyAccessExpression(call.expression,)
-    && recordCollectionMemberEffect({
+  /**
+   * How much of a default-library collection call the derivation answered.
+   */
+  const collectionCoverage = (resolvedDeclaration !== undefined)
+      && isPropertyAccessExpression(call.expression,)
+    ? recordCollectionMemberEffect({
       project,
       checker,
       bindingOriginBySymbolId,
@@ -156,7 +161,9 @@ export function inspectEffectCall({
       declaration: resolvedDeclaration,
       summary,
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-    },))
+    },)
+    : COLLECTION_CALL_UNDERIVED;
+  if (collectionCoverage === COLLECTION_CALL_DERIVED)
     return;
   /**
    * Owned callee declaration selected by signature or symbol fallback.
@@ -225,51 +232,12 @@ export function inspectEffectCall({
     return;
   }
 
-  /**
-   * Authored unresolved call target retained for adapter verification.
-   */
-  const opaqueProvenance = effectCallName(call.expression,);
-  /**
-   * Origin call location naming where each remediation applies.
-   */
-  const originLocation = effectOriginLocation({ node: call, },);
-  addOpaqueEffect({
+  recordOpaqueBoundary({
+    checker,
+    bindingOriginBySymbolId,
+    call,
+    allArgumentIndexes,
     summary,
-    affectedParameterIndex: isPropertyAccessExpression(call.expression,)
-      && expressionCanCarryMutableState({
-        checker,
-        node: call.expression
-          .expression,
-      },)
-      ? parameterIndex({
-        checker,
-        bindingOriginBySymbolId,
-        node: call.expression
-          .expression,
-      },)
-      : PARAMETER_INDEX_UNAVAILABLE,
-    provenance: `${opaqueProvenance} [${originLocation}]`,
-  },);
-  allArgumentIndexes.forEach(function opaqueArgument(
-    indexes,
-    argumentIndex,
-  ): void {
-    /**
-     * Argument expression corresponding to indexed parameter origin.
-     */
-    const argument = call.arguments[argumentIndex];
-    if ((argument === undefined)
-      || (!expressionCanCarryMutableState({
-        checker,
-        node: argument,
-      },)))
-      return;
-    indexes.forEach(function opaqueArgumentOrigin(index,): void {
-      addOpaqueEffect({
-        summary,
-        affectedParameterIndex: index,
-        provenance: `${opaqueProvenance} [${originLocation}]`,
-      },);
-    },);
+    receiverDerived: collectionCoverage === COLLECTION_CALL_RECEIVER_DERIVED,
   },);
 }

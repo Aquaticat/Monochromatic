@@ -155,7 +155,7 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
-      expect(diagnostics.length,).toBe(19,);
+      expect(diagnostics.length,).toBe(16,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -166,7 +166,7 @@ children: [
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
         );
-      },).length,).toBe(12,);
+      },).length,).toBe(9,);
     },
   },),
   it({
@@ -265,11 +265,34 @@ children: [
   it({
     name: 'keeps state reachable through a member result out of every discharge',
     fn: async () => {
-      const diagnostics = await lintReadonly('readonly-inert-member-invalid.ts',);
+      const diagnostics = await lintReadonly('readonly-member-channel-invalid.ts',);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(3,);
+      expect(messages.length,).toBe(4,);
+      /* An answered receiver claim must not carry the argument analysis with it.
+       * `push` answers its receiver completely, a mutation and nothing unresolved,
+       * while `replacement` stays reachable through the array afterwards. Widening
+       * the discharge to return early puts this diagnostic out. */
+      expect(messages.some(function retainedArgumentStaysOpaque(message,): boolean {
+        return message.startsWith(
+          'The function input named "replacement" is used by these calls: values.push [',
+        );
+      },),).toBe(true,);
+      /* `join` returns a `string`, so the result condition alone would discharge it
+       * while it coerces every element. Dropping the verified-channel condition puts
+       * this diagnostic out. */
+      expect(messages.some(function coercionStaysOpaque(message,): boolean {
+        return message.startsWith(
+          'The function input named "values" is used as the object for these method calls: values.join [',
+        );
+      },),).toBe(true,);
+      /* `ReadonlyMap.has` reaches no user code and returns a boolean, so the
+       * receiver claim is answered and nothing is left to report. Removing that
+       * discharge puts a third diagnostic back. */
+      expect(messages.some(function statelessResultStaysSilent(message,): boolean {
+        return message.includes('entries.has',);
+      },),).toBe(false,);
       /* `find` answers what user code runs, its observer being owned, but returns
        * `Labelled | undefined`. A union carries no type arguments, so a species
        * gate reading only those discharged the call and handed back a clean

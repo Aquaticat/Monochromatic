@@ -261,7 +261,7 @@ await describe({
           {
             functionName: 'crossFileSemanticEffect',
             mutated: [0,],
-            opaque: [0,],
+            opaque: [],
           },
           {
             functionName: 'callbackSemanticEffect',
@@ -316,12 +316,12 @@ await describe({
           {
             functionName: 'mutableArrayStructureEffect',
             mutated: [0,],
-            opaque: [0,],
+            opaque: [],
           },
           {
             functionName: 'mutableSetStructureEffect',
             mutated: [0,],
-            opaque: [0,],
+            opaque: [],
           },
           {
             functionName: 'mutableSortObserverEffect',

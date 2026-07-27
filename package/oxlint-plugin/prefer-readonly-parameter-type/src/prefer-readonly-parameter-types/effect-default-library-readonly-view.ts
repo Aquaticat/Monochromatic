@@ -16,7 +16,10 @@ import {
   defaultLibraryViewMembers,
   READONLY_VIEW_INTERFACE_PREFIX,
 } from './effect-default-library-view-members.ts';
-import { isInertCollectionMember, } from './effect-inert-member-authority.ts';
+import {
+  collectionMemberUserCodeChannel,
+  MEMBER_CHANNEL_UNPROVEN,
+} from './effect-member-channel-authority.ts';
 
 /**
  * Member leaves the receiver's own structure intact.
@@ -126,26 +129,32 @@ export function collectionStructureClaim({
 }
 
 /**
- * Tests whether a resolved declaration is a verified inert collection member.
+ * Tests whether a member's user-code channel is no wider than a property read.
  *
  * Consults the one permitted authority, whose entries are enforced against a real
- * engine by `effect-inert-member-authority.unit.test.ts`. Membership discharges
- * the reachable-user-code claim, and nothing else: the structural claim keeps
- * deriving from the paired read-only view, so an inert mutator such as `Set.add`
- * still reports its mutation.
+ * engine by `effect-member-channel-authority.unit.test.ts`. A verified channel
+ * discharges the reachable-user-code claim about the receiver, and nothing else:
+ * the structural claim keeps deriving from the paired read-only view, so a verified
+ * mutator such as `Set.add` still reports its mutation.
+ *
+ * Both verified channels answer the same way here. An internal-slot member reaches
+ * no user code at all, and an own-index member reaches only what `values[0]`
+ * already reaches, which this rule treats as a pure read everywhere else. Keeping
+ * them distinct in the authority is about what each probe must prove, not about
+ * what either discharges.
  *
  * @param project - TypeScript project proving default-library ownership.
  *
  * @param declaration - Selected callable declaration.
  *
- * @returns whether the member is verified to run no user code.
+ * @returns whether the member opens a verified narrow channel.
  *
  * @example
  * ```typescript
- * isInertDefaultLibraryMember({ project, declaration });
+ * memberChannelIsVerifiedNarrow({ project, declaration });
  * ```
  */
-export function isInertDefaultLibraryMember({
+export function memberChannelIsVerifiedNarrow({
   project,
   declaration,
 }: {
@@ -164,10 +173,10 @@ export function isInertDefaultLibraryMember({
   const owner = declaration.parent;
   if ((!isInterfaceDeclaration(owner,)) || (!isIdentifier(owner.name,)))
     return false;
-  return isInertCollectionMember({
+  return collectionMemberUserCodeChannel({
     ownerName: owner.name
       .text,
     memberName: declaration.name
       .text,
-  },);
+  },) !== MEMBER_CHANNEL_UNPROVEN;
 }

@@ -80,4 +80,10 @@ export default plugin;
  *
  * @internal
  */
-export { INERT_MEMBERS_BY_INTERFACE, } from './prefer-readonly-parameter-types/effect-inert-member-authority.ts';
+export {
+  DEFERRED_MEMBER_NAMES,
+  MEMBER_CHANNEL_INTERNAL_SLOT,
+  MEMBER_CHANNEL_RECEIVER_INDEX,
+  MEMBER_CHANNELS_BY_INTERFACE,
+  VERIFIED_MEMBER_CHANNEL_COUNT,
+} from './prefer-readonly-parameter-types/effect-member-channel-authority.ts';

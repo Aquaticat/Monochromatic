@@ -18,15 +18,103 @@ import {
   COLLECTION_STRUCTURE_MUTATED,
   COLLECTION_STRUCTURE_PRESERVED,
   collectionStructureClaim,
+  memberChannelIsVerifiedNarrow,
 } from './effect-default-library-readonly-view.ts';
 import { parameterIndex, } from './effect-call-resolution.ts';
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  resultExposesMutableState,
+} from './effect-primitive-origin.ts';
 import {
   addEffectIndex,
   type MutableEffectSummary,
   PARAMETER_INDEX_UNAVAILABLE,
 } from './effect-summary-model.ts';
 import { recordReadonlyViewApplications, } from './effect-readonly-view-application.ts';
+
+/**
+ * Nothing about the call was answered, so both sides stay opaque.
+ */
+export const COLLECTION_CALL_UNDERIVED: unique symbol = Symbol(
+  'collection call left both receiver and arguments unproven',
+);
+
+/**
+ * What the call does to its receiver is answered; its arguments are not.
+ */
+export const COLLECTION_CALL_RECEIVER_DERIVED: unique symbol = Symbol(
+  'collection call answered for its receiver only',
+);
+
+/**
+ * The whole call is answered and needs no opaque boundary.
+ */
+export const COLLECTION_CALL_DERIVED: unique symbol = Symbol(
+  'collection call fully answered',
+);
+
+/**
+ * How much of one collection call the derivation could answer.
+ */
+export type CollectionCallCoverage =
+  | typeof COLLECTION_CALL_UNDERIVED
+  | typeof COLLECTION_CALL_RECEIVER_DERIVED
+  | typeof COLLECTION_CALL_DERIVED;
+
+/**
+ * Tests whether the receiver claim alone is answerable for this member.
+ *
+ * Two conditions, both load-bearing. The member's user-code channel must be
+ * verified, because a result carrying nothing proves nothing on its own: `join`
+ * returns a `string` and still calls every element's `toString`, and
+ * `values.some(foreignPredicate)` returns a `boolean` and still runs the predicate.
+ * And the result must expose no caller-owned state, because a verified channel
+ * proves nothing about what comes back: `values.at(0)` reaches no user code and
+ * hands back the receiver's own element, which nothing then tracks as an alias, so
+ * `values.at(0).label = 'x'` would go unreported.
+ *
+ * @param project - TypeScript project proving default-library ownership.
+ *
+ * @param checker - TypeScript checker resolving the instantiated result type.
+ *
+ * @param call - Collection call whose result type decides exposure.
+ *
+ * @param declaration - Resolved member declaration.
+ *
+ * @returns whether receiver opacity is dischargeable for this call.
+ *
+ * @example
+ * ```ts
+ * receiverClaimAnswerable({ project, checker, call, declaration, });
+ * ```
+ */
+function receiverClaimAnswerable({
+  project,
+  checker,
+  call,
+  declaration,
+}: {
+  readonly project: Project;
+  readonly checker: Checker;
+  readonly call: CallExpression;
+  readonly declaration: Node;
+},): boolean {
+  if (!memberChannelIsVerifiedNarrow({
+    project,
+    declaration,
+  },))
+    return false;
+  /**
+   * Instantiated result type of this call.
+   */
+  const resultType = checker.getTypeAtLocation(call,);
+  if (resultType === undefined)
+    return false;
+  return !resultExposesMutableState({
+    checker,
+    type: resultType,
+  },);
+}
 
 /**
  * Records both claims for one default-library collection call.
@@ -59,7 +147,7 @@ import { recordReadonlyViewApplications, } from './effect-readonly-view-applicat
  *
  * @param analysisRoot - Optional external implementation root.
  *
- * @returns whether call was fully derived and needs no opaque fallback.
+ * @returns how much of the call was answered.
  *
  * @mutates summary - Adds receiver mutation and derived element-flow relations.
  *
@@ -86,7 +174,7 @@ export function recordCollectionMemberEffect({
   readonly declaration: Node;
   readonly summary: MutableEffectSummary;
   readonly analysisRoot?: string;
-},): boolean {
+},): CollectionCallCoverage {
   /**
    * What this member does to the receiver's own structure.
    */
@@ -96,7 +184,7 @@ export function recordCollectionMemberEffect({
   },);
   if ((structure !== COLLECTION_STRUCTURE_PRESERVED)
     && (structure !== COLLECTION_STRUCTURE_MUTATED))
-    return false;
+    return COLLECTION_CALL_UNDERIVED;
   if (structure === COLLECTION_STRUCTURE_MUTATED) {
     /**
      * Caller parameter owning receiver, when receiver can carry mutable state.
@@ -116,7 +204,11 @@ export function recordCollectionMemberEffect({
       value: mutatedParameterIndex,
     },);
   }
-  return recordReadonlyViewApplications({
+  // The mutation above is recorded before any discharge below, because a member can
+  // be both a verified mutator and narrow: `push` restructures its receiver and
+  // reaches nothing but an own-index write. Returning early past the mutation record
+  // would trade one silent gap for another.
+  if (recordReadonlyViewApplications({
     project,
     checker,
     bindingOriginBySymbolId,
@@ -124,5 +216,14 @@ export function recordCollectionMemberEffect({
     receiver,
     summary,
     ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-  },);
+  },))
+    return COLLECTION_CALL_DERIVED;
+  return receiverClaimAnswerable({
+      project,
+      checker,
+      call,
+      declaration,
+    },)
+    ? COLLECTION_CALL_RECEIVER_DERIVED
+    : COLLECTION_CALL_UNDERIVED;
 }

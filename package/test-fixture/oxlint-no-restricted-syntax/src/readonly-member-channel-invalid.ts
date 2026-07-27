@@ -1,5 +1,5 @@
 /**
- * Fixture probing what a verified-inert collection member may discharge.
+ * Fixture probing what a verified member channel may discharge.
  *
  * @module
  */
@@ -12,11 +12,19 @@ type Labelled = {
 };
 
 /**
+ * Element exposing nothing writable, so only the call itself can be reported.
+ */
+type SealedLabel = {
+  readonly label: string;
+};
+
+/**
  * Reads through a member that exposes no interior state at all.
  *
- * `has` returns a boolean, so nothing reachable from the receiver leaves the
- * call. A verified-inert member with a stateless result is the one case where
- * receiver opacity is dischargeable.
+ * `has` returns a boolean, so nothing reachable from the receiver leaves the call,
+ * and `ReadonlyMap.has` reaches no user code. Both conditions hold, so this call
+ * must report nothing at all: no opaque boundary, and no read-only offer either,
+ * the parameter already being deeply read-only.
  *
  * @param entries - Read-only view whose membership is queried.
  *
@@ -27,8 +35,56 @@ type Labelled = {
  * statelessResultEffect(new Map());
  * ```
  */
-export function statelessResultEffect(entries: ReadonlyMap<string, Labelled>,): boolean {
+export function statelessResultEffect(entries: ReadonlyMap<string, SealedLabel>,): boolean {
   return entries.has('label',);
+}
+
+/**
+ * Reads through a member whose result carries nothing and whose channel is wide.
+ *
+ * `join` returns a `string`, so nothing reachable from the receiver comes back, and
+ * it still calls `toString` on every element. A stateless result therefore proves
+ * nothing on its own, which is why the verified channel is a separate condition:
+ * `join` is absent from the authority and stays opaque.
+ *
+ * @param values - Elements coerced by the default separator join.
+ *
+ * @returns joined text.
+ *
+ * @example
+ * ```ts
+ * elementCoercionEffect([]);
+ * ```
+ */
+export function elementCoercionEffect(values: readonly SealedLabel[],): string {
+  return values.join(',',);
+}
+
+/**
+ * Places a caller-owned argument inside a caller-owned receiver.
+ *
+ * `push` restructures its receiver, reaches nothing but an own-index write, and
+ * returns a length. So the receiver claim is fully answered: a mutation, with no
+ * remaining uncertainty. The argument claim is untouched by any of that, because
+ * `replacement` stays reachable through the array after the call returns.
+ *
+ * Discharging both claims together is the defect this fixture exists to catch: an
+ * answered receiver must not take the argument analysis with it.
+ *
+ * @param values - Receiver gaining an element.
+ *
+ * @param replacement - Caller-owned element retained by receiver.
+ *
+ * @example
+ * ```ts
+ * retainedArgumentEffect([], { label: 'a' });
+ * ```
+ */
+export function retainedArgumentEffect(
+  values: Labelled[],
+  replacement: Labelled,
+): void {
+  values.push(replacement,);
 }
 
 /**
