@@ -3119,3 +3119,34 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   on completion times, which is a new nondeterminism in the thing that decides
   what gets measured. Prefer the stale-but-deterministic order. Revisit only if
   runs get long enough that intra-run drift exceeds one entry per band.
+- COVERAGE BAR REACHED 2026-07-27: 31 settled entries, 10 small / 11 medium /
+  10 large, against the stratified ~10/10/10 target. Accumulation was then
+  STOPPED DELIBERATELY (run 019 killed mid-entry) so the pool is fixed and the
+  sheet's provenance is unambiguous rather than drifting under the draw.
+  Accepted-issue pool at the draw: 2257 over 31 entries. Per band: small 238
+  (10.5 percent), medium 745 (33.0), large 1274 (56.4).
+  ROUND-TWO SHEET DRAWN to
+  `node_modules/.monochromatic/translation-repair-runs/grading-sheet-milestone-three-precision-round-two.md`,
+  50 items, 17 small / 17 medium / 16 large, seed
+  `milestone-three-precision-round-two`, corpus pin unchanged.
+  Validated before handing over: the sheet spreads across 30 of the 31 settled
+  entries, so no single entry dominates it, and its 50 (entry, claim) pairs have
+  ZERO overlap with round one's graded 50. That check matters because scoring a
+  round on items already used to calibrate it would read better than the
+  pipeline is; the seed rule alone was not treated as proof.
+- SLICE-RATE PROJECTION CORRECTED. The rule recorded earlier ("a log lookup and
+  a division") is right about WHERE the numbers come from and wrong about how
+  far one rate projects. Susiethegamer had 5 of 17 slices left at a cold-portion
+  rate of 7.5 min/slice, so 37 minutes was projected; it took 80.9. The resume's
+  five slice cycles ran 7.2, 8.7, about 28, 12.9, and 14.6 minutes, so per-slice
+  cost varies roughly fourfold WITHIN one entry. NIGHT81473140's projection
+  landed (52 projected, 50.6 actual) only because 15 remaining slices averaged
+  that variance out.
+  So: project from remaining slices only when MANY remain, and treat a
+  small-remainder estimate as an order of magnitude, never a schedule. Same
+  small-sample lesson as the timing cohorts and the panel-coverage sub-rates,
+  arriving for the third time in one session through a different door.
+  One unexplained observation left in place rather than explained away: between
+  the panel stage at 16:12:01Z and the next critic stage at 16:40:20Z there is a
+  28 minute gap with no editor or checker line logged, though the panel had
+  issued 11 issues. Cause not established; do not assume it is provider latency.
