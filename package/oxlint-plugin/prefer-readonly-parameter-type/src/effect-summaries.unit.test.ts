@@ -366,7 +366,7 @@ await describe({
           {
             functionName: 'objectArraySortCallbackEffect',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'plainArrayDefaultSortObservationEffect',
