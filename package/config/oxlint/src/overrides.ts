@@ -262,12 +262,24 @@ const nonUnitTestRuleOverride = {
  * rules remain active for its implementation and tests.
  *
  * ECMAScript collections were a third ground and no longer are. Read-only view
- * receivers now derive through `doc/decision/prefer-readonly-effect-model-split.md`.
+ * receivers derive through `doc/decision/prefer-readonly-effect-model-split.md`,
+ * mutable ones through `doc/decision/prefer-readonly-mutable-collection-members.md`,
+ * and a verified member channel discharges the receiver claim through
+ * `doc/decision/prefer-readonly-member-channel-authority.md`.
+ *
  * The exemption still covers the whole package because the remaining two grounds
- * reach 52 of its 96 source files, and because the 37 files free of the semantic
- * API hold their fixed point in mutable `Set` and `Map`, whose members stay
- * opaque until they are derived too. Narrowing this glob is tracked against that
- * work, not available yet.
+ * reach 52 of its 96 source files, and because what blocks the rest is now one
+ * named thing rather than collections generally. Measured on the modules that
+ * import no semantic API: `effect-element-application.ts` and
+ * `effect-callback-relation.ts` report exactly one finding each, both
+ * `summaries.get`, and `effect-fixed-point-propagation.ts` reports two, both
+ * `opaqueProvenanceByParameter.get`. Every one is a `Map.get` whose value type
+ * carries state, which the member-channel decision deliberately keeps opaque:
+ * nothing tracks a call result as an alias of the receiver, and this code does
+ * mutate what those lookups return.
+ *
+ * So narrowing waits on result provenance, a summary fact recording that a call
+ * result is reachable from the receiver's parameter, not on a wider authority.
  */
 const readonlyEffectSelfHostingOverride = {
   files: [
