@@ -71,7 +71,13 @@ Discharged only by analysis, never by assumption:
   and 1. Matching by type rather than index handles all of them, and misreading `reduce` as element-at-0
   would map element flow onto the accumulator and silently discharge a real effect.
 
-  The relation is read from the declaration's types, not asserted.
+  Match against the receiver type as well as its element type. `forEach`'s third callback parameter is
+  `array: readonly T[]`, the receiver itself, so a callback declaring it can reach receiver state without
+  ever touching an element parameter. Matching elements alone would miss that entirely.
+
+  The relation is read from the declaration's types, not asserted. Measured in TypeScript 7.0.2, the
+  instantiated callback parameter types are reference-identical to the receiver's type argument, so identity
+  comparison suffices and a failed match is a missed discharge rather than a false one.
 - When the member observes elements with no caller-supplied function, nothing is discharged.
   `join` coerces elements through `String`, `toSorted()` without a comparator runs the default comparator,
   and `toLocaleString` likewise. These stay opaque.
@@ -157,4 +163,10 @@ The audited fixtures decide correctness, and all must keep their current expecta
 whose callbacks reach only owned functions already proven effect-free. That expectation is a snapshot of the
 coarse model rather than a policy, and updating it is part of this change.
 
-Performance must stay inside the audit's existing gate: a cold 13-file package lint under 10 seconds.
+Performance must not regress. The 10-second cold-run figure in
+`doc/troubleshooting/oxlint-prefer-readonly-incremental-cache.md` is that incident's open acceptance target,
+not a gate this change inherits: the same document measures the cold run at 62.9 seconds and the warm run at
+1.0 seconds. Measured here before any edit, `//package/config/oxlint:lint:oxlint` runs warm in 923
+milliseconds over 14 files with no findings, and `//package/module/caught-value:lint:oxlint` reports two
+errors in 1.2 seconds. Those are the numbers this change is held to; closing the cold-path gap remains the
+other incident's work.
