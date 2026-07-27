@@ -16,6 +16,7 @@ import {
   defaultLibraryViewMembers,
   READONLY_VIEW_INTERFACE_PREFIX,
 } from './effect-default-library-view-members.ts';
+import { isInertCollectionMember, } from './effect-inert-member-authority.ts';
 
 /**
  * Member leaves the receiver's own structure intact.
@@ -122,4 +123,51 @@ export function collectionStructureClaim({
   return pairedViewMembers.has(memberName,)
     ? COLLECTION_STRUCTURE_PRESERVED
     : COLLECTION_STRUCTURE_MUTATED;
+}
+
+/**
+ * Tests whether a resolved declaration is a verified inert collection member.
+ *
+ * Consults the one permitted authority, whose entries are enforced against a real
+ * engine by `effect-inert-member-authority.unit.test.ts`. Membership discharges
+ * the reachable-user-code claim, and nothing else: the structural claim keeps
+ * deriving from the paired read-only view, so an inert mutator such as `Set.add`
+ * still reports its mutation.
+ *
+ * @param project - TypeScript project proving default-library ownership.
+ *
+ * @param declaration - Selected callable declaration.
+ *
+ * @returns whether the member is verified to run no user code.
+ *
+ * @example
+ * ```typescript
+ * isInertDefaultLibraryMember({ project, declaration });
+ * ```
+ */
+export function isInertDefaultLibraryMember({
+  project,
+  declaration,
+}: {
+  readonly project: Project;
+  readonly declaration: Node;
+}): boolean {
+  if ((!isMethodSignatureDeclaration(declaration,))
+    || (!isIdentifier(declaration.name,))
+    || (!project
+      .program
+      .isSourceFileDefaultLibrary(declaration.getSourceFile(),)))
+    return false;
+  /**
+   * Default-library interface selected as method owner.
+   */
+  const owner = declaration.parent;
+  if ((!isInterfaceDeclaration(owner,)) || (!isIdentifier(owner.name,)))
+    return false;
+  return isInertCollectionMember({
+    ownerName: owner.name
+      .text,
+    memberName: declaration.name
+      .text,
+  },);
 }

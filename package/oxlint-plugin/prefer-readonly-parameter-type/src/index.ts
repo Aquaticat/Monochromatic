@@ -74,3 +74,10 @@ const plugin: Plugin = eslintCompatPlugin({
 },);
 
 export default plugin;
+
+/**
+ * Verified inert collection members, exported for the built-artifact probe test.
+ *
+ * @internal
+ */
+export { INERT_MEMBERS_BY_INTERFACE, } from './prefer-readonly-parameter-types/effect-inert-member-authority.ts';
