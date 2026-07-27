@@ -186,6 +186,39 @@ rg --count-matches 'semantic rule failed' -- <sweep-output>
 returns exactly 1 for every sweep taken,
  including the earliest baseline.
 
+## Upgrading does not fix it
+
+`typescript@7.1.0-dev.20260726.1` was installed across the whole workspace and swept.
+The panic persists,
+ with the same message and the same site.
+
+The sweep produced 1859 findings and 23 offers,
+ identical to the run on 7.0.2,
+ and one `semantic rule failed` with the same
+`interface conversion: checker.TypeData is *checker.TypeReference, not *checker.TupleType`.
+
+The stack is what makes the correspondence exact.
+On 7.0.2 it reads `internal/api/proto.go:675`;
+ on the nightly it reads `internal/api/proto.go:741`,
+ which is the line the clone at commit `f209df30` holds the unguarded `t.AsTupleType()` on.
+So the nightly ships that code with no guard added.
+
+The source agrees.
+The newest upstream commit before that nightly's cutoff is `8d29e62f`,
+ dated 2026-07-24,
+ and `git show 8d29e62f:internal/api/proto.go` still has the unguarded branch.
+`8d29e62f` is titled "Fix panic in variadic tuple relationship checking",
+ which is a panic in the relater rather than in this serializer,
+ so it is a different bug that happens to share the word tuple.
+
+The catalog was returned to `'typescript': '>=7.0.2'` and reinstalled,
+ because carrying a prerelease that fixes nothing is cost without benefit.
+A future version is worth retesting the same way:
+ pin the catalog entry,
+ install,
+ sweep,
+ and grep the output for `semantic rule failed`.
+
 ## Verified workarounds
 
 None at our boundary.
