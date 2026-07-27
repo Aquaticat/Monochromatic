@@ -24,7 +24,10 @@
  */
 
 import type { Node, } from 'typescript/unstable/ast';
-import { isIdentifier, } from 'typescript/unstable/ast/is';
+import {
+  isIdentifier,
+  isTypeNode,
+} from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
@@ -71,6 +74,16 @@ export function packagedCallableOrigins({
     .forEach(function collectNamed(node,): void {
       if (!isIdentifier(node,))
         return;
+      /* A name in type position packages no value, so asking the checker about it is
+       * both pointless and a route into paths this scan has no business on: a workspace
+       * sweep over an earlier revision that did ask ended in
+       * `panic: interface conversion: checker.TypeData is *checker.TypeReference, not
+       * *checker.TupleType`, which aborts the whole run rather than one file. */
+      if (enclosedByTypeNode({
+        node,
+        packaged,
+      },))
+        return;
       /**
        * Symbol this occurrence resolves to.
        */
@@ -95,4 +108,42 @@ export function packagedCallableOrigins({
       },);
     },);
   return origins;
+}
+
+/**
+ * Tests whether a name sits inside a type annotation rather than in value position.
+ *
+ * @param node - Name being classified.
+ *
+ * @param packaged - Outer declaration bounding the ascent.
+ *
+ * @returns whether a type node encloses this name.
+ *
+ * @example
+ * ```ts
+ * enclosedByTypeNode({ node, packaged });
+ * ```
+ */
+function enclosedByTypeNode({
+  node,
+  packaged,
+}: {
+  readonly node: Node;
+  readonly packaged: Node;
+},): boolean {
+  /**
+   * Cursor ascending toward the packaged declaration.
+   */
+  const cursor: { current: Node; } = { current: node, };
+  while (cursor.current !== packaged) {
+    if (isTypeNode(cursor.current,))
+      return true;
+    if (cursor.current
+      .parent
+      === cursor.current)
+      return false;
+    cursor.current = cursor.current
+      .parent;
+  }
+  return false;
 }
