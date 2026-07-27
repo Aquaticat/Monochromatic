@@ -411,16 +411,17 @@ await describe({
         expect(accessorPackaged,).toEqual([0,],);
         expect(spreadPackaged,).toEqual([0,],);
         expect(nestedAccessor,).toEqual([0,],);
-        /* Known gap, recorded rather than asserted away. Both are offered readonly while
-         * the callee writes through what they hand over, and the accessor handling does
-         * not remove it because the cause is on the other side: `callThroughMethodResult`
-         * writes `get().label`, and a write through the result of invoking a supplied
-         * callable is attributed to nothing, measured as `referentMutated=[] invoked=[0]`
-         * for that callee. Routing methods and function-valued properties through the
-         * packaging scan was measured and does not change these, so the fix has to
-         * attribute the callee's write first. */
-        expect(methodReturn,).toEqual([],);
-        expect(arrowReturn,).toEqual([],);
+        /* Closed, and it took both halves. The callee side had to attribute the write:
+         * `callThroughMethodResult` writes `get().label`, and calling a callable the
+         * caller supplied may return caller-owned state, so `provenanceSuccessors` now
+         * contributes an identifier callee. The caller side had to carry the origin to
+         * the edge, which is the method and function-valued-property routing in
+         * `parameterIndexes`. Reverting either one alone puts both of these back to `[]`
+         * and offers `row` readonly again, which is how they were measured: with only the
+         * caller half the callee still recorded `referentMutated=[]`, and with only the
+         * callee half the origin never reached the edge. */
+        expect(methodReturn,).toEqual([0,],);
+        expect(arrowReturn,).toEqual([0,],);
         /* The control that keeps every assertion here from passing vacuously: none of
          * these changes may credit a parameter that is only read. */
         expect(readOnly,).toEqual([],);
@@ -795,9 +796,15 @@ await describe({
             opaque: [],
           },
           {
+            /* Opaque as well as mutated, and honest. The literal handed to
+             * `Promise.resolve` holds a method that writes `closureState`, so an
+             * unresolved callee receives a capability over caller-owned state. The claim
+             * read `[]` until `parameterIndexes` began scanning packaged callables for
+             * the origins they carry, which is what the identifier-callee attribution
+             * needs to reach an edge at all. */
             functionName: 'passedContainerClosureSemanticEffect',
             mutated: [0,],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'deadParentClosureSemanticEffect',

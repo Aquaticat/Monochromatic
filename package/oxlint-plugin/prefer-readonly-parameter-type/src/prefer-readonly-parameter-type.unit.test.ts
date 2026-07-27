@@ -360,10 +360,10 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      /* Five reports plus the two offers pinned as a set at the end of this case. The
-       * count moved from five when the packaging probes were added, because the gap they
-       * measure produces an offer rather than a report. */
-      expect(messages.length,).toBe(7,);
+      /* Five reports and no offer. The count went to seven while the packaged-callable
+       * gap was open, since that gap produced offers rather than reports, and back to
+       * five once both halves of it landed. */
+      expect(messages.length,).toBe(5,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -438,20 +438,16 @@ children: [
           || message.includes('"records" should be readonly',)
           || message.includes('"rows" should be readonly',);
       },),).toEqual([],);
-      /* Every offer in the fixture, pinned as a set rather than by count. Both routes to
-       * the contract-name defect surfaced here and are gone: `row` with no lookup
-       * involved, and `rows` through a discharged `at` result. The two that remain are a
-       * measured gap the packaging work does not reach, on `methodReturnPackagedEffect`
-       * and `arrowReturnPackagedEffect`: their callee writes through the result of
-       * invoking a callable they supply, and that write is attributed to nothing, so the
-       * caller looks clean. `effect-summaries.unit.test.ts` records the cause beside the
-       * summaries. */
+      /* Every offer in the fixture, and there are none. Four defects surfaced here as an
+       * offer and each is gone: `row` through a contract-omitted property with no lookup
+       * involved, `rows` through a discharged `at` result, and
+       * `methodReturnPackagedEffect` and `arrowReturnPackagedEffect` through a callable
+       * they package for the callee to call. `effect-summaries.unit.test.ts` carries the
+       * written-parameter assertions that keep this emptiness from being vacuous, since a
+       * fixture nothing linted would satisfy it too. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
-      },),).toEqual([
-        'Parameter "row" should be readonly: property label is writable.',
-        'Parameter "row" should be readonly: property label is writable.',
-      ],);
+      },),).toEqual([],);
     },
   },),
   it({

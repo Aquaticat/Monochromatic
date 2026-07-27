@@ -12,7 +12,7 @@ import {
 import type { Node, } from 'typescript/unstable/ast';
 import {
   isArrayLiteralExpression,
-  isAccessorDeclaration,
+  isFunctionLikeDeclaration,
   isIdentifier,
   isObjectLiteralExpression,
   isPropertyAssignment,
@@ -174,6 +174,12 @@ export function parameterIndexes({
           if ((includedPropertyNames !== ALL_PACKAGED_PROPERTIES)
             && (!includedPropertyNames.has(propertyName,)))
             return;
+          /* A property holding a callable does have a readable value, and reading it
+           * still finds nothing: what reaches a parameter is the body the callee runs. */
+          if (isFunctionLikeDeclaration(property.initializer,)) {
+            collectPackagedCallable(property.initializer,);
+            return;
+          }
           collect(property.initializer,);
           return;
         }
@@ -207,13 +213,10 @@ export function parameterIndexes({
           collect(property.expression,);
           return;
         }
-        if (!isAccessorDeclaration(property,))
-          return;
-        /* An accessor has no property value to read: the callee obtains one by reading
-         * the property, which runs this body in the caller's scope. A method and a
-         * function-valued property are deliberately not routed here, because measuring
-         * showed the offer they produce has a different cause and this would not remove
-         * it: see `methodReturnPackagedEffect` in the result-provenance fixture. */
+        /* Whatever is left has no property value this walk can read. An accessor
+         * computes one by running its body when the callee reads the property; a method
+         * is a body the callee calls. Both reach a parameter only through that body, so
+         * both are scanned for named bindings. */
         collectPackagedCallable(property,);
         },);
       return;
@@ -222,6 +225,10 @@ export function parameterIndexes({
       current.elements
         .forEach(function collectElement(element,): void {
         if (!isSpreadElement(element,)) {
+          if (isFunctionLikeDeclaration(element,)) {
+            collectPackagedCallable(element,);
+            return;
+          }
           collect(element,);
           return;
         }

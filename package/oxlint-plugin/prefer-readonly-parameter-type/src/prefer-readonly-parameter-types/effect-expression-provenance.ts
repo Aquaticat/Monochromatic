@@ -178,6 +178,17 @@ function provenanceSuccessors({
   }
   if (!isCallExpression(node,))
     return [];
+  /* Calling a callable the caller supplied. Whatever comes back was chosen by the
+   * caller's function, so it may be caller-owned state, and the callee identifier is the
+   * only handle on it this analysis has: a caller maps that parameter to whatever it
+   * packaged there. Restricted to an identifier callee on purpose. A member callee would
+   * make every `values.map(fn)` credit `values` for a container the member freshly
+   * allocated, which is the distinction `FRESH_CONTAINER_MEMBER_NAMES` exists to keep.
+   * An identifier that holds no parameter origin contributes nothing, so a call of a
+   * local or imported function is unaffected. Measured on `callThroughMethodResult` in
+   * the result-provenance fixture, which writes `get().label`. */
+  if (isIdentifier(node.expression,))
+    return [node.expression,];
   /* A call contributes its receiver only when the result authority verifies that its
    * result is state the receiver held. Absent that, a call is where provenance stops:
    * the result is either fresh or unproven, and neither may be credited. */
