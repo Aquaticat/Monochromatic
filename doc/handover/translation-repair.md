@@ -3092,5 +3092,12 @@ Deterministic core plus model stages, revised after an adversarial second-model 
 - NIGHT81473140 (12301 B, LARGE, the biggest entry attempted so far) hit the
   90 min per-entry hard cap in run 017 with 26 slices cached, so it did not
   settle. Recoverable exactly as Dethelly and Futajuhuacha were: resume-first
-  ordering picks it up next run and slice progress is monotone. Expect it to
-  need more than one further run at 12 KB.
+  ordering picks it up next run and slice progress is monotone.
+  It needs ONE further run, not several, and that is measured rather than
+  inferred from its size. Run 017 logged the entry as `10 chunk pairs, 41
+  slices`, and it finished 26 of those 41 from a COLD start inside the 90 min
+  cap, so 3.46 min/slice. The 15 remaining come to about 52 minutes, well inside
+  one cap. General lesson: the pipeline prints its slice count when an entry
+  starts, so "how many more runs does this need" is a log lookup and a division,
+  never a guess from byte size. An earlier draft of this note guessed from the
+  12 KB figure and got it wrong.
