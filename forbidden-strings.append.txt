@@ -132,7 +132,26 @@
 # FF[0-9]: Final Fantasy series shorthand family
 /^(?:(?:PR)|(?:TS)|(?:TX)|(?:RE)|(?:PS)|(?:DP)|(?:AS)|(?:CS)|(?:SA)|(?:CA)|(?:FF))[0-9]:/
 
+# Rules banning a bare identifier must be written so the pattern does not match
+# its own text, because this scanner has no per-rule path scoping and no per-rule
+# allowlists (package/cli/forbidden-strings/README.md, "When to pick something
+# else"), so it reads this appendix as ordinary content like any other file. A
+# literal rule body therefore matches itself, and every later edit to this file
+# fails the commit on a line nobody touched. Bracketing one character keeps the
+# matched text identical while breaking the self-match.
+
 ==> crn-renamed-oxc-comment <==
 # Renamed to ParsedComment when mutation-test moved from oxc-parser to
 # yuku-parser; the old name misattributes the producer of the comment shape.
-OxcComment
+/Oxc[C]omment/
+
+==> crn-renamed-inert-collection-member <==
+# Renamed to the member-channel authority in prefer-readonly-parameter-type.
+# "Inert" claimed these default-library members ran no user code, which an
+# accessor-bearing receiver disproved for every Array entry: at, includes,
+# indexOf, lastIndexOf, toReversed, toSpliced, pop and copyWithin all invoke an
+# indexed getter, and that getter can restructure the receiver. The word invites
+# a future reader to re-derive the false claim, so the concept is now a named
+# channel per member. Evidence:
+# doc/decision/prefer-readonly-member-channel-authority.md.
+/(?:INERT_MEMBERS_BY_INTERFAC[E])|(?:isInertCollectionMembe[r])|(?:isInertDefaultLibraryMembe[r])|(?:effect-inert-member-authorit[y])/
