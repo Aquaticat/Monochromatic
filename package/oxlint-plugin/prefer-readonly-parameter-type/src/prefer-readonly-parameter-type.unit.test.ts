@@ -451,6 +451,64 @@ children: [
     },
   },),
   it({
+    name: 'still offers a written parameter for seven measured call-edge shapes',
+    fn: async () => {
+      /* A ledger, not an approval. Every offer counted here except three names a
+       * parameter some callee writes, and each is tracked as its own task with the
+       * machinery it needs. Pinning them keeps the count from drifting quietly in either
+       * direction: a fix has to lower it deliberately, and a regression raises it.
+       *
+       * Sound and staying: `first`, which `mutateSecond` only reads; `value`, which
+       * `store` only stores; and one `row`, which `Reader.use` only reads.
+       *
+       * Unsound, by parameter and cause:
+       * `row` in `restEdgeEffect`, a rest formal collecting a later actual argument, and
+       * `row` in `spreadEdgeEffect`, one spread actual covering two formals. The edge is
+       * indexed by syntactic argument and read by formal index.
+       * `row` in `setterPairEffect`, whose callee assigns through a setter that writes the
+       * assigned value.
+       * `primary` in `mutateDefaultAlias` and `row` in `defaultAliasEffect`, the two sides
+       * of a default that aliases an earlier formal.
+       * `row` in `defaultInitializerEffect`, where the write is reached from a parameter
+       * initializer rather than a body.
+       * `row` in `polymorphicEffect`, where static resolution finds a reading base method
+       * and the reachable override writes.
+       *
+       * Two shapes from the same review do not reproduce and have no offer here: a mixed
+       * method-and-direct effect, which the packaged-callable scan covers, and a getter
+       * body writing a captured parameter, which the caller's own direct-write scan
+       * catches because the accessor body sits in the caller's scope. */
+      const diagnostics = await lintReadonly('readonly-call-edge-invalid.ts',);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      /**
+       * Counts offers naming one parameter.
+       *
+       * @param parameterName - Authored parameter name.
+       *
+       * @returns how many offers name it.
+       */
+      function offersFor(parameterName: string,): number {
+        return messages.filter(function offersParameter(message,): boolean {
+          return message.startsWith(`Parameter "${parameterName}" should be readonly`,);
+        },).length;
+      }
+      expect(messages.filter(function isOffer(message,): boolean {
+        return message.includes('should be readonly',);
+      },).length,).toBe(10,);
+      expect(offersFor('row',),).toBe(7,);
+      expect(offersFor('first',),).toBe(1,);
+      expect(offersFor('value',),).toBe(1,);
+      expect(offersFor('primary',),).toBe(1,);
+      /* The two shapes already fixed, kept as the controls that stop this case from
+       * passing on a fixture the rule never reached: an explicit `this` parameter used to
+       * shift every later formal index, and a parameter named only by a shorthand inside
+       * an accessor body used to contribute no origin. Both would add a `row` offer. */
+      expect(offersFor('handler',),).toBe(0,);
+    },
+  },),
+  it({
     name: 'credits a reassigned alias with every parameter it can hold',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-binding-origin-invalid.ts',);
