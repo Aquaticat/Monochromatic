@@ -73,13 +73,17 @@ Enforcement, not intent. The catalogs the audit removed were unverified assertio
 member was safe and nothing checked it.
 
 Every entry is enforced by `effect-member-channel-authority.unit.test.ts`, which probes a real engine per member
-against five tripwires and fails when a member reaches a channel wider than the one it claims:
+against four tripwires and fails when a member reaches a channel wider than the one it claims:
 
 -   species, covering `ArraySpeciesCreate` reading `constructor[@@species]` and calling it;
 -   element coercion, covering `toString` and `valueOf`;
 -   own-index access, the one hook the own-index channel admits;
--   a `size` accessor, covering property reads an internal-slot member must not perform;
--   argument coercion, covering `ToPrimitive` on what the caller passed.
+-   a `size` accessor, covering property reads an internal-slot member must not perform.
+
+The same recording object is passed as the argument wherever a member takes a key or a value, so element
+coercion doubles as argument coercion. Coercion of an index argument is deliberately not covered: `at`, `with`,
+`toSpliced` and `copyWithin` declare `number` at that position, so no caller-owned object carrying a
+`Symbol.toPrimitive` can arrive there in typed code.
 
 The probe also asserts its own tripwires fire, using members the table deliberately excludes: `slice` must reach
 species and `join` must reach element coercion. Without those controls a probe that silently stopped

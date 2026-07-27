@@ -71,13 +71,18 @@ function probeArguments({
 /**
  * Builds a receiver instrumented on every channel a member could reach.
  *
- * Five tripwires, each a channel the authority claims a member does not take.
+ * Four tripwires, each a channel the authority claims a member does not take.
  * Species covers `ArraySpeciesCreate`, which reads `constructor[@@species]` and
- * calls it. Element coercion covers `join` and a bare `toSorted()`. Own-index
- * access covers the accessor an array member invokes through `Get` and `Set`, the
- * one hook the own-index channel admits. A `size` accessor covers property reads on
- * a `Map` or `Set`, which an internal-slot member must not perform. Argument
- * coercion covers `ToPrimitive` on what the caller passed.
+ * calls it. Element coercion covers `join` and a bare `toSorted()`. Own-index access
+ * covers the accessor an array member invokes through `Get` and `Set`, the one hook
+ * the own-index channel admits. A `size` accessor covers property reads on a `Map`
+ * or `Set`, which an internal-slot member must not perform.
+ *
+ * The same recording object serves as both element and argument, so element coercion
+ * doubles as argument coercion for every member that takes a key or a value.
+ * Coercion of an index argument is not exercised and is not a channel typed code can
+ * reach: `at`, `with`, `toSpliced` and `copyWithin` declare `number` there, so no
+ * caller-owned object with a `Symbol.toPrimitive` can arrive at that position.
  *
  * @param ownerName - Collection interface being probed.
  *
