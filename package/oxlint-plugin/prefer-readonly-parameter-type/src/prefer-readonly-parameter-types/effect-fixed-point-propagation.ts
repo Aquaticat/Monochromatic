@@ -5,6 +5,7 @@
  */
 
 import { propagateCallbackRelations, } from './effect-callback-relation.ts';
+import { EffectPropagationError, } from './effect-propagation-error.ts';
 import { propagateElementApplications, } from './effect-element-application.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
 import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
@@ -31,6 +32,13 @@ const EFFECT_DIMENSION_COUNT = 3;
 export function propagateEffects(
   summaries: ReadonlyMap<string, MutableEffectSummary>,
 ): void {
+  /* The bound counts the mutable effect bits, and those are not the only thing a pass can
+   * report as progress: callback relations, element applications and uncertainty
+   * provenance also set `changed` while contributing no counted bit. So the bound is a
+   * runaway guard rather than a proof of convergence, and exhausting it means a summary
+   * was still growing when the loop stopped. That summary is missing effects, which is
+   * the direction that produces an offer for written state, so it is thrown rather than
+   * returned. */
   /**
    * Total effect bits that can change before fixed point.
    */
@@ -113,4 +121,10 @@ export function propagateEffects(
           },);
       },);
   }
+  if (state.changed)
+    throw new EffectPropagationError({
+      passCount: state.pass,
+      effectBitCount,
+      summaryCount: summaries.size,
+    },);
 }
