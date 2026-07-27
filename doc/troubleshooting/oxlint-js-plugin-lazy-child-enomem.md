@@ -184,15 +184,25 @@ commit `2d4e8d20644e0e7446f0a381894b45ea339a0625`.
 
 ### Failing catalog
 
-- Explicit one worker, cold semantic cache, lazy child: valid diagnostics but 276.1 seconds.
-- Default 16 workers, lazy child: 969 milliseconds, but 58 semantic startup errors containing `spawn ENOMEM`.
-- Merely removing `OXLINT_THREADS=1`: invalid because semantic analysis did not run.
+- Explicit one worker,
+   cold semantic cache,
+   lazy child:
+   valid diagnostics but 276.1 seconds.
+- Default 16 workers,
+   lazy child:
+   969 milliseconds,
+   but 58 semantic startup errors containing `spawn ENOMEM`.
+- Merely removing `OXLINT_THREADS=1`:
+   invalid because semantic analysis did not run.
 
 ### Working catalog
 
-- Explicit four workers with a warm cache: valid diagnostics in 6.0 seconds.
-- Default 16 workers with early child startup and a cold analyzer cache: valid diagnostics in 30.3 seconds.
-- Default 16 workers with early child startup and a warm cache: valid diagnostics in 3.3 seconds.
+- Explicit four workers with a warm cache:
+   valid diagnostics in 6.0 seconds.
+- Default 16 workers with early child startup and a cold analyzer cache:
+   valid diagnostics in 30.3 seconds.
+- Default 16 workers with early child startup and a warm cache:
+   valid diagnostics in 3.3 seconds.
 - The built semantic-rule test suite passed its new 16-worker startup regression together with existing rule cases.
 
 The cold and warm timings are separate facts.
@@ -239,7 +249,9 @@ The full 16 GiB device therefore consumed 11.2 GiB of RAM in this snapshot,
 not another 16 GiB outside RAM.
 
 `Documentation/filesystems/proc.rst:1125-1133` defines `MemAvailable` as an estimate containing
-free memory, reclaimable slab, and reclaimable file-cache pages:
+free memory,
+ reclaimable slab,
+ and reclaimable file-cache pages:
 
 ```text
 MemAvailable
@@ -253,7 +265,9 @@ The initial snapshot had 7.2 GiB free and 17 GiB in buffer and cache.
 Much of the reported 23 GiB was therefore reclaimable cache rather than unused RAM.
 
 The swapped pages had an identifiable owner.
-PID 7319, `/home/user/AppImages/odytty.appimage`, had run since 2026-07-23 and reported:
+PID 7319,
+ `/home/user/AppImages/odytty.appimage`,
+ had run since 2026-07-23 and reported:
 
 ```text
 VmRSS:   6655708 kB
@@ -362,23 +376,29 @@ and the broader allocator design
 [issue 20513](https://github.com/oxc-project/oxc/issues/20513).
 A new issue would be a duplicate.
 
-1.  **Is it really upstream's fault?** No for the reported 276.1-second package run.
+1.  **Is it really upstream's fault?
+    ** No for the reported 276.1-second package run.
     The repository explicitly forced one worker,
     and its plugin waited until the first file visitor to start a child.
     Oxc's allocator made the ordering failure visible,
     but the local configuration and initialization fully remediate this incident.
-2.  **Can upstream fix it?** Yes.
+2.  **Can upstream fix it?
+    ** Yes.
     Issue 20513 describes platform virtual-memory reservation instead of committed fixed blocks.
-3.  **Are they supporting this use case?** Yes.
+3.  **Are they supporting this use case?
+    ** Yes.
     Oxlint documents custom JavaScript plugins and issue 20331 tracks their Linux allocator failures.
-4.  **Would the repository welcome the contribution?** Yes with review and disclosure.
+4.  **Would the repository welcome the contribution?
+    ** Yes with review and disclosure.
     Oxc's `CONTRIBUTING.md:12-21` permits AI assistance,
     requires disclosure,
     and requires contributors to understand and test submissions.
-5.  **Will they likely fix it?** Yes.
+5.  **Will they likely fix it?
+    ** Yes.
     Issue 20331 is open and assigned,
     and the maintainer stated that the Linux allocator work is active.
-6.  **Have we prototyped a minimal upstream fix compatible with their architecture?** No.
+6.  **Have we prototyped a minimal upstream fix compatible with their architecture?
+    ** No.
     The incident has a complete consumer-side fix,
     constraint one fails,
     and duplicating the allocator work already active in issues 20331 and 20513 would not be justified.
