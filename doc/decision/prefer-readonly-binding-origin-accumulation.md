@@ -122,10 +122,24 @@ most thread it through as a parameter and needed only the widened type.
 
 ## The persistent cache is unaffected
 
+Two separate reasons, and both were checked, because an external review of this change
+raised the cache as its highest finding: a stale entry could otherwise keep serving the
+pre-fix `directMutated` and therefore the suggestion that does not compile.
+
 `effect-summary-serialization.ts:220` rebuilds the field as `new Map()` when a summary is
 deserialized, because symbol ids are process-local.
 Origins never round-trip, so widening the value type is not a schema change and
 `EFFECT_CACHE_SCHEMA` did not move.
+
+Stale entries cannot survive the change either.
+`analyzerDigest` in `effect-summary-cache-identity.ts` streams the exact implementation
+bytes into a SHA-256 digest, the published bundle when running from `dist` and every
+analyzer source file when running through `/ts`, alongside `EFFECT_CACHE_SCHEMA` and the
+TypeScript version.
+`effect-summary-persistent-cache.ts:131` makes that digest part of the cache address,
+so editing `effect-binding-origins.ts` invalidates every entry without a schema bump.
+That is why the schema constant is not the invalidation mechanism here and must not be
+bumped for behavior changes.
 
 ## Enforcement
 
