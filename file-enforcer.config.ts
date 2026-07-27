@@ -1688,8 +1688,8 @@ Advisor reads the whole transcript and catches what you skipped;
 sol reads only what you paste and catches what you got wrong.
 Neither substitutes for the other.
 
-Paste the actual source into sol's prompt:
-whole files, or \`tail -n\`-style excerpts when a file is long.
+Paste the actual source into sol's prompt, whole files, never excerpts:
+its context window is always large enough, so trimming only risks cutting the part that mattered.
 Never send a prose description of code sol could read instead.
 Measured: prose-only runs returned plausible-sounding advice that missed defects the source-bearing run of the same question found immediately,
 because every bug had already survived the description.
