@@ -451,7 +451,7 @@ children: [
     },
   },),
   it({
-    name: 'still offers a written parameter for seven measured call-edge shapes',
+    name: 'still offers a written parameter for five measured call-edge shapes',
     fn: async () => {
       /* A ledger, not an approval. Every offer counted here except three names a
        * parameter some callee writes, and each is tracked as its own task with the
@@ -462,9 +462,6 @@ children: [
        * `store` only stores; and one `row`, which `Reader.use` only reads.
        *
        * Unsound, by parameter and cause:
-       * `row` in `restEdgeEffect`, a rest formal collecting a later actual argument, and
-       * `row` in `spreadEdgeEffect`, one spread actual covering two formals. The edge is
-       * indexed by syntactic argument and read by formal index.
        * `row` in `setterPairEffect`, whose callee assigns through a setter that writes the
        * assigned value.
        * `primary` in `mutateDefaultAlias` and `row` in `defaultAliasEffect`, the two sides
@@ -496,15 +493,18 @@ children: [
       }
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(10,);
-      expect(offersFor('row',),).toBe(7,);
+      },).length,).toBe(8,);
+      expect(offersFor('row',),).toBe(5,);
       expect(offersFor('first',),).toBe(1,);
       expect(offersFor('value',),).toBe(1,);
       expect(offersFor('primary',),).toBe(1,);
-      /* The two shapes already fixed, kept as the controls that stop this case from
-       * passing on a fixture the rule never reached: an explicit `this` parameter used to
-       * shift every later formal index, and a parameter named only by a shorthand inside
-       * an accessor body used to contribute no origin. Both would add a `row` offer. */
+      /* The four shapes already fixed, kept as the controls that stop this case from
+       * passing on a fixture the rule never reached. An explicit `this` parameter used to
+       * shift every later formal index. A parameter named only by a shorthand inside an
+       * accessor body used to contribute no origin. A rest formal collecting a later
+       * actual, and one spread actual covering two formals, both used to break the
+       * relation between syntactic argument position and formal index. Each would add a
+       * `row` offer if reverted. */
       expect(offersFor('handler',),).toBe(0,);
     },
   },),

@@ -16,10 +16,14 @@
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
-import { isIdentifier, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
+
+/**
+ * Sentinel marking a formal that no single actual argument fills.
+ */
+const NO_SOLE_POSITION = -1;
 import {
   callableKey,
   type EffectCallableDeclaration,
@@ -27,6 +31,7 @@ import {
   OWNED_CALLABLE_UNAVAILABLE,
 } from './effect-summary-model.ts';
 import { callableDeclaration, } from './effect-call-resolution.ts';
+import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
 
 /**
  * Adds one owned call edge with caller-relative parameter roots.
@@ -69,23 +74,32 @@ export function addOwnedCallEdge({
   readonly foreignInbound: boolean;
   readonly analysisRoot?: string;
 }): void {
-  /* An explicit `this` parameter occupies a formal index while receiving no argument, so
-   * every per-argument array has to start one slot later or propagation reads the wrong
-   * formal. `explicitThisEffect` in the call-edge fixture measured the off-by-one: the
-   * callee recorded its write on formal one, the caller's only argument sat at edge zero,
-   * and the write reached nobody. */
-  const formalOffset = calleeHasThisParameter({ callee, },) ? 1 : 0;
   /**
-   * Placeholder entries aligning argument arrays with formal parameter indexes.
+   * Actual positions each formal can receive, covering `this`, rest and spread.
    */
-  const formalPadding = Array.from(
-    { length: formalOffset, },
-    function emptyFormal(): readonly number[] {
-      return [];
-    },
-  );
+  const positionsByFormal = formalActualPositions({
+    callee,
+    call,
+  },);
   /**
-   * Owned callback declarations paired with argument positions.
+   * Caller origins packaged into each formal, unioned over the positions it can receive.
+   */
+  const originsByFormal = positionsByFormal
+    .map(function originsForFormal(positions,): readonly number[] {
+      /**
+       * Distinct caller parameters reaching this formal.
+       */
+      const origins = new Set<number>();
+      positions.forEach(function collectPosition(position,): void {
+        (allArgumentIndexes[position] ?? [])
+          .forEach(function collectOrigin(origin,): void {
+            origins.add(origin,);
+          },);
+      },);
+      return [...origins,];
+    },);
+  /**
+   * Owned callback declarations paired with actual argument positions.
    */
   const callbacks = call.arguments
     .map(function callbackDeclaration(argument,) {
@@ -94,6 +108,18 @@ export function addOwnedCallEdge({
         node: argument,
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },
       },);
+    },);
+  /**
+   * Sole actual position filling each formal, absent when several or none can.
+   *
+   * A callback identity names one declaration, so it only means anything for a formal
+   * fed by exactly one actual. A rest formal or one past a spread reports no callback,
+   * which makes `propagateInvokedCapabilities` treat its invocation as unresolved rather
+   * than assume an owned body it cannot name.
+   */
+  const soleByFormal = positionsByFormal
+    .map(function soleForFormal(positions,): number {
+      return positions.length === 1 ? positions[0] ?? NO_SOLE_POSITION : NO_SOLE_POSITION;
     },);
   summary.calls
     .push({
@@ -104,77 +130,53 @@ export function addOwnedCallEdge({
      * The two stay separate fields because they answer different questions, and a
      * per-property effect model would give the first one a narrower answer that is
      * measured rather than authored. Until then, narrowing either would drop origins. */
-    arguments: [
-      ...formalPadding,
-      ...allArgumentIndexes,
-    ],
-    foreignArguments: [
-      ...formalPadding,
-      ...allArgumentIndexes,
-    ],
-    directForeignArguments: [
-      ...formalPadding.map(function unmarkedFormal(): boolean {
-        return false;
-      },),
-      ...call.arguments
-        .map(function foreignArgument(argument,): boolean {
-          return expressionContainsForeignBorrowed({
-            project,
-            node: argument,
+    arguments: originsByFormal,
+    foreignArguments: originsByFormal,
+    /* Every covered actual must carry the marker for the formal to count as foreign,
+     * because a foreign formal suppresses the readonly offer. Claiming foreignness for a
+     * formal that might receive an ordinary argument would suppress an offer this
+     * analysis never proved safe, so an unfilled or multiply-filled formal claims
+     * nothing. */
+    directForeignArguments: positionsByFormal
+      .map(function foreignForFormal(positions,): boolean {
+        return (positions.length > 0)
+          && positions.every(function positionIsForeign(position,): boolean {
+            /**
+             * Actual argument at this position, absent when the call supplies none.
+             */
+            const argument = call.arguments[position];
+            return (argument !== undefined)
+              && expressionContainsForeignBorrowed({
+                project,
+                node: argument,
+              },);
           },);
-        },),
-    ],
+      },),
     foreignInbound,
-    callbackKeys: [
-      ...formalPadding.map(function unavailableFormalCallback(): typeof OWNED_CALLABLE_UNAVAILABLE {
-        return OWNED_CALLABLE_UNAVAILABLE;
+    callbackKeys: soleByFormal
+      .map(function callbackKeyForFormal(position,) {
+        /**
+         * Resolved callback at the sole filling position, when there is one.
+         */
+        const candidate = position === NO_SOLE_POSITION
+          ? OWNED_CALLABLE_UNAVAILABLE
+          : callbacks[position] ?? OWNED_CALLABLE_UNAVAILABLE;
+        return candidate === OWNED_CALLABLE_UNAVAILABLE
+          ? OWNED_CALLABLE_UNAVAILABLE
+          : callableKey(candidate,);
       },),
-      ...callbacks
-        .map(function callbackKey(candidate,) {
-          return candidate === OWNED_CALLABLE_UNAVAILABLE
-            ? OWNED_CALLABLE_UNAVAILABLE
-            : callableKey(candidate,);
-        },),
-    ],
-    callbackFileNames: [
-      ...formalPadding.map(function unavailableFormalFileName(): typeof OWNED_CALLABLE_UNAVAILABLE {
-        return OWNED_CALLABLE_UNAVAILABLE;
+    callbackFileNames: soleByFormal
+      .map(function callbackFileNameForFormal(position,) {
+        /**
+         * Resolved callback at the sole filling position, when there is one.
+         */
+        const candidate = position === NO_SOLE_POSITION
+          ? OWNED_CALLABLE_UNAVAILABLE
+          : callbacks[position] ?? OWNED_CALLABLE_UNAVAILABLE;
+        return candidate === OWNED_CALLABLE_UNAVAILABLE
+          ? OWNED_CALLABLE_UNAVAILABLE
+          : candidate.getSourceFile()
+            .fileName;
       },),
-      ...callbacks
-        .map(function callbackFileName(candidate,) {
-          return candidate === OWNED_CALLABLE_UNAVAILABLE
-            ? OWNED_CALLABLE_UNAVAILABLE
-            : candidate.getSourceFile()
-              .fileName;
-        },),
-    ],
   },);
-}
-
-/**
- * Tests whether a callee declares an explicit `this` parameter.
- *
- * @param callee - Callable declaration whose formals are inspected.
- *
- * @returns whether formal index zero receives no argument.
- *
- * @example
- * ```ts
- * calleeHasThisParameter({ callee });
- * ```
- */
-function calleeHasThisParameter({
-  callee,
-}: {
-  readonly callee: EffectCallableDeclaration;
-},): boolean {
-  /**
-   * First declared formal, absent for a callable taking nothing.
-   */
-  const first = callee.parameters[0];
-  if (first === undefined)
-    return false;
-  return isIdentifier(first.name,)
-    && (first.name
-      .getText() === 'this');
 }

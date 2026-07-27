@@ -12,10 +12,14 @@ import {
 import type { Node, } from 'typescript/unstable/ast';
 import {
   isArrayLiteralExpression,
+  isAssertionExpression,
   isFunctionLikeDeclaration,
   isIdentifier,
+  isNonNullExpression,
   isObjectLiteralExpression,
+  isParenthesizedExpression,
   isPropertyAssignment,
+  isSatisfiesExpression,
   isShorthandPropertyAssignment,
   isSpreadAssignment,
   isSpreadElement,
@@ -144,6 +148,22 @@ export function parameterIndexes({
    *
    */
   function collect(current: Node,): void {
+    /* A spread argument, and any wrapper that changes nothing about the value it holds.
+     * `call.arguments` contains the spread element itself, and the structural checks below
+     * test for literal kinds, so a spread of an array literal reached none of them and
+     * packaged nothing. `spreadEdgeEffect` in the call-edge fixture measured that: the
+     * formal mapping pointed at the spread position and found an empty origin set there. */
+    if (isSpreadElement(current,)) {
+      collect(current.expression,);
+      return;
+    }
+    if (isParenthesizedExpression(current,)
+      || isNonNullExpression(current,)
+      || isAssertionExpression(current,)
+      || isSatisfiesExpression(current,)) {
+      collect(current.expression,);
+      return;
+    }
     /**
      * Direct parameter origins at current expression root.
      */
