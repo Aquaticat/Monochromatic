@@ -4,7 +4,7 @@
   // no ignorePatterns that would skip invalid/ or test-fixture/ paths.
   // Used by the lint-fixture mise task and the oxlint-stylistic unit tests.
   "jsPlugins": [
-    "../../oxlint-plugin/stylistic/src/index.ts"
+    "../../oxlint-plugin/stylistic/dist/final/node/index.mjs"
   ],
   "ignorePatterns": [
     "**/dist",
