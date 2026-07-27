@@ -9,10 +9,7 @@ import type {
   Project,
 } from 'typescript/unstable/sync';
 import type { CallExpression, } from 'typescript/unstable/ast';
-import {
-  isIdentifier,
-  isPropertyAccessExpression,
-} from 'typescript/unstable/ast/is';
+import { isIdentifier, } from 'typescript/unstable/ast/is';
 
 import { applyExternalEffect, } from './effect-external-application.ts';
 import {
@@ -41,6 +38,10 @@ import {
   parameterIndexes,
   rootParameterOrigins,
 } from './effect-call-resolution.ts';
+import {
+  memberCallReceiver,
+  NO_MEMBER_RECEIVER,
+} from './effect-member-call-receiver.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
 
 /**
@@ -155,17 +156,20 @@ export function inspectEffectCall({
     },))
     return;
   /**
+   * Expression the call was made on, however the member was named.
+   */
+  const collectionReceiver = memberCallReceiver({ call, },);
+  /**
    * How much of a default-library collection call the derivation answered.
    */
   const collectionCoverage = (resolvedDeclaration !== undefined)
-      && isPropertyAccessExpression(call.expression,)
+      && (collectionReceiver !== NO_MEMBER_RECEIVER)
     ? recordCollectionMemberEffect({
       project,
       checker,
       bindingOriginBySymbolId,
       call,
-      receiver: call.expression
-        .expression,
+      receiver: collectionReceiver,
       declaration: resolvedDeclaration,
       summary,
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },

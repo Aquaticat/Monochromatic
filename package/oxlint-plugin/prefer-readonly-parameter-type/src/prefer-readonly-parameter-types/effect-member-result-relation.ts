@@ -12,7 +12,6 @@ import {
   isIdentifier,
   isInterfaceDeclaration,
   isMethodSignatureDeclaration,
-  isPropertyAccessExpression,
 } from 'typescript/unstable/ast/is';
 import {
   type Checker,
@@ -21,6 +20,10 @@ import {
   TypeFlags,
 } from 'typescript/unstable/sync';
 
+import {
+  memberCallReceiver,
+  NO_MEMBER_RECEIVER,
+} from './effect-member-call-receiver.ts';
 import {
   memberResultProvenance,
   RESULT_RELATION_UNPROVEN,
@@ -228,13 +231,12 @@ export function callResultReceiver({
   readonly checker: Checker;
   readonly call: CallExpression;
 },): Expression | typeof RESULT_NOT_RECEIVER_STATE {
-  if (!isPropertyAccessExpression(call.expression,))
-    return RESULT_NOT_RECEIVER_STATE;
   /**
-   * Expression the member was called on.
+   * Expression the member was called on, however the member was named.
    */
-  const receiver = call.expression
-    .expression;
+  const receiver = memberCallReceiver({ call, },);
+  if (receiver === NO_MEMBER_RECEIVER)
+    return RESULT_NOT_RECEIVER_STATE;
   /**
    * Default-library interface and member this call selected.
    */

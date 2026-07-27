@@ -188,6 +188,10 @@ await describe({
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
         const unionValued = mutatedIndexes('unionValueLookupEffect',);
+        /** Restructuring reached through a computed member call. */
+        const computedStructure = mutatedIndexes('computedStructureEffect',);
+        /** Mutation through a computed lookup, invisible before one receiver rule. */
+        const computedLookup = mutatedIndexes('computedLookupMutationEffect',);
         /** Function that only reads what it looks up. */
         const readOnly = mutatedIndexes('readOnlyLookupEffect',);
         closeSemanticBridge();
@@ -207,6 +211,13 @@ await describe({
          * nothing. Measured: flattening one side only empties this while leaving every
          * other case here passing. */
         expect(unionValued,).toEqual([0,],);
+        /* Computed member access records the same facts as property access, because
+         * which of the two the author wrote has no runtime bearing on what receives
+         * the call. Both were entirely unrecorded before `memberCallReceiver`, and
+         * `computedStructureEffect` was offered `readonly` while pushing to its
+         * parameter. */
+        expect(computedStructure,).toEqual([0,],);
+        expect(computedLookup,).toEqual([0,],);
         /* And the control stays empty, so the resolver is not crediting every lookup
          * with a mutation it never performed. */
         expect(readOnly,).toEqual([],);

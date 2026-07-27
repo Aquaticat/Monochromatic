@@ -355,19 +355,21 @@ children: [
         return diagnostic.message;
       },);
       expect(messages.length,).toBe(10,);
-      /* A known unsound suggestion, pinned rather than fixed here, because computed
-       * member access predates result provenance and is its own defect.
-       * `computedStructureEffect` calls `values['push']('appended')`, and neither the
-       * collection handling nor the opaque boundary looks at a call whose callee is an
-       * element access, so nothing records the mutation and the parameter is offered.
-       * Measured: applying that suggestion fails with
+      /* No offer on a computed-access receiver, which was an unsound suggestion until
+       * `memberCallReceiver` gave every consumer one definition of "the receiver".
+       * `computedStructureEffect` calls `values['push']('appended')`, and the
+       * collection handling, the opaque boundary and the result relation each tested
+       * for a property-access callee, so the call fell through all three and nothing
+       * recorded the mutation. Applying the resulting offer failed with
        * `error TS7015: Element implicitly has an 'any' type because index expression
-       * is not of type 'number'`. Fixing it must turn this assertion into an empty
-       * list. `computedLookupMutationEffect` is the same hole with a map receiver,
-       * where the value type happens to suppress the offer, so it reports nothing at
-       * all: summary measured `mutated=[] opaque=[]`. */
+       * is not of type 'number'`. Reverting that module restores the offer here. */
       expect(messages.filter(function offersComputedReceiver(message,): boolean {
         return message.startsWith('Parameter "values" should be readonly',);
+      },),).toEqual([],);
+      /* And the computed lookup is now visible at all. It reported nothing whatsoever
+       * before, summary measured `mutated=[] opaque=[]`. */
+      expect(messages.filter(function reportsComputedLookup(message,): boolean {
+        return message.includes(`facts['get']`,);
       },).length,).toBe(1,);
       /**
        * Counts messages naming one call as the unresolved receiver operation.

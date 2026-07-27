@@ -5,7 +5,6 @@
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
-import { isPropertyAccessExpression, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
@@ -13,6 +12,10 @@ import {
   rootParameterOrigins,
 } from './effect-call-resolution.ts';
 import { effectCallName, } from './effect-call-name.ts';
+import {
+  memberCallReceiver,
+  NO_MEMBER_RECEIVER,
+} from './effect-member-call-receiver.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
@@ -78,14 +81,17 @@ export function recordOpaqueBoundary({
    */
   const originLocation = effectOriginLocation({ node: call, },);
   /**
+   * Expression the call was made on, however the member was named.
+   */
+  const callReceiver = memberCallReceiver({ call, },);
+  /**
    * Whether an unanswered receiver claim still carries caller-reachable state.
    */
   const receiverClaimOutstanding = (!receiverDerived)
-    && isPropertyAccessExpression(call.expression,)
+    && (callReceiver !== NO_MEMBER_RECEIVER)
     && expressionCanCarryMutableState({
       checker,
-      node: call.expression
-        .expression,
+      node: callReceiver,
     },);
   /**
    * Caller parameters the unresolved receiver can hold.
@@ -94,8 +100,7 @@ export function recordOpaqueBoundary({
     ? rootParameterOrigins({
       project,
       bindingOriginBySymbolId,
-      node: call.expression
-        .expression,
+      node: callReceiver,
     },)
     : NO_PARAMETER_ORIGIN;
   receiverOrigins.forEach(function opaqueReceiverOrigin(index,): void {
