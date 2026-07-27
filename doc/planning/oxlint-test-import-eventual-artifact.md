@@ -27,7 +27,9 @@ Violating files reach their own package's code through 721 resolvable import sit
 
 An import target is eventual when either condition holds.
 
--   The path contains `dist/final`.
+-   The path, resolved and normalized, lies under `<package-root>/dist/final`.
+    Substring matching on `dist/final` is not sufficient:
+    it would accept `src/dist/final/fake.ts` as an artifact.
 -   The path lies inside a directory that the owning package declares as a shipping entry,
     via `exports` (excluding the `./ts` and `./ts/*` keys), `main`, or `bin`,
     with any target under `src/` discarded,
@@ -87,6 +89,11 @@ A prefix glob would also match `package/cli/mutation-test/src/container/test-run
 which is real package behavior imported by `mutant-loop.ts` and `main.ts`,
 and would silently exempt it.
 
+Allowlisted helper modules are themselves subject to the same source-import restriction.
+Without that, a test can import a permitted helper that re-exports directly from source,
+bypassing the rule without any change to the test's own import.
+Matching runs against canonical resolved target paths, never raw specifier text.
+
 ### Packages that build nothing
 
 A package defining no build task in its `mise.toml` is exempt entirely.
@@ -123,13 +130,25 @@ Final scope after the fixture allowlist and the buildless-package exemption:
 -   35 exempt because their package builds nothing
 -   344 violating, across 54 packages, at 662 import sites
 
-Of the violating import sites, measured before the exemptions were applied:
+Stage one, before any exemption, found 721 sites in three exhaustive categories:
 
 -   259 target a module already reachable from the package's public entry, so the fix is a path rewrite.
 -   411 target an internal module, so the fix is exporting that symbol, which XPT permits, or restructuring the test.
+-   51 sit in packages having no `src/index.ts`, so no public entry exists to measure reachability against.
 
-The second group is the dominant cost and the reason this is not a mechanical migration.
+Stage two applies the fixture allowlist and the buildless-package exemption,
+removing 59 sites to reach the 662 figure.
+The clean-file count moves from 174 to 178 across the same two stages,
+the difference being files whose only violations were fixture or helper imports.
+
+The 411 group is the dominant cost and the reason this is not a mechanical migration.
 `package/git-policy/cli` alone accounts for 88 of those sites.
+
+The build bundles rather than preserving module structure,
+verified as one emitted `.mjs` from 75 source files in `package/module/toml-edit`
+and one from 209 in `package/git-policy/cli`.
+Consequently no internal module exists as a separate file under `dist/final`,
+and exporting the symbol from the bundle entry is the only route to it.
 
 Agreed sequence: land the rule at `error` first, then migrate,
 using the rule's own output as the worklist.
@@ -141,11 +160,18 @@ from the moment the rule registers until migration completes,
 `mise run lint` at repo root fails,
 which affects anyone running the standard verification loop.
 
-Type imports have a compliant form in every affected package.
-Relative specifiers resolve declarations alongside the artifact,
-and `dist/final/**/*.d.mts` files are emitted wherever a build task exists,
-verified in `package/cli/git-clone-size`, `package/dev-script/task-util`, and `package/cli/vmsync`.
-No `exports` `types` condition is needed for the relative form.
+Type imports resolve declarations alongside the artifact for relative specifiers,
+with no `exports` `types` condition required.
+Measured across every package having a build task: 80 emit both code and declarations, 5 emit code only.
+Those 5 are `kwin/key-helper`, `ssg/aquati.cat`, `webapp-productivity/done`,
+`webapp-productivity/done-postcss`, and `webapp-productivity/wc`.
+Only 4 type-import sites are actually at risk, all in `ssg/aquati.cat`;
+they have no compliant form until that package emits declarations.
+
+Relative artifact imports prove that an emitted file is importable by path.
+They do not prove that the export map is correct or that consumers can reach the module.
+Only the bare self-reference form exercises the export map,
+so claims about catching export-map errors apply to that form alone.
 
 ## Naming
 
