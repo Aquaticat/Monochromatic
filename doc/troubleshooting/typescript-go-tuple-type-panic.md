@@ -241,6 +241,77 @@ One consequence worth knowing:
  a file that panics no longer fails the lint,
  so the warning is the only signal.
 
+## Minimal reproduction
+
+Delta-debugging the affected file from 186 lines to 30 in 149 runs,
+ then hand-reducing,
+ gives a dependency-free case.
+Every run took about a second,
+ so the whole minimization cost a few minutes:
+
+```ts
+export function take<Fn extends (...args: never[]) => unknown,>(
+  fn: Fn,
+  args: Parameters<Fn>,
+): void {
+  void fn;
+  void args;
+}
+
+export function use(): void {
+  take(
+    function render(): string {
+      return '';
+    },
+    [],
+  );
+}
+```
+
+The essential ingredients are a generic parameter typed `Parameters<Fn>` and a call site
+that instantiates it.
+That matches the reading under "Root cause":
+ an instantiated tuple is a `*TypeReference`,
+ and the serializer branches on the type's own tuple flag.
+
+None of these panic,
+ which is what pins the generic instantiation as necessary:
+
+```ts
+export function take(args: [],): void {}
+export function take(args: Parameters<() => string>,): void {}
+export function take(args: [string, number,],): void {}
+```
+
+A variant returning the tuple-taking callable rather than accepting the tuple directly
+panics as well,
+ so the shape of the wrapper does not matter.
+
+The original file reaches this through `memoizeAsync`,
+ whose returned caller takes `{ args: Parameters<Fn> }`,
+ called as `memoizedGetHtmlBody({ args: [], },)`.
+
+## Why no workaround analyzes the construct
+
+The panic happens while building the effect summary index,
+ not while verifying,
+ which a probe calling `buildEffectSummaryIndex` directly confirms.
+
+More to the point,
+ it happens inside the API's serialization of a type response.
+Receiving the type object at all requires that response,
+ so the rule cannot inspect the type's flags first and then decline:
+ the first request that returns this type panics.
+There is no sequence of API calls that reads the construct safely.
+
+What is available is a smaller blast radius.
+The failure currently costs the whole file,
+ because the catch wraps the whole run.
+Catching per callable inside the index build,
+ and marking that callable's summary fully opaque,
+ would keep the rest of the file analyzed and stay fail-closed.
+That is unbuilt.
+
 ## Verified workarounds
 
 None at our boundary.
