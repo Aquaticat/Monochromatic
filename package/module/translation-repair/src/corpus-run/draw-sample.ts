@@ -24,6 +24,7 @@ import {
   RUN_CORPUS_PIN,
   resolveRunsDir,
 } from './run-config.ts';
+import { resolveSheetPath, } from './sheet-path.ts';
 
 //region Draw sample
 // Reads every settled artifact, bands each entry by its zh source bytes,
@@ -255,14 +256,14 @@ async function drawGradingSample(): Promise<void> {
   }`;
 
   /**
-   * Output path; preliminary and final never overwrite each other.
+   * Output path, named after the draw seed so one round cannot target another
+   * round's sheet, and refused outright when a final sheet is already there.
    */
-  const outPath = join(
+  const outPath = await resolveSheetPath({
     runsDir,
-    isFinal
-      ? 'grading-sheet.md'
-      : 'grading-sheet-preliminary.md',
-  );
+    seed: DEFAULT_SAMPLE_SEED,
+    isFinal,
+  },);
   await writeFile(
     outPath,
     sheet,
