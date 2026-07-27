@@ -425,12 +425,21 @@ children: [
         return message.includes('JSON.stringify',);
       },).length,).toBe(1,);
       /* No lookup receiver is offered read-only yet, not even `readOnlyLookupEffect`'s,
-       * which only reads: that awaits the discharge, not the attribution. The one offer
-       * in this fixture is the computed-access defect above, on a different parameter. */
+       * which only reads: that awaits the discharge, not the attribution. This fixture
+       * emits no offer at all, which is why `readonly-binding-origin-invalid.ts` carries
+       * the positive control proving an offer can still be produced. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
           || message.includes('"records" should be readonly',)
-          || message.includes('"rows" should be readonly',);
+          || message.includes('"rows" should be readonly',)
+          || message.includes('"row" should be readonly',);
+      },),).toEqual([],);
+      /* Every offer, not just the receivers above. Both routes to the contract-name
+       * defect surfaced here as an offer: `row` with no lookup involved, and `rows`
+       * through a discharged `at` result. `effect-summaries.unit.test.ts` carries the
+       * mutation assertions that make this absence meaningful rather than vacuous. */
+      expect(messages.filter(function offersAnyParameter(message,): boolean {
+        return message.includes('should be readonly',);
       },),).toEqual([],);
     },
   },),

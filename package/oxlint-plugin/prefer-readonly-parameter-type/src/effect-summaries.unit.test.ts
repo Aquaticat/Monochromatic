@@ -105,7 +105,7 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'records audited object-property callback invocation without unresolved effects',
+      name: 'records audited object-property callback invocation as resolved while an unresolved reader stays reported',
       fn: async () => {
         const session = openSemanticFile({
           fileName: STATUSLINE_USAGE_PATH,
@@ -134,7 +134,18 @@ await describe({
         /* Style-callback invocation now proves inside the analyzed workspace
          * callee instead of an audited caller-side catalog marking. */
         expect(invoked,).toEqual([],);
-        expect(opaque,).toEqual([],);
+        /* Unresolved reachability, and honest. `parseRateLimitSnapshots` reaches
+         * `Object.entries` in `rate-limit-parse-helpers.ts`, which nothing derives, and
+         * this callable packages its own parameter into that call. The claim used to
+         * read `[]` because the owned call edge walked the argument literal with only
+         * the property names the callee's `@mutates` blocks listed, so an authored
+         * comment decided which caller-owned values inherited the callee's opacity.
+         * Removing that filter is what makes this report appear, and the accompanying
+         * offers it withdrew are the ones measured in
+         * `doc/decision/prefer-readonly-contract-name-narrowing.md`. Deriving the
+         * `Object` readers is what would return this to `[]` on proof rather than on
+         * an omitted name. */
+        expect(opaque,).toEqual([0,],);
       },
     },),
     it({
@@ -257,6 +268,119 @@ await describe({
         /* A function returning nothing parameter-derived records nothing, so the fact
          * is not simply "every callable returns something". */
         expect(returnedIndexes('readOnlyLookupEffect',),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'records every write through one destructured object parameter, whatever its contract names or siblings do',
+      fn: async () => {
+        /* Invisible at the diagnostic level in the direction that matters. The defect
+         * produced an *offer*, so its signature is a missing message, and a fixture
+         * nothing linted would look identical. The summary states the fact directly. */
+        const session = openSemanticFile({
+          fileName: RESULT_PROVENANCE_PATH,
+          sourceText: RESULT_PROVENANCE_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the mutated parameter indexes of one fixture function.
+         *
+         * @param functionName - Fixture function to inspect.
+         *
+         * @returns mutated parameter indexes in ascending order.
+         */
+        function mutatedIndexes(functionName: string,): readonly number[] {
+          const nameNode = session.nodeAtOffset(
+            RESULT_PROVENANCE_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          /* Explicit numeric compare, since the default sort is lexicographic and
+           * would order parameter 10 before parameter 2. */
+          return [...summary.mutatedParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /** Parameter placed in a literal property the callee contract omits. */
+        const omittedProperty = mutatedIndexes('directRestrictedRowEffect',);
+        /** Element obtained by `at` and placed in an omitted property. */
+        const omittedLookup = mutatedIndexes('contractRestrictedRowEffect',);
+        /** Stored set obtained by `get` and placed in an omitted property. */
+        const omittedStored = mutatedIndexes('contractRestrictedLiteralEffect',);
+        /** Whole container handed over as a direct argument. */
+        const directArgument = mutatedIndexes('directArgumentRestrictedEffect',);
+        /** Literal whose every mutated property the contract names. */
+        const fullyNamed = mutatedIndexes('fullContractLiteralEffect',);
+        /** Literal handed to a callee taking an identifier parameter. */
+        const identifierParameter = mutatedIndexes('identifierParameterLiteralEffect',);
+        /** Two parameters where the callee writes only one. */
+        const precisionCost = mutatedIndexes('narrowingPrecisionCostEffect',);
+        /** Callee invoking one property and writing another. */
+        const invokedBeside = mutatedIndexes('invokedExclusionDirectEffect',);
+        /** Direct write beside a parameter forwarded next to a callback. */
+        const invokedMiddle = mutatedIndexes('middleInvokedExclusionEffect',);
+        /** The same write one call further out. */
+        const invokedOuter = mutatedIndexes('outerInvokedExclusionEffect',);
+        /** Function that only reads what it looks up, as a negative control. */
+        const readOnly = mutatedIndexes('readOnlyLookupEffect',);
+        closeSemanticBridge();
+        /* The defect, and the three shapes it took. Restoring the contract-name filter
+         * in `effect-owned-call-edge.ts` empties all three, and the first is the one
+         * that needs no collection member call at all: a parameter placed straight into
+         * an object literal, mutated by the callee through a property its `@mutates`
+         * blocks omit. Measured before the fix, `directRestrictedRowEffect` reported
+         * `mutated=[]` and the rule emitted `Parameter "row" should be readonly:
+         * property label is writable` while the callee wrote `row.label`. */
+        expect(omittedProperty,).toEqual([0,],);
+        expect(omittedLookup,).toEqual([0,],);
+        expect(omittedStored,).toEqual([0,],);
+        /* The three neighbours that were already correct, kept so the assertions above
+         * are known to isolate the contract-name filter rather than callee routing,
+         * literal arguments, or destructuring in general. Each measured `mutated=[0]`
+         * with the filter still in place. */
+        expect(directArgument,).toEqual([0,],);
+        expect(fullyNamed,).toEqual([0,],);
+        expect(identifierParameter,).toEqual([0,],);
+        /* What the sound propagation costs, pinned so it is a measured number rather
+         * than a claim. The callee writes `named` and only reads `unnamed`, so `second`
+         * is not mutated, and propagating every packaged origin credits it anyway. The
+         * cost is a withheld offer, never a wrong one. Recovering `[0]` here needs the
+         * callee's own measured per-property effects; reading its authored contract is
+         * what produced the defect above. */
+        expect(precisionCost,).toEqual([
+          0,
+          1,
+        ],);
+        /* The same collapse seen from the other side, and the reason widening the walk
+         * above was not conservative on its own. Mutation propagation used to subtract
+         * the callee's invoked set by index, so a callee taking `{ run, target }` that
+         * called `run` and wrote `target` cancelled its own write.
+         *
+         * These three state the facts; they do not detect that defect, and measuring said
+         * so. Restoring `excludedIndexes: calleeSummary.invoked` in
+         * `effect-fixed-point-propagation.ts` leaves all three reading `[0]` here while
+         * the fixture gains two diagnostics, so the sibling case in
+         * `prefer-readonly-parameter-type.unit.test.ts` is what catches it, through its
+         * count and its assertion that the fixture offers nothing. The reason is the
+         * defect's own order sensitivity: whichever propagation pass ran first decided
+         * the answer, and this index is built over one file in an order that happens to
+         * keep the write. That sensitivity is itself the argument for having removed the
+         * subtraction rather than resequencing the passes. */
+        expect(invokedBeside,).toEqual([0,],);
+        expect(invokedMiddle,).toEqual([0,],);
+        expect(invokedOuter,).toEqual([0,],);
+        /* The control that keeps every assertion here from passing vacuously: nothing in
+         * these two changes may credit a parameter that is only read. */
+        expect(readOnly,).toEqual([],);
       },
     },),
     it({

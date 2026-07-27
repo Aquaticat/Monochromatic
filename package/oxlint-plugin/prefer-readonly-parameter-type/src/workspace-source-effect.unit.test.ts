@@ -49,7 +49,16 @@ await describe({
         },);
         /* The tomlSet chain formerly forced @mutates contracts up through
          * applyCargoPlan; live workspace analysis plus plain-data traversal
-         * narrowing proves the whole chain effect-free. */
+         * narrowing proves the whole chain mutation-free.
+         *
+         * Mutation-free, not fully resolved. Every link reaches `Object.entries` inside
+         * `@monochromatic-dev/module-toml-edit`, which nothing derives, so each one
+         * carries unproven reachability on the parameter it packages into that call.
+         * The first two links read `[]` until the owned call edge stopped filtering
+         * argument literals by the callee's authored `@mutates` names, which had let a
+         * comment decide which caller-owned values inherited a callee's opacity. What
+         * this case pins is the mutation column: it stays empty for all three, which is
+         * the claim the catalog removal was about. */
         const summaries = [
           'setIfDiffers',
           'applyEnforcement',
@@ -75,12 +84,12 @@ await describe({
           {
             functionName: 'setIfDiffers',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'applyEnforcement',
             mutated: [],
-            opaque: [],
+            opaque: [0,],
           },
           {
             functionName: 'applyCargoPlan',
