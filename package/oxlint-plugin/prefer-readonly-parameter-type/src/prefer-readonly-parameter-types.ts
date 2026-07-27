@@ -164,14 +164,16 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
              */
             const effectSummary = effectIndex.get(semanticNode,);
             if (effectSummary === NO_EFFECT_SUMMARY) {
-              /**
-               * Stable semantic identity omitted by project effect index.
-               */
-              const missingKey = callableKey(semanticNode,);
-              throw new SemanticBridgeError({
-                reason: 'node-not-found',
-                message: `Effect summary index omitted owned callable declaration ${missingKey}.`,
-              },);
+              /* Omitted because its summary could not be built, which
+               * `effect-demand-index.ts` warns about with the cause. Skipping it costs this
+               * one callable its offer and its reports, and costs nothing elsewhere: its
+               * callers already take opacity from the absent-callee branch in
+               * `effect-fixed-point-propagation.ts`. Reporting here instead would put an
+               * internal failure on code whose author cannot act on it. */
+              rl.warn(
+                `skipping ${callableKey(semanticNode,)}, which the effect index omitted`,
+              );
+              return;
             }
             verifyReadonlyCallable({
               context,

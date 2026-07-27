@@ -7,6 +7,9 @@
 import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { directEffectSummary, } from './direct-effect-summary.ts';
 import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
@@ -30,6 +33,11 @@ import {
   isEffectCallableDeclaration,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
+
+/**
+ * Tagged logger for effect index construction.
+ */
+const dl = tagged({ tag: 'effect-demand-index', },);
 import {
   type CallableEffectSummary,
   type EffectSummaryIndex,
@@ -242,30 +250,46 @@ export function createDemandDrivenEffectIndex(
     /**
      * Fresh direct summaries for reached source.
      */
-    const fileSummaries = new Map(declarations.map(function gatherCallable(declaration,): [
+    const fileSummaries = new Map(declarations.flatMap(function gatherCallable(declaration,): readonly [
       string,
       MutableEffectSummary,
-    ] {
-      return [
-        callableKey(declaration,),
-        directEffectSummary({
-          project,
-          declaration,
-          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-          externalEffectResolver({
-            consumerProject,
-            call,
-            declaration: externalDeclaration,
-          },) {
-            return externalCallableEffect({
+    ][] {
+      try {
+        return [[
+          callableKey(declaration,),
+          directEffectSummary({
+            project,
+            declaration,
+            ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+            externalEffectResolver({
               consumerProject,
               call,
               declaration: externalDeclaration,
-              buildIndex,
-            },);
-          },
-        },),
-      ];
+            },) {
+              return externalCallableEffect({
+                consumerProject,
+                call,
+                declaration: externalDeclaration,
+                buildIndex,
+              },);
+            },
+          },),
+        ],];
+      }
+      catch (error) {
+        /* One callable whose summary cannot be built must not cost the rest of the file.
+         * Omitting it is what makes the rest analyzable, and omission is fail-closed on
+         * both sides: its callers hit the absent-callee branch in
+         * `effect-fixed-point-propagation.ts` and take opacity, while the rule skips
+         * verifying it rather than reporting an internal failure against code whose author
+         * cannot act on it. The live cause is an upstream panic recorded in
+         * `doc/troubleshooting/typescript-go-tuple-type-panic.md`, which no ordering of API
+         * calls avoids. */
+        dl.warn(
+          `omitting ${callableKey(declaration,)} from the effect index: ${caughtValueStack(error,)}`,
+        );
+        return [];
+      }
     },),);
     /**
      * Owned source dependencies discovered through semantic call edges.

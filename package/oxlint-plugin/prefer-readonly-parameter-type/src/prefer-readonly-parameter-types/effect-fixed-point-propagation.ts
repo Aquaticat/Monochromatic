@@ -4,12 +4,16 @@
  * @module
  */
 
+import { addOpaqueEffect, } from './effect-call-resolution.ts';
 import { propagateCallbackRelations, } from './effect-callback-relation.ts';
 import { EffectPropagationError, } from './effect-propagation-error.ts';
 import { propagateElementApplications, } from './effect-element-application.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
 import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
-import type { MutableEffectSummary, } from './effect-summary-model.ts';
+import {
+  addEffectIndex,
+  type MutableEffectSummary,
+} from './effect-summary-model.ts';
 import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
 
 /**
@@ -82,8 +86,29 @@ export function propagateEffects(
              * Summary for owned callee edge.
              */
             const calleeSummary = summaries.get(edge.calleeKey,);
-            if (calleeSummary === undefined)
+            if (calleeSummary === undefined) {
+              /* An owned edge naming a callee with no summary used to return silently,
+               * which turned an unresolved callee into a no-effect one: the strongest
+               * possible claim from the weakest possible evidence. Every origin the edge
+               * packages takes opacity instead. A summary goes missing when its callable
+               * could not be built at all, which `effect-demand-index.ts` warns about and
+               * omits so one failure does not cost a whole file. */
+              edge.arguments
+                .forEach(function markUnresolvedFormal(origins,): void {
+                  origins.forEach(function markOrigin(origin,): void {
+                    state.changed = addEffectIndex({
+                      target: summary.opaque,
+                      value: origin,
+                    },) || state.changed;
+                    addOpaqueEffect({
+                      summary,
+                      affectedParameterIndex: origin,
+                      provenance: `callable without an effect summary ${edge.calleeKey}`,
+                    },);
+                  },);
+                },);
               return;
+            }
             state.changed = propagateInvokedCapabilities({
               summaries,
               summary,
