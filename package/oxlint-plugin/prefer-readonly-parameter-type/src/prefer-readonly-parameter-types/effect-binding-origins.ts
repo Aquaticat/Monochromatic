@@ -31,7 +31,7 @@ import {
  * state from every parameter assigned into it, and an earlier revision overwrote, so
  * one branch erased the other and the erased parameter was offered `readonly` while
  * the body mutated it through the alias. Applying that suggestion failed to compile;
- * `doc/planning/prefer-readonly-binding-origin-widening.md` records the measurement.
+ * `doc/decision/prefer-readonly-binding-origin-accumulation.md` records the measurement.
  *
  * Accumulation also fixes convergence. Under overwrite, an alias with two origins
  * flipped between them on every pass and reported progress each time, so

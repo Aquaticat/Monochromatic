@@ -161,25 +161,29 @@ The `second` offer is the unsound one this decision removes.
 The `shadowed` offer is the precision overwrite happened to have and accumulation gives up.
 The `values` offer is the control, which survives both branches, as it must to be a control.
 
-### Measuring this rule at two scopes loads two different bundles
+### Both measurement scopes now run built artifacts
 
-Worth stating, because it silently invalidates workspace measurements.
+While measuring this fix, the fixture harness ran analyzer **source**:
+`.oxlintrc.readonly.fixture.json` named
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts` in its `jsPlugins`,
+so a source edit took effect with no build,
+while the workspace sweep ran a built sidecar
+(`package/config/oxlint/dist/final/node/plugin-prefer-readonly-parameter-type.mjs`,
+rebuilt by `ensureOxlintConfig` in `mise.no-env.toml:417` at every `lint:oxlint`).
+Two scopes, two artifacts, and rebuilding the plugin package updated only one of them.
 
-The fixture harness lints through `.oxlintrc.readonly.fixture.json`, whose `jsPlugins`
-names `package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts`,
-so fixture runs execute analyzer **source** and a source edit takes effect without any build.
+The fixture config now names
+`../../oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs`,
+the package's own `.` export, so both scopes exercise built output.
+This matches what the package's tests already did, several of which import
+`../dist/final/node/index.mjs` directly, and what `test-import(require-eventual-artifact)`
+exists to require.
 
-The workspace sweep resolves the root `oxlint.config.ts` to the built Node entry of
-`@monochromatic-dev/config-oxlint`, whose `jsPlugins` name co-located sidecars, so the
-rule that actually runs is
-`package/config/oxlint/dist/final/node/plugin-prefer-readonly-parameter-type.mjs`.
-Rebuilding the plugin package does not update that sidecar.
-`ensureOxlintConfig` in `mise.no-env.toml:417` rebuilds it at the start of every
-`lint:oxlint`, which is what keeps a workspace sweep honest,
-and which also means a sweep started while a mutation is in the tree measures the mutation.
-
-Checking a workspace number therefore means checking which variant the sidecar holds,
-not which variant the plugin's own `dist` holds.
+The consequence for anyone measuring this rule: a fixture run now reflects the last build,
+not the working tree.
+Verified by mutating `registerBindingOrigin` without rebuilding and confirming the fixture
+was unaffected, which is the only way to know the config resolves to `dist` rather than
+silently falling back to source.
 
 `readAliasEffect` is that control.
 Every other claim in the case is that some parameter is *not* offered,
@@ -187,6 +191,25 @@ which a fixture nothing linted would satisfy equally well,
 so one parameter that must be offered is what proves the file reached the rule.
 This was not hypothetical: the first version of the assertions passed against a fixture
 emitting nothing at all.
+
+## Workspace effect, measured both ways
+
+No workspace diagnostic moved.
+
+Both sweeps report 1,405 findings for this rule, splitting identically into 35 read-only
+offers, 499 `is used by these calls`, and 588 `is used as the object`.
+The pre-fix sweep was taken with the overwrite mutation in the tree, so the sidecar it
+built carried the old behavior, which is what makes it a real before-measurement rather
+than a rerun.
+
+Matching counts alone would not settle it, because accumulation pushes in two directions
+at once: added mutation records suppress offers, while added opacity records create
+diagnostics, so a net-zero total could hide compensating moves.
+The sorted diagnostic sets were therefore diffed and are byte-identical, 1,405 lines each.
+
+The conclusion is about this repository, not about the fix: no code here reassigns a local
+across two parameters and then mutates through it.
+The defect was real and the fixture proves it; nothing in the workspace happened to hit it.
 
 ## Relationship to result provenance
 
