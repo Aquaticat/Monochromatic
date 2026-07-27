@@ -79,6 +79,36 @@ export function partiallyForeignAliasEffect(
 }
 
 /**
+ * Mutates through a local whose first origin is unconditionally overwritten.
+ *
+ * The documented cost of accumulating origins without tracking flow. Only `reached`
+ * can be what the alias holds when the mutation runs, yet `shadowed` is credited too
+ * and loses a read-only offer it deserves. That direction is safe, unlike the
+ * overwrite it replaced: withholding an offer costs a suggestion, while making one
+ * for a mutated parameter emits an annotation that does not compile.
+ *
+ * @param shadowed - Parameter aliased and then displaced before any use.
+ *
+ * @param reached - Parameter actually mutated through alias.
+ *
+ * @example
+ * ```ts
+ * flowInsensitiveAliasEffect([], []);
+ * ```
+ */
+export function flowInsensitiveAliasEffect(
+  shadowed: Labelled[],
+  reached: Labelled[],
+): void {
+  /**
+   * Alias whose only reachable value at the mutation is the second parameter.
+   */
+  let cursor = shadowed;
+  cursor = reached;
+  cursor.push({ label: 'appended', },);
+}
+
+/**
  * Reads a parameter through an alias without mutating anything.
  *
  * The positive control proving this fixture reaches the rule at all. Every other

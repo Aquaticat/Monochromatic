@@ -345,9 +345,9 @@ children: [
       /* The whole expected set, pinned rather than probed by absence. Every other
        * claim in this case is that some parameter is *not* offered, which a fixture
        * nothing linted would satisfy too, so `readAliasEffect` is the control that
-       * proves the file reached the rule. Measured: with `registerBindingOrigin`
-       * reverted to overwriting, this becomes the single message
-       * `Parameter "second" should be readonly`, and the control disappears. */
+       * proves the file reached the rule. Reverting `registerBindingOrigin` to
+       * overwrite origins must fail this assertion, by offering a parameter whose
+       * annotation then fails to compile. */
       expect(messages,).toEqual([
         'Parameter "values" should be readonly: mutable Array has ReadonlyArray projection.',
       ],);
@@ -365,6 +365,14 @@ children: [
       expect(messages.filter(function offersUnrelatedParameter(message,): boolean {
         return message.includes('"only"',)
           || message.includes('"flag"',);
+      },),).toEqual([],);
+      /* The accepted cost of being flow-insensitive, pinned so it stays a decision
+       * rather than drift. `shadowed` is displaced before the mutation runs and can
+       * never be what the alias holds, yet it is credited and loses an offer it
+       * deserves. Withholding an offer is the safe direction; the overwrite this
+       * replaced made one that did not compile. */
+      expect(messages.filter(function offersDisplacedParameter(message,): boolean {
+        return message.includes('"shadowed"',);
       },),).toEqual([],);
     },
   },),
