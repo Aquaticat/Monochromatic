@@ -118,6 +118,78 @@ The plugin version is not a factor.
 
 Smallest reproduction: lint `package/module/caught-value`, whose entire source is two intrinsic calls.
 
+## Attempted fix: derive receiver survival from read-only views, abandoned
+
+The "finish the migration" option was built and measured, then reverted. Recording it so the next attempt
+starts from the blocker rather than from the idea.
+
+### The idea
+
+TypeScript declares a read-only view beside each mutable collection and places on it exactly the operations
+that survive when the holder may not mutate the value. Membership of that view is upstream's own assertion,
+so a recognizer could read it off the resolved declaration without any handwritten effect catalog.
+
+Measured facts supporting it:
+
+- Every top receiver-side finding is such a member: `map` (164), `filter` (70), `slice` (46), `join` (44),
+  `get` (35), `has` (27), `some` (25), `flatMap` (25), `every` (25), `forEach` (23), roughly 576 of the 857
+  receiver-side findings.
+- The calls resolve to `ReadonlyArray` directly, not to `Array`, because the parameters are already typed
+  `readonly T[]`. The derivation would therefore only reward code already shaped the way the rule wants.
+- `ReadonlyArray`, `ReadonlyMap`, `ReadonlySet` and `ReadonlySetLike` are the entire set of `Readonly`-prefixed
+  default-library interfaces in TypeScript 7.0.2, and none declares a mutator, so a prefix test needs no
+  enumeration.
+
+With the recognizer wired to suppress receiver opacity only, `toml-edit` went from 136 findings to 78, and
+`caught-value` stayed at 2 as predicted.
+
+### Why it was reverted
+
+The premise is that `Readonly*` membership proves the receiver survives the call. It proves less than the
+opacity encodes. Two claims are involved:
+
+- The member does not structurally mutate the receiver collection. Provable from membership.
+- The call cannot run user code reachable from the receiver. What receiver opacity actually encodes.
+
+The first does not imply the second. `join` coerces elements through `String`, `toSorted()` without a
+comparator runs the default comparator, and `toLocaleString` likewise. Suppressing opacity for those reverses
+the audited removal of static plain-data exemptions, caught by
+`rejects static plain-data claims without runtime isolation`.
+
+Narrowing to calls where the caller supplies the observing function (an argument whose type is definitely
+callable) fixed that test and two others, but not the core objection. Three audited fixtures in
+`package/test-fixture/oxlint-no-restricted-syntax/src/valid/typescript-sync-adapter.ts` pin exactly the
+narrowed case as opaque:
+
+```ts
+export function arrayCallbackSemanticEffect(
+  states: readonly { value: string; }[],
+): void {
+  states.forEach(function updateState(state,): void {
+    state.value = 'changed';
+  },);
+}
+```
+
+`effect-summaries.unit.test.ts` expects `opaque: [0]` for it, and the same for
+`objectArraySortCallbackEffect`, which passes an explicit comparator over deeply readonly elements.
+`workspace-source-effect.unit.test.ts` expects `opaque: [0]` for `applyCargoPlan`, whose only relevant calls
+are `plan.blocks.filter(...)` and `plan.enforcements.reduce(...)`.
+
+So the audited design already answers the question: a read-only view member that hands caller-owned element
+identities to a callback stays opaque, because the callback invocation is itself an unresolved boundary.
+`readonly T[]` does not make elements readonly, and the analyzer will not assume the callback is harmless.
+
+### What this means for the option
+
+"Finish the migration" is not blocked on a recognizer. It is blocked on an effect-model change: the summary
+carries one opacity flag per parameter, conflating structural mutation of the receiver with reachability of
+user code from the receiver. Separating those two would let `Readonly*` membership discharge the first while
+the second keeps propagating, which is what the audited tests require.
+
+That is a change to what counts as proof, so it belongs in the audit
+(`doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`), not in a drive-by patch.
+
 ## What does not work
 
 - Treating the findings as defects in the linted package. `caught-value` reports two errors over 38 lines whose
