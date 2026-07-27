@@ -1,13 +1,19 @@
 /**
- * Caller origins packaged into a call argument through an object-literal accessor.
+ * Caller origins a callable packaged inside a call-argument literal can hand over.
  *
- * The argument walk enumerates the property forms whose value it can read directly:
- * assignments, shorthand and spreads. An accessor has no such value. The callee obtains
- * one by reading the property, which runs the accessor body in the caller's scope, so a
- * parameter the body can return reaches the callee without ever appearing as a property
- * value. Measured on `accessorPackagedEffect` in the result-provenance fixture, where
- * `get unnamed() { return row; }` recorded nothing and the rule offered `row` as readonly
- * while the callee wrote `row.label`.
+ * The argument walk reads the value each property holds. When that value is a callable,
+ * or when the property is an accessor or a method and has no readable value at all, the
+ * parameter it reaches lives in a body the callee runs, not in anything the walk can see.
+ * Three measured forms in the result-provenance fixture produced the same defect, each
+ * recording no origin while the callee wrote through what came back:
+ * `accessorPackagedEffect` uses `get unnamed() { return row; }`,
+ * `methodReturnPackagedEffect` uses a method, and `arrowReturnPackagedEffect` uses an
+ * ordinary property holding an arrow. Each was offered `row` as readonly.
+ *
+ * This covers callables nested inside a packaged literal, which is exactly where the
+ * callback relation has no reach: `callbackKeys` is recorded per argument position, so a
+ * callable handed over directly is resolved and analyzed as a callback, while one wrapped
+ * in a literal is invisible to it.
  *
  * The body is scanned rather than evaluated, and every binding it names contributes,
  * whatever position it appears in. That over-approximates, which is the direction that
@@ -29,29 +35,29 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Collects caller parameter origins any binding named inside an accessor can carry.
+ * Collects caller parameter origins any binding named inside a packaged callable carries.
  *
  * @param project - TypeScript project resolving binding symbols.
  *
  * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
  *
- * @param accessor - Accessor declaration authored inside a call-argument literal.
+ * @param packaged - Callable, accessor or method authored inside a call-argument literal.
  *
- * @returns parameter indexes reachable through this accessor's body.
+ * @returns parameter indexes reachable through that body.
  *
  * @example
  * ```ts
- * accessorPackagedOrigins({ project, bindingOriginBySymbolId, accessor });
+ * packagedCallableOrigins({ project, bindingOriginBySymbolId, packaged });
  * ```
  */
-export function accessorPackagedOrigins({
+export function packagedCallableOrigins({
   project,
   bindingOriginBySymbolId,
-  accessor,
+  packaged,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
-  readonly accessor: Node;
+  readonly packaged: Node;
 },): ReadonlySet<number> {
   /**
    * Checker resolving each named binding to its declaring symbol.
@@ -61,7 +67,7 @@ export function accessorPackagedOrigins({
    * Origins any binding inside this accessor can carry.
    */
   const origins = new Set<number>();
-  collectAstNodes(accessor,)
+  collectAstNodes(packaged,)
     .forEach(function collectNamed(node,): void {
       if (!isIdentifier(node,))
         return;

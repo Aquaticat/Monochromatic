@@ -825,3 +825,69 @@ export function nestedAccessorPackagedEffect(row: LabelledRow,): void {
     },
   },);
 }
+
+/**
+ * Calls a supplied method and writes through what it returns.
+ *
+ * Callee half of the method-return probe. Nothing in the caller writes, so the caller's
+ * own direct-write scan cannot record anything: the origin has to travel through the
+ * argument walk for this write to be attributed at all.
+ *
+ * @param get - Method the body calls for a row it then writes.
+ *
+ * @mutates get - Overwrites a label on whatever row is returned.
+ *
+ * @example
+ * ```ts
+ * callThroughMethodResult({ get: () => ({ label: '' }) });
+ * ```
+ */
+function callThroughMethodResult({ get, }: { get: () => LabelledRow; },): void {
+  get()
+    .label = 'written-through-result';
+}
+
+/**
+ * Packages a parameter behind an object-literal method the callee calls.
+ *
+ * The shape `passedContainerClosureSemanticEffect` does not cover. There the mutation is
+ * written in the caller's own scope, so the caller's direct-write scan finds it whatever
+ * the argument walk does. Here the write is in the callee, through the value the method
+ * returns, which is the same position the accessor defect occupied.
+ *
+ * @param row - Row the callee writes after calling the supplied method.
+ *
+ * @example
+ * ```ts
+ * methodReturnPackagedEffect({ label: '' });
+ * ```
+ */
+export function methodReturnPackagedEffect(row: LabelledRow,): void {
+  callThroughMethodResult({
+    get(): LabelledRow {
+      return row;
+    },
+  },);
+}
+
+/**
+ * Packages a parameter behind an arrow function held in an ordinary property.
+ *
+ * Third form of the same shape. Here the property does have a value the walk reads, but
+ * that value is a callable whose body is what reaches the parameter, so reading the
+ * property value alone still finds no origin.
+ *
+ * @param row - Row the callee writes after calling the supplied function.
+ *
+ * @example
+ * ```ts
+ * arrowReturnPackagedEffect({ label: '' });
+ * ```
+ */
+export function arrowReturnPackagedEffect(row: LabelledRow,): void {
+  callThroughMethodResult({
+    get: (): LabelledRow => {
+      return row;
+    },
+  },);
+}

@@ -11,8 +11,8 @@ import {
 } from 'typescript/unstable/sync';
 import type { Node, } from 'typescript/unstable/ast';
 import {
-  isAccessorDeclaration,
   isArrayLiteralExpression,
+  isAccessorDeclaration,
   isIdentifier,
   isObjectLiteralExpression,
   isPropertyAssignment,
@@ -22,7 +22,7 @@ import {
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
-import { accessorPackagedOrigins, } from './effect-accessor-origins.ts';
+import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
 import { expressionValueOrigins, } from './effect-expression-provenance.ts';
 import {
   expressionCanCarryMutableState,
@@ -122,6 +122,22 @@ export function parameterIndexes({
    */
   const origins = new Set<number>();
   /**
+   * Adds every origin a callable packaged inside this argument can hand over.
+   *
+   * @param packaged - Callable, accessor or method found inside the packaging structure.
+   *
+   */
+  function collectPackagedCallable(packaged: Node,): void {
+    packagedCallableOrigins({
+      project,
+      bindingOriginBySymbolId,
+      packaged,
+    },)
+      .forEach(function collectPackagedOrigin(origin,): void {
+        origins.add(origin,);
+      },);
+  }
+  /**
    * Visits only authored object and array packaging structure.
    *
    * @param current - Current packaged expression or direct parameter root.
@@ -155,9 +171,10 @@ export function parameterIndexes({
            */
           const propertyName = property.name
             .getText();
-          if ((includedPropertyNames === ALL_PACKAGED_PROPERTIES)
-            || includedPropertyNames.has(propertyName,))
-            collect(property.initializer,);
+          if ((includedPropertyNames !== ALL_PACKAGED_PROPERTIES)
+            && (!includedPropertyNames.has(propertyName,)))
+            return;
+          collect(property.initializer,);
           return;
         }
         if (isShorthandPropertyAssignment(property,)) {
@@ -193,19 +210,11 @@ export function parameterIndexes({
         if (!isAccessorDeclaration(property,))
           return;
         /* An accessor has no property value to read: the callee obtains one by reading
-         * the property, which runs this body in the caller's scope. Scanning it for named
-         * bindings covers that without claiming to know which value comes back. A method
-         * is left to the closure handling instead, since the callee has to call it and
-         * `passedContainerClosureSemanticEffect` measured that including methods here
-         * changes only where that handling already records the write. */
-        accessorPackagedOrigins({
-          project,
-          bindingOriginBySymbolId,
-          accessor: property,
-        },)
-          .forEach(function collectAccessor(origin,): void {
-            origins.add(origin,);
-          },);
+         * the property, which runs this body in the caller's scope. A method and a
+         * function-valued property are deliberately not routed here, because measuring
+         * showed the offer they produce has a different cause and this would not remove
+         * it: see `methodReturnPackagedEffect` in the result-provenance fixture. */
+        collectPackagedCallable(property,);
         },);
       return;
     }

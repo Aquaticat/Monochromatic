@@ -286,13 +286,19 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the mutated parameter indexes of one fixture function.
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * Reads `referentMutatedParameterIndexes` rather than
+         * `mutatedParameterIndexes`, because the second is the union with the invoked
+         * set while the readonly offer is gated on the first alone. Measuring the union
+         * here would have reported a write for `methodReturnPackagedEffect`, which is
+         * offered readonly.
          *
          * @param functionName - Fixture function to inspect.
          *
-         * @returns mutated parameter indexes in ascending order.
+         * @returns written parameter indexes in ascending order.
          */
-        function mutatedIndexes(functionName: string,): readonly number[] {
+        function writtenIndexes(functionName: string,): readonly number[] {
           const nameNode = session.nodeAtOffset(
             RESULT_PROVENANCE_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
@@ -305,39 +311,43 @@ await describe({
             throw new Error(`Expected an effect summary for ${functionName}.`,);
           /* Explicit numeric compare, since the default sort is lexicographic and
            * would order parameter 10 before parameter 2. */
-          return [...summary.mutatedParameterIndexes,]
+          return [...summary.referentMutatedParameterIndexes,]
             .toSorted(function byIndex(left: number, right: number,): number {
               return left - right;
             },);
         }
         /** Parameter placed in a literal property the callee contract omits. */
-        const omittedProperty = mutatedIndexes('directRestrictedRowEffect',);
+        const omittedProperty = writtenIndexes('directRestrictedRowEffect',);
         /** Element obtained by `at` and placed in an omitted property. */
-        const omittedLookup = mutatedIndexes('contractRestrictedRowEffect',);
+        const omittedLookup = writtenIndexes('contractRestrictedRowEffect',);
         /** Stored set obtained by `get` and placed in an omitted property. */
-        const omittedStored = mutatedIndexes('contractRestrictedLiteralEffect',);
+        const omittedStored = writtenIndexes('contractRestrictedLiteralEffect',);
         /** Whole container handed over as a direct argument. */
-        const directArgument = mutatedIndexes('directArgumentRestrictedEffect',);
+        const directArgument = writtenIndexes('directArgumentRestrictedEffect',);
         /** Literal whose every mutated property the contract names. */
-        const fullyNamed = mutatedIndexes('fullContractLiteralEffect',);
+        const fullyNamed = writtenIndexes('fullContractLiteralEffect',);
         /** Literal handed to a callee taking an identifier parameter. */
-        const identifierParameter = mutatedIndexes('identifierParameterLiteralEffect',);
+        const identifierParameter = writtenIndexes('identifierParameterLiteralEffect',);
         /** Two parameters where the callee writes only one. */
-        const precisionCost = mutatedIndexes('narrowingPrecisionCostEffect',);
+        const precisionCost = writtenIndexes('narrowingPrecisionCostEffect',);
         /** Callee invoking one property and writing another. */
-        const invokedBeside = mutatedIndexes('invokedExclusionDirectEffect',);
+        const invokedBeside = writtenIndexes('invokedExclusionDirectEffect',);
         /** Direct write beside a parameter forwarded next to a callback. */
-        const invokedMiddle = mutatedIndexes('middleInvokedExclusionEffect',);
+        const invokedMiddle = writtenIndexes('middleInvokedExclusionEffect',);
         /** The same write one call further out. */
-        const invokedOuter = mutatedIndexes('outerInvokedExclusionEffect',);
+        const invokedOuter = writtenIndexes('outerInvokedExclusionEffect',);
         /** Parameter packaged behind an object-literal getter. */
-        const accessorPackaged = mutatedIndexes('accessorPackagedEffect',);
+        const accessorPackaged = writtenIndexes('accessorPackagedEffect',);
         /** Parameter packaged through a spread of a local object. */
-        const spreadPackaged = mutatedIndexes('spreadPackagedEffect',);
+        const spreadPackaged = writtenIndexes('spreadPackagedEffect',);
         /** Parameter reached by accessors nested one literal deeper. */
-        const nestedAccessor = mutatedIndexes('nestedAccessorPackagedEffect',);
+        const nestedAccessor = writtenIndexes('nestedAccessorPackagedEffect',);
+        /** Parameter behind a method the callee calls for a row it writes. */
+        const methodReturn = writtenIndexes('methodReturnPackagedEffect',);
+        /** The same shape with an arrow held in an ordinary property. */
+        const arrowReturn = writtenIndexes('arrowReturnPackagedEffect',);
         /** Function that only reads what it looks up, as a negative control. */
-        const readOnly = mutatedIndexes('readOnlyLookupEffect',);
+        const readOnly = writtenIndexes('readOnlyLookupEffect',);
         closeSemanticBridge();
         /* The defect, and the three shapes it took. Restoring the contract-name filter
          * in `effect-owned-call-edge.ts` empties all three, and the first is the one
@@ -394,6 +404,16 @@ await describe({
         expect(accessorPackaged,).toEqual([0,],);
         expect(spreadPackaged,).toEqual([0,],);
         expect(nestedAccessor,).toEqual([0,],);
+        /* Known gap, recorded rather than asserted away. Both are offered readonly while
+         * the callee writes through what they hand over, and the accessor handling does
+         * not remove it because the cause is on the other side: `callThroughMethodResult`
+         * writes `get().label`, and a write through the result of invoking a supplied
+         * callable is attributed to nothing, measured as `referentMutated=[] invoked=[0]`
+         * for that callee. Routing methods and function-valued properties through the
+         * packaging scan was measured and does not change these, so the fix has to
+         * attribute the callee's write first. */
+        expect(methodReturn,).toEqual([],);
+        expect(arrowReturn,).toEqual([],);
         /* The control that keeps every assertion here from passing vacuously: none of
          * these changes may credit a parameter that is only read. */
         expect(readOnly,).toEqual([],);

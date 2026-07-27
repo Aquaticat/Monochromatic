@@ -360,7 +360,10 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(5,);
+      /* Five reports plus the two offers pinned as a set at the end of this case. The
+       * count moved from five when the packaging probes were added, because the gap they
+       * measure produces an offer rather than a report. */
+      expect(messages.length,).toBe(7,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -425,22 +428,30 @@ children: [
         return message.includes('JSON.stringify',);
       },).length,).toBe(1,);
       /* No lookup receiver is offered read-only yet, not even `readOnlyLookupEffect`'s,
-       * which only reads: that awaits the discharge, not the attribution. This fixture
-       * emits no offer at all, which is why `readonly-binding-origin-invalid.ts` carries
-       * the positive control proving an offer can still be produced. */
+       * which only reads: that awaits the discharge, not the attribution. `rows` belongs
+       * here too, since a discharged `at` result was the second route to the
+       * contract-name defect. `row` is deliberately absent from this filter: the offers
+       * this fixture still emits name a parameter called `row`, and they are pinned as a
+       * set immediately below rather than folded into a claim about lookup receivers. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
           || message.includes('"records" should be readonly',)
-          || message.includes('"rows" should be readonly',)
-          || message.includes('"row" should be readonly',);
+          || message.includes('"rows" should be readonly',);
       },),).toEqual([],);
-      /* Every offer, not just the receivers above. Both routes to the contract-name
-       * defect surfaced here as an offer: `row` with no lookup involved, and `rows`
-       * through a discharged `at` result. `effect-summaries.unit.test.ts` carries the
-       * mutation assertions that make this absence meaningful rather than vacuous. */
+      /* Every offer in the fixture, pinned as a set rather than by count. Both routes to
+       * the contract-name defect surfaced here and are gone: `row` with no lookup
+       * involved, and `rows` through a discharged `at` result. The two that remain are a
+       * measured gap the packaging work does not reach, on `methodReturnPackagedEffect`
+       * and `arrowReturnPackagedEffect`: their callee writes through the result of
+       * invoking a callable they supply, and that write is attributed to nothing, so the
+       * caller looks clean. `effect-summaries.unit.test.ts` records the cause beside the
+       * summaries. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
-      },),).toEqual([],);
+      },),).toEqual([
+        'Parameter "row" should be readonly: property label is writable.',
+        'Parameter "row" should be readonly: property label is writable.',
+      ],);
     },
   },),
   it({
