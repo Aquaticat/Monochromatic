@@ -181,9 +181,20 @@ exists to require.
 
 The consequence for anyone measuring this rule: a fixture run now reflects the last build,
 not the working tree.
-Verified by mutating `registerBindingOrigin` without rebuilding and confirming the fixture
-was unaffected, which is the only way to know the config resolves to `dist` rather than
-silently falling back to source.
+Verified two ways, because a passing suite proves neither on its own.
+Mutating `registerBindingOrigin` without rebuilding left the fixture unaffected,
+which is how to know the config resolves to `dist` rather than silently falling back to
+source.
+Moving one plugin's built entry aside made its suite fail with
+`Failed to load JS plugin`, which is how to know `dist` is required rather than optional.
+
+Naming built artifacts also means a cold tree has no plugin to load,
+so `test:unit` in each of the five oxlint plugin packages now carries
+`depends = ["build"]`.
+Two of those packages already had test files importing `dist` with no such dependency,
+so their cold runs already rested on a prior build;
+this closes that gap rather than only the one the fixture change opened.
+Verified by deleting every plugin `dist` and running all five suites, which build and pass.
 
 `readAliasEffect` is that control.
 Every other claim in the case is that some parameter is *not* offered,
