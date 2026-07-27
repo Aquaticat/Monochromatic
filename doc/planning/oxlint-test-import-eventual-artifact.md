@@ -331,6 +331,34 @@ so unlike per-file visitor state they must not be cleared between files.
 The 30 packages declaring `src/` entries never collide with the own-bare-name allowance in practice:
 measured across every test file, no bare self-reference occurs in a package whose `.` export points into `src/`.
 
+## Shapes that satisfy the effect rule
+
+`prefer-readonly-parameter-type/prefer-readonly-parameter-types` rejects any parameter reaching a call whose implementation it cannot inspect,
+which covers `Object.keys`, `Object.entries`, `Array.prototype.filter`, `Map.prototype.set`, and every Oxlint host method.
+Four shapes in this package exist for that reason and should not be flattened back:
+
+-   `readFixturePatterns` narrows through `isUnknownArray` rather than bare `Array.isArray`.
+    `Array.isArray` widens its subject to `any[]`, presenting the mutable `Array` interface at the later `filter`;
+    landing on `ReadonlyArray` instead keeps the call on a view TypeScript declares free of receiver mutation.
+
+-   `createOnce` takes `ForeignHostCapability<Context>`, not `ForeignBorrowed<Context>`.
+    Oxlint's context is runtime-owned and its `report` really does change diagnostic state, which the existing `@mutates context` documents.
+
+-   The rule reports through `loc` rather than `node`.
+    `report` only reads a node's position, so marking the node itself would document an effect that does not happen;
+    copying the four line and column numbers into a fresh literal sends nothing sharing identity with the host AST.
+    Oxlint's `Diagnostic` accepts either key.
+
+-   `manifestFacts` takes manifest text and returns only the package name and its declared target strings.
+    Parsing inside keeps the parsed tree from ever crossing a function boundary,
+    so the `Object.entries` walk runs on a value nothing else owns.
+    `eventualDirectories` takes those strings for the same reason,
+    and `owningPackage` writes its verdict to the cache in place rather than through a helper.
+
+Measured after these changes: zero findings from every configured rule in the package.
+`package/oxlint-plugin/tsdoc` still carries 35 findings of the same rule, most of them the identical `context.report` shape,
+and is not covered by the self-hosting override in `package/config/oxlint/src/overrides.ts`.
+
 ## Next action
 
 Migrate the 697 reported sites, using the rule's own output as the worklist.
