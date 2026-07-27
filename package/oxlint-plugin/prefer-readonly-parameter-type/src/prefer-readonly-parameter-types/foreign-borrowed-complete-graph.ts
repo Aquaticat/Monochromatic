@@ -57,33 +57,27 @@ function nearestOwnedCallable({
 }): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
   /**
    * Parent cursor seeking callable boundary.
-   *
-   * A source file reports `undefined` rather than itself as its parent, despite
-   * the non-optional `parent` in TypeScript's node types, so the walk has to
-   * stop on an absent parent as well as on a self-parented one.
    */
-  const cursor: { current: Node | undefined; } = { current: node.parent, };
-  while (cursor.current !== undefined) {
+  const cursor: { current: Node; } = { current: node.parent, };
+  while (!isEffectCallableDeclaration(cursor.current,)) {
     /**
-     * Callable boundary candidate at current cursor position.
+     * Next parent, self-parented source boundary, or absent past a source-file
+     * root.
+     *
+     * A source file reports no parent at all rather than parenting itself,
+     * despite the non-optional `parent` in TypeScript's node types, so the root
+     * has to end the walk alongside the self-parented case.
      */
-    const candidate = cursor.current;
-    if (isEffectCallableDeclaration(candidate,))
-      return indexedSourceFiles.has(candidate
-        .getSourceFile()
-        .fileName,)
-        ? candidate
-        : OWNED_CALLABLE_UNAVAILABLE;
-    /**
-     * Next parent, absent past a source-file root, or self at a self-parented
-     * boundary.
-     */
-    const { parent, } = candidate;
-    if (parent === candidate)
+    const { parent, } = cursor.current;
+    if ((parent === undefined) || (parent === cursor.current))
       return OWNED_CALLABLE_UNAVAILABLE;
     cursor.current = parent;
   }
-  return OWNED_CALLABLE_UNAVAILABLE;
+  return indexedSourceFiles.has(cursor.current
+    .getSourceFile()
+    .fileName,)
+    ? cursor.current
+    : OWNED_CALLABLE_UNAVAILABLE;
 }
 
 /**

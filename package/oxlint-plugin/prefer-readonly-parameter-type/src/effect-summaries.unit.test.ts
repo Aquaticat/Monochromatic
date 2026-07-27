@@ -1390,5 +1390,70 @@ await describe({
         expect(warmStats.persistentSourceCacheHitCount > 0,).toBe(true,);
       },
     },),
+    it({
+      name: 'completes the foreign-borrowed graph when a usage sits at module top level',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Marker source directory preserving exact semantic identity suffix. */
+        const markerRoot = join(
+          projectRoot.path,
+          'ownership-marker',
+          'foreign-borrowed',
+          'src',
+        );
+        /** Active foreign-boundary source. */
+        const foreignPath = join(projectRoot.path, 'foreign.ts',);
+        /** Shared helper reached through the marked boundary. */
+        const helperPath = join(projectRoot.path, 'helper.ts',);
+        /**
+         * Active source whose boundary is itself invoked at module top level.
+         *
+         * The inbound walk for `readForeign` starts at that trailing call and
+         * passes no callable before the source file, which is the shape that
+         * previously stepped off the root.
+         */
+        const foreignSource = "import type { ForeignBorrowed, } from './ownership-marker/foreign-borrowed/src/index.js';\nimport { read, } from './helper.js';\nexport function readForeign(value: ForeignBorrowed<{ text: string; }>,): string { return read(value); }\nexport const eager: string = readForeign({ text: 'top level', },);\n";
+        mkdirSync(markerRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["**/*.ts"]}\n',
+        );
+        writeFileSync(
+          join(markerRoot, 'index.ts',),
+          'declare const FOREIGN_BORROWED_MARKER: unique symbol;\nexport type ForeignBorrowed<Value> = Value & { readonly [FOREIGN_BORROWED_MARKER]?: true; };\n',
+        );
+        writeFileSync(foreignPath, foreignSource,);
+        writeFileSync(
+          helperPath,
+          'export function read(value: { text: string; },): string { return value.text; }\n',
+        );
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: foreignPath,
+          sourceText: foreignSource,
+          hasBOM: false,
+        },);
+        /** Index build threw before the parent walk guarded the root. */
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+          cacheRootOverride: join(projectRoot.path, '.effect-cache',),
+        },);
+        /** Active boundary declaration retaining explicit foreign provenance. */
+        const foreignDeclaration = session.nodeAtOffset(foreignSource.indexOf('readForeign',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(foreignDeclaration,))
+          throw new Error('Expected active foreign boundary declaration.',);
+        /** Active boundary summary proving graph completion survived the walk. */
+        const foreignSummary = index.get(foreignDeclaration,);
+        if (foreignSummary === NO_EFFECT_SUMMARY)
+          throw new Error('Expected active foreign boundary summary.',);
+        expect([...foreignSummary.foreignBorrowedParameterIndexes,],).toEqual([0,],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
   ],
 },);
