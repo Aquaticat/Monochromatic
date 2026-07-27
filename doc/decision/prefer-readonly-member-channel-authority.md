@@ -155,6 +155,17 @@ knowingly rather than by omission.
   caller-owned `Set`, and the rule now says so instead of saying it cannot tell.
 - `readonly-foreign-provenance-invalid.ts` still reports all five findings, including that `replacement` escapes
   through `values.with(0, replacement)`, which is the assertion that caught the reverted wiring.
+- Workspace: 1,405 findings for this rule, against the 1,450 recorded in
+  `doc/decision/prefer-readonly-mutable-collection-members.md`.
+
+  That difference is not this decision's effect and must not be read as one. Two changes landed between the two
+  measurements and they pull in opposite directions: closing the member-result escape adds findings, because it
+  stops discharging `find`, `at` and `Map.get` over state-carrying element types, and the receiver-only discharge
+  removes them. The net is 45 fewer. Splitting it needs a workspace run at the intermediate commit,
+  `d6d3ee083`, which was not performed, so no per-change workspace number is claimed here.
+
+  The exact, attributable numbers for this decision are the fixture and summary counts above, each diffed against
+  a build differing only in the change under test.
 
 ## Scope, and what the residue becomes
 
