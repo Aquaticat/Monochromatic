@@ -5,6 +5,7 @@ source_dir: .
 # Paths to exclude from indexing, as a YAML list of .gitignore-style patterns
 source_dir_exclude:
 - '**/test/**'
+- '**/test-fixture/**'
 - '*.test.ts'
 - '*_test.rs'
 - '*_tests.rs'
