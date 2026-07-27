@@ -127,47 +127,50 @@ Two consequences. `map` and `filter` needed the species repair recorded in
 correctly and findings it reports only from conservatism is not what a first pass over member names suggested,
 so any policy decision resting on that split has to use this table.
 
-## The share that stays unfixable
+## The share that stays unfixable, remeasured
 
-Superseded, pending remeasurement. The figures in this section were computed before the species repair in
-`doc/decision/prefer-readonly-effect-model-split.md`, which re-reports `map`, `filter`, `slice`, `concat` and
-`flat` over non-primitive element types. They are kept because the shape of the argument still holds, but no
-count here should be quoted until the rerun lands.
+Measured after the species repair, using the verified member classification above rather than member names read
+from memory.
 
-As measured on the pre-repair build: of 1,300 findings, 222 were receiver-side findings whose every named
-member is observer-free, 17.1 percent, up from 16.2 percent before that change, the count holding while the
-derivable findings around it cleared.
+Workspace: 1,450 findings for this rule, against 1,300 before the repair. The repair added 150 by re-reporting
+`map`, `filter`, `slice`, `concat` and `flat` over non-primitive element types, which is the cost of closing
+the species channel and was expected.
 
-The distribution matters more than the share, and it is what decides the policy question.
+The 658 receiver-side findings divide three ways:
 
-Those findings sit in **49 distinct packages**, out of 78 holding any finding from this rule. None of them is
-`prefer-readonly-parameter-type` itself, whose findings the existing exemption already suppresses. The spread
-is a long tail rather than a hotspot: `git-policy/cli` holds 61 and `module/toml-edit` 31, then 47 further
-packages hold single digits each.
+- 265 name a collection member that genuinely runs user code, so the rule is correct and a code change can
+  resolve them.
+- 112 name only collection members verified to run nothing. This is the conservative residue, 7.7 percent of
+  all findings for this rule, across 38 packages. Its members are `get` 29, `has` 27, `at` 13, `includes` 13,
+  `entries` 12, `push` 8, `set` 8, then a short tail.
+- 276 name calls that are not default-library collection members at all: host, package and project methods
+  whose implementations cannot be inspected. These are the original catalog-free consequence and are outside
+  this decision.
 
-So accepting the class as a permanent error does not cost one exemption. The rationale that justifies
-exempting this plugin, that the findings are unprovable by construction rather than defects, applies verbatim
-to all 49, exactly as `doc/troubleshooting/oxlint-prefer-readonly-intrinsic-regression.md` warned when the
-original override was scoped. Any package wanting a clean lint would need its own entry, and the allowlist
-would grow with the workspace.
+The remaining 746 argument-side and 31 shape findings are unaffected and already classified as the rule being
+correct.
 
-That is the deciding argument, and it is about exemption count rather than finding count. The recommended
-response is to separate provable from unprovable findings at the diagnostic boundary, so the unprovable class
-becomes one recorded decision instead of 49 growing globs, while the effect model keeps asserting nothing it
-cannot derive. Reopening the no-catalog constraint would reach a similar practical outcome by giving up the
-guarantee that motivated the architecture, and is not recommended.
+## The policy question, restated after remeasurement
 
-Whichever way that lands, `DGT` needs care for this class: its diagnostics must name the affected input
-plainly while stating honestly that no remediation path exists at the call site.
+Separating the residue into its own diagnostic class, which an earlier draft of this work recommended, does not
+survive the corrected numbers. To categorise a finding as belonging to the residue, the analyzer must first
+know that every member it reached runs no user code, and that knowledge is a member list. A catalog-free
+version of that idea can only key on something coarser, such as whether the member takes an observer, which
+was measured to cover 222 findings of which the majority are the rule being correct. So the idea either
+mis-targets badly or requires the catalog it was meant to avoid.
 
-## Acceptance
+That leaves two options.
 
-Each branch carries a fixture that fails when the mutable-collection path is disabled, verified by disabling
-it and observing the expected failure rather than by assuming coverage:
+Accept the residue. 112 findings across 38 packages stay permanently unactionable, and any package wanting a
+clean lint has the same claim to an exemption that this plugin already has, so the allowlist grows with the
+workspace.
 
-- `mutableArrayObservationEffect` iterates a mutable array with an owned observer and is clean. Disabled, the
-  whole call is opaque.
-- `mutableArrayStructureEffect` appends, reporting `mutated: [0]` and `opaque: [0]`. Disabled, it reports
-  opaque alone.
-- `mutableSetStructureEffect` clears, same shape.
-- `crossFileSemanticEffect` propagates the derived mutation across files.
+Reopen the no-catalog constraint for exactly the verified-inert member set. This is narrower than it sounds and
+differs from what the audit removed. The audit rejected hand-authored effect catalogs, whose entries were
+unverified assertions. The set here was produced by probing a real engine, and it can be regenerated and
+enforced by a test that fails when a member starts dispatching, which no hand-authored table could do. It
+targets exactly the 112 and hides nothing the rule reports correctly.
+
+A probe is evidence rather than proof: absence of dispatch under one set of inputs does not establish absence
+for all inputs. A test-enforced table is therefore stronger than an authored one and weaker than a derivation,
+and choosing it means accepting that middle ground deliberately.
