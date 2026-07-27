@@ -1,5 +1,5 @@
 /**
- * Exact semantic recognition for TypeScript's default-library read-only views.
+ * Exact semantic classification for default-library collection members.
  *
  * @module
  */
@@ -12,61 +12,114 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
-/**
- * Prefix TypeScript gives every default-library read-only collection view.
- */
-const READONLY_VIEW_INTERFACE_PREFIX = 'Readonly';
+import {
+  defaultLibraryViewMembers,
+  READONLY_VIEW_INTERFACE_PREFIX,
+} from './effect-default-library-view-members.ts';
 
 /**
- * Prove selected declaration is a member of a default-library read-only view.
+ * Member leaves the receiver's own structure intact.
+ */
+export const COLLECTION_STRUCTURE_PRESERVED: unique symbol = Symbol(
+  'default-library member preserves receiver structure',
+);
+
+/**
+ * Member restructures the receiver.
+ */
+export const COLLECTION_STRUCTURE_MUTATED: unique symbol = Symbol(
+  'default-library member restructures receiver',
+);
+
+/**
+ * Member belongs to no collection whose structural effect is derivable.
+ */
+export const COLLECTION_UNRECOGNIZED: unique symbol = Symbol(
+  'declaration is not a derivable default-library collection member',
+);
+
+/**
+ * How a default-library collection member treats its receiver's structure.
+ */
+export type CollectionStructureClaim =
+  | typeof COLLECTION_STRUCTURE_PRESERVED
+  | typeof COLLECTION_STRUCTURE_MUTATED
+  | typeof COLLECTION_UNRECOGNIZED;
+
+/**
+ * Classify a resolved declaration's effect on its receiver's structure.
  *
- * TypeScript declares a read-only view beside each mutable collection and
- * places on it exactly the operations that stay available once the holder may
- * not mutate the value. Membership is therefore upstream's own statement that
- * the member does not mutate the receiver's structure, read off the resolved
- * declaration rather than asserted by a member list here.
+ * Two cases are derivable, both from upstream's own declarations. A member of a
+ * `Readonly*` view preserves structure by definition, since the view exists to
+ * name the operations available to a holder that may not mutate. A member of a
+ * mutable collection preserves structure when the paired view declares the same
+ * name, and restructures the receiver when it does not: TypeScript builds each
+ * view by removing exactly the mutators, so the difference between the two
+ * interfaces is upstream's own mutator list.
  *
- * Measured against TypeScript 7.0.2, `ReadonlyArray`, `ReadonlyMap`,
- * `ReadonlySet` and `ReadonlySetLike` are the whole matching set across 107
- * library files, and none of them declares a mutator. Matching the prefix
- * rather than those four names keeps a view added upstream later covered
- * without an edit here.
+ * Measured against TypeScript 7.0.2, that difference is `add`, `clear` and
+ * `delete` for `Set`; `clear`, `delete`, `getOrInsert`, `getOrInsertComputed`
+ * and `set` for `Map`; and `copyWithin`, `fill`, `pop`, `push`, `reverse`,
+ * `shift`, `sort`, `splice` and `unshift` for `Array`. No view declares a member
+ * its mutable interface lacks, so the partition is exact in both directions.
  *
- * This proves only that the receiver's own structure survives the call. It says
- * nothing about what user code the member may run, which stays the caller's
- * separate obligation.
+ * A collection with no paired view, `WeakMap`, `WeakSet`, a typed array, or any
+ * host interface, is unrecognized and keeps failing closed.
+ *
+ * This answers only what happens to the receiver's structure. What user code the
+ * member can run remains a separate obligation for the caller.
  *
  * @param project - TypeScript project proving default-library ownership.
  *
  * @param declaration - Selected callable declaration.
  *
- * @returns Whether declaration is a default-library read-only view member.
+ * @returns structural claim derivable for declaration.
  *
  * @example
  * ```typescript
- * isDefaultLibraryReadonlyViewDeclaration({ project, declaration });
+ * collectionStructureClaim({ project, declaration }) === COLLECTION_STRUCTURE_MUTATED;
  * ```
  */
-export function isDefaultLibraryReadonlyViewDeclaration({
+export function collectionStructureClaim({
   project,
   declaration,
 }: {
   readonly project: Project;
   readonly declaration: Node;
-}): boolean {
+}): CollectionStructureClaim {
   if ((!isMethodSignatureDeclaration(declaration,))
+    || (!isIdentifier(declaration.name,))
     || (!project
       .program
       .isSourceFileDefaultLibrary(declaration.getSourceFile(),)))
-    return false;
+    return COLLECTION_UNRECOGNIZED;
   /**
    * Default-library interface selected as method owner.
    */
   const owner = declaration.parent;
   if ((!isInterfaceDeclaration(owner,)) || (!isIdentifier(owner.name,)))
-    return false;
-  return owner
+    return COLLECTION_UNRECOGNIZED;
+  /**
+   * Owner interface name deciding which claim is derivable.
+   */
+  const ownerName = owner
     .name
-    .text
-    .startsWith(READONLY_VIEW_INTERFACE_PREFIX,);
+    .text;
+  if (ownerName.startsWith(READONLY_VIEW_INTERFACE_PREFIX,))
+    return COLLECTION_STRUCTURE_PRESERVED;
+  /**
+   * Member names on the read-only view paired with this owner, when one exists.
+   */
+  const pairedViewMembers = defaultLibraryViewMembers({ project, },)
+    .get(`${READONLY_VIEW_INTERFACE_PREFIX}${ownerName}`,);
+  if (pairedViewMembers === undefined)
+    return COLLECTION_UNRECOGNIZED;
+  /**
+   * Member name deciding whether the paired view retains this operation.
+   */
+  const memberName = declaration.name
+    .text;
+  return pairedViewMembers.has(memberName,)
+    ? COLLECTION_STRUCTURE_PRESERVED
+    : COLLECTION_STRUCTURE_MUTATED;
 }
