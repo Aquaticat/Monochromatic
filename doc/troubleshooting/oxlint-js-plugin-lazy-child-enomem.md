@@ -359,6 +359,39 @@ It forces cold pages toward RAM without releasing the OdyTTY allocations that ow
 Do not add a cgroup cap to the current OdyTTY unit either,
 because a limit breach could kill unrelated terminal jobs in the same 548-task cgroup.
 
+### No-kill capacity mitigation
+
+Adding swap would improve allocation and overcommit headroom without terminating OdyTTY,
+but it would not release OdyTTY's allocation or prove what created it.
+The live device had only 93,860 KiB free when this option was assessed.
+It stored 15.542 GiB of logical data in 11.219 GiB of physical RAM,
+a measured compression ratio of 1.385 to one.
+
+The initialized `/dev/zram0` cannot be enlarged in place.
+The running kernel's `Documentation/admin-guide/blockdev/zram.rst` documents `-EBUSY`
+for changing initialized attributes and requires a reset first.
+The host exposes `/sys/class/zram-control/hot_add`,
+so a second zram device could be added live instead.
+At the current ratio,
+an additional 8 GiB filled with similar data would consume approximately 5.775 GiB of RAM;
+16 GiB would consume approximately 11.549 GiB.
+This adds logical swap and commit headroom,
+but provides only the compression savings as physical-memory relief.
+
+A low-priority disk-backed swapfile provides overflow capacity without using RAM to store swapped pages.
+The Btrfs filesystem under `/var` had 268.091 GiB available,
+and the installed Btrfs v7 tooling supports `btrfs filesystem mkswapfile`.
+A dedicated subvolume would contain the restriction that prevents snapshotting a subvolume with an active swapfile.
+The tradeoffs are storage latency,
+SSD writes,
+and Btrfs maintenance operations skipping block groups that contain active swapfile extents.
+
+For a no-kill recovery,
+a temporary 16 GiB low-priority Btrfs swapfile ranks ahead of another zram device because the current data compresses
+by only 1.385 to one.
+Neither path has been activated in this incident,
+so this is a source-checked mitigation rather than a verified workaround.
+
 ## Verified workarounds
 
 ### Start the semantic child while loading the plugin
