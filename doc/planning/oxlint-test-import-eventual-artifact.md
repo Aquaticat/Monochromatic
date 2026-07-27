@@ -335,7 +335,7 @@ measured across every test file, no bare self-reference occurs in a package whos
 
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` rejects any parameter reaching a call whose implementation it cannot inspect,
 which covers `Object.keys`, `Object.entries`, `Array.prototype.filter`, `Map.prototype.set`, and every Oxlint host method.
-Four shapes in this package exist for that reason and should not be flattened back:
+These shapes in this package exist for that reason and should not be flattened back:
 
 -   `readFixturePatterns` narrows through `isUnknownArray` rather than bare `Array.isArray`.
     `Array.isArray` widens its subject to `any[]`, presenting the mutable `Array` interface at the later `filter`;
