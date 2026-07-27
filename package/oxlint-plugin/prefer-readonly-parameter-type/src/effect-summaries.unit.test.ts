@@ -154,6 +154,8 @@ await describe({
           'mutableArrayObservationEffect',
           'mutableArrayStructureEffect',
           'mutableSetStructureEffect',
+          'mutableSortObserverEffect',
+          'mutableDefaultSortEffect',
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'observationalIntrinsicEffect',
@@ -318,6 +320,16 @@ await describe({
           },
           {
             functionName: 'mutableSetStructureEffect',
+            mutated: [0,],
+            opaque: [0,],
+          },
+          {
+            functionName: 'mutableSortObserverEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'mutableDefaultSortEffect',
             mutated: [0,],
             opaque: [0,],
           },

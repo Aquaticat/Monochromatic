@@ -522,6 +522,46 @@ export function mutableSetStructureEffect(names: Set<string>,): void {
 }
 
 /**
+ * Reorders a caller-owned array through a caller-supplied comparator.
+ *
+ * `sort` restructures the receiver and hands elements to an observer, so both
+ * claims arise from one call. The comparator reads only primitives, so the
+ * reachability claim is discharged and only the structural mutation remains.
+ * Recording the mutation without still analysing the comparator would leave the
+ * receiver opaque here.
+ *
+ * @param states - Mutable container reordered in place.
+ *
+ * @returns reordered container.
+ *
+ * @mutates states - Reorders elements in place.
+ */
+export function mutableSortObserverEffect(
+  states: { readonly value: string; }[],
+): { readonly value: string; }[] {
+  return states.sort(function byValueLength(left, right,): number {
+    return left.value.length - right.value.length;
+  },);
+}
+
+/**
+ * Reorders a caller-owned array with no comparator supplied.
+ *
+ * `sort` restructures the receiver, and with no comparator it runs the default
+ * one, whose string coercion reaches element `toString`. Nothing is supplied to
+ * analyse, so this stays opaque as well as mutated.
+ *
+ * @param names - Mutable container reordered in place.
+ *
+ * @returns reordered container.
+ *
+ * @mutates names - Reorders entries in place.
+ */
+export function mutableDefaultSortEffect(names: string[],): string[] {
+  return names.sort();
+}
+
+/**
  * Mutates parameter through aliased generic callback argument.
  *
  * @param callbackState - State forwarded through aliased callback relation.
