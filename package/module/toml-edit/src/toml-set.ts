@@ -16,6 +16,7 @@ import {
   TomlTypeError,
 } from './errors.ts';
 import { formatPath, } from './path.ts';
+import { segmentsEqual, } from './path-prefix.ts';
 import { doAotReplace, } from './set-aot.ts';
 import { doCreate, } from './set-create.ts';
 import {
@@ -51,15 +52,9 @@ function headerEquals(
     === 'table')
     && (block.tableKind
       === tableKind)
-    && (block.headerSegments
-      .length
-      === path.length)
-    && block.headerSegments
-    .every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === path[i];
+    && segmentsEqual({
+      left: block.headerSegments,
+      right: path,
     },);
 }
 

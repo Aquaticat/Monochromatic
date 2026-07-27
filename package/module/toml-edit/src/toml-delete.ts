@@ -15,6 +15,7 @@ import {
   NOT_REMOVED,
   removeAtPath,
 } from './delete-value.ts';
+import { segmentsEqual, } from './path-prefix.ts';
 import { isImplicitConstituent, } from './set-replace.ts';
 import type {
   TomlEditState,
@@ -37,15 +38,9 @@ function isExactTable(
 ): boolean {
   return (block.kind
     === 'table')
-    && (block.headerSegments
-      .length
-      === path.length)
-    && block.headerSegments
-    .every(function eq(
-      seg,
-      i,
-    ) {
-      return seg === path[i];
+    && segmentsEqual({
+      left: block.headerSegments,
+      right: path,
     },);
 }
 
