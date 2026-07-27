@@ -20,7 +20,10 @@ import {
   parameterIndex,
 } from './effect-call-resolution.ts';
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  typeCanCarryMutableState,
+} from './effect-primitive-origin.ts';
 import {
   callableKey,
   type EffectCallableDeclaration,
@@ -227,6 +230,44 @@ export function readonlyViewElementApplications({
    */
   const elementTypes = checker.getTypeArguments(receiverType,);
   if (elementTypes.length === 0)
+    return READONLY_VIEW_UNDISCHARGED;
+  // A member that builds a collection result routes it through
+  // `ArraySpeciesCreate`, which reads `constructor[Symbol.species]` and calls
+  // whatever it returns. That user code then receives everything the result
+  // holds, which for `filter`, `slice`, `concat`, `flat` and an identity `map`
+  // is the receiver's own elements. Measured in
+  // `doc/decision/prefer-readonly-effect-model-split.md`.
+  //
+  // Whether a member consults species is not derivable: `toReversed`, `with`
+  // and `toSpliced` build new arrays without it. So the derivable and
+  // conservative test is what the result could carry. A result holding only
+  // primitives keeps receiver state out of the channel however it is built,
+  // which is what rescues `map` with a primitive-returning observer.
+  //
+  // This over-restricts members that return the receiver itself, `sort`, and
+  // members that never construct, `reduce` accumulating into an array, since
+  // neither is distinguishable here. Both directions fail closed.
+  /**
+   * Instantiated result type of this call.
+   */
+  const resultType = checker.getTypeAtLocation(call,);
+  if (resultType === undefined)
+    return READONLY_VIEW_UNDISCHARGED;
+  // A result that is not a generic instantiation, `void`, `boolean`, `number`,
+  // or an element union, holds no collection for species to build.
+  /**
+   * Types a constructed collection result would hold, empty when none is built.
+   */
+  const resultTypeArguments = resultType.isTypeReference()
+    ? checker.getTypeArguments(resultType,)
+    : [];
+  if (resultTypeArguments
+    .some(function resultCarriesState(resultTypeArgument,): boolean {
+      return typeCanCarryMutableState({
+        checker,
+        type: resultTypeArgument,
+      },);
+    },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
    * Every argument paired with its resolved type.
