@@ -133,7 +133,7 @@ That rebuild was measured rather than assumed. Two consecutive `mise run lint:ox
 files took 547.8 seconds and then 196.0 seconds, against an 11 MB cache directory written before the change.
 The first run paid to recompute every summary the new field invalidated; the second reused them.
 
-## Known soundness defect, found 2026-07-27 after landing
+## Soundness defect, found 2026-07-27 after landing, since repaired
 
 `map`, `filter`, `slice`, `concat` and `flat` are discharged unsoundly by this decision. They construct their
 result through `ArraySpeciesCreate`, which reads `constructor[Symbol.species]` and calls whatever it returns.
@@ -155,7 +155,8 @@ Species use is not derivable from the declaration: `toReversed`, `with` and `toS
 without consulting species, while `slice`, `concat`, `flat`, `map` and `filter` do. The return type therefore
 cannot distinguish them, which also rules out the shape-based inference rejected earlier in this document.
 
-Two sound repairs, neither applied yet:
+Both repairs below were applied together, in
+`effect-readonly-view-application.ts`:
 
 - Discharge only members whose return type is not a collection. Derivable and conservative, keeping `forEach`,
   `every`, `some`, `reduce`, `find` and `findIndex`, and losing `map`, `filter`, `slice`, `concat`, `flat` and
@@ -166,8 +167,15 @@ Two sound repairs, neither applied yet:
   preserves part of the gain, but it never rescues `filter`, `slice`, `concat` or `flat`, whose results carry
   elements regardless of any observer.
 
-Until one is applied, this decision over-discharges and the acceptance fixtures do not detect it, because none
-of them exercises a species-hooked receiver.
+The gate reads the call's instantiated result type: a result holding any type that can carry mutable state
+leaves the call underived. A result of `void`, `boolean`, a primitive, or an element union builds no collection
+at all and passes. This over-restricts `sort`, which returns the receiver itself, and a `reduce` accumulating
+into an array, which never constructs; neither is distinguishable from a species-consuming member here, and
+both fail closed.
+
+`objectArraySortCallbackEffect` returns to `opaque: [0]` and pins the gate: disabling it makes the fixture
+clean again. `readonly-catalog-free-invalid.ts` moves from 18 diagnostics to 19, recovering a finding the
+unsound discharge had removed.
 
 Reproduction, run with `node`:
 
