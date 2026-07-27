@@ -9,11 +9,15 @@
  * @module
  */
 
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   Context,
   CreateOnceRule,
   ESTree,
+  Location,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 import { dirname, } from 'node:path';
@@ -50,6 +54,57 @@ type CheckedFileContext = {
    */
   readonly containingDirectory: string;
 };
+
+/**
+ * Message reported for each rejecting outcome.
+ */
+const MESSAGE_BY_OUTCOME = {
+  'relative-source': 'relativeSource',
+  'own-source-subpath': 'ownSourceSubpath',
+} as const;
+
+/**
+ * Copies a span's source location into a locally owned literal.
+ *
+ * Oxlint accepts either `node` or `loc` on a diagnostic. Handing it the host's
+ * own node would put a runtime-owned object into a call whose implementation
+ * lives in Rust and cannot be inspected. Reading the four line and column
+ * numbers instead yields a value sharing no identity with the host's AST, which
+ * is what makes the report provably free of effects on borrowed state.
+ *
+ * @param span - node whose reported position is wanted
+ *
+ * @returns fresh location carrying only numbers
+ *
+ * @example
+ * ```ts
+ * locationSnapshot({ span: node.source });
+ * ```
+ */
+function locationSnapshot({ span, }: {
+  /**
+   * Node whose reported position is wanted.
+   */
+  readonly span: ForeignBorrowed<ESTree.Span>;
+},): Location {
+  /**
+   * Host-owned endpoints, read apart so only their numbers are copied out.
+   */
+  const {
+    start,
+    end,
+  } = span.loc;
+  return {
+    start: {
+      line: start.line,
+      column: start.column,
+    },
+    end: {
+      line: end.line,
+      column: end.column,
+    },
+  };
+}
 
 /**
  * Narrows an unknown value to a read-only array view.
@@ -243,7 +298,7 @@ export const requireEventualArtifact: CreateOnceRule = {
    * createOnce(context);
    * ```
    */
-  createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
+  createOnce(context: ForeignHostCapability<Context>,): VisitorWithHooks {
     /**
      * Raw rule options; oxlint omits this until config supplies them.
      */
@@ -295,21 +350,19 @@ export const requireEventualArtifact: CreateOnceRule = {
           fixturePatterns,
         },);
 
-        if (outcome === 'relative-source') {
-          context.report({
-            node: node.source,
-            messageId: 'relativeSource',
-            data: { specifier, },
-          },);
+        if ((outcome !== 'relative-source')
+          && (outcome !== 'own-source-subpath'))
+        {
           return;
         }
-        if (outcome === 'own-source-subpath') {
-          context.report({
-            node: node.source,
-            messageId: 'ownSourceSubpath',
-            data: { specifier, },
-          },);
-        }
+
+        context.report({
+          // Copied out of the host node before the call, so no borrowed
+          // identity crosses into an implementation that cannot be inspected.
+          loc: locationSnapshot({ span: node.source, },),
+          messageId: MESSAGE_BY_OUTCOME[outcome],
+          data: { specifier, },
+        },);
       },
     } as VisitorWithHooks;
   },
