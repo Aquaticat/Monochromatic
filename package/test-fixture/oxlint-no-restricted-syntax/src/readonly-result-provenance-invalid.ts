@@ -305,3 +305,272 @@ export function unionValueLookupEffect(
   else
     stored.tag = 'rewritten';
 }
+
+/**
+ * Mutates a destructured property its contract does not name.
+ *
+ * The callee half of the restricted-walk probe. Its parameter is destructured and it
+ * carries a contract, which is the shape that makes the argument analysis walk a
+ * caller's object literal with only the contract-named properties.
+ *
+ * @param named - Property the contract declares as mutated.
+ *
+ * @param unnamed - Property the contract omits while the body still mutates it.
+ *
+ * @mutates named - Adds a recorded entry.
+ *
+ * @example
+ * ```ts
+ * mutateBeyondContract({ named: new Set(), unnamed: new Set() });
+ * ```
+ */
+function mutateBeyondContract({
+  named,
+  unnamed,
+}: {
+  named: Set<string>;
+  unnamed: Set<string>;
+},): void {
+  named.add('declared',);
+  unnamed.add('undeclared',);
+}
+
+/**
+ * Passes a looked-up value in a literal property the callee contract omits.
+ *
+ * If the restricted walk skips `unnamed`, the lookup result carries no origin into the
+ * call, so mutating it inside the callee is attributed to nothing, while the escape
+ * check calls literal membership attributed and licenses discharging the lookup. That
+ * combination would be a silent miss, so this probe exists to find out whether the
+ * restricted path is reachable from a literal the escape check accepts.
+ *
+ * @param facts - Map whose stored set is handed to a partially contracted callee.
+ *
+ * @param key - Lookup key.
+ *
+ * @example
+ * ```ts
+ * contractRestrictedLiteralEffect(new Map(), 'k');
+ * ```
+ */
+export function contractRestrictedLiteralEffect(
+  facts: Map<string, Set<string>>,
+  key: string,
+): void {
+  const stored = facts.get(key,) ?? new Set<string>();
+  mutateBeyondContract({
+    named: new Set<string>(),
+    unnamed: stored,
+  },);
+}
+
+/**
+ * Mutates both properties of a destructured parameter its contract fully names.
+ *
+ * Control isolating the contract-name restriction from callee routing in general. Its
+ * parameter is destructured exactly like `mutateBeyondContract`, and the only
+ * difference is that every mutated property appears in the contract.
+ *
+ * @param named - First mutated property.
+ *
+ * @param alsoNamed - Second mutated property.
+ *
+ * @mutates named - Adds a recorded entry.
+ *
+ * @mutates alsoNamed - Adds a recorded entry.
+ *
+ * @example
+ * ```ts
+ * mutateWithinContract({ named: new Set(), alsoNamed: new Set() });
+ * ```
+ */
+function mutateWithinContract({
+  named,
+  alsoNamed,
+}: {
+  named: Set<string>;
+  alsoNamed: Set<string>;
+},): void {
+  named.add('declared',);
+  alsoNamed.add('also-declared',);
+}
+
+/**
+ * Mutates properties reached through an identifier parameter.
+ *
+ * Control isolating the destructuring shape. Its parameter is a plain identifier, which
+ * is the shape that makes the argument analysis walk a caller's literal with every
+ * property rather than the contract-named subset.
+ *
+ * @param bag - Container whose stored sets are mutated.
+ *
+ * @mutates bag - Adds recorded entries to stored sets.
+ *
+ * @example
+ * ```ts
+ * mutateThroughIdentifier({ named: new Set(), unnamed: new Set() });
+ * ```
+ */
+function mutateThroughIdentifier(bag: {
+  named: Set<string>;
+  unnamed: Set<string>;
+},): void {
+  bag.named
+    .add('declared',);
+  bag.unnamed
+    .add('undeclared',);
+}
+
+/**
+ * Passes a looked-up value in a literal property the callee contract names.
+ *
+ * Pairs with `contractRestrictedLiteralEffect`: same caller shape, same lookup, same
+ * literal, and the callee differs only in naming every mutated property.
+ *
+ * @param facts - Map whose stored set is handed to a fully contracted callee.
+ *
+ * @param key - Lookup key.
+ *
+ * @example
+ * ```ts
+ * fullContractLiteralEffect(new Map(), 'k');
+ * ```
+ */
+export function fullContractLiteralEffect(
+  facts: Map<string, Set<string>>,
+  key: string,
+): void {
+  const stored = facts.get(key,) ?? new Set<string>();
+  mutateWithinContract({
+    named: new Set<string>(),
+    alsoNamed: stored,
+  },);
+}
+
+/**
+ * Passes a looked-up value in a literal handed to an identifier parameter.
+ *
+ * Pairs with `contractRestrictedLiteralEffect`: same caller shape, same lookup, same
+ * literal, and the callee differs only in taking an identifier instead of a
+ * destructuring pattern.
+ *
+ * @param facts - Map whose stored set is handed to an identifier-parameter callee.
+ *
+ * @param key - Lookup key.
+ *
+ * @example
+ * ```ts
+ * identifierParameterLiteralEffect(new Map(), 'k');
+ * ```
+ */
+export function identifierParameterLiteralEffect(
+  facts: Map<string, Set<string>>,
+  key: string,
+): void {
+  const stored = facts.get(key,) ?? new Set<string>();
+  mutateThroughIdentifier({
+    named: new Set<string>(),
+    unnamed: stored,
+  },);
+}
+
+/**
+ * Row shape whose single property the rule can express as readonly.
+ */
+type LabelledRow = {
+  label: string;
+};
+
+/**
+ * Mutates a row reached through a destructured property its contract omits.
+ *
+ * Row-typed counterpart of `mutateBeyondContract`, written so the caller's parameter has
+ * a readonly form the rule is able to offer. That is what turns an unrecorded mutation
+ * from a lost warning into a suggestion that does not compile.
+ *
+ * @param named - Row the contract declares as mutated.
+ *
+ * @param unnamed - Row the contract omits while the body still writes it.
+ *
+ * @mutates named - Overwrites recorded label.
+ *
+ * @example
+ * ```ts
+ * mutateBeyondContractRow({ named: { label: '' }, unnamed: { label: '' } });
+ * ```
+ */
+function mutateBeyondContractRow({
+  named,
+  unnamed,
+}: {
+  named: LabelledRow;
+  unnamed: LabelledRow;
+},): void {
+  named.label = 'declared';
+  unnamed.label = 'undeclared';
+}
+
+/**
+ * Passes an element in a literal property the callee contract omits.
+ *
+ * The parameter is an array of rows, whose readonly form the rule offers, so an
+ * unrecorded write through the omitted property surfaces as an offer that fails to
+ * compile once applied rather than as a merely missing warning.
+ *
+ * @param rows - Array whose element is handed to a partially contracted callee.
+ *
+ * @example
+ * ```ts
+ * contractRestrictedRowEffect([{ label: '' }]);
+ * ```
+ */
+export function contractRestrictedRowEffect(rows: LabelledRow[],): void {
+  const first = rows.at(0,) ?? { label: '', };
+  mutateBeyondContractRow({
+    named: { label: '', },
+    unnamed: first,
+  },);
+}
+
+/**
+ * Passes a parameter itself in a literal property the callee contract omits.
+ *
+ * No collection lookup and no receiver opacity are involved, so this probe isolates the
+ * contract-name narrowing from result provenance entirely. If the narrowing drops the
+ * parameter's origin here, the resulting offer is wrong for reasons that predate any
+ * provenance work.
+ *
+ * @param row - Row handed to a partially contracted callee through an omitted property.
+ *
+ * @example
+ * ```ts
+ * directRestrictedRowEffect({ label: '' });
+ * ```
+ */
+export function directRestrictedRowEffect(row: LabelledRow,): void {
+  mutateBeyondContractRow({
+    named: { label: '', },
+    unnamed: row,
+  },);
+}
+
+/**
+ * Passes a parameter directly to a callee whose contract omits the mutated property.
+ *
+ * Companion to `directRestrictedRowEffect` using a direct argument rather than a literal
+ * property, so the two together separate the literal-walk path from argument handling in
+ * general.
+ *
+ * @param bag - Container handed straight to a partially contracted callee.
+ *
+ * @example
+ * ```ts
+ * directArgumentRestrictedEffect({ named: { label: '' }, unnamed: { label: '' } });
+ * ```
+ */
+export function directArgumentRestrictedEffect(bag: {
+  named: LabelledRow;
+  unnamed: LabelledRow;
+},): void {
+  mutateBeyondContractRow(bag,);
+}

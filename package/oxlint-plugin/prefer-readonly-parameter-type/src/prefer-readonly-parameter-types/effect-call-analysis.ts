@@ -238,7 +238,6 @@ export function inspectEffectCall({
   if (callee !== OWNED_CALLABLE_UNAVAILABLE) {
     addOwnedCallEdge({
       project,
-      bindingOriginBySymbolId,
       call,
       callee,
       allArgumentIndexes,
