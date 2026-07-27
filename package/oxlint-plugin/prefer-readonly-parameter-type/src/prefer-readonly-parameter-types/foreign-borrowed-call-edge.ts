@@ -98,7 +98,6 @@ export function addForeignBorrowedCallEdge({
   },);
   addOwnedCallEdge({
     project,
-    bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
     call,
     callee,
     allArgumentIndexes,

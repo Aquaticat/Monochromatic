@@ -17,11 +17,6 @@ import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance
 const EFFECT_DIMENSION_COUNT = 3;
 
 /**
- * Empty exclusion set for ordinary effect propagation.
- */
-const NO_EXCLUDED_EFFECT_INDEXES: ReadonlySet<number> = new Set();
-
-/**
  * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
  *
  * @param summaries - Mutable summaries keyed by declaration.
@@ -87,17 +82,21 @@ export function propagateEffects(
               calleeSummary,
               edge,
             },) || state.changed;
+            /* Mutation propagates for every affected callee index, including one the
+             * callee also invokes. Subtracting the invoked set here cancelled real
+             * writes, because one destructured object parameter gives every binding it
+             * introduces the same index, so a callee calling one property and writing
+             * another carried both facts on index zero. Order mattered too: whichever
+             * of the two passes ran first decided the answer. */
             state.changed = propagateCalleeIndexes({
               target: summary.mutated,
               edge,
               calleeIndexes: calleeSummary.mutated,
-              excludedIndexes: calleeSummary.invoked,
             },) || state.changed;
             state.changed = propagateCalleeIndexes({
               target: summary.opaque,
               edge,
               calleeIndexes: calleeSummary.opaque,
-              excludedIndexes: NO_EXCLUDED_EFFECT_INDEXES,
             },) || state.changed;
             state.changed = propagateUncertaintyProvenance({
               summary,

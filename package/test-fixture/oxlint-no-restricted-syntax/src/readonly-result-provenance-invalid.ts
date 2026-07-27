@@ -574,3 +574,182 @@ export function directArgumentRestrictedEffect(bag: {
 },): void {
   mutateBeyondContractRow(bag,);
 }
+
+/**
+ * Mutates one destructured property and only reads the other.
+ *
+ * Companion to `mutateBeyondContractRow` whose contract is accurate, used to measure what
+ * dropping the contract-name narrowing costs in precision rather than in soundness.
+ *
+ * @param named - Row the body writes.
+ *
+ * @param unnamed - Row the body only reads.
+ *
+ * @mutates named - Overwrites recorded label.
+ *
+ * @example
+ * ```ts
+ * mutateOnlyNamedRow({ named: { label: '' }, unnamed: { label: '' } });
+ * ```
+ */
+function mutateOnlyNamedRow({
+  named,
+  unnamed,
+}: {
+  named: LabelledRow;
+  unnamed: LabelledRow;
+},): void {
+  if (unnamed.label === '')
+    named.label = 'declared';
+}
+
+/**
+ * Passes one parameter to a mutated property and another to a read-only one.
+ *
+ * Records the precision the sound propagation gives up. The callee writes only `named`,
+ * so only `first` is really mutated, and propagating every packaged origin credits
+ * `second` as well. The cost is a withheld offer, never a wrong one, and recovering it
+ * needs the callee's own measured per-property effects rather than its authored contract.
+ *
+ * @param first - Row the callee writes.
+ *
+ * @param second - Row the callee only reads.
+ *
+ * @example
+ * ```ts
+ * narrowingPrecisionCostEffect({ label: '' }, { label: '' });
+ * ```
+ */
+export function narrowingPrecisionCostEffect(
+  first: LabelledRow,
+  second: LabelledRow,
+): void {
+  mutateOnlyNamedRow({
+    named: first,
+    unnamed: second,
+  },);
+}
+
+/**
+ * Invokes one destructured property and reads another.
+ *
+ * The callee half of the invocation-exclusion probe. Its contract names only the array it
+ * appends to, so the property holding a caller-owned row is one an authored contract used
+ * to filter out, and every destructured binding here maps to parameter index zero.
+ *
+ * @param run - Callback the body invokes.
+ *
+ * @param collected - Array the body appends to.
+ *
+ * @param spare - Row the body only reads.
+ *
+ * @mutates collected - Appends one recorded label.
+ *
+ * @example
+ * ```ts
+ * inspectWithCallback({ run: () => {}, collected: [], spare: { label: '' } });
+ * ```
+ */
+function inspectWithCallback({
+  run,
+  collected,
+  spare,
+}: {
+  run: () => void;
+  collected: string[];
+  spare: LabelledRow;
+},): void {
+  run();
+  collected.push(spare.label,);
+}
+
+/**
+ * Mutates a parameter directly and also passes it beside an invoked callback.
+ *
+ * Middle link of the invocation-exclusion probe. Propagating every packaged origin puts
+ * this parameter into the invoked set, because the callee invokes a sibling property and
+ * every destructured binding collapses to parameter zero. Mutation propagation subtracts
+ * the invoked set, so the direct write here can stop reaching an outer caller.
+ *
+ * @param victim - Row written directly and passed onward beside a callback.
+ *
+ * @example
+ * ```ts
+ * middleInvokedExclusionEffect({ label: '' });
+ * ```
+ */
+export function middleInvokedExclusionEffect(victim: LabelledRow,): void {
+  victim.label = 'direct';
+  inspectWithCallback({
+    run(): void {},
+    collected: [],
+    spare: victim,
+  },);
+}
+
+/**
+ * Passes a parameter to a callable that both mutates and appears to invoke it.
+ *
+ * Outer link of the invocation-exclusion probe, and the position where suppression would
+ * become a wrong offer rather than a lost fact.
+ *
+ * @param row - Row handed to the middle link.
+ *
+ * @example
+ * ```ts
+ * outerInvokedExclusionEffect({ label: '' });
+ * ```
+ */
+export function outerInvokedExclusionEffect(row: LabelledRow,): void {
+  middleInvokedExclusionEffect(row,);
+}
+
+/**
+ * Invokes one destructured property and writes another.
+ *
+ * Both effects land on parameter index zero, because every destructured binding of one
+ * object parameter shares that index. Mutation propagation subtracts the invoked set from
+ * the mutated set by index, so one call that does both can cancel itself out.
+ *
+ * @param run - Callback the body invokes.
+ *
+ * @param target - Row the body writes.
+ *
+ * @mutates target - Overwrites recorded label.
+ *
+ * @example
+ * ```ts
+ * invokeAndMutate({ run: () => {}, target: { label: '' } });
+ * ```
+ */
+function invokeAndMutate({
+  run,
+  target,
+}: {
+  run: () => void;
+  target: LabelledRow;
+},): void {
+  run();
+  target.label = 'mutated';
+}
+
+/**
+ * Passes a parameter to a callee that both invokes a callback and writes the parameter.
+ *
+ * Contract-independent probe: the contract names `target`, so the property holding this
+ * parameter is one the narrowing keeps. Anything wrong here comes from the index-level
+ * subtraction of invoked from mutated, not from which properties were walked.
+ *
+ * @param row - Row the callee writes.
+ *
+ * @example
+ * ```ts
+ * invokedExclusionDirectEffect({ label: '' });
+ * ```
+ */
+export function invokedExclusionDirectEffect(row: LabelledRow,): void {
+  invokeAndMutate({
+    run(): void {},
+    target: row,
+  },);
+}
