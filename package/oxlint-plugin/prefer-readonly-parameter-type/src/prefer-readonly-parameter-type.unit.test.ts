@@ -336,6 +336,50 @@ children: [
     },
   },),
   it({
+    name: 'reports every member-result escape as receiver opacity while result provenance is unmodelled',
+    fn: async () => {
+      /* A characterization test, not a statement of intent. Nothing records that a
+       * call result aliases its receiver, so each of these seven functions lands on
+       * the opaque boundary at the lookup itself. Result provenance is meant to
+       * change all seven, and `doc/decision/prefer-readonly-binding-origin-accumulation.md`
+       * names it as the next step. Pinning the current answers means that change
+       * shows up here as a reviewable diff rather than passing unnoticed. */
+      const diagnostics = await lintReadonly('readonly-result-provenance-invalid.ts',);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      expect(messages.length,).toBe(7,);
+      /**
+       * Counts messages naming one call as the unresolved receiver operation.
+       *
+       * @param call - Authored member call text.
+       *
+       * @returns how many diagnostics name it.
+       */
+      function namingCall(call: string,): number {
+        return messages.filter(function namesCall(message,): boolean {
+          return message.includes(`method calls: ${call} [`,);
+        },).length;
+      }
+      /* One per function, every one on the lookup rather than on what the result
+       * reaches: five `Map.get` receivers, one over an array of rows, one `at`. */
+      expect(namingCall('facts.get',),).toBe(5,);
+      expect(namingCall('rows.get',),).toBe(1,);
+      expect(namingCall('values.at',),).toBe(1,);
+      /* `escapingLookupEffect` hands its looked-up value to `JSON.stringify`, and no
+       * diagnostic mentions that call, because the escaping value carries no origin
+       * for the argument analysis to attribute. Provenance must make this appear. */
+      expect(messages.some(function namesEscape(message,): boolean {
+        return message.includes('JSON.stringify',);
+      },),).toBe(false,);
+      /* And no parameter is offered read-only, not even `readOnlyLookupEffect`'s,
+       * which only reads. Provenance must make that one an offer. */
+      expect(messages.filter(function offers(message,): boolean {
+        return message.includes('should be readonly',);
+      },),).toEqual([],);
+    },
+  },),
+  it({
     name: 'credits a reassigned alias with every parameter it can hold',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-binding-origin-invalid.ts',);
