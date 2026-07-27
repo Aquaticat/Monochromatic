@@ -151,6 +151,9 @@ await describe({
           'forEachWholeArrayEffect',
           'readonlyMapCallbackEffect',
           'referencedObserverEffect',
+          'mutableArrayObservationEffect',
+          'mutableArrayStructureEffect',
+          'mutableSetStructureEffect',
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'observationalIntrinsicEffect',
@@ -255,7 +258,7 @@ await describe({
           },
           {
             functionName: 'crossFileSemanticEffect',
-            mutated: [],
+            mutated: [0,],
             opaque: [0,],
           },
           {
@@ -302,6 +305,21 @@ await describe({
             functionName: 'referencedObserverEffect',
             mutated: [0,],
             opaque: [],
+          },
+          {
+            functionName: 'mutableArrayObservationEffect',
+            mutated: [],
+            opaque: [],
+          },
+          {
+            functionName: 'mutableArrayStructureEffect',
+            mutated: [0,],
+            opaque: [0,],
+          },
+          {
+            functionName: 'mutableSetStructureEffect',
+            mutated: [0,],
+            opaque: [0,],
           },
           {
             functionName: 'aliasedCallbackSemanticEffect',

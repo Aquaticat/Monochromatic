@@ -474,6 +474,54 @@ export function referencedObserverEffect(
 }
 
 /**
+ * Observes a mutable array through a member the paired read-only view declares.
+ *
+ * `forEach` appears on `ReadonlyArray`, so upstream states it does not
+ * restructure the receiver even when the receiver is the mutable `Array`. The
+ * observer is owned and reads only a primitive, so nothing propagates.
+ *
+ * @param states - Mutable container observed without restructuring.
+ *
+ * @returns count of non-empty values.
+ */
+export function mutableArrayObservationEffect(
+  states: { readonly value: string; }[],
+): number {
+  const counted = { total: 0, };
+  states.forEach(function countState(state,): void {
+    counted.total += state.value.length;
+  },);
+  return counted.total;
+}
+
+/**
+ * Mutates a caller-owned array through a member absent from the paired view.
+ *
+ * `push` is declared on `Array` and not on `ReadonlyArray`, which is upstream's
+ * own statement that it restructures the receiver.
+ *
+ * @param states - Mutable container appended to.
+ *
+ * @mutates states - Appends one element.
+ */
+export function mutableArrayStructureEffect(
+  states: { readonly value: string; }[],
+): void {
+  states.push({ value: 'appended', },);
+}
+
+/**
+ * Mutates a caller-owned set through a member absent from the paired view.
+ *
+ * @param names - Mutable set cleared before reuse.
+ *
+ * @mutates names - Clears every entry.
+ */
+export function mutableSetStructureEffect(names: Set<string>,): void {
+  names.clear();
+}
+
+/**
  * Mutates parameter through aliased generic callback argument.
  *
  * @param callbackState - State forwarded through aliased callback relation.

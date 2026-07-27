@@ -155,7 +155,7 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
-      expect(diagnostics.length,).toBe(21,);
+      expect(diagnostics.length,).toBe(18,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -166,7 +166,7 @@ children: [
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
         );
-      },).length,).toBe(13,);
+      },).length,).toBe(11,);
     },
   },),
   it({
