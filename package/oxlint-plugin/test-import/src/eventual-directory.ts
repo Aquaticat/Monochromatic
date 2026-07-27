@@ -55,6 +55,8 @@ const BUILD_ROOT = 'dist';
  * ```ts
  * eventualDirectories({ packageRoot: '/repo/package/module/x', manifest });
  * ```
+ *
+ * @internal
  */
 export function eventualDirectories({
   packageRoot,

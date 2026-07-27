@@ -169,6 +169,8 @@ function checkedFileContext({
  * // Good; resolves through the exports map
  * import { parse } from '\@scope/my-package';
  * ```
+ *
+ * @internal
  */
 export const requireEventualArtifact: CreateOnceRule = {
   meta: {

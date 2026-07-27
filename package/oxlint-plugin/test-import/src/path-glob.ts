@@ -272,6 +272,8 @@ function scanSegments({
  * ```ts
  * matchesGlob({ pattern: '**\/*-helpers.ts', path: '/repo/package/x/src/tree-helpers.ts' });
  * ```
+ *
+ * @internal
  */
 export function matchesGlob({
   pattern,
@@ -309,6 +311,8 @@ export function matchesGlob({
  * ```ts
  * matchesAnyGlob({ patterns: ['**\/fixture.*'], path: '/repo/src/fixture.json' });
  * ```
+ *
+ * @internal
  */
 export function matchesAnyGlob({
   patterns,

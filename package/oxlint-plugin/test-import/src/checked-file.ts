@@ -40,6 +40,8 @@ const BENCH_SUFFIX = '.bench.ts';
  * package behavior (`cli-helpers.ts` by `cli.ts`, `render-helpers.ts` by four
  * i18n modules, `tasks-helpers.ts` by three database modules) and none are
  * test-only. The suffix describes what a module does, not who may load it.
+ *
+ * @internal
  */
 export const DEFAULT_FIXTURE_PATTERNS: readonly string[] = [
   '**/fixture.*',
@@ -60,6 +62,8 @@ export const DEFAULT_FIXTURE_PATTERNS: readonly string[] = [
  * ```ts
  * isTestFile({ path: '/repo/package/module/x/src/x.unit.test.ts' });
  * ```
+ *
+ * @internal
  */
 export function isTestFile({ path, }: {
   /**
@@ -86,6 +90,8 @@ export function isTestFile({ path, }: {
  * ```ts
  * isFixtureModule({ patterns: DEFAULT_FIXTURE_PATTERNS, path: '/repo/src/tree-helpers.ts' });
  * ```
+ *
+ * @internal
  */
 export function isFixtureModule({
   patterns,
@@ -119,6 +125,8 @@ export function isFixtureModule({
  * ```ts
  * isCheckedFile({ patterns: DEFAULT_FIXTURE_PATTERNS, path: '/repo/src/x.unit.test.ts' });
  * ```
+ *
+ * @internal
  */
 export function isCheckedFile({
   patterns,

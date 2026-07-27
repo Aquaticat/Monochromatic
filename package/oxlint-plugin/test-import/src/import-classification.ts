@@ -28,6 +28,8 @@ const SOURCE_SUBPATH_PREFIX = '/ts/';
 
 /**
  * Verdict for one import specifier.
+ *
+ * @internal
  */
 export type ImportOutcome =
   /**
@@ -68,6 +70,8 @@ export type ImportOutcome =
  * ```ts
  * classifyImport({ specifier: './toml-set.ts', containingDirectory, owner, fixturePatterns });
  * ```
+ *
+ * @internal
  */
 export function classifyImport({
   specifier,

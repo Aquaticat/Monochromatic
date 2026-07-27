@@ -36,6 +36,8 @@ const MANIFEST_FILE = 'package.json';
 
 /**
  * Sentinel meaning no ancestor directory holds a named manifest.
+ *
+ * @internal
  */
 export const PACKAGE_UNRESOLVED: unique symbol = Symbol(
   'no package.json carrying a name exists above this file',
@@ -43,6 +45,8 @@ export const PACKAGE_UNRESOLVED: unique symbol = Symbol(
 
 /**
  * Everything the rule needs to know about the package owning a file.
+ *
+ * @internal
  */
 export type OwningPackage = {
   /**
@@ -197,6 +201,8 @@ function memoize({
  * ```ts
  * owningPackage({ fileName: '/repo/package/module/x/src/x.unit.test.ts' });
  * ```
+ *
+ * @internal
  */
 export function owningPackage({ fileName, }: {
   /**

@@ -10,6 +10,8 @@
 
 /**
  * Fields of a `package.json` this plugin reads.
+ *
+ * @internal
  */
 export type PackageManifest = {
   /**
@@ -55,6 +57,8 @@ const SOURCE_EXPORT_PREFIX = './ts/';
  * ```ts
  * isPackageManifest(JSON.parse(text));
  * ```
+ *
+ * @internal
  */
 export function isPackageManifest(value: unknown,): value is PackageManifest {
   if (((typeof value) !== 'object') || (value === null))
@@ -97,6 +101,8 @@ function isRecordLike(value: unknown,): value is Record<string, unknown> {
  * ```ts
  * stringTargets({ node: { types: './a.d.mts', default: './a.mjs' } });
  * ```
+ *
+ * @internal
  */
 export function stringTargets({ node, }: {
   /**
@@ -150,6 +156,8 @@ export function stringTargets({ node, }: {
  * ```ts
  * shippingTargets({ manifest });
  * ```
+ *
+ * @internal
  */
 export function shippingTargets({ manifest, }: {
   /**

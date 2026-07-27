@@ -30,6 +30,8 @@ const POSIX_SEPARATOR = '/';
  * ```ts
  * toPosixPath({ path: 'C:\\repo\\src' });
  * ```
+ *
+ * @internal
  */
 export function toPosixPath({ path, }: {
   /**
@@ -60,6 +62,8 @@ export function toPosixPath({ path, }: {
  * ```ts
  * resolvePosix({ base: '/repo/src', specifier: '../dist/final/node/index.mjs' });
  * ```
+ *
+ * @internal
  */
 export function resolvePosix({
   base,
@@ -98,6 +102,8 @@ export function resolvePosix({
  * ```ts
  * isUnderDirectory({ directory: '/repo/dist/final', path: '/repo/dist/final/node/index.mjs' });
  * ```
+ *
+ * @internal
  */
 export function isUnderDirectory({
   directory,
@@ -130,6 +136,8 @@ export function isUnderDirectory({
  * ```ts
  * isUnderAnyDirectory({ directories: ['/repo/dist/final'], path: '/repo/dist/final/index.mjs' });
  * ```
+ *
+ * @internal
  */
 export function isUnderAnyDirectory({
   directories,

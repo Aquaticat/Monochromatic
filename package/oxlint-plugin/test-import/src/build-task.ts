@@ -53,6 +53,8 @@ const BUILD_TASK_PREFIX = 'build:';
  * ```ts
  * taskNameOfHeader({ line: '[tasks."build:js"]' });
  * ```
+ *
+ * @internal
  */
 export function taskNameOfHeader({ line, }: {
   /**
@@ -98,6 +100,8 @@ export function taskNameOfHeader({ line, }: {
  * ```ts
  * isBuildTaskName({ name: 'build:js:node' });
  * ```
+ *
+ * @internal
  */
 export function isBuildTaskName({ name, }: {
   /**
@@ -154,6 +158,8 @@ function readTaskFile({ taskFile, }: {
  * ```ts
  * declaresBuildTask({ packageRoot: '/repo/package/module/x' });
  * ```
+ *
+ * @internal
  */
 export function declaresBuildTask({ packageRoot, }: {
   /**
