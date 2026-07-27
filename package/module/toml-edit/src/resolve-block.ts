@@ -10,13 +10,13 @@
 import type {
   Block,
   KeyValueNode,
-  TableNode,
 } from './document.ts';
+import { segmentsEqual, } from './path-prefix.ts';
 import {
-  isStrictPrefix,
-  segmentsEqual,
-} from './path-prefix.ts';
-import { NOT_LOCATED, } from './resolve-document.ts';
+  matchTableSection,
+  NOT_LOCATED,
+  type TableSectionHit,
+} from './resolve-document.ts';
 import type { TomlPath, } from './types.ts';
 
 /**
@@ -27,14 +27,7 @@ export type LocatedBlock =
     readonly kind: 'kv';
     readonly kv: KeyValueNode
   }
-  | {
-    readonly kind: 'table';
-    readonly table: TableNode
-  }
-  | {
-    readonly kind: 'aot';
-    readonly tables: readonly TableNode[]
-  };
+  | TableSectionHit;
 
 /**
  * Locate the entry block named by `path`.
@@ -72,51 +65,16 @@ export function locateBlock(
       kv,
     };
   /**
-   * Table sections whose header exactly names the path.
+   * Section scan shared with {@link locateValueNode}; descent stays block-shaped.
    */
-  const exact = blocks.filter(function isExact(b,): b is TableNode {
-    return (b.kind
-      === 'table')
-      && segmentsEqual({
-        left: b.headerSegments,
-        right: path,
-      },);
+  const section = matchTableSection({
+    blocks,
+    path,
   },);
-  if (exact.length
-    > 0) {
-    /**
-     * First exact section so a standard header resolves to it.
-     */
-    const [first,] = exact;
-    if ((first !== undefined) && (first.tableKind
-      === 'standard'))
-      return {
-        kind: 'table',
-        table: first,
-      };
-    return {
-      kind: 'aot',
-      tables: exact,
-    };
-  }
-  /**
-   * Standard table whose header strictly prefixes the path; descend its body.
-   */
-  const parent = blocks.find(function isParent(b,): b is TableNode {
-    return (b.kind
-      === 'table')
-      && (b.tableKind
-        === 'standard')
-      && isStrictPrefix({
-        candidate: b.headerSegments,
-        path,
-      },);
-  },);
-  if (parent !== undefined)
-    return locateBlock({
-      blocks: parent.body,
-      path: path.slice(parent.headerSegments
-        .length,),
-    },);
-  return NOT_LOCATED;
+  if (section === NOT_LOCATED)
+    return NOT_LOCATED;
+  if (section.kind
+    === 'descend')
+    return locateBlock(section,);
+  return section;
 }

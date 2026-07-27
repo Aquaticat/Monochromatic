@@ -15,20 +15,20 @@ import type {
   TableNode,
   ValueNode,
 } from './document.ts';
+import {
+  isPrefix,
+  isStrictPrefix,
+  segmentsEqual,
+} from './path-prefix.ts';
 import type { TomlPath, } from './types.ts';
 
 /**
- * A resolved structural location.
+ * A table section a path names directly.
  *
- * `value`: the path addresses a key-value's value or a nested element.
  * `table`: the path names a single standard `[foo]` section.
  * `aot`: the path names one or more array-of-tables `[[foo]]` instances.
  */
-export type Located =
-  | {
-    readonly kind: 'value';
-    readonly value: ValueNode
-  }
+export type TableSectionHit =
   | {
     readonly kind: 'table';
     readonly table: TableNode
@@ -37,6 +37,27 @@ export type Located =
     readonly kind: 'aot';
     readonly tables: readonly TableNode[]
   };
+
+/**
+ * Instruction to resume resolution inside a parent section's body.
+ */
+export type TableSectionDescent = {
+  readonly kind: 'descend';
+  readonly blocks: readonly Block[];
+  readonly path: TomlPath;
+};
+
+/**
+ * A resolved structural location.
+ *
+ * `value`: the path addresses a key-value's value or a nested element.
+ */
+export type Located =
+  | {
+    readonly kind: 'value';
+    readonly value: ValueNode
+  }
+  | TableSectionHit;
 
 /**
  * Sentinel for "no structural location at this path".
@@ -84,16 +105,25 @@ export function locateValueNode(
       rest: path.slice(kvHit.matched,),
     },);
   }
-  return matchTables({
+  /**
+   * Section scan shared with {@link locateBlock}; only the descent target differs.
+   */
+  const section = matchTableSection({
     blocks,
     path,
   },);
+  if (section === NOT_LOCATED)
+    return NOT_LOCATED;
+  if (section.kind
+    === 'descend')
+    return locateValueNode(section,);
+  return section;
 }
 
 /**
  * Find a key-value block whose key segments prefix `path`.
  *
- * @returns The match plus its matched length, or {@link NOT_LOCATED}.
+ * @returns Match plus its matched length, or {@link NOT_LOCATED}.
  */
 function matchKeyValue(
   {
@@ -111,26 +141,15 @@ function matchKeyValue(
     if (block.kind
       !== 'keyvalue')
       continue;
-    /**
-     * This entry's key chain length; a prefix match consumes exactly this many.
-     */
-    const len = block.keySegments
-      .length;
-    if (len
-      > path.length)
-      continue;
-    if (block.keySegments
-      .every(function eq(
-        seg,
-        i,
-      ) {
-        return seg === path[i];
-      },)) {
+    if (isPrefix({
+      candidate: block.keySegments,
+      path,
+    },))
       return {
         kv: block,
-        matched: len,
+        matched: block.keySegments
+          .length,
       };
-    }
   }
   return NOT_LOCATED;
 }
@@ -138,9 +157,18 @@ function matchKeyValue(
 /**
  * Resolve `path` against the standard and array table sections in `blocks`.
  *
- * @returns A {@link Located} result, or {@link NOT_LOCATED}.
+ * Shared by both resolvers: an exact header yields a {@link TableSectionHit},
+ * a strict-prefix standard header yields a {@link TableSectionDescent} that the
+ * caller replays against its own entry point.
+ *
+ * @returns Section hit, descent instruction, or {@link NOT_LOCATED}.
+ *
+ * @example
+ * ```ts
+ * matchTableSection({ blocks: edit.blocks, path: ['tools'], },);
+ * ```
  */
-function matchTables(
+export function matchTableSection(
   {
     blocks,
     path,
@@ -148,22 +176,16 @@ function matchTables(
     readonly blocks: readonly Block[];
     readonly path: TomlPath;
   },
-): Located | typeof NOT_LOCATED {
+): TableSectionHit | TableSectionDescent | typeof NOT_LOCATED {
   /**
    * Table sections whose header exactly names `path`.
    */
   const exact = blocks.filter(function isExact(b,): b is TableNode {
     return (b.kind
       === 'table')
-      && (b.headerSegments
-        .length
-        === path.length)
-      && b.headerSegments
-      .every(function eq(
-        seg,
-        i,
-      ) {
-        return seg === path[i];
+      && segmentsEqual({
+        left: b.headerSegments,
+        right: path,
       },);
   },);
   if (exact.length
@@ -191,24 +213,18 @@ function matchTables(
       === 'table')
       && (b.tableKind
         === 'standard')
-      && (b.headerSegments
-        .length
-        < path.length)
-      && b.headerSegments
-      .every(function eq(
-        seg,
-        i,
-      ) {
-        return seg === path[i];
+      && isStrictPrefix({
+        candidate: b.headerSegments,
+        path,
       },);
   },);
-  if (parent !== undefined) {
-    return locateValueNode({
+  if (parent !== undefined)
+    return {
+      kind: 'descend',
       blocks: parent.body,
       path: path.slice(parent.headerSegments
         .length,),
-    },);
-  }
+    };
   return NOT_LOCATED;
 }
 
