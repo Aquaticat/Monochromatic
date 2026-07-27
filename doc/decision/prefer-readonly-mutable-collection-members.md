@@ -85,6 +85,17 @@ So whether the rule can ever lint its own implementation is a policy question, n
 The options are to accept that it cannot, or to reopen the audited no-catalog constraint. Both are decisions
 for the repository owner.
 
+That question has since been decided, and the answer is recorded in
+`doc/decision/prefer-readonly-member-channel-authority.md`: the constraint reopened for one probe-enforced table.
+It did not unblock self-hosting. Remeasured on the same modules, `effect-element-application.ts` and
+`effect-callback-relation.ts` now report one finding each and `effect-fixed-point-propagation.ts` reports two,
+every one a `Map.get` whose value type carries state, which that decision keeps opaque deliberately.
+
+One claim in this section did not survive the decision's own verification and is corrected there rather than
+here: `Map.prototype.get` runs no user code, but the same was asserted of `Array.prototype.at` and
+`Array.prototype.includes` and is false. Both invoke an indexed getter on the receiver. Read that document's
+account of the two channels before reusing anything from this one about which members run nothing.
+
 ## Consequences, measured
 
 - `readonly-catalog-free-invalid.ts` moves from 21 diagnostics to 18, and its contracts-cannot-discharge
@@ -119,8 +130,17 @@ hit, holding an element whose `toString` and `valueOf` record hits:
 - Run nothing: `at`, `includes`, `indexOf`, `lastIndexOf`, `with`, `toReversed`, `toSpliced`, `keys`, `values`,
   `entries`, `Map.get`, `Map.has`, `Set.has`, and the `Map` and `Set` iterator members.
 
+The third bullet is wrong and is kept only so the correction has something to point at. Do not reuse it. The
+probe behind it instrumented species and element coercion and nothing else, so it could not observe the channel
+that actually matters for the `Array` half. Re-probed with an own accessor installed at index 0, `at`,
+`includes`, `indexOf`, `lastIndexOf`, `toReversed`, `toSpliced` and `pop` all invoke the getter, and a getter
+that pushes restructures the receiver during `includes`. Only the `Map` and `Set` entries survive as running
+nothing. The corrected classification, as two named channels, is in
+`doc/decision/prefer-readonly-member-channel-authority.md` and is enforced by a test rather than written down.
+
 The six corrected from recall are `includes`, `indexOf`, `lastIndexOf`, `with`, `toReversed` and `toSpliced`.
-All six run no user code, where an earlier reading in this work had them coercing elements.
+That correction moved them out of the coercion bullet, which was right, and into the run-nothing bullet, which
+was wrong for a different reason nobody was probing for at the time.
 
 Two consequences. `map` and `filter` needed the species repair recorded in
 `doc/decision/prefer-readonly-effect-model-split.md`. And the split between findings the rule reports
