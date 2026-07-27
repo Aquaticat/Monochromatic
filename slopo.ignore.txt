@@ -22,7 +22,7 @@
 # the Kotlin/Rust divergence is gone. (Cross-language code cannot share a function, so these
 # are not extract-a-helper candidates; the remediation is the rewrite, not an ignore entry.)
 
-# ── INTENTIONAL-VARIANT (37) ──
+# ── INTENTIONAL-VARIANT (38) ──
 # Intentional sibling variants (sync/async, single/batch, get/set,
 # plain-vs-from constructors, mirror event handlers). Meant to mirror each
 # other and stay separate; merging would hurt clarity.
@@ -68,6 +68,8 @@ fa1605333de9
 14bd3c29af49
 # isDescendable/isUnder complementary prefix predicates
 2637c16b8dd5
+# isPrefix/isStrictPrefix complementary predicates, differing only by <= vs <
+54a947960da7
 # sync/async clear twins (kv-store)
 368f617a4815
 # sync/async queryAllBackends twins
@@ -112,7 +114,7 @@ f86019ca85c4
 # per-OS lower_current_thread_to_idle #[cfg] bodies
 2204734b921f
 
-# ── STRUCTURAL-IDIOM (24) ──
+# ── STRUCTURAL-IDIOM (26) ──
 # Structural idioms mandated by conventions. Shared skeleton (oxlint createOnce
 # rule scaffolding, per-locale i18n grammar renderers, named-param guard shells)
 # where each body's actual logic differs. Not extractable without a false
@@ -165,6 +167,15 @@ f44552d24b90
 fecf02e12177
 # helper + its caller; shared glob error-message idiom only
 49faeda36551
+# toml-edit resolver entry points (locateBlock/locateValueNode/descendValue):
+# the duplicated table scan was extracted into matchTableSection, so what is left
+# is the mandated sentinel-guard plus early-return plus tail-recursion shell
+# (ST9, TQ3, PP8, NOT_LOCATED); each body resolves a different thing.
+534c966e3b99
+# toml-edit block guards (matchesExact/isExactTable/headerEquals) already
+# delegating to the shared segmentsEqual; each dispatches on a different block
+# kind, so only the delegation shape is common.
+f21a96d78684
 
 # ── COINCIDENTAL-SHAPE (6) ──
 # Coincidental shape matches. Units share only a signature/destructure shape or
