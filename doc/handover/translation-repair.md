@@ -2979,3 +2979,30 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   top would be a second mechanism for one invariant and a place for the two to
   disagree. The one path that DOES bypass the offset is resume-first, which is
   intended: finishing a cached large document beats starting a fresh anything.
+- Grading sheet CLOBBER HAZARD found and fixed (2026-07-27, commit
+  `e26d13ff5`), before it fired. `draw-sample.ts` wrote the gate sheet to a
+  fixed `grading-sheet.md`, which is the same file the user graded round one in,
+  IN PLACE. 24 of those 50 items carry free-text rationale
+  (`rg --count-matches '^### \d+\. grade: [YN]\S'`), and `gate-verdict.md`
+  preserves only the Y/N tally, not the reasoning that drove fixes A-F. So
+  drawing round two would have destroyed the evidence base for round one's
+  conclusions, through a routine command, with no prompt.
+  Round one's graded sheet is archived at
+  `node_modules/.monochromatic/translation-repair-runs/grading-sheet-round-one-graded.md`.
+  Still OUTSIDE git and still never committable: it quotes UNLICENSED corpus.
+  The fix is two independent defenses in `corpus-run/sheet-path.ts`, because
+  either alone still loses data. Sheets are named after the draw seed
+  (`grading-sheet-<seed>.md`), so two rounds cannot target one path; and a
+  `--final` draw throws `GradedSheetExistsError` when its target exists, so a
+  repeated draw inside ONE round cannot clobber grading already done.
+  Preliminary sheets are deliberately exempt and stay redrawable as the pool
+  grows. Round two therefore writes
+  `grading-sheet-milestone-three-precision-round-two.md` and can never reach
+  round one's file.
+  Verified at the CLI boundary on a throwaway runs dir, not by reading the code:
+  first `--final` draw writes, second refuses with the sheet intact, two
+  preliminary draws both succeed.
+  GENERAL LESSON, worth applying past this one file: an output path that is a
+  CONSTANT is a hazard whenever a human writes into the artifact, because the
+  file silently changes owner from the program to the person. Look for the same
+  shape anywhere else a runner writes a fixed name a human then edits.
