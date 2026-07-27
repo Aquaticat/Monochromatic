@@ -269,7 +269,16 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(4,);
+      expect(messages.length,).toBe(6,);
+      /* A generic instantiation is not evidence the call built the value. `reduce`
+       * returning the accumulator it was handed has result type `string[]` over
+       * `string[][]`, a type reference whose only argument is primitive, which the
+       * exposure test alone reads as a fresh container of primitives. */
+      expect(messages.some(function accumulatorStaysOpaque(message,): boolean {
+        return message.startsWith(
+          'The function input named "rows" is used as the object for these method calls: rows.reduce [',
+        );
+      },),).toBe(true,);
       /* An answered receiver claim must not carry the argument analysis with it.
        * `push` answers its receiver completely, a mutation and nothing unresolved,
        * while `replacement` stays reachable through the array afterwards. Widening
@@ -307,11 +316,22 @@ children: [
           'The function input named "values" is used as the object for these method calls: values.at [',
         );
       },),).toBe(true,);
-      /* Neither array may be offered as read-only while its elements are
-       * rewritten through a result, which is what `values[0].label` mutation
-       * already suppresses. */
-      expect(messages.some(function noReadonlyOffer(message,): boolean {
+      /* No collection parameter may be offered as read-only while its elements are
+       * rewritten through a result, which is what `values[0].label` mutation already
+       * suppresses. The one offer here is on `kept`, an observer parameter whose own
+       * elements nothing rewrites, and which cannot be annotated read-only anyway
+       * because `reduce` requires the accumulator's own type back. */
+      expect(messages.filter(function readonlyOffers(message,): boolean {
         return message.includes('should be readonly',);
+      },),).toEqual([
+        'Parameter "kept" should be readonly: mutable Array has ReadonlyArray projection.',
+      ],);
+      /* The indexed control must stay silent: the alias records a mutation of the
+       * parameter, so there is nothing to offer and nothing unresolved. Both
+       * functions rewrite the same caller-owned row, and for one build they
+       * disagreed. */
+      expect(messages.some(function indexedControlStaysSilent(message,): boolean {
+        return message.includes('indexedElementControlEffect',);
       },),).toBe(false,);
     },
   },),

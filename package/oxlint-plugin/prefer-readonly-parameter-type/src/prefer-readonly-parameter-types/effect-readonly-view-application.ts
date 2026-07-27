@@ -23,6 +23,7 @@ import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
 import {
   expressionCanCarryMutableState,
   resultExposesMutableState,
+  typeCanCarryMutableState,
 } from './effect-primitive-origin.ts';
 import {
   callableKey,
@@ -173,6 +174,63 @@ function observedParameterIndexes({
 }
 
 /**
+ * Tests whether a call result is receiver state rather than something newly built.
+ *
+ * Matches by `Type` identity against the receiver's instantiated element types,
+ * because the member's signature is instantiated with those arguments, so receiver
+ * state appearing in a result is the identical instance rather than an equivalent
+ * one. Only state-carrying matches count, since sharing a primitive element type
+ * exposes nothing: `readonly string[]` filtered to `string[]` copies primitives.
+ *
+ * Receiver identity is deliberately not matched. A member returning the receiver
+ * itself, `sort` and `reverse`, is a mutator, so the structural claim has already
+ * recorded the mutation and nothing reachable through the result is new. Matching it
+ * here regressed `mutableSortObserverEffect` from a derived mutation to a mutation
+ * plus an opaque boundary, which is the rule saying it cannot tell about a call it
+ * fully understands.
+ *
+ * @param checker - TypeScript checker resolving result type arguments.
+ *
+ * @param resultType - Instantiated result type of one call.
+ *
+ * @param elementTypes - Types the receiver collection is instantiated over.
+ *
+ * @returns whether result may alias caller-owned receiver state.
+ *
+ * @example
+ * ```ts
+ * resultAliasesReceiverState({ checker, resultType, elementTypes, });
+ * ```
+ */
+function resultAliasesReceiverState({
+  checker,
+  resultType,
+  elementTypes,
+}: {
+  readonly checker: Checker;
+  readonly resultType: Type;
+  readonly elementTypes: readonly Type[];
+},): boolean {
+  /**
+   * Result itself plus anything a constructed result holds.
+   */
+  const resultCandidates = [
+    resultType,
+    ...resultType.isTypeReference()
+      ? checker.getTypeArguments(resultType,)
+      : [],
+  ];
+  return resultCandidates
+    .some(function aliasesState(candidate,): boolean {
+      return elementTypes.includes(candidate,)
+        && typeCanCarryMutableState({
+          checker,
+          type: candidate,
+        },);
+    },);
+}
+
+/**
  * Derives element-flow relations for one default-library read-only view call.
  *
  * Answers only the reachable-user-code question; the caller has already proven
@@ -261,6 +319,26 @@ export function readonlyViewElementApplications({
   if (resultExposesMutableState({
     checker,
     type: resultType,
+  },))
+    return READONLY_VIEW_UNDISCHARGED;
+  // Being a generic instantiation does not make a result freshly built. That is a
+  // fact about the type's representation, not about where the value came from, and
+  // reading it as provenance let one case through: `rows.reduce((kept) => kept)`
+  // over `string[][]` returns the accumulator it was handed, whose type is `string[]`,
+  // a type reference whose only argument is primitive. The exposure test above reads
+  // that as a fresh container of primitives and discharges, so `first.push('x')`
+  // mutated a caller-owned row unreported, while the same mutation through `rows[0]`
+  // was reported.
+  //
+  // Identity separates them. The member's signature is instantiated with the
+  // receiver's type arguments, so a result that is receiver state is the identical
+  // `Type` instance rather than merely an equivalent one, exactly as observed
+  // positions are matched. State-carrying only: a `readonly string[]` filtered to
+  // `string[]` shares the primitive element type and exposes nothing.
+  if (resultAliasesReceiverState({
+    checker,
+    resultType,
+    elementTypes,
   },))
     return READONLY_VIEW_UNDISCHARGED;
   /**

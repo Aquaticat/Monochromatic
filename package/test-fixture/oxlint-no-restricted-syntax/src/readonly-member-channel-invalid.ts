@@ -140,3 +140,54 @@ export function observerResultEscapeEffect(values: Labelled[],): void {
     throw new Error('Expected a match to rewrite.',);
   found.label = 'rewritten';
 }
+
+/**
+ * Rewrites a receiver element handed back by an observer that keeps it.
+ *
+ * Elements are `string[]`, so the reduce result type is `string[]` as well: a type
+ * reference whose only type argument is primitive. Being a generic instantiation
+ * says nothing about where the value came from, and reading it as provenance let
+ * this discharge while the identical mutation through `rows[0]` was reported.
+ * Identity against the instantiated element types separates them.
+ *
+ * @param rows - Rows whose kept row is rewritten through a result.
+ *
+ * @example
+ * ```ts
+ * observerAccumulatorEscapeEffect([]);
+ * ```
+ */
+export function observerAccumulatorEscapeEffect(rows: string[][],): void {
+  /**
+   * Row returned by an owned observer that keeps the accumulator.
+   */
+  const first = rows.reduce(function keepFirst(kept: string[],): string[] {
+    return kept;
+  },);
+  first.push('rewritten',);
+}
+
+/**
+ * Rewrites a receiver element reached by index rather than by a call result.
+ *
+ * The control for `observerAccumulatorEscapeEffect`: the same caller-owned mutation
+ * reached a way the analysis already tracks, so `push` on the alias records a
+ * mutation of the parameter and no read-only offer is made. Both functions must
+ * agree, and for one build they did not.
+ *
+ * @param rows - Rows whose first row is rewritten by index.
+ *
+ * @example
+ * ```ts
+ * indexedElementControlEffect([]);
+ * ```
+ */
+export function indexedElementControlEffect(rows: string[][],): void {
+  /**
+   * Row reached by index, whose root is the parameter itself.
+   */
+  const first = rows[0];
+  if (first === undefined)
+    throw new Error('Expected a first row to rewrite.',);
+  first.push('rewritten',);
+}
