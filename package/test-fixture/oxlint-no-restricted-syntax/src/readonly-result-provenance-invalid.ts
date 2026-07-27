@@ -198,3 +198,71 @@ export function readOnlyLookupEffect(
 ): number {
   return (facts.get(key,) ?? new Set<string>()).size;
 }
+
+/**
+ * Mutates a looked-up value reached through computed member access.
+ *
+ * The syntax-shape probe. `facts['get']` is an element access rather than a property
+ * access, and both the result relation and the opaque boundary test for a property
+ * access before doing anything, so this call may be invisible to each. Any diagnostic
+ * at all is the minimum; silence means a mutation of caller state went unreported.
+ *
+ * @param facts - Map whose stored set is extended through a computed lookup.
+ *
+ * @param key - Lookup key.
+ *
+ * @example
+ * ```ts
+ * computedLookupMutationEffect(new Map(), 'k');
+ * ```
+ */
+export function computedLookupMutationEffect(
+  facts: Map<string, Set<string>>,
+  key: string,
+): void {
+  const stored = facts['get'](key,) ?? new Set<string>();
+  stored.add('recorded',);
+  facts['set'](key, stored,);
+}
+
+/**
+ * Mutates a looked-up value narrowed by an assertion.
+ *
+ * The transparent-form probe: `as` erases at runtime, so the value is the lookup's own.
+ *
+ * @param facts - Map whose stored set is extended after an assertion.
+ *
+ * @param key - Lookup key.
+ *
+ * @example
+ * ```ts
+ * assertedLookupMutationEffect(new Map(), 'k');
+ * ```
+ */
+export function assertedLookupMutationEffect(
+  facts: Map<string, Set<string>>,
+  key: string,
+): void {
+  const stored = facts.get(key,) as Set<string>;
+  stored.add('recorded',);
+}
+
+/**
+ * Restructures a receiver through computed member access.
+ *
+ * The sharpened syntax-shape probe. Unlike the map cases, `string[]` has an honest
+ * deeply read-only projection, so nothing suppresses a suggestion here on grounds of
+ * the value type. If computed access is invisible to the collection handling, this
+ * parameter is offered as read-only while the body pushes to it, and applying that
+ * suggestion does not compile.
+ *
+ * @param values - Array restructured through a computed member call.
+ *
+ * @example
+ * ```ts
+ * computedStructureEffect([]);
+ * ```
+ */
+export function computedStructureEffect(values: string[],): void {
+  values['push']('appended',);
+}

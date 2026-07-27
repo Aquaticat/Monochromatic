@@ -15,12 +15,14 @@ import {
   SyntaxKind,
 } from 'typescript/unstable/ast';
 import {
+  isAssertionExpression,
   isBinaryExpression,
   isCallExpression,
   isConditionalExpression,
   isIdentifier,
   isNonNullExpression,
   isParenthesizedExpression,
+  isSatisfiesExpression,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
@@ -35,20 +37,46 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Operators whose result is one of their two operands, unchanged.
+ * Operators whose value may come from either operand.
  *
- * `??` is the one that matters, and a resolver handling only calls would miss this
- * package's own blocking shape: `target.get(key) ?? new Set()` is a
- * `BinaryExpression`, so following calls alone never reaches the lookup. Both
- * operands are possible values of the whole expression, so both contribute origins.
+ * `??` is the one that matters most, and a resolver handling only calls would miss
+ * this package's own blocking shape: `target.get(key) ?? new Set()` is a
+ * `BinaryExpression`, so following calls alone never reaches the lookup. Measured
+ * more widely than that: `expressionRoot` strips property access but not a binary
+ * operator, so before this every alias established through `??` carried no origin at
+ * all, including `config.eviction ?? []` in `package/module/kv-store`.
  *
- * `&&` and `||` are here for the same reason. Arithmetic and comparison operators are
- * not: their result is a fresh primitive, which carries no state to attribute.
+ * `||` belongs here too, since it yields its left operand whenever that is truthy,
+ * and a mutable object is truthy.
+ *
+ * `&&` deliberately does not, and that asymmetry is the point. It yields its left
+ * operand only when that operand is falsy, and no falsy value is a mutable object, so
+ * any object the expression produces came from the right operand. Following the left
+ * one could only over-attribute: `input && new Set()` would credit `input` for a
+ * `Set` that is always freshly built, and a false mutation record withholds a
+ * read-only offer the parameter deserves. `&&` is handled as right-operand-only in
+ * `provenanceSuccessors`.
+ *
+ * Arithmetic and comparison operators are absent because their result is a fresh
+ * primitive, which carries no state to attribute.
  */
-const VALUE_SELECTING_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
+const EITHER_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.QuestionQuestionToken,
   SyntaxKind.BarBarToken,
+],);
+
+/**
+ * Operators whose value is always their right operand's.
+ *
+ * `&&` for the truthiness reason recorded on `EITHER_OPERAND_OPERATORS`. Simple
+ * assignment because `holder = facts.get(key)` evaluates to what was assigned, so a
+ * mutation through the assignment expression's value reaches the right side. The comma
+ * operator discards its left operand outright.
+ */
+const RIGHT_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.AmpersandAmpersandToken,
+  SyntaxKind.EqualsToken,
+  SyntaxKind.CommaToken,
 ],);
 
 /**
@@ -64,6 +92,15 @@ const NOTHING_WRAPPED: unique symbol = Symbol(
 /**
  * Expressions whose value is exactly their operand's.
  *
+ * Every form here erases at runtime or passes its operand through unchanged, so the
+ * value that arrives is the operand's own. `as`, an angle-bracket assertion and `satisfies`
+ * matter as much as parentheses: `facts.get(key) as Set<string>` is the ordinary way
+ * to narrow a lookup, and treating it as opaque loses attribution for the whole
+ * expression.
+ *
+ * `await` is deliberately absent. Thenable assimilation means an awaited value need
+ * not be the operand's, so admitting it would assert an identity nothing here proves.
+ *
  * @param node - Expression to unwrap.
  *
  * @returns inner expression, or sentinel when nothing is wrapped.
@@ -76,7 +113,14 @@ const NOTHING_WRAPPED: unique symbol = Symbol(
 function transparentOperand(
   { node, }: { readonly node: Node; },
 ): Node | typeof NOTHING_WRAPPED {
-  return isParenthesizedExpression(node,) || isNonNullExpression(node,)
+  /**
+   * Whether this node's value is exactly its operand's.
+   */
+  const passesThrough = isParenthesizedExpression(node,)
+    || isNonNullExpression(node,)
+    || isAssertionExpression(node,)
+    || isSatisfiesExpression(node,);
+  return passesThrough
     ? node.expression
     : NOTHING_WRAPPED;
 }
@@ -117,13 +161,21 @@ function provenanceSuccessors({
       node.whenTrue,
       node.whenFalse,
     ];
-  if (isBinaryExpression(node,)
-    && VALUE_SELECTING_OPERATORS.has(node.operatorToken
+  if (isBinaryExpression(node,)) {
+    if (EITHER_OPERAND_OPERATORS.has(node.operatorToken
       .kind,))
-    return [
-      node.left,
-      node.right,
-    ];
+      return [
+        node.left,
+        node.right,
+      ];
+    /* Right operand only, for the reason recorded on `EITHER_OPERAND_OPERATORS`: a
+     * mutable object produced by `&&` or by an assignment can only be the right
+     * operand's value. */
+    if (RIGHT_OPERAND_OPERATORS.has(node.operatorToken
+      .kind,))
+      return [node.right,];
+    return [];
+  }
   if (!isCallExpression(node,))
     return [];
   /* A call contributes its receiver only when the result authority verifies that its
