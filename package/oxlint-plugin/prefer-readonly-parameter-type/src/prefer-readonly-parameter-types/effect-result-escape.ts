@@ -35,8 +35,11 @@ import {
   isParenthesizedExpression,
   isPrefixUnaryExpression,
   isPropertyAccessExpression,
+  isPropertyAssignment,
   isReturnStatement,
   isSatisfiesExpression,
+  isShorthandPropertyAssignment,
+  isSpreadAssignment,
   isTypeOfExpression,
   isVariableDeclaration,
   isVoidExpression,
@@ -143,6 +146,14 @@ function passesValueOutward({ node, }: { readonly node: Node; },): boolean {
     return true;
   if (isConditionalExpression(parent,))
     return (parent.whenTrue === node) || (parent.whenFalse === node);
+  /* A property's value flows into the literal that holds it, so the position that
+   * decides escape is the literal's, not the property's. Without this step the
+   * enclosing literal is never reached: the parent of a property value is the
+   * `PropertyAssignment`, and the literal is its grandparent. */
+  if (isPropertyAssignment(parent,)
+    || isShorthandPropertyAssignment(parent,)
+    || isSpreadAssignment(parent,))
+    return true;
   if (!isBinaryExpression(parent,))
     return false;
   /**
@@ -155,6 +166,69 @@ function passesValueOutward({ node, }: { readonly node: Node; },): boolean {
   if (EITHER_OPERAND_PASSES.has(operator,))
     return (parent.left === node) || (parent.right === node);
   return RIGHT_OPERAND_PASSES.has(operator,) && (parent.right === node);
+}
+
+/**
+ * Tests whether a literal is handed directly to a call as an argument.
+ *
+ * Nesting is allowed, because `parameterIndexes` walks nested object and array
+ * literals and spreads alike, so a value inside `{ options: { target } }` reaches the
+ * same argument analysis as one inside `{ target }`.
+ *
+ * @param literal - Object or array literal holding a tracked value.
+ *
+ * @returns whether the literal, or a literal enclosing it, is a call argument.
+ *
+ * @example
+ * ```ts
+ * literalIsCallArgument({ literal });
+ * ```
+ */
+function literalIsCallArgument(
+  { literal, }: { readonly literal: Node; },
+): boolean {
+  /**
+   * Cursor ascending through enclosing literals to their consumer.
+   */
+  const cursor: { current: Node; } = { current: literal, };
+  while (isEnclosingLiteral({ node: cursor.current, },)) {
+    cursor.current = cursor.current
+      .parent;
+  }
+  /**
+   * Expression consuming the outermost enclosing literal.
+   */
+  const consumer = valueConsumer({ node: cursor.current, },);
+  /**
+   * Call receiving that literal, when one does.
+   */
+  const { parent, } = consumer;
+  if (!isCallExpression(parent,))
+    return false;
+  return parent.arguments
+    .some(function isThisArgument(argument,): boolean {
+      return argument === consumer;
+    },);
+}
+
+/**
+ * Tests whether a node's parent is itself an object or array literal.
+ *
+ * @param node - Literal whose enclosing literal is sought.
+ *
+ * @returns whether another literal encloses this one.
+ *
+ * @example
+ * ```ts
+ * isEnclosingLiteral({ node: literal });
+ * ```
+ */
+function isEnclosingLiteral({ node, }: { readonly node: Node; },): boolean {
+  /**
+   * Context possibly nesting this literal inside another.
+   */
+  const { parent, } = node;
+  return isObjectLiteralExpression(parent,) || isArrayLiteralExpression(parent,);
 }
 
 /**
@@ -179,10 +253,17 @@ function useEscapes({ node, }: { readonly node: Node; },): boolean {
   const { parent, } = node;
   if (isReturnStatement(parent,) || isYieldExpression(parent,))
     return true;
-  /* Stored into a container or another object, which needs heap containment to
-   * follow. */
+  /* Placed in an object or array literal. Whether that is an escape depends entirely
+   * on where the literal goes, and getting this wrong defeats discharge throughout
+   * this repository: `ST9` makes every multi-argument call pass one object literal, so
+   * treating literal membership as an escape outright leaves almost nothing
+   * dischargeable. A literal handed straight to a call is walked by
+   * `parameterIndexes`, which collects the origins of its properties and shorthand
+   * values, so the obligation transfers to that call exactly as a direct argument
+   * does. A literal that is stored or bound is not walked by anything, so the value
+   * inside it becomes untracked and does escape. */
   if (isObjectLiteralExpression(parent,) || isArrayLiteralExpression(parent,))
-    return true;
+    return !literalIsCallArgument({ literal: parent, },);
   if (isBinaryExpression(parent,)
     && (parent.operatorToken
       .kind
