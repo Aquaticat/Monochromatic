@@ -11,6 +11,8 @@ Every call reached from caller-owned state has one accepted outcome:
 
 - exact repository-owned or source-map-resolved shipped implementation proves its effects;
 - separately verified isolated value shares no caller-owned identity or capability;
+- default-library read-only view member cannot restructure its receiver,
+  and every caller-supplied observer it hands receiver state to is owned source whose own effects propagate;
 - exact `ForeignHostCapability` marker plus `@mutates` contract bounds runtime-owned host behavior after inference fails;
 - rule rejects call as opaque.
 
@@ -33,9 +35,30 @@ not runtime behavior.
 The rule therefore rejects parameter-reachable ECMAScript,
 DOM,
 and Node calls when their implementation is unavailable.
-This includes formerly special-cased global `String`,
-observational collection methods,
+This includes formerly special-cased global `String`
 and shallow frozen copies retaining nested caller identity.
+
+Collection members are split rather than rejected wholesale.
+Membership of a default-library `Readonly*` interface is upstream's own statement that the member leaves the
+receiver's structure intact,
+so what remains to prove is only which user code the member can run over receiver state.
+The member's instantiated signature answers that:
+it names the argument positions receiving the receiver or its type arguments,
+and an observer at such a position is analyzed as ordinary owned source whose effects propagate to the receiver.
+A member handing receiver state to no caller-supplied observer proves nothing this way and stays opaque,
+which covers `join`,
+`toLocaleString`,
+and `toSorted` called without a comparator.
+So do `get`,
+`has`,
+`slice`,
+and `at`,
+which supply no observer to analyze.
+An observer that is not owned source,
+a receiver position the signature does not describe,
+and any further argument carrying state,
+such as a `reduce` seed or a `map` `thisArg`,
+each leave the call opaque.
 
 Workspace calls resolve through repository source and are analyzed live.
 Locked package calls resolve through package exports to the selected shipped JavaScript or TypeScript entry.
