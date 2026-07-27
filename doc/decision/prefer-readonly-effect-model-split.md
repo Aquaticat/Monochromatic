@@ -133,6 +133,75 @@ That rebuild was measured rather than assumed. Two consecutive `mise run lint:ox
 files took 547.8 seconds and then 196.0 seconds, against an 11 MB cache directory written before the change.
 The first run paid to recompute every summary the new field invalidated; the second reused them.
 
+## Known soundness defect, found 2026-07-27 after landing
+
+`map`, `filter`, `slice`, `concat` and `flat` are discharged unsoundly by this decision. They construct their
+result through `ArraySpeciesCreate`, which reads `constructor[Symbol.species]` and calls whatever it returns.
+That is a second user-code channel this decision does not account for, and it receives the receiver's own
+elements.
+
+Measured in Node against a subclass whose `Symbol.species` returns a hostile constructor backing the result
+with a `Proxy`:
+
+- `map` with an identity callback, `filter`, `slice`, `concat` and `flat` all pass the caller-owned element
+  itself to the proxy traps.
+- `map` with a callback returning a primitive passes only the primitive.
+- `forEach`, `every`, `reduce`, `find`, `toReversed` and `with` pass nothing, and consult no species getter.
+
+So an owned, effect-free observer is not sufficient to discharge a member that constructs a collection result.
+Claim B is discharged on the observer alone, and the species channel bypasses it entirely.
+
+Species use is not derivable from the declaration: `toReversed`, `with` and `toSpliced` return new arrays
+without consulting species, while `slice`, `concat`, `flat`, `map` and `filter` do. The return type therefore
+cannot distinguish them, which also rules out the shape-based inference rejected earlier in this document.
+
+Two sound repairs, neither applied yet:
+
+- Discharge only members whose return type is not a collection. Derivable and conservative, keeping `forEach`,
+  `every`, `some`, `reduce`, `find` and `findIndex`, and losing `map`, `filter`, `slice`, `concat`, `flat` and
+  `toSorted`. This would return most of the findings this decision cleared, including `map` at 164 and
+  `filter` at 70.
+- Additionally discharge a collection-returning member when the observer's own return type is primitive, which
+  the measurement shows keeps the element out of the channel. Derivable from the observer's signature, and it
+  preserves part of the gain, but it never rescues `filter`, `slice`, `concat` or `flat`, whose results carry
+  elements regardless of any observer.
+
+Until one is applied, this decision over-discharges and the acceptance fixtures do not detect it, because none
+of them exercises a species-hooked receiver.
+
+Reproduction, run with `node`:
+
+```js
+// doc/decision/prefer-readonly-effect-model-split.md, species channel probe
+function probe(name, invoke,) {
+  const seen = [];
+  class Tracked extends Array {
+    static get [Symbol.species]() {
+      return function Hostile(length,) {
+        return new Proxy(new Array(length,), {
+          defineProperty(target, key, descriptor,) {
+            if (descriptor && ('value' in descriptor)) seen.push(descriptor.value,);
+            return Reflect.defineProperty(target, key, descriptor,);
+          },
+        },);
+      };
+    }
+  }
+  const element = { secret: 'caller-owned', };
+  const receiver = new Tracked();
+  receiver.push(element,);
+  invoke(receiver, element,);
+  console.log(`${name}: user code saw the element = ${seen.includes(element,)}`,);
+}
+
+probe('map identity', (a,) => a.map((x,) => x,),);
+probe('map primitive', (a,) => a.map(() => 1,),);
+probe('filter', (a,) => a.filter(() => true,),);
+probe('forEach', (a,) => a.forEach(() => {},),);
+```
+
+Prints `true` for `map identity` and `filter`, `false` for `map primitive` and `forEach`.
+
 ## What this does not change
 
 The four removals recorded in `doc/planning/replace-prefer-readonly-parameter-types.md` all stand:
