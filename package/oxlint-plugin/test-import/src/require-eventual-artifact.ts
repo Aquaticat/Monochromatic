@@ -52,6 +52,30 @@ type CheckedFileContext = {
 };
 
 /**
+ * Narrows an unknown value to a read-only array view.
+ *
+ * `Array.isArray` alone widens its subject to `any[]`, which presents the
+ * mutable `Array` interface at every later call. Landing on `ReadonlyArray`
+ * instead keeps traversal on the view TypeScript declares free of receiver
+ * mutation.
+ *
+ * Takes a positional parameter because a type predicate cannot reference a
+ * destructured binding.
+ *
+ * @param value - candidate array
+ *
+ * @returns true when value is an array
+ *
+ * @example
+ * ```ts
+ * isUnknownArray(['**\/fixture.*']);
+ * ```
+ */
+function isUnknownArray(value: unknown,): value is readonly unknown[] {
+  return Array.isArray(value,);
+}
+
+/**
  * Reads the configured fixture globs from rule options.
  *
  * Falls back to {@link DEFAULT_FIXTURE_PATTERNS} whenever options are absent or
@@ -82,7 +106,7 @@ function readFixturePatterns(options: readonly unknown[],): readonly string[] {
    * Configured glob array; absent or mistyped falls back to the defaults.
    */
   const { fixturePatterns, } = first;
-  if (!Array.isArray(fixturePatterns,))
+  if (!isUnknownArray(fixturePatterns,))
     return DEFAULT_FIXTURE_PATTERNS;
   return fixturePatterns.filter(function keepStrings(value,): value is string {
     return (typeof value) === 'string';
