@@ -177,8 +177,15 @@ contribute a counted bit.
 returning summaries that were still growing.
  That now throws rather than returning a
 partial result.
- Whether the bound is reachable on real code is not established:
- it is never
-exhausted by this package's tests,
- and the throw is what would make a reachable bound
-visible rather than silent.
+
+Measured after adding the throw:
+ a repository-wide sweep raises it nowhere.
+Findings and offers are identical to the sweep before it,
+ 1850 and 23,
+ and the offer sets match by identity.
+So the bound is not reached by any program this repository's sweep completes,
+ and the guard costs nothing.
+One caveat on the word every:
+ the sweep loses one program to the upstream panic recorded in
+`doc/troubleshooting/typescript-go-tuple-type-panic.md`,
+ so that program's propagation never runs far enough to reach the guard either way.
