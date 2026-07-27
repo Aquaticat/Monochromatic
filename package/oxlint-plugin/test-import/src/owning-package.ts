@@ -37,7 +37,9 @@ const MANIFEST_FILE = 'package.json';
 /**
  * Sentinel meaning no ancestor directory holds a named manifest.
  */
-export const PACKAGE_UNRESOLVED = Symbol('package-unresolved',);
+export const PACKAGE_UNRESOLVED: unique symbol = Symbol(
+  'no ancestor directory holds a named package manifest',
+);
 
 /**
  * Everything the rule needs to know about the package owning a file.

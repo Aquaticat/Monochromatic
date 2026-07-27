@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Dedicated config for fixture linting: only the test-import rule is enabled,
+  // and no ignorePatterns skip test-fixture/ paths.
+  // Used by the lint-fixture mise task and the oxlint-test-import unit tests.
+  "jsPlugins": [
+    "../../oxlint-plugin/test-import/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/node_modules"
+  ],
+  "rules": {
+    "test-import/require-eventual-artifact": "error"
+  }
+}

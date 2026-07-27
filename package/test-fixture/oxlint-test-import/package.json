@@ -1,0 +1,12 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/test-fixture-oxlint-test-import",
+  "description": "Test fixture: package manifest shapes and test-file import forms for verifying oxlint-test-import rule behavior.",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "files": [
+    "case/",
+    "LICENSES"
+  ]
+}

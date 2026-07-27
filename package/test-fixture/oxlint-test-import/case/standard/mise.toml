@@ -1,0 +1,5 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js:node"]
+extends = "build:js:node"

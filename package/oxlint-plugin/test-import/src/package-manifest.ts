@@ -146,7 +146,7 @@ export function shippingTargets({ manifest, }: {
   /**
    * Export targets, with the source subpath keys removed.
    */
-  const exportTargets = isSubpathMap({ node: exportsField, },)
+  const exportTargets = isSubpathMap(exportsField,)
     ? Object.entries(exportsField,)
       .filter(function keepShippingKey([key,],): boolean {
         return (key !== SOURCE_EXPORT_KEY) && (!key.startsWith(SOURCE_EXPORT_PREFIX,));
@@ -170,16 +170,19 @@ export function shippingTargets({ manifest, }: {
  * `types` or `default`. Only the former carries source subpath keys worth
  * skipping, and only its keys are safe to inspect for that purpose.
  *
+ * Takes a positional parameter because a type predicate cannot reference a
+ * destructured binding.
+ *
  * @param node - `exports` field value
  *
  * @returns true when node is an object whose every key names a subpath
+ *
+ * @example
+ * ```ts
+ * isSubpathMap({ '.': './dist/final/node/index.mjs' });
+ * ```
  */
-function isSubpathMap({ node, }: {
-  /**
-   * `exports` field value to classify.
-   */
-  readonly node: unknown;
-},): node is Record<string, unknown> {
+function isSubpathMap(node: unknown,): node is Record<string, unknown> {
   if (((typeof node) !== 'object') || (node === null) || Array.isArray(node,))
     return false;
   /**

@@ -1,0 +1,10 @@
+{
+  "name": "@monochromatic-dev/test-fixture-case-asset-dist",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./font": "./dist/Face-Regular.otf",
+    "./ts": "./src/index.ts"
+  }
+}
