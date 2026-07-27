@@ -1,6 +1,6 @@
 # Split receiver-structure from reachable-user-code in the readonly effect model
 
-Status: accepted, implementation pending.
+Status: accepted, implemented and measured.
 
 Decided: 2026-07-27.
 
@@ -124,18 +124,32 @@ and bodyless host authorities. Nothing here trusts a member list or a hand-autho
 Fail-closed remains the default. The split adds one derivable discharge path and one derivable propagation
 path; every case that cannot use them reports exactly as it does now.
 
-## Consequences, predicted
+## Consequences, measured
 
-These are predictions to be checked against measurement, not results.
+`mise run lint:oxlint` over 2,694 files reports 1,364 findings for this rule after the change, against 1,661
+recorded before it.
 
-- Receiver-side findings on callback-taking members should clear: `map` (164), `filter` (70), `some` (25),
-  `flatMap` (25), `every` (25), `forEach` (23), `reduce` (15), `find` (14) across the workspace.
-- Receiver-side findings on implicit-coercion members should remain: `join` (44), `toSorted` (11).
-- Members with no caller-supplied function and no coercion, `get` (35), `has` (27), `slice` (46), `at` (15),
-  should remain, because claim B has no evidence to work from. This is a known conservative gap.
-- Argument-side findings, 763 of the 1,661, are untouched. `String`, `Object.entries`, `JSON.stringify` and
-  `Error.isError` can each invoke getters, proxy traps or `toJSON`, so those findings are the rule being
-  correct and will survive.
+That pair is not a matched before-and-after and must not be quoted as a 297-finding improvement. The workspace
+moved between the two runs: concurrent work added the `test-import` plugin, itself now reporting 697 findings,
+along with the test files it lints. Establishing a matched baseline would mean reverting the rule in the shared
+worktree while another session is working in it, which is not worth the disruption for a figure the decision
+does not gate on.
+
+The per-member counts fall the same way, and for the same reason cannot be read as a clean delta: a finding
+lists every unresolved cause for one parameter, so discharging one cause removes the whole finding only when
+every other cause clears too, and the remaining causes stop being counted with it.
+
+What is verified directly is the mechanism, on real workspace code rather than fixtures. At
+`package/module/toml-edit/src/emit-value.ts:437` two `map` calls sit in one expression. The outer
+`body.map(...)`, whose receiver is `readonly TOMLKeyValue[]` and resolves to `ReadonlyArray.map`, no longer
+appears as a cause. The inner `kv.key.keys.map(...)`, whose receiver is the mutable
+`(TOMLBare | TOMLQuoted)[]` and resolves to `Array.map`, is the sole cause the diagnostic still names. Every
+other surviving `map` cause sampled resolves to `Array` on a mutable receiver, including
+`Readonly<{ ... }>[]`, which is a mutable array of readonly objects and correctly discharges nothing.
+
+Argument-side findings are untouched by design. `String`, `Object.entries`, `JSON.stringify` and
+`Error.isError` can each invoke getters, proxy traps or `toJSON`, so those findings are the rule being
+correct. `package/module/caught-value` still reports its two, unchanged, and served as the control.
 
 Reaching zero is not the goal and would indicate the guarantee had been abandoned.
 
@@ -153,15 +167,35 @@ The audited fixtures decide correctness, and all must keep their current expecta
   This corrects an error in the first draft of this decision, which asserted the fixture would stay
   `opaque: [0]`. Under the split, keeping it opaque would mean the analyzer had failed to resolve a callback
   it demonstrably resolved.
-- `objectArraySortCallbackEffect` stays `opaque: [0]`. Its comparator calls `localeCompare`, itself
-  unresolved, so opacity propagates from the callback.
+- `objectArraySortCallbackEffect` goes clean, `mutated: []` and `opaque: []`, and so does the sibling
+  `primitiveArraySortObservationEffect`.
+
+  This corrects a second drafting error, which claimed the first would stay `opaque: [0]` because its
+  comparator calls `localeCompare`. It does, but on `left.value`, a `string` extracted from the element
+  rather than the element itself, and the analyzer already treats a primitive receiver as unable to carry
+  mutable state. Both comparators only read element properties and operate on the resulting primitives, so
+  the previous opaque marks came from the coarse receiver bit and nothing else. The bare-comparator siblings
+  are the control and are unchanged: `plainArrayDefaultSortObservationEffect`,
+  `plainArrayOptionalSortObservationEffect`, `hookedArrayDefaultSortOpaqueEffect` and
+  `objectArrayUndefinedSortOpaqueEffect` all stay opaque, because `toSorted` without a comparator supplies
+  no observer to analyze.
 - `readonly-static-plain-data-invalid.ts` keeps four diagnostics. `join` and `toSorted()` supply no observer.
 - `readonly-catalog-free-invalid.ts` keeps 21.
 
-`applyCargoPlan` in `workspace-source-effect.unit.test.ts` is expected to change from `opaque: [0]` to
-`opaque: []`. Its only relevant calls are `plan.blocks.filter(...)` and `plan.enforcements.reduce(...)`,
-whose callbacks reach only owned functions already proven effect-free. That expectation is a snapshot of the
-coarse model rather than a policy, and updating it is part of this change.
+`applyCargoPlan` in `workspace-source-effect.unit.test.ts` keeps `opaque: [0]`, and its test needs no edit.
+This retracts a third drafting error, which expected it to go clean.
+
+The measured provenance names exactly one surviving cause,
+`plan.enforcements.reduce [package/dev-script/file-enforcer/src/cargo/apply-plan.ts:154]`. Its sibling
+`plan.blocks.filter(...)` discharged as predicted. The difference is `reduce`'s second argument: the seed
+`original` carries mutable state, and a non-observer argument carrying state leaves the call underived,
+because the element-flow relation describes element and receiver positions and says nothing about how a seed
+flows into the accumulator. Confirmed on an isolated fixture where the same fold discharges with a primitive
+seed and stays opaque with an object seed.
+
+Discharging it would require deriving accumulator flow as well, which is a larger generalization of the
+signature-reading step than this decision authorizes. It stays out of scope and remains a known conservative
+gap alongside `get`, `has`, `slice` and `at`.
 
 Performance must not regress. The 10-second cold-run figure in
 `doc/troubleshooting/oxlint-prefer-readonly-incremental-cache.md` is that incident's open acceptance target,
@@ -170,3 +204,7 @@ not a gate this change inherits: the same document measures the cold run at 62.9
 milliseconds over 14 files with no findings, and `//package/module/caught-value:lint:oxlint` reports two
 errors in 1.2 seconds. Those are the numbers this change is held to; closing the cold-path gap remains the
 other incident's work.
+
+Measured after the change: `//package/config/oxlint:lint:oxlint` runs warm in 1.0 seconds over the same 14
+files with no findings, and `//package/module/caught-value:lint:oxlint` still reports two errors, in 739
+milliseconds. No regression.
