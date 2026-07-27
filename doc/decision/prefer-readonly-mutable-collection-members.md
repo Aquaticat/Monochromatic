@@ -97,6 +97,42 @@ for the repository owner.
 - `package/module/caught-value` still reports its two argument-side findings, unchanged, as the control.
 - Warm `//package/config/oxlint:lint:oxlint`: 871 milliseconds over 14 files with no findings, against the
   939 milliseconds measured before this change. No regression despite the added snapshot scan.
+- Workspace: 1,300 findings for this rule over 2,696 files, against 1,364 over 2,694 before the change.
+  Unlike the model split's headline, this pair is nearly matched, two files apart in tree state, so the
+  reduction of roughly 64 findings is attributable to this work with modest uncertainty. Receiver-side
+  findings fall from 557 to 516 and argument-side from 765 to 737.
+
+  A first attempt at this measurement was discarded rather than reported: it overlapped the rebuilds used to
+  verify the fixtures, so the run could have loaded a deliberately broken plugin.
+
+## The share that stays unfixable
+
+Of the 1,300 findings, 222 are receiver-side findings whose every named member is observer-free, so no code
+change and no derivation available here can satisfy them. That is 17.1 percent, up from 16.2 percent before
+this change: the count held at roughly 222 while the derivable findings around it cleared, which is the
+predicted direction.
+
+The distribution matters more than the share, and it is what decides the policy question.
+
+Those findings sit in **49 distinct packages**, out of 78 holding any finding from this rule. None of them is
+`prefer-readonly-parameter-type` itself, whose findings the existing exemption already suppresses. The spread
+is a long tail rather than a hotspot: `git-policy/cli` holds 61 and `module/toml-edit` 31, then 47 further
+packages hold single digits each.
+
+So accepting the class as a permanent error does not cost one exemption. The rationale that justifies
+exempting this plugin, that the findings are unprovable by construction rather than defects, applies verbatim
+to all 49, exactly as `doc/troubleshooting/oxlint-prefer-readonly-intrinsic-regression.md` warned when the
+original override was scoped. Any package wanting a clean lint would need its own entry, and the allowlist
+would grow with the workspace.
+
+That is the deciding argument, and it is about exemption count rather than finding count. The recommended
+response is to separate provable from unprovable findings at the diagnostic boundary, so the unprovable class
+becomes one recorded decision instead of 49 growing globs, while the effect model keeps asserting nothing it
+cannot derive. Reopening the no-catalog constraint would reach a similar practical outcome by giving up the
+guarantee that motivated the architecture, and is not recommended.
+
+Whichever way that lands, `DGT` needs care for this class: its diagnostics must name the affected input
+plainly while stating honestly that no remediation path exists at the call site.
 
 ## Acceptance
 
