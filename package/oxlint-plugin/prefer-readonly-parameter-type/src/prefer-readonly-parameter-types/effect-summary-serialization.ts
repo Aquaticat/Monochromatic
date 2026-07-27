@@ -58,6 +58,7 @@ export type SerializedEffectSummary = {
   readonly invoked: readonly number[];
   readonly opaque: readonly number[];
   readonly directForeignBorrowed: readonly number[];
+  readonly directReturned: readonly number[];
   readonly relations: readonly CallbackRelation[];
   readonly elementApplications: readonly ElementApplication[];
   readonly calls: readonly SerializedCallEdge[];
@@ -164,6 +165,7 @@ export function serializeEffectSummaries(
           invoked: [...summary.invoked,],
           opaque: [...summary.opaque,],
           directForeignBorrowed: [...summary.directForeignBorrowed,],
+          directReturned: [...summary.directReturned,],
           relations: summary.relations
             .map(function copyRelation(relation,) {
             return { ...relation, };
@@ -218,6 +220,7 @@ export function deserializeEffectSummaries(
       {
         parameterCount: summary.parameterCount,
         bindingOriginBySymbolId: new Map(),
+
         directMutated: new Set(summary.directMutated,),
         directInvoked: new Set(summary.directInvoked,),
         directOpaque: new Set(summary.directOpaque,),
@@ -235,6 +238,7 @@ export function deserializeEffectSummaries(
         invoked: new Set(summary.invoked,),
         opaque: new Set(summary.opaque,),
         directForeignBorrowed: new Set(summary.directForeignBorrowed,),
+        directReturned: new Set(summary.directReturned,),
         relations: summary.relations
           .map(function copyRelation(relation,) {
           return { ...relation, };

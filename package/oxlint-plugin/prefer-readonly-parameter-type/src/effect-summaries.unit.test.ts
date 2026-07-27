@@ -178,6 +178,29 @@ await describe({
               return left - right;
             },);
         }
+        /**
+         * Reads the returned parameter origins of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns returned parameter indexes in ascending order.
+         */
+        function returnedIndexes(functionName: string,): readonly number[] {
+          const nameNode = session.nodeAtOffset(
+            RESULT_PROVENANCE_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.returnedParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
         /** Mutation through a bound lookup result. */
         const bound = mutatedIndexes('boundLookupMutationEffect',);
         /** Mutation through a lookup result with no binding at all. */
@@ -221,6 +244,15 @@ await describe({
         /* And the control stays empty, so the resolver is not crediting every lookup
          * with a mutation it never performed. */
         expect(readOnly,).toEqual([],);
+        /* Returning parameter-reachable state is recorded as a returned origin rather
+         * than as an effect, per the accepted policy: the caller already holds the
+         * parameter, so handing back a piece of it grants nothing new. The fact exists
+         * so a caller can keep tracking the value, which is what makes the policy
+         * sound; no discharge may rest on it until callers substitute through it. */
+        expect(returnedIndexes('returnedLookupEffect',),).toEqual([0,],);
+        /* A function returning nothing parameter-derived records nothing, so the fact
+         * is not simply "every callable returns something". */
+        expect(returnedIndexes('readOnlyLookupEffect',),).toEqual([],);
       },
     },),
     it({

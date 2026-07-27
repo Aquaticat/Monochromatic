@@ -128,6 +128,7 @@ function unknownInboundSummary(
   return {
     parameterCount: 0,
     bindingOriginBySymbolId: new Map(),
+    directReturned: new Set(),
     directMutated: new Set(),
     directInvoked: new Set(),
     directOpaque: new Set(),

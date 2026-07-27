@@ -34,6 +34,7 @@ export function effectPublicSummary({
       ...summary.invoked,
     ],),
     referentMutatedParameterIndexes: summary.mutated,
+    returnedParameterIndexes: summary.directReturned,
     invokedParameterIndexes: summary.invoked,
     opaqueParameterIndexes: summary.opaque,
     opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,

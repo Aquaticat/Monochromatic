@@ -147,6 +147,7 @@ export type MutableEffectSummary = {
   readonly invoked: Set<number>;
   readonly opaque: Set<number>;
   readonly directForeignBorrowed: ReadonlySet<number>;
+  readonly directReturned: Set<number>;
   readonly relations: CallbackRelation[];
   readonly elementApplications: ElementApplication[];
   readonly calls: CallEdge[];

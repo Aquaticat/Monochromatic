@@ -20,6 +20,7 @@ import {
   isIdentifier,
   isPostfixUnaryExpression,
   isPrefixUnaryExpression,
+  isReturnStatement,
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -168,6 +169,7 @@ export function directEffectSummary({
     invoked: new Set(),
     opaque: new Set(),
     directForeignBorrowed,
+    directReturned: new Set(),
     relations: [],
     elementApplications: [],
     calls: [],
@@ -295,6 +297,34 @@ export function directEffectSummary({
         summary,
         node: node.operand,
       },);
+      return;
+    }
+    /* Returning parameter-reachable state is not itself an effect: the caller already
+     * holds the parameter, so handing back a piece of it grants no capability the
+     * caller lacked. Recording which parameters a result can carry is what lets a
+     * caller keep tracking that value, and that tracking is the condition under which
+     * treating a return as benign stays sound. Until callers substitute through this
+     * fact, no receiver opacity may be discharged on the strength of it.
+     * `doc/decision/prefer-readonly-result-provenance.md` records the policy. */
+    if (isReturnStatement(node,) && (node.expression !== undefined)) {
+      /* Only a returned value that can carry state records anything. A returned
+       * primitive derived from a parameter grants the caller nothing: measured on
+       * `readOnlyLookupEffect`, which returns `(facts.get(key) ?? new Set()).size`,
+       * where the resolver correctly reaches `facts` through the property access and
+       * the `??`, and recording that as a returned origin would claim the caller can
+       * reach the map through a `number`. */
+      if (expressionCanCarryMutableState({
+        checker,
+        node: node.expression,
+      },))
+        addEffectIndexes({
+          target: summary.directReturned,
+          values: expressionOrigins({
+            project,
+            bindingOriginBySymbolId,
+            node: node.expression,
+          },),
+        },);
       return;
     }
     if (isForOfStatement(node,) && (node.awaitModifier !== undefined)) {
