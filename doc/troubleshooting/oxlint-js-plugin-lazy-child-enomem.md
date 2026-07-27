@@ -273,8 +273,8 @@ VmRSS:   6655708 kB
 VmSwap: 11931316 kB
 ```
 
-That process alone held 74.7 percent of the private anonymous swap attributed through
-`/proc/*/status` in the snapshot.
+That process accounted for 74.7 percent of swap visible through per-process `VmSwap`
+in the snapshot.
 `Documentation/filesystems/proc.rst:268-269` confirms that `VmSwap` counts anonymous private data,
 not shared-memory swap.
 The process's cgroup had no configured memory or swap maximum and recorded no cgroup OOM event.
@@ -375,28 +375,28 @@ and the broader allocator design
 [issue 20513](https://github.com/oxc-project/oxc/issues/20513).
 A new issue would be a duplicate.
 
-1.  **Is it really upstream's fault?**
+1.  **Upstream fault**
     No for the reported 276.1-second package run.
     The repository explicitly forced one worker,
     and its plugin waited until the first file visitor to start a child.
     Oxc's allocator made the ordering failure visible,
     but the local configuration and initialization fully remediate this incident.
-2.  **Can upstream fix it?**
+2.  **Upstream ability to fix**
     Yes.
     Issue 20513 describes platform virtual-memory reservation instead of committed fixed blocks.
-3.  **Are they supporting this use case?**
+3.  **Supported use case**
     Yes.
     Oxlint documents custom JavaScript plugins and issue 20331 tracks their Linux allocator failures.
-4.  **Would the repository welcome the contribution?**
+4.  **Contribution policy**
     Yes with review and disclosure.
     Oxc's `CONTRIBUTING.md:12-21` permits AI assistance,
     requires disclosure,
     and requires contributors to understand and test submissions.
-5.  **Will they likely fix it?**
+5.  **Upstream intent to fix**
     Yes.
     Issue 20331 is open and assigned,
     and the maintainer stated that the Linux allocator work is active.
-6.  **Have we prototyped a minimal upstream fix compatible with their architecture?**
+6.  **Compatible minimal prototype**
     No.
     The incident has a complete consumer-side fix,
     constraint one fails,
