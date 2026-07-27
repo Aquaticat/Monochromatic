@@ -3050,3 +3050,31 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   here is graded, fewer accepted issues is equally consistent with the fixes
   suppressing true positives, and the two pools cover different entries. It
   earns a mention only because it is measurable now and the graded answer is not.
+- HEADLINE PRECISION IS BAND-BALANCED, NOT POOL-WEIGHTED (found 2026-07-27,
+  before the round-two draw). `drawStratifiedSample` splits the 50 slots about
+  evenly across bands (round one drew 17 small / 17 medium / 16 large), but the
+  bands do NOT hold even shares of the accepted-issue pool. Measured at 25
+  settled entries: small 175 accepted (9.2 percent), medium 667 (34.9), large
+  1070 (56.0). So a small-band issue is roughly 3.6 times likelier to be sampled
+  than its share of the population, and the raw sample proportion estimates the
+  AVERAGE OF PER-BAND PRECISIONS rather than the precision of the accepted-issue
+  population.
+  Size of the discrepancy, using round one's per-band precisions (small 0.60,
+  medium 0.57, large 0.73) against round two's pool shares: band-balanced 0.635,
+  pool-weighted 0.665. Round one failed at 0.56 to 0.68 under every reading, so
+  the distinction could not change that verdict. Against a 0.9 bar it can.
+  RESOLUTION, adopted because it costs nothing and sacrifices nothing: report
+  BOTH numbers from the SAME 50 grades. Band-balanced stays the headline, since
+  that is what round one reported and comparability with the baseline is the
+  whole point of round two. Pool-weighted is reported beside it, because "accepted-issue
+  precision" read plainly means "of the issues the pipeline accepts, how many
+  are real", which is the pool-weighted quantity. No extra grading is needed:
+  per-band counts plus pool shares give both.
+  The only genuine decision is which number faces the bar IF they straddle 0.9,
+  and that is the user's call. Do not pre-empt it; if both clear or both fail,
+  it never needs asking.
+  Related caution: round one's verdict called precision "roughly flat across
+  bands" on 0.60 / 0.57 / 0.73. At 15 graded items per band the standard error
+  is about 0.12, so those are not distinguishable, but "flat" overstates what
+  n=15 per band can show. The band comparison is underpowered in the same way
+  the timing-cohort split is; say "not distinguishable", never "flat".
