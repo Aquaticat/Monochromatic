@@ -11,7 +11,9 @@ import {
 
 import {
   MEMBER_CHANNELS_BY_INTERFACE,
+  RESULT_PROVENANCE_BY_INTERFACE,
   VERIFIED_MEMBER_CHANNEL_COUNT,
+  VERIFIED_RESULT_RELATION_COUNT,
 } from '../dist/final/node/index.mjs';
 
 /** Effect-analysis production module directory. */
@@ -63,6 +65,16 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
         'effect-member-channel-traps.unit.test.ts',
       ],
       entryCount: 33,
+    },
+  ],
+  [
+    'effect-result-provenance-authority.ts',
+    {
+      decision: 'doc/decision/prefer-readonly-result-provenance.md',
+      enforcedBy: [
+        'effect-result-provenance.unit.test.ts',
+      ],
+      entryCount: 6,
     },
   ],
 ],);
@@ -131,6 +143,26 @@ await describe({
         ).toBe(memberChannelRegistration.entryCount,);
         expect(VERIFIED_MEMBER_CHANNEL_COUNT,).toBe(
           memberChannelRegistration.entryCount,
+        );
+        /** Registry entry for the result-provenance authority. */
+        const resultProvenanceRegistration = PERMITTED_AUTHORITY_MODULES.get(
+          'effect-result-provenance-authority.ts',
+        );
+        if (resultProvenanceRegistration === undefined)
+          throw new Error(
+            'Expected the result-provenance authority to stay registered, since the registry is what permits it.',
+          );
+        /* The same two comparisons for the second authority. Registering a count
+         * without comparing it to anything is the inert pin this guard already had
+         * once: the registry entry looked like enforcement and enforced nothing. */
+        expect(
+          [...RESULT_PROVENANCE_BY_INTERFACE.values(),]
+            .reduce(function sumRelations(total, members,): number {
+              return total + members.size;
+            }, 0,),
+        ).toBe(resultProvenanceRegistration.entryCount,);
+        expect(VERIFIED_RESULT_RELATION_COUNT,).toBe(
+          resultProvenanceRegistration.entryCount,
         );
         /** Production effect source combined for removed identifier checks. */
         const sourceText = sourceFileNames

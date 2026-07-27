@@ -94,3 +94,15 @@ export {
  * @internal
  */
 export { ancestorDirectories, } from './prefer-readonly-parameter-types/ancestor-directories.ts';
+
+/**
+ * Verified member result relations, exported for the built-artifact probe test.
+ *
+ * @internal
+ */
+export {
+  FRESH_CONTAINER_MEMBER_NAMES,
+  RESULT_PROVENANCE_BY_INTERFACE,
+  RESULT_RELATION_RECEIVER_VALUE,
+  VERIFIED_RESULT_RELATION_COUNT,
+} from './prefer-readonly-parameter-types/effect-result-provenance-authority.ts';

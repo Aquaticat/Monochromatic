@@ -1,0 +1,189 @@
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  FRESH_CONTAINER_MEMBER_NAMES,
+  RESULT_PROVENANCE_BY_INTERFACE,
+  RESULT_RELATION_RECEIVER_VALUE,
+  VERIFIED_RESULT_RELATION_COUNT,
+} from '../dist/final/node/index.mjs';
+
+/**
+ * Sentinel placed in a receiver, recognised only by identity.
+ *
+ * A value equal to nothing else, so a member handing back a structurally identical
+ * copy fails the probe. Comparing shapes would pass for `structuredClone`.
+ */
+type Sentinel = { readonly marker: 'receiver-held'; };
+
+/**
+ * Builds one receiver of the named interface holding the sentinel.
+ *
+ * @param ownerName - Declaring default-library interface name.
+ *
+ * @param sentinel - Value to place inside the receiver.
+ *
+ * @returns receiver holding sentinel, and arguments reaching it.
+ *
+ * @example
+ * ```ts
+ * receiverHolding({ ownerName: 'Map', sentinel });
+ * ```
+ */
+function receiverHolding({
+  ownerName,
+  sentinel,
+}: {
+  readonly ownerName: string;
+  readonly sentinel: Sentinel;
+},): {
+  readonly receiver: unknown;
+  readonly argumentsByMember: Readonly<Record<string, readonly unknown[]>>;
+} {
+  if (ownerName.endsWith('Map',))
+    return {
+      receiver: new Map([['key', sentinel,],],),
+      argumentsByMember: { get: ['key',], },
+    };
+  return {
+    receiver: [sentinel,],
+    argumentsByMember: {
+      at: [0,],
+      pop: [],
+      shift: [],
+    },
+  };
+}
+
+await describe({
+  name: 'collection member result provenance',
+  concurrency: 1,
+  children: [
+    it({
+      name: 'returns the identical value the receiver held, for every listed member',
+      fn: async () => {
+        /**
+         * Entries whose result was not identically the sentinel.
+         */
+        const notIdentical: string[] = [];
+        for (const [ownerName, members,] of RESULT_PROVENANCE_BY_INTERFACE) {
+          for (const [memberName, provenance,] of members) {
+            expect(provenance.relation,).toBe(RESULT_RELATION_RECEIVER_VALUE,);
+            /**
+             * Fresh sentinel per member, so one member cannot pass on another's value.
+             */
+            const sentinel: Sentinel = { marker: 'receiver-held', };
+            const { receiver, argumentsByMember, } = receiverHolding({
+              ownerName,
+              sentinel,
+            },);
+            /**
+             * Value the member handed back.
+             */
+            const result = (
+              (receiver as Record<string, unknown>)[memberName] as (
+                this: unknown,
+                ...args: readonly unknown[]
+              ) => unknown
+            ).apply(receiver, [...argumentsByMember[memberName] ?? [],],);
+            if (result !== sentinel)
+              notIdentical.push(`${ownerName}.${memberName}`,);
+          }
+        }
+        /* A non-empty list means a listed member returns something other than the
+         * value the receiver held, so crediting its result to the receiver's
+         * parameter would attribute mutations to state the caller never shared.
+         * Remove the entry rather than weaken this comparison. */
+        expect(notIdentical,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'excludes fresh containers, whose elements alias while the container does not',
+      fn: async () => {
+        /* The reason this table is narrow, checked for every excluded member rather
+         * than argued for one. Each returns a new array whose elements are the
+         * receiver's: element identity holds, container identity does not. Crediting
+         * the container to the receiver would attribute `copy.push(x)` to an array
+         * that never received it.
+         *
+         * Driven through dynamic dispatch, so the assertion covers the whole
+         * exclusion list and no member is spot-checked by a hand-written call. */
+        /**
+         * Arguments letting each excluded member return without throwing.
+         */
+        const containerArguments: Readonly<Record<string, readonly unknown[]>> = {
+          slice: [],
+          concat: [],
+          filter: [
+            function keepAll(): boolean {
+              return true;
+            },
+          ],
+          toReversed: [],
+          toSpliced: [
+            0,
+            0,
+          ],
+          with: [
+            0,
+            { marker: 'receiver-held', },
+          ],
+          flat: [],
+        };
+        /**
+         * Excluded members whose result was the receiver, or lost its element.
+         */
+        const notFreshContainer: string[] = [];
+        for (const memberName of FRESH_CONTAINER_MEMBER_NAMES) {
+          /* Absent from every owner's table, which is what "excluded" has to mean. */
+          for (const [, members,] of RESULT_PROVENANCE_BY_INTERFACE)
+            expect(members.has(memberName,),).toBe(false,);
+          /**
+           * Fresh sentinel, so no member can pass on a value another left behind.
+           */
+          const sentinel: Sentinel = { marker: 'receiver-held', };
+          /**
+           * Receiver whose container identity is compared against the result's.
+           */
+          const values: Sentinel[] = [sentinel,];
+          /**
+           * Container the member handed back.
+           */
+          const result = (
+            (values as unknown as Record<string, unknown>)[memberName] as (
+              this: unknown,
+              ...args: readonly unknown[]
+            ) => unknown
+          ).apply(values, [...containerArguments[memberName] ?? [],],);
+          if (!Array.isArray(result,)) {
+            notFreshContainer.push(`${memberName} returned no array`,);
+            continue;
+          }
+          if (result === values)
+            notFreshContainer.push(`${memberName} returned the receiver`,);
+        }
+        /* A non-empty list means an excluded member is not the fresh container this
+         * exclusion assumes, so the reason it is excluded is wrong even if excluding
+         * it happens to be safe. */
+        expect(notFreshContainer,).toEqual([],);
+        /* And the list is not vacuous, which an empty set would make every loop above
+         * pass without checking anything. */
+        expect(FRESH_CONTAINER_MEMBER_NAMES.size,).toBe(7,);
+      },
+    },),
+    it({
+      name: 'keeps the pinned entry count matching the table',
+      fn: async () => {
+        expect(
+          [...RESULT_PROVENANCE_BY_INTERFACE.values(),]
+            .reduce(function sumEntries(total, members,): number {
+              return total + members.size;
+            }, 0,),
+        ).toBe(VERIFIED_RESULT_RELATION_COUNT,);
+      },
+    },),
+  ],
+},);
