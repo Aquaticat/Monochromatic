@@ -1,12 +1,24 @@
 /**
- * Package manifest reading and shipping-entry extraction.
+ * Package manifest parsing and shipping-entry extraction.
  *
  * Collects every path a manifest declares as something consumers load, from
  * `exports`, `main`, and `bin`. The `./ts` and `./ts/*` export keys are skipped
  * because they are the sanctioned source channel, not a shipped artifact.
  *
+ * Parsing lives here rather than at the caller so the manifest object never
+ * crosses a function boundary. Only its name and its declared targets leave,
+ * both of them plain strings, which keeps every later step working on values
+ * that share no identity with the parsed tree.
+ *
  * @module
  */
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+/**
+ * Logger for manifest parsing.
+ */
+const l = tagged({ tag: 'package-manifest', },);
 
 /**
  * Fields of a `package.json` this plugin reads.
@@ -31,6 +43,31 @@ export type PackageManifest = {
    */
   readonly bin?: unknown;
 };
+
+/**
+ * Everything one manifest contributes, reduced to strings.
+ *
+ * @internal
+ */
+export type ManifestFacts = {
+  /**
+   * Declared package name, matched against bare import specifiers.
+   */
+  readonly name: string;
+  /**
+   * Package-relative or absolute target specifiers, unfiltered.
+   */
+  readonly shippingTargets: readonly string[];
+};
+
+/**
+ * Sentinel meaning manifest text describes no package root.
+ *
+ * @internal
+ */
+export const MANIFEST_UNUSABLE: unique symbol = Symbol(
+  'manifest text that is unparseable or carries no package name',
+);
 
 /**
  * Export key naming the TypeScript source entry.
@@ -142,43 +179,91 @@ export function stringTargets({ node, }: {
 }
 
 /**
- * Collects declared shipping targets from one manifest.
+ * Parses manifest text, treating malformed JSON as absence.
+ *
+ * @param text - `package.json` contents
+ *
+ * @returns parsed contents, or undefined when the text is not JSON
+ *
+ * @example
+ * ```ts
+ * parseManifestText({ text: '{"name":"\@scope/pkg"}' });
+ * ```
+ */
+function parseManifestText({ text, }: {
+  /**
+   * Manifest file contents.
+   */
+  readonly text: string;
+},): unknown {
+  try {
+    return JSON.parse(text,);
+  }
+  catch (error: unknown) {
+    l.debug(`manifest text rejected as malformed: ${String(error,)}`,);
+    return undefined;
+  }
+}
+
+/**
+ * Reduces manifest text to the package name and its declared shipping targets.
  *
  * Reads `exports` (skipping the source subpath keys), `main`, and `bin`. A
  * `null` export target flattens to nothing, so blocked subpaths contribute no
  * directory.
  *
- * @param manifest - parsed package manifest
+ * An `exports` object counts as a subpath map only when every key names a
+ * subpath. That distinguishes `{ '.': ... }` from a condition shorthand such as
+ * `{ types: ..., default: ... }`, and only the former carries source subpath
+ * keys worth skipping.
  *
- * @returns package-relative or absolute target specifiers, unfiltered
+ * @param text - `package.json` contents
+ *
+ * @returns package name and declared targets, or {@link MANIFEST_UNUSABLE}
  *
  * @example
  * ```ts
- * shippingTargets({ manifest });
+ * manifestFacts({ text: '{"name":"\@scope/pkg","main":"./dist/final/node/index.mjs"}' });
  * ```
  *
  * @internal
  */
-export function shippingTargets({ manifest, }: {
+export function manifestFacts({ text, }: {
   /**
-   * Parsed package manifest to read entries from.
+   * Manifest file contents.
    */
-  readonly manifest: PackageManifest;
-},): readonly string[] {
+  readonly text: string;
+},): ManifestFacts | typeof MANIFEST_UNUSABLE {
   /**
-   * Manifest entry fields that name something consumers load.
+   * Parsed manifest, kept local so no caller-owned value reaches the walk below.
    */
-  const {
-    exports: exportsField,
-    main,
-    bin,
-  } = manifest;
+  const parsed = parseManifestText({ text, },);
+  if (!isPackageManifest(parsed,))
+    return MANIFEST_UNUSABLE;
 
   /**
-   * Export targets, with the source subpath keys removed.
+   * Declared `exports` field, in whichever of its shapes was authored.
    */
-  const exportTargets = isSubpathMap(exportsField,)
+  const exportsField: unknown = parsed.exports;
+  /**
+   * Export entries, empty unless the field is an object worth keying.
+   */
+  const exportEntries = isRecordLike(exportsField,)
     ? Object.entries(exportsField,)
+    : [];
+  /**
+   * Whether every key names a subpath, which an array's numeric keys never do.
+   */
+  const keysAreSubpaths = (exportEntries.length > 0)
+    && exportEntries.every(function namesSubpath([key,],): boolean {
+      return key.startsWith('.',);
+    },);
+
+  /**
+   * Targets contributed by `exports`, with the source subpath keys removed.
+   */
+  const exportTargets = keysAreSubpaths
+    ? exportEntries
       .filter(function keepShippingKey([key,],): boolean {
         return (key !== SOURCE_EXPORT_KEY) && (!key.startsWith(SOURCE_EXPORT_PREFIX,));
       },)
@@ -187,45 +272,12 @@ export function shippingTargets({ manifest, }: {
       },)
     : stringTargets({ node: exportsField, },);
 
-  return [
-    ...exportTargets,
-    ...stringTargets({ node: main, },),
-    ...stringTargets({ node: bin, },),
-  ];
-}
-
-/**
- * Tests whether an `exports` value is a subpath map rather than a shorthand.
- *
- * A subpath map keys on `.`-prefixed paths; a condition map keys on names like
- * `types` or `default`. Only the former carries source subpath keys worth
- * skipping, and only its keys are safe to inspect for that purpose.
- *
- * Takes a positional parameter because a type predicate cannot reference a
- * destructured binding.
- *
- * @param node - `exports` field value
- *
- * @returns true when node is an object whose every key names a subpath
- *
- * @example
- * ```ts
- * isSubpathMap({ '.': './dist/final/node/index.mjs' });
- * ```
- */
-function isSubpathMap(node: unknown,): node is Record<string, unknown> {
-  if ((!isRecordLike(node,))
-    || Array.isArray(node,))
-  {
-    return false;
-  }
-  /**
-   * Declared keys, used to tell a subpath map from a condition map.
-   */
-  const keys = Object.keys(node,);
-  if (keys.length === 0)
-    return false;
-  return keys.every(function namesSubpath(key,): boolean {
-    return key.startsWith('.',);
-  },);
+  return {
+    name: parsed.name,
+    shippingTargets: [
+      ...exportTargets,
+      ...stringTargets({ node: parsed.main, },),
+      ...stringTargets({ node: parsed.bin, },),
+    ],
+  };
 }

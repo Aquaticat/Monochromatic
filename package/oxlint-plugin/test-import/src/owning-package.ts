@@ -21,7 +21,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { declaresBuildTask, } from './build-task.ts';
 import { eventualDirectories, } from './eventual-directory.ts';
-import { isPackageManifest, } from './package-manifest.ts';
+import {
+  MANIFEST_UNUSABLE,
+  manifestFacts,
+} from './package-manifest.ts';
 import { toPosixPath, } from './posix-path.ts';
 
 /**
@@ -77,34 +80,37 @@ export type OwningPackage = {
 const packageByDirectory = new Map<string, OwningPackage | typeof PACKAGE_UNRESOLVED>();
 
 /**
- * Reads and parses one candidate manifest, treating any failure as absence.
+ * Reads one candidate manifest, treating an unreadable file as empty.
+ *
+ * Empty text parses to nothing downstream, which is the same verdict a missing
+ * manifest deserves, so absence needs no separate signal.
  *
  * @param manifestPath - absolute path of the candidate manifest
  *
- * @returns parsed manifest contents, or undefined when unreadable or malformed
+ * @returns file contents, or an empty string when the file cannot be read
  *
  * @example
  * ```ts
- * readManifest({ manifestPath: '/repo/package/module/x/package.json' });
+ * readManifestText({ manifestPath: '/repo/package/module/x/package.json' });
  * ```
  */
-function readManifest({ manifestPath, }: {
+function readManifestText({ manifestPath, }: {
   /**
    * Absolute path of the candidate manifest.
    */
   readonly manifestPath: string;
-},): unknown {
+},): string {
   try {
     /* oxlint-disable no-restricted-syntax/no-sync -- Oxlint rule visitors run synchronously and expose no async hook to await a read from. */
-    return JSON.parse(readFileSync(
+    return readFileSync(
       manifestPath,
       'utf8',
-    ),);
+    );
     /* oxlint-enable no-restricted-syntax/no-sync */
   }
   catch (error: unknown) {
     l.debug(`manifest probe skipped for ${manifestPath}: ${String(error,)}`,);
-    return undefined;
+    return '';
   }
 }
 
@@ -127,15 +133,17 @@ function readPackageAt({ directory, }: {
   readonly directory: string;
 },): OwningPackage | typeof PACKAGE_UNRESOLVED {
   /**
-   * Parsed manifest contents; anything unnamed means this is not a package root.
+   * Manifest name and declared targets; anything unnamed means this is not a package root.
    */
-  const parsed = readManifest({
-    manifestPath: join(
-      directory,
-      MANIFEST_FILE,
-    ),
+  const facts = manifestFacts({
+    text: readManifestText({
+      manifestPath: join(
+        directory,
+        MANIFEST_FILE,
+      ),
+    },),
   },);
-  if (!isPackageManifest(parsed,))
+  if (facts === MANIFEST_UNUSABLE)
     return PACKAGE_UNRESOLVED;
 
   /**
@@ -144,51 +152,32 @@ function readPackageAt({ directory, }: {
   const root = toPosixPath({ path: directory, },);
   return {
     root,
-    name: parsed.name,
+    name: facts.name,
     buildsArtifact: declaresBuildTask({ packageRoot: directory, },),
     artifactDirectories: eventualDirectories({
       packageRoot: root,
-      manifest: parsed,
+      shippingTargets: facts.shippingTargets,
     },),
   };
 }
 
 /**
- * Records one lookup result for every directory the walk passed through.
- *
- * @param visited - directories walked past before the result was known
- *
- * @param result - resolved package facts or the unresolved sentinel
- *
- * @returns same result, so callers can return the call directly
- *
- * @mutates visited - none; the shared directory cache absorbs the entries
- *
- * @example
- * ```ts
- * return memoize({ visited, result });
- * ```
+ * Ancestor walk state, held in one holder so the function root needs no `let`.
  */
-function memoize({
-  visited,
-  result,
-}: {
+type AncestorWalk = {
   /**
-   * Directories walked past before the result was known.
+   * Directory currently under inspection.
    */
-  readonly visited: readonly string[];
+  directory: string;
   /**
-   * Resolved package facts or the unresolved sentinel.
+   * Whether more ancestors remain to inspect.
    */
-  readonly result: OwningPackage | typeof PACKAGE_UNRESOLVED;
-},): OwningPackage | typeof PACKAGE_UNRESOLVED {
-  for (const directory of visited)
-    packageByDirectory.set(
-      directory,
-      result,
-    );
-  return result;
-}
+  pending: boolean;
+  /**
+   * Verdict once the walk stops, defaulting to the unresolved sentinel.
+   */
+  result: OwningPackage | typeof PACKAGE_UNRESOLVED;
+};
 
 /**
  * Finds the package owning a file, memoizing every directory visited on the way.
@@ -211,15 +200,16 @@ export function owningPackage({ fileName, }: {
   readonly fileName: string;
 },): OwningPackage | typeof PACKAGE_UNRESOLVED {
   /**
-   * Directories walked past before a package root was found, memoized together.
+   * Directories walked past before the verdict was known, memoized together.
    */
   const visited: string[] = [];
   /**
    * Root-inclusive cursor whose pending flag becomes false after the filesystem root.
    */
-  const walk = {
+  const walk: AncestorWalk = {
     directory: dirname(fileName,),
     pending: true,
+    result: PACKAGE_UNRESOLVED,
   };
 
   while (walk.pending) {
@@ -227,28 +217,23 @@ export function owningPackage({ fileName, }: {
      * Memoized result for this directory, absent on first visit.
      */
     const cached = packageByDirectory.get(walk.directory,);
-    if (cached !== undefined)
-      return memoize({
-        visited,
-        result: cached,
-      },);
+    if (cached !== undefined) {
+      walk.result = cached;
+      walk.pending = false;
+      continue;
+    }
 
     /**
      * Package facts if this directory is a package root.
      */
     const found = readPackageAt({ directory: walk.directory, },);
+    visited.push(walk.directory,);
     if (found !== PACKAGE_UNRESOLVED) {
-      packageByDirectory.set(
-        walk.directory,
-        found,
-      );
-      return memoize({
-        visited,
-        result: found,
-      },);
+      walk.result = found;
+      walk.pending = false;
+      continue;
     }
 
-    visited.push(walk.directory,);
     /**
      * Parent used both as next candidate and as the filesystem-root identity check.
      */
@@ -257,8 +242,13 @@ export function owningPackage({ fileName, }: {
     walk.directory = parent;
   }
 
-  return memoize({
-    visited,
-    result: PACKAGE_UNRESOLVED,
-  },);
+  // Writing the verdict here rather than in a helper keeps the stored value a
+  // local one, so no borrowed state reaches the cache through a parameter.
+  for (const directory of visited)
+    packageByDirectory.set(
+      directory,
+      walk.result,
+    );
+
+  return walk.result;
 }

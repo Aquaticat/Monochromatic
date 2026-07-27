@@ -45,8 +45,10 @@ export {
 
 export {
   isPackageManifest,
+  type ManifestFacts,
+  manifestFacts,
+  MANIFEST_UNUSABLE,
   type PackageManifest,
-  shippingTargets,
   stringTargets,
 } from './package-manifest.ts';
 

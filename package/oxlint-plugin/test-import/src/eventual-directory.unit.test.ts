@@ -10,21 +10,21 @@ import { eventualDirectories, } from '../dist/final/node/index.mjs';
 const ROOT = '/repo/package/module/x';
 
 /**
- * Computes eventual directories for one manifest, sorted for stable comparison.
+ * Computes eventual directories for declared targets, sorted for stable comparison.
  *
- * @param manifest - manifest fields under test
+ * @param shippingTargets - specifiers a manifest declared as entries
  *
  * @returns sorted normalized directories
  *
  * @example
  * ```ts
- * directoriesOf({ name: '@scope/pkg' });
+ * directoriesOf(['./dist/final/node/index.mjs']);
  * ```
  */
-function directoriesOf(manifest: Parameters<typeof eventualDirectories>[0]['manifest'],): readonly string[] {
+function directoriesOf(shippingTargets: readonly string[],): readonly string[] {
   return eventualDirectories({
     packageRoot: ROOT,
-    manifest,
+    shippingTargets,
   },)
     .toSorted();
 }
@@ -35,41 +35,23 @@ await describe({
     it({
       name: 'always includes the default artifact root, even with no entries declared',
       fn: async () => {
-        expect(directoriesOf({ name: '@scope/pkg', },),).toEqual([`${ROOT}/dist/final`,],);
+        expect(directoriesOf([],),).toEqual([`${ROOT}/dist/final`,],);
       },
     },),
     it({
-      name: 'adds the directory holding a declared exports entry',
+      name: 'adds the directory holding a declared entry',
       fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          exports: { '.': './dist/final/node/index.mjs', },
-        },),).toEqual([
+        expect(directoriesOf(['./dist/final/node/index.mjs',],),).toEqual([
           `${ROOT}/dist/final`,
           `${ROOT}/dist/final/node`,
         ],);
       },
     },),
     it({
-      name: 'adds a main entry directory outside the default root',
+      name: 'adds an entry directory outside the default root',
       fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          main: 'dist/app/main.mjs',
-        },),).toEqual([
+        expect(directoriesOf(['dist/app/main.mjs',],),).toEqual([
           `${ROOT}/dist/app`,
-          `${ROOT}/dist/final`,
-        ],);
-      },
-    },),
-    it({
-      name: 'adds a bin entry directory',
-      fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          bin: { pkg: './dist/bin/cli.mjs', },
-        },),).toEqual([
-          `${ROOT}/dist/bin`,
           `${ROOT}/dist/final`,
         ],);
       },
@@ -77,56 +59,32 @@ await describe({
     it({
       name: 'never counts the bare dist root, so intermediate output stays rejected',
       fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          exports: { './font': './dist/Face-Regular.otf', },
-        },),).toEqual([`${ROOT}/dist/final`,],);
+        expect(directoriesOf(['./dist/Face-Regular.otf',],),).toEqual([`${ROOT}/dist/final`,],);
       },
     },),
     it({
       name: 'discards entries pointing into source',
       fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          main: './src/index.ts',
-          bin: { pkg: './src/cli.ts', },
-        },),).toEqual([`${ROOT}/dist/final`,],);
+        expect(directoriesOf([
+          './src/index.ts',
+          './src/cli.ts',
+        ],),).toEqual([`${ROOT}/dist/final`,],);
       },
     },),
     it({
       name: 'never counts the package root itself',
       fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          main: './index.mjs',
-        },),).toEqual([`${ROOT}/dist/final`,],);
-      },
-    },),
-    it({
-      name: 'skips the source subpath exports keys',
-      fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          exports: {
-            './ts': './src/index.ts',
-            './ts/*': './src/*',
-          },
-        },),).toEqual([`${ROOT}/dist/final`,],);
+        expect(directoriesOf(['./index.mjs',],),).toEqual([`${ROOT}/dist/final`,],);
       },
     },),
     it({
       name: 'deduplicates entries resolving to one directory',
       fn: async () => {
-        expect(directoriesOf({
-          name: '@scope/pkg',
-          exports: {
-            '.': {
-              types: './dist/final/node/index.d.mts',
-              default: './dist/final/node/index.mjs',
-            },
-            './extra': './dist/final/node/extra.mjs',
-          },
-        },),).toEqual([
+        expect(directoriesOf([
+          './dist/final/node/index.d.mts',
+          './dist/final/node/index.mjs',
+          './dist/final/node/extra.mjs',
+        ],),).toEqual([
           `${ROOT}/dist/final`,
           `${ROOT}/dist/final/node`,
         ],);

@@ -18,10 +18,6 @@
 import { dirname, } from 'node:path';
 
 import {
-  type PackageManifest,
-  shippingTargets,
-} from './package-manifest.ts';
-import {
   isUnderDirectory,
   resolvePosix,
   toPosixPath,
@@ -47,29 +43,29 @@ const BUILD_ROOT = 'dist';
  *
  * @param packageRoot - normalized absolute package root
  *
- * @param manifest - parsed manifest of that package
+ * @param shippingTargets - specifiers that package's manifest declares as entries
  *
  * @returns normalized absolute directories, always including the default artifact root
  *
  * @example
  * ```ts
- * eventualDirectories({ packageRoot: '/repo/package/module/x', manifest });
+ * eventualDirectories({ packageRoot: '/repo/package/module/x', shippingTargets: ['./dist/final/node/index.mjs'] });
  * ```
  *
  * @internal
  */
 export function eventualDirectories({
   packageRoot,
-  manifest,
+  shippingTargets,
 }: {
   /**
    * Normalized absolute package root.
    */
   readonly packageRoot: string;
   /**
-   * Parsed manifest of that package.
+   * Specifiers that package's manifest declares as entries.
    */
-  readonly manifest: PackageManifest;
+  readonly shippingTargets: readonly string[];
 },): readonly string[] {
   /**
    * Conventional build output root, eventual for every package that builds.
@@ -98,7 +94,7 @@ export function eventualDirectories({
    */
   const directories = new Set<string>([defaultRoot,],);
 
-  for (const target of shippingTargets({ manifest, },)) {
+  for (const target of shippingTargets) {
     /**
      * Declared entry resolved against the package root.
      */
