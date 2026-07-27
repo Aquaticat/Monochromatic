@@ -41,6 +41,10 @@ const config: OxlintConfig = defineConfig({
       'plugin-stylistic.mjs',
       import.meta.url,
     ).href,
+    new URL(
+      'plugin-test-import.mjs',
+      import.meta.url,
+    ).href,
   ],
 },);
 

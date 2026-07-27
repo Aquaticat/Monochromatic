@@ -280,4 +280,11 @@ export const restrictionRules: DummyRuleMap = {
 
   // TODO comments are tracked via issues, not lint.
   'eslint/no-warning-comments': 'off',
+
+  // Tests must reach their own package's behavior through the artifact that
+  // package ships, never through sibling source. Defects have previously
+  // survived the suite by existing only in built output, so a module tested
+  // through source proves nothing about what consumers load.
+  // See doc/planning/oxlint-test-import-eventual-artifact.md.
+  'test-import/require-eventual-artifact': 'error',
 };

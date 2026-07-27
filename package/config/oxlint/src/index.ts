@@ -49,6 +49,9 @@ const config: OxlintConfig = defineConfig({
 
     // TypeScript layout enforcement for per-line constructs, semicolons, and expression structure.
     new URL(import.meta.resolve('@monochromatic-dev/oxlint-plugin-stylistic/ts',),).pathname,
+
+    // Tests must import the artifact their package ships, not its source.
+    new URL(import.meta.resolve('@monochromatic-dev/oxlint-plugin-test-import/ts',),).pathname,
   ],
 },);
 
