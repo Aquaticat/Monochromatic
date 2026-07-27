@@ -109,6 +109,19 @@ export function collectionStructureClaim({
   const ownerName = owner
     .name
     .text;
+  // This accepts any default-library interface whose name starts with `Readonly`,
+  // which is broader than "one of the paired collection views" and is an assumption
+  // rather than a derivation. Measured at TypeScript 7.0.2, the default library
+  // declares exactly four: `ReadonlyArray`, `ReadonlyMap`, `ReadonlySet` and
+  // `ReadonlySetLike`. The first three are the paired views; `ReadonlySetLike`
+  // declares only `has`, `keys` and `size`, so it preserves structure too and the
+  // breadth costs nothing today.
+  //
+  // What would break it is a future library adding a `Readonly`-prefixed interface
+  // with a member that restructures its receiver. Nothing here would notice. The
+  // narrower test is to require the name minus the prefix to name a mutable
+  // default-library interface, which `ReadonlySetLike` would fail, so tightening
+  // means deciding what happens to a view with no mutable counterpart.
   if (ownerName.startsWith(READONLY_VIEW_INTERFACE_PREFIX,))
     return COLLECTION_STRUCTURE_PRESERVED;
   /**
