@@ -38,11 +38,12 @@ export const READONLY_VIEW_UNDISCHARGED: unique symbol = Symbol(
 );
 
 /**
- * One call argument whose semantic type resolved.
+ * One call argument whose semantic type resolved, kept at its own position.
  */
 type TypedArgument = {
   readonly argument: Expression;
   readonly argumentType: Type;
+  readonly argumentIndex: number;
 };
 
 /**
@@ -53,66 +54,106 @@ type OwnedObserver = TypedArgument & {
 };
 
 /**
+ * Sentinel when the member does not describe what an argument position receives.
+ */
+const OBSERVED_POSITIONS_UNAVAILABLE: unique symbol = Symbol(
+  'member signature does not describe observer parameter positions',
+);
+
+/**
  * Collects callback parameter positions carrying receiver-reachable state.
  *
- * TypeScript instantiates the member signature with the receiver's own type
- * argument, so the parameter types that expose receiver state are the identical
- * `Type` instances rather than merely equivalent ones. Both the element type and
- * the receiver type count: `forEach` hands the whole array to a third parameter,
- * which reaches the same state without touching an element parameter.
+ * Read from the member's own instantiated signature, never from how the observer
+ * annotates itself. TypeScript instantiates the member with the receiver's type
+ * arguments, so inside that signature the types exposing receiver state are the
+ * identical `Type` instances rather than merely equivalent ones. Both those
+ * arguments and the receiver type count: `forEach` hands the whole array to a
+ * third parameter, reaching the same state without any element parameter.
+ *
+ * The observer's own annotations cannot be used for this. A pre-declared
+ * function passed by reference, `states.map(operations.render)`, annotates its
+ * parameter independently, producing a structurally identical but distinct type
+ * that matches nothing. Matching against it silently found no position, and
+ * discharging on that emptiness dropped a real mutation.
  *
  * @param checker - TypeScript checker resolving parameter types.
  *
- * @param argument - Caller-supplied observer expression.
+ * @param call - Read-only view call whose member signature is authoritative.
  *
- * @param elementType - Receiver element type.
+ * @param argumentIndex - Position of observer among call arguments.
+ *
+ * @param elementTypes - Types the receiver view is instantiated over.
  *
  * @param receiverType - Receiver collection type.
  *
- * @returns parameter positions exposing receiver-reachable state.
+ * @returns positions exposing receiver state, or sentinel when undescribed.
  *
  * @example
  * ```ts
- * receiverReachableParameterIndexes({ checker, argument, elementType, receiverType });
+ * observedParameterIndexes({ checker, call, argumentIndex, elementTypes, receiverType });
  * ```
  */
-function receiverReachableParameterIndexes({
+function observedParameterIndexes({
   checker,
-  argument,
-  argumentType,
-  elementType,
+  call,
+  argumentIndex,
+  elementTypes,
   receiverType,
 }: {
   readonly checker: Checker;
-  readonly argument: Expression;
-  readonly argumentType: Type;
-  readonly elementType: Type;
+  readonly call: CallExpression;
+  readonly argumentIndex: number;
+  readonly elementTypes: readonly Type[];
   readonly receiverType: Type;
-},): readonly number[] {
+},): readonly number[] | typeof OBSERVED_POSITIONS_UNAVAILABLE {
   /**
-   * Call signatures exposed by observer argument.
+   * Member parameter symbol receiving observer at this position.
    */
-  const signatures = checker.getSignaturesOfType(
-    argumentType,
+  const memberParameter = checker.getResolvedSignature(call,)
+    ?.getParameters()[argumentIndex];
+  if (memberParameter === undefined)
+    return OBSERVED_POSITIONS_UNAVAILABLE;
+  /**
+   * Callback type the member declares for this position.
+   */
+  const declaredObserverType = checker.getTypeOfSymbolAtLocation(
+    memberParameter,
+    call.expression,
+  );
+  if (declaredObserverType === undefined)
+    return OBSERVED_POSITIONS_UNAVAILABLE;
+  // An optional member parameter, `toSorted(compareFn?)`, types as a union with
+  // `undefined`, which exposes no call signature at all. Strip it first, or every
+  // optional-observer member would look undescribed and stay opaque.
+  /**
+   * Declared callback type with any optionality removed.
+   */
+  const presentObserverType = checker.getNonNullableType(
+    declaredObserverType,
+  );
+  if (presentObserverType === undefined)
+    return OBSERVED_POSITIONS_UNAVAILABLE;
+  /**
+   * Call signature the member declares for this position.
+   */
+  const [declaredSignature,] = checker.getSignaturesOfType(
+    presentObserverType,
     SignatureKind.Call,
   );
-  /**
-   * Observer parameter symbols, absent when the argument exposes no signature.
-   */
-  const observerParameters = signatures[0]
-    ?.getParameters()
-    ?? [];
-  return observerParameters
+  if (declaredSignature === undefined)
+    return OBSERVED_POSITIONS_UNAVAILABLE;
+  return declaredSignature
+    .getParameters()
     .flatMap(function reachableParameter(
       parameterSymbol,
       observerParameterIndex,
     ): readonly number[] {
       /**
-       * Instantiated observer parameter type at this call.
+       * Instantiated member callback parameter type at this call.
        */
       const parameterType = checker.getTypeOfSymbolAtLocation(
         parameterSymbol,
-        argument,
+        call.expression,
       );
       // An unresolved parameter type counts as reachable: failing to prove a
       // position safe must widen what propagates, never narrow it.
@@ -120,8 +161,8 @@ function receiverReachableParameterIndexes({
        * Whether this position exposes state reachable from the receiver.
        */
       const reachable = (parameterType === undefined)
-        || (parameterType === elementType)
-        || (parameterType === receiverType);
+        || (parameterType === receiverType)
+        || elementTypes.includes(parameterType,);
       return reachable
         ? [observerParameterIndex,]
         : [];
@@ -178,21 +219,23 @@ export function readonlyViewElementApplications({
   const receiverType = checker.getTypeAtLocation(receiver,);
   if ((receiverType === undefined) || (!receiverType.isTypeReference()))
     return READONLY_VIEW_UNDISCHARGED;
+  // Every type argument counts, not just the first. `ReadonlyArray<T>` puts its
+  // element at 0, but `ReadonlyMap<K, V>` puts the key there and the value that
+  // callbacks receive at 1, so reading only position 0 misses map values.
   /**
-   * Type arguments instantiating the read-only view.
+   * Types the read-only view is instantiated over.
    */
-  const receiverTypeArguments = checker.getTypeArguments(receiverType,);
-  /**
-   * Element type behind the read-only view.
-   */
-  const [elementType,] = receiverTypeArguments;
-  if (elementType === undefined)
+  const elementTypes = checker.getTypeArguments(receiverType,);
+  if (elementTypes.length === 0)
     return READONLY_VIEW_UNDISCHARGED;
   /**
    * Every argument paired with its resolved type.
    */
   const typedArguments = [...call.arguments,]
-    .flatMap(function typedArgument(argument,): readonly TypedArgument[] {
+    .flatMap(function typedArgument(
+      argument,
+      argumentIndex,
+    ): readonly TypedArgument[] {
       /**
        * Argument type, absent when the checker cannot resolve it.
        */
@@ -202,6 +245,7 @@ export function readonlyViewElementApplications({
         : [{
           argument,
           argumentType,
+          argumentIndex,
         },];
     },);
   /**
@@ -245,6 +289,7 @@ export function readonlyViewElementApplications({
     .flatMap(function ownedObserver({
       argument,
       argumentType,
+      argumentIndex,
     },): readonly OwnedObserver[] {
       /**
        * Observer implementation, absent when it is not owned source.
@@ -259,27 +304,46 @@ export function readonlyViewElementApplications({
         : [{
           argument,
           argumentType,
+          argumentIndex,
           declaration,
         },];
     },);
   if (ownedObservers.length !== observers.length)
     return READONLY_VIEW_UNDISCHARGED;
+  /**
+   * Positions the member hands receiver state to, per observer.
+   */
+  const observedPositions = ownedObservers
+    .map(function positionsFor({ argumentIndex, },) {
+      return observedParameterIndexes({
+        checker,
+        call,
+        argumentIndex,
+        elementTypes,
+        receiverType,
+      },);
+    },);
+  if (observedPositions
+    .some(function undescribed(positions,): boolean {
+      return positions === OBSERVED_POSITIONS_UNAVAILABLE;
+    },))
+    return READONLY_VIEW_UNDISCHARGED;
   return ownedObservers
-    .map(function application({
-      argument,
-      argumentType,
-      declaration,
-    },): ElementApplication {
+    .map(function application(
+      { declaration, },
+      observerIndex,
+    ): ElementApplication {
+      /**
+       * Positions for this observer, already proven described above.
+       */
+      const positions = observedPositions[observerIndex];
       return {
         receiverParameterIndex,
         callbackKey: callableKey(declaration,),
-        callbackParameterIndexes: receiverReachableParameterIndexes({
-          checker,
-          argument,
-          argumentType,
-          elementType,
-          receiverType,
-        },),
+        callbackParameterIndexes: (positions === undefined)
+            || (positions === OBSERVED_POSITIONS_UNAVAILABLE)
+          ? []
+          : positions,
       };
     },);
 }
