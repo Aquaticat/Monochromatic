@@ -261,18 +261,34 @@ That attribution is correct, so the finding is not a reason to revert it.
 Whether the disagreement is a real contract gap in that package or a rule-side defect
 comparing bodyless overloads against an implementation is open.
 
-## Remaining work
+## What landed
 
-1. An iterative expression provenance resolver, work-stack rather than recursive per
-   `ITR`, covering property and element access, verified direct-value calls, parentheses
-   and assertions, and value-selecting expressions.
-   `??` matters specifically: `target.get(k) ?? new Set()` is a `BinaryExpression`, so a
-   resolver handling only calls would miss this package's own blocking shape.
-2. Delegating `expressionOrigins`, `rootParameterOrigins`, direct-write attribution and
-   call-argument extraction to that resolver, so extractors cannot disagree.
-3. Escape reporting at every sink listed under the sequencing constraint.
-4. Only then, changing `receiverClaimAnswerable` so a state-carrying result is answerable
-   when its relation is verified and the resolver represents it.
+All four steps of the plan below are built.
+The resolver is `effect-expression-provenance.ts`, both extractors delegate to it,
+`effect-result-escape.ts` enumerates the attributed positions so an unfamiliar construct
+counts as an escape, and `receiverClaimAnswerable` discharges a state-carrying result only
+when its relation is verified and no use of it leaves the callable.
+
+Measured on the self-hosting probe:
+`opaqueProvenanceByParameter.get` is discharged from all four of its findings and
+`summaries.get` from three of them.
+The four findings remain, blocked now by closure capture,
+by an argument claim about storing a caller-owned value,
+and by the deferred iterator member `summaries.values`.
+
+The discharge also exposed a defect it did not create.
+Its escape classifier treats a value sitting in an object literal handed to a call as
+attributed, on the grounds that the argument analysis walks such literals,
+and two things made that false: the walk filtered literal properties by the callee's
+authored contract names, and it could not read a value packaged behind an accessor.
+Both are recorded in `doc/decision/prefer-readonly-contract-name-narrowing.md`,
+together with a third defect in the same family that predates every provenance change.
+
+`directReturned` and `returnedParameterIndexes` have no consumer yet.
+The fact is recorded and the escape classifier still counts a return as an escape,
+so nothing rests on it; caller-side substitution is what would make it load-bearing.
+
+## Remaining work
 
 Iterator members remain separately unproven.
 `summaries.values` is a cause of the `effect-fixed-point-propagation.ts:37` finding, so

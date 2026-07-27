@@ -2,14 +2,15 @@
 
 `prefer-readonly-parameter-type` propagates a callee's effects to a caller by mapping each
 call argument to the caller parameters that argument packages.
-Two revisions of that mapping let a callee's own declarations decide the result,
-and each produced a `readonly` offer for a parameter the callee writes.
-Both are now removed.
-This document records what was measured, what the removal costs, and what would recover the cost.
+Three defects in that mapping each produced a `readonly` offer for a parameter the callee
+writes: two let a callee's own declarations decide the result, and one could not read a
+value at all.
+All three are fixed.
+This document records what was measured, what the fixes cost, and what would recover the cost.
 
 ## What was wrong
 
-Both defects have one shape underneath them.
+The first two share one shape underneath them.
 A single destructured object parameter gives every binding it introduces the same effect index.
 A callee written as `function f({ run, target }: { run: () => void; target: Row })` has one
 parameter, so `run` and `target` are both parameter zero,
@@ -66,6 +67,26 @@ Propagating mutation before invocation kept the write; propagating invocation fi
 A summary index built over one file in one order kept the write while the rule lost it,
 which is why the fixture's diagnostic count is what detects this defect and the summary
 assertions beside it only state the facts.
+
+### The unread property forms
+
+`parameterIndexes` enumerates the object-literal property forms whose value it can read
+directly: assignments, shorthand and spreads.
+An accessor has no such value.
+The callee obtains one by reading the property, which runs the accessor body in the
+caller's scope, so a parameter that body returns reached the callee while contributing no
+origin at all.
+
+Measured on `accessorPackagedEffect`, where `get unnamed() { return row; }` recorded
+`mutated=[]` and the rule offered `row` as readonly while the callee wrote `row.label`.
+The accessor body is now scanned for named bindings rather than evaluated,
+which over-approximates in the direction that withholds an offer instead of making one.
+
+Methods are deliberately excluded.
+A callee has to call a method, which is the closure-capture category rather than the
+packaging one, and including them changed exactly one summary across the 53-function
+propagation fixture: `passedContainerClosureSemanticEffect` gained honest opacity where
+the closure handling already records the write and no offer was ever at stake.
 
 ## Why the removal, and not a smaller change
 
