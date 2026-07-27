@@ -74,15 +74,19 @@ export function recordOpaqueBoundary({
    */
   const originLocation = effectOriginLocation({ node: call, },);
   /**
+   * Whether an unanswered receiver claim still carries caller-reachable state.
+   */
+  const receiverClaimOutstanding = (!receiverDerived)
+    && isPropertyAccessExpression(call.expression,)
+    && expressionCanCarryMutableState({
+      checker,
+      node: call.expression
+        .expression,
+    },);
+  /**
    * Caller parameters the unresolved receiver can hold.
    */
-  const receiverOrigins: ParameterOrigins = (!receiverDerived)
-      && isPropertyAccessExpression(call.expression,)
-      && expressionCanCarryMutableState({
-        checker,
-        node: call.expression
-          .expression,
-      },)
+  const receiverOrigins: ParameterOrigins = receiverClaimOutstanding
     ? rootParameterOrigins({
       checker,
       bindingOriginBySymbolId,

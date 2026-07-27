@@ -183,14 +183,56 @@ function registerBindingOrigins({
    * for the source binding, so a self-assignment (`cursor = cursor`) would otherwise
    * have one call iterating the same object another call is inserting into. */
   return [...parameterOrigins,]
-    .reduce(function registerOne(changed, parameterIndex,): boolean {
-      return registerBindingOrigin({
-        project,
-        name,
+    .reduce(
+      function registerOne(
+        changed,
         parameterIndex,
-        bindingOriginBySymbolId,
-      },) || changed;
-    }, false,);
+      ): boolean {
+        return registerBindingOrigin({
+          project,
+          name,
+          parameterIndex,
+          bindingOriginBySymbolId,
+        },) || changed;
+      },
+      false,
+    );
+}
+
+/**
+ * Tests whether an expression root is reachable from any callable parameter.
+ *
+ * @param project - TypeScript project resolving root symbol.
+ *
+ * @param bindingOriginBySymbolId - Known parameter and alias origins.
+ *
+ * @param node - Expression whose root may represent parameter state.
+ *
+ * @returns whether root carries at least one parameter origin.
+ *
+ * @example
+ * ```ts
+ * expressionHasParameterOrigin({ project, bindingOriginBySymbolId, node });
+ * ```
+ */
+export function expressionHasParameterOrigin({
+  project,
+  bindingOriginBySymbolId,
+  node,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly node: Node;
+},): boolean {
+  /**
+   * Origins resolved for expression root.
+   */
+  const origins = expressionOrigins({
+    project,
+    bindingOriginBySymbolId,
+    node,
+  },);
+  return origins.size > 0;
 }
 
 /**
@@ -226,9 +268,13 @@ export function discoverAliasOrigins({
   readonly forOfStatements: readonly ForOfStatement[];
   readonly bindingOriginBySymbolId: Map<number, Set<number>>;
 },): void {
-  /* Convergence state. Origins only ever grow, so `changed` settles on its own and
-   * the pass bound is a backstop rather than the actual terminator it was while
-   * origins could overwrite each other and oscillate. */
+  /**
+   * Convergence state, settling on its own now that origins only grow.
+   *
+   * The pass bound is a backstop rather than the actual terminator it was while
+   * origins could overwrite each other: an alias with two origins used to flip
+   * between them every pass and report progress each time.
+   */
   const state = {
     changed: true,
     pass: 0,

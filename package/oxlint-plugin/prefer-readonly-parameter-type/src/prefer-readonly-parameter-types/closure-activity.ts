@@ -18,7 +18,7 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
-  expressionOrigins,
+  expressionHasParameterOrigin,
 } from './effect-binding-origins.ts';
 import {
   callableKey,
@@ -208,11 +208,11 @@ export function activeCallableBodyNodes({
       && (node.operatorToken
         .kind
         === SyntaxKind.EqualsToken)
-      && (expressionOrigins({
+      && expressionHasParameterOrigin({
         project,
         bindingOriginBySymbolId,
         node: node.left,
-      },).size > 0)) {
+      },)) {
       activateEscapedCallables({
         project,
         node: node.right,
