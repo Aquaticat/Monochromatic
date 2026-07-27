@@ -176,6 +176,91 @@ stays at seven.
 The message-level suite passed identically with the resolver disabled, which is why the
 summary assertion exists.
 
+## Corrections from a source-bearing review, all measured
+
+An external review with every module pasted in found four defects. Three were in the
+landed resolver and are fixed; one predates this work entirely.
+
+### `&&` over-attributed, fixed
+
+`input && new Set()` credited `input` for a `Set` that is always freshly built.
+`&&` yields its left operand only when that operand is falsy, and no falsy value is a
+mutable object, so any object the expression produces came from the right operand.
+Following the left could only invent mutations, and a false mutation record withholds a
+read-only offer the parameter deserves.
+`&&` is now right-operand-only, alongside assignment and the comma operator;
+`??` and `||` keep both operands.
+
+### Runtime-transparent forms were missing, fixed
+
+`facts.get(key) as Set<string>` lost attribution entirely.
+`as`, angle-bracket assertions and `satisfies` erase at runtime, so the value is the
+operand's own.
+`await` stays out: thenable assimilation means an awaited value need not be the
+operand's, so admitting it would assert an identity nothing here proves.
+
+### Identity validation had a false negative, fixed
+
+`Map<string, A | B>.get` returns `A | B | undefined`, whose constituents are the two
+object types plus absence, while the receiver's held position is the union as one type
+object. Comparing flattened result constituents against the unflattened held type found
+nothing, because a union never appears among its own constituents.
+
+Both sides are now normalized and the test is a subset rather than an existential one,
+which is also stricter: a member returning `Labelled | string` would previously validate
+on the `Labelled` constituent alone, crediting the receiver for a result that may be a
+fresh primitive.
+
+### Computed member calls were invisible, fixed, and this one was unsound
+
+Pre-existing and unrelated to result provenance. The collection handling, the opaque
+boundary and the result relation each tested for a property-access callee, so
+`values['push']('appended')` fell through all three at once, nothing recorded the
+mutation, and the parameter was offered `readonly`.
+
+Applying that offer, checked against TypeScript 7.0.2:
+
+```text
+computed-applied.ts(2,10): error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+```
+
+The map-receiver form was quieter and worse: summary measured `mutated=[] opaque=[]`,
+so the rule saw nothing at all.
+
+`effect-member-call-receiver.ts` is now the one definition, accepting property and
+element access alike and unwrapping runtime-transparent callee wrappers, since which
+form the author wrote has no bearing on what receives the call.
+Measured after: `computedStructureEffect` `mutated=[0] opaque=[]`, and
+`computedLookupMutationEffect` `mutated=[0] opaque=[0]`.
+Reverting element-access acceptance restores the offer.
+
+### One review claim that did not survive measurement
+
+The review suggested `boundLookupMutationEffect` is masked, because it also calls
+`facts.set`, which would prove receiver mutation independently.
+Measured by disabling the call branch: all three assertions fail, so none is masked.
+That measurement also showed `facts.set(key, stored)` alone does not record `facts` as
+mutated, which is unexplained and recorded here rather than assumed benign.
+
+## Workspace effect across the increments
+
+Offers held at 35 in every sweep, so nothing in this task has added or removed a
+`readonly` suggestion in real code. Only opacity attribution moved.
+
+- 1,405 before result provenance.
+- 1,424 after the resolver, 19 new findings, the largest class being aliases through
+  `??` that previously carried no origin at all.
+- 1,451 after the transparent forms, 27 more.
+
+Four of that last group are a different diagnostic class and are not yet understood:
+`Mutation contracts disagree across callable signatures` at `pipe.ts:147`,
+`piped.ts:156`, `pipe-async.ts:147` and `piped-async.ts:156`.
+Bisected to the transparent-form handling, 4 with it and 0 without, traced to
+`package/module/pipe/src/run.ts:51`, `const callableArgs = args as RunCallableArgs`.
+That attribution is correct, so the finding is not a reason to revert it.
+Whether the disagreement is a real contract gap in that package or a rule-side defect
+comparing bodyless overloads against an implementation is open.
+
 ## Remaining work
 
 1. An iterative expression provenance resolver, work-stack rather than recursive per
