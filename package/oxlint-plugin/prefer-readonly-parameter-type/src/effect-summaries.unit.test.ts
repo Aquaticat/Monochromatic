@@ -276,8 +276,8 @@ await describe({
           },
           {
             functionName: 'arrayCallbackSemanticEffect',
-            mutated: [],
-            opaque: [0,],
+            mutated: [0,],
+            opaque: [],
           },
           {
             functionName: 'aliasedCallbackSemanticEffect',
@@ -302,7 +302,7 @@ await describe({
           {
             functionName: 'primitiveArraySortObservationEffect',
             mutated: [],
-            opaque: [0,],
+            opaque: [],
           },
           {
             functionName: 'textEncoderObservationEffect',
@@ -312,7 +312,7 @@ await describe({
           {
             functionName: 'objectArraySortCallbackEffect',
             mutated: [],
-            opaque: [0,],
+            opaque: [],
           },
           {
             functionName: 'plainArrayDefaultSortObservationEffect',
