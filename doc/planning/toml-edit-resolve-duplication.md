@@ -62,9 +62,13 @@ that each caller replays against its own entry point.
 
 - Type check: no errors in any source file.
 - Tests: `//package/module/toml-edit:test:unit` passes in full, all test groups green.
+- Lint: see the lint section.
 - `locateBlock` drops from 214 to 85 body nodes.
 - Predicate cluster `5a49fd1193d3` disappears entirely.
 - Repo-wide similarity ratio excluding exact copies falls from 10.88% (807 of 7419) to 10.81% (802 of 7417).
+- `resolve-document.ts` grows from 277 to 293 total lines,
+  which stays clear of the `eslint/max-lines` cap of 300 because that cap skips blanks and comments.
+  No `max-lines` finding was emitted.
 
 ### Variant B: callback entry point
 
@@ -75,6 +79,29 @@ collapsing each caller's tail to a single return statement.
 - Tests: passes in full, exit status zero.
 - `locateBlock` drops to 63 body nodes; `locateValueNode` to 71.
 - Same clustering outcome and same repo-wide similarity ratio as variant A.
+
+### Lint
+
+`//package/module/toml-edit:lint:oxlint` with type-aware rules,
+comparing unmodified `HEAD` against variant A in the same worktree.
+
+Absolute totals are polluted by test-file noise:
+the worktree cannot resolve the package's own name (`@monochromatic-dev/module-toml-edit`),
+so type-aware rules see `error` types throughout the test files.
+Only the delta and the per-file findings are meaningful.
+
+- Control: 326 warnings, 146 errors.
+- Variant A: 326 warnings, 143 errors.
+- Findings citing `resolve-block.ts` or `resolve-document.ts`:
+  seven `prefer-readonly-parameter-types` before, four after, and no new rule classes.
+
+The first draft of variant A did introduce one finding,
+`eslint(no-duplicate-imports)`,
+by importing `TableSectionHit` from `resolve-document.ts` on a separate `import type` line
+from the `matchTableSection` and `NOT_LOCATED` value import.
+The fix is a single combined import using an inline `type` specifier,
+matching the existing convention in `parse-toml-edit.ts`.
+All figures reported here are after that fix.
 
 ### Residual in both variants
 
