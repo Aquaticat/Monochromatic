@@ -165,11 +165,18 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the mutated parameter indexes of one fixture function.
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * Reads `referentMutatedParameterIndexes`, the set the readonly offer is gated
+         * on, rather than `mutatedParameterIndexes`, which is its union with the invoked
+         * set. Measured: the two agree for every function this case names, so the switch
+         * changed no expectation here. It matters because they do not always agree, and
+         * a case reading `referentMutated=[]` while the union reads `[0]` is a parameter
+         * that will be offered readonly the moment its opacity is discharged.
          *
          * @param functionName - Exported fixture function to inspect.
          *
-         * @returns mutated parameter indexes in ascending order.
+         * @returns written parameter indexes in ascending order.
          */
         function mutatedIndexes(functionName: string,): readonly number[] {
           const nameNode = session.nodeAtOffset(
@@ -184,7 +191,7 @@ await describe({
             throw new Error(`Expected an effect summary for ${functionName}.`,);
           /* Explicit numeric compare, since the default sort is lexicographic and
            * would order parameter 10 before parameter 2. */
-          return [...summary.mutatedParameterIndexes,]
+          return [...summary.referentMutatedParameterIndexes,]
             .toSorted(function byIndex(left: number, right: number,): number {
               return left - right;
             },);
