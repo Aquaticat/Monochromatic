@@ -1161,6 +1161,31 @@ medium over-covers at 11. If small=9 counts as "~10" (it must, given the
 deprioritization), large=9 counts equally -- so 9/11/9 is a defensible "~10/10/
 10". Advisor consulted on whether to declare the bar met + run the FINAL draw,
 or push one more for large=10. No run 031 launched pending that call.
+PASS 7 RUN 014 (2026-07-26, tip `6a381eb3c`, 15401163 ms ~257 min): FOUR
+settled, 19/92, bands 6 small / 7 medium / 6 large. Huasheng repaired (LARGE,
+249 issues, 245 accepted, 240 resolved, 33 findings, resuming its cached
+slices), Katerina (45/44/44, 0 findings), Barron12312 (33/33/33, 1 finding),
+Kotori (97/94/94, 7 findings). LCG_Akiball aborted at the 90 min entry cap with
+slices cached for a later run.
+THE DEADLINE RAISE IS CONFIRMED BY THE MEASUREMENT THAT MOTIVATED IT, which is
+the cleanest result of the day. At 240 s, run 013 cut 35 of 783 calls (4.5
+percent) and spent 7 retry rounds. At 360 s, run 014 cut 4 of 768 (0.5 percent)
+and spent 1 retry round. Voice loss followed: 1 short-handed stage of 86, versus
+4 of 85. The user's hypothesis that the deadline was truncating real work was
+correct, and the earlier conclusion against it was wrong.
+THE TAIL IS NOW FULLY OBSERVED RATHER THAN CLIPPED. Over 764 sampled calls,
+time to first byte ran p50 55_229 ms, p90 196_881 ms, p95 248_239 ms, p99
+301_951 ms, max 347_099 ms. FORTY-FOUR calls finished between 240 s and 347 s,
+every one of which the old deadline would have killed. The counts taper
+properly to zero now (44 at or past 240 s, 22 past 270 s, 9 past 300 s, 1 past
+330 s, 0 past 360 s), where at 240 s the distribution was still dense at the
+cut. 360_000 is therefore not merely better but SUFFICIENT: nothing reached it.
+SIDE FINDING, and a second vindication of retiring the idle guard: the largest
+mid-stream gap in run 014 was 43_845 ms, with p99 at 22_961 ms. The retired 30 s
+window would have killed healthy streams outright, not merely come close. Gap
+maxima keep growing with sample size (733 ms at 6 streams, 24_673 ms at 32,
+43_845 ms at 764), which is the same sample-maximum-is-not-a-bound lesson
+arriving a third time.
 PASS 7 RUN 013 (2026-07-26, tip `065ab5bcf`, 15521985 ms ~259 min): FIVE
 settled, 15/92, bands 5 small / 5 medium / 5 large, dead even and halfway to the
 ~10/10/10 bar. Futajuhuacha repaired at last (LARGE, 214 issues, 211 accepted,
