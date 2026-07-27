@@ -330,6 +330,12 @@ await describe({
         const invokedMiddle = mutatedIndexes('middleInvokedExclusionEffect',);
         /** The same write one call further out. */
         const invokedOuter = mutatedIndexes('outerInvokedExclusionEffect',);
+        /** Parameter packaged behind an object-literal getter. */
+        const accessorPackaged = mutatedIndexes('accessorPackagedEffect',);
+        /** Parameter packaged through a spread of a local object. */
+        const spreadPackaged = mutatedIndexes('spreadPackagedEffect',);
+        /** Parameter reached by accessors nested one literal deeper. */
+        const nestedAccessor = mutatedIndexes('nestedAccessorPackagedEffect',);
         /** Function that only reads what it looks up, as a negative control. */
         const readOnly = mutatedIndexes('readOnlyLookupEffect',);
         closeSemanticBridge();
@@ -378,8 +384,18 @@ await describe({
         expect(invokedBeside,).toEqual([0,],);
         expect(invokedMiddle,).toEqual([0,],);
         expect(invokedOuter,).toEqual([0,],);
-        /* The control that keeps every assertion here from passing vacuously: nothing in
-         * these two changes may credit a parameter that is only read. */
+        /* The third form the argument walk could not see. A property assignment, a
+         * shorthand and a spread all expose a value the walk reads; an accessor computes
+         * one by running its body when the callee reads the property, so a parameter it
+         * returns reached the callee while contributing no origin. Deleting the accessor
+         * branch from `parameterIndexes` empties the first of these and offers `row`
+         * readonly again, and the spread beside it is the neighbour proving the walk was
+         * not simply blind to everything that is not a plain property. */
+        expect(accessorPackaged,).toEqual([0,],);
+        expect(spreadPackaged,).toEqual([0,],);
+        expect(nestedAccessor,).toEqual([0,],);
+        /* The control that keeps every assertion here from passing vacuously: none of
+         * these changes may credit a parameter that is only read. */
         expect(readOnly,).toEqual([],);
       },
     },),

@@ -11,6 +11,7 @@ import {
 } from 'typescript/unstable/sync';
 import type { Node, } from 'typescript/unstable/ast';
 import {
+  isAccessorDeclaration,
   isArrayLiteralExpression,
   isIdentifier,
   isObjectLiteralExpression,
@@ -21,6 +22,7 @@ import {
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 
+import { accessorPackagedOrigins, } from './effect-accessor-origins.ts';
 import { expressionValueOrigins, } from './effect-expression-provenance.ts';
 import {
   expressionCanCarryMutableState,
@@ -184,8 +186,26 @@ export function parameterIndexes({
           return;
         }
         if (isSpreadAssignment(property,)
-          && (includedPropertyNames === ALL_PACKAGED_PROPERTIES))
+          && (includedPropertyNames === ALL_PACKAGED_PROPERTIES)) {
           collect(property.expression,);
+          return;
+        }
+        if (!isAccessorDeclaration(property,))
+          return;
+        /* An accessor has no property value to read: the callee obtains one by reading
+         * the property, which runs this body in the caller's scope. Scanning it for named
+         * bindings covers that without claiming to know which value comes back. A method
+         * is left to the closure handling instead, since the callee has to call it and
+         * `passedContainerClosureSemanticEffect` measured that including methods here
+         * changes only where that handling already records the write. */
+        accessorPackagedOrigins({
+          project,
+          bindingOriginBySymbolId,
+          accessor: property,
+        },)
+          .forEach(function collectAccessor(origin,): void {
+            origins.add(origin,);
+          },);
         },);
       return;
     }

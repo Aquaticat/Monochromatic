@@ -753,3 +753,75 @@ export function invokedExclusionDirectEffect(row: LabelledRow,): void {
     target: row,
   },);
 }
+
+/**
+ * Packages a parameter behind an object-literal getter.
+ *
+ * The argument walk reads literal properties and spreads. A getter's value comes from
+ * running its body, so a parameter returned by one reaches the callee without ever
+ * appearing as a property value the walk can see.
+ *
+ * @param row - Row the callee writes, reachable only through an accessor body.
+ *
+ * @example
+ * ```ts
+ * accessorPackagedEffect({ label: '' });
+ * ```
+ */
+export function accessorPackagedEffect(row: LabelledRow,): void {
+  mutateBeyondContractRow({
+    named: { label: '', },
+    get unnamed(): LabelledRow {
+      return row;
+    },
+  },);
+}
+
+/**
+ * Packages a parameter through a spread of a local object.
+ *
+ * Companion shape: the value reaches the callee through a spread rather than a named
+ * property, which the walk is documented to follow.
+ *
+ * @param row - Row the callee writes, reached through a spread.
+ *
+ * @example
+ * ```ts
+ * spreadPackagedEffect({ label: '' });
+ * ```
+ */
+export function spreadPackagedEffect(row: LabelledRow,): void {
+  mutateBeyondContractRow({
+    named: { label: '', },
+    ...{ unnamed: row, },
+  },);
+}
+
+/**
+ * Packages a parameter behind accessors nested one literal deeper.
+ *
+ * Neighbour of `accessorPackagedEffect` checking that the accessor handling is reached
+ * wherever a literal is walked rather than only at the argument's top level, and that a
+ * setter writing straight through to a parameter counts as much as a getter reading from
+ * one.
+ *
+ * @param row - Row both accessors reach.
+ *
+ * @example
+ * ```ts
+ * nestedAccessorPackagedEffect({ label: '' });
+ * ```
+ */
+export function nestedAccessorPackagedEffect(row: LabelledRow,): void {
+  mutateBeyondContractRow({
+    named: { label: '', },
+    unnamed: {
+      get label(): string {
+        return row.label;
+      },
+      set label(next: string,) {
+        row.label = next;
+      },
+    },
+  },);
+}
