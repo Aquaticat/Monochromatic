@@ -1415,19 +1415,29 @@ into two timing cohorts and could have widened the very gap just cleared.
 Short-handed stages over every `critic stage:` and `panel stage:` line:
 round one 56 of 724 (7.7 percent); round two under 240 s, pass-7 runs 001 to
 013, 17 of 305 (5.6 percent); round two under 360 s, pass-7 runs 014 onward,
-3 of 149 (2.0 percent). The trend still points the optimistic way and is still
-too small to manufacture the improvement the gate needs, but it is now a
-GRADIENT ACROSS round two rather than one flat rate, so the round-two verdict
-must report both sub-rates, not their average.
-Do NOT read the call-level timeout rate as the deadline's doing. Per-run rates
-are 4.8 percent at 240 s (run 013, 36 of 748) against 0.65, 2.19, and 6.49
-percent at 360 s (runs 014, 015, 017). The spread WITHIN the 360 s cohort is
-wider than the gap between cohorts, so provider load dominates this statistic
-and a single run cannot be quoted as a before or after. What the longer
-deadline demonstrably buys is at the STAGE level: run 017 took the cohort's
-worst call-level rate, 10 timeouts in 154 calls, and still lost only 1 stage of
-17, because the extra headroom let the retries land. Voice retention is the
-measurement that survives; call survival is weather.
+3 of 149 (2.0 percent). The 5.6 against 2.0 POOLED COMPARISON IS NOT EVIDENCE
+that the longer deadline retains voices, and must not be quoted as if it were.
+Per-run rates in the 240 s cohort are 0, 0, 0, 0, 0, 0, 4.5, 4.7, 8.3, 8.3,
+13.6, 14.2, and 20.0 percent, against 1.1, 2.1, and 5.5 percent at 360 s. Every
+360 s run falls INSIDE that spread and six 240 s runs beat all three of them,
+so the pooled gap is driven by runs 011, 012, and 002 rather than by the
+deadline. Three runs cannot outvote thirteen on a statistic whose per-run
+spread is this wide.
+The same disqualification applies to the call-level timeout rate: 4.8 percent
+at 240 s (run 013, 36 of 748) against 0.65, 2.19, and 6.49 percent at 360 s
+(runs 014, 015, 017), where the spread within the 360 s cohort again exceeds
+the gap between cohorts. Provider load dominates both statistics, and no single
+run is quotable as a before or after.
+What survives is one WITHIN-RUN observation, which holds load roughly fixed
+instead of comparing across it: run 017 drew the cohort's worst call-level rate,
+10 timeouts in 154 calls, yet lost only 1 stage of 18, because the extra
+headroom let its retries land. That is consistent with the deadline buying voice
+retention and is the mechanism to watch, but it is a single run and is NOT
+demonstration. For the confound the gate actually cares about, the honest
+statement is narrower and still sufficient: every round-two sub-rate sits at or
+below round one's 7.7 percent, so panel coverage did not DEGRADE between rounds
+and cannot have manufactured a precision improvement. Report both sub-rates and
+this reasoning with the round-two verdict; claim no deadline effect.
 PASS 7 RUN 011 (2026-07-26, 5400002 ms = the full 90 min): ZERO settled, still
 10/92. Futajuhuacha (LARGE, 5448 B, 3 chunk pairs, 22 slices) ABORTED at the
 hard cap having adjudicated chunks 0 through 10, and 11 of its 22 slices are
