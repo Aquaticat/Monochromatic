@@ -130,10 +130,25 @@ export type RunCallConfig = {
  * Call-timing configuration stamped into every artifact this pass writes.
  *
  * The pool it labels is deliberately MIXED, by a decision the user made twice:
- * keep already-settled entries rather than discard the compute, and let the
- * stamp make the cost measurable instead of merely accepted. Precision can be
- * split by cohort at analysis time, so a confound becomes a number rather than
- * an unknown.
+ * keep already-settled entries rather than discard the compute.
+ *
+ * An earlier version of this note promised more than the stamp can deliver: it
+ * said precision could be split by cohort at analysis time, turning the
+ * confound into a number. RETRACTED, because the arithmetic does not support
+ * it. The graded sample is 50 items and the pool at the coverage bar is about
+ * 30 entries split near evenly between cohorts, so a per-cohort precision
+ * estimate rests on roughly 25 graded items and carries a standard error near
+ * 8 points. A difference small enough to matter cannot resolve at that width,
+ * and the binding constraint is human grading effort, not compute, so widening
+ * the sample to the several hundred per cohort that would resolve it is not
+ * available. Claiming the number anyway would repeat the exact error retracted
+ * from the panel-coverage analysis: pooling across a noisy dimension and
+ * reading the result as signal.
+ *
+ * What the stamp is still for: identifying which cohort any artifact came from,
+ * so the mixed pool is disclosed QUALITATIVELY with the verdict rather than
+ * left unstated, and so a later analysis over a larger graded set is possible
+ * if one is ever funded.
  *
  * Three cohorts exist in the round-two pool, and the first two are equivalent
  * for call timing even though they look different:
