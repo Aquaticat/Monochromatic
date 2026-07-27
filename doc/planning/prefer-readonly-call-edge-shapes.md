@@ -1,14 +1,14 @@
-# Call-edge shapes that still offer a written parameter
+# Call-edge shapes that offer a written parameter
 
 `prefer-readonly-parameter-type` maps a callee's effects onto a caller through one edge per
 call.
  Nine shapes were measured where that mapping loses a write,
  and the rule then offers
 `readonly` for a parameter the callee writes.
- Two are fixed.
+ Seven are fixed and two remain.
  This document records all
 nine,
- what each needs,
+ what each needed,
  and the three hypotheses from the same review that did not
 reproduce.
 
@@ -64,44 +64,42 @@ the packaged-callable scan asked for the wrong symbol.
 `parameterIndexes` already asks for the value symbol where it walks shorthands directly;
 the scan now does the same.
 
+### Rest and spread broke the index relation
+
+A rest formal now collects every actual from its own position onward,
+ and past a spread every later formal may receive the spread or anything after it.
+`effect-formal-actual-mapping.ts` computes the whole relation,
+ and all five formal-indexed arrays derive from it,
+ which subsumes the `this` padding rather than special-casing it.
+
+Two asymmetries there are deliberate.
+A formal counts as foreign only when every actual that can fill it carries the marker,
+ because a foreign formal suppresses the offer.
+A callback identity is recorded only where exactly one actual fills the formal,
+ so a rest or post-spread formal reports none and propagates invocation as unresolved.
+
+Fixing the mapping was not enough on its own:
+ `call.arguments` holds the spread element itself and the structural checks test for
+ literal kinds,
+ so a spread of an array literal packaged nothing.
+The walk now sees through spread elements and through parentheses,
+ non-null,
+ assertion and satisfies wrappers.
+
+### Parameter defaults and initializers were not walked
+
+A default initializer naming an earlier parameter makes the two aliases,
+ so both indexes now answer for a write through the later name.
+Defaults inside binding patterns are still unrepresented,
+ which `bindingOriginsFor` states.
+
+Parameter initializers now join both the origin-discovery walk and the inspected set.
+They join the inspected set unconditionally rather than through the closure selection,
+ because they are not nested callables and nothing about them is deferred.
+Adding them to the origin walk alone was measured insufficient,
+ which is how the separately built inspected set came to light.
+
 ## Open
-
-### Rest and spread break the index relation
-
-A rest formal must receive the union of every remaining actual.
-`mutateSecondRest(...rows)` records its write on formal zero while the caller's parameter
-sits at edge index one,
- so `restEdgeEffect` is offered `readonly`.
-
-A spread actual covers several formals.
- `mutateSecond(_first, second)` records on formal
-one while `spreadEdgeEffect` has a single syntactic spread argument.
- Expand the spread when
-the tuple length is known,
- and map conservatively to every candidate formal otherwise.
-
-`TQ1` forbids rest parameters in code we control,
- so the rest half is mostly about
-third-party and default-library callees,
- while the spread half applies to our own code.
-
-### Parameter defaults and initializers are not walked
-
-`mutateDefaultAlias(primary, alias = primary)` writes `alias`,
- records only formal one,
-and offers `primary`.
- The conservative summary is both formals,
- because an omitted or
-`undefined` `alias` refers to `primary`.
- `defaultAliasEffect` is the caller side:
- an
-omitted argument leaves `arguments[1]` absent,
- so the write reaches nobody even once the
-callee records it.
-
-`defaultInitializerEffect` reaches a mutating call from a parameter initializer rather than
-a body,
- which a summary walk bounded by the body never sees.
 
 ### A setter can write the value assigned through it
 
@@ -189,3 +187,53 @@ One caveat on the word every:
  the sweep loses one program to the upstream panic recorded in
 `doc/troubleshooting/typescript-go-tuple-type-panic.md`,
  so that program's propagation never runs far enough to reach the guard either way.
+
+## What the two remaining fixes would cost here
+
+Both were measured rather than estimated,
+ and both come out at zero for this repository.
+
+For the overridden method,
+ no real method here is overridden.
+Counted across `.ts` outside `dist` and `node_modules`:
+ 145 class declarations,
+ 117 with a heritage clause,
+ and 6 `override` members.
+Of the 117,
+ 73 are `extends Error` and 34 are `extends HTMLElement`.
+Of the 6,
+ five are `public override readonly name` overriding `Error.name`,
+ a property,
+ and the sixth is this fixture's own.
+So the precise fix changes nothing here,
+ and the blunt variant that treats every method call on a class-typed receiver as
+ unresolved is the only one with a cost and is unnecessary.
+
+For the setter,
+ the blunt variant would touch 992 property assignments of the form
+`a.b = c`,
+ because no static test inside the callee can see an accessor the caller supplied.
+Against that,
+ the repository declares 12 `set` accessors,
+ two files of which are these fixtures and one a paused package.
+The three real ones all take a primitive and write `this` rather than their parameter,
+ so `expressionCanCarryMutableState` already excludes them.
+
+Value in both cases is correctness for consumers of the rule rather than findings here.
+
+## Sweeps
+
+Repository-wide `mise run lint:oxlint`,
+ each on a clean tree,
+ compared by offer identity
+rather than by count,
+ since one addition and one withdrawal cancel numerically:
+
+- 1451 findings and 35 offers before any of this session's work.
+- 1850 and 23 after the propagation-bound guard.
+- 1859 and 23 after the formal-to-actual mapping.
+- 1859 and 23 after the parameter-default work,
+   with the offer set identical.
+
+No offer was added or withdrawn across the call-edge work,
+ and the propagation-bound failure is raised nowhere.
