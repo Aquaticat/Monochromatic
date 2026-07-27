@@ -1,16 +1,16 @@
-# `prefer-readonly-parameter-types` reports every ECMAScript intrinsic call as unresolved, 136 errors in one package
+# `prefer-readonly-parameter-types` reports every ECMAScript intrinsic as opaque, 1,661 workspace findings
 
-Status: root cause not yet localized. The confirming test is named under "What would settle it".
+Status: root cause identified. The findings are the intended output of the catalog-free fail-closed architecture,
+whose workspace-wide migration was never completed. Not an accidental regression, and not an upstream bug.
 
-Last verified: 2026-07-27, with `@oxlint/plugins` 1.75.0 and `typescript` 7.0.2 installed.
+Last verified: 2026-07-27, with `@oxlint/plugins` 1.75.0 and `typescript` 7.0.2.
 
 ## Symptom
 
-`mise run //package/module/toml-edit:lint:oxlint` reports 136 errors, every one from the project-owned rule
-`prefer-readonly-parameter-type(prefer-readonly-parameter-types)`.
-The flagged calls are ordinary ECMAScript intrinsics.
+Any package-scoped lint reports errors from the project-owned rule
+`prefer-readonly-parameter-type(prefer-readonly-parameter-types)` on ordinary ECMAScript intrinsic calls.
 
-Verbatim, for `package/module/toml-edit/src/path-prefix.ts`:
+For `package/module/toml-edit`, 136 errors, every one from this rule. Verbatim:
 
 ```text
 x prefer-readonly-parameter-type(prefer-readonly-parameter-types): The function input named "left" is used as the
@@ -24,31 +24,76 @@ This rule cannot inspect enough of those calls to know what they might change.
 
 The same shape appears for `blocks.filter`, `path.slice`, `Object.entries`, `String`, and `Error.isError`.
 
-This is not confined to `toml-edit`.
-`package/module/caught-value` is 38 lines of source whose only calls are `Error.isError` and `String`,
-and it reports two errors of the same class:
+It is not package-specific. `package/module/caught-value` is 38 lines whose only calls are `Error.isError` and
+`String`, and it reports two errors of the same class.
+
+Workspace-wide, from `mise run lint:oxlint` at the repository root on 2026-07-27:
 
 ```text
-x prefer-readonly-parameter-type(prefer-readonly-parameter-types): The function input named "value" is used by these
-calls: Error.isError [.../caught-value/src/index.ts:55], String [.../caught-value/src/index.ts:57].
+Found 3902 warnings and 2329 errors.
+Finished in 530.7s on 2670 files with 479 rules using 16 threads.
 ```
 
-## Why this reads as a regression
+Of those, 1,661 findings are this rule. The next most frequent rule is `no-unsafe-member-access` at 754.
 
-`doc/planning/replace-prefer-readonly-parameter-types.md` records the migration acceptance gate, dated 2026-07-14:
+## Root cause
 
-> Final single-worker root process `proc_367` ran `OXLINT_THREADS=1 mise run lint:oxlint` over 2,548 files in
-> 816.5 seconds. It reported 3,792 warnings and 665 errors from existing non-readonly workspace findings.
-> Its captured output contains zero occurrences of the replacement rule ID, `SemanticBridgeError`,
-> the omitted-owned-callable failure, or `context canceled`.
+The rule was deliberately made catalog-free and fail-closed on 2026-07-22 and 2026-07-23.
+`doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md:55-57` states the governing constraint:
 
-The documented steady state is therefore zero findings from this rule across the whole workspace.
-The current state is at least 136 in one package and two in a 38-line package,
-so something between that gate and now changed the rule's ability to resolve intrinsic effects.
+> The requested architecture must not recover speed by trusting handwritten external-effect catalogs.
+> An unresolved effect must be derived,
+> contained by a verified isolation boundary,
+> or reported as opaque.
 
-## Version skew present in the working tree
+`Array.prototype.every`, `String`, and `Error.isError` have no repository-owned implementation to derive from,
+cannot be placed inside a verified isolation boundary at the call site,
+and are no longer covered by a catalog. They are therefore reported as opaque, exactly as designed.
 
-The installed toolchain does not match the committed lockfile:
+The same commit series recognised this and responded by exempting only one directory.
+`package/config/oxlint/src/overrides.ts:255-270`, added by `32a06a75b` on 2026-07-23, says so in its own words:
+
+```ts
+/**
+ * The effect rule cannot soundly use its own strict opacity policy to prove
+ * ECMAScript collections, TypeScript semantic handles, or Oxlint's host context.
+ * Self-application would require precisely the handwritten host authorities the
+ * rule forbids. Other rules remain active for its implementation and tests.
+ */
+const readonlyEffectSelfHostingOverride = {
+  files: [
+    '**/oxlint-plugin/prefer-readonly-parameter-type/**',
+  ],
+  rules: {
+    'prefer-readonly-parameter-type/prefer-readonly-parameter-types': 'off' as const,
+  },
+} satisfies OxlintOverride;
+```
+
+"Cannot soundly use its own strict opacity policy to prove ECMAScript collections" is the whole finding.
+That statement is true of every package in the workspace, not only of the rule's own implementation.
+The exemption was scoped to `**/oxlint-plugin/prefer-readonly-parameter-type/**` and nothing else,
+so the remaining 142 workspace projects inherit the strict policy with no way to satisfy it.
+
+The audit records the architecture decision and the performance gates but does not mention the
+workspace-wide finding count, so this consequence is currently untracked.
+
+## An earlier reading was wrong
+
+`doc/planning/replace-prefer-readonly-parameter-types.md` records an acceptance gate dated 2026-07-14:
+
+> It reported 3,792 warnings and 665 errors from existing non-readonly workspace findings.
+> Its captured output contains zero occurrences of the replacement rule ID [...]
+
+Read alone, that looks like proof of a regression, because the steady state was zero findings and it is now 1,661.
+It is not. The gate predates the catalog-free work by eight days.
+It certified the *replacement rule migration*, before the external-effect catalogs were retired
+(`e2cda4e35`, 2026-07-22) and before demand analysis began failing closed (`4bdbc0478`, 2026-07-23).
+Treating 2026-07-14 as a valid "before" for the current behaviour compares two different architectures.
+
+## Verification
+
+The version skew between the committed lockfile and the installed tree is real but irrelevant:
 
 ```text
 installed:            @oxlint/plugins 1.75.0
@@ -56,45 +101,73 @@ committed lockfile:   @oxlint/plugins 1.74.0   (specifier '>=1.73.0')
 uncommitted lockfile: @oxlint/plugins 1.75.0
 ```
 
-The uncommitted `pnpm-lock.yaml` in the working tree carries a catalog bump from 1.74.0 to 1.75.0,
-and `node_modules` already reflects it.
-The acceptance gate predates that bump.
-
-This makes the bump the leading hypothesis for the regression.
-It is a hypothesis, not a finding:
-no test in this investigation isolated the plugin version as the cause.
-
-## What would settle it
-
-Only `@oxlint/plugins` 1.75.0 is present in the pnpm store,
-so the comparison needs the older version fetched first:
+Tested directly, in a worktree installed from the committed lockfile:
 
 ```bash
-# In a disposable worktree, with the committed lockfile that pins 1.74.0.
 git worktree add "${HOME}/temp/agent/oxlint-bisect" HEAD
 cd "${HOME}/temp/agent/oxlint-bisect"
-pnpm install --frozen-lockfile
+pnpm install --no-frozen-lockfile   # resolves @oxlint/plugins 1.74.0
+mise run //package/config/oxlint:build
 cd package/module/caught-value
 node ../../dev-script/task-util/src/oxlint-wrapper.ts --type-aware
 ```
 
-Two findings under 1.74.0 means the bump is innocent and the cause is in our own plugin or its inputs.
-Zero findings under 1.74.0 confirms the bump.
+Result under 1.74.0: `Found 0 warnings and 2 errors`.
+Result under 1.75.0 in the main checkout: `Found 0 warnings and 2 errors`.
+The plugin version is not a factor.
 
-Run the comparison against `caught-value` rather than `toml-edit`:
-two findings over 38 lines of source is the smallest reproduction available,
-and its only calls are the two intrinsics.
+Smallest reproduction: lint `package/module/caught-value`, whose entire source is two intrinsic calls.
 
-## Related fix landed during this investigation
+## What does not work
 
-A separate defect in the same rule was found and fixed while reproducing the above,
-and it is worth separating from the intrinsic question because it masked findings rather than creating them.
+- Treating the findings as defects in the linted package. `caught-value` reports two errors over 38 lines whose
+  only calls are `Error.isError` and `String`; there is no code change that satisfies the rule there.
+- Blaming the `@oxlint/plugins` bump. Measured above: 1.74.0 and 1.75.0 both report two.
+- Blaming TypeScript configuration drift. `tsconfig.json` and `package/config/typescript/` have not changed since
+  the acceptance gate except for the 2026-07-15 directory rename (`ece5b7553`).
+- Following the rule's own remediation list. It offers four paths: include the implementation in the nearest
+  `tsconfig.json`, pass only primitives or a verified isolated snapshot, remove the call, or mark the input as a
+  foreign host capability with an audited `@mutates` contract. For `Array.prototype.every` the first is impossible,
+  the third means not using array methods, and `AGENTS.md` `JCH` forbids the fourth for absent effects.
+- Bisecting by materialising historical plugin source into a current worktree. Attempted and abandoned:
+  substituting `package/oxlint-plugin/prefer-readonly-parameter-type/src` at an older commit while the rest of the
+  tree stays current mixes two architectures and produced misleading results. A full historical checkout is the
+  only sound bisect, and one attempt hit `spawn ENOMEM` on a host whose 15 GiB swap was fully consumed.
 
-`nearestOwnedCallable` walked parent pointers to find a call's enclosing callable,
-stopping only on a self-parented node.
-A source file reports no parent at all rather than parenting itself,
-despite the non-optional `parent` in TypeScript's node types,
-so the walk assigned an absent parent to the cursor and the next predicate call read `.kind` off it:
+## Options, none applied
+
+No fix is applied here. `AGENTS.md` `LN7` forbids loosening lint rules without prior approval, and all three
+plausible resolutions are policy decisions rather than mechanical cleanups.
+
+- Widen the exemption. The rationale already written into `readonlyEffectSelfHostingOverride` applies verbatim to
+  every package. Broadening `files` to the workspace turns the rule off in practice, which is honest about the
+  current information limit but abandons the guarantee the rule exists to provide.
+- Restore a minimal ECMAScript-intrinsic authority. Directly contradicts the audited constraint that no handwritten
+  external-effect catalog may be trusted, so it reopens the decision the audit closed.
+- Finish the migration. Give the rule a derivation path for default-library declarations, so intrinsics resolve
+  without a handwritten catalog. Largest option, and the only one that keeps both the guarantee and the audit.
+
+## Upstream filing decision
+
+Nothing to file. The 6-constraint check does not apply.
+
+Constraint 1 (is it really upstream's fault?) fails outright: the behaviour originates in the repository-owned
+`package/oxlint-plugin/prefer-readonly-parameter-type` and a repository-owned architecture decision recorded in
+`doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`. `@oxlint/plugins` was tested at two
+versions and is not implicated. There is no upstream claim to make, so constraints 2 through 6 are not reached and
+no duplicate search was run.
+
+`.out-of-scope/` was checked and holds no oxlint or oxc exemption; it did not need to gate anything here.
+
+## Related defect fixed during this investigation
+
+Separate from the intrinsic question, and worth distinguishing because it *suppressed* findings rather than
+creating them.
+
+`nearestOwnedCallable` walked parent pointers to find a call's enclosing callable, stopping only on a self-parented
+node. A source file reports no parent at all rather than parenting itself, despite the non-optional `parent` in
+TypeScript's node types, so the walk assigned an absent parent to the cursor and the next predicate read `.kind`
+off it:
 
 ```text
 [prefer-readonly-parameter-types] [Program] semantic rule failed: TypeError: Cannot read properties of undefined
@@ -105,56 +178,21 @@ so the walk assigned an absent parent to the cursor and the next predicate call 
     at completeForeignBorrowedGraph (.../plugin-prefer-readonly-parameter-type.mjs:6:37637)
 ```
 
-The trigger is a callable in the inbound closure that is itself invoked at module top level,
-such as `await main();` at the end of `package/module/toml-edit/src/conformance/decode.ts`.
-The walk from that call passes no callable before reaching the source file.
+The trigger is a callable in the inbound closure that is itself invoked at module top level, such as `await main();`
+at the end of `package/module/toml-edit/src/conformance/decode.ts`. The walk from that call passes no callable
+before reaching the source file.
 
-Two properties made this hard to see:
+Two properties made it hard to see:
 
 - It reproduces only on a cold or invalidated effect-summary cache
   (`node_modules/.cache/prefer-readonly-parameter-type`), and vanishes on a warm re-run.
-- The rule logged `String(error)`, which reduces the thrown `TypeError` to its message and drops every frame,
-  so the crash site could not be located from lint output.
+- The rule logged `String(error)`, which reduces the thrown `TypeError` to its message and drops every frame, so
+  the crash site could not be located from lint output.
 
-Both are fixed: the walk stops on an absent parent (commits `01f85074a` and `a2a7e7f5a`,
-the second reshaping the guard to avoid a nullish union), and the log now uses `caughtValueStack`
-from `@monochromatic-dev/module-caught-value` so frames survive (commit `5c8a624a9`).
+Both are fixed. The walk stops on an absent parent (`01f85074a`, reshaped in `a2a7e7f5a` to avoid a nullish union),
+and the log uses `caughtValueStack` from `@monochromatic-dev/module-caught-value` so frames survive (`5c8a624a9`).
 A regression test covers the top-level-invocation shape; reverting the guard fails it with the original `TypeError`.
 
-Fixing the crash raised the reported count in `toml-edit` from 133 to 139,
-because the crashed file previously reported a single `semanticBridgeUnavailable` diagnostic
-in place of its real findings.
-The count is now 136 after the duplicate-predicate refactors landed.
-
-## What does not work
-
-- Treating the 136 findings as `toml-edit` defects. They are not package-specific:
-  the same class appears in `caught-value`, whose entire source is two intrinsic calls.
-- Loosening or disabling the rule. `AGENTS.md` `LN7` forbids loosening lint rules without prior approval,
-  and `MXL`-style suppression would hide a regression rather than resolve it.
-- Following the rule's own remediation list for these findings.
-  It offers four paths: include the implementation in the nearest `tsconfig.json`,
-  pass only primitives or a verified isolated snapshot, remove the call,
-  or mark the input as a foreign host capability and document effects with `@mutates`.
-  None applies to `Array.prototype.every`: its implementation cannot be added to a `tsconfig.json`,
-  and `AGENTS.md` `JCH` forbids using `@mutates` for absent effects.
-  That mismatch is itself evidence the findings are spurious rather than actionable.
-
-## Upstream filing decision
-
-Not filed, and no draft is kept.
-
-The 6-constraint check cannot be started, because constraint 1
-(is it really upstream's fault?) is unanswered:
-the regression has not been localized to `@oxlint/plugins` versus our own
-`package/oxlint-plugin/prefer-readonly-parameter-type`.
-Filing against oxc while the cause may sit in our plugin would be a publicity incident of exactly the kind
-the constraint exists to prevent.
-
-`.out-of-scope/` was checked and holds no oxlint or oxc exemption.
-No upstream duplicate search was run, for the same reason:
-there is not yet a claim about upstream behavior to search for.
-
-Re-run "What would settle it" first.
-If 1.74.0 is clean, the audit becomes an upstream question and this section should be redone in full.
-If 1.74.0 is equally affected, the cause is ours and no upstream filing arises at all.
+Fixing the crash raised `toml-edit` from 133 to 139 reported errors, because the crashed file previously emitted a
+single `semanticBridgeUnavailable` diagnostic in place of its real findings. The count is 136 after the
+duplicate-predicate refactors landed.
