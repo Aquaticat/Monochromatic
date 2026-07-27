@@ -107,8 +107,12 @@ Fifteen files mention `bindingOriginBySymbolId`;
 most thread it through as a parameter and needed only the widened type.
 
 - `effect-binding-origins.ts`, the accumulation itself, the progress signal, and
-  `registerBindingOrigins`, which snapshots before registering so a self-assignment
-  cannot have one call iterating the set another call is inserting into.
+  `registerBindingOrigins`, which copied before registering so a self-assignment could
+  not have one call iterating the set another call was inserting into.
+  That copy stopped being the safety property when result provenance landed:
+  `expressionValueOrigins` now always returns a freshly built set or a shared empty
+  constant, so no caller ever holds the live stored set, and the spread remains only
+  because `ReadonlySet` has no `reduce`.
 - `effect-call-resolution.ts`, the root lookup and the object-shorthand lookup.
 - `effect-opaque-boundary.ts`, one opaque record per receiver origin.
 - `effect-call-analysis.ts`, one `directInvoked` entry and one callback relation per origin.

@@ -43,6 +43,18 @@ const HELPER_PATH = fileURLToPath(new URL(
   import.meta.url,
 ),);
 
+/** Fixture whose functions reach caller state through member call results. */
+const RESULT_PROVENANCE_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-result-provenance-invalid.ts',
+  import.meta.url,
+),);
+
+/** Current result-provenance fixture text. */
+const RESULT_PROVENANCE_SOURCE = readFileSync(
+  RESULT_PROVENANCE_PATH,
+  'utf8',
+);
+
 /** Statusline source proving audited object-property callback invocation. */
 const STATUSLINE_USAGE_PATH = fileURLToPath(new URL(
   '../../../pi-plugin/statusline/src/usage-warning.ts',
@@ -123,6 +135,68 @@ await describe({
          * callee instead of an audited caller-side catalog marking. */
         expect(invoked,).toEqual([],);
         expect(opaque,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'attributes a mutation reached through a verified member result to its receiver',
+      fn: async () => {
+        /* The diagnostic-level tests cannot see this. A parameter mutated through a
+         * call result also still carries that call's receiver opacity, and opacity
+         * dominates the message, so the fixture emits the same count whether
+         * attribution works or not. Only the summary distinguishes them. */
+        const session = openSemanticFile({
+          fileName: RESULT_PROVENANCE_PATH,
+          sourceText: RESULT_PROVENANCE_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the mutated parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns mutated parameter indexes in ascending order.
+         */
+        function mutatedIndexes(functionName: string,): readonly number[] {
+          const nameNode = session.nodeAtOffset(
+            RESULT_PROVENANCE_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          /* Explicit numeric compare, since the default sort is lexicographic and
+           * would order parameter 10 before parameter 2. */
+          return [...summary.mutatedParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /** Mutation through a bound lookup result. */
+        const bound = mutatedIndexes('boundLookupMutationEffect',);
+        /** Mutation through a lookup result with no binding at all. */
+        const chained = mutatedIndexes('chainedLookupMutationEffect',);
+        /** Property write through an element obtained by `at`. */
+        const element = mutatedIndexes('chainedElementWriteEffect',);
+        /** Function that only reads what it looks up. */
+        const readOnly = mutatedIndexes('readOnlyLookupEffect',);
+        closeSemanticBridge();
+        /* Each names parameter 0, the collection the result came from. Dropping the
+         * call branch from `provenanceSuccessors` empties all three while leaving
+         * every diagnostic count in the sibling fixture test unchanged, which is why
+         * this assertion exists rather than a message-level one. */
+        expect(bound,).toEqual([0,],);
+        expect(chained,).toEqual([0,],);
+        expect(element,).toEqual([0,],);
+        /* And the control stays empty, so the resolver is not crediting every lookup
+         * with a mutation it never performed. */
+        expect(readOnly,).toEqual([],);
       },
     },),
     it({

@@ -168,9 +168,13 @@ function registerBindingOrigins({
   readonly parameterOrigins: ParameterOrigins;
   readonly bindingOriginBySymbolId: Map<number, Set<number>>;
 },): boolean {
-  /* Snapshot before registering. `expressionOrigins` hands back the live set stored
-   * for the source binding, so a self-assignment (`cursor = cursor`) would otherwise
-   * have one call iterating the same object another call is inserting into. */
+  /* Spread because `ReadonlySet` has no `reduce`, and for no stronger reason now.
+   *
+   * It used to also be a defensive snapshot: `expressionOrigins` returned the live set
+   * stored for the source binding, so a self-assignment (`cursor = cursor`) could have
+   * one call iterating the object another was inserting into. `expressionValueOrigins`
+   * removed that hazard structurally by always returning a freshly built set or the
+   * shared empty constant, so the copy is no longer what makes this safe. */
   return [...parameterOrigins,]
     .reduce(
       function registerOne(
