@@ -378,6 +378,102 @@ export function arrayCallbackSemanticEffect(
 }
 
 /**
+ * Mutates elements arriving at the fold callback's second parameter.
+ *
+ * `reduce` carries its accumulator at parameter 0 and its element at parameter
+ * 1, so matching callback parameters by position instead of by type would
+ * attribute element flow to the primitive total and discharge this mutation.
+ *
+ * @param states - Readonly container whose mutable elements are updated.
+ *
+ * @returns count of visited elements.
+ *
+ * @mutates states - Updates value on every folded element.
+ */
+export function reduceElementParameterEffect(
+  states: readonly { value: string; }[],
+): number {
+  return states.reduce(function fold(total, state,): number {
+    state.value = 'changed';
+    return total + 1;
+  }, 0,);
+}
+
+/**
+ * Mutates receiver-reachable state through the whole-array callback parameter.
+ *
+ * `forEach` hands the receiver itself to parameter 2, so matching only the
+ * element type would let this reach receiver state undetected.
+ *
+ * @param states - Readonly container reached through its own third parameter.
+ *
+ * @mutates states - Updates value on the first element.
+ */
+export function forEachWholeArrayEffect(
+  states: readonly { value: string; }[],
+): void {
+  states.forEach(function reachThroughArray(value, index, all,): void {
+    const first = all[0];
+    if (first === undefined)
+      return;
+    first.value = `${value.value}${String(index,)}`;
+  },);
+}
+
+/**
+ * Mutates map values arriving at the read-only map's visit callback.
+ *
+ * Proves the recognizer covers every default-library read-only view rather than
+ * `ReadonlyArray` alone.
+ *
+ * @param entries - Readonly map whose mutable values are updated.
+ *
+ * @mutates entries - Updates value on every visited entry.
+ */
+export function readonlyMapCallbackEffect(
+  entries: ReadonlyMap<string, { value: string; }>,
+): void {
+  entries.forEach(function updateEntry(entry,): void {
+    entry.value = 'changed';
+  },);
+}
+
+/**
+ * Mutates its own parameter, for use as an observer passed by reference.
+ *
+ * @param state - Element mutated.
+ *
+ * @returns previous value.
+ *
+ * @mutates state - Overwrites value.
+ */
+function renderVisitedState(state: { value: string; },): string {
+  const previous = state.value;
+  state.value = 'rendered';
+  return previous;
+}
+
+/**
+ * Passes an owned observer by reference rather than as a callback literal.
+ *
+ * A by-reference observer annotates its own parameter, so that type is a
+ * distinct instance from the receiver's element type even when the two are
+ * structurally identical. Matching positions against the observer's annotations
+ * finds nothing here, and discharging on that emptiness loses this mutation.
+ *
+ * @param states - Readonly container whose mutable elements are updated.
+ *
+ * @returns previous values.
+ *
+ * @mutates states - Updates value on every visited element.
+ */
+export function referencedObserverEffect(
+  states: readonly { value: string; }[],
+): readonly string[] {
+  return states.map(renderVisitedState,);
+}
+
+/**
  * Mutates parameter through aliased generic callback argument.
  *
  * @param callbackState - State forwarded through aliased callback relation.

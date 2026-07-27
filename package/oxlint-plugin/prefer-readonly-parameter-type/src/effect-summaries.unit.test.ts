@@ -147,6 +147,10 @@ await describe({
           'asyncIteratorEffect',
           'wholeParameterContractEffect',
           'arrayCallbackSemanticEffect',
+          'reduceElementParameterEffect',
+          'forEachWholeArrayEffect',
+          'readonlyMapCallbackEffect',
+          'referencedObserverEffect',
           'aliasedCallbackSemanticEffect',
           'noSemanticEffect',
           'observationalIntrinsicEffect',
@@ -276,6 +280,26 @@ await describe({
           },
           {
             functionName: 'arrayCallbackSemanticEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'reduceElementParameterEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'forEachWholeArrayEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'readonlyMapCallbackEffect',
+            mutated: [0,],
+            opaque: [],
+          },
+          {
+            functionName: 'referencedObserverEffect',
             mutated: [0,],
             opaque: [],
           },
