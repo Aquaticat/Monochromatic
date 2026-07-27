@@ -63,6 +63,22 @@ channel being claimed is exactly the one the probe observes.
 receiver, which is every `Array` entry. This does not claim they run nothing. It claims their channel is no
 wider than the one `values[0]` opens, and the same accessor fires for a plain indexed read.
 
+Own-index access is wider than the `Get` and `Set` an earlier revision of this document named, and that
+understatement made the channel look narrower than the members in it. Probed against a `Proxy`-wrapped array,
+which typed code can pass as `T[]`: `indexOf`, `lastIndexOf`, `unshift`, `copyWithin`, `reverse` and `shift`
+reach `has`, while `pop` and `shift` reach `deleteProperty`. Nothing reached `ownKeys` or `getPrototypeOf`.
+
+Every one of those is still inside the channel, because the baseline is measured against this rule's own
+behaviour rather than guessed from an implementation: `0 in values` keeps its read-only offer, and
+`delete values[0]` reports a plain mutation with nothing unresolved, both measured. So the set of operations the
+rule already accepts on a parameter is `get`, `has`, `set`, `getOwnPropertyDescriptor`, `defineProperty` and
+`deleteProperty`, and `effect-member-channel-traps.unit.test.ts` derives that executably and fails any member
+reaching outside it. Mutation-tested: dropping `deleteProperty` from the baseline fails naming `Array.pop` and
+`Array.shift`.
+
+The claim survived the falsification test; its description did not. That is worth recording, because the
+description was the thing being relied on.
+
 Admitting the second channel is therefore consistent with a decision this rule already made everywhere else,
 rather than a new exposure. Confirmed at the user boundary: a function whose body is `values[0].label = 'x'` is
 offered no read-only projection, while one whose body only reads `values[0]` is, so the rule already treats an
@@ -201,6 +217,12 @@ knowingly rather than by omission.
 
   The exact, attributable numbers for this decision are the fixture and summary counts above, each diffed against
   a build differing only in the change under test.
+
+  Remeasured after the accumulator-escape fix: still 1,405, unchanged. That fix closed a false negative rather
+  than adding findings, because the pattern it catches, an observer member whose result type is identical to a
+  state-carrying element type, occurs nowhere in this workspace. Its evidence is the fixture, not the count. The
+  remeasurement is a real re-run rather than a cached repeat: `analyzerDigest` hashes the built bundle's bytes
+  into the summary-cache key, so every rebuild invalidates the persistent cache.
 
 ## Scope, and what the residue becomes
 
