@@ -355,9 +355,16 @@ These shapes in this package exist for that reason and should not be flattened b
     `eventualDirectories` takes those strings for the same reason,
     and `owningPackage` writes its verdict to the cache in place rather than through a helper.
 
-Measured after these changes: zero findings from every configured rule in the package.
-`package/oxlint-plugin/tsdoc` still carries 35 findings of the same rule, most of them the identical `context.report` shape,
-and is not covered by the self-hosting override in `package/config/oxlint/src/overrides.ts`.
+Measured after these changes: zero findings from every configured rule in the package,
+and the repo-wide report is unchanged at 697 sites across 357 files.
+Old and new shipping-target derivation were compared across all 165 package manifests in the repo with no mismatch,
+so the restructure is behavior-neutral.
+
+`package/oxlint-plugin/tsdoc` still carries 35 findings of the same rule and is not covered by the self-hosting override in `package/config/oxlint/src/overrides.ts`.
+Measured breakdown: 23 name the `context` parameter and reach only `context.*` methods, which is exactly the shape `ForeignHostCapability` cleared here;
+the remaining 12 do not, so the `loc` change is no help there.
+Those 12 reach bodyless callables, `functionNodes.set`, and `fixer` methods, each needing its own remedy.
+The shape match has not been confirmed by applying the marker in that package.
 
 ## Next action
 
