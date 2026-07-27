@@ -121,6 +121,24 @@ Workspace sweeps of `mise run lint:oxlint`, each on a clean tree:
 - After the discharge alone, 1437 findings and 36 offers.
 - After removing the contract-name filter, 1834 findings and 25 offers.
 - After removing the invocation subtraction as well, 1832 findings and 23 offers.
+- After the accessor scan, still 1832 findings and 23 offers.
+
+The accessor scan leaving both counts untouched is a result rather than a null one.
+It fixes a defect the fixture measures and no source in this repository currently hits,
+and it was the check that mattered for a second reason:
+the walk it widens also feeds `foreignArguments`,
+whose consumer in `foreign-borrowed-propagation.ts` requires every packaged origin to be
+a foreign candidate,
+so a wider walk there can withdraw a foreign-borrowed conclusion and a withdrawn one
+stops suppressing an offer.
+An unchanged offer count is what rules that out.
+
+Every sweep aborts one program with the same upstream panic,
+`interface conversion: checker.TypeData is *checker.TypeReference, not *checker.TupleType`
+raised inside `typescript-go`'s API while serializing a type response.
+It predates all of this work, appears in the baseline sweep as well,
+and costs the analysis of `package/module/test`.
+Because it is identical across every sweep, the comparisons above still hold.
 
 The single offer the discharge added is at
 `package/rolldown-plugin/import-attributes/src/transform-helpers.ts:170`,
