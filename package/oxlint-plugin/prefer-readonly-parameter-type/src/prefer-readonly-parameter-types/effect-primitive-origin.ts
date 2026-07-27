@@ -106,6 +106,58 @@ export function receiverElementsArePrimitive({
 }
 
 /**
+ * Tests whether a call result can hand caller-owned mutable state back.
+ *
+ * A generic instantiation is a container the call built, so what it holds decides:
+ * `filter` returns a fresh `T[]`, and an `Array<string>` exposes nothing the caller
+ * owns however it was constructed. Anything else is the value itself, so the value
+ * decides: `find`, `at` and `Map.get` return `T | undefined`, a union rather than an
+ * instantiation, and that union IS the receiver's own element.
+ *
+ * Reading only the type arguments was the whole defect. A union has none, so
+ * `.some()` over an empty list answered no and every element-returning member looked
+ * safe. Measured: `values.find(ownedPredicate)` followed by `found.label = 'x'`
+ * yielded a clean read-only suggestion for `values`, while the identical mutation
+ * through `values[0]` correctly suppressed it.
+ *
+ * Members that return the receiver itself, `Map.set` and `Array.sort`, are covered
+ * by their own structural claim instead: each is a mutator, so the receiver is
+ * already recorded as mutated and nothing reachable through the result is new.
+ *
+ * @param checker - TypeScript checker resolving instantiated type arguments.
+ *
+ * @param type - Instantiated result type of one call.
+ *
+ * @returns whether caller-owned mutable state is reachable through result.
+ *
+ * @example
+ * ```ts
+ * resultExposesMutableState({ checker, type: checker.getTypeAtLocation(call,), });
+ * ```
+ */
+export function resultExposesMutableState({
+  checker,
+  type,
+}: {
+  readonly checker: Checker;
+  readonly type: Type;
+},): boolean {
+  if (type.isTypeReference()) {
+    return checker.getTypeArguments(type,)
+      .some(function argumentCarriesState(typeArgument,): boolean {
+        return typeCanCarryMutableState({
+          checker,
+          type: typeArgument,
+        },);
+      },);
+  }
+  return typeCanCarryMutableState({
+    checker,
+    type,
+  },);
+}
+
+/**
  * Tests whether expression can carry caller-owned mutable state across unknown call.
  *
  * @param checker - TypeScript checker resolving expression type.

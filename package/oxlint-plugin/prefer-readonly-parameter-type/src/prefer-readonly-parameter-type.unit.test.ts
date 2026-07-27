@@ -263,6 +263,36 @@ children: [
     },
   },),
   it({
+    name: 'keeps state reachable through a member result out of every discharge',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-inert-member-invalid.ts',);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      expect(messages.length,).toBe(3,);
+      /* `find` answers what user code runs, its observer being owned, but returns
+       * `Labelled | undefined`. A union carries no type arguments, so a species
+       * gate reading only those discharged the call and handed back a clean
+       * read-only suggestion for an array whose element the body rewrites. */
+      expect(messages.some(function observerResultStaysOpaque(message,): boolean {
+        return message.startsWith(
+          'The function input named "values" is used as the object for these method calls: values.find [',
+        );
+      },),).toBe(true,);
+      expect(messages.some(function accessorResultStaysOpaque(message,): boolean {
+        return message.startsWith(
+          'The function input named "values" is used as the object for these method calls: values.at [',
+        );
+      },),).toBe(true,);
+      /* Neither array may be offered as read-only while its elements are
+       * rewritten through a result, which is what `values[0].label` mutation
+       * already suppresses. */
+      expect(messages.some(function noReadonlyOffer(message,): boolean {
+        return message.includes('should be readonly',);
+      },),).toBe(false,);
+    },
+  },),
+  it({
     name: 'reports readonly preference, stale contracts, and unresolved effects',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);

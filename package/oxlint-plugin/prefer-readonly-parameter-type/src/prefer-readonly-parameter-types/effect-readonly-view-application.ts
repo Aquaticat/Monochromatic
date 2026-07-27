@@ -22,7 +22,7 @@ import {
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
 import {
   expressionCanCarryMutableState,
-  typeCanCarryMutableState,
+  resultExposesMutableState,
 } from './effect-primitive-origin.ts';
 import {
   callableKey,
@@ -244,6 +244,11 @@ export function readonlyViewElementApplications({
   // primitives keeps receiver state out of the channel however it is built,
   // which is what rescues `map` with a primitive-returning observer.
   //
+  // Species is not the only way state leaves through the result. A member can
+  // simply hand an element back, `find` and `findLast` returning `T | undefined`,
+  // and that element is the receiver's own. Both routes are the same question,
+  // what the result exposes, so both go through one predicate.
+  //
   // This over-restricts members that return the receiver itself, `sort`, and
   // members that never construct, `reduce` accumulating into an array, since
   // neither is distinguishable here. Both directions fail closed.
@@ -253,21 +258,10 @@ export function readonlyViewElementApplications({
   const resultType = checker.getTypeAtLocation(call,);
   if (resultType === undefined)
     return READONLY_VIEW_UNDISCHARGED;
-  // A result that is not a generic instantiation, `void`, `boolean`, `number`,
-  // or an element union, holds no collection for species to build.
-  /**
-   * Types a constructed collection result would hold, empty when none is built.
-   */
-  const resultTypeArguments = resultType.isTypeReference()
-    ? checker.getTypeArguments(resultType,)
-    : [];
-  if (resultTypeArguments
-    .some(function resultCarriesState(resultTypeArgument,): boolean {
-      return typeCanCarryMutableState({
-        checker,
-        type: resultTypeArgument,
-      },);
-    },))
+  if (resultExposesMutableState({
+    checker,
+    type: resultType,
+  },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
    * Every argument paired with its resolved type.
