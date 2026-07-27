@@ -17,7 +17,7 @@ import {
 
 import {
   callableDeclaration,
-  parameterIndex,
+  rootParameterOrigins,
 } from './effect-call-resolution.ts';
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
 import {
@@ -30,8 +30,9 @@ import {
   type EffectCallableDeclaration,
   type ElementApplication,
   type MutableEffectSummary,
+  NO_PARAMETER_ORIGIN,
   OWNED_CALLABLE_UNAVAILABLE,
-  PARAMETER_INDEX_UNAVAILABLE,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -498,41 +499,55 @@ export function recordReadonlyViewApplications({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly summary: MutableEffectSummary;
   readonly analysisRoot?: string;
 },): boolean {
   /**
-   * Caller parameter owning receiver, when receiver can carry mutable state.
+   * Caller parameters owning receiver, when receiver can carry mutable state.
    */
-  const receiverParameterIndex = expressionCanCarryMutableState({
+  const receiverOrigins = expressionCanCarryMutableState({
       checker,
       node: receiver,
     },)
-    ? parameterIndex({
+    ? rootParameterOrigins({
       checker,
       bindingOriginBySymbolId,
       node: receiver,
     },)
-    : PARAMETER_INDEX_UNAVAILABLE;
-  if (receiverParameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+    : NO_PARAMETER_ORIGIN;
+  if (receiverOrigins.size === 0)
     return false;
   /**
-   * Derived relations, or sentinel when reachable user code stays unproven.
+   * Relations derived for every parameter the receiver can hold.
    */
-  const applications = readonlyViewElementApplications({
-    project,
-    checker,
-    call,
-    receiver,
-    receiverParameterIndex,
-    ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-  },);
-  if (applications === READONLY_VIEW_UNDISCHARGED)
-    return false;
-  applications.forEach(function record(application,): void {
+  const derived: ElementApplication[] = [];
+  /* One derivation per origin, accumulated before anything is recorded. Discharge
+   * depends on the call and the receiver's type rather than on which parameter the
+   * receiver came from, so these agree in practice; a disagreement must still leave
+   * the whole call to the opaque boundary instead of recording a partial answer for
+   * the origins that happened to derive. */
+  for (const receiverParameterIndex of receiverOrigins) {
+    /**
+     * Derived relations for one origin, or sentinel when user code stays unproven.
+     */
+    const applications = readonlyViewElementApplications({
+      project,
+      checker,
+      call,
+      receiver,
+      receiverParameterIndex,
+      ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+    },);
+    if (applications === READONLY_VIEW_UNDISCHARGED)
+      return false;
+    applications.forEach(function collect(application,): void {
+      derived.push(application,);
+    },);
+  }
+  derived.forEach(function record(application,): void {
     summary.elementApplications
       .push(application,);
   },);

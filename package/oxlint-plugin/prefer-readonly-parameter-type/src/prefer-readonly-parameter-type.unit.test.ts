@@ -336,6 +336,39 @@ children: [
     },
   },),
   it({
+    name: 'credits a reassigned alias with every parameter it can hold',
+    fn: async () => {
+      const diagnostics = await lintReadonly('readonly-binding-origin-invalid.ts',);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      /* The whole expected set, pinned rather than probed by absence. Every other
+       * claim in this case is that some parameter is *not* offered, which a fixture
+       * nothing linted would satisfy too, so `readAliasEffect` is the control that
+       * proves the file reached the rule. Measured: with `registerBindingOrigin`
+       * reverted to overwriting, this becomes the single message
+       * `Parameter "second" should be readonly`, and the control disappears. */
+      expect(messages,).toEqual([
+        'Parameter "values" should be readonly: mutable Array has ReadonlyArray projection.',
+      ],);
+      /* Neither candidate may be offered, because either can be what the alias holds
+       * when the mutation runs. Overwriting credits the mutation to whichever branch
+       * registered last and offers the other parameter, whose annotation then fails
+       * to compile: `Property 'push' does not exist on type 'readonly Labelled[]'`. */
+      expect(messages.filter(function offersEitherCandidate(message,): boolean {
+        return message.startsWith('Parameter "first" should be readonly',)
+          || message.startsWith('Parameter "second" should be readonly',);
+      },),).toEqual([],);
+      /* Accumulating origins must not slide into crediting every parameter. The
+       * control aliases one parameter and one fresh array, so the fresh array
+       * contributes no origin and `flag` is never implicated by either function. */
+      expect(messages.filter(function offersUnrelatedParameter(message,): boolean {
+        return message.includes('"only"',)
+          || message.includes('"flag"',);
+      },),).toEqual([],);
+    },
+  },),
+  it({
     name: 'reports readonly preference, stale contracts, and unresolved effects',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-invalid.ts',);

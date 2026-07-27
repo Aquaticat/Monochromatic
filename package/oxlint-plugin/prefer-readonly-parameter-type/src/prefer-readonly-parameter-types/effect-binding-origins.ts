@@ -20,11 +20,23 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import {
   expressionRoot,
-  PARAMETER_INDEX_UNAVAILABLE,
+  NO_PARAMETER_ORIGIN,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 
 /**
  * Registers every identifier bound by one parameter or destructuring pattern.
+ *
+ * Origins accumulate rather than replace. A local reassigned across branches holds
+ * state from every parameter assigned into it, and an earlier revision overwrote, so
+ * one branch erased the other and the erased parameter was offered `readonly` while
+ * the body mutated it through the alias. Applying that suggestion failed to compile;
+ * `doc/planning/prefer-readonly-binding-origin-widening.md` records the measurement.
+ *
+ * Accumulation also fixes convergence. Under overwrite, an alias with two origins
+ * flipped between them on every pass and reported progress each time, so
+ * `discoverAliasOrigins` only stopped at its pass bound. Monotone growth makes
+ * progress mean "the set grew", which settles on its own.
  *
  * @param project - TypeScript project resolving binding symbols.
  *
@@ -52,7 +64,7 @@ export function registerBindingOrigin({
   readonly project: Project;
   readonly name: BindingName;
   readonly parameterIndex: number;
-  readonly bindingOriginBySymbolId: Map<number, number>;
+  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
 },): boolean {
   if (isIdentifier(name,)) {
     /**
@@ -63,14 +75,19 @@ export function registerBindingOrigin({
     if (symbol === undefined)
       return false;
     /**
-     * Prior origin detects fixed-point progress.
+     * Origins already known for binding, or new accumulator.
      */
-    const prior = bindingOriginBySymbolId.get(symbol.id,);
+    const origins = bindingOriginBySymbolId.get(symbol.id,) ?? new Set<number>();
+    /**
+     * Size before insertion detects fixed-point progress.
+     */
+    const priorSize = origins.size;
+    origins.add(parameterIndex,);
     bindingOriginBySymbolId.set(
       symbol.id,
-      parameterIndex,
+      origins,
     );
-    return prior !== parameterIndex;
+    return origins.size !== priorSize;
   }
   /**
    * Whether any nested binding origin changed.
@@ -90,7 +107,7 @@ export function registerBindingOrigin({
 }
 
 /**
- * Resolves parameter origin represented by expression root.
+ * Resolves every parameter origin represented by expression root.
  *
  * @param project - TypeScript project resolving root symbol.
  *
@@ -98,42 +115,82 @@ export function registerBindingOrigin({
  *
  * @param node - Expression whose root may represent parameter state.
  *
- * @returns source parameter index or sentinel.
+ * @returns source parameter origins, empty when root is not parameter-derived.
  *
  * @example
  * ```ts
- * expressionOrigin({ project, bindingOriginBySymbolId, node });
+ * expressionOrigins({ project, bindingOriginBySymbolId, node });
  * ```
  */
-export function expressionOrigin({
+export function expressionOrigins({
   project,
   bindingOriginBySymbolId,
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly node: Node;
-},): number | typeof PARAMETER_INDEX_UNAVAILABLE {
+},): ParameterOrigins {
   /**
    * Root node after property and element access removal.
    */
   const root = expressionRoot(node,);
-  if (isIdentifier(root,)) {
-    /**
-     * Root symbol used for direct parameter or alias lookup.
-     */
-    const symbol = project.checker
-      .getSymbolAtLocation(root,);
-    /**
-     * Direct origin resolved before audited result traversal.
-     */
-    const directOrigin = symbol === undefined
-      ? PARAMETER_INDEX_UNAVAILABLE
-      : bindingOriginBySymbolId.get(symbol.id,) ?? PARAMETER_INDEX_UNAVAILABLE;
-    if (directOrigin !== PARAMETER_INDEX_UNAVAILABLE)
-      return directOrigin;
-  }
-  return PARAMETER_INDEX_UNAVAILABLE;
+  if (!isIdentifier(root,))
+    return NO_PARAMETER_ORIGIN;
+  /**
+   * Root symbol used for direct parameter or alias lookup.
+   */
+  const symbol = project.checker
+    .getSymbolAtLocation(root,);
+  if (symbol === undefined)
+    return NO_PARAMETER_ORIGIN;
+  return bindingOriginBySymbolId.get(symbol.id,)
+    ?? NO_PARAMETER_ORIGIN;
+}
+
+/**
+ * Registers one binding as holding every origin its source can hold.
+ *
+ * @param project - TypeScript project resolving binding symbols.
+ *
+ * @param name - Binding name or nested pattern receiving origins.
+ *
+ * @param parameterOrigins - Origins resolved for aliased source expression.
+ *
+ * @param bindingOriginBySymbolId - Origin map receiving bindings.
+ *
+ * @returns whether map changed.
+ *
+ * @mutates bindingOriginBySymbolId - Adds every source origin for binding symbols.
+ *
+ * @example
+ * ```ts
+ * registerBindingOrigins({ project, name, parameterOrigins, bindingOriginBySymbolId });
+ * ```
+ */
+function registerBindingOrigins({
+  project,
+  name,
+  parameterOrigins,
+  bindingOriginBySymbolId,
+}: {
+  readonly project: Project;
+  readonly name: BindingName;
+  readonly parameterOrigins: ParameterOrigins;
+  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
+},): boolean {
+  /* Snapshot before registering. `expressionOrigins` hands back the live set stored
+   * for the source binding, so a self-assignment (`cursor = cursor`) would otherwise
+   * have one call iterating the same object another call is inserting into. */
+  return [...parameterOrigins,]
+    .reduce(function registerOne(changed, parameterIndex,): boolean {
+      return registerBindingOrigin({
+        project,
+        name,
+        parameterIndex,
+        bindingOriginBySymbolId,
+      },) || changed;
+    }, false,);
 }
 
 /**
@@ -167,11 +224,11 @@ export function discoverAliasOrigins({
   readonly variableDeclarations: readonly VariableDeclaration[];
   readonly aliasAssignments: readonly BinaryExpression[];
   readonly forOfStatements: readonly ForOfStatement[];
-  readonly bindingOriginBySymbolId: Map<number, number>;
+  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
 },): void {
-  /**
-   * Convergence state bounded by candidate alias count.
-   */
+  /* Convergence state. Origins only ever grow, so `changed` settles on its own and
+   * the pass bound is a backstop rather than the actual terminator it was while
+   * origins could overwrite each other and oscillate. */
   const state = {
     changed: true,
     pass: 0,
@@ -185,32 +242,30 @@ export function discoverAliasOrigins({
       if (declaration.initializer === undefined)
         return;
       /**
-       * Parameter origin of initializer root.
+       * Parameter origins of initializer root.
        */
-      const parameterIndex = expressionOrigin({
+      const parameterOrigins = expressionOrigins({
         project,
         bindingOriginBySymbolId,
         node: declaration.initializer,
       },);
-      if (parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
-        return;
-      state.changed = registerBindingOrigin({
+      state.changed = registerBindingOrigins({
         project,
         name: declaration.name,
-        parameterIndex,
+        parameterOrigins,
         bindingOriginBySymbolId,
       },) || state.changed;
     },);
     forOfStatements.forEach(function discoverIteration(statement,): void {
       /**
-       * Parameter origin of iterated expression.
+       * Parameter origins of iterated expression.
        */
-      const parameterIndex = expressionOrigin({
+      const parameterOrigins = expressionOrigins({
         project,
         bindingOriginBySymbolId,
         node: statement.expression,
       },);
-      if (parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+      if (parameterOrigins.size === 0)
         return;
       if (isVariableDeclarationList(statement.initializer,)) {
         /**
@@ -218,40 +273,39 @@ export function discoverAliasOrigins({
          */
         const { declarations, } = statement.initializer;
         declarations.forEach(function registerIterationDeclaration(declaration,): void {
-            state.changed = registerBindingOrigin({
+            state.changed = registerBindingOrigins({
               project,
               name: declaration.name,
-              parameterIndex,
+              parameterOrigins,
               bindingOriginBySymbolId,
             },) || state.changed;
         },);
         return;
       }
       if (isIdentifier(statement.initializer,)) {
-        state.changed = registerBindingOrigin({
+        state.changed = registerBindingOrigins({
           project,
           name: statement.initializer,
-          parameterIndex,
+          parameterOrigins,
           bindingOriginBySymbolId,
         },) || state.changed;
       }
     },);
     aliasAssignments.forEach(function discoverAssignment(assignment,): void {
       /**
-       * Parameter origin of assignment right-hand side.
+       * Parameter origins of assignment right-hand side.
        */
-      const parameterIndex = expressionOrigin({
+      const parameterOrigins = expressionOrigins({
         project,
         bindingOriginBySymbolId,
         node: assignment.right,
       },);
-      if ((parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
-        || (!isIdentifier(assignment.left,)))
+      if (!isIdentifier(assignment.left,))
         return;
-      state.changed = registerBindingOrigin({
+      state.changed = registerBindingOrigins({
         project,
         name: assignment.left,
-        parameterIndex,
+        parameterOrigins,
         bindingOriginBySymbolId,
       },) || state.changed;
     },);

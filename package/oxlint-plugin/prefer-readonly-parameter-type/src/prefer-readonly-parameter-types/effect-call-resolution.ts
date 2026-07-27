@@ -31,8 +31,10 @@ import {
   expressionRoot,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
+  NO_PARAMETER_ORIGIN,
   OWNED_CALLABLE_UNAVAILABLE,
   PARAMETER_INDEX_UNAVAILABLE,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -41,7 +43,7 @@ import {
 export const ALL_PACKAGED_PROPERTIES: unique symbol = Symbol('all packaged call argument properties',);
 
 /**
- * Maps expression root symbol to callable parameter index.
+ * Maps expression root symbol to every callable parameter it can hold.
  *
  * @param checker - TypeScript checker resolving root symbol.
  *
@@ -49,36 +51,36 @@ export const ALL_PACKAGED_PROPERTIES: unique symbol = Symbol('all packaged call 
  *
  * @param node - Expression whose root may be parameter.
  *
- * @returns parameter index or sentinel.
+ * @returns parameter origins, empty when root is not parameter-derived.
  *
  * @example
  * ```ts
- * parameterIndex({ checker, bindingOriginBySymbolId, node });
+ * rootParameterOrigins({ checker, bindingOriginBySymbolId, node });
  * ```
  */
-export function parameterIndex({
+export function rootParameterOrigins({
   checker,
   bindingOriginBySymbolId,
   node,
 }: {
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly node: Node;
-},): number | typeof PARAMETER_INDEX_UNAVAILABLE {
+},): ParameterOrigins {
   /**
    * Root expression node before symbol resolution.
    */
   const root = expressionRoot(node,);
   if (!isIdentifier(root,))
-    return PARAMETER_INDEX_UNAVAILABLE;
+    return NO_PARAMETER_ORIGIN;
   /**
    * Root symbol resolved in current project.
    */
   const symbol = checker.getSymbolAtLocation(root,);
   if (symbol === undefined)
-    return PARAMETER_INDEX_UNAVAILABLE;
+    return NO_PARAMETER_ORIGIN;
   return bindingOriginBySymbolId.get(symbol.id,)
-    ?? PARAMETER_INDEX_UNAVAILABLE;
+    ?? NO_PARAMETER_ORIGIN;
 }
 
 /**
@@ -111,7 +113,7 @@ export function parameterIndexes({
   includedPropertyNames,
 }: {
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly node: Node;
   readonly includedPropertyNames: ReadonlySet<string> | typeof ALL_PACKAGED_PROPERTIES;
 },): readonly number[] {
@@ -127,19 +129,21 @@ export function parameterIndexes({
    */
   function collect(current: Node,): void {
     /**
-     * Direct parameter origin at current expression root.
+     * Direct parameter origins at current expression root.
      */
-    const direct = parameterIndex({
+    const direct = rootParameterOrigins({
       checker,
       bindingOriginBySymbolId,
       node: current,
     },);
-    if (direct !== PARAMETER_INDEX_UNAVAILABLE) {
+    if (direct.size > 0) {
       if (expressionCanCarryMutableState({
         checker,
         node: current,
       },))
-        origins.add(direct,);
+        direct.forEach(function collectDirect(origin,): void {
+          origins.add(origin,);
+        },);
       return;
     }
     if (isObjectLiteralExpression(current,)) {
@@ -167,15 +171,17 @@ export function parameterIndexes({
           const valueSymbol = checker.getShorthandAssignmentValueSymbol(property,);
           if (valueSymbol !== undefined) {
             /**
-             * Caller parameter origin represented by shorthand value.
+             * Caller parameter origins represented by shorthand value.
              */
-            const origin = bindingOriginBySymbolId.get(valueSymbol.id,);
-            if ((origin !== undefined)
-              && expressionCanCarryMutableState({
-                checker,
-                node: property.name,
-              },))
-              origins.add(origin,);
+            const shorthandOrigins = bindingOriginBySymbolId.get(valueSymbol.id,)
+              ?? NO_PARAMETER_ORIGIN;
+            if (expressionCanCarryMutableState({
+              checker,
+              node: property.name,
+            },))
+              shorthandOrigins.forEach(function collectShorthand(origin,): void {
+                origins.add(origin,);
+              },);
           }
           return;
         }

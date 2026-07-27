@@ -10,14 +10,15 @@ import type { Checker, } from 'typescript/unstable/sync';
 
 import {
   addOpaqueEffect,
-  parameterIndex,
+  rootParameterOrigins,
 } from './effect-call-resolution.ts';
 import { effectCallName, } from './effect-call-name.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   type MutableEffectSummary,
-  PARAMETER_INDEX_UNAVAILABLE,
+  NO_PARAMETER_ORIGIN,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -58,7 +59,7 @@ export function recordOpaqueBoundary({
   receiverDerived,
 }: {
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly allArgumentIndexes: readonly (readonly number[])[];
   readonly summary: MutableEffectSummary;
@@ -72,23 +73,29 @@ export function recordOpaqueBoundary({
    * Origin call location naming where each remediation applies.
    */
   const originLocation = effectOriginLocation({ node: call, },);
-  addOpaqueEffect({
-    summary,
-    affectedParameterIndex: (!receiverDerived)
+  /**
+   * Caller parameters the unresolved receiver can hold.
+   */
+  const receiverOrigins: ParameterOrigins = (!receiverDerived)
       && isPropertyAccessExpression(call.expression,)
       && expressionCanCarryMutableState({
         checker,
         node: call.expression
           .expression,
       },)
-      ? parameterIndex({
-        checker,
-        bindingOriginBySymbolId,
-        node: call.expression
-          .expression,
-      },)
-      : PARAMETER_INDEX_UNAVAILABLE,
-    provenance: `${opaqueProvenance} [${originLocation}]`,
+    ? rootParameterOrigins({
+      checker,
+      bindingOriginBySymbolId,
+      node: call.expression
+        .expression,
+    },)
+    : NO_PARAMETER_ORIGIN;
+  receiverOrigins.forEach(function opaqueReceiverOrigin(index,): void {
+    addOpaqueEffect({
+      summary,
+      affectedParameterIndex: index,
+      provenance: `${opaqueProvenance} [${originLocation}]`,
+    },);
   },);
   allArgumentIndexes.forEach(function opaqueArgument(
     indexes,

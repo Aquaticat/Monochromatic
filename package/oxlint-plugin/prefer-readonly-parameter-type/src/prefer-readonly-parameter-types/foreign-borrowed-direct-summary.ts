@@ -55,7 +55,7 @@ export function foreignBorrowedOwnershipSeed({
   /**
    * Binding origins seeded by callable parameters.
    */
-  const bindingOriginBySymbolId = new Map<number, number>();
+  const bindingOriginBySymbolId = new Map<number, Set<number>>();
   declaration.parameters
     .forEach(function registerParameter(
       parameter,

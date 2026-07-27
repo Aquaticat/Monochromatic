@@ -28,17 +28,18 @@ import {
   recordCollectionMemberEffect,
 } from './effect-collection-member-effect.ts';
 import {
-  addEffectIndex,
+  addEffectIndexes,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
+  NO_PARAMETER_ORIGIN,
   OWNED_CALLABLE_UNAVAILABLE,
-  PARAMETER_INDEX_UNAVAILABLE,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 import {
   ALL_PACKAGED_PROPERTIES,
   callableDeclaration,
-  parameterIndex,
   parameterIndexes,
+  rootParameterOrigins,
 } from './effect-call-resolution.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
 
@@ -80,7 +81,7 @@ export function inspectEffectCall({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
   readonly foreignInbound: boolean;
@@ -88,19 +89,19 @@ export function inspectEffectCall({
   readonly externalEffectResolver: ExternalCallableEffectResolver;
 },): void {
   /**
-   * Index when direct callee identifier is current callback parameter.
+   * Parameters the direct callee identifier can hold, when it is a callback.
    */
-  const callbackParameterIndex = isIdentifier(call.expression,)
-    ? parameterIndex({
+  const callbackParameterOrigins = isIdentifier(call.expression,)
+    ? rootParameterOrigins({
       checker,
       bindingOriginBySymbolId,
       node: call.expression,
     },)
-    : PARAMETER_INDEX_UNAVAILABLE;
-  if (callbackParameterIndex !== PARAMETER_INDEX_UNAVAILABLE) {
-    addEffectIndex({
+    : NO_PARAMETER_ORIGIN;
+  if (callbackParameterOrigins.size > 0) {
+    addEffectIndexes({
       target: summary.directInvoked,
-      value: callbackParameterIndex,
+      values: callbackParameterOrigins,
     },);
     call.arguments
       .forEach(function callbackArgument(
@@ -119,12 +120,19 @@ export function inspectEffectCall({
         sourceParameterIndexes.forEach(function callbackSource(
           sourceParameterIndex,
         ): void {
-          summary.relations
-            .push({
-              callbackParameterIndex,
-              callbackArgumentIndex,
-              sourceParameterIndex,
-            },);
+          /* One relation per callback origin. A reassigned callback local may hold
+           * either parameter, and the argument reaches whichever one runs, so
+           * recording a single origin would under-report the other. */
+          callbackParameterOrigins.forEach(function relateOrigin(
+            callbackParameterIndex,
+          ): void {
+            summary.relations
+              .push({
+                callbackParameterIndex,
+                callbackArgumentIndex,
+                sourceParameterIndex,
+              },);
+          },);
         },);
       },);
     return;

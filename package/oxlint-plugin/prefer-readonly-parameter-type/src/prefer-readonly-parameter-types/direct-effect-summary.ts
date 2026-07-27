@@ -27,7 +27,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import { activeCallableBodyNodes, } from './closure-activity.ts';
 import {
   discoverAliasOrigins,
-  expressionOrigin,
+  expressionOrigins,
   registerBindingOrigin,
 } from './effect-binding-origins.ts';
 import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
@@ -43,11 +43,13 @@ import {
 } from './mutation-contract-query.ts';
 import {
   addEffectIndex,
+  addEffectIndexes,
   callableKey,
   type EffectCallableDeclaration,
   collectAstNodes,
   type MutableEffectSummary,
   PARAMETER_INDEX_UNAVAILABLE,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -70,15 +72,15 @@ function inspectDirectWrite({
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly summary: MutableEffectSummary;
   readonly node: Node;
 },): void {
   if (isIdentifier(node,))
     return;
-  addEffectIndex({
+  addEffectIndexes({
     target: summary.directMutated,
-    value: expressionOrigin({
+    values: expressionOrigins({
       project,
       bindingOriginBySymbolId,
       node,
@@ -122,7 +124,7 @@ export function directEffectSummary({
   /**
    * Binding symbol origins seeded by callable parameters.
    */
-  const bindingOriginBySymbolId = new Map<number, number>();
+  const bindingOriginBySymbolId = new Map<number, Set<number>>();
   declaration.parameters
     .forEach(function registerParameter(
       parameter,
@@ -296,9 +298,9 @@ export function directEffectSummary({
       return;
     }
     if (isForOfStatement(node,) && (node.awaitModifier !== undefined)) {
-      addEffectIndex({
+      addEffectIndexes({
         target: summary.directMutated,
-        value: expressionOrigin({
+        values: expressionOrigins({
           project,
           bindingOriginBySymbolId,
           node: node.expression,

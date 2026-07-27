@@ -92,7 +92,22 @@ export type EffectSummaryCacheStats = {
 function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
   return {
     parameterCount: summary.parameterCount,
-    bindingOriginBySymbolId: new Map(summary.bindingOriginBySymbolId,),
+    /* Deep, matching `opaqueProvenanceByParameter` below. A shallow copy would share
+     * each origin set with the cached summary, so any later write through one would
+     * be visible through the other, which is exactly what cloning exists to prevent. */
+    bindingOriginBySymbolId: new Map(
+      [...summary.bindingOriginBySymbolId
+        .entries(),]
+        .map(function cloneOrigins([symbolId, origins,],): [
+          number,
+          Set<number>,
+        ] {
+          return [
+            symbolId,
+            new Set(origins,),
+          ];
+        },),
+    ),
     directMutated: new Set(summary.directMutated,),
     directInvoked: new Set(summary.directInvoked,),
     directOpaque: new Set(summary.directOpaque,),

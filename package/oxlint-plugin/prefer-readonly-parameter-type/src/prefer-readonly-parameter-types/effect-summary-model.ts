@@ -32,6 +32,26 @@ export const PARAMETER_INDEX_UNAVAILABLE: unique symbol = Symbol(
 );
 
 /**
+ * Every callable parameter one binding can hold, empty when none.
+ *
+ * A local reassigned across branches holds state from more than one parameter, so a
+ * single index cannot describe it. Emptiness replaces the sentinel here rather than
+ * joining it in a union, because a set already distinguishes "no origin" from "some
+ * origin" without a second representation of absence.
+ */
+export type ParameterOrigins = ReadonlySet<number>;
+
+/**
+ * Shared empty result for expressions rooted outside callable parameters.
+ *
+ * Most identifiers in a body resolve to no parameter, so this is returned far more
+ * often than any populated set and sharing one instance avoids allocating per node.
+ * Safe only while `ParameterOrigins` stays read-only at every boundary: an assertion
+ * back to `Set<number>` anywhere would let one caller poison every other.
+ */
+export const NO_PARAMETER_ORIGIN: ParameterOrigins = new Set<number>();
+
+/**
  * Sentinel when semantic call target has no owned callable declaration.
  */
 export const OWNED_CALLABLE_UNAVAILABLE: unique symbol = Symbol(
@@ -118,7 +138,7 @@ export type CallEdge = {
  */
 export type MutableEffectSummary = {
   readonly parameterCount: number;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly directMutated: Set<number>;
   readonly directInvoked: Set<number>;
   readonly directOpaque: Set<number>;
@@ -182,6 +202,43 @@ export function addEffectIndex({
    */
   const priorSize = target.size;
   target.add(value,);
+  return target.size !== priorSize;
+}
+
+/**
+ * Adds every parameter origin a binding can hold to effect set.
+ *
+ * Separate from `addEffectIndex` rather than a widened parameter on it, because the
+ * two describe different inputs: propagation edges carry one callee index at a time,
+ * while a binding carries the whole set of parameters it may alias.
+ *
+ * @param target - Effect set receiving indexes.
+ *
+ * @param values - Parameter origins resolved for one binding or expression.
+ *
+ * @returns whether any index was newly added.
+ *
+ * @mutates target - Adds every resolved parameter origin.
+ *
+ * @example
+ * ```ts
+ * addEffectIndexes({ target: summary.directMutated, values: origins });
+ * ```
+ */
+export function addEffectIndexes({
+  target,
+  values,
+}: {
+  readonly target: Set<number>;
+  readonly values: ParameterOrigins;
+},): boolean {
+  /**
+   * Size before insertion detects fixed-point progress.
+   */
+  const priorSize = target.size;
+  values.forEach(function addOrigin(value,): void {
+    target.add(value,);
+  },);
   return target.size !== priorSize;
 }
 

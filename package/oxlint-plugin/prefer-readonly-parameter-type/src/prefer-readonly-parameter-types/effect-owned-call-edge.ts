@@ -17,6 +17,7 @@ import {
   type EffectCallableDeclaration,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 import {
   ALL_PACKAGED_PROPERTIES,
@@ -69,7 +70,7 @@ export function addOwnedCallEdge({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly callee: EffectCallableDeclaration;
   readonly allArgumentIndexes: readonly (readonly number[])[];

@@ -20,15 +20,16 @@ import {
   collectionStructureClaim,
   memberChannelIsVerifiedNarrow,
 } from './effect-default-library-readonly-view.ts';
-import { parameterIndex, } from './effect-call-resolution.ts';
+import { rootParameterOrigins, } from './effect-call-resolution.ts';
 import {
   expressionCanCarryMutableState,
   resultExposesMutableState,
 } from './effect-primitive-origin.ts';
 import {
-  addEffectIndex,
+  addEffectIndexes,
   type MutableEffectSummary,
-  PARAMETER_INDEX_UNAVAILABLE,
+  NO_PARAMETER_ORIGIN,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 import { recordReadonlyViewApplications, } from './effect-readonly-view-application.ts';
 
@@ -168,7 +169,7 @@ export function recordCollectionMemberEffect({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly declaration: Node;
@@ -187,21 +188,21 @@ export function recordCollectionMemberEffect({
     return COLLECTION_CALL_UNDERIVED;
   if (structure === COLLECTION_STRUCTURE_MUTATED) {
     /**
-     * Caller parameter owning receiver, when receiver can carry mutable state.
+     * Caller parameters owning receiver, when receiver can carry mutable state.
      */
-    const mutatedParameterIndex = expressionCanCarryMutableState({
+    const mutatedParameterOrigins = expressionCanCarryMutableState({
         checker,
         node: receiver,
       },)
-      ? parameterIndex({
+      ? rootParameterOrigins({
         checker,
         bindingOriginBySymbolId,
         node: receiver,
       },)
-      : PARAMETER_INDEX_UNAVAILABLE;
-    addEffectIndex({
+      : NO_PARAMETER_ORIGIN;
+    addEffectIndexes({
       target: summary.directMutated,
-      value: mutatedParameterIndex,
+      values: mutatedParameterOrigins,
     },);
   }
   // The mutation above is recorded before any discharge below, because a member can

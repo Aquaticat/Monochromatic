@@ -18,14 +18,14 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
-  expressionOrigin,
+  expressionOrigins,
 } from './effect-binding-origins.ts';
 import {
   callableKey,
   type EffectCallableDeclaration,
   collectAstNodes,
   isEffectCallableDeclaration,
-  PARAMETER_INDEX_UNAVAILABLE,
+  type ParameterOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -181,7 +181,7 @@ export function activeCallableBodyNodes({
 }: {
   readonly project: Project;
   readonly body: Node;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, number>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
 }): readonly Node[] {
   /**
    * Complete descendants used to discover nested declarations and activations.
@@ -208,11 +208,11 @@ export function activeCallableBodyNodes({
       && (node.operatorToken
         .kind
         === SyntaxKind.EqualsToken)
-      && (expressionOrigin({
+      && (expressionOrigins({
         project,
         bindingOriginBySymbolId,
         node: node.left,
-      },) !== PARAMETER_INDEX_UNAVAILABLE)) {
+      },).size > 0)) {
       activateEscapedCallables({
         project,
         node: node.right,
