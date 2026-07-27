@@ -184,6 +184,10 @@ await describe({
         const chained = mutatedIndexes('chainedLookupMutationEffect',);
         /** Property write through an element obtained by `at`. */
         const element = mutatedIndexes('chainedElementWriteEffect',);
+        /** Mutation through a lookup narrowed by a runtime-erased assertion. */
+        const asserted = mutatedIndexes('assertedLookupMutationEffect',);
+        /** Mutation through a lookup whose value type is a union of object types. */
+        const unionValued = mutatedIndexes('unionValueLookupEffect',);
         /** Function that only reads what it looks up. */
         const readOnly = mutatedIndexes('readOnlyLookupEffect',);
         closeSemanticBridge();
@@ -194,6 +198,15 @@ await describe({
         expect(bound,).toEqual([0,],);
         expect(chained,).toEqual([0,],);
         expect(element,).toEqual([0,],);
+        /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
+         * assertion expressions from `transparentOperand` empties this one. */
+        expect(asserted,).toEqual([0,],);
+        /* The union-valued receiver. Its held position is `Labelled | Tagged` as one
+         * type object while the result flattens to both plus absence, so comparing
+         * only flattened result constituents against the unflattened held type found
+         * nothing. Measured: flattening one side only empties this while leaving every
+         * other case here passing. */
+        expect(unionValued,).toEqual([0,],);
         /* And the control stays empty, so the resolver is not crediting every lookup
          * with a mutation it never performed. */
         expect(readOnly,).toEqual([],);

@@ -354,7 +354,7 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(9,);
+      expect(messages.length,).toBe(10,);
       /* A known unsound suggestion, pinned rather than fixed here, because computed
        * member access predates result provenance and is its own defect.
        * `computedStructureEffect` calls `values['push']('appended')`, and neither the
@@ -387,6 +387,10 @@ children: [
        * one moved to naming its sink, and the asserted one joined. */
       expect(namingCall('facts.get',),).toBe(5,);
       expect(namingCall('rows.get',),).toBe(1,);
+      /* The union-valued receiver, whose result constituents are two object types plus
+       * absence while its held position is the union itself. Flattening only the result
+       * side left this unattributed; the summary test asserts it is credited now. */
+      expect(namingCall('records.get',),).toBe(1,);
       expect(namingCall('values.at',),).toBe(1,);
       /* The one that moved. `escapingLookupEffect` hands its looked-up value to
        * `JSON.stringify`, and the report now names that call rather than the lookup,
@@ -401,6 +405,7 @@ children: [
        * in this fixture is the computed-access defect above, on a different parameter. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
+          || message.includes('"records" should be readonly',)
           || message.includes('"rows" should be readonly',);
       },),).toEqual([],);
     },

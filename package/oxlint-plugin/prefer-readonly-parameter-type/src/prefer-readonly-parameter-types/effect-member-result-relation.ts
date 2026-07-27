@@ -14,10 +14,11 @@ import {
   isMethodSignatureDeclaration,
   isPropertyAccessExpression,
 } from 'typescript/unstable/ast/is';
-import type {
-  Checker,
-  Project,
-  Type,
+import {
+  type Checker,
+  type Project,
+  type Type,
+  TypeFlags,
 } from 'typescript/unstable/sync';
 
 import {
@@ -70,6 +71,64 @@ function identityCandidates({ type, }: { readonly type: Type; },): readonly Type
   return type.isUnionType()
     ? type.getTypes()
     : [type,];
+}
+
+/**
+ * Tests whether every value the result can be is state the receiver held.
+ *
+ * A subset test, not an existential one, and the difference matters in both
+ * directions.
+ *
+ * It fixes a false negative. `Map<string, A | B>.get` returns `A | B | undefined`,
+ * whose constituents are `A`, `B` and `undefined`, while the held type is the union
+ * `A | B` as a single object. Asking whether any result constituent is identical to
+ * the held type finds nothing, because the union object itself never appears among the
+ * flattened constituents. Normalizing both sides removes that.
+ *
+ * It is also stricter. Under an existential test a member returning
+ * `Labelled | string` would validate on the `Labelled` constituent alone, crediting
+ * the receiver for a result that may be a fresh primitive instead. Requiring every
+ * constituent to be held state, or absent, refuses that.
+ *
+ * `undefined` is admitted because every entry in the authority returns an optional:
+ * an absent element is not receiver state and cannot be mutated, so its presence says
+ * nothing against the relation.
+ *
+ * @param resultType - Instantiated result type of the call.
+ *
+ * @param heldType - Receiver-held type at the authority's recorded position.
+ *
+ * @returns whether the result can only be held state or absence.
+ *
+ * @example
+ * ```ts
+ * resultIsHeldState({ resultType, heldType });
+ * ```
+ */
+function resultIsHeldState({
+  resultType,
+  heldType,
+}: {
+  readonly resultType: Type;
+  readonly heldType: Type;
+},): boolean {
+  /**
+   * Every distinct value the receiver's held position can be.
+   */
+  const held = new Set(identityCandidates({ type: heldType, },),);
+  /**
+   * Every distinct value this call's result can be.
+   */
+  const results = identityCandidates({ type: resultType, },);
+  /* An empty result set would satisfy a subset test vacuously, so require that the
+   * result contributes at least one held constituent rather than only absence. */
+  return results.some(function isHeldState(candidate,): boolean {
+      return held.has(candidate,);
+    },)
+    && results.every(function isHeldStateOrAbsent(candidate,): boolean {
+      return held.has(candidate,)
+        || ((candidate.flags & TypeFlags.Undefined) !== 0);
+    },);
 }
 
 /**
@@ -209,11 +268,10 @@ export function callResultReceiver({
   const resultType = checker.getTypeAtLocation(call,);
   if ((heldType === undefined) || (resultType === undefined))
     return RESULT_NOT_RECEIVER_STATE;
-  /**
-   * Result constituents compared against the receiver-held type.
-   */
-  const candidates = identityCandidates({ type: resultType, },);
-  return candidates.includes(heldType,)
+  return resultIsHeldState({
+      resultType,
+      heldType,
+    },)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
 }

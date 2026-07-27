@@ -266,3 +266,42 @@ export function assertedLookupMutationEffect(
 export function computedStructureEffect(values: string[],): void {
   values['push']('appended',);
 }
+
+/**
+ * Second element shape, so a map value type can be a union of object types.
+ */
+type Tagged = {
+  tag: string;
+};
+
+/**
+ * Mutates a looked-up value whose declared type is a union of object types.
+ *
+ * The normalization probe. `Map<string, Labelled | Tagged>.get` returns
+ * `Labelled | Tagged | undefined`, whose constituents are the two object types plus
+ * absence, while the receiver's held position is the union `Labelled | Tagged` as one
+ * type object. Asking whether any result constituent is identical to that union finds
+ * nothing, because the union object never appears among its own flattened
+ * constituents, so this mutation went unattributed.
+ *
+ * @param records - Map whose stored union-typed value is rewritten.
+ *
+ * @param key - Lookup key.
+ *
+ * @example
+ * ```ts
+ * unionValueLookupEffect(new Map(), 'k');
+ * ```
+ */
+export function unionValueLookupEffect(
+  records: Map<string, Labelled | Tagged>,
+  key: string,
+): void {
+  const stored = records.get(key,);
+  if (stored === undefined)
+    return;
+  if ('label' in stored)
+    stored.label = 'rewritten';
+  else
+    stored.tag = 'rewritten';
+}
