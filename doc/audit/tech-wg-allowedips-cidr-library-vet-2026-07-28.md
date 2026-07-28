@@ -765,6 +765,14 @@ The source locks pin every fetched artifact by integrity.
 
 The fetch command copies each read-only source tree and runs
 `corepack pnpm@11.17.0 install --frozen-lockfile`.
+The first network-disabled lint attempt then failed with exact diagnostic `spawnSync pnpm ENOENT`.
+Source inspection found `eslint-silverwind.js:1` invoking
+`execFileSync('pnpm', ['exec', 'eslint', ...])`.
+This was a validation-environment omission,
+ not a candidate result.
+A second bounded fetch step will persist Corepack's pnpm 11.17.0 cache under `/work/.corepack` and create a
+`/work/bin/pnpm` dispatch symlink.
+The rerun adds that directory to `PATH` and keeps networking disabled.
 `pnpm-workspace.yaml` sets `ignoreScripts: true`,
  so no package lifecycle can execute.
 Corepack fetches and invokes pnpm 11.17.0;
@@ -826,12 +834,16 @@ With networking disabled,
  the command path is:
 
 ```text
-# ~/temp/agent/fast-cidr-tools-0.3.4/package.json
+# ~/temp/agent/fast-cidr-tools-0.3.4/.github/workflows/publish.yml
+node_modules/.bin/bunchee --clean --target=es2021
 node_modules/.bin/eslint --format=sukka .
 node_modules/.bin/mocha --require @swc-node/register test/index.test.ts
-node_modules/.bin/bunchee --clean --target=es2021
 ```
 
+An initial lint-before-build attempt failed because `benchmark.cts` imports the absent built artifact.
+The exact diagnostic was `Unable to resolve path to module ./dist/es/index.mjs`.
+The upstream workflow builds before lint,
+ so the corrected command order matches `.github/workflows/publish.yml:31-35`.
 Mocha loads `@swc-node/register`,
  which loads the lock-pinned `@swc/core` Linux x64 prebuilt.
 ESLint loads the project config.
@@ -916,8 +928,12 @@ node wg-cidr-consumer-validation.mjs fast-cidr-tools
 node wg-cidr-consumer-validation.mjs @h3mantd/ip-kit
 ```
 
-The harness SHA-256 is
-`6b076d48d9c0c09fd069b306b2251eae7386a4ff964055fb55e84b70fd94607e`.
+The first `ip-kit` consumer attempt exposed that `RangeSet.fromCIDRs` rejects host literals with exact
+diagnostic `Invalid CIDR format: 192.0.2.1`.
+The corrected consumer adapter converts hosts to `/32` or `/128` before family partitioning,
+ which is additional production orchestration attributable to this candidate.
+The corrected harness SHA-256 is
+`b03a47741353be79c5fb92506a094e58f7c955e80b34fcf37cd02f93e896c3d6`.
 It exercises five fixed vectors for dual-stack union,
  subtraction,
  minimization,
