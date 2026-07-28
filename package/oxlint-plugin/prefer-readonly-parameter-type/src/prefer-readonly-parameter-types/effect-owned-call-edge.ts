@@ -43,6 +43,8 @@ import type {
 } from './effect-slot-identity.ts';
 import { parametersOfSlots, } from './effect-slot-projection.ts';
 
+import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
+
 /**
  * Sentinel marking a formal that no single actual argument fills.
  */
@@ -59,7 +61,6 @@ const SLOT_IS_WHOLE_PARAMETER: unique symbol = Symbol(
  * Property key one slot names, or the sentinel for a whole-parameter slot.
  */
 type SlotPropertyKey = string | typeof SLOT_IS_WHOLE_PARAMETER;
-import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
 
 /**
  * Adds one owned call edge with caller-relative parameter roots.
@@ -175,8 +176,11 @@ export function addOwnedCallEdge({
        * array indexes. In `function callee(...{ 0: box })` the key `0` is the whole first
        * actual, and resolving that key against a caller's `{ named: owned }` would find
        * nothing and lose every write through `box`. */
-      if (callee.parameters[formalIndex]
-        ?.dotDotDotToken !== undefined)
+      /**
+       * Formal this position describes, absent when the mapping outruns the declaration.
+       */
+      const formal = callee.parameters[formalIndex];
+      if ((formal === undefined) || (formal.dotDotDotToken !== undefined))
         return ARGUMENT_NOT_DECOMPOSABLE;
       /**
        * Decomposition of every actual that can fill this formal.

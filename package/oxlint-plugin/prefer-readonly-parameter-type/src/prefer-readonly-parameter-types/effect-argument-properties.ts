@@ -374,7 +374,8 @@ export function originsOfPropertyKey({
    * Origins collected while walking back towards the defining property.
    */
   const origins = new Set<EffectSlot>();
-  for (const contribution of view.contributions.toReversed()) {
+  for (const contribution of view.contributions
+    .toReversed()) {
     if (contribution.key === key) {
       contribution.origins
         .forEach(function collectExact(origin,): void {

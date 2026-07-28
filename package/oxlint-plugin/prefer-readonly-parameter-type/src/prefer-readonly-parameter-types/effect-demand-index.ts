@@ -11,6 +11,7 @@ import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { directEffectSummary, } from './direct-effect-summary.ts';
+import { sourceIdentity, } from './effect-source-identity.ts';
 import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { createDependencyClosureResolver, } from './effect-dependency-closure.ts';
 import { propagateEffects, } from './effect-fixed-point-propagation.ts';
@@ -35,10 +36,6 @@ import {
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 
-/**
- * Tagged logger for effect index construction.
- */
-const dl = tagged({ tag: 'effect-demand-index', },);
 import {
   type CallableEffectSummary,
   type EffectSummaryIndex,
@@ -50,6 +47,11 @@ import {
 } from './external-callable-effect.ts';
 import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
 import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
+
+/**
+ * Tagged logger for effect index construction.
+ */
+const dl = tagged({ tag: 'effect-demand-index', },);
 
 /**
  * Inputs needed to construct one exact-snapshot demand index.
@@ -65,51 +67,6 @@ type DemandDrivenEffectIndexOptions = {
   readonly buildIndex: ExternalEffectIndexBuilder;
   readonly analysisBudget: EffectAnalysisBudget;
 };
-
-/**
- * Builds layered-cache identity for one reached source.
- *
- * @param project - Semantic project owning cache scope.
- *
- * @param scopeKey - Persistent scope identity.
- *
- * @param projectDigest - Exact semantic project identity.
- *
- * @param sourceFile - Reached source whose summaries are requested.
- *
- * @param cacheRootOverride - Optional disposable cache root.
- *
- * @returns shared process and persistent cache identity.
- */
-function sourceIdentity({
-  project,
-  scopeKey,
-  projectDigest,
-  sourceFile,
-  cacheRootOverride,
-}: {
-  readonly project: Project;
-  readonly scopeKey: string;
-  readonly projectDigest: string;
-  readonly sourceFile: SourceFile;
-  readonly cacheRootOverride?: string;
-}): {
-  readonly projectKey: string;
-  readonly scopeKey: string;
-  readonly projectDigest: string;
-  readonly fileName: string;
-  readonly sourceText: string;
-  readonly cacheRootOverride?: string;
-} {
-  return {
-    projectKey: project.configFileName,
-    scopeKey,
-    projectDigest,
-    fileName: sourceFile.fileName,
-    sourceText: sourceFile.text,
-    ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
-  };
-}
 
 /**
  * Creates mutable index that expands only from requested callable sources.

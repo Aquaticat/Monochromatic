@@ -50,6 +50,7 @@ function trappedObject({ hits, }: { readonly hits: TrapHits; },): Record<string,
       hits.push('ownKeys',);
       return Reflect.ownKeys(receiver,);
     },
+    // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Mirrors the external ProxyHandler.getOwnPropertyDescriptor contract, which returns a descriptor or `undefined` for an absent own property; the trap cannot narrow what the specification defines.
     getOwnPropertyDescriptor(receiver, property,): PropertyDescriptor | undefined {
       hits.push('getOwnPropertyDescriptor',);
       return Reflect.getOwnPropertyDescriptor(receiver, property,);
@@ -58,6 +59,7 @@ function trappedObject({ hits, }: { readonly hits: TrapHits; },): Record<string,
       hits.push('defineProperty',);
       return Reflect.defineProperty(receiver, property, descriptor,);
     },
+    // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- Mirrors the external ProxyHandler.getPrototypeOf contract, whose `null` is the real end of a prototype chain rather than an absent value.
     getPrototypeOf(receiver,): object | null {
       hits.push('getPrototypeOf',);
       return Reflect.getPrototypeOf(receiver,);

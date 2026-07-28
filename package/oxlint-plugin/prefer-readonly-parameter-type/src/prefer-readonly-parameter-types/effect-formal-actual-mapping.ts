@@ -164,7 +164,7 @@ function calleeHasThisParameter({
   /**
    * First declared formal, absent for a callable taking nothing.
    */
-  const first: Node | undefined = callee.parameters[0]
+  const first = callee.parameters[0]
     ?.name;
   if (first === undefined)
     return false;

@@ -164,7 +164,7 @@ export function verifiedReaderCall({
   /**
    * Value the reader reads, which is always its first argument.
    */
-  const operand = call.arguments[0];
+  const [operand,] = call.arguments;
   if (operand === undefined)
     /* Called with nothing to read. Nothing caller-owned reaches it, and there is no
      * operand to answer for, so it stays unproven rather than being answered vacuously. */
@@ -215,7 +215,7 @@ function operandHoldsOnlyData({
   /**
    * Type the operand carries at this call.
    */
-  const operandType: Type | undefined = checker.getTypeAtLocation(operand,);
+  const operandType = checker.getTypeAtLocation(operand,);
   if (operandType === undefined)
     return false;
   if (checker.getSignaturesOfType(
