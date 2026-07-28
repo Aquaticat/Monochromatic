@@ -56,6 +56,11 @@ const EXTENDED_GLOB_PREFIXES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Sentinel returned when inline option assignment separator is absent.
+ */
+const OPTION_ASSIGNMENT_NOT_FOUND = -1;
+
+/**
  * Check original shell spelling has runtime expansion outside quotes.
  *
  * @param sourceText - exact shell word spelling
@@ -138,10 +143,17 @@ function sourceHasUnsafeExpansion(
 function loopSourceIsLiteral(
   source: WordSource,
 ): boolean {
-  return (!source.value.includes('$',))
-    && (!source.value.includes('`',))
-    && (!source.value.startsWith('~',))
-    && (!sourceHasUnsafeExpansion(source.sourceText,));
+  /**
+   * Parsed value and exact shell spelling checked as one provenance fact.
+   */
+  const {
+    sourceText,
+    value,
+  } = source;
+  return (!value.includes('$',))
+    && (!value.includes('`',))
+    && (!value.startsWith('~',))
+    && (!sourceHasUnsafeExpansion(sourceText,));
 }
 
 /**
@@ -230,6 +242,9 @@ function provenWordValues(
     readonly command: CommandInfo;
   },
 ): ProvenWordValues {
+  /**
+   * Parsed value and original spelling used by expansion proof.
+   */
   const {
     sourceText,
     value,
@@ -288,7 +303,7 @@ function pathCandidates(
    * Inline long-option assignment separator.
    */
   const assignmentIndex = value.indexOf('=',);
-  if ((assignmentIndex !== -1)) {
+  if (assignmentIndex !== OPTION_ASSIGNMENT_NOT_FOUND) {
     /**
      * Value after option assignment.
      */
