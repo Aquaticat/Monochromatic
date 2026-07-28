@@ -274,7 +274,7 @@ function drainIteratorResult({ result, }: { readonly result: unknown; },): void 
   /**
    * Advancing member, present only when the result is an iterator.
    */
-  const advance = (result as Record<string, unknown>)['next'];
+  const advance = (result as { readonly next?: unknown; }).next;
   if ((typeof advance) !== 'function')
     return;
   /**
