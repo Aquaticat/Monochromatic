@@ -17,7 +17,7 @@ export type LookupAddress = {
  */
 export type LookupAddresses = (
   { hostname, }: { readonly hostname: string; },
-) => Promise<readonly LookupAddress[]>;
+) => Promise<readonly LookupAddress[]> | readonly LookupAddress[];
 
 /**
  * Module logger for input-to-network conversion.
