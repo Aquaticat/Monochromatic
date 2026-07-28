@@ -230,7 +230,14 @@ function addUnknownInbound({
  *
  * @param analysisRoot - Optional external package root admitted as owned.
  *
- * @returns foreign parameter indexes for demanded backwards closure.
+ * @returns foreign parameter indexes for demanded backwards closure, and the callables whose
+ * own inbounds that closure enumerated.
+ *
+ * Only the enumerated callables carry a complete answer. The returned map also holds entries
+ * for callees that closure members happen to call without the walk ever reaching them, because
+ * grouping inbounds sees every edge a member's summary carries. Those entries are built from the
+ * subset of inbounds the closure happened to contain, so a consumer that treats them as proven
+ * pins a partial answer.
  *
  * @example
  * ```ts
@@ -254,7 +261,10 @@ export function completeForeignBorrowedGraph({
   readonly rootDeclaration: EffectCallableDeclaration;
   readonly analysisBudget: EffectAnalysisBudget;
   readonly analysisRoot?: string;
-}): ReadonlyMap<string, ReadonlySet<ParameterIndex>> {
+}): {
+  readonly foreignByCallable: ReadonlyMap<string, ReadonlySet<ParameterIndex>>;
+  readonly enumerated: ReadonlySet<string>;
+} {
   /**
    * Ownership summaries in demanded backwards caller closure.
    */
@@ -405,5 +415,8 @@ export function completeForeignBorrowedGraph({
       }
     },);
   }
-  return propagateForeignBorrowed(summaries,);
+  return {
+    foreignByCallable: propagateForeignBorrowed(summaries,),
+    enumerated: visited,
+  };
 }

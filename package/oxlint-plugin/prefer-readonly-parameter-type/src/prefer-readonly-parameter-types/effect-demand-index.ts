@@ -444,25 +444,26 @@ export function createDemandDrivenEffectIndex(
           analysisBudget,
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
-        /* Every callable the closure returned is verified, not just the root it started from.
-         * The walk queues each caller it discovers and enumerates that caller's own signature
-         * usages project-wide, so a callable appearing in the result had its inbounds covered
-         * as completely as the root did. Marking only the root left the rest to each re-run a
-         * whole backwards closure when asked about, which is where most of the cost of proving
-         * every callable went. */
-        completeForeign.forEach(function retainCompleteForeign(
-          indexes,
-          callableKeyValue,
-        ): void {
-          completeForeignByCallable.set(
-            callableKeyValue,
+        completeForeign.foreignByCallable
+          .forEach(function retainCompleteForeign(
             indexes,
-          );
-          verifiedForeignKeys.add(callableKeyValue,);
-        },);
-        /* The root is marked separately because a root the closure found no candidate for is
-         * absent from the result, and re-proving it would repeat the same empty answer. */
-        verifiedForeignKeys.add(key,);
+            callableKeyValue,
+          ): void {
+            completeForeignByCallable.set(
+              callableKeyValue,
+              indexes,
+            );
+          },);
+        /* Only the callables the walk actually enumerated are marked proven, which saves each of
+         * them re-running a whole backwards closure when the rule asks about it. Marking every
+         * key of the returned map instead was measurably wrong: grouping inbounds also produces
+         * entries for callees a closure member calls without the walk ever reaching them, built
+         * from whichever inbounds the closure happened to contain, and pinning those moved six
+         * findings across the workspace. */
+        completeForeign.enumerated
+          .forEach(function markProven(callableKeyValue,): void {
+            verifiedForeignKeys.add(callableKeyValue,);
+          },);
       }
       /* Every key reaching here has been verified, since the proof above runs for any key that
        * has not. The lookup still defaults, because a callable the closure finds no inbound for
