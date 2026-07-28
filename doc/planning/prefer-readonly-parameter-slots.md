@@ -20,13 +20,18 @@ as a pure function of the declaration alone:
 - slots below `parameterCount` are the whole parameters,
    numbered exactly as parameter indexes are today,
    so every existing fact keeps its meaning;
-- slots from `parameterCount` upward are one per named binding a parameter's destructuring
-   pattern introduces.
+- slots from `parameterCount` upward are one per statically canonical top-level property key an
+   object pattern in a parameter reads.
 
-Depth is deliberately capped at one property.
-A nested pattern attributes its inner bindings to the outer property's slot,
-which is sound because a write through the inner binding is a write through the outer property,
+The unit is the property key, not the binding.
+`{ a: x, a: y }` reads one property twice and gets one slot that both symbols register against.
+`{ a: { b } }` gives property `a` a slot and registers `b` against it,
+which is sound because a write through `b` is a write through `a`,
 and more precise than widening to the parameter.
+Defining the unit as the binding instead would leave `a` with no slot in that second case,
+which is the direction that loses writes.
+
+Depth is capped at one property, so nothing below the top level gets its own slot.
 
 Purity of the allocator is what lets a caller and a callee agree on a numbering without the
 caller re-analyzing the callee's body.
@@ -41,11 +46,30 @@ That is today's behaviour, so it is not a regression.
 
 A string slot key on the edge would let the caller name a callee property without knowing the
 callee's numbering.
-It buys nothing here.
-The caller already holds the declaration,
-`analyzerDigest()` hashes every analyzer source so a change to the allocator invalidates every
-persisted summary,
-and numbers keep the serialization, the hashing and the propagation loop unchanged in shape.
+The hazard it guards against is a persisted caller edge outliving a change to the callee that
+renumbers slots,
+which would map an effect onto the wrong argument.
+
+That hazard is already closed, and by content rather than by naming.
+`PersistentEffectCacheEnvelope` in `effect-cache-envelope.ts` snapshots a content digest for
+every non-declaration workspace file in the entry's transitive module-dependency closure,
+and an entry revalidates only while every one of those digests still matches.
+A callee edit changes the callee file's digest,
+the callee is in the caller's closure,
+so the caller's cached edges are discarded before they can be misread.
+An entry whose module references did not resolve snapshots the whole indexed scope instead,
+which fails in the same safe direction.
+
+Numbers therefore keep the serialization, the hashing and the propagation loop unchanged in
+shape,
+and buy the safety a string key would have been paying for.
+Two things still have to move with them:
+`schema` is bumped because the payload gains a field,
+and `isParameterIndexes` in `effect-summary-cache-validation.ts` bounds every stored index by
+`parameterCount`,
+which a property slot exceeds by construction.
+Left alone it would reject valid payloads rather than accept invalid ones,
+so it fails safe, but it makes the cache useless.
 
 ## The brand is the safety mechanism
 
@@ -86,6 +110,48 @@ Slots split them, so each is decided here:
    The conversion happens where the edge is built, not where it is read.
 - `directForeignArguments` stays parameter-indexed, for the same reason.
 
+## The caller-side fallback is what makes this sound
+
+Propagation reads `edge.arguments[calleeSlot]` where `calleeSlot` comes from the callee's
+effect set.
+When the callee records a write on property slot `0.named`,
+nothing ever consults the whole-parameter slot.
+So a caller that cannot decompose its actual and fills only the whole slot turns a precise
+callee fact into an empty mapping,
+and the write disappears.
+
+The rule is therefore the opposite of a widening:
+
+- **Inside the callee**, an unsupported binding or effect attributes to the whole-parameter
+   slot. This is a widening and it withholds offers.
+- **At the caller**, an actual that cannot be decomposed contributes its origins to the whole
+   slot **and to every property slot of that formal**. This is a broadcast, and skipping it
+   loses writes.
+
+The two are not symmetric and stating only the first is unsound.
+The broadcast covers a non-literal actual, a call spread, a computed key, an object spread, a
+conditional, an alias whose aggregate structure is unavailable, and every position past a
+call spread.
+
+A child effect is never added to the whole slot inside a summary.
+That would erase the precision the whole change exists to recover,
+because the whole slot maps to every origin the actual packages.
+
+## Callback and observer effects must project before they are read
+
+Two consumers index a summary with something that is not a slot in that summary:
+
+- `effect-callback-relation.ts` tests `callbackSummary.mutated.has(relation.callbackArgumentIndex)`,
+   where the index is an actual argument position of the callback invocation.
+- `effect-element-application.ts` tests an observer summary with
+   `ElementApplication.callbackParameterIndexes`.
+
+A callback or observer that destructures its parameter records a property slot,
+and both tests then miss it.
+Both project the callback summary to parameters before applying the existing relation.
+That keeps current soundness without claiming property precision through callbacks,
+which needs `CallbackRelation` to describe a slot-to-slot mapping and is out of scope here.
+
 ## The external path needs projection, not slots
 
 `applyExternalEffect` indexes a positional argument map with parameter indexes taken from an
@@ -109,27 +175,75 @@ Each stage is committed separately and the workspace sweep is compared by offer 
 ## Rules decided in advance
 
 - **Renamed binding** `{ a: b }`. The slot key is the property name `a`, since that is what a
-   caller writes; the symbol registered is `b`'s.
-- **Rest property** `{ a, ...rest }`. `rest` takes the whole-parameter slot. No caller property
-   name matches it, and it can hold any property the literal supplies.
-- **Default inside a pattern** `{ a = fallback }`. The binding takes its own property slot;
-   the initializer's own origins are registered against that slot.
-- **Computed property name**. No slot. The binding takes the whole-parameter slot.
-- **Spread in the caller's literal** `{ ...other, named: first }`. Every property slot of that
-   formal receives the full union of the literal's origins. Ordering between a spread and a
-   later property is not reasoned about.
-- **Non-literal actual**. Every property slot of the formal receives the actual's origins,
-   which is what happens today.
+   caller writes; the symbol registered is `b`'s. Diagnostics keep the authored name `b`.
+- **Duplicate keys** `{ a: x, a: y }`. One slot for property `a`, both symbols registered
+   against it.
+- **Equivalent keys** `{ 1: x }` against `{ "1": y }`. Keys are canonicalized to the property
+   name the checker resolves, so equivalent spellings agree. The key is held in a map owned by
+   the parameter rather than concatenated into one string, so no delimiter needs escaping.
+- **Rest property** `{ a, ...rest }`. `rest` takes the whole-parameter slot. It names a
+   complement set rather than a property, so no caller property key ever matches it.
+- **Array pattern** `[first, second]`, elisions and array rest. Whole-parameter slot. Positional
+   element keys are not modelled.
+- **Default inside a pattern** `{ a = fallback }`. The binding takes property `a`'s slot, and
+   the initializer's own origins are unioned into it. `BindingElement.initializer` is walked
+   neither for origins nor for effects today, which is a gap this has to close rather than
+   inherit.
+- **Computed property name** `{ [key]: value }`. No slot. The binding takes the whole-parameter
+   slot, and a caller's unknown computed key contributes to every property slot.
+- **Caller literal, property order**. Resolved by walking the literal's properties in reverse
+   for each target key: an exact match contributes its value and stops; a known different key
+   is ignored; an unknown computed key contributes and continues; a spread contributes every
+   origin of its source and continues. So `{ ...other, named: first }` attributes `named` to
+   `first` alone, while `{ named: first, ...other }` attributes it to both.
+- **Non-literal actual**. Broadcast: every property slot of the formal receives the actual's
+   origins, which is what happens today.
 - **Overloads**. `overload-consistency.ts` compares two different declarations with two
    different slot tables, so both sides project to parameters before comparing.
 - **Propagation bound**. `effect-fixed-point-propagation.ts` counts
    `parameterCount * EFFECT_DIMENSION_COUNT`. It becomes slot-count-based, otherwise
    `EffectPropagationError` throws on a program that is converging normally.
 
+## Two structural requirements the current code does not meet
+
+`addOwnedCallEdge` receives `allArgumentIndexes`, which is already flattened: each actual has
+been reduced to a list of caller origins with no record of which property contributed which.
+Property matching cannot be reconstructed from it,
+so the edge has to be built from structured argument provenance,
+which means the builder also needs `bindingOriginBySymbolId`.
+
+`registerBindingOrigin` is used both to seed parameters and to register local aliases,
+and it recurses through any pattern it is handed.
+Only the parameter seeding may allocate property slots.
+An alias destructured from an unrelated local must not invent one,
+so the two uses become separate operations.
+
+## What this fixes, beyond precision
+
+The index collapse was recorded as a precision cost.
+Three live unsoundnesses were measured on a throwaway fixture while designing this,
+each offering `readonly` for a parameter something writes:
+
+- A callback and its argument packaged into one destructured parameter.
+   `probeInvoke({ callback, value })` invoking `callback(value)` reads `referentMutated=[]`
+   while the callback writes through what it receives. The same call written positionally
+   reads `[0]`, which isolates the cause to the destructured parameter.
+   `propagateCallbackRelations` looks up `edge.callbackKeys[relation.callbackParameterIndex]`,
+   finds the object literal at that position is not a callable, and `continue`s. Tracked as
+   task #27.
+- A callee reached through a local holding an object literal.
+   `const options = { named: first }; callee(options)` reads `referentMutated=[]` where the
+   direct literal reads `[0]`, because `provenanceSuccessors` has no case for an aggregate
+   literal. Independent of slots. Tracked as task #28.
+- The precision loss itself, which withholds offers rather than making wrong ones and is the
+   one the acceptance criterion measures.
+
 ## Acceptance
 
 `narrowingPrecisionCostEffect` reads `mutated` projected to parameters as the first parameter
 alone, where it reads both today.
+Adversarial fixtures cover every shape the rules above widen or broadcast,
+and each must retain the write even where that means both caller parameters stay affected.
 Fixture assertions state both levels,
 parameter-level for the invariants that must not move and slot-level for the new precision,
 so a regression in the projection cannot hide behind a passing parameter-level assertion.
