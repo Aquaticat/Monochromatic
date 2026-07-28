@@ -761,6 +761,41 @@ children: [
     },
   },),
   it({
+    name: 'keeps a receiver-held tuple out of the exposure discharge',
+    fn: async () => {
+      const diagnostics = await lintReadonly(
+        'readonly-tuple-exposure-invalid.ts',
+      );
+      /* Three opacity reports and no offer. `resultExposesMutableState` calls a tuple
+       * type argument state-carrying without looking inside it, which is what keeps
+       * these reported, and recursing into the tuple's own positions looks like an
+       * obvious refinement.
+       *
+       * It is unsound, measured rather than argued. With that recursion applied via
+       * `checker.isTupleType`, all three reports vanish and
+       * `rewriteMutableStoredPair` is offered as read-only while its body runs
+       * `pair[0] = 'rewritten'` on a tuple the array holds. A tuple is caller-owned
+       * state whatever its positions are, because the tuple itself is writable, and
+       * only a member that builds the tuple fresh could discharge it. That is the
+       * container relation `FRESH_CONTAINER_MEMBER_NAMES` records as unbuilt.
+       *
+       * A note for anyone retrying it: `Type.isTupleType()` answers false for these
+       * arguments and `checker.isTupleType(type)` answers true, so a first attempt
+       * can look like a safe no-op while testing nothing. */
+      expect(diagnostics.length,).toBe(3,);
+      expect(diagnostics.every(function reportsIteratorOpacity(
+        diagnostic,
+      ): boolean {
+        return diagnostic.message
+          .includes('rows.values',);
+      },),).toBe(true,);
+      expect(diagnostics.some(function offersAnything(diagnostic,): boolean {
+        return diagnostic.message
+          .includes('should be readonly',);
+      },),).toBe(false,);
+    },
+  },),
+  it({
     name: 'keeps foreign ownership anchored to a marker through recursion',
     fn: async () => {
       const diagnostics = await lintReadonly(
