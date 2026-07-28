@@ -97,6 +97,38 @@ async function isTrustedAgentTempDir(
 }
 
 /**
+ * Canonicalize account home before deriving trusted scratch child.
+ *
+ * A symlink at operating-system home mount is account identity, while symlinks
+ * below canonical home remain subject to {@link isTrustedAgentTempDir}.
+ *
+ * @param home - runtime account home spelling
+ *
+ * @returns canonical home when available, otherwise lexical absolute fallback
+ *
+ * @example
+ * ```typescript
+ * await canonicalHomePath('/home/user');
+ * ```
+ */
+async function canonicalHomePath(
+  home: string,
+): Promise<string> {
+  try {
+    return await realpath(home,);
+  }
+  catch (error) {
+    /** Metadata failure remains visible while downstream trust check fails closed. */
+    const innerL = tagged({
+      tag: canonicalHomePath.name,
+      l: moduleLogger,
+    },);
+    innerL.debug(`home realpath failed for ${home}: ${String(error,)}`,);
+    return resolve(home,);
+  }
+}
+
+/**
  * Return private roots for structured reads and Bash helper execution.
  *
  * Current `~/temp/agent` is preferred. Historical `/tmp/agent` remains trusted
@@ -123,11 +155,15 @@ async function agentTempAllowlistedDirs(
   } = {},
 ): Promise<readonly string[]> {
   /**
+   * Canonical account home keeps OS-level `/home` aliases outside scratch policy's symlink check.
+   */
+  const canonicalHome = await canonicalHomePath(home,);
+  /**
    * Candidate roots whose current metadata is checked for every relevant tool call.
    */
   const candidateDirs = [
     join(
-      home,
+      canonicalHome,
       'temp',
       'agent',
     ),
