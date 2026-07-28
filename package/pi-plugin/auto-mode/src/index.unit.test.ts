@@ -677,6 +677,15 @@ await describe({
           tmpdir(),
           'amode-index-outside-',
         ),);
+        /** Existing outside ripgrep configuration source. */
+        const outsideIgnorePath = join(
+          outsideRoot,
+          'ignore',
+        );
+        await writeFile(
+          outsideIgnorePath,
+          'ignored\n',
+        );
         await symlink(
           outsideRoot,
           join(
@@ -703,7 +712,9 @@ await describe({
           `rg fixture ${agentRoot} > ${targetPath}`,
           `find ${agentRoot} -type f -exec touch {} \\;`,
           `find -L ${agentRoot} -type f -print`,
+          `find ${agentRoot} -follow -type f -print`,
           `sort --output=${targetPath}`,
+          `sort --temporary-directory=${agentRoot}`,
           `printf -v result '%s' fixture`,
           `MODE=fixture rg fixture ${agentRoot}`,
           `for repo in ${agentRoot}/{repo,../../outside}; do git -C "$repo" tag --points-at HEAD; done`,
@@ -711,6 +722,7 @@ await describe({
           `rg fixture ${agentRoot}/*`,
           `rg fixture ${agentRoot}/escape`,
           `rg fixture ${outsideRoot}`,
+          `rg --ignore-file ${outsideIgnorePath} fixture ${agentRoot}`,
           `rg fixture ${secretPath}`,
         ];
         const {

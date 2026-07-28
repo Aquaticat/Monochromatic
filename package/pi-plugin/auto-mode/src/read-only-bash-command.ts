@@ -56,6 +56,7 @@ const FIND_NON_READ_ACTIONS: ReadonlySet<string> = new Set([
 const FIND_UNBOUNDED_LINK_OPTIONS: ReadonlySet<string> = new Set([
   '-H',
   '-L',
+  '-follow',
 ]);
 
 /**
@@ -64,7 +65,9 @@ const FIND_UNBOUNDED_LINK_OPTIONS: ReadonlySet<string> = new Set([
 const SORT_NON_READ_OPTIONS: ReadonlySet<string> = new Set([
   '--compress-program',
   '--output',
+  '--temporary-directory',
   '-o',
+  '-T',
 ]);
 
 /**
