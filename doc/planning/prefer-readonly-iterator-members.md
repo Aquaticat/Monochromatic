@@ -144,6 +144,26 @@ Removing the `keys` entries from the authority and rebuilding takes that fixture
 to nine,
 which is exactly the two functions asserted silent.
 
+P4 is answered narrowly rather than by its totals,
+and the totals are worth distrusting.
+The sweep ran as one root invocation at one thread,
+where the 1932 figure it would be compared against came from the sequential per-package procedure,
+so the two are different measurements;
+the fixture additions above account for two findings on their own.
+What the sweep does answer:
+offers stand at 32,
+the same count as before the change,
+and none of the fifteen files containing those offers holds a `keys`, `values` or `entries` call at
+all.
+Since the discharge fires only at an iterator call site,
+no offer in this repository could have come from it.
+
+The measured control for what stage two would be worth:
+`[...records,].reduce(owned, 0)` over a parameter array reports nothing,
+because `recordReadonlyViewApplications` answers it before the channel check is reached.
+So the cause at `:49` would be removed rather than moved,
+had the discharge been able to fire at all.
+
 ### Why the discharge cannot hide a write
 
 An argument,
@@ -252,3 +272,44 @@ because two very different results both count as progress and only one counts as
      a silent read-only offer for `summaries`.
      That parameter's values are written on every propagation pass,
      so an offer means the analysis lost an effect it used to see.
+
+## Settled
+
+The second outcome holds:
+the finding stays,
+and its remaining cause is now named exactly.
+
+`summaries.values` still reports,
+and no longer for the reason the exemption recorded.
+The channel is verified;
+what is missing is a relation describing a container whose elements are receiver state,
+which is the same thing missing for every `.get` cause in the same finding.
+So the finding has one blocker rather than two,
+and iterator members are no longer among them.
+
+Closing that blocker is larger than a table entry,
+and this is the part worth carrying forward:
+
+-    A container relation alone changes nothing,
+     because `useEscapes` treats a `SpreadElement` parent and a `ForOfStatement` parent as
+     unrecognised and therefore escaping.
+     Every direct drainage shape hits one of those two.
+
+-    Making them attributed is a global widening,
+     not a change scoped to iterators.
+     `ReadonlyMap.get` is channel-verified with a direct receiver-value relation,
+     so admitting for-of would let `for (const value of groups.get('selected',)!)` discharge while
+     iteration runs arbitrary user code through `[Symbol.iterator]`, `next`, and `return` on abrupt
+     completion.
+     Nothing in alias discovery or `parameterIndexes` accounts for those.
+
+-    Even a complete stage two would leave the `:37` finding standing,
+     because its five other causes are untouched by it.
+
+A ticket for the tuple case is worth opening separately and is not part of this:
+`resultExposesMutableState` calls a tuple state-carrying without looking inside it,
+which is why `entries()` over `ReadonlyMap<string, string>` stays opaque when both positions are
+primitive.
+Recursing into tuple type arguments would be sound and local.
+The current behaviour is now pinned by a fixture assertion,
+so changing it is a deliberate act rather than a silent one.
