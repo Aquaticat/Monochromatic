@@ -235,11 +235,14 @@ export function inspectEffectCall({
   const overridable = (resolvedDeclaration !== undefined)
     && isOverridableMethod({ declaration: resolvedDeclaration, },);
   /**
-   * Owned callee declaration selected by signature or symbol fallback.
+   * Whether the signature resolved to a callable this analysis can inspect.
    */
-  const signatureCallee = ((resolvedDeclaration !== undefined)
-      && (!overridable)
-      && isEffectCallableDeclaration(resolvedDeclaration,))
+  const resolvedIsOwnedCallable = (resolvedDeclaration !== undefined)
+    && isEffectCallableDeclaration(resolvedDeclaration,);
+  /**
+   * Owned callee declaration selected by signature, when one body certainly runs.
+   */
+  const signatureCallee = (resolvedIsOwnedCallable && (!overridable))
     ? callableDeclaration({
       project,
       node: resolvedDeclaration,
