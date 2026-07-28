@@ -327,6 +327,35 @@ which is the only reason the withdrawal check was sound before the extractor was
 A comparator that silently drops half its input is worse than no comparator,
 so it now reports its own unlocated count and both sides read zero.
 
+## What stage 3 must do, predicted before it is measured
+
+Stage 3 changes message text and nothing else.
+Only `verifier.ts` reads `opaqueBindingsByParameter`, only to build a subject,
+and `affectedBindingNames` mutates nothing.
+So the invariant is far sharper than stage 2's:
+
+- **Offers are identical**, not merely unwithdrawn.
+- **The set of finding locations is identical.**
+- Only the message text of a report may differ.
+
+Any offer or location that moves is a bug rather than a tradeoff.
+
+One failure mode is specific enough to name in advance.
+`usageSubject` has an empty-list branch emitting "The function input at this location is",
+a subject that names nothing.
+`parameterNames` falls back to every binding when narrowing empties the list,
+but `inputMethodUsageSubject` applies its receiver filter after that fallback,
+so a narrowed list can survive `parameterNames` and then filter to empty.
+That is reachable rather than theoretical:
+`everyBoundaryIsInputMethod` answers yes when every boundary is a method on some binding of the
+parameter,
+while `affectedBindingNames` includes a binding only when its own slot is opaque,
+so opacity widened to the whole-parameter slot while the boundary names a property binding leaves
+the receiver out of the narrowed set.
+The check is a count of that phrase across both sweeps, and any increase is the regression.
+The remedy is to apply the receiver filter first and fall back to the unnarrowed receiver list,
+never to widen what counts as affected.
+
 ## Rules decided in advance
 
 - **Renamed binding** `{ a: b }`. The slot key is the property name `a`, since that is what a
