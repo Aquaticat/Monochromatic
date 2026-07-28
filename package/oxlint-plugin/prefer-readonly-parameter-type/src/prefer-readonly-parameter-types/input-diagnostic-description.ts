@@ -147,16 +147,64 @@ export function inputMethodUsageSubject({
   readonly parameterIndex: number;
   readonly affectedNames?: ReadonlySet<string>;
 },): string {
-  return usageSubject(parameterNames({
-    targetIndexes,
-    parameterIndex,
-    ...(affectedNames === undefined) ? {} : { affectedNames, },
-  },)
-    .filter(function usedAsReceiver(name,): boolean {
-      return boundaries.some(function beginsWithName(boundary,): boolean {
-        return boundary.startsWith(`${name}.`,);
-      },);
-    },),);
+  /**
+   * Receivers among the bindings whose own slot carries the effect.
+   */
+  const narrowed = receiverNames({
+    names: parameterNames({
+      targetIndexes,
+      parameterIndex,
+      ...(affectedNames === undefined) ? {} : { affectedNames, },
+    },),
+    boundaries,
+  },);
+  /* Two filters run in sequence and they can disagree, so the second one gets its own fallback.
+   * `parameterNames` already falls back to every binding when narrowing empties its list, but the
+   * receiver filter runs after that and can empty the result again. The disagreement is real
+   * rather than theoretical: the message kind is chosen by `everyBoundaryIsInputMethod` from
+   * every binding of the input, while a binding counts as affected only when its own slot carries
+   * the effect, so opacity widened to the whole parameter while a boundary names one property
+   * leaves the receiver outside the narrowed set. An empty list reads "The function input at this
+   * location is", which names nothing a reader can act on, so the unnarrowed receivers answer
+   * instead. Widening what counts as affected would fix the symptom by discarding the precision
+   * this exists to add. */
+  return usageSubject(narrowed.length === 0
+    ? receiverNames({
+      names: parameterNames({
+        targetIndexes,
+        parameterIndex,
+      },),
+      boundaries,
+    },)
+    : narrowed,);
+}
+
+/**
+ * Keeps the names used as the receiver of at least one unknown call.
+ *
+ * @param names - Candidate input binding names.
+ *
+ * @param boundaries - Authored unknown method call expressions.
+ *
+ * @returns names some boundary calls a method on.
+ *
+ * @example
+ * ```ts
+ * receiverNames({ names: ['ctx'], boundaries: ['ctx.ui.notify'] });
+ * ```
+ */
+function receiverNames({
+  names,
+  boundaries,
+}: {
+  readonly names: readonly string[];
+  readonly boundaries: readonly string[];
+},): readonly string[] {
+  return names.filter(function usedAsReceiver(name,): boolean {
+    return boundaries.some(function beginsWithName(boundary,): boolean {
+      return boundary.startsWith(`${name}.`,);
+    },);
+  },);
 }
 
 /**

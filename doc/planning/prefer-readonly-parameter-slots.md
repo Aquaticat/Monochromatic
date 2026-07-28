@@ -356,6 +356,21 @@ The check is a count of that phrase across both sweeps, and any increase is the 
 The remedy is to apply the receiver filter first and fall back to the unnarrowed receiver list,
 never to widen what counts as affected.
 
+### Stage 3, measured
+
+Every one of those held.
+Offers are identical to the pre-stage-three sweep, all thirty-three of them.
+Not one finding location moved, lost or gained.
+Three hundred findings changed their message text and nothing else did.
+The empty subject appears zero times on both sides,
+so the named failure mode did not fire across 128 packages.
+
+It is still reachable by construction, so the remedy landed anyway.
+A path that can emit a subject naming nothing is a defect whether or not this workspace happens
+to reach it,
+and the sweep says only that no code here has an input whose whole-parameter slot took opacity
+while a boundary named one of its properties.
+
 ## Rules decided in advance
 
 - **Renamed binding** `{ a: b }`. The slot key is the property name `a`, since that is what a
