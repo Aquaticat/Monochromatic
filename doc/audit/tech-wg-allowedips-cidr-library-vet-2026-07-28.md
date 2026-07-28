@@ -1318,6 +1318,8 @@ Raising its weight one input at a time gives:
   `ip-kit` scores `43 / 88 = 48.9%`.
 
 The `ip-kit` maintenance range endpoints at the frozen weight produce 47.2% and 50.0%.
+They remain at the frozen weight because changing an endpoint and its weight together would change two inputs,
+outside the required one-at-a-time method.
 No exact rating has medium confidence,
 so the one-step medium-confidence arm has no input.
 Across every defined one-at-a-time test,
