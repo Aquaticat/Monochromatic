@@ -246,7 +246,12 @@ Auto-mode also allows `read` tool access to existing files under current
 `~/temp/agent` and historical `/tmp/agent` compatibility roots when each
 directory is owned by the current process user,
 has no group or other permission bits,
- and resolves without symlinks.
+ and resolves without symlinks below canonical account home.
+The account home is canonicalized before deriving `~/temp/agent`,
+so operating-system aliases such as `/home/user` to `/var/home/user` preserve account identity.
+A symlink at `temp`,
+`agent`,
+or any descendant still cannot escape canonical scratch boundary.
 Agents should place new third-party source clones under `~/temp/agent` when they
 need repeated inspection outside the current project.
 The allowlist uses canonical filesystem paths,
@@ -254,13 +259,30 @@ The allowlist uses canonical filesystem paths,
 either root still go through the normal signal and judge pipeline.
 
 For Bash tool calls,
- both private roots are trusted for existing non-secret
-helper paths.
- Running an inspected helper script from either root does not
-trigger a location-only prompt.
- Bash calls still flag destructive commands,
+a positive whole-shell proof bypasses normal path judging for modeled source-inspection commands.
+Current modeled forms cover ripgrep without external helper options,
+GNU find without mutation,
+subprocess,
+named-file output,
+or link-following actions,
+output-only `sort`,
+`paste`,
+and `printf`,
+and `git -C <repo> tag --points-at <object>`.
+Literal `for` loop values carry path provenance into body commands,
+so repeated Git inspection across scratch repositories remains provable.
+Every path must canonically remain under Pi's current working directory or a private agent scratch root.
+Unknown commands,
+unproven expansions,
+writable redirects,
+secret-looking paths,
+and mutating option forms continue through normal judge handling.
+
+Both private roots remain trusted for existing non-secret helper paths.
+Running an inspected helper script from either root does not trigger a location-only prompt when existing credential-handoff policy applies.
+Bash calls still flag destructive commands,
 secret-looking paths inside either root,
- and paths outside trusted roots.
+and paths outside trusted roots.
 
 When a Bash command passes a secret-looking environment variable to a trusted
 script or interpreter command under either root,
