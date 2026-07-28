@@ -207,6 +207,13 @@ Notifications,
  don't poll.
 Stop only at completion or genuine blocker.
 
+PXQ:
+ "Completion" in PX1 means the queue,
+ not the task.
+Finished item with tracked work left:
+ start the next unasked.
+Never end a turn on a status report the user must answer with "continue".
+
 PX2:
  Doesn't relax constraints:
  PX3 gates destructive/external actions,
