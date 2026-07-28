@@ -209,8 +209,9 @@ async function bashSignals(
     ctx,
     trustedAgentTempDirs,
   },);
+  if (readOnlyProof.proven)
+    return false;
   if (readOnlyProof.required
-    && !readOnlyProof.proven
     && !allowProjectDotenvCredentialSource) {
     return true;
   }
