@@ -390,6 +390,9 @@ importers:
       '@monochromatic-dev/cli-terminal-exec':
         specifier: workspace:*
         version: link:package/cli/terminal-exec
+      '@monochromatic-dev/cli-wg-allowedips':
+        specifier: workspace:*
+        version: link:package/cli/wg-allowedips
       '@monochromatic-dev/config-dprint':
         specifier: workspace:*
         version: link:package/config/dprint

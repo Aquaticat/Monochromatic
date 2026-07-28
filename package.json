@@ -15,6 +15,7 @@
     "@monochromatic-dev/git-policy-cli": "workspace:*",
     "@monochromatic-dev/cli-git-clone-size": "workspace:*",
     "@monochromatic-dev/cli-terminal-exec": "workspace:*",
+    "@monochromatic-dev/cli-wg-allowedips": "workspace:*",
     "@monochromatic-dev/claude-code-plugin-terminal-title": "workspace:*",
     "@monochromatic-dev/claude-code-plugin-session-start-housekeeping": "workspace:*",
     "@monochromatic-dev/claude-code-plugin-stop-reminder": "workspace:*",
