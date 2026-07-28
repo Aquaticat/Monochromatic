@@ -46,7 +46,6 @@ import {
   type ExternalEffectIndexBuilder,
 } from './external-callable-effect.ts';
 import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
-import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 
 /**
  * Tagged logger for effect index construction.
@@ -142,12 +141,6 @@ export function createDemandDrivenEffectIndex(
     readonly sourceFile: SourceFile;
     readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   }>();
-  /**
-   * Guaranteed foreign provenance recomputed after every graph expansion.
-   */
-  const foreignByCallable: {
-    current: ReadonlyMap<string, ReadonlySet<ParameterIndex>>;
-  } = { current: new Map(), };
   /**
    * Callable candidates whose exact signature inbounds were verified.
    */
@@ -363,8 +356,12 @@ export function createDemandDrivenEffectIndex(
       projectKey: project.configFileName,
       activeFiles: indexedFileNames,
     },);
+    /* The optimistic per-expansion foreign pass is gone with the gate it fed. It narrowed
+     * candidates over whatever had been reached, and nothing reads that answer now: the
+     * complete backwards closure decides every foreign question and walks the whole configured
+     * scope rather than the reached part of it. Keeping the pass would have cost a full
+     * inbound grouping after every expansion to produce a value no consumer looks at. */
     propagateEffects(summaries,);
-    foreignByCallable.current = propagateForeignBorrowed(summaries,);
     analysisBudget.record({
       startedAt: finalizationStartedAt,
       phase: 'fixed-point finalization',
@@ -391,14 +388,22 @@ export function createDemandDrivenEffectIndex(
       const summary = summaries.get(key,);
       if (summary === undefined)
         return NO_EFFECT_SUMMARY;
-      /**
-       * Foreign candidates from currently reached inbound graph.
-       */
-      const partialForeignParameterIndexes = foreignByCallable.current
-        .get(key,)
-        ?? new Set<ParameterIndex>();
-      if ((partialForeignParameterIndexes.size > 0)
-        && (!verifiedForeignKeys.has(key,))) {
+      /* The complete proof runs for every callable asked about, not only for one the reached
+       * graph already hints at. The hint is `foreignByCallable.current`, recomputed after each
+       * expansion over whatever has been reached, so gating on it made the answer a fact about
+       * which files the lint run happened to visit first. Measured in one process with no
+       * threads: `stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts`
+       * read `foreign=[]` before its siblings were expanded and `foreign=[0]` after, because
+       * `wayland-test.ts` declares the marker and reaches it. Skipping is not the safe
+       * direction either, since foreign ownership suppresses the readonly offer, so the
+       * unproven answer emits an offer the proven one withholds.
+       *
+       * `completeForeignBorrowedGraph` was already order-independent: it walks
+       * `indexedSourceFiles`, the whole configured scope, however little has been reached. Only
+       * its trigger had to move.
+       * `doc/troubleshooting/prefer-readonly-parameter-type-thread-nondeterminism.md` records
+       * the measurement. */
+      if (!verifiedForeignKeys.has(key,)) {
         /**
          * Exact backwards caller closure for current reached candidate.
          */
@@ -420,12 +425,14 @@ export function createDemandDrivenEffectIndex(
         },);
         verifiedForeignKeys.add(key,);
       }
+      /* Every key reaching here has been verified, since the proof above runs for any key that
+       * has not. The lookup still defaults, because a callable the closure finds no inbound for
+       * is absent from the result rather than present and empty. */
       /**
-       * Guaranteed foreign indexes after candidate-triggered complete-inbound proof.
+       * Guaranteed foreign indexes after the complete-inbound proof.
        */
-      const foreignParameterIndexes = verifiedForeignKeys.has(key,)
-        ? completeForeignByCallable.get(key,) ?? new Set<ParameterIndex>()
-        : partialForeignParameterIndexes;
+      const foreignParameterIndexes = completeForeignByCallable.get(key,)
+        ?? new Set<ParameterIndex>();
       return effectPublicSummary({
         summary,
         foreignParameterIndexes,
