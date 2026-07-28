@@ -172,6 +172,21 @@ Each stage is committed separately and the workspace sweep is compared by offer 
 3.  Diagnostic naming narrowed to the affected bindings, so a finding stops naming primitives
     that cannot carry state.
 
+## Every sweep comparison must run sequentially and single-threaded
+
+Two separate reasons, discovered separately.
+
+The parallel package fanout in the root `lint:oxlint` task runs one oxlint process per package
+up to `availableParallelism()`,
+each holding its own TypeScript program,
+and sixteen of those exhausted host memory and took the machine down.
+`fanout_packages` in `mise.toml` offers no way to bound it,
+so a measurement sweep runs the package tasks one at a time instead.
+That turned out to be faster in wall-clock terms as well as survivable,
+because the parallel version was thrashing.
+
+The thread count inside each process is the second reason, recorded next.
+
 ## Every sweep comparison must run single-threaded
 
 Under oxlint's default thread count this rule does not produce the same findings twice.
@@ -231,6 +246,30 @@ never by relaxing the prediction after the fact.
 
 Recording all of this before the stage-2 sweep is the point:
 a prediction written after seeing the result is not evidence of anything.
+
+## Stage 2, measured
+
+The acceptance criterion is met.
+`narrowingPrecisionCostEffect` reports `mutated` projected to parameters as the first parameter
+alone, where it read both,
+and the rule now offers `readonly` for its `second` parameter,
+which its callee only reads.
+No offer was withdrawn anywhere in the plugin's own test suite.
+
+Fourteen caller shapes in `readonly-slot-narrowing-invalid.ts` pin both directions,
+and every one matched the prediction written before it was built:
+
+- Narrowed to the written parameter alone: a plain key, shorthand keys, quoted keys, a callee
+   binding the key under another name, `1e0` against a callee reading `1`, a row packaged one
+   literal deeper, a row returned by a method the callee calls, and a spread placed before the
+   exact key that shadows it.
+- Refused: a spread placed after the key it can overwrite, a computed key, an accessor pair
+   whose setter comes last, a getter reaching its row through `this`, and a rest formal whose
+   property key names an array index.
+- `prototypeKeyBroadcast` is the one that decides whether the `__proto__` rule was needed. Its
+   literal defines no own `named`, its callee writes through the prototype's, and it reports the
+   prototype-served row alone. Reading `__proto__` as an ordinary key reports nothing there,
+   which is an offer for a row something mutates.
 
 ## Rules decided in advance
 
