@@ -148,8 +148,17 @@ P4 is answered narrowly rather than by its totals,
 and the totals are worth distrusting.
 The sweep ran as one root invocation at one thread,
 where the 1932 figure it would be compared against came from the sequential per-package procedure,
-so the two are different measurements;
-the fixture additions above account for two findings on their own.
+so the two are different measurements.
+
+I first wrote that the fixture additions accounted for two of the difference.
+They account for none.
+The readonly fixture sources are excluded from the root lint,
+measured by pointing `oxlint` at one directly and being told there were no files to lint,
+and confirmed in the sweep output,
+which names no `readonly-member-channel-invalid.ts` or `readonly-overload-invalid.ts` location at all.
+So the whole of the difference between 1932 and 1941 is procedural,
+which is a cleaner statement than the one it replaces:
+the two numbers were never comparable, and nothing of mine is mixed into the gap.
 What the sweep does answer:
 offers stand at 32,
 the same count as before the change,
