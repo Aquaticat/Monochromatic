@@ -937,6 +937,33 @@ node wg-cidr-consumer-validation.mjs fast-cidr-tools
 node wg-cidr-consumer-validation.mjs @h3mantd/ip-kit
 ```
 
+The planned `cidr-tools` validation boundary receives one additional network-disabled probe:
+
+```text
+# ~/temp/agent/wg-cidr-planned-validation-probe.mjs
+node wg-cidr-planned-validation-probe.mjs
+```
+
+Its SHA-256 is
+`359a04d1d32ad4838c359b00b5668109764be377000a9f03b4104587585ee6ef`.
+It imports the already-inspected published `cidr-tools` graph and `node:net`,
+then composes the specification's original-address `isIP` check,
+`parseCidr`,
+and explicit family bounds.
+It must accept four valid dual-stack CIDRs and reject malformed address text,
+nonstandard shorthand IPv4,
+out-of-range prefixes,
+trailing prefix junk,
+stacked suffixes,
+and a missing address.
+The shared isolation,
+resource,
+read,
+network,
+write,
+and stop conditions apply unchanged.
+Success requires every assertion and exit status zero.
+
 The first `ip-kit` consumer attempt exposed that `RangeSet.fromCIDRs` rejects host literals with exact
 diagnostic `Invalid CIDR format: 192.0.2.1`.
 The corrected consumer adapter converts hosts to `/32` or `/128` before family partitioning,
