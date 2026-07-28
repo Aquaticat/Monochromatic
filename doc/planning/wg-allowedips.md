@@ -44,9 +44,12 @@ An empty disallowed file represents an empty set.
 Do not add short aliases or positional input.
 Do not add interactive prompts or alternate output modes.
 
-Use `cidr-tools` through the pnpm catalog.
-Call its `excludeCidr` operation directly.
-The operation unions both inputs before subtraction and returns a minimized sorted set of IPv4 and IPv6
+Add `cidr-tools: '>=12.1.2'` to the pnpm catalog.
+The package must depend on it through `catalog:`.
+This version floor supports Node 22 or newer and has the required array input for both `excludeCidr` parameters.
+
+Call `excludeCidr(allowedNetworks, disallowedNetworks)` directly.
+The operation unions both arrays before subtraction and returns a minimized sorted set of IPv4 and IPv6
 networks.
 Do not build another merge or interval layer around it.
 
@@ -60,6 +63,12 @@ For each line:
 3. Treat a valid IP literal as one host address.
 4. Treat an entry containing `/` as a CIDR block.
 5. Treat any other entry as a domain for name resolution.
+
+Validate IP literals with `isIP` from `node:net`.
+For a CIDR entry use `parseCidr` from `cidr-tools` and validate its address portion with `isIP`.
+Reject a prefix above 32 for IPv4 or above 128 for IPv6.
+This closes the bounds gap in the dependency's deliberately rudimentary validation without adding another
+validation dependency.
 
 A range means a CIDR block such as `10.0.0.0/8`.
 Start-to-end syntax such as `10.0.0.1-10.0.0.20` is unsupported.
@@ -75,7 +84,6 @@ The generated result is a point-in-time snapshot.
 Do not add:
 
 - DNS caching;
-- domain deduplication machinery;
 - retries or backoff;
 - TTL handling;
 - resolver configuration.
@@ -88,6 +96,14 @@ After parsing and resolving both files:
 2. Pass both sets directly to `excludeCidr`.
 3. Join a nonempty result with `, ` and write one newline-terminated line to stdout.
 4. Write nothing to stdout when the result is empty.
+
+Every emitted token must include a CIDR prefix.
+Individual IPv4 and IPv6 inputs therefore become `/32` and `/128` host routes.
+
+Keep name resolution as an internal seam of the function that turns both file texts into output text.
+Production passes the Node lookup adapter.
+Tests pass a deterministic lookup adapter.
+Do not expose this seam through the package interface.
 
 Example:
 
@@ -120,8 +136,9 @@ These conditions must fail the command before it writes a result:
 - a CIDR parser rejects an entry;
 - a domain lookup fails.
 
-Preserve useful input or path context from the argument parser and filesystem.
-Preserve the same context from the CIDR parser and resolver.
+Let argument-parser and filesystem errors propagate.
+Let CIDR-parser and resolver errors propagate.
+The explicit prefix-bound error must name the rejected entry.
 Do not add retry loops or custom line-number diagnostics.
 Do not add a separate exit-code taxonomy.
 
@@ -162,7 +179,7 @@ Tests must cover:
 - IPv4 union and subtraction;
 - IPv6 union and subtraction;
 - individual IPs becoming host routes;
-- domain results entering the correct set;
+- deterministic domain results entering the correct set through the test lookup adapter;
 - blank and comment lines;
 - duplicate and overlapping inputs;
 - partial-overlap and out-of-set inputs;
@@ -188,6 +205,8 @@ Verify its stdout and exit status.
 
 - [`cidr-tools` API][cidr-tools]
 - [Node.js operating-system lookup API][node-lookup]
+- [Node.js IP literal validator][node-is-ip]
 
 [cidr-tools]: https://github.com/silverwind/cidr-tools#api
+[node-is-ip]: https://nodejs.org/api/net.html#netisipinput
 [node-lookup]: https://nodejs.org/api/dns.html#dnspromiseslookuphostname-options
