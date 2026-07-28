@@ -99,10 +99,27 @@ to be measured rather than assumed:
     The invoked capability still reaches the ordinary parameter diagnostics on the implementation,
     which is where a reader is told about it.
 
+## The asymmetry is structural, not incidental
+
+Read in `direct-effect-summary.ts`:
+an implementation's summary seeds `mutated` from `directMutated` and `invoked` from `directInvoked`,
+both measured from the body,
+and consults no authored contract while doing it.
+Read in `direct-bodyless-summary.ts`:
+an overload's summary seeds `mutated` from authored contract blocks and never touches `invoked` at
+all.
+
+So no authored form exists that puts a parameter into `invoked`.
+Any callable whose body invokes something reached through a parameter therefore disagrees with its
+own overloads permanently,
+and the only way to silence it is to author a `@mutates` naming that parameter,
+which claims a referent mutation in order to acknowledge an invocation.
+That is a worse contract than silence,
+and `JCH` is the rule it strains:
+the contract would be describing the shape the comparison demands rather than the effect that exists.
+
 ## Not yet established
 
 -   That the four findings still reproduce on the current tree.
--   That the mechanism is `invoked` rather than `mutated`,
+-   That the mechanism is `invoked` rather than `mutated` for these four specifically,
     which a fixture with an overloaded callable that only invokes a parameter-held step would settle.
--   Whether a body-carrying declaration's authored contracts also seed `mutated` alone,
-    which decides whether the comparison is symmetric after the change.

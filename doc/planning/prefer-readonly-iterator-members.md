@@ -219,10 +219,17 @@ both of which must be settled before any of this is written:
 
 -    Crediting the receiver for the iterator makes `[...summaries.values(),]` carry the receiver's
      origin,
-     which then makes the `.reduce(...)` call on that array literal an opaque boundary attributed to
-     `summaries`.
-     Adding provenance can therefore move a cause rather than remove it,
-     and can make a finding's cause list longer.
+     which changes what the `.reduce(...)` call on that array literal does.
+     I first read that as the cause moving from `values` to `reduce`,
+     and that was wrong:
+     `recordReadonlyViewApplications` runs before the channel check and can answer the call outright.
+     For this shape it should,
+     because the result is a `number`,
+     the extra argument is `0`,
+     and the callback is a local function expression the analysis owns,
+     which is every condition `readonlyViewElementApplications` requires.
+     So a cause can also be removed rather than moved,
+     and neither outcome is predictable without reading which of the two paths answers first.
      Any stage-two measurement has to compare cause lists,
      not finding counts.
 
