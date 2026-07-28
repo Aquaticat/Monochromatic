@@ -18,6 +18,7 @@ export type {
   ShellCommandContext,
   ShellCommandInfo,
   ShellEnvAssignment,
+  ShellLoopBinding,
   ShellParseError,
   ShellRedirect,
   ShellRedirectKind,

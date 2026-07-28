@@ -9,12 +9,31 @@ import type { RedirectOperator as UnbashRedirectOperator, } from 'unbash';
 //region Command context
 
 /**
+ * Literal values assigned by one enclosing shell `for` loop.
+ */
+type ShellLoopBinding = {
+  /**
+   * Loop variable name referenced by body commands.
+   */
+  readonly name: string;
+  /**
+   * Parsed source words assigned across loop iterations.
+   */
+  readonly values: readonly string[];
+};
+
+/**
  * Context describing when a parsed command can execute.
  */
-type ShellCommandContext =
+type ShellCommandContext = {
+  /**
+   * Lexically enclosing `for` bindings from outermost to innermost loop.
+   */
+  readonly loopBindings: readonly ShellLoopBinding[];
+} & (
   | {
     /**
-     * Command is evaluated as part of the script's immediate control flow.
+     * Command is evaluated as part of script's immediate control flow.
      */
     readonly kind: 'executed';
   }
@@ -27,7 +46,8 @@ type ShellCommandContext =
      * Function name whose body contains the command.
      */
     readonly functionName: string;
-  };
+  }
+);
 
 //endregion Command context
 
@@ -199,6 +219,7 @@ export type {
   ShellCommandContext,
   ShellCommandInfo,
   ShellEnvAssignment,
+  ShellLoopBinding,
   ShellParseError,
   ShellRedirect,
   ShellRedirectKind,

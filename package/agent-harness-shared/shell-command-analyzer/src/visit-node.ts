@@ -154,7 +154,46 @@ function visitNode(
       ],
     };
   }
-  if ((node.type === 'For') || (node.type === 'Select')) {
+  if (node.type === 'For') {
+    /**
+     * Body context carrying literal source values assigned to loop variable.
+     */
+    const loopContext: ShellCommandContext = {
+      ...context,
+      loopBindings: [
+        ...context.loopBindings,
+        {
+          name: node.name.value,
+          values: node.wordlist.map(function loopWordValue(word,): string {
+            return word.value;
+          },),
+        },
+      ],
+    };
+    return {
+      ...EMPTY_VISIT_RESULT,
+      workItems: [
+        ...wordWorkItems({
+          word: node.name,
+          context,
+        },),
+        ...wordsWorkItems({
+          words: node.wordlist,
+          context,
+        },),
+        ...statementWorkItems({
+          statements: node.body
+            .commands,
+          context: loopContext,
+        },),
+        ...redirectWorkItems({
+          redirects,
+          context,
+        },),
+      ],
+    };
+  }
+  if (node.type === 'Select') {
     return {
       ...EMPTY_VISIT_RESULT,
       workItems: [

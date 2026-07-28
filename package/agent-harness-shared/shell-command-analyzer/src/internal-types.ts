@@ -230,7 +230,10 @@ const NO_SCRIPT: unique symbol = Symbol('nested script payload absent from unbas
 /**
  * Context for commands executed by script evaluation.
  */
-const EXECUTED_CONTEXT: ShellCommandContext = { kind: 'executed', };
+const EXECUTED_CONTEXT: ShellCommandContext = {
+  kind: 'executed',
+  loopBindings: [],
+};
 
 /**
  * Empty redirects singleton used for child work items.
