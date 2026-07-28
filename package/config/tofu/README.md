@@ -21,10 +21,17 @@ Manages firewall rules on Hetzner Cloud,
 
 ## Components
 
+### `asn-networks.ts`
+
+Shared IPinfo Lite adapter that resolves a case-insensitive `AS<number>` input to every database network or
+single address.
+It owns per-ASN cache freshness,
+streaming database filtering,
+and stale-cache fallback for OpenTofu and `wg-allowedips`.
+
 ### `fetch_ips.ts`
 
-TypeScript script that fetches and caches IP ranges for a specific ASN from ipinfo.
-io.
+OpenTofu external-data wrapper around `asn-networks.ts`.
 Features:
 
 - Streaming JSON parsing with minimal memory usage
