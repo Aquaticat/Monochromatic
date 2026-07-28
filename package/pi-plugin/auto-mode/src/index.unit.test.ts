@@ -486,7 +486,7 @@ await describe({
         expect(await probeFlaggedToolCall({
           handler: toolCallHandler,
           event,
-          cwd: fixtureRoot,
+          cwd: '/account-project',
           entries,
         },),).toBe(false,);
         await rm(
@@ -536,6 +536,10 @@ await describe({
             const repositoryRoot = join(
               agentRoot,
               repositoryName,
+            );
+            await mkdir(
+              repositoryRoot,
+              { recursive: true, },
             );
             await Promise.all([
               mkdir(
