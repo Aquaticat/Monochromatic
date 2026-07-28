@@ -300,11 +300,14 @@ touch ~/temp/agent/target.txt
 find ~/temp/agent -type f -delete
 find ~/temp/agent -type f -exec touch {} \;
 find -L ~/temp/agent -type f -print
+find ~/temp/agent -follow -type f -print
 rg --pre cat pattern ~/temp/agent
+rg --ignore-file /outside/ignore pattern ~/temp/agent
 rg pattern ~/temp/agent/*
 git -C ~/temp/agent tag release-candidate
 rg pattern ~/temp/agent > ~/temp/agent/target.txt
 sort --output=~/temp/agent/target.txt
+sort --temporary-directory=~/temp/agent
 printf -v result '%s' fixture
 MODE=fixture rg pattern ~/temp/agent
 ```
