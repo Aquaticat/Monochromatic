@@ -777,3 +777,78 @@ export function explicitThisReceiver(row: WritableRow,): void {
 export function writeThroughThis(this: LabelledRow,): void {
   this.label = 'written';
 }
+
+/**
+ * Row whose assignment runs a setter body.
+ */
+export type SetterRow = {
+  /**
+   * Stored label the accessor pair reads and writes.
+   */
+  stored: string;
+
+  /**
+   * Label whose assignment stores through the setter.
+   */
+  label: string;
+};
+
+/**
+ * Assigns a property whose declaration is a setter.
+ *
+ * The assignment looks like an ordinary property store, and it runs a body: the setter writes
+ * `this.stored`. Treating the assignment as a write of `row` records the effect whether or not
+ * the setter is inspected, so `row` is written either way.
+ *
+ * @param row - Row whose setter this assignment runs.
+ *
+ * @mutates row - Assigns through a declared setter.
+ *
+ * @example
+ * ```ts
+ * assignThroughSetter({ stored: '', label: '' });
+ * ```
+ */
+export function assignThroughSetter(row: SetterRow,): void {
+  row.label = 'written';
+}
+
+/**
+ * Holder whose setter retains the row it is assigned.
+ */
+export type RetainingHolder = {
+  /**
+   * Rows the setter has stored.
+   */
+  kept: LabelledRow[];
+
+  /**
+   * Row whose assignment appends to the stored list.
+   */
+  latest: LabelledRow;
+};
+
+/**
+ * Assigns one row into a holder whose setter keeps it.
+ *
+ * Running the setter stores `row` inside `holder`, so a later write through `holder` reaches
+ * `row`. The assignment names `holder` as the write target; whether `row` is also affected
+ * depends on modelling what the setter body does with the value it is given.
+ *
+ * @param holder - Holder whose setter keeps what it is assigned.
+ *
+ * @param row - Row the setter retains.
+ *
+ * @mutates holder - Appends through a declared setter.
+ *
+ * @example
+ * ```ts
+ * retainThroughSetter({ kept: [], latest: { label: '' } }, { label: '' });
+ * ```
+ */
+export function retainThroughSetter(
+  holder: RetainingHolder,
+  row: LabelledRow,
+): void {
+  holder.latest = row;
+}

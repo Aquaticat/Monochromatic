@@ -154,6 +154,10 @@ await describe({
         const localLiteral = writtenIndexes('localLiteralProvenance',);
         /** Row held by a class expression's static member. */
         const classMember = writtenIndexes('classMemberPackaging',);
+        /** Receiver of an assignment whose declaration is a setter. */
+        const throughSetter = writtenIndexes('assignThroughSetter',);
+        /** Holder whose setter retains the row assigned into it, and that row. */
+        const setterRetention = writtenIndexes('retainThroughSetter',);
         /** Row a callable writes through its explicit `this` formal. */
         const throughThis = writtenIndexes('writeThroughThis',);
         /** Row written by a method called on it as the receiver. */
@@ -246,6 +250,19 @@ await describe({
          * to the walk. It read no written parameter while the callee writes through `holder.row`,
          * which offered a row something mutates. */
         expect(classMember,).toEqual([0,],);
+        /* Assignment through a declared setter, pinned because it was suspected of losing the
+         * write and does not. The store names its receiver whether or not the setter body is
+         * inspected, which is the sound answer: running the setter changes state the receiver
+         * controls.
+         *
+         * Retention names the receiver alone, and that is also sound. `holder.latest = row`
+         * stores `row` inside `holder` without mutating `row`, and annotating `row` deeply
+         * readonly would make the store a type error, so the offer this leaves available cannot
+         * be taken without TypeScript objecting. A setter body writing a different parameter
+         * would be a real gap and cannot be built in one callable: the holder would have to have
+         * captured that parameter already, which the analysis sees as the capture. */
+        expect(throughSetter,).toEqual([0,],);
+        expect(setterRetention,).toEqual([0,],);
         /* Both halves of a write made through an explicit `this`. The callable side reported
          * nothing because a `this` expression is not an identifier, so the provenance walk had
          * no root to resolve; the caller side reported nothing because the receiver is the value
