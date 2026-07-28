@@ -191,3 +191,119 @@ export function indexedElementControlEffect(rows: string[][],): void {
     throw new Error('Expected a first row to rewrite.',);
   first.push('rewritten',);
 }
+
+/**
+ * Iterates the keys of a map whose key type is primitive.
+ *
+ * The one shape a channel entry discharges on its own. `keys` returns
+ * `MapIterator<string>`, whose only type argument is primitive, so nothing reachable
+ * from the receiver comes back and the verified channel is the sole outstanding
+ * claim. Removing the iterator entries from the authority puts an opacity report for
+ * `entries.keys` back.
+ *
+ * @param entries - Read-only view whose keys are counted.
+ *
+ * @returns total key length.
+ *
+ * @example
+ * ```ts
+ * primitiveKeyIterationEffect(new Map());
+ * ```
+ */
+export function primitiveKeyIterationEffect(
+  entries: ReadonlyMap<string, SealedLabel>,
+): number {
+  /**
+   * Running total, accumulated across every key.
+   */
+  const measured = { total: 0, };
+  for (const key of entries.keys())
+    measured.total += key.length;
+  return measured.total;
+}
+
+/**
+ * Iterates the indices of an array, which are primitive whatever it holds.
+ *
+ * `Array.keys` yields numbers, so the element type never reaches the result and the
+ * discharge does not depend on what the array holds. This is the array half of the
+ * same claim, and it is the member whose drainage fetches no element at all.
+ *
+ * @param values - Elements whose indices are summed.
+ *
+ * @returns total of every index.
+ *
+ * @example
+ * ```ts
+ * indexIterationEffect([]);
+ * ```
+ */
+export function indexIterationEffect(values: readonly SealedLabel[],): number {
+  /**
+   * Running total, accumulated across every index.
+   */
+  const measured = { total: 0, };
+  for (const index of values.keys())
+    measured.total += index;
+  return measured.total;
+}
+
+/**
+ * Iterates the values of a map, which hands back what the receiver holds.
+ *
+ * A verified channel proves nothing about what comes back, and `values` returns
+ * `MapIterator<SealedLabel>`, whose type argument is an object. Nothing tracks the
+ * yielded element as an alias of the receiver, so the boundary stays. Deeply
+ * read-only elements do not change this: the exposure test asks whether an object can
+ * be reached, not whether it can be written.
+ *
+ * @param entries - Read-only view whose values are counted.
+ *
+ * @returns total label length.
+ *
+ * @example
+ * ```ts
+ * heldValueIterationEffect(new Map());
+ * ```
+ */
+export function heldValueIterationEffect(
+  entries: ReadonlyMap<string, SealedLabel>,
+): number {
+  /**
+   * Running total, accumulated across every held value.
+   */
+  const measured = { total: 0, };
+  for (const held of entries.values())
+    measured.total += held.label.length;
+  return measured.total;
+}
+
+/**
+ * Iterates the pairs of a map whose keys and values are both primitive.
+ *
+ * The limit the entries do not lift. `entries` returns `MapIterator<[string, string]>`,
+ * and a tuple is an object however primitive its positions are, so the exposure test
+ * answers yes and the boundary stays even here. Lifting it needs a relation
+ * describing a container whose elements are receiver state, which
+ * `FRESH_CONTAINER_MEMBER_NAMES` records as unbuilt.
+ *
+ * @param entries - Read-only view whose pairs are counted.
+ *
+ * @returns total of every key and value length.
+ *
+ * @example
+ * ```ts
+ * primitivePairIterationEffect(new Map());
+ * ```
+ */
+export function primitivePairIterationEffect(
+  entries: ReadonlyMap<string, string>,
+): number {
+  /**
+   * Running total, accumulated across every pair.
+   */
+  const measured = { total: 0, };
+  for (const [key, held,] of entries.entries())
+    measured.total += key.length + held.length;
+  return measured.total;
+}

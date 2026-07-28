@@ -281,7 +281,34 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(5,);
+      expect(messages.length,).toBe(7,);
+      /* A channel entry for an iterator member discharges exactly when the iterator
+       * yields primitives, and these two are the whole of what it buys on its own.
+       * Both loops iterate something whose element type carries no receiver state, so
+       * the verified channel is the only outstanding claim and nothing is reported. */
+      expect(messages.some(function primitiveKeyIterationStaysSilent(
+        message,
+      ): boolean {
+        return message.includes('entries.keys',);
+      },),).toBe(false,);
+      expect(messages.some(function indexIterationStaysSilent(message,): boolean {
+        return message.includes('values.keys',);
+      },),).toBe(false,);
+      /* And the two it does not buy, which is why the entries are not the whole
+       * answer. `values` hands back what the receiver holds, and `entries` hands back
+       * a tuple, an object however primitive its positions are. Both keep reporting,
+       * and both would clear only under a relation describing a container whose
+       * elements are receiver state. */
+      expect(messages.some(function heldValueIterationStaysOpaque(
+        message,
+      ): boolean {
+        return message.includes('entries.values',);
+      },),).toBe(true,);
+      expect(messages.some(function primitivePairIterationStaysOpaque(
+        message,
+      ): boolean {
+        return message.includes('entries.entries',);
+      },),).toBe(true,);
       /* A generic instantiation is not evidence the call built the value. `reduce`
        * returning the accumulator it was handed has result type `string[]` over
        * `string[][]`, a type reference whose only argument is primitive, which the
