@@ -30,7 +30,10 @@ await describe({
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
           writeFile(allowedPath, '10.0.0.0/8\n2001:db8::/126\n',),
-          writeFile(disallowedPath, '10.0.0.0/9\n2001:db8::/127\n',),
+          writeFile(
+            disallowedPath,
+            '10.0.0.0/9\n127.0.0.0/8\n::1/128\n2001:db8::/127\n',
+          ),
         ],);
         /**
          * Successful built command result.
@@ -51,6 +54,43 @@ await describe({
     },),
 
     it({
+      name: 'warns when disallowed input does not cover every loopback range',
+      fn: async () => {
+        await using directory = await makeTempDir();
+        /**
+         * Allowed input fixture path.
+         */
+        const allowedPath = `${directory.path}/allowed.txt`;
+        /**
+         * Partially loopback-covering disallowed input fixture path.
+         */
+        const disallowedPath = `${directory.path}/disallowed.txt`;
+        await Promise.all([
+          writeFile(allowedPath, '192.0.2.1\n',),
+          writeFile(disallowedPath, '127.0.0.0/9\n::1/128\n',),
+        ],);
+        /**
+         * Successful built command result with loopback coverage warning.
+         */
+        const result = await runCli({
+          args: [
+            '--allowed',
+            allowedPath,
+            '--disallowed',
+            disallowedPath,
+          ],
+        },);
+        expect(result.exitCode,).toBe(0,);
+        expect(result.stdout,).toBe('192.0.2.1/32\n',);
+        expect(
+          result.stderr.split(
+            'disallowed IPs do not cover all loopback ranges; uncovered: 127.128.0.0/9',
+          ).length - 1,
+        ).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'warns once for each domain whose lookup returns ENOTFOUND',
       fn: async () => {
         await using directory = await makeTempDir();
@@ -64,7 +104,7 @@ await describe({
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
           writeFile(allowedPath, '192.0.2.1\nfirst.invalid\n',),
-          writeFile(disallowedPath, 'second.invalid\n',),
+          writeFile(disallowedPath, 'second.invalid\n127.0.0.0/8\n::1/128\n',),
         ],);
         /**
          * Successful built command result with warning-only DNS failures.

@@ -24,6 +24,14 @@ export type GenerateAllowedIpsWithLookupOptions = {
 const l = tagged({ tag: 'generate-with-lookup', },);
 
 /**
+ * Complete IANA-designated IPv4 and IPv6 loopback address space.
+ */
+const LOOPBACK_NETWORKS = [
+  '127.0.0.0/8',
+  '::1/128',
+] as const;
+
+/**
  * Generates exact `union(allowed) - union(disallowed)` output with an injected resolver.
  *
  * This is a built-artifact test seam and is not exported through the package export map.
@@ -82,6 +90,18 @@ export async function generateAllowedIpsWithLookup(
       lookupAsnNetworks,
     },),
   ],);
+  /**
+   * Loopback remainder not semantically covered by resolved disallowed networks.
+   */
+  const uncoveredLoopbackNetworks = excludeCidr(
+    LOOPBACK_NETWORKS,
+    disallowedNetworks,
+  );
+  if (uncoveredLoopbackNetworks.length > 0) {
+    fl.warn(
+      `disallowed IPs do not cover all loopback ranges; uncovered: ${uncoveredLoopbackNetworks.join(', ',)}`,
+    );
+  }
   if (allowedNetworks.length === 0) {
     fl.error('allowed input contributed no addresses',);
     throw new InputValidationError('Allowed input must contain at least one address.',);

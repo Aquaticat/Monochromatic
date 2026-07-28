@@ -91,6 +91,16 @@ A failed refresh uses a valid stale snapshot when available and fails when no va
 
 IP address data is powered by [IPinfo][ipinfo] and used under CC-BY-SA-4.0.
 
+## Loopback coverage
+
+The disallowed networks should cover the complete IANA-designated loopback space:
+IPv4 [`127.0.0.0/8`][iana-ipv4-special] and IPv6 [`::1/128`][iana-ipv6-special].
+Coverage is semantic,
+so broader disallowed CIDRs satisfy the check.
+When any loopback addresses remain uncovered,
+the command writes one warning to stderr listing the uncovered remainder.
+The warning does not change set subtraction or stdout.
+
 ## Output
 
 The result is a minimized,
@@ -131,5 +141,7 @@ mise run //package/cli/wg-allowedips:build
 mise run //package/cli/wg-allowedips:buildAndTest
 ```
 
+[iana-ipv4-special]: https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
+[iana-ipv6-special]: https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml
 [ipinfo]: https://ipinfo.io
 [ipinfo-lite]: https://ipinfo.io/developers/ipinfo-lite-database

@@ -107,10 +107,16 @@ Do not add:
 
 After parsing and resolving both files:
 
-1. Fail when the allowed set is empty.
-2. Pass both sets directly to `excludeCidr`.
-3. Join a nonempty result with `, ` and write one newline-terminated line to stdout.
-4. Write nothing to stdout when the result is empty.
+1. Compute the parts of IPv4 `127.0.0.0/8` and IPv6 `::1/128` not covered by the disallowed set.
+2. Write one warning listing the uncovered remainder when either loopback range is not completely covered.
+3. Fail when the allowed set is empty.
+4. Pass both input sets directly to `excludeCidr` for output subtraction.
+5. Join a nonempty result with `, ` and write one newline-terminated line to stdout.
+6. Write nothing to stdout when the result is empty.
+
+Loopback coverage is semantic.
+Exact ranges and broader disallowed CIDRs satisfy the check.
+The warning does not alter subtraction or stdout.
 
 Every emitted token must include a CIDR prefix.
 Individual IPv4 and IPv6 inputs therefore become `/32` and `/128` host routes.
@@ -200,6 +206,7 @@ Tests must cover:
 - deterministic ASN results entering both sets through the test lookup adapter;
 - ASN database single addresses becoming host routes;
 - warnings for empty ASN results and failures for invalid ASN results;
+- missing or partial loopback coverage warnings and exact or broader loopback coverage acceptance;
 - blank and comment lines;
 - duplicate and overlapping inputs;
 - partial-overlap and out-of-set inputs;
