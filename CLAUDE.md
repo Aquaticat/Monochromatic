@@ -1482,6 +1482,11 @@ Surface it,
  survives rewrites);
  never silently let it stand.
 
+CMQ:
+ Current repo's GitHub objects are user-controlled under PX3.
+Post GCA corrective commit comments unasked.
+Ask only if ownership or recipient authority is uncertain.
+
 CLG:
  Never preemptively bypass `git-policy-cli` guards (they reject bulk staging + pathspec-less commits).
 Stage explicit scoped pathspecs.
