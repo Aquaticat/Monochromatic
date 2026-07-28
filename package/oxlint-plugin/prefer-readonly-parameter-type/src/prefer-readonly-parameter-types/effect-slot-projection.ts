@@ -59,6 +59,11 @@ export function calleeSlotOrigins({
   readonly ownership: SlotOwnership;
   readonly slot: EffectSlot;
 },): readonly EffectSlot[] {
+  /* Absent and empty mean different things here, and conflating them undoes every narrowing at
+   * once with nothing failing. An absent entry is an edge that never answered for this slot. An
+   * empty one is a decomposed caller literal that fills this key nowhere, which is the answer
+   * per-property attribution exists to produce. Widening the test to `supplied?.length` would
+   * turn each of those into the owning parameter's full origins. */
   /**
    * Origins recorded against this exact slot, absent for a truncated edge.
    */

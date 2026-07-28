@@ -118,6 +118,41 @@ function objectLiteralUnder(
 }
 
 /**
+ * Tests whether a literal sets a prototype rather than defining an own property.
+ *
+ * Only the plain `__proto__: value` spelling does that. Its danger is not the property it fails
+ * to define but the behaviour it installs for every other key: an inherited accessor runs with
+ * the receiving literal as its `this`, so `{ __proto__: { get named() { return this.hidden; } },
+ * hidden: owned }` reaches `owned` through a sibling key that no walk looking for `named` would
+ * consider, and the getter body names no caller binding at all. An extracted method keeps its
+ * home object for `super`, which is a second route to the same loss. Deciding that a key holds
+ * nothing is what offers `readonly` for state a callee writes, so a literal setting a prototype
+ * is not decomposed at all. Recovering precision here would mean proving the whole chain carries
+ * no receiver-sensitive accessor, method or proxy, which nothing available here can do.
+ *
+ * The computed, shorthand and method spellings of the same name define ordinary own properties
+ * and do not set a prototype, so none of them reaches this test.
+ *
+ * @param literal - Object literal being decomposed.
+ *
+ * @returns whether any member is a plain prototype assignment.
+ *
+ * @example
+ * ```ts
+ * setsPrototype({ literal });
+ * ```
+ */
+function setsPrototype(
+  { literal, }: { readonly literal: ObjectLiteralExpression; },
+): boolean {
+  return literal.properties
+    .some(function isPrototypeAssignment(property,): boolean {
+      return isPropertyAssignment(property,)
+        && (canonicalPropertyKey({ name: property.name, },) === PROTOTYPE_PROPERTY_KEY);
+    },);
+}
+
+/**
  * Tests whether a literal defines any property through an accessor.
  *
  * An accessor defeats the reverse walk from either end. `{ hidden: owned, get named() { return
@@ -187,19 +222,11 @@ function propertyContribution({
       },),
     };
   if (isPropertyAssignment(property,)) {
-    /**
-     * Key this assignment fills, absent for a computed name.
-     */
-    const key = canonicalPropertyKey({ name: property.name, },);
-    /* `{ __proto__: source }` in this exact spelling sets the prototype rather than defining an
-     * own property, so every key the callee reads and the literal does not define is served
-     * from `source`. Treating it as a key would leave those keys with no origins at all, and a
-     * callee writing through one of them would have that write attributed to nothing. Measured:
-     * the write lands, and `Object.hasOwn` reports no own `__proto__`. The computed, shorthand
-     * and method spellings of the same name all define ordinary own properties and keep their
-     * key. */
+    /* A plain `__proto__` assignment never reaches here: `argumentPropertyView` refuses to
+     * decompose a literal that sets a prototype at all, because the behaviour a prototype
+     * installs reaches keys other than its own. */
     return {
-      key: key === PROTOTYPE_PROPERTY_KEY ? NOT_A_STATIC_KEY : key,
+      key: canonicalPropertyKey({ name: property.name, },),
       origins: isFunctionLikeDeclaration(property.initializer,)
         ? [
           ...packagedCallableOrigins({
@@ -296,7 +323,8 @@ export function argumentPropertyView({
    */
   const literal = objectLiteralUnder({ node, },);
   if ((literal === ARGUMENT_NOT_DECOMPOSABLE)
-    || definesAccessor({ literal, },))
+    || definesAccessor({ literal, },)
+    || setsPrototype({ literal, },))
     return ARGUMENT_NOT_DECOMPOSABLE;
   return {
     contributions: literal.properties

@@ -90,6 +90,23 @@ Every other finding in the package was identical across all runs.
 Comparing sorted `location + message` pairs rather than raw output is necessary,
 because multi-threaded runs also emit the same findings in a different order.
 
+## A larger divergence, observed and not yet explained
+
+The parallel multi-threaded root sweep reported 1837 findings with 27 offers.
+A sequential single-threaded sweep of the same 128 package tasks reported 1741 findings with 33
+offers.
+
+Fewer findings alongside more offers is the signature of more analysis completing:
+an unresolved call produces a report, and resolving it removes the report and can produce an
+offer instead.
+That points the same way as everything else here,
+and it is a far larger effect than the single flipping offer characterized above.
+
+Recorded as an observation.
+Nothing has established which of the two sweeps is closer to right,
+and the comparison the slot work depends on is single-threaded against single-threaded,
+which this does not affect.
+
 ## Verified workarounds
 
 Set `OXLINT_THREADS=1` for any run whose output is being compared against another run:

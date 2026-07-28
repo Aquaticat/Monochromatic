@@ -1,10 +1,13 @@
 /**
  * Caller-side property matching, and every shape that has to defeat it.
  *
- * Each caller takes two rows and hands them to a callee that writes through exactly one
- * destructured property. Narrowing works when the summary names only the parameter the callee
- * really writes. The rest are shapes where narrowing would lose a write, and each has to keep
- * naming both parameters.
+ * Each caller takes rows and hands them to a callee that writes through exactly one destructured
+ * property. Narrowing works when the summary names only the parameters the callee can really
+ * reach. The rest are shapes where narrowing would drop one, and each has to keep naming every
+ * parameter a write could reach: usually both, but `prototypeKeyBroadcast` names one because only
+ * one is reachable there, and the rest-index callers name what their arity allows. The expected
+ * set is stated per shape in `effect-argument-properties.unit.test.ts`, never derived from a rule
+ * about counts.
  *
  * @module
  */
@@ -356,30 +359,74 @@ export function spreadBeforeKeyNarrowing(
 //region Narrowing has to be withheld
 
 /**
- * Puts a spread after the key it can overwrite.
+ * Puts a spread of unknown shape after the key it can overwrite.
  *
- * The spread runs later, so it can supply `named` too, and both rows stay named.
+ * Both rows are genuinely reachable rather than conservatively named. The spread carries one
+ * computed key, so `named` holds `first` unless that key resolves to `named`, in which case it
+ * holds `second`. A spread of a literal naming `named` outright would make `first` unreachable
+ * and turn this into a test of conservatism instead of reachability.
  *
  * @param first - Row named by the exact key.
  *
- * @param second - Row the spread carries.
+ * @param second - Row the spread may substitute.
+ *
+ * @param key - Property name resolved at runtime.
  *
  * @example
  * ```ts
- * spreadAfterKeyBroadcast({ label: '' }, { label: '' });
+ * spreadAfterKeyBroadcast({ label: '' }, { label: '' }, 'named');
  * ```
  */
 export function spreadAfterKeyBroadcast(
   first: LabelledRow,
   second: LabelledRow,
+  key: string,
 ): void {
   writeNamedOnly({
     named: first,
-    ...{
-      named: second,
-      spare: second,
+    spare: first,
+    ...{ [key]: second, },
+  } as { named: LabelledRow; spare: LabelledRow; },);
+}
+
+/**
+ * Serves the callee's property from a prototype accessor that reads a sibling.
+ *
+ * The outer literal defines no own `named`. The inherited getter runs with the outer literal as
+ * its receiver, so `this.hidden` is `first`, and the callee writes through it. Nothing about that
+ * is visible in the getter body, which names no caller binding at all, and `hidden` is a
+ * different known key that a walk looking for `named` would skip. A literal that sets a prototype
+ * therefore cannot be decomposed at all.
+ *
+ * This is the shape that separates a sound rule from a plausible one, measured three ways.
+ * Reading `__proto__` as an ordinary key reports no written parameter here and none for
+ * `prototypeKeyBroadcast` either. Reading it as a wildcard carrying the origins found inside the
+ * prototype fixes `prototypeKeyBroadcast` and still reports none here, because the origin this
+ * reaches is not inside the prototype at all. Refusing to decompose reports both. Only the last
+ * one avoids offering `readonly` for a row the callee mutates.
+ *
+ * @param first - Row the inherited getter reaches through its receiver.
+ *
+ * @param second - Row under a key the callee only reads.
+ *
+ * @example
+ * ```ts
+ * inheritedAccessorBroadcast({ label: '' }, { label: '' });
+ * ```
+ */
+export function inheritedAccessorBroadcast(
+  first: LabelledRow,
+  second: LabelledRow,
+): void {
+  writeNamedOnly({
+    __proto__: {
+      get named(): LabelledRow {
+        return (this as unknown as { hidden: LabelledRow; }).hidden;
+      },
     },
-  },);
+    hidden: first,
+    spare: second,
+  } as unknown as { named: LabelledRow; spare: LabelledRow; },);
 }
 
 /**
@@ -412,7 +459,11 @@ export function computedKeyBroadcast(
  * Serves the callee's property from an explicit prototype.
  *
  * The literal defines no own `named`, and the callee still writes through `second`. Treating
- * `__proto__` as an ordinary key would attribute that write to nothing.
+ * `__proto__` as an ordinary key attributes that write to nothing: measured that way, this
+ * reported no written parameter at all.
+ *
+ * `second` alone is the reachable answer, and this names both, because a literal that sets a
+ * prototype is not decomposed. `inheritedAccessorBroadcast` is why.
  *
  * @param first - Row placed under an ordinary key.
  *
@@ -490,10 +541,11 @@ export function thisAccessorBroadcast(
 }
 
 /**
- * Hands a literal to a rest formal that destructures it by index.
+ * Hands one literal to a rest formal that destructures it by index.
  *
- * The rest formal's key `0` names an array index, not a property of the literal, so the write
- * through it has to keep naming the row.
+ * The rest formal's key `0` names an array index, not a property of the literal, so resolving
+ * that key against the literal finds nothing. Catches the empty result, which is the dangerous
+ * one.
  *
  * @param first - Row the callee writes.
  *
@@ -504,6 +556,33 @@ export function thisAccessorBroadcast(
  */
 export function restIndexBroadcast(first: LabelledRow,): void {
   writeThroughRestIndex({ named: first, },);
+}
+
+/**
+ * Hands two literals to a rest formal that destructures it by index.
+ *
+ * Catches what the single-literal shape cannot: whether every actual reaching a rest formal
+ * contributes to its property slots, rather than only the one whose position matches. The callee
+ * writes through rest index `0`, so naming the second row as well is the conservatism the rule
+ * states; naming only the second would be the inversion this shape exists to rule out.
+ *
+ * @param first - Row at rest index zero, which the callee writes.
+ *
+ * @param second - Row at rest index one.
+ *
+ * @example
+ * ```ts
+ * restIndexSpreadBroadcast({ label: '' }, { label: '' });
+ * ```
+ */
+export function restIndexSpreadBroadcast(
+  first: LabelledRow,
+  second: LabelledRow,
+): void {
+  writeThroughRestIndex(
+    { named: first, },
+    { named: second, },
+  );
 }
 
 //endregion

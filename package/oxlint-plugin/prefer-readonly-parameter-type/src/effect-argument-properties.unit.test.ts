@@ -107,6 +107,10 @@ await describe({
         const computedKey = writtenIndexes('computedKeyBroadcast',);
         /** Property served from an explicit prototype rather than an own key. */
         const prototypeKey = writtenIndexes('prototypeKeyBroadcast',);
+        /** Prototype accessor reaching a sibling key through its receiver. */
+        const inheritedAccessor = writtenIndexes('inheritedAccessorBroadcast',);
+        /** Two literals reaching one rest formal. */
+        const restIndexSpread = writtenIndexes('restIndexSpreadBroadcast',);
         /** Property defined by a getter with an origin-free setter after it. */
         const accessorKey = writtenIndexes('accessorKeyBroadcast',);
         /** Getter reaching its row through `this` rather than through its own value. */
@@ -142,12 +146,32 @@ await describe({
           0,
           1,
         ],);
-        /* The sharpest case. `{ __proto__: { named: second }, spare: first }` defines no own
-         * `named`, and the callee writes through the prototype's, so `second` is written and
-         * `first` is not. Reading `__proto__` as an ordinary key attributes that write to
-         * nothing at all and reads `[]` here, which is an offer for a row something
-         * mutates. */
-        expect(prototypeKey,).toEqual([1,],);
+        /* A literal that sets a prototype is not decomposed at all, so both rows stay named even
+         * though only `second` is reachable through the written property. Measured three ways to
+         * show why the refusal earns its imprecision:
+         *
+         * 1. `__proto__` read as an ordinary key: `[]` here and `[]` for the inherited-accessor
+         *    shape. Both unsound.
+         * 2. `__proto__` read as a wildcard carrying the origins inside the prototype: `[1]` here,
+         *    which is exactly right, and still `[]` for the inherited-accessor shape, because the
+         *    origin that one reaches sits outside the prototype entirely. Shipped in
+         *    `0f787856f` and unsound.
+         * 3. Refusing to decompose: both shapes name both rows.
+         *
+         * Anything that restores precision here has to answer measurement 2. */
+        expect(prototypeKey,).toEqual([
+          0,
+          1,
+        ],);
+        /* The shape that ruled out the wildcard. An inherited getter runs with the outer literal
+         * as its receiver, so `{ __proto__: { get named() { return this.hidden } }, hidden: first }`
+         * reaches `first` through a sibling key that no walk looking for `named` considers, and
+         * the getter body names no caller binding at all. Reads `[]` without the refusal, which
+         * offers `readonly` for a row the callee writes. */
+        expect(inheritedAccessor,).toEqual([
+          0,
+          1,
+        ],);
         /* An accessor pair whose setter comes last carries no origin, so stopping at the
          * first exact match from the end would drop the getter's row. */
         expect(accessorKey,).toEqual([
@@ -160,10 +184,19 @@ await describe({
           0,
           1,
         ],);
-        /* A rest formal's key `0` names an array index rather than a property of the
-         * literal, so resolving it against the literal finds nothing. One parameter here,
-         * and it has to stay named. */
+        /* A rest formal's key `0` names an array index rather than a property of the literal, so
+         * resolving it against the literal finds nothing. One parameter here, and it has to stay
+         * named: this catches the empty result, which is the dangerous one. */
         expect(restIndex,).toEqual([0,],);
+        /* Two literals reaching the same rest formal, which the single-literal shape cannot test:
+         * every actual that can fill a rest formal contributes to its property slots, not only
+         * the one whose position matches. The callee writes through rest index zero, so naming
+         * the second row too is the stated conservatism, and naming only the second would be the
+         * inversion this rules out. */
+        expect(restIndexSpread,).toEqual([
+          0,
+          1,
+        ],);
       },
     },),
   ],
