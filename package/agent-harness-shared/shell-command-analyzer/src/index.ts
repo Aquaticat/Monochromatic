@@ -22,4 +22,5 @@ export type {
   ShellParseError,
   ShellRedirect,
   ShellRedirectKind,
+  ShellWordSource,
 } from './types.ts';

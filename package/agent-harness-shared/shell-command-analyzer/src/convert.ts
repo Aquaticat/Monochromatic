@@ -18,6 +18,7 @@ import type {
   ShellEnvAssignment,
   ShellRedirect,
   ShellRedirectKind,
+  ShellWordSource,
 } from './types.ts';
 
 //region Redirect conversion
@@ -191,6 +192,11 @@ function redirectToInfo(redirect: ForeignBorrowed<UnbashRedirect>,): ShellRedire
   const target = redirect.target
     ?.value;
   /**
+   * Original source spelling paired with parsed target value.
+   */
+  const targetSourceText = redirect.target
+    ?.text;
+  /**
    * Target classification.
    */
   const kind = redirectKind({
@@ -201,6 +207,7 @@ function redirectToInfo(redirect: ForeignBorrowed<UnbashRedirect>,): ShellRedire
   return {
     operator: redirect.operator,
     ...(target === undefined ? {} : { target, }),
+    ...(targetSourceText === undefined ? {} : { targetSourceText, }),
     ...(redirect.fileDescriptor === undefined ? {} : { fileDescriptor: redirect.fileDescriptor, }),
     kind,
     writesFile: redirectWritesFile({
@@ -236,23 +243,48 @@ function redirectTargets(redirects: readonly ShellRedirect[],): string[] {
   },);
 }
 
+/**
+ * Extract file-like redirect values with original source spellings.
+ *
+ * @param redirects - public redirect records
+ *
+ * @returns target values and source text for file redirects only
+ *
+ * @example
+ * ```ts
+ * redirectTargetSources([redirect]);
+ * ```
+ */
+function redirectTargetSources(redirects: readonly ShellRedirect[],): ShellWordSource[] {
+  return redirects.flatMap(function sourceForRedirect(redirect,): ShellWordSource[] {
+    if (redirect.kind !== 'file')
+      return [];
+    if ((redirect.target === undefined) || (redirect.targetSourceText === undefined))
+      return [];
+    return [{
+      value: redirect.target,
+      sourceText: redirect.targetSourceText,
+    },];
+  },);
+}
+
 //endregion Redirect conversion
 
 //region Command conversion
 
 /**
- * Convert word to argument, excluding process substitution placeholders.
+ * Pair word value with source spelling, excluding process substitution placeholders.
  *
  * @param word - suffix word from `unbash`
  *
- * @returns singleton argument, or empty array for process substitution syntax
+ * @returns singleton source record, or empty array for process substitution syntax
  *
  * @example
  * ```ts
- * wordToArg(word);
+ * wordToSource(word);
  * ```
  */
-function wordToArg(word: ForeignBorrowed<UnbashWord>,): string[] {
+function wordToSource(word: ForeignBorrowed<UnbashWord>,): ShellWordSource[] {
   if ((word.parts ?? [])
     .some(function isProcessSubstitution(
       part: ForeignBorrowed<NonNullable<UnbashWord['parts']>[number]>,
@@ -261,7 +293,10 @@ function wordToArg(word: ForeignBorrowed<UnbashWord>,): string[] {
     },)) {
     return [];
   }
-  return [word.value,];
+  return [{
+    value: word.value,
+    sourceText: word.text,
+  },];
 }
 
 /**
@@ -354,6 +389,11 @@ function commandToInfo(
     ): ShellRedirect {
       return redirectToInfo(redirect,);
     },);
+  /**
+   * Suffix argument values paired with exact shell source spelling.
+   */
+  const argSources = command.suffix
+    .flatMap(wordToSource,);
 
   return {
     name: command.name
@@ -361,10 +401,13 @@ function commandToInfo(
       ?? '',
     envAssignments: command.prefix
       .flatMap(assignmentToEnvAssignment,),
-    args: command.suffix
-      .flatMap(wordToArg,),
+    args: argSources.map(function sourceValue(source,): string {
+      return source.value;
+    },),
+    argSources,
     redirects,
     redirectTargets: redirectTargets(redirects,),
+    redirectTargetSources: redirectTargetSources(redirects,),
     paramRefs: [...paramRefs,],
     context,
   };
@@ -407,8 +450,10 @@ function redirectOnlyCommand(
     name: '',
     envAssignments: [],
     args: [],
+    argSources: [],
     redirects: convertedRedirects,
     redirectTargets: redirectTargets(convertedRedirects,),
+    redirectTargetSources: redirectTargetSources(convertedRedirects,),
     paramRefs: [...paramRefs,],
     context,
   };

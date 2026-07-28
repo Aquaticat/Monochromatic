@@ -28,7 +28,27 @@ await describe({
             expect(result.parsed,).toBe(true,);
             expect(result.commands[0]?.name,).toBe('ls',);
             expect(result.commands[0]?.args,).toEqual(['-la', '/tmp',],);
+            expect(result.commands[0]?.argSources,).toEqual([
+              {
+                value: '-la',
+                sourceText: '-la',
+              },
+              {
+                value: '/tmp',
+                sourceText: '/tmp',
+              },
+            ],);
             expect(result.allFiles,).toContain('/tmp',);
+          },
+        },),
+        it({
+          name: 'preserves quoted argument source spelling',
+          fn: async function testQuotedArgumentSources() {
+            const result = analyzeShellCommand("find /repo -name '*.ts'",);
+            expect(result.commands[0]?.argSources,).toContainEqual({
+              value: '*.ts',
+              sourceText: "'*.ts'",
+            },);
           },
         },),
         it({
@@ -47,6 +67,10 @@ await describe({
             const outputResult = analyzeShellCommand('cat > out.txt',);
             expect(outputResult.commands[0]?.redirects[0]?.writesFile,).toBe(true,);
             expect(outputResult.commands[0]?.redirectTargets,).toContain('out.txt',);
+            expect(outputResult.commands[0]?.redirectTargetSources,).toContainEqual({
+              value: 'out.txt',
+              sourceText: 'out.txt',
+            },);
 
             const descriptorResult = analyzeShellCommand('printf hi 2>&1',);
             expect(descriptorResult.commands[0]?.redirects[0]?.kind,).toBe('fileDescriptor',);
@@ -129,10 +153,12 @@ await describe({
             expect(loopPrint?.context.loopBindings,).toEqual([{
               name: 'repo',
               values: ['/safe/one', '/safe/two',],
+              sourceTexts: ['/safe/one', '/safe/two',],
             },],);
             expect(loopGit?.context.loopBindings,).toEqual([{
               name: 'repo',
               values: ['/safe/one', '/safe/two',],
+              sourceTexts: ['/safe/one', '/safe/two',],
             },],);
             expect(after?.context.loopBindings,).toEqual([],);
           },

@@ -167,8 +167,14 @@ function visitNode(
      * Literal source values assigned to loop variable.
      */
     const loopValues: string[] = [];
-    for (const word of wordlist)
+    /**
+     * Original shell spellings paired with loop values.
+     */
+    const loopSourceTexts: string[] = [];
+    for (const word of wordlist) {
       loopValues[loopValues.length] = word.value;
+      loopSourceTexts[loopSourceTexts.length] = word.text;
+    }
     /**
      * Body context carrying literal source values assigned to loop variable.
      */
@@ -179,6 +185,7 @@ function visitNode(
         {
           name: name.value,
           values: loopValues,
+          sourceTexts: loopSourceTexts,
         },
       ],
     };

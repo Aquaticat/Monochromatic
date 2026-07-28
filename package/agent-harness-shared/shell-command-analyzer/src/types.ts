@@ -20,6 +20,10 @@ type ShellLoopBinding = {
    * Parsed source words assigned across loop iterations.
    */
   readonly values: readonly string[];
+  /**
+   * Original shell spellings paired with parsed values.
+   */
+  readonly sourceTexts: readonly string[];
 };
 
 /**
@@ -52,6 +56,20 @@ type ShellCommandContext = {
 //endregion Command context
 
 //region Command records
+
+/**
+ * Parsed shell word paired with original source spelling.
+ */
+type ShellWordSource = {
+  /**
+   * Value after quote removal but before shell runtime expansion.
+   */
+  readonly value: string;
+  /**
+   * Original shell source spelling including quotes and escapes.
+   */
+  readonly sourceText: string;
+};
 
 /**
  * Environment assignment prefix parsed before shell command name.
@@ -89,6 +107,10 @@ type ShellRedirect = {
    */
   readonly target?: string;
   /**
+   * Original source spelling for target word, when present.
+   */
+  readonly targetSourceText?: string;
+  /**
    * Explicit file descriptor before redirect operator, when present.
    */
   readonly fileDescriptor?: number;
@@ -123,6 +145,10 @@ type ShellCommandInfo = {
    */
   readonly args: readonly string[];
   /**
+   * Argument values paired with original shell source spellings.
+   */
+  readonly argSources: readonly ShellWordSource[];
+  /**
    * Redirects attached to command.
    */
   readonly redirects: readonly ShellRedirect[];
@@ -130,6 +156,10 @@ type ShellCommandInfo = {
    * File-like redirect targets in source order.
    */
   readonly redirectTargets: readonly string[];
+  /**
+   * File-like redirect values paired with original shell source spellings.
+   */
+  readonly redirectTargetSources: readonly ShellWordSource[];
   /**
    * Pre-scanned shell parameter references from raw source.
    */
@@ -223,4 +253,5 @@ export type {
   ShellParseError,
   ShellRedirect,
   ShellRedirectKind,
+  ShellWordSource,
 };
