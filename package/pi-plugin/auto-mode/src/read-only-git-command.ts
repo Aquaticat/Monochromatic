@@ -21,10 +21,14 @@
 function gitSubcommandIndex(
   args: readonly string[],
 ): number {
-  /** Linear cursor wrapped for const-root mutation discipline. */
+  /**
+   * Linear cursor wrapped for const-root mutation discipline.
+   */
   const state = { index: 0, };
   while (state.index < args.length) {
-    /** Current possible global option or subcommand. */
+    /**
+     * Current possible global option or subcommand.
+     */
     const argument = args[state.index];
     if (argument === '-C') {
       if (args[state.index + 1] === undefined)
@@ -56,22 +60,32 @@ function gitSubcommandIndex(
 function gitIsReadOnly(
   args: readonly string[],
 ): boolean {
-  /** Subcommand position after supported global options. */
+  /**
+   * Subcommand position after supported global options.
+   */
   const subcommandIndex = gitSubcommandIndex(args,);
   if (subcommandIndex < 0)
     return false;
   if (args[subcommandIndex] !== 'tag')
     return false;
-  /** Arguments that select tag listing mode. */
-  const tagArgs = args.slice(subcommandIndex + 1,);
-  if (tagArgs.length === 2) {
-    return (tagArgs[0] === '--points-at')
-      && (tagArgs[1] !== '');
+  /**
+   * First argument after tag subcommand.
+   */
+  const tagArgumentStart = subcommandIndex + 1;
+  /**
+   * Count of tag arguments without borrowing array through unresolved method.
+   */
+  const tagArgumentCount = args.length - tagArgumentStart;
+  if (tagArgumentCount === 2) {
+    return (args[tagArgumentStart] === '--points-at')
+      && (args[tagArgumentStart + 1] !== '');
   }
-  if (tagArgs.length !== 1)
+  if (tagArgumentCount !== 1)
     return false;
-  /** Inline points-at object after option assignment. */
-  const [inlinePointsAt = '',] = tagArgs;
+  /**
+   * Inline points-at object after option assignment.
+   */
+  const inlinePointsAt = args[tagArgumentStart] ?? '';
   return inlinePointsAt.startsWith('--points-at=',)
     && (inlinePointsAt.length > '--points-at='.length);
 }

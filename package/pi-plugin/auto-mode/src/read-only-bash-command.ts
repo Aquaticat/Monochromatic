@@ -12,7 +12,9 @@ import type { CommandInfo, } from './types.ts';
 
 //region Command policy
 
-/** Commands with an implemented read-only proof. */
+/**
+ * Commands with an implemented read-only proof.
+ */
 const PROVABLE_READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
   'find',
   'git',
@@ -22,7 +24,9 @@ const PROVABLE_READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
   'sort',
 ]);
 
-/** ripgrep options that execute an external helper. */
+/**
+ * ripgrep options that execute an external helper.
+ */
 const RIPGREP_EXECUTION_OPTIONS: ReadonlySet<string> = new Set([
   '--hostname-bin',
   '--pre',
@@ -31,7 +35,9 @@ const RIPGREP_EXECUTION_OPTIONS: ReadonlySet<string> = new Set([
   '-z',
 ]);
 
-/** GNU find actions that mutate state, execute commands, or write named files. */
+/**
+ * GNU find actions that mutate state, execute commands, or write named files.
+ */
 const FIND_NON_READ_ACTIONS: ReadonlySet<string> = new Set([
   '-delete',
   '-exec',
@@ -44,20 +50,26 @@ const FIND_NON_READ_ACTIONS: ReadonlySet<string> = new Set([
   '-okdir',
 ]);
 
-/** GNU find traversal modes that can follow descendants outside proved roots. */
+/**
+ * GNU find traversal modes that can follow descendants outside proved roots.
+ */
 const FIND_UNBOUNDED_LINK_OPTIONS: ReadonlySet<string> = new Set([
   '-H',
   '-L',
 ]);
 
-/** GNU sort options that select an explicit output or helper program. */
+/**
+ * GNU sort options that select explicit output or helper program.
+ */
 const SORT_NON_READ_OPTIONS: ReadonlySet<string> = new Set([
   '--compress-program',
   '--output',
   '-o',
 ]);
 
-/** Shell printf option that assigns variable instead of writing standard output. */
+/**
+ * Shell printf option that assigns variable instead of writing standard output.
+ */
 const PRINTF_NON_READ_OPTIONS: ReadonlySet<string> = new Set(['-v',]);
 
 //endregion Command policy
@@ -121,7 +133,10 @@ function hasBlockedOption(
 ): boolean {
   return args.some(function argumentUsesBlockedOption(argument,): boolean {
     for (const option of blockedOptions) {
-      if (optionMatches({ argument, option, },))
+      if (optionMatches({
+        argument,
+        option,
+      },))
         return true;
     }
     return false;
@@ -147,7 +162,11 @@ function hasBlockedOption(
 function ripgrepIsReadOnly(
   args: readonly string[],
 ): boolean {
-  if (process.env['RIPGREP_CONFIG_PATH'] !== undefined)
+  /**
+   * Runtime environment containing optional implicit ripgrep configuration.
+   */
+  const { env, } = process;
+  if (env.RIPGREP_CONFIG_PATH !== undefined)
     return false;
   return !hasBlockedOption({
     args,
@@ -242,28 +261,37 @@ function supportsReadOnlyProof(
 function commandIsReadOnly(
   command: CommandInfo,
 ): boolean {
-  if (command.envAssignments.length > 0)
+  /**
+   * Command shape fields used by positive proof.
+   */
+  const {
+    args,
+    envAssignments,
+    name,
+    redirects,
+  } = command;
+  if (envAssignments.length > 0)
     return false;
-  if (command.redirects.some(function redirectWritesFile(redirect,): boolean {
+  if (redirects.some(function redirectWritesFile(redirect,): boolean {
     return redirect.writesFile;
   },)) {
     return false;
   }
-  if (command.name === 'rg')
-    return ripgrepIsReadOnly(command.args,);
-  if (command.name === 'find')
-    return findIsReadOnly(command.args,);
-  if (command.name === 'sort')
-    return sortIsReadOnly(command.args,);
-  if (command.name === 'git')
-    return gitIsReadOnly(command.args,);
-  if (command.name === 'printf') {
+  if (name === 'rg')
+    return ripgrepIsReadOnly(args,);
+  if (name === 'find')
+    return findIsReadOnly(args,);
+  if (name === 'sort')
+    return sortIsReadOnly(args,);
+  if (name === 'git')
+    return gitIsReadOnly(args,);
+  if (name === 'printf') {
     return !hasBlockedOption({
-      args: command.args,
+      args,
       blockedOptions: PRINTF_NON_READ_OPTIONS,
     },);
   }
-  return command.name === 'paste';
+  return name === 'paste';
 }
 
 //endregion Public proof

@@ -604,23 +604,33 @@ await describe({
           event: 'tool_call',
         },);
 
-        for (const [commandIndex, command,] of commands.entries()) {
-          /** Bash event carrying one read-only command family. */
-          const event = {
-            type: 'tool_call',
-            toolName: 'bash',
-            toolCallId: `bash-read-only-${String(commandIndex,)}`,
-            input: { command, },
-          } as ToolCallEvent;
-          /** Flag decision paired with source command for actionable failure diff. */
-          const flagged = await probeFlaggedToolCall({
-            handler: toolCallHandler,
-            event,
-            cwd: home,
-            entries,
-          },);
+        /**
+         * Concurrent decisions paired with source commands for actionable failure diffs.
+         */
+        const decisions = await Promise.all(commands.map(
+          async function classifyReadOnlyCommand(command, commandIndex,): Promise<{
+            readonly command: string;
+            readonly flagged: boolean;
+          }> {
+            /** Bash event carrying one read-only command family. */
+            const event = {
+              type: 'tool_call',
+              toolName: 'bash',
+              toolCallId: `bash-read-only-${String(commandIndex,)}`,
+              input: { command, },
+            } as ToolCallEvent;
+            /** Whether read-only command reached approval-reuse path. */
+            const flagged = await probeFlaggedToolCall({
+              handler: toolCallHandler,
+              event,
+              cwd: home,
+              entries,
+            },);
+            return { command, flagged, };
+          },
+        ),);
+        for (const { command, flagged, } of decisions)
           expect({ command, flagged, },).toEqual({ command, flagged: false, },);
-        }
         await rm(
           home,
           {
@@ -689,23 +699,33 @@ await describe({
           event: 'tool_call',
         },);
 
-        for (const [commandIndex, command,] of commands.entries()) {
-          /** Bash event carrying one unsafe lookalike command. */
-          const event = {
-            type: 'tool_call',
-            toolName: 'bash',
-            toolCallId: `bash-mutating-${String(commandIndex,)}`,
-            input: { command, },
-          } as ToolCallEvent;
-          /** Flag decision paired with source command for actionable failure diff. */
-          const flagged = await probeFlaggedToolCall({
-            handler: toolCallHandler,
-            event,
-            cwd: home,
-            entries,
-          },);
+        /**
+         * Concurrent decisions paired with unsafe commands for actionable failure diffs.
+         */
+        const decisions = await Promise.all(commands.map(
+          async function classifyMutatingCommand(command, commandIndex,): Promise<{
+            readonly command: string;
+            readonly flagged: boolean;
+          }> {
+            /** Bash event carrying one unsafe lookalike command. */
+            const event = {
+              type: 'tool_call',
+              toolName: 'bash',
+              toolCallId: `bash-mutating-${String(commandIndex,)}`,
+              input: { command, },
+            } as ToolCallEvent;
+            /** Whether unsafe command reached approval-reuse path. */
+            const flagged = await probeFlaggedToolCall({
+              handler: toolCallHandler,
+              event,
+              cwd: home,
+              entries,
+            },);
+            return { command, flagged, };
+          },
+        ),);
+        for (const { command, flagged, } of decisions)
           expect({ command, flagged, },).toEqual({ command, flagged: true, },);
-        }
         await rm(
           home,
           {

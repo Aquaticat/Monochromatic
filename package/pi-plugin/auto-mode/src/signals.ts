@@ -211,8 +211,8 @@ async function bashSignals(
   },);
   if (readOnlyProof.proven)
     return false;
-  if (readOnlyProof.required
-    && !allowProjectDotenvCredentialSource) {
+  if ((readOnlyProof.required)
+    && (!allowProjectDotenvCredentialSource)) {
     return true;
   }
 

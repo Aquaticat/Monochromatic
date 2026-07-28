@@ -156,6 +156,20 @@ function visitNode(
   }
   if (node.type === 'For') {
     /**
+     * Loop syntax parts used by pre-body work and body context.
+     */
+    const {
+      body,
+      name,
+      wordlist,
+    } = node;
+    /**
+     * Literal source values assigned to loop variable.
+     */
+    const loopValues: string[] = [];
+    for (const word of wordlist)
+      loopValues[loopValues.length] = word.value;
+    /**
      * Body context carrying literal source values assigned to loop variable.
      */
     const loopContext: ShellCommandContext = {
@@ -163,10 +177,8 @@ function visitNode(
       loopBindings: [
         ...context.loopBindings,
         {
-          name: node.name.value,
-          values: node.wordlist.map(function loopWordValue(word,): string {
-            return word.value;
-          },),
+          name: name.value,
+          values: loopValues,
         },
       ],
     };
@@ -174,16 +186,15 @@ function visitNode(
       ...EMPTY_VISIT_RESULT,
       workItems: [
         ...wordWorkItems({
-          word: node.name,
+          word: name,
           context,
         },),
         ...wordsWorkItems({
-          words: node.wordlist,
+          words: wordlist,
           context,
         },),
         ...statementWorkItems({
-          statements: node.body
-            .commands,
+          statements: body.commands,
           context: loopContext,
         },),
         ...redirectWorkItems({

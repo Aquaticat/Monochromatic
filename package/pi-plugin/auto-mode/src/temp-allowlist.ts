@@ -118,7 +118,9 @@ async function canonicalHomePath(
     return await realpath(home,);
   }
   catch (error) {
-    /** Metadata failure remains visible while downstream trust check fails closed. */
+    /**
+     * Metadata failure remains visible while downstream trust check fails closed.
+     */
     const innerL = tagged({
       tag: canonicalHomePath.name,
       l: moduleLogger,

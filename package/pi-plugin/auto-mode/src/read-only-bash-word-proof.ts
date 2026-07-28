@@ -15,10 +15,14 @@ import type {
   SignalContext,
 } from './types.ts';
 
-/** Sentinel for shell word whose runtime values cannot be proven. */
+/**
+ * Sentinel for shell word whose runtime values cannot be proven.
+ */
 const UNPROVEN_WORD: unique symbol = Symbol('read-only Bash word value is unproven',);
 
-/** Expanded shell word values or fail-closed sentinel. */
+/**
+ * Expanded shell word values or fail-closed sentinel.
+ */
 type ProvenWordValues = readonly string[] | typeof UNPROVEN_WORD;
 
 /**
@@ -36,11 +40,11 @@ type ProvenWordValues = readonly string[] | typeof UNPROVEN_WORD;
 function loopValueIsLiteral(
   value: string,
 ): boolean {
-  return !value.includes('$',)
-    && !value.includes('`',)
-    && !value.includes('*',)
-    && !value.includes('?',)
-    && !value.includes('[',);
+  return (!value.includes('$',))
+    && (!value.includes('`',))
+    && (!value.includes('*',))
+    && (!value.includes('?',))
+    && (!value.includes('[',));
 }
 
 /**
@@ -66,16 +70,26 @@ function loopBindingValues(
     readonly name: string;
   },
 ): ProvenWordValues {
-  for (let index = command.context.loopBindings.length - 1; index >= 0; index -= 1) {
-    /** Possible innermost matching loop binding. */
-    const binding = command.context.loopBindings[index];
+  /**
+   * Lexical loop bindings copied from command context.
+   */
+  const { loopBindings, } = command.context;
+  for (let index = loopBindings.length - 1; index >= 0; index -= 1) {
+    /**
+     * Possible innermost matching loop binding.
+     */
+    const binding = loopBindings[index];
     if ((binding === undefined) || (binding.name !== name))
       continue;
-    if (binding.values.length === 0)
+    /**
+     * Literal values attached to matched lexical binding.
+     */
+    const { values, } = binding;
+    if (values.length === 0)
       return UNPROVEN_WORD;
-    if (!binding.values.every(loopValueIsLiteral,))
+    if (!values.every(loopValueIsLiteral,))
       return UNPROVEN_WORD;
-    return binding.values;
+    return values;
   }
   return UNPROVEN_WORD;
 }
@@ -105,7 +119,9 @@ function provenWordValues(
     readonly command: CommandInfo;
   },
 ): ProvenWordValues {
-  /** Named parameter references in shell word. */
+  /**
+   * Named parameter references in shell word.
+   */
   const references = extractParamRefs(word,);
   if (references.length === 0) {
     if (word.includes('$',) || word.includes('`',))
@@ -114,11 +130,16 @@ function provenWordValues(
   }
   if (references.length !== 1)
     return UNPROVEN_WORD;
-  /** Sole named reference eligible for exact loop expansion. */
+  /**
+   * Sole named reference eligible for exact loop expansion.
+   */
   const [name = '',] = references;
   if ((word !== `$${name}`) && (word !== `\${${name}}`))
     return UNPROVEN_WORD;
-  return loopBindingValues({ command, name, },);
+  return loopBindingValues({
+    command,
+    name,
+  },);
 }
 
 /**
@@ -136,14 +157,20 @@ function provenWordValues(
 function pathCandidates(
   value: string,
 ): readonly string[] {
-  /** Candidate path spellings before de-duplication. */
-  const candidates = [
-    ...(looksLikePath(value,) ? [value,] : []),
-  ];
-  /** Inline long-option assignment separator. */
+  /**
+   * Candidate path spellings before de-duplication.
+   */
+  const candidates = looksLikePath(value,)
+    ? [value,]
+    : [];
+  /**
+   * Inline long-option assignment separator.
+   */
   const assignmentIndex = value.indexOf('=',);
-  if (assignmentIndex >= 0) {
-    /** Value after option assignment. */
+  if (assignmentIndex !== -1) {
+    /**
+     * Value after option assignment.
+     */
     const assignedValue = value.slice(assignmentIndex + 1,);
     if (looksLikePath(assignedValue,))
       candidates.push(assignedValue,);
@@ -178,32 +205,46 @@ async function commandWordsStayInReadScope(
     readonly trustedAgentTempDirs: readonly string[];
   },
 ): Promise<boolean> {
-  /** Arguments, assignment values, and file redirects that can carry paths. */
-  const words = [
+  /**
+   * Arguments, assignment values, and file redirects that can carry paths.
+   */
+  const words: string[] = [
     ...command.args,
-    ...command.envAssignments.map(function assignmentValue(assignment,): string {
-      return assignment.value;
-    },),
     ...command.redirectTargets,
   ];
+  for (const assignment of command.envAssignments)
+    words[words.length] = assignment.value;
+  /**
+   * Independent canonical path checks gathered before concurrent execution.
+   */
+  const pathSignalPromises: Promise<boolean>[] = [];
   for (const word of words) {
-    /** Finite values after exact loop-variable expansion. */
-    const values = provenWordValues({ word, command, },);
+    /**
+     * Finite values after exact loop-variable expansion.
+     */
+    const values = provenWordValues({
+      word,
+      command,
+    },);
     if (values === UNPROVEN_WORD)
       return false;
     for (const value of values) {
       for (const filePath of pathCandidates(value,)) {
-        if (await pathSignals({
+        pathSignalPromises[pathSignalPromises.length] = pathSignals({
           filePath,
           ctx,
           allowlistedDirs: trustedAgentTempDirs,
-        },)) {
-          return false;
-        }
+        },);
       }
     }
   }
-  return true;
+  /**
+   * Whether any path escaped read scope or matched secret-path policy.
+   */
+  const pathSignalDecisions = await Promise.all(pathSignalPromises,);
+  return !pathSignalDecisions.some(function hasPathSignal(decision,): boolean {
+    return decision;
+  },);
 }
 
 export { commandWordsStayInReadScope, };

@@ -40,7 +40,7 @@ import { shouldFlag, } from './signals.ts';
 import { JUDGE_SYSTEM_PROMPT, } from './system-prompt.ts';
 import { agentTempAllowlistedDirs, } from './temp-allowlist.ts';
 import {
-  buildApprovalFingerprint,
+  buildApprovalFingerprint as approvalFingerprintForEvent,
   describeAction,
   isRelevantTool,
   serializeToolInputForJudge,
@@ -106,7 +106,7 @@ type SkillPromptEvent = {
  * - {@link describeAction} and {@link appendBypassAllowEntry} log bypassed tool calls
  * - {@link agentTempAllowlistedDirs} and {@link linkedWorktreeReadAllowlistedDirs} build read allowlists
  * - {@link shouldFlag} and {@link isRelevantTool} decide whether a tool call needs evaluation
- * - {@link buildApprovalFingerprint} and {@link evaluate} run the judge pipeline
+ * - {@link approvalFingerprintForEvent} and {@link evaluate} run the judge pipeline
  * - {@link updateWidget} renders flow verdicts
  *
  * @param pi - the pi extension API
@@ -463,7 +463,7 @@ function initializeAutoMode(
       /**
        * Stable identity for exact same-session approval reuse.
        */
-      const approvalFingerprint = buildApprovalFingerprint({
+      const approvalFingerprint = approvalFingerprintForEvent({
         event,
         cwd: ctx.cwd,
       },);
@@ -543,10 +543,8 @@ export default function autoMode(
   initializeAutoMode({ pi, },);
 }
 
-export {
-  buildApprovalFingerprint,
-  initializeAutoMode,
-};
+export { initializeAutoMode, };
+export { buildApprovalFingerprint, } from './tool-helpers.ts';
 export {
   buildContext,
   getReusableApproval,
