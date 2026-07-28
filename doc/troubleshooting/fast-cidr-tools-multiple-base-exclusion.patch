@@ -1,0 +1,28 @@
+diff --git a/src/exclude.ts b/src/exclude.ts
+index 1585b2d..f1d5de4 100644
+--- a/src/exclude.ts
++++ b/src/exclude.ts
+@@ -121,9 +121,9 @@ export function exclude(_basenets: string[], _exclnets: string[], sort = false):
+           basenets.push(remainders[j]);
+         }
+         basenets.splice(index, 1);
++      } else {
++        index++;
+       }
+-
+-      index++;
+     }
+   }
+ 
+diff --git a/test/index.test.ts b/test/index.test.ts
+index 81a2124..ac414c5 100644
+--- a/test/index.test.ts
++++ b/test/index.test.ts
+@@ -51,6 +51,7 @@ describe('cidr-tools-wasm', () => {
+     expect(exclude(['10.11.0.0/16'], ['10.11.70.0/24'])).toStrictEqual(['10.11.0.0/18', '10.11.64.0/22', '10.11.68.0/23', '10.11.128.0/17', '10.11.96.0/19', '10.11.80.0/20', '10.11.72.0/21', '10.11.71.0/24']);
+     expect(exclude(['0.0.0.0/30'], ['0.0.0.1/32', '0.0.0.2/32'])).toStrictEqual(['0.0.0.0/32', '0.0.0.3/32']);
+     expect(exclude(['0.0.0.0/0'], ['127.0.0.0/1'])).toStrictEqual(['128.0.0.0/1']);
++    expect(exclude(['10.0.0.0/30', '10.0.0.8/30'], ['10.0.0.0/28'])).toStrictEqual([]);
+ 
+     expect(exclude(['::/127'], ['::1/128'])).toStrictEqual(['::/128']);
+     expect(exclude(['::/120'], ['::1/112'])).toStrictEqual([]);
