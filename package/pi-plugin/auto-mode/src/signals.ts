@@ -31,6 +31,7 @@ import {
   textSignals,
 } from './content-signals.ts';
 import { pathSignals, } from './path-signals.ts';
+import { classifyReadOnlyBash, } from './read-only-bash-proof.ts';
 import {
   hasTrustedAgentTempCredentialHandoff,
   isTrustedAgentTempBashPathAllowed,
@@ -200,6 +201,19 @@ async function bashSignals(
     ctx,
     trustedAgentTempDirs,
   },);
+  /**
+   * Positive proof required for modeled inspection families and existing private scratch paths.
+   */
+  const readOnlyProof = await classifyReadOnlyBash({
+    analysis,
+    ctx,
+    trustedAgentTempDirs,
+  },);
+  if (readOnlyProof.required
+    && !readOnlyProof.proven
+    && !allowProjectDotenvCredentialSource) {
+    return true;
+  }
 
   for (const cmd of analysis.commands) {
     if (PRIVILEGE_COMMANDS.has(cmd.name,))
