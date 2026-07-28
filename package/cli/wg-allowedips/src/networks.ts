@@ -347,8 +347,8 @@ async function entryNetworks(
      */
     const networks = await lookupAsnNetworks({ asn, },);
     if (networks.length === 0) {
-      l.error(`ASN ${asn} contributed no networks`,);
-      throw new InputValidationError(`ASN contributed no networks: ${asn}`,);
+      l.warn(`ASN ${asn} contributed no networks; skipping ASN`,);
+      return [];
     }
     return networks.map(function normalizeAsnNetwork(network: string,): string {
       return asnNetwork({

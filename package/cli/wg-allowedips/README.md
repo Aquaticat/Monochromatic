@@ -79,6 +79,7 @@ ASN entries use case-insensitive `AS<number>` syntax,
 for example `AS41231`.
 Each entry contributes every network and single address assigned to that ASN by the [IPinfo Lite database][ipinfo-lite].
 The same expansion works in allowed and disallowed inputs.
+An ASN contributing no networks writes one warning to stderr for that entry and contributes nothing.
 
 ASN data reuses the IPinfo integration under `package/config/tofu`.
 Fresh `src/cache_AS<number>.txt` snapshots avoid network access.

@@ -203,22 +203,40 @@ await describe({
     },),
 
     it({
-      name: 'rejects an ASN with no database networks',
-      fn: async () => {
+      name: 'warns once for each ASN contributing no networks',
+      fn: async ({ sinon, }) => {
         /**
-         * Empty ASN diagnostic.
+         * Console warning spy observing built logger output after its microtask flush.
          */
-        const error = await captureError({
-          operation: async function generateEmptyAsn(): Promise<string> {
-            return await generateAllowedIpsWithLookup({
-              allowedText: 'AS64503',
-              disallowedText: '',
-              lookupAddresses: fixtureLookup,
-              lookupAsnNetworks: fixtureAsnLookup,
-            },);
-          },
+        const warningSpy = sinon.spy(
+          console,
+          'warn',
+        );
+        /**
+         * Direct route retained while empty ASNs in both sets contribute nothing.
+         */
+        const output = await generateAllowedIpsWithLookup({
+          allowedText: '192.0.2.1\nAS64503',
+          disallowedText: 'AS64506',
+          lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
         },);
-        expect(String(error,),).toContain('ASN contributed no networks: AS64503',);
+        await Promise.resolve();
+        /**
+         * Every console warning argument flattened for per-ASN occurrence checks.
+         */
+        const warningText = warningSpy.args
+          .map(function warningArgument([message,],): string {
+            return String(message,);
+          },)
+          .join('\n',);
+        expect(output,).toBe('192.0.2.1/32\n',);
+        expect(
+          warningText.split('ASN AS64503 contributed no networks; skipping ASN',).length - 1,
+        ).toBe(1,);
+        expect(
+          warningText.split('ASN AS64506 contributed no networks; skipping ASN',).length - 1,
+        ).toBe(1,);
       },
     },),
 

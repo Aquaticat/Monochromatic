@@ -93,7 +93,8 @@ Reuse its per-ASN cache,
 month-scale refresh policy,
 `IPINFO_TOKEN` configuration,
 and stale-cache fallback.
-Fail an ASN entry that contributes no networks.
+When an ASN contributes no networks,
+write one warning to stderr for that entry and let it contribute nothing.
 
 Do not add:
 
@@ -148,12 +149,12 @@ These conditions must fail the command before it writes a result:
 - a required flag is missing;
 - an input file cannot be read;
 - a CIDR parser rejects an entry;
-- a domain lookup fails;
-- an ASN database lookup fails without a cached fallback;
-- an ASN contributes no networks.
+- a domain lookup fails with a code other than `ENOTFOUND`;
+- an ASN database lookup fails without a cached fallback.
 
 Let argument-parser and filesystem errors propagate.
-Let CIDR-parser and resolver errors propagate.
+Let CIDR-parser errors propagate.
+Let resolver errors propagate except for domain `ENOTFOUND` and empty ASN results.
 The explicit prefix-bound error must name the rejected entry.
 Do not add retry loops or custom line-number diagnostics.
 Do not add a separate exit-code taxonomy.
@@ -198,7 +199,7 @@ Tests must cover:
 - deterministic domain results entering the correct set through the test lookup adapter;
 - deterministic ASN results entering both sets through the test lookup adapter;
 - ASN database single addresses becoming host routes;
-- empty and invalid ASN results;
+- warnings for empty ASN results and failures for invalid ASN results;
 - blank and comment lines;
 - duplicate and overlapping inputs;
 - partial-overlap and out-of-set inputs;

@@ -147,6 +147,7 @@ const ASN_NETWORK_RECORDS: AsnNetworkRecords = {
   ],
   AS64503: [],
   AS64504: ['not-a-network',],
+  AS64506: [],
 };
 
 /**
