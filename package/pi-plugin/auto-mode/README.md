@@ -277,6 +277,11 @@ unproven expansions,
 writable redirects,
 secret-looking paths,
 and mutating option forms continue through normal judge handling.
+Unquoted pathname,
+brace,
+tilde,
+and extended-glob expansion syntax fails closed.
+Quoted patterns used by `find` predicates and ripgrep arguments remain literal.
 
 Both private roots remain trusted for existing non-secret helper paths.
 Running an inspected helper script from either root does not trigger a location-only prompt when existing credential-handoff policy applies.
