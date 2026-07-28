@@ -52,9 +52,11 @@ function usageSubject(names: readonly string[],): string {
 function parameterNames({
   targetIndexes,
   parameterIndex,
+  affectedNames,
 }: {
   readonly targetIndexes: ReadonlyMap<string, number>;
   readonly parameterIndex: number;
+  readonly affectedNames?: ReadonlySet<string>;
 },): readonly string[] {
   /**
    * Authored binding names belonging to current input.
@@ -67,7 +69,21 @@ function parameterNames({
     if (index === parameterIndex)
       names.push(name,);
   },);
-  return names;
+  if (affectedNames === undefined)
+    return names;
+  /**
+   * Names whose own slot carries the reported effect, in the order they were authored.
+   *
+   * Filtered rather than taken from the set directly, so the order stays the declaration's.
+   */
+  const affected = names.filter(function carriesEffect(name,): boolean {
+    return affectedNames.has(name,);
+  },);
+  /* An empty result means the effect reached no binding this map knows, which should not happen
+   * and would produce a subject naming nothing. Describing the whole input is what the report
+   * said before per-property attribution, so falling back to it loses precision and never the
+   * reader's ability to find the input. */
+  return affected.length === 0 ? names : affected;
 }
 
 /**
@@ -77,23 +93,28 @@ function parameterNames({
  *
  * @param parameterIndex - Input index being described.
  *
+ * @param affectedNames - Bindings whose own slot carries the effect, absent to name them all.
+ *
  * @returns subject plus verb for singular or destructured input names.
  *
  * @example
  * ```ts
- * inputUsageSubject({ targetIndexes, parameterIndex: 0 });
+ * inputUsageSubject({ targetIndexes, parameterIndex: 0, affectedNames });
  * ```
  */
 export function inputUsageSubject({
   targetIndexes,
   parameterIndex,
+  affectedNames,
 }: {
   readonly targetIndexes: ReadonlyMap<string, number>;
   readonly parameterIndex: number;
+  readonly affectedNames?: ReadonlySet<string>;
 },): string {
   return usageSubject(parameterNames({
     targetIndexes,
     parameterIndex,
+    ...(affectedNames === undefined) ? {} : { affectedNames, },
   },),);
 }
 
@@ -106,6 +127,8 @@ export function inputUsageSubject({
  *
  * @param parameterIndex - Input index being described.
  *
+ * @param affectedNames - Bindings whose own slot carries the effect, absent to name them all.
+ *
  * @returns subject plus verb naming method receiver bindings only.
  *
  * @example
@@ -117,14 +140,17 @@ export function inputMethodUsageSubject({
   boundaries,
   targetIndexes,
   parameterIndex,
+  affectedNames,
 }: {
   readonly boundaries: readonly string[];
   readonly targetIndexes: ReadonlyMap<string, number>;
   readonly parameterIndex: number;
+  readonly affectedNames?: ReadonlySet<string>;
 },): string {
   return usageSubject(parameterNames({
     targetIndexes,
     parameterIndex,
+    ...(affectedNames === undefined) ? {} : { affectedNames, },
   },)
     .filter(function usedAsReceiver(name,): boolean {
       return boundaries.some(function beginsWithName(boundary,): boolean {

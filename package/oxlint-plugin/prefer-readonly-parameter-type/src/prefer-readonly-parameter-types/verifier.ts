@@ -199,11 +199,22 @@ export function verifyReadonlyCallable({
     const parameterName = parameter.name
       .getText(sourceFile,);
     /**
+     * Bindings of this parameter whose own slot carries the opacity.
+     *
+     * Absent when nothing beneath the parameter is opaque, and then every binding is named, as
+     * every report did before per-property attribution. A destructured parameter used to name
+     * its primitive siblings in a report about one property, which `ST9` made the ordinary
+     * case rather than an unusual one.
+     */
+    const affectedNames = effectSummary.opaqueBindingsByParameter
+      .get(parameterIndex,);
+    /**
      * Plain-language subject for singular or destructured input names.
      */
     const inputSubject = inputUsageSubject({
       targetIndexes,
       parameterIndex,
+      ...(affectedNames === undefined) ? {} : { affectedNames, },
     },);
     /**
      * Semantic parameter type.
@@ -298,6 +309,7 @@ export function verifyReadonlyCallable({
         targetIndexes,
         parameterIndex,
         uncertainty,
+        ...(affectedNames === undefined) ? {} : { affectedNames, },
       },),);
       return;
     }

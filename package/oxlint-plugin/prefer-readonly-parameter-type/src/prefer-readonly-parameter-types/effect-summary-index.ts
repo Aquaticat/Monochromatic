@@ -48,6 +48,15 @@ export type CallableEffectSummary = {
   readonly opaqueProvenanceByParameter: ReadonlyMap<ParameterIndex, ReadonlySet<string>>;
   readonly foreignBorrowedParameterIndexes: ReadonlySet<ParameterIndex>;
   readonly callbackRelations: readonly PublicCallbackRelation[];
+  /**
+   * Authored binding names whose own slot carries the opacity, per parameter.
+   *
+   * The only slot-derived thing crossing this boundary, and it crosses as names rather than
+   * slots because a slot number means nothing outside the declaration that allocated it. A
+   * parameter is absent when nothing beneath it is opaque, which is not the same as an empty
+   * set: an effect on the whole-parameter slot lists every binding under it.
+   */
+  readonly opaqueBindingsByParameter: ReadonlyMap<ParameterIndex, ReadonlySet<string>>;
 };
 
 /**

@@ -593,11 +593,14 @@ children: [
       expect(messages.some(function opacityPreemptsReadonlyShape(message,): boolean {
         return message.includes('claims readonly semantics dishonestly',);
       },),).toBe(false,);
+      /* Five, up from four, because `destructuredOpaqueEffect` joined them. Its report used to
+       * name both bindings of its one destructured parameter and now names `state` alone,
+       * which is the assertion immediately below. */
       expect(messages.filter(function contractedOpacity(message,): boolean {
         return message.startsWith(
           'The function input named "state" is used by these calls: JSON.stringify [',
         );
-      },).length,).toBe(4,);
+      },).length,).toBe(5,);
       /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
       const opaqueMessage = messages.find(function unsafeJson(message,): boolean {
         return message.startsWith(
@@ -619,11 +622,21 @@ children: [
           + '\n4. After source and source-map inference are exhausted, mark exact runtime-owned host input as ForeignHostCapability and document its possible effects with @mutates.'
           + '\n\nAn @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
       ),).toBe(true,);
-      expect(messages.some(function destructuredInput(message,): boolean {
+      /* `destructuredOpaqueEffect({ state, label })` calls `JSON.stringify({ state, label })`,
+       * and `label` is a `string`. A primitive cannot carry the state an unresolved call might
+       * change, so naming it in the report told the reader to look at something that could not
+       * be the problem. It was named because both bindings shared one parameter index, which
+       * `ST9` makes the ordinary shape rather than an unusual one: the report could only name
+       * every binding of the parameter or none.
+       *
+       * Now the opacity is recorded against `state`'s own slot and the report says so.
+       * `effect-affected-bindings.ts` is what turns that slot fact into a name, and removing it
+       * puts `label` back. */
+      expect(messages.some(function namesPrimitiveSibling(message,): boolean {
         return message.startsWith(
           'The function inputs named "state" and "label" are used by these calls: JSON.stringify [',
         );
-      },),).toBe(true,);
+      },),).toBe(false,);
       /** Method-specific diagnostic explaining state changes without assignment. */
       const methodMessage = messages.find(function unknownMethod(message,): boolean {
         return message.startsWith(

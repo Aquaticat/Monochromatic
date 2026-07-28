@@ -73,6 +73,8 @@ export function uncertaintyBoundaries({
  *
  * @param inputSubject - Plain-language input description.
  *
+ * @param affectedNames - Bindings whose own slot carries the opacity, absent to name them all.
+ *
  * @param targetIndexes - Authored targets mapped to parameter indexes.
  *
  * @param parameterIndex - Parameter carrying unresolved effects.
@@ -92,6 +94,7 @@ export function opaqueEffectReport({
   targetIndexes,
   parameterIndex,
   uncertainty,
+  affectedNames,
 }: {
   readonly loc: {
     readonly start: {
@@ -106,6 +109,7 @@ export function opaqueEffectReport({
   readonly inputSubject: string;
   readonly targetIndexes: ReadonlyMap<string, number>;
   readonly parameterIndex: number;
+  readonly affectedNames?: ReadonlySet<string>;
   readonly uncertainty: UncertaintyBoundaries;
 },): Parameters<Context['report']>[0] {
   /**
@@ -127,6 +131,7 @@ export function opaqueEffectReport({
           boundaries: uncertainty.facts,
           targetIndexes,
           parameterIndex,
+          ...(affectedNames === undefined) ? {} : { affectedNames, },
         },)
         : inputSubject,
       boundaries: uncertainty.names,

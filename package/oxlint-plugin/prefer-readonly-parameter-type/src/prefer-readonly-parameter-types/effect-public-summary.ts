@@ -10,6 +10,7 @@
  * @module
  */
 
+import { affectedBindingNames, } from './effect-affected-bindings.ts';
 import {
   asParameterIndex,
   type ParameterIndex,
@@ -18,7 +19,10 @@ import {
   parametersOfSlots,
   provenanceOfParameter,
 } from './effect-slot-projection.ts';
-import type { MutableEffectSummary, } from './effect-summary-model.ts';
+import type {
+  EffectCallableDeclaration,
+  MutableEffectSummary,
+} from './effect-summary-model.ts';
 import type {
   CallableEffectSummary,
   PublicCallbackRelation,
@@ -31,19 +35,23 @@ import type {
  *
  * @param foreignParameterIndexes - Guaranteed foreign-owned parameter indexes.
  *
+ * @param declaration - Callable the summary describes, resolving binding names.
+ *
  * @returns copied public effect summary.
  *
  * @example
  * ```ts
- * effectPublicSummary({ summary, foreignParameterIndexes });
+ * effectPublicSummary({ summary, foreignParameterIndexes, declaration });
  * ```
  */
 export function effectPublicSummary({
   summary,
   foreignParameterIndexes,
+  declaration,
 }: {
   readonly summary: MutableEffectSummary;
   readonly foreignParameterIndexes: ReadonlySet<ParameterIndex>;
+  readonly declaration: EffectCallableDeclaration;
 }): CallableEffectSummary {
   /**
    * Slot ownership this summary's facts are projected through.
@@ -98,6 +106,24 @@ export function effectPublicSummary({
         ];
       },
     ),),
+    /* Names rather than slots, because a report has to say which authored inputs it is about
+     * and a slot number means nothing to a reader. Built here because this is the last point
+     * where the slot facts and the declaration are both in hand. */
+    opaqueBindingsByParameter: new Map([...affectedBindingNames({
+      declaration,
+      slots: summary.opaque,
+    },),].map(function brandOwner([
+      parameterIndex,
+      names,
+    ],): readonly [
+      ParameterIndex,
+      ReadonlySet<string>,
+    ] {
+      return [
+        asParameterIndex(parameterIndex,),
+        names,
+      ];
+    },),),
     /* Deduplicated, because projection can collapse several relations onto one. A callee
      * taking `{ run, target }` records relations against distinct property slots that both
      * name parameter zero, and repeating the pair would inflate what a consumer reads without

@@ -472,6 +472,7 @@ export function createDemandDrivenEffectIndex(
       return effectPublicSummary({
         summary,
         foreignParameterIndexes,
+        declaration,
       },);
     },
   };
