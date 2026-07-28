@@ -26,6 +26,7 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
+import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
 import {
   bindingOriginsFor,
   discoverAliasOrigins,
@@ -214,63 +215,11 @@ export function directEffectSummary({
    */
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined) {
-    declaration.parameters
-      .forEach(function rejectBodylessParameter(
-        parameter,
-        parameterIndex,
-      ): void {
-        if (!expressionCanCarryMutableState({
-          checker,
-          node: parameter.name,
-        },))
-          return;
-        addOpaqueEffect({
-          summary,
-          affectedSlot: asEffectSlot(parameterIndex,),
-          provenance: `bodyless callable ${callableKey(declaration,)}`,
-        },);
-      },);
-    /**
-     * Authored bodyless mutation contracts remain documentation of known effects.
-     * They never remove unresolved implementation opacity.
-     */
-    const contracts = mutationContractsForDeclaration({
+    recordBodylessEffects({
+      checker,
       declaration,
-      sourceFile: declaration.getSourceFile(),
+      summary,
     },);
-    if (contracts !== MUTATION_CONTRACT_UNAVAILABLE) {
-      /**
-       * Contract target names mapped to source parameter indexes.
-       */
-      const targetIndexes = mutationTargetIndexes({
-        declaration,
-        sourceFile: declaration.getSourceFile(),
-      },);
-      /* An authored name resolves to a whole parameter, so it seeds that parameter's own
-       * slot rather than any property slot beneath it. The whole slot is the wider claim of
-       * the two, and a caller fills it with every origin the actual packages, so a contract
-       * naming a destructured property still reaches every value that property could hold.
-       * Checking such a name against the measured property facts is what per-property
-       * attribution finally makes possible, and is deliberately not done here. */
-      contracts.blocks
-        .forEach(function seedContract(block,): void {
-        /**
-         * Parameter this contract names, absent when the name matches none.
-         */
-        const named = targetIndexes.get(block.parameterName,);
-        addEffectSlot({
-          target: summary.mutated,
-          value: named === undefined
-            ? EFFECT_SLOT_UNAVAILABLE
-            : asEffectSlot(named,),
-        },);
-      },);
-    }
-    summary.directOpaque
-      .forEach(function seedBodylessOpacity(index,): void {
-        summary.opaque
-          .add(index,);
-      },);
     return summary;
   }
   /* Parameter initializers run on entry and can do anything a body statement can, so they

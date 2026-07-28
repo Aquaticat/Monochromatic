@@ -39,6 +39,12 @@ export function applyExternalEffect({
   readonly argumentIndexes: readonly (readonly EffectSlot[])[];
   readonly summary: MutableEffectSummary;
 }): void {
+  /* Every lookup below indexes an actual-position array with a parameter position of the
+   * external callee. The two coincide only for a plain positional call, which predates slots
+   * and is unchanged by them, and no brand catches it because indexing accepts any number.
+   * External summaries stay parameter-level deliberately: a slot number means nothing across
+   * a project boundary, where the declaration a consumer resolves need not be the one the
+   * external analyzer inspected. */
   externalEffect.summary
     .referentMutatedParameterIndexes
     .forEach(function externalMutation(parameter,): void {

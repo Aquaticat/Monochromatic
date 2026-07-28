@@ -161,6 +161,8 @@ function isCallbackKey(value: unknown,): value is SerializedCallbackKey {
  *
  * @param parameterCount - Exclusive caller parameter-index limit.
  *
+ * @param slotCount - Exclusive caller slot limit.
+ *
  * @returns whether every edge field and relation is valid.
  */
 function isCallEdge({
@@ -229,7 +231,7 @@ function isCallEdge({
  *
  * @param value - Parsed JSON value.
  *
- * @param parameterCount - Exclusive callable parameter-index limit.
+ * @param slotCount - Exclusive callable slot limit.
  *
  * @returns whether relation indexes are valid.
  */
@@ -260,7 +262,7 @@ function isCallbackRelation({
  *
  * @param value - Parsed JSON value.
  *
- * @param parameterCount - Exclusive callable parameter-index limit.
+ * @param slotCount - Exclusive callable slot limit.
  *
  * @returns whether relation identity and indexes are valid.
  */
@@ -288,7 +290,7 @@ function isElementApplication({
  *
  * @param value - Parsed JSON value.
  *
- * @param parameterCount - Exclusive callable parameter-index limit.
+ * @param slotCount - Exclusive callable slot limit.
  *
  * @returns whether provenance keys and facts are bounded.
  */
@@ -354,16 +356,28 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
    * anything that depends on it. Every slot must name a parameter this callable has, and the
    * whole parameters must come first and in order, because that is the numbering the
    * allocator produces and a caller's cached edge indexes into. */
-  if ((!Array.isArray(value.parameterOfSlot,))
-    || (value.parameterOfSlot
-      .length < parameterCount)
+  /**
+   * Persisted slot ownership, still unvalidated.
+   */
+  const { parameterOfSlot, } = value;
+  if (!Array.isArray(parameterOfSlot,))
+    return false;
+  /**
+   * Distinct owners named by the persisted ownership.
+   */
+  const distinctOwners = [...new Set(parameterOfSlot,),];
+  if ((parameterOfSlot.length < parameterCount)
+    || (parameterOfSlot.length > MAX_CALLABLE_ARITY)
     || (!isBoundedIndexes({
-      value: [...new Set(value.parameterOfSlot,),],
+      value: distinctOwners,
       upperBound: parameterCount,
     },))
-    || value.parameterOfSlot
-      .slice(0, parameterCount,)
-      .some(function outOfOrderWholeSlot(
+    || parameterOfSlot
+      .slice(
+        0,
+        parameterCount,
+      )
+    .some(function outOfOrderWholeSlot(
         owner,
         slot,
       ): boolean {
@@ -373,8 +387,7 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
   /**
    * Slot count bounding every slot-relative field.
    */
-  const slotCount = value.parameterOfSlot
-    .length;
+  const slotCount = parameterOfSlot.length;
   /**
    * Set-backed effect arrays requiring bounded unique slots.
    */

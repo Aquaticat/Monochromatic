@@ -4,6 +4,7 @@
  * @module
  */
 
+import { calleeSlotOrigins, } from './effect-slot-projection.ts';
 import {
   addEffectSlot,
   type CallEdge,
@@ -58,7 +59,11 @@ export function propagateInvokedCapabilities({
       && (callbackKey !== OWNED_CALLABLE_UNAVAILABLE)
       && summaries.has(callbackKey,))
       continue;
-    for (const callerIndex of edge.originsByCalleeSlot[calleeIndex] ?? []) {
+    for (const callerIndex of calleeSlotOrigins({
+      edge,
+      ownership: calleeSummary.slots,
+      slot: calleeIndex,
+    },)) {
       changed = addEffectSlot({
         target: summary.invoked,
         value: callerIndex,

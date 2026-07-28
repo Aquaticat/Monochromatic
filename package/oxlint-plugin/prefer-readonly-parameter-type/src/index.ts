@@ -50,6 +50,8 @@ export {
   typescriptOffset,
 } from './prefer-readonly-parameter-types/typescript-node-map.ts';
 
+export { VERIFIED_READER_COUNT, } from './prefer-readonly-parameter-types/effect-default-library-reader-authority.ts';
+
 export {
   parameterBindingSlots,
   type ParameterSlotTable,

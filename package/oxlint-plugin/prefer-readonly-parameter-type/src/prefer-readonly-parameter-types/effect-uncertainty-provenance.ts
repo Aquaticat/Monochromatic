@@ -5,6 +5,7 @@
  */
 
 import type { EffectSlot, } from './effect-slot-identity.ts';
+import { calleeSlotOrigins, } from './effect-slot-projection.ts';
 import {
   type CallEdge,
   type MutableEffectSummary,
@@ -97,7 +98,11 @@ export function propagateUncertaintyProvenance({
     /**
      * Caller parameters packaged into uncertain callee parameter.
      */
-    const callerIndexes = edge.originsByCalleeSlot[calleeIndex] ?? [];
+    const callerIndexes = calleeSlotOrigins({
+      edge,
+      ownership: calleeSummary.slots,
+      slot: calleeIndex,
+    },);
     /**
      * Provenance facts attached to uncertain callee parameter.
      */

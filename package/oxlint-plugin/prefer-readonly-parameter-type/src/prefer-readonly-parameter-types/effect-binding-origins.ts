@@ -475,6 +475,9 @@ export function bindingOriginsFor({
    * Fresh set attached for the symbol.
    */
   const created = new Set<EffectSlot>();
-  bindingOriginBySymbolId.set(symbol.id, created,);
+  bindingOriginBySymbolId.set(
+    symbol.id,
+    created,
+  );
   return created;
 }

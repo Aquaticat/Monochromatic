@@ -20,10 +20,6 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 
-/**
- * Sentinel marking a formal that no single actual argument fills.
- */
-const NO_SOLE_POSITION = -1;
 import {
   callableKey,
   type EffectCallableDeclaration,
@@ -37,6 +33,11 @@ import type {
   ParameterIndex,
 } from './effect-slot-identity.ts';
 import { parametersOfSlots, } from './effect-slot-projection.ts';
+
+/**
+ * Sentinel marking a formal that no single actual argument fills.
+ */
+const NO_SOLE_POSITION = -1;
 import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
 
 /**
@@ -143,6 +144,8 @@ export function addOwnedCallEdge({
    */
   const originsByCalleeSlot = calleeSlots.parameterOfSlot
     .map(function originsForSlot(owner,): readonly EffectSlot[] {
+      /* A formal-indexed array read with a parameter position. Those coincide by
+       * construction, and no brand checks it: a branded number indexes anything. */
       return originsByFormal[owner] ?? [];
     },);
   summary.calls

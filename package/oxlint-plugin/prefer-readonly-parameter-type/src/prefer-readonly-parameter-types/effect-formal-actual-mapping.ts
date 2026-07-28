@@ -77,7 +77,7 @@ export function formalActualPositions({
   /**
    * Spread boundary normalized so absence compares as past every position.
    */
-  const spreadBoundary = firstSpread === -1 ? actualCount : firstSpread;
+  const spreadBoundary = firstSpread === (-1) ? actualCount : firstSpread;
   return callee.parameters
     .map(function positionsForFormal(
       parameter,

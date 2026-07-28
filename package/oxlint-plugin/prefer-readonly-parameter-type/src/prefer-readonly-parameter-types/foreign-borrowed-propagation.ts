@@ -121,7 +121,9 @@ function initializeCandidates({
     const callableCandidates = new Set(summary.directForeignBorrowed,);
     if ((incomingByCallee.get(key,) ?? []).length > 0) {
       for (let position = 0;
-        position < summary.slots.parameterCount;
+        position
+          < summary.slots
+          .parameterCount;
         position++) {
         callableCandidates.add(asParameterIndex(position,),);
       }
@@ -149,7 +151,8 @@ function totalParameterCount(
    */
   let count = 0;
   for (const summary of summaries.values())
-    count += summary.slots.parameterCount;
+    count += summary.slots
+      .parameterCount;
   return count;
 }
 
@@ -206,7 +209,9 @@ export function propagateForeignBorrowed(
        */
       const callableCandidates = candidates.get(key,) ?? new Set<ParameterIndex>();
       for (let position = 0;
-        position < summary.slots.parameterCount;
+        position
+          < summary.slots
+          .parameterCount;
         position++) {
         /**
          * Current parameter under test.

@@ -5,9 +5,11 @@
  */
 
 import type { EffectSlot, } from './effect-slot-identity.ts';
+import { calleeSlotOrigins, } from './effect-slot-projection.ts';
 import {
   addEffectSlot,
   type CallEdge,
+  type SlotOwnership,
 } from './effect-summary-model.ts';
 
 /**
@@ -27,6 +29,8 @@ import {
  *
  * @param edge - Call edge with caller argument roots.
  *
+ * @param calleeOwnership - Slot ownership of the callee the edge names.
+ *
  * @param calleeIndexes - Callee parameter indexes carrying effect.
  *
  * @returns whether target changed.
@@ -35,16 +39,18 @@ import {
  *
  * @example
  * ```ts
- * propagateCalleeIndexes({ target, edge, calleeIndexes });
+ * propagateCalleeIndexes({ target, edge, calleeOwnership, calleeIndexes });
  * ```
  */
 export function propagateCalleeIndexes({
   target,
   edge,
+  calleeOwnership,
   calleeIndexes,
 }: {
   readonly target: Set<EffectSlot>;
   readonly edge: CallEdge;
+  readonly calleeOwnership: SlotOwnership;
   readonly calleeIndexes: ReadonlySet<EffectSlot>;
 },): boolean {
   /**
@@ -55,7 +61,11 @@ export function propagateCalleeIndexes({
     /**
      * Caller parameters packaged into affected callee parameter.
      */
-    const callerIndexes = edge.originsByCalleeSlot[calleeIndex] ?? [];
+    const callerIndexes = calleeSlotOrigins({
+      edge,
+      ownership: calleeOwnership,
+      slot: calleeIndex,
+    },);
     for (const callerIndex of callerIndexes) {
       changed = addEffectSlot({
         target,

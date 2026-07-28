@@ -97,7 +97,8 @@ export function packagedCallableOrigins({
        */
       const symbol = isShorthandPropertyAssignment(node.parent,)
           && (node.parent
-            .name === node)
+            .name
+            === node)
         ? checker.getShorthandAssignmentValueSymbol(node.parent,)
         : checker.getSymbolAtLocation(node,);
       if (symbol === undefined)

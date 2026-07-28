@@ -6,6 +6,7 @@
 
 import { asParameterIndex, } from './effect-slot-identity.ts';
 import {
+  calleeSlotOrigins,
   parameterCarriesSlot,
   provenanceOfParameter,
 } from './effect-slot-projection.ts';
@@ -69,8 +70,11 @@ export function propagateCallbackRelations({
     /**
      * Caller parameters packaged as callback source value.
      */
-    const sourceCallerIndexes = edge.originsByCalleeSlot[relation.sourceSlot]
-      ?? [];
+    const sourceCallerIndexes = calleeSlotOrigins({
+      edge,
+      ownership: calleeSummary.slots,
+      slot: relation.sourceSlot,
+    },);
     /* The relation names a syntactic argument position of the inner invocation, which is a
      * parameter position of the callback, not a slot of it. A callback that destructures
      * that parameter records its writes against property slots, so asking its slot sets

@@ -22,6 +22,7 @@ import type {
   ParameterDeclaration,
 } from 'typescript/unstable/ast';
 import {
+  isArrayBindingPattern,
   isBindingElement,
   isIdentifier,
   isObjectBindingPattern,
@@ -59,6 +60,11 @@ export type ParameterBindingSlot = {
 /**
  * Tests whether a node destructures rather than naming one binding.
  *
+ * Asks the kind predicates rather than probing for an `elements` field. This AST exposes
+ * every field name on the prototype, so `'elements' in node` answers true for a numeric
+ * literal, and `{ 1: one }` was classified as a nested pattern and given no property slot at
+ * all. `numericKeySlots` in the shape fixture is what measured it.
+ *
  * @param node - Binding name to classify.
  *
  * @returns whether node is a destructuring pattern.
@@ -69,8 +75,8 @@ export type ParameterBindingSlot = {
  * ```
  */
 function isBindingPatternNode(node: Node,): node is BindingPattern {
-  return (!isIdentifier(node,))
-    && ('elements' in node);
+  return isObjectBindingPattern(node,)
+    || isArrayBindingPattern(node,);
 }
 
 /**
@@ -274,11 +280,21 @@ function bindingNamesUnder(
     }
     if (!isBindingPatternNode(current,))
       continue;
+    /**
+     * Names bound directly by this pattern, in declaration order.
+     */
+    const nested: Node[] = [];
     current.forEachChild(function queueElement(child,): undefined {
       if (isBindingElement(child,) && (child.name !== undefined))
-        pending.push(child.name,);
+        nested.push(child.name,);
       return undefined;
     },);
+    /* Reversed on the way in, because a stack hands them back in the opposite order and a
+     * caller comparing bound names against a written pattern should see them as written. */
+    nested.toReversed()
+      .forEach(function queueNested(bound,): void {
+        pending.push(bound,);
+      },);
   }
   return found;
 }
@@ -322,12 +338,16 @@ export function parameterBindingSlots({
   const propertySlots = table.propertySlotsByParameter[parameterIndex]
     ?? new Map<string, EffectSlot>();
   if (!isObjectBindingPattern(parameter.name,))
-    return [
-      {
-        name: parameter.name,
-        slot: wholeSlot,
-      },
-    ];
+    /* An identifier yields itself and an array pattern flattens, so every pair this returns
+     * names one identifier whichever shape the parameter has. Positional element keys are
+     * not modelled, so all of them take the whole-parameter slot. */
+    return bindingNamesUnder({ name: parameter.name, },)
+      .map(function wholeBinding(bound,): ParameterBindingSlot {
+        return {
+          name: bound,
+          slot: wholeSlot,
+        };
+      },);
   return parameter.name
     .elements
     .flatMap(function bindingsOfElement(element,): readonly ParameterBindingSlot[] {

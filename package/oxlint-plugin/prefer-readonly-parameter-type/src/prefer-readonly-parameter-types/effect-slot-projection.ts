@@ -20,7 +20,59 @@ import type {
   EffectSlot,
   ParameterIndex,
 } from './effect-slot-identity.ts';
-import type { SlotOwnership, } from './effect-summary-model.ts';
+import type {
+  CallEdge,
+  SlotOwnership,
+} from './effect-summary-model.ts';
+
+/**
+ * Reads the caller origins an edge supplies for one callee slot, never answering short.
+ *
+ * The broadcast in `addOwnedCallEdge` fills every callee slot, so a freshly built edge always
+ * has an entry. A restored one need not: the persisted arrays are validated for internal
+ * agreement but nothing compares their length against the callee they name, and an edge
+ * truncated to its formals would answer nothing for a property slot. Answering nothing there
+ * discards a write the callee performs, which is the direction that offers `readonly` for
+ * mutated state, so a missing entry falls back to the owning parameter's origins instead.
+ * That is the answer this analysis gave before slots existed, so the failure mode is lost
+ * precision rather than lost soundness.
+ *
+ * @param edge - Call edge supplying caller origins.
+ *
+ * @param ownership - Slot ownership of the callee the edge names.
+ *
+ * @param slot - Callee slot carrying some effect.
+ *
+ * @returns caller origins reaching that slot, empty only when the formal has none.
+ *
+ * @example
+ * ```ts
+ * calleeSlotOrigins({ edge, ownership: calleeSummary.slots, slot });
+ * ```
+ */
+export function calleeSlotOrigins({
+  edge,
+  ownership,
+  slot,
+}: {
+  readonly edge: CallEdge;
+  readonly ownership: SlotOwnership;
+  readonly slot: EffectSlot;
+},): readonly EffectSlot[] {
+  /**
+   * Origins recorded against this exact slot, absent for a truncated edge.
+   */
+  const supplied = edge.originsByCalleeSlot[slot];
+  if (supplied !== undefined)
+    return supplied;
+  /**
+   * Parameter owning this slot, absent when the slot is outside the callee.
+   */
+  const owner = ownership.parameterOfSlot[slot];
+  if (owner === undefined)
+    return [];
+  return edge.originsByCalleeSlot[owner] ?? [];
+}
 
 /**
  * Collects the parameters owning a set of slots.

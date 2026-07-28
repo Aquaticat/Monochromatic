@@ -158,7 +158,7 @@ export function verifiedReaderCall({
    */
   const resultRelation = VERIFIED_READERS[owner.name
     .text]?.[declaration.name
-    .text];
+      .text];
   if (resultRelation === undefined)
     return NOT_A_VERIFIED_READER;
   /**
@@ -218,7 +218,12 @@ function operandHoldsOnlyData({
   const operandType: Type | undefined = checker.getTypeAtLocation(operand,);
   if (operandType === undefined)
     return false;
-  if (checker.getSignaturesOfType(operandType, 0,).length > 0)
+  if (checker.getSignaturesOfType(
+    operandType,
+    0,
+  )
+    .length
+    > 0)
     /* Callable, so its own properties are whatever a function object carries. */
     return false;
   return checker.getPropertiesOfType(operandType,)

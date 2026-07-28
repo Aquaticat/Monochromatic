@@ -4,7 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { VERIFIED_READER_COUNT, } from './prefer-readonly-parameter-types/effect-default-library-reader-authority.ts';
+import { VERIFIED_READER_COUNT, } from '../dist/final/node/index.mjs';
 
 /** Trap names a proxy records while a reader runs over it. */
 type TrapHits = string[];
@@ -72,12 +72,12 @@ function trappedObject({ hits, }: { readonly hits: TrapHits; },): Record<string,
 /**
  * Traps that would mean a reader is not a reader.
  */
-const WRITING_TRAPS: readonly string[] = [
+const WRITING_TRAPS: ReadonlySet<string> = new Set([
   'set',
   'deleteProperty',
   'defineProperty',
   'setPrototypeOf',
-];
+]);
 
 await describe({
   name: 'default-library reader authority',
@@ -110,7 +110,7 @@ await describe({
           expect(hits.length > 0,).toBe(true,);
           expect(
             hits.filter(function isWriting(trap,): boolean {
-              return WRITING_TRAPS.includes(trap,);
+              return WRITING_TRAPS.has(trap,);
             },),
           ).toEqual([],);
         }

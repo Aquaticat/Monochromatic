@@ -110,7 +110,9 @@ function restoredOwnership(summary: SerializedEffectSummary,): SlotOwnership {
    * Owning parameter of every slot, as branded positions.
    */
   const parameterOfSlot = summary.parameterOfSlot
-    .map(asParameterIndex,);
+    .map(function brandOwner(owner,): ParameterIndex {
+      return asParameterIndex(owner,);
+    },);
   return {
     parameterCount: summary.parameterCount,
     slotCount: parameterOfSlot.length,
@@ -132,7 +134,9 @@ function restoredOwnership(summary: SerializedEffectSummary,): SlotOwnership {
  * ```
  */
 function restoredSlotList(slots: readonly number[],): readonly EffectSlot[] {
-  return slots.map(asEffectSlot,);
+  return slots.map(function brandSlot(slot,): EffectSlot {
+    return asEffectSlot(slot,);
+  },);
 }
 
 /**
@@ -325,11 +329,28 @@ export function deserializeEffectSummaries(
               new Set(facts,),
             ];
           },),),
-        mutated: restoredSlots(summary.mutated,),
-        invoked: restoredSlots(summary.invoked,),
-        opaque: restoredSlots(summary.opaque,),
+        /* Reseeded from the direct sets rather than trusted as stored. A serializer always
+         * writes a summary whose propagated sets already contain its direct ones, because
+         * `directEffectSummary` seeds them before returning, and propagation only ever adds.
+         * Nothing downstream reseeds, though, so a payload that lost the relation would drop
+         * a write that the same payload still records as direct. The union costs nothing and
+         * removes the dependence on validation being exhaustive. */
+        mutated: restoredSlots([
+          ...summary.mutated,
+          ...summary.directMutated,
+        ],),
+        invoked: restoredSlots([
+          ...summary.invoked,
+          ...summary.directInvoked,
+        ],),
+        opaque: restoredSlots([
+          ...summary.opaque,
+          ...summary.directOpaque,
+        ],),
         directForeignBorrowed: new Set(summary.directForeignBorrowed
-          .map(asParameterIndex,),),
+          .map(function brandForeign(owner,): ParameterIndex {
+            return asParameterIndex(owner,);
+          },),),
         directReturned: restoredSlots(summary.directReturned,),
         relations: summary.relations
           .map(function copyRelation(relation,) {
@@ -352,7 +373,9 @@ export function deserializeEffectSummaries(
               .map(restoredSlotList,),
             foreignOriginsByFormal: edge.foreignOriginsByFormal
               .map(function restoreForeign(origins,): readonly ParameterIndex[] {
-                return origins.map(asParameterIndex,);
+                return origins.map(function brandForeignOrigin(owner,): ParameterIndex {
+                  return asParameterIndex(owner,);
+                },);
               },),
             callbackKeysByCalleeSlot: edge.callbackKeysByCalleeSlot
               .map(deserializeCallbackKey,),

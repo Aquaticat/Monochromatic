@@ -51,7 +51,9 @@ export function propagateEffects(
     totalCount,
     summary,
   ): number {
-    return totalCount + (summary.slots.slotCount * EFFECT_DIMENSION_COUNT);
+    return totalCount + (summary.slots
+      .slotCount
+      * EFFECT_DIMENSION_COUNT);
   },
     0,
   );
@@ -124,11 +126,13 @@ export function propagateEffects(
             state.changed = propagateCalleeIndexes({
               target: summary.mutated,
               edge,
+              calleeOwnership: calleeSummary.slots,
               calleeIndexes: calleeSummary.mutated,
             },) || state.changed;
             state.changed = propagateCalleeIndexes({
               target: summary.opaque,
               edge,
+              calleeOwnership: calleeSummary.slots,
               calleeIndexes: calleeSummary.opaque,
             },) || state.changed;
             state.changed = propagateUncertaintyProvenance({

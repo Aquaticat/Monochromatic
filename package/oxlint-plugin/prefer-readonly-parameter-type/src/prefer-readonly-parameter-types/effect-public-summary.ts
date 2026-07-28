@@ -10,7 +10,10 @@
  * @module
  */
 
-import { asParameterIndex, type ParameterIndex, } from './effect-slot-identity.ts';
+import {
+  asParameterIndex,
+  type ParameterIndex,
+} from './effect-slot-identity.ts';
 import {
   parametersOfSlots,
   provenanceOfParameter,
@@ -95,15 +98,33 @@ export function effectPublicSummary({
         ];
       },
     ),),
-    callbackRelations: summary.relations
-      .map(function publicRelation(relation,): PublicCallbackRelation {
-        return {
-          callbackParameterIndex: ownership.parameterOfSlot[relation.callbackSlot]
-            ?? asParameterIndex(0,),
-          callbackArgumentPosition: relation.callbackArgumentPosition,
-          sourceParameterIndex: ownership.parameterOfSlot[relation.sourceSlot]
-            ?? asParameterIndex(0,),
-        };
-      },),
+    /* Deduplicated, because projection can collapse several relations onto one. A callee
+     * taking `{ run, target }` records relations against distinct property slots that both
+     * name parameter zero, and repeating the pair would inflate what a consumer reads without
+     * saying anything new. */
+    callbackRelations: [
+      ...new Map(summary.relations
+        .map(function publicRelation(relation,): readonly [
+          string,
+          PublicCallbackRelation,
+        ] {
+          /**
+           * Projected relation, parameter-level on both ends.
+           */
+          const projected = {
+            callbackParameterIndex: ownership.parameterOfSlot[relation.callbackSlot]
+              ?? asParameterIndex(0,),
+            callbackArgumentPosition: relation.callbackArgumentPosition,
+            sourceParameterIndex: ownership.parameterOfSlot[relation.sourceSlot]
+              ?? asParameterIndex(0,),
+          };
+          return [
+            `${String(projected.callbackParameterIndex,)}:${
+              String(projected.callbackArgumentPosition,)
+            }:${String(projected.sourceParameterIndex,)}`,
+            projected,
+          ];
+        },),).values(),
+    ],
   };
 }

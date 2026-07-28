@@ -124,9 +124,13 @@ function unknownInboundSummary(
   declaration: EffectCallableDeclaration,
 ): MutableEffectSummary {
   /**
-   * Callee parameter positions represented by empty ordinary origins.
+   * Callee slots this synthetic edge answers for, all of them with no origins.
+   *
+   * Sized by the callee's slots rather than its formals, because that is what propagation
+   * indexes this array with. A callee that destructures has strictly more of the first.
    */
-  const parameterIndexes = declaration.parameters
+  const emptyBySlot = parameterSlotTable({ declaration, },)
+    .parameterOfSlot
     .map(function emptyOrigins(): readonly EffectSlot[] {
     return [];
   },);
@@ -138,7 +142,15 @@ function unknownInboundSummary(
     return [];
   },);
   return {
-    slots: parameterSlotTable({ declaration, },),
+    /* This summary is a caller standing in for an inbound nothing could name, not the
+     * callee. It declares no parameters of its own, so it owns no slots either; giving it
+     * the callee's table would claim the callee's parameters as this caller's. */
+    slots: {
+      parameterCount: 0,
+      slotCount: 0,
+      parameterOfSlot: [],
+      slotsByParameter: [],
+    },
     bindingOriginBySymbolId: new Map(),
     directReturned: new Set(),
     directMutated: new Set(),
@@ -155,18 +167,18 @@ function unknownInboundSummary(
       calleeKey: callableKey(declaration,),
       calleeFileName: declaration.getSourceFile()
         .fileName,
-      originsByCalleeSlot: parameterIndexes,
+      originsByCalleeSlot: emptyBySlot,
       foreignOriginsByFormal: foreignOrigins,
       directForeignByFormal: declaration.parameters
         .map(function ordinaryArgument(): boolean {
         return false;
       },),
       foreignInbound: true,
-      callbackKeysByCalleeSlot: declaration.parameters
+      callbackKeysByCalleeSlot: emptyBySlot
         .map(function unavailableCallback() {
         return OWNED_CALLABLE_UNAVAILABLE;
       },),
-      callbackFileNamesByCalleeSlot: declaration.parameters
+      callbackFileNamesByCalleeSlot: emptyBySlot
         .map(function unavailableCallbackFile() {
         return OWNED_CALLABLE_UNAVAILABLE;
       },),
