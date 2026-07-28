@@ -2,6 +2,7 @@ import { lookup, } from 'node:dns/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { createAsnLookup, } from './asn-lookup.ts';
 import { generateAllowedIpsWithLookup, } from './generate-with-lookup.ts';
 import type { LookupAddress, } from './networks.ts';
 
@@ -56,6 +57,7 @@ async function lookupAddresses(
  * Generates a minimized WireGuard `AllowedIPs` value from allowed and disallowed file text.
  *
  * Domains resolve through the operating system once per input entry during this call.
+ * ASNs resolve through config-tofu's IPinfo Lite database and per-ASN cache.
  *
  * @param allowedText - Complete allowed-file text.
  *
@@ -93,6 +95,7 @@ export async function generateAllowedIps(
     allowedText,
     disallowedText,
     lookupAddresses,
+    lookupAsnNetworks: createAsnLookup(),
   },);
   fl.debug('generated AllowedIPs text',);
   return result;

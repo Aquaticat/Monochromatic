@@ -7,6 +7,7 @@ import {
 import { generateAllowedIpsWithLookup, } from '../dist/final/node/generate-with-lookup.mjs';
 import {
   captureError,
+  fixtureAsnLookup,
   fixtureLookup,
 } from './test-fixtures.ts';
 
@@ -51,6 +52,7 @@ await describe({
           allowedText: '  \r\n # comment\r\n 192.0.2.1 \r\n 2001:db8::1\n',
           disallowedText: '# none\n',
           lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
         },);
         expect(output,).toBe('192.0.2.1/32, 2001:db8::1/128\n',);
       },
@@ -66,6 +68,7 @@ await describe({
           allowedText: '192.0.2.7/24\n2001:db8::7/126',
           disallowedText: '',
           lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
         },);
         expect(output,).toBe('192.0.2.0/24, 2001:db8::4/126\n',);
       },
@@ -81,6 +84,7 @@ await describe({
           allowedText: 'inline#comment.example',
           disallowedText: '',
           lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
         },);
         expect(output,).toBe('198.51.100.7/32\n',);
       },
@@ -100,6 +104,7 @@ await describe({
           allowedText: 'allowed.example',
           disallowedText: 'disallowed.example',
           lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
         },);
         expect(output,).toBe('2001:db8::1/128\n',);
       },
@@ -117,6 +122,7 @@ await describe({
               allowedText: 'unknown.example',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -136,6 +142,7 @@ await describe({
               allowedText: 'invalid-address.example',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -144,6 +151,102 @@ await describe({
     },),
 
     //endregion Domain resolution
+
+    //region ASN resolution
+
+    it({
+      name: 'adds case-insensitive ASN networks and subtracts another ASN',
+      fn: async () => {
+        /**
+         * Dual-stack ASN result after subtracting first half of each network.
+         */
+        const output = await generateAllowedIpsWithLookup({
+          allowedText: 'as64500',
+          disallowedText: 'AS64501',
+          lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
+        },);
+        expect(output,).toBe('192.0.2.128/25, 2001:db8:100:8000::/49\n',);
+      },
+    },),
+
+    it({
+      name: 'turns single addresses from ASN database into host routes',
+      fn: async () => {
+        /**
+         * Host routes from database records without prefixes.
+         */
+        const output = await generateAllowedIpsWithLookup({
+          allowedText: 'AS64502',
+          disallowedText: '',
+          lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
+        },);
+        expect(output,).toBe('198.51.100.9/32, 2001:db8::9/128\n',);
+      },
+    },),
+
+    it({
+      name: 'rejects an ASN with no database networks',
+      fn: async () => {
+        /**
+         * Empty ASN diagnostic.
+         */
+        const error = await captureError({
+          operation: async function generateEmptyAsn(): Promise<string> {
+            return await generateAllowedIpsWithLookup({
+              allowedText: 'AS64503',
+              disallowedText: '',
+              lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
+            },);
+          },
+        },);
+        expect(String(error,),).toContain('ASN contributed no networks: AS64503',);
+      },
+    },),
+
+    it({
+      name: 'rejects an invalid network returned by ASN database',
+      fn: async () => {
+        /**
+         * Invalid ASN database record diagnostic.
+         */
+        const error = await captureError({
+          operation: async function generateInvalidAsnNetwork(): Promise<string> {
+            return await generateAllowedIpsWithLookup({
+              allowedText: 'AS64504',
+              disallowedText: '',
+              lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
+            },);
+          },
+        },);
+        expect(String(error,),).toContain('Invalid network from ASN AS64504: not-a-network',);
+      },
+    },),
+
+    it({
+      name: 'propagates ASN lookup failure',
+      fn: async () => {
+        /**
+         * Error from unregistered deterministic ASN resolver fixture.
+         */
+        const error = await captureError({
+          operation: async function generateUnknownAsn(): Promise<string> {
+            return await generateAllowedIpsWithLookup({
+              allowedText: 'AS64505',
+              disallowedText: '',
+              lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
+            },);
+          },
+        },);
+        expect(String(error,),).toContain('Unexpected ASN lookup: AS64505',);
+      },
+    },),
+
+    //endregion ASN resolution
 
     //region Empty allowed set
 
@@ -159,6 +262,7 @@ await describe({
               allowedText: ' \n# comment\n',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -178,6 +282,7 @@ await describe({
               allowedText: 'empty.example',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -201,6 +306,7 @@ await describe({
               allowedText: '127.1/24',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -220,6 +326,7 @@ await describe({
               allowedText: '192.0.2.1/33',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -239,6 +346,7 @@ await describe({
               allowedText: '2001:db8::1/129',
               disallowedText: '',
               lookupAddresses: fixtureLookup,
+              lookupAsnNetworks: fixtureAsnLookup,
             },);
           },
         },);
@@ -262,6 +370,7 @@ await describe({
                 allowedText: entry,
                 disallowedText: '',
                 lookupAddresses: fixtureLookup,
+                lookupAsnNetworks: fixtureAsnLookup,
               },);
             },
           },);

@@ -5,7 +5,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { generateAllowedIpsWithLookup, } from '../dist/final/node/generate-with-lookup.mjs';
-import { fixtureLookup, } from './test-fixtures.ts';
+import {
+  fixtureAsnLookup,
+  fixtureLookup,
+} from './test-fixtures.ts';
 
 /**
  * Exact set-operation fixture.
@@ -83,6 +86,7 @@ await describe({
           allowedText,
           disallowedText,
           lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
         },);
         expect(output,).toBe(expected,);
       },

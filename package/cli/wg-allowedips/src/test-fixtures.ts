@@ -17,6 +17,11 @@ type LookupAddress = {
 };
 
 /**
+ * ASN fixture networks keyed by normalized ASN.
+ */
+type AsnNetworkRecords = Readonly<Record<string, readonly string[]>>;
+
+/**
  * Disposable temporary directory used by built-CLI tests.
  */
 export type TempDir = {
@@ -49,6 +54,16 @@ class UnexpectedLookupError extends Error {
    * Stable error type name.
    */
   override name = 'UnexpectedLookupError';
+}
+
+/**
+ * Error raised when a fixture receives an unregistered ASN.
+ */
+class UnexpectedAsnLookupError extends Error {
+  /**
+   * Stable error type name.
+   */
+  override name = 'UnexpectedAsnLookupError';
 }
 
 /**
@@ -92,6 +107,26 @@ const LOOKUP_RECORDS: Readonly<Record<string, readonly LookupAddress[]>> = {
 };
 
 /**
+ * Deterministic ASN networks covering CIDR, single-address, empty, and invalid records.
+ */
+const ASN_NETWORK_RECORDS: AsnNetworkRecords = {
+  AS64500: [
+    '192.0.2.0/24',
+    '2001:db8:100::/48',
+  ],
+  AS64501: [
+    '192.0.2.0/25',
+    '2001:db8:100::/49',
+  ],
+  AS64502: [
+    '198.51.100.9',
+    '2001:db8::9',
+  ],
+  AS64503: [],
+  AS64504: ['not-a-network',],
+};
+
+/**
  * Deterministically resolves fixture hostnames.
  *
  * @param hostname - Fixture hostname to resolve.
@@ -114,6 +149,32 @@ export function fixtureLookup(
   const records = LOOKUP_RECORDS[hostname];
   if (records === undefined)
     throw new UnexpectedLookupError(`Unexpected lookup: ${hostname}`,);
+  return records;
+}
+
+/**
+ * Deterministically resolves fixture ASNs.
+ *
+ * @param asn - Normalized fixture ASN.
+ *
+ * @returns Registered network and single-address records.
+ *
+ * @throws {@link UnexpectedAsnLookupError} when ASN has no fixture.
+ *
+ * @example
+ * ```ts
+ * fixtureAsnLookup({ asn: 'AS64500' });
+ * ```
+ */
+export function fixtureAsnLookup(
+  { asn, }: { readonly asn: string; },
+): readonly string[] {
+  /**
+   * Registered networks for requested ASN.
+   */
+  const records = ASN_NETWORK_RECORDS[asn];
+  if (records === undefined)
+    throw new UnexpectedAsnLookupError(`Unexpected ASN lookup: ${asn}`,);
   return records;
 }
 

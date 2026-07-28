@@ -4,6 +4,7 @@ import { excludeCidr, } from 'cidr-tools';
 import { InputValidationError, } from './errors.ts';
 import {
   type LookupAddresses,
+  type LookupAsnNetworks,
   textNetworks,
 } from './networks.ts';
 
@@ -14,6 +15,7 @@ export type GenerateAllowedIpsWithLookupOptions = {
   readonly allowedText: string;
   readonly disallowedText: string;
   readonly lookupAddresses: LookupAddresses;
+  readonly lookupAsnNetworks: LookupAsnNetworks;
 };
 
 /**
@@ -32,6 +34,8 @@ const l = tagged({ tag: 'generate-with-lookup', },);
  *
  * @param lookupAddresses - Deterministic test or operating-system resolver adapter.
  *
+ * @param lookupAsnNetworks - Deterministic test or IPinfo Lite ASN adapter.
+ *
  * @returns Empty string for complete subtraction, otherwise minimized sorted CIDRs joined by `, ` and one newline.
  *
  * @throws {@link InputValidationError} when allowed input contributes no addresses.
@@ -42,6 +46,7 @@ const l = tagged({ tag: 'generate-with-lookup', },);
  *   allowedText: '10.0.0.0/8',
  *   disallowedText: '10.0.0.0/9',
  *   lookupAddresses: async () => [],
+ *   lookupAsnNetworks: async () => [],
  * });
  * // => '10.128.0.0/9\n'
  * ```
@@ -51,6 +56,7 @@ export async function generateAllowedIpsWithLookup(
     allowedText,
     disallowedText,
     lookupAddresses,
+    lookupAsnNetworks,
   }: GenerateAllowedIpsWithLookupOptions,
 ): Promise<string> {
   /**
@@ -68,10 +74,12 @@ export async function generateAllowedIpsWithLookup(
     textNetworks({
       text: allowedText,
       lookupAddresses,
+      lookupAsnNetworks,
     },),
     textNetworks({
       text: disallowedText,
       lookupAddresses,
+      lookupAsnNetworks,
     },),
   ],);
   if (allowedNetworks.length === 0) {

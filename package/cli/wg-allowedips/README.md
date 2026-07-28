@@ -30,6 +30,7 @@ An entry can be:
 - an IPv6 address;
 - an IPv4 CIDR block;
 - an IPv6 CIDR block;
+- an autonomous system number in `AS<number>` form;
 - a domain.
 
 Surrounding whitespace is trimmed.
@@ -71,6 +72,21 @@ TTL handling,
 or resolver configuration.
 A lookup failure fails the command before it writes a result.
 
+## Autonomous system numbers
+
+ASN entries use case-insensitive `AS<number>` syntax,
+for example `AS41231`.
+Each entry contributes every network and single address assigned to that ASN by the [IPinfo Lite database][ipinfo-lite].
+The same expansion works in allowed and disallowed inputs.
+
+ASN data reuses the IPinfo integration under `package/config/tofu`.
+Fresh `src/cache_AS<number>.txt` snapshots avoid network access.
+An absent or older snapshot is refreshed from IPinfo using `IPINFO_TOKEN` from the process environment or
+`package/config/tofu/.env.local`.
+A failed refresh uses a stale snapshot when available and fails when no snapshot exists.
+
+IP address data is powered by [IPinfo][ipinfo] and used under CC-BY-SA-4.0.
+
 ## Output
 
 The result is a minimized,
@@ -110,3 +126,6 @@ mise run //package/cli/wg-allowedips:build
 ```console
 mise run //package/cli/wg-allowedips:buildAndTest
 ```
+
+[ipinfo]: https://ipinfo.io
+[ipinfo-lite]: https://ipinfo.io/developers/ipinfo-lite-database

@@ -20,6 +20,13 @@ export type LookupAddresses = (
 ) => Promise<readonly LookupAddress[]> | readonly LookupAddress[];
 
 /**
+ * ASN resolver seam used by set generation.
+ */
+export type LookupAsnNetworks = (
+  { asn, }: { readonly asn: string; },
+) => Promise<readonly string[]> | readonly string[];
+
+/**
  * Module logger for input-to-network conversion.
  */
 const l = tagged({ tag: 'networks', },);
@@ -135,13 +142,85 @@ function parseNetwork({ entry, }: { readonly entry: string; },): string {
 }
 
 /**
+ * Checks whether one entry uses conventional case-insensitive `AS<number>` syntax.
+ *
+ * @param entry - Trimmed active input entry.
+ *
+ * @returns Whether entry denotes an ASN.
+ *
+ * @example
+ * ```ts
+ * isAsnEntry('AS41231'); // true
+ * ```
+ */
+function isAsnEntry(entry: string,): boolean {
+  /**
+   * Case-normalized candidate used only for syntax classification.
+   */
+  const normalized = entry.toUpperCase();
+  if (!normalized.startsWith('AS',))
+    return false;
+  /**
+   * Decimal autonomous-system number text after prefix.
+   */
+  const numberText = normalized.slice(2,);
+  if (numberText === '')
+    return false;
+  for (const character of numberText) {
+    if ((character < '0') || (character > '9'))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Normalizes one network or single address returned by ASN database.
+ *
+ * @param network - Database network or address text.
+ *
+ * @param asn - ASN named in validation diagnostics.
+ *
+ * @returns Explicit normalized CIDR.
+ *
+ * @throws {@link InputValidationError} when database text is neither address nor CIDR.
+ *
+ * @example
+ * ```ts
+ * asnNetwork({ network: '192.0.2.1', asn: 'AS64500' });
+ * // => '192.0.2.1/32'
+ * ```
+ */
+function asnNetwork(
+  {
+    network,
+    asn,
+  }: {
+    readonly network: string;
+    readonly asn: string;
+  },
+): string {
+  if (isIP(network,) !== 0) {
+    return toHostRoute({
+      address: network,
+      context: `ASN ${asn}`,
+    },);
+  }
+  if (network.includes('/',))
+    return parseNetwork({ entry: network, },);
+  l.error(`invalid network from ASN ${asn}: ${network}`,);
+  throw new InputValidationError(`Invalid network from ASN ${asn}: ${network}`,);
+}
+
+/**
  * Classifies one trimmed input entry and resolves it into explicit networks.
  *
  * @param entry - Nonempty, non-comment input entry.
  *
  * @param lookupAddresses - Resolver seam for domain entries.
  *
- * @returns One direct network or every resolved domain address as host routes.
+ * @param lookupAsnNetworks - Resolver seam for ASN entries.
+ *
+ * @returns One direct network or every resolved domain or ASN network.
  *
  * @throws {@link InputValidationError} when a direct or resolved address is invalid.
  *
@@ -150,6 +229,7 @@ function parseNetwork({ entry, }: { readonly entry: string; },): string {
  * await entryNetworks({
  *   entry: 'example.test',
  *   lookupAddresses: async () => [{ address: '192.0.2.1' }],
+ *   lookupAsnNetworks: async () => [],
  * });
  * // => ['192.0.2.1/32']
  * ```
@@ -158,9 +238,11 @@ async function entryNetworks(
   {
     entry,
     lookupAddresses,
+    lookupAsnNetworks,
   }: {
     readonly entry: string;
     readonly lookupAddresses: LookupAddresses;
+    readonly lookupAsnNetworks: LookupAsnNetworks;
   },
 ): Promise<readonly string[]> {
   /**
@@ -177,6 +259,27 @@ async function entryNetworks(
   if (entry.includes('/',)) {
     l.debug('classified CIDR entry',);
     return [parseNetwork({ entry, },),];
+  }
+  if (isAsnEntry(entry,)) {
+    /**
+     * Case-normalized ASN passed to database adapter and diagnostics.
+     */
+    const asn = entry.toUpperCase();
+    l.debug(`resolving ASN ${asn}`,);
+    /**
+     * Database networks and single addresses assigned to ASN.
+     */
+    const networks = await lookupAsnNetworks({ asn, },);
+    if (networks.length === 0) {
+      l.error(`ASN ${asn} contributed no networks`,);
+      throw new InputValidationError(`ASN contributed no networks: ${asn}`,);
+    }
+    return networks.map(function normalizeAsnNetwork(network: string,): string {
+      return asnNetwork({
+        network,
+        asn,
+      },);
+    },);
   }
   l.debug(`resolving domain ${entry}`,);
   /**
@@ -199,11 +302,17 @@ async function entryNetworks(
  *
  * @param lookupAddresses - Resolver seam for domain entries.
  *
+ * @param lookupAsnNetworks - Resolver seam for ASN entries.
+ *
  * @returns Flattened networks contributed by all active lines.
  *
  * @example
  * ```ts
- * await textNetworks({ text: '# comment\n192.0.2.1\n', lookupAddresses: async () => [] });
+ * await textNetworks({
+ *   text: '# comment\n192.0.2.1\n',
+ *   lookupAddresses: async () => [],
+ *   lookupAsnNetworks: async () => [],
+ * });
  * // => ['192.0.2.1/32']
  * ```
  */
@@ -211,9 +320,11 @@ export async function textNetworks(
   {
     text,
     lookupAddresses,
+    lookupAsnNetworks,
   }: {
     readonly text: string;
     readonly lookupAddresses: LookupAddresses;
+    readonly lookupAsnNetworks: LookupAsnNetworks;
   },
 ): Promise<readonly string[]> {
   /**
@@ -244,6 +355,7 @@ export async function textNetworks(
     return await entryNetworks({
       entry,
       lookupAddresses,
+      lookupAsnNetworks,
     },);
   },),);
   return groups.flat();

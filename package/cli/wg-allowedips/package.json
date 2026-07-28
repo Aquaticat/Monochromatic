@@ -29,6 +29,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/config-tofu": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "cidr-tools": "catalog:"
   },

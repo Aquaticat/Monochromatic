@@ -1203,6 +1203,9 @@ importers:
 
   package/cli/wg-allowedips:
     dependencies:
+      '@monochromatic-dev/config-tofu':
+        specifier: workspace:*
+        version: link:../../config/tofu
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

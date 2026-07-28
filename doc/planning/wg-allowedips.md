@@ -1,9 +1,9 @@
 # Plan: generate WireGuard AllowedIPs
 
 Status:
- implementation-ready specification.
- Recovered from Pi session `019fa835-e9e8-7523-9746-e9b7a0305a84` and simplified on 2026-07-28.
- Implementation has not started.
+ implemented specification.
+ Recovered from Pi session `019fa835-e9e8-7523-9746-e9b7a0305a84`,
+ simplified and implemented on 2026-07-28.
 
 ## Goal
 
@@ -19,6 +19,7 @@ Each set may contain:
 - IPv6 addresses;
 - IPv4 CIDR blocks;
 - IPv6 CIDR blocks;
+- autonomous system numbers;
 - domains.
 
 A domain contributes every address returned for it by the operating system resolver during that run.
@@ -63,7 +64,8 @@ For each line:
 2. Skip it when the result is empty or starts with `#`.
 3. Treat a valid IP literal as one host address.
 4. Treat an entry containing `/` as a CIDR block.
-5. Treat any other entry as a domain for name resolution.
+5. Treat a case-insensitive `AS<number>` entry as an autonomous system number.
+6. Treat any other entry as a domain for name resolution.
 
 Validate IP literals with `isIP` from `node:net`.
 For a CIDR entry use `parseCidr` from `cidr-tools` and validate its address portion with `isIP`.
@@ -81,6 +83,14 @@ This follows the operating system's name-resolution behavior.
 That behavior includes hosts-file and split-horizon results.
 Use every returned address as a host route.
 The generated result is a point-in-time snapshot.
+
+Resolve ASNs through the shared IPinfo Lite integration under `package/config/tofu`.
+Each ASN contributes every matching database network or single address.
+Reuse its per-ASN cache,
+month-scale refresh policy,
+`IPINFO_TOKEN` configuration,
+and stale-cache fallback.
+Fail an ASN entry that contributes no networks.
 
 Do not add:
 
@@ -135,7 +145,9 @@ These conditions must fail the command before it writes a result:
 - a required flag is missing;
 - an input file cannot be read;
 - a CIDR parser rejects an entry;
-- a domain lookup fails.
+- a domain lookup fails;
+- an ASN database lookup fails without a cached fallback;
+- an ASN contributes no networks.
 
 Let argument-parser and filesystem errors propagate.
 Let CIDR-parser and resolver errors propagate.
@@ -181,6 +193,9 @@ Tests must cover:
 - IPv6 union and subtraction;
 - individual IPs becoming host routes;
 - deterministic domain results entering the correct set through the test lookup adapter;
+- deterministic ASN results entering both sets through the test lookup adapter;
+- ASN database single addresses becoming host routes;
+- empty and invalid ASN results;
 - blank and comment lines;
 - duplicate and overlapping inputs;
 - partial-overlap and out-of-set inputs;
