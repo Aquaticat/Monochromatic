@@ -135,10 +135,30 @@ holds, or it exercises only the miss path; an insertion is passed one the receiv
 only the overwrite path. `add` on an existing member and `set` on an existing key both skipped insertion entirely
 before this, which is the work most likely to reach somewhere unexpected.
 
-Iterator members are excluded for a separate reason. `keys`, `values` and `entries` reach nothing when they are
-called, and the read happens later when the iterator advances. Measured: `Array.prototype.values` fires no hook
-until `next()`, which fires the indexed getter. Nothing in the model separates creating an iterator from
-consuming one, so an inert-creation claim would be read as an inert-consumption claim, and both stay unproven.
+Iterator members were excluded for a separate reason, and are no longer. `keys`, `values` and `entries` reach
+nothing when they are called, and the read happens later when the iterator advances. Measured:
+`Array.prototype.values` fires no hook until `next()`, which fires the indexed getter. Nothing in the model
+separated creating an iterator from consuming one, so an inert-creation claim would have been read as an
+inert-consumption claim, and both stayed unproven.
+
+What resolved it was asking what could consume a creation-only fact, and finding nothing. `receiverClaimAnswerable`
+consults this authority while inspecting the creating call, and for-of and spread advance an iterator through no
+`CallExpression` at all, so there is no second call at which a separate consumption fact could be asked for. The
+entries therefore claim the union of both operations, which each probe measures as two steps: the producer, then a
+full drain including the terminal step that reports `done`.
+
+The union is expressible only because both operations land inside a channel already admitted here. Measured per
+member rather than assumed: draining an array iterator through the accessor probe reaches `index-get` for `values`
+and `entries`, and nothing at all for `keys`, which yields indices and fetches no element. What `keys` does read is
+`length`, which no accessor can watch because `length` on a real array is a non-configurable own data property.
+The `Proxy` probe drives the same drain and sees that read as `get`, which is inside the indexed-access baseline.
+Draining a `Map` or `Set` iterator touches the `size` accessor in neither phase.
+
+The union gives up two things worth naming. It answers "this call and any later built-in advancement of its
+result" rather than "this call", so it cannot describe partial consumption. And a full drain proves the built-in
+`next` path, not every future use of the returned object: source that replaces the iterator's own `next` runs
+something no probe here measured. Both sit behind the assumption the own-index channel already rests on, that
+caller-owned collections hold ordinary data properties.
 
 ## How the guard changed
 
@@ -233,9 +253,14 @@ deliberate.
 Discharged: members whose result is a boolean, a number or `void`, which covers `has` at 27 findings, `includes`
 at 13 and `push` at 8, plus `get` and `at` over collections whose value type is primitive.
 
-Not discharged: `entries` at 12, because iterator members are excluded; `set` at 8 and every member returning the
-receiver, because the result exposes it; and `get` and `at` over object-valued collections, because the result is
-the receiver's own element.
+Not discharged: `entries` at 12, because iterator members were excluded when this was measured; `set` at 8 and
+every member returning the receiver, because the result exposes it; and `get` and `at` over object-valued
+collections, because the result is the receiver's own element.
+
+Admitting the iterator members later moved only part of that. An entry alone does not discharge `entries`, whose
+result type argument is a tuple object and therefore exposes state whatever the tuple holds. What it does
+discharge is an iterator yielding primitives, `Array.keys` over any array and `Map.keys` over a primitive-keyed
+map among them, where the channel is the only outstanding claim.
 
 Closing the rest needs result provenance rather than a wider authority: a summary fact recording that a call's
 result is reachable from the receiver's parameter, propagated through the fixed point so that mutating what came

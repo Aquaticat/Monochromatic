@@ -6,7 +6,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  DEFERRED_MEMBER_NAMES,
+  ITERATOR_MEMBER_NAMES,
   MEMBER_CHANNEL_RECEIVER_INDEX,
   MEMBER_CHANNELS_BY_INTERFACE,
   VERIFIED_MEMBER_CHANNEL_COUNT,
@@ -16,6 +16,28 @@ import {
  * Hook names one probed invocation reached.
  */
 type ProbeHits = string[];
+
+/**
+ * Steps a drain may take before the probe treats the iterator as non-terminating.
+ *
+ * A runaway guard rather than an expected count. Every probed receiver holds two
+ * elements, so a conforming iterator finishes in three steps including the terminal
+ * one, and anything reaching this limit is a defect worth failing on rather than
+ * hanging on.
+ */
+const DRAIN_STEP_LIMIT = 16;
+
+/**
+ * Hooks one member reached, split by the operation that reached them.
+ *
+ * The split is the whole point of probing an iterator member. Creating an iterator
+ * and advancing it are different operations reaching different channels, and an
+ * entry claiming their union has to show both rather than assert the union directly.
+ */
+type PhaseHooks = {
+  readonly creation: readonly string[];
+  readonly drainage: readonly string[];
+};
 
 /**
  * Hook names admitted by the own-index channel, and by nothing narrower.
@@ -231,28 +253,74 @@ function instrumentedReceiver({
 }
 
 /**
- * Invokes one member on an instrumented receiver and reports what it reached.
+ * Advances a returned iterator to exhaustion, when the result is one.
+ *
+ * Includes the terminal step that reports `done`, because an iterator reads its
+ * receiver one last time to discover it is finished, and stopping at the final value
+ * would leave that read unmeasured.
+ *
+ * @param result - Value the probed member returned.
+ *
+ * @throws Error when a result keeps yielding past the runaway guard.
+ *
+ * @example
+ * ```ts
+ * drainIteratorResult({ result: values.entries(), });
+ * ```
+ */
+function drainIteratorResult({ result, }: { readonly result: unknown; },): void {
+  if ((result === null) || ((typeof result) !== 'object'))
+    return;
+  /**
+   * Advancing member, present only when the result is an iterator.
+   */
+  const advance = (result as Record<string, unknown>)['next'];
+  if ((typeof advance) !== 'function')
+    return;
+  /**
+   * Drain position, tracking exhaustion and guarding against a non-terminating result.
+   */
+  const drain = {
+    done: false,
+    steps: 0,
+  };
+  while (!drain.done) {
+    drain.steps++;
+    if (drain.steps > DRAIN_STEP_LIMIT)
+      throw new Error(
+        `A probed iterator did not finish within ${DRAIN_STEP_LIMIT} steps, so the drain measured an unbounded operation rather than one collection's worth of reads.`,
+      );
+    drain.done = (advance as (this: unknown,) => { readonly done?: boolean; })
+      .call(result,)
+      .done === true;
+  }
+}
+
+/**
+ * Invokes one member on an instrumented receiver, then drains any iterator it returns.
  *
  * @param ownerName - Collection interface declaring member.
  *
  * @param memberName - Member being invoked.
  *
- * @returns hook names reached by this invocation, deduplicated.
+ * @returns hooks reached while creating, and those reached only while draining.
+ *
+ * @throws Error when the authority lists a member this engine does not provide.
  *
  * @example
  * ```ts
- * reachedHooks({ ownerName: 'Array', memberName: 'includes', });
+ * reachedHooksByPhase({ ownerName: 'Array', memberName: 'values', });
  * ```
  */
-function reachedHooks({
+function reachedHooksByPhase({
   ownerName,
   memberName,
 }: {
   readonly ownerName: string;
   readonly memberName: string;
-},): readonly string[] {
+},): PhaseHooks {
   /**
-   * Hooks reached by this single invocation.
+   * Hooks reached so far, accumulated across both phases.
    */
   const hits: ProbeHits = [];
   const { receiver, element, fresh, } = instrumentedReceiver({
@@ -267,8 +335,12 @@ function reachedHooks({
     throw new Error(
       `${ownerName}.${memberName} is not callable on the probe receiver, so the authority lists a member this engine does not provide.`,
     );
+  /**
+   * What the member handed back, kept so an iterator result can be drained.
+   */
+  const invocation: { result: unknown; } = { result: undefined, };
   try {
-    (member as (this: unknown, ...args: unknown[]) => unknown)
+    invocation.result = (member as (this: unknown, ...args: unknown[]) => unknown)
       .apply(receiver, [...probeArguments({
         memberName,
         element,
@@ -284,7 +356,62 @@ function reachedHooks({
     // than rejected.
     hits.push(`threw:${caughtValueText(error,)}`,);
   }
-  return [...new Set(hits,),];
+  /**
+   * Hooks the creating call alone reached.
+   */
+  const creation = [...new Set(hits,),];
+  try {
+    drainIteratorResult({ result: invocation.result, },);
+  }
+  catch (error: unknown) {
+    hits.push(`threw:${caughtValueText(error,)}`,);
+  }
+  return {
+    creation,
+    drainage: [...new Set(hits,),].filter(function reachedOnlyWhileDraining(
+      hit,
+    ): boolean {
+      return !creation.includes(hit,);
+    },),
+  };
+}
+
+/**
+ * Reports every hook one member reached across its whole lifetime.
+ *
+ * The union of both phases, which is what the authority entry claims: a caller asks
+ * this authority about the creating call and never gets a second chance to ask about
+ * advancement, so the entry has to cover both.
+ *
+ * @param ownerName - Collection interface declaring member.
+ *
+ * @param memberName - Member being invoked.
+ *
+ * @returns hook names reached by creation and drainage together, deduplicated.
+ *
+ * @example
+ * ```ts
+ * reachedHooks({ ownerName: 'Array', memberName: 'includes', });
+ * ```
+ */
+function reachedHooks({
+  ownerName,
+  memberName,
+}: {
+  readonly ownerName: string;
+  readonly memberName: string;
+},): readonly string[] {
+  /**
+   * Both phases of one probed member.
+   */
+  const phases = reachedHooksByPhase({
+    ownerName,
+    memberName,
+  },);
+  return [
+    ...phases.creation,
+    ...phases.drainage,
+  ];
 }
 
 await describe({
@@ -374,27 +501,64 @@ await describe({
       },
     },),
     it({
-      name: 'excludes iterator members, whose effects are deferred past creation',
+      name: 'claims iterator members as creation plus drainage, with each phase measured',
       fn: async () => {
-        for (const memberName of DEFERRED_MEMBER_NAMES) {
+        /* Every listed interface declares all three, so absence from any one of them
+         * would mean the table grew unevenly rather than deliberately. */
+        for (const memberName of ITERATOR_MEMBER_NAMES) {
           for (const [, members,] of MEMBER_CHANNELS_BY_INTERFACE)
-            expect(members.has(memberName,),).toBe(false,);
+            expect(members.has(memberName,),).toBe(true,);
         }
-        /**
-         * Hooks reached by creating an iterator, then by advancing it.
-         */
-        const hits: ProbeHits = [];
-        const { receiver, } = instrumentedReceiver({
+        /* Creation reaches nothing, on every owner and every member. This is the half
+         * of the claim that was never in doubt, and it is asserted so that a future
+         * engine moving work into the producer fails here rather than silently
+         * widening what the entries cover. */
+        for (const memberName of ITERATOR_MEMBER_NAMES) {
+          for (const ownerName of [
+            'Array',
+            'Map',
+            'Set',
+          ]) {
+            expect(reachedHooksByPhase({
+              ownerName,
+              memberName,
+            },).creation,).toEqual([],);
+          }
+        }
+        /* Drainage is where an array iterator reaches its receiver, and it reaches the
+         * own-index channel the entry claims. `keys` is the member that separates the
+         * two phases most sharply: it yields indices, so advancing it never fetches an
+         * element and this probe observes nothing at all. What it does read is
+         * `length`, which cannot be instrumented here because `length` on a real array
+         * is a non-configurable own data property. The sibling trap probe drives the
+         * same drain through a `Proxy` and sees that read as `get`. */
+        expect(reachedHooksByPhase({
           ownerName: 'Array',
-          hits,
-        },);
-        /**
-         * Iterator over the instrumented receiver.
-         */
-        const iterator = (receiver as readonly unknown[])[Symbol.iterator]();
-        expect(hits,).toEqual([],);
-        iterator.next();
-        expect(hits.includes('index-get',),).toBe(true,);
+          memberName: 'values',
+        },).drainage,).toEqual(['index-get',],);
+        expect(reachedHooksByPhase({
+          ownerName: 'Array',
+          memberName: 'entries',
+        },).drainage,).toEqual(['index-get',],);
+        expect(reachedHooksByPhase({
+          ownerName: 'Array',
+          memberName: 'keys',
+        },).drainage,).toEqual([],);
+        /* Draining a `Map` or `Set` iterator reads internal slots and no property, so
+         * the `size` accessor stays untouched through both phases. That accessor is
+         * proven to fire by the tripwire control, so an empty result here is evidence
+         * rather than an uninstrumented silence. */
+        for (const memberName of ITERATOR_MEMBER_NAMES) {
+          for (const ownerName of [
+            'Map',
+            'Set',
+          ]) {
+            expect(reachedHooksByPhase({
+              ownerName,
+              memberName,
+            },).drainage,).toEqual([],);
+          }
+        }
       },
     },),
   ],

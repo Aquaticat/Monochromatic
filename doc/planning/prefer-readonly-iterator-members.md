@@ -1,0 +1,190 @@
+# Iterator members in the collection channel authority
+
+Working notes for task #15,
+"Separate iterator-member creation from consumption in the channel authority".
+Predictions are written before the measurement that tests them,
+so a prediction that survives contact is evidence and one that does not is a correction.
+
+## What the task inherited
+
+`keys`,
+`values` and `entries` sit in `DEFERRED_MEMBER_NAMES` in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-member-channel-authority.ts`.
+The stated reason:
+creating an iterator reaches nothing,
+advancing it reads the receiver,
+and nothing in the authority separates the two operations,
+so an inert-creation claim would be read as an inert-consumption claim.
+
+Consequence:
+every `values()` call is an opaque boundary,
+which is one named cause of the unresolved-effect finding at
+`effect-fixed-point-propagation.ts:37`.
+
+## Baseline, measured before any change
+
+Probe:
+`oxlint --config oxlint.selfhost-probe.config.ts --type-aware --threads 1` over the three modules
+that import no semantic API.
+The probe config is the root config with the self-hosting override filtered out.
+
+Four findings,
+matching what `package/config/oxlint/src/overrides.ts` records.
+The `:37` finding on `summaries` names six causes:
+
+-   `(provenanceBySlot.get(slot,) ?? []).forEach` at `effect-slot-projection.ts:182`
+-   `summaries.get` at `effect-fixed-point-propagation.ts:90`
+-   `summaries.values` at `effect-fixed-point-propagation.ts:49`
+-   `summary.opaqueProvenanceBySlot.set` at `effect-call-resolution.ts:419`
+-   `target.get` at `effect-uncertainty-provenance.ts:47`
+-   `target.set` at `effect-uncertainty-provenance.ts:55`
+
+The rationale comment in `overrides.ts` is already stale independently of this task:
+it names `opaqueProvenanceByParameter.get`,
+which the slot work renamed,
+and it does not name the `forEach` cause at all.
+
+## The correction that reordered the work
+
+My first reading was that channel entries alone would be inert,
+because `receiverClaimAnswerable` also needs the result to expose no mutable state or to be verified
+receiver state,
+and `MapIterator<V>` is neither.
+That is wrong as a general claim,
+and the counterexample decides the shape of the work.
+
+`Array.prototype.keys()` returns `ArrayIterator<number>`.
+`resultExposesMutableState` sees a type reference,
+reads its type arguments,
+finds `number`,
+and answers no.
+`receiverClaimAnswerable` therefore returns true at its third check without ever consulting
+`callResultReceiver`.
+Coverage becomes `COLLECTION_CALL_RECEIVER_DERIVED`,
+`recordOpaqueBoundary` runs with `receiverDerived: true`,
+and the receiver opacity disappears.
+
+So the channel entry is independently valuable exactly when the iterator yields primitives.
+Verified against the declarations actually in use,
+`lib.es2015.iterable.d.ts` at TypeScript 7.0.2:
+`Array.keys(): ArrayIterator<number>`,
+`Map.keys(): MapIterator<K>`,
+`Set.values(): SetIterator<T>`.
+
+## Stage one: the channel entries
+
+Claim the union of creation and drainage rather than separating them.
+Both operations land inside a channel the authority already admits:
+own-index for arrays,
+internal-slot for `Map` and `Set`.
+Nothing could consume a creation-only fact anyway,
+because for-of and spread produce no `CallExpression`,
+so `inspectEffectCall` never sees a consumption site.
+The separation the task names stays visible in the probe,
+which measures creation and drainage as distinct steps,
+and collapses only in the recorded entry.
+
+Eighteen entries:
+`keys`, `values`, `entries` on `Array`, `ReadonlyArray`, `Map`, `ReadonlyMap`, `Set`, `ReadonlySet`.
+All six interfaces declare all three,
+confirmed in the lib.
+
+`Symbol.iterator` stays out and cannot be reached:
+`collectionMemberUserCodeChannel` is looked up by `declaration.name.text`,
+and a computed symbol name is not an `Identifier`.
+
+### Predictions
+
+-    P1.
+     A call to `keys` on any array,
+     or on a `Map` with a primitive key,
+     stops contributing receiver opacity.
+     The mechanism is the primitive type argument,
+     not the channel entry on its own.
+
+-    P2.
+     `values` and `entries` on a collection holding mutable values keep reporting receiver opacity,
+     because `resultExposesMutableState` answers yes and no result relation covers an iterator.
+
+-    P3.
+     The `:37` finding does not clear.
+     Its cause list keeps `summaries.values`,
+     because `summaries` holds `MutableEffectSummary`.
+     Stage one is therefore not sufficient for this task's third completion criterion on its own.
+
+-    P4.
+     Repo-wide,
+     findings fall and offers rise.
+     Every new offer is a candidate unsoundness and gets read individually.
+     An offer appearing on a parameter that something writes through is the failure signal,
+     and reverts stage one.
+
+### Probe obligations
+
+The existing authority probe installs an own `size` accessor on a `Map` or `Set` and indexed
+accessors on an array,
+then invokes the member once.
+For an iterator member it must also drain,
+because drainage is where the reads happen.
+
+The sibling trap probe drives a fully trapped array through a `Proxy` and admits exactly the
+operations plain indexed access opens.
+Drainage of an array iterator reads `length` and then each index,
+both of which surface as the `get` trap,
+so the trap probe measures drainage where the accessor probe cannot:
+`length` on a real array is a non-configurable own data property and cannot be given a getter.
+That limit is why the array half needs the `Proxy` and gets it.
+
+`Map` and `Set` cannot be proxied at all,
+since their members reject a receiver without the internal slot.
+Their drainage claim rests on the specification,
+guarded by the `size` accessor tripwire,
+which is the same footing every existing `Map` and `Set` entry already stands on.
+
+## Stage two: a container result relation, not yet decided
+
+`FRESH_CONTAINER_MEMBER_NAMES` records that representing "a fresh container holding receiver
+elements" needs a relation and a resolver that keeps container identity and element identity apart.
+An iterator is the safest possible first case,
+because the over-attribution such a relation risks,
+crediting the receiver for writes to the container itself,
+is unreachable:
+nothing writes properties onto an iterator.
+
+Two obstacles found by reading,
+both of which must be settled before any of this is written:
+
+-    `resultEscapesCallable` enumerates attributed positions and treats everything else as an escape.
+     A `ForOfStatement` parent matches nothing in that enumeration,
+     so a for-of iterated expression is an escape today and no discharge could fire.
+     A `SpreadElement` parent matches nothing either,
+     which is exactly the shape at `effect-fixed-point-propagation.ts:49`.
+
+-    Crediting the receiver for the iterator makes `[...summaries.values(),]` carry the receiver's
+     origin,
+     which then makes the `.reduce(...)` call on that array literal an opaque boundary attributed to
+     `summaries`.
+     Adding provenance can therefore move a cause rather than remove it,
+     and can make a finding's cause list longer.
+     Any stage-two measurement has to compare cause lists,
+     not finding counts.
+
+## Acceptable outcomes at `:37`
+
+Written down before measuring,
+because two very different results both count as progress and only one counts as success.
+
+-    Success:
+     the uncertainty finding is replaced by a recorded mutation.
+     `propagateEffects` genuinely writes through the map's values,
+     so the honest end state is the rule saying "this is written",
+     not the rule saying nothing.
+
+-    Also acceptable:
+     the finding stays and its remaining cause is named precisely,
+     which is the task's own alternative completion criterion.
+
+-    Failure:
+     a silent read-only offer for `summaries`.
+     That parameter's values are written on every propagation pass,
+     so an offer means the analysis lost an effect it used to see.

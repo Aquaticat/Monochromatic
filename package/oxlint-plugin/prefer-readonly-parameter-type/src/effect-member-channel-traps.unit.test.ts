@@ -135,6 +135,73 @@ function recordingHandler(
 }
 
 /**
+ * Steps a drain may take before the probe treats the iterator as non-terminating.
+ */
+const DRAIN_STEP_LIMIT = 16;
+
+/**
+ * Applies one member to a trapped receiver and exhausts any iterator it returns.
+ *
+ * Drainage is where an iterator member reaches its receiver, so applying without
+ * draining would report a clean run for `keys`, `values` and `entries` while measuring
+ * only the producer. The terminal step reporting `done` is included, since that step
+ * reads the receiver's length one last time.
+ *
+ * @param receiver - Trapped receiver the member is applied to.
+ *
+ * @param memberName - Member being invoked.
+ *
+ * @throws Error when a result keeps yielding past the runaway guard.
+ *
+ * @example
+ * ```ts
+ * applyAndDrain({ receiver, memberName: 'entries', });
+ * ```
+ */
+function applyAndDrain({
+  receiver,
+  memberName,
+}: {
+  readonly receiver: unknown;
+  readonly memberName: string;
+},): void {
+  /**
+   * Value the member handed back, drained when it is an iterator.
+   */
+  const result = (
+    (receiver as Record<string, unknown>)[memberName] as (
+      this: unknown,
+      ...args: readonly unknown[]
+    ) => unknown
+  ).apply(receiver, [...trapProbeArguments({ memberName, },),],);
+  if ((result === null) || ((typeof result) !== 'object'))
+    return;
+  /**
+   * Advancing member, present only when the result is an iterator.
+   */
+  const advance = (result as Record<string, unknown>)['next'];
+  if ((typeof advance) !== 'function')
+    return;
+  /**
+   * Drain position, tracking exhaustion and guarding against a non-terminating result.
+   */
+  const drain = {
+    done: false,
+    steps: 0,
+  };
+  while (!drain.done) {
+    drain.steps++;
+    if (drain.steps > DRAIN_STEP_LIMIT)
+      throw new Error(
+        `A probed iterator did not finish within ${DRAIN_STEP_LIMIT} steps, so the drain measured an unbounded operation rather than one array's worth of reads.`,
+      );
+    drain.done = (advance as (this: unknown,) => { readonly done?: boolean; })
+      .call(result,)
+      .done === true;
+  }
+}
+
+/**
  * Runs one operation against a fully trapped array and reports what it reached.
  *
  * @param operate - Operation performed on the trapped receiver.
@@ -184,12 +251,10 @@ await describe({
              */
             const traps = reachedTraps({
               operate(receiver,): void {
-                (
-                  (receiver as Record<string, unknown>)[memberName] as (
-                    this: unknown,
-                    ...args: readonly unknown[]
-                  ) => unknown
-                ).apply(receiver, [...trapProbeArguments({ memberName, },),],);
+                applyAndDrain({
+                  receiver,
+                  memberName,
+                },);
               },
             },);
             /**
@@ -253,6 +318,21 @@ await describe({
             Object.keys(receiver as readonly unknown[],);
           },
         },).includes('ownKeys',),).toBe(true,);
+        /* The drain is instrumented, and this is the only probe that can show it.
+         * `Array.prototype.keys` yields indices without fetching an element, so the
+         * sibling accessor probe observes nothing while draining it. What it does read
+         * is `length`, which surfaces here as `get` because a `Proxy` traps a property
+         * that a real array will not let anyone instrument. Without this control, a
+         * drain that silently stopped advancing would report a clean run for every
+         * iterator member. */
+        expect(reachedTraps({
+          operate(receiver,): void {
+            applyAndDrain({
+              receiver,
+              memberName: 'keys',
+            },);
+          },
+        },),).toEqual(['get',],);
       },
     },),
     it({

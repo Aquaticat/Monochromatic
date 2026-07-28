@@ -111,6 +111,9 @@ const CHANNELS_BY_OWNER: Readonly<
     fill: MEMBER_CHANNEL_RECEIVER_INDEX,
     copyWithin: MEMBER_CHANNEL_RECEIVER_INDEX,
     reverse: MEMBER_CHANNEL_RECEIVER_INDEX,
+    keys: MEMBER_CHANNEL_RECEIVER_INDEX,
+    values: MEMBER_CHANNEL_RECEIVER_INDEX,
+    entries: MEMBER_CHANNEL_RECEIVER_INDEX,
   },
   ReadonlyArray: {
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -120,6 +123,9 @@ const CHANNELS_BY_OWNER: Readonly<
     with: MEMBER_CHANNEL_RECEIVER_INDEX,
     toReversed: MEMBER_CHANNEL_RECEIVER_INDEX,
     toSpliced: MEMBER_CHANNEL_RECEIVER_INDEX,
+    keys: MEMBER_CHANNEL_RECEIVER_INDEX,
+    values: MEMBER_CHANNEL_RECEIVER_INDEX,
+    entries: MEMBER_CHANNEL_RECEIVER_INDEX,
   },
   Map: {
     get: MEMBER_CHANNEL_INTERNAL_SLOT,
@@ -127,19 +133,31 @@ const CHANNELS_BY_OWNER: Readonly<
     set: MEMBER_CHANNEL_INTERNAL_SLOT,
     delete: MEMBER_CHANNEL_INTERNAL_SLOT,
     clear: MEMBER_CHANNEL_INTERNAL_SLOT,
+    keys: MEMBER_CHANNEL_INTERNAL_SLOT,
+    values: MEMBER_CHANNEL_INTERNAL_SLOT,
+    entries: MEMBER_CHANNEL_INTERNAL_SLOT,
   },
   ReadonlyMap: {
     get: MEMBER_CHANNEL_INTERNAL_SLOT,
     has: MEMBER_CHANNEL_INTERNAL_SLOT,
+    keys: MEMBER_CHANNEL_INTERNAL_SLOT,
+    values: MEMBER_CHANNEL_INTERNAL_SLOT,
+    entries: MEMBER_CHANNEL_INTERNAL_SLOT,
   },
   Set: {
     has: MEMBER_CHANNEL_INTERNAL_SLOT,
     add: MEMBER_CHANNEL_INTERNAL_SLOT,
     delete: MEMBER_CHANNEL_INTERNAL_SLOT,
     clear: MEMBER_CHANNEL_INTERNAL_SLOT,
+    keys: MEMBER_CHANNEL_INTERNAL_SLOT,
+    values: MEMBER_CHANNEL_INTERNAL_SLOT,
+    entries: MEMBER_CHANNEL_INTERNAL_SLOT,
   },
   ReadonlySet: {
     has: MEMBER_CHANNEL_INTERNAL_SLOT,
+    keys: MEMBER_CHANNEL_INTERNAL_SLOT,
+    values: MEMBER_CHANNEL_INTERNAL_SLOT,
+    entries: MEMBER_CHANNEL_INTERNAL_SLOT,
   },
 };
 
@@ -170,19 +188,42 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 33;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 51;
 
 /**
- * Iterator members deliberately absent, because their effects are deferred.
+ * Members returning an iterator, whose entries claim creation and drainage together.
  *
- * `keys`, `values` and `entries` return an iterator, and creating one reaches
- * nothing. Advancing it reads the receiver, and for an array that read runs an
- * indexed accessor, so an inert-creation claim would be read as an inert-consumption
- * claim. Measured: `Array.prototype.values` fires no hook until `next()`, which
- * fires the indexed getter. Nothing here separates the two operations, so both stay
- * unproven.
+ * These were excluded while the authority described one invocation, because creating
+ * an iterator reaches nothing and advancing it reads the receiver, so an
+ * inert-creation claim would have been read as an inert-consumption claim.
+ *
+ * The entries now claim the union of both operations, which is what the one consumer
+ * can use. `receiverClaimAnswerable` asks this authority while inspecting the
+ * creating call, and there is no second call to ask about: for-of and spread advance
+ * an iterator through no `CallExpression` at all, so a creation-only fact would have
+ * had nothing to consume it. Both operations land inside a channel already admitted
+ * here, which is why the union is expressible: internal-slot for `Map` and `Set`,
+ * own-index for an array, whose drainage reads `length` and then each index.
+ *
+ * The union is also the conservative representation, not merely the convenient one.
+ * A member whose creation is narrow and whose drainage is not would take the wider
+ * channel, and a channel wider than both admitted here is absent, which fails closed.
+ *
+ * What the union gives up is worth naming. It answers "this call and any later
+ * built-in advancement of its result", not "this call", so it cannot distinguish
+ * partial consumption, and it proves the built-in `next` path rather than every
+ * future use of the returned object: source that replaces the iterator's own `next`
+ * runs something this claim never measured. Both are behind the same assumption the
+ * own-index channel already rests on, that caller-owned collections hold ordinary
+ * data properties.
+ *
+ * Kept as a named list because the probe in
+ * `effect-member-channel-authority.unit.test.ts` measures creation and drainage as
+ * separate steps and needs to know which members to drain. `Symbol.iterator` is
+ * absent and unreachable either way: lookup here is by `declaration.name.text`, and a
+ * computed name is not an identifier.
  */
-export const DEFERRED_MEMBER_NAMES: ReadonlySet<string> = new Set([
+export const ITERATOR_MEMBER_NAMES: ReadonlySet<string> = new Set([
   'keys',
   'values',
   'entries',
