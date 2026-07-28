@@ -208,6 +208,35 @@ Every change it makes removes a suppression,
 which is the direction that turns withheld offers into offers,
 and each one has to be read.
 
+### Measured, and falsified in both directions
+
+The fixture is `readonly-recursive-ownership-invalid.ts`.
+
+Before the change,
+with the marker present:
+one offer.
+`markerlessPlain` was offered and `markerlessRecursion` was not,
+though the two take the same parameter and read it the same way.
+The only difference between them is the self-edge.
+
+After the change,
+with the marker present:
+two offers.
+`markerlessRecursion` joins its twin,
+while `markerFedRecursion` and `markedRecursionEntry` stay suppressed.
+
+With the marker removed from `markedRecursionEntry`:
+four offers.
+That is the falsification that matters,
+because it establishes the two surviving suppressions are marker-driven rather than an artifact of
+the helper being unexported.
+
+One count separates all three states,
+which is why the unit assertion is a count:
+one before the fix,
+two after,
+four if grounding ever over-removes.
+
 Sol also recommends shadow mode for any future gate:
 run every closure, assert the gate would have admitted every non-empty result,
 and record the prospective skip ratio before trusting it.
