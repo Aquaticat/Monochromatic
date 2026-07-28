@@ -699,6 +699,12 @@ Both passed license,
  platform,
  upstream-suite,
  and published-consumer gates.
+The hard constraints explicitly allow a candidate plus small project code.
+A deterministic text guard can complete parser validation without changing set semantics,
+so each finalist's parser limitations are scored under validation clarity rather than treated as arithmetic
+correctness failures.
+The published `fast-cidr-tools` set operation itself returns a wrong set and therefore fails the exact-subtraction
+hard gate.
 
 `fast-cidr-tools` 0.3.4 fails exact set subtraction at the published consumer boundary.
 `ip-num` 1.6.1 fails the no-install-lifecycle hard constraint.
@@ -1030,6 +1036,17 @@ It accepted malformed IPv4 text and out-of-range prefixes,
 The planned `node:net` address check and explicit family prefix bound reject those accepted cases.
 Evidence is `proc_10-stdout.log`;
  status is consumer pass.
+
+The separately manifested specification-boundary probe composed `parseCidr` with `isIP` on the original address
+text and explicit family bounds.
+It accepted four valid dual-stack CIDRs and rejected all seven invalid cases,
+including nonstandard shorthand IPv4,
+out-of-range prefixes,
+and every malformed case from the shared consumer catalog.
+The network-disabled Node 24 process exited zero with `planned cidr-tools validation boundary passed`.
+Evidence is `proc_28-stdout.log`,
+SHA-256 `c7eb84794e0bd34a67d8d3dd590a283d97f1962666d39bff70ffb2bf4cb19241`.
+Status is compensating validation boundary pass.
 
 The local `ip-bigint` build is byte-identical to its published JavaScript.
 The local `cidr-tools` build differs from the published JavaScript only in the bundler-generated local default
