@@ -714,13 +714,190 @@ All parser-only,
 
 ## Execution manifests
 
-No third-party command tree has been executed.
-Source clones,
- registry retrieval,
- GitHub API inspection,
- and read-only file measurements are not candidate
-execution.
-Finalist execution manifests must be recorded before validation.
+### Shared isolation boundary
+
+Validation uses local image `docker.io/library/node:24-slim` at digest
+`sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
+The measured container runtime is Node 24.18.0 and npm 11.16.0 on Linux x86-64.
+Node 24 satisfies the Node 22-or-newer consumer requirement.
+Upstream CI evidence supplies the separately recorded platform matrices.
+
+Every container receives two CPUs,
+ 2 GiB memory,
+ 256 processes,
+ 4,096 file descriptors,
+ no ambient credentials,
+ a read-only root,
+ a 256 MiB temporary filesystem,
+ all Linux capabilities dropped,
+ and `no-new-privileges`.
+Candidate source is mounted read-only and copied into a private `~/temp/agent/wg-cidr-validation` directory.
+A post-fetch size assertion enforces a 1 GiB scratch ceiling.
+The process tool owns a ten-minute command ceiling without an external `timeout` wrapper.
+
+Dependency fetch containers may contact the npm registry.
+All later test,
+ build,
+ and consumer containers use `--network=none`.
+Unexpected lifecycle execution,
+ network access after fetch,
+ a scratch-size breach,
+ an undeclared subprocess,
+ or a nonzero command stops that candidate.
+Scratch trees and stopped containers are deleted after logs and checksums are recorded.
+
+A pre-manifest environment probe ran `node --version`,
+ `npm --version`,
+ and `command -v` inside this image.
+It loaded no candidate code,
+ mounted no repository,
+ used no network,
+ and wrote no persistent state.
+All candidate execution starts after these manifests.
+
+### `cidr-tools` upstream manifest
+
+Identity is `cidr-tools` 12.1.3 at commit
+`a3b61d005c34b8eb91333ea5e78788ae24491d0b`,
+ plus runtime dependency `ip-bigint` 9.0.7 at commit
+`91be103d1e56c8ca49e7c1ad8ccb24e862d88154`.
+The source locks pin every fetched artifact by integrity.
+
+The fetch command copies each read-only source tree and runs
+`corepack pnpm@11.17.0 install --frozen-lockfile`.
+`pnpm-workspace.yaml` sets `ignoreScripts: true`,
+ so no package lifecycle can execute.
+Corepack fetches and invokes pnpm 11.17.0;
+ pnpm reads the lock,
+ writes `node_modules`,
+ and contacts the npm registry.
+
+With networking disabled,
+ the complete relevant command path is:
+
+```text
+# ~/temp/agent/cidr-tools-2026-07-28/Makefile
+node_modules/.bin/eslint-silverwind --color .
+node_modules/.bin/tsgo
+node_modules/.bin/vitest run
+node_modules/.bin/tsdown
+```
+
+The same four commands run for `ip-bigint`.
+ESLint loads the checked-in config;
+ `tsgo` loads the pinned TypeScript native-preview executable;
+ Vitest may spawn bounded worker processes and load its pinned native transform packages;
+ tsdown loads its checked-in config and pinned bundler.
+These native packages are development-only and execute only inside the container.
+The adopted runtime remains pure TypeScript-built JavaScript.
+Success requires zero lint or type findings,
+ passing tests,
+ successful build,
+ and no network attempt.
+
+### `fast-cidr-tools` upstream manifest
+
+Identity is `fast-cidr-tools` 0.3.4 at release commit
+`d37506e5fcacc7a04760bd9c1b8c924d877bbc39`.
+Its lock pins `foxts` 4.1.0 for upstream reproduction and all dev artifacts by integrity.
+The real consumer manifest separately resolves the published `^4.1.0` range.
+
+The fetch command is
+`corepack pnpm@10.18.0 install --frozen-lockfile --ignore-scripts`.
+The explicit flag prevents the allowed `@swc/core` and `oxc-resolver` build lifecycles.
+Corepack and pnpm perform the same bounded registry reads and `node_modules` writes described in the shared
+manifest.
+
+With networking disabled,
+ the command path is:
+
+```text
+# ~/temp/agent/fast-cidr-tools-0.3.4/package.json
+node_modules/.bin/eslint --format=sukka .
+node_modules/.bin/mocha --require @swc-node/register test/index.test.ts
+node_modules/.bin/bunchee --clean --target=es2021
+```
+
+Mocha loads `@swc-node/register`,
+ which loads the lock-pinned `@swc/core` Linux x64 prebuilt.
+ESLint loads the project config.
+Bunchee loads Rollup,
+ SWC,
+ and its resolver plugins and writes `dist`.
+These are development-only native and plugin boundaries.
+Success requires zero lint findings,
+ passing tests,
+ successful build,
+ and no network attempt.
+
+### `@h3mantd/ip-kit` upstream manifest
+
+Identity is `@h3mantd/ip-kit` 1.1.0 at commit
+`cf077b0316ba484c5e357403e2aeb650b7b2695b`.
+Its npm lock pins the development graph by integrity.
+
+The fetch command is `npm ci --ignore-scripts`.
+The explicit flag prevents esbuild lifecycle execution.
+Npm reads the lock,
+ writes `node_modules`,
+ and contacts the npm registry.
+
+With networking disabled,
+ the command path is:
+
+```text
+# ~/temp/agent/ip-kit-2026-07-28/package.json
+node_modules/.bin/eslint 'src/**/*.ts' 'tests/**/*.ts'
+node_modules/.bin/tsc --noEmit
+node_modules/.bin/vitest run
+node_modules/.bin/tsup src/index.ts --dts --format esm,cjs --clean --tsconfig tsconfig.build.json
+```
+
+Vitest and tsup load their lock-pinned esbuild Linux x64 prebuilt;
+ Vitest may spawn bounded workers;
+ tsup writes `dist`.
+The prebuilt is development-only.
+Success requires zero lint or type findings,
+ passing tests,
+ successful build,
+ and no network attempt.
+
+### Published consumer manifest
+
+A fresh disposable package installs exact `cidr-tools@12.1.3`,
+ `fast-cidr-tools@0.3.4`,
+ and `@h3mantd/ip-kit@1.1.0` with `npm install --ignore-scripts --save-exact`.
+The inspected runtime graphs contain no install lifecycle,
+ native code,
+ Wasm,
+ or subprocess call.
+The expected network endpoint is the npm registry;
+ expected writes are a lock and `node_modules` under the private fixture.
+
+After manifest and installed-tree inspection,
+ a network-disabled container invokes:
+
+```text
+# ~/temp/agent/wg-cidr-consumer-validation.mjs
+node wg-cidr-consumer-validation.mjs cidr-tools
+node wg-cidr-consumer-validation.mjs fast-cidr-tools
+node wg-cidr-consumer-validation.mjs @h3mantd/ip-kit
+```
+
+The harness SHA-256 is
+`6b076d48d9c0c09fd069b306b2251eae7386a4ff964055fb55e84b70fd94607e`.
+It exercises five fixed vectors for dual-stack union,
+ subtraction,
+ minimization,
+ complete subtraction,
+ hosts,
+ disjoint base intervals,
+ and family ordering.
+It also records six malformed-input parser outcomes.
+Candidate modules read only their package files and inputs,
+ write only JSON to stdout,
+ and spawn nothing.
+Each candidate succeeds only when every exact output equals the independently fixed expectation.
 
 ## Scoring and sensitivity
 
