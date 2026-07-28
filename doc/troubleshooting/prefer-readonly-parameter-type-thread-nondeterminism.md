@@ -188,6 +188,38 @@ the task's argument forwarding fails with `ERR_INVALID_TYPESCRIPT_SYNTAX` and ox
 which reads as a clean zero-offer result.
 Invoke the wrapper directly.
 
+## Fixed, and what it cost
+
+The gate is gone: the complete proof now decides every foreign question, and the optimistic
+per-expansion pass that fed the gate went with it, nothing having read its answer any more.
+
+Measured after, on the same package that produced the symptom:
+eight of eight multi-threaded repeats agree,
+where seven of seventeen disagreed before,
+and all four file sets that used to disagree now report the same thing.
+Across the workspace the fix withdraws exactly one offer,
+`package/desktop-app/electron-infra/src/wayland-state.ts:166:3`,
+the flaky one,
+and moves nothing else.
+
+It costs 57 percent of sweep wall time, 616 seconds to 966.
+Running the proof unconditionally cost 110 percent;
+a pre-scan skipping any scope whose sources name neither marker identifier recovers the
+difference,
+and is an equivalence rather than a trade,
+since `isForeignBorrowedType` can only detect a marker written under one of those names.
+The two sweeps are byte-identical, which is the check rather than the argument.
+
+Two attempts to memoize the closure across callables were both rejected by the sweep and are
+recorded in task #34 so nobody repeats them.
+Reusing every key of a closure's result added six reports;
+reusing only the callables it enumerated added an offer,
+which is the direction that offers `readonly` for written state.
+Enumerating a callable's inbound call sites turns out not to be the same as being able to decide
+that callable from a closure rooted elsewhere.
+Two arguments that it should have been were both contradicted by measurement,
+so the remaining cost is tracked rather than paid for with an answer nobody verified.
+
 ## Verified workarounds
 
 Set `OXLINT_THREADS=1` for any run whose output is being compared against another run:
