@@ -119,6 +119,63 @@ and a computed symbol name is not an `Identifier`.
      An offer appearing on a parameter that something writes through is the failure signal,
      and reverts stage one.
 
+### Results
+
+P1 holds,
+and it is the whole of what stage one buys.
+Measured on four shapes added to `readonly-member-channel-invalid.ts`:
+`ReadonlyMap<string, SealedLabel>.keys()` and `readonly SealedLabel[].keys()` report nothing at all,
+where before each reported an opaque boundary.
+
+P2 holds.
+`entries.values()` over the same map keeps reporting,
+because `MapIterator<SealedLabel>` has an object type argument.
+`entries.entries()` over `ReadonlyMap<string, string>` keeps reporting too,
+which is the sharper limit:
+both positions of that pair are primitive and the boundary stays anyway,
+because a tuple is an object whatever it holds.
+
+P3 holds exactly.
+The self-host probe output after stage one is byte-identical to the baseline apart from elapsed time,
+so `:37` is unchanged and `summaries.values` is still a named cause.
+
+The fixture assertions were falsified rather than trusted.
+Removing the `keys` entries from the authority and rebuilding takes that fixture from seven diagnostics
+to nine,
+which is exactly the two functions asserted silent.
+
+### Why the discharge cannot hide a write
+
+An argument,
+not a measurement,
+and it is worth more than the sweep because it covers shapes no repository happens to contain.
+
+A new offer can appear only where an opacity report was the sole thing withholding one.
+The mutation analysis is independent:
+a body that writes through the parameter records that write and is refused an offer whether or not
+anything is opaque.
+So the discharge is unsound only if it stops reporting a write that nothing else records,
+and the only writes it could hide are writes through what the iterator yields.
+
+The discharge fires only when `resultExposesMutableState` answers no,
+which for an iterator means every yielded value is primitive.
+A primitive cannot be written through.
+So there is no write to hide.
+
+The remaining question is whether the iterator itself,
+which is an object holding a live reference to the receiver,
+gives an escaping consumer a way to write the collection.
+It does not:
+an iterator exposes advancement and nothing else,
+and the reference it holds lives in an internal slot no source construct can reach.
+Advancing reads.
+
+This is what makes iterators the one container the channel entries can admit without the container
+relation.
+It is also exactly why the entries buy so little:
+the same primitive-yield condition that makes them safe is what stops them applying to `values()`
+over anything worth iterating.
+
 ### Probe obligations
 
 The existing authority probe installs an own `size` accessor on a `Map` or `Set` and indexed
