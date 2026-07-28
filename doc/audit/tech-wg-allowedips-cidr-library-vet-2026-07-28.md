@@ -775,9 +775,17 @@ A plain `pnpm` symlink to the Corepack binary did not dispatch by its symlink na
 The second test attempt therefore failed with exact Corepack diagnostic
 `Unknown Syntax Error: Command not found` while receiving `exec eslint ...`.
 No candidate test had started.
-The corrected environment command is `corepack enable --install-directory /work/bin pnpm`,
- which creates Corepack's actual pnpm shim.
-The next rerun adds that directory to `PATH` and keeps networking disabled.
+The next environment command used `corepack enable --install-directory /work/bin pnpm`,
+ which created Corepack's actual pnpm shim.
+That allowed `eslint-silverwind` to invoke pnpm,
+ but placing the manager cache under `/work` made ESLint scan Corepack's own files.
+The third attempt stopped on 26 lint errors under `/work/.corepack`;
+ candidate source had not been linted.
+The final environment keeps the same inspected cache and shims in a separate private `/manager` mount,
+ removes the two environment directories from `/work`,
+ adds `/manager/bin` to `PATH`,
+ and keeps networking disabled.
+This prevents manager implementation files from entering the upstream lint root.
 `pnpm-workspace.yaml` sets `ignoreScripts: true`,
  so no package lifecycle can execute.
 Corepack fetches and invokes pnpm 11.17.0;
