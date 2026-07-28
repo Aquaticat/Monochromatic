@@ -118,6 +118,26 @@ await describe({
           },
         },),
         it({
+          name: 'attaches literal for-loop bindings only to body commands',
+          fn: async function testLiteralForLoopBindings() {
+            const result = analyzeShellCommand(
+              'printf before; for repo in /safe/one /safe/two; do printf "%s" "$repo"; git -C "$repo" tag --points-at HEAD; done; printf after',
+            );
+            /** Executed commands in shell traversal order. */
+            const [before, loopPrint, loopGit, after,] = result.executedCommands;
+            expect(before?.context.loopBindings,).toEqual([],);
+            expect(loopPrint?.context.loopBindings,).toEqual([{
+              name: 'repo',
+              values: ['/safe/one', '/safe/two',],
+            },],);
+            expect(loopGit?.context.loopBindings,).toEqual([{
+              name: 'repo',
+              values: ['/safe/one', '/safe/two',],
+            },],);
+            expect(after?.context.loopBindings,).toEqual([],);
+          },
+        },),
+        it({
           name: 'returns parse failure with pre-scanned parameter refs',
           fn: async function testParseFailure() {
             const result = analyzeShellCommand('echo "$SECRET_VAR',);

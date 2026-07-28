@@ -10,6 +10,7 @@ import {
   mkdir,
   mkdtemp,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -21,11 +22,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { buildApprovalFingerprint, } from './tool-helpers.ts';
-import {
+import autoMode, {
+  buildApprovalFingerprint,
+  initializeAutoMode,
   VERDICT_ENTRY_TYPE,
   type VerdictData,
-} from './types.ts';
+} from '@monochromatic-dev/pi-plugin-auto-mode';
 
 /** Private directory mode required before agent scratch roots are allowlisted. */
 const PRIVATE_DIRECTORY_MODE = 0o700;
@@ -157,13 +159,96 @@ function getHandler(
   return handler;
 }
 
-//endregion
+/**
+ * Describe read or Bash probe exactly as auto-mode does before approval lookup.
+ *
+ * @param event - read or Bash tool event used by integration probe
+ *
+ * @returns action text used by approval fingerprint lookup
+ *
+ * @throws when event is outside probe's read and Bash surface
+ *
+ * @example
+ * ```typescript
+ * probeAction({ type: 'tool_call', toolName: 'read', toolCallId: 'r', input: { path: '/tmp/a' } });
+ * ```
+ */
+function probeAction(
+  event: ToolCallEvent,
+): string {
+  if (event.toolName === 'read') {
+    return `read ${(event.input as { readonly path: string; }).path}`;
+  }
+  if (event.toolName === 'bash') {
+    return `bash: ${(event.input as { readonly command: string; }).command}`;
+  }
+  throw new Error(`Unsupported approval probe tool: ${event.toolName}`,);
+}
 
-// Dynamic import isolates extension registration until mock infrastructure exists.
-const {
-  default: autoMode,
-  initializeAutoMode,
-} = await import('./index.ts');
+/**
+ * Invoke tool-call handler with prior approval that records only when call was flagged.
+ *
+ * @param handler - registered auto-mode tool-call handler
+ *
+ * @param event - tool event whose flagging decision is observed
+ *
+ * @param cwd - Pi working directory used by path policy and fingerprint
+ *
+ * @param entries - append-only mock entries inspected before and after handler
+ *
+ * @returns whether auto-mode reached flagged approval-reuse path
+ *
+ * @mutates entries - flagged calls append reused approval verdict
+ *
+ * @example
+ * ```typescript
+ * await probeFlaggedToolCall({ handler, event, cwd: '/project', entries: [] });
+ * ```
+ */
+async function probeFlaggedToolCall(
+  {
+    handler,
+    event,
+    cwd,
+    entries,
+  }: {
+    readonly handler: HandlerFn;
+    readonly event: ToolCallEvent;
+    readonly cwd: string;
+    readonly entries: AppendedEntry[];
+  },
+): Promise<boolean> {
+  /** Entry count before possible approval-reuse audit record. */
+  const entryCountBefore = entries.length;
+  /** Approval fingerprint matching current event and cwd. */
+  const approvalFingerprint = buildApprovalFingerprint({ event, cwd, },);
+  await handler(
+    event,
+    {
+      cwd,
+      ui: {
+        setWidget() {},
+      },
+      sessionManager: {
+        getBranch() {
+          return [{
+            type: 'custom',
+            customType: VERDICT_ENTRY_TYPE,
+            data: {
+              action: probeAction(event,),
+              approvalFingerprint,
+              verdict: 'user-approve',
+              reason: 'Probe distinguishes flagged path.',
+            } satisfies VerdictData,
+          },];
+        },
+      },
+    },
+  );
+  return entries.length > entryCountBefore;
+}
+
+//endregion
 
 await describe({
   name: autoMode.name,
@@ -313,6 +398,306 @@ await describe({
         );
 
         expect(result,).toBeUndefined();
+        await rm(
+          home,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'allows aliased current-home scratch reads without judge evaluation',
+      fn: async function allowsAliasedCurrentHomeScratchRead() {
+        /** Disposable parent containing canonical home and lexical home alias. */
+        const fixtureRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-home-alias-',
+        ),);
+        /** Canonical home target matching systems where `/home` aliases `/var/home`. */
+        const canonicalHome = join(
+          fixtureRoot,
+          'canonical-home',
+        );
+        /** Lexical home spelling returned by runtime environment. */
+        const homeAlias = join(
+          fixtureRoot,
+          'home-alias',
+        );
+        /** Canonical private scratch root. */
+        const agentRoot = join(
+          canonicalHome,
+          'temp',
+          'agent',
+        );
+        await mkdir(
+          agentRoot,
+          { recursive: true, },
+        );
+        await chmod(
+          agentRoot,
+          PRIVATE_DIRECTORY_MODE,
+        );
+        await symlink(
+          canonicalHome,
+          homeAlias,
+          'dir',
+        );
+        /** Existing file addressed through lexical home alias. */
+        const tempFile = join(
+          homeAlias,
+          'temp',
+          'agent',
+          'source.ts',
+        );
+        await writeFile(
+          tempFile,
+          'export const source = true;\n',
+        );
+
+        const {
+          api,
+          registrations,
+          entries,
+        } = createMockApi();
+        await initializeAutoMode({
+          pi: api,
+          home: homeAlias,
+          historicalAgentTempDir: join(
+            fixtureRoot,
+            'historical-agent',
+          ),
+        },);
+        /** Registered entry-point handler under test. */
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+        /** Aliased scratch read matching observed Fedora home spelling. */
+        const event = {
+          type: 'tool_call',
+          toolName: 'read',
+          toolCallId: 'read-aliased-agent-temp',
+          input: { path: tempFile, },
+        } as ToolCallEvent;
+
+        expect(await probeFlaggedToolCall({
+          handler: toolCallHandler,
+          event,
+          cwd: fixtureRoot,
+          entries,
+        },),).toBe(false,);
+        await rm(
+          fixtureRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'allows statically read-only scratch inspection command families',
+      fn: async function allowsReadOnlyScratchInspectionCommands() {
+        /** Disposable account home for trusted scratch fixture. */
+        const home = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-read-only-',
+        ),);
+        /** Private agent scratch root containing candidate repositories. */
+        const agentRoot = join(
+          home,
+          'temp',
+          'agent',
+        );
+        await mkdir(
+          agentRoot,
+          { recursive: true, },
+        );
+        await chmod(
+          agentRoot,
+          PRIVATE_DIRECTORY_MODE,
+        );
+        /** Candidate repository names matching multi-repository inspection. */
+        const repositoryNames = [
+          'cidr-tools',
+          'ip-address',
+          'fast-cidr-tools',
+          'ip-kit',
+          'ip-num',
+        ];
+        /** Existing repository roots used by canonical path proof. */
+        const repositoryRoots = await Promise.all(repositoryNames.map(
+          async function createRepositoryFixture(repositoryName,): Promise<string> {
+            /** Repository fixture root. */
+            const repositoryRoot = join(
+              agentRoot,
+              repositoryName,
+            );
+            await Promise.all([
+              mkdir(
+                join(
+                  repositoryRoot,
+                  '.github',
+                  'workflows',
+                ),
+                { recursive: true, },
+              ),
+              mkdir(
+                join(
+                  repositoryRoot,
+                  'src',
+                ),
+                { recursive: true, },
+              ),
+              mkdir(
+                join(
+                  repositoryRoot,
+                  'test',
+                ),
+                { recursive: true, },
+              ),
+              writeFile(
+                join(
+                  repositoryRoot,
+                  'package.json',
+                ),
+                '{}\n',
+              ),
+            ],);
+            return repositoryRoot;
+          },
+        ),);
+        /** Space-delimited literal repository roots used by shell examples. */
+        const repositoryArguments = repositoryRoots.join(' ',);
+        /** Exact read-only Bash families from reported approval prompts. */
+        const commands = [
+          `rg --line-number 'foxts|fast-fnv1a|fnv1a52' ${repositoryRoots[2]}/src ${repositoryRoots[2]}/test ${repositoryRoots[2]}/package.json`,
+          `rg --line-number --ignore-case 'wasm|native|prebuild|postinstall|install|node-gyp|binding|generated|fuzz|mutation' ${repositoryArguments} --glob '!pnpm-lock.yaml' --glob '!package-lock.json'`,
+          `find ${repositoryArguments} -path '*/.github/workflows/*' -type f -print | sort`,
+          `find ${repositoryArguments} -type f \\( -name '*.test.ts' -o -name '*.spec.ts' -o -path '*/test/*' -o -path '*/tests/*' -o -path '*/spec/*' \\) ! -path '*/node_modules/*' -print | sort`,
+          `for repo in ${repositoryArguments}; do printf '%s\\t' "$repo"; git -C "$repo" tag --points-at HEAD | paste --serial --delimiters=, -; done`,
+        ];
+        const {
+          api,
+          registrations,
+          entries,
+        } = createMockApi();
+        await initializeAutoMode({
+          pi: api,
+          home,
+          historicalAgentTempDir: join(
+            home,
+            'historical-agent',
+          ),
+        },);
+        /** Registered entry-point handler under test. */
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+
+        for (const [commandIndex, command,] of commands.entries()) {
+          /** Bash event carrying one read-only command family. */
+          const event = {
+            type: 'tool_call',
+            toolName: 'bash',
+            toolCallId: `bash-read-only-${String(commandIndex,)}`,
+            input: { command, },
+          } as ToolCallEvent;
+          expect(await probeFlaggedToolCall({
+            handler: toolCallHandler,
+            event,
+            cwd: home,
+            entries,
+          },),).toBe(false,);
+        }
+        await rm(
+          home,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'keeps mutating scratch command variants on judge path',
+      fn: async function judgesMutatingScratchCommandVariants() {
+        /** Disposable account home for trusted scratch fixture. */
+        const home = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-mutating-',
+        ),);
+        /** Private scratch root containing existing command targets. */
+        const agentRoot = join(
+          home,
+          'temp',
+          'agent',
+        );
+        await mkdir(
+          agentRoot,
+          { recursive: true, },
+        );
+        await chmod(
+          agentRoot,
+          PRIVATE_DIRECTORY_MODE,
+        );
+        /** Existing target that makes redirect and direct mutation observable to classifier. */
+        const targetPath = join(
+          agentRoot,
+          'target.txt',
+        );
+        await writeFile(
+          targetPath,
+          'fixture\n',
+        );
+        /** Mutating or executable variants that must not receive read-only bypass. */
+        const commands = [
+          `touch ${targetPath}`,
+          `find ${agentRoot} -type f -delete`,
+          `rg --pre cat fixture ${agentRoot}`,
+          `git -C ${agentRoot} tag release-candidate`,
+          `rg fixture ${agentRoot} > ${targetPath}`,
+        ];
+        const {
+          api,
+          registrations,
+          entries,
+        } = createMockApi();
+        await initializeAutoMode({
+          pi: api,
+          home,
+          historicalAgentTempDir: join(
+            home,
+            'historical-agent',
+          ),
+        },);
+        /** Registered entry-point handler under test. */
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+
+        for (const [commandIndex, command,] of commands.entries()) {
+          /** Bash event carrying one unsafe lookalike command. */
+          const event = {
+            type: 'tool_call',
+            toolName: 'bash',
+            toolCallId: `bash-mutating-${String(commandIndex,)}`,
+            input: { command, },
+          } as ToolCallEvent;
+          expect(await probeFlaggedToolCall({
+            handler: toolCallHandler,
+            event,
+            cwd: home,
+            entries,
+          },),).toBe(true,);
+        }
         await rm(
           home,
           {
