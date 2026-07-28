@@ -7,33 +7,31 @@ Status:
 
 ## Goal
 
-Build `wg-allowedips`,
- a CLI that computes a WireGuard `AllowedIPs` value from an allowed set and a disallowed
-set:
+The `wg-allowedips` CLI computes a WireGuard `AllowedIPs` value from an allowed set and a disallowed set:
 
 ```text
 result = union(allowed) − union(disallowed)
 ```
 
-Both sets may contain IPv4 addresses,
- IPv6 addresses,
- or CIDR blocks.
-A domain contributes every IPv4 and IPv6 address returned for it by the operating system resolver during that
-run.
+Each set may contain:
 
+- IPv4 addresses;
+- IPv6 addresses;
+- IPv4 CIDR blocks;
+- IPv6 CIDR blocks;
+- domains.
+
+A domain contributes every address returned for it by the operating system resolver during that run.
 The tool must preserve this direct set model.
 It must not infer `0.0.0.0/0` or `::/0` from a disallowed entry.
 
 ## Package and command
 
-Create:
+Create the package with these identities:
 
-- package path:
-   `package/cli/wg-allowedips`;
-- package name:
-   `@monochromatic-dev/cli-wg-allowedips`;
-- executable:
-   `wg-allowedips`.
+- Path is `package/cli/wg-allowedips`.
+- Package name is `@monochromatic-dev/cli-wg-allowedips`.
+- Executable name is `wg-allowedips`.
 
 The command contract is:
 
@@ -43,18 +41,14 @@ wg-allowedips --allowed <path> --disallowed <path>
 
 Both flags are required.
 An empty disallowed file represents an empty set.
-Do not add short aliases,
- positional input,
- interactive prompts,
- or alternate output modes.
+Do not add short aliases or positional input.
+Do not add interactive prompts or alternate output modes.
 
 Use `cidr-tools` through the pnpm catalog.
-Its `excludeCidr` operation already unions,
- subtracts,
- minimizes,
- and sorts IPv4 and IPv6 networks,
- so the CLI
-must not build a second merge or interval layer around it.
+Call its `excludeCidr` operation directly.
+The operation unions both inputs before subtraction and returns a minimized sorted set of IPv4 and IPv6
+networks.
+Do not build another merge or interval layer around it.
 
 ## Input format
 
@@ -69,22 +63,22 @@ For each line:
 
 A range means a CIDR block such as `10.0.0.0/8`.
 Start-to-end syntax such as `10.0.0.1-10.0.0.20` is unsupported.
-Comments occupy their whole trimmed line;
- inline comments are unsupported.
+Comments occupy a whole trimmed line.
+Inline comments are unsupported.
 
 Resolve domains with `lookup` from `node:dns/promises` and `{ all: true }`.
-This deliberately follows the operating system's name-resolution behavior,
- including hosts-file and
-split-horizon results.
-Use every address the operating system returns and treat each as a host route.
+This follows the operating system's name-resolution behavior.
+That behavior includes hosts-file and split-horizon results.
+Use every returned address as a host route.
 The generated result is a point-in-time snapshot.
 
-Do not add DNS caching,
- deduplication machinery,
- retries,
- backoff,
- TTL handling,
- or resolver configuration.
+Do not add:
+
+- DNS caching;
+- domain deduplication machinery;
+- retries or backoff;
+- TTL handling;
+- resolver configuration.
 
 ## Processing and output
 
@@ -119,26 +113,25 @@ It does not include `AllowedIPs =`.
 
 ## Failure behavior
 
-A missing flag,
- unreadable file,
- malformed CIDR,
- or failed domain lookup must make the command fail nonzero
-before it writes a result.
-Let filesystem,
- argument-parser,
- CIDR-parser,
- and resolver failures retain their useful path or input context.
-Do not add retry loops,
- custom line-number diagnostics,
- or a separate exit-code taxonomy.
+These conditions must fail the command before it writes a result:
 
-Set arithmetic needs no special-case diagnostics:
+- a required flag is missing;
+- an input file cannot be read;
+- a CIDR parser rejects an entry;
+- a domain lookup fails.
 
-- duplicate and overlapping allowed entries merge naturally;
-- a disallowed entry outside the allowed set is a no-op;
-- partial overlap subtracts only the intersection;
-- an empty disallowed set returns the minimized allowed set without a warning;
-- complete subtraction succeeds with empty stdout.
+Preserve useful input or path context from the argument parser and filesystem.
+Preserve the same context from the CIDR parser and resolver.
+Do not add retry loops or custom line-number diagnostics.
+Do not add a separate exit-code taxonomy.
+
+Set arithmetic needs no special diagnostics:
+
+- Duplicate and overlapping allowed entries merge naturally.
+- A disallowed entry outside the allowed set is a no-op.
+- Partial overlap subtracts only the intersection.
+- An empty disallowed set returns the minimized allowed set without a warning.
+- Complete subtraction succeeds with empty stdout.
 
 ## Non-goals
 
@@ -148,51 +141,48 @@ Do not add:
 - non-portable `!` exclusion syntax;
 - an implicit full-tunnel universe;
 - arbitrary start-to-end address ranges;
-- warnings for duplicates,
-   overlap,
-   cancellation,
-   or no-op exclusions;
-- persistent state,
-   network watching,
-   or automatic regeneration;
-- JSON,
-   TOML,
-   or multiple output formats.
+- warnings for duplicates or overlap;
+- warnings for cancellation or no-op exclusions;
+- persistent state or network watching;
+- automatic regeneration;
+- JSON or TOML input;
+- multiple output formats.
 
 ## Completion criteria
 
-The package is complete only when it has its normal repository scaffolding,
- `README.md`,
- license material,
- zero
-lint findings,
- and passing tests.
+The package must include:
+
+- normal repository scaffolding;
+- `README.md`;
+- license material;
+- tests for every exported code path.
+
 Tests must cover:
 
-- IPv4 and IPv6 union and subtraction;
+- IPv4 union and subtraction;
+- IPv6 union and subtraction;
 - individual IPs becoming host routes;
 - domain results entering the correct set;
 - blank and comment lines;
-- duplicate,
-   overlapping,
-   partial-overlap,
-   and out-of-set inputs through ordinary set arithmetic;
-- empty allowed,
-   empty disallowed,
-   and empty result behavior;
-- malformed CIDR,
-   failed lookup,
-   missing flag,
-   and missing file failures;
+- duplicate and overlapping inputs;
+- partial-overlap and out-of-set inputs;
+- empty allowed behavior;
+- empty disallowed behavior;
+- empty result behavior;
+- CIDR parser failure;
+- lookup failure;
+- missing flag and missing file failures;
 - exact stdout formatting.
 
-Verification must pass the package's `lint`,
- `lint:types`,
- `test:unit`,
- and `build` mise tasks.
-Finally,
- invoke the built `wg-allowedips` executable against disposable input files and verify its stdout and
-exit status.
+These package tasks must pass with zero lint findings:
+
+- `lint`;
+- `lint:types`;
+- `test:unit`;
+- `build`.
+
+Finally invoke the built `wg-allowedips` executable against disposable input files.
+Verify its stdout and exit status.
 
 ## API references
 
