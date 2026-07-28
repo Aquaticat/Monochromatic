@@ -721,3 +721,59 @@ export function classMemberPackaging(first: LabelledRow,): void {
     },
   },);
 }
+
+/**
+ * Object whose method writes the receiver it is called on.
+ */
+const receiverWriters = {
+  /**
+   * Writes the label of whatever receiver this method runs on.
+   *
+   * @mutates this - Assigns one label on its receiver.
+   *
+   * @example
+   * ```ts
+   * receiverWriters.write.call({ label: '' });
+   * ```
+   */
+  write(this: LabelledRow,): void {
+    this.label = 'written';
+  },
+};
+
+/**
+ * Row carrying the receiver-writing method.
+ */
+export type WritableRow = LabelledRow & typeof receiverWriters;
+
+/**
+ * Calls a method that writes the receiver it is called on.
+ *
+ * The method declares an explicit `this` formal and assigns through it, so `row` is written. The
+ * call supplies no argument at all: the receiver is the value before the dot, which a mapping
+ * from formals to actual argument positions has no position for.
+ *
+ * @param row - Row the method writes through its receiver.
+ *
+ * @example
+ * ```ts
+ * explicitThisReceiver({ label: '', ...receiverWriters });
+ * ```
+ */
+export function explicitThisReceiver(row: WritableRow,): void {
+  row.write();
+}
+
+/**
+ * Writes the row it is bound to as its receiver.
+ *
+ * @mutates this - Assigns one label on its receiver.
+ *
+ * @example
+ * ```ts
+ * writeThroughThis.call({ label: '' });
+ * ```
+ */
+export function writeThroughThis(this: LabelledRow,): void {
+  this.label = 'written';
+}
