@@ -612,12 +612,14 @@ await describe({
             toolCallId: `bash-read-only-${String(commandIndex,)}`,
             input: { command, },
           } as ToolCallEvent;
-          expect(await probeFlaggedToolCall({
+          /** Flag decision paired with source command for actionable failure diff. */
+          const flagged = await probeFlaggedToolCall({
             handler: toolCallHandler,
             event,
             cwd: home,
             entries,
-          },),).toBe(false,);
+          },);
+          expect({ command, flagged, },).toEqual({ command, flagged: false, },);
         }
         await rm(
           home,
@@ -695,12 +697,14 @@ await describe({
             toolCallId: `bash-mutating-${String(commandIndex,)}`,
             input: { command, },
           } as ToolCallEvent;
-          expect(await probeFlaggedToolCall({
+          /** Flag decision paired with source command for actionable failure diff. */
+          const flagged = await probeFlaggedToolCall({
             handler: toolCallHandler,
             event,
             cwd: home,
             entries,
-          },),).toBe(true,);
+          },);
+          expect({ command, flagged, },).toEqual({ command, flagged: true, },);
         }
         await rm(
           home,
