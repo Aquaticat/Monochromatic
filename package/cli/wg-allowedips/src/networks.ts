@@ -212,6 +212,82 @@ function asnNetwork(
 }
 
 /**
+ * Checks whether a caught resolver failure reports DNS name absence.
+ *
+ * @param error - Caught resolver failure.
+ *
+ * @returns Whether error carries exact Node resolver code `ENOTFOUND`.
+ *
+ * @example
+ * ```ts
+ * isDnsNotFoundError({ code: 'ENOTFOUND' }); // true
+ * ```
+ */
+function isDnsNotFoundError(error: unknown,): boolean {
+  return ((typeof error) === 'object')
+    && (error !== null)
+    && ('code' in error)
+    && (error.code === 'ENOTFOUND');
+}
+
+/**
+ * Resolves one domain while treating DNS name absence as a warning-only empty contribution.
+ *
+ * @param entry - Domain name from one active input line.
+ *
+ * @param lookupAddresses - Operating-system or injected resolver adapter.
+ *
+ * @returns Host routes for every resolved address, or an empty list for `ENOTFOUND`.
+ *
+ * @throws Resolver failures whose code is not `ENOTFOUND`.
+ *
+ * @example
+ * ```ts
+ * await domainNetworks({
+ *   entry: 'example.test',
+ *   lookupAddresses: async () => [{ address: '192.0.2.1' }],
+ * });
+ * // => ['192.0.2.1/32']
+ * ```
+ */
+async function domainNetworks(
+  {
+    entry,
+    lookupAddresses,
+  }: {
+    readonly entry: string;
+    readonly lookupAddresses: LookupAddresses;
+  },
+): Promise<readonly string[]> {
+  /**
+   * Function-scoped logger for one domain lookup.
+   */
+  const fl = tagged({
+    tag: domainNetworks.name,
+    l,
+  },);
+  try {
+    /**
+     * Every address returned by operating-system lookup for one domain.
+     */
+    const addresses = await lookupAddresses({ hostname: entry, },);
+    fl.debug(`resolved ${entry} to ${String(addresses.length,)} address(es)`,);
+    return addresses.map(function resolvedHostRoute({ address, },): string {
+      return toHostRoute({
+        address,
+        context: `domain ${entry}`,
+      },);
+    },);
+  }
+  catch (error) {
+    if (!isDnsNotFoundError(error,))
+      throw error;
+    fl.warn(`DNS lookup returned ENOTFOUND for ${entry}; skipping domain`,);
+    return [];
+  }
+}
+
+/**
  * Classifies one trimmed input entry and resolves it into explicit networks.
  *
  * @param entry - Nonempty, non-comment input entry.
@@ -282,16 +358,9 @@ async function entryNetworks(
     },);
   }
   l.debug(`resolving domain ${entry}`,);
-  /**
-   * Every address returned by operating-system lookup for one domain.
-   */
-  const addresses = await lookupAddresses({ hostname: entry, },);
-  l.debug(`resolved ${entry} to ${String(addresses.length,)} address(es)`,);
-  return addresses.map(function resolvedHostRoute({ address, },): string {
-    return toHostRoute({
-      address,
-      context: `domain ${entry}`,
-    },);
+  return await domainNetworks({
+    entry,
+    lookupAddresses,
   },);
 }
 

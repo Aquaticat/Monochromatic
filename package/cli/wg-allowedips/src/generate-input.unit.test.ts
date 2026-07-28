@@ -111,7 +111,23 @@ await describe({
     },),
 
     it({
-      name: 'propagates lookup failure',
+      name: 'skips every domain whose lookup returns ENOTFOUND',
+      fn: async () => {
+        /**
+         * Direct route retained while each unresolved domain contributes nothing.
+         */
+        const output = await generateAllowedIpsWithLookup({
+          allowedText: '192.0.2.1\nmissing-one.example',
+          disallowedText: 'missing-two.example',
+          lookupAddresses: fixtureLookup,
+          lookupAsnNetworks: fixtureAsnLookup,
+        },);
+        expect(output,).toBe('192.0.2.1/32\n',);
+      },
+    },),
+
+    it({
+      name: 'propagates lookup failure other than ENOTFOUND',
       fn: async () => {
         /**
          * Error from unregistered deterministic resolver hostname.

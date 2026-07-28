@@ -57,6 +57,21 @@ class UnexpectedLookupError extends Error {
 }
 
 /**
+ * Deterministic operating-system-style failure for a hostname that does not exist.
+ */
+class FixtureDnsNotFoundError extends Error {
+  /**
+   * Stable resolver error code consumed by domain handling.
+   */
+  readonly code = 'ENOTFOUND';
+
+  /**
+   * Stable error type name.
+   */
+  override name = 'FixtureDnsNotFoundError';
+}
+
+/**
  * Error raised when a fixture receives an unregistered ASN.
  */
 class UnexpectedAsnLookupError extends Error {
@@ -107,6 +122,14 @@ const LOOKUP_RECORDS: Readonly<Record<string, readonly LookupAddress[]>> = {
 };
 
 /**
+ * Hostnames that reproduce Node's operating-system `ENOTFOUND` resolver failure.
+ */
+const NOT_FOUND_HOSTNAMES: ReadonlySet<string> = new Set([
+  'missing-one.example',
+  'missing-two.example',
+],);
+
+/**
  * Deterministic ASN networks covering CIDR, single-address, empty, and invalid records.
  */
 const ASN_NETWORK_RECORDS: AsnNetworkRecords = {
@@ -143,6 +166,8 @@ const ASN_NETWORK_RECORDS: AsnNetworkRecords = {
 export function fixtureLookup(
   { hostname, }: { readonly hostname: string; },
 ): readonly LookupAddress[] {
+  if (NOT_FOUND_HOSTNAMES.has(hostname,))
+    throw new FixtureDnsNotFoundError(`getaddrinfo ENOTFOUND ${hostname}`,);
   /**
    * Registered addresses for requested hostname.
    */

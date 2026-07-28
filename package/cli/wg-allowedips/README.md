@@ -70,7 +70,8 @@ The command does not add DNS caching,
 retries,
 TTL handling,
 or resolver configuration.
-A lookup failure fails the command before it writes a result.
+A lookup returning `ENOTFOUND` writes one warning to stderr for that domain and contributes no addresses.
+Other lookup failures fail the command before it writes a result.
 
 ## Autonomous system numbers
 
@@ -109,8 +110,8 @@ Missing options,
 unreadable files,
 invalid CIDRs,
 invalid family bounds,
-and resolver failures propagate as command failures.
-The command does not add warning or exit-code taxonomies.
+and resolver failures other than `ENOTFOUND` propagate as command failures.
+The command does not add an exit-code taxonomy.
 
 ## Development
 

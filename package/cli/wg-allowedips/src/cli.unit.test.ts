@@ -51,6 +51,44 @@ await describe({
     },),
 
     it({
+      name: 'warns once for each domain whose lookup returns ENOTFOUND',
+      fn: async () => {
+        await using directory = await makeTempDir();
+        /**
+         * Allowed input containing one route and independently missing domains.
+         */
+        const allowedPath = `${directory.path}/allowed.txt`;
+        /**
+         * Empty disallowed input fixture path.
+         */
+        const disallowedPath = `${directory.path}/disallowed.txt`;
+        await Promise.all([
+          writeFile(allowedPath, '192.0.2.1\nfirst.invalid\n',),
+          writeFile(disallowedPath, 'second.invalid\n',),
+        ],);
+        /**
+         * Successful built command result with warning-only DNS failures.
+         */
+        const result = await runCli({
+          args: [
+            '--allowed',
+            allowedPath,
+            '--disallowed',
+            disallowedPath,
+          ],
+        },);
+        expect(result.exitCode,).toBe(0,);
+        expect(result.stdout,).toBe('192.0.2.1/32\n',);
+        expect(
+          result.stderr.split('DNS lookup returned ENOTFOUND for first.invalid; skipping domain',).length - 1,
+        ).toBe(1,);
+        expect(
+          result.stderr.split('DNS lookup returned ENOTFOUND for second.invalid; skipping domain',).length - 1,
+        ).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'writes no stdout for complete subtraction',
       fn: async () => {
         await using directory = await makeTempDir();

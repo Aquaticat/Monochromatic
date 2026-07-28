@@ -82,6 +82,9 @@ Resolve domains with `lookup` from `node:dns/promises` and `{ all: true }`.
 This follows the operating system's name-resolution behavior.
 That behavior includes hosts-file and split-horizon results.
 Use every returned address as a host route.
+When lookup reports `ENOTFOUND`,
+write one warning to stderr for that domain and let the entry contribute no addresses.
+Propagate every other lookup failure.
 The generated result is a point-in-time snapshot.
 
 Resolve ASNs through the shared IPinfo Lite integration under `package/config/tofu`.
