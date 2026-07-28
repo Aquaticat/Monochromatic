@@ -1,8 +1,8 @@
 # Technology vet: wg-allowedips CIDR library
 
 Status:
- in progress.
- Lifecycle phase is finalist validation complete and scoring pending.
+ complete.
+ Lifecycle phase is recommended.
  Started and last updated on 2026-07-28.
 
 Subject:
@@ -1045,6 +1045,11 @@ Parser probes rejected malformed addresses,
 An exact-prefix consumer guard is therefore required.
 Evidence is `proc_12-stderr.log` and `proc_16-stdout.log`.
 Status is consumer pass with additional production orchestration.
+The parser defect,
+ verified consumer guard,
+ minimal upstream patch,
+ and 161-test prototype are recorded in
+[the `ip-kit` troubleshooting report](../troubleshooting/ip-kit-trailing-prefix-text.md).
 
 The local ESM build is byte-identical to the published artifact.
 The exact commit's upstream Node 18,
@@ -1094,14 +1099,271 @@ The defect is independent of input validation or output sorting and violates the
 constraint.
 Status is hard-gate fail;
  the candidate is not scored.
+The root cause,
+ minimal patch,
+ upstream filing draft,
+ and passing seven-group prototype are recorded in
+[the `fast-cidr-tools` troubleshooting report](../troubleshooting/fast-cidr-tools-multiple-base-exclusion.md).
 
 ## Scoring and sensitivity
 
-Scoring waits for ratings and sensitivity calculations across the two validated finalists.
+Hard-gate failures remain outside arithmetic.
+The frozen weights total 18 and produce a maximum score of 72.
+
+### `cidr-tools` 12.1.3
+
+#### Interface fit and production-code footprint
+
+Rating is `4 of 4`.
+Confidence is high.
+Weight is `5`.
+Score effect is 20 points.
+
+The consumer calls `excludeCidr(allowed, disallowed)` directly.
+It needs no family partition,
+host conversion,
+or result reconstruction around set subtraction.
+
+#### Validation clarity and error ergonomics
+
+Rating is `3 of 4`.
+Confidence is high.
+Weight is `5`.
+Score effect is 15 points.
+
+`parseCidr` rejects malformed CIDR structure and trailing junk.
+Its documented rudimentary address parsing means the planned `node:net` check and explicit family bounds remain
+necessary,
+but those checks have one clear ownership boundary.
+
+#### Runtime dependency surface and human auditability
+
+Rating is `4 of 4`.
+Confidence is high.
+Weight is `4`.
+Score effect is 16 points.
+
+The complete runtime graph is 684 direct lines plus 307 lines in one same-author dependency.
+Both modules are strict TypeScript,
+have zero suppressions or debt markers,
+and contain no native,
+Wasm,
+operating-system,
+network,
+filesystem,
+or process boundary.
+
+#### Upstream test quality
+
+Rating is `3 of 4`.
+Confidence is high.
+Weight is `3`.
+Score effect is 9 points.
+
+Tests cover both families,
+empty and full subtraction,
+overlaps,
+hosts,
+minimization,
+ordering,
+and prior unsorted IPv6 regressions.
+No fuzzing or mutation harness exists.
+
+#### Maintenance and release hygiene
+
+Rating is `3 of 4`.
+Confidence is high.
+Weight is `1`.
+Score effect is 3 points.
+
+The maintainer responded to every sampled issue,
+merged all sampled pull requests,
+and released fixes,
+including 12.1.3.
+Maintenance remains concentrated in one person.
+
+Arithmetic is `5 * 4 + 5 * 3 + 4 * 4 + 3 * 3 + 1 * 3 = 63`.
+The score is `63 / 72 = 87.5%`.
+
+### `@h3mantd/ip-kit` 1.1.0
+
+#### Interface fit and production-code footprint
+
+Rating is `2 of 4`.
+Confidence is high.
+Weight is `5`.
+Score effect is 10 points.
+
+The set engine passed after the adapter converted hosts to host CIDRs,
+partitioned both inputs by family,
+built two pairs of `RangeSet` objects,
+subtracted each pair,
+converted each result to CIDRs,
+and joined the families.
+
+#### Validation clarity and error ergonomics
+
+Rating is `1 of 4`.
+Confidence is high.
+Weight is `5`.
+Score effect is 5 points.
+
+Errors are typed and most malformed inputs are rejected,
+but `CIDR.parse` partially parses non-decimal prefixes.
+Exact input rejection therefore requires a project-owned prefix-text parser before the package parser.
+
+#### Runtime dependency surface and human auditability
+
+Rating is `3 of 4`.
+Confidence is high.
+Weight is `4`.
+Score effect is 12 points.
+
+The runtime is dependency-free strict TypeScript with zero suppressions or debt markers and no native or
+operating-system boundary.
+Its 1,805 lines across 11 files are broader than the consumed task requires.
+
+#### Upstream test quality
+
+Rating is `2 of 4`.
+Confidence is high.
+Weight is `3`.
+Score effect is 6 points.
+
+The 1,255 test lines cover broad address operations and example-based set laws.
+They miss non-decimal prefix text and do not combine IPv6 subtraction with minimal CIDR conversion.
+No fuzzing or mutation harness exists.
+
+#### Maintenance and release hygiene
+
+The low-signal rating range is `1 through 3`.
+Its provisional midpoint is `2`.
+Confidence is low.
+Weight is `1`.
+The provisional score effect is 2 points,
+with endpoints of 1 and 3 points.
+
+Three recent releases and 22 owner commits support at least a weak rating.
+No external maintenance sample exists,
+and CI covers Ubuntu only,
+so evidence does not distinguish weak from good response and release hygiene.
+
+Provisional arithmetic is `5 * 2 + 5 * 1 + 4 * 3 + 3 * 2 + 1 * 2 = 35`.
+The provisional score is `35 / 72 = 48.6%`.
+The maintenance endpoints produce `34 / 72 = 47.2%` and `36 / 72 = 50.0%`.
+
+### Sensitivity results
+
+Maintenance and release hygiene is the only equal-default criterion.
+Raising its weight one input at a time gives:
+
+- weight 1:
+  `cidr-tools` scores `63 / 72 = 87.5%`;
+  `ip-kit` scores `35 / 72 = 48.6%`;
+- weight 2:
+  `cidr-tools` scores `66 / 76 = 86.8%`;
+  `ip-kit` scores `37 / 76 = 48.7%`;
+- weight 3:
+  `cidr-tools` scores `69 / 80 = 86.3%`;
+  `ip-kit` scores `39 / 80 = 48.8%`;
+- weight 4:
+  `cidr-tools` scores `72 / 84 = 85.7%`;
+  `ip-kit` scores `41 / 84 = 48.8%`;
+- weight 5:
+  `cidr-tools` scores `75 / 88 = 85.2%`;
+  `ip-kit` scores `43 / 88 = 48.9%`.
+
+The `ip-kit` maintenance range endpoints at the frozen weight produce 47.2% and 50.0%.
+No exact rating has medium confidence,
+so the one-step medium-confidence arm has no input.
+Across every defined one-at-a-time test,
+normalized scores range from 85.2% to 87.5% for `cidr-tools` and 47.2% to 50.0% for `ip-kit`.
+The order never changes.
+These ranges do not claim stability under simultaneous changes to several inputs.
+
+## Finalist tradeoffs and ranking
+
+### 1. `cidr-tools` 12.1.3
+
+Pros:
+
+- one direct subtraction call matches the required set model;
+- smallest audited runtime source surface;
+- every consumer vector passed without set-operation adapter machinery;
+- exact-release CI passed on Node 22,
+  24,
+  and 26 across Ubuntu,
+  macOS,
+  and Windows;
+- active,
+  measured maintainer response and release flow.
+
+Cons:
+
+- rudimentary parsing requires the planned address and family-prefix guards;
+- one same-author runtime dependency expands the provenance boundary;
+- single-maintainer concentration and no fuzz or mutation suite remain.
+
+### 2. `@h3mantd/ip-kit` 1.1.0
+
+Pros:
+
+- dependency-free,
+  pure TypeScript runtime;
+- exact subtraction and minimal CIDR conversion passed every adapted dual-stack consumer vector;
+- custom error types and broad address-operation tests.
+
+Cons:
+
+- family partitioning,
+  host conversion,
+  object construction,
+  and result conversion add production orchestration;
+- `CIDR.parse` accepts non-decimal prefix text,
+  requiring a second project-owned parser guard;
+- more unused source surface and weaker relevant set-test coverage;
+- no upstream macOS or Windows CI and no external maintenance sample.
+
+The complete finalist ranking is `cidr-tools` > `@h3mantd/ip-kit`.
+
+`cidr-tools` ranks ahead because both pass the hard gates,
+while its direct API,
+smaller audited boundary,
+clearer validation ownership,
+stronger relevant tests,
+and measured cross-platform CI all match this decision better.
+The score order survives every required one-at-a-time sensitivity test.
+
+Hard-gate exits are not numeric runners-up.
+`fast-cidr-tools` fails exact subtraction,
+`ip-num` violates the install-lifecycle constraint,
+and `ip-address` is a parser toolkit without a collection set engine.
 
 ## Recommendation
 
-No recommendation yet.
+Retain `cidr-tools`.
+The exact validated recommendation is `cidr-tools` 12.1.3 with `ip-bigint` 9.0.7.
+Do not replace it with `beaugunderson/ip-address`,
+because that package has no union,
+subtraction,
+or minimal CIDR-cover operation and would force a project-owned interval engine.
+Do not replace it with `@h3mantd/ip-kit` for this CLI,
+because its broader set API requires more consumer code and its parser requires an additional exact-prefix guard.
+
+Confidence in the ordering is high.
+The material retained risk is `cidr-tools`' permissive address and prefix-range parsing,
+which makes the planned `node:net` and family-bound checks mandatory rather than optional.
+Exact cross-platform CI,
+source-to-artifact comparison,
+and fixed consumer vectors support the recommendation.
+Evidence limits are the absence of fuzz or mutation suites and the lack of local macOS or Windows runners.
+
+This recommendation applies to the exact validated release.
+It does not authorize a product dependency,
+catalog range,
+planning specification,
+or decision-record change.
+Adoption remains a separate action.
 
 [cidr-ci]: https://github.com/silverwind/cidr-tools/actions/runs/30333360243
 [cidr-issue-30]: https://github.com/silverwind/cidr-tools/issues/30
