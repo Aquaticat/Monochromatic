@@ -27,6 +27,8 @@ Shared IPinfo Lite adapter that resolves a case-insensitive `AS<number>` input t
 single address.
 It owns per-ASN cache freshness,
 streaming database filtering,
+network validation,
+atomic cache replacement,
 and stale-cache fallback for OpenTofu and `wg-allowedips`.
 
 ### `fetch_ips.ts`

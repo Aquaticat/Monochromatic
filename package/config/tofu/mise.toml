@@ -3,7 +3,7 @@ run = [{ tasks = ["lint:tofu", "lint:oxlint", "lint:types"] }]
 
 [tasks.test]
 run = [
-  { tasks = ["test:storagebox-resolver", "test:hosts-resolver", "test:external-caches"] },
+  { tasks = ["test:storagebox-resolver", "test:hosts-resolver", "test:asn-cache", "test:external-caches"] },
 ]
 
 [tasks."test:storagebox-resolver"]
@@ -51,6 +51,54 @@ const host = process.env.usage_host
 const result = JSON.parse(execFileSync('node', ['src/resolve_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
 if (!result[host]) { throw new Error(`expected resolved ips for ${host}`) }
 """
+
+[tasks."test:asn-cache"]
+description = "Verify ASN database filtering, atomic cache replacement, and corrupt-cache rejection"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { mkdtemp, readdir, rm, unlink, writeFile } = await import('node:fs/promises')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { lookupAsnNetworks } = await import('./src/asn-networks.ts')
+const directory = await mkdtemp(join(tmpdir(), 'tofu-asn-cache-'))
+await using cleanup = { async [Symbol.asyncDispose]() { await rm(directory, { force: true, recursive: true }) } }
+const responseFor = text => new Response(
+  new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new CompressionStream('gzip')),
+  { status: 200 },
+)
+globalThis.fetch = async () => responseFor([
+  JSON.stringify({ asn: 'AS64500', network: '192.0.2.0/24' }),
+  JSON.stringify({ asn: 'AS64500', network: '2001:db8::1' }),
+  JSON.stringify({ asn: 'AS64501', network: '198.51.100.0/24' }),
+  '',
+].join('\n'))
+const networks = await lookupAsnNetworks({ asn: 'as64500', cacheDirectory: directory, token: 'fixture' })
+if (JSON.stringify(networks) !== JSON.stringify(['192.0.2.0/24', '2001:db8::1'])) {
+  throw new Error(`unexpected ASN networks: ${JSON.stringify(networks)}`)
+}
+const names = await readdir(directory)
+if (JSON.stringify(names) !== JSON.stringify(['cache_AS64500.txt'])) {
+  throw new Error(`atomic cache left unexpected files: ${JSON.stringify(names)}`)
+}
+const cachePath = join(directory, 'cache_AS64500.txt')
+await writeFile(cachePath, 'not-a-network')
+let corruptCacheRejected = false
+try {
+  await lookupAsnNetworks({ asn: 'AS64500', cacheDirectory: directory, token: '' })
+} catch (error) {
+  corruptCacheRejected = String(error).includes('Invalid network for AS64500')
+}
+if (!corruptCacheRejected) { throw new Error('expected corrupt ASN cache rejection') }
+await unlink(cachePath)
+globalThis.fetch = async () => responseFor(`${JSON.stringify({ asn: 'AS64500' })}\n`)
+let malformedRecordRejected = false
+try {
+  await lookupAsnNetworks({ asn: 'AS64500', cacheDirectory: directory, token: 'fixture' })
+} catch (error) {
+  malformedRecordRejected = error instanceof Error
+}
+if (!malformedRecordRejected) { throw new Error('expected malformed target ASN record rejection') }
+'''
 
 [tasks."test:external-caches"]
 description = "Smoke-test OpenTofu external helpers against local cache files when present"

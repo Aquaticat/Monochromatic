@@ -1,10 +1,19 @@
+import { randomUUID, } from 'node:crypto';
 import type { Stats, } from 'node:fs';
 import {
   readFile,
+  rename,
+  rm,
   stat,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+
+import {
+  AsnDatabaseError,
+  normalizeAsn,
+  validateNetwork,
+} from './asn-network.ts';
 
 /**
  * Input for resolving every IPinfo Lite network assigned to one ASN.
@@ -49,21 +58,6 @@ type IpinfoLiteRecord = {
  * ```
  */
 type UnknownRecord = Record<PropertyKey, unknown>;
-
-/**
- * Error raised when ASN syntax or IPinfo Lite database access fails.
- *
- * @example
- * ```ts
- * throw new AsnDatabaseError('ASN must use AS<number> syntax: AS-example');
- * ```
- */
-export class AsnDatabaseError extends Error {
-  /**
-   * Stable error type name.
-   */
-  override name = 'AsnDatabaseError';
-}
 
 /**
  * Sentinel returned when one NDJSON line has no matching network.
@@ -131,56 +125,6 @@ function isIpinfoLiteRecord(value: unknown,): value is IpinfoLiteRecord {
 }
 
 /**
- * Checks whether text contains only ASCII decimal digits.
- *
- * @param text - Candidate decimal suffix.
- *
- * @returns Whether every character is an ASCII digit and text is nonempty.
- *
- * @example
- * ```ts
- * isDecimalDigits('41231'); // true
- * ```
- */
-function isDecimalDigits(text: string,): boolean {
-  if (text === '')
-    return false;
-  for (const character of text) {
-    if ((character < '0') || (character > '9'))
-      return false;
-  }
-  return true;
-}
-
-/**
- * Normalizes and validates conventional `AS<number>` text.
- *
- * @param asn - Candidate ASN text.
- *
- * @returns Uppercase normalized ASN.
- *
- * @throws {@link AsnDatabaseError} when syntax is not `AS<number>`.
- *
- * @example
- * ```ts
- * normalizeAsn('as41231'); // 'AS41231'
- * ```
- */
-function normalizeAsn(asn: string,): string {
-  /**
-   * Case-normalized trimmed ASN.
-   */
-  const normalized = asn
-    .trim()
-    .toUpperCase();
-  if ((!normalized.startsWith('AS',))
-    || (!isDecimalDigits(normalized.slice(2,),))) {
-    throw new AsnDatabaseError(`ASN must use AS<number> syntax: ${asn}`,);
-  }
-  return normalized;
-}
-
-/**
  * Parses one IPinfo NDJSON line and returns its network when ASN matches.
  *
  * @param line - NDJSON text line from IPinfo Lite.
@@ -212,9 +156,18 @@ function parseMatchingNetwork(
    * Parsed NDJSON entry before runtime shape validation.
    */
   const entry: unknown = JSON.parse(line,);
-  if ((!isIpinfoLiteRecord(entry,)) || (entry.asn !== targetAsn))
+  if (!isIpinfoLiteRecord(entry,)) {
+    if (isRecord(entry,) && (entry.asn === targetAsn)) {
+      throw new AsnDatabaseError(`IPinfo Lite record for ${targetAsn} lacks network text.`,);
+    }
     return NO_MATCHING_NETWORK;
-  return entry.network;
+  }
+  if (entry.asn !== targetAsn)
+    return NO_MATCHING_NETWORK;
+  return validateNetwork({
+    network: entry.network,
+    targetAsn,
+  },);
 }
 
 /**
@@ -293,14 +246,27 @@ async function readTextIfExists(path: string,): Promise<string | typeof ABSENT> 
  *
  * @param text - Cache file contents.
  *
- * @returns Network strings preserving database order.
+ * @param targetAsn - ASN named when a cached entry is invalid.
+ *
+ * @returns Validated network strings preserving database order.
  *
  * @example
  * ```ts
- * cacheNetworks('192.0.2.0/24,2001:db8::/32');
+ * cacheNetworks({
+ *   text: '192.0.2.0/24,2001:db8::/32',
+ *   targetAsn: 'AS64500',
+ * });
  * ```
  */
-function cacheNetworks(text: string,): readonly string[] {
+function cacheNetworks(
+  {
+    text,
+    targetAsn,
+  }: {
+    readonly text: string;
+    readonly targetAsn: string;
+  },
+): readonly string[] {
   return text
     .split(',',)
     .map(function trimNetwork(network: string,): string {
@@ -308,7 +274,76 @@ function cacheNetworks(text: string,): readonly string[] {
     },)
     .filter(function isPresent(network: string,): boolean {
       return network !== '';
+    },)
+    .map(function validateCachedNetwork(network: string,): string {
+      return validateNetwork({
+        network,
+        targetAsn,
+      },);
     },);
+}
+
+/**
+ * Replaces one cache through a same-directory temporary file so readers never observe partial text.
+ *
+ * @param cachePath - Final cache path.
+ *
+ * @param cacheDirectory - Directory shared by temporary and final paths.
+ *
+ * @param targetAsn - ASN used to create ignored temporary filename.
+ *
+ * @param text - Complete comma-separated cache text.
+ *
+ * @example
+ * ```ts
+ * await writeCacheAtomically({
+ *   cachePath: '/tmp/cache_AS41231.txt',
+ *   cacheDirectory: '/tmp',
+ *   targetAsn: 'AS41231',
+ *   text: '91.189.88.0/24',
+ * });
+ * ```
+ */
+async function writeCacheAtomically(
+  {
+    cachePath,
+    cacheDirectory,
+    targetAsn,
+    text,
+  }: {
+    readonly cachePath: string;
+    readonly cacheDirectory: string;
+    readonly targetAsn: string;
+    readonly text: string;
+  },
+): Promise<void> {
+  /**
+   * Unique same-directory temporary path preserving atomic rename semantics.
+   */
+  const temporaryPath = join(
+    cacheDirectory,
+    `cache_${targetAsn}.${randomUUID()}.txt`,
+  );
+  /**
+   * Cleanup guard removing temporary path after successful rename or failed write.
+   */
+  await using temporaryFile = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
+        temporaryPath,
+        { force: true, },
+      );
+    },
+  };
+  await writeFile(
+    temporaryPath,
+    text,
+    { flag: 'wx', },
+  );
+  await rename(
+    temporaryPath,
+    cachePath,
+  );
 }
 
 /**
@@ -501,10 +536,13 @@ export async function lookupAsnNetworks(
    */
   const stats = await statIfExists(cachePath,);
   if ((stats !== ABSENT) && ((Date.now() - stats.mtimeMs) < THIRTY_DAYS_MS)) {
-    return cacheNetworks(await readFile(
-      cachePath,
-      'utf8',
-    ),);
+    return cacheNetworks({
+      text: await readFile(
+        cachePath,
+        'utf8',
+      ),
+      targetAsn,
+    },);
   }
   try {
     /**
@@ -514,10 +552,12 @@ export async function lookupAsnNetworks(
       targetAsn,
       token,
     },);
-    await writeFile(
+    await writeCacheAtomically({
       cachePath,
-      networks.join(',',),
-    );
+      cacheDirectory,
+      targetAsn,
+      text: networks.join(',',),
+    },);
     return networks;
   }
   catch (error) {
@@ -536,6 +576,9 @@ export async function lookupAsnNetworks(
         { cause: error, },
       );
     }
-    return cacheNetworks(cached,);
+    return cacheNetworks({
+      text: cached,
+      targetAsn,
+    },);
   }
 }
