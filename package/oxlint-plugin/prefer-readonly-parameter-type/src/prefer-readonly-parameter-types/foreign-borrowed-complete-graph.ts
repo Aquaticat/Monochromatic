@@ -38,26 +38,6 @@ import { propagateForeignBorrowed, } from './foreign-borrowed-propagation.ts';
 const l = tagged({ tag: 'foreign-borrowed-complete-graph', },);
 
 /**
- * Signature usages already enumerated, per immutable project snapshot.
- *
- * `getSignatureUsage` walks every reference to one callable across the project, and the complete
- * backwards closure asks it once per callable it visits. Rooting a closure at each callable the
- * rule asks about therefore re-enumerates the same callables repeatedly, which is where the cost
- * of proving foreign ownership completely goes.
- *
- * This caches an enumeration rather than a verdict, which is what makes it safe where two
- * attempts at caching verdicts were not. The same declaration in the same project snapshot has
- * the same references however the walk reached it, so a hit cannot answer differently from a
- * miss. Keyed by project identity, as `effect-final-index-cache.ts` is, so entries are released
- * with the snapshot that made them meaningful.
- */
-const usagesByProject = new WeakMap<
-  Project,
-  Map<string, readonly SignatureUsage[] | typeof SIGNATURE_USAGE_UNAVAILABLE>
->();
-
-
-/**
  * Sentinel when TypeScript cannot enumerate signature usage.
  */
 const SIGNATURE_USAGE_UNAVAILABLE: unique symbol = Symbol(
@@ -115,60 +95,6 @@ function nearestOwnedCallable({
  * @returns signature usages or unavailable sentinel after logged failure.
  */
 function signatureUsages({
-  project,
-  declaration,
-}: {
-  readonly project: Project;
-  readonly declaration: EffectCallableDeclaration;
-}): readonly SignatureUsage[] | typeof SIGNATURE_USAGE_UNAVAILABLE {
-  /**
-   * Usages already enumerated for this project snapshot.
-   */
-  const projectUsages = usagesByProject.get(project,)
-    ?? new Map<string, readonly SignatureUsage[] | typeof SIGNATURE_USAGE_UNAVAILABLE>();
-  usagesByProject.set(
-    project,
-    projectUsages,
-  );
-  /**
-   * Stable identity of the callable whose usages are wanted.
-   */
-  const key = callableKey(declaration,);
-  /**
-   * Prior enumeration for this callable, absent on first ask.
-   */
-  const cached = projectUsages.get(key,);
-  if (cached !== undefined)
-    return cached;
-  /**
-   * Fresh enumeration, or the sentinel when the checker cannot supply one.
-   */
-  const usages = enumerateSignatureUsages({
-    project,
-    declaration,
-  },);
-  projectUsages.set(
-    key,
-    usages,
-  );
-  return usages;
-}
-
-/**
- * Asks the checker for every project reference to one callable's signature.
- *
- * @param project - TypeScript project resolving signature usages.
- *
- * @param declaration - Callable whose references are wanted.
- *
- * @returns usages, or sentinel when the checker cannot supply them.
- *
- * @example
- * ```ts
- * enumerateSignatureUsages({ project, declaration });
- * ```
- */
-function enumerateSignatureUsages({
   project,
   declaration,
 }: {
