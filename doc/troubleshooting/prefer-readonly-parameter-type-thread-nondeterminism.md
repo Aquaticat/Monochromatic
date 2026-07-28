@@ -220,6 +220,25 @@ that callable from a closure rooted elsewhere.
 Two arguments that it should have been were both contradicted by measurement,
 so the remaining cost is tracked rather than paid for with an answer nobody verified.
 
+## Sweeps compare analyzers, so everything else has to be held still
+
+Three ways a sweep pair has silently measured something other than the analyzer,
+each of which produced a clean-looking wrong answer before it was noticed:
+
+- **Concurrent edits to linted source.** Comparing a sweep taken now against one taken hours
+   earlier attributed nine moved report locations to a plugin change, when
+   `package/config/tofu/src` had been edited twice in between by other work. The tell was line
+   numbers shifting by a constant while the message text stayed identical, and
+   `git log --since` over the named files confirmed it. Both sides of a pair have to be swept
+   against the same tree, which for a historical plugin state means checking that state's plugin
+   sources into the current tree rather than reusing an old log.
+- **Committing while a sweep runs.** Each package task rebuilds the plugin when its sources are
+   stale, so packages linted before and after a commit use different builds. One such run
+   reported 1880 findings where a clean run of the same commit reported 1931.
+- **Invoking the wrapper directly.** `oxlint-wrapper.mjs` does not rebuild the oxlint config;
+   only the mise task's `ensureOxlintConfig()` does. Probing through the wrapper after a source
+   change silently measures the previous build, which made a landed fix read as ineffective.
+
 ## Verified workarounds
 
 Set `OXLINT_THREADS=1` for any run whose output is being compared against another run:
