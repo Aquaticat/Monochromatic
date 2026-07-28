@@ -8,18 +8,11 @@ import {
   asParameterIndex,
   type ParameterIndex,
 } from './effect-slot-identity.ts';
-import type {
-  CallEdge,
-  MutableEffectSummary,
-} from './effect-summary-model.ts';
-
-/**
- * One inbound owned call carrying caller state into callee.
- */
-type ForeignInbound = {
-  readonly callerKey: string;
-  readonly edge: CallEdge;
-};
+import type { MutableEffectSummary, } from './effect-summary-model.ts';
+import {
+  type ForeignInbound,
+  groundForeignCandidates,
+} from './foreign-borrowed-grounding.ts';
 
 /**
  * Tests whether one inbound argument is wholly foreign-owned.
@@ -241,5 +234,13 @@ export function propagateForeignBorrowed(
       }
     }
   }
-  return candidates;
+  /* The fixed point above answers whether every inbound argument is foreign. It does not answer
+   * whether anything is, because `initializeCandidates` seeds optimistically and a component whose
+   * inbounds pass a parameter straight through then sustains itself. Grounding supplies the second
+   * question and can only remove, since it walks candidates this loop already accepted. */
+  return groundForeignCandidates({
+    summaries,
+    incomingByCallee,
+    candidates,
+  },);
 }

@@ -761,6 +761,33 @@ children: [
     },
   },),
   it({
+    name: 'keeps foreign ownership anchored to a marker through recursion',
+    fn: async () => {
+      const diagnostics = await lintReadonly(
+        'readonly-recursive-ownership-invalid.ts',
+      );
+      /* Two, and the count distinguishes all three states this can be in. Before
+       * grounding it was one: `markerlessRecursion` was suppressed by a foreign
+       * candidate no marker fed, because the greatest fixed point seeds every
+       * parameter of a callable holding an inbound and a self-edge then sustains it.
+       * If grounding over-removed, it would be four, because `markerFedRecursion` and
+       * `markedRecursionEntry` would lose a suppression a marker does feed.
+       *
+       * That middle case is the one worth being careful about. Removing the marker
+       * from `markedRecursionEntry` and re-linting yields four offers, which is what
+       * establishes the two suppressions here are marker-driven rather than an
+       * artifact of the helper being unexported. */
+      expect(diagnostics.length,).toBe(2,);
+      /* Neither offer may name the marked parameter. `markerlessPlain` and
+       * `markerlessRecursion` both take `value`, so the messages are identical and
+       * only this separates an over-removal that happened to keep the count. */
+      expect(diagnostics.some(function offersMarkedParameter(diagnostic,): boolean {
+        return diagnostic.message
+          .includes('"marked"',);
+      },),).toBe(false,);
+    },
+  },),
+  it({
     name: 'suggests readonly arrays only through explicit suggestion fixes',
     fn: async () => {
       /** Source with deeply projectable primitive array parameter. */
