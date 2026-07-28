@@ -165,24 +165,13 @@ export function parameterIndexes({
       collect(current.expression,);
       return;
     }
-    /**
-     * Direct parameter origins at current expression root.
-     */
-    const direct = rootParameterOrigins({
-      project,
-      bindingOriginBySymbolId,
-      node: current,
-    },);
-    if (direct.size > 0) {
-      if (expressionCanCarryMutableState({
-        checker,
-        node: current,
-      },))
-        direct.forEach(function collectDirect(origin,): void {
-          origins.add(origin,);
-        },);
-      return;
-    }
+    /* Authored aggregate structure is walked here before the root resolver is consulted, and the
+     * order is load-bearing. `provenanceSuccessors` also descends a literal now, so the resolver
+     * answers for one, and answering first would end this walk before the branches below run.
+     * Those branches are what reach a value held only by an accessor or a method, whose origin is
+     * inside a body rather than in a property value. Measured: `accessorKeyBroadcast` in the
+     * slot-narrowing fixture, whose row is reachable only through its getter, dropped from both
+     * parameters to one, which is a lost write rather than lost precision. */
     if (isObjectLiteralExpression(current,)) {
       current.properties
         .forEach(function collectProperty(property,): void {
@@ -239,6 +228,24 @@ export function parameterIndexes({
          * is a body the callee calls. Both reach a parameter only through that body, so
          * both are scanned for named bindings. */
         collectPackagedCallable(property,);
+        },);
+      return;
+    }
+    /**
+     * Direct parameter origins at current expression root.
+     */
+    const direct = rootParameterOrigins({
+      project,
+      bindingOriginBySymbolId,
+      node: current,
+    },);
+    if (direct.size > 0) {
+      if (expressionCanCarryMutableState({
+        checker,
+        node: current,
+      },))
+        direct.forEach(function collectDirect(origin,): void {
+          origins.add(origin,);
         },);
       return;
     }

@@ -15,14 +15,20 @@ import {
   SyntaxKind,
 } from 'typescript/unstable/ast';
 import {
+  isArrayLiteralExpression,
   isAssertionExpression,
   isBinaryExpression,
   isCallExpression,
   isConditionalExpression,
   isIdentifier,
   isNonNullExpression,
+  isObjectLiteralExpression,
   isParenthesizedExpression,
+  isPropertyAssignment,
   isSatisfiesExpression,
+  isShorthandPropertyAssignment,
+  isSpreadAssignment,
+  isSpreadElement,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
@@ -36,6 +42,7 @@ import {
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
+import { receiverElementsArePrimitive, } from './effect-primitive-origin.ts';
 import {
   expressionRoot,
   NO_SLOT_ORIGIN,
@@ -182,6 +189,57 @@ function provenanceSuccessors({
       return [node.right,];
     return [];
   }
+  if (isObjectLiteralExpression(node,))
+    /* An aggregate holds whatever was written into it, so a callee writing through one of its
+     * properties writes into the value that property holds. The literal's own identity is fresh
+     * and is not what is being credited here: this resolver answers which caller parameters an
+     * expression's value can reach, and everything a literal packages is reachable through it.
+     *
+     * Without this a local written once, `const packaged = { named: first, }`, carried no origin
+     * at all, so `callee(packaged,)` attributed the callee's write to nothing and offered the row
+     * it mutates as read-only. `localLiteralProvenance` in the slot-narrowing fixture measures
+     * it. The same values reached through a literal written directly at the call site were always
+     * collected, by `parameterIndexes`, so the two paths disagreed about identical state.
+     *
+     * Property assignments, shorthand and spreads all contribute. A method or accessor does not:
+     * what it can reach is a body rather than a value, which `packagedCallableOrigins` answers
+     * for the argument walk and which this resolver has no node to hand back for. */
+    return node.properties
+      .flatMap(function packagedValue(property,): readonly Node[] {
+        if (isPropertyAssignment(property,))
+          return [property.initializer,];
+        if (isShorthandPropertyAssignment(property,))
+          return [property.name,];
+        if (isSpreadAssignment(property,))
+          return [property.expression,];
+        return [];
+      },);
+  if (isArrayLiteralExpression(node,))
+    /* Elements for the same reason, with a spread contributing what it spreads.
+     *
+     * A spread of a container whose elements are all primitive contributes nothing, which is the
+     * same rule `parameterIndexes` applies to a spread argument and is applied here so the two
+     * walks cannot disagree about identical state. `[...values,]` over a `readonly string[]`
+     * builds a fresh array of primitives that shares no object with `values`, so crediting
+     * `values` reports a parameter nothing can reach. Measured on `copiedPrimitiveArray` in
+     * `readonly-catalog-free-invalid.ts`, whose doc comment states exactly that intent. */
+    return node.elements
+      .flatMap(function packagedElement(element,): readonly Node[] {
+        if (!isSpreadElement(element,))
+          return [element,];
+        /**
+         * Type of the container being spread, when the checker resolves one.
+         */
+        const spreadType = project.checker
+          .getTypeAtLocation(element.expression,);
+        return ((spreadType !== undefined)
+            && receiverElementsArePrimitive({
+              checker: project.checker,
+              type: spreadType,
+            },))
+          ? []
+          : [element.expression,];
+      },);
   if (!isCallExpression(node,))
     return [];
   /* Calling a callable the caller supplied. Whatever comes back was chosen by the

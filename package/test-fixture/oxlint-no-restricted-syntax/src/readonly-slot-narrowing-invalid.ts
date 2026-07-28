@@ -586,3 +586,38 @@ export function restIndexSpreadBroadcast(
 }
 
 //endregion
+
+/**
+ * Packages both rows into a local before handing it over.
+ *
+ * The literal is written once and named once, so every write the callee performs through it
+ * reaches whichever row that property holds. Nothing about that is visible if the local carries
+ * no origins at all, which is what a provenance walk with no case for an aggregate literal
+ * produces: the callee's write is attributed to nothing and both rows are offered read-only.
+ *
+ * The actual is an identifier rather than a literal, so the edge cannot decompose it and both
+ * rows stay named. Recovering `first` alone needs the local's own property structure, which is
+ * a separate question from carrying its origins at all.
+ *
+ * @param first - Row the callee writes.
+ *
+ * @param second - Row the callee only reads.
+ *
+ * @example
+ * ```ts
+ * localLiteralProvenance({ label: '' }, { label: '' });
+ * ```
+ */
+export function localLiteralProvenance(
+  first: LabelledRow,
+  second: LabelledRow,
+): void {
+  /**
+   * Both rows packaged under the keys the callee destructures.
+   */
+  const packaged = {
+    named: first,
+    spare: second,
+  };
+  writeNamedOnly(packaged,);
+}

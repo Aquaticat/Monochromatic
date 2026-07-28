@@ -111,6 +111,8 @@ await describe({
         const inheritedAccessor = writtenIndexes('inheritedAccessorBroadcast',);
         /** Two literals reaching one rest formal. */
         const restIndexSpread = writtenIndexes('restIndexSpreadBroadcast',);
+        /** Both rows packaged into a local before the call. */
+        const localLiteral = writtenIndexes('localLiteralProvenance',);
         /** Property defined by a getter with an origin-free setter after it. */
         const accessorKey = writtenIndexes('accessorKeyBroadcast',);
         /** Getter reaching its row through `this` rather than through its own value. */
@@ -181,6 +183,16 @@ await describe({
         /* A getter reaching its row through `this` puts the origin under a different key
          * entirely, which no walk of the accessor body finds. */
         expect(thisAccessor,).toEqual([
+          0,
+          1,
+        ],);
+        /* A local holding the literal carries what the literal packages, so the callee's write
+         * reaches the row that property holds. This read `[]` while the provenance walk had no
+         * case for an aggregate, which offered both rows read-only while one of them is written.
+         * Both stay named because the actual is an identifier the edge cannot decompose; naming
+         * `first` alone would need the local's own property structure, which is a separate
+         * question from carrying its origins at all. */
+        expect(localLiteral,).toEqual([
           0,
           1,
         ],);
