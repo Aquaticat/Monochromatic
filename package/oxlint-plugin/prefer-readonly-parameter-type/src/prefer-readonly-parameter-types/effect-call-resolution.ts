@@ -46,11 +46,6 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Sentinel selecting every property in packaged call argument.
- */
-export const ALL_PACKAGED_PROPERTIES: unique symbol = Symbol('all packaged call argument properties',);
-
-/**
  * Maps an expression to every callable parameter its value can be reached from.
  *
  * {@inheritDoc expressionValueOrigins}
@@ -93,8 +88,6 @@ export function rootParameterOrigins({
  *
  * @param node - Call argument whose object or array may package parameter values.
  *
- * @param includedPropertyNames - Object property names relevant to callee effect.
- *
  * @returns unique caller parameter indexes in authored order.
  *
  * @example
@@ -103,7 +96,6 @@ export function rootParameterOrigins({
  *   project,
  *   bindingOriginBySymbolId,
  *   node,
- *   includedPropertyNames: ALL_PACKAGED_PROPERTIES,
  * });
  * ```
  */
@@ -111,12 +103,10 @@ export function parameterIndexes({
   project,
   bindingOriginBySymbolId,
   node,
-  includedPropertyNames,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly node: Node;
-  readonly includedPropertyNames: ReadonlySet<string> | typeof ALL_PACKAGED_PROPERTIES;
 },): readonly EffectSlot[] {
   /**
    * Checker for the project resolving this argument structure.
@@ -181,9 +171,6 @@ export function parameterIndexes({
            */
           const propertyName = property.name
             .getText();
-          if ((includedPropertyNames !== ALL_PACKAGED_PROPERTIES)
-            && (!includedPropertyNames.has(propertyName,)))
-            return;
           /* A property holding a callable does have a readable value, and reading it
            * still finds nothing: what reaches a parameter is the body the callee runs. */
           if (isFunctionLikeDeclaration(property.initializer,)) {
@@ -194,10 +181,6 @@ export function parameterIndexes({
           return;
         }
         if (isShorthandPropertyAssignment(property,)) {
-          if ((includedPropertyNames !== ALL_PACKAGED_PROPERTIES)
-            && (!includedPropertyNames.has(property.name
-              .getText(),)))
-            return;
           /**
            * Value symbol hidden behind object shorthand property symbol.
            */
@@ -218,8 +201,7 @@ export function parameterIndexes({
           }
           return;
         }
-        if (isSpreadAssignment(property,)
-          && (includedPropertyNames === ALL_PACKAGED_PROPERTIES)) {
+        if (isSpreadAssignment(property,)) {
           collect(property.expression,);
           return;
         }

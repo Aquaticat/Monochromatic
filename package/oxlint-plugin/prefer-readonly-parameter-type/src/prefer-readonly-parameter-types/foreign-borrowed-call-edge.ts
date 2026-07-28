@@ -8,7 +8,6 @@ import type { CallExpression, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
-  ALL_PACKAGED_PROPERTIES,
   callableDeclaration,
   parameterIndexes,
 } from './effect-call-resolution.ts';
@@ -94,7 +93,6 @@ export function addForeignBorrowedCallEdge({
       project,
       bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
       node: argument,
-      includedPropertyNames: ALL_PACKAGED_PROPERTIES,
     },);
   },);
   addOwnedCallEdge({

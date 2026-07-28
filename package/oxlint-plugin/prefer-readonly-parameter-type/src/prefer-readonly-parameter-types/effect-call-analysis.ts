@@ -36,7 +36,6 @@ import {
   type SlotOrigins,
 } from './effect-summary-model.ts';
 import {
-  ALL_PACKAGED_PROPERTIES,
   callableDeclaration,
   parameterIndexes,
   rootParameterOrigins,
@@ -128,7 +127,6 @@ export function inspectEffectCall({
           project,
           bindingOriginBySymbolId,
           node: argument,
-          includedPropertyNames: ALL_PACKAGED_PROPERTIES,
         },);
         sourceSlots.forEach(function callbackSource(
           sourceSlot,
@@ -250,7 +248,6 @@ export function inspectEffectCall({
         project,
         bindingOriginBySymbolId,
         node: argument,
-        includedPropertyNames: ALL_PACKAGED_PROPERTIES,
       },);
     },);
   if ((callee === OWNED_CALLABLE_UNAVAILABLE)

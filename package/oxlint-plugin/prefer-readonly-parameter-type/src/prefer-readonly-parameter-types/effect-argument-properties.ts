@@ -36,10 +36,7 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
-import {
-  ALL_PACKAGED_PROPERTIES,
-  parameterIndexes,
-} from './effect-call-resolution.ts';
+import { parameterIndexes, } from './effect-call-resolution.ts';
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
@@ -218,7 +215,6 @@ function propertyContribution({
         project,
         bindingOriginBySymbolId,
         node: property.expression,
-        includedPropertyNames: ALL_PACKAGED_PROPERTIES,
       },),
     };
   if (isPropertyAssignment(property,)) {
@@ -239,7 +235,6 @@ function propertyContribution({
           project,
           bindingOriginBySymbolId,
           node: property.initializer,
-          includedPropertyNames: ALL_PACKAGED_PROPERTIES,
         },),
     };
   }
