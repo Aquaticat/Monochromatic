@@ -81,9 +81,11 @@ The same expansion works in allowed and disallowed inputs.
 
 ASN data reuses the IPinfo integration under `package/config/tofu`.
 Fresh `src/cache_AS<number>.txt` snapshots avoid network access.
+Snapshot entries are validated before use,
+and refreshes replace snapshots atomically.
 An absent or older snapshot is refreshed from IPinfo using `IPINFO_TOKEN` from the process environment or
 `package/config/tofu/.env.local`.
-A failed refresh uses a stale snapshot when available and fails when no snapshot exists.
+A failed refresh uses a valid stale snapshot when available and fails when no valid snapshot exists.
 
 IP address data is powered by [IPinfo][ipinfo] and used under CC-BY-SA-4.0.
 
