@@ -78,7 +78,7 @@ const l = tagged({
  *
  * @example
  * ```ts
- * const verdict = await callJudge({ model, auth, action, actionInput: '{"path":"src/index.ts"}', cwd, recentContext, trustDirectives: [], timeoutMs: 10_000, systemPrompt, batchContext: [] });
+ * const verdict = await callJudge({ model, auth, action, actionInput: '{"path":"src/index.ts"}', cwd, recentContext, trustDirectives: [], timeoutMs: 60_000, systemPrompt, batchContext: [] });
  * ```
  */
 async function callJudge(

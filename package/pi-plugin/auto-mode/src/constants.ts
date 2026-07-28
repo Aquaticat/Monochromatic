@@ -19,7 +19,7 @@
  * callJudge({ timeoutMs: JUDGE_TIMEOUT_MS, });
  * ```
  */
-export const JUDGE_TIMEOUT_MS = 10_000;
+export const JUDGE_TIMEOUT_MS = 60_000;
 
 //endregion
 

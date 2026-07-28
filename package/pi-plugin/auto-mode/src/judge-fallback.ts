@@ -47,7 +47,7 @@ const NO_SECOND_FALLBACK: unique symbol = Symbol('second fallback judge unavaila
  *   cwd: '/project',
  *   recentContext: '',
  *   trustDirectives: [],
- *   timeoutMs: 10_000,
+ *   timeoutMs: 60_000,
  *   systemPrompt: 'Judge.',
  *   batchContext: [],
  * };

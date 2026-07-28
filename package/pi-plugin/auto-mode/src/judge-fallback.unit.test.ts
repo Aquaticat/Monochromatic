@@ -27,7 +27,7 @@ const CONTEXT_WINDOW = 128_000;
 const MAX_TOKENS = 4_096;
 
 /** Timeout budget for judge attempts. */
-const JUDGE_TIMEOUT_MS = 10_000;
+const JUDGE_TIMEOUT_MS = 60_000;
 
 /**
  * Build selected judge fixture with complete Pi model shape.
