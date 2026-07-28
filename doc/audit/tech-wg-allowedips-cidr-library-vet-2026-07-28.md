@@ -2,7 +2,7 @@
 
 Status:
  in progress.
- Lifecycle phase is discovery complete and screening started.
+ Lifecycle phase is targeted evidence complete and finalists selected.
  Started and last updated on 2026-07-28.
 
 Subject:
@@ -41,7 +41,9 @@ The user explicitly prioritizes the least production code and no special-case ma
 
 Every package candidate is an inspectable open-source local technology.
 The incumbent dependency replacement overlay applies because `cidr-tools` is already selected by the plan.
-The multi-platform overlay applies because the Node CLI must behave deterministically on Linux, macOS, and
+The multi-platform overlay applies because the Node CLI must behave deterministically on Linux,
+ macOS,
+ and
 Windows.
 
 The high-trust overlay does not apply.
@@ -54,7 +56,10 @@ The SaaS and sensitive-data overlays do not apply.
 
 A candidate must satisfy all of these constraints:
 
-- deterministic operation on Linux, macOS, and Windows under Node.js 22 or newer;
+- deterministic operation on Linux,
+   macOS,
+   and Windows under Node.
+  js 22 or newer;
 - exact IPv4 and IPv6 union-minus-union with a minimized sorted CIDR cover;
 - parsing and validation of IPv4 and IPv6 single addresses and CIDR prefixes;
 - inspectable JavaScript or TypeScript source;
@@ -135,7 +140,12 @@ Run an uncapped repository search for:
 - CIDR plus `subtract`;
 - subnet plus `subtract`.
 
-Inspect every matching plan, decision, audit, package manifest, catalog entry, and implementation.
+Inspect every matching plan,
+ decision,
+ audit,
+ package manifest,
+ catalog entry,
+ and implementation.
 
 ### Expansion round
 
@@ -155,7 +165,11 @@ Its total counts changed slightly while the audit ran.
 The page rule depends on new screening survivors rather than a stable total.
 
 The query `cidr ipv4 ipv6 subtract exclude merge` reported about 47,662 results.
-The first page discovered `cidr-tools`, `fast-cidr-tools`, `ip-num`, `ip-address`, and
+The first page discovered `cidr-tools`,
+ `fast-cidr-tools`,
+ `ip-num`,
+ `ip-address`,
+ and
 `cidr-block`.
 The page from offset 100 added `ip.js`.
 The page from offset 200 added no survivor.
@@ -170,14 +184,18 @@ The pages from offsets 200 and 300 added no survivor.
 The query therefore met the two-page saturation rule.
 
 The query `subnet ipv6 typescript range` reported about 404,185 results.
-The first page repeated `ip-address`, `ip-num`, and `cidr-block`.
+The first page repeated `ip-address`,
+ `ip-num`,
+ and `cidr-block`.
 The page from offset 100 added `@cldn/ip` and repeated `ip.js`.
 The pages from offsets 200 and 300 added no survivor.
 The query therefore met the two-page saturation rule.
 
 ### Npm registry expansion round
 
-Candidate metadata added the terms `prefix`, `pool`, and `summarize`.
+Candidate metadata added the terms `prefix`,
+ `pool`,
+ and `summarize`.
 The de-duplicated expansion query was `cidr prefix pool summarize`.
 It reported about 43,648 results.
 The first page contained only known candidates.
@@ -190,7 +208,10 @@ The query `cidr ipv6 subtract language:TypeScript` returned no repository.
 The query `cidr aggregate exclude language:JavaScript` returned no repository.
 The query `IP address subnet language:TypeScript` returned 26 repositories and was exhausted on its first
 page.
-It corroborated `ip-address` and `@cldn/ip` while adding only parser, matcher, application, or IPv4-only
+It corroborated `ip-address` and `@cldn/ip` while adding only parser,
+ matcher,
+ application,
+ or IPv4-only
 projects.
 
 The expansion query `cidr prefix pool language:TypeScript` returned no repository.
@@ -208,7 +229,9 @@ The four frozen searches discovered or corroborated:
 - `ip-address`;
 - `ip-num`;
 - `@cldn/ip`;
-- parser and matcher packages such as `ipaddr.js`, `ip-cidr`, and `netip-ts`.
+- parser and matcher packages such as `ipaddr.js`,
+   `ip-cidr`,
+   and `netip-ts`.
 
 The provider exposed no page cursor.
 Registry and GitHub enumeration independently covered the plausible candidates and met their saturation rules.
@@ -217,7 +240,11 @@ No web-only result remained a screening survivor.
 ### Repository schedule
 
 The uncapped repository search found `cidr-tools` only in `doc/planning/wg-allowedips.md`.
-It found no `ip-address`, `ip-bigint`, CIDR-subtraction implementation, prior decision, or prior audit.
+It found no `ip-address`,
+ `ip-bigint`,
+ CIDR-subtraction implementation,
+ prior decision,
+ or prior audit.
 A separate address list in `package/config/tofu/hetzner.tf` was unrelated.
 
 ### Terminal discovery result
@@ -231,11 +258,16 @@ Later taxonomy terms will be recorded without adding queries.
 ### `cidr-tools`
 
 Discovery source:
- current plan plus npm, GitHub, and web results.
+ current plan plus npm,
+ GitHub,
+ and web results.
 
 Screening result:
- serious alternative.
-It documents direct IPv4 and IPv6 merge and exclusion over arrays.
+ finalist pending runtime validation.
+Source and artifact evidence confirm direct dual-stack union,
+ subtraction,
+ minimization,
+ and ordering.
 
 ### `fast-cidr-tools`
 
@@ -243,9 +275,11 @@ Discovery source:
  npm and web results.
 
 Screening result:
- serious alternative.
-It documents direct IPv4 and IPv6 merge and exclusion over arrays.
-Its opt-in sorting and reported IPv6 issues require targeted source validation.
+ finalist pending runtime validation.
+It provides direct dual-stack merge and exclusion with opt-in sorting.
+Validation must probe its permissive parser,
+ prior IPv6 defect,
+ and larger same-author dependency graph.
 
 ### `@h3mantd/ip-kit`
 
@@ -253,9 +287,10 @@ Discovery source:
  npm expansion and web results.
 
 Screening result:
- serious alternative.
-Its `RangeSet` interface documents union, subtraction, and conversion to minimal CIDRs for both families.
-Its broad unused feature surface requires a human-auditability comparison.
+ finalist pending runtime validation.
+Its `RangeSet` operations cover subtraction and minimal CIDR conversion,
+ with separate sets required for each
+address family.
 
 ### `ip-num`
 
@@ -263,20 +298,24 @@ Discovery source:
  npm registry and web results.
 
 Screening result:
- serious alternative pending source confirmation.
-Its pool and ranged-set interfaces document aggregation and range removal for IPv4 and IPv6.
-The audit must confirm that arbitrary union-minus-union does not require recursive consumer logic.
+ hard-gate failure.
+Version 1.6.1 declares `preinstall: npx only-allow npm`,
+ contrary to the frozen no-install-lifecycle
+constraint.
 
 ### `ip-address`
 
 Discovery source:
- user nomination plus npm, GitHub, and web results.
+ user nomination plus npm,
+ GitHub,
+ and web results.
 
 Screening result:
- serious alternative for targeted category-fit confirmation.
-Its published interface provides strict parsers, subnet bounds, containment, and BigInt conversion.
-It does not publish a collection union, subtraction, or minimal-cover operation.
-Source inspection will determine whether it can replace the selected subtraction dependency.
+ exited for category mismatch after targeted source confirmation.
+Version 10.3.1 exports address parsers and helpers but no collection union,
+ subtraction,
+ or range-to-CIDR cover.
+Replacing `cidr-tools` with it would add a project-owned set engine despite ready-to-use finalists.
 
 ### `cidr-block`
 
@@ -285,7 +324,11 @@ Discovery source:
 
 Screening result:
  exited for category mismatch.
-Its exhaustive published interface covers validation, bounds, overlap, splitting, and iteration but no
+Its exhaustive published interface covers validation,
+ bounds,
+ overlap,
+ splitting,
+ and iteration but no
 collection union or subtraction.
 Using it would still require a separate set engine.
 
@@ -301,7 +344,9 @@ It converts one continuous range to a prefix cover but provides no collection un
 ### `@cldn/ip`
 
 Discovery source:
- npm, GitHub, and web results.
+ npm,
+ GitHub,
+ and web results.
 
 Screening result:
  exited for category mismatch.
@@ -319,16 +364,25 @@ It converts address strings and BigInts but does not implement set subtraction o
 
 ### Parser and matcher packages
 
-This group includes `ipaddr.js`, `ip-cidr`, `netip-ts`, `node-cidr`, and similar registry results.
+This group includes `ipaddr.js`,
+ `ip-cidr`,
+ `netip-ts`,
+ `node-cidr`,
+ and similar registry results.
 
 Screening result:
  exited for category mismatch.
-Their published interfaces parse, normalize, test containment, or split one subnet.
+Their published interfaces parse,
+ normalize,
+ test containment,
+ or split one subnet.
 They do not implement both union-minus-union and minimal CIDR-cover output.
 
 ### IPv4-only and aggregate-only packages
 
-This group includes `aggregate-cidr`, `cidr-lib`, and several overlap or matcher packages.
+This group includes `aggregate-cidr`,
+ `cidr-lib`,
+ and several overlap or matcher packages.
 
 Screening result:
  failed the dual-stack or subtraction hard constraint.
@@ -339,14 +393,334 @@ Screening result:
  deferred by open-source precedence and the existing-tools rule.
 Ready-to-use serious alternatives survived discovery.
 
-## Evidence records
+## Targeted evidence records
 
-Evidence collection has not started.
+### Artifact identity, license, and provenance
+
+All inspected licenses are compatible with the repository's LGPL-3.0 licensing requirement.
+No candidate repository contains a tracked native,
+ Wasm,
+ or prebuilt executable.
+The npm manifests contain no optional runtime dependency or downloaded artifact path.
+
+`cidr-tools` 12.1.3 is BSD-2-Clause.
+The npm artifact has integrity
+`sha512-nrz3c8ARh18FGrDZG4O6DffMcsOeh/Sw4hsMLSxAxxcCl3OfE2aGinplB1URIE2LSkrSQltL/eYweqw1E9FBuQ==`.
+Tag `12.1.3` resolves to commit `a3b61d005c34b8eb91333ea5e78788ae24491d0b`.
+The tag-triggered release workflow builds and publishes with npm trusted publishing.
+Its only runtime dependency is BSD-2-Clause `ip-bigint` 9.0.7,
+ which has no runtime dependencies or lifecycle
+scripts.
+Evidence is the [registry record][cidr-registry],
+ [release][cidr-release],
+ and
+`.github/workflows/release.yaml:1-27` in clone `~/temp/agent/cidr-tools-2026-07-28`.
+Status is pass.
+
+`fast-cidr-tools` 0.3.4 is MIT.
+The npm artifact has integrity
+`sha512-WQNW+ynysAsI+O3YX2269Ff1wx6+xTyKrtLPN0TaZOf5ZZfFNPS59J0vmCrJbpno5z3vJ5sX4wUHpJL7avuHLg==`.
+The registry omits `gitHead`,
+ but release commit
+`d37506e5fcacc7a04760bd9c1b8c924d877bbc39` has the exact 0.3.4 manifest and its trusted-publishing
+workflow run succeeded on 2025-11-07.
+The published `foxts ^4.1.0` range currently resolves to MIT `foxts` 4.6.0.
+That package installs MIT `fast-escape-html` and `fast-escape-regexp`,
+ although the consumed
+`foxts/fast-ip-version` subpath imports neither.
+None declares an install lifecycle.
+Evidence is the [registry record][fast-registry],
+ [release commit][fast-release-commit],
+ and
+`package.json` plus `.github/workflows/publish.yml:1-45` in clone
+`~/temp/agent/fast-cidr-tools-0.3.4`.
+Status is pass with a larger same-author audit surface.
+
+`@h3mantd/ip-kit` 1.1.0 is MIT and dependency-free.
+The npm artifact has integrity
+`sha512-oD9D9uHVkz/na6uYFcoQru/46WXlWMjkP8Pqy4xkb8wn8If0DNKEzVxRHvPmg6wSAufw40JF2lsz7Isl75zyWw==`.
+Registry `gitHead`,
+ tag `v1.1.0`,
+ and clone commit all resolve to
+`cf077b0316ba484c5e357403e2aeb650b7b2695b`.
+Its tag workflow publishes with npm provenance and no install lifecycle.
+Evidence is the [registry record][ip-kit-registry] and `.github/workflows/publish-on-tag.yml:1-33` in clone
+`~/temp/agent/ip-kit-2026-07-28`.
+Status is pass.
+
+`ip-num` 1.6.1 is MIT and has no runtime dependency,
+ but its exact registry artifact and source commit
+`d566df2b2725fb571e43890b3cb604486e68ceee` declare `preinstall: npx only-allow npm`.
+Evidence is the [registry record][ip-num-registry] and `package.json:16-18` in clone
+`~/temp/agent/ip-num-2026-07-28`.
+Status is hard-gate fail because installation executes a lifecycle command.
+
+`ip-address` 10.3.1 is MIT,
+ dependency-free,
+ and has integrity
+`sha512-1e9d3kb97NHJTIJDZW9rKqW2h6+dFa50Dy0fpPSMQp2ADje5gvKsXmdiK6dwY5t76TaTt5+P5N1Y/LoToIxP6g==`.
+Registry `gitHead` is signed commit `be7e626c0d49fccb518899f520a3fb64ee189741`.
+Its release workflow uses trusted publishing.
+Version 10.3.1 fixes a high-severity leading-zero parser advisory affecting 10.3.0 and older.
+The advisory does not affect the evaluated version.
+Evidence is the [registry record][ip-address-registry],
+ [security advisory][ip-address-advisory],
+ and clone
+`~/temp/agent/ip-address-10.3.1`.
+Status is provenance and security pass,
+ followed by category-fit exit.
+
+A GitHub Advisory Database query for each exact candidate and runtime dependency returned no advisory affecting
+the evaluated version on 2026-07-28.
+Repository advisory enumeration found only the four published `ip-address` advisories,
+ all patched by 10.3.1.
+
+### Production source and interface fit
+
+`cidr-tools` directly parses inputs into separate IPv4 and IPv6 interval lists,
+ coalesces each list,
+ subtracts
+coalesced exclusions,
+ converts remaining intervals to minimal CIDRs,
+ and emits IPv4 before IPv6.
+The consumed boundary is one call:
+ `excludeCidr(allowed, disallowed)`.
+The adjacent source excerpt is `export function excludeCidr(base, excl)`,
+ followed by
+`subtractSorted4` and `subtractSorted6` over merged intervals.
+Evidence is `index.ts:313-463` in clone `~/temp/agent/cidr-tools-2026-07-28` at commit
+`a3b61d005c34b8eb91333ea5e78788ae24491d0b`.
+Status is pass.
+
+`fast-cidr-tools` directly provides `exclude(base, exclusions, sort)`.
+Passing `true` opts into numeric ordering.
+Its parser identifies a family merely by the presence of `:` or `.`,
+ then converts the suffix with `BigInt`.
+The adjacent source excerpts are `const version = fastIpVersion(cidr)` and
+`const bitmask = ... BigInt(splitted[1])`.
+Evidence is `src/parse.ts:7-29`,
+ `src/merge.ts:42-148`,
+ and `src/exclude.ts:8-137` in clone
+`~/temp/agent/fast-cidr-tools-0.3.4` at release commit
+`d37506e5fcacc7a04760bd9c1b8c924d877bbc39`.
+Status is operation-fit pass and validation-quality concern pending execution.
+
+`@h3mantd/ip-kit` normalizes one-family `RangeSet` instances,
+ subtracts ranges,
+ and converts each remaining
+interval to a minimal CIDR cover.
+A consumer must partition both input lists by family,
+ create up to four sets,
+ subtract twice,
+ concatenate,
+ and
+stringify.
+`CIDR.parse` uses `parseInt(parts[1], 10)`,
+ so a suffix such as `24junk` is accepted as prefix 24 unless the
+consumer performs an exact prefix check.
+Evidence is `src/domain/rangeset.ts:21-168,227-280`,
+ `src/domain/range.ts:92-137`,
+ and
+`src/domain/cidr.ts:21-45` in clone `~/temp/agent/ip-kit-2026-07-28` at commit
+`cf077b0316ba484c5e357403e2aeb650b7b2695b`.
+Status is operation-fit pass with orchestration and validation concerns pending execution.
+
+`ip-address` exports only `Address4`,
+ `Address6`,
+ `AddressError`,
+ and IPv6 formatting helpers.
+An uncapped source search found no collection union,
+ subtraction,
+ or interval-to-CIDR operation.
+Its adjacent complete export excerpt is the seven-line `src/ip-address.ts`.
+Evidence is [that source file][ip-address-exports] in clone `~/temp/agent/ip-address-10.3.1` at signed commit
+`be7e626c0d49fccb518899f520a3fb64ee189741`.
+Status is category mismatch.
+The existing-tools rule prevents treating a project-owned interval engine as a finalist while direct-operation
+packages survive.
+
+`ip-num` exposes ranges and pools,
+ but list subtraction would require combining its mutable pool and per-range
+`difference` operations.
+Its `Pool.aggregate()` recursively calls itself until stable.
+This broader interface does not rescue the install-lifecycle hard failure.
+Evidence is `src/IPPool.ts:56-107` and `src/IPRange.ts:450-619` in clone
+`~/temp/agent/ip-num-2026-07-28`.
+Status is excluded.
+
+### Auditability, tests, and CI
+
+The measured non-test TypeScript surfaces are:
+
+- `cidr-tools`:
+   684 lines in one source file plus 307 lines in dependency `ip-bigint`;
+- `fast-cidr-tools`:
+   739 lines,
+   plus 2,524 lines in the resolved `foxts` package and 183 lines in its two
+  installed dependencies;
+- `@h3mantd/ip-kit`:
+   1,805 lines across 11 files with no runtime dependency;
+- `ip-num`:
+   4,122 lines across 13 source files;
+- `ip-address`:
+   2,525 lines across nine source files.
+
+The first three candidates use strict TypeScript checking.
+The inspected runtime source has no native or Wasm boundary.
+An uncapped search found no fuzzing or mutation harness in any candidate.
+Suppression and debt-marker counts,
+ excluding locks and generated documentation,
+ were zero for `cidr-tools`,
+one for `fast-cidr-tools`,
+ zero for `ip-kit`,
+ 19 for `ip-num`,
+ and 22 for `ip-address`.
+These counts describe audit surface and do not act as hard gates.
+
+`cidr-tools` has 404 lines of direct tests and `ip-bigint` has 102.
+The direct suite covers empty sets,
+ full subtraction,
+ partial subtraction,
+ mixed families,
+ minimization,
+ ordering,
+host inputs,
+ overlapping inputs,
+ and prior unsorted-IPv6 regressions.
+CI runs lint and tests on Node 22,
+ 24,
+ and 26 across Ubuntu,
+ macOS,
+ and Windows,
+ plus Bun on all three systems.
+Evidence is `index.test.ts:15-87,398-404` and `.github/workflows/ci.yaml:1-29`.
+Status is strong relevant coverage with no fuzz or mutation evidence.
+
+`fast-cidr-tools` has 159 lines of tests.
+Its exclusion cases cover both families but are fewer,
+ and its default expected output is deliberately unsorted.
+The suite contains one regression for the prior 128-bit IPv6 bug.
+CI runs only Node 22 on Ubuntu.
+Evidence is `test/index.test.ts:1-159`,
+ `.node-version`,
+ and
+`.github/workflows/publish.yml:1-45`.
+Status is weaker platform and invariant coverage.
+
+`@h3mantd/ip-kit` has 1,255 lines of tests.
+The range-set tests include example-based set laws,
+ but IPv6 range-set coverage exercises construction and
+containment rather than IPv6 subtraction and conversion together.
+CI runs lint,
+ type checking,
+ tests,
+ and build on Node 18,
+ 20,
+ and 22,
+ only on Ubuntu.
+Evidence is `tests/domain/rangeset.test.ts:1-188`,
+ `tests/domain/range-toCIDRs.test.ts:1-31`,
+ and
+`.github/workflows/ci.yml:1-38`.
+Status is broad unit coverage with a relevant dual-stack gap.
+
+### Maintenance
+
+The audit queried all issues updated since 2025-07-28 when the count was at most 20,
+ otherwise the ten most
+recently updated.
+It queried the ten most recently updated pull requests under the same rule.
+The GraphQL evidence,
+ including author association,
+ comments,
+ reviews,
+ and timeline actions,
+ is stored under
+`~/temp/agent/*-maintenance-2026-07-28.json`.
+
+`cidr-tools` had four updated issues and three pull requests.
+All were inspected.
+The sole maintainer commented on every issue,
+ closed three after fixes,
+ and merged all three pull requests.
+The last 12 months contain 124 maintainer-authored commits,
+ three Copilot commits,
+ and multiple releases,
+ including
+12.1.3 on 2026-07-28.
+Issue 30 remains open with a maintainer response;
+ its shorthand parsing concern is mitigated at this CLI boundary
+by strict `node:net` validation.
+Evidence includes [issue 30][cidr-issue-30] and [release 12.1.3][cidr-release].
+Status is active releases and responsive maintenance,
+ concentrated in one maintainer.
+
+`fast-cidr-tools` had one updated issue and two pull requests.
+All were inspected.
+The maintainer responded to the issue and reviewed and merged both external fixes.
+The last 12 months contain ten maintainer commits and two external commits.
+Release 0.3.4 followed the duplicate-range fix on 2025-11-07.
+The earlier pull request for 128-bit IPv6 calculation documents a relevant correctness regression now covered by
+one test.
+Evidence includes [pull request 7][fast-pr-7] and the [0.3.4 workflow run][fast-workflow-run].
+Status is responsive but low-volume,
+ single-maintainer maintenance.
+
+`@h3mantd/ip-kit` had no issue and two owner-authored pull requests.
+It had 22 owner-authored commits and releases 1.0.0,
+ 1.0.1,
+ and 1.1.0 during the period.
+No external maintenance sample exists.
+Evidence includes [release 1.1.0][ip-kit-release].
+Status is recent single-maintainer release activity with low public-tracker signal.
+
+`ip-num` had two updated issues and 24 pull requests.
+Both issues and the ten most recently updated pull requests were inspected.
+The last 12 months contain 56 maintainer commits and three external commits,
+ with releases 1.6.0 and 1.6.1 on
+2026-07-19.
+Three current external parser or range fixes remain open,
+ including a correction to `RangedSet.isCidrAble()`.
+Status is active,
+ concentrated maintenance but excluded by the lifecycle gate.
+
+`ip-address` had 31 updated issues and 33 pull requests.
+The ten most recently updated of each were inspected.
+The last 12 months contain 45 owner commits and four external commits.
+Four releases on 2026-07-25 fixed four disclosed advisories and added GitHub Actions CI.
+Status is active,
+ concentrated maintenance but category-mismatched for this decision.
+
+## Hard-gate outcomes
+
+The finalists are `cidr-tools` 12.1.3,
+ `fast-cidr-tools` 0.3.4,
+ and `@h3mantd/ip-kit` 1.1.0.
+Each passed license,
+ source availability,
+ provenance,
+ pure JavaScript or TypeScript,
+ artifact,
+ and install-lifecycle
+gates.
+Platform and consumer correctness remain pending runtime validation.
+
+`ip-num` 1.6.1 fails the no-install-lifecycle hard constraint.
+`ip-address` 10.3.1 exits for category mismatch because it supplies no set engine.
+All parser-only,
+ matcher-only,
+ IPv4-only,
+ and aggregate-only discovery exits remain excluded.
 
 ## Execution manifests
 
 No third-party command tree has been executed.
-Source clones and read-only metadata queries are not candidate execution.
+Source clones,
+ registry retrieval,
+ GitHub API inspection,
+ and read-only file measurements are not candidate
+execution.
+Finalist execution manifests must be recorded before validation.
 
 ## Scoring and sensitivity
 
@@ -356,4 +730,17 @@ Scoring waits for equal-depth finalist validation.
 
 No recommendation yet.
 
+[cidr-issue-30]: https://github.com/silverwind/cidr-tools/issues/30
+[cidr-registry]: https://registry.npmjs.org/cidr-tools/12.1.3
+[cidr-release]: https://github.com/silverwind/cidr-tools/releases/tag/12.1.3
+[fast-pr-7]: https://github.com/SukkaW/fast-cidr-tools/pull/7
+[fast-registry]: https://registry.npmjs.org/fast-cidr-tools/0.3.4
+[fast-release-commit]: https://github.com/SukkaW/fast-cidr-tools/commit/d37506e5fcacc7a04760bd9c1b8c924d877bbc39
+[fast-workflow-run]: https://github.com/SukkaW/fast-cidr-tools/actions/runs/19178337000
+[ip-address-advisory]: https://github.com/beaugunderson/ip-address/security/advisories/GHSA-mwp4-54f8-5fhr
+[ip-address-exports]: https://github.com/beaugunderson/ip-address/blob/be7e626c0d49fccb518899f520a3fb64ee189741/src/ip-address.ts
+[ip-address-registry]: https://registry.npmjs.org/ip-address/10.3.1
 [ip-address-repo]: https://github.com/beaugunderson/ip-address
+[ip-kit-registry]: https://registry.npmjs.org/%40h3mantd%2Fip-kit/1.1.0
+[ip-kit-release]: https://github.com/h3mantD/ip-kit/releases/tag/v1.1.0
+[ip-num-registry]: https://registry.npmjs.org/ip-num/1.6.1
