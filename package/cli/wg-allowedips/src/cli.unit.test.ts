@@ -137,6 +137,19 @@ await describe({
     },),
 
     it({
+      name: 'rejects positional input',
+      fn: async () => {
+        /**
+         * No-positionals parser result.
+         */
+        const result = await runCli({ args: ['allowed.txt',], },);
+        expect(result.exitCode,).not.toBe(0,);
+        expect(result.stderr,).toContain('Unexpected argument',);
+        expect(result.stdout,).toBe('',);
+      },
+    },),
+
+    it({
       name: 'lets unreadable-file failure propagate',
       fn: async () => {
         await using directory = await makeTempDir();
