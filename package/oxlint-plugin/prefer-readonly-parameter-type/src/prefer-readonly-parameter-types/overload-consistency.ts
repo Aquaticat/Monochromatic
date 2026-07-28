@@ -233,7 +233,7 @@ export function verifyOverloadConsistency({
           reason: 'node-not-found',
           message: 'Effect summary index omitted bodyless overload.',
         },);
-      summary.mutatedParameterIndexes
+      summary.referentMutatedParameterIndexes
         .forEach(function add(index,): void {
         effects.add(index,);
       },);
@@ -241,8 +241,23 @@ export function verifyOverloadConsistency({
     },
       new Set<number>(),
     );
+    /* Referent mutations on both sides, because an authored contract can express
+     * nothing else. `recordBodylessEffects` seeds an overload's `mutated` from
+     * `@mutates` blocks and never touches `invoked`, while an implementation seeds
+     * `invoked` from every callable it calls through a parameter. Comparing the union
+     * against contracts therefore reported a category difference as a disagreement:
+     * any callable that invokes something reached through a parameter differed from
+     * its own overloads permanently, and the only way to silence it was to author a
+     * `@mutates` claiming a write in order to acknowledge a call, which is the trade
+     * `JCH` forbids.
+     *
+     * Measured on `invokedStepOverload` and its `invokedStepPlain` control in
+     * `readonly-overload-invalid.ts`: identical bodies invoking a supplied step,
+     * mutating nothing, and only the overloaded one was reported. The invoked
+     * capability is still recorded and still propagates to callers; it is only no
+     * longer read as a contract a signature failed to state. */
     if (equalIndexes({
-      left: implementationSummary.mutatedParameterIndexes,
+      left: implementationSummary.referentMutatedParameterIndexes,
       right: overloadEffects,
     },))
       return;

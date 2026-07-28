@@ -748,6 +748,16 @@ children: [
       expect(diagnostics[0]?.message,).toBe(
         'Mutation contracts disagree across callable signatures.',
       );
+      /* The one report is the over-claiming overload, whose `@mutates controller`
+       * names a transition the implementation never performs. `invokedStepOverload`
+       * in the same fixture invokes a step lifted out of its parameter and is not
+       * reported, because an invoked capability is not a referent mutation and no
+       * authored contract can express one. Its `invokedStepPlain` control has the
+       * identical body without overloads and was already silent, which is what
+       * places the difference in the comparison rather than in the effect.
+       *
+       * Comparing the union again would report all three, and the length assertion
+       * above is what catches that. */
     },
   },),
   it({
