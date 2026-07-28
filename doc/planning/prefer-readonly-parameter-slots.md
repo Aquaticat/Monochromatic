@@ -476,6 +476,34 @@ each offering `readonly` for a parameter something writes:
 - The precision loss itself, which withholds offers rather than making wrong ones and is the
    one the acceptance criterion measures.
 
+## What landed, and what the sweep pair actually brackets
+
+Commits, in order:
+`4a39a445e` and `f69c83303` planned it;
+`4883d16df` and `7ab855cb8` built stage one;
+`54a1d06d4` corrected it;
+`6a0122661` and `263b0d099` recorded the nondeterminism and revised the predictions;
+`0f787856f` and `7776ba61a` built and measured stage two;
+`5bfedf489` fixed the prototype unsoundness in it;
+`13b60c154`, `63c7d8c6d` and `a238f02ea` recorded the measurements;
+`d33ba1870` built stage three;
+`03c18be6b` pre-registered its invariant;
+`49896479f` closed the empty-subject path.
+
+The shipped state measures 1741 findings and 33 offers,
+identical across the stage-three sweep and the confirmation sweep after the last fix,
+which is what an unreached path changing nothing looks like.
+
+One limit on what that pair proves, stated plainly because the numbers invite a stronger reading.
+The reference side was swept at `263b0d099`,
+which already has slots allocated and threaded and broadcasts on every property slot.
+So the pair brackets stages two and three, not stage one.
+Stage one's neutrality rests on weaker evidence:
+one single-threaded package lint agreeing between the pre-slot commit and the post-slot one,
+and a multi-threaded sweep pair that the nondeterminism finding has since devalued.
+A workspace-scale single-threaded sweep of the pre-slot commit was never run,
+and running one is the only thing that would settle it.
+
 ## Acceptance
 
 `narrowingPrecisionCostEffect` reads `mutated` projected to parameters as the first parameter
