@@ -543,7 +543,10 @@ export default function autoMode(
   initializeAutoMode({ pi, },);
 }
 
-export { initializeAutoMode, };
+export {
+  buildApprovalFingerprint,
+  initializeAutoMode,
+};
 export {
   buildContext,
   getReusableApproval,
