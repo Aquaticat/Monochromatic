@@ -153,6 +153,61 @@ result to `effectPublicSummary` whether or not any consumer reads it.
 Deferring it until a verdict actually depends on it approximates nothing and skips whatever the
 answer would not have changed.
 
+## Design for the anchoring fix, task #36
+
+Recorded here because it was worked out while this note was open,
+and because it is the thing that has to land before any narrowing is measurable.
+
+A plain least fixed point is not the fix,
+and the reason is a concrete shape rather than a preference.
+Take a marker-fed recursive helper:
+
+```ts
+function entry(marked: ForeignBorrowed<Held>,): void {
+  helper(marked,);
+}
+
+function helper(value: Held,): void {
+  helper(value,);
+}
+```
+
+`helper`'s parameter is genuinely foreign,
+and it has two inbounds:
+one from `entry`, grounded in a marker,
+and one from itself, grounded in nothing yet.
+A least fixed point requires every inbound to be foreign at each step,
+so the self-edge is never satisfied at the point the parameter would first enter,
+and the parameter is lost.
+That is the case the greatest fixed point exists to support,
+which is why it is a greatest one.
+
+The fix keeps the existing greatest fixed point and adds a grounding pass over its result:
+
+-    Seeds.
+     A candidate is seeded when the parameter is `directForeignBorrowed`,
+     or when every inbound sets `directForeignByFormal` for it.
+     Both are semantic facts, not text.
+
+-    Support edges.
+     For a surviving candidate, each inbound contributes an edge from the caller's contributing
+     candidates to it.
+
+-    Grounding.
+     Keep a candidate only when it is seeded, or reachable in the support graph from a seeded one.
+
+`recurse` from the counterexample has one inbound, itself, no seed, and no path to one,
+so it drops.
+`helper` reaches `entry`'s marked parameter through the inbound `entry` provides,
+so it stays,
+and its self-edge stops being the only thing holding it up.
+
+The grounding pass is reachability over candidates that survived,
+so it cannot add a candidate the current implementation would not have produced.
+Every change it makes removes a suppression,
+which is the direction that turns withheld offers into offers,
+and each one has to be read.
+
 Sol also recommends shadow mode for any future gate:
 run every closure, assert the gate would have admitted every non-empty result,
 and record the prospective skip ratio before trusting it.
