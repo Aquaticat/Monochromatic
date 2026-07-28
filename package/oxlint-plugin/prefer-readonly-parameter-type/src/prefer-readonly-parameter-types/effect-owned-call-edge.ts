@@ -26,8 +26,17 @@ import {
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
 } from './effect-summary-model.ts';
+import {
+  ARGUMENT_NOT_DECOMPOSABLE,
+  type ArgumentPropertyView,
+  argumentPropertyView,
+  originsOfPropertyKey,
+} from './effect-argument-properties.ts';
 import { callableDeclaration, } from './effect-call-resolution.ts';
-import { parameterSlotTable, } from './effect-parameter-slots.ts';
+import {
+  parameterSlotTable,
+  type ParameterSlotTable,
+} from './effect-parameter-slots.ts';
 import type {
   EffectSlot,
   ParameterIndex,
@@ -134,19 +143,101 @@ export function addOwnedCallEdge({
    */
   const calleeSlots = parameterSlotTable({ declaration: callee, },);
   /**
-   * Caller origins per callee slot, every property slot repeating its formal's origins.
+   * Property key each callee slot names, absent for a whole-parameter slot.
+   */
+  const keyOfSlot = slotPropertyKeys({ calleeSlots, },);
+  /**
+   * Authored property structure of the actuals filling each formal.
    *
-   * The repetition is what keeps this sound. Propagation looks the edge up by whichever slot
-   * the callee recorded its effect against and never consults the whole-parameter slot, so a
-   * property slot left empty here would discard a write the callee really performs. Narrowing
-   * a property slot to the caller property that fills it is the precision this model exists
-   * for, and it is only ever safe where the actual can actually be decomposed.
+   * Sentinel for a formal fed by anything this cannot read, which is the ordinary case: an
+   * identifier, a call result, a conditional, or a position past a spread. A formal fed by
+   * several actuals decomposes only when every one of them does, because a property of the
+   * formal could come from any of them.
+   */
+  const viewsByFormal = positionsByFormal
+    .map(function viewsForFormal(
+      positions,
+      formalIndex,
+    ): readonly ArgumentPropertyView[] | typeof ARGUMENT_NOT_DECOMPOSABLE {
+      /* A rest formal is a synthesized array rather than an actual, so its property keys name
+       * array indexes. In `function callee(...{ 0: box })` the key `0` is the whole first
+       * actual, and resolving that key against a caller's `{ named: owned }` would find
+       * nothing and lose every write through `box`. */
+      if (callee.parameters[formalIndex]
+        ?.dotDotDotToken !== undefined)
+        return ARGUMENT_NOT_DECOMPOSABLE;
+      /**
+       * Decomposition of every actual that can fill this formal.
+       */
+      const views = positions
+        .map(function viewForPosition(
+          position,
+        ): ArgumentPropertyView | typeof ARGUMENT_NOT_DECOMPOSABLE {
+          /**
+           * Actual at this position, absent when the mapping names one the call lacks.
+           */
+          const argument = call.arguments[position];
+          return argument === undefined
+            ? ARGUMENT_NOT_DECOMPOSABLE
+            : argumentPropertyView({
+              project,
+              bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
+              node: argument,
+            },);
+        },);
+      return views.every(function decomposed(view,): view is ArgumentPropertyView {
+        return view !== ARGUMENT_NOT_DECOMPOSABLE;
+      },)
+        ? views
+        : ARGUMENT_NOT_DECOMPOSABLE;
+    },);
+  /**
+   * Caller origins per callee slot, narrowed to the property filling it where possible.
+   *
+   * A whole-parameter slot always takes every origin its formal packages. A property slot takes
+   * only what the caller's authored literal puts under that key, and falls back to the formal's
+   * full origins whenever the actual exposes no readable structure. That fallback is what keeps
+   * this sound: propagation looks the edge up by whichever slot the callee recorded its effect
+   * against and never consults the whole-parameter slot, so a property slot filled from nothing
+   * would discard a write the callee really performs.
    */
   const originsByCalleeSlot = calleeSlots.parameterOfSlot
-    .map(function originsForSlot(owner,): readonly EffectSlot[] {
+    .map(function originsForSlot(
+      owner,
+      slot,
+    ): readonly EffectSlot[] {
       /* A formal-indexed array read with a parameter position. Those coincide by
        * construction, and no brand checks it: a branded number indexes anything. */
-      return originsByFormal[owner] ?? [];
+      /**
+       * Every origin this formal packages, which a whole slot takes unnarrowed.
+       */
+      const wholeOrigins = originsByFormal[owner] ?? [];
+      /**
+       * Key this slot names, absent when the slot is the whole parameter.
+       */
+      const key = keyOfSlot[slot];
+      /**
+       * Decomposed actuals filling this formal, sentinel when any resists decomposition.
+       */
+      const views = viewsByFormal[owner];
+      if ((key === undefined)
+        || (views === undefined)
+        || (views === ARGUMENT_NOT_DECOMPOSABLE))
+        return wholeOrigins;
+      /**
+       * Origins reaching this key across every actual that can fill the formal.
+       */
+      const narrowed = new Set<EffectSlot>();
+      views.forEach(function narrowView(view,): void {
+        originsOfPropertyKey({
+          view,
+          key,
+        },)
+          .forEach(function collectNarrowed(origin,): void {
+            narrowed.add(origin,);
+          },);
+      },);
+      return [...narrowed,];
     },);
   summary.calls
     .push({
@@ -222,6 +313,40 @@ export function addOwnedCallEdge({
             .fileName;
       },),
   },);
+}
+
+/**
+ * Inverts the callee's per-parameter key maps into one key per slot.
+ *
+ * @param calleeSlots - Slot table of the callee this edge names.
+ *
+ * @returns key each slot names, absent at every whole-parameter slot.
+ *
+ * @example
+ * ```ts
+ * slotPropertyKeys({ calleeSlots });
+ * ```
+ */
+function slotPropertyKeys(
+  { calleeSlots, }: { readonly calleeSlots: ParameterSlotTable; },
+): readonly (string | undefined)[] {
+  /**
+   * Keys accumulated per slot, left absent for the whole parameters that come first.
+   */
+  const keys: (string | undefined)[] = calleeSlots.parameterOfSlot
+    .map(function noKey(): undefined {
+      return undefined;
+    },);
+  calleeSlots.propertySlotsByParameter
+    .forEach(function readParameter(propertySlots,): void {
+      propertySlots.forEach(function readKey(
+        slot,
+        key,
+      ): void {
+        keys[slot] = key;
+      },);
+    },);
+  return keys;
 }
 
 /**

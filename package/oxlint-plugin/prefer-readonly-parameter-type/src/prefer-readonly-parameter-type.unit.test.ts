@@ -372,10 +372,12 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      /* Five reports and no offer. The count went to seven while the packaged-callable
+      /* Five reports and one offer. The count went to seven while the packaged-callable
        * gap was open, since that gap produced offers rather than reports, and back to
-       * five once both halves of it landed. */
-      expect(messages.length,).toBe(5,);
+       * five once both halves of it landed. Caller-side property matching then added the
+       * sixth, which is the offer: `narrowingPrecisionCostEffect` hands `second` to a
+       * property its callee only reads, so nothing writes it. */
+      expect(messages.length,).toBe(6,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -450,16 +452,26 @@ children: [
           || message.includes('"records" should be readonly',)
           || message.includes('"rows" should be readonly',);
       },),).toEqual([],);
-      /* Every offer in the fixture, and there are none. Four defects surfaced here as an
+      /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
        * involved, `rows` through a discharged `at` result, and
        * `methodReturnPackagedEffect` and `arrowReturnPackagedEffect` through a callable
        * they package for the callee to call. `effect-summaries.unit.test.ts` carries the
-       * written-parameter assertions that keep this emptiness from being vacuous, since a
-       * fixture nothing linted would satisfy it too. */
+       * written-parameter assertions that keep this list from being vacuous, since a
+       * fixture nothing linted would satisfy an empty one too.
+       *
+       * The surviving offer is a recovery rather than a defect. `second` reaches
+       * `mutateOnlyNamedRow` through the `unnamed` property, whose only use in that body
+       * is reading `unnamed.label`, so no write reaches `second` at all. It appeared when
+       * the call edge stopped repeating an argument's whole origin set on every property
+       * slot the callee reads. Reverting `effect-argument-properties.ts` empties this
+       * list again, and `narrowingPrecisionCostEffect` goes back to reporting both
+       * parameters written in `effect-summaries.unit.test.ts`. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
-      },),).toEqual([],);
+      },),).toEqual([
+        'Parameter "second" should be readonly: property label is writable.',
+      ],);
     },
   },),
   it({

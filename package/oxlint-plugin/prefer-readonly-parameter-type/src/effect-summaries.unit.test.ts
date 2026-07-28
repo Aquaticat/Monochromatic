@@ -374,16 +374,18 @@ await describe({
         expect(directArgument,).toEqual([0,],);
         expect(fullyNamed,).toEqual([0,],);
         expect(identifierParameter,).toEqual([0,],);
-        /* What the sound propagation costs, pinned so it is a measured number rather
-         * than a claim. The callee writes `named` and only reads `unnamed`, so `second`
-         * is not mutated, and propagating every packaged origin credits it anyway. The
-         * cost is a withheld offer, never a wrong one. Recovering `[0]` here needs the
-         * callee's own measured per-property effects; reading its authored contract is
-         * what produced the defect above. */
-        expect(precisionCost,).toEqual([
-          0,
-          1,
-        ],);
+        /* The precision the slot model exists to recover, now measured rather than
+         * predicted. The callee writes `named` and only reads `unnamed`, and the caller
+         * hands `first` to the one and `second` to the other, so only `first` is written.
+         *
+         * This read `[0, 1]` for as long as the call edge repeated an argument's whole
+         * origin set on every property slot the callee reads. It reads `[0]` because
+         * `effect-argument-properties.ts` now resolves each property slot against the
+         * caller's authored literal, and the sibling assertion in
+         * `prefer-readonly-parameter-type.unit.test.ts` records the offer for `second`
+         * that follows from it. Reverting that module restores `[0, 1]` and withdraws the
+         * offer, which is the safe direction and was the state before. */
+        expect(precisionCost,).toEqual([0,],);
         /* The same collapse seen from the other side, and the reason widening the walk
          * above was not conservative on its own. Mutation propagation used to subtract
          * the callee's invoked set by index, so a callee taking `{ run, target }` that
