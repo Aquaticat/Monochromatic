@@ -104,17 +104,16 @@ export type ArgumentPropertyView = {
 function objectLiteralUnder(
   { node, }: { readonly node: Node; },
 ): ObjectLiteralExpression | typeof ARGUMENT_NOT_DECOMPOSABLE {
-  /**
-   * Innermost expression reached so far.
-   */
-  let current = node;
-  while (isParenthesizedExpression(current,)
-    || isNonNullExpression(current,)
-    || isAssertionExpression(current,)
-    || isSatisfiesExpression(current,))
-    current = current.expression;
-  return isObjectLiteralExpression(current,)
-    ? current
+  /* Recurses one wrapper at a time, which is a bounded structural descent rather than a walk
+   * over a sequence: each step moves to a child expression, so the depth is the authored
+   * nesting depth. `parameterIndexes` unwraps the same set the same way. */
+  if (isParenthesizedExpression(node,)
+    || isNonNullExpression(node,)
+    || isAssertionExpression(node,)
+    || isSatisfiesExpression(node,))
+    return objectLiteralUnder({ node: node.expression, },);
+  return isObjectLiteralExpression(node,)
+    ? node
     : ARGUMENT_NOT_DECOMPOSABLE;
 }
 

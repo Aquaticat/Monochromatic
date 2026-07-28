@@ -47,6 +47,18 @@ import { parametersOfSlots, } from './effect-slot-projection.ts';
  * Sentinel marking a formal that no single actual argument fills.
  */
 const NO_SOLE_POSITION = -1;
+
+/**
+ * Sentinel marking a slot that stands for a whole parameter rather than one of its properties.
+ */
+const SLOT_IS_WHOLE_PARAMETER: unique symbol = Symbol(
+  'effect slot stands for a whole parameter and names no property',
+);
+
+/**
+ * Property key one slot names, or the sentinel for a whole-parameter slot.
+ */
+type SlotPropertyKey = string | typeof SLOT_IS_WHOLE_PARAMETER;
 import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
 
 /**
@@ -213,14 +225,14 @@ export function addOwnedCallEdge({
        */
       const wholeOrigins = originsByFormal[owner] ?? [];
       /**
-       * Key this slot names, absent when the slot is the whole parameter.
+       * Key this slot names, sentinel when the slot is the whole parameter.
        */
-      const key = keyOfSlot[slot];
+      const key = keyOfSlot[slot] ?? SLOT_IS_WHOLE_PARAMETER;
       /**
        * Decomposed actuals filling this formal, sentinel when any resists decomposition.
        */
       const views = viewsByFormal[owner];
-      if ((key === undefined)
+      if ((key === SLOT_IS_WHOLE_PARAMETER)
         || (views === undefined)
         || (views === ARGUMENT_NOT_DECOMPOSABLE))
         return wholeOrigins;
@@ -329,13 +341,13 @@ export function addOwnedCallEdge({
  */
 function slotPropertyKeys(
   { calleeSlots, }: { readonly calleeSlots: ParameterSlotTable; },
-): readonly (string | undefined)[] {
+): readonly SlotPropertyKey[] {
   /**
-   * Keys accumulated per slot, left absent for the whole parameters that come first.
+   * Keys accumulated per slot, standing for the whole parameters that come first.
    */
-  const keys: (string | undefined)[] = calleeSlots.parameterOfSlot
-    .map(function noKey(): undefined {
-      return undefined;
+  const keys: SlotPropertyKey[] = calleeSlots.parameterOfSlot
+    .map(function noKey(): typeof SLOT_IS_WHOLE_PARAMETER {
+      return SLOT_IS_WHOLE_PARAMETER;
     },);
   calleeSlots.propertySlotsByParameter
     .forEach(function readParameter(propertySlots,): void {
