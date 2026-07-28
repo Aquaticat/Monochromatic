@@ -6,7 +6,12 @@
  * throw new CliUsageError('Missing required option: --allowed');
  * ```
  */
-export class CliUsageError extends Error {}
+export class CliUsageError extends Error {
+  /**
+   * Stable error type name rendered by Node.
+   */
+  override name = 'CliUsageError';
+}
 
 /**
  * Error raised when input text cannot represent an address set accepted by the CLI.
@@ -16,4 +21,9 @@ export class CliUsageError extends Error {}
  * throw new InputValidationError('Allowed input must contain at least one address.');
  * ```
  */
-export class InputValidationError extends Error {}
+export class InputValidationError extends Error {
+  /**
+   * Stable error type name rendered by Node.
+   */
+  override name = 'InputValidationError';
+}

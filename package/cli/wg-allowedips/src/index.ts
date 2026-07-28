@@ -33,39 +33,6 @@ type CliPaths = {
 const l = tagged({ tag: 'wg-allowedips', },);
 
 /**
- * Reads one required string option or raises a command-contract error.
- *
- * @param flag - Option name included in an error.
- *
- * @param value - Parsed option value when supplied.
- *
- * @returns Required path value.
- *
- * @throws {@link CliUsageError} when the option is absent.
- *
- * @example
- * ```ts
- * requiredPath({ flag: '--allowed', value: 'allowed.txt' });
- * // => 'allowed.txt'
- * ```
- */
-function requiredPath(
-  {
-    flag,
-    value,
-  }: {
-    readonly flag: string;
-    readonly value: string | undefined;
-  },
-): string {
-  if (value === undefined) {
-    l.error(`missing required option ${flag}`,);
-    throw new CliUsageError(`Missing required option: ${flag}`,);
-  }
-  return value;
-}
-
-/**
  * Parses the exact two-option command contract.
  *
  * @param argv - Arguments after runtime and script path.
@@ -92,31 +59,55 @@ function parseCliPaths({ argv, }: { readonly argv: readonly string[]; },): CliPa
       disallowed: { type: 'string', },
     },
   },);
+  if (values.allowed === undefined) {
+    l.error('missing required option --allowed',);
+    throw new CliUsageError('Missing required option: --allowed',);
+  }
+  if (values.disallowed === undefined) {
+    l.error('missing required option --disallowed',);
+    throw new CliUsageError('Missing required option: --disallowed',);
+  }
   return {
-    allowedPath: requiredPath({ flag: '--allowed', value: values.allowed, },),
-    disallowedPath: requiredPath({ flag: '--disallowed', value: values.disallowed, },),
+    allowedPath: values.allowed,
+    disallowedPath: values.disallowed,
   };
 }
 
+/**
+ * Arguments after runtime and script path.
+ */
+const processArguments = process.argv
+  .slice(2,);
 /**
  * Parsed file paths from process arguments.
  */
 const {
   allowedPath,
   disallowedPath,
-} = parseCliPaths({ argv: process.argv.slice(2,), },);
+} = parseCliPaths({ argv: processArguments, },);
 l.debug(`reading allowed input from ${allowedPath}`,);
 l.debug(`reading disallowed input from ${disallowedPath}`,);
 /**
  * Complete allowed and disallowed file texts read concurrently.
  */
 const [allowedText, disallowedText,] = await Promise.all([
-  readFile(allowedPath, 'utf8',),
-  readFile(disallowedPath, 'utf8',),
+  readFile(
+    allowedPath,
+    'utf8',
+  ),
+  readFile(
+    disallowedPath,
+    'utf8',
+  ),
 ],);
 /**
  * Exact stdout payload generated from both files.
  */
-const output = await generateAllowedIps({ allowedText, disallowedText, },);
+const output = await generateAllowedIps({
+  allowedText,
+  disallowedText,
+},);
 l.debug(`writing ${String(output.length,)} stdout byte(s)`,);
-process.stdout.write(output,);
+process
+  .stdout
+  .write(output,);

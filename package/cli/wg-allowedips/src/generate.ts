@@ -2,10 +2,8 @@ import { lookup, } from 'node:dns/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  generateAllowedIpsWithLookup,
-  type LookupAddresses,
-} from './generate-with-lookup.ts';
+import { generateAllowedIpsWithLookup, } from './generate-with-lookup.ts';
+import type { LookupAddress, } from './networks.ts';
 
 /**
  * Text inputs accepted by {@link generateAllowedIps}.
@@ -32,21 +30,27 @@ const l = tagged({ tag: 'generate', },);
  * await lookupAddresses({ hostname: 'localhost' });
  * ```
  */
-const lookupAddresses: LookupAddresses = async function lookupAddresses(
-  { hostname, },
-): Promise<readonly { readonly address: string; }[]> {
+async function lookupAddresses(
+  { hostname, }: { readonly hostname: string; },
+): Promise<readonly LookupAddress[]> {
   /**
    * Function-scoped logger for operating-system resolution.
    */
-  const fl = tagged({ tag: lookupAddresses.name, l, },);
+  const fl = tagged({
+    tag: lookupAddresses.name,
+    l,
+  },);
   fl.debug(`resolving ${hostname} through operating-system lookup`,);
   /**
    * Complete lookup result from Node.
    */
-  const addresses = await lookup(hostname, { all: true, },);
+  const addresses = await lookup(
+    hostname,
+    { all: true, },
+  );
   fl.debug(`operating-system lookup returned ${String(addresses.length,)} address(es)`,);
   return addresses;
-};
+}
 
 /**
  * Generates a minimized WireGuard `AllowedIPs` value from allowed and disallowed file text.
@@ -77,7 +81,10 @@ export async function generateAllowedIps(
   /**
    * Function-scoped logger for public generation lifecycle.
    */
-  const fl = tagged({ tag: generateAllowedIps.name, l, },);
+  const fl = tagged({
+    tag: generateAllowedIps.name,
+    l,
+  },);
   fl.debug('generating AllowedIPs text',);
   /**
    * Result generated through the internal resolver seam.
