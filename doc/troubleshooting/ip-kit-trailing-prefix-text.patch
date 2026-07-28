@@ -1,0 +1,36 @@
+diff --git a/src/domain/cidr.ts b/src/domain/cidr.ts
+index ec0e415..4b593f5 100644
+--- a/src/domain/cidr.ts
++++ b/src/domain/cidr.ts
+@@ -25,10 +25,11 @@ export class CIDR<V extends IPVersion = IPVersion> {
+       throw new ParseError(`Invalid CIDR format: ${s}`);
+     }
+     const ipStr = parts[0];
+-    const prefix = parseInt(parts[1], 10);
+-    if (isNaN(prefix)) {
+-      throw new ParseError(`Invalid prefix: ${parts[1]}`);
++    const prefixText = parts[1];
++    if (!/^\d+$/.test(prefixText)) {
++      throw new ParseError(`Invalid prefix: ${prefixText}`);
+     }
++    const prefix = Number(prefixText);
+     if (IP.isIPv4(ipStr)) {
+       const ip = IPv4.parse(ipStr);
+       if (prefix < 0 || prefix > 32) {
+diff --git a/tests/domain/cidr.test.ts b/tests/domain/cidr.test.ts
+index c6fdb8a..3c1c629 100644
+--- a/tests/domain/cidr.test.ts
++++ b/tests/domain/cidr.test.ts
+@@ -10,6 +10,12 @@ describe('CIDR IPv4', () => {
+     expect(cidr.prefix).toBe(24);
+   });
+ 
++  it('rejects non-decimal prefix text', () => {
++    for (const input of ['192.168.1.0/24junk', '192.168.1.0/0x18', '192.168.1.0/2e1', '192.168.1.0/ 24', '192.168.1.0/24 ', '192.168.1.0/']) {
++      expect(() => CIDR.parse(input)).toThrow('Invalid prefix');
++    }
++  });
++
+   it('from', () => {
+     const ip = IPv4.parse('192.168.1.0');
+     const cidr = CIDR.from(ip, 24);
