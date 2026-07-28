@@ -173,14 +173,12 @@ Already-authorized step:
  do it.
 
 PX3:
- Local work + mutating user-controlled,
- sole-user-responsibility resources:
- act,
- report.
-Else explicit authorization;
- uncertain -> ask;
- drafts local,
- show payload.
+ Act + report on local work,
+ current-repo GitHub mutations,
+ and mutations of solely user-controlled resources.
+Else authorization;
+ uncertain -> ask.
+Keep drafts local.
 Read-only research allowed.
 
 TSK:
@@ -1432,16 +1430,11 @@ Repeat in package order.
 GCA:
  Inaccurate commit message:
  don't amend (harness rule).
-Surface it,
- ask user to push,
- post commit comment (renders on GitHub,
- survives rewrites);
+Surface it;
+ if auto-push is off,
+ ask user to push.
+Post corrective current-repo commit comment unasked;
  never silently let it stand.
-
-CMQ:
- Current repo's GitHub objects are user-controlled under PX3.
-Post GCA corrective commit comments unasked.
-Ask only if ownership or recipient authority is uncertain.
 
 CLG:
  Never preemptively bypass `git-policy-cli` guards (they reject bulk staging + pathspec-less commits).
