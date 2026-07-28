@@ -1,4 +1,4 @@
-# pnpm 11.5.1 `minimumReleaseAgeStrict` rejects immature lockfile entries in non-interactive installs
+# pnpm strict `minimumReleaseAge` rejects immature packages in non-interactive installs
 
 ## Symptom
 
@@ -25,6 +25,27 @@ The install succeeded with:
 ```bash
 env PNPM_CONFIG_TRUST_LOCKFILE=true mise run prepare:pnpm:install
 ```
+
+### Fresh resolution without a lockfile
+
+pnpm 11.15.1 also rejected an intentionally adopted dependency during fresh resolution:
+
+```console
+$ pnpm install --filter @monochromatic-dev/cli-wg-allowedips --lockfile=false --ignore-scripts
+[ERR_PNPM_NO_MATURE_MATCHING_VERSION] 2 versions do not meet the minimumReleaseAge constraint:
+  cidr-tools@12.1.3 ...
+  ip-bigint@9.0.7 ...
+```
+
+The command explicitly disabled lockfile reads and writes,
+so it had no reviewed resolution for `trustLockfile` to trust.
+The accepted versions had already passed the source,
+artifact,
+runtime-graph,
+and consumer validation recorded in
+`doc/audit/tech-wg-allowedips-cidr-library-vet-2026-07-28.md`.
+The matching bounded workaround is a version-specific exclusion for each exact audited release,
+not a bare package-name exclusion.
 
 ## Root cause
 
@@ -61,6 +82,21 @@ if (canPrompt) {
 
 The thrown error text comes from `failOnImmature`.
 
+pnpm 11.15.1 retains that path at
+`~/.local/share/mise/installs/pnpm/11.15.1/dist/pnpm.mjs:196967-196973`:
+
+```javascript
+function failOnImmature(immature) {
+  const sorted = [...immature].sort((a2, b) => `${a2.name}@${a2.version}`.localeCompare(`${b.name}@${b.version}`));
+  const list2 = sorted.map((v) => `  ${v.name}@${v.version} ${v.reason}`).join("\n");
+  return new PnpmError("NO_MATURE_MATCHING_VERSION", `${sorted.length} ${sorted.length === 1 ? "version does" : "versions do"} not meet the minimumReleaseAge constraint:
+${list2}`, {
+    hint: "Run the install interactively to approve these picks, or add them to minimumReleaseAgeExclude in pnpm-workspace.yaml, or wait for the packages to mature past the configured cutoff."
+  });
+}
+```
+
+The original pnpm 11.5.1 source was at
 `/var/home/user/.local/share/mise/installs/npm-pnpm/11/lib/node_modules/pnpm/dist/pnpm.mjs:167760`:
 
 ```javascript
@@ -149,6 +185,17 @@ Tradeoff:
  Use it only when the immature version is intentionally accepted for future
 installs too.
 
+For an externally audited dependency,
+prefer the exact form:
+
+```yaml
+minimumReleaseAgeExclude:
+- 'cidr-tools@12.1.3'
+- 'ip-bigint@9.0.7'
+```
+
+This admits only the inspected releases and leaves future versions behind the age gate.
+
 ### Wait for package maturity
 
 Rerun the normal install after the package versions pass the configured release-age cutoff.
@@ -162,6 +209,9 @@ Running the same install again in a non-interactive agent session does not help.
  pnpm cannot prompt,
  so it reaches
 `failOnImmature` again.
+
+Using `PNPM_CONFIG_TRUST_LOCKFILE=true` with `--lockfile=false` does not provide the reviewed-lockfile workaround.
+The command has prohibited itself from reading a lockfile and must resolve the immature release again.
 
 Using `--no-save` with strict release-age approval is not a substitute.
  The source has a separate guard for that case.
