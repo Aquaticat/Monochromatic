@@ -309,6 +309,23 @@ children: [
       ): boolean {
         return message.includes('entries.entries',);
       },),).toBe(true,);
+      /* A higher-order member is not opaque by virtue of being higher-order.
+       * `[...records,].reduce(owned, 0)` is answered by
+       * `recordReadonlyViewApplications`, which runs before the channel check and
+       * requires exactly what this call supplies: a primitive result, an argument
+       * carrying nothing, and a callback resolving to owned source. Its sibling
+       * `rows.reduce` above reports, because its result aliases the receiver's own
+       * element type, and the pair is what keeps either result from being read as a
+       * fact about `reduce` itself.
+       *
+       * This is a control rather than a case. It measures what a container result
+       * relation for iterator members would be worth, since it puts a parameter
+       * origin on an array literal with no such relation needed. */
+      expect(messages.some(function spreadAccumulatorStaysSilent(
+        message,
+      ): boolean {
+        return message.includes('records.reduce',);
+      },),).toBe(false,);
       /* A generic instantiation is not evidence the call built the value. `reduce`
        * returning the accumulator it was handed has result type `string[]` over
        * `string[][]`, a type reference whose only argument is primitive, which the

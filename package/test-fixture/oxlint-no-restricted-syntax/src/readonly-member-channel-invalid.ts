@@ -307,3 +307,36 @@ export function primitivePairIterationEffect(
     measured.total += key.length + held.length;
   return measured.total;
 }
+
+/**
+ * Folds a fresh array of receiver elements down to a number.
+ *
+ * The control deciding what a container result relation would be worth. The array
+ * literal carries the parameter's origin today, with no new relation needed, so this
+ * measures the one gate that would then matter: whether a higher-order member with an
+ * owned callback and a primitive result is answered before the channel check.
+ * `recordReadonlyViewApplications` runs first and requires exactly what this call
+ * supplies, a result carrying nothing, an argument carrying nothing, and a callback
+ * resolving to owned source.
+ *
+ * Its sibling `observerAccumulatorEscapeEffect` is the same member answering the other
+ * way, because its result aliases the receiver's own element type. The pair is the
+ * point: `reduce` is not opaque by virtue of being higher-order.
+ *
+ * @param records - Elements folded to a total.
+ *
+ * @returns total label length.
+ *
+ * @example
+ * ```ts
+ * spreadAccumulatorEffect([]);
+ * ```
+ */
+export function spreadAccumulatorEffect(records: readonly SealedLabel[],): number {
+  return [...records,].reduce(function total(
+    count: number,
+    held: SealedLabel,
+  ): number {
+    return count + held.label.length;
+  }, 0,);
+}
