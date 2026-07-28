@@ -155,3 +155,15 @@
 # channel per member. Evidence:
 # doc/decision/prefer-readonly-member-channel-authority.md.
 /(?:INERT_MEMBERS_BY_INTERFAC[E])|(?:isInertCollectionMembe[r])|(?:isInertDefaultLibraryMembe[r])|(?:effect-inert-member-authorit[y])/
+
+==> crn-renamed-deferred-iterator-member <==
+# Renamed to ITERATOR_MEMBER_NAMES in prefer-readonly-parameter-type. "Deferred"
+# claimed nothing in the model separated creating an iterator from consuming one,
+# so keys, values and entries stayed out of the member-channel authority. Nothing
+# needed to separate them: receiverClaimAnswerable consults the authority while
+# inspecting the creating call, and for-of and spread advance an iterator through
+# no CallExpression, so a creation-only fact had no consumer. The entries now
+# claim the union of both operations. The old name invites a future reader to
+# re-derive a deferral that was never load-bearing. Evidence:
+# doc/decision/prefer-readonly-member-channel-authority.md.
+/DEFERRED_MEMBER_NAME[S]/
