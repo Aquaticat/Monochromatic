@@ -682,3 +682,42 @@ export function packagedCallbackInvocation(first: LabelledRow,): void {
     value: first,
   },);
 }
+
+/**
+ * Writes through the row a static class member holds.
+ *
+ * @param holder - Class whose static row this writes.
+ *
+ * @mutates holder - Assigns one label on the held row.
+ *
+ * @example
+ * ```ts
+ * writeStaticMember({ holder: class { static row = { label: '' }; } });
+ * ```
+ */
+function writeStaticMember({ holder, }: { holder: { row: LabelledRow; }; },): void {
+  holder.row
+    .label = 'written';
+}
+
+/**
+ * Packages a row inside a class expression's static member.
+ *
+ * A class expression is neither a callable this walk routes to a body scan nor a literal it
+ * descends, so the row it holds is reachable by the callee and invisible to the argument walk.
+ * The callee writes through `holder.row`, so `first` is written.
+ *
+ * @param first - Row held by the class and written by the callee.
+ *
+ * @example
+ * ```ts
+ * classMemberPackaging({ label: '' });
+ * ```
+ */
+export function classMemberPackaging(first: LabelledRow,): void {
+  writeStaticMember({
+    holder: class {
+      static row = first;
+    },
+  },);
+}

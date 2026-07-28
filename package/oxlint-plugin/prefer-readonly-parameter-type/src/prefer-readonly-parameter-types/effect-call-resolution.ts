@@ -13,6 +13,7 @@ import type { Node, } from 'typescript/unstable/ast';
 import {
   isArrayLiteralExpression,
   isAssertionExpression,
+  isClassExpression,
   isFunctionLikeDeclaration,
   isIdentifier,
   isNonNullExpression,
@@ -153,6 +154,17 @@ export function parameterIndexes({
       || isAssertionExpression(current,)
       || isSatisfiesExpression(current,)) {
       collect(current.expression,);
+      return;
+    }
+    if (isClassExpression(current,)) {
+      /* A class expression is neither a callable this routes to a body scan nor a literal it
+       * descends, so a row held by a static member was reachable by the callee and invisible
+       * here: `callee({ holder: class { static row = first; }, },)` attributed the callee's
+       * write through `holder.row` to nothing. `classMemberPackaging` in the slot-narrowing
+       * fixture measures it. Scanned for named bindings exactly as a method or accessor is,
+       * which reaches a static initializer, a field initializer and anything a body closes
+       * over. */
+      collectPackagedCallable(current,);
       return;
     }
     /* Authored aggregate structure is walked here before the root resolver is consulted, and the

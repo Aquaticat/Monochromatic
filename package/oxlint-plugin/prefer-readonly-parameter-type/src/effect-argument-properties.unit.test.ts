@@ -152,6 +152,8 @@ await describe({
         const restIndexSpread = writtenIndexes('restIndexSpreadBroadcast',);
         /** Both rows packaged into a local before the call. */
         const localLiteral = writtenIndexes('localLiteralProvenance',);
+        /** Row held by a class expression's static member. */
+        const classMember = writtenIndexes('classMemberPackaging',);
         /** Property defined by a getter with an origin-free setter after it. */
         const accessorKey = writtenIndexes('accessorKeyBroadcast',);
         /** Getter reaching its row through `this` rather than through its own value. */
@@ -235,6 +237,11 @@ await describe({
           0,
           1,
         ],);
+        /* A class expression is neither a callable the walk routes to a body scan nor a literal
+         * it descends, so a row held by a static member was reachable by the callee and invisible
+         * to the walk. It read no written parameter while the callee writes through `holder.row`,
+         * which offered a row something mutates. */
+        expect(classMember,).toEqual([0,],);
         /* A callee invoking a callback it destructured, with the row that callback writes
          * packaged beside it. The edge cannot name which body runs, because the actual at that
          * argument position is an object literal rather than a callable, so the invocation is
