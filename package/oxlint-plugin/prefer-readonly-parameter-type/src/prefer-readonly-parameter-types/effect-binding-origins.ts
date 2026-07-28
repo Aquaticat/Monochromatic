@@ -1,31 +1,45 @@
 /**
  * Parameter and local-alias binding origin analysis.
  *
+ * Seeding a parameter and registering a local alias are separate operations here, and the
+ * separation is load-bearing. Seeding allocates: a parameter's destructuring pattern is where
+ * property slots come from, so each binding it introduces registers against its own slot.
+ * Aliasing never allocates: a local destructured from something else takes whatever slots its
+ * source already carries, because no caller writes a property of a local. Letting one
+ * operation do both would invent property slots for patterns no caller can address.
+ *
  * @module
  */
 
 import type {
   BinaryExpression,
-  BindingName,
   ForOfStatement,
   Node,
+  ParameterDeclaration,
   VariableDeclaration,
 } from 'typescript/unstable/ast';
 import {
+  isArrayBindingPattern,
   isBindingElement,
   isIdentifier,
+  isObjectBindingPattern,
   isVariableDeclarationList,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionValueOrigins, } from './effect-expression-provenance.ts';
-import type { ParameterOrigins, } from './effect-summary-model.ts';
+import {
+  parameterBindingSlots,
+  type ParameterSlotTable,
+} from './effect-parameter-slots.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
+import type { SlotOrigins, } from './effect-summary-model.ts';
 
 /**
- * Registers every identifier bound by one parameter or destructuring pattern.
+ * Registers every identifier bound by one name or destructuring pattern against one slot.
  *
  * Origins accumulate rather than replace. A local reassigned across branches holds
- * state from every parameter assigned into it, and an earlier revision overwrote, so
+ * state from every slot assigned into it, and an earlier revision overwrote, so
  * one branch erased the other and the erased parameter was offered `readonly` while
  * the body mutated it through the alias. Applying that suggestion failed to compile;
  * `doc/decision/prefer-readonly-binding-origin-accumulation.md` records the measurement.
@@ -35,33 +49,38 @@ import type { ParameterOrigins, } from './effect-summary-model.ts';
  * `discoverAliasOrigins` only stopped at its pass bound. Monotone growth makes
  * progress mean "the set grew", which settles on its own.
  *
+ * A pattern handed here spreads one slot over every name it binds, which is what an alias
+ * needs: `const { a, b } = source` gives both locals the source's slots, because a write
+ * through either reaches the source. Only a parameter's own pattern allocates finer slots,
+ * and `seedParameterSlots` is what does that.
+ *
  * @param project - TypeScript project resolving binding symbols.
  *
  * @param name - Binding name or nested pattern.
  *
- * @param parameterIndex - Source parameter represented by binding.
+ * @param slot - Slot the bound state belongs to.
  *
  * @param bindingOriginBySymbolId - Origin map receiving bindings.
  *
  * @returns whether map changed.
  *
- * @mutates bindingOriginBySymbolId - Adds parameter origin for binding symbols.
+ * @mutates bindingOriginBySymbolId - Adds slot origin for binding symbols.
  *
  * @example
  * ```ts
- * registerBindingOrigin({ project, name, parameterIndex: 0, bindingOriginBySymbolId });
+ * registerBindingOrigin({ project, name, slot, bindingOriginBySymbolId });
  * ```
  */
 export function registerBindingOrigin({
   project,
   name,
-  parameterIndex,
+  slot,
   bindingOriginBySymbolId,
 }: {
   readonly project: Project;
-  readonly name: BindingName;
-  readonly parameterIndex: number;
-  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
+  readonly name: Node;
+  readonly slot: EffectSlot;
+  readonly bindingOriginBySymbolId: Map<number, Set<EffectSlot>>;
 },): boolean {
   if (isIdentifier(name,)) {
     /**
@@ -74,18 +93,20 @@ export function registerBindingOrigin({
     /**
      * Origins already known for binding, or new accumulator.
      */
-    const origins = bindingOriginBySymbolId.get(symbol.id,) ?? new Set<number>();
+    const origins = bindingOriginBySymbolId.get(symbol.id,) ?? new Set<EffectSlot>();
     /**
      * Size before insertion detects fixed-point progress.
      */
     const priorSize = origins.size;
-    origins.add(parameterIndex,);
+    origins.add(slot,);
     bindingOriginBySymbolId.set(
       symbol.id,
       origins,
     );
     return origins.size !== priorSize;
   }
+  if ((!isObjectBindingPattern(name,)) && (!isArrayBindingPattern(name,)))
+    return false;
   /**
    * Whether any nested binding origin changed.
    */
@@ -96,11 +117,63 @@ export function registerBindingOrigin({
     changed = registerBindingOrigin({
       project,
       name: element.name,
-      parameterIndex,
+      slot,
       bindingOriginBySymbolId,
     },) || changed;
   }
   return changed;
+}
+
+/**
+ * Seeds one parameter's bindings, each against the slot its own property owns.
+ *
+ * This is the only place property slots enter a summary. A binding under a rest element, an
+ * array pattern or a computed key takes the whole-parameter slot, because no caller property
+ * key names it.
+ *
+ * @param project - TypeScript project resolving binding symbols.
+ *
+ * @param parameter - Parameter whose bindings are seeded.
+ *
+ * @param parameterIndex - Declared position of that parameter.
+ *
+ * @param table - Slot table allocated for the owning declaration.
+ *
+ * @param bindingOriginBySymbolId - Origin map receiving bindings.
+ *
+ * @mutates bindingOriginBySymbolId - Adds one slot origin per bound name.
+ *
+ * @example
+ * ```ts
+ * seedParameterSlots({ project, parameter, parameterIndex, table, bindingOriginBySymbolId });
+ * ```
+ */
+export function seedParameterSlots({
+  project,
+  parameter,
+  parameterIndex,
+  table,
+  bindingOriginBySymbolId,
+}: {
+  readonly project: Project;
+  readonly parameter: ParameterDeclaration;
+  readonly parameterIndex: number;
+  readonly table: ParameterSlotTable;
+  readonly bindingOriginBySymbolId: Map<number, Set<EffectSlot>>;
+},): void {
+  parameterBindingSlots({
+    parameter,
+    parameterIndex,
+    table,
+  },)
+    .forEach(function seedOne(bound,): void {
+      registerBindingOrigin({
+        project,
+        name: bound.name,
+        slot: bound.slot,
+        bindingOriginBySymbolId,
+      },);
+    },);
 }
 
 /**
@@ -127,9 +200,9 @@ export function expressionOrigins({
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly node: Node;
-},): ParameterOrigins {
+},): SlotOrigins {
   return expressionValueOrigins({
     project,
     bindingOriginBySymbolId,
@@ -164,9 +237,9 @@ function registerBindingOrigins({
   bindingOriginBySymbolId,
 }: {
   readonly project: Project;
-  readonly name: BindingName;
-  readonly parameterOrigins: ParameterOrigins;
-  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
+  readonly name: Node;
+  readonly parameterOrigins: SlotOrigins;
+  readonly bindingOriginBySymbolId: Map<number, Set<EffectSlot>>;
 },): boolean {
   /* Spread because `ReadonlySet` has no `reduce`, and for no stronger reason now.
    *
@@ -179,12 +252,12 @@ function registerBindingOrigins({
     .reduce(
       function registerOne(
         changed,
-        parameterIndex,
+        slot,
       ): boolean {
         return registerBindingOrigin({
           project,
           name,
-          parameterIndex,
+          slot,
           bindingOriginBySymbolId,
         },) || changed;
       },
@@ -214,7 +287,7 @@ export function expressionHasParameterOrigin({
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly node: Node;
 },): boolean {
   /**
@@ -259,7 +332,7 @@ export function discoverAliasOrigins({
   readonly variableDeclarations: readonly VariableDeclaration[];
   readonly aliasAssignments: readonly BinaryExpression[];
   readonly forOfStatements: readonly ForOfStatement[];
-  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
+  readonly bindingOriginBySymbolId: Map<number, Set<EffectSlot>>;
 },): void {
   /**
    * Convergence state, settling on its own now that origins only grow.
@@ -379,19 +452,19 @@ export function bindingOriginsFor({
 }: {
   readonly project: Project;
   readonly name: Node;
-  readonly bindingOriginBySymbolId: Map<number, Set<number>>;
-},): Set<number> {
+  readonly bindingOriginBySymbolId: Map<number, Set<EffectSlot>>;
+},): Set<EffectSlot> {
   if (!isIdentifier(name,))
     /* A binding pattern spreads over several symbols, so there is no single set to grow.
      * Defaults inside patterns are not represented here. */
-    return new Set<number>();
+    return new Set<EffectSlot>();
   /**
    * Symbol declared by this binding name.
    */
   const symbol = project.checker
     .getSymbolAtLocation(name,);
   if (symbol === undefined)
-    return new Set<number>();
+    return new Set<EffectSlot>();
   /**
    * Existing origin set for the symbol, created when this is its first mention.
    */
@@ -401,7 +474,7 @@ export function bindingOriginsFor({
   /**
    * Fresh set attached for the symbol.
    */
-  const created = new Set<number>();
+  const created = new Set<EffectSlot>();
   bindingOriginBySymbolId.set(symbol.id, created,);
   return created;
 }

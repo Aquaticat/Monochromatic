@@ -20,6 +20,7 @@ import {
 import { isFunctionLikeDeclaration, } from 'typescript/unstable/ast/is';
 
 import {
+  asParameterIndex,
   buildEffectSummaryIndex,
   clearEffectSummaryCache,
   clearFinalEffectIndexCache,
@@ -521,7 +522,7 @@ await describe({
           throw new Error('Expected transitive opaque summary.',);
         /** Opaque boundary names propagated to wrapper parameter. */
         const transitiveProvenance = [
-          ...transitiveSummary.opaqueProvenanceByParameter.get(0,) ?? [],
+          ...transitiveSummary.opaqueProvenanceByParameter.get(asParameterIndex(0,),) ?? [],
         ];
         /** Mutation contracts leave unresolved implementations opaque. */
         const contractedOpaqueEffects = [
@@ -540,7 +541,7 @@ await describe({
             affected: [...summary.mutatedParameterIndexes,],
             referentMutated: [...summary.referentMutatedParameterIndexes,],
             opaque: [...summary.opaqueParameterIndexes,],
-            provenance: [...summary.opaqueProvenanceByParameter.get(0,) ?? [],],
+            provenance: [...summary.opaqueProvenanceByParameter.get(asParameterIndex(0,),) ?? [],],
           };
         },);
         closeSemanticBridge();

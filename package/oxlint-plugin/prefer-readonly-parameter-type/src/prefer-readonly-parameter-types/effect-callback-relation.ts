@@ -4,8 +4,13 @@
  * @module
  */
 
+import { asParameterIndex, } from './effect-slot-identity.ts';
 import {
-  addEffectIndex,
+  parameterCarriesSlot,
+  provenanceOfParameter,
+} from './effect-slot-projection.ts';
+import {
+  addEffectSlot,
   type CallEdge,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
@@ -51,7 +56,7 @@ export function propagateCallbackRelations({
     /**
      * Callback declaration key passed to callback parameter.
      */
-    const callbackKey = edge.callbackKeys[relation.callbackParameterIndex];
+    const callbackKey = edge.callbackKeysByCalleeSlot[relation.callbackSlot];
     if ((callbackKey === undefined)
       || (callbackKey === OWNED_CALLABLE_UNAVAILABLE))
       continue;
@@ -64,24 +69,40 @@ export function propagateCallbackRelations({
     /**
      * Caller parameters packaged as callback source value.
      */
-    const sourceCallerIndexes = edge.arguments[relation.sourceParameterIndex]
+    const sourceCallerIndexes = edge.originsByCalleeSlot[relation.sourceSlot]
       ?? [];
+    /* The relation names a syntactic argument position of the inner invocation, which is a
+     * parameter position of the callback, not a slot of it. A callback that destructures
+     * that parameter records its writes against property slots, so asking its slot sets
+     * directly would answer `false` and drop the write. Projecting to parameters first keeps
+     * the answer sound; carrying property precision through a callback would need the
+     * relation to name a slot on both sides, which it does not yet. */
+    /**
+     * Callback parameter this relation's argument position fills.
+     */
+    const callbackParameter = asParameterIndex(relation.callbackArgumentPosition,);
     /**
      * Whether callback argument carries proven mutation.
      */
-    const callbackArgumentMutated = callbackSummary.mutated
-      .has(relation.callbackArgumentIndex,);
+    const callbackArgumentMutated = parameterCarriesSlot({
+      ownership: callbackSummary.slots,
+      slots: callbackSummary.mutated,
+      parameterIndex: callbackParameter,
+    },);
     /**
      * Whether callback argument carries unresolved uncertainty.
      */
-    const callbackArgumentOpaque = callbackSummary.opaque
-      .has(relation.callbackArgumentIndex,);
+    const callbackArgumentOpaque = parameterCarriesSlot({
+      ownership: callbackSummary.slots,
+      slots: callbackSummary.opaque,
+      parameterIndex: callbackParameter,
+    },);
     for (const sourceCallerIndex of sourceCallerIndexes) {
       /**
        * Whether mutation propagation changed caller summary.
        */
       const mutationChanged = callbackArgumentMutated
-        && addEffectIndex({
+        && addEffectSlot({
           target: summary.mutated,
           value: sourceCallerIndex,
         },);
@@ -89,7 +110,7 @@ export function propagateCallbackRelations({
        * Whether opaque propagation changed caller summary.
        */
       const opaqueChanged = callbackArgumentOpaque
-        && addEffectIndex({
+        && addEffectSlot({
           target: summary.opaque,
           value: sourceCallerIndex,
         },);
@@ -98,11 +119,13 @@ export function propagateCallbackRelations({
        */
       const provenanceChanged = callbackArgumentOpaque
         && addUncertaintyProvenance({
-          target: summary.opaqueProvenanceByParameter,
-          parameterIndex: sourceCallerIndex,
-          provenanceFacts: callbackSummary.opaqueProvenanceByParameter
-            .get(relation.callbackArgumentIndex,)
-            ?? new Set<string>(),
+          target: summary.opaqueProvenanceBySlot,
+          affectedSlot: sourceCallerIndex,
+          provenanceFacts: provenanceOfParameter({
+            ownership: callbackSummary.slots,
+            provenanceBySlot: callbackSummary.opaqueProvenanceBySlot,
+            parameterIndex: callbackParameter,
+          },),
         },);
       changed = mutationChanged
         || opaqueChanged

@@ -1,11 +1,25 @@
 /**
  * Public effect-summary projection from mutable fixed-point state.
  *
+ * Every set crossing this boundary is projected from slots to the parameters that own them.
+ * Projection loses precision and never soundness: a parameter answers for every slot beneath
+ * it, so a write recorded against one property still marks the parameter affected. The rule's
+ * report, foreign ownership, overload agreement and external-package effects all speak in
+ * parameters, and this is the single place the two vocabularies meet.
+ *
  * @module
  */
 
+import { asParameterIndex, type ParameterIndex, } from './effect-slot-identity.ts';
+import {
+  parametersOfSlots,
+  provenanceOfParameter,
+} from './effect-slot-projection.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
-import type { CallableEffectSummary, } from './effect-summary-index.ts';
+import type {
+  CallableEffectSummary,
+  PublicCallbackRelation,
+} from './effect-summary-index.ts';
 
 /**
  * Converts completed mutable summary to public immutable view.
@@ -26,19 +40,70 @@ export function effectPublicSummary({
   foreignParameterIndexes,
 }: {
   readonly summary: MutableEffectSummary;
-  readonly foreignParameterIndexes: ReadonlySet<number>;
+  readonly foreignParameterIndexes: ReadonlySet<ParameterIndex>;
 }): CallableEffectSummary {
+  /**
+   * Slot ownership this summary's facts are projected through.
+   */
+  const ownership = summary.slots;
+  /**
+   * Parameters carrying a proven referent write.
+   */
+  const mutated = parametersOfSlots({
+    ownership,
+    slots: summary.mutated,
+  },);
+  /**
+   * Parameters whose value this callable invokes.
+   */
+  const invoked = parametersOfSlots({
+    ownership,
+    slots: summary.invoked,
+  },);
+  /**
+   * Parameters carrying unresolved reachability.
+   */
+  const opaque = parametersOfSlots({
+    ownership,
+    slots: summary.opaque,
+  },);
   return {
     mutatedParameterIndexes: new Set([
-      ...summary.mutated,
-      ...summary.invoked,
+      ...mutated,
+      ...invoked,
     ],),
-    referentMutatedParameterIndexes: summary.mutated,
-    returnedParameterIndexes: summary.directReturned,
-    invokedParameterIndexes: summary.invoked,
-    opaqueParameterIndexes: summary.opaque,
-    opaqueProvenanceByParameter: summary.opaqueProvenanceByParameter,
+    referentMutatedParameterIndexes: mutated,
+    returnedParameterIndexes: parametersOfSlots({
+      ownership,
+      slots: summary.directReturned,
+    },),
+    invokedParameterIndexes: invoked,
+    opaqueParameterIndexes: opaque,
     foreignBorrowedParameterIndexes: foreignParameterIndexes,
-    callbackRelations: [...summary.relations,],
+    opaqueProvenanceByParameter: new Map([...opaque,].map(
+      function provenanceFor(parameterIndex,): readonly [
+        ParameterIndex,
+        ReadonlySet<string>,
+      ] {
+        return [
+          parameterIndex,
+          provenanceOfParameter({
+            ownership,
+            provenanceBySlot: summary.opaqueProvenanceBySlot,
+            parameterIndex,
+          },),
+        ];
+      },
+    ),),
+    callbackRelations: summary.relations
+      .map(function publicRelation(relation,): PublicCallbackRelation {
+        return {
+          callbackParameterIndex: ownership.parameterOfSlot[relation.callbackSlot]
+            ?? asParameterIndex(0,),
+          callbackArgumentPosition: relation.callbackArgumentPosition,
+          sourceParameterIndex: ownership.parameterOfSlot[relation.sourceSlot]
+            ?? asParameterIndex(0,),
+        };
+      },),
   };
 }

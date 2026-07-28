@@ -5,7 +5,11 @@
  */
 
 import {
-  addEffectIndex,
+  parameterCarriesSlot,
+  provenanceOfParameter,
+} from './effect-slot-projection.ts';
+import {
+  addEffectSlot,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import { addUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
@@ -54,43 +58,54 @@ export function propagateElementApplications({
     const observerSummary = summaries.get(application.callbackKey,);
     if (observerSummary === undefined)
       continue;
-    for (const parameterIndex of application.callbackParameterIndexes) {
+    for (const parameterIndex of application.observerParameterIndexes) {
+      /* Positions here name observer parameters, not observer slots. An observer that
+       * destructures its element records writes against property slots, so its slot sets
+       * are projected before being asked, exactly as callback relations are. */
       /**
        * Whether observer mutates receiver-reachable state at this position.
        */
-      const observerMutated = observerSummary.mutated
-        .has(parameterIndex,);
+      const observerMutated = parameterCarriesSlot({
+        ownership: observerSummary.slots,
+        slots: observerSummary.mutated,
+        parameterIndex,
+      },);
       /**
        * Whether observer leaves receiver-reachable state unresolved here.
        */
-      const observerOpaque = observerSummary.opaque
-        .has(parameterIndex,);
+      const observerOpaque = parameterCarriesSlot({
+        ownership: observerSummary.slots,
+        slots: observerSummary.opaque,
+        parameterIndex,
+      },);
       /**
        * Whether mutation propagation changed caller summary.
        */
       const mutationChanged = observerMutated
-        && addEffectIndex({
+        && addEffectSlot({
           target: summary.mutated,
-          value: application.receiverParameterIndex,
+          value: application.receiverSlot,
         },);
       /**
        * Whether opaque propagation changed caller summary.
        */
       const opaqueChanged = observerOpaque
-        && addEffectIndex({
+        && addEffectSlot({
           target: summary.opaque,
-          value: application.receiverParameterIndex,
+          value: application.receiverSlot,
         },);
       /**
        * Whether observer uncertainty provenance changed caller summary.
        */
       const provenanceChanged = observerOpaque
         && addUncertaintyProvenance({
-          target: summary.opaqueProvenanceByParameter,
-          parameterIndex: application.receiverParameterIndex,
-          provenanceFacts: observerSummary.opaqueProvenanceByParameter
-            .get(parameterIndex,)
-            ?? new Set<string>(),
+          target: summary.opaqueProvenanceBySlot,
+          affectedSlot: application.receiverSlot,
+          provenanceFacts: provenanceOfParameter({
+            ownership: observerSummary.slots,
+            provenanceBySlot: observerSummary.opaqueProvenanceBySlot,
+            parameterIndex,
+          },),
         },);
       changed = mutationChanged
         || opaqueChanged

@@ -4,10 +4,11 @@
  * @module
  */
 
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   type CallEdge,
   type MutableEffectSummary,
-  PARAMETER_INDEX_UNAVAILABLE,
+  EFFECT_SLOT_UNAVAILABLE,
 } from './effect-summary-model.ts';
 
 /**
@@ -15,7 +16,7 @@ import {
  *
  * @param target - Caller provenance map receiving facts.
  *
- * @param parameterIndex - Caller parameter affected by uncertain boundary.
+ * @param affectedSlot - Caller slot affected by uncertain boundary.
  *
  * @param provenanceFacts - Callee provenance facts to propagate.
  *
@@ -25,24 +26,24 @@ import {
  *
  * @example
  * ```ts
- * addUncertaintyProvenance({ target, parameterIndex: 0, provenanceFacts });
+ * addUncertaintyProvenance({ target, affectedSlot, provenanceFacts });
  * ```
  */
 export function addUncertaintyProvenance({
   target,
-  parameterIndex,
+  affectedSlot,
   provenanceFacts,
 }: {
-  readonly target: Map<number, Set<string>>;
-  readonly parameterIndex: number | typeof PARAMETER_INDEX_UNAVAILABLE;
+  readonly target: Map<EffectSlot, Set<string>>;
+  readonly affectedSlot: EffectSlot | typeof EFFECT_SLOT_UNAVAILABLE;
   readonly provenanceFacts: ReadonlySet<string>;
 },): boolean {
-  if (parameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+  if (affectedSlot === EFFECT_SLOT_UNAVAILABLE)
     return false;
   /**
    * Existing caller provenance or new accumulator.
    */
-  const callerFacts = target.get(parameterIndex,) ?? new Set<string>();
+  const callerFacts = target.get(affectedSlot,) ?? new Set<string>();
   /**
    * Size before union detects fixed-point progress.
    */
@@ -51,7 +52,7 @@ export function addUncertaintyProvenance({
     callerFacts.add(provenance,);
   },);
   target.set(
-    parameterIndex,
+    affectedSlot,
     callerFacts,
   );
   return callerFacts.size !== priorSize;
@@ -86,7 +87,7 @@ export function propagateUncertaintyProvenance({
   readonly summary: MutableEffectSummary;
   readonly calleeSummary: MutableEffectSummary;
   readonly edge: CallEdge;
-  readonly calleeIndexes: ReadonlySet<number>;
+  readonly calleeIndexes: ReadonlySet<EffectSlot>;
 },): boolean {
   /**
    * Whether any caller provenance fact was added.
@@ -96,17 +97,17 @@ export function propagateUncertaintyProvenance({
     /**
      * Caller parameters packaged into uncertain callee parameter.
      */
-    const callerIndexes = edge.arguments[calleeIndex] ?? [];
+    const callerIndexes = edge.originsByCalleeSlot[calleeIndex] ?? [];
     /**
      * Provenance facts attached to uncertain callee parameter.
      */
-    const provenanceFacts = calleeSummary.opaqueProvenanceByParameter
+    const provenanceFacts = calleeSummary.opaqueProvenanceBySlot
       .get(calleeIndex,)
       ?? new Set<string>();
     for (const callerIndex of callerIndexes) {
       changed = addUncertaintyProvenance({
-        target: summary.opaqueProvenanceByParameter,
-        parameterIndex: callerIndex,
+        target: summary.opaqueProvenanceBySlot,
+        affectedSlot: callerIndex,
         provenanceFacts,
       },) || changed;
     }

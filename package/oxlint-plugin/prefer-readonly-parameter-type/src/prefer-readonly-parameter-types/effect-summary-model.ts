@@ -13,6 +13,10 @@ import type {
   MethodSignatureDeclaration,
   Node,
 } from 'typescript/unstable/ast';
+import type {
+  EffectSlot,
+  ParameterIndex,
+} from './effect-slot-identity.ts';
 import {
   isCallSignatureDeclaration,
   isConstructorTypeNode,
@@ -25,31 +29,31 @@ import {
 } from 'typescript/unstable/ast/is';
 
 /**
- * Sentinel when expression root does not resolve to callable parameter.
+ * Sentinel when expression root does not resolve to a callable slot.
  */
-export const PARAMETER_INDEX_UNAVAILABLE: unique symbol = Symbol(
-  'expression root lacks callable parameter index',
+export const EFFECT_SLOT_UNAVAILABLE: unique symbol = Symbol(
+  'expression root lacks callable effect slot',
 );
 
 /**
- * Every callable parameter one binding can hold, empty when none.
+ * Every callable slot one binding can hold, empty when none.
  *
- * A local reassigned across branches holds state from more than one parameter, so a
- * single index cannot describe it. Emptiness replaces the sentinel here rather than
+ * A local reassigned across branches holds state from more than one slot, so a
+ * single slot cannot describe it. Emptiness replaces the sentinel here rather than
  * joining it in a union, because a set already distinguishes "no origin" from "some
  * origin" without a second representation of absence.
  */
-export type ParameterOrigins = ReadonlySet<number>;
+export type SlotOrigins = ReadonlySet<EffectSlot>;
 
 /**
  * Shared empty result for expressions rooted outside callable parameters.
  *
- * Most identifiers in a body resolve to no parameter, so this is returned far more
+ * Most identifiers in a body resolve to no slot, so this is returned far more
  * often than any populated set and sharing one instance avoids allocating per node.
- * Safe only while `ParameterOrigins` stays read-only at every boundary: an assertion
- * back to `Set<number>` anywhere would let one caller poison every other.
+ * Safe only while `SlotOrigins` stays read-only at every boundary: an assertion
+ * back to `Set<EffectSlot>` anywhere would let one caller poison every other.
  */
-export const NO_PARAMETER_ORIGIN: ParameterOrigins = new Set<number>();
+export const NO_SLOT_ORIGIN: SlotOrigins = new Set<EffectSlot>();
 
 /**
  * Sentinel when semantic call target has no owned callable declaration.
@@ -94,11 +98,17 @@ export function isEffectCallableDeclaration(node: Node,): node is EffectCallable
 
 /**
  * One callback-parameter relation inferred from owned function body.
+ *
+ * `callbackSlot` and `sourceSlot` name slots of the callable that declared the relation.
+ * `callbackArgumentPosition` is neither: it is the syntactic position of an argument at the
+ * inner invocation, read against the callback's own summary by the consumer. Keeping the
+ * three names distinct is deliberate, since all three were `number` and the last one is the
+ * odd one out.
  */
 export type CallbackRelation = {
-  readonly callbackParameterIndex: number;
-  readonly callbackArgumentIndex: number;
-  readonly sourceParameterIndex: number;
+  readonly callbackSlot: EffectSlot;
+  readonly callbackArgumentPosition: number;
+  readonly sourceSlot: EffectSlot;
 };
 
 /**
@@ -110,44 +120,62 @@ export type CallbackRelation = {
  * receiver state handed to it.
  */
 export type ElementApplication = {
-  readonly receiverParameterIndex: number;
+  readonly receiverSlot: EffectSlot;
   readonly callbackKey: string;
-  readonly callbackParameterIndexes: readonly number[];
+  readonly observerParameterIndexes: readonly ParameterIndex[];
 };
 
 /**
  * One owned call edge with caller-relative argument roots.
+ *
+ * Three of these arrays used to share one formal-parameter index. Slots split them, because
+ * propagation reads a callee's effect set and that set now names slots, while foreign
+ * ownership is a marker on a whole parameter and has no property-level meaning. Each array
+ * therefore says in its name what indexes it, and what its values are.
  */
 export type CallEdge = {
   readonly calleeKey: string;
   readonly calleeFileName: string;
-  readonly arguments: readonly (readonly number[])[];
-  readonly foreignArguments: readonly (readonly number[])[];
-  readonly directForeignArguments: readonly boolean[];
+  readonly originsByCalleeSlot: readonly (readonly EffectSlot[])[];
+  readonly foreignOriginsByFormal: readonly (readonly ParameterIndex[])[];
+  readonly directForeignByFormal: readonly boolean[];
   readonly foreignInbound: boolean;
-  readonly callbackKeys: readonly (
+  readonly callbackKeysByCalleeSlot: readonly (
     string | typeof OWNED_CALLABLE_UNAVAILABLE
   )[];
-  readonly callbackFileNames: readonly (
+  readonly callbackFileNamesByCalleeSlot: readonly (
     string | typeof OWNED_CALLABLE_UNAVAILABLE
   )[];
+};
+
+/**
+ * Which parameter owns each slot of one callable.
+ *
+ * Carried on the summary rather than recomputed, because a summary restored from the
+ * persistent cache has no declaration to recompute it from.
+ */
+export type SlotOwnership = {
+  readonly parameterCount: number;
+  readonly slotCount: number;
+  readonly parameterOfSlot: readonly ParameterIndex[];
+  readonly slotsByParameter: readonly (readonly EffectSlot[])[];
 };
 
 /**
  * Mutable internal summary while fixed point is computed.
  */
 export type MutableEffectSummary = {
-  readonly parameterCount: number;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
-  readonly directMutated: Set<number>;
-  readonly directInvoked: Set<number>;
-  readonly directOpaque: Set<number>;
-  readonly opaqueProvenanceByParameter: Map<number, Set<string>>;
-  readonly mutated: Set<number>;
-  readonly invoked: Set<number>;
-  readonly opaque: Set<number>;
-  readonly directForeignBorrowed: ReadonlySet<number>;
-  readonly directReturned: Set<number>;
+  readonly slots: SlotOwnership;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly directMutated: Set<EffectSlot>;
+  readonly directInvoked: Set<EffectSlot>;
+  readonly directOpaque: Set<EffectSlot>;
+  readonly opaqueProvenanceBySlot: Map<EffectSlot, Set<string>>;
+  readonly mutated: Set<EffectSlot>;
+  readonly invoked: Set<EffectSlot>;
+  readonly opaque: Set<EffectSlot>;
+  readonly directForeignBorrowed: ReadonlySet<ParameterIndex>;
+  readonly directReturned: Set<EffectSlot>;
   readonly relations: CallbackRelation[];
   readonly elementApplications: ElementApplication[];
   readonly calls: CallEdge[];
@@ -174,29 +202,29 @@ export function callableKey(declaration: EffectCallableDeclaration,): string {
 }
 
 /**
- * Adds parameter index to effect set.
+ * Adds one slot to an effect set.
  *
- * @param target - Effect set receiving index.
+ * @param target - Effect set receiving slot.
  *
- * @param value - Parameter index to add.
+ * @param value - Slot to add.
  *
  * @returns whether value was newly added.
  *
- * @mutates target - Adds resolved parameter index.
+ * @mutates target - Adds resolved slot.
  *
  * @example
  * ```ts
- * addEffectIndex({ target: indexes, value: 0 });
+ * addEffectSlot({ target: slots, value: asEffectSlot(0) });
  * ```
  */
-export function addEffectIndex({
+export function addEffectSlot({
   target,
   value,
 }: {
-  readonly target: Set<number>;
-  readonly value: number | typeof PARAMETER_INDEX_UNAVAILABLE;
+  readonly target: Set<EffectSlot>;
+  readonly value: EffectSlot | typeof EFFECT_SLOT_UNAVAILABLE;
 },): boolean {
-  if (value === PARAMETER_INDEX_UNAVAILABLE)
+  if (value === EFFECT_SLOT_UNAVAILABLE)
     return false;
   /**
    * Size before insertion detects fixed-point progress.
@@ -207,31 +235,31 @@ export function addEffectIndex({
 }
 
 /**
- * Adds every parameter origin a binding can hold to effect set.
+ * Adds every slot origin a binding can hold to an effect set.
  *
- * Separate from `addEffectIndex` rather than a widened parameter on it, because the
- * two describe different inputs: propagation edges carry one callee index at a time,
- * while a binding carries the whole set of parameters it may alias.
+ * Separate from `addEffectSlot` rather than a widened parameter on it, because the
+ * two describe different inputs: propagation edges carry one callee slot at a time,
+ * while a binding carries the whole set of slots it may alias.
  *
- * @param target - Effect set receiving indexes.
+ * @param target - Effect set receiving slots.
  *
- * @param values - Parameter origins resolved for one binding or expression.
+ * @param values - Slot origins resolved for one binding or expression.
  *
- * @returns whether any index was newly added.
+ * @returns whether any slot was newly added.
  *
- * @mutates target - Adds every resolved parameter origin.
+ * @mutates target - Adds every resolved slot origin.
  *
  * @example
  * ```ts
- * addEffectIndexes({ target: summary.directMutated, values: origins });
+ * addEffectSlots({ target: summary.directMutated, values: origins });
  * ```
  */
-export function addEffectIndexes({
+export function addEffectSlots({
   target,
   values,
 }: {
-  readonly target: Set<number>;
-  readonly values: ParameterOrigins;
+  readonly target: Set<EffectSlot>;
+  readonly values: SlotOrigins;
 },): boolean {
   /**
    * Size before insertion detects fixed-point progress.

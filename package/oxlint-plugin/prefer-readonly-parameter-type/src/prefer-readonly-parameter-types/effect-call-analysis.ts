@@ -28,12 +28,12 @@ import {
   recordCollectionMemberEffect,
 } from './effect-collection-member-effect.ts';
 import {
-  addEffectIndexes,
+  addEffectSlots,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
-  NO_PARAMETER_ORIGIN,
+  NO_SLOT_ORIGIN,
   OWNED_CALLABLE_UNAVAILABLE,
-  type ParameterOrigins,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 import {
   ALL_PACKAGED_PROPERTIES,
@@ -51,6 +51,7 @@ import {
   verifiedReaderCall,
 } from './effect-default-library-reader-authority.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
 
 /**
@@ -92,7 +93,7 @@ export function inspectEffectCall({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
   readonly foreignInbound: boolean;
@@ -109,40 +110,40 @@ export function inspectEffectCall({
       bindingOriginBySymbolId,
       node: call.expression,
     },)
-    : NO_PARAMETER_ORIGIN;
+    : NO_SLOT_ORIGIN;
   if (callbackParameterOrigins.size > 0) {
-    addEffectIndexes({
+    addEffectSlots({
       target: summary.directInvoked,
       values: callbackParameterOrigins,
     },);
     call.arguments
       .forEach(function callbackArgument(
         argument,
-        callbackArgumentIndex,
+        callbackArgumentPosition,
       ): void {
         /**
          * Source parameter passed to callback argument, when direct.
          */
-        const sourceParameterIndexes = parameterIndexes({
+        const sourceSlots = parameterIndexes({
           project,
           bindingOriginBySymbolId,
           node: argument,
           includedPropertyNames: ALL_PACKAGED_PROPERTIES,
         },);
-        sourceParameterIndexes.forEach(function callbackSource(
-          sourceParameterIndex,
+        sourceSlots.forEach(function callbackSource(
+          sourceSlot,
         ): void {
           /* One relation per callback origin. A reassigned callback local may hold
            * either parameter, and the argument reaches whichever one runs, so
            * recording a single origin would under-report the other. */
           callbackParameterOrigins.forEach(function relateOrigin(
-            callbackParameterIndex,
+            callbackSlot,
           ): void {
             summary.relations
               .push({
-                callbackParameterIndex,
-                callbackArgumentIndex,
-                sourceParameterIndex,
+                callbackSlot,
+                callbackArgumentPosition,
+                sourceSlot,
               },);
           },);
         },);
@@ -244,7 +245,7 @@ export function inspectEffectCall({
    * Caller parameter roots corresponding to call arguments.
    */
   const allArgumentIndexes = call.arguments
-    .map(function argumentIndex(argument,): readonly number[] {
+    .map(function argumentIndex(argument,): readonly EffectSlot[] {
       return parameterIndexes({
         project,
         bindingOriginBySymbolId,

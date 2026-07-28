@@ -35,10 +35,11 @@ import {
   callResultReceiver,
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   expressionRoot,
-  NO_PARAMETER_ORIGIN,
-  type ParameterOrigins,
+  NO_SLOT_ORIGIN,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -262,13 +263,13 @@ export function expressionValueOrigins({
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly node: Node;
-},): ParameterOrigins {
+},): SlotOrigins {
   /**
    * Origins accumulated across every branch reached.
    */
-  const origins = new Set<number>();
+  const origins = new Set<EffectSlot>();
   /**
    * Expressions still to examine, each a descendant of one already seen.
    */
@@ -294,8 +295,8 @@ export function expressionValueOrigins({
        * Origins already recorded for this binding.
        */
       const known = symbol === undefined
-        ? NO_PARAMETER_ORIGIN
-        : bindingOriginBySymbolId.get(symbol.id,) ?? NO_PARAMETER_ORIGIN;
+        ? NO_SLOT_ORIGIN
+        : bindingOriginBySymbolId.get(symbol.id,) ?? NO_SLOT_ORIGIN;
       known.forEach(function collectKnown(origin,): void {
         origins.add(origin,);
       },);
@@ -310,6 +311,6 @@ export function expressionValueOrigins({
       },);
   }
   return origins.size === 0
-    ? NO_PARAMETER_ORIGIN
+    ? NO_SLOT_ORIGIN
     : origins;
 }

@@ -7,6 +7,7 @@
 import type { PersistentEffectDependencyState, } from './effect-cache-envelope.ts';
 import type { EffectClosureEdges, } from './effect-dependency-closure.ts';
 import type { EffectProjectSurfaces, } from './effect-project-fingerprint.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import type { MutableEffectSummary, } from './effect-summary-model.ts';
 import {
   type EffectDependencyClosure,
@@ -91,8 +92,10 @@ export type EffectSummaryCacheStats = {
  */
 function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
   return {
-    parameterCount: summary.parameterCount,
-    /* Deep, matching `opaqueProvenanceByParameter` below. A shallow copy would share
+    /* Shared rather than copied. Ownership is derived from the declaration and never
+     * mutated, so every clone can point at the same table. */
+    slots: summary.slots,
+    /* Deep, matching `opaqueProvenanceBySlot` below. A shallow copy would share
      * each origin set with the cached summary, so any later write through one would
      * be visible through the other, which is exactly what cloning exists to prevent. */
     bindingOriginBySymbolId: new Map(
@@ -100,7 +103,7 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
         .entries(),]
         .map(function cloneOrigins([symbolId, origins,],): [
           number,
-          Set<number>,
+          Set<EffectSlot>,
         ] {
           return [
             symbolId,
@@ -111,15 +114,15 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
     directMutated: new Set(summary.directMutated,),
     directInvoked: new Set(summary.directInvoked,),
     directOpaque: new Set(summary.directOpaque,),
-    opaqueProvenanceByParameter: new Map(
-      [...summary.opaqueProvenanceByParameter
+    opaqueProvenanceBySlot: new Map(
+      [...summary.opaqueProvenanceBySlot
         .entries(),]
-        .map(function cloneProvenance([index, facts,],): [
-          number,
+        .map(function cloneProvenance([slot, facts,],): [
+          EffectSlot,
           Set<string>,
         ] {
           return [
-            index,
+            slot,
             new Set(facts,),
           ];
         },),

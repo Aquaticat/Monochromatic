@@ -5,8 +5,9 @@
  */
 
 import type { ExternalCallableEffect, } from './external-callable-effect.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
-  addEffectIndex,
+  addEffectSlot,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import { addOpaqueEffect, } from './effect-call-resolution.ts';
@@ -35,7 +36,7 @@ export function applyExternalEffect({
   summary,
 }: {
   readonly externalEffect: ExternalCallableEffect;
-  readonly argumentIndexes: readonly (readonly number[])[];
+  readonly argumentIndexes: readonly (readonly EffectSlot[])[];
   readonly summary: MutableEffectSummary;
 }): void {
   externalEffect.summary
@@ -43,7 +44,7 @@ export function applyExternalEffect({
     .forEach(function externalMutation(parameter,): void {
       argumentIndexes[parameter]
         ?.forEach(function callerMutation(index,): void {
-          addEffectIndex({
+          addEffectSlot({
             target: summary.directMutated,
             value: index,
           },);
@@ -54,7 +55,7 @@ export function applyExternalEffect({
     .forEach(function externalInvocation(parameter,): void {
       argumentIndexes[parameter]
         ?.forEach(function callerInvocation(index,): void {
-          addEffectIndex({
+          addEffectSlot({
             target: summary.directInvoked,
             value: index,
           },);
@@ -67,8 +68,8 @@ export function applyExternalEffect({
         ?.forEach(function callbackSourceUncertainty(index,): void {
           addOpaqueEffect({
             summary,
-            affectedParameterIndex: index,
-            provenance: `${externalEffect.provenance} callback argument ${String(relation.callbackArgumentIndex,)}`,
+            affectedSlot: index,
+            provenance: `${externalEffect.provenance} callback argument ${String(relation.callbackArgumentPosition,)}`,
           },);
         },);
     },);
@@ -79,7 +80,7 @@ export function applyExternalEffect({
         ?.forEach(function callerUncertainty(index,): void {
           addOpaqueEffect({
             summary,
-            affectedParameterIndex: index,
+            affectedSlot: index,
             provenance: externalEffect.provenance,
           },);
         },);

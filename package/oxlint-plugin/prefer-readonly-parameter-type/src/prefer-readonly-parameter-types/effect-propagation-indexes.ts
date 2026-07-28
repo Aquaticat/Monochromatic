@@ -4,8 +4,9 @@
  * @module
  */
 
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
-  addEffectIndex,
+  addEffectSlot,
   type CallEdge,
 } from './effect-summary-model.ts';
 
@@ -42,9 +43,9 @@ export function propagateCalleeIndexes({
   edge,
   calleeIndexes,
 }: {
-  readonly target: Set<number>;
+  readonly target: Set<EffectSlot>;
   readonly edge: CallEdge;
-  readonly calleeIndexes: ReadonlySet<number>;
+  readonly calleeIndexes: ReadonlySet<EffectSlot>;
 },): boolean {
   /**
    * Whether any caller effect index was added.
@@ -54,9 +55,9 @@ export function propagateCalleeIndexes({
     /**
      * Caller parameters packaged into affected callee parameter.
      */
-    const callerIndexes = edge.arguments[calleeIndex] ?? [];
+    const callerIndexes = edge.originsByCalleeSlot[calleeIndex] ?? [];
     for (const callerIndex of callerIndexes) {
-      changed = addEffectIndex({
+      changed = addEffectSlot({
         target,
         value: callerIndex,
       },) || changed;

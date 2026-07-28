@@ -4,6 +4,10 @@
  * @module
  */
 
+import {
+  asParameterIndex,
+  type ParameterIndex,
+} from './effect-slot-identity.ts';
 import type {
   CallEdge,
   MutableEffectSummary,
@@ -34,23 +38,23 @@ function inboundArgumentIsForeign({
   candidates,
 }: {
   readonly inbound: ForeignInbound;
-  readonly calleeIndex: number;
-  readonly candidates: ReadonlyMap<string, ReadonlySet<number>>;
+  readonly calleeIndex: ParameterIndex;
+  readonly candidates: ReadonlyMap<string, ReadonlySet<ParameterIndex>>;
 },): boolean {
   /**
    * Argument mapping carried by inbound call.
    */
   const { edge, } = inbound;
-  if (edge.directForeignArguments[calleeIndex] === true)
+  if (edge.directForeignByFormal[calleeIndex] === true)
     return true;
   /**
    * Caller parameter origins packaged into current callee argument.
    */
-  const callerIndexes = edge.foreignArguments[calleeIndex] ?? [];
+  const callerIndexes = edge.foreignOriginsByFormal[calleeIndex] ?? [];
   /**
    * Current guaranteed indexes for caller declaration.
    */
-  const callerCandidates = candidates.get(inbound.callerKey,) ?? new Set<number>();
+  const callerCandidates = candidates.get(inbound.callerKey,) ?? new Set<ParameterIndex>();
   return (callerIndexes.length > 0)
     && callerIndexes.every(function callerIsForeign(callerIndex,): boolean {
       return callerCandidates.has(callerIndex,);
@@ -105,21 +109,21 @@ function initializeCandidates({
 }: {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly incomingByCallee: ReadonlyMap<string, readonly ForeignInbound[]>;
-},): Map<string, Set<number>> {
+},): Map<string, Set<ParameterIndex>> {
   /**
    * Optimistic guaranteed indexes by callable declaration.
    */
-  const candidates = new Map<string, Set<number>>();
+  const candidates = new Map<string, Set<ParameterIndex>>();
   for (const [key, summary,] of summaries) {
     /**
      * Explicit marker indexes preserved regardless of inbound calls.
      */
     const callableCandidates = new Set(summary.directForeignBorrowed,);
     if ((incomingByCallee.get(key,) ?? []).length > 0) {
-      for (let parameterIndex = 0;
-        parameterIndex < summary.parameterCount;
-        parameterIndex++) {
-        callableCandidates.add(parameterIndex,);
+      for (let position = 0;
+        position < summary.slots.parameterCount;
+        position++) {
+        callableCandidates.add(asParameterIndex(position,),);
       }
     }
     candidates.set(
@@ -145,7 +149,7 @@ function totalParameterCount(
    */
   let count = 0;
   for (const summary of summaries.values())
-    count += summary.parameterCount;
+    count += summary.slots.parameterCount;
   return count;
 }
 
@@ -166,7 +170,7 @@ function totalParameterCount(
  */
 export function propagateForeignBorrowed(
   summaries: ReadonlyMap<string, MutableEffectSummary>,
-): ReadonlyMap<string, ReadonlySet<number>> {
+): ReadonlyMap<string, ReadonlySet<ParameterIndex>> {
   /**
    * Inbound calls grouped by callee declaration.
    */
@@ -200,10 +204,14 @@ export function propagateForeignBorrowed(
       /**
        * Candidate indexes for current declaration.
        */
-      const callableCandidates = candidates.get(key,) ?? new Set<number>();
-      for (let parameterIndex = 0;
-        parameterIndex < summary.parameterCount;
-        parameterIndex++) {
+      const callableCandidates = candidates.get(key,) ?? new Set<ParameterIndex>();
+      for (let position = 0;
+        position < summary.slots.parameterCount;
+        position++) {
+        /**
+         * Current parameter under test.
+         */
+        const parameterIndex = asParameterIndex(position,);
         /**
          * Whether exact marker directly covers current parameter.
          */

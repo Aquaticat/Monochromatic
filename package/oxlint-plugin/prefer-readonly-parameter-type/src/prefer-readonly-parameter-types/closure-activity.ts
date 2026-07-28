@@ -25,7 +25,7 @@ import {
   type EffectCallableDeclaration,
   collectAstNodes,
   isEffectCallableDeclaration,
-  type ParameterOrigins,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -181,7 +181,7 @@ export function activeCallableBodyNodes({
 }: {
   readonly project: Project;
   readonly body: Node;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
 }): readonly Node[] {
   /**
    * Complete descendants used to discover nested declarations and activations.

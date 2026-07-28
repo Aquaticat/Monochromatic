@@ -32,10 +32,11 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   collectAstNodes,
-  NO_PARAMETER_ORIGIN,
-  type ParameterOrigins,
+  NO_SLOT_ORIGIN,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -60,9 +61,9 @@ export function packagedCallableOrigins({
   packaged,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly packaged: Node;
-},): ReadonlySet<number> {
+},): ReadonlySet<EffectSlot> {
   /**
    * Checker resolving each named binding to its declaring symbol.
    */
@@ -70,7 +71,7 @@ export function packagedCallableOrigins({
   /**
    * Origins any binding inside this accessor can carry.
    */
-  const origins = new Set<number>();
+  const origins = new Set<EffectSlot>();
   collectAstNodes(packaged,)
     .forEach(function collectNamed(node,): void {
       if (!isIdentifier(node,))
@@ -104,7 +105,7 @@ export function packagedCallableOrigins({
       /**
        * Caller parameters this binding can hold.
        */
-      const named = bindingOriginBySymbolId.get(symbol.id,) ?? NO_PARAMETER_ORIGIN;
+      const named = bindingOriginBySymbolId.get(symbol.id,) ?? NO_SLOT_ORIGIN;
       if (named.size === 0)
         return;
       /* A binding that cannot carry mutable state grants the callee nothing, and

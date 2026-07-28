@@ -71,7 +71,7 @@ export function reachedSourceFileNames({
           indexedFileNames,
           fileName: edge.calleeFileName,
         },);
-        edge.callbackFileNames
+        edge.callbackFileNamesByCalleeSlot
           .forEach(function collectCallbackFile(fileName,): void {
             if ((typeof fileName) !== 'string')
               return;
@@ -109,7 +109,7 @@ export function assertReachedCallSummaries(
           message: `Owned effect edge lacks callee summary: ${edge.calleeKey}.`,
         },);
       }
-      for (const callbackKey of edge.callbackKeys) {
+      for (const callbackKey of edge.callbackKeysByCalleeSlot) {
         if (((typeof callbackKey) === 'string')
           && (!summaries.has(callbackKey,))) {
           throw new SemanticBridgeError({

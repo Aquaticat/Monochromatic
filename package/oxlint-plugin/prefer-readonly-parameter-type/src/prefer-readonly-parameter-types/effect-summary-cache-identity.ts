@@ -28,8 +28,11 @@ import { ancestorDirectories, } from './ancestor-directories.ts';
  *
  * Schema 4 removes documented-uncertainty state because authored contracts
  * cannot discharge unresolved implementation effects.
+ *
+ * Schema 5 keys every effect by slot rather than by parameter and persists the slot
+ * ownership beside them, because the numbers mean nothing without it.
  */
-export const EFFECT_CACHE_SCHEMA = 4;
+export const EFFECT_CACHE_SCHEMA = 5;
 
 /**
  * Process memo for analyzer implementation digest.

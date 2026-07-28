@@ -31,10 +31,10 @@ import {
   resultExposesMutableState,
 } from './effect-primitive-origin.ts';
 import {
-  addEffectIndexes,
+  addEffectSlots,
   type MutableEffectSummary,
-  NO_PARAMETER_ORIGIN,
-  type ParameterOrigins,
+  NO_SLOT_ORIGIN,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 import { recordReadonlyViewApplications, } from './effect-readonly-view-application.ts';
 
@@ -194,7 +194,7 @@ export function recordCollectionMemberEffect({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly declaration: Node;
@@ -225,8 +225,8 @@ export function recordCollectionMemberEffect({
         bindingOriginBySymbolId,
         node: receiver,
       },)
-      : NO_PARAMETER_ORIGIN;
-    addEffectIndexes({
+      : NO_SLOT_ORIGIN;
+    addEffectSlots({
       target: summary.directMutated,
       values: mutatedParameterOrigins,
     },);

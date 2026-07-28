@@ -50,6 +50,22 @@ export {
   typescriptOffset,
 } from './prefer-readonly-parameter-types/typescript-node-map.ts';
 
+export {
+  parameterBindingSlots,
+  type ParameterSlotTable,
+  parameterSlotTable,
+  slotsByParameterFrom,
+} from './prefer-readonly-parameter-types/effect-parameter-slots.ts';
+
+export {
+  asEffectSlot,
+  asParameterIndex,
+  canonicalPropertyKey,
+  type EffectSlot,
+  NOT_A_STATIC_KEY,
+  type ParameterIndex,
+} from './prefer-readonly-parameter-types/effect-slot-identity.ts';
+
 initializeSemanticBridge();
 
 /**

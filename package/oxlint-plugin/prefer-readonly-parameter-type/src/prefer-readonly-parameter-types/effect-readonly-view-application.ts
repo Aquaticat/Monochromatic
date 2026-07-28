@@ -26,13 +26,18 @@ import {
   typeCanCarryMutableState,
 } from './effect-primitive-origin.ts';
 import {
+  asParameterIndex,
+  type EffectSlot,
+  type ParameterIndex,
+} from './effect-slot-identity.ts';
+import {
   callableKey,
   type EffectCallableDeclaration,
   type ElementApplication,
   type MutableEffectSummary,
-  NO_PARAMETER_ORIGIN,
+  NO_SLOT_ORIGIN,
   OWNED_CALLABLE_UNAVAILABLE,
-  type ParameterOrigins,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -110,7 +115,7 @@ function observedParameterIndexes({
   readonly argumentIndex: number;
   readonly elementTypes: readonly Type[];
   readonly receiverType: Type;
-},): readonly number[] | typeof OBSERVED_POSITIONS_UNAVAILABLE {
+},): readonly ParameterIndex[] | typeof OBSERVED_POSITIONS_UNAVAILABLE {
   /**
    * Member parameter symbol receiving observer at this position.
    */
@@ -152,7 +157,7 @@ function observedParameterIndexes({
     .flatMap(function reachableParameter(
       parameterSymbol,
       observerParameterIndex,
-    ): readonly number[] {
+    ): readonly ParameterIndex[] {
       /**
        * Instantiated member callback parameter type at this call.
        */
@@ -169,7 +174,7 @@ function observedParameterIndexes({
         || (parameterType === receiverType)
         || elementTypes.includes(parameterType,);
       return reachable
-        ? [observerParameterIndex,]
+        ? [asParameterIndex(observerParameterIndex,),]
         : [];
     },);
 }
@@ -249,7 +254,7 @@ function resultAliasesReceiverState({
  *
  * @param receiver - Receiver expression rooted at a caller parameter.
  *
- * @param receiverParameterIndex - Caller parameter owning receiver.
+ * @param receiverSlot - Caller slot owning receiver.
  *
  * @param analysisRoot - Optional external implementation root.
  *
@@ -257,7 +262,7 @@ function resultAliasesReceiverState({
  *
  * @example
  * ```ts
- * readonlyViewElementApplications({ project, checker, call, receiver, receiverParameterIndex });
+ * readonlyViewElementApplications({ project, checker, call, receiver, receiverSlot });
  * ```
  */
 export function readonlyViewElementApplications({
@@ -265,14 +270,14 @@ export function readonlyViewElementApplications({
   checker,
   call,
   receiver,
-  receiverParameterIndex,
+  receiverSlot,
   analysisRoot,
 }: {
   readonly project: Project;
   readonly checker: Checker;
   readonly call: CallExpression;
   readonly receiver: Expression;
-  readonly receiverParameterIndex: number;
+  readonly receiverSlot: EffectSlot;
   readonly analysisRoot?: string;
 },): readonly ElementApplication[] | typeof READONLY_VIEW_UNDISCHARGED {
   /**
@@ -452,9 +457,9 @@ export function readonlyViewElementApplications({
        */
       const positions = observedPositions[observerIndex];
       return {
-        receiverParameterIndex,
+        receiverSlot,
         callbackKey: callableKey(declaration,),
-        callbackParameterIndexes: (positions === undefined)
+        observerParameterIndexes: (positions === undefined)
             || (positions === OBSERVED_POSITIONS_UNAVAILABLE)
           ? []
           : positions,
@@ -499,7 +504,7 @@ export function recordReadonlyViewApplications({
 }: {
   readonly project: Project;
   readonly checker: Checker;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly summary: MutableEffectSummary;
@@ -517,7 +522,7 @@ export function recordReadonlyViewApplications({
       bindingOriginBySymbolId,
       node: receiver,
     },)
-    : NO_PARAMETER_ORIGIN;
+    : NO_SLOT_ORIGIN;
   if (receiverOrigins.size === 0)
     return false;
   /**
@@ -529,7 +534,7 @@ export function recordReadonlyViewApplications({
    * receiver came from, so these agree in practice; a disagreement must still leave
    * the whole call to the opaque boundary instead of recording a partial answer for
    * the origins that happened to derive. */
-  for (const receiverParameterIndex of receiverOrigins) {
+  for (const receiverSlot of receiverOrigins) {
     /**
      * Derived relations for one origin, or sentinel when user code stays unproven.
      */
@@ -538,7 +543,7 @@ export function recordReadonlyViewApplications({
       checker,
       call,
       receiver,
-      receiverParameterIndex,
+      receiverSlot,
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },);
     if (applications === READONLY_VIEW_UNDISCHARGED)

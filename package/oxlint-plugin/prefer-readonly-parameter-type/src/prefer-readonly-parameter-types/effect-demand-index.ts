@@ -16,6 +16,7 @@ import { createDependencyClosureResolver, } from './effect-dependency-closure.ts
 import { propagateEffects, } from './effect-fixed-point-propagation.ts';
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import { effectPublicSummary, } from './effect-public-summary.ts';
+import type { ParameterIndex, } from './effect-slot-identity.ts';
 import {
   assertReachedCallSummaries,
   reachedSourceFileNames,
@@ -188,7 +189,7 @@ export function createDemandDrivenEffectIndex(
    * Guaranteed foreign provenance recomputed after every graph expansion.
    */
   const foreignByCallable: {
-    current: ReadonlyMap<string, ReadonlySet<number>>;
+    current: ReadonlyMap<string, ReadonlySet<ParameterIndex>>;
   } = { current: new Map(), };
   /**
    * Callable candidates whose exact signature inbounds were verified.
@@ -197,7 +198,7 @@ export function createDemandDrivenEffectIndex(
   /**
    * Complete foreign results accumulated from demanded backwards closures.
    */
-  const completeForeignByCallable = new Map<string, ReadonlySet<number>>();
+  const completeForeignByCallable = new Map<string, ReadonlySet<ParameterIndex>>();
 
   /**
    * Loads one reached source from cache or exact semantic scan.
@@ -438,7 +439,7 @@ export function createDemandDrivenEffectIndex(
        */
       const partialForeignParameterIndexes = foreignByCallable.current
         .get(key,)
-        ?? new Set<number>();
+        ?? new Set<ParameterIndex>();
       if ((partialForeignParameterIndexes.size > 0)
         && (!verifiedForeignKeys.has(key,))) {
         /**
@@ -466,7 +467,7 @@ export function createDemandDrivenEffectIndex(
        * Guaranteed foreign indexes after candidate-triggered complete-inbound proof.
        */
       const foreignParameterIndexes = verifiedForeignKeys.has(key,)
-        ? completeForeignByCallable.get(key,) ?? new Set<number>()
+        ? completeForeignByCallable.get(key,) ?? new Set<ParameterIndex>()
         : partialForeignParameterIndexes;
       return effectPublicSummary({
         summary,

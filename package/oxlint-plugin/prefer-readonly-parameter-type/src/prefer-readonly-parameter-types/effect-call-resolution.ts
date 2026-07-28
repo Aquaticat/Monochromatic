@@ -33,15 +33,16 @@ import {
   receiverElementsArePrimitive,
 } from './effect-primitive-origin.ts';
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   type EffectCallableDeclaration,
   expressionRoot,
   isEffectCallableDeclaration,
   type MutableEffectSummary,
-  NO_PARAMETER_ORIGIN,
+  NO_SLOT_ORIGIN,
   OWNED_CALLABLE_UNAVAILABLE,
-  PARAMETER_INDEX_UNAVAILABLE,
-  type ParameterOrigins,
+  EFFECT_SLOT_UNAVAILABLE,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -73,9 +74,9 @@ export function rootParameterOrigins({
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly node: Node;
-},): ParameterOrigins {
+},): SlotOrigins {
   return expressionValueOrigins({
     project,
     bindingOriginBySymbolId,
@@ -113,10 +114,10 @@ export function parameterIndexes({
   includedPropertyNames,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly node: Node;
   readonly includedPropertyNames: ReadonlySet<string> | typeof ALL_PACKAGED_PROPERTIES;
-},): readonly number[] {
+},): readonly EffectSlot[] {
   /**
    * Checker for the project resolving this argument structure.
    */
@@ -124,7 +125,7 @@ export function parameterIndexes({
   /**
    * Unique origins discovered through bounded argument structure.
    */
-  const origins = new Set<number>();
+  const origins = new Set<EffectSlot>();
   /**
    * Adds every origin a callable packaged inside this argument can hand over.
    *
@@ -217,7 +218,7 @@ export function parameterIndexes({
              * Caller parameter origins represented by shorthand value.
              */
             const shorthandOrigins = bindingOriginBySymbolId.get(valueSymbol.id,)
-              ?? NO_PARAMETER_ORIGIN;
+              ?? NO_SLOT_ORIGIN;
             if (expressionCanCarryMutableState({
               checker,
               node: property.name,
@@ -383,7 +384,7 @@ export function callableDeclaration({
  *
  * @param summary - Callable summary receiving opaque effect.
  *
- * @param affectedParameterIndex - Affected source parameter index.
+ * @param affectedSlot - Affected source parameter index.
  *
  * @param provenance - Authored external call expression text.
  *
@@ -391,32 +392,32 @@ export function callableDeclaration({
  *
  * @example
  * ```ts
- * addOpaqueEffect({ summary, affectedParameterIndex, provenance });
+ * addOpaqueEffect({ summary, affectedSlot, provenance });
  * ```
  */
 export function addOpaqueEffect({
   summary,
-  affectedParameterIndex,
+  affectedSlot,
   provenance,
 }: {
   readonly summary: MutableEffectSummary;
-  readonly affectedParameterIndex: number | typeof PARAMETER_INDEX_UNAVAILABLE;
+  readonly affectedSlot: EffectSlot | typeof EFFECT_SLOT_UNAVAILABLE;
   readonly provenance: string;
 },): void {
-  if (affectedParameterIndex === PARAMETER_INDEX_UNAVAILABLE)
+  if (affectedSlot === EFFECT_SLOT_UNAVAILABLE)
     return;
   summary.directOpaque
-    .add(affectedParameterIndex,);
+    .add(affectedSlot,);
   /**
    * Existing provenance facts for parameter, or new accumulator.
    */
-  const provenanceFacts = summary.opaqueProvenanceByParameter
-    .get(affectedParameterIndex,)
+  const provenanceFacts = summary.opaqueProvenanceBySlot
+    .get(affectedSlot,)
     ?? new Set<string>();
   provenanceFacts.add(provenance,);
-  summary.opaqueProvenanceByParameter
+  summary.opaqueProvenanceBySlot
     .set(
-      affectedParameterIndex,
+      affectedSlot,
       provenanceFacts,
     );
 }

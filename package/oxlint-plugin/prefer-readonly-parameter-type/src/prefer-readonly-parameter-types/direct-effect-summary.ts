@@ -30,8 +30,15 @@ import {
   bindingOriginsFor,
   discoverAliasOrigins,
   expressionOrigins,
-  registerBindingOrigin,
+  seedParameterSlots,
 } from './effect-binding-origins.ts';
+import { parameterSlotTable, } from './effect-parameter-slots.ts';
+import {
+  asEffectSlot,
+  asParameterIndex,
+  type EffectSlot,
+  type ParameterIndex,
+} from './effect-slot-identity.ts';
 import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import { inspectEffectCall, } from './effect-call-analysis.ts';
 import { declarationDirectlyOwnsNode, } from './effect-foreign-inbound.ts';
@@ -44,14 +51,14 @@ import {
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
 import {
-  addEffectIndex,
-  addEffectIndexes,
+  addEffectSlot,
+  addEffectSlots,
   callableKey,
   type EffectCallableDeclaration,
   collectAstNodes,
   type MutableEffectSummary,
-  PARAMETER_INDEX_UNAVAILABLE,
-  type ParameterOrigins,
+  EFFECT_SLOT_UNAVAILABLE,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -74,13 +81,13 @@ function inspectDirectWrite({
   node,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly summary: MutableEffectSummary;
   readonly node: Node;
 },): void {
   if (isIdentifier(node,))
     return;
-  addEffectIndexes({
+  addEffectSlots({
     target: summary.directMutated,
     values: expressionOrigins({
       project,
@@ -124,18 +131,23 @@ export function directEffectSummary({
    */
   const { checker, } = project;
   /**
+   * Slots this callable's parameters own, allocated from the declaration alone.
+   */
+  const table = parameterSlotTable({ declaration, },);
+  /**
    * Binding symbol origins seeded by callable parameters.
    */
-  const bindingOriginBySymbolId = new Map<number, Set<number>>();
+  const bindingOriginBySymbolId = new Map<number, Set<EffectSlot>>();
   declaration.parameters
     .forEach(function registerParameter(
       parameter,
       parameterIndex,
     ): void {
-    registerBindingOrigin({
+    seedParameterSlots({
       project,
-      name: parameter.name,
+      parameter,
       parameterIndex,
+      table,
       bindingOriginBySymbolId,
     },);
   },);
@@ -149,7 +161,7 @@ export function directEffectSummary({
     .forEach(function registerDefaultAlias(parameter,): void {
       if (parameter.initializer === undefined)
         return;
-      addEffectIndexes({
+      addEffectSlots({
         target: bindingOriginsFor({
           project,
           name: parameter.name,
@@ -165,7 +177,7 @@ export function directEffectSummary({
   /**
    * Parameter indexes explicitly carrying exact foreign ownership marker.
    */
-  const directForeignBorrowed = new Set<number>();
+  const directForeignBorrowed = new Set<ParameterIndex>();
   /**
    * Parameter entries paired with declaration indexes.
    */
@@ -176,19 +188,18 @@ export function directEffectSummary({
       project,
       name: parameter.name,
     },))
-      directForeignBorrowed.add(parameterIndex,);
+      directForeignBorrowed.add(asParameterIndex(parameterIndex,),);
   }
   /**
    * Mutable summary receiving direct and propagated effects.
    */
   const summary: MutableEffectSummary = {
-    parameterCount: declaration.parameters
-      .length,
+    slots: table,
     bindingOriginBySymbolId,
     directMutated: new Set(),
     directInvoked: new Set(),
     directOpaque: new Set(),
-    opaqueProvenanceByParameter: new Map(),
+    opaqueProvenanceBySlot: new Map(),
     mutated: new Set(),
     invoked: new Set(),
     opaque: new Set(),
@@ -215,7 +226,7 @@ export function directEffectSummary({
           return;
         addOpaqueEffect({
           summary,
-          affectedParameterIndex: parameterIndex,
+          affectedSlot: asEffectSlot(parameterIndex,),
           provenance: `bodyless callable ${callableKey(declaration,)}`,
         },);
       },);
@@ -235,12 +246,23 @@ export function directEffectSummary({
         declaration,
         sourceFile: declaration.getSourceFile(),
       },);
+      /* An authored name resolves to a whole parameter, so it seeds that parameter's own
+       * slot rather than any property slot beneath it. The whole slot is the wider claim of
+       * the two, and a caller fills it with every origin the actual packages, so a contract
+       * naming a destructured property still reaches every value that property could hold.
+       * Checking such a name against the measured property facts is what per-property
+       * attribution finally makes possible, and is deliberately not done here. */
       contracts.blocks
         .forEach(function seedContract(block,): void {
-        addEffectIndex({
+        /**
+         * Parameter this contract names, absent when the name matches none.
+         */
+        const named = targetIndexes.get(block.parameterName,);
+        addEffectSlot({
           target: summary.mutated,
-          value: targetIndexes.get(block.parameterName,)
-            ?? PARAMETER_INDEX_UNAVAILABLE,
+          value: named === undefined
+            ? EFFECT_SLOT_UNAVAILABLE
+            : asEffectSlot(named,),
         },);
       },);
     }
@@ -365,7 +387,7 @@ export function directEffectSummary({
         checker,
         node: node.expression,
       },))
-        addEffectIndexes({
+        addEffectSlots({
           target: summary.directReturned,
           values: expressionOrigins({
             project,
@@ -376,7 +398,7 @@ export function directEffectSummary({
       return;
     }
     if (isForOfStatement(node,) && (node.awaitModifier !== undefined)) {
-      addEffectIndexes({
+      addEffectSlots({
         target: summary.directMutated,
         values: expressionOrigins({
           project,

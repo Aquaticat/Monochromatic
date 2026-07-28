@@ -69,22 +69,26 @@ function isCacheString(value: unknown,): value is string {
 }
 
 /**
- * Tests unique parameter-index array.
+ * Tests unique bounded-index array.
+ *
+ * Used for both parameter positions and effect slots, which is why the bound is a plain
+ * argument: the two share a representation and differ only in what bounds them, and passing
+ * the wrong one here would accept a payload whose numbers point outside the callable.
  *
  * @param value - Parsed JSON value.
  *
- * @param parameterCount - Exclusive parameter-index limit.
+ * @param upperBound - Exclusive index limit.
  *
  * @returns whether array contains only unique valid indexes.
  */
-function isParameterIndexes({
+function isBoundedIndexes({
   value,
-  parameterCount,
+  upperBound,
 }: {
   readonly value: unknown;
-  readonly parameterCount: number;
+  readonly upperBound: number;
 }): boolean {
-  if ((!Array.isArray(value,)) || (value.length > parameterCount))
+  if ((!Array.isArray(value,)) || (value.length > upperBound))
     return false;
   /**
    * Parsed indexes narrowed from JSON array.
@@ -98,7 +102,7 @@ function isParameterIndexes({
     if (((typeof index) !== 'number')
       || (!isIndex({
         value: index,
-        upperBound: parameterCount,
+        upperBound,
       },))
       || seen.has(index,))
       return false;
@@ -108,27 +112,31 @@ function isParameterIndexes({
 }
 
 /**
- * Tests caller-parameter roots for each call argument.
+ * Tests caller-side roots recorded per callee position.
+ *
+ * The outer length is a count of the callee's positions, which this validator cannot know,
+ * so it is bounded by arity alone. The inner values belong to the caller and are bounded by
+ * whatever the caller has: slots for effect origins, parameters for foreign ownership.
  *
  * @param value - Parsed JSON value.
  *
- * @param parameterCount - Exclusive caller parameter-index limit.
+ * @param upperBound - Exclusive caller index limit.
  *
  * @returns whether nested argument roots are bounded and valid.
  */
 function isArgumentRoots({
   value,
-  parameterCount,
+  upperBound,
 }: {
   readonly value: unknown;
-  readonly parameterCount: number;
+  readonly upperBound: number;
 }): boolean {
   return Array.isArray(value,)
     && (value.length <= MAX_CALLABLE_ARITY)
     && value.every(function validRoots(roots,): boolean {
-      return isParameterIndexes({
+      return isBoundedIndexes({
         value: roots,
-        parameterCount,
+        upperBound,
       },);
     },);
 }
@@ -158,52 +166,61 @@ function isCallbackKey(value: unknown,): value is SerializedCallbackKey {
 function isCallEdge({
   value,
   parameterCount,
+  slotCount,
 }: {
   readonly value: unknown;
   readonly parameterCount: number;
+  readonly slotCount: number;
 }): boolean {
   if ((!isRecord(value,))
     || (!isCacheString(value.calleeKey,))
     || (!isCacheString(value.calleeFileName,))
-    || (!Array.isArray(value.arguments,))
+    || (!Array.isArray(value.originsByCalleeSlot,))
     || (!isArgumentRoots({
-      value: value.arguments,
-      parameterCount,
+      value: value.originsByCalleeSlot,
+      upperBound: slotCount,
     },))
-    || (!Array.isArray(value.foreignArguments,))
+    || (!Array.isArray(value.foreignOriginsByFormal,))
     || (!isArgumentRoots({
-      value: value.foreignArguments,
-      parameterCount,
+      value: value.foreignOriginsByFormal,
+      upperBound: parameterCount,
     },))
-    || (!Array.isArray(value.directForeignArguments,))
-    || (!Array.isArray(value.callbackKeys,))
-    || (!Array.isArray(value.callbackFileNames,))
+    || (!Array.isArray(value.directForeignByFormal,))
+    || (!Array.isArray(value.callbackKeysByCalleeSlot,))
+    || (!Array.isArray(value.callbackFileNamesByCalleeSlot,))
     || ((typeof value.foreignInbound) !== 'boolean'))
     return false;
+  /* Two lengths, not one. Slots split the edge: origins and callback identities are indexed
+   * by the callee's slots, while foreign ownership is indexed by its formals, and a callee
+   * with a destructured parameter has strictly more of the first. The counts belong to the
+   * callee, which this validator cannot see, so only their agreement is checked. */
   /**
-   * Call arity shared by every argument-relative edge field.
+   * Callee slot count shared by every slot-indexed edge field.
    */
-  const arity = value.arguments
+  const slotArity = value.originsByCalleeSlot
     .length;
-  return (value.foreignArguments
-    .length
-    === arity)
-    && (value.directForeignArguments
+  /**
+   * Callee formal count shared by every formal-indexed edge field.
+   */
+  const formalArity = value.foreignOriginsByFormal
+    .length;
+  return (formalArity <= slotArity)
+    && (value.directForeignByFormal
       .length
-      === arity)
-    && (value.callbackKeys
+      === formalArity)
+    && (value.callbackKeysByCalleeSlot
       .length
-      === arity)
-    && (value.callbackFileNames
+      === slotArity)
+    && (value.callbackFileNamesByCalleeSlot
       .length
-      === arity)
-    && value.directForeignArguments
+      === slotArity)
+    && value.directForeignByFormal
     .every(function booleanFlag(flag,): boolean {
       return (typeof flag) === 'boolean';
     },)
-    && value.callbackKeys
+    && value.callbackKeysByCalleeSlot
     .every(isCallbackKey,)
-    && value.callbackFileNames
+    && value.callbackFileNamesByCalleeSlot
     .every(isCallbackKey,);
 }
 
@@ -218,22 +235,22 @@ function isCallEdge({
  */
 function isCallbackRelation({
   value,
-  parameterCount,
+  slotCount,
 }: {
   readonly value: unknown;
-  readonly parameterCount: number;
+  readonly slotCount: number;
 }): boolean {
   return isRecord(value,)
     && isIndex({
-      value: value.callbackParameterIndex,
-      upperBound: parameterCount,
+      value: value.callbackSlot,
+      upperBound: slotCount,
     },)
     && isIndex({
-      value: value.sourceParameterIndex,
-      upperBound: parameterCount,
+      value: value.sourceSlot,
+      upperBound: slotCount,
     },)
     && isIndex({
-      value: value.callbackArgumentIndex,
+      value: value.callbackArgumentPosition,
       upperBound: MAX_CALLABLE_ARITY,
     },);
 }
@@ -249,20 +266,20 @@ function isCallbackRelation({
  */
 function isElementApplication({
   value,
-  parameterCount,
+  slotCount,
 }: {
   readonly value: unknown;
-  readonly parameterCount: number;
+  readonly slotCount: number;
 }): boolean {
   return isRecord(value,)
     && isIndex({
-      value: value.receiverParameterIndex,
-      upperBound: parameterCount,
+      value: value.receiverSlot,
+      upperBound: slotCount,
     },)
     && isCacheString(value.callbackKey,)
-    && isParameterIndexes({
-      value: value.callbackParameterIndexes,
-      parameterCount: MAX_CALLABLE_ARITY,
+    && isBoundedIndexes({
+      value: value.observerParameterIndexes,
+      upperBound: MAX_CALLABLE_ARITY,
     },);
 }
 
@@ -277,10 +294,10 @@ function isElementApplication({
  */
 function isOpaqueProvenance({
   value,
-  parameterCount,
+  slotCount,
 }: {
   readonly value: unknown;
-  readonly parameterCount: number;
+  readonly slotCount: number;
 }): boolean {
   if (!Array.isArray(value,))
     return false;
@@ -301,7 +318,7 @@ function isOpaqueProvenance({
     const [index, facts,] = fields;
     if ((!isIndex({
       value: index,
-      upperBound: parameterCount,
+      upperBound: slotCount,
     },))
       || (!Array.isArray(facts,))
       || (facts.length > MAX_CALLABLE_ARITY))
@@ -332,28 +349,57 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
   /**
    * Callable parameter count reused by every parameter-relative field.
    */
-  const {parameterCount} = value;
+  const { parameterCount, } = value;
+  /* Ownership is what makes the rest of the payload meaningful, so it is checked before
+   * anything that depends on it. Every slot must name a parameter this callable has, and the
+   * whole parameters must come first and in order, because that is the numbering the
+   * allocator produces and a caller's cached edge indexes into. */
+  if ((!Array.isArray(value.parameterOfSlot,))
+    || (value.parameterOfSlot
+      .length < parameterCount)
+    || (!isBoundedIndexes({
+      value: [...new Set(value.parameterOfSlot,),],
+      upperBound: parameterCount,
+    },))
+    || value.parameterOfSlot
+      .slice(0, parameterCount,)
+      .some(function outOfOrderWholeSlot(
+        owner,
+        slot,
+      ): boolean {
+        return owner !== slot;
+      },))
+    return false;
   /**
-   * Set-backed effect arrays requiring bounded unique indexes.
+   * Slot count bounding every slot-relative field.
    */
-  const effectArrays = [
+  const slotCount = value.parameterOfSlot
+    .length;
+  /**
+   * Set-backed effect arrays requiring bounded unique slots.
+   */
+  const slotArrays = [
     value.directMutated,
     value.directInvoked,
     value.directOpaque,
     value.mutated,
     value.invoked,
     value.opaque,
-    value.directForeignBorrowed,
+    value.directReturned,
   ];
-  return effectArrays.every(function validIndexes(indexes,): boolean {
-    return isParameterIndexes({
-      value: indexes,
-      parameterCount,
+  return slotArrays.every(function validSlots(slots,): boolean {
+    return isBoundedIndexes({
+      value: slots,
+      upperBound: slotCount,
     },);
   },)
+    && isBoundedIndexes({
+      value: value.directForeignBorrowed,
+      upperBound: parameterCount,
+    },)
     && isOpaqueProvenance({
-      value: value.opaqueProvenanceByParameter,
-      parameterCount,
+      value: value.opaqueProvenanceBySlot,
+      slotCount,
     },)
     && Array.isArray(value.relations,)
     && (value.relations
@@ -363,7 +409,7 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
     .every(function validRelation(relation,): boolean {
       return isCallbackRelation({
         value: relation,
-        parameterCount,
+        slotCount,
       },);
     },)
     && Array.isArray(value.elementApplications,)
@@ -374,7 +420,7 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
     .every(function validApplication(application,): boolean {
       return isElementApplication({
         value: application,
-        parameterCount,
+        slotCount,
       },);
     },)
     && Array.isArray(value.calls,)
@@ -386,6 +432,7 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
       return isCallEdge({
         value: call,
         parameterCount,
+        slotCount,
       },);
     },);
 }

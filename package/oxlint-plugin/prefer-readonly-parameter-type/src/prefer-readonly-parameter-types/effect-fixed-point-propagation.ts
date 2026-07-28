@@ -11,7 +11,7 @@ import { propagateElementApplications, } from './effect-element-application.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
 import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
 import {
-  addEffectIndex,
+  addEffectSlot,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
@@ -51,7 +51,7 @@ export function propagateEffects(
     totalCount,
     summary,
   ): number {
-    return totalCount + (summary.parameterCount * EFFECT_DIMENSION_COUNT);
+    return totalCount + (summary.slots.slotCount * EFFECT_DIMENSION_COUNT);
   },
     0,
   );
@@ -93,16 +93,16 @@ export function propagateEffects(
                * packages takes opacity instead. A summary goes missing when its callable
                * could not be built at all, which `effect-demand-index.ts` warns about and
                * omits so one failure does not cost a whole file. */
-              edge.arguments
-                .forEach(function markUnresolvedFormal(origins,): void {
+              edge.originsByCalleeSlot
+                .forEach(function markUnresolvedSlot(origins,): void {
                   origins.forEach(function markOrigin(origin,): void {
-                    state.changed = addEffectIndex({
+                    state.changed = addEffectSlot({
                       target: summary.opaque,
                       value: origin,
                     },) || state.changed;
                     addOpaqueEffect({
                       summary,
-                      affectedParameterIndex: origin,
+                      affectedSlot: origin,
                       provenance: `callable without an effect summary ${edge.calleeKey}`,
                     },);
                   },);

@@ -7,6 +7,7 @@
 import type { CallExpression, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   addOpaqueEffect,
   rootParameterOrigins,
@@ -20,8 +21,8 @@ import { effectOriginLocation, } from './effect-origin-location.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
   type MutableEffectSummary,
-  NO_PARAMETER_ORIGIN,
-  type ParameterOrigins,
+  NO_SLOT_ORIGIN,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 
 /**
@@ -62,9 +63,9 @@ export function recordOpaqueBoundary({
   receiverDerived,
 }: {
   readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, ParameterOrigins>;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly call: CallExpression;
-  readonly allArgumentIndexes: readonly (readonly number[])[];
+  readonly allArgumentIndexes: readonly (readonly EffectSlot[])[];
   readonly summary: MutableEffectSummary;
   readonly receiverDerived: boolean;
 },): void {
@@ -96,17 +97,17 @@ export function recordOpaqueBoundary({
   /**
    * Caller parameters the unresolved receiver can hold.
    */
-  const receiverOrigins: ParameterOrigins = receiverClaimOutstanding
+  const receiverOrigins: SlotOrigins = receiverClaimOutstanding
     ? rootParameterOrigins({
       project,
       bindingOriginBySymbolId,
       node: callReceiver,
     },)
-    : NO_PARAMETER_ORIGIN;
+    : NO_SLOT_ORIGIN;
   receiverOrigins.forEach(function opaqueReceiverOrigin(index,): void {
     addOpaqueEffect({
       summary,
-      affectedParameterIndex: index,
+      affectedSlot: index,
       provenance: `${opaqueProvenance} [${originLocation}]`,
     },);
   },);
@@ -127,7 +128,7 @@ export function recordOpaqueBoundary({
     indexes.forEach(function opaqueArgumentOrigin(index,): void {
       addOpaqueEffect({
         summary,
-        affectedParameterIndex: index,
+        affectedSlot: index,
         provenance: `${opaqueProvenance} [${originLocation}]`,
       },);
     },);

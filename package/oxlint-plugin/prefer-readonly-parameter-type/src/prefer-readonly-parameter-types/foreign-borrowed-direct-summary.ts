@@ -21,7 +21,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import { activeCallableBodyNodes, } from './closure-activity.ts';
 import {
   discoverAliasOrigins,
-  registerBindingOrigin,
+  seedParameterSlots,
 } from './effect-binding-origins.ts';
 import {
   collectAstNodes,
@@ -29,6 +29,12 @@ import {
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
+import { parameterSlotTable, } from './effect-parameter-slots.ts';
+import {
+  asParameterIndex,
+  type EffectSlot,
+  type ParameterIndex,
+} from './effect-slot-identity.ts';
 import { addForeignBorrowedCallEdge, } from './foreign-borrowed-call-edge.ts';
 
 /**
@@ -55,42 +61,46 @@ export function foreignBorrowedOwnershipSeed({
   /**
    * Binding origins seeded by callable parameters.
    */
-  const bindingOriginBySymbolId = new Map<number, Set<number>>();
+  const bindingOriginBySymbolId = new Map<number, Set<EffectSlot>>();
+  /**
+   * Slots this declaration's parameters own.
+   */
+  const table = parameterSlotTable({ declaration, },);
   declaration.parameters
     .forEach(function registerParameter(
       parameter,
       parameterIndex,
     ): void {
-    registerBindingOrigin({
+    seedParameterSlots({
       project,
-      name: parameter.name,
+      parameter,
       parameterIndex,
+      table,
       bindingOriginBySymbolId,
     },);
   },);
   /**
    * Explicit foreign marker indexes on current declaration.
    */
-  const directForeignBorrowed = new Set<number>();
+  const directForeignBorrowed = new Set<ParameterIndex>();
   for (const [parameterIndex, parameter,] of declaration.parameters
     .entries()) {
     if (bindingContainsForeignBorrowed({
       project,
       name: parameter.name,
     },))
-      directForeignBorrowed.add(parameterIndex,);
+      directForeignBorrowed.add(asParameterIndex(parameterIndex,),);
   }
   /**
    * Ownership-only summary with effect dimensions intentionally empty.
    */
   const summary: MutableEffectSummary = {
-    parameterCount: declaration.parameters
-      .length,
+    slots: table,
     bindingOriginBySymbolId,
     directMutated: new Set(),
     directInvoked: new Set(),
     directOpaque: new Set(),
-    opaqueProvenanceByParameter: new Map(),
+    opaqueProvenanceBySlot: new Map(),
     mutated: new Set(),
     invoked: new Set(),
     opaque: new Set(),

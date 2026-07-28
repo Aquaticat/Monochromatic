@@ -16,6 +16,11 @@ import type {
 } from 'typescript/unstable/sync';
 
 import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
+import { parameterSlotTable, } from './effect-parameter-slots.ts';
+import type {
+  EffectSlot,
+  ParameterIndex,
+} from './effect-slot-identity.ts';
 import {
   callableKey,
   type EffectCallableDeclaration,
@@ -122,17 +127,24 @@ function unknownInboundSummary(
    * Callee parameter positions represented by empty ordinary origins.
    */
   const parameterIndexes = declaration.parameters
-    .map(function emptyOrigins(): readonly number[] {
+    .map(function emptyOrigins(): readonly EffectSlot[] {
+    return [];
+  },);
+  /**
+   * Foreign origins per formal, empty for the same reason ordinary origins are.
+   */
+  const foreignOrigins = declaration.parameters
+    .map(function emptyForeignOrigins(): readonly ParameterIndex[] {
     return [];
   },);
   return {
-    parameterCount: 0,
+    slots: parameterSlotTable({ declaration, },),
     bindingOriginBySymbolId: new Map(),
     directReturned: new Set(),
     directMutated: new Set(),
     directInvoked: new Set(),
     directOpaque: new Set(),
-    opaqueProvenanceByParameter: new Map(),
+    opaqueProvenanceBySlot: new Map(),
     mutated: new Set(),
     invoked: new Set(),
     opaque: new Set(),
@@ -143,18 +155,18 @@ function unknownInboundSummary(
       calleeKey: callableKey(declaration,),
       calleeFileName: declaration.getSourceFile()
         .fileName,
-      arguments: parameterIndexes,
-      foreignArguments: parameterIndexes,
-      directForeignArguments: declaration.parameters
+      originsByCalleeSlot: parameterIndexes,
+      foreignOriginsByFormal: foreignOrigins,
+      directForeignByFormal: declaration.parameters
         .map(function ordinaryArgument(): boolean {
         return false;
       },),
       foreignInbound: true,
-      callbackKeys: declaration.parameters
+      callbackKeysByCalleeSlot: declaration.parameters
         .map(function unavailableCallback() {
         return OWNED_CALLABLE_UNAVAILABLE;
       },),
-      callbackFileNames: declaration.parameters
+      callbackFileNamesByCalleeSlot: declaration.parameters
         .map(function unavailableCallbackFile() {
         return OWNED_CALLABLE_UNAVAILABLE;
       },),
@@ -230,7 +242,7 @@ export function completeForeignBorrowedGraph({
   readonly rootDeclaration: EffectCallableDeclaration;
   readonly analysisBudget: EffectAnalysisBudget;
   readonly analysisRoot?: string;
-}): ReadonlyMap<string, ReadonlySet<number>> {
+}): ReadonlyMap<string, ReadonlySet<ParameterIndex>> {
   /**
    * Ownership summaries in demanded backwards caller closure.
    */

@@ -12,6 +12,7 @@ import type {
 } from '@oxlint/plugins';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
+import { asParameterIndex, } from './effect-slot-identity.ts';
 import { bindingContainsForeignHostCapability, } from './foreign-host-capability-classifier.ts';
 import { inputUsageSubject, } from './input-diagnostic-description.ts';
 import {
@@ -186,8 +187,12 @@ export function verifyReadonlyCallable({
   declaration.parameters
     .forEach(function verifyParameter(
       parameter,
-      parameterIndex,
+      declaredPosition,
     ): void {
+    /**
+     * Declared position of this parameter, as the effect index it is compared against.
+     */
+    const parameterIndex = asParameterIndex(declaredPosition,);
     /**
      * Authored parameter text used in diagnostics.
      */

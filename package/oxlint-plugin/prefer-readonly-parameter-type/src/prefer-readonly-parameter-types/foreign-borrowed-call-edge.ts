@@ -13,6 +13,7 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { declarationDirectlyOwnsNode, } from './effect-foreign-inbound.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
 import { addOwnedCallEdge, } from './effect-owned-call-edge.ts';
 import {
   type EffectCallableDeclaration,
@@ -88,7 +89,7 @@ export function addForeignBorrowedCallEdge({
    * Caller parameter roots corresponding to exact call arguments.
    */
   const allArgumentIndexes = call.arguments
-    .map(function argumentIndexes(argument,): readonly number[] {
+    .map(function argumentIndexes(argument,): readonly EffectSlot[] {
     return parameterIndexes({
       project,
       bindingOriginBySymbolId: summary.bindingOriginBySymbolId,

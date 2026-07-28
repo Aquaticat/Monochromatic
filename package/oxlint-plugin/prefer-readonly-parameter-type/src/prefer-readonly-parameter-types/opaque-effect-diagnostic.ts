@@ -6,6 +6,7 @@
 
 import type { Context, } from '@oxlint/plugins';
 
+import type { ParameterIndex, } from './effect-slot-identity.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
 import {
   everyBoundaryIsInputMethod,
@@ -47,7 +48,7 @@ export function uncertaintyBoundaries({
   parameterIndex,
 }: {
   readonly effectSummary: CallableEffectSummary;
-  readonly parameterIndex: number;
+  readonly parameterIndex: ParameterIndex;
 },): UncertaintyBoundaries {
   /**
    * Sorted upstream boundary names retained by effect propagation.

@@ -4,12 +4,20 @@
  * @module
  */
 
+import { slotsByParameterFrom, } from './effect-parameter-slots.ts';
+import {
+  asEffectSlot,
+  asParameterIndex,
+  type EffectSlot,
+  type ParameterIndex,
+} from './effect-slot-identity.ts';
 import {
   type CallbackRelation,
   type CallEdge,
   type ElementApplication,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
+  type SlotOwnership,
 } from './effect-summary-model.ts';
 
 /**
@@ -37,20 +45,31 @@ export type SerializedCallbackKey =
 /**
  * JSON-safe call edge.
  */
-export type SerializedCallEdge = Omit<CallEdge, 'callbackKeys' | 'callbackFileNames'> & {
-  readonly callbackKeys: readonly SerializedCallbackKey[];
-  readonly callbackFileNames: readonly SerializedCallbackKey[];
-};
+export type SerializedCallEdge =
+  & Omit<
+    CallEdge,
+    | 'callbackKeysByCalleeSlot'
+    | 'callbackFileNamesByCalleeSlot'
+    | 'originsByCalleeSlot'
+    | 'foreignOriginsByFormal'
+  >
+  & {
+    readonly originsByCalleeSlot: readonly (readonly number[])[];
+    readonly foreignOriginsByFormal: readonly (readonly number[])[];
+    readonly callbackKeysByCalleeSlot: readonly SerializedCallbackKey[];
+    readonly callbackFileNamesByCalleeSlot: readonly SerializedCallbackKey[];
+  };
 
 /**
  * JSON-safe direct summary.
  */
 export type SerializedEffectSummary = {
   readonly parameterCount: number;
+  readonly parameterOfSlot: readonly number[];
   readonly directMutated: readonly number[];
   readonly directInvoked: readonly number[];
   readonly directOpaque: readonly number[];
-  readonly opaqueProvenanceByParameter: readonly (readonly [
+  readonly opaqueProvenanceBySlot: readonly (readonly [
     number,
     readonly string[]
   ])[];
@@ -73,6 +92,64 @@ export type SerializedEffectSummaries = readonly (
     SerializedEffectSummary
   ]
 )[];
+
+/**
+ * Rebuilds slot ownership from a restored payload.
+ *
+ * @param summary - Restored summary carrying its persisted ownership.
+ *
+ * @returns ownership usable for projection back to parameters.
+ *
+ * @example
+ * ```ts
+ * restoredOwnership(summary);
+ * ```
+ */
+function restoredOwnership(summary: SerializedEffectSummary,): SlotOwnership {
+  /**
+   * Owning parameter of every slot, as branded positions.
+   */
+  const parameterOfSlot = summary.parameterOfSlot
+    .map(asParameterIndex,);
+  return {
+    parameterCount: summary.parameterCount,
+    slotCount: parameterOfSlot.length,
+    parameterOfSlot,
+    slotsByParameter: slotsByParameterFrom({ parameterOfSlot, },),
+  };
+}
+
+/**
+ * Rebrands a restored list of slot numbers.
+ *
+ * @param slots - Plain slot numbers read from the payload.
+ *
+ * @returns same slots, branded.
+ *
+ * @example
+ * ```ts
+ * restoredSlotList([0, 1]);
+ * ```
+ */
+function restoredSlotList(slots: readonly number[],): readonly EffectSlot[] {
+  return slots.map(asEffectSlot,);
+}
+
+/**
+ * Rebrands a restored set of slot numbers.
+ *
+ * @param slots - Plain slot numbers read from the payload.
+ *
+ * @returns mutable branded slot set.
+ *
+ * @example
+ * ```ts
+ * restoredSlots([0, 1]);
+ * ```
+ */
+function restoredSlots(slots: readonly number[],): Set<EffectSlot> {
+  return new Set(restoredSlotList(slots,),);
+}
 
 /**
  * Serializes callback identity without process-local symbols.
@@ -146,11 +223,17 @@ export function serializeEffectSummaries(
       return [
         key,
         {
-          parameterCount: summary.parameterCount,
+          parameterCount: summary.slots
+            .parameterCount,
+          /* Ownership is persisted because a restored summary has no declaration to derive
+           * it from, and every effect set it carries is meaningless without it: the numbers
+           * are slots, and only this says which parameter each one answers for. */
+          parameterOfSlot: [...summary.slots
+            .parameterOfSlot,],
           directMutated: [...summary.directMutated,],
           directInvoked: [...summary.directInvoked,],
           directOpaque: [...summary.directOpaque,],
-          opaqueProvenanceByParameter: [...summary.opaqueProvenanceByParameter
+          opaqueProvenanceBySlot: [...summary.opaqueProvenanceBySlot
             .entries(),]
             .map(function serializeProvenance([index, facts,],): readonly [
               number,
@@ -174,8 +257,8 @@ export function serializeEffectSummaries(
             .map(function copyApplication(application,): ElementApplication {
             return {
               ...application,
-              callbackParameterIndexes: [
-                ...application.callbackParameterIndexes,
+              observerParameterIndexes: [
+                ...application.observerParameterIndexes,
               ],
             };
           },),
@@ -183,9 +266,17 @@ export function serializeEffectSummaries(
             .map(function serializeCall(edge,): SerializedCallEdge {
             return {
               ...edge,
-              callbackKeys: edge.callbackKeys
+              originsByCalleeSlot: edge.originsByCalleeSlot
+                .map(function plainOrigins(origins,): readonly number[] {
+                  return [...origins,];
+                },),
+              foreignOriginsByFormal: edge.foreignOriginsByFormal
+                .map(function plainForeign(origins,): readonly number[] {
+                  return [...origins,];
+                },),
+              callbackKeysByCalleeSlot: edge.callbackKeysByCalleeSlot
                 .map(serializeCallbackKey,),
-              callbackFileNames: edge.callbackFileNames
+              callbackFileNamesByCalleeSlot: edge.callbackFileNamesByCalleeSlot
                 .map(serializeCallbackKey,),
             };
           },),
@@ -218,27 +309,28 @@ export function deserializeEffectSummaries(
     return [
       key,
       {
-        parameterCount: summary.parameterCount,
+        slots: restoredOwnership(summary,),
         bindingOriginBySymbolId: new Map(),
 
-        directMutated: new Set(summary.directMutated,),
-        directInvoked: new Set(summary.directInvoked,),
-        directOpaque: new Set(summary.directOpaque,),
-        opaqueProvenanceByParameter: new Map(summary.opaqueProvenanceByParameter
-          .map(function deserializeProvenance([index, facts,],): [
-            number,
+        directMutated: restoredSlots(summary.directMutated,),
+        directInvoked: restoredSlots(summary.directInvoked,),
+        directOpaque: restoredSlots(summary.directOpaque,),
+        opaqueProvenanceBySlot: new Map(summary.opaqueProvenanceBySlot
+          .map(function deserializeProvenance([slot, facts,],): [
+            EffectSlot,
             Set<string>
           ] {
             return [
-              index,
+              asEffectSlot(slot,),
               new Set(facts,),
             ];
           },),),
-        mutated: new Set(summary.mutated,),
-        invoked: new Set(summary.invoked,),
-        opaque: new Set(summary.opaque,),
-        directForeignBorrowed: new Set(summary.directForeignBorrowed,),
-        directReturned: new Set(summary.directReturned,),
+        mutated: restoredSlots(summary.mutated,),
+        invoked: restoredSlots(summary.invoked,),
+        opaque: restoredSlots(summary.opaque,),
+        directForeignBorrowed: new Set(summary.directForeignBorrowed
+          .map(asParameterIndex,),),
+        directReturned: restoredSlots(summary.directReturned,),
         relations: summary.relations
           .map(function copyRelation(relation,) {
           return { ...relation, };
@@ -247,8 +339,8 @@ export function deserializeEffectSummaries(
           .map(function copyApplication(application,): ElementApplication {
           return {
             ...application,
-            callbackParameterIndexes: [
-              ...application.callbackParameterIndexes,
+            observerParameterIndexes: [
+              ...application.observerParameterIndexes,
             ],
           };
         },),
@@ -256,9 +348,15 @@ export function deserializeEffectSummaries(
           .map(function deserializeCall(edge,): CallEdge {
           return {
             ...edge,
-            callbackKeys: edge.callbackKeys
+            originsByCalleeSlot: edge.originsByCalleeSlot
+              .map(restoredSlotList,),
+            foreignOriginsByFormal: edge.foreignOriginsByFormal
+              .map(function restoreForeign(origins,): readonly ParameterIndex[] {
+                return origins.map(asParameterIndex,);
+              },),
+            callbackKeysByCalleeSlot: edge.callbackKeysByCalleeSlot
               .map(deserializeCallbackKey,),
-            callbackFileNames: edge.callbackFileNames
+            callbackFileNamesByCalleeSlot: edge.callbackFileNamesByCalleeSlot
               .map(deserializeCallbackKey,),
           };
         },),

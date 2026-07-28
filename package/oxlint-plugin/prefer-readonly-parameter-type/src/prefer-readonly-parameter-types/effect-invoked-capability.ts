@@ -5,7 +5,7 @@
  */
 
 import {
-  addEffectIndex,
+  addEffectSlot,
   type CallEdge,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
@@ -53,13 +53,13 @@ export function propagateInvokedCapabilities({
     /**
      * Owned callback declaration passed to invoked parameter.
      */
-    const callbackKey = edge.callbackKeys[calleeIndex];
+    const callbackKey = edge.callbackKeysByCalleeSlot[calleeIndex];
     if ((callbackKey !== undefined)
       && (callbackKey !== OWNED_CALLABLE_UNAVAILABLE)
       && summaries.has(callbackKey,))
       continue;
-    for (const callerIndex of edge.arguments[calleeIndex] ?? []) {
-      changed = addEffectIndex({
+    for (const callerIndex of edge.originsByCalleeSlot[calleeIndex] ?? []) {
+      changed = addEffectSlot({
         target: summary.invoked,
         value: callerIndex,
       },) || changed;
