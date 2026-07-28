@@ -290,6 +290,11 @@ a prediction written after seeing the result is not evidence of anything.
    mutated by the evaluation of the second before the call happens. Not a spread element
    either, since `callee(...values)` fills formals from the elements rather than from the
    spread expression itself.
+   No fixture asserts this one. `parameterIndexes` walks neither an assignment nor a call, so
+   that actual carries no origins whether the rule unwraps it or not, and both the right rule
+   and the wrong one report the same empty set against a true answer of the first parameter.
+   Asserting it green would pin task #28's gap as the specification. It becomes testable when
+   #28 lands and not before.
 - **Non-literal actual**. Broadcast: every property slot of the formal receives the actual's
    origins, which is what happens today.
 - **Overloads**. `overload-consistency.ts` compares two different declarations with two

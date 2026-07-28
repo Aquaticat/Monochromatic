@@ -114,6 +114,12 @@ Reducing the thread count without reaching one narrows the window rather than cl
    stage-one slot refactor was checked exactly that way: baseline and refactor both reported
    1837 findings and 27 offers with identical offer sets, which now reads as two samples from
    a distribution rather than as evidence the refactor changed nothing.
+- Bisecting a multi-threaded difference. Five single-sample multi-threaded runs were used to
+   attribute the 1838-and-28 sweep to a subset of the changed files, and every one of those
+   samples is void: the bisect reported that neither half of the change reproduced the offer
+   while the whole change did, which is only possible because each sample was a coin flip.
+   The bisect is worth recording for one reason, that its incoherence is what prompted the
+   determinism check. No conclusion drawn from it survives.
 - Reading the run's warnings. The rule's fail-closed path logs
    `semantic rule failed, so <file> has no readonly analysis this run`, and neither the runs
    that produce the offer nor the runs that omit it log anything.
