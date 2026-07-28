@@ -156,7 +156,7 @@ function actualPositionsFrom({
  * calleeHasThisParameter({ callee });
  * ```
  */
-function calleeHasThisParameter({
+export function calleeHasThisParameter({
   callee,
 }: {
   readonly callee: EffectCallableDeclaration;

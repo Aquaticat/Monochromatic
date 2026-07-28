@@ -154,6 +154,10 @@ await describe({
         const localLiteral = writtenIndexes('localLiteralProvenance',);
         /** Row held by a class expression's static member. */
         const classMember = writtenIndexes('classMemberPackaging',);
+        /** Row a callable writes through its explicit `this` formal. */
+        const throughThis = writtenIndexes('writeThroughThis',);
+        /** Row written by a method called on it as the receiver. */
+        const thisReceiver = writtenIndexes('explicitThisReceiver',);
         /** Property defined by a getter with an origin-free setter after it. */
         const accessorKey = writtenIndexes('accessorKeyBroadcast',);
         /** Getter reaching its row through `this` rather than through its own value. */
@@ -242,6 +246,14 @@ await describe({
          * to the walk. It read no written parameter while the callee writes through `holder.row`,
          * which offered a row something mutates. */
         expect(classMember,).toEqual([0,],);
+        /* Both halves of a write made through an explicit `this`. The callable side reported
+         * nothing because a `this` expression is not an identifier, so the provenance walk had
+         * no root to resolve; the caller side reported nothing because the receiver is the value
+         * before the dot and the formal-to-actual mapping has no position for it. Each offered a
+         * row that is written, and the caller half was untestable until the callable half landed,
+         * since an empty effect set propagates as nothing whatever the edge does with it. */
+        expect(throughThis,).toEqual([0,],);
+        expect(thisReceiver,).toEqual([0,],);
         /* A callee invoking a callback it destructured, with the row that callback writes
          * packaged beside it. The edge cannot name which body runs, because the actual at that
          * argument position is an object literal rather than a callable, so the invocation is

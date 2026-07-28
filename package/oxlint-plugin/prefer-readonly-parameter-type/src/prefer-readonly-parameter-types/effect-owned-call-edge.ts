@@ -32,7 +32,14 @@ import {
   argumentPropertyView,
   originsOfPropertyKey,
 } from './effect-argument-properties.ts';
-import { callableDeclaration, } from './effect-call-resolution.ts';
+import {
+  callableDeclaration,
+  parameterIndexes,
+} from './effect-call-resolution.ts';
+import {
+  memberCallReceiver,
+  NO_MEMBER_RECEIVER,
+} from './effect-member-call-receiver.ts';
 import {
   parameterSlotTable,
   type ParameterSlotTable,
@@ -43,7 +50,10 @@ import type {
 } from './effect-slot-identity.ts';
 import { parametersOfSlots, } from './effect-slot-projection.ts';
 
-import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
+import {
+  calleeHasThisParameter,
+  formalActualPositions,
+} from './effect-formal-actual-mapping.ts';
 
 /**
  * Sentinel marking a formal that no single actual argument fills.
@@ -127,6 +137,37 @@ export function addOwnedCallEdge({
       },);
       return [...origins,];
     },);
+  /* A method declaring an explicit `this` formal writes through its receiver, and the receiver
+   * is the value before the dot rather than an argument, so `formalActualPositions` has no
+   * position for it and left that formal with nothing. `explicitThisReceiver` in the
+   * slot-narrowing fixture measured no effect for `row.write()` where `write` assigns
+   * `this.label`, which offers a row the method mutates.
+   *
+   * This is the one place holding both the callee declaration and the call expression, so it is
+   * where the receiver can fill that formal. */
+  /**
+   * Caller origins reaching each formal, with the receiver filling an explicit `this`.
+   */
+  const originsWithReceiver = calleeHasThisParameter({ callee, },)
+    ? originsByFormal.map(function fillReceiver(
+      origins,
+      formalIndex,
+    ): readonly EffectSlot[] {
+      if (formalIndex !== 0)
+        return origins;
+      /**
+       * Value before the dot, absent when the call names no member.
+       */
+      const receiver = memberCallReceiver({ call, },);
+      return receiver === NO_MEMBER_RECEIVER
+        ? origins
+        : parameterIndexes({
+          project,
+          bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
+          node: receiver,
+        },);
+    },)
+    : originsByFormal;
   /**
    * Owned callback declarations paired with actual argument positions.
    */
@@ -227,7 +268,7 @@ export function addOwnedCallEdge({
       /**
        * Every origin this formal packages, which a whole slot takes unnarrowed.
        */
-      const wholeOrigins = originsByFormal[owner] ?? [];
+      const wholeOrigins = originsWithReceiver[owner] ?? [];
       /**
        * Key this slot names, sentinel when the slot is the whole parameter.
        */
@@ -264,7 +305,7 @@ export function addOwnedCallEdge({
     /* Foreign ownership is a marker on a whole parameter, and its consumer compares against
      * caller parameters, so caller slots collapse to the parameters that own them here rather
      * than at the point of use. */
-    foreignOriginsByFormal: originsByFormal
+    foreignOriginsByFormal: originsWithReceiver
       .map(function foreignOriginsForFormal(origins,): readonly ParameterIndex[] {
         return [
           ...parametersOfSlots({
