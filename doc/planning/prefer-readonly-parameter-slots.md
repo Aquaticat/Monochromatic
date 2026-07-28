@@ -494,15 +494,28 @@ The shipped state measures 1741 findings and 33 offers,
 identical across the stage-three sweep and the confirmation sweep after the last fix,
 which is what an unreached path changing nothing looks like.
 
-One limit on what that pair proves, stated plainly because the numbers invite a stronger reading.
-The reference side was swept at `263b0d099`,
-which already has slots allocated and threaded and broadcasts on every property slot.
-So the pair brackets stages two and three, not stage one.
-Stage one's neutrality rests on weaker evidence:
-one single-threaded package lint agreeing between the pre-slot commit and the post-slot one,
-and a multi-threaded sweep pair that the nondeterminism finding has since devalued.
-A workspace-scale single-threaded sweep of the pre-slot commit was never run,
-and running one is the only thing that would settle it.
+### Stage one is settled
+
+The sweep pair above brackets stages two and three only,
+because its reference side already had slots allocated and threaded.
+Stage one was measured separately and afterwards,
+by checking the pre-slot plugin sources into the current tree, sweeping, then doing the same for
+the post-slot ones:
+
+Both sides report 1796 findings and 28 offers,
+with identical finding sets and identical offer sets,
+zero locations lost and zero gained.
+Keying effects by slot rather than by parameter index changed nothing at workspace scale,
+which is what stage one claimed and what nothing had previously checked with a measurement worth
+trusting.
+
+The first attempt at this comparison reused the older `263b0d099` sweep log rather than
+re-sweeping,
+and reported nine moved report locations.
+Every one was `package/config/tofu`, which concurrent work had edited twice in between.
+Line numbers shifted by a constant while message text stayed identical, which is the signature,
+and `git log --since` over the named files confirmed it.
+Both sides of a sweep pair have to be swept against the same tree.
 
 ## Acceptance
 
