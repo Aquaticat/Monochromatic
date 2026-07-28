@@ -277,6 +277,20 @@ Sequential and single-threaded on both sides, 128 package tasks each.
 The pre-stage-two side reported 1799 findings with 28 offers;
 the stage-two side 1741 with 33.
 
+The sweep's own reproducibility was tested before any of it was believed,
+because nothing had established that fixing the thread count inside each process was enough once
+128 processes ran in sequence against a shared on-disk cache.
+Two consecutive runs of the shipped state reported 1741 findings and 33 offers with identical
+finding and offer sets.
+Comparing one run against one run was what the voided bisect did,
+and it is not a thing to repeat.
+
+Refusing to decompose a literal that sets a prototype cost nothing measurable here:
+the sweep is identical before and after that fix,
+finding for finding,
+so no argument literal in this workspace sets a prototype.
+The precision it gives up is real but unexercised.
+
 **No offer was withdrawn.**
 That was the prediction that mattered,
 and it is the one a narrowing cannot survive breaking.
