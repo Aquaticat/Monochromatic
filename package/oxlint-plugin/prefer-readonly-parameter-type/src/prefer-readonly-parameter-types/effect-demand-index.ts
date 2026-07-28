@@ -444,6 +444,12 @@ export function createDemandDrivenEffectIndex(
           analysisBudget,
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
+        /* Every callable the closure returned is verified, not just the root it started from.
+         * The walk queues each caller it discovers and enumerates that caller's own signature
+         * usages project-wide, so a callable appearing in the result had its inbounds covered
+         * as completely as the root did. Marking only the root left the rest to each re-run a
+         * whole backwards closure when asked about, which is where most of the cost of proving
+         * every callable went. */
         completeForeign.forEach(function retainCompleteForeign(
           indexes,
           callableKeyValue,
@@ -452,7 +458,10 @@ export function createDemandDrivenEffectIndex(
             callableKeyValue,
             indexes,
           );
+          verifiedForeignKeys.add(callableKeyValue,);
         },);
+        /* The root is marked separately because a root the closure found no candidate for is
+         * absent from the result, and re-proving it would repeat the same empty answer. */
         verifiedForeignKeys.add(key,);
       }
       /* Every key reaching here has been verified, since the proof above runs for any key that
