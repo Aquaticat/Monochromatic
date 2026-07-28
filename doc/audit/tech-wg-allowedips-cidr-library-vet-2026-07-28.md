@@ -2,7 +2,7 @@
 
 Status:
  in progress.
- Lifecycle phase is targeted evidence complete and finalists selected.
+ Lifecycle phase is finalist validation complete and scoring pending.
  Started and last updated on 2026-07-28.
 
 Subject:
@@ -263,11 +263,12 @@ Discovery source:
  and web results.
 
 Screening result:
- finalist pending runtime validation.
-Source and artifact evidence confirm direct dual-stack union,
- subtraction,
- minimization,
- and ordering.
+ validated finalist.
+Source,
+ upstream,
+ platform,
+ published-artifact,
+ and consumer checks passed.
 
 ### `fast-cidr-tools`
 
@@ -275,11 +276,8 @@ Discovery source:
  npm and web results.
 
 Screening result:
- finalist pending runtime validation.
-It provides direct dual-stack merge and exclusion with opt-in sorting.
-Validation must probe its permissive parser,
- prior IPv6 defect,
- and larger same-author dependency graph.
+ hard-gate failure during published consumer validation.
+One exclusion covering multiple disjoint allowed intervals leaves one covered interval in the output.
 
 ### `@h3mantd/ip-kit`
 
@@ -287,10 +285,8 @@ Discovery source:
  npm expansion and web results.
 
 Screening result:
- finalist pending runtime validation.
-Its `RangeSet` operations cover subtraction and minimal CIDR conversion,
- with separate sets required for each
-address family.
+ validated finalist.
+The published artifact passed after the consumer added family partitioning and host-to-CIDR conversion.
 
 ### `ip-num`
 
@@ -693,18 +689,18 @@ Status is active,
 
 ## Hard-gate outcomes
 
-The finalists are `cidr-tools` 12.1.3,
- `fast-cidr-tools` 0.3.4,
- and `@h3mantd/ip-kit` 1.1.0.
-Each passed license,
+The validated finalists are `cidr-tools` 12.1.3 and `@h3mantd/ip-kit` 1.1.0.
+Both passed license,
  source availability,
  provenance,
- pure JavaScript or TypeScript,
+ pure JavaScript or TypeScript runtime,
  artifact,
- and install-lifecycle
-gates.
-Platform and consumer correctness remain pending runtime validation.
+ install-lifecycle,
+ platform,
+ upstream-suite,
+ and published-consumer gates.
 
+`fast-cidr-tools` 0.3.4 fails exact set subtraction at the published consumer boundary.
 `ip-num` 1.6.1 fails the no-install-lifecycle hard constraint.
 `ip-address` 10.3.1 exits for category mismatch because it supplies no set engine.
 All parser-only,
@@ -960,14 +956,154 @@ Candidate modules read only their package files and inputs,
  and spawn nothing.
 Each candidate succeeds only when every exact output equals the independently fixed expectation.
 
+## Validation results
+
+All local commands ran on Linux x86-64 in the recorded Node 24.18.0 container.
+Full transcripts and checksums are under `~/temp/agent/wg-cidr-validation/logs`.
+Dependency fetches used registry network access;
+ every candidate test and consumer command used `--network=none`.
+No command exceeded its resource or scratch ceiling.
+
+### `cidr-tools` and `ip-bigint`
+
+The two frozen installs completed in five seconds each,
+ consumed 176,888 KiB and 176,716 KiB,
+ and executed no lifecycle.
+The final upstream commands each exited zero in eight seconds.
+`cidr-tools` passed lint and type checking,
+ nine Vitest tests,
+ and its Node 22 build.
+`ip-bigint` passed lint and type checking,
+ one Vitest test,
+ and its Node 22 build.
+The only stderr was ESLint's performance-only `ESLintPoorConcurrencyWarning`.
+Evidence is `proc_21-*.log` and `proc_22-*.log`.
+
+The exact `cidr-tools` and `ip-bigint` commits also have successful upstream checks for Node 22,
+ 24,
+ and
+26 on Ubuntu,
+ macOS,
+ and Windows,
+ plus Bun on all three systems.
+Evidence is [the 12.1.3 CI run][cidr-ci] and [the ip-bigint 9.0.7 CI run][ip-bigint-ci].
+No production source imports an operating-system,
+ filesystem,
+ process,
+ worker,
+ or network API.
+Platform status is pass with high confidence.
+
+The published `cidr-tools` package passed all five fixed consumer vectors.
+Its parser rejected trailing-junk,
+ stacked,
+ and missing-address prefixes.
+It accepted malformed IPv4 text and out-of-range prefixes,
+ matching its documented rudimentary validation.
+The planned `node:net` address check and explicit family prefix bound reject those accepted cases.
+Evidence is `proc_10-stdout.log`;
+ status is consumer pass.
+
+The local `ip-bigint` build is byte-identical to its published JavaScript.
+The local `cidr-tools` build differs from the published JavaScript only in the bundler-generated local default
+identifier,
+ `work_default` instead of `cidr_tools_default`,
+ because the build directory basename differs.
+The declarations are byte-identical and the executable export graph and bodies are otherwise identical.
+Source-to-artifact status is pass.
+
+The non-default coverage command `pnpm exec vitest --coverage` was omitted.
+It executes the same test files and changes only coverage accounting,
+ so it cannot add a consumed code path.
+Benchmarks and update or release commands were also omitted because they do not validate the consumed API.
+
+### `@h3mantd/ip-kit`
+
+The frozen install completed in 49 seconds,
+ consumed 143,248 KiB,
+ and executed no lifecycle.
+Npm reported 19 advisories in the development graph;
+ the published runtime package is dependency-free and its exact-version advisory query was empty.
+The upstream command exited zero in five seconds:
+ lint and type checking passed,
+ all 160 tests in 13 files passed,
+ and ESM,
+ CommonJS,
+ and declarations built.
+Evidence is `proc_9-*.log`.
+
+The first published consumer attempt failed before set arithmetic because `RangeSet.fromCIDRs` rejects a host
+literal with `Invalid CIDR format: 192.0.2.1`.
+After the candidate adapter converted hosts to `/32` or `/128` and partitioned inputs by family,
+ all five
+fixed vectors passed.
+Parser probes rejected malformed addresses,
+ stacked suffixes,
+ and out-of-range prefixes,
+ but accepted
+`192.0.2.1/24junk` as prefix 24.
+An exact-prefix consumer guard is therefore required.
+Evidence is `proc_12-stderr.log` and `proc_16-stdout.log`.
+Status is consumer pass with additional production orchestration.
+
+The local ESM build is byte-identical to the published artifact.
+The exact commit's upstream Node 18,
+ 20,
+ and 22 Linux checks passed.
+No production source imports an operating-system,
+ filesystem,
+ process,
+ worker,
+ or network API;
+ the consumed operations use language-defined BigInt arithmetic.
+No macOS or Windows runner was locally available and upstream does not test those systems.
+Platform status is pass with medium confidence from the pure runtime boundary rather than direct runner evidence.
+
+The non-default `npm run test:coverage` command was omitted because it executes the same 13 test files and changes
+only coverage accounting.
+Watch mode,
+ formatting,
+ examples,
+ changesets,
+ and release commands cannot affect the consumed runtime operation and were omitted.
+
+### `fast-cidr-tools`
+
+The frozen install completed in five seconds,
+ consumed 212,580 KiB,
+ and executed no lifecycle.
+After matching upstream's build-before-lint order,
+ build and all seven tests passed in four seconds.
+Lint exited zero but reported four naming-convention warnings.
+The local ESM build is byte-identical to the published artifact.
+Evidence is `proc_15-*.log`.
+
+The published consumer failed the first set vector.
+For allowed `10.0.0.0/30` and `10.0.0.8/30` with disallowed `10.0.0.0/28`,
+ exact subtraction is empty.
+Version 0.3.4 returned `10.0.0.8/30`.
+Evidence is `proc_11-stderr.log`.
+
+The source cause is `src/exclude.ts:111-127`.
+When an exclusion changes one base,
+ the loop appends remainders,
+ splices the current base,
+ then unconditionally increments `index`.
+That increment skips the next original base shifted into the removed slot.
+The defect is independent of input validation or output sorting and violates the exact union-minus-union hard
+constraint.
+Status is hard-gate fail;
+ the candidate is not scored.
+
 ## Scoring and sensitivity
 
-Scoring waits for equal-depth finalist validation.
+Scoring waits for ratings and sensitivity calculations across the two validated finalists.
 
 ## Recommendation
 
 No recommendation yet.
 
+[cidr-ci]: https://github.com/silverwind/cidr-tools/actions/runs/30333360243
 [cidr-issue-30]: https://github.com/silverwind/cidr-tools/issues/30
 [cidr-registry]: https://registry.npmjs.org/cidr-tools/12.1.3
 [cidr-release]: https://github.com/silverwind/cidr-tools/releases/tag/12.1.3
@@ -979,6 +1115,7 @@ No recommendation yet.
 [ip-address-exports]: https://github.com/beaugunderson/ip-address/blob/be7e626c0d49fccb518899f520a3fb64ee189741/src/ip-address.ts
 [ip-address-registry]: https://registry.npmjs.org/ip-address/10.3.1
 [ip-address-repo]: https://github.com/beaugunderson/ip-address
+[ip-bigint-ci]: https://github.com/silverwind/ip-bigint/actions/runs/30332965290
 [ip-kit-registry]: https://registry.npmjs.org/%40h3mantd%2Fip-kit/1.1.0
 [ip-kit-release]: https://github.com/h3mantD/ip-kit/releases/tag/v1.1.0
 [ip-num-registry]: https://registry.npmjs.org/ip-num/1.6.1
