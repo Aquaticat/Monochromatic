@@ -511,10 +511,16 @@ children: [
           return message.startsWith(`Parameter "${parameterName}" should be readonly`,);
         },).length;
       }
+      /* Four, down from five, and `row` twice rather than three times, because
+       * `polymorphicEffect` stopped offering. Its call resolves against the declared receiver
+       * type to `Reader.use`, which only reads, while `Writer.use` overrides it and writes. A
+       * call to an instance method a subclass may override is now unresolved, so both its
+       * receiver and its row take opacity instead. Reverting
+       * `effect-overridable-method.ts` restores the offer. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(5,);
-      expect(offersFor('row',),).toBe(3,);
+      },).length,).toBe(4,);
+      expect(offersFor('row',),).toBe(2,);
       expect(offersFor('first',),).toBe(1,);
       expect(offersFor('value',),).toBe(1,);
       /* The seven shapes already fixed, kept as the controls that stop this case from

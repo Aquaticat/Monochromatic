@@ -35,6 +35,7 @@ import {
   OWNED_CALLABLE_UNAVAILABLE,
   type SlotOrigins,
 } from './effect-summary-model.ts';
+import { isOverridableMethod, } from './effect-overridable-method.ts';
 import {
   callableDeclaration,
   parameterIndexes,
@@ -218,11 +219,27 @@ export function inspectEffectCall({
     : COLLECTION_CALL_UNDERIVED;
   if (collectionCoverage === COLLECTION_CALL_DERIVED)
     return;
+  /* A call resolves against the receiver's declared type, so an instance method resolves to
+   * the declaration that type names. The value at runtime may be a subclass whose override runs
+   * instead, and an override is free to write what the base only reads.
+   * `callOverridableMethod` in the slot-narrowing fixture measures exactly that: it reported no
+   * effect at all while `WritingDerived.inspect` assigns the row its base reads, which offers a
+   * row a subclass mutates.
+   *
+   * The subclass need not exist in this project either, so enumerating overrides cannot settle
+   * it. Treating the call as unresolved is what the rule already does everywhere it cannot see
+   * the body that runs. */
+  /**
+   * Whether the resolved declaration is an instance method a subclass may override.
+   */
+  const overridable = (resolvedDeclaration !== undefined)
+    && isOverridableMethod({ declaration: resolvedDeclaration, },);
   /**
    * Owned callee declaration selected by signature or symbol fallback.
    */
-  const signatureCallee = (resolvedDeclaration !== undefined)
-    && isEffectCallableDeclaration(resolvedDeclaration,)
+  const signatureCallee = ((resolvedDeclaration !== undefined)
+      && (!overridable)
+      && isEffectCallableDeclaration(resolvedDeclaration,))
     ? callableDeclaration({
       project,
       node: resolvedDeclaration,
@@ -232,7 +249,7 @@ export function inspectEffectCall({
   /**
    * Owned callee selected by signature or expression symbol fallback.
    */
-  const callee = signatureCallee === OWNED_CALLABLE_UNAVAILABLE
+  const callee = ((signatureCallee === OWNED_CALLABLE_UNAVAILABLE) && (!overridable))
     ? callableDeclaration({
       project,
       node: call.expression,
