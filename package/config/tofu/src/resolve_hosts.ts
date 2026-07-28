@@ -199,7 +199,8 @@ function assertHostname(hostname: string,): string {
  * ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
-  return Error.isError(error,)
+  return ((typeof error) === 'object')
+    && (error !== null)
     && ('code' in error);
 }
 
@@ -493,6 +494,28 @@ if (hostnames.length > 0) {
 }
 
 /**
+ * Joins CIDRs without passing caller-owned array identity to an unresolved method.
+ *
+ * @param cidrs - CIDR strings to join in source order.
+ *
+ * @returns Comma-separated CIDR text.
+ *
+ * @example
+ * ```ts
+ * joinCidrs(['192.0.2.1/32', '2001:db8::1/128']);
+ * ```
+ */
+function joinCidrs(cidrs: readonly string[],): string {
+  /**
+   * Output text accumulated from primitive CIDR strings.
+   */
+  let result = '';
+  for (const cidr of cidrs)
+    result = result === '' ? cidr : `${result},${cidr}`;
+  return result;
+}
+
+/**
  * Per-host output entries, each pairing a hostname with its comma-joined CIDR string.
  */
 const resultEntries = Object.entries(resolvedByHost,)
@@ -502,7 +525,7 @@ const resultEntries = Object.entries(resolvedByHost,)
   ],): ResultEntry {
     return [
       hostname,
-      cidrs.join(',',),
+      joinCidrs(cidrs,),
     ];
   },);
 

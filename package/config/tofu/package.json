@@ -4,6 +4,9 @@
   "private": true,
   "description": "OpenTofu configuration for Hetzner Cloud firewalls with dynamic IP range aggregation from CDNs and ASN lookups.",
   "type": "module",
+  "exports": {
+    "./ts/*": "./src/*"
+  },
   "devDependencies": {
     "@types/node": "catalog:"
   }

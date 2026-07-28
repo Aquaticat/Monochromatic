@@ -225,7 +225,8 @@ function parseOrPort443Cidr(address: string,): string | NoOrPort443Cidr {
  * ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
-  return Error.isError(error,)
+  return ((typeof error) === 'object')
+    && (error !== null)
     && ('code' in error);
 }
 
