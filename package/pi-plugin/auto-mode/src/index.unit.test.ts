@@ -672,13 +672,46 @@ await describe({
           targetPath,
           'fixture\n',
         );
-        /** Mutating or executable variants that must not receive read-only bypass. */
+        /** Outside root reached only if unquoted scratch glob follows symlink. */
+        const outsideRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-outside-',
+        ),);
+        await symlink(
+          outsideRoot,
+          join(
+            agentRoot,
+            'escape',
+          ),
+          'dir',
+        );
+        /** Secret-looking path that must retain secret-path signal inside scratch allowlist. */
+        const secretPath = join(
+          agentRoot,
+          '.env',
+        );
+        await writeFile(
+          secretPath,
+          'SECRET=value\n',
+        );
+        /** Mutating, executable, or expansion-unsafe variants that must not receive read-only bypass. */
         const commands = [
           `touch ${targetPath}`,
           `find ${agentRoot} -type f -delete`,
           `rg --pre cat fixture ${agentRoot}`,
           `git -C ${agentRoot} tag release-candidate`,
           `rg fixture ${agentRoot} > ${targetPath}`,
+          `find ${agentRoot} -type f -exec touch {} \\;`,
+          `find -L ${agentRoot} -type f -print`,
+          `sort --output=${targetPath}`,
+          `printf -v result '%s' fixture`,
+          `MODE=fixture rg fixture ${agentRoot}`,
+          `for repo in ${agentRoot}/{repo,../../outside}; do git -C "$repo" tag --points-at HEAD; done`,
+          `for repo in ${agentRoot}; do git -C $repo tag --points-at HEAD; done`,
+          `rg fixture ${agentRoot}/*`,
+          `rg fixture ${agentRoot}/escape`,
+          `rg fixture ${outsideRoot}`,
+          `rg fixture ${secretPath}`,
         ];
         const {
           api,
@@ -726,13 +759,22 @@ await describe({
         ),);
         for (const { command, flagged, } of decisions)
           expect({ command, flagged, },).toEqual({ command, flagged: true, },);
-        await rm(
-          home,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
+        await Promise.all([
+          rm(
+            home,
+            {
+              recursive: true,
+              force: true,
+            },
+          ),
+          rm(
+            outsideRoot,
+            {
+              recursive: true,
+              force: true,
+            },
+          ),
+        ],);
       },
     },),
 

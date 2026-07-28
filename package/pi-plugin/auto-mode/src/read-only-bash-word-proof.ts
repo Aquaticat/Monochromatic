@@ -26,25 +26,122 @@ const UNPROVEN_WORD: unique symbol = Symbol('read-only Bash word value is unprov
 type ProvenWordValues = readonly string[] | typeof UNPROVEN_WORD;
 
 /**
- * Check loop value has no expansion or glob evaluated by shell at runtime.
+ * Parsed argument source record exposed by shared shell analyzer.
+ */
+type WordSource = CommandInfo['argSources'][number];
+
+/**
+ * Shell quote mode while scanning original word spelling.
+ */
+type QuoteMode = 'double' | 'none' | 'single';
+
+/**
+ * Unquoted characters that trigger pathname or brace expansion.
+ */
+const UNSAFE_UNQUOTED_CHARACTERS: ReadonlySet<string> = new Set([
+  '*',
+  '?',
+  '[',
+  '{',
+  '}',
+]);
+
+/**
+ * Extended-glob operator prefixes that become active before opening parenthesis.
+ */
+const EXTENDED_GLOB_PREFIXES: ReadonlySet<string> = new Set([
+  '+',
+  '@',
+  '!',
+]);
+
+/**
+ * Check original shell spelling has runtime expansion outside quotes.
  *
- * @param value - parsed loop word
+ * @param sourceText - exact shell word spelling
+ *
+ * @returns whether pathname, brace, tilde, or extended-glob expansion remains
+ *
+ * @example
+ * ```typescript
+ * sourceHasUnsafeExpansion('/repo/*');
+ * ```
+ */
+function sourceHasUnsafeExpansion(
+  sourceText: string,
+): boolean {
+  /**
+   * Quote and escape state for one linear source scan.
+   */
+  const state: {
+    escaped: boolean;
+    quote: QuoteMode;
+  } = {
+    escaped: false,
+    quote: 'none',
+  };
+  for (let index = 0; index < sourceText.length; index += 1) {
+    /**
+     * Current source character.
+     */
+    const character = sourceText.charAt(index,);
+    if (state.escaped) {
+      state.escaped = false;
+      continue;
+    }
+    if (character === '\\') {
+      state.escaped = true;
+      continue;
+    }
+    if (state.quote === 'single') {
+      if (character === "'")
+        state.quote = 'none';
+      continue;
+    }
+    if (state.quote === 'double') {
+      if (character === '"')
+        state.quote = 'none';
+      continue;
+    }
+    if (character === "'") {
+      state.quote = 'single';
+      continue;
+    }
+    if (character === '"') {
+      state.quote = 'double';
+      continue;
+    }
+    if ((index === 0) && (character === '~'))
+      return true;
+    if (UNSAFE_UNQUOTED_CHARACTERS.has(character,))
+      return true;
+    if (EXTENDED_GLOB_PREFIXES.has(character,)
+      && (sourceText.charAt(index + 1,) === '(')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Check loop value has no expansion evaluated by shell at runtime.
+ *
+ * @param source - parsed value paired with original loop word spelling
  *
  * @returns whether value is literal enough for path proof
  *
  * @example
  * ```typescript
- * loopValueIsLiteral('/repo');
+ * loopSourceIsLiteral({ value: '/repo', sourceText: '/repo' });
  * ```
  */
-function loopValueIsLiteral(
-  value: string,
+function loopSourceIsLiteral(
+  source: WordSource,
 ): boolean {
-  return (!value.includes('$',))
-    && (!value.includes('`',))
-    && (!value.includes('*',))
-    && (!value.includes('?',))
-    && (!value.includes('[',));
+  return (!source.value.includes('$',))
+    && (!source.value.includes('`',))
+    && (!source.value.startsWith('~',))
+    && (!sourceHasUnsafeExpansion(source.sourceText,));
 }
 
 /**
@@ -84,11 +181,25 @@ function loopBindingValues(
     /**
      * Literal values attached to matched lexical binding.
      */
-    const { values, } = binding;
+    const {
+      sourceTexts,
+      values,
+    } = binding;
     if (values.length === 0)
       return UNPROVEN_WORD;
-    if (!values.every(loopValueIsLiteral,))
+    if (sourceTexts.length !== values.length)
       return UNPROVEN_WORD;
+    for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+      /**
+       * Paired loop value and exact source spelling at current index.
+       */
+      const source = {
+        value: values[valueIndex] ?? '',
+        sourceText: sourceTexts[valueIndex] ?? '',
+      };
+      if (!loopSourceIsLiteral(source,))
+        return UNPROVEN_WORD;
+    }
     return values;
   }
   return UNPROVEN_WORD;
@@ -99,7 +210,7 @@ function loopBindingValues(
  *
  * Embedded, special, multiple, and unbound parameter expansions fail closed.
  *
- * @param word - parsed command word
+ * @param source - parsed command value paired with original shell spelling
  *
  * @param command - command carrying lexical loop provenance
  *
@@ -107,35 +218,45 @@ function loopBindingValues(
  *
  * @example
  * ```typescript
- * provenWordValues({ word: '$repo', command });
+ * provenWordValues({ source: { value: '$repo', sourceText: '"$repo"' }, command });
  * ```
  */
 function provenWordValues(
   {
-    word,
+    source,
     command,
   }: {
-    readonly word: string;
+    readonly source: WordSource;
     readonly command: CommandInfo;
   },
 ): ProvenWordValues {
+  const {
+    sourceText,
+    value,
+  } = source;
   /**
    * Named parameter references in shell word.
    */
-  const references = extractParamRefs(word,);
+  const references = extractParamRefs(value,);
   if (references.length === 0) {
-    if (word.includes('$',) || word.includes('`',))
+    if (value.includes('$',) || value.includes('`',))
       return UNPROVEN_WORD;
-    return [word,];
+    if (value.startsWith('~',))
+      return UNPROVEN_WORD;
+    if (sourceHasUnsafeExpansion(sourceText,))
+      return UNPROVEN_WORD;
+    return [value,];
   }
   if (references.length !== 1)
     return UNPROVEN_WORD;
   /**
-   * Sole named reference eligible for exact loop expansion.
+   * Sole named reference eligible for exact quoted loop expansion.
    */
   const [name = '',] = references;
-  if ((word !== `$${name}`) && (word !== `\${${name}}`))
+  if ((sourceText !== `"$${name}"`)
+    && (sourceText !== `"\${${name}}"`)) {
     return UNPROVEN_WORD;
+  }
   return loopBindingValues({
     command,
     name,
@@ -208,22 +329,26 @@ async function commandWordsStayInReadScope(
   /**
    * Arguments, assignment values, and file redirects that can carry paths.
    */
-  const words: string[] = [
-    ...command.args,
-    ...command.redirectTargets,
+  const wordSources: WordSource[] = [
+    ...command.argSources,
+    ...command.redirectTargetSources,
   ];
-  for (const assignment of command.envAssignments)
-    words[words.length] = assignment.value;
+  for (const assignment of command.envAssignments) {
+    wordSources[wordSources.length] = {
+      value: assignment.value,
+      sourceText: assignment.value,
+    };
+  }
   /**
    * Independent canonical path checks gathered before concurrent execution.
    */
   const pathSignalPromises: Promise<boolean>[] = [];
-  for (const word of words) {
+  for (const source of wordSources) {
     /**
      * Finite values after exact loop-variable expansion.
      */
     const values = provenWordValues({
-      word,
+      source,
       command,
     },);
     if (values === UNPROVEN_WORD)
