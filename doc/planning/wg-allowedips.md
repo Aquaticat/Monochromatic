@@ -44,9 +44,10 @@ An empty disallowed file represents an empty set.
 Do not add short aliases or positional input.
 Do not add interactive prompts or alternate output modes.
 
-Add `cidr-tools: '>=12.1.2'` to the pnpm catalog.
+Add `cidr-tools: '>=12.1.3'` to the pnpm catalog.
 The package must depend on it through `catalog:`.
-This version floor supports Node 22 or newer and has the required array input for both `excludeCidr` parameters.
+This validated version floor supports Node 22 or newer and has the required array input for both `excludeCidr`
+parameters.
 
 Call `excludeCidr(allowedNetworks, disallowedNetworks)` directly.
 The operation unions both arrays before subtraction and returns a minimized sorted set of IPv4 and IPv6
