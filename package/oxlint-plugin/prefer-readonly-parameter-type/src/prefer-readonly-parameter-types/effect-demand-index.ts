@@ -444,26 +444,16 @@ export function createDemandDrivenEffectIndex(
           analysisBudget,
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
-        completeForeign.foreignByCallable
-          .forEach(function retainCompleteForeign(
-            indexes,
+        completeForeign.forEach(function retainCompleteForeign(
+          indexes,
+          callableKeyValue,
+        ): void {
+          completeForeignByCallable.set(
             callableKeyValue,
-          ): void {
-            completeForeignByCallable.set(
-              callableKeyValue,
-              indexes,
-            );
-          },);
-        /* Only the callables the walk actually enumerated are marked proven, which saves each of
-         * them re-running a whole backwards closure when the rule asks about it. Marking every
-         * key of the returned map instead was measurably wrong: grouping inbounds also produces
-         * entries for callees a closure member calls without the walk ever reaching them, built
-         * from whichever inbounds the closure happened to contain, and pinning those moved six
-         * findings across the workspace. */
-        completeForeign.enumerated
-          .forEach(function markProven(callableKeyValue,): void {
-            verifiedForeignKeys.add(callableKeyValue,);
-          },);
+            indexes,
+          );
+        },);
+        verifiedForeignKeys.add(key,);
       }
       /* Every key reaching here has been verified, since the proof above runs for any key that
        * has not. The lookup still defaults, because a callable the closure finds no inbound for
