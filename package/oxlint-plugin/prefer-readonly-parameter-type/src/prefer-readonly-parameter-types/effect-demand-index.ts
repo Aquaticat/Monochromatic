@@ -48,6 +48,18 @@ import {
 import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
 
 /**
+ * Identifiers an ownership marker must be written as to be detectable at all.
+ *
+ * `isForeignBorrowedType` in `foreign-borrowed-identity.ts` requires the type's alias symbol to
+ * carry one of these names and to resolve to the marker package, so a marker renamed on import
+ * is already invisible to the classifier.
+ */
+const OWNERSHIP_MARKER_NAMES: readonly string[] = [
+  'ForeignBorrowed',
+  'ForeignHostCapability',
+];
+
+/**
  * Tagged logger for effect index construction.
  */
 const dl = tagged({ tag: 'effect-demand-index', },);
@@ -141,6 +153,24 @@ export function createDemandDrivenEffectIndex(
     readonly sourceFile: SourceFile;
     readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   }>();
+  /**
+   * Whether any indexed source names an ownership marker at all.
+   *
+   * The complete backwards closure walks exactly these sources, so a scope naming no marker can
+   * yield no foreign parameter for any callable and the closure would return nothing every time.
+   * Skipping it there is an equivalence rather than a trade, and it matters because the closure
+   * otherwise runs once per callable the rule asks about. Measured on this workspace: running it
+   * unconditionally cost about a third of the sweep's wall time, and most packages name no
+   * marker.
+   */
+  const scopeNamesOwnershipMarker = [...indexedSourceFiles.values(),]
+    .some(function namesMarker(sourceFile,): boolean {
+      return OWNERSHIP_MARKER_NAMES
+        .some(function named(markerName,): boolean {
+          return sourceFile.text
+            .includes(markerName,);
+        },);
+    },);
   /**
    * Callable candidates whose exact signature inbounds were verified.
    */
@@ -403,7 +433,7 @@ export function createDemandDrivenEffectIndex(
        * its trigger had to move.
        * `doc/troubleshooting/prefer-readonly-parameter-type-thread-nondeterminism.md` records
        * the measurement. */
-      if (!verifiedForeignKeys.has(key,)) {
+      if (scopeNamesOwnershipMarker && (!verifiedForeignKeys.has(key,))) {
         /**
          * Exact backwards caller closure for current reached candidate.
          */
