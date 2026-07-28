@@ -29,6 +29,7 @@ import {
   isShorthandPropertyAssignment,
   isSpreadAssignment,
   isSpreadElement,
+  isThisExpression,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
@@ -343,9 +344,19 @@ export function expressionValueOrigins({
      * Root after property and element access removal.
      */
     const root = expressionRoot(current,);
-    if (isIdentifier(root,)) {
+    /* A `this` expression is not an identifier, so this branch skipped it and the walk fell
+     * through to a successor lookup with nothing to hand back. A callable declaring an explicit
+     * `this` formal therefore recorded no write for `this.label = 'written'` at all, which
+     * offers a row the callable mutates. `writeThroughThis` in the slot-narrowing fixture
+     * measured it.
+     *
+     * Nothing else was missing. The checker resolves a `this` expression to the same symbol as
+     * the `this` parameter's name, measured as symbol identity rather than assumed, and the
+     * parameter seeding already registers that symbol against parameter zero. Only the gate in
+     * front of the lookup had to widen. */
+    if (isIdentifier(root,) || isThisExpression(root,)) {
       /**
-       * Symbol the root identifier resolves to.
+       * Symbol the root identifier or `this` expression resolves to.
        */
       const symbol = project.checker
         .getSymbolAtLocation(root,);
