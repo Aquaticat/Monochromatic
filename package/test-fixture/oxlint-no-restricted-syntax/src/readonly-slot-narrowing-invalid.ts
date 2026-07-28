@@ -621,3 +621,64 @@ export function localLiteralProvenance(
   };
   writeNamedOnly(packaged,);
 }
+
+/**
+ * Writes through whatever a destructured callback is handed.
+ *
+ * @param run - Callback this invokes.
+ *
+ * @param value - Row handed to that callback.
+ *
+ * @example
+ * ```ts
+ * invokePackagedCallback({ run: () => {}, value: { label: '' } });
+ * ```
+ */
+function invokePackagedCallback({
+  run,
+  value,
+}: {
+  run: (row: LabelledRow,) => void;
+  value: LabelledRow;
+},): void {
+  run(value,);
+}
+
+/**
+ * Writes the row it is handed.
+ *
+ * @param row - Row this writes.
+ *
+ * @mutates row - Assigns one label.
+ *
+ * @example
+ * ```ts
+ * writeSuppliedRow({ label: '' });
+ * ```
+ */
+function writeSuppliedRow(row: LabelledRow,): void {
+  row.label = 'written';
+}
+
+/**
+ * Packages a callback and the row it writes into one destructured parameter.
+ *
+ * The callee invokes `run(value,)` and the callback writes through what it receives, so `first`
+ * is written. Naming the callback needs the edge to resolve which declaration the property holds,
+ * and a call edge that cannot resolve one has to keep the write rather than drop it: the object
+ * literal at that argument position is not itself a callable, so a lookup by argument position
+ * finds no declaration and the invocation goes unmodelled.
+ *
+ * @param first - Row the packaged callback writes.
+ *
+ * @example
+ * ```ts
+ * packagedCallbackInvocation({ label: '' });
+ * ```
+ */
+export function packagedCallbackInvocation(first: LabelledRow,): void {
+  invokePackagedCallback({
+    run: writeSuppliedRow,
+    value: first,
+  },);
+}

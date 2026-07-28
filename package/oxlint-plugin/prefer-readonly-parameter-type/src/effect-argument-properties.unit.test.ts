@@ -85,6 +85,45 @@ await describe({
               return left - right;
             },);
         }
+        /**
+         * Reads the parameter positions one fixture caller cannot account for.
+         *
+         * @param functionName - Exported fixture caller to inspect.
+         *
+         * @returns opaque parameter positions in ascending order.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the declaration under test.
+           */
+          const nameNode = session.nodeAtOffset(
+            NARROWING_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration the name belongs to.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Summary of that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,]
+            .toSorted(function byIndex(
+              left: number,
+              right: number,
+            ): number {
+              return left - right;
+            },);
+        }
+        /** Callback and its argument packaged into one destructured parameter. */
+        const packagedCallback = opaqueIndexes('packagedCallbackInvocation',);
+        /** The same shape, which proves no write rather than proving one. */
+        const packagedCallbackWritten = writtenIndexes('packagedCallbackInvocation',);
         /** Each row handed to the property the callee names. */
         const plainKey = writtenIndexes('plainKeyNarrowing',);
         /** Both rows handed over through shorthand properties. */
@@ -196,6 +235,17 @@ await describe({
           0,
           1,
         ],);
+        /* A callee invoking a callback it destructured, with the row that callback writes
+         * packaged beside it. The edge cannot name which body runs, because the actual at that
+         * argument position is an object literal rather than a callable, so the invocation is
+         * unresolved and the row it reaches takes opacity. It read no written parameter and no
+         * opacity at all before, which offered a row the packaged callback mutates.
+         *
+         * Opacity rather than a write on purpose: nothing here proved what the callback does,
+         * only that this rule cannot say. Naming the declaration a caller packaged in a property
+         * would prove it, and is tracked separately. */
+        expect(packagedCallback,).toEqual([0,],);
+        expect(packagedCallbackWritten,).toEqual([],);
         /* A rest formal's key `0` names an array index rather than a property of the literal, so
          * resolving it against the literal finds nothing. One parameter here, and it has to stay
          * named: this catches the empty result, which is the dangerous one. */
