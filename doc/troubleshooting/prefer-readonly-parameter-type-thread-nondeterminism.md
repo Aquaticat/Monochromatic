@@ -33,8 +33,67 @@ the difference being exactly this one diagnostic.
 
 ## Root cause
 
-Not yet pinned to a line.
-What is established by measurement:
+Pinned, and reproducible without threads at all.
+
+A callable's foreign-borrowed verdict depends on how much of the effect graph happened to be
+expanded when its summary was first requested.
+`effect-demand-index.ts` gates the expensive complete-inbound proof behind a hint:
+
+```ts
+const partialForeignParameterIndexes = foreignByCallable.current.get(key,) ?? new Set();
+if ((partialForeignParameterIndexes.size > 0) && (!verifiedForeignKeys.has(key,))) {
+  // ... completeForeignBorrowedGraph, then verifiedForeignKeys.add(key)
+}
+const foreignParameterIndexes = verifiedForeignKeys.has(key,)
+  ? completeForeignByCallable.get(key,) ?? new Set()
+  : partialForeignParameterIndexes;
+```
+
+`completeForeignBorrowedGraph` is itself order-independent: it walks `indexedSourceFiles`, which
+is the whole configured scope however little has been reached.
+The gate in front of it is not.
+`foreignByCallable.current` is recomputed after each expansion over the *reached* graph, so
+whether the hint is non-empty when a callable is queried is a fact about which files the lint run
+happened to visit first.
+An empty hint skips the proof and answers "not foreign",
+which is not a conservative default:
+foreign ownership suppresses the readonly offer,
+so the unproven answer emits an offer the proven one withholds.
+
+Measured directly, one process, one project, one callable, no threads involved:
+
+```text
+before expanding siblings: {"foreign":[],"written":[],"opaque":[]}
+after expanding siblings:  {"foreign":[0],"written":[],"opaque":[]}
+```
+
+The probe opens `wayland-state.ts`, reads `stateMatches`, then requests summaries for every
+callable in `wayland-test.ts`, `wayland-control.ts`, `wayland-process.ts` and
+`wayland-constants.ts`, and reads `stateMatches` again.
+`wayland-test.ts` declares `expected: ForeignBorrowed<ExpectedObservedState>` and reaches
+`stateMatches` through `waitForObservedState`,
+so the marker is real and the second answer is the correct one.
+
+Threads are therefore not the cause but an amplifier.
+They decide the order files reach the rule, and the order decides the answer.
+
+The earlier hypotheses are recorded as refuted rather than deleted, so nobody re-derives them:
+
+- **The in-memory summary cache colliding across scopes.** `summariesByProject` is addressed by
+   `projectKey` and file name while the persistent layer uses `scopeKey`, which looks like a
+   missing partition. It is not one. `scopeKey` is `configFileName + analysisRoot`, `projectKey`
+   is `configFileName`, and the `projectDigest` the memory cache validates already folds in
+   `analysisRoot`. Two scopes differing only in analysis root therefore differ in
+   `projectDigest` and cannot share an entry.
+- **The inclusion scope differing per active file.** `indexedSourceFileMap` admits every
+   non-declaration program source that is not from an external library, plus the active file, so
+   the set and its digest are the same whichever file is active.
+- **The fixed-point pass bound being exhausted.** That throws `SemanticBridgeError`, which
+   `prefer-readonly-parameter-types.ts` logs as `semantic rule failed`, and no run of either kind
+   logs one. The suppressed case still reports a diagnostic elsewhere in the same file, so
+   analysis plainly completed.
+
+What was established by measurement before the cause was found:
 
 - The flip is controlled by oxlint's thread count, and by nothing else tested.
 - It is not the persistent effect cache. Deleting
@@ -106,6 +165,28 @@ Recorded as an observation.
 Nothing has established which of the two sweeps is closer to right,
 and the comparison the slot work depends on is single-threaded against single-threaded,
 which this does not affect.
+
+## A deterministic reproduction, no threads needed
+
+Once the cause is known the flakiness reproduces as a plain function of the file set,
+single-threaded, from `package/desktop-app/electron-infra`:
+
+```bash
+W=package/dev-script/task-util/dist/final/node/oxlint-wrapper.mjs
+OXLINT_THREADS=1 node "$W" --type-aware src/wayland-state.ts               # 1 offer
+OXLINT_THREADS=1 node "$W" --type-aware src/wayland-state.ts src/wayland-test.ts   # 1 offer
+OXLINT_THREADS=1 node "$W" --type-aware src/                              # 0 offers
+```
+
+Every four-file subset of the wayland cluster still offers;
+only the whole cluster suppresses.
+So no single companion file is the trigger,
+which is what a cumulative expansion threshold looks like rather than a missing dependency.
+
+Passing the target paths through `mise run ... -- <paths>` does not work:
+the task's argument forwarding fails with `ERR_INVALID_TYPESCRIPT_SYNTAX` and oxlint never runs,
+which reads as a clean zero-offer result.
+Invoke the wrapper directly.
 
 ## Verified workarounds
 
