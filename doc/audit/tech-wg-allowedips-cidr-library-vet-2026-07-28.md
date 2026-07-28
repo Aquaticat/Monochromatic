@@ -770,9 +770,14 @@ Source inspection found `eslint-silverwind.js:1` invoking
 `execFileSync('pnpm', ['exec', 'eslint', ...])`.
 This was a validation-environment omission,
  not a candidate result.
-A second bounded fetch step will persist Corepack's pnpm 11.17.0 cache under `/work/.corepack` and create a
-`/work/bin/pnpm` dispatch symlink.
-The rerun adds that directory to `PATH` and keeps networking disabled.
+A second bounded fetch step persisted Corepack's pnpm 11.17.0 cache under `/work/.corepack`.
+A plain `pnpm` symlink to the Corepack binary did not dispatch by its symlink name.
+The second test attempt therefore failed with exact Corepack diagnostic
+`Unknown Syntax Error: Command not found` while receiving `exec eslint ...`.
+No candidate test had started.
+The corrected environment command is `corepack enable --install-directory /work/bin pnpm`,
+ which creates Corepack's actual pnpm shim.
+The next rerun adds that directory to `PATH` and keeps networking disabled.
 `pnpm-workspace.yaml` sets `ignoreScripts: true`,
  so no package lifecycle can execute.
 Corepack fetches and invokes pnpm 11.17.0;
