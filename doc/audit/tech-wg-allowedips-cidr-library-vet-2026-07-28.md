@@ -771,6 +771,11 @@ Corepack fetches and invokes pnpm 11.17.0;
  pnpm reads the lock,
  writes `node_modules`,
  and contacts the npm registry.
+Post-fetch inspection found `unrs-resolver` 1.12.2 declaring `node postinstall.js`.
+That script delegates native-package selection to `napi-postinstall`.
+The workspace-wide `ignoreScripts` policy suppressed it,
+ as the zero-stderr install transcript confirms.
+The native resolver is a dev-only transitive of lint tooling and is not in the adopted runtime graph.
 
 With networking disabled,
  the complete relevant command path is:
@@ -804,9 +809,18 @@ The real consumer manifest separately resolves the published `^4.1.0` range.
 
 The fetch command is
 `corepack pnpm@10.18.0 install --frozen-lockfile --ignore-scripts`.
-The explicit flag prevents the allowed `@swc/core` and `oxc-resolver` build lifecycles.
+The explicit flag prevents install lifecycle execution.
+Post-fetch inspection found three suppressed dev-only commands:
+ `@swc/core` 1.13.5 declares `node postinstall.js`,
+ `oxc-resolver` 11.8.0 declares `napi-postinstall oxc-resolver 11.8.0 check`,
+ and `unrs-resolver` 1.11.1 declares `napi-postinstall unrs-resolver 1.11.1 check`.
+The SWC script can invoke npm to fetch a Wasm fallback when its native binding is absent;
+ it did not run.
+A `resolve` package test fixture also contains an inert `lerna bootstrap` field,
+ but that nested fixture is not an installable package boundary.
 Corepack and pnpm perform the same bounded registry reads and `node_modules` writes described in the shared
 manifest.
+The zero-stderr install transcript confirms all lifecycle commands remained suppressed.
 
 With networking disabled,
  the command path is:
@@ -837,10 +851,24 @@ Identity is `@h3mantd/ip-kit` 1.1.0 at commit
 Its npm lock pins the development graph by integrity.
 
 The fetch command is `npm ci --ignore-scripts`.
-The explicit flag prevents esbuild lifecycle execution.
+Post-fetch inspection found esbuild 0.18.20 and 0.21.5 each declaring `node install.js`;
+ the explicit flag suppressed both lifecycle commands.
+The installed dev graph also contains lock-pinned Linux x64 esbuild and Rollup native files,
+ one source-map Wasm module,
+ and unused vendored macOS and Windows `term-size` executables.
+The selected lint,
+ type,
+ test,
+ and build paths can load esbuild,
+ Rollup,
+ and source-map.
+They do not call the `term-size` package.
 Npm reads the lock,
  writes `node_modules`,
  and contacts the npm registry.
+The install completed without lifecycle output,
+ while npm reported 19 vulnerabilities in this development-only graph.
+Runtime audit of the dependency-free published package remains separate.
 
 With networking disabled,
  the command path is:
@@ -867,6 +895,10 @@ Success requires zero lint or type findings,
 A fresh disposable package installs exact `cidr-tools@12.1.3`,
  `fast-cidr-tools@0.3.4`,
  and `@h3mantd/ip-kit@1.1.0` with `npm install --ignore-scripts --save-exact`.
+Post-fetch inspection resolved `cidr-tools` 12.1.3 with `ip-bigint` 9.0.7,
+ `fast-cidr-tools` 0.3.4 with `foxts` 4.6.0 and its two dependencies,
+ and `@h3mantd/ip-kit` 1.1.0.
+Their lock integrities match the registry evidence.
 The inspected runtime graphs contain no install lifecycle,
  native code,
  Wasm,
