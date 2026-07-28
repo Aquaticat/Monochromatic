@@ -271,6 +271,48 @@ and every one matched the prediction written before it was built:
    prototype-served row alone. Reading `__proto__` as an ordinary key reports nothing there,
    which is an offer for a row something mutates.
 
+## The workspace sweep, and the five offers it recovered
+
+Sequential and single-threaded on both sides, 128 package tasks each.
+The pre-stage-two side reported 1799 findings with 28 offers;
+the stage-two side 1741 with 33.
+
+**No offer was withdrawn.**
+That was the prediction that mattered,
+and it is the one a narrowing cannot survive breaking.
+All five added offers are in `package/module/toml-edit/src/emit-value.ts`,
+and each is verified rather than assumed:
+
+- That file contains no mutation at all. Measured: no member assignment and no mutating array or
+   map method call anywhere in its 476 lines.
+- The opacity that used to reach them is real and still reported. `assembleArrayParts` calls
+   `parts.join`, an unresolved receiver call, and measures `opaque=[0]` after the change exactly
+   as before it.
+- What moved is where that opacity lands. `emitArray` calls
+   `assembleArrayParts({ parts, options, depth, },)`, and the callee's opaque `parts` slot now
+   receives only the origins filling the key `parts`, which is a local. `emitArray` measures
+   `opaque=[]` where the broadcast had credited its `node`, `options` and `depth` alike.
+
+So the effect was localized, not lost,
+which is the distinction the whole model exists to draw.
+
+Findings churn is larger and less interpretable: 73 locations lost a finding and 15 gained one.
+The gained ones are not new reports.
+`client.ts:81:1` appears while `client.ts:83:12` disappears, and `exa-client.ts:108:1` while
+`110:12` disappears,
+which is one report re-anchoring from a parameter to its declaration as the set of parameters it
+names changes.
+Reading the finding count as a quality signal would have been wrong in both directions.
+
+One methodological note worth keeping.
+The first comparator classified over half of all findings as unlocated,
+because oxlint prints the `,-[path]` line after every continuation line of the message and a
+report's remediation list runs to more than a dozen of them.
+Offers were unaffected, their messages being one line,
+which is the only reason the withdrawal check was sound before the extractor was fixed.
+A comparator that silently drops half its input is worse than no comparator,
+so it now reports its own unlocated count and both sides read zero.
+
 ## Rules decided in advance
 
 - **Renamed binding** `{ a: b }`. The slot key is the property name `a`, since that is what a
