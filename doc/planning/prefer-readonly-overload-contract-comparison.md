@@ -118,8 +118,55 @@ That is a worse contract than silence,
 and `JCH` is the rule it strains:
 the contract would be describing the shape the comparison demands rather than the effect that exists.
 
-## Not yet established
+## Settled by measurement
 
--   That the four findings still reproduce on the current tree.
--   That the mechanism is `invoked` rather than `mutated` for these four specifically,
-    which a fixture with an overloaded callable that only invokes a parameter-held step would settle.
+The four findings reproduce on the current tree,
+at `pipe.ts:147`, `piped.ts:156`, `pipe-async.ts:147` and `piped-async.ts:156`,
+found in the same whole-repo sweep that closed task #15.
+
+The mechanism is `invoked`,
+shown by a pair rather than by an argument.
+`invokedStepOverload` in `readonly-overload-invalid.ts` declares one bodyless overload with no
+contract,
+and its implementation destructures a callable out of its parameter and calls it.
+It writes nothing.
+It was reported.
+`invokedStepPlain` has the identical body with no overloads,
+and was silent.
+Same effect, same summary, different comparison.
+That places the disagreement in the check.
+
+## What landed
+
+`verifyOverloadConsistency` now compares `referentMutatedParameterIndexes` on both sides.
+
+Measured after:
+
+-   `inconsistentReadonlyOverload` still reports.
+    Its overload claims `@mutates controller` and the implementation transitions nothing,
+    so the referent sets still differ,
+    which is the case the check exists for.
+
+-   `invokedStepOverload` stops reporting.
+
+-   `package/module/pipe` goes from thirteen findings to nine,
+    and the four that left are exactly the overload ones.
+    The other nine are pre-existing opacity reports naming `steps.slice` and supplied callbacks.
+
+Nothing is lost from the analysis.
+The invoked capability is still recorded on the implementation's summary and still propagates to
+callers,
+so a caller passing mutable state into an overloaded higher-order callable is still refused an offer.
+What stopped is reading that capability as a contract a signature failed to state.
+
+## Which hypothesis held
+
+Neither as written.
+The task recorded (a) a genuine contract incompleteness and (b) a rule-side defect where bodyless
+overloads compute no effects.
+
+The answer is (b) in location and neither in mechanism.
+Bodyless overloads computing nothing was never the problem:
+they compute exactly what an author wrote,
+which is the right amount.
+The problem was the other side computing something no author can write.
