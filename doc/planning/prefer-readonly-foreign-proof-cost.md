@@ -92,14 +92,68 @@ every finding that changes must be a spurious withholding removed,
 identified individually,
 and no new offer may appear on a parameter anything writes.
 
-## Still to confirm
+## The attempt is refuted, and was not implemented
 
--   The self-recursion claim, by fixture rather than by reading.
-    A recursive callable with no marker, in a scope that names one, should report its parameters
-    foreign today.
+Three counterexamples, none of which a workspace-equivalence sweep would necessarily have contained.
+That is the point:
+the design fails deterministically, and measuring it could have passed.
 
--   Whether that shape occurs in this workspace at all,
-    which decides whether the precision loss is real or theoretical.
+### A marker need not be named in the file that applies it
 
--   Whether module reachability is a superset of semantic call reachability,
-    without which the per-file skip is unsound whatever else holds.
+This is the one that ends it.
+`bindingContainsForeignBorrowed` and `expressionContainsForeignBorrowed` inspect checker types,
+not source text.
+A consumer can write
+
+```ts
+withForeign(function apply(value,) { return root(value,); },);
+```
+
+where the arrow's parameter is contextually typed by an API declaring `ForeignBorrowed<T>`,
+and the consumer's own text names no marker at all.
+The same holds for `root(getForeignValue(),)`,
+where `directForeignByFormal` becomes true from the callee's return type.
+
+So the set of files that can seed foreign provenance is not the set of files whose text names a
+marker,
+and any traversal rooted at marker-naming files starts in the wrong place.
+Worse for the proposed direction:
+the file declaring the marker is typically an outbound dependency of the caller,
+so a forward walk from it never reaches the caller at all.
+
+### Module reachability is not a superset of call reachability
+
+The skip needed forward module closure to cover every call path.
+It does not.
+Two global script files can hold a caller and a callee with no module dependency between them,
+and semantic call edges only enter the resolver through `seedEdges` and `includeDirectDependencies`,
+both of which run inside `loadSource`.
+A precomputed reachable set never sees edges that later loads add.
+
+### Reflexive reachability
+
+`closureFor(F)` does not put `F` in its own `dependencyDigests`,
+so a directly marked root in a marker-naming file would have been missed by construction.
+
+## What survives
+
+The reframing does.
+Markerless recursive components producing foreign candidates is confirmed independently,
+and it means the shipped whole-scope gate already changes answers rather than being the equivalence
+its comment claims.
+That is a precision defect worth its own task, not part of this one.
+
+The most promising untried direction is no longer about marker locality at all:
+compute the foreign proof only when it can change a report.
+Foreign ownership suppresses a read-only offer,
+so a parameter already recorded as mutated, or already classified as something other than mutable,
+has a verdict the foreign answer cannot move.
+`createDemandDrivenEffectIndex.get` runs a closure for every callable asked about and hands the
+result to `effectPublicSummary` whether or not any consumer reads it.
+Deferring it until a verdict actually depends on it approximates nothing and skips whatever the
+answer would not have changed.
+
+Sol also recommends shadow mode for any future gate:
+run every closure, assert the gate would have admitted every non-empty result,
+and record the prospective skip ratio before trusting it.
+That is the right shape for a change whose failure mode is silent.
