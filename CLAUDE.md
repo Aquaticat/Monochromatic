@@ -578,11 +578,11 @@ RT4:
 ## Before running a command
 
 BXP:
- Auto-mode skips Bash judging only after whole parsed shell is proven read-only.
+ Auto-mode's Bash read bypass requires whole parsed shell proof.
 Unknown commands,
  mutating options,
  writable redirects,
- and unproven expansions fail closed.
+ or unproven expansions leave normal signal judging active.
 
 BXR:
  Read-only Bash paths must canonically stay under Pi cwd or private `~/temp/agent`.
