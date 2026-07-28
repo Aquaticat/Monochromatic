@@ -1,0 +1,43 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/cli-wg-allowedips",
+  "description": "CLI that computes a minimized WireGuard AllowedIPs value from allowed and disallowed address sets.",
+  "type": "module",
+  "private": true,
+  "main": "src/generate.ts",
+  "module": "dist/final/node/generate.mjs",
+  "bin": {
+    "wg-allowedips": "dist/final/node/index.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/generate.d.mts",
+      "default": "./dist/final/node/generate.mjs"
+    },
+    "./ts": "./src/generate.ts",
+    "./ts/*": "./src/*"
+  },
+  "files": [
+    "dist/final",
+    "LICENSES"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "nano-spawn": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "cidr-tools": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/cli/wg-allowedips"
+  },
+  "sideEffects": true
+}

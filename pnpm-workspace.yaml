@@ -64,6 +64,7 @@ catalog:
   'chai': '>=6.2.2'
   'chai-as-promised': '>=8.0.2'
   'chokidar': '>=5.0.0'
+  'cidr-tools': '>=12.1.3'
   'crossws': '>=0.4.4'
   # css-edit.bench baseline parser; not a runtime dependency anywhere.
   'css-tree': '>=3.2.1'
