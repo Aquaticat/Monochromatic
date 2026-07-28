@@ -167,7 +167,7 @@ function pathCandidates(
    * Inline long-option assignment separator.
    */
   const assignmentIndex = value.indexOf('=',);
-  if (assignmentIndex !== -1) {
+  if ((assignmentIndex !== -1)) {
     /**
      * Value after option assignment.
      */
