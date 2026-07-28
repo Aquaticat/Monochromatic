@@ -278,23 +278,34 @@ const nonUnitTestRuleOverride = {
  *
  * An earlier revision of this comment described each finding by one cause and
  * concluded "every one is a `Map.get`". That was measured too narrowly. Each
- * finding names a list, and across the four the distinct causes are
- * `summaries.get`, `target.get`, `opaqueProvenanceByParameter.get`,
- * `target.set`, and `summaries.values`. Re-measured under the pre-accumulation
- * binding-origin behavior to confirm the wider lists are not a consequence of
- * that change: identical.
+ * finding names a list, and the `:37` finding alone names six causes:
+ * `(provenanceBySlot.get(slot,) ?? []).forEach` at
+ * `effect-slot-projection.ts:182`, `summaries.get` at `:90`, `summaries.values`
+ * at `:49`, `summary.opaqueProvenanceBySlot.set` at
+ * `effect-call-resolution.ts:419`, and `target.get` and `target.set` at
+ * `effect-uncertainty-provenance.ts:47` and `:55`.
  *
- * Two separate things therefore block narrowing, not one:
+ * What blocks narrowing is result provenance: a summary fact recording that a
+ * call result is reachable from the receiver's parameter. That covers every
+ * `.get` cause, and `target.set` once the value it stores carries a known
+ * origin, because the code mutates what those lookups return and nothing tracks
+ * the alias.
  *
- * 1. Result provenance, a summary fact recording that a call result is reachable
- *    from the receiver's parameter. This covers every `.get` cause, and
- *    `target.set` once the value it stores carries a known origin, because the
- *    code mutates what those lookups return and nothing tracks the alias.
- * 2. Iterator members. `summaries.values` sits in `DEFERRED_MEMBER_NAMES`, where
- *    `doc/decision/prefer-readonly-member-channel-authority.md` leaves creation
- *    and consumption unseparated, so it stays unproven no matter what result
- *    provenance does. It is a cause of the `:37` finding, which therefore cannot
- *    clear on result provenance alone.
+ * Iterator members were listed here as a second, independent blocker, on the
+ * ground that `summaries.values` stayed unproven whatever result provenance did.
+ * That is no longer true and the reason it was stated is no longer the reason it
+ * holds. The iterator members are in the channel authority now, claiming
+ * creation and drainage together, which discharges an iterator yielding
+ * primitives and nothing else. `summaries.values` yields `MutableEffectSummary`,
+ * so it still reports, and it now reports for exactly the same reason every
+ * `.get` cause does: nothing describes a container whose elements are receiver
+ * state. Measured after the entries landed, this probe's output was
+ * byte-identical.
+ *
+ * So one thing blocks narrowing, not two, and `doc/planning/prefer-readonly-iterator-members.md`
+ * records why closing it is larger than a table entry: the discharge would also
+ * need `effect-result-escape.ts` to recognise a spread and a for-of position,
+ * which is a global widening rather than a relation.
  *
  * Neither is a wider authority, which remains the thing this exemption is not
  * waiting for.
