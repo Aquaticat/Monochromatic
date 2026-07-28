@@ -237,6 +237,36 @@ one before the fix,
 two after,
 four if grounding ever over-removes.
 
+### Repo-wide: nothing changed at all
+
+Swept at one thread against the fresh baseline taken at the commit before it.
+
+-   1937 findings and 32 offers on both sides.
+-   All 7201 finding locations identical, compared as sorted sets rather than as counts.
+-   884.8s against 897.8s, which is 1.5 percent and inside the variation between runs.
+
+So the shape does not occur in this workspace.
+The defect is real and has a reproduction;
+this repository simply contains no callable whose only in-scope inbound is its own recursive call
+and whose parameter would otherwise be offered.
+
+That is worth separating from the cache attempt recorded above,
+which was also measured as no change and was reverted.
+The difference is what each was for.
+The cache was a performance change that bought no performance,
+so no-change was its refutation.
+This is a correctness change with a failing test before and a passing one after,
+so no-change is only the statement that the workspace has no instances yet.
+Reverting it would restore a known wrong answer with a known reproduction.
+
+### And it unblocks the narrowing work
+
+Task #34 was blocked on this on the grounds that fixing it would move the baseline any narrowing gate
+had to be measured against.
+It does not move the baseline.
+The block is therefore lifted by measurement rather than by argument,
+and the current numbers stand: 1937 findings, 32 offers, at one thread from the repository root.
+
 Sol also recommends shadow mode for any future gate:
 run every closure, assert the gate would have admitted every non-empty result,
 and record the prospective skip ratio before trusting it.
