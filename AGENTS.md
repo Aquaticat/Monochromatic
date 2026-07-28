@@ -533,6 +533,18 @@ RT4:
 
 ## Before running a command
 
+BXP:
+ Auto-mode skips Bash judging only after whole parsed shell is proven read-only.
+Unknown commands,
+ mutating options,
+ writable redirects,
+ and unproven expansions fail closed.
+
+BXR:
+ Read-only Bash paths must canonically stay under Pi cwd or private `~/temp/agent`.
+Git inspection may read repository metadata.
+Preserve secret-path + symlink-escape checks.
+
 ### Command execution conventions
 
 TMO:
