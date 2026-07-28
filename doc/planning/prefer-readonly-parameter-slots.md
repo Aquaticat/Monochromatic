@@ -172,6 +172,66 @@ Each stage is committed separately and the workspace sweep is compared by offer 
 3.  Diagnostic naming narrowed to the affected bindings, so a finding stops naming primitives
     that cannot carry state.
 
+## Every sweep comparison must run single-threaded
+
+Under oxlint's default thread count this rule does not produce the same findings twice.
+Seventeen repeats of one package lint at one commit split seven to ten on whether a single
+correct offer appears,
+and ten single-threaded repeats of the same lint agreed unanimously.
+`doc/troubleshooting/prefer-readonly-parameter-type-thread-nondeterminism.md` records the
+measurement, rules out the persistent cache and the analysis budget, and names the workaround:
+`OXLINT_THREADS=1`.
+
+This is why the stage-one checkpoint has to be read carefully.
+Baseline and stage one both reported 1837 findings and 27 offers with identical offer sets,
+but both were multi-threaded,
+so that is two samples from a distribution rather than proof the refactor changed nothing.
+A third multi-threaded sweep, at the stage-one correction commit, reported 1838 and 28,
+and bisecting that difference is what surfaced the nondeterminism.
+
+Every comparison from here runs with `OXLINT_THREADS=1`,
+and the stage-one checkpoint is re-established that way before stage 2 is measured.
+
+## What stage 2 must do, predicted before it is measured
+
+Narrowing only ever removes caller origins from an `originsByCalleeSlot` entry,
+propagation is a union-only least fixed point,
+and the whole-parameter slot keeps its full unnarrowed origins,
+so a caller's effect sets can only shrink.
+That makes stage 2 falsifiable rather than merely observable.
+Checked in this order, because each one is cheaper and sharper than the next:
+
+- **Whole-slot edge rows are unchanged.** They are built from `originsByFormal` exactly as
+   before, so any movement here is a bug in the plumbing rather than in the narrowing.
+- **Every property-slot edge row is a subset of its old row.**
+- **Every callable's effect sets are a subset of their old sets.**
+- **No offer is withdrawn.** A withdrawn offer would mean narrowing created an effect, which
+   the direction of the change forbids. New offers are the point of the change.
+
+Two things that are deliberately not on that list.
+
+Foreign-borrowed findings are compared as an observation rather than asserted unchanged.
+`foreignOriginsByFormal` does derive from the unnarrowed formal origins,
+but that only shows the edge field is untouched;
+whether the diagnostic that consumes it also reads propagated effects is unproven,
+and an invariant nobody has proven is a bug detector that fires on the wrong thing.
+
+Total finding count is not an invariant either.
+A parameter that loses `opaque` stops producing `opaqueEffectReport` and may produce
+`shouldBeReadonly` in its place,
+and one that loses `affected` can newly produce `staleMutatesTag`.
+So the offer set is compared by identity,
+while the finding delta has to be explained by those category shifts rather than by a number.
+
+One legitimate way these predictions fail:
+stage 2 reaches an origin the old whole-argument collector never found,
+which makes an effect set grow for a reason that is a fix rather than a regression.
+That has to be recognized by naming the newly found origin,
+never by relaxing the prediction after the fact.
+
+Recording all of this before the stage-2 sweep is the point:
+a prediction written after seeing the result is not evidence of anything.
+
 ## Rules decided in advance
 
 - **Renamed binding** `{ a: b }`. The slot key is the property name `a`, since that is what a
@@ -196,6 +256,40 @@ Each stage is committed separately and the workspace sweep is compared by offer 
    is ignored; an unknown computed key contributes and continues; a spread contributes every
    origin of its source and continues. So `{ ...other, named: first }` attributes `named` to
    `first` alone, while `{ named: first, ...other }` attributes it to both.
+- **Both sides of a key comparison canonicalize the same way**. The caller's literal keys go
+   through `canonicalPropertyKey` in `effect-slot-identity.ts`, the same function the callee's
+   pattern keys went through. That is what makes `callee({ 'named': x })` reach a callee written
+   `{ named }`. Comparing `getText()` instead would make quoting and numeric spelling decide
+   whether a write is seen, and earlier call-edge work was already bitten by exactly that.
+   Agreeing is necessary and not sufficient: a shared key that is wrong makes a matching key
+   look definitely different, which is the direction that drops an origin. Measured with
+   `createScanner`, this AST's numeric token values are already the runtime property keys:
+   `1e0` and `1.0` both read `1`, `0x10` reads `16`, `1_000` reads `1000`. String and template
+   literals expose their cooked text, so escapes agree too.
+- **Plain `__proto__: value`**. Not a key. That exact spelling sets the prototype rather than
+   defining an own property, so every key the callee reads and the literal does not define is
+   served through it. Treating it as a key leaves those keys with no origins, and
+   `callee({ __proto__: source })` writing through `source.named` is then attributed to
+   nothing. Verified at runtime: the write lands, and `Object.hasOwn` reports no own
+   `__proto__`. The computed, shorthand and method spellings of the same name all create
+   ordinary own properties and keep their key.
+- **Any accessor in the literal**. No narrowing for that actual at all. Two shapes defeat
+   anything weaker. `{ hidden: owned, get named() { return this.hidden; } }` reaches `owned`
+   through `this`, which no scan of the accessor body finds, and
+   `{ get named() { return owned; }, set named(value) {} }` puts the origin-free setter last,
+   so a reverse walk that stops at the first exact match stops on the setter. A method is
+   different and keeps its key: it defines a fresh function object and shadows what came
+   before.
+- **Property slots owned by a rest parameter**. Always broadcast. A rest formal is a
+   synthesized array, so in `function callee(...{ 0: box })` the key `0` names the first
+   actual rather than a property of it, and resolving `0` against a caller's
+   `{ named: owned }` finds nothing and loses the write.
+- **Wrappers that may be unwrapped to find the literal**. Parentheses and type-only wrappers
+   only. Not an assignment, a sequence, an `await`, or a call: in
+   `callee(argument = {}, Object.assign(argument, { named: owned },),)` the first actual is
+   mutated by the evaluation of the second before the call happens. Not a spread element
+   either, since `callee(...values)` fills formals from the elements rather than from the
+   spread expression itself.
 - **Non-literal actual**. Broadcast: every property slot of the formal receives the actual's
    origins, which is what happens today.
 - **Overloads**. `overload-consistency.ts` compares two different declarations with two
