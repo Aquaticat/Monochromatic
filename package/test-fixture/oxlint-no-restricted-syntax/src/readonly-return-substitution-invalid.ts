@@ -295,3 +295,100 @@ export function writeThroughFreshCall(config: Config,): void {
   freshRow(config,)
     .label = 'written';
 }
+
+/**
+ * Writes through a local holding a returned piece of caller state.
+ *
+ * A local hides the call from the write completely: the target's root is an identifier,
+ * so stripping access layers finds no call, and `discoverAliasOrigins` gave the binding no
+ * origins because its own walk stops at a call too. Closing it needs the binding to record
+ * which call filled it, which is a different fact from which parameter it can reach.
+ *
+ * @param config - Structure the caller owns and this callable writes into.
+ *
+ * @example
+ * ```ts
+ * writeThroughHeldResult({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughHeldResult(config: Config,): void {
+  /**
+   * Row this callable holds after the call handed it back.
+   */
+  const local = firstRow(config,);
+  local.label = 'written';
+}
+
+/**
+ * Writes through an alias of a local holding a returned piece of caller state.
+ *
+ * One hop further than `writeThroughHeldResult`, and here to prove the alias hop rather
+ * than assume it. The binding map converges the same way the origin map does, so an alias
+ * of an alias costs a pass and nothing else, and a fix that only read declarations
+ * directly initialized by a call would pass the shape above and fail this one.
+ *
+ * @param config - Structure the caller owns and this callable writes into.
+ *
+ * @example
+ * ```ts
+ * writeThroughAliasedResult({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughAliasedResult(config: Config,): void {
+  /**
+   * Row this callable holds after the call handed it back.
+   */
+  const local = firstRow(config,);
+  /**
+   * Second name for the same row.
+   */
+  const alias = local;
+  alias.label = 'written';
+}
+
+/**
+ * Writes through a local holding a freshly built row.
+ *
+ * The control for the local shapes. The binding does record which call filled it, and that
+ * callee's returned set is empty, so substitution hands over nothing and the offer stands.
+ * Withholding here would mean the fix withholds from every local fed by any call.
+ *
+ * @param config - Structure read to seed a fresh row.
+ *
+ * @example
+ * ```ts
+ * writeThroughHeldFresh({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughHeldFresh(config: Config,): void {
+  /**
+   * Row this callable owns, allocated by the callee.
+   */
+  const local = freshRow(config,);
+  local.label = 'written';
+}
+
+/**
+ * Reads through a local holding a returned piece of caller state.
+ *
+ * The other control. A binding fed by a call records the call whatever happens next, so
+ * this shape proves the recording alone changes nothing: only a write or a store consults
+ * it.
+ *
+ * @param config - Structure whose label length is measured.
+ *
+ * @returns label length.
+ *
+ * @example
+ * ```ts
+ * readHeldResult({ row: { label: '', }, },);
+ * ```
+ */
+export function readHeldResult(config: Config,): number {
+  /**
+   * Row this callable holds after the call handed it back.
+   */
+  const local = firstRow(config,);
+  return local.label
+    .length;
+}

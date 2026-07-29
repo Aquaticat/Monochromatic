@@ -113,10 +113,49 @@ export function recordResultApplication({
   const site = deferrableResultSite({ node, },);
   if (site === NOT_A_DEFERRABLE_RESULT)
     return;
-  summary.resultApplications
-    .push({
-    callSiteKey: site,
+  recordResultApplicationSites({
+    summary,
+    sites: new Set([site,],),
     kind,
+  },);
+}
+
+/**
+ * Records that a caller uses the results of named calls in a way needing resolution.
+ *
+ * Takes call sites rather than an expression because a use can reach more than one. A
+ * binding holds whatever call filled it, and following aliases can find several, so the
+ * node-to-site question and the site-to-record question are separate and only the first
+ * has one answer.
+ *
+ * @param summary - Caller summary receiving the deferred uses.
+ *
+ * @param sites - Call sites whose results this use consumes.
+ *
+ * @param kind - Whether the results are mutated or handed back.
+ *
+ * @mutates summary - Appends one deferred use per named call site.
+ *
+ * @example
+ * ```ts
+ * recordResultApplicationSites({ summary, sites, kind: 'mutated' });
+ * ```
+ */
+export function recordResultApplicationSites({
+  summary,
+  sites,
+  kind,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly sites: ReadonlySet<string>;
+  readonly kind: 'mutated' | 'returned';
+},): void {
+  sites.forEach(function recordOne(site,): void {
+    summary.resultApplications
+      .push({
+      callSiteKey: site,
+      kind,
+    },);
   },);
 }
 
@@ -156,11 +195,47 @@ export function recordResultRetention({
   const site = deferrableResultSite({ node, },);
   if (site === NOT_A_DEFERRABLE_RESULT)
     return;
-  summary.resultApplications
-    .push({
-    callSiteKey: site,
-    kind: 'retained',
+  recordResultRetentionSites({
+    summary,
+    sites: new Set([site,],),
     provenance,
+  },);
+}
+
+/**
+ * Records that a caller hands the results of named calls to something outliving them.
+ *
+ * {@inheritDoc recordResultApplicationSites}
+ *
+ * @param summary - Caller summary receiving the deferred retentions.
+ *
+ * @param sites - Call sites whose results are handed outward.
+ *
+ * @param provenance - Retention provenance naming where the value went.
+ *
+ * @mutates summary - Appends one deferred retention per named call site.
+ *
+ * @example
+ * ```ts
+ * recordResultRetentionSites({ summary, sites, provenance });
+ * ```
+ */
+export function recordResultRetentionSites({
+  summary,
+  sites,
+  provenance,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly sites: ReadonlySet<string>;
+  readonly provenance: string;
+},): void {
+  sites.forEach(function recordOne(site,): void {
+    summary.resultApplications
+      .push({
+      callSiteKey: site,
+      kind: 'retained',
+      provenance,
+    },);
   },);
 }
 

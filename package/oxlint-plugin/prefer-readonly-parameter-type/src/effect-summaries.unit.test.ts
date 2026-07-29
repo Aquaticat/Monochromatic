@@ -633,6 +633,10 @@ await describe({
          * exactly as an assigned call result has none. */
         expect(structuralOpaque('storeIterationThroughCall',),).toEqual([0,],);
         expect(structuralOpaque('storeIterationThroughFreshCall',),).toEqual([],);
+        /* The store equivalents of the local shapes, sharing the binding record with the
+         * write side rather than repeating its reasoning. */
+        expect(structuralOpaque('storeHeldResult',),).toEqual([0,],);
+        expect(structuralOpaque('storeHeldFresh',),).toEqual([],);
         /* The controls, which must still read empty after that flip. */
         expect(intoParameter,).toEqual([],);
         expect(intoOwnLocal,).toEqual([],);
@@ -779,14 +783,20 @@ await describe({
         expect(handedBack,).toEqual([0,],);
         expect(handedBackTwice,).toEqual([0,],);
         expect(allocated,).toEqual([],);
-        /* A boundary, pinned rather than a behaviour defended. The write site now defers
-         * against the call it lands on, so a write straight onto a returned value is
-         * reached, but this case puts a local between the call and the write and the
-         * binding carries no deferred link. Asserting the current empty set means closing
-         * that gap fails this line rather than changing behaviour silently, which is the
-         * point of writing it down. Whoever closes it should change this to `[0,]` and
-         * move the case out of the boundary comment in the fixture. */
-        expect(propertyWrite,).toEqual([],);
+        /* The boundary that was pinned here has flipped, which is the whole point of
+         * having pinned it. A local between the call and the write no longer hides it: the
+         * binding records which call filled it, and the write consults that. This case
+         * needs the access strip as well as the binding hop, since the local holds
+         * `handBack(rows,)[0]` rather than the call's own result. */
+        expect(propertyWrite,).toEqual([0,],);
+        /* The local shapes, and the two controls that keep the binding record from
+         * withholding wherever any call feeds a local. The alias case is here to prove the
+         * hop rather than assume it: a fix reading only declarations directly initialized
+         * by a call passes `writeThroughHeldResult` and fails this one. */
+        expect(writtenIndexes('writeThroughHeldResult',),).toEqual([0,],);
+        expect(writtenIndexes('writeThroughAliasedResult',),).toEqual([0,],);
+        expect(writtenIndexes('writeThroughHeldFresh',),).toEqual([],);
+        expect(writtenIndexes('readHeldResult',),).toEqual([],);
         /* The structural half of the same defect, and the one that was falsified end to
          * end. `firstRow` and `writeThroughOwnedCall` were both offered `ReadonlyDeep`,
          * applying BOTH type-checked under TypeScript 7.0.2, and running the pair printed

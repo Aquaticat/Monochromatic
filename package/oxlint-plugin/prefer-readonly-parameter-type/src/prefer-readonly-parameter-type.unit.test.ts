@@ -625,9 +625,13 @@ children: [
        * depends on. Every arrival belongs: a callable that hands back a piece of its own
        * parameter grants the caller no capability it lacked, and one that allocates shares
        * no identity with its argument. */
+      /* Eighteen after the binding record, which added `storeHeldFresh` to the offers and
+       * withheld `storeHeldResult` beside it. Three withheld now for a retention the
+       * origin walk cannot see on its own: through a call, through an iteration over a
+       * call result, and through a local holding one. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(17,);
+      },).length,).toBe(18,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls

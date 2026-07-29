@@ -455,6 +455,47 @@ export function storeFreshThroughOwnedCall(config: Config,): void {
 }
 
 /**
+ * Stores a returned piece of caller state after holding it in a local.
+ *
+ * A local between the call and the store hides the call from `parameterIndexes` exactly as
+ * it hides one from the write walk, and the same binding record closes both.
+ *
+ * @param config - Configuration whose row escapes through a local.
+ *
+ * @example
+ * ```ts
+ * storeHeldResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeHeldResult(config: Config,): void {
+  /**
+   * Row this callable holds after the call handed it back.
+   */
+  const local = firstRow(config,);
+  held = local;
+}
+
+/**
+ * Stores a freshly allocated row after holding it in a local.
+ *
+ * The control for the shape above.
+ *
+ * @param config - Configuration read to seed a fresh row.
+ *
+ * @example
+ * ```ts
+ * storeHeldFresh({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeHeldFresh(config: Config,): void {
+  /**
+   * Row this callable owns, allocated by the callee.
+   */
+  const local = freshRow(config,);
+  held = local;
+}
+
+/**
  * Stores a fresh object built from a structural parameter's primitive.
  *
  * The control against reading the whole right side for whether it can carry state. The

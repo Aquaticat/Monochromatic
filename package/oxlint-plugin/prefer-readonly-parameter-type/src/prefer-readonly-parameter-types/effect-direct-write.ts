@@ -14,10 +14,10 @@ import { isIdentifier, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionOrigins, } from './effect-binding-origins.ts';
-import { recordResultApplication, } from './effect-result-substitution.ts';
+import { targetResultSites, } from './effect-result-binding.ts';
+import { recordResultApplicationSites, } from './effect-result-substitution.ts';
 import {
   addEffectSlots,
-  expressionRoot,
   type MutableEffectSummary,
   type SlotOrigins,
 } from './effect-summary-model.ts';
@@ -29,6 +29,8 @@ import {
  *
  * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
  *
+ * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ *
  * @param summary - Summary receiving direct mutation.
  *
  * @param node - Write target expression.
@@ -37,17 +39,19 @@ import {
  *
  * @example
  * ```ts
- * inspectDirectWrite({ project, bindingOriginBySymbolId, summary, node: assignment.left });
+ * inspectDirectWrite({ project, bindingOriginBySymbolId, resultSitesBySymbolId, summary, node: assignment.left });
  * ```
  */
 export function inspectDirectWrite({
   project,
   bindingOriginBySymbolId,
+  resultSitesBySymbolId,
   summary,
   node,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
   readonly summary: MutableEffectSummary;
   readonly node: Node;
 },): void {
@@ -74,12 +78,21 @@ export function inspectDirectWrite({
    * ignores `readonly` property modifiers, so a callee declaring `Row` hands a
    * `ReadonlyDeep<Row>` back as mutable with no diagnostic.
    *
-   * The root is passed rather than the whole target because the write lands on the call's
-   * result, not on a projection of it. `deferrableResultSite` unwraps the identity-keeping
-   * wrappers itself, so only the access layers have to come off here. */
-  recordResultApplication({
+   * A local between the call and the write hides it just as completely, and
+   * `targetResultSites` answers both cases with one question: it strips the access layers,
+   * names the call when one is underneath, and otherwise follows the identifier through
+   * the binding map that records which call filled it. More than one site can come back,
+   * because an alias chain can be fed from several places.
+   *
+   * A callee that allocates needs no exception here. Its returned set is empty, so the
+   * deferred use resolves to nothing and the offer stands. */
+  recordResultApplicationSites({
     summary,
-    node: expressionRoot(node,),
+    sites: targetResultSites({
+      project,
+      resultSitesBySymbolId,
+      node,
+    },),
     kind: 'mutated',
   },);
 }

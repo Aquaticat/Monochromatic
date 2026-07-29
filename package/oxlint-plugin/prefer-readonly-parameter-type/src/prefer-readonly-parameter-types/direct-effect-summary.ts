@@ -31,6 +31,7 @@ import {
   recordIterationStore,
 } from './effect-assignment-store.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
+import { discoverResultBindings, } from './effect-result-binding.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
 import { recordResultApplication, } from './effect-result-substitution.ts';
 import {
@@ -243,6 +244,22 @@ export function directEffectSummary({
     bindingOriginBySymbolId,
   },);
   /**
+   * Call sites each local binding can be holding a result of.
+   *
+   * Beside the origins rather than inside them, because the two settle for different
+   * reasons: origins accumulate parameter slots a binding can reach, while these name a
+   * syntactic fact about where a value came from, complete as soon as the declarations
+   * have been walked.
+   */
+  const resultSitesBySymbolId = new Map<number, Set<string>>();
+  discoverResultBindings({
+    project,
+    variableDeclarations,
+    aliasAssignments,
+    forOfStatements,
+    resultSitesBySymbolId,
+  },);
+  /**
    * Body nodes selected after aliases expose caller-reachable closure storage.
    *
    * Parameter initializers join the selected set unconditionally rather than through the
@@ -265,6 +282,7 @@ export function directEffectSummary({
       inspectDirectWrite({
         project,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         summary,
         node: node.left,
       },);
@@ -277,6 +295,7 @@ export function directEffectSummary({
       recordAssignmentStore({
         project,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         summary,
         node,
         body,
@@ -287,6 +306,7 @@ export function directEffectSummary({
       inspectDirectWrite({
         project,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         summary,
         node: node.expression,
       },);
@@ -298,6 +318,7 @@ export function directEffectSummary({
       inspectDirectWrite({
         project,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         summary,
         node: node.operand,
       },);
@@ -349,6 +370,7 @@ export function directEffectSummary({
       recordIterationStore({
         project,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         summary,
         node,
         body,

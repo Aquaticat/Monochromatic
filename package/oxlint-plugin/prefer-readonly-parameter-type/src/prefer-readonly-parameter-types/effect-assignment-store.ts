@@ -28,7 +28,8 @@ import {
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
-import { recordResultRetention, } from './effect-result-substitution.ts';
+import { targetResultSites, } from './effect-result-binding.ts';
+import { recordResultRetentionSites, } from './effect-result-substitution.ts';
 import { retentionProvenance, } from './effect-retention-provenance.ts';
 import type {
   MutableEffectSummary,
@@ -72,6 +73,8 @@ const RETAINING_ASSIGNMENT_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
  *
  * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
  *
+ * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ *
  * @param summary - Summary receiving opacity.
  *
  * @param node - Candidate assignment from the body scan.
@@ -88,12 +91,14 @@ const RETAINING_ASSIGNMENT_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 export function recordAssignmentStore({
   project,
   bindingOriginBySymbolId,
+  resultSitesBySymbolId,
   summary,
   node,
   body,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
   readonly summary: MutableEffectSummary;
   readonly node: Node;
   readonly body: Node;
@@ -147,10 +152,17 @@ export function recordAssignmentStore({
    * `ReadonlyDeep` to both `firstRow` and the storing callable, applying both
    * type-checked, and a later write through the stored value changed the caller's row.
    * Recorded in `doc/planning/prefer-readonly-return-substitution.md`, section "Stage
-   * two, a store the analysis could not see". */
-  recordResultRetention({
+   * two, a store the analysis could not see".
+   *
+   * `targetResultSites` rather than the stored expression alone, so a local between the
+   * call and the store is followed the same way the write side follows one. */
+  recordResultRetentionSites({
     summary,
-    node: node.right,
+    sites: targetResultSites({
+      project,
+      resultSitesBySymbolId,
+      node: node.right,
+    },),
     provenance,
   },);
 }
@@ -172,6 +184,8 @@ export function recordAssignmentStore({
  *
  * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
  *
+ * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ *
  * @param summary - Summary receiving opacity.
  *
  * @param node - Candidate iteration statement from the body scan.
@@ -188,12 +202,14 @@ export function recordAssignmentStore({
 export function recordIterationStore({
   project,
   bindingOriginBySymbolId,
+  resultSitesBySymbolId,
   summary,
   node,
   body,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
   readonly summary: MutableEffectSummary;
   readonly node: Node;
   readonly body: Node;
@@ -251,9 +267,13 @@ export function recordIterationStore({
   /* `for (held of rowsOf(config,))` retains through a call the origin walk cannot see,
    * for the same reason the assignment form could not. The iterable is the expression
    * whose result is consumed here, so that is what the retention defers against. */
-  recordResultRetention({
+  recordResultRetentionSites({
     summary,
-    node: node.expression,
+    sites: targetResultSites({
+      project,
+      resultSitesBySymbolId,
+      node: node.expression,
+    },),
     provenance,
   },);
 }
