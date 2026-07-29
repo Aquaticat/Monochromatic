@@ -764,13 +764,49 @@ await describe({
         expect(handedBack,).toEqual([0,],);
         expect(handedBackTwice,).toEqual([0,],);
         expect(allocated,).toEqual([],);
-        /* A boundary, pinned rather than a behaviour defended. The deferred recording
-         * sits in the collection-member path, so a property write through a returned
-         * element is not reached. Asserting the current empty set means closing that gap
-         * fails this line rather than changing behaviour silently, which is the point of
-         * writing it down. Whoever closes it should change this to `[0,]` and move the
-         * case out of the boundary comment in the fixture. */
+        /* A boundary, pinned rather than a behaviour defended. The write site now defers
+         * against the call it lands on, so a write straight onto a returned value is
+         * reached, but this case puts a local between the call and the write and the
+         * binding carries no deferred link. Asserting the current empty set means closing
+         * that gap fails this line rather than changing behaviour silently, which is the
+         * point of writing it down. Whoever closes it should change this to `[0,]` and
+         * move the case out of the boundary comment in the fixture. */
         expect(propertyWrite,).toEqual([],);
+        /* The structural half of the same defect, and the one that was falsified end to
+         * end. `firstRow` and `writeThroughOwnedCall` were both offered `ReadonlyDeep`,
+         * applying BOTH type-checked under TypeScript 7.0.2, and running the pair printed
+         * the caller's row carrying the written label.
+         *
+         * Checking one annotation at a time is the wrong experiment and produced the wrong
+         * answer first: annotating the caller alone fails with `TS2345`, which reads as a
+         * self-limiting offer. The rule reports per parameter and a reader applies every
+         * suggestion in the file, so the pair is what has to be tested. It compiles because
+         * assignability ignores `readonly` property modifiers, so `firstRow` declaring
+         * `Row` hands a deeply readonly value back as a mutable one silently.
+         *
+         * The delete form is here because `inspectDirectWrite` serves three syntactic
+         * shapes and a fix reaching only assignment would be a fix for one of them.
+         *
+         * Mutated to check these two lines discriminate: removing the deferred recording
+         * from `inspectDirectWrite` turns both into `[]` and moves nothing else, leaving
+         * `oneHop` at `[0,]` because that write travels the collection-member path. */
+        expect(writtenIndexes('writeThroughOwnedCall',),).toEqual([0,],);
+        expect(writtenIndexes('deleteThroughOwnedCall',),).toEqual([0,],);
+        /* The structural control, which must stay silent or the fix is a blanket
+         * withholding rather than an attribution.
+         *
+         * Its first draft was `return { label: config.row.label, };` and it reported. That
+         * looked like the fix over-reaching and was not: an isolation probe showed a fresh
+         * object literal whose only property is a copied primitive is recorded as returning
+         * parameter state, indistinguishably from one that genuinely aliases. The control
+         * had been carrying an origin all along. It is written in the `buildFresh` shape
+         * now, and the separate over-approximation is tracked rather than silently
+         * absorbed into this assertion. */
+        expect(writtenIndexes('writeThroughFreshCall',),).toEqual([],);
+        expect([...summaryOf('freshRow',)
+          .returnedParameterIndexes,],).toEqual([],);
+        expect([...summaryOf('firstRow',)
+          .returnedParameterIndexes,],).toEqual([0,],);
       },
     },),
     it({
