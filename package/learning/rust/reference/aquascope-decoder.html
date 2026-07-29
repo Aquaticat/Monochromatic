@@ -68,13 +68,13 @@
           Rust's compiler is named <code>rustc</code>.
           <p>
             <strong>Example:</strong>
-            if <code>mut</code> is removed from this sample, the compiler rejects <code>s.push_str("!")</code>;
-            no executable from that rejected source starts.
+            source text containing <code>???</code> where Rust expects code is rejected;
+            compiler reports error instead of producing executable.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
             <code>tsc</code> also checks source before running.
-            Rust checks additional rules that later sections call ownership and borrowing.
+            Rust and TypeScript check different sets of rules; later sections explain Rust's additional checks.
           </p>
         </dd>
 
@@ -245,6 +245,13 @@
 
       <h3>Text and computer memory</h3>
       <dl>
+        <dt>Memory</dt>
+        <dd>
+          Space inside computer used to hold program data while program runs.
+          <p><strong>Example:</strong> Aquascope shows memory holding local variable <code>s</code> and text for <code>Hello world</code>.</p>
+          <p><strong>TypeScript relationship:</strong> TypeScript programs also use memory, but JavaScript normally hides its layout.</p>
+        </dd>
+
         <dt>Byte</dt>
         <dd>
           Whole number from <code>0</code> through <code>255</code> used as a basic unit of computer memory.
@@ -290,13 +297,6 @@
           <p><strong>TypeScript relationship:</strong> TypeScript object and class methods use similar dot-call syntax.</p>
         </dd>
 
-        <dt>Memory</dt>
-        <dd>
-          Space used to hold program data while the program runs.
-          <p><strong>Example:</strong> Aquascope shows memory holding local variable <code>s</code> and bytes for <code>Hello world</code>.</p>
-          <p><strong>TypeScript relationship:</strong> TypeScript programs also use memory, but JavaScript normally hides its layout.</p>
-        </dd>
-
         <dt>Allocation, deallocation, and buffer</dt>
         <dd>
           Allocation is block of memory reserved for a value.
@@ -314,12 +314,11 @@
           </p>
         </dd>
 
-        <dt>Stack, frame, and register caveat</dt>
+        <dt>Stack and frame</dt>
         <dd>
           Aquascope uses <strong>Stack</strong> for active function calls.
           Each call gets frame that lists its local variables.
-          Real compiled code may keep a value in a processor's small fast storage, called register,
-          instead of the physical stack; the diagram is a learning model.
+          This is learning model; compiler may represent local values differently without changing Rust rule being taught.
           <p><strong>Example:</strong> <code>main</code>'s frame lists local variable <code>s</code> at <code>L1</code>.</p>
           <p><strong>TypeScript relationship:</strong> JavaScript engines also track active function calls, but TypeScript does not expose their memory layout.</p>
         </dd>
@@ -808,7 +807,10 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
           </tr>
         </tbody>
       </table>
-      <p><strong>Example:</strong> compiler rejects any later statement that tries to use <code>s</code>.</p>
+      <p>
+        <strong>Example:</strong>
+        compiler rejects later code that reads <code>s</code>, calls method on <code>s</code>, or passes <code>s</code> to another function.
+      </p>
     </section>
 
     <section aria-labelledby="concrete">
@@ -863,7 +865,11 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <dt><code>vec</code></dt>
         <dd>
           Lowercase private field inside <code>String</code> holding its UTF-8 bytes through <code>Vec&lt;u8&gt;</code>.
-          <p><strong>Example:</strong> for <code>String::from("Hi")</code>, this field handles bytes <code>H</code> and <code>i</code>.</p>
+          <p>
+            <strong>Example:</strong>
+            for <code>String::from("Hi")</code>, this field's <code>Vec</code> has length <code>2</code>
+            and points to buffer containing bytes <code>H</code> and <code>i</code>.
+          </p>
         </dd>
 
         <dt><code>Vec&lt;u8&gt;</code></dt>
