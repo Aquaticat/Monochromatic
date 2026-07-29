@@ -23,23 +23,15 @@ import {
 } from 'typescript/unstable/ast';
 import {
   isArrayLiteralExpression,
-  isAssertionExpression,
   isBinaryExpression,
   isCallExpression,
-  isConditionalExpression,
   isElementAccessExpression,
   isExpressionStatement,
   isIdentifier,
-  isNonNullExpression,
   isObjectLiteralExpression,
-  isParenthesizedExpression,
   isPrefixUnaryExpression,
   isPropertyAccessExpression,
-  isPropertyAssignment,
   isReturnStatement,
-  isSatisfiesExpression,
-  isShorthandPropertyAssignment,
-  isSpreadAssignment,
   isTypeOfExpression,
   isVariableDeclaration,
   isVoidExpression,
@@ -47,6 +39,10 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import {
+  assignmentStoreEscapes,
+  valueConsumer,
+} from './effect-value-consumer.ts';
 import {
   collectAstNodes,
   isEffectCallableDeclaration,
@@ -74,99 +70,6 @@ const TESTING_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 const TESTING_PREFIX_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.ExclamationToken,
 ],);
-
-/**
- * Operators whose value may be either operand's.
- */
-const EITHER_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
-  SyntaxKind.QuestionQuestionToken,
-  SyntaxKind.BarBarToken,
-],);
-
-/**
- * Operators whose value is always the right operand's.
- */
-const RIGHT_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
-  SyntaxKind.AmpersandAmpersandToken,
-  SyntaxKind.EqualsToken,
-  SyntaxKind.CommaToken,
-],);
-
-/**
- * Ascends to the expression that actually consumes this value.
- *
- * The mirror of the descent in `effect-expression-provenance.ts`, and needed for the
- * same reason. `facts.get(key) ?? new Set()` makes the call's parent the `??`
- * expression rather than the declaration, so classifying the call's immediate parent
- * called every such lookup an escape and no discharge ever fired. Parentheses,
- * assertions and the value-selecting operators all hand the value onward, so the
- * position that decides escape is the first parent that does something else with it.
- *
- * @param node - Expression whose consuming position is wanted.
- *
- * @returns outermost expression carrying this same value.
- *
- * @example
- * ```ts
- * valueConsumer({ node: call });
- * ```
- */
-function valueConsumer({ node, }: { readonly node: Node; },): Node {
-  /**
-   * Cursor ascending while each parent passes the value through unchanged.
-   */
-  const cursor: { current: Node; } = { current: node, };
-  while (passesValueOutward({ node: cursor.current, },))
-    cursor.current = cursor.current
-      .parent;
-  return cursor.current;
-}
-
-/**
- * Tests whether a node's parent yields this node's own value.
- *
- * @param node - Candidate contributing operand.
- *
- * @returns whether the parent's value can be this node's value.
- *
- * @example
- * ```ts
- * passesValueOutward({ node });
- * ```
- */
-function passesValueOutward({ node, }: { readonly node: Node; },): boolean {
-  /**
-   * Syntactic context possibly forwarding this value.
-   */
-  const { parent, } = node;
-  if (isParenthesizedExpression(parent,)
-    || isNonNullExpression(parent,)
-    || isAssertionExpression(parent,)
-    || isSatisfiesExpression(parent,))
-    return true;
-  if (isConditionalExpression(parent,))
-    return (parent.whenTrue === node) || (parent.whenFalse === node);
-  /* A property's value flows into the literal that holds it, so the position that
-   * decides escape is the literal's, not the property's. Without this step the
-   * enclosing literal is never reached: the parent of a property value is the
-   * `PropertyAssignment`, and the literal is its grandparent. */
-  if (isPropertyAssignment(parent,)
-    || isShorthandPropertyAssignment(parent,)
-    || isSpreadAssignment(parent,))
-    return true;
-  if (!isBinaryExpression(parent,))
-    return false;
-  /**
-   * Operator deciding which operands can be the expression's value.
-   */
-  const operator = parent.operatorToken
-    .kind;
-  /* Mirrors the operand policy in `effect-expression-provenance.ts`: `??` and `||`
-   * can yield either operand, while `&&`, assignment and comma yield only the right. */
-  if (EITHER_OPERAND_PASSES.has(operator,))
-    return (parent.left === node) || (parent.right === node);
-  return RIGHT_OPERAND_PASSES.has(operator,) && (parent.right === node);
-}
 
 /**
  * Tests whether a literal is handed directly to a call as an argument.
@@ -264,15 +167,11 @@ function useEscapes({ node, }: { readonly node: Node; },): boolean {
    * inside it becomes untracked and does escape. */
   if (isObjectLiteralExpression(parent,) || isArrayLiteralExpression(parent,))
     return !literalIsCallArgument({ literal: parent, },);
-  if (isBinaryExpression(parent,)
-    && (parent.operatorToken
-      .kind
-      === SyntaxKind.EqualsToken)
-    && (parent.right === node))
-    /* Assigned somewhere. Only an assignment into a plain local keeps the value
-     * inside attributed tracking, and that local is followed through the binding
-     * origins instead, so anything else is a store this cannot follow. */
-    return !isIdentifier(parent.left,);
+  /* Assignment is deliberately absent here and cannot be added back. Every caller hands
+   * this predicate `valueConsumer` of a node, and that ascends the right operand of an
+   * assignment, so a node contributing to one never arrives. `assignmentStoreEscapes` in
+   * `effect-value-consumer.ts` classifies the store during the ascent instead, which is
+   * the only position where both the store and the assignment's own consumer are visible. */
   /* Reached as the object of a property or element access: attributed through
    * provenance, which follows the access down to this value's own origins. */
   if (isPropertyAccessExpression(parent,) || isElementAccessExpression(parent,))
@@ -393,6 +292,15 @@ export function resultEscapesCallable({
    * placed straight into a container, escapes without ever being bound. */
   if (useEscapes({ node: valueConsumer({ node: call, },), },))
     return true;
+  /* Then any store performed on the way to that position. `sink.value = facts.get(k)`
+   * consumes the assignment expression as a discarded statement, so the position test
+   * above answers about the assignment rather than about the store beneath it. */
+  if (assignmentStoreEscapes({
+    project,
+    node: call,
+    body,
+  },))
+    return true;
   /**
    * Bindings that hold this call's result.
    */
@@ -420,7 +328,13 @@ export function resultEscapesCallable({
       return enclosedByNestedCallable({
         node,
         body,
-      },) || useEscapes({ node: valueConsumer({ node, },), },);
+      },)
+        || useEscapes({ node: valueConsumer({ node, },), },)
+        || assignmentStoreEscapes({
+          project,
+          node,
+          body,
+        },);
     },);
 }
 
