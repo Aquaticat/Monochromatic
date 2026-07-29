@@ -258,6 +258,43 @@ What actually orders these is that #42 is a precondition for #41:
       the compile check removed the reason to hurry it,
       and #35 refuted a closely related refinement after it looked obviously safe.
 
+## Sweep baseline for the follow-up work
+
+Single-threaded `OXLINT_THREADS=1 mise run lint:oxlint` from the repository root at `91b261348`,
+ captured because every item in "Recommendation" moves findings and none of them can be judged without a before.
+
+Workspace totals:
+ 3902 warnings and 3299 errors,
+ 7201 diagnostics.
+That reproduces the figure `doc/planning/prefer-readonly-foreign-proof-cost.md` recorded for the deferral work,
+ across a context boundary and several commits since,
+ which is the only reproducibility evidence this baseline carries.
+
+This rule contributes 1937,
+ in five categories that sum exactly to that total:
+
+-    1196 `used by these calls`,
+      argument opacity.
+-    666 `used as the object for these method calls`,
+      receiver opacity,
+      the category all three follow-ups move.
+-    37 `claims readonly semantics dishonestly`.
+-    32 `should be readonly`,
+      the offers.
+-    6 `has stale @mutates contract`.
+
+`Mutation contracts disagree` is now zero,
+ where `doc/decision/prefer-readonly-result-provenance.md` recorded four instances in `package/module/pipe`.
+That category cleared at some point since,
+ and this document does not establish when or why.
+
+Counting note,
+ recorded because it cost a wrong number once here.
+Matching `Parameter "[^"]*" should be readonly` returns 26 rather than 32:
+ six parameters are destructuring patterns whose printed names contain braces and quotes,
+ so the quoted-name pattern silently drops them.
+Count these categories by their distinctive phrase and check the parts sum to the whole.
+
 ## Consequence carried meanwhile
 
 `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts` carries a scoped `unicorn/prefer-at` disable
