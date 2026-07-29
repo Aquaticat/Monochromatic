@@ -2964,3 +2964,28 @@ Neither happened.
 `max-lines` findings are back to one file,
  which is the one that had them before any of this work,
  so both budget regressions this session introduced are gone.
+
+## A mutation check that destroyed the thing it was checking
+
+The idiom used for the stage one, two and three mutation checks was:
+ edit the source,
+ rebuild,
+ measure,
+ then `git checkout --` the file to restore it.
+
+That works only because those fixes were already committed.
+Running it against the spread ascent,
+ which was not,
+ restored the file to `HEAD` and discarded the fix along with the mutation.
+The test run that followed in the same command then reported the pre-fix behaviour,
+ which read as the restore having failed rather than as the fix having been deleted.
+
+The mutation check itself was valid and its result stands:
+ reverting the ascent fails the boundary equality and nothing else.
+What was wrong was the restore.
+
+Rule for the rest of this work:
+ commit before mutation-checking,
+ so `git checkout --` restores the fix rather than removing it.
+If a fix is not ready to commit,
+ restore by re-applying the edit rather than by checkout.
