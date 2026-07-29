@@ -8,7 +8,10 @@ import type { Context, } from '@oxlint/plugins';
 
 import type { ParameterIndex, } from './effect-slot-identity.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
-import { splitRetentionBoundaries, } from './effect-retention-provenance.ts';
+import {
+  boundariesAreReportable,
+  splitRetentionBoundaries,
+} from './effect-retention-provenance.ts';
 import {
   everyBoundaryIsInputMethod,
   inputMethodUsageSubject,
@@ -29,14 +32,14 @@ import {
  * const uncertainty: UncertaintyBoundaries = {
  *   facts: ['JSON.stringify'],
  *   names: 'JSON.stringify',
- *   retentions: [],
+ *   reportable: true,
  * };
  * ```
  */
 export type UncertaintyBoundaries = {
   readonly facts: readonly string[];
   readonly names: string;
-  readonly retentions: readonly string[];
+  readonly reportable: boolean;
 };
 
 /**
@@ -71,10 +74,7 @@ export function uncertaintyBoundaries({
   /**
    * Boundaries split into causes this report can address and stores it cannot.
    */
-  const {
-    callBoundaries,
-    retentionBoundaries,
-  } = splitRetentionBoundaries({ boundaries, },);
+  const { callBoundaries, } = splitRetentionBoundaries({ boundaries, },);
   return {
     facts: callBoundaries,
     /* The fallback belongs to the call half alone. Opacity with no provenance at all is a
@@ -85,7 +85,7 @@ export function uncertaintyBoundaries({
     names: callBoundaries.length === 0
       ? 'a call whose name this rule could not determine'
       : callBoundaries.join(', ',),
-    retentions: retentionBoundaries,
+    reportable: boundariesAreReportable({ boundaries, },),
   };
 }
 

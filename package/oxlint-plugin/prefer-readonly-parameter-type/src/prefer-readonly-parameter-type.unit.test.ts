@@ -628,6 +628,18 @@ children: [
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',);
       },),).toBe(true,);
+      /* The subject that introduces the boundary list, held to the same rule as the list.
+       * `reportMixedBindingCauses` stores one destructured binding and passes the other to
+       * an unresolved call, and each binding owns its own slot, so a subject built from
+       * every opaque slot said both were used by `JSON.stringify`. Filtering the list
+       * without filtering the subject left that standing. */
+      const mixedMessages = messages.filter(function namesCalledBinding(message,): boolean {
+        return message.includes('"called"',);
+      },);
+      expect(mixedMessages.length,).toBe(1,);
+      expect(mixedMessages.every(function omitsStoredBinding(message,): boolean {
+        return !message.includes('"stored"',);
+      },),).toBe(true,);
     },
   },),
   it({

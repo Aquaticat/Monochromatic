@@ -13,6 +13,7 @@
  */
 
 import { affectedBindingNames, } from './effect-affected-bindings.ts';
+import { boundariesAreReportable, } from './effect-retention-provenance.ts';
 import {
   asParameterIndex,
   type ParameterIndex,
@@ -76,6 +77,27 @@ export function effectPublicSummary({
     ownership,
     slots: summary.opaque,
   },);
+  /**
+   * Opaque slots a report may name a binding for.
+   *
+   * The slot set stays whole for every verdict and narrows only here, where names are
+   * chosen. A destructured parameter gives each binding its own slot, so one binding
+   * stored and another passed to an unresolved call arrive with different causes, and a
+   * subject built from every opaque slot says the stored one is used by the call.
+   * `reportMixedBindingCauses` in `readonly-structural-store-invalid.ts` is that shape.
+   */
+  const reportableOpaqueSlots = new Set(
+    [...summary.opaque,].filter(function slotCanBeNamed(slot,): boolean {
+      /**
+       * Provenance recorded against this slot alone, absent when nothing reached it.
+       */
+      const slotBoundaries = summary.opaqueProvenanceBySlot
+        .get(slot,);
+      return boundariesAreReportable({
+        boundaries: [...slotBoundaries ?? [],],
+      },);
+    },),
+  );
   return {
     mutatedParameterIndexes: new Set([
       ...mutated,
@@ -113,7 +135,7 @@ export function effectPublicSummary({
      * where the slot facts and the declaration are both in hand. */
     opaqueBindingsByParameter: new Map([...affectedBindingNames({
       declaration,
-      slots: summary.opaque,
+      slots: reportableOpaqueSlots,
     },),].map(function brandOwner([
       parameterIndex,
       names,

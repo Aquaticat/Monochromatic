@@ -77,3 +77,37 @@ export function splitRetentionBoundaries({
     },),
   };
 }
+
+/**
+ * Tests whether opacity described by these facts has a cause a report can ask about.
+ *
+ * Absence of provenance is reportable rather than silent, and getting that backwards is
+ * the mistake this exists to prevent. Opacity with nothing recorded against it is the
+ * genuine unknown the fallback wording was written for, while opacity whose every recorded
+ * cause is a store is understood completely. Testing an empty call list alone would make
+ * those two indistinguishable and silence the one that has to speak.
+ *
+ * @param boundaries - Provenance facts recorded against one parameter or one slot.
+ *
+ * @returns whether a report drawn from these facts would name a cause it can ask about.
+ *
+ * @example
+ * ```ts
+ * boundariesAreReportable({ boundaries: ['JSON.stringify'], },);
+ * ```
+ */
+export function boundariesAreReportable({
+  boundaries,
+}: {
+  readonly boundaries: readonly string[];
+},): boolean {
+  /**
+   * Facts split by whether a report can address them.
+   */
+  const {
+    callBoundaries,
+    retentionBoundaries,
+  } = splitRetentionBoundaries({ boundaries, },);
+  return (callBoundaries.length > 0)
+    || (retentionBoundaries.length === 0);
+}

@@ -159,17 +159,9 @@ function factsForParameter({
     parameterIndex,
   },);
   /**
-   * Recorded causes of this parameter's opacity, separated by what a report can ask about.
-   */
-  const {
-    facts: callBoundaries,
-    retentions: retentionBoundaries,
-  } = uncertainty;
-  /**
    * Whether some recorded cause of this opacity is one a report can ask about.
    */
-  const reportableOpacity = (callBoundaries.length > 0)
-    || (retentionBoundaries.length === 0);
+  const { reportable: reportableOpacity, } = uncertainty;
   /**
    * Whether exact marker explicitly authorizes opaque host capability use.
    */
