@@ -3348,6 +3348,24 @@ Then the same sweep with the closure branch disabled,
 Only the second answers the question,
  because a reproducible reading can still be a reading of something other than the fix.
 
+### The reading is reproducible, and cache warmth is not what moved it
+
+The warm repeat at the same commit came back identical:
+ 1966 findings,
+ the same per-category tally,
+ nothing added and nothing removed.
+Wall clock fell from 8m16s to 3m00s,
+ which is the only thing the cache changed.
+
+So the cache-generation suspicion is refuted for results and confirmed for cost,
+ which is the second time in this session that sweep wall clock has turned out to measure
+ something other than the work.
+Cold and warm agree on every finding.
+
+That leaves the movement attributable either to this change or to something that differs
+ between the baseline capture and now,
+ and only the disabled-branch run separates those.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
