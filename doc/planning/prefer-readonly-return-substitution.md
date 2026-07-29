@@ -606,6 +606,50 @@ That spread case also names the next precision question.
  while `parameterIndexes` and `provenanceSuccessors` both walk spreads,
  so the escape test disagrees with the argument analysis about identical state.
 
+## Sweep pre-registration for caller-side substitution
+
+Written before the sweep ran.
+This change attributes writes the rule previously recorded against nothing,
+ so it moves findings in a direction the holder closure did not:
+ offers should fall,
+ and the category that grows is mutation rather than opacity.
+
+Compared against the `sweep-after-41` capture with `sweep-compare.mjs`,
+ which reproduces the recorded category counts exactly on a known-zero pair.
+
+What each direction has to survive:
+
+-    Offers falling below 32.
+     Sample the lost ones.
+     Each must be a parameter whose callable really does write through a value returned
+      by a resolved callee.
+     A lost offer with no such write means substitution is attributing through a result
+      the callee allocated,
+      which the `growFresh` control says it must not.
+-    Mutation findings rising.
+     There is no separate mutation category in the diagnostic taxonomy,
+      because a proven write withholds the offer rather than reporting,
+      so this shows up only as offers falling and as silence.
+     That asymmetry is worth stating:
+      the change's main effect is invisible except as absence.
+-    Receiver opacity or argument opacity moving at all.
+     Neither should.
+     Substitution adds to `mutated`,
+      and nothing in it touches a discharge decision.
+     Movement there means the deferred relation is reaching a path it was not meant to.
+
+The number that would narrow the change rather than ship it:
+ any sampled lost offer whose callable writes only through a freshly allocated result,
+ or any movement in the two opacity categories that cannot be traced to a mutation that
+ also appeared.
+
+One measurement this cannot make.
+Whether either false offer occurred in this workspace before today is unmeasured,
+ and a sweep after the fix cannot answer it,
+ since the evidence would be an offer that is now absent for the right reason rather than
+ a finding that moved.
+Sampling the lost offers is the closest available answer.
+
 ## Consequence carried meanwhile
 
 `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts` carries a scoped `unicorn/prefer-at` disable
