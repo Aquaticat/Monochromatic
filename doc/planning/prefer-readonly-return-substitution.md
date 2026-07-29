@@ -2409,3 +2409,65 @@ The result is zero delta,
  but the run is not clean and is not cited as though it were.
 The stage two capture was launched with no concurrent build,
  and it covers both stages.
+
+## Two things stage two got wrong that being green did not reveal
+
+### The cache validator never checked the field
+
+`isEffectSummary` validates `relations`,
+ `elementApplications`,
+ and `calls`,
+ each bounded and each element type-checked.
+It did not mention `resultApplications` at all.
+
+That was harmless by accident rather than by design.
+An unrecognised entry contributed a call-site key matching no edge,
+ and `propagateResultApplications` skipped it.
+The retaining kind ends that,
+ because it carries provenance the propagation requires,
+ and a payload naming that kind without provenance now reaches a throw.
+An unvalidated field turned a corrupt-payload case from a skip into a crash inside the
+ fixed point,
+ while `rejects corrupt nested persistent payloads` says the intended behaviour for
+ corrupt input is rejection.
+
+The validator now checks kind against a set it states itself,
+ requires provenance for exactly the retaining kind,
+ and requires its absence for the other two.
+Requiring absence is the part that would catch a payload written by a model that does not
+ match this one,
+ which is the only way a mismatched kind could arrive.
+
+The digest already covers the ordinary version-skew case:
+ the cache key hashes the analyzer's implementation bytes,
+ so a cache written before this change is never read rather than being read and
+ misinterpreted.
+The validator is for the case the digest does not cover,
+ which is a file that was edited rather than superseded.
+
+### The cross-process cache test proved nothing about any of it
+
+`reuses persistent summaries across independent Node processes` analysed one function:
+
+```ts
+export function inspect(value: { text: string; },): string { return value.text; }
+```
+
+That produces no deferred result use of any kind.
+The test asserted that the counters move,
+ which they do whatever happens to a field the fixture never populates.
+It would have stayed green while serialization dropped the provenance,
+ while the validator rejected the payload,
+ and while the restored application reached the propagation throw,
+ because none of those paths were entered.
+
+The fixture now stores a returned piece of its own parameter,
+ and the probe prints the verdict beside the counters.
+The cold process computes the retention from syntax,
+ the warm one restores it from disk,
+ and both must say the same thing.
+Asserting the exact value rather than equality of the two,
+ because two processes that both lost it would agree and pass.
+
+A cache test whose fixture exercises none of the cached shapes measures the counters and
+ calls it reuse.
