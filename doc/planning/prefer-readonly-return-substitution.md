@@ -2876,3 +2876,40 @@ The reason is in the callee:
  which carries no caller state.
 The gate was never consulted.
 Reading the callee's summary rather than the caller's silence is what separated those two.
+
+## Where the queue stands
+
+Task forty-eight is three stages landed,
+ four defects of my own found and fixed after landing them,
+ and a queue of shapes the same machinery does not reach yet.
+
+The remainder is not a tail.
+Fifty-eight wants one multi-site descent for write targets,
+ covering conditionals,
+ parenthesised whole targets,
+ destructuring patterns and iteration targets.
+Sixty-one wants the binding record to survive a pattern,
+ a default,
+ or a logical assignment.
+Sixty-two wants the return branch and the call arguments to consult that record at all,
+ which is inside forty-eight's own title:
+ a return and an argument are use sites.
+Fifty-nine and sixty-two overlap on the argument case,
+ differing only in whether the site comes from an expression or from the binding record.
+
+So closing forty-eight is a statement about its three stages,
+ not about the class of defect.
+Anything reading the title as coverage will be wrong,
+ and sixty-two is where the rest of the title lives.
+
+The four defects found after landing are worth naming together,
+ because they have one shape:
+ each was a case the tests could not ask about.
+The swallowed verdict,
+ the progress that did not count provenance,
+ the alias inside a wrapper,
+ and the retention that never learned the leaf test.
+Every one passed a green suite and a mutation check,
+ because a mutation check asks whether the assertions discriminate the mechanism they
+ name,
+ and none of them named these.
