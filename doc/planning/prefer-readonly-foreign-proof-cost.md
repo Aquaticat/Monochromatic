@@ -271,3 +271,102 @@ Sol also recommends shadow mode for any future gate:
 run every closure, assert the gate would have admitted every non-empty result,
 and record the prospective skip ratio before trusting it.
 That is the right shape for a change whose failure mode is silent.
+
+## The fifth attempt, pre-registered before it is measured
+
+Compute the foreign proof only when a verdict reads it.
+
+### Why this one is not a gate
+
+The four earlier attempts each invented a predicate that tried to guess whether the proof could
+matter,
+and each was refuted by a case the predicate got wrong.
+This attempt has no predicate over the closure at all.
+It moves the proof out of `CallableEffectSummary` and into a second `EffectSummaryIndex` method,
+and the verifier's own control flow decides whether to ask.
+`verifier.ts` reads the foreign answer in exactly four places,
+so the question "can the answer change a report" has a mechanical answer per parameter:
+
+-    `classification.kind === 'dishonest-readonly'`.
+-    `mutated && classification.kind === 'honest-readonly'`.
+-    `(!mutated) && classification.kind === 'mutable'`.
+-    `(!affected)` together with a parameter type the redundant-marker report would act on.
+
+Everything else reaches no branch the answer can move:
+an `opaque` parameter reports and returns before the read,
+`opaque-capability` matches no branch,
+and a `mutated` parameter whose type is already `mutable` has no offer left to suppress.
+The fourth item is an equivalence rather than an approximation because
+`reportRedundantForeignBorrowed` returns at its own first test unless the parameter's declared type
+carries the marker;
+testing that before asking is the report function's own control flow, hoisted.
+
+### The one thing that has to be true, and why it is
+
+Skipping a closure must not change any other callable's answer.
+`completeForeignByCallable` is one map shared by every closure and written for every key each closure
+returns,
+which is exactly the shape attempt 2 died on,
+so the question is whether a read ever returns an entry another root wrote.
+
+It cannot,
+and the reason is three lines rather than an argument about graph shape:
+`initializeCandidates` calls `candidates.set(key, ...)` for every entry of `summaries` with no
+condition,
+`groundForeignCandidates` returns one entry per candidate,
+and `completeForeignBorrowedGraph` seeds its root into `summaries` before enumerating anything.
+So a root's own closure always returns an entry for its own key,
+that write always lands last before the read,
+and the `?? new Set()` fallback at the read site is dead code.
+
+The comment above that fallback says the opposite:
+"a callable the closure finds no inbound for is absent from the result rather than present and
+empty".
+That is false about this implementation and is corrected in the same commit.
+
+The reshaping keeps only each root's own entry,
+so the hazard stops being a fact that needs remembering and becomes one the type cannot express.
+Sol's reason for insisting on that, which is the durable half of attempt 2's refutation:
+`getSignatureUsage` enumerates references rather than call edges,
+a lexical caller is inserted into `summaries` and queued before `isCallExpression` and edge
+validation run,
+and a caller that fails validation stays in the map with its edge replaced by a synthetic unknown
+inbound.
+Caller summaries therefore carry only the outbound edges the current root's walk discovered.
+They are not the summaries a closure rooted at that caller would have built,
+whatever the reachability sets say.
+
+### What is predicted, so that a null result is readable
+
+-    The sweep reports exactly 1937 findings and 32 offers,
+     and all 7201 finding locations are identical as sorted sets.
+-    The named failure mode is not the branch gating, which is equivalent by construction.
+     It is the analysis budget.
+     `createEffectAnalysisBudget` defaults to 120000 ms per project index and every closure records a
+     phase against it,
+     so proving less spends less,
+     and external implementation inference can now complete where it previously exhausted the budget
+     and returned unavailable, which would remove consumer opacity reports.
+     The baseline sweep contains zero occurrences of `analysis-incomplete` or `budget exhausted`,
+     so this is predicted not to fire here.
+     It stays a real semantic change and is stated rather than hidden.
+-    A second budget consequence has no measurement to hide behind:
+     a proof demanded mid-verification can throw after earlier parameters already reported,
+     where today every active-file proof runs during `includeActiveSource` before any report.
+     The verifier therefore computes every parameter fact first,
+     demands the proof once for the whole callable, and only then reports.
+
+### The bar this attempt is measured against
+
+Wall time alone cannot say whether the direction worked,
+because the current 884.8s baseline includes the proof and no current measurement of the floor
+exists.
+The 616s against 966s in the task description was taken at an older commit and is not comparable.
+So the floor is measured too:
+a throwaway build whose proof returns empty without running a closure.
+
+Recovered fraction is then `(baseline - deferred) / (baseline - floor)`.
+Registered before the runs:
+under half is a refutation of this direction as a cost fix,
+leaving only the type-shape improvement,
+and that outcome gets recorded rather than argued away.
