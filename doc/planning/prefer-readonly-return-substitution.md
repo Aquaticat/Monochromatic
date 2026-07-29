@@ -441,6 +441,61 @@ Matching `Parameter "[^"]*" should be readonly` returns 26 rather than 32:
  so the quoted-name pattern silently drops them.
 Count these categories by their distinctive phrase and check the parts sum to the whole.
 
+## A second false offer, on the array path
+
+The half-measurement recorded in "What this proposal does not establish" is now complete,
+ and it came back the way that section predicted rather than the way the earlier
+ retraction went.
+Both halves were re-measured here rather than carried forward,
+ because the claim they support is that the shipped rule writes a false annotation.
+
+The rule offers `readonly Row[]` for the laundering caller:
+
+```ts
+// disposable probe directory under the fixture source root
+function launderMutable(rows: Row[],): Row[] {
+  return rows as Row[];
+}
+
+export function structuralThroughLaunderedReturn(rows: Row[],): void {
+  launderMutable(rows,)
+    .push({ label: 'appended', },);
+}
+```
+
+Read at the user boundary and attributed by diagnostic line:
+ both `launderMutable` and `structuralThroughLaunderedReturn` are offered,
+ with the reason `mutable Array has ReadonlyArray projection`.
+The control in the same file,
+ `structuralDirect`,
+ which performs the identical `push` with no laundering hop,
+ draws no diagnostic at all,
+ because the direct write is recorded as a mutation.
+So the hop is the whole difference,
+ exactly as the alias hop was on the structural path.
+
+Applying that offer to both parameters type-checks clean under TypeScript 7.0.2,
+ exit zero,
+ and executing it grows the caller's own array from one element to two.
+The annotation says the callable will not change the array's structure,
+ and the callable changes the array's structure.
+
+This one is not closed by the holder closure,
+ and testing it after `7a50e47d9` is how that was established rather than assumed.
+`structuralThroughLaunderedReturn` contains no member call,
+ so no receiver opacity exists to keep.
+The write travels through a resolved callee's return value,
+ and only caller-side substitution through `returnedParameterIndexes` can attribute it.
+
+A related gap surfaced in the same probe and is not the same claim.
+`structuralUnderReadonlyClaim`,
+ written with `rows: readonly Row[]` already,
+ performs the same laundered `push` and draws no `dishonestReadonly` report,
+ only a request for a deeper projection.
+So the rule does not catch a false readonly claim by this route either,
+ in the direction where the claim is already written down.
+Whether `dishonestReadonly` is meant to cover that is not established here.
+
 ## Sweep pre-registration for the holder closure
 
 Written before the sweep finished,
@@ -578,8 +633,10 @@ Whether that bare report is itself a deep claim is a separate question,
  and it is left open rather than answered by inference,
  since inferring what a report promises is what produced the retraction recorded here.
 
-One shape is half-measured and matters,
- because it is the one route by which the missing consumer could produce a genuinely false offer.
+One shape was half-measured here and is now measured in full,
+ so it has moved to "A second false offer,
+ on the array path".
+It is the route by which the missing consumer produces a genuinely false offer.
 Element writes cannot make a `ReadonlyArray` offer false.
 A structural write can,
  and a resolved callee can launder one through a cast:
@@ -602,16 +659,6 @@ Measured,
 So `readonly Row[]` here is a false annotation in the strict sense,
  not merely an imprecise one:
  the callable structurally mutates exactly what the annotation says it will not.
-
-What is still unmeasured is the half that decides whether this is a live defect:
- whether the rule actually offers `readonly` for that callable.
-It should,
- by the same reasoning that made `writeThroughReturnedIndex` clean,
- since nothing maps `self`'s returned parameter back through the argument.
-Confirm it before treating this as established.
-If confirmed,
- #40 recovers a soundness justification that the element-write case does not give it,
- and the ranking in "Recommendation" should be revisited.
 
 Whether any of these shapes occurs in the workspace today is unmeasured,
  and no sweep has looked.
