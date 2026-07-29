@@ -1,776 +1,635 @@
-<!DOCTYPE html>
-<html lang='en'>
-  <head>
-    <meta charset='utf-8'>
-    <meta
-      name='viewport'
-      content='width=device-width, initial-scale=1'>
-    <title>Aquascope decoder for the opening diagram</title>
-    <style>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aquascope decoder for the opening diagram</title>
+  <style>
     :root {
       --dark: oklch(0.1 0 0);
       --light: oklch(0.9 0 0);
-      @media (prefers-color-scheme: light) {
-        --fg: var(--dark);
-        --bg: var(--light);
-      }
-      @media (prefers-color-scheme: dark) {
-        --fg: var(--light);
-        --bg: var(--dark);
-      }
+      @media (prefers-color-scheme: light) { --fg: var(--dark); --bg: var(--light); }
+      @media (prefers-color-scheme: dark) { --fg: var(--light); --bg: var(--dark); }
     }
-    html {
-      color: var(--fg);
-      background-color: var(--bg);
-    }
-    </style>
-  </head>
-  <body>
-    <main>
-      <header>
-        <p>Companion reference</p>
-        <h1>Aquascope decoder for the opening diagram</h1>
-        <p>
-          Keep the
-          <a
-            href='https://rust-book.cs.brown.edu/experiment-intro.html#content-changes'>opening
-            diagram</a>
-          visible while reading this page. Aquascope is a separate teaching tool, not Rust
-          syntax. It can draw both what Rust checks before code starts and what the
-          program's data looks like while the code runs.
-        </p>
-        <p>
-          <strong>The opening diagram draws only the running-data half.</strong>
-          It shows four memory pictures and contains no permission letters. “R, W, O
-          permission marks” is therefore forward material for a later book page, and it is
-          the one section on this page you cannot match against the opening diagram.
-        </p>
-        <p>
-          <strong>Read this page in order.</strong>
-          “Words used by the decoder” explains the vocabulary that every later section
-          relies on. When an example needs new syntax, that same entry explains it
-          immediately. No knowledge of Rust, computer memory, or systems programming is
-          assumed.
-        </p>
-      </header>
+    html { color: var(--fg); background-color: var(--bg); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p>Companion reference</p>
+      <h1>Aquascope decoder for the opening diagram</h1>
+      <p>
+        Keep the
+        <a href="https://rust-book.cs.brown.edu/experiment-intro.html#content-changes">opening diagram</a>
+        visible while reading this page.
+        Aquascope is a separate teaching tool, not Rust syntax.
+        It can draw both what Rust checks before code starts and what the program's data looks like while the code runs.
+      </p>
+      <p>
+        <strong>The opening diagram draws only the running-data half.</strong>
+        It shows four memory pictures and contains no permission letters.
+        “R, W, O permission marks” is therefore forward material for a later book page,
+        and it is the one section on this page you cannot match against the opening diagram.
+      </p>
+      <p>
+        <strong>Read this page in order.</strong>
+        “Words used by the decoder” explains the vocabulary that every later section relies on.
+        When an example needs new syntax, that same entry explains it immediately.
+        No knowledge of Rust, computer memory, or systems programming is assumed.
+      </p>
+    </header>
 
-      <section aria-labelledby='words'>
-        <h2 id='words'>Words used by the decoder</h2>
+    <section aria-labelledby="words">
+      <h2 id="words">Words used by the decoder</h2>
 
-        <h3>From source text to a running program</h3>
-        <dl>
-          <dt>Source code</dt>
-          <dd>
-            Text written by a programmer in a programming language. Rust source files
-            normally end in <code>.rs</code>.
-            <p>
-              <strong>Example:</strong>
-              <code>fn main() {}</code> is complete minimal Rust source:
-              <code>fn</code> starts a function definition,
-              <code>main</code> is its name,
-              <code>()</code> says it has no inputs, and <code>{}</code> encloses its
-              empty body.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> a <code>.ts</code> file is
-              TypeScript source code.
-            </p>
-          </dd>
+      <h3>From source text to a running program</h3>
+      <dl>
+        <dt>Source code</dt>
+        <dd>
+          Text written by a programmer in a programming language.
+          Rust source files normally end in <code>.rs</code>.
+          <p>
+            <strong>Example:</strong>
+            <code>fn main() {}</code> is complete minimal Rust source:
+            <code>fn</code> starts a function definition,
+            <code>main</code> is its name,
+            <code>()</code> says it has no inputs,
+            and <code>{}</code> encloses its empty body.
+          </p>
+          <p><strong>TypeScript relationship:</strong> a <code>.ts</code> file is TypeScript source code.</p>
+        </dd>
 
-          <dt>Executable program</dt>
-          <dd>
-            File that a computer can start and run. This page sometimes shortens
-            “executable program” to “program.”
-            <p>
-              <strong>Example:</strong> <code>main.rs</code> is source text; a separate
-              file produced from it is executable program.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript is normally turned into JavaScript and run by Node.js or a
-              browser; Rust normally produces an executable file ahead of time.
-            </p>
-          </dd>
+        <dt>Executable program</dt>
+        <dd>
+          File that a computer can start and run.
+          This page sometimes shortens “executable program” to “program.”
+          <p><strong>Example:</strong> <code>main.rs</code> is source text; a separate file produced from it is executable program.</p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript is normally turned into JavaScript and run by Node.js or a browser;
+            Rust normally produces an executable file ahead of time.
+          </p>
+        </dd>
 
-          <dt>Compiler</dt>
-          <dd>
-            Tool that reads and translates source code. For this binary sample, Rust's
-            compiler either reports why the source is rejected or produces executable file
-            that computer can start. Rust's compiler is named <code>rustc</code>.
-            <p>
-              <strong>Example:</strong>
-              source text containing <code>???</code> where Rust expects code is rejected;
-              compiler reports error instead of producing executable.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              <code>tsc</code> also checks source, but TypeScript errors do not inherently
-              stop JavaScript emission:
-              <code>noEmitOnError</code> must be enabled to make errors block emitted
-              files. Rust and TypeScript also check different sets of rules.
-            </p>
-          </dd>
+        <dt>Compiler</dt>
+        <dd>
+          Tool that reads and translates source code.
+          For this binary sample, Rust's compiler either reports why the source is rejected
+          or produces executable file that computer can start.
+          Rust's compiler is named <code>rustc</code>.
+          <p>
+            <strong>Example:</strong>
+            source text containing <code>???</code> where Rust expects code is rejected;
+            compiler reports error instead of producing executable.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            <code>tsc</code> also checks source,
+            but TypeScript errors do not inherently stop JavaScript emission:
+            <code>noEmitOnError</code> must be enabled to make errors block emitted files.
+            Rust and TypeScript also check different sets of rules.
+          </p>
+        </dd>
 
-          <dt>Compile time</dt>
-          <dd>
-            Period when the compiler is reading and checking source code, before the
-            executable starts.
-            <p>
-              <strong>Example:</strong> compiler reporting unknown variable name is
-              compile-time event.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript type errors also come from compiler, but emitted JavaScript can
-              still run when project configuration permits emission.
-            </p>
-          </dd>
+        <dt>Compile time</dt>
+        <dd>
+          Period when the compiler is reading and checking source code, before the executable starts.
+          <p><strong>Example:</strong> compiler reporting unknown variable name is compile-time event.</p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript type errors also come from compiler,
+            but emitted JavaScript can still run when project configuration permits emission.
+          </p>
+        </dd>
 
-          <dt>Runtime</dt>
-          <dd>
-            Period after an executable has started and its instructions are running.
-            <p>
-              <strong>Example:</strong>
-              for minimal source <code>fn main() {}</code>, entering empty function body
-              and returning from it are runtime events.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> JavaScript executing inside
-              Node.js or a browser is runtime behavior.
-            </p>
-          </dd>
-        </dl>
+        <dt>Runtime</dt>
+        <dd>
+          Period after an executable has started and its instructions are running.
+          <p>
+            <strong>Example:</strong>
+            for minimal source <code>fn main() {}</code>,
+            entering empty function body and returning from it are runtime events.
+          </p>
+          <p><strong>TypeScript relationship:</strong> JavaScript executing inside Node.js or a browser is runtime behavior.</p>
+        </dd>
+      </dl>
 
-        <h3>Parts of code</h3>
-        <dl>
-          <dt>Keyword</dt>
-          <dd>
-            Word reserved by a language for a particular purpose. A reserved word cannot
-            be reused freely as a variable name.
-            <p>
-              <strong>Example:</strong> <code>fn</code>, <code>let</code>, and <code
-              >mut</code> are Rust keywords.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> <code>function</code>, <code
-              >let</code>, and <code>class</code> are TypeScript keywords.
-            </p>
-          </dd>
+      <h3>Parts of code</h3>
+      <dl>
+        <dt>Keyword</dt>
+        <dd>
+          Word reserved by a language for a particular purpose.
+          A reserved word cannot be reused freely as a variable name.
+          <p><strong>Example:</strong> <code>fn</code>, <code>let</code>, and <code>mut</code> are Rust keywords.</p>
+          <p><strong>TypeScript relationship:</strong> <code>function</code>, <code>let</code>, and <code>class</code> are TypeScript keywords.</p>
+        </dd>
 
-          <dt>Function and function call</dt>
-          <dd>
-            Function is named section of code. Code inside function runs when function is
-            called. A call is written with a function name followed by parentheses.
-            <p>
-              <strong>Example:</strong> <code>greet();</code> calls a function named <code
-              >greet</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript functions and calls
-              have the same broad role.
-            </p>
-          </dd>
+        <dt>Function and function call</dt>
+        <dd>
+          Function is named section of code.
+          Code inside function runs when function is called.
+          A call is written with a function name followed by parentheses.
+          <p><strong>Example:</strong> <code>greet();</code> calls a function named <code>greet</code>.</p>
+          <p><strong>TypeScript relationship:</strong> TypeScript functions and calls have the same broad role.</p>
+        </dd>
 
-          <dt><code>main</code> and automatic startup</dt>
-          <dd>
-            <code>main</code> is entry point into this executable's Rust code.
-            Operating-system and Rust-provided startup work happens first; Rust's runtime
-            then calls <code>main</code> automatically. Programmer does not add <code
-            >main();</code> at end of Rust file.
-            <p>
-              <strong>Example:</strong>
-              starting an executable built from <code>fn main() { let count = 5; }</code>
-              performs startup setup, enters <code>main</code>'s body, then runs <code>let
-                count = 5;</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              the name <code>main</code> has no special behavior in TypeScript. A
-              TypeScript function named <code>main</code> runs only if other code calls
-              <code>main()</code>.
-            </p>
-          </dd>
+        <dt><code>main</code> and automatic startup</dt>
+        <dd>
+          <code>main</code> is entry point into this executable's Rust code.
+          Operating-system and Rust-provided startup work happens first;
+          Rust's runtime then calls <code>main</code> automatically.
+          Programmer does not add <code>main();</code> at end of Rust file.
+          <p>
+            <strong>Example:</strong>
+            starting an executable built from <code>fn main() { let count = 5; }</code>
+            performs startup setup, enters <code>main</code>'s body, then runs <code>let count = 5;</code>.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            the name <code>main</code> has no special behavior in TypeScript.
+            A TypeScript function named <code>main</code> runs only if other code calls <code>main()</code>.
+          </p>
+        </dd>
 
-          <dt>Parameter and argument</dt>
-          <dd>
-            Parameter is input name written in function definition. Argument is value
-            supplied by particular function call.
-            <p>
-              <strong>Example:</strong>
-              in complete definition <code>fn show(number: i32) {}</code>, <code
-              >number</code> is parameter and <code>i32</code> means whole-number type; in
-              <code>show(5)</code>, value <code>5</code> is argument.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript uses the same parameter
-              and argument distinction.
-            </p>
-          </dd>
+        <dt>Parameter and argument</dt>
+        <dd>
+          Parameter is input name written in function definition.
+          Argument is value supplied by particular function call.
+          <p>
+            <strong>Example:</strong>
+            in complete definition <code>fn show(number: i32) {}</code>, <code>number</code> is parameter
+            and <code>i32</code> means whole-number type;
+            in <code>show(5)</code>, value <code>5</code> is argument.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript uses the same parameter and argument distinction.</p>
+        </dd>
 
-          <dt>Function body</dt>
-          <dd>
-            Code enclosed by function's braces, <code>{</code> and <code>}</code>.
-            <p>
-              <strong>Example:</strong> in <code>fn greet() { let word = 5; }</code>,
-              <code>let word = 5;</code> is the body.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript also uses braces around
-              a normal function body.
-            </p>
-          </dd>
+        <dt>Function body</dt>
+        <dd>
+          Code enclosed by function's braces, <code>{</code> and <code>}</code>.
+          <p><strong>Example:</strong> in <code>fn greet() { let word = 5; }</code>, <code>let word = 5;</code> is the body.</p>
+          <p><strong>TypeScript relationship:</strong> TypeScript also uses braces around a normal function body.</p>
+        </dd>
 
-          <dt>Block and scope</dt>
-          <dd>
-            Block is code between matching braces. Scope is region of source where a name
-            is usable. In simple <code>let</code> declaration used here, local variable's
-            name is visible from its declaration to end of enclosing block.
-            <p>
-              <strong>Example:</strong>
-              in <code>fn demo() { let count = 5; }</code>,
-              <code>count</code>'s scope ends at that closing brace, and no later code can
-              name <code>count</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript <code>let</code> is also block-scoped, so this name-visibility
-              rule matches. A later entry separately explains when Rust destroys values.
-            </p>
-          </dd>
+        <dt>Block and scope</dt>
+        <dd>
+          Block is code between matching braces.
+          Scope is region of source where a name is usable.
+          In simple <code>let</code> declaration used here,
+          local variable's name is visible from its declaration to end of enclosing block.
+          <p>
+            <strong>Example:</strong>
+            in <code>fn demo() { let count = 5; }</code>,
+            <code>count</code>'s scope ends at that closing brace, and no later code can name <code>count</code>.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript <code>let</code> is also block-scoped, so this name-visibility rule matches.
+            A later entry separately explains when Rust destroys values.
+          </p>
+        </dd>
 
-          <dt>Value</dt>
-          <dd>
-            Actual piece of data handled by code.
-            <p>
-              <strong>Example:</strong> <code>5</code> is a number value, and <code
-              >true</code> is a yes-or-no value.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> values have the same broad meaning
-              in TypeScript.
-            </p>
-          </dd>
+        <dt>Value</dt>
+        <dd>
+          Actual piece of data handled by code.
+          <p><strong>Example:</strong> <code>5</code> is a number value, and <code>true</code> is a yes-or-no value.</p>
+          <p><strong>TypeScript relationship:</strong> values have the same broad meaning in TypeScript.</p>
+        </dd>
 
-          <dt>Expression</dt>
-          <dd>
-            Piece of code that produces a value.
-            <p>
-              <strong>Example:</strong> <code>2 + 3</code> is expression producing value
-              <code>5</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> <code>2 + 3</code> is also
-              TypeScript expression.
-            </p>
-          </dd>
+        <dt>Expression</dt>
+        <dd>
+          Piece of code that produces a value.
+          <p><strong>Example:</strong> <code>2 + 3</code> is expression producing value <code>5</code>.</p>
+          <p><strong>TypeScript relationship:</strong> <code>2 + 3</code> is also TypeScript expression.</p>
+        </dd>
 
-          <dt>Statement and semicolon</dt>
-          <dd>
-            Statement is component of block that declares name or evaluates expression for
-            its effect. After ordinary expression, <code>;</code> makes it an expression
-            statement and discards expression's result.
-            <code>let</code> declaration also ends with semicolon.
-            <p>
-              <strong>Example:</strong>
-              <code>let score = 5;</code> is declaration statement:
-              <code>let</code> declares name <code>score</code> with initial value <code
-              >5</code>;
-              <code>2 + 3;</code> computes <code>5</code> and then discards it.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript also has statements,
-              but its expression and return rules differ.
-            </p>
-          </dd>
+        <dt>Statement and semicolon</dt>
+        <dd>
+          Statement is component of block that declares name or evaluates expression for its effect.
+          After ordinary expression, <code>;</code> makes it an expression statement and discards expression's result.
+          <code>let</code> declaration also ends with semicolon.
+          <p>
+            <strong>Example:</strong>
+            <code>let score = 5;</code> is declaration statement:
+            <code>let</code> declares name <code>score</code> with initial value <code>5</code>;
+            <code>2 + 3;</code> computes <code>5</code> and then discards it.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript also has statements, but its expression and return rules differ.</p>
+        </dd>
 
-          <dt>Type and field</dt>
-          <dd>
-            Type names a category of values and the operations allowed on them. Field is
-            named part stored inside a value of a type with multiple parts.
-            <p>
-              <strong>Example:</strong>
-              <code>i32</code> is a type; a type describing a point could store fields
-              named <code>x</code> and <code>y</code>, so one point value would hold two
-              numbers under those two names.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript also checks types and object properties. Type annotations and
-              type-only declarations are erased before JavaScript runs; Rust types also
-              constrain runtime representation and operations.
-            </p>
-          </dd>
+        <dt>Type and field</dt>
+        <dd>
+          Type names a category of values and the operations allowed on them.
+          Field is named part stored inside a value of a type with multiple parts.
+          <p>
+            <strong>Example:</strong>
+            <code>i32</code> is a type;
+            a type describing a point could store fields named <code>x</code> and <code>y</code>,
+            so one point value would hold two numbers under those two names.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript also checks types and object properties.
+            Type annotations and type-only declarations are erased before JavaScript runs;
+            Rust types also constrain runtime representation and operations.
+          </p>
+        </dd>
 
-          <dt>Variable, variable declaration, and binding</dt>
-          <dd>
-            Variable is programmer-chosen name for value while relevant code runs.
-            Variable declaration creates that name. Rust documentation calls connection
-            between name and current value a <strong>binding</strong>. After this
-            definition, decoder may use “binding” for that connection.
-            <p>
-              <strong>Example:</strong>
-              <code>let score = 5;</code> declares variable <code>score</code>
-              and binds name <code>score</code> to value <code>5</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              this is closest to a TypeScript variable declaration; TypeScript programmers
-              do not normally need “binding” as a separate term here.
-            </p>
-          </dd>
+        <dt>Variable, variable declaration, and binding</dt>
+        <dd>
+          Variable is programmer-chosen name for value while relevant code runs.
+          Variable declaration creates that name.
+          Rust documentation calls connection between name and current value a <strong>binding</strong>.
+          After this definition, decoder may use “binding” for that connection.
+          <p>
+            <strong>Example:</strong>
+            <code>let score = 5;</code> declares variable <code>score</code>
+            and binds name <code>score</code> to value <code>5</code>.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            this is closest to a TypeScript variable declaration;
+            TypeScript programmers do not normally need “binding” as a separate term here.
+          </p>
+        </dd>
 
-          <dt>Local variable</dt>
-          <dd>
-            Variable declared inside one function body.
-            <p>
-              <strong>Example:</strong>
-              in <code>fn demo() { let count = 5; let total = 6; }</code>,
-              <code>count</code> and <code>total</code> are local variables of <code
-              >demo</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> a variable declared inside a
-              TypeScript function is also local to that function body.
-            </p>
-          </dd>
+        <dt>Local variable</dt>
+        <dd>
+          Variable declared inside one function body.
+          <p>
+            <strong>Example:</strong>
+            in <code>fn demo() { let count = 5; let total = 6; }</code>,
+            <code>count</code> and <code>total</code> are local variables of <code>demo</code>.
+          </p>
+          <p><strong>TypeScript relationship:</strong> a variable declared inside a TypeScript function is also local to that function body.</p>
+        </dd>
 
-          <dt>Initialization and assignment</dt>
-          <dd>
-            Initialization supplies variable's first value as part of declaration.
-            Assignment later replaces value at already initialized variable. Both
-            spellings contain <code>=</code>, but they are different operations.
-            <p>
-              <strong>Example:</strong>
-              in <code>let mut score = 5; score = 6;</code>, first <code>=</code>
-              initializes <code>score</code> to <code>5</code>; second assigns <code
-              >6</code> and replaces previous value <code>5</code>. Rust drops replaced
-              value first, but dropping plain <code>i32</code> performs no visible
-              cleanup.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript makes same
-              declaration-versus-later-assignment distinction.
-            </p>
-          </dd>
+        <dt>Initialization and assignment</dt>
+        <dd>
+          Initialization supplies variable's first value as part of declaration.
+          Assignment later replaces value at already initialized variable.
+          Both spellings contain <code>=</code>, but they are different operations.
+          <p>
+            <strong>Example:</strong>
+            in <code>let mut score = 5; score = 6;</code>,
+            first <code>=</code> initializes <code>score</code> to <code>5</code>;
+            second assigns <code>6</code> and replaces previous value <code>5</code>.
+            Rust drops replaced value first, but dropping plain <code>i32</code> performs no visible cleanup.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript makes same declaration-versus-later-assignment distinction.</p>
+        </dd>
 
-          <dt>Mutation and <code>mut</code></dt>
-          <dd>
-            Mutation means operation alters existing data or assigns replacement value.
-            For local value in this sample,
-            <code>mut</code> on declaration permits later assignment and mutable borrowing
-            through that binding.
-            <code>mut</code> describes allowed access through binding; it is not permanent
-            property carried by moved value.
-            <p>
-              <strong>Example:</strong>
-              <code>let mut score = 5; score = 6;</code> replaces <code>5</code> with
-              <code>6</code> through <code>score</code>. By contrast, <code>let reference
-                = &amp;mut score;</code> needs no <code>mut</code> on name <code
-              >reference</code>
-              to write <code>*reference = 7;</code>. Here <code>&amp;mut</code> creates
-              mutable reference and prefix <code>*</code> reaches value through it.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript <code>let</code> permits later assignment without an extra
-              keyword. Rust's <code>mut</code> has no direct TypeScript keyword
-              equivalent.
-            </p>
-          </dd>
+        <dt>Mutation and <code>mut</code></dt>
+        <dd>
+          Mutation means operation alters existing data or assigns replacement value.
+          For local value in this sample,
+          <code>mut</code> on declaration permits later assignment and mutable borrowing through that binding.
+          <code>mut</code> describes allowed access through binding; it is not permanent property carried by moved value.
+          <p>
+            <strong>Example:</strong>
+            <code>let mut score = 5; score = 6;</code> replaces <code>5</code> with <code>6</code> through <code>score</code>.
+            By contrast, <code>let reference = &amp;mut score;</code> needs no <code>mut</code> on name <code>reference</code>
+            to write <code>*reference = 7;</code>.
+            Here <code>&amp;mut</code> creates mutable reference and prefix <code>*</code> reaches value through it.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript <code>let</code> permits later assignment without an extra keyword.
+            Rust's <code>mut</code> has no direct TypeScript keyword equivalent.
+          </p>
+        </dd>
 
-          <dt>Literal</dt>
-          <dd>
-            Source-code spelling that directly represents a value.
-            <p>
-              <strong>Example:</strong> <code>"Hello world"</code> is a string literal;
-              quotation marks mark its boundaries.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> <code>"Hello world"</code> is also
-              a TypeScript string literal.
-            </p>
-          </dd>
-        </dl>
+        <dt>Literal</dt>
+        <dd>
+          Source-code spelling that directly represents a value.
+          <p><strong>Example:</strong> <code>"Hello world"</code> is a string literal; quotation marks mark its boundaries.</p>
+          <p><strong>TypeScript relationship:</strong> <code>"Hello world"</code> is also a TypeScript string literal.</p>
+        </dd>
+      </dl>
 
-        <h3>Text and computer memory</h3>
-        <dl>
-          <dt>Memory</dt>
-          <dd>
-            Space inside computer used to hold program data while program runs.
-            <p>
-              <strong>Example:</strong>
-              while a program runs, it needs runtime memory for current values and other
-              program data. Source and executable files occupy storage too, but they are
-              not runtime memory pictures Aquascope draws.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript programs also use
-              memory, but JavaScript normally hides its layout.
-            </p>
-          </dd>
+      <h3>Text and computer memory</h3>
+      <dl>
+        <dt>Memory</dt>
+        <dd>
+          Space inside computer used to hold program data while program runs.
+          <p>
+            <strong>Example:</strong>
+            while a program runs, it needs runtime memory for current values and other program data.
+            Source and executable files occupy storage too, but they are not runtime memory pictures Aquascope draws.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript programs also use memory, but JavaScript normally hides its layout.</p>
+        </dd>
 
-          <dt>ASCII</dt>
-          <dd>
-            Text encoding with <code>128</code> numbered codes, from <code>0</code>
-            through <code>127</code>. Codes include control signals plus printable
-            unaccented English letters, digits, space, and punctuation. Text using only
-            these codes is called ASCII-only.
-            <p>
-              <strong>Example:</strong> ASCII assigns number <code>72</code> to <code
-              >H</code> and number <code>32</code> to the space character.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              <code>"H".charCodeAt(0)</code> evaluates to <code>72</code>, because
-              JavaScript's character numbers agree with ASCII over that range.
-            </p>
-          </dd>
+        <dt>ASCII</dt>
+        <dd>
+          Text encoding with <code>128</code> numbered codes, from <code>0</code> through <code>127</code>.
+          Codes include control signals plus printable unaccented English letters, digits, space, and punctuation.
+          Text using only these codes is called ASCII-only.
+          <p><strong>Example:</strong> ASCII assigns number <code>72</code> to <code>H</code> and number <code>32</code> to the space character.</p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            <code>"H".charCodeAt(0)</code> evaluates to <code>72</code>,
+            because JavaScript's character numbers agree with ASCII over that range.
+          </p>
+        </dd>
 
-          <dt>Bit and byte</dt>
-          <dd>
-            Bit is binary digit, either <code>0</code> or <code>1</code>. In Rust, byte is
-            storage unit of eight bits. Eight bits can encode <code>256</code> patterns;
-            Rust type <code>u8</code> interprets them as whole numbers from <code>0</code>
-            through <code>255</code>.
-            <p>
-              <strong>Example:</strong> byte holding ASCII <code>H</code> has numeric
-              value <code>72</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> one element of a TypeScript <code
-              >Uint8Array</code> holds one byte.
-            </p>
-          </dd>
+        <dt>Bit and byte</dt>
+        <dd>
+          Bit is binary digit, either <code>0</code> or <code>1</code>.
+          In Rust, byte is storage unit of eight bits.
+          Eight bits can encode <code>256</code> patterns;
+          Rust type <code>u8</code> interprets them as whole numbers from <code>0</code> through <code>255</code>.
+          <p><strong>Example:</strong> byte holding ASCII <code>H</code> has numeric value <code>72</code>.</p>
+          <p><strong>TypeScript relationship:</strong> one element of a TypeScript <code>Uint8Array</code> holds one byte.</p>
+        </dd>
 
-          <dt>UTF-8</dt>
-          <dd>
-            Unicode assigns numbers to text symbols from many writing systems. UTF-8
-            represents each Unicode scalar value with one to four bytes. It uses same
-            one-byte representation as ASCII for every ASCII code.
-            <p>
-              <strong>Example:</strong>
-              ASCII-only text <code>Hello</code> uses five UTF-8 bytes; literal scalar
-              value <code>é</code>, Unicode <code>U+00E9</code>, uses two UTF-8 bytes.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              JavaScript's <code>string</code> model uses UTF-16 code units; encoding text
-              as UTF-8 bytes normally requires an API such as <code>TextEncoder</code>.
-            </p>
-          </dd>
+        <dt>UTF-8</dt>
+        <dd>
+          Unicode assigns numbers to text symbols from many writing systems.
+          UTF-8 represents each Unicode scalar value with one to four bytes.
+          It uses same one-byte representation as ASCII for every ASCII code.
+          <p>
+            <strong>Example:</strong>
+            ASCII-only text <code>Hello</code> uses five UTF-8 bytes;
+            literal scalar value <code>é</code>, Unicode <code>U+00E9</code>, uses two UTF-8 bytes.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            JavaScript's <code>string</code> model uses UTF-16 code units;
+            encoding text as UTF-8 bytes normally requires an API such as <code>TextEncoder</code>.
+          </p>
+        </dd>
 
-          <dt><code>String</code></dt>
-          <dd>
-            Rust type for UTF-8 text whose contents can grow or shrink after creation. The
-            type tracks where its bytes are, how many bytes are text, and how much room is
-            reserved.
-            <p>
-              <strong>Example:</strong> <code>String::from("Hi")</code> creates a <code
-              >String</code> containing two UTF-8 bytes.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript <code>string</code> values cannot be modified internally; an
-              expression such as <code>text += "!"</code> produces a different string
-              value. Rust <code>String</code> has no exact TypeScript <code>string</code>
-              mirror.
-            </p>
-          </dd>
+        <dt><code>String</code></dt>
+        <dd>
+          Rust type for UTF-8 text whose contents can grow or shrink after creation.
+          The type tracks where its bytes are, how many bytes are text, and how much room is reserved.
+          <p><strong>Example:</strong> <code>String::from("Hi")</code> creates a <code>String</code> containing two UTF-8 bytes.</p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript <code>string</code> values cannot be modified internally;
+            an expression such as <code>text += "!"</code> produces a different string value.
+            Rust <code>String</code> has no exact TypeScript <code>string</code> mirror.
+          </p>
+        </dd>
 
-          <dt>Method</dt>
-          <dd>
-            Function attached to type and called with dot syntax on value of that type.
-            <p>
-              <strong>Example:</strong>
-              <code>let s = String::from("Hi"); let n = s.len();</code> creates <code
-              >s</code>, calls <code>len</code>, and binds byte count <code>2</code> to
-              <code>n</code> without changing <code>s</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript object and class
-              methods use similar dot-call syntax.
-            </p>
-          </dd>
+        <dt>Method</dt>
+        <dd>
+          Function attached to type and called with dot syntax on value of that type.
+          <p>
+            <strong>Example:</strong>
+            <code>let s = String::from("Hi"); let n = s.len();</code> creates <code>s</code>,
+            calls <code>len</code>, and binds byte count <code>2</code> to <code>n</code> without changing <code>s</code>.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript object and class methods use similar dot-call syntax.</p>
+        </dd>
 
-          <dt>Allocation, deallocation, and buffer</dt>
-          <dd>
-            Allocation is block of memory reserved for a value. Deallocation returns that
-            block to allocator so it can be reused. Buffer is allocated block reserved to
-            hold a sequence of items such as bytes.
-            <p>
-              <strong>Example:</strong>
-              in this Aquascope model, <code>String::from("Hi")</code> would obtain buffer
-              for two text bytes; returning that buffer to allocator later is
-              deallocation.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              JavaScript normally deallocates objects automatically through garbage
-              collection, meaning the runtime later reclaims objects that code can no
-              longer reach through any variable.
-            </p>
-          </dd>
+        <dt>Allocation, deallocation, and buffer</dt>
+        <dd>
+          Allocation is block of memory reserved for a value.
+          Deallocation returns that block to allocator so it can be reused.
+          Buffer is allocated block reserved to hold a sequence of items such as bytes.
+          <p>
+            <strong>Example:</strong>
+            in this Aquascope model, <code>String::from("Hi")</code> would obtain buffer for two text bytes;
+            returning that buffer to allocator later is deallocation.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            JavaScript normally deallocates objects automatically through garbage collection,
+            meaning the runtime later reclaims objects that code can no longer reach through any variable.
+          </p>
+        </dd>
 
-          <dt>Stack and frame</dt>
-          <dd>
-            Aquascope uses <strong>Stack</strong> for active function calls. Each call
-            gets frame that lists its local variables. This is learning model; compiler
-            may represent local values differently without changing Rust rule being
-            taught.
-            <p>
-              <strong>Example:</strong>
-              while <code>fn demo() { let count = 5; }</code> runs,
-              <code>demo</code>'s frame lists one local variable, <code>count</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> JavaScript engines also track
-              active function calls, but TypeScript does not expose their memory layout.
-            </p>
-          </dd>
+        <dt>Stack and frame</dt>
+        <dd>
+          Aquascope uses <strong>Stack</strong> for active function calls.
+          Each call gets frame that lists its local variables.
+          This is learning model; compiler may represent local values differently without changing Rust rule being taught.
+          <p>
+            <strong>Example:</strong>
+            while <code>fn demo() { let count = 5; }</code> runs,
+            <code>demo</code>'s frame lists one local variable, <code>count</code>.
+          </p>
+          <p><strong>TypeScript relationship:</strong> JavaScript engines also track active function calls, but TypeScript does not expose their memory layout.</p>
+        </dd>
 
-          <dt>Heap</dt>
-          <dd>
-            Memory area used for dynamically allocated buffers and other values.
-            <p>
-              <strong>Example:</strong>
-              even though compiler already knows literal <code>"Hello world"</code>'s byte
-              count,
-              <code>String::from</code> creates owned growable buffer on heap when
-              statement runs.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> JavaScript objects use heap
-              memory, but TypeScript does not expose their addresses or cleanup timing.
-            </p>
-          </dd>
+        <dt>Heap</dt>
+        <dd>
+          Memory area used for dynamically allocated buffers and other values.
+          <p>
+            <strong>Example:</strong>
+            even though compiler already knows literal <code>"Hello world"</code>'s byte count,
+            <code>String::from</code> creates owned growable buffer on heap when statement runs.
+          </p>
+          <p><strong>TypeScript relationship:</strong> JavaScript objects use heap memory, but TypeScript does not expose their addresses or cleanup timing.</p>
+        </dd>
 
-          <dt>Pointer and pointee</dt>
-          <dd>
-            Pointer is value that identifies another location in memory. Pointee is data
-            at the location identified by the pointer. Aquascope draws pointer as dot.
-            <p>
-              <strong>Example:</strong>
-              a <code>String</code>'s stack value holds pointer, and its heap text bytes
-              are that pointer's pointee.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              JavaScript engines use hidden references for objects, but ordinary
-              TypeScript has no explicit memory-address pointer.
-            </p>
-          </dd>
+        <dt>Pointer and pointee</dt>
+        <dd>
+          Pointer is value that identifies another location in memory.
+          Pointee is data at the location identified by the pointer.
+          Aquascope draws pointer as dot.
+          <p>
+            <strong>Example:</strong>
+            a <code>String</code>'s stack value holds pointer, and its heap text bytes are that pointer's pointee.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            JavaScript engines use hidden references for objects,
+            but ordinary TypeScript has no explicit memory-address pointer.
+          </p>
+        </dd>
 
-          <dt>Length, capacity, and metadata</dt>
-          <dd>
-            For <code>String</code>, length is number of bytes currently used. Capacity is
-            number of bytes current buffer can hold before <code>String</code> must obtain
-            more capacity. Obtaining more capacity may grow allocation in place or replace
-            it; this Aquascope run replaces it. Metadata means small values that describe
-            other data; pointer, length, and capacity describe <code>String</code>'s
-            bytes.
-            <p>
-              <strong>Example:</strong>
-              <code>String::from("Hi")</code> has length <code>2</code>; if its allocation
-              had room for four bytes, its capacity would be <code>4</code>
-              and two positions would be reserved but unused.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> arrays expose <code>length</code>,
-              but TypeScript does not expose JavaScript array capacity.
-            </p>
-          </dd>
-        </dl>
+        <dt>Length, capacity, and metadata</dt>
+        <dd>
+          For <code>String</code>, length is number of bytes currently used.
+          Capacity is number of bytes current buffer can hold before <code>String</code> must obtain more capacity.
+          Obtaining more capacity may grow allocation in place or replace it;
+          this Aquascope run replaces it.
+          Metadata means small values that describe other data; pointer, length, and capacity describe <code>String</code>'s bytes.
+          <p>
+            <strong>Example:</strong>
+            <code>String::from("Hi")</code> has length <code>2</code>;
+            if its allocation had room for four bytes, its capacity would be <code>4</code>
+            and two positions would be reserved but unused.
+          </p>
+          <p><strong>TypeScript relationship:</strong> arrays expose <code>length</code>, but TypeScript does not expose JavaScript array capacity.</p>
+        </dd>
+      </dl>
 
-        <h3>Rust access and cleanup rules</h3>
-        <dl>
-          <dt>Ownership and owner</dt>
-          <dd>
-            Ownership is responsibility to destroy value and release resources that value
-            owns. This sample has one <code>String</code> that is sole owner of one heap
-            buffer. This is sample-specific model, not claim that every Rust allocation
-            always has exactly one owner.
-            <p>
-              <strong>Example:</strong>
-              <code>String</code> value created by <code>String::from("Hi")</code> owns
-              its heap buffer; destroying that <code>String</code> deallocates buffer.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              ordinary TypeScript runtime does not enforce Rust's deterministic
-              owner-and-drop rules; garbage collection has no direct ownership equivalent.
-            </p>
-          </dd>
+      <h3>Rust access and cleanup rules</h3>
+      <dl>
+        <dt>Ownership and owner</dt>
+        <dd>
+          Ownership is responsibility to destroy value and release resources that value owns.
+          This sample has one <code>String</code> that is sole owner of one heap buffer.
+          This is sample-specific model, not claim that every Rust allocation always has exactly one owner.
+          <p>
+            <strong>Example:</strong>
+            <code>String</code> value created by <code>String::from("Hi")</code> owns its heap buffer;
+            destroying that <code>String</code> deallocates buffer.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            ordinary TypeScript runtime does not enforce Rust's deterministic owner-and-drop rules;
+            garbage collection has no direct ownership equivalent.
+          </p>
+        </dd>
 
-          <dt>Scope end and automatic cleanup</dt>
-          <dd>
-            When normal control leaves block, Rust drops each initialized local value
-            still associated with that block. Value already moved or explicitly dropped is
-            no longer initialized there and is not dropped again. Explicit <code
-            >drop</code> is an option for ending value earlier, not requirement for
-            cleanup.
-            <p>
-              <strong>Example:</strong>
-              in <code>fn demo() { let text = String::from("Hi"); }</code>,
-              <code>text</code>'s heap buffer is deallocated at the closing brace, and the
-              source contains no cleanup instruction at all.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              leaving a TypeScript function does not free its objects at that moment.
-              Garbage collection reclaims them at an unspecified later time, so the exact
-              cleanup point Rust guarantees has no TypeScript equivalent.
-            </p>
-          </dd>
+        <dt>Scope end and automatic cleanup</dt>
+        <dd>
+          When normal control leaves block,
+          Rust drops each initialized local value still associated with that block.
+          Value already moved or explicitly dropped is no longer initialized there and is not dropped again.
+          Explicit <code>drop</code> is an option for ending value earlier, not requirement for cleanup.
+          <p>
+            <strong>Example:</strong>
+            in <code>fn demo() { let text = String::from("Hi"); }</code>,
+            <code>text</code>'s heap buffer is deallocated at the closing brace,
+            and the source contains no cleanup instruction at all.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            leaving a TypeScript function does not free its objects at that moment.
+            Garbage collection reclaims them at an unspecified later time,
+            so the exact cleanup point Rust guarantees has no TypeScript equivalent.
+          </p>
+        </dd>
 
-          <dt><code>Copy</code>, <code>Clone</code>, and non-copy values</dt>
-          <dd>
-            Trait is named capability a type can implement.
-            <code>Copy</code> trait permits implicit bit-for-bit duplication, so
-            assignment or argument passing leaves source usable. Whole-number types such
-            as <code>i32</code> and <code>u8</code> are <code>Copy</code>. Bitwise-copying
-            <code>String</code> would duplicate pointer and cleanup responsibility,
-            risking deallocation of same buffer twice, so <code>String</code> is not <code
-            >Copy</code>. Its explicit <code>clone()</code> instead allocates and copies
-            text safely.
-            <strong>Every move rule below applies to non-<code>Copy</code> types
-              only.</strong>
-            <p>
-              <strong>Example:</strong>
-              after <code>let a = 5; let b = a;</code> both <code>a</code> and <code
-              >b</code> are usable; after <code>let a = String::from("Hi"); let b =
-                a;</code> only <code>b</code> is usable; after <code>let b =
-                a.clone();</code>, both strings are usable and own separate buffers.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript assignment copies primitive value or object reference, and source
-              variable remains usable in both cases. It has no equivalent of move
-              invalidating source variable.
-            </p>
-          </dd>
+        <dt><code>Copy</code>, <code>Clone</code>, and non-copy values</dt>
+        <dd>
+          Trait is named capability a type can implement.
+          <code>Copy</code> trait permits implicit bit-for-bit duplication,
+          so assignment or argument passing leaves source usable.
+          Whole-number types such as <code>i32</code> and <code>u8</code> are <code>Copy</code>.
+          Bitwise-copying <code>String</code> would duplicate pointer and cleanup responsibility,
+          risking deallocation of same buffer twice, so <code>String</code> is not <code>Copy</code>.
+          Its explicit <code>clone()</code> instead allocates and copies text safely.
+          <strong>Every move rule below applies to non-<code>Copy</code> types only.</strong>
+          <p>
+            <strong>Example:</strong>
+            after <code>let a = 5; let b = a;</code> both <code>a</code> and <code>b</code> are usable;
+            after <code>let a = String::from("Hi"); let b = a;</code> only <code>b</code> is usable;
+            after <code>let b = a.clone();</code>, both strings are usable and own separate buffers.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript assignment copies primitive value or object reference,
+            and source variable remains usable in both cases.
+            It has no equivalent of move invalidating source variable.
+          </p>
+        </dd>
 
-          <dt>Move</dt>
-          <dd>
-            Move transfers value of a non-<code>Copy</code> type, and its ownership, from
-            one variable or function input to another. Old variable is not “empty”;
-            compiler rejects later reads through it.
-            <p>
-              <strong>Example:</strong>
-              after <code>let first = String::from("Hi"); let second = first;</code>,
-              <code>second</code> can be used but compiler rejects later use of <code
-              >first</code>. The same two lines written with <code>5</code> in place of
-              the <code>String</code>
-              leave both names usable, because <code>i32</code> is <code>Copy</code>.
-            </p>
-            <p>
-              Reading <code>first</code> afterward produces
-              <code>error[E0382]: borrow of moved value: `first`</code>, and that message
-              states the reason itself: “move occurs because <code>first</code> has type
-              <code>String</code>, which does not implement the <code>Copy</code> trait.”
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              there is no direct TypeScript move. Assigning object to another TypeScript
-              variable leaves both variables usable and pointing to same object.
-            </p>
-          </dd>
+        <dt>Move</dt>
+        <dd>
+          Move transfers value of a non-<code>Copy</code> type, and its ownership, from one variable or function input to another.
+          Old variable is not “empty”; compiler rejects later reads through it.
+          <p>
+            <strong>Example:</strong>
+            after <code>let first = String::from("Hi"); let second = first;</code>,
+            <code>second</code> can be used but compiler rejects later use of <code>first</code>.
+            The same two lines written with <code>5</code> in place of the <code>String</code>
+            leave both names usable, because <code>i32</code> is <code>Copy</code>.
+          </p>
+          <p>
+            Reading <code>first</code> afterward produces
+            <code>error[E0382]: borrow of moved value: `first`</code>,
+            and that message states the reason itself:
+            “move occurs because <code>first</code> has type <code>String</code>,
+            which does not implement the <code>Copy</code> trait.”
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            there is no direct TypeScript move.
+            Assigning object to another TypeScript variable leaves both variables usable and pointing to same object.
+          </p>
+        </dd>
 
-          <dt>Reference and borrow</dt>
-          <dd>
-            Reference is compiler-checked pointer that lets code access data owned
-            elsewhere. Reference does not become responsible for destroying that data.
-            Borrow means using <code>&amp;</code> to create this temporary access;
-            resulting value is reference. Compiler limits what owner can do while
-            reference will still be used.
-            <p>
-              <strong>Example:</strong>
-              in <code>let text = String::from("Hello"); let part =
-                &amp;text[0..2];</code>,
-              <code>part</code> borrows the first two bytes and <code>text</code> keeps
-              owning them.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              TypeScript has no borrow operator and no compile-time rule that temporarily
-              blocks the original variable this way.
-            </p>
-          </dd>
+        <dt>Reference and borrow</dt>
+        <dd>
+          Reference is compiler-checked pointer that lets code access data owned elsewhere.
+          Reference does not become responsible for destroying that data.
+          Borrow means using <code>&amp;</code> to create this temporary access; resulting value is reference.
+          Compiler limits what owner can do while reference will still be used.
+          <p>
+            <strong>Example:</strong>
+            in <code>let text = String::from("Hello"); let part = &amp;text[0..2];</code>,
+            <code>part</code> borrows the first two bytes and <code>text</code> keeps owning them.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript has no borrow operator and no compile-time rule that temporarily blocks the original variable this way.
+          </p>
+        </dd>
 
-          <dt>Slice, <code>str</code>, and <code>&amp;str</code></dt>
-          <dd>
-            Slice is view into contiguous sequence whose length is known at runtime rather
-            than fixed in type. Rust calls such type dynamically sized. Contiguous means
-            included positions sit next to each other with no gaps.
-            <code>str</code> is dynamically sized string-slice type containing valid UTF-8
-            bytes; code normally accesses it through pointer type such as <code
-            >&amp;str</code>. Shared reference <code>&amp;str</code> carries pointer and
-            byte length without owning or copying referred bytes.
-            <p>
-              <strong>Example:</strong>
-              <code>&amp;text[0..2]</code> for a <code>String</code> holding <code
-              >Hello</code>
-              has type <code>&amp;str</code>, starts at <code>H</code>, and has length
-              <code>2</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> <code>string.slice</code> returns
-              a new string value, not compiler-checked borrowed view, so it is not direct
-              mirror.
-            </p>
-          </dd>
+        <dt>Slice, <code>str</code>, and <code>&amp;str</code></dt>
+        <dd>
+          Slice is view into contiguous sequence whose length is known at runtime rather than fixed in type.
+          Rust calls such type dynamically sized.
+          Contiguous means included positions sit next to each other with no gaps.
+          <code>str</code> is dynamically sized string-slice type containing valid UTF-8 bytes;
+          code normally accesses it through pointer type such as <code>&amp;str</code>.
+          Shared reference <code>&amp;str</code> carries pointer and byte length without owning or copying referred bytes.
+          <p>
+            <strong>Example:</strong>
+            <code>&amp;text[0..2]</code> for a <code>String</code> holding <code>Hello</code>
+            has type <code>&amp;str</code>, starts at <code>H</code>, and has length <code>2</code>.
+          </p>
+          <p><strong>TypeScript relationship:</strong> <code>string.slice</code> returns a new string value, not compiler-checked borrowed view, so it is not direct mirror.</p>
+        </dd>
 
-          <dt><code>drop</code></dt>
-          <dd>
-            Rust function that receives value, ends that value immediately, and performs
-            its cleanup. It is a way to end a value <strong>earlier</strong> than its
-            scope would; cleanup already happens at scope end without it. Passing an owned
-            non-<code>Copy</code> value to <code>drop</code> moves it, so the original
-            variable becomes unusable. Passing existing <code>Copy</code> variable such as
-            an <code>i32</code> copies its value into <code>drop</code>; copied argument
-            is dropped and original variable remains usable.
-            <code>rustc</code> warns about this ineffective call.
-            <p>
-              <strong>Example:</strong>
-              <code>drop(text);</code> ends a <code>String</code> and deallocates its heap
-              buffer at that line instead of at the enclosing closing brace.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              <code>delete</code> removes object property and does not destroy object;
-              ordinary TypeScript has no direct operation that immediately frees object's
-              memory.
-            </p>
-          </dd>
+        <dt><code>drop</code></dt>
+        <dd>
+          Rust function that receives value, ends that value immediately, and performs its cleanup.
+          It is a way to end a value <strong>earlier</strong> than its scope would;
+          cleanup already happens at scope end without it.
+          Passing an owned non-<code>Copy</code> value to <code>drop</code> moves it,
+          so the original variable becomes unusable.
+          Passing existing <code>Copy</code> variable such as an <code>i32</code> copies its value into <code>drop</code>;
+          copied argument is dropped and original variable remains usable.
+          <code>rustc</code> warns about this ineffective call.
+          <p>
+            <strong>Example:</strong>
+            <code>drop(text);</code> ends a <code>String</code> and deallocates its heap buffer at that line
+            instead of at the enclosing closing brace.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            <code>delete</code> removes object property and does not destroy object;
+            ordinary TypeScript has no direct operation that immediately frees object's memory.
+          </p>
+        </dd>
 
-          <dt>Undefined behavior, safe Rust, and <code>unsafe</code></dt>
-          <dd>
-            Undefined behavior is execution for which Rust provides no promise about
-            result. Reading from deallocated memory is one example. Safe Rust operations
-            cannot perform dangling read in this sample: compiler rejects source before
-            executable is produced.
-            <code>unsafe</code> Rust and foreign code, meaning linked code written in
-            another language, can perform operations compiler cannot fully check;
-            programmer must uphold their safety requirements or program can cause
-            undefined behavior. Safe checks are deliberately cautious, so they also reject
-            some programs that would have been safe at runtime.
-            <p>
-              <strong>Example:</strong>
-              code that read a borrowed slice after its allocation had been deallocated
-              would be reading bytes that no longer belong to any string, which is why the
-              compiler refuses to build it.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong>
-              ordinary TypeScript does not expose deallocated-memory reads; it has no
-              direct language-level equivalent of this Rust memory error.
-            </p>
-          </dd>
-        </dl>
+        <dt>Undefined behavior, safe Rust, and <code>unsafe</code></dt>
+        <dd>
+          Undefined behavior is execution for which Rust provides no promise about result.
+          Reading from deallocated memory is one example.
+          Safe Rust operations cannot perform dangling read in this sample:
+          compiler rejects source before executable is produced.
+          <code>unsafe</code> Rust and foreign code, meaning linked code written in another language,
+          can perform operations compiler cannot fully check;
+          programmer must uphold their safety requirements or program can cause undefined behavior.
+          Safe checks are deliberately cautious,
+          so they also reject some programs that would have been safe at runtime.
+          <p>
+            <strong>Example:</strong>
+            code that read a borrowed slice after its allocation had been deallocated
+            would be reading bytes that no longer belong to any string,
+            which is why the compiler refuses to build it.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            ordinary TypeScript does not expose deallocated-memory reads;
+            it has no direct language-level equivalent of this Rust memory error.
+          </p>
+        </dd>
+      </dl>
 
-        <details>
-          <summary>Copyable TypeScript anchor example</summary>
-          <pre>
-<code>function main(): void {
+      <details>
+        <summary>Copyable TypeScript anchor example</summary>
+        <pre><code>function main(): void {
   let text = "Hello world";
   text += "!";
   console.log(text);
@@ -782,1234 +641,856 @@ second.text += "!";
 console.log(first.text, second.text);
 
 main(); // main has no automatic meaning in TypeScript</code></pre>
-          <p>
-            Running it prints <code>Hello! Hello!</code> and then <code>Hello
-              world!</code>. The first line proves both names still reach the same object
-            after assignment. The last line runs last because nothing calls <code
-            >main</code> until the file's final statement.
-          </p>
-          <p>
-            This one example shows three contrasts: TypeScript calls <code>main</code>
-            explicitly,
-            <code>let</code> needs no <code>mut</code>, and both <code>first</code> and
-            <code>second</code> remain usable after assignment.
-          </p>
-        </details>
-      </section>
+        <p>
+          Running it prints <code>Hello! Hello!</code> and then <code>Hello world!</code>.
+          The first line proves both names still reach the same object after assignment.
+          The last line runs last because nothing calls <code>main</code> until the file's final statement.
+        </p>
+        <p>
+          This one example shows three contrasts:
+          TypeScript calls <code>main</code> explicitly,
+          <code>let</code> needs no <code>mut</code>,
+          and both <code>first</code> and <code>second</code> remain usable after assignment.
+        </p>
+      </details>
+    </section>
 
-      <section aria-labelledby='program'>
-        <h2 id='program'>Every piece of the code panel</h2>
-        <pre>
-<code>fn main() {
+    <section aria-labelledby="program">
+      <h2 id="program">Every piece of the code panel</h2>
+      <pre><code>fn main() {
     let mut s = String::from("Hello world");
     let hello = &amp;s[0..5];
     s.push_str("!");
     drop(s);
 }</code></pre>
 
-        <p>
-          <strong>The widget shows four of these six lines.</strong>
-          Its copy of the source contains <code>fn main() {</code> and the closing <code
-          >}</code>, but the book's widget hides that pair, so the panel beside you lists
-          only the four statements while this page lists the whole function. The eye
-          control reveals the hidden pair.
-        </p>
-        <p>
-          Each displayed statement carries a badge, <code>L1</code> through <code
-          >L4</code>, at its end. A badge is Aquascope's label rather than Rust syntax. It
-          links one statement to the memory picture carrying the same badge, and each
-          picture shows the state <strong>after</strong> that statement has run.
-        </p>
-
-        <h3><code>fn main() { ... }</code></h3>
-        <dl>
-          <dt><code>fn</code></dt>
-          <dd>
-            Keyword that starts Rust function definition.
-            <p>
-              <strong>Example:</strong> <code>fn greet() {}</code> defines function named
-              <code>greet</code>.
-            </p>
-          </dd>
-
-          <dt><code>main</code></dt>
-          <dd>
-            Special function whose initial call is performed automatically when executable
-            starts.
-            <p>
-              <strong>Example:</strong> launching this executable enters <code
-              >main</code>; Rust source does not contain separate <code>main();</code>
-              call.
-            </p>
-          </dd>
-
-          <dt><code>()</code></dt>
-          <dd>
-            Empty parameter list, meaning <code>main</code> declares no input parameters.
-            <p>
-              <strong>Example:</strong> a function with one parameter could begin <code>fn
-                greet(name: String)</code>.
-            </p>
-          </dd>
-
-          <dt><code>{ }</code></dt>
-          <dd>
-            Braces marking start and end of function body. On normal exit, closing brace
-            drops each initialized local value still associated with this block.
-            <p>
-              <strong>Example:</strong> all four sample statements are between <code
-              >main</code>'s braces.
-            </p>
-          </dd>
-        </dl>
-
-        <h3><code>let mut s = String::from("Hello world");</code></h3>
-        <dl>
-          <dt><code>let</code></dt>
-          <dd>
-            Keyword starting variable declaration. Declaration creates binding between
-            variable name and value.
-            <p>
-              <strong>Example:</strong> <code>let score = 5;</code> binds name <code
-              >score</code> to value <code>5</code>.
-            </p>
-          </dd>
-
-          <dt><code>mut</code></dt>
-          <dd>
-            Keyword permitting mutable access through this <code>String</code> binding.
-            Here it allows compiler to create temporary <code>&amp;mut String</code>
-            reference required by <code>push_str</code>. If this <code>String</code> later
-            moves into new binding, new declaration independently decides whether mutable
-            access through new name is permitted.
-            <p>
-              <strong>Example:</strong>
-              <code>s.push_str("!")</code> changes <code>s</code>'s text from <code>Hello
-                world</code> to <code>Hello world!</code>
-              and byte length from <code>11</code> to <code>12</code>. It may reuse
-              current buffer or replace full buffer with larger allocation. Without <code
-              >mut</code>, compiler rejects this exact call.
-            </p>
-          </dd>
-
-          <dt><code>s</code></dt>
-          <dd>
-            Programmer-chosen variable name. Letter has no built-in Rust meaning.
-            <p>
-              <strong>Example:</strong> later statements use same name in <code
-              >s.push_str("!")</code> and <code>drop(s)</code>.
-            </p>
-          </dd>
-
-          <dt><code>=</code></dt>
-          <dd>
-            In this <code>let</code> declaration, equals sign introduces initializer on
-            right. This is initialization, not later assignment to existing variable.
-            <p>
-              <strong>Example:</strong> value produced by <code>String::from(...)</code>
-              becomes initial value reached through <code>s</code>.
-            </p>
-          </dd>
-
-          <dt><code>String</code></dt>
-          <dd>
-            Type of new growable UTF-8 text value.
-            <p>
-              <strong>Example:</strong> at <code>L1</code>, this <code>String</code> owns
-              buffer holding <code>Hello world</code>.
-            </p>
-          </dd>
-
-          <dt><code>::</code> and <code>from</code></dt>
-          <dd>
-            <code>::</code> separates the parts of a path. Here the path names a function
-            attached to the type itself rather than to an existing value. The same
-            separator also names items inside modules, as in <code>std::ptr</code>, so
-            read it as “look inside” rather than as a type-only marker.
-            <code>from</code> is selected function's name.
-            <p>
-              <strong>Example:</strong> <code>String::from("Hi")</code> creates new <code
-              >String</code> from literal <code>"Hi"</code>.
-            </p>
-          </dd>
-
-          <dt><code>"Hello world"</code></dt>
-          <dd>
-            Literal supplying source text. Quotation marks mark boundaries and are not
-            part of text.
-            <code>String::from</code> copies literal's eleven bytes into owned buffer
-            shown by Aquascope.
-            <p>
-              <strong>Example:</strong> heap cells at <code>L1</code> show <code>H</code>
-              through <code>d</code>, not quotation marks.
-            </p>
-          </dd>
-
-          <dt><code>;</code></dt>
-          <dd>
-            Semicolon ends every statement shown here. It is required after <code
-            >let</code>; after standalone method or function call, it makes expression
-            statement that keeps call's effect and discards returned value.
-            <p>
-              <strong>Example:</strong> <code>s.push_str("!");</code> keeps text mutation
-              and discards call's <code>()</code> result.
-            </p>
-          </dd>
-        </dl>
-
-        <h3><code>let hello = &amp;s[0..5];</code></h3>
-        <dl>
-          <dt><code>hello</code></dt>
-          <dd>
-            New local variable whose type is inferred as <code>&amp;str</code>.
-            <p>
-              <strong>Example:</strong> expanded <code>L2</code> view shows <code
-              >hello</code> with pointer and length <code>5</code>.
-            </p>
-          </dd>
-
-          <dt><code>&amp;</code></dt>
-          <dd>
-            Borrow operator that creates reference instead of transferring ownership.
-            <p>
-              <strong>Example:</strong> <code>hello</code> can read five bytes, but <code
-              >s</code>'s <code>String</code> still owns their buffer.
-            </p>
-          </dd>
-
-          <dt><code>[ ]</code></dt>
-          <dd>
-            Indexing brackets selecting part of value.
-            <p>
-              <strong>Example:</strong> brackets apply range <code>0..5</code> to <code
-              >s</code>'s text.
-            </p>
-          </dd>
-
-          <dt><code>0..5</code></dt>
-          <dd>
-            Range starting at byte position <code>0</code> and stopping before byte
-            position <code>5</code>. Both endpoints must be UTF-8 character boundaries or
-            range indexing panics at runtime.
-            <p>
-              <strong>Example:</strong>
-              positions <code>0</code> through <code>4</code> spell <code>Hello</code>, so
-              this range is valid;
-              <code>0..1</code> would panic for <code>é</code>, whose encoding occupies
-              bytes <code>0</code> and <code>1</code>.
-            </p>
-          </dd>
-        </dl>
-        <p>
-          The sample never reads <code>hello</code> later. Compiler therefore treats
-          borrow as finished before next statement.
-          <strong>Example:</strong>
-          if <code>let count = hello.len();</code> were added after <code>push_str</code>,
-          borrow would still be needed there and compiler would reject earlier <code
-          >push_str</code> call with <code>error[E0502]: cannot borrow `s` as mutable
-            because it is also borrowed as immutable</code>.
-        </p>
-        <p>
-          Read that error message carefully, because it names the real rule. The compiler
-          refuses the combination of a live borrow and a mutating call. It does not decide
-          by checking whether the buffer happened to move. A version of <code
-          >push_str</code> that grew the buffer in place would be rejected the same way.
-        </p>
-
-        <h3><code>s.push_str("!");</code></h3>
-        <dl>
-          <dt><code>.</code></dt>
-          <dd>
-            Dot selecting method on value to left.
-            <p>
-              <strong>Example:</strong> <code>s.len()</code> selects method <code
-              >len</code> on <code>s</code>.
-            </p>
-          </dd>
-
-          <dt><code>push_str</code></dt>
-          <dd>
-            <code>String</code> method that appends bytes from string slice. Its input
-            type is <code>&amp;str</code>; literal <code>"!"</code> has that string-slice
-            type, so method reads literal's byte without taking ownership of literal. It
-            adds exclamation-mark byte, increasing length from <code>11</code> to <code
-            >12</code>. Because current capacity is only <code>11</code>, this Aquascope
-            run obtains capacity-<code>22</code> allocation, copies eleven existing bytes,
-            appends new byte, and deallocates old allocation. Capacity <code>22</code> is
-            observed here, not guaranteed growth rule.
-            <p>
-              <strong>Example:</strong> before call, <code>s</code> contains <code>Hello
-                world</code>; after call, it contains <code>Hello world!</code>.
-            </p>
-          </dd>
-
-          <dt><code>("!")</code></dt>
-          <dd>
-            Parentheses contain argument passed to method. Argument is one-character
-            string literal.
-            <p>
-              <strong>Example:</strong> literal supplies exclamation-mark byte visible at
-              end of heap at <code>L3</code>.
-            </p>
-          </dd>
-        </dl>
-
-        <h3><code>drop(s);</code></h3>
-        <dl>
-          <dt><code>drop</code></dt>
-          <dd>
-            Function ending supplied value immediately and performing cleanup. This line
-            is not what makes cleanup happen. Without it, the same buffer would be
-            deallocated one line later, at <code>main</code>'s closing brace. The line
-            exists so the diagram can show that deallocation while a badge is still
-            available to label it.
-            <p>
-              <strong>Example:</strong> at <code>L4</code>, heap buffer is gone because
-              <code>drop</code> ended <code>String</code>.
-            </p>
-          </dd>
-
-          <dt><code>(s)</code></dt>
-          <dd>
-            Argument passed to <code>drop</code>. Passing owned <code>String</code> moves
-            it out of <code>s</code> and into function;
-            <code>s</code> cannot be used afterward.
-            <p>
-              <strong>Example:</strong>
-              after <code>drop(s);</code>, compiler rejects later <code
-              >s.push_str("?");</code>
-              because <code>s</code>'s value was moved into <code>drop</code>.
-            </p>
-          </dd>
-        </dl>
-      </section>
-
-      <section aria-labelledby='controls'>
-        <h2 id='controls'>Every control and border</h2>
-        <dl>
-          <dt><code>L1</code>, <code>L2</code>, <code>L3</code>, <code>L4</code></dt>
-          <dd>
-            Aquascope snapshot labels, not Rust syntax. Badge beside source statement
-            matches memory picture carrying same badge.
-            <p>
-              <strong>Example:</strong> <code>L2</code> beside borrow matches picture
-              where both <code>s</code> and <code>hello</code> exist.
-            </p>
-          </dd>
-
-          <dt>Copy icon</dt>
-          <dd>
-            Copies the whole Rust source the widget holds, including the two lines the
-            widget hides. Result is the six-line function, not the four displayed
-            statements.
-            <p>
-              <strong>Example:</strong> pressing it yields text beginning <code>fn main()
-                {</code> and ending <code>}</code>.
-            </p>
-          </dd>
-
-          <dt>Eye icon</dt>
-          <dd>
-            Shows or hides the helper source lines concealed by the book's widget. Here
-            that pair is <code>fn main() {</code> and the closing <code>}</code>. This
-            display choice does not change values in snapshots.
-            <p>
-              <strong>Example:</strong> pressing it once makes the panel show six lines
-              instead of four.
-            </p>
-          </dd>
-
-          <dt>Binocular icon</dt>
-          <dd>
-            Switches compact value picture to expanded picture of Rust's internal
-            implementation.
-            <p>
-              <strong>Example:</strong> compact <code>s ●</code> expands into <code
-              >String</code>, <code>Vec</code>, <code>RawVec</code>, and pointer wrappers.
-            </p>
-          </dd>
-
-          <dt>Dashed outer border</dt>
-          <dd>
-            Boundary of one embedded Aquascope widget, with no Rust meaning.
-            <p>
-              <strong>Example:</strong> source panel and all four snapshots sit inside it.
-            </p>
-          </dd>
-
-          <dt>Dashed <code>Stack</code> and <code>Heap</code> borders</dt>
-          <dd>
-            Group displayed values by memory area, with no Rust syntax meaning.
-            <p>
-              <strong>Example:</strong> <code>s</code> sits inside Stack border and text
-              bytes sit inside Heap border.
-            </p>
-          </dd>
-
-          <dt>Solid nested borders</dt>
-          <dd>
-            Show value and fields contained inside it in expanded view. Nesting means
-            “contains,” not “points to.”
-            <p>
-              <strong>Example:</strong> <code>String</code> border contains field <code
-              >vec</code>, whose <code>Vec</code> border contains <code>buf</code> and
-              <code>len</code>.
-            </p>
-          </dd>
-
-          <dt>Horizontal scrollbar</dt>
-          <dd>
-            Moves across picture wider than page and has no Rust meaning.
-            <p>
-              <strong>Example:</strong> expanded picture may need horizontal scrolling to
-              reach heap bytes.
-            </p>
-          </dd>
-        </dl>
-      </section>
-
-      <section aria-labelledby='runtime-labels'>
-        <h2 id='runtime-labels'>Every label and mark in the compact runtime picture</h2>
-        <dl>
-          <dt><code>Stack</code></dt>
-          <dd>
-            Aquascope area showing active function frames and local variables.
-            <p>
-              <strong>Example:</strong> <code>main</code>'s frame contains <code>s</code>
-              at <code>L1</code>.
-            </p>
-          </dd>
-
-          <dt><code>main</code></dt>
-          <dd>
-            Frame for automatically started <code>main</code> function call.
-            <p>
-              <strong>Example:</strong> at <code>L2</code>, this frame lists both <code
-              >s</code> and <code>hello</code>.
-            </p>
-          </dd>
-
-          <dt><code>Heap</code></dt>
-          <dd>
-            Aquascope area showing runtime-sized allocations. Screenshot says <code
-            >Heap</code>, not <code>Help</code>.
-            <p>
-              <strong>Example:</strong> eleven byte cells for <code>Hello world</code>
-              appear there at <code>L1</code>.
-            </p>
-          </dd>
-
-          <dt>Absent <code>Heap</code> box</dt>
-          <dd>
-            When a snapshot has no live heap allocation, Aquascope omits the <code
-            >Heap</code> box instead of drawing an empty one. An absent box therefore
-            means “nothing allocated,” not “this view is unavailable.”
-            <p>
-              <strong>Example:</strong> <code>L4</code> shows only a <code>Stack</code>
-              box, because <code>drop(s)</code> deallocated the sole heap buffer.
-            </p>
-          </dd>
-
-          <dt><code>●</code></dt>
-          <dd>
-            Aquascope pointer mark, not Rust syntax. A cell holding this dot holds a
-            pointer rather than a displayed number or character.
-            <p>
-              <strong>Example:</strong> at <code>L1</code>, <code>s</code>'s only visible
-              cell holds a dot, meaning <code>s</code> reaches its text through a pointer.
-            </p>
-          </dd>
-
-          <dt>Arrow or connector</dt>
-          <dd>
-            Curved line links pointer dot to heap data it identifies. Chromium
-            verification displays these lines; learner's Firefox view can omit them even
-            though pointer dots and target bytes still render. Missing line is
-            browser-rendering issue, not different Rust state.
-            <p>
-              <strong>Example:</strong>
-              at <code>L1</code>, visible Chromium line connects <code>s</code>'s dot to
-              first heap byte <code>H</code>. If Firefox omits line, same dot still
-              represents pointer to start of text.
-            </p>
-          </dd>
-
-          <dt>What the compact view leaves out</dt>
-          <dd>
-            The compact picture shows one dot for <code>s</code> and no <code>len</code>
-            or <code>cap</code>. Those numbers exist while the program runs; the binocular
-            view is what displays them.
-            <p>
-              <strong>Example:</strong>
-              at <code>L1</code>, the compact view shows <code>s ●</code>, and the
-              binocular view shows that same value with <code>len 11</code> and <code>cap
-                11</code>.
-            </p>
-          </dd>
-
-          <dt><code>⦻</code></dt>
-          <dd>
-            Aquascope mark saying old pointer target is no longer allocated. It is not
-            Rust syntax and is not necessarily value stored by program.
-            <p>
-              <strong>Example:</strong> at <code>L3</code>, <code>hello</code>'s old
-              target has been deallocated, so diagram shows <code>⦻</code>.
-            </p>
-          </dd>
-
-          <dt>Moved-out value, shown faded and striped</dt>
-          <dd>
-            Diagonal stripes across faded text mean the variable's value was moved away
-            and the variable can no longer reach it. At <code>L4</code> this appears on
-            <code>s</code> together with <code>⦻</code>, because the moved-out <code
-            >String</code>'s buffer is gone as well: one mark reports the move, the other
-            reports the deallocation.
-            <p>
-              <strong>Example:</strong> <code>s</code> is faded and striped at <code
-              >L4</code> because <code>drop(s)</code> consumed its <code>String</code>.
-            </p>
-          </dd>
-
-          <dt>Character-like heap cells</dt>
-          <dd>
-            One displayed cell per byte in this ASCII-only example. Other UTF-8 characters
-            may require multiple cells.
-            <p>
-              <strong>Example:</strong> first five cells are <code>H</code>, <code
-              >e</code>, <code>l</code>, <code>l</code>, <code>o</code>.
-            </p>
-          </dd>
-        </dl>
-      </section>
-
-      <section aria-labelledby='snapshots'>
-        <h2 id='snapshots'>What changes from L1 to L4</h2>
-
-        <h3><code>L1</code>: after <code>String::from("Hello world")</code></h3>
-        <dl>
-          <dt>Stack</dt>
-          <dd>
-            <code>main</code> frame contains <code>s</code>, displayed as a single pointer
-            dot.
-          </dd>
-          <dt>Heap</dt>
-          <dd>Eleven bytes spell <code>Hello world</code>.</dd>
-          <dt>Exact effect</dt>
-          <dd>New <code>String</code> owns buffer containing copy of literal's bytes.</dd>
-        </dl>
-        <p>
-          <strong>Example:</strong>
-          the compact view shows only <code>s ●</code>; pressing the binocular icon
-          reports the same value's <code>len 11</code> and <code>cap 11</code>.
-        </p>
-
-        <h3><code>L2</code>: after <code>let hello = &amp;s[0..5]</code></h3>
-        <dl>
-          <dt>Stack</dt>
-          <dd>
-            <code>s</code> still owns buffer; <code>hello</code> appears as a second dot,
-            and the binocular view shows its length <code>5</code>.
-          </dd>
-          <dt>Heap</dt>
-          <dd>Same eleven bytes remain.</dd>
-          <dt>Exact effect</dt>
-          <dd>
-            No text byte is copied; <code>hello</code> describes first five existing
-            bytes.
-          </dd>
-        </dl>
-        <p><strong>Example:</strong> <code>hello</code> reads as <code>Hello</code>.</p>
-
-        <h3><code>L3</code>: after <code>s.push_str("!")</code></h3>
-        <dl>
-          <dt>Stack</dt>
-          <dd>
-            <code>s</code> points to current allocation; <code>hello</code> now shows
-            <code>⦻</code>.
-          </dd>
-          <dt>Heap</dt>
-          <dd>Twelve bytes spell <code>Hello world!</code>.</dd>
-          <dt>Exact effect</dt>
-          <dd>
-            This Aquascope run replaced full capacity-<code>11</code> allocation with
-            capacity-<code>22</code> allocation.
-          </dd>
-        </dl>
-        <p>
-          <strong>Example:</strong>
-          program remains valid because it never reads <code>hello</code> after its
-          creation. Rust rejects version that reads <code>hello</code> after <code
-          >push_str</code>.
-        </p>
-        <p>
-          Capacity <code>22</code> is observed result of this run, not Rust language
-          promise. Code may rely on enough capacity for current text, but not on doubling.
-        </p>
-
-        <h3><code>L4</code>: after <code>drop(s)</code></h3>
-        <dl>
-          <dt>Stack</dt>
-          <dd>
-            <code>s</code> is faded and striped with <code>⦻</code>; <code>hello</code>
-            also shows <code>⦻</code>.
-          </dd>
-          <dt>Heap</dt>
-          <dd>
-            No <code>Heap</code> box is drawn at all, because no allocation remains.
-          </dd>
-          <dt>Exact effect</dt>
-          <dd>
-            <code>drop</code> ended owning <code>String</code> and deallocated buffer.
-          </dd>
-        </dl>
-        <p>
-          <strong>Example:</strong>
-          compiler rejects later code that reads <code>s</code>, calls method on <code
-          >s</code>, or passes <code>s</code> to another function.
-        </p>
-
-        <h3>What the diagram does not label</h3>
-        <p>
-          The badges stop at <code>L4</code>, one line before <code>main</code>'s closing
-          brace. A fifth program state exists there, with <code>main</code>'s frame empty
-          and no heap allocation, and Aquascope draws no badge for it.
-        </p>
-        <p>
-          That missing state carries the lesson the four badges can hide. Deleting <code
-          >drop(s);</code> from this sample would not leak the buffer. It would move the
-          deallocation from <code>L4</code> to the closing brace, where Rust performs it
-          because <code>s</code>'s scope ends.
-          <code>drop</code> chooses <strong>when</strong> cleanup happens; it is not what
-          causes cleanup.
-        </p>
-      </section>
-
-      <section aria-labelledby='concrete'>
-        <h2 id='concrete'>Every label in the binocular picture</h2>
-        <p>
-          <strong>Standard library</strong> means reusable types and functions shipped
-          with Rust.
-          <strong>Example:</strong> <code>String</code>, <code>Vec</code>, and <code
-          >drop</code> come from Rust's standard library. Binocular picture exposes mostly
-          private details inside that library. Their names and nesting can change with
-          Rust version. Learn them only well enough to decode this picture.
-        </p>
-        <p>
-          A <strong>wrapper</strong> is value whose job is to contain another value while
-          adding a rule.
-          <strong>Example:</strong> <code>NonNull</code> wraps pointer and adds rule that
-          pointer cannot be null. Null means special pointer value that points nowhere.
-        </p>
-        <p>
-          <strong>The picture's labels carry no angle brackets.</strong>
-          The written Rust type of the <code>vec</code> field is <code
-          >Vec&lt;u8&gt;</code>, and the diagram displays it as bare <code>Vec</code>. The
-          same applies to every wrapper below, so do not search the picture for <code
-          >Unique&lt;u8&gt;</code> or <code>NonNull&lt;u8&gt;</code>.
-        </p>
-
-        <h3>Containment at L1</h3>
-        <ul>
-          <li>
-            variable <code>s</code>: <code>String</code>
-            <ul>
-              <li>
-                field <code>vec</code>: <code>Vec</code>
-                <ul>
-                  <li>
-                    field <code>buf</code>: <code>RawVec</code>
-                    <ul>
-                      <li>
-                        field <code>inner</code>: <code>RawVecInner</code>
-                        <ul>
-                          <li>
-                            field <code>ptr</code>: <code>Unique</code>
-                            <ul>
-                              <li>
-                                field <code>pointer</code>: <code>NonNull</code>
-                                <ul>
-                                  <li>
-                                    field <code>pointer</code>: pointer dot <code>●</code>
-                                  </li>
-                                </ul>
-                              </li>
-                            </ul>
-                          </li>
-                          <li>
-                            field <code>cap</code>: <code>UsizeNoHighBit / 11</code>
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                  <li>field <code>len</code>: <code>11</code></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-
-        <dl>
-          <dt><code>vec</code></dt>
-          <dd>
-            Lowercase private field inside <code>String</code> holding its UTF-8 bytes
-            through a <code>Vec</code> of bytes.
-            <p>
-              <strong>Example:</strong>
-              for <code>String::from("Hi")</code>, this field's <code>Vec</code> has
-              length <code>2</code>
-              and points to buffer containing bytes <code>H</code> and <code>i</code>.
-            </p>
-          </dd>
-
-          <dt><code>Vec</code>, written <code>Vec&lt;u8&gt;</code></dt>
-          <dd>
-            <code>Vec</code> is Rust list type whose length can change. Written form <code
-            >Vec&lt;u8&gt;</code> says each list element has type <code>u8</code>, Rust
-            byte-sized number type. The diagram shows only the bare name.
-            <p>
-              <strong>Example:</strong> <code>vec![72_u8, 105_u8]</code> constructs <code
-              >Vec&lt;u8&gt;</code> containing byte values for <code>Hi</code>.
-            </p>
-          </dd>
-
-          <dt>Macro</dt>
-          <dd>
-            Rust construct that compiler expands into other Rust code during compilation.
-            Macro calls use exclamation mark after name.
-            <p>
-              <strong>Example:</strong> <code>vec![1, 2, 3]</code> is call to macro named
-              <code>vec!</code>.
-            </p>
-            <p>
-              <strong>TypeScript relationship:</strong> TypeScript has no direct language
-              feature with Rust's macro-call syntax.
-            </p>
-          </dd>
-
-          <dt><code>vec!</code></dt>
-          <dd>
-            Macro that constructs <code>Vec</code>; it is different from lowercase field
-            <code>vec</code> and uppercase type <code>Vec</code>.
-            <p>
-              <strong>Example:</strong> <code>vec![1, 2, 3]</code> constructs list with
-              three number values.
-            </p>
-          </dd>
-
-          <dt><code>u8</code></dt>
-          <dd>
-            Rust type for whole number from <code>0</code> through <code>255</code>. It
-            occupies exactly one byte.
-            <p>
-              <strong>Example:</strong> <code>72_u8</code> is byte value for ASCII <code
-              >H</code>; suffix <code>_u8</code> tells Rust its type.
-            </p>
-          </dd>
-
-          <dt><code>buf</code></dt>
-          <dd>
-            Short for buffer. Field inside <code>Vec</code> that owns reserved memory
-            block.
-            <p>
-              <strong>Example:</strong> at <code>L1</code>, <code>buf</code> owns room for
-              eleven bytes.
-            </p>
-          </dd>
-
-          <dt><code>RawVec</code></dt>
-          <dd>
-            Private standard-library layer recording buffer pointer and capacity. Outer
-            <code>Vec</code> separately records length.
-            <p>
-              <strong>Example:</strong> screenshot places <code>RawVec</code> around <code
-              >inner</code>, while <code>len 11</code> remains outside it.
-            </p>
-          </dd>
-
-          <dt><code>inner</code></dt>
-          <dd>
-            Field name meaning next private layer inside <code>RawVec</code>.
-            <p>
-              <strong>Example:</strong> <code>inner</code> contains fields <code
-              >ptr</code> and <code>cap</code>.
-            </p>
-          </dd>
-
-          <dt><code>RawVecInner</code></dt>
-          <dd>
-            Private standard-library type grouping pointer and capacity used by <code
-            >RawVec</code>.
-            <p>
-              <strong>Example:</strong> at <code>L1</code>, its pointer reaches heap text
-              and its capacity is <code>11</code>.
-            </p>
-          </dd>
-
-          <dt><code>ptr</code></dt>
-          <dd>
-            Short for pointer. Field holding pointer wrapper.
-            <p>
-              <strong>Example:</strong> following nested value inside <code>ptr</code>
-              reaches heap byte <code>H</code>.
-            </p>
-          </dd>
-
-          <dt><code>Unique</code></dt>
-          <dd>
-            Private pointer wrapper telling standard-library code to treat allocation as
-            owned through this path. Ordinary Rust code cannot name it without opting into
-            unstable compiler features.
-            <p>
-              <strong>Example:</strong> <code>Unique</code> is wrapper on route from <code
-              >s</code> to its byte buffer.
-            </p>
-          </dd>
-
-          <dt><code>pointer</code> inside <code>Unique</code></dt>
-          <dd>
-            Field containing next wrapper, <code>NonNull</code>. It is not second
-            allocation.
-            <p>
-              <strong>Example:</strong> expanded box reads <code>Unique</code>, then <code
-              >pointer</code>, then <code>NonNull</code> around same route to heap.
-            </p>
-          </dd>
-
-          <dt><code>NonNull</code></dt>
-          <dd>
-            Pointer wrapper guaranteeing contained pointer is not null, meaning not
-            “points nowhere.” Unlike the other wrappers in this chain, <code
-            >NonNull</code> is part of Rust's public standard library rather than a
-            private detail, so ordinary Rust code may use it directly. It does not by
-            itself guarantee target has not been deallocated.
-            <p>
-              <strong>Example:</strong> at <code>L1</code>, <code>NonNull</code> contains
-              pointer dot leading to live text buffer.
-            </p>
-          </dd>
-
-          <dt><code>pointer</code> inside <code>NonNull</code></dt>
-          <dd>
-            Deepest displayed field containing actual pointer mark <code>●</code>.
-            <p>
-              <strong>Example:</strong> at <code>L4</code>, this deepest field shows <code
-              >⦻</code> instead, because its target is gone.
-            </p>
-          </dd>
-
-          <dt><code>cap</code></dt>
-          <dd>
-            Short for capacity. Field records how many bytes fit before another allocation
-            is needed.
-            <p>
-              <strong>Example:</strong> <code>cap 11</code> is full when <code>len
-                11</code>; adding one byte requires more room.
-            </p>
-          </dd>
-
-          <dt><code>usize</code></dt>
-          <dd>
-            Rust type for non-negative whole numbers used as lengths and index positions.
-            Largest possible value depends on computer where program runs.
-            <p>
-              <strong>Example:</strong> end position <code>5</code> in <code>0..5</code>
-              can be represented as <code>usize</code>.
-            </p>
-          </dd>
-
-          <dt><code>UsizeNoHighBit</code></dt>
-          <dd>
-            Private number wrapper used for capacity. Bit means one binary digit, either
-            <code>0</code> or <code>1</code>; this wrapper only accepts numbers whose
-            highest bit is <code>0</code>.
-            <p>
-              <strong>Example:</strong> <code>UsizeNoHighBit / 11</code> wraps capacity
-              number <code>11</code>.
-            </p>
-          </dd>
-
-          <dt><code>Type / value</code></dt>
-          <dd>
-            Aquascope display notation, not Rust source syntax. Text before slash is type
-            and text after slash is current value.
-            <p>
-              <strong>Example:</strong> <code>UsizeNoHighBit / 22</code> means wrapper
-              type currently contains <code>22</code>.
-            </p>
-          </dd>
-
-          <dt><code>len</code></dt>
-          <dd>
-            Short for length. For <code>String</code>, it counts UTF-8 bytes currently
-            used.
-            <p>
-              <strong>Example:</strong>
-              <code>len</code> changes from <code>11</code> to <code>12</code> after
-              adding <code>!</code>; one-character text <code>é</code> has byte length
-              <code>2</code>.
-            </p>
-          </dd>
-        </dl>
-
-        <p>
-          <strong>Do not memorize this wrapper chain.</strong>
-          Stable idea is only: <code>String</code> owns heap bytes and records pointer,
-          length, and capacity.
-        </p>
-      </section>
-
-      <section aria-labelledby='permissions'>
-        <h2 id='permissions'>
-          R, W, O permission marks, which the opening diagram does not show
-        </h2>
-        <p>
-          <strong>Do not look for this section's marks in the opening diagram.</strong>
-          That widget is configured to draw running data only. It contains no <code
-          >R</code>, <code>W</code>, or <code>O</code> letter anywhere, and no amount of
-          pressing its controls will produce one.
-        </p>
-        <p>
-          Read this section when the book reaches
-          <a
-            href='https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places'>References
-            Change Permissions on Places</a>, where diagrams do carry these marks. This
-          section previews only permission marks listed here; later diagrams may introduce
-          additional icons that their surrounding book text explains.
-        </p>
-        <p>
-          These marks describe a compile-time picture, not runtime memory. A <strong
-          >place</strong> is specific data location named by code: whole variable, field,
-          indexed element, or target reached through reference. Permission is Aquascope's
-          letter for operation compiler currently allows at one place and one source
-          position.
-        </p>
-        <p>
-          <strong>Example:</strong>
-          <code>s</code> is place for whole <code>String</code>;
-          <code>s[0..5]</code> is place for selected text range. Same place can have
-          different permissions before and during borrow.
-        </p>
-        <p>
-          <strong>TypeScript relationship:</strong> TypeScript has no direct R, W, O
-          permission model.
-        </p>
-
-        <dl>
-          <dt><code>R</code>: Read</dt>
-          <dd>
-            Permission to read data.
-            <p>
-              <strong>Example:</strong> evaluating <code>s.len()</code> reads <code
-              >s</code> without changing its text.
-            </p>
-          </dd>
-
-          <dt><code>W</code>: Write</dt>
-          <dd>
-            Permission to mutate data.
-            <p>
-              <strong>Example:</strong> <code>s.push_str("!")</code> needs <code>W</code>
-              because text differs afterward.
-            </p>
-          </dd>
-
-          <dt><code>O</code>: Own</dt>
-          <dd>
-            Permission to move or drop owned data. Letter means “own,” not “object.”
-            <p>
-              <strong>Example:</strong> <code>drop(s)</code> needs <code>O</code> because
-              it moves and ends <code>String</code>.
-            </p>
-          </dd>
-
-          <dt><code>+R</code>, <code>+W</code>, <code>+O</code></dt>
-          <dd>
-            Place gains shown permission after source line.
-            <p>
-              <strong>Example:</strong> <code>let mut s = ...</code> creates mutable
-              initialized variable, so picture can show <code>+R+W+O</code>.
-            </p>
-          </dd>
-
-          <dt>Slashed letter</dt>
-          <dd>
-            Place loses shown permission after source line.
-            <p>
-              <strong>Example:</strong> while reference to <code>s</code>'s data will be
-              used later, <code>s</code> loses <code>W</code> and <code>O</code>.
-            </p>
-          </dd>
-
-          <dt><code>‒</code></dt>
-          <dd>
-            Place lacks that permission and line did not change absence.
-            <p>
-              <strong>Example:</strong> variable declared without <code>mut</code> can
-              show dash where <code>W</code> would appear.
-            </p>
-          </dd>
-
-          <dt>Filled expected letter</dt>
-          <dd>
-            Operation needs permission and place has it.
-            <p>
-              <strong>Example:</strong> <code>s.len()</code> can show filled <code
-              >R</code> when reading is allowed.
-            </p>
-          </dd>
-
-          <dt>Hollow expected letter</dt>
-          <dd>
-            Operation needs permission but place lacks it, so compiler reports error.
-            <p>
-              <strong>Example:</strong> <code>push_str</code> can show hollow <code
-              >W</code> when later reference use keeps <code>s</code> borrowed.
-            </p>
-          </dd>
-        </dl>
-
-        <h3>Permission example without new syntax</h3>
-        <pre>
-<code>fn main() {
+      <p>
+        <strong>The widget shows four of these six lines.</strong>
+        Its copy of the source contains <code>fn main() {</code> and the closing <code>}</code>,
+        but the book's widget hides that pair,
+        so the panel beside you lists only the four statements while this page lists the whole function.
+        The eye control reveals the hidden pair.
+      </p>
+      <p>
+        Each displayed statement carries a badge, <code>L1</code> through <code>L4</code>, at its end.
+        A badge is Aquascope's label rather than Rust syntax.
+        It links one statement to the memory picture carrying the same badge,
+        and each picture shows the state <strong>after</strong> that statement has run.
+      </p>
+
+      <h3><code>fn main() { ... }</code></h3>
+      <dl>
+        <dt><code>fn</code></dt>
+        <dd>
+          Keyword that starts Rust function definition.
+          <p><strong>Example:</strong> <code>fn greet() {}</code> defines function named <code>greet</code>.</p>
+        </dd>
+
+        <dt><code>main</code></dt>
+        <dd>
+          Special function whose initial call is performed automatically when executable starts.
+          <p><strong>Example:</strong> launching this executable enters <code>main</code>; Rust source does not contain separate <code>main();</code> call.</p>
+        </dd>
+
+        <dt><code>()</code></dt>
+        <dd>
+          Empty parameter list, meaning <code>main</code> declares no input parameters.
+          <p><strong>Example:</strong> a function with one parameter could begin <code>fn greet(name: String)</code>.</p>
+        </dd>
+
+        <dt><code>{ }</code></dt>
+        <dd>
+          Braces marking start and end of function body.
+          On normal exit, closing brace drops each initialized local value still associated with this block.
+          <p><strong>Example:</strong> all four sample statements are between <code>main</code>'s braces.</p>
+        </dd>
+      </dl>
+
+      <h3><code>let mut s = String::from("Hello world");</code></h3>
+      <dl>
+        <dt><code>let</code></dt>
+        <dd>
+          Keyword starting variable declaration.
+          Declaration creates binding between variable name and value.
+          <p><strong>Example:</strong> <code>let score = 5;</code> binds name <code>score</code> to value <code>5</code>.</p>
+        </dd>
+
+        <dt><code>mut</code></dt>
+        <dd>
+          Keyword permitting mutable access through this <code>String</code> binding.
+          Here it allows compiler to create temporary <code>&amp;mut String</code> reference required by <code>push_str</code>.
+          If this <code>String</code> later moves into new binding,
+          new declaration independently decides whether mutable access through new name is permitted.
+          <p>
+            <strong>Example:</strong>
+            <code>s.push_str("!")</code> changes <code>s</code>'s text from <code>Hello world</code> to <code>Hello world!</code>
+            and byte length from <code>11</code> to <code>12</code>.
+            It may reuse current buffer or replace full buffer with larger allocation.
+            Without <code>mut</code>, compiler rejects this exact call.
+          </p>
+        </dd>
+
+        <dt><code>s</code></dt>
+        <dd>
+          Programmer-chosen variable name. Letter has no built-in Rust meaning.
+          <p><strong>Example:</strong> later statements use same name in <code>s.push_str("!")</code> and <code>drop(s)</code>.</p>
+        </dd>
+
+        <dt><code>=</code></dt>
+        <dd>
+          In this <code>let</code> declaration, equals sign introduces initializer on right.
+          This is initialization, not later assignment to existing variable.
+          <p><strong>Example:</strong> value produced by <code>String::from(...)</code> becomes initial value reached through <code>s</code>.</p>
+        </dd>
+
+        <dt><code>String</code></dt>
+        <dd>
+          Type of new growable UTF-8 text value.
+          <p><strong>Example:</strong> at <code>L1</code>, this <code>String</code> owns buffer holding <code>Hello world</code>.</p>
+        </dd>
+
+        <dt><code>::</code> and <code>from</code></dt>
+        <dd>
+          <code>::</code> separates the parts of a path.
+          Here the path names a function attached to the type itself rather than to an existing value.
+          The same separator also names items inside modules, as in <code>std::ptr</code>,
+          so read it as “look inside” rather than as a type-only marker.
+          <code>from</code> is selected function's name.
+          <p><strong>Example:</strong> <code>String::from("Hi")</code> creates new <code>String</code> from literal <code>"Hi"</code>.</p>
+        </dd>
+
+        <dt><code>"Hello world"</code></dt>
+        <dd>
+          Literal supplying source text. Quotation marks mark boundaries and are not part of text.
+          <code>String::from</code> copies literal's eleven bytes into owned buffer shown by Aquascope.
+          <p><strong>Example:</strong> heap cells at <code>L1</code> show <code>H</code> through <code>d</code>, not quotation marks.</p>
+        </dd>
+
+        <dt><code>;</code></dt>
+        <dd>
+          Semicolon ends every statement shown here.
+          It is required after <code>let</code>;
+          after standalone method or function call, it makes expression statement that keeps call's effect and discards returned value.
+          <p><strong>Example:</strong> <code>s.push_str("!");</code> keeps text mutation and discards call's <code>()</code> result.</p>
+        </dd>
+      </dl>
+
+      <h3><code>let hello = &amp;s[0..5];</code></h3>
+      <dl>
+        <dt><code>hello</code></dt>
+        <dd>
+          New local variable whose type is inferred as <code>&amp;str</code>.
+          <p><strong>Example:</strong> expanded <code>L2</code> view shows <code>hello</code> with pointer and length <code>5</code>.</p>
+        </dd>
+
+        <dt><code>&amp;</code></dt>
+        <dd>
+          Borrow operator that creates reference instead of transferring ownership.
+          <p><strong>Example:</strong> <code>hello</code> can read five bytes, but <code>s</code>'s <code>String</code> still owns their buffer.</p>
+        </dd>
+
+        <dt><code>[ ]</code></dt>
+        <dd>
+          Indexing brackets selecting part of value.
+          <p><strong>Example:</strong> brackets apply range <code>0..5</code> to <code>s</code>'s text.</p>
+        </dd>
+
+        <dt><code>0..5</code></dt>
+        <dd>
+          Range starting at byte position <code>0</code> and stopping before byte position <code>5</code>.
+          Both endpoints must be UTF-8 character boundaries or range indexing panics at runtime.
+          <p>
+            <strong>Example:</strong>
+            positions <code>0</code> through <code>4</code> spell <code>Hello</code>, so this range is valid;
+            <code>0..1</code> would panic for <code>é</code>, whose encoding occupies bytes <code>0</code> and <code>1</code>.
+          </p>
+        </dd>
+      </dl>
+      <p>
+        The sample never reads <code>hello</code> later.
+        Compiler therefore treats borrow as finished before next statement.
+        <strong>Example:</strong>
+        if <code>let count = hello.len();</code> were added after <code>push_str</code>,
+        borrow would still be needed there and compiler would reject earlier <code>push_str</code> call
+        with <code>error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable</code>.
+      </p>
+      <p>
+        Read that error message carefully, because it names the real rule.
+        The compiler refuses the combination of a live borrow and a mutating call.
+        It does not decide by checking whether the buffer happened to move.
+        A version of <code>push_str</code> that grew the buffer in place would be rejected the same way.
+      </p>
+
+      <h3><code>s.push_str("!");</code></h3>
+      <dl>
+        <dt><code>.</code></dt>
+        <dd>
+          Dot selecting method on value to left.
+          <p><strong>Example:</strong> <code>s.len()</code> selects method <code>len</code> on <code>s</code>.</p>
+        </dd>
+
+        <dt><code>push_str</code></dt>
+        <dd>
+          <code>String</code> method that appends bytes from string slice.
+          Its input type is <code>&amp;str</code>; literal <code>"!"</code> has that string-slice type,
+          so method reads literal's byte without taking ownership of literal.
+          It adds exclamation-mark byte, increasing length from <code>11</code> to <code>12</code>.
+          Because current capacity is only <code>11</code>, this Aquascope run obtains capacity-<code>22</code> allocation,
+          copies eleven existing bytes, appends new byte, and deallocates old allocation.
+          Capacity <code>22</code> is observed here, not guaranteed growth rule.
+          <p><strong>Example:</strong> before call, <code>s</code> contains <code>Hello world</code>; after call, it contains <code>Hello world!</code>.</p>
+        </dd>
+
+        <dt><code>("!")</code></dt>
+        <dd>
+          Parentheses contain argument passed to method. Argument is one-character string literal.
+          <p><strong>Example:</strong> literal supplies exclamation-mark byte visible at end of heap at <code>L3</code>.</p>
+        </dd>
+      </dl>
+
+      <h3><code>drop(s);</code></h3>
+      <dl>
+        <dt><code>drop</code></dt>
+        <dd>
+          Function ending supplied value immediately and performing cleanup.
+          This line is not what makes cleanup happen.
+          Without it, the same buffer would be deallocated one line later, at <code>main</code>'s closing brace.
+          The line exists so the diagram can show that deallocation while a badge is still available to label it.
+          <p><strong>Example:</strong> at <code>L4</code>, heap buffer is gone because <code>drop</code> ended <code>String</code>.</p>
+        </dd>
+
+        <dt><code>(s)</code></dt>
+        <dd>
+          Argument passed to <code>drop</code>.
+          Passing owned <code>String</code> moves it out of <code>s</code> and into function;
+          <code>s</code> cannot be used afterward.
+          <p>
+            <strong>Example:</strong>
+            after <code>drop(s);</code>, compiler rejects later <code>s.push_str("?");</code>
+            because <code>s</code>'s value was moved into <code>drop</code>.
+          </p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="controls">
+      <h2 id="controls">Every control and border</h2>
+      <dl>
+        <dt><code>L1</code>, <code>L2</code>, <code>L3</code>, <code>L4</code></dt>
+        <dd>
+          Aquascope snapshot labels, not Rust syntax.
+          Badge beside source statement matches memory picture carrying same badge.
+          <p><strong>Example:</strong> <code>L2</code> beside borrow matches picture where both <code>s</code> and <code>hello</code> exist.</p>
+        </dd>
+
+        <dt>Copy icon</dt>
+        <dd>
+          Copies the whole Rust source the widget holds, including the two lines the widget hides.
+          Result is the six-line function, not the four displayed statements.
+          <p><strong>Example:</strong> pressing it yields text beginning <code>fn main() {</code> and ending <code>}</code>.</p>
+        </dd>
+
+        <dt>Eye icon</dt>
+        <dd>
+          Shows or hides the helper source lines concealed by the book's widget.
+          Here that pair is <code>fn main() {</code> and the closing <code>}</code>.
+          This display choice does not change values in snapshots.
+          <p><strong>Example:</strong> pressing it once makes the panel show six lines instead of four.</p>
+        </dd>
+
+        <dt>Binocular icon</dt>
+        <dd>
+          Switches compact value picture to expanded picture of Rust's internal implementation.
+          <p><strong>Example:</strong> compact <code>s ●</code> expands into <code>String</code>, <code>Vec</code>, <code>RawVec</code>, and pointer wrappers.</p>
+        </dd>
+
+        <dt>Dashed outer border</dt>
+        <dd>
+          Boundary of one embedded Aquascope widget, with no Rust meaning.
+          <p><strong>Example:</strong> source panel and all four snapshots sit inside it.</p>
+        </dd>
+
+        <dt>Dashed <code>Stack</code> and <code>Heap</code> borders</dt>
+        <dd>
+          Group displayed values by memory area, with no Rust syntax meaning.
+          <p><strong>Example:</strong> <code>s</code> sits inside Stack border and text bytes sit inside Heap border.</p>
+        </dd>
+
+        <dt>Solid nested borders</dt>
+        <dd>
+          Show value and fields contained inside it in expanded view.
+          Nesting means “contains,” not “points to.”
+          <p><strong>Example:</strong> <code>String</code> border contains field <code>vec</code>, whose <code>Vec</code> border contains <code>buf</code> and <code>len</code>.</p>
+        </dd>
+
+        <dt>Horizontal scrollbar</dt>
+        <dd>
+          Moves across picture wider than page and has no Rust meaning.
+          <p><strong>Example:</strong> expanded picture may need horizontal scrolling to reach heap bytes.</p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="runtime-labels">
+      <h2 id="runtime-labels">Every label and mark in the compact runtime picture</h2>
+      <dl>
+        <dt><code>Stack</code></dt>
+        <dd>
+          Aquascope area showing active function frames and local variables.
+          <p><strong>Example:</strong> <code>main</code>'s frame contains <code>s</code> at <code>L1</code>.</p>
+        </dd>
+
+        <dt><code>main</code></dt>
+        <dd>
+          Frame for automatically started <code>main</code> function call.
+          <p><strong>Example:</strong> at <code>L2</code>, this frame lists both <code>s</code> and <code>hello</code>.</p>
+        </dd>
+
+        <dt><code>Heap</code></dt>
+        <dd>
+          Aquascope area showing runtime-sized allocations.
+          Screenshot says <code>Heap</code>, not <code>Help</code>.
+          <p><strong>Example:</strong> eleven byte cells for <code>Hello world</code> appear there at <code>L1</code>.</p>
+        </dd>
+
+        <dt>Absent <code>Heap</code> box</dt>
+        <dd>
+          When a snapshot has no live heap allocation, Aquascope omits the <code>Heap</code> box
+          instead of drawing an empty one.
+          An absent box therefore means “nothing allocated,” not “this view is unavailable.”
+          <p><strong>Example:</strong> <code>L4</code> shows only a <code>Stack</code> box, because <code>drop(s)</code> deallocated the sole heap buffer.</p>
+        </dd>
+
+        <dt><code>●</code></dt>
+        <dd>
+          Aquascope pointer mark, not Rust syntax.
+          A cell holding this dot holds a pointer rather than a displayed number or character.
+          <p><strong>Example:</strong> at <code>L1</code>, <code>s</code>'s only visible cell holds a dot, meaning <code>s</code> reaches its text through a pointer.</p>
+        </dd>
+
+        <dt>Arrow or connector</dt>
+        <dd>
+          Curved line links pointer dot to heap data it identifies.
+          Chromium verification displays these lines;
+          learner's Firefox view can omit them even though pointer dots and target bytes still render.
+          Missing line is browser-rendering issue, not different Rust state.
+          <p>
+            <strong>Example:</strong>
+            at <code>L1</code>, visible Chromium line connects <code>s</code>'s dot to first heap byte <code>H</code>.
+            If Firefox omits line, same dot still represents pointer to start of text.
+          </p>
+        </dd>
+
+        <dt>What the compact view leaves out</dt>
+        <dd>
+          The compact picture shows one dot for <code>s</code> and no <code>len</code> or <code>cap</code>.
+          Those numbers exist while the program runs;
+          the binocular view is what displays them.
+          <p>
+            <strong>Example:</strong>
+            at <code>L1</code>, the compact view shows <code>s ●</code>,
+            and the binocular view shows that same value with <code>len 11</code> and <code>cap 11</code>.
+          </p>
+        </dd>
+
+        <dt><code>⦻</code></dt>
+        <dd>
+          Aquascope mark saying old pointer target is no longer allocated.
+          It is not Rust syntax and is not necessarily value stored by program.
+          <p><strong>Example:</strong> at <code>L3</code>, <code>hello</code>'s old target has been deallocated, so diagram shows <code>⦻</code>.</p>
+        </dd>
+
+        <dt>Moved-out value, shown faded and striped</dt>
+        <dd>
+          Diagonal stripes across faded text mean the variable's value was moved away
+          and the variable can no longer reach it.
+          At <code>L4</code> this appears on <code>s</code> together with <code>⦻</code>,
+          because the moved-out <code>String</code>'s buffer is gone as well:
+          one mark reports the move, the other reports the deallocation.
+          <p><strong>Example:</strong> <code>s</code> is faded and striped at <code>L4</code> because <code>drop(s)</code> consumed its <code>String</code>.</p>
+        </dd>
+
+        <dt>Character-like heap cells</dt>
+        <dd>
+          One displayed cell per byte in this ASCII-only example.
+          Other UTF-8 characters may require multiple cells.
+          <p><strong>Example:</strong> first five cells are <code>H</code>, <code>e</code>, <code>l</code>, <code>l</code>, <code>o</code>.</p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="snapshots">
+      <h2 id="snapshots">What changes from L1 to L4</h2>
+
+      <h3><code>L1</code>: after <code>String::from("Hello world")</code></h3>
+      <dl>
+        <dt>Stack</dt>
+        <dd><code>main</code> frame contains <code>s</code>, displayed as a single pointer dot.</dd>
+        <dt>Heap</dt>
+        <dd>Eleven bytes spell <code>Hello world</code>.</dd>
+        <dt>Exact effect</dt>
+        <dd>New <code>String</code> owns buffer containing copy of literal's bytes.</dd>
+      </dl>
+      <p>
+        <strong>Example:</strong>
+        the compact view shows only <code>s ●</code>;
+        pressing the binocular icon reports the same value's <code>len 11</code> and <code>cap 11</code>.
+      </p>
+
+      <h3><code>L2</code>: after <code>let hello = &amp;s[0..5]</code></h3>
+      <dl>
+        <dt>Stack</dt>
+        <dd><code>s</code> still owns buffer; <code>hello</code> appears as a second dot, and the binocular view shows its length <code>5</code>.</dd>
+        <dt>Heap</dt>
+        <dd>Same eleven bytes remain.</dd>
+        <dt>Exact effect</dt>
+        <dd>No text byte is copied; <code>hello</code> describes first five existing bytes.</dd>
+      </dl>
+      <p><strong>Example:</strong> <code>hello</code> reads as <code>Hello</code>.</p>
+
+      <h3><code>L3</code>: after <code>s.push_str("!")</code></h3>
+      <dl>
+        <dt>Stack</dt>
+        <dd><code>s</code> points to current allocation; <code>hello</code> now shows <code>⦻</code>.</dd>
+        <dt>Heap</dt>
+        <dd>Twelve bytes spell <code>Hello world!</code>.</dd>
+        <dt>Exact effect</dt>
+        <dd>This Aquascope run replaced full capacity-<code>11</code> allocation with capacity-<code>22</code> allocation.</dd>
+      </dl>
+      <p>
+        <strong>Example:</strong>
+        program remains valid because it never reads <code>hello</code> after its creation.
+        Rust rejects version that reads <code>hello</code> after <code>push_str</code>.
+      </p>
+      <p>
+        Capacity <code>22</code> is observed result of this run, not Rust language promise.
+        Code may rely on enough capacity for current text, but not on doubling.
+      </p>
+
+      <h3><code>L4</code>: after <code>drop(s)</code></h3>
+      <dl>
+        <dt>Stack</dt>
+        <dd><code>s</code> is faded and striped with <code>⦻</code>; <code>hello</code> also shows <code>⦻</code>.</dd>
+        <dt>Heap</dt>
+        <dd>No <code>Heap</code> box is drawn at all, because no allocation remains.</dd>
+        <dt>Exact effect</dt>
+        <dd><code>drop</code> ended owning <code>String</code> and deallocated buffer.</dd>
+      </dl>
+      <p>
+        <strong>Example:</strong>
+        compiler rejects later code that reads <code>s</code>, calls method on <code>s</code>, or passes <code>s</code> to another function.
+      </p>
+
+      <h3>What the diagram does not label</h3>
+      <p>
+        The badges stop at <code>L4</code>, one line before <code>main</code>'s closing brace.
+        A fifth program state exists there, with <code>main</code>'s frame empty and no heap allocation,
+        and Aquascope draws no badge for it.
+      </p>
+      <p>
+        That missing state carries the lesson the four badges can hide.
+        Deleting <code>drop(s);</code> from this sample would not leak the buffer.
+        It would move the deallocation from <code>L4</code> to the closing brace,
+        where Rust performs it because <code>s</code>'s scope ends.
+        <code>drop</code> chooses <strong>when</strong> cleanup happens; it is not what causes cleanup.
+      </p>
+    </section>
+
+    <section aria-labelledby="concrete">
+      <h2 id="concrete">Every label in the binocular picture</h2>
+      <p>
+        <strong>Standard library</strong> means reusable types and functions shipped with Rust.
+        <strong>Example:</strong> <code>String</code>, <code>Vec</code>, and <code>drop</code> come from Rust's standard library.
+        Binocular picture exposes mostly private details inside that library.
+        Their names and nesting can change with Rust version.
+        Learn them only well enough to decode this picture.
+      </p>
+      <p>
+        A <strong>wrapper</strong> is value whose job is to contain another value while adding a rule.
+        <strong>Example:</strong> <code>NonNull</code> wraps pointer and adds rule that pointer cannot be null.
+        Null means special pointer value that points nowhere.
+      </p>
+      <p>
+        <strong>The picture's labels carry no angle brackets.</strong>
+        The written Rust type of the <code>vec</code> field is <code>Vec&lt;u8&gt;</code>,
+        and the diagram displays it as bare <code>Vec</code>.
+        The same applies to every wrapper below,
+        so do not search the picture for <code>Unique&lt;u8&gt;</code> or <code>NonNull&lt;u8&gt;</code>.
+      </p>
+
+      <h3>Containment at L1</h3>
+      <ul>
+        <li>
+          variable <code>s</code>: <code>String</code>
+          <ul>
+            <li>
+              field <code>vec</code>: <code>Vec</code>
+              <ul>
+                <li>
+                  field <code>buf</code>: <code>RawVec</code>
+                  <ul>
+                    <li>
+                      field <code>inner</code>: <code>RawVecInner</code>
+                      <ul>
+                        <li>
+                          field <code>ptr</code>: <code>Unique</code>
+                          <ul>
+                            <li>
+                              field <code>pointer</code>: <code>NonNull</code>
+                              <ul><li>field <code>pointer</code>: pointer dot <code>●</code></li></ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>field <code>cap</code>: <code>UsizeNoHighBit / 11</code></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>field <code>len</code>: <code>11</code></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <dl>
+        <dt><code>vec</code></dt>
+        <dd>
+          Lowercase private field inside <code>String</code> holding its UTF-8 bytes through a <code>Vec</code> of bytes.
+          <p>
+            <strong>Example:</strong>
+            for <code>String::from("Hi")</code>, this field's <code>Vec</code> has length <code>2</code>
+            and points to buffer containing bytes <code>H</code> and <code>i</code>.
+          </p>
+        </dd>
+
+        <dt><code>Vec</code>, written <code>Vec&lt;u8&gt;</code></dt>
+        <dd>
+          <code>Vec</code> is Rust list type whose length can change.
+          Written form <code>Vec&lt;u8&gt;</code> says each list element has type <code>u8</code>, Rust byte-sized number type.
+          The diagram shows only the bare name.
+          <p><strong>Example:</strong> <code>vec![72_u8, 105_u8]</code> constructs <code>Vec&lt;u8&gt;</code> containing byte values for <code>Hi</code>.</p>
+        </dd>
+
+        <dt>Macro</dt>
+        <dd>
+          Rust construct that compiler expands into other Rust code during compilation.
+          Macro calls use exclamation mark after name.
+          <p><strong>Example:</strong> <code>vec![1, 2, 3]</code> is call to macro named <code>vec!</code>.</p>
+          <p><strong>TypeScript relationship:</strong> TypeScript has no direct language feature with Rust's macro-call syntax.</p>
+        </dd>
+
+        <dt><code>vec!</code></dt>
+        <dd>
+          Macro that constructs <code>Vec</code>; it is different from lowercase field <code>vec</code> and uppercase type <code>Vec</code>.
+          <p><strong>Example:</strong> <code>vec![1, 2, 3]</code> constructs list with three number values.</p>
+        </dd>
+
+        <dt><code>u8</code></dt>
+        <dd>
+          Rust type for whole number from <code>0</code> through <code>255</code>.
+          It occupies exactly one byte.
+          <p><strong>Example:</strong> <code>72_u8</code> is byte value for ASCII <code>H</code>; suffix <code>_u8</code> tells Rust its type.</p>
+        </dd>
+
+        <dt><code>buf</code></dt>
+        <dd>
+          Short for buffer. Field inside <code>Vec</code> that owns reserved memory block.
+          <p><strong>Example:</strong> at <code>L1</code>, <code>buf</code> owns room for eleven bytes.</p>
+        </dd>
+
+        <dt><code>RawVec</code></dt>
+        <dd>
+          Private standard-library layer recording buffer pointer and capacity.
+          Outer <code>Vec</code> separately records length.
+          <p><strong>Example:</strong> screenshot places <code>RawVec</code> around <code>inner</code>, while <code>len 11</code> remains outside it.</p>
+        </dd>
+
+        <dt><code>inner</code></dt>
+        <dd>
+          Field name meaning next private layer inside <code>RawVec</code>.
+          <p><strong>Example:</strong> <code>inner</code> contains fields <code>ptr</code> and <code>cap</code>.</p>
+        </dd>
+
+        <dt><code>RawVecInner</code></dt>
+        <dd>
+          Private standard-library type grouping pointer and capacity used by <code>RawVec</code>.
+          <p><strong>Example:</strong> at <code>L1</code>, its pointer reaches heap text and its capacity is <code>11</code>.</p>
+        </dd>
+
+        <dt><code>ptr</code></dt>
+        <dd>
+          Short for pointer. Field holding pointer wrapper.
+          <p><strong>Example:</strong> following nested value inside <code>ptr</code> reaches heap byte <code>H</code>.</p>
+        </dd>
+
+        <dt><code>Unique</code></dt>
+        <dd>
+          Private pointer wrapper telling standard-library code to treat allocation as owned through this path.
+          Ordinary Rust code cannot name it without opting into unstable compiler features.
+          <p><strong>Example:</strong> <code>Unique</code> is wrapper on route from <code>s</code> to its byte buffer.</p>
+        </dd>
+
+        <dt><code>pointer</code> inside <code>Unique</code></dt>
+        <dd>
+          Field containing next wrapper, <code>NonNull</code>. It is not second allocation.
+          <p><strong>Example:</strong> expanded box reads <code>Unique</code>, then <code>pointer</code>, then <code>NonNull</code> around same route to heap.</p>
+        </dd>
+
+        <dt><code>NonNull</code></dt>
+        <dd>
+          Pointer wrapper guaranteeing contained pointer is not null, meaning not “points nowhere.”
+          Unlike the other wrappers in this chain, <code>NonNull</code> is part of Rust's public standard library
+          rather than a private detail, so ordinary Rust code may use it directly.
+          It does not by itself guarantee target has not been deallocated.
+          <p><strong>Example:</strong> at <code>L1</code>, <code>NonNull</code> contains pointer dot leading to live text buffer.</p>
+        </dd>
+
+        <dt><code>pointer</code> inside <code>NonNull</code></dt>
+        <dd>
+          Deepest displayed field containing actual pointer mark <code>●</code>.
+          <p><strong>Example:</strong> at <code>L4</code>, this deepest field shows <code>⦻</code> instead, because its target is gone.</p>
+        </dd>
+
+        <dt><code>cap</code></dt>
+        <dd>
+          Short for capacity. Field records how many bytes fit before another allocation is needed.
+          <p><strong>Example:</strong> <code>cap 11</code> is full when <code>len 11</code>; adding one byte requires more room.</p>
+        </dd>
+
+        <dt><code>usize</code></dt>
+        <dd>
+          Rust type for non-negative whole numbers used as lengths and index positions.
+          Largest possible value depends on computer where program runs.
+          <p><strong>Example:</strong> end position <code>5</code> in <code>0..5</code> can be represented as <code>usize</code>.</p>
+        </dd>
+
+        <dt><code>UsizeNoHighBit</code></dt>
+        <dd>
+          Private number wrapper used for capacity.
+          Bit means one binary digit, either <code>0</code> or <code>1</code>;
+          this wrapper only accepts numbers whose highest bit is <code>0</code>.
+          <p><strong>Example:</strong> <code>UsizeNoHighBit / 11</code> wraps capacity number <code>11</code>.</p>
+        </dd>
+
+        <dt><code>Type / value</code></dt>
+        <dd>
+          Aquascope display notation, not Rust source syntax.
+          Text before slash is type and text after slash is current value.
+          <p><strong>Example:</strong> <code>UsizeNoHighBit / 22</code> means wrapper type currently contains <code>22</code>.</p>
+        </dd>
+
+        <dt><code>len</code></dt>
+        <dd>
+          Short for length. For <code>String</code>, it counts UTF-8 bytes currently used.
+          <p>
+            <strong>Example:</strong>
+            <code>len</code> changes from <code>11</code> to <code>12</code> after adding <code>!</code>;
+            one-character text <code>é</code> has byte length <code>2</code>.
+          </p>
+        </dd>
+      </dl>
+
+      <p>
+        <strong>Do not memorize this wrapper chain.</strong>
+        Stable idea is only: <code>String</code> owns heap bytes and records pointer, length, and capacity.
+      </p>
+    </section>
+
+    <section aria-labelledby="permissions">
+      <h2 id="permissions">R, W, O permission marks, which the opening diagram does not show</h2>
+      <p>
+        <strong>Do not look for this section's marks in the opening diagram.</strong>
+        That widget is configured to draw running data only.
+        It contains no <code>R</code>, <code>W</code>, or <code>O</code> letter anywhere,
+        and no amount of pressing its controls will produce one.
+      </p>
+      <p>
+        Read this section when the book reaches
+        <a href="https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places">References Change Permissions on Places</a>,
+        where diagrams do carry these marks.
+        This section previews only permission marks listed here;
+        later diagrams may introduce additional icons that their surrounding book text explains.
+      </p>
+      <p>
+        These marks describe a compile-time picture, not runtime memory.
+        A <strong>place</strong> is specific data location named by code:
+        whole variable, field, indexed element, or target reached through reference.
+        Permission is Aquascope's letter for operation compiler currently allows at one place and one source position.
+      </p>
+      <p>
+        <strong>Example:</strong>
+        <code>s</code> is place for whole <code>String</code>;
+        <code>s[0..5]</code> is place for selected text range.
+        Same place can have different permissions before and during borrow.
+      </p>
+      <p><strong>TypeScript relationship:</strong> TypeScript has no direct R, W, O permission model.</p>
+
+      <dl>
+        <dt><code>R</code>: Read</dt>
+        <dd>
+          Permission to read data.
+          <p><strong>Example:</strong> evaluating <code>s.len()</code> reads <code>s</code> without changing its text.</p>
+        </dd>
+
+        <dt><code>W</code>: Write</dt>
+        <dd>
+          Permission to mutate data.
+          <p><strong>Example:</strong> <code>s.push_str("!")</code> needs <code>W</code> because text differs afterward.</p>
+        </dd>
+
+        <dt><code>O</code>: Own</dt>
+        <dd>
+          Permission to move or drop owned data. Letter means “own,” not “object.”
+          <p><strong>Example:</strong> <code>drop(s)</code> needs <code>O</code> because it moves and ends <code>String</code>.</p>
+        </dd>
+
+        <dt><code>+R</code>, <code>+W</code>, <code>+O</code></dt>
+        <dd>
+          Place gains shown permission after source line.
+          <p><strong>Example:</strong> <code>let mut s = ...</code> creates mutable initialized variable, so picture can show <code>+R+W+O</code>.</p>
+        </dd>
+
+        <dt>Slashed letter</dt>
+        <dd>
+          Place loses shown permission after source line.
+          <p><strong>Example:</strong> while reference to <code>s</code>'s data will be used later, <code>s</code> loses <code>W</code> and <code>O</code>.</p>
+        </dd>
+
+        <dt><code>‒</code></dt>
+        <dd>
+          Place lacks that permission and line did not change absence.
+          <p><strong>Example:</strong> variable declared without <code>mut</code> can show dash where <code>W</code> would appear.</p>
+        </dd>
+
+        <dt>Filled expected letter</dt>
+        <dd>
+          Operation needs permission and place has it.
+          <p><strong>Example:</strong> <code>s.len()</code> can show filled <code>R</code> when reading is allowed.</p>
+        </dd>
+
+        <dt>Hollow expected letter</dt>
+        <dd>
+          Operation needs permission but place lacks it, so compiler reports error.
+          <p><strong>Example:</strong> <code>push_str</code> can show hollow <code>W</code> when later reference use keeps <code>s</code> borrowed.</p>
+        </dd>
+      </dl>
+
+      <h3>Permission example without new syntax</h3>
+      <pre><code>fn main() {
     let mut word = String::from("Hello");
     let first = &amp;word[0..1];
     let count = first.len();
     word.push_str("!");
 }</code></pre>
+      <ol>
+        <li><code>word</code> starts with <code>RWO</code>.</li>
+        <li>Reference <code>first</code> temporarily removes <code>W</code> and <code>O</code> from <code>word</code>.</li>
+        <li><code>first.len()</code> is last use of reference, so borrow ends after this statement.</li>
+        <li><code>word</code> regains <code>W</code> and <code>O</code>, so <code>push_str</code> is allowed.</li>
+      </ol>
+      <p>
+        This version compiles.
+        <code>rustc</code> reports only <code>warning: unused variable: `count`</code>.
+      </p>
+      <p>
+        <strong>Rejected example:</strong>
+        move <code>word.push_str("!")</code> before <code>let count = first.len();</code>.
+        Later read through <code>first</code> keeps borrow active,
+        so <code>word</code> lacks <code>W</code> where <code>push_str</code> needs it.
+        <code>rustc</code> then reports
+        <code>error[E0502]: cannot borrow `word` as mutable because it is also borrowed as immutable</code>.
+      </p>
+
+      <h3>Check this section</h3>
+      <p>What do <code>R</code>, <code>W</code>, and <code>O</code> permit, and which diagrams carry them?</p>
+      <details>
+        <summary>Reveal feedback</summary>
+        <p>
+          <code>R</code> reads, <code>W</code> mutates, and <code>O</code> moves or drops.
+          They appear in chapter 4 permission diagrams, never in the opening diagram.
+        </p>
+      </details>
+    </section>
+
+    <section aria-labelledby="check">
+      <h2 id="check">Check the decoder</h2>
+      <p>Answer before opening feedback. Every question here is about the opening diagram.</p>
+      <ol>
+        <li>Does Rust code explicitly call <code>main()</code> to start this executable?</li>
+        <li>What does “binding” mean after <code>let s = ...</code>?</li>
+        <li>What exact before-and-after effect makes <code>s.push_str("!")</code> mutation?</li>
+        <li>Why is Rust move not TypeScript assignment?</li>
+        <li>After <code>let b = a;</code>, when does <code>a</code> stay usable and when does it not?</li>
+        <li>If <code>drop(s);</code> were deleted from the sample, when would the heap buffer be deallocated?</li>
+        <li>What is difference among <code>vec</code>, <code>Vec</code>, and <code>vec!</code>?</li>
+        <li>At <code>L1</code>, which view shows <code>s</code>'s length and capacity, and where are its text bytes?</li>
+        <li>Why can <code>hello</code> show <code>⦻</code> at <code>L3</code> without this program reading invalid memory?</li>
+        <li>How many lines does the copy icon place on your clipboard?</li>
+      </ol>
+      <details>
+        <summary>Reveal feedback</summary>
         <ol>
-          <li><code>word</code> starts with <code>RWO</code>.</li>
+          <li>No. Starting executable automatically makes initial call to <code>main</code>.</li>
+          <li>Connection from variable name <code>s</code> to <code>String</code> value.</li>
           <li>
-            Reference <code>first</code> temporarily removes <code>W</code> and <code
-            >O</code> from <code>word</code>.
+            Before call text is <code>Hello world</code>, length is <code>11</code>, and capacity is <code>11</code>.
+            Afterward text is <code>Hello world!</code>, length is <code>12</code>, and this run's capacity is <code>22</code>.
+            Aquascope shows old allocation deallocated after eleven bytes are copied and <code>!</code> is appended.
+          </li>
+          <li>Move of non-<code>Copy</code> value makes old Rust variable unusable; TypeScript assignment leaves source variable usable.</li>
+          <li>
+            <code>a</code> stays usable when its type is <code>Copy</code>, such as <code>i32</code>.
+            It becomes unusable when its type is not, such as <code>String</code>.
           </li>
           <li>
-            <code>first.len()</code> is last use of reference, so borrow ends after this
-            statement.
+            At <code>main</code>'s closing brace, because <code>s</code>'s scope ends there.
+            <code>drop</code> moves that moment earlier; it is not what causes cleanup.
           </li>
+          <li><code>vec</code> is field, <code>Vec</code> is type, and <code>vec!</code> is macro.</li>
           <li>
-            <code>word</code> regains <code>W</code> and <code>O</code>, so <code
-            >push_str</code> is allowed.
+            Only the binocular view shows <code>len 11</code> and <code>cap 11</code>;
+            the compact view shows just <code>s ●</code>.
+            The text bytes are in the heap allocation either way.
+          </li>
+          <li>Old target was deallocated, but <code>hello</code> is never read after creation.</li>
+          <li>
+            Six.
+            It copies the hidden <code>fn main() {</code> and <code>}</code> along with the four displayed statements.
           </li>
         </ol>
-        <p>
-          This version compiles.
-          <code>rustc</code> reports only <code>warning: unused variable: `count`</code>.
-        </p>
-        <p>
-          <strong>Rejected example:</strong>
-          move <code>word.push_str("!")</code> before <code>let count =
-            first.len();</code>. Later read through <code>first</code> keeps borrow
-          active, so <code>word</code> lacks <code>W</code> where <code>push_str</code>
-          needs it.
-          <code>rustc</code> then reports
-          <code>error[E0502]: cannot borrow `word` as mutable because it is also borrowed
-            as immutable</code>.
-        </p>
+      </details>
+    </section>
 
-        <h3>Check this section</h3>
-        <p>
-          What do <code>R</code>, <code>W</code>, and <code>O</code> permit, and which
-          diagrams carry them?
-        </p>
-        <details>
-          <summary>Reveal feedback</summary>
-          <p>
-            <code>R</code> reads, <code>W</code> mutates, and <code>O</code> moves or
-            drops. They appear in chapter 4 permission diagrams, never in the opening
-            diagram.
-          </p>
-        </details>
-      </section>
+    <section aria-labelledby="sources">
+      <h2 id="sources">Primary sources</h2>
+      <ul>
+        <li><a href="https://github.com/cognitive-engineering-lab/aquascope">Aquascope source repository</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/book/ch01-02-hello-world.html#the-anatomy-of-a-rust-program">Official book explanation of automatic <code>main</code> startup</a></li>
+        <li><a href="https://rust-book.cs.brown.edu/ch04-01-what-is-ownership.html">Experimental book explanation of stack, heap, pointers, moves, and drops</a></li>
+        <li><a href="https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places">Experimental book definition of R, W, and O permissions</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/statements.html">Rust Reference definitions of <code>let</code> and expression statements</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/expressions/operator-expr.html#assignment-expressions">Rust Reference definition of assignment</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/destructors.html">Rust Reference rules for drops and local-variable drop scopes</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/types/str.html">Rust Reference definition and layout of <code>str</code> and <code>&amp;str</code></a></li>
+        <li><a href="https://doc.rust-lang.org/reference/unsafe-keyword.html">Rust Reference explanation of unchecked obligations in <code>unsafe</code> code</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/behavior-considered-undefined.html">Rust Reference catalog of behavior considered undefined</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/std/primitive.slice.html">Standard-library definition of a slice as a view into a contiguous sequence</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/std/marker/trait.Copy.html">Standard-library documentation for <code>Copy</code> and <code>String</code>'s non-<code>Copy</code> behavior</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/std/string/struct.String.html">Standard-library guarantees for <code>String</code> representation, slicing, and growth</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/std/ptr/struct.NonNull.html">Standard-library documentation for <code>NonNull</code></a></li>
+        <li><a href="https://www.typescriptlang.org/tsconfig/noEmitOnError.html">TypeScript documentation for error-gated emission</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/alloc/string.rs.html">Rust standard-library <code>String</code> source and representation</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/alloc/vec/mod.rs.html">Rust standard-library <code>Vec</code> source and guarantees</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/alloc/raw_vec/mod.rs.html">Rust standard-library <code>RawVec</code> internals</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/core/ptr/unique.rs.html">Rust standard-library <code>Unique</code> internals</a></li>
+      </ul>
+    </section>
 
-      <section aria-labelledby='check'>
-        <h2 id='check'>Check the decoder</h2>
-        <p>
-          Answer before opening feedback. Every question here is about the opening
-          diagram.
-        </p>
-        <ol>
-          <li>
-            Does Rust code explicitly call <code>main()</code> to start this executable?
-          </li>
-          <li>What does “binding” mean after <code>let s = ...</code>?</li>
-          <li>
-            What exact before-and-after effect makes <code>s.push_str("!")</code>
-            mutation?
-          </li>
-          <li>Why is Rust move not TypeScript assignment?</li>
-          <li>
-            After <code>let b = a;</code>, when does <code>a</code> stay usable and when
-            does it not?
-          </li>
-          <li>
-            If <code>drop(s);</code> were deleted from the sample, when would the heap
-            buffer be deallocated?
-          </li>
-          <li>
-            What is difference among <code>vec</code>, <code>Vec</code>, and <code
-            >vec!</code>?
-          </li>
-          <li>
-            At <code>L1</code>, which view shows <code>s</code>'s length and capacity, and
-            where are its text bytes?
-          </li>
-          <li>
-            Why can <code>hello</code> show <code>⦻</code> at <code>L3</code> without this
-            program reading invalid memory?
-          </li>
-          <li>How many lines does the copy icon place on your clipboard?</li>
-        </ol>
-        <details>
-          <summary>Reveal feedback</summary>
-          <ol>
-            <li>
-              No. Starting executable automatically makes initial call to <code
-              >main</code>.
-            </li>
-            <li>
-              Connection from variable name <code>s</code> to <code>String</code> value.
-            </li>
-            <li>
-              Before call text is <code>Hello world</code>, length is <code>11</code>, and
-              capacity is <code>11</code>. Afterward text is <code>Hello world!</code>,
-              length is <code>12</code>, and this run's capacity is <code>22</code>.
-              Aquascope shows old allocation deallocated after eleven bytes are copied and
-              <code>!</code> is appended.
-            </li>
-            <li>
-              Move of non-<code>Copy</code> value makes old Rust variable unusable;
-              TypeScript assignment leaves source variable usable.
-            </li>
-            <li>
-              <code>a</code> stays usable when its type is <code>Copy</code>, such as
-              <code>i32</code>. It becomes unusable when its type is not, such as <code
-              >String</code>.
-            </li>
-            <li>
-              At <code>main</code>'s closing brace, because <code>s</code>'s scope ends
-              there.
-              <code>drop</code> moves that moment earlier; it is not what causes cleanup.
-            </li>
-            <li>
-              <code>vec</code> is field, <code>Vec</code> is type, and <code>vec!</code>
-              is macro.
-            </li>
-            <li>
-              Only the binocular view shows <code>len 11</code> and <code>cap 11</code>;
-              the compact view shows just <code>s ●</code>. The text bytes are in the heap
-              allocation either way.
-            </li>
-            <li>
-              Old target was deallocated, but <code>hello</code> is never read after
-              creation.
-            </li>
-            <li>
-              Six. It copies the hidden <code>fn main() {</code> and <code>}</code> along
-              with the four displayed statements.
-            </li>
-          </ol>
-        </details>
-      </section>
-
-      <section aria-labelledby='sources'>
-        <h2 id='sources'>Primary sources</h2>
-        <ul>
-          <li>
-            <a href='https://github.com/cognitive-engineering-lab/aquascope'>Aquascope
-              source repository</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/stable/book/ch01-02-hello-world.html#the-anatomy-of-a-rust-program'>Official
-              book explanation of automatic <code>main</code> startup</a>
-          </li>
-          <li>
-            <a
-              href='https://rust-book.cs.brown.edu/ch04-01-what-is-ownership.html'>Experimental
-              book explanation of stack, heap, pointers, moves, and drops</a>
-          </li>
-          <li>
-            <a
-              href='https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places'>Experimental
-              book definition of R, W, and O permissions</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/reference/statements.html'>Rust Reference
-              definitions of <code>let</code> and expression statements</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/reference/expressions/operator-expr.html#assignment-expressions'>Rust
-              Reference definition of assignment</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/reference/destructors.html'>Rust Reference
-              rules for drops and local-variable drop scopes</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/reference/types/str.html'>Rust Reference
-              definition and layout of <code>str</code> and <code>&amp;str</code></a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/reference/unsafe-keyword.html'>Rust
-              Reference explanation of unchecked obligations in <code>unsafe</code>
-              code</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/reference/behavior-considered-undefined.html'>Rust
-              Reference catalog of behavior considered undefined</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/stable/std/primitive.slice.html'>Standard-library
-              definition of a slice as a view into a contiguous sequence</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/stable/std/marker/trait.Copy.html'>Standard-library
-              documentation for <code>Copy</code> and <code>String</code>'s non-<code
-              >Copy</code> behavior</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/stable/std/string/struct.String.html'>Standard-library
-              guarantees for <code>String</code> representation, slicing, and growth</a>
-          </li>
-          <li>
-            <a
-              href='https://doc.rust-lang.org/stable/std/ptr/struct.NonNull.html'>Standard-library
-              documentation for <code>NonNull</code></a>
-          </li>
-          <li>
-            <a
-              href='https://www.typescriptlang.org/tsconfig/noEmitOnError.html'>TypeScript
-              documentation for error-gated emission</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/stable/src/alloc/string.rs.html'>Rust
-              standard-library <code>String</code> source and representation</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/stable/src/alloc/vec/mod.rs.html'>Rust
-              standard-library <code>Vec</code> source and guarantees</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/stable/src/alloc/raw_vec/mod.rs.html'>Rust
-              standard-library <code>RawVec</code> internals</a>
-          </li>
-          <li>
-            <a href='https://doc.rust-lang.org/stable/src/core/ptr/unique.rs.html'>Rust
-              standard-library <code>Unique</code> internals</a>
-          </li>
-        </ul>
-      </section>
-
-      <nav aria-label='Companion navigation'>
-        <a href='index.html'>Reference index</a> ·
-        <a href='../lessons/0001-whats-different-about-this-book.html'>Companion 0001</a>
-      </nav>
-    </main>
-  </body>
+    <nav aria-label="Companion navigation">
+      <a href="index.html">Reference index</a> ·
+      <a href="../lessons/0001-whats-different-about-this-book.html">Companion 0001</a>
+    </nav>
+  </main>
+</body>
 </html>
