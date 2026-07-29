@@ -205,7 +205,22 @@ Property and element stores are therefore not covered by the escape test at all,
 The code does not implement the constraint its own accepted decision states.
 
 Whether that yields a false offer is unmeasured and is not assumed here.
-Tracked as #42.
+
+Fixed in `a57bb6f56`,
+ with the classification moved into the ascent,
+ which is the only position where both the store and the assignment's own consumer are visible.
+Measured by rebuilding at the prior commit for the before:
+ storing a member result into a property or an element was offered `readonly` and now reports,
+ while assigning to a plain local and reading in place stay offered.
+
+The sweep cannot see it.
+Diagnostics are byte-identical before and after across 128 packages,
+ 1937 from this rule on both sides as sorted message-plus-location sets,
+ so this shape does not occur anywhere in the repository
+ and the fix rests entirely on a fixture and two mutation measurements.
+That is worth stating plainly rather than filing as a win:
+ the change is correct on constructed input and inert on real input,
+ and only the second half was ever going to be evidence about the workspace.
 
 ## Recommendation
 
