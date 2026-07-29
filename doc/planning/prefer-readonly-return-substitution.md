@@ -2217,3 +2217,94 @@ Nothing about a change may be inferred from these numbers again without controll
 
 The honest statement of what the guard costs is that it is below the noise floor of the
  only instrument that has measured it.
+
+## Stage one, and the boundary check that nearly did not happen in a linted place
+
+`inspectDirectWrite` now defers the use against the call its target lands on.
+The descent is `expressionRoot`,
+ which strips the access layers,
+ and `deferrableResultSite` unwraps the identity-keeping wrappers itself,
+ so the two compose without either learning about the other.
+One call covers all three write forms that function already served:
+ assignment,
+ `delete`,
+ and the update operators.
+
+Summaries after,
+ from the built artifact:
+
+```text
+firstRow                     mutated=[] returned=[0]
+freshRow                     mutated=[] returned=[]
+writeThroughOwnedCall        mutated=[0]
+deleteThroughOwnedCall       mutated=[0]
+writeThroughFreshCall        mutated=[]
+growThroughReturn            mutated=[0]
+measureThroughReturn         mutated=[]
+```
+
+Removing the one call turns `writeThroughOwnedCall` and `deleteThroughOwnedCall` into
+ empty and moves nothing else.
+`growThroughReturn` keeps reporting because that write travels the collection-member
+ path,
+ which is a different producer of the same deferred record.
+
+The control was wrong before the fix was.
+Its first draft was `return { label: config.row.label, }`,
+ a freshly allocated object holding a copied string,
+ and it reported.
+That reads as the fix over-reaching,
+ and it is not.
+An isolation probe:
+
+```text
+literalOfPrimitive   returned=[0]   return { label: config.row.label, };
+literalOfReference   returned=[0]   return { held: config.row, };
+literalOfConstant    returned=[]    return cond ? { label: 'a', } : { label: 'b', };
+```
+
+A fresh literal whose only property is a copied primitive is recorded as returning
+ parameter state,
+ indistinguishably from one that genuinely aliases.
+The return branch does gate on `expressionCanCarryMutableState`,
+ but it asks the question of the whole returned expression,
+ an object literal answers yes,
+ and the descent inside never re-asks per property.
+Over-approximation in the safe direction,
+ tracked separately rather than absorbed into a control.
+
+### The boundary check ran in the one package where the rule is off
+
+First attempt put the probe under
+ `package/oxlint-plugin/prefer-readonly-parameter-type/src/`,
+ and oxlint reported nothing at all,
+ including for a function that reads and does nothing else.
+`readonlyEffectSelfHostingOverride` in `package/config/oxlint/src/overrides.ts` turns
+ the rule off for `**/oxlint-plugin/prefer-readonly-parameter-type/**`.
+
+A clean report is what a working fix and a disabled rule both look like.
+The control that caught it was a parameter that must still be offered,
+ in the same file,
+ and it is the only reason the empty result was read as a configuration fact rather than
+ as success.
+
+Re-run under `package/module/jsonc-edit/src/`,
+ which is linted and installs `type-fest`:
+
+```text
+firstRow    offered: Parameter "config" should be readonly: property row is writable.
+measure     offered: Parameter "config" should be readonly: property row is writable.
+writeThroughOwnedCall  no report
+```
+
+Three parameters,
+ two offers,
+ and the withheld one is the caller that writes.
+The falsification pair can no longer be built,
+ because the rule no longer offers the annotation to both halves of it.
+
+`firstRow` keeping its offer is deliberate.
+It writes nothing,
+ and handing back a value the caller already reaches grants no capability the caller
+ lacked,
+ which is the policy `doc/decision/prefer-readonly-result-provenance.md` records.
