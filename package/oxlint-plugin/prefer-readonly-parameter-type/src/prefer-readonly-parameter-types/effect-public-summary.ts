@@ -82,9 +82,14 @@ export function effectPublicSummary({
       ...invoked,
     ],),
     referentMutatedParameterIndexes: mutated,
+    /* The propagated set rather than the direct one. A callable returning another's
+     * result carries whatever that result carries, and only the fixed point knows it, so
+     * projecting the direct set would report `b` returning `a(x,)` as returning nothing.
+     * Nothing consumed this fact before result substitution existed, so widening it
+     * changes no existing verdict. */
     returnedParameterIndexes: parametersOfSlots({
       ownership,
-      slots: summary.directReturned,
+      slots: summary.returned,
     },),
     invokedParameterIndexes: invoked,
     opaqueParameterIndexes: opaque,

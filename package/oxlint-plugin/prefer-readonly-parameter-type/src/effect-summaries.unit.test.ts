@@ -80,6 +80,18 @@ const ALIAS_HOP_SOURCE = readFileSync(
   'utf8',
 );
 
+/** Fixture writing caller state through a callee's returned parameter. */
+const RETURN_SUBSTITUTION_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-return-substitution-invalid.ts',
+  import.meta.url,
+),);
+
+/** Current return-substitution fixture text. */
+const RETURN_SUBSTITUTION_SOURCE = readFileSync(
+  RETURN_SUBSTITUTION_PATH,
+  'utf8',
+);
+
 /** Statusline source proving audited object-property callback invocation. */
 const STATUSLINE_USAGE_PATH = fileURLToPath(new URL(
   '../../../pi-plugin/statusline/src/usage-warning.ts',
@@ -374,6 +386,127 @@ await describe({
          * turns `local` into `[0]` while leaving both cases above passing. */
         expect(local,).toEqual([],);
         expect(inPlace,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'attributes a write reaching caller state through a callee returned parameter, at any depth',
+      fn: async () => {
+        /* `directReturned` recorded which parameters a result can carry from the day the
+         * accepted decision asked for it, and nothing consumed the fact, so every case
+         * here was offered `readonly Row[]`. The offer was false rather than imprecise:
+         * applying it to `growThroughReturn` type-checked under TypeScript 7.0.2 and
+         * running it grew the caller's array. Measured in
+         * `doc/planning/prefer-readonly-return-substitution.md`, section "A second false
+         * offer, on the array path".
+         *
+         * The fresh control is the half that keeps this honest. A callee allocating its
+         * own array shares no identity with its argument, so attributing a write through
+         * that result would withhold an offer that is true. It is written without `map`
+         * deliberately: a caller-supplied callback opens an opaque boundary of its own,
+         * and a control withheld for the wrong reason discriminates nothing. */
+        const session = openSemanticFile({
+          fileName: RETURN_SUBSTITUTION_PATH,
+          sourceText: RETURN_SUBSTITUTION_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads one fixture function's summary.
+         *
+         * @param functionName - Exported or local fixture function to inspect.
+         *
+         * @returns effect summary for that declaration.
+         */
+        function summaryOf(functionName: string,) {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            RETURN_SUBSTITUTION_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return summary;
+        }
+        /**
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * Reads `referentMutatedParameterIndexes` rather than the union with the invoked
+         * set, because the readonly offer is gated on that set alone.
+         *
+         * @param functionName - Fixture function to inspect.
+         *
+         * @returns written parameter indexes in ascending order.
+         */
+        function writtenIndexes(functionName: string,): readonly number[] {
+          return [...summaryOf(functionName,)
+            .referentMutatedParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /** One returning callable between the write and the caller's array. */
+        const oneHop = writtenIndexes('growThroughReturn',);
+        /** Two returning callables, which only the fixed point can follow. */
+        const twoHops = writtenIndexes('growThroughTwoReturns',);
+        /** A freshly allocated array the caller does not own. */
+        const fresh = writtenIndexes('growFresh',);
+        /** The same write with no returning callable between. */
+        const direct = writtenIndexes('growDirectly',);
+        /** A read through a returning callable, which changes nothing. */
+        const read = writtenIndexes('measureThroughReturn',);
+        /** Returned parameters of the single-hop callable. */
+        const handedBack = [...summaryOf('handBack',)
+          .returnedParameterIndexes,];
+        /** Returned parameters of the callable that returns another's result. */
+        const handedBackTwice = [...summaryOf('handBackTwice',)
+          .returnedParameterIndexes,];
+        /** Returned parameters of the callable allocating its own array. */
+        const allocated = [...summaryOf('buildFresh',)
+          .returnedParameterIndexes,];
+        /** Whether the fresh control carries unresolved reachability instead. */
+        const freshOpaque = [...summaryOf('growFresh',)
+          .opaqueParameterIndexes,];
+        closeSemanticBridge();
+        /* The write attributes to the caller's parameter however many returning
+         * callables sit between, and the direct case still behaves as it always did. */
+        expect(oneHop,).toEqual([0,],);
+        expect(twoHops,).toEqual([0,],);
+        expect(direct,).toEqual([0,],);
+        /* And nothing is attributed through a result the callee allocated.
+         *
+         * Three mutations, each measured rather than predicted, because the first
+         * prediction written here was wrong. Removing the deferred recording in
+         * `effect-collection-member-effect.ts` turns `oneHop` and `twoHops` into `[]`
+         * while `direct` keeps passing. Removing the deferred recording in the return
+         * branch of `direct-effect-summary.ts` turns `twoHops` and `handedBackTwice` into
+         * `[]` while `oneHop` keeps passing, which is the transitivity discriminator.
+         * Projecting `directReturned` instead of `returned` in `effect-public-summary.ts`
+         * turns `handedBackTwice` into `[]` and moves NOTHING else: the substitution reads
+         * the propagated set directly, so the projection only decides what callers of the
+         * summary API see. */
+        expect(fresh,).toEqual([],);
+        expect(read,).toEqual([],);
+        /* The fresh control must be silent rather than withheld some other way, or it
+         * cannot show that substitution declined to attribute. */
+        expect(freshOpaque,).toEqual([],);
+        expect(handedBack,).toEqual([0,],);
+        expect(handedBackTwice,).toEqual([0,],);
+        expect(allocated,).toEqual([],);
       },
     },),
     it({
