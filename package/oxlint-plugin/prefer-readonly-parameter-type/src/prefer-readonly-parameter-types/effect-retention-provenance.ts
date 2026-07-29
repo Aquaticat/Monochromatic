@@ -21,6 +21,17 @@
 const RETENTION_PROVENANCE_PREFIX = 'stored into ';
 
 /**
+ * Prefix marking a provenance fact as a callable the callable handed back.
+ *
+ * A second prefix rather than a second target text, because nothing is stored when a callable
+ * is returned and a fact reading `stored into a callable returned to its caller` would be read
+ * as a store by the next person looking at a summary dump. The silence is what both prefixes
+ * share and it is what `isRetentionProvenance` decides, so the reader recognises both while
+ * the text stays true to what happened.
+ */
+const RETURNED_CALLABLE_PROVENANCE_PREFIX = 'handed back as a callable capturing it at ';
+
+/**
  * Builds one provenance fact for a value the callable handed to a binding it does not own.
  *
  * @param target - Authored text of what the value was handed to.
@@ -64,7 +75,8 @@ export function retentionProvenance({
  * ```
  */
 export function isRetentionProvenance(provenance: string,): boolean {
-  return provenance.startsWith(RETENTION_PROVENANCE_PREFIX,);
+  return provenance.startsWith(RETENTION_PROVENANCE_PREFIX,)
+    || provenance.startsWith(RETURNED_CALLABLE_PROVENANCE_PREFIX,);
 }
 
 /**
@@ -91,12 +103,19 @@ export function splitRetentionBoundaries({
   readonly callBoundaries: readonly string[];
   readonly retentionBoundaries: readonly string[];
 } {
+  /* Both halves ask `isRetentionProvenance` rather than spelling its test again, which is
+   * what this module's own opening says it exists to prevent and what it was nonetheless
+   * doing here. Adding a second retention prefix for a returned callable moved the predicate
+   * and left these two behind, so a returned capture was classified a call, joined the
+   * boundary list, and both spoke where it should have stayed silent and changed the leading
+   * boundary of an unrelated parameter's message. Two symptoms, one cause, and the cause was
+   * a duplicated test rather than the new prefix. */
   return {
     callBoundaries: boundaries.filter(function boundaryIsCall(boundary,): boolean {
-      return !boundary.startsWith(RETENTION_PROVENANCE_PREFIX,);
+      return !isRetentionProvenance(boundary,);
     },),
     retentionBoundaries: boundaries.filter(function boundaryIsRetention(boundary,): boolean {
-      return boundary.startsWith(RETENTION_PROVENANCE_PREFIX,);
+      return isRetentionProvenance(boundary,);
     },),
   };
 }
@@ -133,4 +152,24 @@ export function boundariesAreReportable({
   } = splitRetentionBoundaries({ boundaries, },);
   return (callBoundaries.length > 0)
     || (retentionBoundaries.length === 0);
+}
+
+/**
+ * Builds one provenance fact for a callable the callable handed back to its caller.
+ *
+ * @param location - Where the return sits, so a summary dump can point at it.
+ *
+ * @returns provenance fact naming the return as the escape.
+ *
+ * @example
+ * ```ts
+ * returnedCallableProvenance({ location: 'src/card.ts:60', });
+ * ```
+ */
+export function returnedCallableProvenance({
+  location,
+}: {
+  readonly location: string;
+},): string {
+  return `${RETURNED_CALLABLE_PROVENANCE_PREFIX}${location}`;
 }

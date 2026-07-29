@@ -32,7 +32,7 @@ import {
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
-import { retentionProvenance, } from './effect-retention-provenance.ts';
+import { returnedCallableProvenance, } from './effect-retention-provenance.ts';
 import {
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
@@ -85,12 +85,9 @@ export function recordReturnedCallableCapture({
    */
   const location = effectOriginLocation({ node: returned, },);
   /**
-   * Retention provenance naming what the return handed out.
+   * Provenance naming the return as the escape, silent like every other retention.
    */
-  const provenance = retentionProvenance({
-    target: 'a callable returned to its caller',
-    location,
-  },);
+  const provenance = returnedCallableProvenance({ location, },);
   packagedCallableOrigins({
     project,
     bindingOriginBySymbolId,
