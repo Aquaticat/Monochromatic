@@ -198,15 +198,27 @@ export function expressionCanCarryMutableState({
  * is what it copied, and a property copy of a reference is the same reference while a
  * property copy of a primitive is a value the caller cannot observe again.
  *
- * Fails closed at every step where the shape is not established. An unresolved property
- * type, `any`, `unknown`, and any index signature whose values are references all answer
- * yes, so the only answer of no is over a shape whose every member is known primitive.
+ * Fails closed wherever the shape was not established, which is the whole difficulty. An
+ * empty member list has two readings: every member was enumerated and there were none, or
+ * nothing could be enumerated. The second reading is a shape whose real members are
+ * unknown, and answering no there would discharge on a failure to look. This returns yes
+ * for both, so the only no is over a shape that enumerated at least one member and found
+ * every one of them primitive.
+ *
+ * A type parameter answers yes without consulting its constraint. `Omit<T, 'label'>` maps
+ * over an unresolved `keyof T` and enumerates nothing, and the constraint bounds what `T`
+ * must have rather than what it may have, so a constraint of primitives proves nothing
+ * about the members an argument actually brings.
+ *
+ * Callers that want the empty-and-resolved case treated as carrying nothing have to
+ * establish resolvability some other way, because this cannot distinguish it.
  *
  * @param checker - TypeScript checker resolving member types.
  *
  * @param type - Semantic type whose members are inspected.
  *
- * @returns whether some member of type can carry caller-owned mutable state.
+ * @returns whether some member of type can carry caller-owned mutable state, or whether
+ * its members could not be established.
  *
  * @example
  * ```ts
@@ -221,6 +233,8 @@ export function membersCanCarryMutableState({
   readonly type: Type;
 },): boolean {
   if ((type.flags & TypeFlags.AnyOrUnknown) !== 0)
+    return true;
+  if (type.isTypeParameter())
     return true;
   if (type.isUnionType() || type.isIntersectionType()) {
     return type.getTypes()
@@ -239,16 +253,21 @@ export function membersCanCarryMutableState({
       },);
     },))
     return true;
-  return checker.getPropertiesOfType(type,)
-    .some(function propertyCarries(property,): boolean {
-      /**
-       * Declared type of one member, absent when the bridge cannot resolve it.
-       */
-      const propertyType = checker.getTypeOfSymbol(property,);
-      return (propertyType === undefined)
-        || typeCanCarryMutableState({
-          checker,
-          type: propertyType,
-        },);
-    },);
+  /**
+   * Members this type exposes, empty both when there are none and when none resolved.
+   */
+  const properties = checker.getPropertiesOfType(type,);
+  if (properties.length === 0)
+    return true;
+  return properties.some(function propertyCarries(property,): boolean {
+    /**
+     * Declared type of one member, absent when the bridge cannot resolve it.
+     */
+    const propertyType = checker.getTypeOfSymbol(property,);
+    return (propertyType === undefined)
+      || typeCanCarryMutableState({
+        checker,
+        type: propertyType,
+      },);
+  },);
 }

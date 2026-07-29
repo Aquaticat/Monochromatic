@@ -397,6 +397,10 @@ await describe({
         const primitiveRest = opaqueIndexes('storeRestOverPrimitiveState',);
         /** Store of an object rest holding a caller-owned reference. */
         const carriedRest = opaqueIndexes('storeRestOverCarriedState',);
+        /** Store of an object rest over a constrained type parameter. */
+        const constrainedRest = opaqueIndexes('storeRestOverGenericState',);
+        /** Store of an object rest over an unconstrained type parameter. */
+        const unconstrainedRest = opaqueIndexes('storeRestOverUnconstrainedState',);
         closeSemanticBridge();
         /* The receiver keeps its opacity, because nothing follows the stored element. */
         expect(property,).toEqual([0,],);
@@ -420,10 +424,21 @@ await describe({
          * it however primitive what the rest copied was. */
         expect(ownParameter,).toEqual([],);
         expect(primitiveRest,).toEqual([],);
-        /* And the rest control, which decides that the second fix narrowed rather than
-         * disabled. A property copy of a reference is the caller's same object, so this
-         * rest does hold caller state and keeps its opacity. */
+        /* And the rest controls, which decide that the second fix narrowed rather than
+         * disabled. A property copy of a reference is the caller's same object, so that
+         * rest does hold caller state and keeps its opacity.
+         *
+         * The generic pair covers the way the first attempt at that fix was unsound.
+         * `membersCanCarryMutableState` answered from `.some()` over the index and
+         * property lists, and a type it cannot enumerate produces two empty lists, so
+         * `Omit<T, 'label'>` over an unresolved `keyof T` read as carrying nothing and
+         * discharged. Both measured `[]` then and `[0,]` now. A constraint of primitives
+         * proves nothing either, since it bounds what `T` must have rather than what an
+         * argument may bring, which is why the constrained case is here beside the bare
+         * one. */
         expect(carriedRest,).toEqual([0,],);
+        expect(constrainedRest,).toEqual([0,],);
+        expect(unconstrainedRest,).toEqual([0,],);
       },
     },),
     it({
@@ -500,6 +515,12 @@ await describe({
         const storedAlias = structuralOpaque('storeAliasedIntoModuleBinding',);
         /** Property stored through a logical assignment. */
         const storedLogical = structuralOpaque('storeThroughLogicalAssignment',);
+        /** Property stored through a nullish assignment. */
+        const storedNullish = structuralOpaque('storeThroughNullishAssignment',);
+        /** Property stored through a conjunction assignment. */
+        const storedConjunction = structuralOpaque('storeThroughAndAssignment',);
+        /** Property stored after an owned call laundered it. */
+        const storedThroughCall = structuralOpaque('storeThroughOwnedCall',);
         /** Iteration binding stored into a module binding. */
         const storedIteration = structuralOpaque('storeIterationBinding',);
         /** Property stored into a local of the enclosing callable. */
@@ -510,6 +531,8 @@ await describe({
         const intoOwnLocal = structuralOpaque('assignIntoOwnLocal',);
         /** Primitive accumulated into a module binding. */
         const intoCount = structuralOpaque('countIntoModuleBinding',);
+        /** Fresh object built from a parameter's primitive, then stored. */
+        const freshAggregate = structuralOpaque('storeFreshAggregate',);
         /** Structure read in place without binding. */
         const readInPlaceOnly = structuralOpaque('readStructureInPlace',);
         /** Rows iterated while reading only primitives. */
@@ -523,14 +546,27 @@ await describe({
         expect(storedProperty,).toEqual([],);
         expect(storedAlias,).toEqual([],);
         expect(storedLogical,).toEqual([],);
+        expect(storedNullish,).toEqual([],);
+        expect(storedConjunction,).toEqual([],);
         expect(storedIteration,).toEqual([],);
         expect(storedEnclosing,).toEqual([],);
+        /* The one store no assignment-site test can reach on its own, kept beside the
+         * others because it flips for a different reason. A callee's summary does not
+         * exist while its callers are scanned, so the right side of this store has no
+         * origins at all and the deferred result relation has to supply them. */
+        expect(storedThroughCall,).toEqual([],);
         /* The controls, which must still read empty after that flip. */
         expect(intoParameter,).toEqual([],);
         expect(intoOwnLocal,).toEqual([],);
         expect(intoCount,).toEqual([],);
         expect(readInPlaceOnly,).toEqual([],);
         expect(iterated,).toEqual([],);
+        /* The control that catches the widest wrong shape of the fix. Gating on whether
+         * the whole right side can carry state reports here, because an object literal is
+         * a reference and the origin walk reaches the parameter through the property read
+         * filling it, while the only thing stored is a string in an object this callable
+         * allocated. */
+        expect(freshAggregate,).toEqual([],);
       },
     },),
     it({
