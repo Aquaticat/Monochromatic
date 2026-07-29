@@ -84,6 +84,12 @@ Linkup fetch uses fixed behavior:
 
 Blocked fetch hosts throw before any network request is made.
 
+After fetching,
+the extension removes Markdown inline images backed by base64 `data:image/` URLs from the model-visible response.
+Line-isolated images remove their complete physical lines,
+while images sharing a line with prose remove only the image construct.
+The untouched provider response remains available in tool-result details.
+
 Responses that are exactly a single `markdown` string field are returned as raw markdown text,
 for example `{ "markdown": "# Meow" }` becomes `# Meow`.
 Other fetch response shapes are returned as JSON.

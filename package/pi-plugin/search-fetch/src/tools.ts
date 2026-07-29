@@ -34,6 +34,7 @@ import {
   filterBlockedSearchResults,
   findBlockedUrlMatch,
 } from './domain-policy.ts';
+import { filterFetchResponseDataImages, } from './markdown-data-image-filter.ts';
 import {
   createLinkupToolOutput,
   LINKUP_VISIBLE_JSON_MAX_BYTES,
@@ -354,7 +355,7 @@ function createLinkupWebFetchTool(
   return defineTool({
     name: LINKUP_WEB_FETCH_TOOL_NAME,
     label: 'Web Fetch',
-    description: `Fetch one page with Linkup renderJs first and Exa contents fallback. Blocked hosts throw before providers are called. Output is raw markdown when Linkup returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    description: `Fetch one page with Linkup renderJs first and Exa contents fallback. Blocked hosts throw before providers are called. Inline Markdown images backed by base64 data URLs are removed after fetch. Output is raw markdown when Linkup returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
     promptSnippet: 'Fetch a known URL with Linkup renderJs first, Exa fallback, and the global blocklist preflight.',
     promptGuidelines: [
       'Use web_fetch when the URL is already known and the goal is to read page content.',
@@ -425,10 +426,16 @@ function createLinkupWebFetchTool(
         input: fetchInput,
         ...(signal === undefined ? {} : { signal, }),
       },);
+      /**
+       * Model-visible response after removing base64-backed Markdown images.
+       */
+      const filteredResponse = filterFetchResponseDataImages(providerResponse.response,);
+      if (filteredResponse.removedImageCount > 0)
+        innerL.warn(`removed ${String(filteredResponse.removedImageCount,)} inline base64 Markdown image(s)`,);
 
       return createLinkupToolOutput({
         toolName: LINKUP_WEB_FETCH_TOOL_NAME,
-        linkupResponse: providerResponse.response,
+        linkupResponse: filteredResponse.linkupResponse,
         rawLinkupResponse: providerResponse.response,
         ignoredKeys,
         fixedBehavior: FETCH_FIXED_BEHAVIOR,

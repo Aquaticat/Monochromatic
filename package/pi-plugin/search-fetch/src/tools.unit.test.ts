@@ -342,6 +342,49 @@ await describe({
       },
     },),
     it({
+      name: 'fetch filters base64 Markdown images while preserving raw response details',
+      fn: async () => {
+        /**
+         * Fetch response containing line-wrapped linked image data.
+         */
+        const fetchResponse = {
+          markdown: [
+            'Before',
+            '[![Microsoft',
+            ' Logo](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA',
+            ' ALgAAAAmCAYAAAB3X1H0AAAA)]()',
+            'After',
+          ].join('\n',),
+        };
+        /**
+         * Mock client returning unfiltered provider response.
+         */
+        const mock = mockClient({
+          searchResponse: EMPTY_RESPONSE,
+          fetchResponse,
+        },);
+        /**
+         * Fetch tool under test.
+         */
+        const fetchTool = fetchToolFrom(mock.client,);
+
+        /**
+         * Final filtered tool result.
+         */
+        const result = await fetchTool.execute(
+          'tool-call-fetch-data-image-filter',
+          { url: 'https://example.com', },
+          undefined,
+          undefined,
+          fakeContext(),
+        );
+
+        expect(textContentAt({ result, index: 0, },),).toBe('Before\nAfter',);
+        expect(result.details.rawLinkupResponse,).toBe(fetchResponse,);
+        expect(result.details.linkupResponse,).toEqual({ markdown: 'Before\nAfter', },);
+      },
+    },),
+    it({
       name: 'fetch stores non-exact markdown response in details and visible output is JSON',
       fn: async () => {
         /**

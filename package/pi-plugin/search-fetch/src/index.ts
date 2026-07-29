@@ -166,6 +166,10 @@ export {
   exaForwardableBlocklist,
 } from './exa-client.ts';
 export {
+  filterFetchResponseDataImages,
+  filterMarkdownDataImages,
+} from './markdown-data-image-filter.ts';
+export {
   createSearchFetchClient,
 } from './search-fetch-client.ts';
 export {
@@ -211,6 +215,10 @@ export type {
   ExaContentsRequestBody,
   ExaSearchRequestBody,
 } from './exa-client.ts';
+export type {
+  FetchResponseDataImageFilterResult,
+  MarkdownDataImageFilterResult,
+} from './markdown-data-image-filter.ts';
 export type {
   ProviderFallback,
   ProviderResponse,
