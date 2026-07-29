@@ -1182,3 +1182,55 @@ The rest of `Row = { label: string; }` is genuinely `{}`,
 What separates them is whether the shape was resolvable,
  which needs a type-parameter branch as well as a positive-evidence requirement,
  and failing closed on both.
+
+## What the narrowing sweep measured, and what it could not
+
+Two things have to be separated before the numbers mean anything.
+
+The first is that this sweep ran against a build carrying the unenumerable-shape defect,
+ so it measures the over-permissive predicate rather than the shipped one.
+That still bounds the corrected version:
+ the fail-closed predicate discharges a strict subset of what the measured one did,
+ so whatever this moved is an upper bound on what the fix moves.
+
+The second is that the six control verdicts pre-registered here are not checked by any
+ sweep.
+Root oxlint ignores test-fixture paths,
+ measured at zero fixture findings in every capture,
+ so the controls live in `effect-summaries.unit.test.ts` and nowhere else.
+The pre-registration's phrasing invited the wrong reading and this is the correction:
+ a clean sweep is evidence about workspace shapes,
+ and the controls are evidence about the predicates.
+
+Against `sweep-after-43`:
+
+```text
+before 1938: argument-opacity=1196 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+```
+
+Omission warnings unchanged at five upstream panics and no parent reads.
+No `EffectPropagationError`.
+
+One pre-registered stop signal fired.
+Argument opacity moved,
+ which this recorded as not expected and not possible,
+ since neither predicate runs on an argument position.
+It is discharged by attribution rather than waived,
+ and the attribution is measured:
+
+-    The new argument-opacity finding names `providerOrName` in
+      `package/pi-plugin/search-fetch/src/mise.verify-extension.ts`.
+     Commit `032e5ac04`,
+      timestamped between the two captures,
+      adds that identifier twice to that exact file.
+-    The offer pair is one finding at two line numbers,
+      `tools.ts:461` and `tools.ts:468`,
+      with identical parameter and message.
+     Commit `d98a44f7c` edited that file between the captures.
+
+So the workspace delta from both narrowings is zero,
+ and the repository moved underneath the measurement instead.
+Concurrent commits from another session are ordinary here and are not an obstacle;
+ what they cost is the ability to read a delta without attributing every record,
+ which is worth knowing before the next sweep is pre-registered as a bare count.
