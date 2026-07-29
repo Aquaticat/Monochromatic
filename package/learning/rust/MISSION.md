@@ -24,6 +24,9 @@ without becoming a replacement course.
 - TypeScript comparison examples link to runnable TypeScript Playground examples.
 - Label every unfamiliar term, symbol, control, and diagram mark when it first appears.
 - Demonstrate every introduced concept with a concrete example rather than only defining it.
+- Explain each technical term before using it to explain another term.
+- State exact execution and state changes, including whether startup invokes code automatically.
+- Mark concepts with no direct TypeScript equivalent instead of inventing a misleading analogy.
 
 ## Out of scope
 
