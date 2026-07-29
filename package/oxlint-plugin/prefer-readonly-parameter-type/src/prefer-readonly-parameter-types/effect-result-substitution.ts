@@ -1,0 +1,286 @@
+/**
+ * Substituting a callee's returned state into the caller that uses the result.
+ *
+ * The gap this closes was measured rather than predicted, and is recorded in
+ * `doc/planning/prefer-readonly-return-substitution.md`, section "A second false offer,
+ * on the array path". A callee that hands its own parameter back lets a caller mutate
+ * caller-owned state through the returned value, and nothing attributed that write:
+ * `launderMutable(rows,).push(...)` was offered `readonly Row[]`, the applied annotation
+ * type-checked, and running it grew the caller's array.
+ *
+ * The syntax pass cannot close it alone. `directEffectSummary` sees one declaration and
+ * no other callable's summary, so asking what a callee returns while walking its caller
+ * would make the answer depend on which was analysed first, which `#29` forbids. The use
+ * is therefore recorded where it is visible, and the origins are resolved here, where the
+ * callee summary and the edge's formal-to-actual mapping sit together.
+ *
+ * This module only ever ADDS facts. Nothing discharges on the strength of a returned set
+ * being empty, and nothing may: `doc/decision/prefer-readonly-result-provenance.md` makes
+ * caller substitution the precondition for discharging receiver opacity, not a
+ * consequence of it, and an empty returned set is equally consistent with a fresh result
+ * and with a return shape this analysis does not model.
+ *
+ * @module
+ */
+
+import type { Node, } from 'typescript/unstable/ast';
+import {
+  isAssertionExpression,
+  isCallExpression,
+  isNonNullExpression,
+  isParenthesizedExpression,
+  isSatisfiesExpression,
+} from 'typescript/unstable/ast/is';
+
+import {
+  addEffectSlot,
+  type CallEdge,
+  callSiteKey,
+  type MutableEffectSummary,
+} from './effect-summary-model.ts';
+import type { EffectSlot, } from './effect-slot-identity.ts';
+
+/**
+ * No call underlies this expression, so no result use can be deferred against one.
+ */
+export const NOT_A_DEFERRABLE_RESULT: unique symbol = Symbol(
+  'expression is not the result of a call',
+);
+
+/**
+ * Names the call whose result an expression is, when it is one.
+ *
+ * Unwraps the wrappers that keep a value's identity, matching `transparentOperand` in
+ * `effect-expression-provenance.ts`. `await` is deliberately absent from both: thenable
+ * assimilation does not prove the awaited value is the one the callee returned, so an
+ * awaited result stays unmodelled rather than being claimed.
+ *
+ * @param node - Expression whose underlying call is sought.
+ *
+ * @returns call-site identity, or sentinel when no call underlies it.
+ *
+ * @example
+ * ```ts
+ * deferrableResultSite({ node: receiver });
+ * ```
+ */
+export function deferrableResultSite(
+  { node, }: { readonly node: Node; },
+): string | typeof NOT_A_DEFERRABLE_RESULT {
+  /**
+   * Cursor descending through wrappers that keep the value's identity.
+   */
+  const cursor: { current: Node; } = { current: node, };
+  while (isParenthesizedExpression(cursor.current,)
+    || isNonNullExpression(cursor.current,)
+    || isAssertionExpression(cursor.current,)
+    || isSatisfiesExpression(cursor.current,))
+    cursor.current = cursor.current
+      .expression;
+  return isCallExpression(cursor.current,)
+    ? callSiteKey(cursor.current,)
+    : NOT_A_DEFERRABLE_RESULT;
+}
+
+/**
+ * Records that a caller uses one call's result in a way whose origins must be resolved.
+ *
+ * @param summary - Caller summary receiving the deferred use.
+ *
+ * @param node - Expression whose underlying call result is used.
+ *
+ * @param kind - Whether the result is mutated or handed back.
+ *
+ * @mutates summary - Appends one deferred result use when a call underlies the node.
+ *
+ * @example
+ * ```ts
+ * recordResultApplication({ summary, node: receiver, kind: 'mutated' });
+ * ```
+ */
+export function recordResultApplication({
+  summary,
+  node,
+  kind,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly node: Node;
+  readonly kind: 'mutated' | 'returned';
+},): void {
+  /**
+   * Call whose result this use consumes, when one underlies the expression.
+   */
+  const site = deferrableResultSite({ node, },);
+  if (site === NOT_A_DEFERRABLE_RESULT)
+    return;
+  summary.resultApplications
+    .push({
+    callSiteKey: site,
+    kind,
+  },);
+}
+
+/**
+ * Adds every caller origin a callee's returned slots map to, through one edge.
+ *
+ * @param target - Caller effect set receiving substituted origins.
+ *
+ * @param edge - Owned call edge carrying formal-to-actual origins.
+ *
+ * @param calleeReturned - Callee slots its result can carry.
+ *
+ * @mutates target - Adds each caller origin behind a returned callee slot.
+ *
+ * @returns whether target gained an origin.
+ *
+ * @example
+ * ```ts
+ * substituteReturnedOrigins({ target: summary.mutated, edge, calleeReturned });
+ * ```
+ */
+function substituteReturnedOrigins({
+  target,
+  edge,
+  calleeReturned,
+}: {
+  readonly target: Set<EffectSlot>;
+  readonly edge: CallEdge;
+  readonly calleeReturned: ReadonlySet<EffectSlot>;
+},): boolean {
+  /**
+   * Whether substitution added an origin the caller did not already carry.
+   */
+  const growth: { any: boolean; } = { any: false, };
+  for (const calleeSlot of calleeReturned) {
+    /**
+     * Caller origins the callee reaches through this slot.
+     *
+     * Read from the edge rather than from the call's arguments, because
+     * `formalActualPositions` already resolved explicit `this`, rest formals and spread
+     * actuals into this mapping, and indexing arguments by parameter position would
+     * disagree with it on every one of those.
+     */
+    const origins = edge.originsByCalleeSlot[calleeSlot];
+    if (origins === undefined)
+      continue;
+    for (const origin of origins) {
+      if (addEffectSlot({
+        target,
+        value: origin,
+      },))
+        growth.any = true;
+    }
+  }
+  return growth.any;
+}
+
+/**
+ * Resolves one caller's deferred result uses against its callees' returned state.
+ *
+ * @param summaries - Owned callable summaries by declaration key.
+ *
+ * @param summary - Caller summary whose result uses are resolved.
+ *
+ * @mutates summary - Adds mutation and returned origins behind used call results.
+ *
+ * @returns whether caller summary changed.
+ *
+ * @example
+ * ```ts
+ * propagateResultApplications({ summaries, summary });
+ * ```
+ */
+export function propagateResultApplications({
+  summaries,
+  summary,
+}: {
+  readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
+  readonly summary: MutableEffectSummary;
+},): boolean {
+  if (summary.resultApplications
+    .length
+    === 0)
+    return false;
+  /**
+   * Edges of this caller by call site, so a deferred use finds the call it belongs to.
+   */
+  const edgeByCallSite = new Map<string, CallEdge>(
+    summary.calls
+      .map(function keyed(edge,): [
+        string,
+        CallEdge,
+      ] {
+        return [
+          edge.callSiteKey,
+          edge,
+        ];
+      },),
+  );
+  /**
+   * Whether any deferred use contributed an origin this pass.
+   */
+  const growth: { any: boolean; } = { any: false, };
+  for (const application of summary.resultApplications) {
+    /**
+     * Edge for the call whose result this use consumes.
+     *
+     * Absent when the callee was never resolved as owned, in which case the call already
+     * took an opaque boundary of its own and this use needs no separate treatment.
+     */
+    const edge = edgeByCallSite.get(application.callSiteKey,);
+    if (edge === undefined)
+      continue;
+    /**
+     * Summary of the callee whose result this use consumes.
+     *
+     * Absent when the callee's summary could not be built. `propagateEffects` already
+     * turns that into opacity for every origin the edge packages, so nothing is added
+     * here and nothing is claimed.
+     */
+    const calleeSummary = summaries.get(edge.calleeKey,);
+    if (calleeSummary === undefined)
+      continue;
+    if (substituteReturnedOrigins({
+      target: application.kind === 'mutated' ? summary.mutated : summary.returned,
+      edge,
+      calleeReturned: calleeSummary.returned,
+    },))
+      growth.any = true;
+  }
+  return growth.any;
+}
+
+/**
+ * Seeds the propagated returned set from the directly recorded one.
+ *
+ * Separate from substitution because the direct facts are the base case of the fixed
+ * point: a callable returning its own parameter says so without any callee's help, and a
+ * callable returning another's result needs that base case to have been seeded first.
+ *
+ * @param summary - Summary whose returned set is seeded.
+ *
+ * @mutates summary - Copies direct returned slots into the propagated set.
+ *
+ * @returns whether the propagated set grew.
+ *
+ * @example
+ * ```ts
+ * seedReturnedSlots({ summary });
+ * ```
+ */
+export function seedReturnedSlots(
+  { summary, }: { readonly summary: MutableEffectSummary; },
+): boolean {
+  /**
+   * Whether seeding added a slot the propagated set lacked.
+   */
+  const growth: { any: boolean; } = { any: false, };
+  for (const slot of summary.directReturned) {
+    if (addEffectSlot({
+      target: summary.returned,
+      value: slot,
+    },))
+      growth.any = true;
+  }
+  return growth.any;
+}
