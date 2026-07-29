@@ -1903,3 +1903,43 @@ It is unreachable today and it errs toward speaking,
  which is the direction a fail-safe should point,
  and the induction above is exactly the kind of argument that stops holding after an
  unrelated change.
+
+## Sweep result after folding
+
+```text
+before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+added   0
+removed 0
+```
+
+Equality with `sweep-after-45-reverted` again,
+ with `dishonest` at thirty-seven,
+ which was the addition to the criterion after the suppressed verdict was found.
+Both digests were identical before and after the run.
+
+The equality is worth reading carefully rather than as a third pass,
+ because it is the one number this capture could not have moved.
+`dishonest` held at thirty-seven through the broken shape too.
+What establishes the fix is `storeDishonestProjection`,
+ which reports now and did not before,
+ and which is a unit test rather than a sweep line.
+
+Wall clock 8m31s,
+ inside the range earlier captures ran in,
+ so restoring the foreign-ownership proof for retention-only parameters cost nothing
+ measurable.
+That comparison is weaker than the others here:
+ this is the only capture that was timed,
+ and the range it is being compared against was recorded from earlier runs rather than
+ measured beside it.
+
+What the three equalities together establish,
+ and what they do not.
+The store classification changes no verdict anywhere in this repository,
+ and the two channel fixes return every message to what it said before the classification
+ existed.
+None of that is evidence about the shapes this repository lacks,
+ which is why `readonly-structural-store-invalid.ts` now carries `reportMixedBindingCauses`
+ and the dishonest pair:
+ a fixture is the only instrument that reaches them.
