@@ -642,9 +642,39 @@ children: [
        * Self-limiting rather than false, since the write is on `config` directly and the
        * applied annotation stops type-checking, so no falsification rides on it. Task #65
        * holds the selection question, and this count is what its fix moves. */
+      /* Twenty-two once the capture channel landed, and the two arrivals are its controls
+       * rather than its subjects. `handFreshCaptureToRetainer` hands a retaining callee a
+       * closure that allocates its own row, and `handCaptureToReader` hands a capturing
+       * closure to a callee that only invokes it. Both keep their offers, which is what
+       * separates attributing what a callable captured from refusing every callable handed to
+       * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(20,);
+      },).length,).toBe(22,);
+      /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
+       * caller that says nothing and a caller that reports argument opacity naming the
+       * retaining callee both lose their offer and both read `[0]` from the summary, so
+       * neither the offer count nor the opaque set can tell the intended outcome from the
+       * failure this channel can produce: captures arriving as call-caused. Unique parameter
+       * names are what make the count per callable rather than per file. */
+      expect(messages.filter(function namesRetained(message,): boolean {
+        return message.includes('"retained"',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesNamedRetained(message,): boolean {
+        return message.includes('"namedRetained"',);
+      },).length,).toBe(0,);
+      /* And the controls, which must speak exactly once each and say only that an offer
+       * stands. A control that fell silent would look identical to the shapes above. */
+      expect(messages.filter(function namesUntouched(message,): boolean {
+        return message.includes('"untouched"',);
+      },),).toEqual([
+        'Parameter "untouched" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesInspected(message,): boolean {
+        return message.includes('"inspected"',);
+      },),).toEqual([
+        'Parameter "inspected" should be readonly: property rows is writable.',
+      ],);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls

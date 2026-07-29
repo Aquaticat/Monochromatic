@@ -707,6 +707,23 @@ await describe({
          * no effect at all where the declaration form records `mutated=[0]`. Self-limiting,
          * so no offer rides on it, and tracked as task #65. */
         expect(structuralOpaque('invokeAssignedLocalClosureWriting',),).toEqual([],);
+        /* A closure written straight into a call reaches caller state through its body, and
+         * the argument walk reads values rather than bodies, so this attributed nothing while
+         * the same capture inside an object literal attributed correctly. Falsified with every
+         * offer in the file applied and type-checking clean. */
+        expect(structuralOpaque('handCaptureToRetainer',),).toEqual([0,],);
+        /* The alias, and the reason the channel is driven by the declarations the edge already
+         * resolves rather than by argument syntax. A syntax test sees an identifier here. */
+        expect(structuralOpaque('handNamedCaptureToRetainer',),).toEqual([0,],);
+        /* Two controls, and they fail in opposite directions. The first hands the same
+         * retaining callee a closure that allocates its own row, so nothing captured travels
+         * and the parameter keeps its offer: without it, this would be a rule against handing
+         * callables to retaining callees rather than an attribution of what they captured. */
+        expect(structuralOpaque('handFreshCaptureToRetainer',),).toEqual([],);
+        /* The second hands a capturing closure to a callee that merely invokes it. That callee
+         * is certain about its formal, so the gate never opens. Without it, the channel could
+         * withhold on every callable ever handed to an owned callee and still look correct. */
+        expect(structuralOpaque('handCaptureToReader',),).toEqual([],);
       },
     },),
     it({

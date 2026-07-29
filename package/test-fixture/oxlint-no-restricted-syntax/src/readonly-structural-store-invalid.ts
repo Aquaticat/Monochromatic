@@ -1146,3 +1146,116 @@ export function invokeAssignedLocalClosureWriting(config: Config,): void {
   };
   local();
 }
+
+/**
+ * Retains whatever callable it is handed, without ever invoking it.
+ *
+ * @param callback - Callable retained past this call.
+ *
+ * @example
+ * ```ts
+ * retainCallable((): Row => ({ label: '', }),);
+ * ```
+ */
+export function retainCallable(callback: () => Row,): void {
+  callbackHolder.produce = callback;
+}
+
+/**
+ * Hands a bare capturing closure to a callee that retains it.
+ *
+ * Falsified before the capture channel existed. Nothing here writes and nothing here stores,
+ * so the only thing that can withhold the offer is what the closure captured travelling to
+ * the callee's uncertain formal. The rule offered `ReadonlyDeep<Config>`, applying it
+ * type-checked clean, and the holder invoking the retained closure changed the caller's row.
+ *
+ * @param retained - Configuration whose row the handed closure hands out.
+ *
+ * @example
+ * ```ts
+ * handCaptureToRetainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handCaptureToRetainer(retained: Config,): void {
+  retainCallable((): Row => retained.row,);
+}
+
+/**
+ * Hands the same capture by name rather than inline.
+ *
+ * The alias control, and the reason the channel is driven by resolved declarations rather
+ * than by argument syntax. A syntax test sees an identifier here and stops; the resolver
+ * follows the local to the function expression it was bound to.
+ *
+ * @param namedRetained - Configuration whose row the named closure hands out.
+ *
+ * @example
+ * ```ts
+ * handNamedCaptureToRetainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handNamedCaptureToRetainer(namedRetained: Config,): void {
+  /**
+   * Closure this callable allocates and hands over by name.
+   */
+  const producer = (): Row => namedRetained.row;
+  retainCallable(producer,);
+}
+
+/**
+ * Hands a closure that captures nothing to the same retaining callee.
+ *
+ * The control that keeps this an attribution rather than a rule against handing callables to
+ * retaining callees. This closure allocates its own row, so there is nothing captured to
+ * travel, and the parameter keeps its offer.
+ *
+ * @param untouched - Configuration the handed closure never names.
+ *
+ * @returns count read in place off the untouched configuration.
+ *
+ * @example
+ * ```ts
+ * handFreshCaptureToRetainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handFreshCaptureToRetainer(untouched: Config,): number {
+  retainCallable((): Row => ({ label: 'fresh', }),);
+  return untouched.rows
+    .length;
+}
+
+/**
+ * Invokes a handed callable and keeps nothing.
+ *
+ * The precision control. This callee is certain about its formal, so a caller handing it a
+ * capturing closure keeps its offer, which is what stops the channel from withholding on
+ * every callable ever handed to an owned callee.
+ *
+ * @param invoked - Callable invoked once and discarded.
+ *
+ * @returns label read through the invoked callable.
+ *
+ * @example
+ * ```ts
+ * readThroughCallable((): Row => ({ label: '', }),);
+ * ```
+ */
+export function readThroughCallable(invoked: () => Row,): string {
+  return invoked().label;
+}
+
+/**
+ * Hands a capturing closure to a callee that only invokes it.
+ *
+ * @param inspected - Configuration whose row the handed closure reads.
+ *
+ * @returns label read through the handed closure.
+ *
+ * @example
+ * ```ts
+ * handCaptureToReader({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handCaptureToReader(inspected: Config,): string {
+  return readThroughCallable((): Row => inspected.row,);
+}
