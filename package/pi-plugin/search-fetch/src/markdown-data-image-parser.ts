@@ -61,6 +61,11 @@ type MarkdownParseResult<Value> = Value | typeof UNPARSEABLE_MARKDOWN;
  * @param imageStart - offset of `![`
  *
  * @returns image token range or parser rejection sentinel
+ *
+ * @example
+ * ```ts
+ * findBase64ImageRange({ markdown: '![x](data:image/png;base64,AAAA)', imageStart: 0 });
+ * ```
  */
 function findBase64ImageRange(
   {
@@ -248,6 +253,11 @@ function base64ImageDestinationEnd(
  * @param imageRange - parsed inner image range
  *
  * @returns linked-image range or unchanged inner image range
+ *
+ * @example
+ * ```ts
+ * findLinkedImageRange({ markdown: '[![x](data:image/png;base64,AAAA)]()', imageRange: { start: 1, end: 39 } });
+ * ```
  */
 function findLinkedImageRange(
   {
@@ -341,6 +351,11 @@ function sameLineLinkEnd(
  * @param constructRange - image or linked-image range
  *
  * @returns construct span or complete owned-line span
+ *
+ * @example
+ * ```ts
+ * lineOwnedRemovalRange({ markdown: '![x](data:image/png;base64,AAAA)', constructRange: { start: 0, end: 38 } });
+ * ```
  */
 function lineOwnedRemovalRange(
   {
@@ -406,6 +421,11 @@ function lineOwnedRemovalRange(
  * @param value - candidate parser result
  *
  * @returns whether candidate is exact parser sentinel
+ *
+ * @example
+ * ```ts
+ * isUnparseableMarkdown(findBase64ImageRange({ markdown: 'plain text', imageStart: 0 }));
+ * ```
  */
 function isUnparseableMarkdown(value: unknown,): value is typeof UNPARSEABLE_MARKDOWN {
   return ((typeof value) === 'symbol')
