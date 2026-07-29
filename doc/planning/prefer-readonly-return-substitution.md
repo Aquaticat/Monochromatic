@@ -1378,3 +1378,39 @@ It counts what a run recomputed and failed on,
  not what the index is missing.
 A warm cache reports zero while the same callables remain unanalysed,
  and a cold run on an unchanged tree is the only reading worth quoting.
+
+## What the reverted build measured
+
+Quiet tree,
+ dist digest verified identical before and after the run.
+
+Against the capture taken with the rest narrowing in place:
+
+```text
+before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+added   0
+removed 0
+```
+
+Zero delta.
+So the narrowing recovered no offer anywhere in this workspace,
+ and everything it did here was the latent false offer it also introduced.
+That is the cleanest possible argument for having reverted it rather than repaired it:
+ there was nothing on the other side of the trade.
+
+Against `sweep-after-43`,
+ the net of every change since,
+ the delta is the same two added and one removed already attributed to another session's
+ commits in `package/pi-plugin/search-fetch`.
+So both halves of this work moved zero workspace findings in total.
+
+One prediction confirmed along the way.
+The previous section explained a zero omission count as a warm cache serving the
+ callables that panic.
+This run reports five again.
+Nothing about those callables changed;
+ what changed is that reverting the narrowing changed the analyzer bundle,
+ which is what the cache identity digests,
+ so the panicking path was recomputed and warned again.
+The explanation predicted the number before the run rather than after it.
