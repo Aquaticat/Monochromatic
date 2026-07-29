@@ -361,6 +361,61 @@ export function writeThroughAliasedResult(config: Config,): void {
 }
 
 /**
+ * Writes through an alias wrapped in a type assertion.
+ *
+ * The wrapper shapes are here because getting them wrong is invisible. Access layers and
+ * identity-keeping wrappers were removed once each, in that order, so an alias carrying no
+ * access layer left the assertion in place: the call test looked inside it and correctly
+ * found no call, and the identifier test then ran against the assertion rather than
+ * against the binding. Measured before the normalization loop existed, this recorded
+ * nothing while the bare alias beside it recorded a write.
+ *
+ * @param config - Structure the caller owns and this callable writes into.
+ *
+ * @example
+ * ```ts
+ * writeThroughAssertedAlias({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughAssertedAlias(config: Config,): void {
+  /**
+   * Row this callable holds after the call handed it back.
+   */
+  const local = firstRow(config,);
+  /**
+   * Same row, named through an assertion.
+   */
+  const alias = local as Row;
+  alias.label = 'written';
+}
+
+/**
+ * Writes through a parenthesised alias.
+ *
+ * The other half of the wrapper pair, and not redundant with it: a parenthesis and an
+ * assertion are different node kinds reached by the same removal, so a fix that handled
+ * one by accident would pass the other.
+ *
+ * @param config - Structure the caller owns and this callable writes into.
+ *
+ * @example
+ * ```ts
+ * writeThroughParenAlias({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughParenAlias(config: Config,): void {
+  /**
+   * Row this callable holds after the call handed it back.
+   */
+  const local = firstRow(config,);
+  /**
+   * Same row, named through a parenthesis.
+   */
+  const alias = (local);
+  alias.label = 'written';
+}
+
+/**
  * Writes through a local holding a freshly built row.
  *
  * The control for the local shapes. The binding does record which call filled it, and that

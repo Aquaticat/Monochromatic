@@ -38,6 +38,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import {
   deferrableResultSite,
   NOT_A_DEFERRABLE_RESULT,
+  transparentValueRoot,
 } from './effect-result-substitution.ts';
 import { expressionRoot, } from './effect-summary-model.ts';
 
@@ -76,10 +77,35 @@ function expressionResultSites({
   readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
   readonly node: Node;
 },): ReadonlySet<string> {
+  /* One loop over both removals rather than one of each in sequence. Doing them once each
+   * lost an alias: `const alias = local as Row;` has no access layer to strip, so the root
+   * stayed the assertion, `deferrableResultSite` looked inside it and correctly answered
+   * that no call was there, and the identifier test then ran against the assertion rather
+   * than against `local`. Measured before the loop existed: the asserted and parenthesised
+   * aliases recorded no write while the bare one recorded `mutated=[0]`.
+   *
+   * The two removals also interleave, as in `firstRow(config,).row as Row`, so neither
+   * order fixes it on its own. */
   /**
-   * Deepest receiver, past every property and element access.
+   * Value this expression is, past every access layer and identity-keeping wrapper.
    */
-  const root = expressionRoot(node,);
+  const cursor: { current: Node; } = { current: node, };
+  /**
+   * Whether the last round removed anything, so the walk knows to look again.
+   */
+  const walk: { removed: boolean; } = { removed: true, };
+  while (walk.removed) {
+    /**
+     * Same value with one more round of layers and wrappers taken off.
+     */
+    const next = transparentValueRoot(expressionRoot(cursor.current,),);
+    walk.removed = next !== cursor.current;
+    cursor.current = next;
+  }
+  /**
+   * Innermost expression this value comes from.
+   */
+  const root = cursor.current;
   /**
    * Call this expression is the result of, when one underlies the root.
    */
@@ -88,7 +114,10 @@ function expressionResultSites({
     return new Set([site,],);
   /* An alias hop, which is what makes `const alias = local;` carry what `local` carries.
    * Only an identifier root is followed, matching `discoverAliasOrigins`: anything else is
-   * a shape this does not model, and naming no call site withholds rather than claims. */
+   * a shape this does not model. Naming no call site does NOT withhold, which is worth
+   * stating plainly because the first version of this comment claimed it did: both
+   * consumers iterate the returned set, so an empty one records nothing and the offer
+   * stands. Every shape missing here is a hole, not a conservative choice. */
   if (!isIdentifier(root,))
     return NO_RESULT_SITE;
   /**

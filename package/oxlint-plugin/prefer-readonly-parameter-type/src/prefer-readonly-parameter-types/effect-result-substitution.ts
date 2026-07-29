@@ -68,6 +68,40 @@ export function deferrableResultSite(
   { node, }: { readonly node: Node; },
 ): string | typeof NOT_A_DEFERRABLE_RESULT {
   /**
+   * Value this expression is, past every wrapper that keeps its identity.
+   */
+  const root = transparentValueRoot(node,);
+  return isCallExpression(root,)
+    ? callSiteKey(root,)
+    : NOT_A_DEFERRABLE_RESULT;
+}
+
+/**
+ * Removes the wrappers that keep a value's identity.
+ *
+ * Exported because more than one question needs the same normalization and answering them
+ * with separate spellings produced a hole: `expressionResultSites` stripped access layers,
+ * asked `deferrableResultSite` about the result, and then tested the ORIGINAL node for
+ * being an identifier. So `const alias = local as Row;` reached the identifier inside the
+ * assertion, learned it was not a call, and then failed the identifier test against the
+ * assertion itself. Measured: that alias and a parenthesised one recorded no write while
+ * the bare alias recorded one.
+ *
+ * `await` is deliberately absent, matching `transparentOperand` in
+ * `effect-expression-provenance.ts`: thenable assimilation does not prove the awaited
+ * value is the one the callee returned.
+ *
+ * @param node - Expression whose identity-keeping wrappers are removed.
+ *
+ * @returns innermost expression holding the same value.
+ *
+ * @example
+ * ```ts
+ * transparentValueRoot(declaration.initializer);
+ * ```
+ */
+export function transparentValueRoot(node: Node,): Node {
+  /**
    * Cursor descending through wrappers that keep the value's identity.
    */
   const cursor: { current: Node; } = { current: node, };
@@ -77,9 +111,7 @@ export function deferrableResultSite(
     || isSatisfiesExpression(cursor.current,))
     cursor.current = cursor.current
       .expression;
-  return isCallExpression(cursor.current,)
-    ? callSiteKey(cursor.current,)
-    : NOT_A_DEFERRABLE_RESULT;
+  return cursor.current;
 }
 
 /**

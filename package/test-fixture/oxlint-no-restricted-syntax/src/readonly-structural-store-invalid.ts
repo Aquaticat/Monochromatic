@@ -496,6 +496,31 @@ export function storeHeldFresh(config: Config,): void {
 }
 
 /**
+ * Stores a primitive read off a returned piece of caller state.
+ *
+ * The control the retention path needed and did not have. `parameterIndexes` gates every
+ * leaf on whether it can carry mutable state, which is why the object-literal control
+ * beside it stays silent, and the deferred retention does not go through that resolver at
+ * all. Measured without a gate of its own: this recorded `opaque=[0]` with store
+ * provenance for retaining a `string`.
+ *
+ * `storeHeldFresh` could not catch it. That one stays empty because its callee returns
+ * nothing the caller owns, not because anything recognised a primitive, so the two
+ * controls fail for different reasons and neither substitutes for the other.
+ *
+ * @param config - Configuration whose label is copied out.
+ *
+ * @example
+ * ```ts
+ * storePrimitiveProjection({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storePrimitiveProjection(config: Config,): void {
+  heldLabel = firstRow(config,)
+    .label;
+}
+
+/**
  * Stores a fresh object built from a structural parameter's primitive.
  *
  * The control against reading the whole right side for whether it can carry state. The

@@ -637,6 +637,12 @@ await describe({
          * write side rather than repeating its reasoning. */
         expect(structuralOpaque('storeHeldResult',),).toEqual([0,],);
         expect(structuralOpaque('storeHeldFresh',),).toEqual([],);
+        /* Retaining a primitive read off a returned value keeps nothing a caller can write
+         * through. The deferred retention does not travel through `parameterIndexes`, so it
+         * does not inherit that resolver's leaf test and needed its own: measured without
+         * one, this recorded `[0,]` with store provenance for a `string`. The fresh control
+         * above cannot stand in, since it stays empty for a different reason. */
+        expect(structuralOpaque('storePrimitiveProjection',),).toEqual([],);
         /* The controls, which must still read empty after that flip. */
         expect(intoParameter,).toEqual([],);
         expect(intoOwnLocal,).toEqual([],);
@@ -797,6 +803,13 @@ await describe({
         expect(writtenIndexes('writeThroughAliasedResult',),).toEqual([0,],);
         expect(writtenIndexes('writeThroughHeldFresh',),).toEqual([],);
         expect(writtenIndexes('readHeldResult',),).toEqual([],);
+        /* The wrapper pair. Access layers and identity-keeping wrappers are removed in one
+         * loop rather than once each, because an alias with no access layer left the
+         * wrapper in place and the identifier test then ran against the wrapper. Measured
+         * before the loop: both of these recorded nothing while the bare alias recorded a
+         * write. Two node kinds, so a fix handling one by accident fails the other. */
+        expect(writtenIndexes('writeThroughAssertedAlias',),).toEqual([0,],);
+        expect(writtenIndexes('writeThroughParenAlias',),).toEqual([0,],);
         /* The structural half of the same defect, and the one that was falsified end to
          * end. `firstRow` and `writeThroughOwnedCall` were both offered `ReadonlyDeep`,
          * applying BOTH type-checked under TypeScript 7.0.2, and running the pair printed

@@ -155,7 +155,19 @@ export function recordAssignmentStore({
    * two, a store the analysis could not see".
    *
    * `targetResultSites` rather than the stored expression alone, so a local between the
-   * call and the store is followed the same way the write side follows one. */
+   * call and the store is followed the same way the write side follows one.
+   *
+   * Gated on what the stored value can carry, because this path does not go through
+   * `parameterIndexes` and so does not inherit its leaf test. Measured without the gate:
+   * `heldLabel = firstRow(config,).label` recorded `opaque=[0]` with store provenance for
+   * retaining a `string`, which is precisely the claim the leaf test exists to refuse.
+   * `storeHeldFresh` stayed empty only because its callee returns nothing, not because
+   * anything here recognised a primitive. */
+  if (!expressionCanCarryMutableState({
+    checker: project.checker,
+    node: node.right,
+  },))
+    return;
   recordResultRetentionSites({
     summary,
     sites: targetResultSites({

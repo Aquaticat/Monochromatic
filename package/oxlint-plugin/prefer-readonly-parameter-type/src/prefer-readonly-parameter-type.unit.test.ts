@@ -625,13 +625,15 @@ children: [
        * depends on. Every arrival belongs: a callable that hands back a piece of its own
        * parameter grants the caller no capability it lacked, and one that allocates shares
        * no identity with its argument. */
-      /* Eighteen after the binding record, which added `storeHeldFresh` to the offers and
-       * withheld `storeHeldResult` beside it. Three withheld now for a retention the
-       * origin walk cannot see on its own: through a call, through an iteration over a
-       * call result, and through a local holding one. */
+      /* Nineteen. Three are withheld for a retention the origin walk cannot see on its
+       * own: through a call, through an iteration over a call result, and through a local
+       * holding one. The rest keep their offers, including three that store a call result
+       * and must: two whose callee allocates, and one that stores only a primitive read
+       * off a returned value. That last arrival is the control for a gate the retention
+       * path was missing, and it belongs among the offers rather than beside them. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(18,);
+      },).length,).toBe(19,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls
