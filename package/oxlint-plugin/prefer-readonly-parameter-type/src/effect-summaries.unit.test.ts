@@ -862,6 +862,20 @@ await describe({
         /* Its control, so descending a returned literal attributes what its callables captured
          * rather than reporting every returned literal that holds one. */
         expect(structuralOpaque('handBackFreshIterator',),).toEqual([],);
+        /* A callable written inside the one being summarised has no summary of its own, since its
+         * body is scanned inline, so the deferred result relation had nothing to substitute
+         * against its call site and a store of what it handed back attributed nothing. Falsified.
+         *
+         * Answered with what the callable can reach rather than with what it returns, which
+         * over-approximates in the direction that withholds. A precise answer needs nested
+         * callables to carry summaries, which is larger than the falsification requires. */
+        expect(structuralOpaque('storeLocalFunctionResult',),).toEqual([0,],);
+        /* The member-call form, where the resolver answers about a value and a property is not
+         * one, so the receiver's authored literal is what answers. */
+        expect(structuralOpaque('storeArrowPropertyResult',),).toEqual([0,],);
+        /* The control, so following a local callee attributes what it reaches rather than
+         * reporting every store of a locally computed value. */
+        expect(structuralOpaque('storeFreshLocalFunctionResult',),).toEqual([],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came

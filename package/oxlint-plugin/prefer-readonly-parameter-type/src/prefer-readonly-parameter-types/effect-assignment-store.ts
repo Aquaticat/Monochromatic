@@ -28,7 +28,10 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
-import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
+import {
+  calledCallableOrigins,
+  transitiveCallableOrigins,
+} from './effect-callable-capture-closure.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { targetResultSites, } from './effect-result-binding.ts';
 import { possibleValueNodes, } from './effect-possible-values.ts';
@@ -208,6 +211,24 @@ export function recordAssignmentStore({
       packaged: callable,
     },)
       .forEach(function recordCapturedSlot(affectedSlot,): void {
+        addOpaqueEffect({
+          summary,
+          affectedSlot,
+          provenance,
+        },);
+      },);
+  },);
+  /* A call to a locally defined callable has no summary to defer against, since its body is
+   * scanned inline, so the retention recorded below substitutes nothing. Falsified: storing what
+   * a local function or a method on a local literal hands back left the parameter offered while
+   * the caller's row escaped. */
+  storedValues.forEach(function recordCalledCallable(value,): void {
+    calledCallableOrigins({
+      project,
+      bindingOriginBySymbolId,
+      node: value,
+    },)
+      .forEach(function recordReachedSlot(affectedSlot,): void {
         addOpaqueEffect({
           summary,
           affectedSlot,

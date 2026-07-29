@@ -2275,3 +2275,82 @@ export function handBackFreshIterator(
     next: (): { value: Row; } => ({ value: { label: 'fresh', }, }),
   };
 }
+
+/**
+ * Stores what a locally declared function hands back.
+ *
+ * Falsified. A callable written inside the one being summarised has no summary of its own, since
+ * its body is scanned inline, so the deferred result relation had nothing to substitute against
+ * its call site. The same store through a top-level callee recorded retention correctly all
+ * along.
+ *
+ * The inline scan also put the nested return into this callable's returned set, so a callable
+ * returning nothing claimed a returned origin. That fact is still there and is tracked with this
+ * shape.
+ *
+ * @param viaLocalFunction - Configuration whose row escapes into the outside binding.
+ *
+ * @example
+ * ```ts
+ * storeLocalFunctionResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeLocalFunctionResult(viaLocalFunction: Config,): void {
+  /**
+   * Local function handing back the row it closes over.
+   */
+  function read(): Row {
+    return viaLocalFunction.row;
+  }
+  held = read();
+}
+
+/**
+ * Stores what an arrow property on a local holder hands back.
+ *
+ * The member-call form. A member call resolves to no callable, because the resolver answers about
+ * a value and a property is not one, so the receiver's authored literal is what answers.
+ *
+ * @param viaArrowProperty - Configuration whose row escapes into the outside binding.
+ *
+ * @example
+ * ```ts
+ * storeArrowPropertyResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeArrowPropertyResult(viaArrowProperty: Config,): void {
+  /**
+   * Holder whose arrow property closes over the parameter.
+   */
+  const holder = {
+    read: (): Row => viaArrowProperty.row,
+  };
+  held = holder.read();
+}
+
+/**
+ * Stores what a locally declared function allocating its own row hands back.
+ *
+ * The control. Following a local callee must attribute what it can reach rather than report every
+ * store of a locally computed value.
+ *
+ * @param viaFreshLocal - Configuration the local function never names.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeFreshLocalFunctionResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshLocalFunctionResult(viaFreshLocal: Config,): number {
+  /**
+   * Local function naming nothing the caller owns.
+   */
+  function read(): Row {
+    return { label: 'fresh', };
+  }
+  held = read();
+  return viaFreshLocal.rows
+    .length;
+}

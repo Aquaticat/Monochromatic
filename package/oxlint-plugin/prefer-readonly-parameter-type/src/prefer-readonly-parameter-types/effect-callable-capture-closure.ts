@@ -42,17 +42,27 @@ import type {
   CallExpression,
   Node,
 } from 'typescript/unstable/ast';
-import { isCallExpression, } from 'typescript/unstable/ast/is';
+import {
+  isCallExpression,
+  isObjectLiteralExpression,
+  isPropertyAccessExpression,
+} from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { callableDeclaration, } from './effect-call-resolution.ts';
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { reachableValueSources, } from './effect-result-reach.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   collectAstNodes,
   OWNED_CALLABLE_UNAVAILABLE,
   type SlotOrigins,
 } from './effect-summary-model.ts';
+
+/**
+ * Origins carried by nothing, shared so a call to no known callable allocates none.
+ */
+const NO_REACHED_ORIGINS: ReadonlySet<EffectSlot> = new Set<EffectSlot>();
 
 /**
  * Builds a stable identity for any node, callable declaration or not.
@@ -206,4 +216,99 @@ function calledCallables({
         return [];
       return [callee,];
     },);
+}
+
+/**
+ * Collects caller origins the result of calling a locally defined callable can carry.
+ *
+ * A callable written inside the one being summarised has no summary of its own: its body is
+ * scanned inline, so the deferred result relation has nothing to substitute against its call
+ * site. Measured before this existed:
+ *
+ * ```ts
+ * function read(): Row {
+ *   return config.row;
+ * }
+ * bag.row = read();
+ * ```
+ *
+ * recorded `opaque=[]` and was offered, while the same store through a top-level callee recorded
+ * retention correctly. Falsified, driver printing the caller's row changed. The inline scan even
+ * put the nested return into the enclosing callable's returned set, so a callable returning `void`
+ * claimed a returned origin.
+ *
+ * Answered with what the callable can reach rather than with what it returns. Over-approximating,
+ * since the callable may return something freshly allocated, and it is the direction that
+ * withholds. A precise answer needs nested callables to carry summaries of their own, which is a
+ * larger change than the falsification requires.
+ *
+ * @param project - TypeScript project resolving the callee.
+ *
+ * @param bindingOriginBySymbolId - Origins of the callable being summarised.
+ *
+ * @param node - Expression that may be a call to a locally defined callable.
+ *
+ * @returns origins the result can carry, empty when the callee is not one.
+ *
+ * @example
+ * ```ts
+ * calledCallableOrigins({ project, bindingOriginBySymbolId, node });
+ * ```
+ */
+export function calledCallableOrigins({
+  project,
+  bindingOriginBySymbolId,
+  node,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly node: Node;
+},): ReadonlySet<EffectSlot> {
+  if (!isCallExpression(node,))
+    return NO_REACHED_ORIGINS;
+  /**
+   * Callable the callee expression resolves to, absent when nothing owned answers.
+   */
+  const callee = callableDeclaration({
+    project,
+    node: node.expression,
+  },);
+  if (callee !== OWNED_CALLABLE_UNAVAILABLE)
+    return transitiveCallableOrigins({
+      project,
+      bindingOriginBySymbolId,
+      packaged: callee,
+    },);
+  /* A member call on a local holder resolves to no callable, because the resolver answers about a
+   * value and `holder.read` is a property of one. Both `holder.read()` where `read` is a method
+   * and where it is an arrow property were falsified for that reason.
+   *
+   * The receiver's authored literal is what answers. Every binding the literal mentions is
+   * collected, without asking which property the call selected, exactly as the aggregate descent
+   * elsewhere declines to track keys: the name is recorded nowhere, narrowing would need a claim
+   * this cannot support, and taking all of them only withholds more. */
+  if (!isPropertyAccessExpression(node.expression,))
+    return NO_REACHED_ORIGINS;
+  /**
+   * Origins reachable through anything the receiver can be.
+   */
+  const reached = new Set<EffectSlot>();
+  reachableValueSources({
+    project,
+    node: node.expression
+      .expression,
+  },)
+    .forEach(function collectSource(source,): void {
+      if (!isObjectLiteralExpression(source,))
+        return;
+      transitiveCallableOrigins({
+        project,
+        bindingOriginBySymbolId,
+        packaged: source,
+      },)
+        .forEach(function collectOrigin(origin,): void {
+          reached.add(origin,);
+        },);
+    },);
+  return reached;
 }

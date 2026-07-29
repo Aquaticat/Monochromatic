@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(35,);
+      },).length,).toBe(36,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -751,8 +751,16 @@ children: [
           || message.includes('"neverReturned"',)
           || message.includes('"actuallyReached"',)
           || message.includes('"interpolated"',)
-          || message.includes('"iteratedOut"',);
+          || message.includes('"iteratedOut"',)
+          || message.includes('"viaLocalFunction"',)
+          || message.includes('"viaArrowProperty"',);
       },).length,).toBe(0,);
+      /* The nested-callee control, carrying the count from thirty-five to thirty-six. */
+      expect(messages.filter(function namesFreshLocal(message,): boolean {
+        return message.includes('"viaFreshLocal"',);
+      },),).toEqual([
+        'Parameter "viaFreshLocal" should be readonly: property rows is writable.',
+      ],);
       /* The two pass-two controls, carrying the count from thirty-three to thirty-five. A tag
        * handed a label retains nothing writable, and a returned iterator whose closure allocates
        * its own row captures nothing. */
