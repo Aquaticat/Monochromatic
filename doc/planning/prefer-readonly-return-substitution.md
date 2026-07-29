@@ -1337,3 +1337,44 @@ The parameter half stands.
  a closure written in a parameter initializer,
  is invisible to the holder scan because parameter initializers are siblings of the body.
 That is recorded as its own task rather than folded in here.
+
+## The omission count is cache-dependent, not a floor
+
+An earlier section here called the omission-warning count a floor for what the effect
+ index drops,
+ on the grounds that one of the two drop channels logs only at debug level.
+That reasoning was right and the conclusion was still too strong,
+ because it missed a third reason the count can read low.
+
+Measured across four captures of the same workspace:
+
+```text
+sweep-after-43     omitting=5
+sweep-after-45     omitting=5
+sweep-after-45fix  omitting=5
+sweep-quiet        omitting=0
+```
+
+The quiet run reports none,
+ and the upstream panic string is absent from it entirely.
+Nothing was fixed between the third and fourth captures.
+What changed is that the persistent cache served the callables that panic,
+ so the checker path that panics was never re-entered and nothing was omitted to warn
+ about.
+
+The cache identity is a digest of the loaded analyzer,
+ and the sweep loads a bundle,
+ so editing analyzer sources between runs does not invalidate it while the bundle stands.
+That is why the cache stayed warm across two runs whose sources differed.
+
+Confirmed by reconciling the diagnostics rather than trusting the counts.
+Findings naming `package/webapp-productivity/rss` number 43 in both captures,
+ and the apparent difference of two was the two omission warnings naming that same file.
+So the analysis produced identical verdicts;
+ only the record of what it failed on differed.
+
+What follows for anyone sizing the problem from that number.
+It counts what a run recomputed and failed on,
+ not what the index is missing.
+A warm cache reports zero while the same callables remain unanalysed,
+ and a cold run on an unchanged tree is the only reading worth quoting.
