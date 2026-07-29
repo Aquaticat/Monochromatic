@@ -161,8 +161,8 @@ export function measureThroughReturn(rows: Row[],): number {
  *
  * Pins a known boundary rather than a fixed defect. The deferred recording sits in
  * `effect-collection-member-effect.ts`, so it fires for a collection member call on a
- * returned result. A property write travels through `inspectDirectWrite` instead, whose
- * origin walk reaches the call and comes back with nothing, so this records no write.
+ * returned result. A property write travels through `inspectDirectWrite` instead, and
+ * a write through a local holding the result is the alias hop that still records nothing.
  *
  * Not demonstrated to be a false offer. Under `readonly Row[]` an element property write
  * is legal, exactly as the retraction recorded in the planning document established, so
@@ -182,4 +182,114 @@ export function writePropertyThroughReturn(rows: Row[],): void {
   const first = handBack(rows,)[0];
   if (first !== undefined)
     first.label = 'changed';
+}
+
+/**
+ * Structural holder whose interior a callee can hand back.
+ */
+type Config = {
+  row: Row;
+};
+
+/**
+ * Hands back a piece of the caller's own structure.
+ *
+ * Offering `readonly` here stays honest. This callable writes nothing, and handing the
+ * caller a value the caller already reaches grants no capability. What the offer depends
+ * on is the caller substituting through the returned fact, which is the whole point of
+ * recording it.
+ *
+ * @param config - Structure whose row is handed back.
+ *
+ * @returns caller's own row.
+ *
+ * @example
+ * ```ts
+ * firstRow({ row: { label: '', }, },);
+ * ```
+ */
+function firstRow(config: Config,): Row {
+  return config.row;
+}
+
+/**
+ * Builds a fresh row, sharing no identity with its argument.
+ *
+ * @param config - Structure read to decide the fresh label.
+ *
+ * @returns newly allocated row.
+ *
+ * @example
+ * ```ts
+ * freshRow({ row: { label: '', }, },);
+ * ```
+ */
+function freshRow(config: Config,): Row {
+  /**
+   * Row this callable allocates and owns.
+   */
+  const fresh: Row = { label: 'fresh', };
+  if (config.row
+    .label
+    .length
+    === 0)
+    fresh.label = 'empty';
+  return fresh;
+}
+
+/**
+ * Writes a property straight onto a returned piece of caller state.
+ *
+ * The shape that falsified the write path. Both this parameter and `firstRow`'s were
+ * offered `ReadonlyDeep`, applying both compiled, and running the pair mutated the
+ * caller's row. Assignability ignores `readonly` property modifiers, so `firstRow`
+ * declaring `Row` launders the deeply readonly value back into a mutable one silently.
+ *
+ * @param config - Structure the caller owns and this callable writes into.
+ *
+ * @example
+ * ```ts
+ * writeThroughOwnedCall({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughOwnedCall(config: Config,): void {
+  firstRow(config,)
+    .label = 'written';
+}
+
+/**
+ * Deletes a property from a returned piece of caller state.
+ *
+ * A second write form through the same seam, present because `inspectDirectWrite` serves
+ * three syntactic shapes and a fix that reached only assignment would be a fix for one of
+ * them.
+ *
+ * @param config - Structure the caller owns and this callable deletes from.
+ *
+ * @example
+ * ```ts
+ * deleteThroughOwnedCall({ row: { label: '', }, },);
+ * ```
+ */
+export function deleteThroughOwnedCall(config: Config,): void {
+  // oxlint-disable-next-line no-restricted-syntax/no-delete -- Fixture proving the delete form reaches the same write seam as assignment; the effect under test is the point.
+  delete (firstRow(config,) as Partial<Row>).label;
+}
+
+/**
+ * Writes onto a freshly built row, which the caller does not own.
+ *
+ * The control that keeps the fix from being a blanket withholding. `freshRow` allocates,
+ * so its returned set is empty and substitution adds nothing, leaving the offer standing.
+ *
+ * @param config - Structure read to seed a fresh row.
+ *
+ * @example
+ * ```ts
+ * writeThroughFreshCall({ row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughFreshCall(config: Config,): void {
+  freshRow(config,)
+    .label = 'written';
 }

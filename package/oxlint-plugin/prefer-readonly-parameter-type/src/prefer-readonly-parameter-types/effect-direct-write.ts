@@ -14,8 +14,10 @@ import { isIdentifier, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { expressionOrigins, } from './effect-binding-origins.ts';
+import { recordResultApplication, } from './effect-result-substitution.ts';
 import {
   addEffectSlots,
+  expressionRoot,
   type MutableEffectSummary,
   type SlotOrigins,
 } from './effect-summary-model.ts';
@@ -58,5 +60,26 @@ export function inspectDirectWrite({
       bindingOriginBySymbolId,
       node,
     },),
+  },);
+  /* The origin walk above stops dead at a call. `expressionValueOrigins` strips the
+   * access layers, finds a `CallExpression` at the root, asks `provenanceSuccessors` what
+   * feeds it and is told nothing, so `firstRow(config,).label = 'written'` recorded no
+   * write at all.
+   *
+   * That was a false offer rather than a precision gap, and the falsification is in
+   * `doc/planning/prefer-readonly-return-substitution.md`, section "The write path never
+   * asks what a call returned". `firstRow` and `writeThroughOwnedCall` were both offered
+   * `ReadonlyDeep`, applying both type-checked under TypeScript 7.0.2, and running the
+   * pair printed the caller's row with the written label. It compiles because assignability
+   * ignores `readonly` property modifiers, so a callee declaring `Row` hands a
+   * `ReadonlyDeep<Row>` back as mutable with no diagnostic.
+   *
+   * The root is passed rather than the whole target because the write lands on the call's
+   * result, not on a projection of it. `deferrableResultSite` unwraps the identity-keeping
+   * wrappers itself, so only the access layers have to come off here. */
+  recordResultApplication({
+    summary,
+    node: expressionRoot(node,),
+    kind: 'mutated',
   },);
 }
