@@ -301,8 +301,11 @@ The rewritten file type-checks clean under TypeScript 7.0.2,
 So a parameter the rule annotated deeply readonly has its reachable state rewritten
  by the very callable carrying the annotation.
 That is a false offer in the strict sense used in "What the caller-side gap costs",
- it is live in the shipped rule,
  and no part of the rule was mutated to produce it.
+It was live when measured,
+ at `768638274`,
+ and closed by the holder closure in `7a50e47d9`:
+ all four probe functions report receiver opacity now and none is offered.
 
 Three facts about `ReadonlyDeep` explain why the laundering compiles,
  each measured against TypeScript 7.0.2 rather than reasoned from how the projection ought to behave:
@@ -473,6 +476,77 @@ The number that would narrow the change rather than ship it:
  more than about a fifth of the 666 receiver-opacity findings appearing as new,
  or any sampled new finding tracing to a binding occurrence rather than a value use.
 Either says the closure is catching aliasing in general instead of aliasing of a tracked result.
+
+## What the holder-closure sweep measured
+
+Single-threaded,
+ `9b65b74f8` behaviour,
+ 8 minutes 34 seconds wall,
+ inside the 8 minutes 31 seconds to 9 minutes 43 seconds range of the four earlier sweeps.
+That is the answer to the cost question the closure raises:
+ it re-walks each transfer site's source on every pass and collects body nodes once per
+ tracked call,
+ which is superlinear in an alias chain,
+ and no part of it is visible in the wall time across 128 packages.
+
+Workspace totals moved from 7201 to 7202.
+This rule moved from 1937 to 1938.
+Against the pre-registered criteria:
+
+-    Offers stayed at 32.
+     The closure revoked no offer anywhere in the workspace,
+      which is the outcome the pre-registration would have read as a warning sign had it
+      been paired with a large opacity rise.
+-    Receiver opacity rose by one,
+      666 to 667,
+      against a threshold of roughly a fifth of 666.
+-    Argument opacity,
+      dishonest-readonly and stale-mutates counts are unchanged.
+
+The single new report is `getOnlyHandler` in
+`package/pi-plugin/agent-settled-notification/src/mise.verify-extension.ts`,
+ and it is the intended shape rather than a lookalike:
+
+```ts
+const handlers = handlersByEvent.get(event,);
+const [handler,] = handlers;
+return handler;
+```
+
+`handlers` holds the member result,
+ array destructuring puts `handler` in the holder set,
+ and returning it escapes.
+The pre-registration asked whether any new finding traces to a binding occurrence rather
+ than a value use.
+This one traces to the return.
+The binding occurrence `[handler,]` is skipped by `occurrenceEstablishesBinding`,
+ which is what the fixture's `destructureReadInPlace` control pins.
+
+Three argument-opacity findings kept their anchor,
+ category and parameter,
+ while changing the boundaries they name.
+Two in `package/oxlint-plugin/test-import/src/package-manifest.ts` gained `pending.pop`,
+ which follows from the same closure:
+ `pending.pop()` feeds `current`,
+ an assertion aliases it to `fallbacks`,
+ and `pending.push(...fallbacks,)` spreads it into a call,
+ so the member call no longer discharges and joins the boundary list.
+One in `package/webapp-productivity/done/src/server.ts` renamed its boundary from
+ `h3@2.0.1-rc.26 . serveStatic` to `serveStatic` with a local location.
+
+Both were checked rather than assumed.
+Two runs of each package at the current commit agree with each other,
+ so neither is run-to-run variation,
+ and rebuilding the rule at `a57bb6f56` reproduces the `h3` spelling,
+ so the closure is what changed it.
+Why a discharge decision changes which identity a boundary is reported under is not
+ explained here,
+ and it is worth knowing before the next change to this path.
+
+That spread case also names the next precision question.
+`useEscapes` counts a direct call argument as attributed and a spread element as escaping,
+ while `parameterIndexes` and `provenanceSuccessors` both walk spreads,
+ so the escape test disagrees with the argument analysis about identical state.
 
 ## Consequence carried meanwhile
 
