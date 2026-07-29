@@ -133,6 +133,8 @@ then `mise run //package/git-policy/cli:perf:lifecycle-latency` invokes `rolldow
   `package/git-policy/cli/package.json`.
 - Failed pre-fix run inspected:
   [run 30440155739][failed-run].
+- Successful corrected workflow run:
+  [run 30442283425][corrected-run].
 
 Retrieve the trigger and recent-run evidence with:
 
@@ -147,7 +149,34 @@ gh run list \
 gh run view 30440155739 \
   --repo Aquaticat/Monochromatic \
   --log-failed
+gh workflow run cli-git-performance.yml \
+  --repo Aquaticat/Monochromatic \
+  --ref main
+gh run watch 30442283425 \
+  --repo Aquaticat/Monochromatic \
+  --exit-status
 ```
+
+### Corrected hosted run
+
+Manual dispatch run `30442283425` completed successfully at revision
+`5ba6d1b8ed68b158ee669da391ea39c52c0ed937`.
+The `detect-version-bump` job selected the manual exception,
+the lifecycle job installed the corrected `@monochromatic-dev/git-policy-cli...` dependency closure,
+enforced every measured budget,
+and uploaded artifact `cli-git-lifecycle-latency-1`.
+The artifact response reported 7,133 bytes and `expired=false`.
+
+The exact inline detector was also extracted into a disposable Git repository and exercised against a committed base
+manifest.
+The result catalog was:
+
+```text
+manual=true unchanged-push=false changed-pull-request=true missing-base=error invalid-version=error
+```
+
+Neither the workflow implementation commit nor the documentation commits created a `push` run,
+confirming that changes outside `package/git-policy/cli/package.json` do not satisfy the automatic trigger.
 
 ### Runs that start the benchmark after the correction
 
@@ -307,4 +336,5 @@ Monochromatic configured an unfiltered push trigger and retained a stale package
 Commit `3ab61f0d3bfddbf017127617591d8b8c7abd4910` corrected both at the repository boundary.
 ~~~
 
+[corrected-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/30442283425
 [failed-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/30440155739
