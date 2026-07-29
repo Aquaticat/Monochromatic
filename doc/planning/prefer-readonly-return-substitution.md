@@ -2308,3 +2308,104 @@ It writes nothing,
  and handing back a value the caller already reaches grants no capability the caller
  lacked,
  which is the policy `doc/decision/prefer-readonly-result-provenance.md` records.
+
+## Stage two, a store the analysis could not see
+
+`held = config.row` recorded opacity.
+`held = firstRow(config,)` recorded nothing,
+ for the same reason the write path recorded nothing:
+ `parameterIndexes` walks to the root of the stored expression,
+ finds a call,
+ and comes back empty.
+
+Falsified the same way stage one was,
+ and to the same standard:
+
+```text
+firstRow               offered ReadonlyDeep
+storeOwnedResult       offered ReadonlyDeep
+both applied           type-checks clean
+driver output          caller row label is now: written
+```
+
+The write that observes it happens in a third callable taking no parameters at all,
+ so nothing about the mutation is visible at the annotated call.
+That is what makes the store class worth its own stage:
+ the effect and its cause sit in different functions,
+ and only the retention record connects them.
+
+The deferred retention carries provenance,
+ which the two existing kinds do not.
+Store-caused opacity and call-caused opacity are different things to a reader,
+ and the vocabulary that separates them is `effect-retention-provenance.ts`.
+A retained application arriving without provenance would land as an unexplained opaque
+ slot,
+ which the diagnostic reads as a genuine unknown and reports as an unresolved effect
+ addressed to an unresolved implementation,
+ which is exactly the confusion that vocabulary was built to end.
+The propagation throws rather than defaulting,
+ since the only way to hold one is a payload written by something other than this code.
+
+Substitution writes `summary.opaque` and not `summary.directOpaque`,
+ which is the whole difference between this and `addOpaqueEffect`.
+The direct set is seeded into the propagated one once,
+ at the end of the syntactic pass,
+ and this runs afterwards:
+ an addition to the direct set here would land in the provenance map and never reach the
+ set the verifier reads.
+That would have been a silent half-fix,
+ recording the cause while leaving the offer standing.
+
+At the boundary,
+ on four parameters:
+
+```text
+firstRow                    offered
+freshRow                    offered
+storeFreshThroughOwnedCall  offered
+storeOwnedResult            withheld, and silent
+```
+
+Silent matters as much as withheld.
+The retention provenance routes this to the offer gate rather than to the opacity
+ report,
+ so no reader is told about an unresolved effect that does not exist.
+
+### The control was the hard part again
+
+`storeFreshThroughOwnedCall` stores a call result too,
+ and must keep its offer,
+ or the fix is a rule against storing any call result rather than an attribution.
+It needed `freshRow` written in the local-and-conditional shape,
+ because the obvious spelling,
+ `return { label: config.row.label, }`,
+ carries a parameter origin for a copied string,
+ which was measured while building the stage one control.
+
+Two shapes,
+ two controls,
+ and both controls were nearly written in the one way that would have made them agree
+ with the defect.
+
+## The stage one sweep says the shape is not here
+
+Zero delta against `sweep-after-45-reverted`,
+ offers steady at thirty-two.
+The criterion was registered before the run:
+ offers should FALL if a write landing directly on an owned call's result occurs
+ anywhere in this repository.
+They did not,
+ so it does not,
+ and the fixture is the only thing proving stage one.
+Third instance of that pattern in this work.
+
+The capture has a defect of its own worth recording rather than hiding.
+I rebuilt the plugin and the sidecar for stage two roughly three minutes into its lint
+ phase,
+ overwriting the file oxlint had loaded.
+Whether that reached the running process depends on load timing I did not verify.
+The result is zero delta,
+ which contamination could only have hidden rather than manufactured,
+ but the run is not clean and is not cited as though it were.
+The stage two capture was launched with no concurrent build,
+ and it covers both stages.
