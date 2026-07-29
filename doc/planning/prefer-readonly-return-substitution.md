@@ -440,7 +440,8 @@ Count these categories by their distinctive phrase and check the parts sum to th
 
 ## Sweep pre-registration for the holder closure
 
-Written before the sweep finished, because the closure reports more by construction.
+Written before the sweep finished,
+ because the closure reports more by construction.
 Any delta at all is consistent with the fix working,
  and equally consistent with it over-reporting exactly as the review warned,
  so a number on its own decides nothing.
