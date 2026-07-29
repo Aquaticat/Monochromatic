@@ -2471,3 +2471,86 @@ Asserting the exact value rather than equality of the two,
 
 A cache test whose fixture exercises none of the cached shapes measures the counters and
  calls it reuse.
+
+## What the stronger model found in stage two that I did not
+
+Three things, one of them a defect I wrote.
+
+### Progress has to count the provenance
+
+`substituteRetainedOrigins` decided whether it had changed anything by asking whether the
+ opaque slot set grew,
+ while adding the provenance fact unconditionally.
+A slot already opaque from some other cause therefore gained a new retention fact and the
+ pass reported no change.
+
+That is not merely conservative.
+`propagateUncertaintyProvenance` reads a callee's `opaqueProvenanceBySlot` DURING the
+ fixed point,
+ and summaries are walked in map order,
+ so a caller walked before its callee gained the fact is never revisited and the cause
+ never crosses the call edge.
+
+The consequence is the safe direction but it is the exact confusion the retention
+ vocabulary was built to end.
+Traced through the verifier rather than guessed:
+ a caller missing the fact still has the slot opaque through ordinary edge propagation,
+ `boundariesAreReportable` answers true for an empty fact list because absence of
+ provenance is a genuine unknown,
+ and `verifier.ts` returns early at the opacity branch with an unresolved-effect report.
+So the parameter that should be withheld quietly is instead handed a report naming
+ remedies for a call that does not exist.
+Not a false offer.
+I first reasoned it was one,
+ by remembering the offer gate as the only test of opacity,
+ and reading `verifier.ts` corrected that:
+ the opacity branch sits ahead of the offer and returns.
+
+Fixed by comparing the fact count across the insertion.
+Recorded as reasoned rather than reproduced:
+ triggering it needs a specific summary map order,
+ and a test that depended on that order would pin the order rather than the invariant.
+The invariant is the one the module already states,
+ which is that a propagation step reports every change it makes.
+
+### The optional field made the guard the only defence
+
+`ResultApplication` had `kind` widened to include `retained` and `provenance` added as
+ optional,
+ with a runtime throw covering the impossible combination.
+The combination was not impossible.
+`{ callSiteKey, kind: 'retained' }` type-checked,
+ so any well-typed literal could reach the throw,
+ and the throw was inside the fixed point.
+
+Rewriting the type as a union,
+ with `provenance?: never` on the non-retaining arm,
+ moved the invariant into the type.
+TypeScript then narrowed the guard's subject to `never` and rejected the line,
+ which is how the guard was shown to be dead rather than argued to be.
+
+### Three more fields rehydration reads and validation did not check
+
+`returned` was serialized,
+ restored through `restoredSlots`,
+ and absent from the slot arrays `isEffectSummary` checks.
+A payload missing it passed validation and crashed inside rehydration,
+ which is the one outcome `rejects corrupt nested persistent payloads` says must not
+ happen.
+
+`isCallEdge` validated `calleeKey` and `calleeFileName` and not `callSiteKey`,
+ which is the key a deferred result use finds its edge by and the only one.
+An edge accepted with a malformed key matches no application,
+ so the use is skipped,
+ and a skipped use is a missing effect rather than a loud failure.
+That one can produce a false offer.
+
+Opaque provenance permitted a repeated slot,
+ which `new Map(...)` resolves by keeping the last entry and discarding the facts recorded
+ against the others.
+The serializer writes from a `Map` and cannot produce a repeat,
+ so a repeat is proof the payload was written by something else.
+
+Every one of these was reachable only through a payload edited rather than superseded,
+ since the cache digest covers version skew.
+That is a narrow door and it was standing open.
