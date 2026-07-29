@@ -56,6 +56,18 @@ const RESULT_PROVENANCE_SOURCE = readFileSync(
   'utf8',
 );
 
+/** Fixture storing a member result beyond the callable that produced it. */
+const ASSIGNMENT_STORE_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-assignment-store-invalid.ts',
+  import.meta.url,
+),);
+
+/** Current assignment-store fixture text. */
+const ASSIGNMENT_STORE_SOURCE = readFileSync(
+  ASSIGNMENT_STORE_PATH,
+  'utf8',
+);
+
 /** Statusline source proving audited object-property callback invocation. */
 const STATUSLINE_USAGE_PATH = fileURLToPath(new URL(
   '../../../pi-plugin/statusline/src/usage-warning.ts',
@@ -276,6 +288,80 @@ await describe({
         /* A function returning nothing parameter-derived records nothing, so the fact
          * is not simply "every callable returns something". */
         expect(returnedIndexes('readOnlyLookupEffect',),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'keeps receiver opacity for a member result stored beyond the callable, and discharges a local transfer',
+      fn: async () => {
+        /* The store cases were offered `readonly` before `assignmentStoreEscapes`. Every
+         * caller of `useEscapes` hands it `valueConsumer` of the node, that ascends the
+         * right operand of an assignment, and so the branch written to classify a store
+         * could never receive one: `sink.value = rows.at(0,)` arrived as the assignment
+         * expression, whose parent is an `ExpressionStatement`, and was discarded as
+         * consumed in place. Measured by rebuilding at the prior commit, where all four
+         * cases below are offered.
+         *
+         * The controls carry the other half. Classifying every assignment as a store
+         * would report `assignToLocal` too, and a local transfer keeps the value inside
+         * the body where the holder set is responsible for it. */
+        const session = openSemanticFile({
+          fileName: ASSIGNMENT_STORE_PATH,
+          sourceText: ASSIGNMENT_STORE_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns opaque parameter indexes in ascending order.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            ASSIGNMENT_STORE_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /** Store into a caller-owned property. */
+        const property = opaqueIndexes('storeIntoProperty',);
+        /** Store into a caller-owned element position. */
+        const element = opaqueIndexes('storeIntoElement',);
+        /** Assignment to a plain local, which stays inside the callable. */
+        const local = opaqueIndexes('assignToLocal',);
+        /** Result consumed in place, never bound. */
+        const inPlace = opaqueIndexes('readInPlace',);
+        closeSemanticBridge();
+        /* The receiver keeps its opacity, because nothing follows the stored element. */
+        expect(property,).toEqual([0,],);
+        expect(element,).toEqual([0,],);
+        /* And the controls stay discharged. Removing the locality test from
+         * `targetIsCallableLocal`, so that every assignment target counts as a store,
+         * turns `local` into `[0]` while leaving both cases above passing. */
+        expect(local,).toEqual([],);
+        expect(inPlace,).toEqual([],);
       },
     },),
     it({
