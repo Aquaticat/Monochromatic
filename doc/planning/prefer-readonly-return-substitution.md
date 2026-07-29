@@ -4098,3 +4098,71 @@ What carries the correctness in every one of these is the falsification:
  and a driver observed the caller's state change.
 The sweep only ever answered a different question,
  which is what the change costs everything else.
+
+## A lexical scanner answering a call-graph question, fixed in both directions
+
+The capture walk follows calls now.
+
+```ts
+const read = (): Row => config.row;
+holder.produce = (): Row => read();
+```
+
+The stored arrow names only `read`, and a local bound to a function expression carries no
+ parameter origin,
+ so the lexical scan came back empty and the parameter was offered.
+Falsified: annotation applied, type-checked clean beside a control whose direct write was
+ rejected, driver changed the caller's row.
+
+This is the same defect as the over-reporting recorded against task sixty-four,
+ pointing the other way.
+One scanner was answering a question about a call graph by reading names,
+ so it was wrong twice at once:
+ naming bindings a read-only body merely mentions,
+ and missing captures that leave through a call.
+
+Applied at all three capture sites rather than one,
+ because they ask the same question and fixing one would have looked correct while the identical
+ shape stayed invisible next door.
+Deliberately not applied to `parameterIndexes`,
+ which feeds the unresolved boundary,
+ where over-approximating withholds on ordinary `map` and `filter` code.
+
+### The second surviving mutant, and a claim of mine that was backwards
+
+Deleting the call-following fails immediately.
+
+Deleting the **source-file bound** survived the entire suite.
+
+The first surviving mutant this session exposed a design decision nothing measured,
+ and the answer was a new fixture.
+This one is different,
+ and the answer is a correction.
+The module claimed the bound was "a soundness condition rather than a budget".
+That is backwards.
+
+`packagedCallableOrigins` resolves each named binding to a symbol and looks it up in the origin
+ map of the callable being summarised.
+A cross-file callee's body names its own symbols,
+ absent from that map,
+ so following it contributes nothing.
+It also loses nothing,
+ because a callable able to capture those bindings is written inside the callable that owns them
+ and therefore shares its file.
+
+So the bound skips work whose answer it cannot change.
+No assertion can defend it,
+ the mutant was right to survive,
+ and the cost it avoids is unmeasured.
+Wall clock is the obvious instrument and has already failed twice here,
+ so the honest record is that the bound is justified by the mechanism and not by a measurement.
+
+### The control no assertion could otherwise provide
+
+`storeMutuallyRecursiveClosures` pairs two nested callables that call each other,
+ with the capture in the second.
+It is the termination control,
+ and it is unlike every other fixture in this work:
+ a walk that failed to terminate would hang rather than answer wrongly,
+ so no ordinary assertion could catch it.
+What makes the fixture a test is that the suite completes at all.
