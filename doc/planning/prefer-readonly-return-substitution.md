@@ -650,6 +650,81 @@ Whether either false offer occurred in this workspace before today is unmeasured
  a finding that moved.
 Sampling the lost offers is the closest available answer.
 
+## What the substitution sweep measured
+
+Single-threaded,
+ 9 minutes 46 seconds wall,
+ three seconds above the top of the range of the five earlier sweeps and inside their spread.
+No `EffectPropagationError` anywhere,
+ which was checked first rather than inferred from the counts:
+ the loop bound rose to four dimensions with this change,
+ and the loop throws at its bound rather than returning a partial answer.
+
+Workspace totals stayed at 7202.
+This rule stayed at 1938.
+Every category is unchanged,
+ and the finding sets are identical as anchored message multisets,
+ so nothing moved at all.
+
+Against the pre-registered criteria:
+ offers did not fall,
+ and the two categories that had to stay still did.
+The prediction that offers would fall was wrong,
+ and the reason is the same one that made the assignment-store fix inert:
+ the shape does not occur here.
+
+So this repeats the pattern of the store fix rather than that of the holder closure.
+Correct on constructed input,
+ inert on real input,
+ and the evidence rests entirely on the fixture and the three mutations.
+Stating that plainly is worth more than filing it as a win,
+ because the sweep was the only thing that could have spoken about the workspace and it
+ said nothing.
+
+One thing the sweep could not have measured,
+ recorded before it ran and worth repeating after:
+ whether either false offer occurred here before today.
+The evidence for that would be an offer now absent for the right reason,
+ which is indistinguishable in a diff from an offer that was never there.
+
+## What stage one does not reach
+
+Measured after the sweep,
+ prompted by review rather than found by the sweep,
+ and pinned by an assertion in `effect-summaries.unit.test.ts`.
+
+The deferred recording sits in `effect-collection-member-effect.ts`,
+ so it fires when the mutating operation is a default-library collection member call on
+ the returned result.
+A property write travels a different path:
+
+```ts
+export function writePropertyThroughReturn(rows: Row[],): void {
+  const first = handBack(rows,)[0];
+  if (first !== undefined)
+    first.label = 'changed';
+}
+```
+
+Measured:
+ `mutated=[]`.
+`inspectDirectWrite` resolves the write's origins through a walk that reaches the call and
+ returns nothing,
+ and no deferred relation is recorded there.
+
+So the honest description of what landed is
+ "collection-member mutations on a returned result,
+ and returns of one",
+ not "writes through a returned parameter".
+The wider phrasing was in an earlier draft of this document and is withdrawn.
+
+This is a boundary rather than a demonstrated false offer.
+Under `readonly Row[]` an element property write is legal,
+ which is the retraction recorded in "What the caller-side gap costs",
+ so the shallow offer here is honest.
+The structural projection is where the same gap would bite,
+ and that is unmeasured.
+
 ## Consequence carried meanwhile
 
 `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts` carries a scoped `unicorn/prefer-at` disable
