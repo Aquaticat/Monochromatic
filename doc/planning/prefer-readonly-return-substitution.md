@@ -784,3 +784,83 @@ So `readonly Row[]` here is a false annotation in the strict sense,
 
 Whether any of these shapes occurs in the workspace today is unmeasured,
  and no sweep has looked.
+
+## Sweep pre-registration for the root parent walk
+
+Written before the sweep ran,
+ and unlike the two before it this one starts from a measurement rather than a prediction.
+
+The three sweep captures already on disk carry the answer in their warning stream,
+ which no earlier reading of them used.
+Counting the demand index's omission warning by cause:
+
+```text
+sweep-after-42   5 typescript-go tuple panic   0 parent read
+sweep-after-41   5 typescript-go tuple panic   3 parent read
+sweep-after-40   5 typescript-go tuple panic   3 parent read
+```
+
+The captures run in that chronological order,
+ so the reading is unambiguous:
+ the holder closure introduced the crash.
+`effect-result-holders.ts` calls `targetIsCallableLocal`,
+ that call reaches `nodeWithin`,
+ and before the fix `nodeWithin` walked onto an absent parent for any target declared
+ outside the callable body.
+Every previous statement that the holder closure moved one finding was made from the
+ diagnostic lines alone,
+ with the warning stream in the same file unread.
+Three callables were being deleted from the effect index by a change I had already called
+ measured.
+
+The three are all dependency code,
+ not workspace code:
+
+-    `@earendil-works/pi-coding-agent` `dist/core/tools/file-mutation-queue.js`
+-    `h3@2.0.1-rc.26` `dist/h3.mjs`
+-    `yaml@3.0.0-1` `dist/directives-CiM56lHW.js`
+
+That placement decides which direction findings can move.
+A deleted callee is absent rather than empty,
+ and `propagateEffects` gives a caller of an absent callee opacity on every slot,
+ so the workspace callers of these three were taking opacity for a reason that no longer
+ holds.
+The expected direction is therefore opacity falling,
+ which is the exact movement the substitution pre-registration named as its stop signal.
+That criterion does not carry over,
+ and saying so here is the point of writing this before the numbers arrive.
+
+What each direction has to survive:
+
+-    Omission warnings.
+     The parent-read count must reach zero.
+     The panic count must stay at 5,
+      since nothing in this change touches the upstream checker crash.
+     A parent read surviving means a third root walk exists that neither fix found.
+-    Opacity falling.
+     Each lost finding must name a call into one of the three packages above.
+     This has to be checked against the authored call text,
+      because the internal provenance string `callable without an effect summary` does not
+      reach the rendered message:
+      measured at zero occurrences across the whole 5.5 MB capture.
+     A lost opacity finding whose calls all resolve inside the workspace is unexplained by
+      this change and is the stop signal.
+-    Offers rising.
+     Admissible,
+      and only where a recovered callee turns out to write nothing.
+     Each new offer must be sampled against the recovered summary rather than assumed,
+      since a recovered callee that does write should withhold the offer instead.
+-    Anything moving in a file with no path to those three packages.
+     Not admissible.
+     The fix changes one predicate on a walk that previously threw,
+      so a callable that never threw should be unaffected.
+
+The number that would narrow the change rather than ship it:
+ a surviving parent read,
+ or a new offer on a parameter whose recovered callee mutates it.
+
+One thing this sweep cannot establish,
+ stated so a clean result is not overread.
+It measures what the fix recovered.
+It does not measure what remains deleted for other causes,
+ and the five panics are proof that the effect index still drops callables silently.
