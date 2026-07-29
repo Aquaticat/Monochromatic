@@ -233,8 +233,12 @@ function fakePiApi(): {
     setThinkingLevel(level: string,) {
       void level;
     },
-    registerProvider(name: string,) {
-      registrations.push(`provider:${name}`,);
+    registerProvider(
+      providerOrName: unknown,
+      config?: unknown,
+    ) {
+      void config;
+      registrations.push(`provider:${String(providerOrName,)}`,);
     },
     unregisterProvider(name: string,) {
       registrations.push(`unprovider:${name}`,);
