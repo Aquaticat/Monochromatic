@@ -538,6 +538,10 @@ await describe({
         const storedIteration = structuralOpaque('storeIterationBinding',);
         /** Property stored into a local of the enclosing callable. */
         const storedEnclosing = structuralOpaque('storeIntoEnclosingLocal',);
+        /** Property stored past the enclosing callable from a nested one. */
+        const storedFromNested = structuralOpaque('storeFromNestedIntoModuleBinding',);
+        /** Store written inside a nested callable nothing ever runs. */
+        const storedFromInert = structuralOpaque('storeFromInertNested',);
         /** Property assigned to another parameter. */
         const intoParameter = structuralOpaque('assignIntoParameter',);
         /** Property assigned to a local the callable declares. */
@@ -566,11 +570,19 @@ await describe({
         expect(storedNullish,).toEqual([0,],);
         expect(storedConjunction,).toEqual([0,],);
         expect(storedIteration,).toEqual([0,],);
-        /* One store still silent, and named rather than left to be rediscovered. The
-         * assignment sits in a nested callable whose own parameters are none of these, so
-         * the origins the store would carry belong to the enclosing callable and this
-         * classification never sees them together. */
+        /* Silent, and correctly so, which took a refuted explanation to establish. This
+         * was recorded as a hole caused by nesting: the store leaves the nested body, and
+         * the origins were said to belong to the enclosing callable where the
+         * classification never sees them. `storeFromNestedIntoModuleBinding` refutes that
+         * by holding the nesting and the invocation fixed and moving only the target. The
+         * real reason is that the callable being summarised is the enclosing one and
+         * `captured` is its own per-invocation local, which dies when the call returns. */
         expect(storedEnclosing,).toEqual([],);
+        expect(storedFromNested,).toEqual([0,],);
+        /* The activation half of the same pair. Escaping syntax alone must not report, or
+         * the shape above would be satisfied by a scan that never asked whether the nested
+         * callable runs. */
+        expect(storedFromInert,).toEqual([],);
         /* The one store no assignment-site test can reach on its own, kept beside the
          * others because it flips for a different reason. A callee's summary does not
          * exist while its callers are scanned, so the right side of this store has no

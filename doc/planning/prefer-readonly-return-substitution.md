@@ -1122,15 +1122,16 @@ What the sketch gets wrong:
      Either the vocabulary widens to cover a store or a store-specific wrapper owns the
       provenance.
 
-One disagreement resolved rather than split.
+One disagreement resolved rather than split,
+ and resolved the wrong way.
 A nested callable storing into a local of an enclosing callable was proposed as a case to
  leave out of a first stage,
  on the grounds that the enclosing local is owned.
-It is not owned by the nested body,
- sibling closures and later invocations can observe what was stored there,
- and lexical capture proves nothing about lifetime.
-`storeIntoEnclosingLocal` is therefore a store this must report,
- not a hole to name.
+The answer recorded here was that the local is not owned by the nested body,
+ that sibling closures and later invocations can observe what was stored there,
+ and that `storeIntoEnclosingLocal` is therefore a store this must report.
+Measurement refuted every clause of that.
+The correction is in "What a nested store actually measures".
 
 ## The rest narrowing shipped unsound, and how that was caught
 
@@ -1459,13 +1460,12 @@ The classification sees a value leaving the callable and never asks what the res
  which is the difference between asking where a value went and asking what a type claims
  to hold.
 
-Two holes stay open and named.
-`storeIntoEnclosingLocal` assigns from a nested callable whose own parameters are none of
- these,
- so the origins the store would carry belong to the enclosing callable and this
- classification never sees them together.
+One hole stays open and named.
 `storeThroughOwnedCall` has no origins on its right side at all,
  because a callee's summary does not exist while its callers are scanned.
+`storeIntoEnclosingLocal` was recorded here as a second hole,
+ with an explanation that measurement later refuted;
+ see "What a nested store actually measures".
 
 One offer was lost that deserves to exist,
  and one unsound offer was closed that had been documented as unsound.
@@ -1526,3 +1526,135 @@ Every commit since the previous capture is this work,
  and the tree is otherwise quiet apart from an untracked PNG at the repository root left
  by a concurrent session,
  which oxlint does not read.
+
+## What a nested store actually measures
+
+The record above said `storeIntoEnclosingLocal` reports nothing because the origins
+ belong to the enclosing callable and the classification never sees them together.
+That was written from reasoning rather than measurement,
+ and a reviewer named the competing mechanism:
+ `activeCallableBodyNodes` returns descendants of the outer body filtered by
+ `insideOnlyActiveClosures`,
+ so a node inside an invoked nested closure is in the scanned set with `body` still the
+ outer body,
+ and `targetIsCallableLocal` therefore answers yes because `captured` is declared inside
+ that outer body.
+
+Two explanations, one experiment.
+Hold the nesting and the invocation fixed and move only the target.
+
+```text
+storeIntoEnclosingLocal            opaque=[]
+storeFromNestedIntoModuleBinding   opaque=[0]
+storeFromInertNested               opaque=[]
+storeDirectly                      opaque=[0]
+storeIntoEnclosingLocalThenLeak    opaque=[0]
+storeIntoEnclosingLocalThenWrite   mutated=[0]
+returnStoringClosure               mutated=[0]
+```
+
+`storeFromNestedIntoModuleBinding` settles it.
+Same nesting,
+ same invocation,
+ target outside the enclosing body,
+ and it reports.
+The scan does see a nested body's origins and its enclosing container together,
+ so the committed explanation was wrong about the mechanism.
+
+It was also wrong about the verdict.
+`captured` is a per-invocation local of the very callable that owns the parameter.
+It dies when the call returns,
+ and nothing outside can reach `config.row` through it afterwards,
+ so withholding nothing is correct rather than a gap.
+The three rows below the fold confirm the ways it could stop being correct are already
+ covered:
+ leaking the local afterwards reports,
+ because `discoverAliasOrigins` registered `captured` as carrying the parameter's slot;
+ writing through it reports as a mutation;
+ and handing a closure over it to the caller reports as a mutation too,
+ which means the escaping-closure case is not the danger its task description assumed.
+
+`storeFromInertNested` is the control for the other half.
+A nested callable nothing invokes and nothing hands outward contributes no effect,
+ so escaping syntax alone must not report,
+ and it does not.
+
+Both new shapes are in `readonly-structural-store-invalid.ts` so the pair stays checkable.
+The lesson is the one that keeps recurring here:
+ an explanation that fits the observed output is not thereby the mechanism producing it,
+ and the cost of guessing is that the next reader acts on the guess.
+
+## Sweep result for the store classification
+
+Captured on a quiet tree against `sweep-after-45-reverted`,
+ with `dist/final/node/index.mjs` verified at digest
+ `ee25c6a85b7e2b24a6b170f414b64e5f6f70f7a455c28ac920a695c8f7296518` before and after,
+ so no mid-run rebuild.
+
+```text
+before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
+after  1971: argument-opacity=1232 receiver-opacity=664 dishonest=37 offer=32
+added   42: argument-opacity=42
+removed 10: argument-opacity=7 receiver-opacity=3
+```
+
+Every added finding names `stored into` somewhere in its call list,
+ which was the pre-registered attribution test,
+ and it passes.
+Every removed finding has a counterpart at the same file,
+ line and column in the added set,
+ so nothing went silent:
+ the removals are re-wordings,
+ three of them the channel flip already explained in
+ `doc/troubleshooting/prefer-readonly-root-parent-walk.md`.
+`EffectPropagationError` stays absent and the panic and omission counts are identical
+ across the pair.
+
+The pre-registered stop signal did not fire.
+No offer was lost anywhere,
+ which is the first result worth pausing on rather than filing.
+
+Offers did not move at all,
+ in either direction.
+The pre-registration expected them to fall,
+ on the reasoning that a store closes an unsound offer.
+It closes them in the fixtures,
+ where the call-edge ledger went from four offers to two,
+ and it closed none in this repository.
+Sampling four of the new sites in the baseline capture found no finding of any kind at
+ those locations:
+ they were already silently withheld,
+ and the classification did not change what the rule concludes about them.
+
+What it changed is that they now speak.
+
+```text
+The function input named "task" is used by these calls: stored into this.#task.
+
+This rule cannot inspect enough of those calls to know what they might change.
+
+Resolve the call by one of these proof-preserving changes:
+1. Include the exact repository-owned implementation in the nearest tsconfig.json ...
+```
+
+Every sentence of that is wrong for a store.
+A store is not a call,
+ so "used by these calls" misnames it and "cannot inspect enough of those calls" claims a
+ limit the rule did not hit:
+ it read the assignment completely and knows exactly what happened.
+All four remediations address an unresolved implementation,
+ and none of them is what a reader who retains a constructor argument should do.
+
+The cause is the design note in `effect-assignment-store.ts`,
+ which chose opacity over a dimension of its own on the grounds that an escaped reference
+ is precisely a value this analysis cannot prove stays unwritten.
+That is right about the decision and wrong about the channel.
+Opacity carries a message,
+ and that message is a request for help the reader cannot act on,
+ because nothing about their tsconfig will make a retained argument unretained.
+A withheld offer should be silent the way a mutation is silent.
+
+Thirty-two locations in this repository now carry a diagnostic worded for a different
+ situation,
+ which is a regression at the user boundary introduced by this change,
+ and it is tracked as its own task rather than left in the ledger.

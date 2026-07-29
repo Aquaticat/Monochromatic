@@ -174,10 +174,14 @@ export function storeIterationBinding(config: Config,): void {
 /**
  * Stores a structural parameter's row into a local of the enclosing callable.
  *
- * The nested callable does not own that local, and the enclosing callable outlives every
- * call to it, so this leaves the nested body exactly as a module binding does.
+ * Control, and it took a wrong explanation to see why. The store leaves the nested body,
+ * which is what first read as an escape, but the callable being summarised is the
+ * enclosing one and `captured` is its own per-invocation local. It dies when the call
+ * returns and nothing outside can reach `config.row` through it, so withholding nothing is
+ * correct rather than a gap. `storeFromNestedIntoModuleBinding` is the paired shape that
+ * proves nesting is not what silences this one.
  *
- * @param config - Configuration whose row escapes the nested body.
+ * @param config - Configuration whose row reaches a local of this callable.
  *
  * @returns label the nested callable stored, or empty when it never ran.
  *
@@ -192,13 +196,63 @@ export function storeIntoEnclosingLocal(config: Config,): string {
    */
   let captured: Row | undefined;
   /**
-   * Nested callable whose store leaves its own body.
+   * Nested callable whose store stays inside the enclosing callable.
    */
   function storeCaptured(): void {
     captured = config.row;
   }
   storeCaptured();
   return captured?.label ?? '';
+}
+
+/**
+ * Stores a structural parameter's row into a module binding from a nested callable.
+ *
+ * Paired with `storeIntoEnclosingLocal` to separate two explanations of why that one
+ * reports nothing. Same nesting, same invocation, and only the target moves outside the
+ * enclosing body. Reporting here proves the scan does see a nested body's origins and its
+ * enclosing container together, so the silence next door is about the target rather than
+ * about the nesting.
+ *
+ * @param config - Configuration whose row escapes past every callable involved.
+ *
+ * @example
+ * ```ts
+ * storeFromNestedIntoModuleBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFromNestedIntoModuleBinding(config: Config,): void {
+  /**
+   * Nested callable whose store leaves the enclosing callable too.
+   */
+  function storeCaptured(): void {
+    held = config.row;
+  }
+  storeCaptured();
+}
+
+/**
+ * Declares but never runs a nested callable that would store past every callable.
+ *
+ * Control for the activation half of the pair. A nested callable nothing invokes and
+ * nothing hands outward contributes no effect, so the escaping syntax alone must not
+ * report. Without this, `storeFromNestedIntoModuleBinding` would be satisfied by a scan
+ * that ignored activation entirely.
+ *
+ * @param config - Configuration whose row is named but never stored.
+ *
+ * @example
+ * ```ts
+ * storeFromInertNested({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFromInertNested(config: Config,): void {
+  /**
+   * Nested callable nothing invokes and nothing hands outward.
+   */
+  function storeCaptured(): void {
+    held = config.row;
+  }
 }
 
 /**
