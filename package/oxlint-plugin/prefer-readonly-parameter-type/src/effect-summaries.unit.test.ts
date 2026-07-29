@@ -739,6 +739,19 @@ await describe({
          * callable captured rather than reporting every callable ever stored. */
         expect(structuralOpaque('storeNamedCapturingClosure',),).toEqual([0,],);
         expect(structuralOpaque('storeNamedFreshClosure',),).toEqual([],);
+        /* The returned closure, withheld through opacity because the accepted decision's
+         * precondition fails: a function expression records no returned origin, so no caller
+         * can substitute through it, which is exactly the condition the decision names.
+         * Falsified with the annotation applied and type-checking clean. */
+        expect(structuralOpaque('returnCapturingClosure',),).toEqual([0,],);
+        /* Two controls in opposite directions. A returned closure naming nothing the caller
+         * owns keeps its offer, so this attributes captures rather than refusing returns. */
+        expect(structuralOpaque('returnFreshClosure',),).toEqual([],);
+        /* And a direct return of caller state keeps its offer, which is the accepted policy
+         * working: that return is tracked, callers substitute through it, and the condition
+         * holds. Without this line the change would read as a rule against returning caller
+         * state, which is precisely what the decision permits. */
+        expect(structuralOpaque('returnRowDirectly',),).toEqual([],);
       },
     },),
     it({
@@ -1569,7 +1582,16 @@ await describe({
           {
             functionName: 'returnedClosureSemanticEffect',
             mutated: [0,],
-            opaque: [],
+            /* Opaque as well as mutated once returned callables started recording what they
+             * captured. Redundant here and load-bearing next door: this closure writes
+             * through its capture, so the active-body scan already attributed the mutation,
+             * while a returned closure that only hands the capture back records no mutation
+             * and nothing else would withhold it.
+             *
+             * Nothing a reader sees changes. A mutation withholds silently and a retention
+             * withholds silently, and this file emits no diagnostic at this callable before
+             * or after. Checked at the oxlint boundary rather than reasoned about. */
+            opaque: [0,],
           },
           {
             functionName: 'passedClosureSemanticEffect',

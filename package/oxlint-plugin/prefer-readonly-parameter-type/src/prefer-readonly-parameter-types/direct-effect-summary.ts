@@ -31,6 +31,7 @@ import {
   recordIterationStore,
 } from './effect-assignment-store.ts';
 import { discoverBodyBindings, } from './effect-body-bindings.ts';
+import { recordReturnedCallableCapture, } from './effect-returned-callable.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
 import { recordResultApplication, } from './effect-result-substitution.ts';
@@ -293,6 +294,30 @@ export function directEffectSummary({
      * fact, no receiver opacity may be discharged on the strength of it.
      * `doc/decision/prefer-readonly-result-provenance.md` records the policy. */
     if (isReturnStatement(node,) && (node.expression !== undefined)) {
+      /* Returning a callable is not returning a value the caller can track. The accepted
+       * decision permits returning parameter-reachable state on one stated condition, that
+       * callers keep tracking it through the recorded returned origins, and
+       * `expressionOrigins` has no provenance successors for a function expression, so
+       * `return (): Row => config.row` records no returned origin and no caller can
+       * substitute through it. The condition fails rather than the policy applying.
+       *
+       * Falsified rather than argued: `ReadonlyDeep` applied, type-checked clean beside a
+       * control whose direct write was rejected, and the driver changed the caller's row
+       * through the returned closure.
+       *
+       * Opacity rather than a returned origin, which was the tempting reuse. A returned
+       * origin asserts a caller can reach these parameters through this result, and what a
+       * returned closure carries is the capability to reach them by invoking it.
+       * `packagedCallableOrigins` over-approximates, scanning nested callable bodies, and
+       * an over-approximation is safe on a channel that withholds and unsafe on one that
+       * claims. Nothing today discharges on a returned set, so this would not break yet;
+       * it would state the wrong relation and break whenever something did. */
+      recordReturnedCallableCapture({
+        project,
+        bindingOriginBySymbolId,
+        summary,
+        returned: node.expression,
+      },);
       /* Only a returned value that can carry state records anything. A returned
        * primitive derived from a parameter grants the caller nothing: measured on
        * `readOnlyLookupEffect`, which returns `(facts.get(key) ?? new Set()).size`,

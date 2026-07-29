@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(23,);
+      },).length,).toBe(25,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -693,6 +693,27 @@ children: [
         return message.includes('"unnamed"',);
       },),).toEqual([
         'Parameter "unnamed" should be readonly: property rows is writable.',
+      ],);
+      /* The returned closure, withheld and silent. Its cause is the same retention the stores
+       * above carry, because there is no call to name and no boundary a reader could inspect,
+       * so the offer is simply not made. */
+      expect(messages.filter(function namesProduced(message,): boolean {
+        return message.includes('"produced"',);
+      },).length,).toBe(0,);
+      /* Its two controls, both speaking exactly once and both saying an offer stands. The
+       * second is the accepted policy working rather than a control on this change: a direct
+       * return of caller state is tracked, callers substitute through it, and it keeps its
+       * offer. Without it this would read as a rule against returning caller state, which is
+       * what the decision explicitly permits. */
+      expect(messages.filter(function namesUnreturned(message,): boolean {
+        return message.includes('"unreturned"',);
+      },),).toEqual([
+        'Parameter "unreturned" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesDirect(message,): boolean {
+        return message.includes('"direct"',);
+      },),).toEqual([
+        'Parameter "direct" should be readonly: property rows is writable.',
       ],);
       expect(messages.some(function forwardedNamesBoundary(message,): boolean {
         return message.includes('"forwarded"',)

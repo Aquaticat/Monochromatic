@@ -1353,3 +1353,71 @@ export function storeNamedFreshClosure(unnamed: Config,): number {
   return unnamed.rows
     .length;
 }
+
+/**
+ * Hands back a closure that can produce the caller's own row on demand.
+ *
+ * Falsified. Returning parameter-reachable state is permitted by
+ * `doc/decision/prefer-readonly-result-provenance.md` on one stated condition, that callers
+ * keep tracking the value through recorded returned origins, and a function expression has no
+ * provenance successors, so this recorded no returned origin and no caller could substitute
+ * through it. The precondition fails rather than the policy applying.
+ *
+ * Withheld through opacity rather than through a returned origin. A returned origin asserts a
+ * caller can reach these parameters through this result, and what this hands back is the
+ * capability to reach them by invoking it.
+ *
+ * @param produced - Configuration whose row the returned closure hands out.
+ *
+ * @returns closure carrying caller state.
+ *
+ * @example
+ * ```ts
+ * returnCapturingClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function returnCapturingClosure(produced: Config,): () => Row {
+  return (): Row => produced.row;
+}
+
+/**
+ * Hands back a closure that allocates its own row.
+ *
+ * The control. Withholding must attribute what a returned callable captured rather than
+ * refuse every callable ever returned, so this one names nothing the caller owns and keeps
+ * its offer.
+ *
+ * @param unreturned - Configuration the returned closure never names.
+ *
+ * @returns closure carrying nothing the caller owns.
+ *
+ * @example
+ * ```ts
+ * returnFreshClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function returnFreshClosure(unreturned: Config,): () => Row {
+  void unreturned.rows
+    .length;
+  return (): Row => ({ label: 'fresh', });
+}
+
+/**
+ * Hands back a piece of caller state directly, which the accepted decision permits.
+ *
+ * The policy control, and the reason this change is about a precondition rather than about
+ * returns. This return is tracked: callers substitute through the recorded returned origin, so
+ * the decision's condition holds and the offer stands.
+ *
+ * @param direct - Configuration whose row is handed back.
+ *
+ * @returns caller's own row.
+ *
+ * @example
+ * ```ts
+ * returnRowDirectly({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function returnRowDirectly(direct: Config,): Row {
+  return direct.row;
+}
