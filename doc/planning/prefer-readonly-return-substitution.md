@@ -4680,3 +4680,65 @@ So across every change in this effort, the escaping closure, the aliased and con
 The soundness gain is what the falsifications record and the sweep cannot show, because a
  withheld offer is silent. The sweep's contribution is the negative claim, and it is worth having
  for exactly that: nothing was lost.
+
+## Hunt pass two, and one falsification of mine that did not count
+
+Four candidates, and only three were defects.
+
+Two are fixed. A tagged template is a call and the analysis never saw it as one, because a
+ `TaggedTemplateExpression` is not a `CallExpression`, so the call branch skipped it and every
+ interpolated value reached the tag unrecorded. And the returned-callable capture resolved the
+ returned expression itself, so a closure held inside a returned object literal went unrecorded,
+ which the aggregate descent already written for the result-site walk answers.
+
+One is open as task #76, a method on a local literal whose result is stored outward, filed with
+ the instruction to measure which of its two halves fails before designing anything.
+
+### The one that was not a defect
+
+```ts
+export function retainOptionally(
+  optional: Config,
+  keep: ((row: Row,) => void) | undefined,
+): void {
+  keep?.(optional.row,);
+}
+```
+
+Two corrections, and the second matters more.
+
+It is not about optional chaining. The plain call measures identically, so the task's title was
+ wrong and its own instruction to diagnose first is what caught that.
+
+And the empty opacity is the callback relation working, not a hole. The callee cannot know what a
+ caller-supplied callback does, so the relation defers the decision to the caller, and the caller
+ resolves it:
+
+```text
+supplyRetainingCallback   opq=[0]
+supplyWritingCallback     mut=[0]
+supplyReadingCallback     clean
+```
+
+Responsibility sits where the knowledge is.
+The callee keeping its offer is correct policy of the kind `returnRowDirectly` already pins:
+ handing a value to a callback the caller wrote is handing it back to the caller, who already had
+ it.
+
+### Why my falsification did not count, and the rule that follows
+
+The bar requires a caller to observe a mutation the annotation denies.
+My driver was the caller **and supplied the storing callback itself**.
+It did it to itself, and no annotation on the callee's parameter ever denied what a callback the
+ caller wrote would do.
+
+The same driver would equally "falsify" `returnRowDirectly`, which this document keeps offered on
+ purpose as the policy control.
+
+So the bar needs one more clause, implicit until this caught me out:
+ **the escape must come from something the annotated callable does, not from something the caller
+ hands it.**
+A driver that supplies the escaping behaviour proves nothing about the callable it is driving.
+
+Three of the four pass-two candidates were real. Recording the fourth as not-a-defect is the more
+ useful of the two outcomes, because it is the one that would have led to a wrong fix.
