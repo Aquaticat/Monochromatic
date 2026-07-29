@@ -1943,3 +1943,45 @@ None of that is evidence about the shapes this repository lacks,
  which is why `readonly-structural-store-invalid.ts` now carries `reportMixedBindingCauses`
  and the dishonest pair:
  a fixture is the only instrument that reaches them.
+
+## Sweep pre-registration for the iteration store
+
+Written before the sweep ran.
+
+This is the first change in the sequence that can move offers,
+ and the equality criterion the last three used does not apply.
+`for (held of config.rows)` was offered and is now withheld,
+ so any repository callable retaining an element through an iteration target loses its
+ offer.
+
+Expected direction:
+ offers falling from thirty-two,
+ argument opacity rising by the same shapes,
+ and no message naming a store,
+ since the channel work landed before this.
+
+What each result would mean.
+
+-    Offers falling with a matching opacity rise.
+     The change reaching real code,
+      and each lost offer should show a callable assigning an element to a binding it does
+      not declare.
+-    Offers unchanged.
+     The shape does not occur here,
+      which the fixture already covers and which would make this capture uninformative
+      rather than wrong.
+-    Offers falling further than the opacity rise explains.
+     Something else moved and the change is wider than the loop it names.
+-    Any message naming a store.
+     A regression in the channel work,
+      which three captures at equality say is closed.
+-    `dishonest` away from thirty-seven,
+      or `stale-mutates` away from six.
+     The iteration classification reaching verdicts that are not about it,
+      which is the mistake the previous shape of the channel work made.
+
+The stop signal:
+ a sampled lost offer whose callable iterates into a binding it declares,
+ or into a binding holding only primitives.
+Both are controls in the fixture,
+ and either appearing here would mean the fixture passes for a reason the sweep refutes.
