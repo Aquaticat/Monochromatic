@@ -2837,3 +2837,42 @@ Every shape the walk does not model is a hole rather than a conservative choice,
 
 Corrected in place,
  and the shapes are filed rather than left in prose.
+
+### The new gate is load-bearing in the unsafe direction, so it was probed there
+
+`expressionCanCarryMutableState` decides whether a store records a retention,
+ and a false answer produces an offer rather than withholding one:
+ no retention recorded means `retained` is false,
+ and the parameter reaches the offer gate.
+That is the one thing in this change that could create unsoundness rather than lose
+ precision.
+
+Measured on every shape where a wrong answer would be dangerous:
+
+```text
+storeAny                  opaque=[0]   any
+storeUnknown              opaque=[0]   unknown
+storeMaybe                opaque=[0]   Row | undefined
+storeUnionWithPrimitive   opaque=[0]   Row | string
+storeGenericIdentity      opaque=[0]   T instantiated to Row
+storeRow                  opaque=[0]   Row
+storeLabel                opaque=[]    string
+```
+
+Every dangerous shape fails closed.
+`typeCanCarryMutableState` answers true for `any` and `unknown` outright,
+ true for a union if ANY constituent can carry state,
+ and true for an unconstrained type parameter,
+ so the only silence is the intended one.
+
+One case looked like a gate failure and was not.
+`held = pickVia(config, pick,)`,
+ where `pickVia<T>(config, pick,)` returns `pick(config,)`,
+ records nothing.
+The reason is in the callee:
+ `pickVia` has `returned=[1]`,
+ naming the CALLBACK parameter rather than `config`,
+ so substitution maps it to the caller's own closure argument,
+ which carries no caller state.
+The gate was never consulted.
+Reading the callee's summary rather than the caller's silence is what separated those two.
