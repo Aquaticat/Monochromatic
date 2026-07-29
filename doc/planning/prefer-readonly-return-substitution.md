@@ -121,9 +121,10 @@ and `writeThroughIndex` is withheld an offer that would have been honest.
 Withholding is always safe,
  so that half costs nothing but noise.
 
-This weakens the ordering in "Recommendation" rather than removing the finding.
-Caller-side substitution is not a soundness prerequisite,
- so the items can be sequenced freely.
+This removes the soundness argument for doing caller-side substitution first,
+ without removing the finding.
+What orders the work instead is a dependency between the two escape-test defects,
+ set out in "Recommendation".
 
 ## The unconsumed return fact
 
