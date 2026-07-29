@@ -1480,3 +1480,49 @@ Both are in `readonly-call-edge-invalid.ts`.
  the value left the callable,
  and where it went settles the question without resolving what happens there.
 The precision half is tracked as its own task rather than accepted quietly.
+
+## Sweep pre-registration for the store classification
+
+Written before the sweep ran.
+This is the first change in this sequence with a reason to move workspace findings in
+ volume,
+ because it adds a report source rather than correcting one.
+
+Expected direction:
+ argument opacity rising,
+ offers falling,
+ and the two connected case by case.
+
+What each direction has to survive:
+
+-    Offers falling.
+     Each lost offer must name a parameter its callable assigns into something the
+      callable does not own.
+     A lost offer whose callable contains no such assignment means the target policy is
+      answering about the wrong thing.
+-    New opacity naming a store.
+     The provenance says `stored into <target>`,
+      which is a string no other path emits,
+      so every new record is attributable by reading it rather than by investigating.
+     A new opacity record without that provenance did not come from here.
+-    Receiver opacity moving.
+     Possible and expected only where a callable both makes a member call and stores its
+      result,
+      since the store now reports what the discharge used to decide alone.
+     Movement on a callable with no store is the stop signal.
+-    Mutation categories moving.
+     Not expected.
+     Nothing here touches `directMutated`,
+      and the write attribution it sits beside was moved to a sibling module unchanged.
+
+The number that would narrow the change rather than ship it:
+ any sampled lost offer whose callable stores only into its own locals or its own
+ parameters,
+ which is the precision case already tracked and would mean it is wider than measured.
+
+Confounders recorded before launching,
+ after the last sweep taught that lesson.
+Every commit since the previous capture is this work,
+ and the tree is otherwise quiet apart from an untracked PNG at the repository root left
+ by a concurrent session,
+ which oxlint does not read.
