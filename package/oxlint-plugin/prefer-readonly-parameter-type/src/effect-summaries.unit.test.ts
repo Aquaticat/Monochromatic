@@ -1310,6 +1310,115 @@ await describe({
       },
     },),
     it({
+      name: 'proves the same parameters whichever callable was asked about first',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Marker source directory preserving exact semantic identity suffix. */
+        const markerRoot = join(
+          projectRoot.path,
+          'ownership-marker',
+          'foreign-borrowed',
+          'src',
+        );
+        /** Active foreign-boundary source. */
+        const foreignPath = join(projectRoot.path, 'foreign.ts',);
+        /** Shared helper reached from the boundary and from an ordinary caller. */
+        const helperPath = join(projectRoot.path, 'helper.ts',);
+        /** Ordinary caller keeping the shared helper out of foreign ownership. */
+        const ownedPath = join(projectRoot.path, 'owned.ts',);
+        /** Active source carrying explicit marker into shared helper. */
+        const foreignSource = "import type { ForeignBorrowed, } from './ownership-marker/foreign-borrowed/src/index.js';\nimport { read, } from './helper.js';\nexport function readForeign(value: ForeignBorrowed<{ text: string; }>,): string { return read(value); }\n";
+        mkdirSync(markerRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["**/*.ts"]}\n',
+        );
+        writeFileSync(
+          join(markerRoot, 'index.ts',),
+          'declare const FOREIGN_BORROWED_MARKER: unique symbol;\nexport type ForeignBorrowed<Value> = Value & { readonly [FOREIGN_BORROWED_MARKER]?: true; };\n',
+        );
+        writeFileSync(foreignPath, foreignSource,);
+        writeFileSync(
+          helperPath,
+          'export function read(value: { text: string; },): string { return value.text; }\n',
+        );
+        writeFileSync(
+          ownedPath,
+          "import { read, } from './helper.js';\nexport function readOwned(value: { text: string; },): string { return read(value); }\n",
+        );
+
+        /**
+         * Proves both callables in one order, from a cold index each time.
+         *
+         * The helper's backwards closure walks through the boundary and reaches every callable
+         * the boundary's own closure would, so asking the helper first is what leaves an answer
+         * for the boundary behind. Retaining that answer instead of proving the boundary in its
+         * own right is what attempt two did, and the closure's caller summaries carry only the
+         * edges the helper's walk discovered, so the retained answer is not the same answer.
+         *
+         * @param helperFirst - Whether to demand the shared helper before the marked boundary.
+         *
+         * @returns proven parameter positions for the boundary and for the helper.
+         */
+        const proveInOrder = (helperFirst: boolean,): {
+          readonly foreign: readonly number[];
+          readonly helper: readonly number[];
+        } => {
+          clearEffectSummaryCache();
+          clearFinalEffectIndexCache();
+          /** Semantic session for one complete cold run. */
+          const session = openSemanticFile({
+            fileName: foreignPath,
+            sourceText: foreignSource,
+            hasBOM: false,
+          },);
+          /** Cold index sharing nothing with the other order. */
+          const index = buildEffectSummaryIndex({
+            project: session.project,
+            activeSourceFile: session.sourceFile,
+            cacheRootOverride: join(projectRoot.path, `.effect-cache-${String(helperFirst,)}`,),
+          },);
+          /** Marked boundary declaration. */
+          const foreignDeclaration = session.nodeAtOffset(foreignSource.indexOf('readForeign',),)
+            .parent;
+          if (!isFunctionLikeDeclaration(foreignDeclaration,))
+            throw new Error('Expected active foreign boundary declaration.',);
+          /** Shared helper source decoded by active semantic project. */
+          const helperSource = session.project.program.getSourceFile(helperPath,);
+          if (helperSource === undefined)
+            throw new Error('Expected shared helper source.',);
+          /** Shared helper declaration reached from both callers. */
+          const [helperDeclaration,] = helperSource.statements;
+          if ((helperDeclaration === undefined)
+            || (!isFunctionLikeDeclaration(helperDeclaration,)))
+            throw new Error('Expected shared helper declaration.',);
+          /** Answers in the order this run demands them. */
+          const answers = helperFirst
+            ? {
+              helper: [...index.proveForeignBorrowed(helperDeclaration,),],
+              foreign: [...index.proveForeignBorrowed(foreignDeclaration,),],
+            }
+            : {
+              foreign: [...index.proveForeignBorrowed(foreignDeclaration,),],
+              helper: [...index.proveForeignBorrowed(helperDeclaration,),],
+            };
+          return answers;
+        };
+
+        expect(proveInOrder(true,),).toEqual({
+          foreign: [0,],
+          helper: [],
+        },);
+        expect(proveInOrder(false,),).toEqual({
+          foreign: [0,],
+          helper: [],
+        },);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'rejects overload provenance when callable alias escapes beside matching call',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();
