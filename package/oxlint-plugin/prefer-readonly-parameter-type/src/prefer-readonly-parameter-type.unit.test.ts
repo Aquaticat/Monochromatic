@@ -746,7 +746,10 @@ children: [
           || message.includes('"logicalBound"',)
           || message.includes('"defaultBound"',)
           || message.includes('"defaulted"',)
-          || message.includes('"conditionalTarget"',);
+          || message.includes('"conditionalTarget"',)
+          || message.includes('"neverReached"',)
+          || message.includes('"neverReturned"',)
+          || message.includes('"actuallyReached"',);
       },).length,).toBe(0,);
       /* The cluster's leaf control, and the three offers that carry the count from thirty to
        * thirty-three. A count handed to a collection retains nothing a caller can be written

@@ -203,7 +203,95 @@ export function activeCallableBodyNodes({
    * Nested callable keys proven invoked or escaped.
    */
   const activeKeys = new Set<string>();
+  /* Gated on ancestry and iterated to a fixed point, rather than scanned once over every node.
+   * The scan visited every node in the body, so a call written inside a closure that never runs
+   * activated its target anyway, and the target's own body was then read as though the enclosing
+   * callable had run it. Measured: `declareWritingSiblingUncalled` recorded `mutated=[0]` for a
+   * write the callable never reaches, and `storeCallingDeclaredSibling` recorded a returned
+   * origin it never returns.
+   *
+   * Two forms behave differently and the first probe of this used the wrong one. A sibling bound
+   * to a `const` arrow did not reproduce it, because overload resolution answers with the arrow
+   * and its key matched nothing the scan had reached; a sibling written as a function declaration
+   * did. So the earlier note recording that the consequence did not reproduce was true of the
+   * shape it tested and false of the defect.
+   *
+   * Termination: `activeKeys` only grows, and it is bounded by `nestedKeys`, which is fixed. */
+  /**
+   * Whether the last pass activated anything, so the loop knows to look again.
+   */
+  const state: { changed: boolean; } = { changed: true, };
+  while (state.changed) {
+    state.changed = false;
+    /**
+     * Keys already active before this pass, so growth is what ends the loop.
+     */
+    const knownBefore = activeKeys.size;
+    activationSites({
+      project,
+      bindingOriginBySymbolId,
+      allNodes,
+      body,
+      nestedKeys,
+      activeKeys,
+    },);
+    state.changed = activeKeys.size !== knownBefore;
+  }
+  return allNodes.filter(function activeNode(node,): boolean {
+    return insideOnlyActiveClosures({
+      node,
+      body,
+      activeKeys,
+    },);
+  },);
+}
+
+/**
+ * Activates every callable reachable from a site the enclosing callable can actually run.
+ *
+ * @param project - TypeScript project resolving call targets.
+ *
+ * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ *
+ * @param allNodes - Every node of the body.
+ *
+ * @param body - Outer callable body boundary.
+ *
+ * @param nestedKeys - Keys of every callable nested under the body.
+ *
+ * @param activeKeys - Accumulator receiving newly activated keys.
+ *
+ * @mutates activeKeys - Adds every key reachable from a runnable site.
+ *
+ * @example
+ * ```ts
+ * activationSites({ project, bindingOriginBySymbolId, allNodes, body, nestedKeys, activeKeys });
+ * ```
+ */
+function activationSites({
+  project,
+  bindingOriginBySymbolId,
+  allNodes,
+  body,
+  nestedKeys,
+  activeKeys,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly allNodes: readonly Node[];
+  readonly body: Node;
+  readonly nestedKeys: ReadonlySet<string>;
+  readonly activeKeys: Set<string>;
+},): void {
   allNodes.forEach(function findActivation(node,): void {
+    /* The gate. A site inside a closure nothing has proven active cannot activate anything,
+     * because the enclosing callable does not reach it. */
+    if (!insideOnlyActiveClosures({
+      node,
+      body,
+      activeKeys,
+    },))
+      return;
     if (isBinaryExpression(node,)
       && (node.operatorToken
         .kind
@@ -255,13 +343,6 @@ export function activeCallableBodyNodes({
       project,
       node: node.expression,
       nestedKeys,
-      activeKeys,
-    },);
-  },);
-  return allNodes.filter(function activeNode(node,): boolean {
-    return insideOnlyActiveClosures({
-      node,
-      body,
       activeKeys,
     },);
   },);

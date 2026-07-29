@@ -2015,3 +2015,94 @@ export function writeThroughConditionalTarget(
 export function projectResultOutward(projectedOut: Config,): Row {
   return [rowOf(projectedOut,),][0] as Row;
 }
+
+/**
+ * Declares a sibling that writes, and reaches it only from a closure nothing here runs.
+ *
+ * The shape that showed activation discovery was not gated on ancestry. The scan visited every
+ * node in the body, so the call inside the stored closure activated `writeIt`, and its write was
+ * then attributed to this callable, which never reaches it. Measured before the gate:
+ * `mutated=[0]`.
+ *
+ * Still withheld afterwards, and that is the point. The stored closure genuinely captures the
+ * configuration, so the capture walk withholds the offer while the mutation claim disappears. A
+ * fix that lost the withholding along with the false fact would be a regression dressed as a
+ * correction.
+ *
+ * @param neverReached - Configuration this callable never writes through.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeClosureReachingWriter({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeClosureReachingWriter(neverReached: Config,): number {
+  /**
+   * Sibling that would write if this callable ever reached it.
+   */
+  function writeIt(): void {
+    neverReached.row
+      .label = 'written';
+  }
+  callbackHolder.produce = (): Row => {
+    writeIt();
+    return { label: 'fresh', };
+  };
+  return neverReached.rows
+    .length;
+}
+
+/**
+ * Declares a sibling that returns caller state, reached only from a stored closure.
+ *
+ * The returned-origin half of the same defect, and the form that decides it. A sibling bound to a
+ * `const` arrow does not reproduce it, because overload resolution answers with the arrow, while
+ * a function declaration does. Measured before the gate: `returned=[0]`, an origin this callable
+ * never returns.
+ *
+ * @param neverReturned - Configuration this callable never hands back.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeClosureReachingReturner({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeClosureReachingReturner(neverReturned: Config,): number {
+  /**
+   * Sibling that would hand back caller state if this callable ever reached it.
+   */
+  function readIt(): Row {
+    return neverReturned.row;
+  }
+  callbackHolder.produce = (): Row => readIt();
+  return neverReturned.rows
+    .length;
+}
+
+/**
+ * Invokes a sibling that writes, from the body itself.
+ *
+ * The control. Activation gated on ancestry must still activate a sibling the callable actually
+ * calls, or the gate would silence every ordinary nested helper.
+ *
+ * @param actuallyReached - Configuration this callable does write through.
+ *
+ * @example
+ * ```ts
+ * invokeWritingSibling({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function invokeWritingSibling(actuallyReached: Config,): void {
+  /**
+   * Sibling this callable calls directly.
+   */
+  function writeIt(): void {
+    actuallyReached.row
+      .label = 'written';
+  }
+  writeIt();
+}

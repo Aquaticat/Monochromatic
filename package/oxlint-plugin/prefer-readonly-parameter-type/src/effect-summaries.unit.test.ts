@@ -824,6 +824,24 @@ await describe({
          * asking the expression alone where every write and store site consults the record. It
          * is a tracked returned origin now, which is what the accepted decision requires. */
         expect(structuralReturned('projectResultOutward',),).toEqual([0,],);
+        /* Activation discovery is gated on ancestry now. It visited every node in the body, so a
+         * call written inside a closure nothing runs activated its target, and the target's body
+         * was read as though the enclosing callable had run it. Measured before the gate:
+         * `mutated=[0]` for a write this callable never reaches, and a returned origin it never
+         * returns.
+         *
+         * Both assertions are pairs on purpose. The false fact is gone and the offer is still
+         * withheld, because the stored closure genuinely captures the configuration and the
+         * capture walk answers for that. A fix that lost the withholding along with the false
+         * fact would be a regression dressed as a correction, and asserting only the emptiness
+         * would not notice. */
+        expect(structuralMutated('storeClosureReachingWriter',),).toEqual([],);
+        expect(structuralOpaque('storeClosureReachingWriter',),).toEqual([0,],);
+        expect(structuralReturned('storeClosureReachingReturner',),).toEqual([],);
+        expect(structuralOpaque('storeClosureReachingReturner',),).toEqual([0,],);
+        /* The control. A sibling the callable actually calls must still activate, or the gate
+         * would silence every ordinary nested helper. */
+        expect(structuralMutated('invokeWritingSibling',),).toEqual([0,],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came
