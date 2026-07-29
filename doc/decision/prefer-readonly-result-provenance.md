@@ -6,8 +6,13 @@ This document records the design and the increments that landed against it.
 The opening previously said the resolver and the escape reporting were not built yet, which the
 "What landed" section already contradicted; both are built, and the sequencing constraint in
 "The sequencing constraint" is why they had to land together.
-Caller-side substitution is still not built, and
-`doc/planning/prefer-readonly-return-substitution.md` measures what that costs.
+Caller-side substitution is built now,
+and the sentence here previously said it was not.
+`effect-fixed-point-propagation.ts` calls `seedReturnedSlots` and `propagateResultApplications`,
+and `effect-result-substitution.ts` substitutes a callee's returned slots into its callers.
+`doc/planning/prefer-readonly-return-substitution.md` records how it was built,
+what it cost,
+and the false offers it closed.
 
 ## Problem
 
@@ -287,9 +292,19 @@ authored contract names, and it could not read a value packaged behind an access
 Both are recorded in `doc/decision/prefer-readonly-contract-name-narrowing.md`,
 together with a third defect in the same family that predates every provenance change.
 
-`directReturned` and `returnedParameterIndexes` have no consumer yet.
-The fact is recorded and the escape classifier still counts a return as an escape,
-so nothing rests on it; caller-side substitution is what would make it load-bearing.
+`directReturned` and `returnedParameterIndexes` had no consumer when this was written,
+and they have one now.
+Substitution reads them,
+which is exactly the condition this document set for a return counting as benign,
+so the fact is load-bearing rather than merely recorded.
+
+What that condition does not cover is a returned callable.
+`expressionOrigins` has no provenance successors for a function expression,
+so `return (): Row => config.row` records no returned origin at all
+and no caller can substitute through it.
+The precondition fails there rather than the policy applying,
+which makes it a false offer rather than a permitted return;
+falsified, and tracked as its own task.
 
 Task #38 tested that last clause and it holds.
 A caller that writes through the returned value recovers no origin and records no mutation,
