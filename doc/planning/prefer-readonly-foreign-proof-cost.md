@@ -370,3 +370,74 @@ Registered before the runs:
 under half is a refutation of this direction as a cost fix,
 leaving only the type-shape improvement,
 and that outcome gets recorded rather than argued away.
+
+### Measured
+
+Three sweeps, one thread, from the repository root, same tree.
+
+-    Baseline, the proof eager for every callable asked about: 884.8s.
+-    Deferred, this change: 511.1s.
+-    Floor, the proof disabled outright and answering empty without a closure: 537.9s.
+
+The deferred run is not slower than the floor.
+It is 26.8s faster,
+which no amount of doing strictly more work explains,
+so the reading is that both sit at the same place and the difference is run-to-run variation.
+Arithmetically the recovered fraction is `373.7 / 346.9`, above one,
+which is the shape of a measurement whose residual is under its own noise rather than of a change
+that beat its own floor.
+What can be claimed:
+the proof's remaining cost after deferral is smaller than the variation between two sweeps,
+which the pair of runs here bounds at about 5 percent of sweep wall time.
+
+The prediction held exactly.
+Deferred against baseline:
+1196 opaque-call reports,
+666 opaque-method reports,
+32 offers,
+37 dishonest-readonly reports,
+6 stale contracts on both sides;
+3902 warnings and 3299 errors across every rule on both sides;
+and all 7201 finding locations identical as sorted sets.
+`package/module/ts-morph-shim/src/visit-node.ts:167:60`,
+the offer attempt 2 invented,
+stays absent.
+
+### What the proof buys, now that it has a price
+
+The floor run answers a question no previous attempt could ask,
+because none of them had a build with the proof switched off.
+Disabling it adds exactly seven offers and nothing else:
+
+-    `package/desktop-app/electron-infra/src/wayland-state.ts:166:3`
+-    `package/module/toml-edit/src/emit-value.ts:66:24`, `:333:3`, `:423:3`
+-    `package/module/toml-edit/src/toml-get-node.ts:110:3`, `:141:3`
+-    `package/pi-plugin/goal/src/pi-runtime-verifier-provider.ts:244:22`
+
+Every one is an offer withheld because a marker proves the caller owns the parameter,
+and the first is the flaky one from
+`doc/troubleshooting/prefer-readonly-parameter-type-thread-nondeterminism.md` whose
+order-dependence started this whole line of work.
+So the complete backwards closure exists to withhold seven offers in this workspace,
+and after this change it costs no measurable time to do it.
+
+An eighth location appears in the floor list and is an artifact:
+`effect-demand-index.ts:487:27` is the `false ?` the throwaway floor build introduced,
+which the linter reported against itself.
+Recorded so the count is not read as eight.
+
+### Why deferral reaches the floor rather than approaching it
+
+Worth stating, because "no measurable cost" invites the suspicion that the proof stopped running.
+It did not:
+the deferred build still withholds all seven offers, which requires proving all seven.
+The reason the rest costs nothing is the diagnostic mix.
+Of 1937 findings, 1862 are opacity reports, and an opaque parameter reports and returns before the
+foreign answer is read.
+Most of the remainder are parameters this repository already types `readonly`,
+which is `honest-readonly` and matches no branch the answer can move.
+The closure was running once per callable regardless,
+including for `includeActiveSource`, which asks for every callable in the active file purely to seed
+the graph and reads no summary at all,
+and for `verifyOverloadConsistency`, which reads the summary but never its foreign field.
+Those two were paying the largest cost the rule has for answers nothing consumed.

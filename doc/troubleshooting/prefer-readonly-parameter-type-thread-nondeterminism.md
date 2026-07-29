@@ -202,7 +202,7 @@ Across the workspace the fix withdraws exactly one offer,
 the flaky one,
 and moves nothing else.
 
-It costs 57 percent of sweep wall time, 616 seconds to 966.
+It cost 57 percent of sweep wall time when it landed, 616 seconds to 966.
 Running the proof unconditionally cost 110 percent;
 a pre-scan skipping any scope whose sources name neither marker identifier recovers the
 difference,
@@ -217,8 +217,28 @@ reusing only the callables it enumerated added an offer,
 which is the direction that offers `readonly` for written state.
 Enumerating a callable's inbound call sites turns out not to be the same as being able to decide
 that callable from a closure rooted elsewhere.
-Two arguments that it should have been were both contradicted by measurement,
-so the remaining cost is tracked rather than paid for with an answer nobody verified.
+
+### The cost is gone, and the fix was not a cheaper closure
+
+Nothing about the closure changed.
+What changed is who asks for it.
+The proof left `CallableEffectSummary` for `EffectSummaryIndex.proveForeignBorrowed`,
+so the verifier demands it only when one of the four verdicts that read it could move,
+and `includeActiveSource` and `verifyOverloadConsistency`, which never read it, stopped paying.
+
+Measured at one thread from the repository root, same tree, three sweeps:
+884.8s with the proof eager, 511.1s deferred, and 537.9s with the proof disabled outright.
+The deferred run is not slower than a build that does not prove foreign ownership at all,
+so its residual cost is under the variation between runs.
+
+The findings are unchanged:
+1937 findings and 32 offers on both sides,
+3902 warnings and 3299 errors across every rule,
+and all 7201 finding locations identical as sorted sets.
+Switching the proof off instead adds exactly seven offers,
+one of which is the flaky `wayland-state.ts:166:3` characterized here,
+which is what the whole mechanism buys in this workspace.
+`doc/planning/prefer-readonly-foreign-proof-cost.md` records the design and the other six.
 
 ## Sweeps compare analyzers, so everything else has to be held still
 
