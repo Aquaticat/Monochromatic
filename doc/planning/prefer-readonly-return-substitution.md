@@ -3241,21 +3241,57 @@ Recording nothing in the closure branch fails `storeCapturingClosure` and moves 
 This fix adds attribution,
  so the direction it can move the workspace is offers falling and argument opacity rising.
 
-An offer that fell must be sampled and shown to be a genuine escaping-closure capture:
- a callable storing a closure past its own body,
- where the closure names a parameter.
-An offer that fell for any other reason is a defect in this change,
- not a finding.
+The baseline is `sweep-after-46-spread.txt`,
+ captured at `a7b8675ca`,
+ and it is chosen by modification time rather than by the tidiest name.
+The obvious candidate,
+ `sweep-after-45-reverted`,
+ carries the same 1939 findings and is four captures stale:
+ task forty-six moved three locations in each direction,
+ leaving the total unchanged and the contents not,
+ and tasks forty-eight,
+ forty-nine,
+ fifty and fifty-five all captured after it.
+Diffing against the stale one would surface those and invite sampling another change as a
+ closure capture.
 
-A finding that appeared in a category other than store-caused retention is also a defect
- here,
- because store provenance is filtered from the reportable set and a closure capture records
- nothing else.
+Store retention is filtered from the reportable set,
+ so a capture emits nothing at all.
+It does not recategorize a finding;
+ it deletes one.
+The signature to look for is therefore exact:
+ offers down by some count,
+ the total down by that same count,
+ and every other category unchanged.
+
+Three outcomes are defects rather than findings,
+ and each says which mechanism broke.
+
+Argument opacity or receiver opacity moving at all means a retention entry reached the
+ boundary list,
+ which is the task fifty-five split failing.
+
+Any offer that rose is unsound and immediate,
+ since this change only adds attribution.
+
+An offer that fell without a genuine escaping-closure capture behind it,
+ meaning a callable that stores a closure past its own body where the closure names a
+ parameter,
+ is over-withholding that has to be explained before it is accepted.
 
 Zero delta is the expected outcome and is not evidence of anything.
-Of the 1939 findings in the standing baseline,
+Two separate reasons,
+ and only the first is about scale.
+Of the 1939 findings in the baseline,
  1864 are already opacity and only 32 are offers,
  so a withholding fix has almost nowhere to act.
+The second is about form:
+ what this covers is the bare `holder.callback = (): Row => config.row`,
+ and real code more often writes the alias,
+ `const handler = ...` followed by `target.on = handler`,
+ which is task #66 and is not covered.
+A zero here is evidence about one syntactic form,
+ never about whether escaping closures matter in this repository.
 
 ### What this fix does not close
 
