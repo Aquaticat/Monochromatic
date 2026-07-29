@@ -2176,3 +2176,44 @@ No write path records a deferred result use,
 The task tracking this was written as precision work about aliases.
 It is a soundness defect,
  and its first stage is one call at the write site.
+
+## Sweep wall clock does not measure what I was using it for
+
+The resolvability guard added one memoized ancestor walk per offer,
+ at most thirty-two of them repo-wide,
+ and the capture that followed it ran nine minutes three seconds against a cluster of
+ eight thirty-one,
+ eight thirty-three,
+ eight thirty-two.
+Thirty-one seconds is far more than thirty-two directory walks can cost,
+ so I re-ran rather than attributing.
+
+The repeat finished in two minutes fifty.
+
+Three times faster than the run it was repeating,
+ on the same commit,
+ with `sweep-compare.mjs` reporting the two captures identical:
+ one thousand nine hundred thirty-nine findings both times,
+ nothing added,
+ nothing removed,
+ offer thirty-two,
+ dishonest thirty-seven.
+The two files are not the same file:
+ their hashes differ and sixteen thousand two hundred eighty-nine lines differ between
+ them,
+ all of it other rules' output and block ordering.
+
+So the conclusion about the guard is the one I wanted,
+ reached by a route that invalidates the instrument.
+Wall clock on this sweep has ranged from one hundred sixty-nine seconds to five hundred
+ forty-three seconds for identical findings,
+ a factor of three,
+ which means the eight thirty-one to eight thirty-three cluster I had been treating as a
+ stable baseline was three consecutive samples of a noisy quantity and not a baseline at
+ all.
+Nothing about a change may be inferred from these numbers again without controlling
+ whatever varies,
+ and I have not identified what that is.
+
+The honest statement of what the guard costs is that it is below the noise floor of the
+ only instrument that has measured it.
