@@ -1050,6 +1050,28 @@ export function storeReadingClosure(config: Config,): void {
 }
 
 /**
+ * Stores the same capturing closure behind parentheses and an assertion.
+ *
+ * The normalization control. A closure wrapped this way is the same closure, and the store
+ * path has to reach through both wrappers to see it. Without that, the shape reads as an
+ * ordinary expression, the origin walk over it comes back empty exactly as it does for a
+ * bare closure, and the offer returns.
+ *
+ * Two wrappers rather than one, because a single hop is satisfied by unwrapping once, and
+ * what the code does is loop until nothing more comes off.
+ *
+ * @param config - Configuration whose row the wrapped stored closure hands out.
+ *
+ * @example
+ * ```ts
+ * storeWrappedCapturingClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeWrappedCapturingClosure(config: Config,): void {
+  callbackHolder.produce = (((): Row => config.row) as () => Row);
+}
+
+/**
  * Hands a structural parameter to a callable that stores a closure capturing it.
  *
  * The control for whether the store-site record reaches callers. A caller sees no write and

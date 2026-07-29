@@ -687,6 +687,11 @@ await describe({
          * reach nothing, but `packagedCallableOrigins` names every binding a packaged body
          * mentions whatever position it appears in. Task #64 holds the question. */
         expect(structuralOpaque('storeReadingClosure',),).toEqual([0,],);
+        /* The normalization control, with the same closure behind parentheses and an
+         * assertion. Two wrappers, because one is satisfied by unwrapping once while the
+         * code loops until nothing more comes off. Measured with the normalization removed:
+         * this line read `[]` while every bare shape above stayed `[0,]`. */
+        expect(structuralOpaque('storeWrappedCapturingClosure',),).toEqual([0,],);
         /* The caller, which settles what the store record has to cover. It writes nothing
          * and stores nothing, so the only thing that can withhold its offer is the callee's
          * slot arriving through the call edge. That it reads `[0,]` is why the unrecorded
