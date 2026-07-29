@@ -13,6 +13,8 @@
 - Tie each concept to first-party Rust in this monorepo when the book has supplied enough context.
 - Prefer retrieval practice and immediate feedback over passive summaries.
 - Remind the learner to ask follow-up questions.
+- Treat every unexplained term, symbol, control, and diagram mark in the source as a companion gap.
+- Pair every concept with a concrete worked example; a definition alone is insufficient.
 
 ## Presentation
 

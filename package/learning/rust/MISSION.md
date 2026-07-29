@@ -22,6 +22,8 @@ without becoming a replacement course.
 - Each HTML file repeats the minimal automatic-dark-mode CSS inline; there is no shared stylesheet.
 - Graphs and diagrams use HTML and CSS. JavaScript is allowed when it produces a tighter feedback loop.
 - TypeScript comparison examples link to runnable TypeScript Playground examples.
+- Label every unfamiliar term, symbol, control, and diagram mark when it first appears.
+- Demonstrate every introduced concept with a concrete example rather than only defining it.
 
 ## Out of scope
 

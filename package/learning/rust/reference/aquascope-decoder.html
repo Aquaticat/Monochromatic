@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aquascope decoder for the opening diagram</title>
+  <style>
+    :root {
+      --dark: oklch(0.1 0 0);
+      --light: oklch(0.9 0 0);
+      @media (prefers-color-scheme: light) { --fg: var(--dark); --bg: var(--light); }
+      @media (prefers-color-scheme: dark) { --fg: var(--light); --bg: var(--dark); }
+    }
+    html { color: var(--fg); background-color: var(--bg); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p>Companion reference</p>
+      <h1>Aquascope decoder for the opening diagram</h1>
+      <p>
+        Keep the
+        <a href="https://rust-book.cs.brown.edu/experiment-intro.html#content-changes">opening diagram</a>
+        visible while reading this page.
+        This reference labels the Rust code, controls, memory picture, expanded internals,
+        and compile-time permission letters.
+      </p>
+      <p>
+        <strong>Aquascope is a visualization tool, not part of the Rust language.</strong>
+        It can show a simulated program execution or the compiler's permission model.
+        The opening page displays concepts before the book teaches them,
+        so use this decoder rather than trying to infer every box unaided.
+      </p>
+    </header>
+
+    <section aria-labelledby="first-reading">
+      <h2 id="first-reading">First reading: stay in the simple view</h2>
+      <p>
+        The useful picture is simple: a local variable named <code>s</code> holds information about text,
+        while the text's bytes live in a separate heap allocation.
+        A pointer connects the two.
+      </p>
+      <ol>
+        <li>Match each <code>L</code> badge beside the code with the diagram carrying the same badge.</li>
+        <li>Read <code>Stack</code>, the local variables, pointer dots, and <code>Heap</code>.</li>
+        <li>Ignore the binocular button until the simple view makes sense.</li>
+        <li>Treat <code>RawVec</code> and similar names as optional implementation details, not required vocabulary.</li>
+      </ol>
+      <p>
+        <strong>Example:</strong>
+        at <code>L1</code>, <code>s</code> is in the <code>main</code> stack frame,
+        and its pointer leads to the heap bytes spelling <code>Hello world</code>.
+      </p>
+    </section>
+
+    <section aria-labelledby="two-views">
+      <h2 id="two-views">Aquascope answers two different questions</h2>
+      <dl>
+        <dt><strong>Runtime or Interpret view</strong></dt>
+        <dd>
+          This view asks, “What values and allocations exist after this statement runs?”
+          It contains the <code>Stack</code>, <code>Heap</code>, pointers, and <code>L1</code> through <code>L4</code> snapshots.
+          <p>
+            <strong>Example:</strong>
+            after <code>s.push_str("!")</code>, the runtime view shows the heap text as
+            <code>Hello world!</code>.
+          </p>
+        </dd>
+
+        <dt><strong>Compile-time or Permissions view</strong></dt>
+        <dd>
+          This view asks, “Which operations would the Rust compiler permit at each source location?”
+          It contains <code>R</code>, <code>W</code>, and <code>O</code>.
+          These permissions are compiler reasoning, not values stored in memory while the program runs.
+          <p>
+            <strong>Example:</strong>
+            a variable declared with <code>let mut</code> normally receives read, write, and own permissions,
+            displayed as <code>RWO</code>.
+          </p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="program">
+      <h2 id="program">The program at the top</h2>
+      <pre><code>fn main() {
+    let mut s = String::from("Hello world");
+    let hello = &amp;s[0..5];
+    s.push_str("!");
+    drop(s);
+}</code></pre>
+
+      <h3>First line around the body</h3>
+      <dl>
+        <dt><code>fn</code></dt>
+        <dd>
+          Keyword that declares a function.
+          <p><strong>Example:</strong> <code>fn greet() {}</code> declares a function named <code>greet</code>.</p>
+        </dd>
+
+        <dt><code>main</code></dt>
+        <dd>
+          Conventional entry function where this executable starts.
+          It is also the frame name shown inside <code>Stack</code>.
+          <p><strong>Example:</strong> the first statement executed in this program is inside <code>main</code>.</p>
+        </dd>
+
+        <dt><code>()</code></dt>
+        <dd>
+          Function parameter list. Empty parentheses mean this function declares no parameters.
+          <p><strong>Example:</strong> <code>main()</code> has no named input between the parentheses.</p>
+        </dd>
+
+        <dt><code>{ }</code></dt>
+        <dd>
+          Braces enclose the function body.
+          <p><strong>Example:</strong> all four statements in the sample are inside <code>main</code>'s braces.</p>
+        </dd>
+      </dl>
+
+      <h3><code>let mut s = String::from("Hello world");</code></h3>
+      <dl>
+        <dt><code>let</code></dt>
+        <dd>
+          Keyword that creates a local variable binding.
+          <p><strong>Example:</strong> <code>let score = 5;</code> creates a local variable named <code>score</code>.</p>
+        </dd>
+
+        <dt><code>mut</code></dt>
+        <dd>
+          Allows the bound value to be changed through this variable.
+          Without it, calling a method that changes <code>s</code> would be rejected.
+          <p><strong>Example:</strong> <code>let mut score = 5; score = 6;</code> changes <code>score</code>.</p>
+        </dd>
+
+        <dt><code>s</code></dt>
+        <dd>
+          Programmer-chosen variable name. It is short for “string” here, but Rust gives the letter no special meaning.
+          <p><strong>Example:</strong> <code>s.push_str("!")</code> later uses this same variable.</p>
+        </dd>
+
+        <dt><code>=</code></dt>
+        <dd>
+          Assigns the expression on the right to the new binding on the left.
+          <p><strong>Example:</strong> in <code>let score = 5;</code>, the value <code>5</code> is assigned to <code>score</code>.</p>
+        </dd>
+
+        <dt><code>String</code></dt>
+        <dd>
+          Rust's owned, growable, UTF-8 text type.
+          “Owned” means this value is responsible for eventually freeing its heap allocation.
+          <p><strong>Example:</strong> <code>String::from("Hi")</code> creates growable text containing <code>Hi</code>.</p>
+        </dd>
+
+        <dt><code>::</code></dt>
+        <dd>
+          Selects an item associated with a type or module.
+          Here it selects the function <code>from</code> associated with <code>String</code>.
+          <p><strong>Example:</strong> <code>String::new()</code> calls another function associated with <code>String</code>.</p>
+        </dd>
+
+        <dt><code>from</code></dt>
+        <dd>
+          Conversion function used here to make an owned <code>String</code> from a string literal.
+          <p><strong>Example:</strong> <code>String::from("Hi")</code> converts the literal <code>"Hi"</code>.</p>
+        </dd>
+
+        <dt><code>"Hello world"</code></dt>
+        <dd>
+          String literal embedded in the program. The quotation marks delimit the text and are not stored as characters.
+          <p><strong>Example:</strong> this literal contains eleven ASCII bytes, including one space.</p>
+        </dd>
+
+        <dt><code>;</code></dt>
+        <dd>
+          Ends this statement.
+          <p><strong>Example:</strong> each of the four statements in <code>main</code> ends with a semicolon.</p>
+        </dd>
+      </dl>
+
+      <h3><code>let hello = &amp;s[0..5];</code></h3>
+      <dl>
+        <dt><code>hello</code></dt>
+        <dd>
+          New local variable name. It will refer to part of the text owned by <code>s</code>.
+          <p><strong>Example:</strong> in this run, <code>hello</code> refers to the five bytes spelling <code>Hello</code>.</p>
+        </dd>
+
+        <dt><code>&amp;</code></dt>
+        <dd>
+          Borrow operator. It creates a reference that can temporarily access data without taking ownership of it.
+          <p><strong>Example:</strong> <code>let whole = &amp;s;</code> borrows the whole <code>String</code>.</p>
+        </dd>
+
+        <dt><code>[ ]</code></dt>
+        <dd>
+          Indexing syntax. With a range inside, it selects a slice of the string.
+          <p><strong>Example:</strong> <code>s[0..5]</code> selects bytes from index <code>0</code> up to, but not including, index <code>5</code>.</p>
+        </dd>
+
+        <dt><code>0..5</code></dt>
+        <dd>
+          Half-open range. It includes <code>0</code> and excludes <code>5</code>.
+          These are byte positions for a string slice.
+          <p><strong>Example:</strong> positions <code>0</code> through <code>4</code> in <code>Hello world</code> spell <code>Hello</code>.</p>
+        </dd>
+
+        <dt>Reference</dt>
+        <dd>
+          Non-owning pointer produced by a borrow. The referent must remain valid while the reference is used.
+          <p><strong>Example:</strong> <code>hello</code> is a reference to the first five bytes owned by <code>s</code>.</p>
+        </dd>
+
+        <dt>Slice</dt>
+        <dd>
+          View into a contiguous part of existing data. A string slice tracks a starting pointer and byte length.
+          <p><strong>Example:</strong> the expanded <code>L2</code> view shows <code>hello</code> with a pointer and <code>len 5</code>.</p>
+        </dd>
+      </dl>
+
+      <h3><code>s.push_str("!");</code></h3>
+      <dl>
+        <dt><code>.</code></dt>
+        <dd>
+          Method-call syntax. It asks Rust to call a method using the value on the left.
+          <p><strong>Example:</strong> <code>s.len()</code> calls the <code>len</code> method on <code>s</code>.</p>
+        </dd>
+
+        <dt><code>push_str</code></dt>
+        <dd>
+          <code>String</code> method that appends a string slice.
+          It may need a larger heap allocation when current capacity is full.
+          <p><strong>Example:</strong> appending <code>"!"</code> changes <code>Hello world</code> to <code>Hello world!</code>.</p>
+        </dd>
+
+        <dt><code>"!"</code></dt>
+        <dd>
+          One-character string literal passed as the method argument.
+          <p><strong>Example:</strong> the heap gains an exclamation-mark byte at <code>L3</code>.</p>
+        </dd>
+      </dl>
+
+      <h3><code>drop(s);</code></h3>
+      <dl>
+        <dt><code>drop</code></dt>
+        <dd>
+          Standard function that takes ownership of a value and destroys it immediately.
+          Destroying this <code>String</code> frees its heap allocation.
+          <p><strong>Example:</strong> after <code>drop(s)</code>, <code>L4</code> has no heap text and <code>s</code> is unusable.</p>
+        </dd>
+
+        <dt><code>(s)</code></dt>
+        <dd>
+          Function argument. Passing the owned <code>String</code> moves it into <code>drop</code>.
+          <p><strong>Example:</strong> a later <code>println!("{s}")</code> would be rejected because <code>s</code> was moved.</p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="controls">
+      <h2 id="controls">Controls and framing</h2>
+      <dl>
+        <dt><code>L1</code>, <code>L2</code>, <code>L3</code>, <code>L4</code></dt>
+        <dd>
+          Snapshot labels added by Aquascope. They are not Rust syntax.
+          Each badge beside the source corresponds to a memory picture with the same badge.
+          <p><strong>Example:</strong> <code>L2</code> beside the borrow matches the picture where both <code>s</code> and <code>hello</code> exist.</p>
+        </dd>
+
+        <dt>Dashed outer border</dt>
+        <dd>
+          Boundary of the embedded Aquascope widget.
+          <p><strong>Example:</strong> the code and all four snapshots sit inside one dashed border.</p>
+        </dd>
+
+        <dt>Copy icon</dt>
+        <dd>
+          Copies the displayed Rust code.
+          <p><strong>Example:</strong> pressing it copies the four statements so they can be pasted elsewhere.</p>
+        </dd>
+
+        <dt>Eye icon</dt>
+        <dd>
+          Reveals or hides helper source lines that the book chose to conceal.
+          It does not change the program's meaning.
+          <p><strong>Example:</strong> a hidden surrounding <code>fn main() { ... }</code> can be revealed without changing a snapshot.</p>
+        </dd>
+
+        <dt>Binocular icon</dt>
+        <dd>
+          Toggles between the compact value view and concrete standard-library internals.
+          <p><strong>Example:</strong> compact <code>s ●</code> expands into <code>String</code>, <code>Vec</code>, <code>RawVec</code>, and pointer wrappers.</p>
+        </dd>
+
+        <dt>Horizontal scrollbar</dt>
+        <dd>
+          Moves across a diagram wider than the available page. It carries no Rust meaning.
+          <p><strong>Example:</strong> the concrete view may require scrolling to see both stack internals and heap bytes.</p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="memory-labels">
+      <h2 id="memory-labels">Labels and marks in the simple runtime view</h2>
+      <dl>
+        <dt><code>Stack</code></dt>
+        <dd>
+          Aquascope's model of active function frames and their local variables.
+          Real optimized machine code may keep some values in processor registers instead.
+          <p><strong>Example:</strong> the <code>main</code> frame contains local variables <code>s</code> and, at <code>L2</code>, <code>hello</code>.</p>
+        </dd>
+
+        <dt><code>main</code></dt>
+        <dd>
+          Function frame belonging to the running <code>main</code> call.
+          A frame maps local variable names to their current values.
+          <p><strong>Example:</strong> <code>s</code> appears inside the box headed <code>main</code>.</p>
+        </dd>
+
+        <dt><code>Heap</code></dt>
+        <dd>
+          Memory region used for dynamically sized allocations that can outlive an individual expression.
+          The screenshot says <code>Heap</code>, not <code>Help</code>.
+          <p><strong>Example:</strong> the bytes spelling <code>Hello world</code> are in the heap at <code>L1</code>.</p>
+        </dd>
+
+        <dt><code>●</code></dt>
+        <dd>
+          Pointer value. A pointer describes where another value is located.
+          The arrow or connector leads to its pointee, meaning the value it points to.
+          <p><strong>Example:</strong> the dot stored by <code>s</code> points to the first byte <code>H</code> in the heap allocation.</p>
+        </dd>
+
+        <dt>Arrow or connector</dt>
+        <dd>
+          Visual relation from a pointer to its pointee. It is not data copied between the boxes.
+          <p><strong>Example:</strong> <code>hello</code>'s connector targets only the first five bytes of <code>Hello world</code>.</p>
+        </dd>
+
+        <dt><code>⦻</code></dt>
+        <dd>
+          Pointer whose old pointee is no longer allocated. Aquascope uses it to show invalid memory.
+          The program causes undefined behavior only if it later tries to use such a pointer.
+          <p><strong>Example:</strong> after reallocation at <code>L3</code>, <code>hello</code>'s old target has been freed, so Aquascope shows <code>⦻</code>.</p>
+        </dd>
+
+        <dt>Faded or striped value</dt>
+        <dd>
+          Value that has been moved and can no longer be used through that variable.
+          <p><strong>Example:</strong> <code>s</code> is striped at <code>L4</code> because <code>drop(s)</code> moved it.</p>
+        </dd>
+
+        <dt>One box per character</dt>
+        <dd>
+          Compact display of the string's bytes in order.
+          The source text is ASCII, so each displayed character occupies one byte in this example.
+          <p><strong>Example:</strong> the first five boxes contain <code>H</code>, <code>e</code>, <code>l</code>, <code>l</code>, <code>o</code>.</p>
+        </dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="walkthrough">
+      <h2 id="walkthrough">Read the four snapshots</h2>
+
+      <table>
+        <caption><strong>L1: after creating the <code>String</code></strong></caption>
+        <thead>
+          <tr><th scope="col">Stack</th><th scope="col">Heap</th><th scope="col">Change</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>main</code> contains <code>s</code>, whose compact value is a pointer.</td>
+            <td>Eleven bytes spell <code>Hello world</code>.</td>
+            <td><code>String::from</code> allocated and copied the literal's text.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>Example:</strong>
+        in the expanded run, <code>len</code> is <code>11</code> and <code>cap</code> is <code>11</code>.
+      </p>
+
+      <table>
+        <caption><strong>L2: after borrowing a slice</strong></caption>
+        <thead>
+          <tr><th scope="col">Stack</th><th scope="col">Heap</th><th scope="col">Change</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>s</code> still owns the text; <code>hello</code> holds a non-owning pointer and length <code>5</code>.</td>
+            <td>The same eleven bytes remain allocated.</td>
+            <td><code>hello</code> now refers to the range spelling <code>Hello</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>Example:</strong>
+        no character is copied to create <code>hello</code>; the slice describes existing bytes.
+      </p>
+
+      <table>
+        <caption><strong>L3: after appending the exclamation mark</strong></caption>
+        <thead>
+          <tr><th scope="col">Stack</th><th scope="col">Heap</th><th scope="col">Change</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>s</code> points to the current allocation; <code>hello</code>'s old target is shown as invalid.</td>
+            <td>Twelve bytes spell <code>Hello world!</code>.</td>
+            <td>The full eleven-byte allocation grew to capacity <code>22</code> in this Aquascope run.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>Example:</strong>
+        this program is still valid because it never uses <code>hello</code> after the borrow statement.
+        If a later statement read <code>hello</code>, Rust would reject the mutation of <code>s</code>.
+      </p>
+      <p>
+        The observed change from capacity <code>11</code> to <code>22</code> is not a language promise.
+        Rust guarantees sufficient capacity, but code must not depend on a particular growth factor.
+      </p>
+
+      <table>
+        <caption><strong>L4: after dropping <code>s</code></strong></caption>
+        <thead>
+          <tr><th scope="col">Stack</th><th scope="col">Heap</th><th scope="col">Change</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>s</code> is moved and both pointer displays are invalid.</td>
+            <td>The string allocation is gone.</td>
+            <td><code>drop</code> destroyed the owner and freed its allocation.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>Example:</strong>
+        attempting <code>s.push_str("?")</code> after <code>drop(s)</code> would be a compile-time use-after-move error.
+      </p>
+    </section>
+
+    <section aria-labelledby="concrete-view">
+      <h2 id="concrete-view">The binocular view, decoded</h2>
+      <p>
+        The nested rectangles show containment.
+        A capitalized label is generally a type name,
+        a lowercase label is generally a field or variable name,
+        and the deepest number or dot is a value.
+      </p>
+      <p>
+        <strong>Example:</strong>
+        <code>String</code> is a type, <code>vec</code> is a field inside it,
+        and <code>11</code> is a value held by length or capacity metadata.
+      </p>
+
+      <h3>Containment path shown at L1</h3>
+      <ul>
+        <li>
+          variable <code>s</code> contains a <code>String</code>
+          <ul>
+            <li>
+              field <code>vec</code> contains a <code>Vec&lt;u8&gt;</code>
+              <ul>
+                <li>
+                  field <code>buf</code> contains a <code>RawVec&lt;u8&gt;</code>
+                  <ul>
+                    <li>
+                      field <code>inner</code> contains a <code>RawVecInner</code>
+                      <ul>
+                        <li>
+                          field <code>ptr</code> contains a <code>Unique&lt;u8&gt;</code>
+                          <ul>
+                            <li>
+                              field <code>pointer</code> contains a <code>NonNull&lt;u8&gt;</code>
+                              <ul>
+                                <li>field <code>pointer</code> contains the pointer dot <code>●</code></li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>field <code>cap</code> contains <code>UsizeNoHighBit / 11</code></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>field <code>len</code> contains <code>11</code></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Every concrete label</h3>
+      <dl>
+        <dt><code>vec</code></dt>
+        <dd>
+          Private field inside <code>String</code> that stores its UTF-8 bytes as <code>Vec&lt;u8&gt;</code>.
+          This lowercase field is different from both the <code>Vec</code> type and the <code>vec!</code> macro.
+          <p><strong>Example:</strong> for <code>String::from("Hi")</code>, the <code>vec</code> field manages bytes <code>H</code> and <code>i</code>.</p>
+        </dd>
+
+        <dt><code>Vec&lt;u8&gt;</code></dt>
+        <dd>
+          Growable sequence whose elements have type <code>u8</code>.
+          <code>Vec</code> is short for vector, not a mathematical direction in this context.
+          <p><strong>Example:</strong> <code>vec![1_u8, 2_u8]</code> creates a two-element <code>Vec&lt;u8&gt;</code>.</p>
+        </dd>
+
+        <dt><code>vec!</code></dt>
+        <dd>
+          Macro that constructs a <code>Vec</code>. The exclamation mark is part of macro-call syntax.
+          It does not appear as a label in the concrete screenshot, but distinguishing it prevents three similar names from blending together.
+          <p><strong>Example:</strong> <code>let digits = vec![1, 2, 3];</code> constructs a vector with three elements.</p>
+        </dd>
+
+        <dt><code>u8</code></dt>
+        <dd>
+          Unsigned eight-bit integer type. A <code>String</code> stores UTF-8 encoded bytes of this type.
+          <p><strong>Example:</strong> ASCII <code>H</code> is stored as the <code>u8</code> value <code>72</code>.</p>
+        </dd>
+
+        <dt><code>buf</code></dt>
+        <dd>
+          Field inside <code>Vec</code> that manages its allocated buffer. “Buffer” means a region reserved for elements.
+          <p><strong>Example:</strong> at <code>L1</code>, <code>buf</code> manages space for eleven bytes.</p>
+        </dd>
+
+        <dt><code>RawVec</code></dt>
+        <dd>
+          Internal standard-library helper that owns an allocation and tracks its capacity,
+          but leaves the outer <code>Vec</code> to track how many elements are initialized.
+          It is not a type ordinary Rust code needs to use.
+          <p><strong>Example:</strong> <code>buf: RawVec</code> owns the allocation for <code>Hello world</code>, while sibling field <code>len</code> records eleven used bytes.</p>
+        </dd>
+
+        <dt><code>inner</code></dt>
+        <dd>
+          Field inside <code>RawVec</code> containing the allocation details shared across element types.
+          The name means only “implementation nested inside this wrapper.”
+          <p><strong>Example:</strong> the screenshot's <code>inner</code> contains both <code>ptr</code> and <code>cap</code>.</p>
+        </dd>
+
+        <dt><code>RawVecInner</code></dt>
+        <dd>
+          Internal standard-library type that groups a buffer pointer, capacity, and allocator information.
+          <p><strong>Example:</strong> at <code>L1</code>, its pointer targets the heap text and its capacity value is <code>11</code>.</p>
+        </dd>
+
+        <dt><code>ptr</code></dt>
+        <dd>
+          Abbreviation of “pointer.” This field stores the pointer wrapper used to find the allocation.
+          <p><strong>Example:</strong> following <code>ptr</code>'s nested dot leads to the heap byte <code>H</code>.</p>
+        </dd>
+
+        <dt><code>Unique</code></dt>
+        <dd>
+          Unstable standard-library wrapper around a non-null raw pointer.
+          It signals that the containing abstraction owns the referent and must uphold unique ownership rules.
+          <p><strong>Example:</strong> the <code>Unique&lt;u8&gt;</code> inside <code>s</code>'s buffer represents ownership of the byte allocation.</p>
+        </dd>
+
+        <dt><code>pointer</code> field inside <code>Unique</code></dt>
+        <dd>
+          Field that contains the next pointer wrapper, <code>NonNull</code>.
+          It is another wrapper layer, not another heap allocation.
+          <p><strong>Example:</strong> opening the <code>Unique</code> box reveals <code>pointer: NonNull</code> around the same pointer dot.</p>
+        </dd>
+
+        <dt><code>NonNull</code></dt>
+        <dd>
+          Raw-pointer wrapper whose value is guaranteed not to be the null address.
+          Non-null does not by itself guarantee that the pointed-to allocation remains alive.
+          <p><strong>Example:</strong> at <code>L1</code>, <code>NonNull</code> contains the dot leading to the live <code>Hello world</code> allocation.</p>
+        </dd>
+
+        <dt><code>pointer</code> field inside <code>NonNull</code></dt>
+        <dd>
+          Deepest displayed field holding the actual pointer value visualized as <code>●</code>.
+          <p><strong>Example:</strong> Aquascope draws a connector from this dot to the first heap byte.</p>
+        </dd>
+
+        <dt><code>cap</code></dt>
+        <dd>
+          Abbreviation of “capacity,” meaning how many elements fit in the current allocation before growth is required.
+          For a <code>String</code>, those elements are bytes.
+          <p><strong>Example:</strong> <code>cap 11</code> is full when <code>len 11</code>; appending one byte requires more capacity.</p>
+        </dd>
+
+        <dt><code>UsizeNoHighBit</code></dt>
+        <dd>
+          Internal integer wrapper whose highest bit must remain zero.
+          <code>RawVec</code> uses it for capacities restricted to the supported range.
+          This is an implementation detail, not a Rust keyword or public collection concept.
+          <p><strong>Example:</strong> <code>UsizeNoHighBit / 11</code> wraps the capacity value <code>11</code>.</p>
+        </dd>
+
+        <dt><code>usize</code></dt>
+        <dd>
+          Unsigned integer type sized for indexing and memory sizes on the current target platform.
+          It is the ordinary integer underneath <code>UsizeNoHighBit</code>.
+          <p><strong>Example:</strong> <code>let index: usize = 5;</code> can hold the end index used by <code>0..5</code>.</p>
+        </dd>
+
+        <dt><code>Type / value</code></dt>
+        <dd>
+          Aquascope notation in the concrete display, not Rust source syntax.
+          Text before the slash names a wrapper type; text after it is the contained value.
+          <p><strong>Example:</strong> <code>UsizeNoHighBit / 22</code> means a <code>UsizeNoHighBit</code> currently containing <code>22</code>.</p>
+        </dd>
+
+        <dt><code>len</code></dt>
+        <dd>
+          Abbreviation of “length,” meaning how many elements are currently initialized and part of the value.
+          For this ASCII <code>String</code>, it is also the visible character count.
+          <p><strong>Example:</strong> <code>len</code> changes from <code>11</code> to <code>12</code> after appending <code>!</code>.</p>
+        </dd>
+      </dl>
+
+      <p>
+        <strong>Do not memorize the wrapper chain.</strong>
+        <code>RawVec</code>, <code>RawVecInner</code>, <code>Unique</code>, and <code>UsizeNoHighBit</code>
+        are standard-library internals and may change between Rust versions.
+        The stable learning target is that a <code>String</code> manages a pointer, a length, a capacity,
+        and UTF-8 bytes in a heap allocation.
+      </p>
+    </section>
+
+    <section aria-labelledby="permissions">
+      <h2 id="permissions">The permission letters <code>R</code>, <code>W</code>, and <code>O</code></h2>
+      <p>
+        Permissions belong to the compile-time view.
+        They describe operations the borrow checker permits on a <strong>place</strong>,
+        meaning a storage location expression such as a variable, field, index, or dereference.
+      </p>
+      <p>
+        <strong>Example:</strong>
+        <code>x</code>, <code>values[0]</code>, and <code>*reference</code> are all places because each can identify stored data.
+      </p>
+
+      <dl>
+        <dt><code>R</code>: Read</dt>
+        <dd>
+          Permission to read data, including copying a copyable value to another location.
+          <p><strong>Example:</strong> <code>let x = 5; let y = x;</code> reads <code>x</code> to copy <code>5</code> into <code>y</code>.</p>
+        </dd>
+
+        <dt><code>W</code>: Write</dt>
+        <dd>
+          Permission to mutate data at a place.
+          A variable normally receives it only when declared with <code>mut</code>.
+          <p><strong>Example:</strong> <code>let mut x = 5; x = 6;</code> uses <code>W</code> permission on <code>x</code>.</p>
+        </dd>
+
+        <dt><code>O</code>: Own</dt>
+        <dd>
+          Permission to move or drop owned data. <code>O</code> means “own,” not “object.”
+          <p><strong>Example:</strong> <code>drop(s)</code> requires <code>O</code> because it moves and destroys the <code>String</code>.</p>
+        </dd>
+
+        <dt><code>+R</code>, <code>+W</code>, or <code>+O</code></dt>
+        <dd>
+          The place gains that permission after the marked source line.
+          <p><strong>Example:</strong> <code>let mut x = 5;</code> initializes <code>x</code>, so the diagram can show <code>+R+W+O</code>.</p>
+        </dd>
+
+        <dt>Slashed permission</dt>
+        <dd>
+          The place loses that permission after the line.
+          <p><strong>Example:</strong> borrowing <code>&amp;s</code> temporarily removes <code>W</code> and <code>O</code> from <code>s</code> while the reference remains in use.</p>
+        </dd>
+
+        <dt><code>‒</code></dt>
+        <dd>
+          The place does not have that permission, and the line did not change that fact.
+          <p><strong>Example:</strong> <code>let x = 5;</code> without <code>mut</code> can show a dash in the <code>W</code> position.</p>
+        </dd>
+
+        <dt>Filled expected letter</dt>
+        <dd>
+          Operation needs the permission and the place has it.
+          <p><strong>Example:</strong> reading <code>x</code> displays a filled <code>R</code> when <code>x</code> is readable.</p>
+        </dd>
+
+        <dt>Hollow expected letter</dt>
+        <dd>
+          Operation needs the permission but the place lacks it, corresponding to a compiler error.
+          <p><strong>Example:</strong> mutating a borrowed vector can show a hollow <code>W</code> because the borrow removed write permission.</p>
+        </dd>
+      </dl>
+
+      <h3>Worked borrow example</h3>
+      <pre><code>fn main() {
+    let mut values = vec![1, 2, 3];
+    let first = &amp;values[0];
+    println!("{first}");
+    values.push(4);
+}</code></pre>
+      <ol>
+        <li><code>values</code> starts with <code>RWO</code> because it is initialized and mutable.</li>
+        <li>Creating <code>first</code> borrows from <code>values</code>, temporarily removing <code>W</code> and <code>O</code>.</li>
+        <li><code>println!</code> is the last use of <code>first</code>, so the borrow ends.</li>
+        <li><code>values</code> regains <code>W</code> and <code>O</code>, allowing <code>push</code>.</li>
+      </ol>
+      <p>
+        <strong>Example of rejection:</strong>
+        move <code>values.push(4)</code> before <code>println!</code>.
+        The push needs <code>W</code>, but <code>values</code> remains borrowed until <code>first</code>'s later use,
+        so Rust rejects the program before runtime.
+      </p>
+    </section>
+
+    <section aria-labelledby="retain">
+      <h2 id="retain">What to retain from this opening page</h2>
+      <ul>
+        <li>Aquascope is a tool with separate runtime and compile-time visualizations.</li>
+        <li><code>L1</code> and similar badges join a source statement to a state snapshot.</li>
+        <li>A <code>String</code> manages heap bytes through pointer, length, and capacity metadata.</li>
+        <li>A reference such as <code>hello</code> points to existing data without owning it.</li>
+        <li>Growing a full string may replace its allocation and invalidate pointers to the old allocation.</li>
+        <li><code>drop(s)</code> consumes the owner and frees its heap allocation.</li>
+        <li><code>R</code>, <code>W</code>, and <code>O</code> mean read, write, and own in compile-time permission diagrams.</li>
+        <li>The concrete wrapper chain is optional implementation detail.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="check">
+      <h2 id="check">Check the decoder</h2>
+      <p>Answer before opening the feedback.</p>
+      <ol>
+        <li>What is the difference among <code>vec</code>, <code>Vec</code>, and <code>vec!</code>?</li>
+        <li>Where are <code>s</code>'s metadata and text bytes shown at <code>L1</code>?</li>
+        <li>Why can <code>hello</code> be shown as invalid at <code>L3</code> without this program being unsafe?</li>
+        <li>What do <code>len 12</code> and <code>cap 22</code> each mean?</li>
+        <li>Which permission is needed to read, mutate, and drop a place?</li>
+      </ol>
+      <details>
+        <summary>Reveal feedback</summary>
+        <ol>
+          <li><code>vec</code> is a <code>String</code> field, <code>Vec</code> is a collection type, and <code>vec!</code> is a construction macro.</li>
+          <li>The metadata is in <code>s</code>'s <code>main</code> stack-frame value; the eleven text bytes are in the heap.</li>
+          <li>The old allocation was replaced, but <code>hello</code> is never used after its borrow, so no invalid pointer is read.</li>
+          <li>Length means twelve bytes are in the string; capacity means the allocation can currently hold up to twenty-two bytes.</li>
+          <li><code>R</code> reads, <code>W</code> mutates, and <code>O</code> moves or drops.</li>
+        </ol>
+      </details>
+    </section>
+
+    <section aria-labelledby="sources">
+      <h2 id="sources">Primary sources</h2>
+      <ul>
+        <li><a href="https://cel.cs.brown.edu/aquascope/">Aquascope Playground</a></li>
+        <li><a href="https://github.com/cognitive-engineering-lab/aquascope">Aquascope source repository</a></li>
+        <li><a href="https://rust-book.cs.brown.edu/ch04-01-what-is-ownership.html">Book explanation of stack, heap, pointers, moves, and drops</a></li>
+        <li><a href="https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places">Book definition of R, W, and O permissions</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/alloc/string.rs.html">Rust standard-library <code>String</code> source and representation</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/alloc/vec/mod.rs.html">Rust standard-library <code>Vec</code> source and guarantees</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/alloc/raw_vec/mod.rs.html">Rust standard-library <code>RawVec</code> internals</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/src/core/ptr/unique.rs.html">Rust standard-library <code>Unique</code> internals</a></li>
+      </ul>
+    </section>
+
+    <nav aria-label="Companion navigation">
+      <a href="index.html">Reference index</a> ·
+      <a href="../lessons/0001-whats-different-about-this-book.html">Companion 0001</a>
+    </nav>
+  </main>
+</body>
+</html>
