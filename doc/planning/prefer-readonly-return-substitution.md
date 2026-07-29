@@ -3029,3 +3029,57 @@ Not falsified yet,
  so it is recorded as a suspicion with a measurement behind it rather than as a defect.
 The falsification is the next thing that task needs,
  before any design.
+
+## The first capture in this session that moved
+
+Task forty-six,
+ the spread ascent:
+
+```text
+1939 findings before and after
+argument-opacity 1197, receiver-opacity 667, dishonest 37, offer 32, stale-mutates 6
+added 3, all argument-opacity
+removed 3, all argument-opacity
+```
+
+Three findings changed their text.
+None appeared,
+ none disappeared,
+ and no offer moved.
+
+The three are real workspace locations,
+ two of them in the file task forty-six named as its original observation:
+
+```text
+package/oxlint-plugin/test-import/src/package-manifest.ts:144
+package/oxlint-plugin/test-import/src/package-manifest.ts:270
+package/git-policy/cli/src/trust/typescript-syntax-validation.ts:45
+```
+
+All three are the same work-stack idiom,
+ and the message improved rather than merely changing.
+The parameter at `package-manifest.ts:144` named:
+
+```text
+before   Object.values, pending.pop
+after    pending.push, pending.push
+```
+
+The code has two spread pushes,
+ `pending.push(...fallbacks,)` and `pending.push(...Object.values(current,),)`,
+ and the operand of each is what the ascent now carries into the call-argument position.
+Before,
+ both operands escaped and the boundaries named the calls that PRODUCED the tracked
+ values.
+After,
+ the argument analysis records against the sink,
+ so the boundaries name where the value went.
+
+A reader is told the value entered `pending.push` and can act on that.
+Being told it came from `Object.values` and `pending.pop` names two calls that are not
+ the obligation.
+
+The opacity is unchanged in every case,
+ which is the part that had to hold:
+ the obligation moved to the sink rather than disappearing,
+ which is exactly what the call-argument branch of `useEscapes` says it does.
