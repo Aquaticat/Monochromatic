@@ -220,6 +220,38 @@ Task #73 carries this. Record the channels covered rather than the conclusion:
  a pass that finds nothing is the only available evidence that the shape space is closed,
  and it is weak evidence.
 
+## Channels closed by working the queue as one pass
+
+The queue had been filed one defect at a time and named one cause eight times: a call result
+ reaching a use site the deferred relation did not cover.
+Measuring the whole queue in a single file resolved it.
+
+- an argument that is a call result, through an unresolved receiver and an owned one
+- a binding through a destructuring pattern, a logical assignment, a parameter default
+- a conditional write target
+- a property of an authored literal, and an element of one
+- a return of any of those
+
+The fix is one idea applied in three places: ask where a value can have **come from** rather
+ than what layer sits over it.
+The value-source walk is reused, aggregate members are added on top of it only for this
+ question, and widening can only add call sites, so every shape it reaches is a hole closed.
+
+Four queue tasks needed no fix at all, and measuring them said so:
+ a store through a destructuring pattern, an object literal property, a store from a parameter
+ initializer, and an element property write on an array parameter.
+Those four were filed from reading rather than probing.
+**Probe before filing.**
+
+Activation discovery is now gated on ancestry.
+It had visited every node in the body, so a call inside a closure nothing runs activated its
+ target and the target's body was read as though the enclosing callable had run it.
+Two forms differ, and the first probe used the wrong one:
+ a sibling bound to a `const` arrow does not reproduce it,
+ a function declaration does.
+Assert both halves of that fix, since the false fact must go **and** the offer must stay
+ withheld.
+
 ## Where the work stands
 
 Closed and swept: #51, #66, #67, #68, #69.
@@ -231,6 +263,9 @@ Every sweep but #69's came back at zero delta; #69's moved by one true finding,
  a closure capturing a promise `resolve` handed to `handle.once`.
 
 Open, in the order worth taking them:
+
+- #54, a store into caller-reachable state versus one beyond the caller
+- #63, a parameter initializer's own expression versus a callable packaged inside it
 
 - #71, re-measure the one substantive claim that rested on the retired baseline
 - #70, find a shape demonstrating a cost for the ungated activation scan, or close it declined
