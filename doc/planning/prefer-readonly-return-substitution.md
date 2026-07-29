@@ -7,18 +7,20 @@ Scope:
 Opened from task #38,
  which asked whether a member read should face escape analysis an index read does not.
 
-The answer for the asymmetry itself is that neither path is wrong about soundness,
- and the difference is a precision inconsistency the rule carries in two places.
-Every offer the probe actually produced was checked by applying it and type-checking,
+The answer for the asymmetry itself is that on the array path neither route is wrong about soundness,
+ and the difference there is a precision inconsistency the rule carries in two places.
+Every offer the array probe produced was checked by applying it and type-checking,
  and every one of them holds.
-An earlier revision of this document claimed an unsound offer.
+An earlier revision of this document claimed an unsound offer on that path.
 That claim was inferred rather than measured,
  the measurement refuted it,
  and the correction is recorded in "What the caller-side gap costs".
 
-One separate shape does yield a false annotation and is only half measured.
-It is set out in "What this proposal does not establish",
- and it is the thing to resolve before the ranking is trusted.
+The array path is not the whole rule.
+On the structural path the same alias hop does produce a false offer,
+ measured end to end against the shipped rule with nothing mutated,
+ and it is set out in "A false offer on the structural path".
+That finding is what the ranking now rests on.
 
 ## What was measured
 
@@ -172,12 +174,19 @@ The module doc claims to collect holders "directly or by alias",
  which overstates what the code does.
 Assignment-established aliases and destructuring have the same gap.
 
-Like the first defect,
- this one is a consistency failure rather than a false offer:
+On the array path this looks like a consistency failure rather than a false offer:
 `readonly Row[]` on `aliasedEscapeThroughMember` type-checks,
  measured in the same run.
 Two functions with identical semantics get opposite verdicts,
  and the discharge rests on a claim the code does not honor.
+
+That reading was too narrow,
+ and "A false offer on the structural path" corrects it.
+The same alias hop over a structural parameter produces an annotation the rule writes,
+ that compiles,
+ and that the callable violates at runtime.
+The array projection was hiding the consequence,
+ not bounding it.
 
 ## A third defect: a branch that cannot execute
 
@@ -224,6 +233,115 @@ That is worth stating plainly rather than filing as a win:
  the change is correct on constructed input and inert on real input,
  and only the second half was ever going to be evidence about the workspace.
 
+## A false offer on the structural path
+
+The array probes could not have found this,
+ for a reason that is structural rather than incidental.
+`ReadonlyArray<Row>` constrains structure and not elements,
+ so an element write can never falsify it.
+A structural parameter is projected with `ReadonlyDeep` instead,
+ which does constrain elements,
+ and `readonlyDeepSuggestions` in `readonly-suggestions.ts` rejects array and tuple parameter types outright.
+The two projections therefore never apply to the same parameter,
+ and every probe up to this point had chosen the one that cannot be falsified this way.
+
+Probe over `type Config = { rows: Row[] }` with `type Row = { label: string }`,
+ the file importing `ReadonlyDeep` from `type-fest` so a concrete suggestion is attached:
+
+```ts
+// package/test-fixture/oxlint-no-restricted-syntax/src/, disposable probe directory
+export function pickDeep(config: Config,): Row | undefined {
+  return config.rows
+    .at(0,);
+}
+
+export function driveDeep(config: Config,): void {
+  const first = pickDeep(config,);
+  if (first !== undefined)
+    first.label = 'written by driveDeep';
+}
+
+export function pickAliasedDeep(config: Config,): Row | undefined {
+  const selected = config.rows
+    .at(0,);
+  const alias = selected;
+  return alias;
+}
+
+export function driveAliasedDeep(config: Config,): void {
+  const first = pickAliasedDeep(config,);
+  if (first !== undefined)
+    first.label = 'written by driveAliasedDeep';
+}
+```
+
+Read at the user boundary with `oxlint --format json`,
+ attributed by diagnostic line rather than by message order:
+
+-    `pickDeep` reports receiver opacity,
+      naming `config.rows.at`.
+-    `driveDeep` reports receiver opacity as well,
+      inherited across the resolved call edge.
+-    `pickAliasedDeep` is offered `readonly`.
+-    `driveAliasedDeep` is offered `readonly`.
+
+One alias hop is the entire difference between the withheld pair and the offered pair.
+It also answers a question the excerpts could not:
+ a nested receiver reaches the discharge path,
+ so `config.rows.at` is classified exactly as `rows.at` is.
+
+The offer was then applied by the rule itself rather than by hand.
+`oxlint --fix-suggestions` rewrites both offered parameters to `ReadonlyDeep<Config>`,
+ which is the suggestion text the JSON formatter does not carry.
+The rewritten file type-checks clean under TypeScript 7.0.2,
+ exit zero,
+ and calling `driveAliasedDeep` on a caller-owned `{ rows: [{ label: 'original', },], }`
+ leaves the caller reading `written by driveAliasedDeep`.
+
+So a parameter the rule annotated deeply readonly has its reachable state rewritten
+ by the very callable carrying the annotation.
+That is a false offer in the strict sense used in "What the caller-side gap costs",
+ it is live in the shipped rule,
+ and no part of the rule was mutated to produce it.
+
+Three facts about `ReadonlyDeep` explain why the laundering compiles,
+ each measured against TypeScript 7.0.2 rather than reasoned from how the projection ought to behave:
+
+-    Writing through the projected result is rejected,
+      `TS2540`,
+      so the callee cannot perform the write directly.
+-    Returning the projected result as the authored element type is rejected
+      when the element carries its own array,
+      `TS2322` on `readonly string[]` against `string[]`.
+-    Returning it is accepted when the element holds only primitives,
+      because property `readonly` modifiers do not affect assignability.
+
+The third fact is what the laundering needs,
+ and it is why the probe element is `{ label: string }`.
+A helper returning `Row | undefined` erases the projection at its own boundary,
+ and the caller then writes through a value the checker no longer knows was projected.
+
+Either pending fix closes it,
+ from opposite directions.
+Closing the holder set,
+ #41,
+ keeps `pickAliasedDeep` opaque so the caller inherits opacity and is withheld,
+ which is the fail-closed route.
+Caller-side substitution,
+ #40,
+ maps the returned index back through the argument so the write attributes to `config`,
+ which is the precise route.
+Neither is redundant:
+ the first restores the invariant the accepted decision states,
+ the second recovers the offers the first will suppress.
+
+A type error on an applied suggestion would not have been enough to claim this.
+A suggestion that fails to compile is self-limiting,
+ and reporting one as unsoundness is the same inference shape retracted earlier in this document.
+The bar used here is the one set in "What this proposal does not establish":
+ the applied annotation compiles clean,
+ and the caller observes a mutation the annotation denies.
+
 ## Recommendation
 
 Ranking:
@@ -235,7 +353,7 @@ Ranking:
 Two revisions of this ranking were wrong,
  so the reasoning is given rather than just the order.
 The first claimed the consumer had to land first or a false offer would spread;
- the compile check refuted that.
+ the compile check refuted that on the array path.
 The second called the holder-set fix the smallest and independent item;
  external review refuted that too,
  because closing the holder set without fixing reference-position classification
@@ -244,6 +362,14 @@ The second called the holder-set fix the smallest and independent item;
 What actually orders these is that #42 is a precondition for #41:
  assignment-established aliases cannot be classified correctly
  while the branch that classifies assignment cannot run.
+#42 landed in `a57bb6f56`,
+ so the ordering constraint is discharged and #41 is next.
+
+The order survives "A false offer on the structural path" and the reason for it changes.
+#41 is no longer a consistency fix that happens to be safe.
+It is the direct cause of a measured false offer,
+ and closing it is the fail-closed half of the remedy.
+#40 remains the precise half rather than an alternative to it.
 
 1.   Make the assignment branch in `useEscapes` reachable,
       #42.
@@ -324,12 +450,23 @@ The comment stays as written,
 
 ## What this proposal does not establish
 
-The probe uses one element shape and one collection.
+The probes use two element shapes and one collection.
 `Map` and iterator members are not covered,
  and `doc/decision/prefer-readonly-result-provenance.md`
 already records iterator members as separately unproven.
-The compile check covers the offers this probe produced,
+The compile checks cover the offers these probes produced,
  not every offer the rule can produce.
+
+Nothing here measures how often the structural false offer occurs in this workspace.
+The probe was constructed,
+ and no sweep has looked for the shape in the 128 packages.
+The 32 offers in the baseline are unexamined for it.
+`readonlyDeepSuggestions` also returns nothing when the source file lacks a named `ReadonlyDeep`
+ import from `type-fest`,
+ while the report still fires with no suggestion attached.
+Whether that bare report is itself a deep claim is a separate question,
+ and it is left open rather than answered by inference,
+ since inferring what a report promises is what produced the retraction recorded here.
 
 One shape is half-measured and matters,
  because it is the one route by which the missing consumer could produce a genuinely false offer.
