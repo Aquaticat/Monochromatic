@@ -186,10 +186,47 @@ A caller that says nothing and a caller that reports argument opacity naming its
  lose their offer and both read the same opaque set.
 Unique parameter names are what make a diagnostic count per callable rather than per file.
 
+## The method that is replacing the queue
+
+Walking escape channels on purpose is cheaper than waiting for defects to surface, and it found
+ three in one pass.
+
+Write one file where **every** parameter genuinely leaks, each through a different channel, each
+ with a unique parameter name, plus two controls that must still be offered.
+Any offer the file draws is then a false offer by construction,
+ and oxlint names them with no reasoning about the analyzer required.
+Then apply the ordinary bar to each candidate.
+
+First pass: fourteen channels, six offers, two of them the intended controls.
+Three real defects, all now fixed.
+The fourth candidate, a callback parameter retained by its driver, is carried forward.
+
+Second pass staged in `hunt2.ts` in the session scratch directory:
+ `Object.defineProperty`,
+ `splice`,
+ `Array.from`,
+ a spread copy,
+ `WeakMap.set`,
+ `Reflect.set`,
+ an optional call,
+ a class field initialiser,
+ a method reaching state through `this`,
+ a tagged template,
+ the retained callback parameter,
+ an iterator object handed back,
+ and two controls.
+
+Task #73 carries this. Record the channels covered rather than the conclusion:
+ a pass that finds nothing is the only available evidence that the shape space is closed,
+ and it is weak evidence.
+
 ## Where the work stands
 
-Closed and swept: #51, #66, #67, #68, #69, and the three-channel fix for constructions, yields
- and awaited returns.
+Closed and swept: #51, #66, #67, #68, #69.
+The three-channel fix for constructions, yields and awaited returns is landed, tested and
+ mutation-checked, with its sweep running at time of writing; constructions are common here, so
+ this is the first change in this work where a large offer fall would be plausible rather than
+ surprising.
 Every sweep but #69's came back at zero delta; #69's moved by one true finding,
  a closure capturing a promise `resolve` handed to `handle.once`.
 
@@ -198,7 +235,7 @@ Open, in the order worth taking them:
 - #71, re-measure the one substantive claim that rested on the retired baseline
 - #70, find a shape demonstrating a cost for the ungated activation scan, or close it declined
 - #64, the read-only-capture precision question, now with two over-approximations to answer for
-- #72, the construction channel's own sweep, still outstanding at time of writing
+- #73, the next hunt pass, staged and ready
 - #44, #52 to #63, the older queue
 
 #65 is open and deliberately unfixed.
