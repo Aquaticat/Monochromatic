@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Companion reading loop</title>
+  <style>
+    :root {
+      --dark: oklch(0.1 0 0);
+      --light: oklch(0.9 0 0);
+      @media (prefers-color-scheme: light) { --fg: var(--dark); --bg: var(--light); }
+      @media (prefers-color-scheme: dark) { --fg: var(--light); --bg: var(--dark); }
+    }
+    html { color: var(--fg); background-color: var(--bg); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Companion reading loop</h1>
+    <ol>
+      <li>Read one linked page of the experimental Rust Book.</li>
+      <li>Hide the source page and answer the companion's retrieval prompts from memory.</li>
+      <li>Commit to each answer before revealing feedback.</li>
+      <li>Reopen the source page for anything the feedback did not resolve.</li>
+      <li>Inspect the linked monorepo source only when the lesson says the required concepts are available.</li>
+      <li>Ask the teaching agent about anything unclear.</li>
+      <li>Return later and attempt the prompts again without rereading first.</li>
+    </ol>
+    <p>This loop makes the Rust Book the teacher and the companion the practice and transfer layer.</p>
+    <nav aria-label="Companion workspace">
+      <a href="../lessons/index.html">Lesson index</a> ·
+      <a href="index.html">Reference index</a>
+    </nav>
+  </main>
+</body>
+</html>
