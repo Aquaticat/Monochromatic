@@ -2913,3 +2913,54 @@ Every one passed a green suite and a mutation check,
  because a mutation check asks whether the assertions discriminate the mechanism they
  name,
  and none of them named these.
+
+## Stage three, falsified to the same bar as the other two
+
+Stage three had been verified by summaries before and after,
+ and by which parameters the rule offers at the boundary.
+Neither is the bar this work set.
+The bar is:
+ the rule produces the annotation,
+ the applied annotation type-checks clean,
+ and the caller observes a mutation the annotation denies.
+
+Run on a build with `discoverResultBindings` disabled:
+
+```text
+firstRow                offered
+writeThroughHeldResult  offered
+```
+
+Both annotations applied,
+ `mise run //package/module/jsonc-edit:lint:types` clean,
+ and the driver prints:
+
+```text
+caller row label is now: written
+```
+
+With the fix restored and both artifacts rebuilt,
+ the same file offers `firstRow` alone.
+The pair cannot be constructed,
+ which is what closes it.
+
+Stage three carried the most new machinery of the three and was the only one resting on
+ the inference that it was the same defect class as stage one.
+It was,
+ and now that is measured rather than reasoned.
+
+## The last capture
+
+Zero delta on all five counters,
+ offers steady at thirty-two.
+
+The criterion had inverted for this one and was registered before the run:
+ the wrapper fix adds attribution so offers could fall,
+ while the retention gate removes records so offers could RISE,
+ and a rise is the dangerous outcome because it means a repository parameter withheld for
+ a store-through-call is offered again.
+Neither happened.
+
+`max-lines` findings are back to one file,
+ which is the one that had them before any of this work,
+ so both budget regressions this session introduced are gone.
