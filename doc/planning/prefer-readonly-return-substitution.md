@@ -1674,3 +1674,43 @@ Thirty-two locations in this repository now carry a diagnostic worded for a diff
  situation,
  which is a regression at the user boundary introduced by this change,
  and it is tracked as its own task rather than left in the ledger.
+
+## Sweep pre-registration for the retention channel
+
+Written before the sweep ran.
+
+The prediction here is stronger than a direction,
+ which is what makes it worth capturing.
+The store classification added forty-two findings and removed ten,
+ and every one of those movements was caused by a store reaching a message.
+If a store no longer reaches a message,
+ the capture should equal `sweep-after-45-reverted` exactly:
+ the thirty-two silent ones go quiet again,
+ and the ten mixed ones return to their baseline text and category.
+
+Not "forty-two fewer than the last capture".
+Equality with the pre-classification baseline is the test,
+ because a residual line names precisely what leaked rather than leaving a count to
+ interpret.
+
+What each possible residue would mean.
+
+-    A finding whose message names a store.
+     The split failed and the provenance crossed the boundary it must not cross.
+-    A finding present in the baseline and absent now.
+     The silent return swallowed a report that had a call cause,
+      which would mean `reportableOpacity` is reading the wrong half.
+-    `offer` above thirty-two.
+     A retained parameter was offered readonly,
+      which is the unsound direction and the one number that would revert this.
+-    `offer` below thirty-two.
+     Something unrelated to this change moved,
+      since nothing here can withhold an offer that opacity was not already withholding.
+
+Confounders.
+The tree carries the two commits of this work and nothing else,
+ apart from the untracked PNG at the repository root left by a concurrent session,
+ which oxlint does not read.
+Both the plugin bundle and the `config-oxlint` sidecar are rebuilt before launching,
+ because the sidecar is what oxlint actually loads and a stale one measured the old
+ behaviour once already today.
