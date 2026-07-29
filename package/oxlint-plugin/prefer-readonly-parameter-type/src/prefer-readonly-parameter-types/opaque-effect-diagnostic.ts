@@ -33,6 +33,7 @@ import {
  *   facts: ['JSON.stringify'],
  *   names: 'JSON.stringify',
  *   reportable: true,
+ *   retained: false,
  * };
  * ```
  */
@@ -40,6 +41,7 @@ export type UncertaintyBoundaries = {
   readonly facts: readonly string[];
   readonly names: string;
   readonly reportable: boolean;
+  readonly retained: boolean;
 };
 
 /**
@@ -74,7 +76,10 @@ export function uncertaintyBoundaries({
   /**
    * Boundaries split into causes this report can address and stores it cannot.
    */
-  const { callBoundaries, } = splitRetentionBoundaries({ boundaries, },);
+  const {
+    callBoundaries,
+    retentionBoundaries,
+  } = splitRetentionBoundaries({ boundaries, },);
   return {
     facts: callBoundaries,
     /* The fallback belongs to the call half alone. Opacity with no provenance at all is a
@@ -86,6 +91,7 @@ export function uncertaintyBoundaries({
       ? 'a call whose name this rule could not determine'
       : callBoundaries.join(', ',),
     reportable: boundariesAreReportable({ boundaries, },),
+    retained: retentionBoundaries.length > 0,
   };
 }
 

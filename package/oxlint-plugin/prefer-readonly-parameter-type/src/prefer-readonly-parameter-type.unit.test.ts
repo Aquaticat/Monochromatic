@@ -640,6 +640,16 @@ children: [
       expect(mixedMessages.every(function omitsStoredBinding(message,): boolean {
         return !message.includes('"stored"',);
       },),).toBe(true,);
+      /* Both halves of the dishonest pair, which is where the withhold has to stop. A store
+       * decides one verdict, the offer, and no other. The first shape of this silenced
+       * every verdict for a stored parameter, including this one, which is about the
+       * declared type and has nothing to do with where a value went. No sweep of this
+       * repository could catch it: nothing here pairs retention with a dishonest declared
+       * type, so the count of these reports held constant across three captures while one
+       * of them was being suppressed. Two, not one, is the assertion. */
+      expect(messages.filter(function isDishonest(message,): boolean {
+        return message.includes('claims readonly semantics dishonestly',);
+      },).length,).toBe(2,);
     },
   },),
   it({

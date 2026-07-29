@@ -228,7 +228,7 @@ export function verifyReadonlyCallable({
       classification,
       parameterBlocks,
       opaque,
-      reportableOpacity,
+      retained,
       acceptedHostOpacity,
       affected,
       mutated,
@@ -252,16 +252,6 @@ export function verifyReadonlyCallable({
         .end,
     },);
 
-    /* A store withholds the offer without asking for anything, which is how a mutation has
-     * always behaved. Returning here rather than reporting is the whole difference: the
-     * classification that records a store is sound and stays, and every branch below still
-     * reads the same `opaque` it read before, so nothing about the analysis moves. What
-     * moves is that a parameter this rule understands completely stops being handed a
-     * message about calls it could not inspect, followed by four remedies addressed to an
-     * unresolved implementation, none of which a reader who retains an argument can act
-     * on. The offer is unreachable past this point, which is the withhold. */
-    if (opaque && (!reportableOpacity))
-      return;
     if (opaque
       && foreignHostCapability
       && (parameterBlocks.length === 0)) {
@@ -310,7 +300,15 @@ export function verifyReadonlyCallable({
         },
       },);
     }
+    /* `retained` gates the offer and nothing else, which is the whole of what a store
+     * changes. Every branch above answers exactly as it did before the store
+     * classification existed, because `opaque` is false for a parameter whose only
+     * recorded cause is a store, and a store is not a mutation so none of them was ever
+     * about it. Placing this test on the offer rather than ahead of the loop is the
+     * correction: an early return also took the dishonest-type report away from a
+     * parameter that happened to be stored, which `storeDishonestProjection` measures. */
     if ((!mutated)
+      && (!retained)
       && (!foreignBorrowed)
       && (classification.kind === 'mutable')) {
       /**

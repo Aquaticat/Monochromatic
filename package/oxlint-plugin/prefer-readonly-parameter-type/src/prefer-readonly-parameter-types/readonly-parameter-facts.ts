@@ -55,15 +55,13 @@ export type ReadonlyParameterFacts = {
   readonly parameterBlocks: readonly ParsedMutationContractBlock[];
   readonly opaque: boolean;
   /**
-   * Whether this parameter's opacity has a cause a report can ask the reader to resolve.
+   * Whether this callable hands this parameter's state to something it does not own.
    *
-   * Additive on purpose, leaving `opaque` exactly what it was. Every other verdict reads
-   * `opaque`, directly or through `acceptedHostOpacity`, and narrowing it would move the
-   * stale-contract gate and the foreign-ownership proof for reasons that have nothing to
-   * do with what a message says. False only when a store is the sole recorded cause, so
-   * opacity with no provenance at all keeps reporting the unknown it is.
+   * Withholds the offer and nothing else. It is deliberately not part of `affected` or
+   * `mutated`: a store is not a write, and treating it as one would demand an `@mutates`
+   * block for an effect the callable does not have.
    */
-  readonly reportableOpacity: boolean;
+  readonly retained: boolean;
   readonly acceptedHostOpacity: boolean;
   readonly affected: boolean;
   readonly mutated: boolean;
@@ -147,9 +145,9 @@ function factsForParameter({
     },);
   }
   /**
-   * Whether analyzer found unresolved external effect.
+   * Whether analysis recorded unresolved reachability against this parameter, at all.
    */
-  const opaque = effectSummary.opaqueParameterIndexes
+  const analysisOpacity = effectSummary.opaqueParameterIndexes
     .has(parameterIndex,);
   /**
    * Provenance for this parameter's opacity, split by cause.
@@ -159,9 +157,25 @@ function factsForParameter({
     parameterIndex,
   },);
   /**
-   * Whether some recorded cause of this opacity is one a report can ask about.
+   * Whether analyzer found unresolved external effect.
+   *
+   * Folded rather than left whole, and the reason is what a store used to be. Before the
+   * store classification a retained parameter carried no opacity here, so every verdict
+   * reading this fact answered as if the store were not there, which is exactly right:
+   * a store is understood completely, and none of the verdicts downstream is about it.
+   * Reproducing that means this fact has to be false for a parameter whose every recorded
+   * cause is a store, because `acceptedHostOpacity` reads it, and that reaches `affected`
+   * and `mutated`, and those gate the stale contract and dishonest-type reports.
+   *
+   * Gating the two opacity reports instead was tried and was wrong for the same reason,
+   * one branch further out: it silences the reports and leaves those two facts shifted.
+   * The offer is withheld by `retained` on its own, which is the one verdict that must
+   * differ from the pre-classification behaviour.
+   *
+   * `opaqueParameterIndexes` keeps the store, because propagation and discharge must go on
+   * treating an escaped reference as a value nothing proved unwritten.
    */
-  const { reportable: reportableOpacity, } = uncertainty;
+  const opaque = analysisOpacity && uncertainty.reportable;
   /**
    * Whether exact marker explicitly authorizes opaque host capability use.
    */
@@ -210,7 +224,7 @@ function factsForParameter({
     },),
     parameterBlocks,
     opaque,
-    reportableOpacity,
+    retained: uncertainty.retained,
     acceptedHostOpacity,
     affected,
     mutated,
