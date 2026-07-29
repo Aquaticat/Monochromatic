@@ -4264,3 +4264,40 @@ removed 0:
 ```
 
 Offers did not rise and no category moved.
+
+## A change that measured as dead code, and was reverted rather than landed
+
+Task sixty-five's cause was known precisely:
+ `getResolvedSignature` on `local()` answers with the signature of the declared function type
+ rather than with the arrow assigned into the binding,
+ so the arrow's key never reaches `activeKeys` and its write is filtered out.
+
+The fix looked obvious once the possible-value walk existed.
+Resolve the call target through it,
+ activate whatever nested callables it names,
+ and leave assignment right sides alone,
+ since activating those would treat storing a closure as running it.
+
+Measured, it changes nothing.
+
+Two shapes were written to exercise it,
+ a closure bound by a conditional and one reached through an alias,
+ and both already recorded `mutated=[0]` before the change and after it.
+`getResolvedSignature` answers for any binding with an initializer,
+ however that initializer is written.
+
+So the change was dead code and is reverted.
+Landing it would have added a path no shape reaches,
+ documented as a fix for a defect it does not fix,
+ which is worse than leaving the defect recorded.
+
+What remains unreached is exactly the binding filled by assignment after its declaration,
+ and reaching it needs a relation this analysis does not have:
+ the values assigned to a binding, not merely the one it was declared with.
+The possible-value walk refuses that on purpose and says so,
+ because what such a binding can be is not written where it is declared.
+
+Left open with both sides recorded.
+The shape is self-limiting,
+ since the write is on the parameter directly and the offered annotation stops type-checking,
+ so no falsification rides on it and the work it would take is not justified yet.
