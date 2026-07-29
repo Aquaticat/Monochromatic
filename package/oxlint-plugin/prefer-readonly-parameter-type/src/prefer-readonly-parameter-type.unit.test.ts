@@ -530,8 +530,6 @@ children: [
        * `store` only stores; and one `row`, which `Reader.use` only reads.
        *
        * Unsound, by parameter and cause:
-       * `row` in `setterPairEffect`, whose callee assigns through a setter that writes the
-       * assigned value.
        * `row` in `polymorphicEffect`, where static resolution finds a reading base method
        * and the reachable override writes.
        *
@@ -555,18 +553,28 @@ children: [
           return message.startsWith(`Parameter "${parameterName}" should be readonly`,);
         },).length;
       }
-      /* Four, down from five, and `row` twice rather than three times, because
-       * `polymorphicEffect` stopped offering. Its call resolves against the declared receiver
-       * type to `Reader.use`, which only reads, while `Writer.use` overrides it and writes. A
-       * call to an instance method a subclass may override is now unresolved, so both its
-       * receiver and its row take opacity instead. Reverting
-       * `effect-overridable-method.ts` restores the offer. */
+      /* Two, down from four, and both losses come from classifying an assignment that
+       * hands a parameter onward. `store` assigns `value` into `slot.value`, so `value`
+       * is no longer offered, and `setterPairEffect` calls `store`, so its `row` takes
+       * the same opacity through the call edge.
+       *
+       * One of those two was a documented unsound offer. `setterPairEffect` reaches a
+       * setter that writes the assigned value, and it is withheld now for a reason that
+       * does not mention setters at all: the value left the callable, and where it went
+       * settles the question without resolving what happens there.
+       *
+       * The other is a precision loss and is tracked rather than accepted quietly.
+       * `store` puts one parameter inside another, and both belong to the caller, which
+       * already held each of them. Rearranging a graph the caller can already reach
+       * grants no capability it lacked, the way returning a piece of a parameter does
+       * not, so `value` deserves its offer and the classification cannot yet tell that
+       * target apart from one the caller cannot reach. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(4,);
-      expect(offersFor('row',),).toBe(2,);
+      },).length,).toBe(2,);
+      expect(offersFor('row',),).toBe(1,);
       expect(offersFor('first',),).toBe(1,);
-      expect(offersFor('value',),).toBe(1,);
+      expect(offersFor('value',),).toBe(0,);
       /* The seven shapes already fixed, kept as the controls that stop this case from
        * passing on a fixture the rule never reached. An explicit `this` parameter shifting
        * every later formal index. A parameter named only by a shorthand inside an accessor

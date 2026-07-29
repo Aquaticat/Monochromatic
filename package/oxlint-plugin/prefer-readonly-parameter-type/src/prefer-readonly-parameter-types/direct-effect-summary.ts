@@ -26,6 +26,8 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
+import { recordAssignmentStore, } from './effect-assignment-store.ts';
+import { inspectDirectWrite, } from './effect-direct-write.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
 import { recordResultApplication, } from './effect-result-substitution.ts';
 import {
@@ -62,42 +64,6 @@ import {
   EFFECT_SLOT_UNAVAILABLE,
   type SlotOrigins,
 } from './effect-summary-model.ts';
-
-/**
- * Records direct write rooted at callable parameter or alias.
- *
- * @param project - TypeScript project resolving root symbol.
- *
- * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
- *
- * @param summary - Summary receiving direct mutation.
- *
- * @param node - Write target expression.
- *
- * @mutates summary - Adds direct caller-observable write target.
- */
-function inspectDirectWrite({
-  project,
-  bindingOriginBySymbolId,
-  summary,
-  node,
-}: {
-  readonly project: Project;
-  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
-  readonly summary: MutableEffectSummary;
-  readonly node: Node;
-},): void {
-  if (isIdentifier(node,))
-    return;
-  addEffectSlots({
-    target: summary.directMutated,
-    values: expressionOrigins({
-      project,
-      bindingOriginBySymbolId,
-      node,
-    },),
-  },);
-}
 
 /**
  * Builds direct syntax facts and call edges for one callable.
@@ -298,6 +264,19 @@ export function directEffectSummary({
         bindingOriginBySymbolId,
         summary,
         node: node.left,
+      },);
+      /* Two questions about one assignment, and `inspectDirectWrite` answers only the
+       * first. It asks which parameter the write lands on and returns early for an
+       * identifier target, correctly, because `held = row` changes no object the caller
+       * can see. What that leaves is where the value went, and an identifier target is
+       * exactly where it matters: a binding outside this callable keeps the value after
+       * the call returns. */
+      recordAssignmentStore({
+        project,
+        bindingOriginBySymbolId,
+        summary,
+        node,
+        body,
       },);
       return;
     }

@@ -445,12 +445,12 @@ await describe({
          * the point: the reading itself was the mistake, not any particular branch. */
         expect(primitiveRest,).toEqual([0,],);
         expect(carriedRest,).toEqual([0,],);
-        expect(constrainedRest,).toEqual([0,],);
-        expect(unconstrainedRest,).toEqual([0,],);
+        expect(constrainedRest,).toEqual([0, 1,],);
+        expect(unconstrainedRest,).toEqual([0, 1,],);
         expect(indexedRest,).toEqual([0,],);
         expect(primitiveIndexRest,).toEqual([0,],);
-        expect(unionRest,).toEqual([0,],);
-        expect(primitiveUnionRest,).toEqual([0,],);
+        expect(unionRest,).toEqual([0, 1,],);
+        expect(primitiveUnionRest,).toEqual([0, 1,],);
         expect(emptyRest,).toEqual([0,],);
       },
     },),
@@ -553,17 +553,23 @@ await describe({
         /** Rows iterated while reading only primitives. */
         const iterated = structuralOpaque('iterateStructureRows',);
         closeSemanticBridge();
-        /* The one shape a discharge decision happens to cover. */
+        /* Every store reaches a report now, where only the member form did before and
+         * only because a verified member call carries receiver opacity whose discharge
+         * happened to run the escape test. `recordAssignmentStore` asks the question
+         * directly at the assignment instead, so an index read, a property read, an alias
+         * hop and the three retaining operators all arrive. */
         expect(storedMember,).toEqual([0,],);
-        /* Every other store, currently silent, and each one a false offer. Flipping these
-         * to `[0,]` is what the classification has to achieve. */
-        expect(storedElement,).toEqual([],);
-        expect(storedProperty,).toEqual([],);
-        expect(storedAlias,).toEqual([],);
-        expect(storedLogical,).toEqual([],);
-        expect(storedNullish,).toEqual([],);
-        expect(storedConjunction,).toEqual([],);
-        expect(storedIteration,).toEqual([],);
+        expect(storedElement,).toEqual([0,],);
+        expect(storedProperty,).toEqual([0,],);
+        expect(storedAlias,).toEqual([0,],);
+        expect(storedLogical,).toEqual([0,],);
+        expect(storedNullish,).toEqual([0,],);
+        expect(storedConjunction,).toEqual([0,],);
+        expect(storedIteration,).toEqual([0,],);
+        /* One store still silent, and named rather than left to be rediscovered. The
+         * assignment sits in a nested callable whose own parameters are none of these, so
+         * the origins the store would carry belong to the enclosing callable and this
+         * classification never sees them together. */
         expect(storedEnclosing,).toEqual([],);
         /* The one store no assignment-site test can reach on its own, kept beside the
          * others because it flips for a different reason. A callee's summary does not
@@ -586,8 +592,13 @@ await describe({
          * declared members at all. Nothing here writes, so the direct-write attribution
          * that catches the mutating form never fires, and the reading of the rest's type
          * was the only thing between this and an offer. It measured `[]` while that
-         * reading was in place. */
-        expect(excessRest,).toEqual([0,],);
+         * reading was in place.
+         *
+         * It reports for a better reason now. The store classification sees a value
+         * leaving the callable and does not need to know what the rest copied, which is
+         * the difference between asking where a value went and asking what its type
+         * claims to hold. */
+        expect(excessRest,).toEqual([0, 1,],);
       },
     },),
     it({
