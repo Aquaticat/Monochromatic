@@ -5,12 +5,13 @@
 `.github/workflows/cli-git-performance.yml` starts the complete packed lifecycle benchmark for every push to `main`,
 even when a commit changes only an unrelated document or package.
 
-The latest 500 runs returned by GitHub on 2026-07-29 contained 499 `push` runs and one `pull_request` run.
+The 500-run window from run `29973695489` through run `30441334531`,
+returned by GitHub on 2026-07-29,
+contained 499 `push` runs and one `pull_request` run.
 Every run had a `failure` conclusion.
-Of the 499 push revisions,
-498 were available in the local Git history for path classification.
-The proposed dependency and infrastructure scope matched 39 revisions and did not match 459 revisions.
-This is a classification of that 498-run sample,
+All 499 push revisions were available in the local Git history for path classification.
+The proposed dependency and infrastructure scope matched 39 revisions and did not match 460 revisions.
+This is a classification of that 499-run sample,
 not a claim about every historical run.
 
 The current red state has a second repository-local cause.
