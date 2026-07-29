@@ -47,18 +47,10 @@ import {
   type ExternalEffectIndexBuilder,
 } from './external-callable-effect.ts';
 import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
-
-/**
- * Identifiers an ownership marker must be written as to be detectable at all.
- *
- * `isForeignBorrowedType` in `foreign-borrowed-identity.ts` requires the type's alias symbol to
- * carry one of these names and to resolve to the marker package, so a marker renamed on import
- * is already invisible to the classifier.
- */
-const OWNERSHIP_MARKER_NAMES: readonly string[] = [
-  'ForeignBorrowed',
-  'ForeignHostCapability',
-];
+import {
+  provenRootEntry,
+  scopeNamesOwnershipMarker,
+} from './foreign-borrowed-demand.ts';
 
 /**
  * Tagged logger for effect index construction.
@@ -156,29 +148,12 @@ export function createDemandDrivenEffectIndex(
     readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   }>();
   /**
-   * Whether any indexed source names an ownership marker at all.
+   * Whether a proof could find any marker to anchor on in this scope.
    *
-   * The complete backwards closure walks exactly these sources, so a scope naming no marker can
-   * yield no foreign parameter for any callable and the closure would return nothing every time.
-   * Skipping it there is an equivalence rather than a trade, and it matters because the closure
-   * otherwise runs once per callable whose verdict demands it. Measured on this workspace:
-   * running it unconditionally cost about a third of the sweep's wall time, and most packages
-   * name no marker.
-   *
-   * `doc/planning/prefer-readonly-foreign-proof-cost.md` records one way this is not the pure
-   * equivalence it claims: a markerless recursive component can produce a candidate, so a scope
-   * that names a marker somewhere can withhold an offer this skip emits. The skip is the more
-   * correct of the two, since nothing is marked in either case, and the grounding pass in
-   * `foreign-borrowed-grounding.ts` closes the gap from the other side.
+   * Computed once because it reads every indexed source, and consulted before every demanded
+   * proof. `foreign-borrowed-demand.ts` records what it is and is not equivalent to.
    */
-  const scopeNamesOwnershipMarker = [...indexedSourceFiles.values(),]
-    .some(function namesMarker(sourceFile,): boolean {
-      return OWNERSHIP_MARKER_NAMES
-        .some(function named(markerName,): boolean {
-          return sourceFile.text
-            .includes(markerName,);
-        },);
-    },);
+  const markerReachable = scopeNamesOwnershipMarker({ indexedSourceFiles, },);
   /**
    * Proven foreign parameters by the callable each closure was rooted at.
    *
@@ -484,19 +459,17 @@ export function createDemandDrivenEffectIndex(
        * callable, since the closure walks exactly those sources, so the walk would return
        * nothing every time.
        */
-      const rootForeign = scopeNamesOwnershipMarker
-        ? completeForeignBorrowedGraph({
-          project,
-          indexedSourceFiles,
-          rootDeclaration: declaration,
-          analysisBudget,
-          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+      const rootForeign = markerReachable
+        ? provenRootEntry({
+          completeForeign: completeForeignBorrowedGraph({
+            project,
+            indexedSourceFiles,
+            rootDeclaration: declaration,
+            analysisBudget,
+            ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+          },),
+          key,
         },)
-          .get(key,)
-          /* Present for every key the closure holds a summary for, and the root is seeded into
-           * `summaries` before anything is enumerated, so this default stands for a root the
-           * walk failed to seed rather than for one it found no inbound for. */
-          ?? new Set<ParameterIndex>()
         : new Set<ParameterIndex>();
       foreignByProvenRoot.set(
         key,

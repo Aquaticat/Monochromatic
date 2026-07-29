@@ -206,8 +206,12 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
            * locating a crash site inside the rule needs frames and a message alone has
            * repeatedly proven insufficient.
            *
-           * The file gets no readonly analysis this run, and no offer either: this catch
-           * wraps the whole verification, so nothing was reported from a partial state.
+           * The file loses its remaining analysis. Diagnostics already emitted for earlier
+           * callables survive, because `context.report` has published them by the time
+           * anything throws, so this is not the file-wide atomicity an earlier version of this
+           * comment claimed. What holds is per-callable: `verifyReadonlyCallable` builds every
+           * parameter fact and demands the foreign proof before emitting anything, so no
+           * single callable is left half diagnosed.
            * `doc/troubleshooting/typescript-go-tuple-type-panic.md` is the live example. */
           rl.warn(
             `semantic rule failed, so ${context.filename} has no readonly analysis this run: ${
