@@ -68,8 +68,12 @@ type TransferSite = {
 /**
  * Descends one expression to the sub-expressions its own value can be.
  *
- * The descending mirror of `passesValueOutward`, sharing its operator sets so the two
- * directions cannot disagree about which operand an expression's value comes from.
+ * The descending mirror of `passesValueOutward` for operators, sharing its operator sets
+ * so the two directions cannot disagree about which operand an expression's value comes
+ * from. A mirror of the operators only: `provenanceSuccessors` in
+ * `effect-expression-provenance.ts` also descends object and array literals, and this
+ * walk does not, so `const box = { selected, }` never makes `box` a holder. That case
+ * fails closed elsewhere, because `useEscapes` counts a stored literal as escaping.
  *
  * @param node - Expression whose value sources are wanted.
  *
@@ -290,12 +294,20 @@ function recordTargetLeaves({
 }
 
 /**
- * Collects every place inside one body where a value moves into a binding.
+ * Collects the initialized declarations and direct local assignments in one body.
  *
- * A declaration transfers into its name, which may be a pattern. An assignment transfers
- * into its target only when that target is a binding local to this callable: a property,
- * an element, or an outer binding is a store this analysis cannot follow, and
- * `assignmentStoreEscapes` classifies those rather than tracking them.
+ * Not every transfer, and the shortfall is deliberate rather than unnoticed. A
+ * declaration transfers into its name, which may be a pattern. An assignment transfers
+ * into its target only when that target is a plain identifier naming a binding local to
+ * this callable, so a property, an element, or an outer binding is left to
+ * `assignmentStoreEscapes`, which classifies each as a store this analysis cannot follow.
+ *
+ * The forms left out all fail closed, checked one at a time rather than assumed. A
+ * destructuring assignment target is not an identifier, so it reaches the same store
+ * classification. A compound or logical assignment operator is in neither operand set, so
+ * `useEscapes` receives the operand itself and falls through to escaping. An iteration
+ * binding has no initializer, so a holder used as the iterable reaches an unfamiliar
+ * consumer and escapes. Failing closed costs offers, which is the affordable direction.
  *
  * @param project - TypeScript project resolving target symbols.
  *
@@ -373,7 +385,13 @@ export function resultReachableSymbolIds({
   readonly body: Node;
 },): ReadonlySet<number> {
   /**
-   * Symbol ids proven to hold state reachable from this call's result.
+   * Symbol ids reachable from this call's result in the transfer graph.
+   *
+   * Membership is a graph relation over transfer sites, not a runtime fact. An alias
+   * overwritten before it escapes stays a member, a transfer written above the one that
+   * establishes its source still propagates, and an object rest of a primitive-only row
+   * qualifies on its type alone. Each of those keeps opacity for a callable that would
+   * have been offered honestly.
    */
   const holders = new Set<number>();
   /**

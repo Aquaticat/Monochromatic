@@ -173,6 +173,12 @@ function nodeWithin({
  * is an identifier target and is nonetheless a store this analysis cannot follow, so
  * treating every identifier as local would launder exactly the case the check exists for.
  *
+ * Narrower than its name suggests, in one direction that costs offers rather than
+ * soundness. A parameter is local to the callable in every sense a reader would mean, but
+ * its declaration sits outside the body node, so `temporary = rows.at(0,)` on a parameter
+ * named `temporary` is classified as an escaping store. Tracked as its own task rather
+ * than widened here, because widening moves workspace findings.
+ *
  * @param project - TypeScript project resolving the target symbol.
  *
  * @param target - Left-hand side of one assignment.
