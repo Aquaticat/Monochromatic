@@ -3511,6 +3511,70 @@ If it reads 1939,
  something in this commit other than the disabled branch moved the workspace,
  and the only candidates left are the import edits and the early return the mutant kept.
 
+### It read 1966, so the standing baseline was measuring something else
+
+Four runs now agree,
+ and they span both code states and both cache states:
+
+```text
+this fix, cold cache                    1966   8m16s
+this fix, warm cache                    1966   3m00s
+closure branch disabled                 1966   8m13s
+exact pre-fix source from 06fc7bce3     1966   8m12s
+```
+
+The last of those is the one that settles it.
+It restores the file byte for byte from the commit before the fix,
+ rebuilds the plugin bundle and then the sidecar,
+ and records both digests beside the capture.
+It reads 1966 and differs from the baseline by the same 83 and 56.
+
+So 1939 is not a reading of the code that commit contained.
+It is not reproducible from that source,
+ from this source,
+ warm or cold,
+ and the number the workspace actually produces on either side of this change is 1966.
+
+The delta's own shape says what kind of error it was.
+Forty-two files appear in both the added and the removed set,
+ which is one finding whose boundary changed name rather than a finding gained beside a
+ finding lost.
+Boundaries reported by package and export became boundaries reported by the name at their
+ call site,
+ concentrated in particular packages rather than spread evenly.
+That is what a capture blended across two analyzer versions looks like:
+ whichever module a worker loaded decided how that worker's files reported,
+ and the recorded incident of a sidecar rebuilt three minutes into a running sweep is
+ exactly how such a blend gets made.
+
+The honest scope of this.
+Every conclusion in this document that rested on comparing against 1939 rested on a number
+ that does not describe the code it named,
+ and the affected captures are the ones reading 1939:
+ the reverted forty-five capture,
+ the four stage captures for forty-eight,
+ and the spread capture for forty-six.
+What survives is the reasoning that never depended on the absolute number,
+ which is most of it:
+ the fixture measurements,
+ the falsifications,
+ the mutation checks,
+ and the per-finding sampling of what moved.
+What does not survive is any claim of the form "the workspace did not move",
+ because a comparison against an unreproducible number cannot establish that.
+
+The new baseline is `sweep-51-prefix.txt`,
+ which is the pre-fix source with both artifacts rebuilt in order,
+ with `sweep-51-prefix.digest` beside it naming the commit and both digests.
+That is the first capture in this document that can be checked afterwards rather than
+ trusted.
+
+The discipline gains one more line from this,
+ beyond recording digests.
+A capture disagreeing with expectation is not evidence about the change until the change has
+ been removed and the capture repeated,
+ because a delta that survives removing the thing under test was never about it.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
