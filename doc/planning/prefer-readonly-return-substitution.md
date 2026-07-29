@@ -906,3 +906,103 @@ The offer count did not move,
 Restoring three deleted callees changed what the rule can say about one boundary.
 It did not change what the rule offers anywhere,
  because every affected caller was already reported for a reason that survives.
+
+## A third false offer, on a store into a module binding
+
+The root-walk fix closed the member form of this shape and left three others open.
+Measured after that fix landed,
+ over a structural parameter,
+ with a disposable fixture and probe removed afterward.
+
+```ts
+type Config = { rows: Row[]; row: Row; };
+
+let escaped: Row | undefined;
+
+export function storeElementFromStructure(config: Config,): void {
+  escaped = config.rows[0];
+}
+
+export function storeMemberFromStructure(config: Config,): void {
+  escaped = config.rows.at(0,);
+}
+
+export function storePropertyFromStructure(config: Config,): void {
+  escaped = config.row;
+}
+
+export function storeAliasedFromStructure(config: Config,): void {
+  const held = config.row;
+  escaped = held;
+}
+```
+
+Summaries read directly from the effect index.
+
+```text
+storeElementFromStructure    mutated=[] opaque=[]  offered
+storeMemberFromStructure     mutated=[] opaque=[0] reported
+storePropertyFromStructure   mutated=[] opaque=[]  offered
+storeAliasedFromStructure    mutated=[] opaque=[]  offered
+```
+
+Only the member form is caught.
+The reason is the asymmetry that
+ `doc/troubleshooting/prefer-readonly-root-parent-walk.md` already records.
+A verified member call has receiver opacity to discharge
+ and so reaches the escape test at all.
+An index read,
+ a property read and an alias hop never arrive there.
+
+All three legs of the falsification bar are met,
+ by the rule's own fixer rather than by hand.
+`oxlint --fix-suggestions --fix` writes `ReadonlyDeep<Config>` onto all three.
+That file type-checks clean under TypeScript 7.0.2,
+ exit zero.
+Driving it observes the caller's own data change through the escaped reference:
+
+```text
+element: changed-by-element
+property: changed-by-property
+alias: changed-by-alias
+```
+
+Each line reads a property `ReadonlyDeep<Config>` declares readonly,
+ after a call the annotation says cannot change it.
+The rule's own diagnostic text names this exact hazard,
+ "or arrange for one of those changes to happen later",
+ so this is the rule failing its stated contract rather than a gap in what the contract
+ covers.
+
+Why the array path hid it,
+ again.
+`readonly Row[]` constrains structure and not elements,
+ so `escaped = rows[0]` followed by a later `escaped.label = 'x'` violates nothing the
+ shallow projection promised.
+`ReadonlyDeep<Config>` does constrain elements,
+ and `readonlyDeepSuggestions` rejects array and tuple parameter types outright,
+ so the two projections never meet on one parameter.
+Any conclusion drawn from an array-shaped probe about this shape is unsupported.
+
+## The fixer deletes the import the fix needs
+
+Found while applying the annotation above,
+ and separate from any soundness question.
+
+`readonlyDeepSuggestions` returns nothing unless the file already imports `ReadonlyDeep`
+ from `type-fest`,
+ because it reads the local name from the existing import to preserve an authored alias.
+Adding that import to make the suggestion available makes it unused,
+ and one `--fix` pass removes it while writing the projection that needs it.
+The diff of one run over its own input:
+
+```text
+-import type { ReadonlyDeep, } from 'type-fest';
+-export function storeElementFromStructure(config: Config,): void {
++export function storeElementFromStructure(config: ReadonlyDeep<Config>,): void {
+```
+
+Four signatures gained the projection and the import was deleted in the same pass,
+ leaving a file that does not compile.
+Reproduced twice on separate copies,
+ with only this rule enabled in the fixture config.

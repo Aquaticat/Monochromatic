@@ -43,3 +43,34 @@ Inspect matches manually;
 ## Done when
 
 The detection commands return no filename-shaped fragments across tracked Markdown files.
+
+## Reading the diagnostic: the reported position is the paragraph, not the offence
+
+Worth knowing before chasing one of these,
+ because the position misdirects.
+`semantic-line-breaks` reports the first line of the paragraph containing the violation,
+ with a column that can sit past the end of that line.
+The break-point character actually needing a break can be several lines below.
+
+Measured on `doc/planning/prefer-readonly-return-substitution.md`.
+The report read `946:1`,
+ where line 946 was a short complete sentence with no break-point character except its
+ closing period,
+ and the column was one past the line's own length.
+The offence was on line 950,
+ an ordinary sentence carrying two mid-line commas.
+
+The reason the position misleads so convincingly is that it moves when you edit nearby
+ text,
+ which reads exactly like feedback about the edit.
+Rewording line 946 moved the column;
+ backticking a path on the following line moved it again;
+ neither touched the cause.
+
+What actually converges is bisection on the paragraph rather than inspection of the
+ reported line.
+Delete the whole added section,
+ confirm the file lints clean,
+ then re-add it in halves until the report returns.
+That found the real line in three rounds after roughly a dozen rounds of editing the
+ reported one.
