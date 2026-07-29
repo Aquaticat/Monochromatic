@@ -18,6 +18,7 @@ import {
 import {
   isBinaryExpression,
   isForOfStatement,
+  isFunctionLikeDeclaration,
   isVariableDeclarationList,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -27,9 +28,13 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
+import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { targetResultSites, } from './effect-result-binding.ts';
-import { recordResultRetentionSites, } from './effect-result-substitution.ts';
+import {
+  recordResultRetentionSites,
+  transparentValueRoot,
+} from './effect-result-substitution.ts';
 import { retentionProvenance, } from './effect-retention-provenance.ts';
 import type {
   MutableEffectSummary,
@@ -146,6 +151,49 @@ export function recordAssignmentStore({
         provenance,
       },);
     },);
+  /**
+   * Stored value with parentheses and assertions removed, so a wrapped closure is seen.
+   */
+  const stored = transparentValueRoot(node.right,);
+  /* A stored closure hands over everything it captured, and nothing above sees that.
+   * `effect-expression-provenance.ts` gives a function expression no provenance successors,
+   * so `parameterIndexes` comes back empty for `holder.callback = (): Row => config.row`,
+   * and the body is never scanned either: `closure-activity.ts` calls a stored closure
+   * inactive, correct for one that never runs and wrong here, because whoever holds it
+   * decides whether it runs.
+   *
+   * Falsified rather than argued. The rule offered `ReadonlyDeep`, the applied annotation
+   * type-checked, and a holder invoking the stored closure changed the caller's row.
+   * Recorded in `doc/planning/prefer-readonly-return-substitution.md`, section "The
+   * escaping closure is a false offer, falsified".
+   *
+   * `packagedCallableOrigins` answers this because it is the same question the argument
+   * path already asks of a method or accessor authored inside a call-argument literal: what
+   * can a callable handed to something else reach. Handing it over by storing it differs
+   * from handing it over as an argument in who holds it, not in what it captured.
+   *
+   * It over-approximates in the direction of withholding, naming every binding the body
+   * mentions rather than only those a write could travel through, so a closure that merely
+   * reads its capture withholds too. Measured, not assumed: `storeReadingClosure` in the
+   * structural-store fixture stores `(): number => config.row.label.length` and records
+   * `opaque=[0]`. Task #64 holds the finer question. */
+  if (isFunctionLikeDeclaration(stored,)) {
+    packagedCallableOrigins({
+      project,
+      bindingOriginBySymbolId,
+      packaged: stored,
+    },)
+      .forEach(function recordCapturedSlot(affectedSlot,): void {
+        addOpaqueEffect({
+          summary,
+          affectedSlot,
+          provenance,
+        },);
+      },);
+    /* Nothing below can add to a closure: a function expression is not a call, so it holds
+     * no deferred result for `targetResultSites` to substitute into. */
+    return;
+  }
   /* `parameterIndexes` stops at a call exactly as the write-side walk did, so
    * `held = firstRow(config,)` recorded nothing while `held = config.row` recorded
    * opacity for the same retention. Falsified rather than inferred: the rule offered

@@ -41,6 +41,17 @@ let held: Row | undefined;
 let measured = 0;
 
 /**
+ * Binding outside every callable body, holding whichever closure was stored into it last.
+ *
+ * Declared `const` on purpose. What escapes is the property assignment, not a rebinding of
+ * the holder itself, so the store path has to answer for a target it can never see reassigned.
+ */
+const callbackHolder: {
+  produce?: () => Row;
+  measure?: () => number;
+} = {};
+
+/**
  * Stores an indexed element of a structural parameter into a module binding.
  *
  * Measured offered `ReadonlyDeep<Config>` before this was covered, and the applied
@@ -968,4 +979,148 @@ export function destructureIntoOwnLocal(config: Config,): string {
   let localRow: Row | undefined;
   ({ row: localRow, } = config);
   return localRow?.label ?? '';
+}
+
+/**
+ * Stores a closure that hands the caller's own row to whoever holds the closure.
+ *
+ * Falsified before the fix existed: the rule offered `ReadonlyDeep<Config>`, the applied
+ * annotation type-checked clean, and a holder invoking the stored closure changed the
+ * caller's row. Nothing in the assignment names `config`, so the origin walk over the stored
+ * expression came back empty, and the closure body went unscanned because a stored closure
+ * counts as inactive.
+ *
+ * @param config - Configuration whose row the stored closure can hand out.
+ *
+ * @example
+ * ```ts
+ * storeCapturingClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeCapturingClosure(config: Config,): void {
+  callbackHolder.produce = (): Row => config.row;
+}
+
+/**
+ * Stores a closure that writes through the caller's row before handing it back.
+ *
+ * Self-limiting once the annotation is applied, because the write inside the closure stops
+ * type-checking, which is why the reading shape is the one that falsifies. It belongs here
+ * anyway: what the store hands over does not depend on what the closure does with it, and
+ * an implementation recording only writes would treat these two shapes differently.
+ *
+ * @param config - Configuration whose row the stored closure writes through.
+ *
+ * @example
+ * ```ts
+ * storeCapturingClosureWriting({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeCapturingClosureWriting(config: Config,): void {
+  callbackHolder.produce = (): Row => {
+    config.row
+      .label = 'written';
+    return config.row;
+  };
+}
+
+/**
+ * Stores a closure that only measures the caller's row and hands back a number.
+ *
+ * Withheld, and it need not be. The capture grants the holder no way to reach the row: the
+ * closure reads a `string`, returns its length, and hands nothing outward. `packagedCallableOrigins`
+ * names every binding a packaged body mentions whatever position it appears in, so `config`
+ * contributes here exactly as it does in the shapes that do hand something over.
+ *
+ * Recorded rather than fixed, because withholding costs precision and the alternative costs
+ * soundness if the finer body summary is wrong. Task #64 holds the question, and the
+ * assertion pinning this shape is what a narrowing fix has to flip.
+ *
+ * @param config - Configuration whose row the stored closure only reads.
+ *
+ * @example
+ * ```ts
+ * storeReadingClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeReadingClosure(config: Config,): void {
+  callbackHolder.measure = (): number => config.row
+    .label
+    .length;
+}
+
+/**
+ * Hands a structural parameter to a callable that stores a closure capturing it.
+ *
+ * The control for whether the store-site record reaches callers. A caller sees no write and
+ * no store of its own, so the only thing that can withhold its offer is the callee's slot
+ * arriving through the call edge.
+ *
+ * @param config - Configuration handed to the storing callable.
+ *
+ * @example
+ * ```ts
+ * passToCapturingStore({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function passToCapturingStore(config: Config,): void {
+  storeCapturingClosure(config,);
+}
+
+/**
+ * Writes through a closure the callable declares, invokes and never hands anywhere.
+ *
+ * The control that must not move. A closure assigned to a binding the callable owns is not a
+ * store, `targetIsCallableLocal` answers that, and the write reaches `config` through the
+ * ordinary active-body scan rather than through anything the store path records. Should this
+ * shape start reporting store provenance, the target policy has stopped distinguishing a
+ * binding the callable owns from one it does not.
+ *
+ * @param config - Configuration the locally invoked closure writes through.
+ *
+ * @example
+ * ```ts
+ * invokeLocalClosureWriting({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function invokeLocalClosureWriting(config: Config,): void {
+  /**
+   * Closure this callable owns, which dies when the call returns.
+   */
+  const local = (): void => {
+    config.row
+      .label = 'written';
+  };
+  local();
+}
+
+/**
+ * Writes through a closure the callable assigns to a local it declared separately.
+ *
+ * The same closure as `invokeLocalClosureWriting` reached through an assignment rather than
+ * an initializer, and it measures differently: no effect at all, where the declaration form
+ * records the write. The store path is not the cause, since `targetIsCallableLocal` answers
+ * for both, so the difference sits in which closures the activity scan selects.
+ *
+ * Self-limiting, not unsound. `config` is written directly in this file, so the offered
+ * annotation stops type-checking and the falsification bar is never reached. Pinned here
+ * because the two forms should not disagree, and tracked separately.
+ *
+ * @param config - Configuration the locally invoked closure writes through.
+ *
+ * @example
+ * ```ts
+ * invokeAssignedLocalClosureWriting({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function invokeAssignedLocalClosureWriting(config: Config,): void {
+  /**
+   * Closure this callable owns, filled after it was declared.
+   */
+  let local: (() => void) | undefined;
+  local = (): void => {
+    config.row
+      .label = 'written';
+  };
+  local();
 }

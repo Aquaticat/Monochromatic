@@ -666,6 +666,42 @@ await describe({
          * the difference between asking where a value went and asking what its type
          * claims to hold. */
         expect(excessRest,).toEqual([0, 1,],);
+        /* A closure stored outside the callable hands over everything it captured, and the
+         * store site alone cannot see that: the assignment names no parameter, so the
+         * origin walk over the right side comes back empty, and the closure body goes
+         * unscanned because a stored closure counts as inactive.
+         *
+         * False rather than imprecise. `ReadonlyDeep<Config>` applied to
+         * `storeCapturingClosure` type-checked clean, and a holder invoking the stored
+         * closure changed the caller's row. Measured in
+         * `doc/planning/prefer-readonly-return-substitution.md`, section "The escaping
+         * closure is a false offer, falsified". */
+        expect(structuralOpaque('storeCapturingClosure',),).toEqual([0,],);
+        /* The same capture in a closure that writes rather than returns. Self-limiting once
+         * an annotation is applied, so it cannot falsify anything, and it is pinned because
+         * what a store hands over does not depend on what the closure does with it. An
+         * implementation recording only writes would separate these two. */
+        expect(structuralOpaque('storeCapturingClosureWriting',),).toEqual([0,],);
+        /* Withheld where it need not be, pinned so a narrowing fix has something to flip.
+         * The stored closure reads a `string` and hands back its length, so the holder can
+         * reach nothing, but `packagedCallableOrigins` names every binding a packaged body
+         * mentions whatever position it appears in. Task #64 holds the question. */
+        expect(structuralOpaque('storeReadingClosure',),).toEqual([0,],);
+        /* The caller, which settles what the store record has to cover. It writes nothing
+         * and stores nothing, so the only thing that can withhold its offer is the callee's
+         * slot arriving through the call edge. That it reads `[0,]` is why the unrecorded
+         * write inside the stored closure needs no channel of its own. */
+        expect(structuralOpaque('passToCapturingStore',),).toEqual([0,],);
+        /* The control that must not move. A closure assigned to a binding the callable owns
+         * is not a store, `targetIsCallableLocal` answers that for both forms below, and the
+         * declaration form's write reaches `config` through the ordinary active-body scan
+         * instead. Store provenance appearing on either would mean the target policy had
+         * stopped telling an owned binding from an outside one. */
+        expect(structuralOpaque('invokeLocalClosureWriting',),).toEqual([],);
+        /* The same closure filled by assignment rather than by an initializer, which records
+         * no effect at all where the declaration form records `mutated=[0]`. Self-limiting,
+         * so no offer rides on it, and tracked as task #65. */
+        expect(structuralOpaque('invokeAssignedLocalClosureWriting',),).toEqual([],);
       },
     },),
     it({

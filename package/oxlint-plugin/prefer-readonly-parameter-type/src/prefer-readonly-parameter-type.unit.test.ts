@@ -631,9 +631,20 @@ children: [
        * and must: two whose callee allocates, and one that stores only a primitive read
        * off a returned value. That last arrival is the control for a gate the retention
        * path was missing, and it belongs among the offers rather than beside them. */
+      /* Twenty. Six closure shapes arrived and five of them withhold: three that store a
+       * capturing closure past the callable, one that hands its parameter to a callable
+       * doing so, and one whose locally invoked closure writes. The twentieth offer is
+       * `invokeAssignedLocalClosureWriting`, and it is the odd one: the same write as the
+       * shape beside it, reached through an assignment to an already-declared local rather
+       * than through an initializer, recording no effect at all.
+       *
+       * It belongs among the offers only in the sense that the rule currently makes it.
+       * Self-limiting rather than false, since the write is on `config` directly and the
+       * applied annotation stops type-checking, so no falsification rides on it. Task #65
+       * holds the selection question, and this count is what its fix moves. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(19,);
+      },).length,).toBe(20,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls
