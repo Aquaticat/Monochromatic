@@ -5,112 +5,19 @@
  */
 
 import { isRetentionProvenance, } from './effect-retention-provenance.ts';
+import {
+  isBoundedIndexes,
+  isCacheString,
+  isIndex,
+  isRecord,
+  MAX_CALLABLE_ARITY,
+} from './effect-summary-cache-primitive.ts';
 import type {
   SerializedCallEdge,
   SerializedCallbackKey,
   SerializedEffectSummaries,
   SerializedEffectSummary,
 } from './effect-summary-serialization.ts';
-
-/**
- * Maximum supported callable parameter or argument count.
- */
-const MAX_CALLABLE_ARITY = 65_535;
-
-/**
- * Maximum retained cache string length.
- */
-const MAX_CACHE_STRING_LENGTH = 65_535;
-
-/**
- * Tests whether unknown value is property-bearing record.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether direct string properties can be inspected.
- */
-function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object')
-    && (value !== null)
-    && (!Array.isArray(value,));
-}
-
-/**
- * Tests bounded nonnegative integer.
- *
- * @param value - Parsed JSON value.
- *
- * @param upperBound - Exclusive maximum.
- *
- * @returns whether value is valid index.
- */
-function isIndex({
-  value,
-  upperBound,
-}: {
-  readonly value: unknown;
-  readonly upperBound: number;
-}): boolean {
-  return ((typeof value) === 'number')
-    && Number.isInteger(value,)
-    && (value >= 0)
-    && (value < upperBound);
-}
-
-/**
- * Tests bounded cache string.
- *
- * @param value - Parsed JSON value.
- *
- * @returns whether string length fits cache policy.
- */
-function isCacheString(value: unknown,): value is string {
-  return ((typeof value) === 'string')
-    && (value.length <= MAX_CACHE_STRING_LENGTH);
-}
-
-/**
- * Tests unique bounded-index array.
- *
- * Used for both parameter positions and effect slots, which is why the bound is a plain
- * argument: the two share a representation and differ only in what bounds them, and passing
- * the wrong one here would accept a payload whose numbers point outside the callable.
- *
- * @param value - Parsed JSON value.
- *
- * @param upperBound - Exclusive index limit.
- *
- * @returns whether array contains only unique valid indexes.
- */
-function isBoundedIndexes({
-  value,
-  upperBound,
-}: {
-  readonly value: unknown;
-  readonly upperBound: number;
-}): boolean {
-  if ((!Array.isArray(value,)) || (value.length > upperBound))
-    return false;
-  /**
-   * Parsed indexes narrowed from JSON array.
-   */
-  const indexes: readonly unknown[] = value;
-  /**
-   * Seen indexes rejecting duplicate cache amplification.
-   */
-  const seen = new Set<number>();
-  for (const index of indexes) {
-    if (((typeof index) !== 'number')
-      || (!isIndex({
-        value: index,
-        upperBound,
-      },))
-      || seen.has(index,))
-      return false;
-    seen.add(index,);
-  }
-  return true;
-}
 
 /**
  * Tests caller-side roots recorded per callee position.
@@ -394,7 +301,9 @@ function isOpaqueProvenance({
      * Parsed provenance facts narrowed from JSON array.
      */
     const factValues: readonly unknown[] = facts;
-    return factValues.every(isCacheString,);
+    return factValues.every(function validFact(fact,): boolean {
+      return isCacheString(fact,);
+    },);
   },);
 }
 
@@ -516,7 +425,9 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
       .length
       <= MAX_CALLABLE_ARITY)
     && value.resultApplications
-    .every(isResultApplication,)
+    .every(function validResultApplication(application,): boolean {
+      return isResultApplication(application,);
+    },)
     && Array.isArray(value.calls,)
     && (value.calls
       .length
