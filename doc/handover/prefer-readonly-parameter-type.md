@@ -262,23 +262,32 @@ The three-channel fix for constructions, yields and awaited returns is landed, t
 Every sweep but #69's came back at zero delta; #69's moved by one true finding,
  a closure capturing a promise `resolve` handed to `handle.once`.
 
-Open, in the order worth taking them:
+Open, and none of them is a false offer:
 
-- #54, a store into caller-reachable state versus one beyond the caller
-- #63, a parameter initializer's own expression versus a callable packaged inside it
+- #71, re-measuring task #46's per-finding claim against the current baseline, running
+- #74, discharging a construction whose constructor copies rather than retains
+- #73, the next escape-channel hunt pass, staged and waiting for the queue to clear
 
-- #71, re-measure the one substantive claim that rested on the retired baseline
-- #70, find a shape demonstrating a cost for the ungated activation scan, or close it declined
-- #64, the read-only-capture precision question, now with two over-approximations to answer for
-- #73, the next hunt pass, staged and ready
-- #44, #52 to #63, the older queue
+Declined with the reason recorded, because building each the obvious way is worse than leaving
+ it:
 
-#65 is open and deliberately unfixed.
-Its cause is known exactly: overload resolution answers with the declared function type's
- signature rather than the arrow assigned into the binding.
-What remains unreached is the binding filled by assignment after declaration,
- which needs the values assigned to a binding rather than the one it was declared with.
-The shape is self-limiting, so no falsification rides on it.
+- #54, restoring an offer for a store into another parameter. The callee cannot decide it. The
+  edge from one parameter to another escapes or not depending on where the first came from, which
+  only the caller knows, so the naive fix admits a false offer. It needs a
+  parameter-to-parameter reachability relation propagated at the edge, and it is precision only.
+- #63, separating an initializer's own expression from a callable packaged inside it. The
+  over-attribution is load-bearing. Gating the callable requires its invocation site to activate
+  it, and `callback()` on a parameter typed `() => void` resolves to the type's signature rather
+  than to the arrow written as the default, so the fix would lose a write the callable genuinely
+  performs.
+- #65, activating a closure filled by assignment. The same missing capability as #63: what a
+  binding whose declared type is a function actually holds. A change for it measured as dead code
+  and was reverted rather than landed.
+- #64, the read-only-capture precision question. A `throw` is modelled nowhere, so no body
+  summary is complete enough to grant an offer on the strength of it.
+
+Everything else in the queue is closed. Four of those closures needed no code at all, and
+ measuring them said so.
 
 ## Primary records
 
