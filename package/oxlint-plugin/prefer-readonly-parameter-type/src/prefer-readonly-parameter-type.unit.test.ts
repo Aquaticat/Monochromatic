@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(30,);
+      },).length,).toBe(33,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -738,8 +738,29 @@ children: [
           || message.includes('"leftBiased"',)
           || message.includes('"handedToNew"',)
           || message.includes('"yieldedOut"',)
-          || message.includes('"awaitedThrough"',);
+          || message.includes('"awaitedThrough"',)
+          || message.includes('"pushedResult"',)
+          || message.includes('"nestedResult"',)
+          || message.includes('"keptRow"',)
+          || message.includes('"patternBound"',)
+          || message.includes('"logicalBound"',)
+          || message.includes('"defaultBound"',)
+          || message.includes('"defaulted"',)
+          || message.includes('"conditionalTarget"',);
       },).length,).toBe(0,);
+      /* The cluster's leaf control, and the three offers that carry the count from thirty to
+       * thirty-three. A count handed to a collection retains nothing a caller can be written
+       * through, and the two returns of caller state are the permitted return whose callers now
+       * substitute through a tracked origin. */
+      expect(messages.filter(function namesCountedArgument(message,): boolean {
+        return message.includes('"countedArgument"',);
+      },),).toEqual([
+        'Parameter "countedArgument" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesHandedBack(message,): boolean {
+        return message.includes('"handedBack"',)
+          || message.includes('"projectedOut"',);
+      },).length,).toBe(2,);
       /* And their control, carrying the count from twenty-six to twenty-seven. */
       expect(messages.filter(function namesNeither(message,): boolean {
         return message.includes('"neither"',);

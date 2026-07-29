@@ -22,6 +22,7 @@ import { isFunctionLikeDeclaration, } from 'typescript/unstable/ast/is';
 import {
   asParameterIndex,
   buildEffectSummaryIndex,
+  type CallableEffectSummary,
   clearEffectSummaryCache,
   clearFinalEffectIndexCache,
   closeSemanticBridge,
@@ -487,13 +488,21 @@ await describe({
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads the opaque parameter indexes of one structural-store fixture function.
+         * Reads one index set of one structural-store fixture function.
          *
          * @param functionName - Exported fixture function to inspect.
          *
-         * @returns opaque parameter indexes in ascending order.
+         * @param read - Which index set to take off the summary.
+         *
+         * @returns those parameter indexes in ascending order.
          */
-        function structuralOpaque(functionName: string,): readonly number[] {
+        function structuralIndexes({
+          functionName,
+          read,
+        }: {
+          readonly functionName: string;
+          readonly read: (summary: CallableEffectSummary,) => Iterable<number>;
+        },): readonly number[] {
           /**
            * Name node of the requested fixture declaration.
            */
@@ -513,10 +522,55 @@ await describe({
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
             throw new Error(`Expected an effect summary for ${functionName}.`,);
-          return [...summary.opaqueParameterIndexes,]
+          return [...read(summary,),]
             .toSorted(function byIndex(left: number, right: number,): number {
               return left - right;
             },);
+        }
+        /**
+         * Reads the opaque parameter indexes of one structural-store fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns opaque parameter indexes in ascending order.
+         */
+        function structuralOpaque(functionName: string,): readonly number[] {
+          return structuralIndexes({
+            functionName,
+            read: function opaqueOf(summary,): Iterable<number> {
+              return summary.opaqueParameterIndexes;
+            },
+          },);
+        }
+        /**
+         * Reads the mutated parameter indexes of one structural-store fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns mutated parameter indexes in ascending order.
+         */
+        function structuralMutated(functionName: string,): readonly number[] {
+          return structuralIndexes({
+            functionName,
+            read: function mutatedOf(summary,): Iterable<number> {
+              return summary.mutatedParameterIndexes;
+            },
+          },);
+        }
+        /**
+         * Reads the returned parameter indexes of one structural-store fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns returned parameter indexes in ascending order.
+         */
+        function structuralReturned(functionName: string,): readonly number[] {
+          return structuralIndexes({
+            functionName,
+            read: function returnedOf(summary,): Iterable<number> {
+              return summary.returnedParameterIndexes;
+            },
+          },);
         }
         /** Indexed element stored into a module binding. */
         const storedElement = structuralOpaque('storeElementIntoModuleBinding',);
@@ -756,6 +810,20 @@ await describe({
          * decision names was failing at the caller rather than here: this recorded its returned
          * origin all along, and no caller could substitute through an await. */
         expect(structuralOpaque('returnRowAsync',),).toEqual([],);
+        /* A result bound through a pattern, a logical assignment and a parameter default. The
+         * registration refused every non-identifier name, the binding scan collected plain
+         * assignment alone, and it collected local declarations and not this callable's own
+         * parameters. Three separate omissions in one record. */
+        expect(structuralMutated('writeThroughPatternBinding',),).toEqual([0,],);
+        expect(structuralMutated('writeThroughLogicalBinding',),).toEqual([0,],);
+        expect(structuralMutated('writeThroughDefaultBinding',),).toEqual([0, 1,],);
+        /* A conditional write target, which the normalisation walk could not see through
+         * because a conditional is where a value came from rather than a layer over it. */
+        expect(structuralMutated('writeThroughConditionalTarget',),).toEqual([0,],);
+        /* And a return of an element of an authored literal, which the return branch missed by
+         * asking the expression alone where every write and store site consults the record. It
+         * is a tracked returned origin now, which is what the accepted decision requires. */
+        expect(structuralReturned('projectResultOutward',),).toEqual([0,],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came
@@ -808,6 +876,17 @@ await describe({
          * only what their operands can carry, and a count carries nothing. */
         expect(structuralOpaque('handLabelToConstructor',),).toEqual([],);
         expect(structuralOpaque('yieldCountOutward',),).toEqual([],);
+        /* One cluster of queue shapes, one cause: a call result reaching a use site the deferred
+         * relation did not cover. All eight falsified, each fixed by asking where a value can
+         * have come from rather than what layer sits over it.
+         *
+         * An argument that is a call result, through an unresolved receiver and an owned one,
+         * since the two fail for the same reason and one proves nothing about the other. */
+        expect(structuralOpaque('retainResultThroughPush',),).toEqual([0,],);
+        expect(structuralOpaque('handResultToRetainer',),).toEqual([0,],);
+        /* Its leaf control, which is what keeps this from withholding on every call handed a
+         * projection off a parameter. */
+        expect(structuralOpaque('handCountToCollection',),).toEqual([],);
       },
     },),
     it({

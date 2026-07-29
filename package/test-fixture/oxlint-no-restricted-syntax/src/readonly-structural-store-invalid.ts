@@ -41,6 +41,16 @@ let held: Row | undefined;
 let measured = 0;
 
 /**
+ * Collection retaining rows past every call.
+ */
+const pushTarget: Row[] = [];
+
+/**
+ * Collection retaining counts past every call, which no caller can be written through.
+ */
+const countTarget: number[] = [];
+
+/**
  * Binding outside every callable body, holding whichever closure was stored into it last.
  *
  * Declared `const` on purpose. What escapes is the property assignment, not a rebinding of
@@ -1816,4 +1826,192 @@ export async function returnRowAsync(asyncReturned: Config,): Promise<Row> {
  */
 export async function writeThroughAwaitedRow(awaitedThrough: Config,): Promise<void> {
   (await returnRowAsync(awaitedThrough,)).label = 'written';
+}
+
+/**
+ * Hands back a piece of the caller's own structure.
+ *
+ * @param handedBack - Structure whose row is handed back.
+ *
+ * @returns caller's own row.
+ *
+ * @example
+ * ```ts
+ * rowOf({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function rowOf(handedBack: Config,): Row {
+  return handedBack.row;
+}
+
+/**
+ * Keeps whatever row it is handed.
+ *
+ * @param keptRow - Row retained past this call.
+ *
+ * @example
+ * ```ts
+ * keepRow({ label: '', },);
+ * ```
+ */
+export function keepRow(keptRow: Row,): void {
+  held = keptRow;
+}
+
+/**
+ * Retains a returned row through a collection call.
+ *
+ * Falsified. A call result handed as an argument carries caller state the origin walk cannot
+ * see, because a callee's summary does not exist while its callers are walked.
+ *
+ * @param pushedResult - Configuration whose returned row the collection keeps.
+ *
+ * @example
+ * ```ts
+ * retainResultThroughPush({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function retainResultThroughPush(pushedResult: Config,): void {
+  pushTarget.push(rowOf(pushedResult,),);
+}
+
+/**
+ * Hands a returned row to an owned callee that keeps it.
+ *
+ * The owned half of the same shape, since the unresolved and owned receivers fail for the same
+ * reason and a fixture covering one proves nothing about the other.
+ *
+ * @param nestedResult - Configuration whose returned row the outer call keeps.
+ *
+ * @example
+ * ```ts
+ * handResultToRetainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handResultToRetainer(nestedResult: Config,): void {
+  keepRow(rowOf(nestedResult,),);
+}
+
+/**
+ * Hands a count to a collection call.
+ *
+ * The leaf control. An argument that cannot carry mutable state records nothing, which is what
+ * keeps this from withholding on every call that is handed a projection.
+ *
+ * @param countedArgument - Configuration whose row count is handed over.
+ *
+ * @example
+ * ```ts
+ * handCountToCollection({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handCountToCollection(countedArgument: Config,): void {
+  countTarget.push(countedArgument.rows
+    .length,);
+}
+
+/**
+ * Writes through a returned row bound by a destructuring pattern.
+ *
+ * Falsified. The registration returned false for any non-identifier name, so a pattern
+ * registered nothing.
+ *
+ * @param patternBound - Configuration this callable writes through.
+ *
+ * @example
+ * ```ts
+ * writeThroughPatternBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughPatternBinding(patternBound: Config,): void {
+  /**
+   * Row reached through a pattern rather than a plain binding.
+   */
+  const { inner, } = { inner: rowOf(patternBound,), };
+  inner.label = 'written';
+}
+
+/**
+ * Writes through a returned row bound by a logical assignment.
+ *
+ * Falsified. The binding scan collected plain assignment alone.
+ *
+ * @param logicalBound - Configuration this callable writes through.
+ *
+ * @example
+ * ```ts
+ * writeThroughLogicalBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughLogicalBinding(logicalBound: Config,): void {
+  /**
+   * Row filled by a logical assignment.
+   */
+  let filled: Row | undefined;
+  filled ??= rowOf(logicalBound,);
+  filled.label = 'written';
+}
+
+/**
+ * Writes through a returned row bound by a parameter default.
+ *
+ * Falsified. The binding scan collected local declarations and not this callable's own
+ * parameters.
+ *
+ * @param defaultBound - Configuration this callable writes through.
+ *
+ * @param defaulted - Row defaulting to the returned one.
+ *
+ * @example
+ * ```ts
+ * writeThroughDefaultBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughDefaultBinding(
+  defaultBound: Config,
+  defaulted: Row = rowOf(defaultBound,),
+): void {
+  defaulted.label = 'written';
+}
+
+/**
+ * Writes through a returned row reached by a conditional target.
+ *
+ * Falsified. The normalisation walk strips access layers and identity-keeping wrappers, and a
+ * conditional is neither: it is a place a value came from rather than a layer over it.
+ *
+ * @param conditionalTarget - Configuration this callable writes through.
+ *
+ * @param pick - Which branch is written.
+ *
+ * @example
+ * ```ts
+ * writeThroughConditionalTarget({ rows: [], row: { label: '', }, }, true,);
+ * ```
+ */
+export function writeThroughConditionalTarget(
+  conditionalTarget: Config,
+  pick: boolean,
+): void {
+  (pick ? rowOf(conditionalTarget,) : rowOf(conditionalTarget,)).label = 'written';
+}
+
+/**
+ * Hands back a returned row through an element of an authored array.
+ *
+ * Falsified. The return branch asked the expression alone where every write and store site
+ * consults the binding record, and a call underlies a member of the literal rather than the
+ * element access or the literal itself.
+ *
+ * @param projectedOut - Configuration whose row is projected out.
+ *
+ * @returns caller's own row reached through a literal.
+ *
+ * @example
+ * ```ts
+ * projectResultOutward({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function projectResultOutward(projectedOut: Config,): Row {
+  return [rowOf(projectedOut,),][0] as Row;
 }
