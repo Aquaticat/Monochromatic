@@ -21,6 +21,11 @@ const IMAGE_DATA_PREFIX = 'data:image/';
  */
 const BASE64_MARKER = ';base64,';
 
+/**
+ * Parser result for unsupported or malformed Markdown syntax.
+ */
+const UNPARSEABLE_MARKDOWN: unique symbol = Symbol('Markdown candidate is unsupported or malformed',);
+
 //endregion Constants
 
 //region Types
@@ -38,6 +43,11 @@ type CharacterRange = {
    */
   readonly end: number;
 };
+
+/**
+ * Parsed value or domain-specific rejection sentinel.
+ */
+type MarkdownParseResult<Value> = Value | typeof UNPARSEABLE_MARKDOWN;
 
 /**
  * Filtered Markdown and removal count.
@@ -126,66 +136,77 @@ function filterFetchResponseDataImages(response: unknown,): FetchResponseDataIma
  * ```
  */
 function filterMarkdownDataImages(markdown: string,): MarkdownDataImageFilterResult {
-  /**
-   * Retained text chunks joined once after scanning.
-   */
-  const retainedChunks: string[] = [];
-  /**
-   * Start of text not yet copied into retained chunks.
-   */
-  let retainedStart = 0;
-  /**
-   * Search start for next inline-image opener.
-   */
-  let searchStart = 0;
-  /**
-   * Number of accepted image constructs removed so far.
-   */
-  let removedImageCount = 0;
-  /**
-   * Next possible inline-image opener.
-   */
-  let imageStart = markdown.indexOf(IMAGE_OPEN, searchStart,);
-
-  while (imageStart !== -1) {
+  return (function scanMarkdownDataImages(): MarkdownDataImageFilterResult {
     /**
-     * Parsed base64 image token, when candidate is complete and valid.
+     * Retained text chunks joined once after scanning.
      */
-    const imageRange = base64ImageRange({
-      markdown,
-      imageStart,
-    },);
-    if (imageRange === undefined) {
-      searchStart = imageStart + IMAGE_OPEN.length;
-    }
-    else {
-      /**
-       * Full linked-image wrapper when image is tightly wrapped by one.
-       */
-      const constructRange = linkedImageRange({
-        markdown,
-        imageRange,
-      },);
-      /**
-       * Smallest safe removal range, widened to physical lines only when construct owns them.
-       */
-      const removalRange = lineOwnedRemovalRange({
-        markdown,
-        constructRange,
-      },);
-      retainedChunks.push(markdown.slice(retainedStart, removalRange.start,),);
-      retainedStart = removalRange.end;
-      searchStart = removalRange.end;
-      removedImageCount += 1;
-    }
-    imageStart = markdown.indexOf(IMAGE_OPEN, searchStart,);
-  }
+    const retainedChunks: string[] = [];
+    /**
+     * Start of text not yet copied into retained chunks.
+     */
+    let retainedStart = 0;
+    /**
+     * Search start for next inline-image opener.
+     */
+    let searchStart = 0;
+    /**
+     * Number of accepted image constructs removed so far.
+     */
+    let removedImageCount = 0;
+    /**
+     * Next possible inline-image opener.
+     */
+    let imageStart = markdown.indexOf(
+      IMAGE_OPEN,
+      searchStart,
+    );
 
-  retainedChunks.push(markdown.slice(retainedStart,),);
-  return {
-    markdown: retainedChunks.join('',),
-    removedImageCount,
-  };
+    while (imageStart !== (-1)) {
+      /**
+       * Parsed base64 image token, or rejection sentinel.
+       */
+      const imageRange = base64ImageRange({
+        markdown,
+        imageStart,
+      },);
+      if (isUnparseableMarkdown(imageRange,)) {
+        searchStart = imageStart + IMAGE_OPEN.length;
+      }
+      else {
+        /**
+         * Full linked-image wrapper when image is tightly wrapped by one.
+         */
+        const constructRange = linkedImageRange({
+          markdown,
+          imageRange,
+        },);
+        /**
+         * Smallest safe range, widened to physical lines only when construct owns them.
+         */
+        const removalRange = lineOwnedRemovalRange({
+          markdown,
+          constructRange,
+        },);
+        retainedChunks.push(markdown.slice(
+          retainedStart,
+          removalRange.start,
+        ),);
+        retainedStart = removalRange.end;
+        searchStart = removalRange.end;
+        removedImageCount += 1;
+      }
+      imageStart = markdown.indexOf(
+        IMAGE_OPEN,
+        searchStart,
+      );
+    }
+
+    retainedChunks.push(markdown.slice(retainedStart,),);
+    return {
+      markdown: retainedChunks.join('',),
+      removedImageCount,
+    };
+  })();
 }
 
 //endregion Public API
@@ -199,7 +220,7 @@ function filterMarkdownDataImages(markdown: string,): MarkdownDataImageFilterRes
  *
  * @param imageStart - offset of `![`
  *
- * @returns image token range, or undefined for unsupported or malformed syntax
+ * @returns image token range or parser rejection sentinel
  */
 function base64ImageRange(
   {
@@ -209,7 +230,7 @@ function base64ImageRange(
     readonly markdown: string;
     readonly imageStart: number;
   },
-): CharacterRange | undefined {
+): MarkdownParseResult<CharacterRange> {
   /**
    * Start of inline destination after balanced alt text and opening parenthesis.
    */
@@ -217,18 +238,18 @@ function base64ImageRange(
     markdown,
     imageStart,
   },);
-  if (destinationStart === undefined)
-    return undefined;
+  if (isUnparseableMarkdown(destinationStart,))
+    return UNPARSEABLE_MARKDOWN;
 
   /**
-   * Exclusive token end after a validated data-image destination.
+   * Exclusive token end after validated data-image destination.
    */
   const imageEnd = base64ImageDestinationEnd({
     markdown,
     destinationStart,
   },);
-  return imageEnd === undefined
-    ? undefined
+  return isUnparseableMarkdown(imageEnd,)
+    ? UNPARSEABLE_MARKDOWN
     : {
       start: imageStart,
       end: imageEnd,
@@ -242,7 +263,7 @@ function base64ImageRange(
  *
  * @param imageStart - offset of `![`
  *
- * @returns destination start, or undefined for malformed image syntax
+ * @returns destination start or parser rejection sentinel
  */
 function imageDestinationStart(
   {
@@ -252,39 +273,41 @@ function imageDestinationStart(
     readonly markdown: string;
     readonly imageStart: number;
   },
-): number | undefined {
-  /**
-   * Nested square-bracket depth inside alt text.
-   */
-  let bracketDepth = 1;
-  /**
-   * Current alt-text offset.
-   */
-  let cursor = imageStart + IMAGE_OPEN.length;
-
-  while (cursor < markdown.length) {
+): MarkdownParseResult<number> {
+  return (function scanAltText(): MarkdownParseResult<number> {
     /**
-     * Current alt-text character.
+     * Nested square-bracket depth inside alt text.
      */
-    const character = markdown[cursor];
-    if (character === '\\')
-      cursor += 2;
-    else if (character === '[') {
-      bracketDepth += 1;
-      cursor += 1;
+    let bracketDepth = 1;
+    /**
+     * Current alt-text offset.
+     */
+    let cursor = imageStart + IMAGE_OPEN.length;
+
+    while (cursor < markdown.length) {
+      /**
+       * Current alt-text character.
+       */
+      const character = markdown.charAt(cursor,);
+      if (character === '\\')
+        cursor += 2;
+      else if (character === '[') {
+        bracketDepth += 1;
+        cursor += 1;
+      }
+      else if (character === ']') {
+        bracketDepth -= 1;
+        if (bracketDepth === 0)
+          return markdown.charAt(cursor + 1,) === '('
+            ? cursor + 2
+            : UNPARSEABLE_MARKDOWN;
+        cursor += 1;
+      }
+      else
+        cursor += 1;
     }
-    else if (character === ']') {
-      bracketDepth -= 1;
-      if (bracketDepth === 0)
-        return markdown[cursor + 1] === '('
-          ? cursor + 2
-          : undefined;
-      cursor += 1;
-    }
-    else
-      cursor += 1;
-  }
-  return undefined;
+    return UNPARSEABLE_MARKDOWN;
+  })();
 }
 
 /**
@@ -294,7 +317,7 @@ function imageDestinationStart(
  *
  * @param destinationStart - first destination character
  *
- * @returns exclusive image token end, or undefined when destination is unsupported
+ * @returns exclusive image token end or parser rejection sentinel
  */
 function base64ImageDestinationEnd(
   {
@@ -304,65 +327,73 @@ function base64ImageDestinationEnd(
     readonly markdown: string;
     readonly destinationStart: number;
   },
-): number | undefined {
+): MarkdownParseResult<number> {
   /**
    * Whether destination uses Markdown angle brackets.
    */
-  const angleWrapped = markdown[destinationStart] === '<';
+  const angleWrapped = markdown.charAt(destinationStart,) === '<';
   /**
    * Start of data URL after optional angle bracket.
    */
   const dataStart = angleWrapped
     ? destinationStart + 1
     : destinationStart;
-  if (!markdown.startsWith(IMAGE_DATA_PREFIX, dataStart,))
-    return undefined;
+  if (!markdown.startsWith(
+    IMAGE_DATA_PREFIX,
+    dataStart,
+  ))
+    return UNPARSEABLE_MARKDOWN;
 
-  /**
-   * Cursor scanning media type parameters before base64 marker.
-   */
-  let cursor = dataStart + IMAGE_DATA_PREFIX.length;
-  while (!markdown.startsWith(BASE64_MARKER, cursor,)) {
+  return (function scanDataImageDestination(): MarkdownParseResult<number> {
     /**
-     * Current media-type character.
+     * Cursor scanning media type, then payload.
      */
-    const character = markdown[cursor];
-    if ((character === undefined)
-      || isMarkdownWhitespace(character,)
-      || (character === ')')
-      || (character === '>'))
-      return undefined;
-    cursor += 1;
-  }
-  cursor += BASE64_MARKER.length;
-
-  /**
-   * Whether payload includes at least one base64 character.
-   */
-  let hasPayload = false;
-  while (cursor < markdown.length) {
-    /**
-     * Current payload or closing character.
-     */
-    const character = markdown[cursor];
-    if ((!angleWrapped) && (character === ')'))
-      return hasPayload
-        ? cursor + 1
-        : undefined;
-    if (angleWrapped && (character === '>'))
-      return hasPayload && (markdown[cursor + 1] === ')')
-        ? cursor + 2
-        : undefined;
-    if (isMarkdownWhitespace(character,))
-      cursor += 1;
-    else if (isBase64Character(character,)) {
-      hasPayload = true;
+    let cursor = dataStart + IMAGE_DATA_PREFIX.length;
+    while (!markdown.startsWith(
+      BASE64_MARKER,
+      cursor,
+    )) {
+      /**
+       * Current media-type character.
+       */
+      const character = markdown.charAt(cursor,);
+      if ((character === '')
+        || isMarkdownWhitespace(character,)
+        || (character === ')')
+        || (character === '>'))
+        return UNPARSEABLE_MARKDOWN;
       cursor += 1;
     }
-    else
-      return undefined;
-  }
-  return undefined;
+    cursor += BASE64_MARKER.length;
+
+    /**
+     * Whether payload includes at least one base64 character.
+     */
+    let hasPayload = false;
+    while (cursor < markdown.length) {
+      /**
+       * Current payload or closing character.
+       */
+      const character = markdown.charAt(cursor,);
+      if ((!angleWrapped) && (character === ')'))
+        return hasPayload
+          ? cursor + 1
+          : UNPARSEABLE_MARKDOWN;
+      if (angleWrapped && (character === '>'))
+        return hasPayload && (markdown.charAt(cursor + 1,) === ')')
+          ? cursor + 2
+          : UNPARSEABLE_MARKDOWN;
+      if (isMarkdownWhitespace(character,))
+        cursor += 1;
+      else if (isBase64Character(character,)) {
+        hasPayload = true;
+        cursor += 1;
+      }
+      else
+        return UNPARSEABLE_MARKDOWN;
+    }
+    return UNPARSEABLE_MARKDOWN;
+  })();
 }
 
 /**
@@ -384,18 +415,21 @@ function linkedImageRange(
   },
 ): CharacterRange {
   if ((imageRange.start === 0)
-    || (markdown[imageRange.start - 1] !== '[')
-    || (!markdown.startsWith('](', imageRange.end,)))
+    || (markdown.charAt(imageRange.start - 1,) !== '[')
+    || (!markdown.startsWith(
+      '](',
+      imageRange.end,
+    )))
     return imageRange;
 
   /**
-   * Exclusive end of outer link when its destination closes safely.
+   * Exclusive end of outer link when destination closes safely.
    */
   const linkedEnd = sameLineLinkEnd({
     markdown,
     destinationStart: imageRange.end + 2,
   },);
-  return linkedEnd === undefined
+  return isUnparseableMarkdown(linkedEnd,)
     ? imageRange
     : {
       start: imageRange.start - 1,
@@ -410,7 +444,7 @@ function linkedImageRange(
  *
  * @param destinationStart - first outer destination character
  *
- * @returns exclusive link end, or undefined for malformed or multiline wrappers
+ * @returns exclusive link end or parser rejection sentinel
  */
 function sameLineLinkEnd(
   {
@@ -420,37 +454,39 @@ function sameLineLinkEnd(
     readonly markdown: string;
     readonly destinationStart: number;
   },
-): number | undefined {
-  /**
-   * Parenthesis depth including already-consumed opening parenthesis.
-   */
-  let parenthesisDepth = 1;
-  /**
-   * Current outer destination offset.
-   */
-  let cursor = destinationStart;
-
-  while ((cursor < markdown.length) && (markdown[cursor] !== '\n')) {
+): MarkdownParseResult<number> {
+  return (function scanLinkDestination(): MarkdownParseResult<number> {
     /**
-     * Current destination character.
+     * Parenthesis depth including already-consumed opening parenthesis.
      */
-    const character = markdown[cursor];
-    if (character === '\\')
-      cursor += 2;
-    else if (character === '(') {
-      parenthesisDepth += 1;
-      cursor += 1;
+    let parenthesisDepth = 1;
+    /**
+     * Current outer destination offset.
+     */
+    let cursor = destinationStart;
+
+    while ((cursor < markdown.length) && (markdown.charAt(cursor,) !== '\n')) {
+      /**
+       * Current destination character.
+       */
+      const character = markdown.charAt(cursor,);
+      if (character === '\\')
+        cursor += 2;
+      else if (character === '(') {
+        parenthesisDepth += 1;
+        cursor += 1;
+      }
+      else if (character === ')') {
+        parenthesisDepth -= 1;
+        if (parenthesisDepth === 0)
+          return cursor + 1;
+        cursor += 1;
+      }
+      else
+        cursor += 1;
     }
-    else if (character === ')') {
-      parenthesisDepth -= 1;
-      if (parenthesisDepth === 0)
-        return cursor + 1;
-      cursor += 1;
-    }
-    else
-      cursor += 1;
-  }
-  return undefined;
+    return UNPARSEABLE_MARKDOWN;
+  })();
 }
 
 /**
@@ -474,31 +510,43 @@ function lineOwnedRemovalRange(
   /**
    * Start of first physical line touched by construct.
    */
-  const lineStart = markdown.lastIndexOf('\n', constructRange.start - 1,) + 1;
+  const lineStart = (markdown.lastIndexOf(
+    '\n',
+    constructRange.start - 1,
+  ) + 1);
   /**
    * Newline ending last touched line, when present.
    */
-  const followingLineBreak = markdown.indexOf('\n', constructRange.end,);
+  const followingLineBreak = markdown.indexOf(
+    '\n',
+    constructRange.end,
+  );
   /**
    * End of last physical line excluding newline.
    */
-  const lineEnd = followingLineBreak === -1
+  const lineEnd = (followingLineBreak === (-1))
     ? markdown.length
     : followingLineBreak;
   /**
    * Content before construct on first touched line.
    */
-  const prefix = markdown.slice(lineStart, constructRange.start,);
+  const prefix = markdown.slice(
+    lineStart,
+    constructRange.start,
+  );
   /**
    * Content after construct on last touched line.
    */
-  const suffix = markdown.slice(constructRange.end, lineEnd,);
+  const suffix = markdown.slice(
+    constructRange.end,
+    lineEnd,
+  );
   if ((prefix.trim() !== '') || (suffix.trim() !== ''))
     return constructRange;
 
   return {
     start: lineStart,
-    end: followingLineBreak === -1
+    end: (followingLineBreak === (-1))
       ? markdown.length
       : followingLineBreak + 1,
   };
@@ -507,6 +555,18 @@ function lineOwnedRemovalRange(
 //endregion Markdown parsing
 
 //region Value helpers
+
+/**
+ * Return whether value is parser rejection sentinel.
+ *
+ * @param value - candidate parser result
+ *
+ * @returns whether candidate is exact parser sentinel
+ */
+function isUnparseableMarkdown(value: unknown,): value is typeof UNPARSEABLE_MARKDOWN {
+  return ((typeof value) === 'symbol')
+    && (value === UNPARSEABLE_MARKDOWN);
+}
 
 /**
  * Return whether value is a response record carrying Markdown text.
@@ -532,16 +592,10 @@ function hasMarkdownString(value: unknown,): value is Readonly<Record<string, un
  *
  * @returns whether character belongs to standard base64 alphabet or padding
  */
-function isBase64Character(character: string | undefined,): boolean {
-  if (character === undefined)
-    return false;
-  /**
-   * UTF-16 code unit for ASCII classification.
-   */
-  const code = character.charCodeAt(0,);
-  return ((code >= 65) && (code <= 90))
-    || ((code >= 97) && (code <= 122))
-    || ((code >= 48) && (code <= 57))
+function isBase64Character(character: string,): boolean {
+  return ((character >= 'A') && (character <= 'Z'))
+    || ((character >= 'a') && (character <= 'z'))
+    || ((character >= '0') && (character <= '9'))
     || (character === '+')
     || (character === '/')
     || (character === '=');
@@ -554,7 +608,7 @@ function isBase64Character(character: string | undefined,): boolean {
  *
  * @returns whether character is space, tab, carriage return, or line feed
  */
-function isMarkdownWhitespace(character: string | undefined,): boolean {
+function isMarkdownWhitespace(character: string,): boolean {
   return (character === ' ')
     || (character === '\t')
     || (character === '\r')
