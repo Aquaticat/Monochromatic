@@ -1259,3 +1259,44 @@ export function readThroughCallable(invoked: () => Row,): string {
 export function handCaptureToReader(inspected: Config,): string {
   return readThroughCallable((): Row => inspected.row,);
 }
+
+/**
+ * Forwards a handed callable to something this analysis cannot resolve.
+ *
+ * The callee that decides the admission gate. It stores nothing, so it carries no retention
+ * provenance, and it hands the callable to a boundary that could keep it and invoke it later.
+ * A gate reading retention alone would let a caller of this keep its offer.
+ *
+ * @param relayed - Callable handed onward to an unresolved boundary.
+ *
+ * @example
+ * ```ts
+ * relayCallable((): Row => ({ label: '', }),);
+ * ```
+ */
+export function relayCallable(relayed: () => Row,): void {
+  queueMicrotask(relayed,);
+}
+
+/**
+ * Hands a capturing closure to a callee that forwards it somewhere unresolved.
+ *
+ * The shape that decides between two gates, and the reason the gate is the callee's
+ * uncertainty rather than the reason for it. Absent retention provenance means call-caused or
+ * unknown, never proven non-retaining: whatever `relayCallable` forwarded to may keep the
+ * closure and invoke it whenever it likes.
+ *
+ * Measured with a retention-only gate in place: this recorded nothing and kept its offer,
+ * while every other shape in this file stayed correct, so nothing else here can stand in for
+ * it.
+ *
+ * @param forwarded - Configuration whose row the forwarded closure hands out.
+ *
+ * @example
+ * ```ts
+ * handCaptureToRelay({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handCaptureToRelay(forwarded: Config,): void {
+  relayCallable((): Row => forwarded.row,);
+}

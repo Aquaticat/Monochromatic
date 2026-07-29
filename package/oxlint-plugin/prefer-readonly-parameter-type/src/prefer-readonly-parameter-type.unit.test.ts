@@ -675,6 +675,18 @@ children: [
       },),).toEqual([
         'Parameter "inspected" should be readonly: property rows is writable.',
       ],);
+      /* The forwarded capture speaks, and that is right rather than a leak. Its callee could
+       * not account for the callable and named the boundary it handed it to, so the caller
+       * inherits a cause a reader can act on. The stored captures above stay silent because
+       * their cause is a store, which a reader cannot act on. One channel, two messages,
+       * decided by the callee's own provenance rather than by a second rule here. */
+      expect(messages.filter(function namesForwarded(message,): boolean {
+        return message.includes('"forwarded"',);
+      },).length,).toBe(1,);
+      expect(messages.some(function forwardedNamesBoundary(message,): boolean {
+        return message.includes('"forwarded"',)
+          && message.includes('queueMicrotask',);
+      },),).toBe(true,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls

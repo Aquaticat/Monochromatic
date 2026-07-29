@@ -724,6 +724,14 @@ await describe({
          * is certain about its formal, so the gate never opens. Without it, the channel could
          * withhold on every callable ever handed to an owned callee and still look correct. */
         expect(structuralOpaque('handCaptureToReader',),).toEqual([],);
+        /* The shape that decides what the admission gate reads, and the only one here that
+         * does. `relayCallable` stores nothing and forwards its callable to an unresolved
+         * boundary, so it carries `queueMicrotask` rather than any retention. Gating on
+         * retention provenance was the first design and it passes every other assertion in
+         * this file: measured with that gate in place, this line alone read `[]` while the
+         * whole suite stayed green. Absent retention means call-caused or unknown, never
+         * proven non-retaining. */
+        expect(structuralOpaque('handCaptureToRelay',),).toEqual([0,],);
       },
     },),
     it({
