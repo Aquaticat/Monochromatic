@@ -31,6 +31,9 @@ import type {
 } from 'typescript/unstable/ast';
 import {
   isIdentifier,
+  isArrayBindingPattern,
+  isBindingElement,
+  isObjectBindingPattern,
   isVariableDeclarationList,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -40,6 +43,7 @@ import {
   NOT_A_DEFERRABLE_RESULT,
   transparentValueRoot,
 } from './effect-result-substitution.ts';
+import { reachableValueSources, } from './effect-result-reach.ts';
 import { expressionRoot, } from './effect-summary-model.ts';
 
 /**
@@ -112,6 +116,35 @@ function expressionResultSites({
   const site = deferrableResultSite({ node: root, },);
   if (site !== NOT_A_DEFERRABLE_RESULT)
     return new Set([site,],);
+  /* Past this point the normalisation walk has run out of layers to strip, and a family of
+   * shapes lives here that hold a call result rather than layer over one: a conditional, a
+   * property of an authored literal, an element of one. Each was falsified.
+   *
+   * Asked of every source the value can have come from rather than of the root alone, and the
+   * widening can only add call sites, so every shape it reaches is a hole closed. The
+   * per-source lookup below is the same identifier hop this function has always done. */
+  /**
+   * Sites found through anything the value can have come from.
+   */
+  const reached = new Set<string>();
+  reachableValueSources({
+    project,
+    node: root,
+  },)
+    .forEach(function collectSource(source,): void {
+      if (source === root)
+        return;
+      expressionResultSites({
+        project,
+        resultSitesBySymbolId,
+        node: source,
+      },)
+        .forEach(function collectSite(found,): void {
+          reached.add(found,);
+        },);
+    },);
+  if (reached.size > 0)
+    return reached;
   /* An alias hop, which is what makes `const alias = local;` carry what `local` carries.
    * Only an identifier root is followed, matching `discoverAliasOrigins`: anything else is
    * a shape this does not model. Naming no call site does NOT withhold, which is worth
@@ -161,8 +194,27 @@ function registerResultSites({
   readonly sites: ReadonlySet<string>;
   readonly resultSitesBySymbolId: Map<number, Set<string>>;
 },): boolean {
-  if ((sites.size === 0) || (!isIdentifier(name,)))
+  if (sites.size === 0)
     return false;
+  /* A pattern names several bindings and every one of them can be holding a piece of what the
+   * call handed back. This returned false for any non-identifier, so
+   * `const { row, } = { row: firstRow(config,), };` registered nothing and a later write
+   * through `row` attributed nothing. Falsified.
+   *
+   * Every leaf takes every site, without asking which key or index a leaf reads. Neither is
+   * tracked here, so narrowing would need a claim this cannot support, and taking all of them
+   * only adds sites, which only adds effects. */
+  if (!isIdentifier(name,))
+    return patternLeaves({ name, },)
+      .map(function registerLeaf(leaf,): boolean {
+        return registerResultSites({
+          project,
+          name: leaf,
+          sites,
+          resultSitesBySymbolId,
+        },);
+      },)
+      .includes(true,);
   /**
    * Symbol the binding name resolves to.
    */
@@ -331,4 +383,33 @@ export function targetResultSites({
     resultSitesBySymbolId,
     node,
   },);
+}
+
+/**
+ * Names every binding a pattern introduces.
+ *
+ * @param name - Binding name, which may be a pattern.
+ *
+ * @returns identifier leaves the pattern binds.
+ *
+ * @example
+ * ```ts
+ * patternLeaves({ name });
+ * ```
+ */
+function patternLeaves({ name, }: { readonly name: Node; },): readonly Node[] {
+  if (isIdentifier(name,))
+    return [name,];
+  if (isObjectBindingPattern(name,) || isArrayBindingPattern(name,))
+    return name.elements
+      .flatMap(function elementLeaves(element,): readonly Node[] {
+        if (!isBindingElement(element,))
+          return [];
+        /**
+         * Name this element binds, absent for an elision in an array pattern.
+         */
+        const bound = element.name;
+        return bound === undefined ? [] : patternLeaves({ name: bound, },);
+      },);
+  return [];
 }
