@@ -4628,3 +4628,55 @@ The four captures reading 1939 are still unusable as evidence about totals,
  because their conclusions were of the form the retirement invalidated.
 The fixture measurements, the falsifications, the mutation checks and the per-finding sampling
  never depended on the absolute number and were never in question.
+
+## The construction discharge, and the net across the whole effort
+
+The classifier answers what the leaf test could not. `honest-readonly` means every reachable
+ position is readonly, so no write travels through the value whatever a constructor keeps with it,
+ while the leaf test answers yes for any array because an array is an object.
+
+The offer came back, and it is the same one:
+
+```text
+added   1: offer=1
+package/pi-plugin/search-fetch/src/tools.ts:468:3  Parameter "{ input, supportedKeys, }" ...
+```
+
+Same file, same line, same parameter, same message as the one the construction channel took.
+So the construction channel and its discharge together move the workspace by nothing, while
+ constructions now withhold where they retain.
+
+One slip in that change is worth recording, because it was fail-open.
+A first draft skipped an argument whose type the checker could not answer for, which would have
+ made an unknown type the safest thing to hand a constructor. Absent type now falls through to
+ recording. A channel whose purpose is to withhold on what it cannot prove must never treat
+ ignorance as proof.
+
+### The net, from the one baseline that can be checked
+
+Measured against `sweep-51-prefix.txt`, the pre-fix source with both artifacts rebuilt and both
+ digests recorded:
+
+```text
+before 1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   3: argument-opacity=3
+removed 2: argument-opacity=2
+```
+
+**Offers unchanged.**
+Receiver opacity, dishonest and stale-mutates unchanged.
+One argument-opacity finding gained, and two that changed their boundary list rather than
+ appearing or leaving.
+
+That one finding is the closure capturing a promise `resolve` handed to `handle.once`, which is
+ true at its own source.
+
+So across every change in this effort, the escaping closure, the aliased and conditional and
+ container stores, the returned callable, the sibling call, the handed capture, the construction,
+ the yield, the awaited return, the whole call-result cluster and the activation gate, the
+ measured cost to this workspace is one true finding and two enriched boundary lists.
+
+The soundness gain is what the falsifications record and the sweep cannot show, because a
+ withheld offer is silent. The sweep's contribution is the negative claim, and it is worth having
+ for exactly that: nothing was lost.
