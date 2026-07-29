@@ -174,6 +174,12 @@ function unknownInboundSummary(
       calleeFileName: declaration.getSourceFile()
         .fileName,
       originsByCalleeSlot: emptyBySlot,
+      /* A foreign relation packages no callable, so there is nothing captured to carry, and
+       * the length still has to match the formal-indexed list beside it. */
+      capturedOriginsByFormal: foreignOrigins
+        .map(function noCaptures(): readonly EffectSlot[] {
+        return [];
+      },),
       foreignOriginsByFormal: foreignOrigins,
       directForeignByFormal: declaration.parameters
         .map(function ordinaryArgument(): boolean {

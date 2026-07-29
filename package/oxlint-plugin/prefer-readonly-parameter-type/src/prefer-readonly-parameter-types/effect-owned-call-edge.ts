@@ -18,6 +18,10 @@
 import type { CallExpression, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
+import {
+  argumentCapturedOrigins,
+  capturedOriginsByFormal,
+} from './effect-captured-argument-origins.ts';
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 
 import {
@@ -304,6 +308,18 @@ export function addOwnedCallEdge({
     calleeFileName: callee.getSourceFile()
       .fileName,
     originsByCalleeSlot,
+    /* Driven by `callbacks`, the declarations already resolved above, rather than by argument
+     * syntax. That is what makes `retain(producer,)` behave like the inline form: the
+     * resolver follows a local bound to a function expression where a syntax test would see
+     * an identifier and stop. */
+    capturedOriginsByFormal: capturedOriginsByFormal({
+      positionsByFormal,
+      argumentCaptures: argumentCapturedOrigins({
+        project,
+        bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
+        callables: callbacks,
+      },),
+    },),
     /* Foreign ownership is a marker on a whole parameter, and its consumer compares against
      * caller parameters, so caller slots collapse to the parameters that own them here rather
      * than at the point of use. */

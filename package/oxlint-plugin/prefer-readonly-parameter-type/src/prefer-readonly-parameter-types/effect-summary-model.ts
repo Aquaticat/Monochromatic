@@ -177,6 +177,13 @@ export type CallEdge = {
   readonly calleeKey: string;
   readonly calleeFileName: string;
   readonly originsByCalleeSlot: readonly (readonly EffectSlot[])[];
+  /* Formal-indexed rather than slot-indexed, because a capture is not inside the value the
+   * caller authored and so belongs under no property key. Kept beside `originsByCalleeSlot`
+   * rather than unioned into it, since the two license different conclusions: an ordinary
+   * origin says the callee received the caller's value, so a write or a return the callee
+   * records is a fact about it, while a capture says only that running the callable can
+   * reach the parameter. */
+  readonly capturedOriginsByFormal: readonly (readonly EffectSlot[])[];
   readonly foreignOriginsByFormal: readonly (readonly ParameterIndex[])[];
   readonly directForeignByFormal: readonly boolean[];
   readonly foreignInbound: boolean;

@@ -18,6 +18,10 @@ import {
   addEffectSlot,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
+import {
+  markCapturedCapabilityUnresolved,
+  propagateCapturedCapability,
+} from './effect-captured-capability.ts';
 import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance.ts';
 
 /**
@@ -128,6 +132,14 @@ export function propagateEffects(
                     },);
                   },);
                 },);
+              /* A capture is in the same position as an ordinary origin here and was not
+               * covered by the loop above, which reads `originsByCalleeSlot` alone. Without
+               * this, an owned edge whose callee summary failed to build kept exactly the
+               * false offer this channel exists to remove. */
+              state.changed = markCapturedCapabilityUnresolved({
+                summary,
+                edge,
+              },) || state.changed;
               return;
             }
             state.changed = propagateInvokedCapabilities({
@@ -159,6 +171,15 @@ export function propagateEffects(
               calleeSummary,
               edge,
               calleeIndexes: calleeSummary.opaque,
+            },) || state.changed;
+            /* Runs beside the ordinary opacity propagation rather than inside it, because it
+             * reads a different edge fact and answers a different question: not what the
+             * callee did to a value it received, but what a callable the caller wrote can
+             * reach once the callee could not account for it. */
+            state.changed = propagateCapturedCapability({
+              summary,
+              calleeSummary,
+              edge,
             },) || state.changed;
             state.changed = propagateCallbackRelations({
               summaries,

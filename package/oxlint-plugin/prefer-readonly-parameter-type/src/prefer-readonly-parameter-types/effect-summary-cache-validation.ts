@@ -97,6 +97,16 @@ function isCallEdge({
       value: value.originsByCalleeSlot,
       upperBound: slotCount,
     },))
+    /* Bounded by the caller's slot count rather than its parameter count, unlike the
+     * foreign list beside it. Both are indexed by the callee's formals, and they differ in
+     * what they hold: foreign ownership collapses to caller parameters at the point of
+     * record, while a capture stays a caller slot so a destructured caller keeps the
+     * property that was captured. */
+    || (!Array.isArray(value.capturedOriginsByFormal,))
+    || (!isArgumentRoots({
+      value: value.capturedOriginsByFormal,
+      upperBound: slotCount,
+    },))
     || (!Array.isArray(value.foreignOriginsByFormal,))
     || (!isArgumentRoots({
       value: value.foreignOriginsByFormal,
@@ -122,6 +132,9 @@ function isCallEdge({
   const formalArity = value.foreignOriginsByFormal
     .length;
   return (formalArity <= slotArity)
+    && (value.capturedOriginsByFormal
+      .length
+      === formalArity)
     && (value.directForeignByFormal
       .length
       === formalArity)

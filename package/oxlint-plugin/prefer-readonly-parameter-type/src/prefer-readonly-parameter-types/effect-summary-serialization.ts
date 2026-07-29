@@ -52,10 +52,12 @@ export type SerializedCallEdge =
     | 'callbackKeysByCalleeSlot'
     | 'callbackFileNamesByCalleeSlot'
     | 'originsByCalleeSlot'
+    | 'capturedOriginsByFormal'
     | 'foreignOriginsByFormal'
   >
   & {
     readonly originsByCalleeSlot: readonly (readonly number[])[];
+    readonly capturedOriginsByFormal: readonly (readonly number[])[];
     readonly foreignOriginsByFormal: readonly (readonly number[])[];
     readonly callbackKeysByCalleeSlot: readonly SerializedCallbackKey[];
     readonly callbackFileNamesByCalleeSlot: readonly SerializedCallbackKey[];
@@ -282,6 +284,10 @@ export function serializeEffectSummaries(
                 .map(function plainOrigins(origins,): readonly number[] {
                   return [...origins,];
                 },),
+              capturedOriginsByFormal: edge.capturedOriginsByFormal
+                .map(function plainCaptured(origins,): readonly number[] {
+                  return [...origins,];
+                },),
               foreignOriginsByFormal: edge.foreignOriginsByFormal
                 .map(function plainForeign(origins,): readonly number[] {
                   return [...origins,];
@@ -383,6 +389,8 @@ export function deserializeEffectSummaries(
           return {
             ...edge,
             originsByCalleeSlot: edge.originsByCalleeSlot
+              .map(restoredSlotList,),
+            capturedOriginsByFormal: edge.capturedOriginsByFormal
               .map(restoredSlotList,),
             foreignOriginsByFormal: edge.foreignOriginsByFormal
               .map(function restoreForeign(origins,): readonly ParameterIndex[] {
