@@ -30,8 +30,8 @@ import {
   recordAssignmentStore,
   recordIterationStore,
 } from './effect-assignment-store.ts';
+import { discoverBodyBindings, } from './effect-body-bindings.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
-import { discoverResultBindings, } from './effect-result-binding.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
 import { recordResultApplication, } from './effect-result-substitution.ts';
 import {
@@ -195,69 +195,17 @@ export function directEffectSummary({
     },);
     return summary;
   }
-  /* Parameter initializers run on entry and can do anything a body statement can, so they
-   * belong to the callable's own effects. A walk bounded by the body never saw them, and
-   * `defaultInitializerEffect` in the call-edge fixture reached a mutating call from an
-   * initializer and was offered readonly for the parameter it wrote. */
   /**
-   * Nodes of every parameter initializer, which run on entry before the body.
+   * What every local in this body can be holding, by parameter slot and by call site.
    */
-  const parameterInitializerNodes = declaration.parameters
-    .flatMap(function initializerNodes(parameter,): readonly Node[] {
-      return parameter.initializer === undefined
-        ? []
-        : collectAstNodes(parameter.initializer,);
-    },);
-  /**
-   * Complete body nodes used to discover origins before escape selection.
-   */
-  const allBodyNodes = [
-    ...parameterInitializerNodes,
-    ...collectAstNodes(body,),
-  ];
-  /**
-   * Variable declarations that may alias parameter-reachable state.
-   */
-  const variableDeclarations = allBodyNodes.filter(function variableDeclaration(node,): node is VariableDeclaration {
-    return isVariableDeclaration(node,);
-  },);
-  /**
-   * Simple assignments that may establish aliases after declaration.
-   */
-  const aliasAssignments = allBodyNodes.filter(function aliasAssignment(node,): node is BinaryExpression {
-    return isBinaryExpression(node,)
-      && (node.operatorToken
-        .kind
-        === SyntaxKind.EqualsToken);
-  },);
-  /**
-   * Iteration statements binding elements reached through parameter-owned iterables.
-   */
-  const forOfStatements = allBodyNodes.filter(function forOfStatement(node,): node is ForOfStatement {
-    return isForOfStatement(node,);
-  },);
-  discoverAliasOrigins({
-    project,
-    variableDeclarations,
-    aliasAssignments,
-    forOfStatements,
-    bindingOriginBySymbolId,
-  },);
-  /**
-   * Call sites each local binding can be holding a result of.
-   *
-   * Beside the origins rather than inside them, because the two settle for different
-   * reasons: origins accumulate parameter slots a binding can reach, while these name a
-   * syntactic fact about where a value came from, complete as soon as the declarations
-   * have been walked.
-   */
-  const resultSitesBySymbolId = new Map<number, Set<string>>();
-  discoverResultBindings({
-    project,
-    variableDeclarations,
-    aliasAssignments,
-    forOfStatements,
+  const {
+    parameterInitializerNodes,
     resultSitesBySymbolId,
+  } = discoverBodyBindings({
+    project,
+    declaration,
+    body,
+    bindingOriginBySymbolId,
   },);
   /**
    * Body nodes selected after aliases expose caller-reachable closure storage.
