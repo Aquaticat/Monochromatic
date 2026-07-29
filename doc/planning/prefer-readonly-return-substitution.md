@@ -3749,6 +3749,83 @@ Receiver opacity must not move at all,
  because nothing here touches receivers.
 Dishonest and stale-mutates must not move either.
 
+### The capture, and a criterion I wrote too tightly
+
+```text
+before 1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   3: argument-opacity=3
+removed 2: argument-opacity=2
+```
+
+Both baselines carry digests,
+ so this is the first comparison in this document where each side can be checked rather than
+ trusted.
+
+Receiver opacity,
+ dishonest and stale-mutates all held still,
+ as registered.
+Offers held still too,
+ which the criterion allowed.
+
+Two of the three additions are not additions.
+`it.ts:392` on `opts` and `matrix.ts:428` on `combination` were already opaque naming
+ `Promise.race`,
+ and they now also name `run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },).then`.
+Same file,
+ same line,
+ same parameter,
+ one more cause in the list,
+ which the comparison necessarily reports as one removed beside one added.
+A parameter that was already withheld gained a reason,
+ and no offer moved.
+
+The third is real,
+ and it is the shape this channel was built for:
+
+```ts
+function waitForExit(handle: SpawnedChildHandle,): Promise<ExitResult> {
+  return new Promise(function captureExit(resolve,) {
+    handle.once('exit', function onExitForPromise(code, signal,) {
+      resolve({ code, signal, },);
+    },);
+  });
+}
+```
+
+`onExitForPromise` captures `resolve` and is handed to `handle.once`,
+ which is a bodyless callable this analysis cannot inspect,
+ and an event listener is precisely a callee that keeps what it is given.
+So `resolve` escapes,
+ the report is true,
+ and it names the boundary responsible.
+
+It violates the criterion as I wrote it.
+I registered that a rise on a parameter that never had an offer is a defect,
+ reasoning that this channel only converts offered into withheld.
+That reasoning assumed every capture lands on a parameter that could be offered,
+ and `resolve` cannot be:
+ it is callable-typed,
+ so its classification is an opaque capability and no offer was ever available to lose.
+The channel converted it from silent to speaking rather than from offered to withheld,
+ which the criterion had no case for.
+
+The criterion was mis-specified,
+ and that is a different thing from the finding being wrong.
+What the criterion was really guarding is intact and is worth stating in the form it should
+ have taken:
+ nothing became more permissive.
+Offers did not move,
+ every change adds opacity rather than removing it,
+ and the one genuinely new report is true at its own source.
+
+The cost is one new message in 1967 on a parameter no reader can act on by annotating,
+ which is noise rather than a defect,
+ and it belongs to a question wider than this change:
+ whether opacity should report at all on a parameter whose classification can never carry an
+ offer.
+That question is not opened here.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
