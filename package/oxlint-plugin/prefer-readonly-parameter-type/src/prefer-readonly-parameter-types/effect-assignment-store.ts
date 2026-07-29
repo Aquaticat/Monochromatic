@@ -28,7 +28,7 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
-import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { targetResultSites, } from './effect-result-binding.ts';
 import {
@@ -193,7 +193,7 @@ export function recordAssignmentStore({
     node: stored,
   },);
   if (storedCallable !== OWNED_CALLABLE_UNAVAILABLE) {
-    packagedCallableOrigins({
+    transitiveCallableOrigins({
       project,
       bindingOriginBySymbolId,
       packaged: storedCallable,

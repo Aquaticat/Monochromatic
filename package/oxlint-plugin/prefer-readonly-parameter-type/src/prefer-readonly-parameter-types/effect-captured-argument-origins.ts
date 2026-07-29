@@ -27,7 +27,7 @@
 import type { Node, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
-import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   OWNED_CALLABLE_UNAVAILABLE,
@@ -79,7 +79,7 @@ export function argumentCapturedOrigins({
     /**
      * Caller origins any binding named inside that callable can carry.
      */
-    const captured = packagedCallableOrigins({
+    const captured = transitiveCallableOrigins({
       project,
       bindingOriginBySymbolId,
       packaged: callable,

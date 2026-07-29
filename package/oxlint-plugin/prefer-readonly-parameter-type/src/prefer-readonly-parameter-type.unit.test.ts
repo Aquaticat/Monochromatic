@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(25,);
+      },).length,).toBe(26,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -714,6 +714,20 @@ children: [
         return message.includes('"direct"',);
       },),).toEqual([
         'Parameter "direct" should be readonly: property rows is writable.',
+      ],);
+      /* The transitive shapes on all three paths, withheld and silent, because each cause is
+       * an escape rather than a call a reader could inspect. */
+      expect(messages.filter(function namesRelayed(message,): boolean {
+        return message.includes('"relayedThrough"',)
+          || message.includes('"relayedArgument"',)
+          || message.includes('"relayedReturn"',)
+          || message.includes('"recursed"',);
+      },).length,).toBe(0,);
+      /* And the control carrying the count from twenty-five to twenty-six. */
+      expect(messages.filter(function namesRelayedFresh(message,): boolean {
+        return message.includes('"relayedFresh"',);
+      },),).toEqual([
+        'Parameter "relayedFresh" should be readonly: property rows is writable.',
       ],);
       expect(messages.some(function forwardedNamesBoundary(message,): boolean {
         return message.includes('"forwarded"',)

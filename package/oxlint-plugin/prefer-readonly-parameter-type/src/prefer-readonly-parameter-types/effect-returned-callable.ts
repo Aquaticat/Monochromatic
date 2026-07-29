@@ -31,7 +31,7 @@ import {
   callableDeclaration,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
-import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
 import { returnedCallableProvenance, } from './effect-retention-provenance.ts';
 import {
   type MutableEffectSummary,
@@ -88,7 +88,7 @@ export function recordReturnedCallableCapture({
    * Provenance naming the return as the escape, silent like every other retention.
    */
   const provenance = returnedCallableProvenance({ location, },);
-  packagedCallableOrigins({
+  transitiveCallableOrigins({
     project,
     bindingOriginBySymbolId,
     packaged: callable,

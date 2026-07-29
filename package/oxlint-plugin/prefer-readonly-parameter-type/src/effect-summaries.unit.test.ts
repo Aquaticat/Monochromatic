@@ -752,6 +752,24 @@ await describe({
          * holds. Without this line the change would read as a rule against returning caller
          * state, which is precisely what the decision permits. */
         expect(structuralOpaque('returnRowDirectly',),).toEqual([],);
+        /* The capture walk follows calls now, because a lexical scan was answering a call-graph
+         * question. A stored closure naming only `read` reached caller state through it, and a
+         * local bound to a function expression carries no parameter origin, so the scan came
+         * back empty and the parameter was offered. Falsified. */
+        expect(structuralOpaque('storeClosureCallingSibling',),).toEqual([0,],);
+        /* The same capture on the other two paths, because fixing one site and leaving the
+         * others would look correct while the identical shape stayed invisible next door. */
+        expect(structuralOpaque('handSiblingCaptureToRetainer',),).toEqual([0,],);
+        expect(structuralOpaque('returnClosureCallingSibling',),).toEqual([0,],);
+        /* The control. Following calls must attribute what a callee reaches rather than report
+         * every closure that calls anything, so a sibling allocating its own row keeps the
+         * offer. */
+        expect(structuralOpaque('storeClosureCallingFreshSibling',),).toEqual([],);
+        /* The termination control. A mutually recursive pair is folded in once each rather than
+         * chased forever, and the capture is real so the offer stays withheld. Nothing else
+         * here would notice a walk that failed to terminate, because it would hang rather than
+         * answer wrongly, which no assertion can catch. */
+        expect(structuralOpaque('storeMutuallyRecursiveClosures',),).toEqual([0,],);
       },
     },),
     it({

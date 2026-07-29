@@ -1421,3 +1421,125 @@ export function returnFreshClosure(unreturned: Config,): () => Row {
 export function returnRowDirectly(direct: Config,): Row {
   return direct.row;
 }
+
+/**
+ * Stores a closure reaching caller state only by calling a sibling local.
+ *
+ * Falsified before the capture walk followed calls. The stored arrow names only `read`, and a
+ * local bound to a function expression carries no parameter origin, so the lexical scan came
+ * back empty and the parameter was offered.
+ *
+ * @param relayedThrough - Configuration whose row the sibling closure hands out.
+ *
+ * @example
+ * ```ts
+ * storeClosureCallingSibling({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeClosureCallingSibling(relayedThrough: Config,): void {
+  /**
+   * Sibling closure the stored one calls, which is where the capture actually sits.
+   */
+  const read = (): Row => relayedThrough.row;
+  callbackHolder.produce = (): Row => read();
+}
+
+/**
+ * Hands a callee a closure reaching caller state only through a sibling call.
+ *
+ * The argument-path form of the same walk. Without it, following calls at the store site alone
+ * would look correct while the identical capture handed to a retaining callee stayed invisible.
+ *
+ * @param relayedArgument - Configuration whose row the sibling closure hands out.
+ *
+ * @example
+ * ```ts
+ * handSiblingCaptureToRetainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handSiblingCaptureToRetainer(relayedArgument: Config,): void {
+  /**
+   * Sibling closure the handed one calls.
+   */
+  const read = (): Row => relayedArgument.row;
+  retainCallable((): Row => read(),);
+}
+
+/**
+ * Returns a closure reaching caller state only through a sibling call.
+ *
+ * The returned-path form, for the same reason.
+ *
+ * @param relayedReturn - Configuration whose row the sibling closure hands out.
+ *
+ * @returns closure carrying caller state through a sibling.
+ *
+ * @example
+ * ```ts
+ * returnClosureCallingSibling({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function returnClosureCallingSibling(relayedReturn: Config,): () => Row {
+  /**
+   * Sibling closure the returned one calls.
+   */
+  const read = (): Row => relayedReturn.row;
+  return (): Row => read();
+}
+
+/**
+ * Stores a closure calling a sibling that names nothing the caller owns.
+ *
+ * The control. Following calls must attribute what the callee reaches rather than report every
+ * closure that calls anything, so this sibling allocates its own row and the offer stands.
+ *
+ * @param relayedFresh - Configuration the sibling closure never names.
+ *
+ * @returns count read in place off the untouched configuration.
+ *
+ * @example
+ * ```ts
+ * storeClosureCallingFreshSibling({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeClosureCallingFreshSibling(relayedFresh: Config,): number {
+  /**
+   * Sibling closure naming nothing the caller owns.
+   */
+  const read = (): Row => ({ label: 'fresh', });
+  callbackHolder.produce = (): Row => read();
+  return relayedFresh.rows
+    .length;
+}
+
+/**
+ * Stores a closure whose sibling calls back into it.
+ *
+ * The termination control. A mutually recursive pair must be folded in once each rather than
+ * chased forever, and the offer must still be withheld because the capture is real.
+ *
+ * @param recursed - Configuration whose row the recursive pair hands out.
+ *
+ * @example
+ * ```ts
+ * storeMutuallyRecursiveClosures({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeMutuallyRecursiveClosures(recursed: Config,): void {
+  /**
+   * First half of the pair, which the second calls.
+   */
+  function first(): Row {
+    return second();
+  }
+  /**
+   * Second half of the pair, which calls back into the first and holds the capture.
+   */
+  function second(): Row {
+    return recursed.rows
+      .length > 0
+      ? first()
+      : recursed.row;
+  }
+  callbackHolder.produce = (): Row => first();
+}
