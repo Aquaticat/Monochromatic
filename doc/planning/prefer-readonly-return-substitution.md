@@ -3139,3 +3139,120 @@ The control is already measured and must not move:
  `targetIsCallableLocal` answers that,
  and `invokeLocalClosureWriting` keeps its `mutated=[0]` through the ordinary active-body
  scan.
+
+## What the escaping closure fix records, and two things it corrected on the way
+
+The fix is at the store site.
+`recordAssignmentStore` normalizes parentheses and assertions off the stored value,
+ asks whether what remains is a callable,
+ and hands it to `packagedCallableOrigins`,
+ which is the same question the argument path already asks of a method or accessor authored
+ inside a call-argument literal.
+Handing a callable over by storing it differs from handing it over as an argument in who
+ holds it,
+ not in what it captured.
+
+Two claims in the section above needed correcting once it was measured.
+
+The first is
+ "what the closure DOES inside cannot matter".
+What cannot matter is **when** it runs,
+ since the holder decides that.
+What it does inside matters a great deal:
+ a capture grants a write capability only if the body writes through it,
+ hands it outward,
+ or returns something carrying it.
+`packagedCallableOrigins` does not ask,
+ and names every binding a packaged body mentions whatever position it appears in,
+ so a closure that only reads its capture withholds too.
+Measured rather than assumed:
+ `storeReadingClosure` stores `(): number => config.row.label.length` and records
+ `opaque=[0]`.
+That is the withholding direction,
+ which costs precision and not soundness,
+ and it matches what the argument path has always done.
+Task #64 holds the question of whether the body can be summarised finely enough to keep such
+ an offer.
+
+The second is the control.
+`invokeLocalClosureWriting` does keep `mutated=[0]`,
+ and only in its declaration form.
+The same closure reached through an assignment to an already-declared local records nothing
+ at all:
+
+```ts
+export function invokeAssignedLocalClosureWriting(config: Config,): void {
+  let local: (() => void) | undefined;
+  local = (): void => {
+    config.row
+      .label = 'written';
+  };
+  local();
+}
+```
+
+The store path is not the cause.
+`targetIsCallableLocal` answers for both forms,
+ so `recordAssignmentStore` returns early either way,
+ which is correct:
+ a binding the callable owns is not a store.
+The difference is in which closures `closure-activity.ts` selects as active.
+Self-limiting rather than unsound,
+ since `config` is written directly in the same file and the offered annotation stops
+ type-checking,
+ so no falsification rides on it.
+Tracked as task #65,
+ and it is the twentieth offer in the fixture.
+
+### What the caller measurement settled
+
+The reading shape falsifies and the writing shape does not,
+ so the writing shape's unrecorded write looked like a second hole owed a second fix:
+ `storeCapturingClosureWriting` records no `mutated` slot,
+ and `mutated` is what feeds callers through the call edge.
+
+It is not a second hole.
+`passToCapturingStore` hands its own parameter to `storeCapturingClosure` and writes nothing
+ itself,
+ so the only thing that can withhold its offer is the callee's slot arriving through the
+ edge.
+It records `opaque=[0]` carrying the callee's store provenance.
+The capture record reaches callers through the retention channel,
+ which is the channel a store is supposed to use,
+ and the mutation channel is not needed for it.
+
+### The mutation check
+
+Two mutants,
+ each killed by a different assertion,
+ which is what makes the fixtures separable rather than redundant.
+
+Removing the wrapper normalization fails `storeWrappedCapturingClosure` alone and moves the
+ fixture offer count from twenty to twenty-one.
+Every bare shape stays `[0]`,
+ so the normalization has exactly one witness and that witness tests only it.
+
+Recording nothing in the closure branch fails `storeCapturingClosure` and moves the count
+ from twenty to twenty-five,
+ restoring precisely the five shapes the fix withholds.
+
+### The sweep criterion, registered before the capture is read
+
+This fix adds attribution,
+ so the direction it can move the workspace is offers falling and argument opacity rising.
+
+An offer that fell must be sampled and shown to be a genuine escaping-closure capture:
+ a callable storing a closure past its own body,
+ where the closure names a parameter.
+An offer that fell for any other reason is a defect in this change,
+ not a finding.
+
+A finding that appeared in a category other than store-caused retention is also a defect
+ here,
+ because store provenance is filtered from the reportable set and a closure capture records
+ nothing else.
+
+Zero delta is the expected outcome and is not evidence of anything.
+Of the 1939 findings in the standing baseline,
+ 1864 are already opacity and only 32 are offers,
+ so a withholding fix has almost nowhere to act.
