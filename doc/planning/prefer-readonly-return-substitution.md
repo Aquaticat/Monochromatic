@@ -1414,3 +1414,69 @@ Nothing about those callables changed;
  which is what the cache identity digests,
  so the panicking path was recomputed and warned again.
 The explanation predicted the number before the run rather than after it.
+
+## What the store classification changed
+
+Implemented as `recordAssignmentStore` in `effect-assignment-store.ts`,
+ called from the body scan beside the write attribution that already ran there.
+The two ask different questions about one assignment,
+ which is why the write attribution returns early for an identifier target and this does
+ its work there.
+
+Measured over `readonly-structural-store-invalid.ts`,
+ every shape before and after:
+
+```text
+storeElementIntoModuleBinding    []  -> [0]
+storePropertyIntoModuleBinding   []  -> [0]
+storeAliasedIntoModuleBinding    []  -> [0]
+storeThroughLogicalAssignment    []  -> [0]
+storeThroughNullishAssignment    []  -> [0]
+storeThroughAndAssignment        []  -> [0]
+storeIterationBinding            []  -> [0]
+storeMemberIntoModuleBinding     [0] -> [0]
+leakExcessRestMember             []  -> [0, 1]
+storeFreshAggregate              []  -> []
+assignIntoParameter              []  -> []
+assignIntoOwnLocal               []  -> []
+countIntoModuleBinding           []  -> []
+readStructureInPlace             []  -> []
+iterateStructureRows             []  -> []
+storeIntoEnclosingLocal          []  -> []
+storeThroughOwnedCall            []  -> []
+```
+
+`parameterIndexes` rather than `expressionOrigins` is the whole precision of this.
+The origin resolver descends an object literal and answers with the parameter reached
+ through the property read that filled it,
+ so `held = { label: config.row.label, }` would have attributed a store of a string to
+ `config`.
+`parameterIndexes` gates each leaf on whether that leaf can carry mutable state,
+ and `storeFreshAggregate` keeps its offer.
+
+`leakExcessRestMember` is now reported for a better reason than the one that was reverted.
+The classification sees a value leaving the callable and never asks what the rest copied,
+ which is the difference between asking where a value went and asking what a type claims
+ to hold.
+
+Two holes stay open and named.
+`storeIntoEnclosingLocal` assigns from a nested callable whose own parameters are none of
+ these,
+ so the origins the store would carry belong to the enclosing callable and this
+ classification never sees them together.
+`storeThroughOwnedCall` has no origins on its right side at all,
+ because a callee's summary does not exist while its callers are scanned.
+
+One offer was lost that deserves to exist,
+ and one unsound offer was closed that had been documented as unsound.
+Both are in `readonly-call-edge-invalid.ts`.
+`store` assigns `value` into `slot.value`,
+ and both belong to the caller,
+ which already held each of them,
+ so rearranging a graph the caller can already reach grants nothing and `value` deserves
+ its offer.
+`setterPairEffect` calls `store` and is withheld now for a reason that never mentions
+ setters:
+ the value left the callable,
+ and where it went settles the question without resolving what happens there.
+The precision half is tracked as its own task rather than accepted quietly.
