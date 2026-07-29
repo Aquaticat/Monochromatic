@@ -1635,3 +1635,33 @@ export function storeConditionalFresh(neither: Config, condition: boolean,): num
   return neither.rows
     .length;
 }
+
+/**
+ * Stores a coalescence whose capturing closure sits on the left.
+ *
+ * The operand control, and the only shape here that decides it. `storeCoalescedClosure` puts the
+ * capture on the right, so treating nullish coalescence as right-operand-only passes it and
+ * every other assertion: measured with that mutation in place, the whole suite stayed green.
+ *
+ * The capture is unreachable to the origin walk as well, which is what leaves this walk as the
+ * only path to it. `producer` is bound to a conditional holding an arrow, and an arrow has no
+ * provenance successors, so the binding carries no origin for the origin walk to find.
+ *
+ * @param leftBiased - Configuration whose row the left operand hands out.
+ *
+ * @param absent - Whether the left operand is left empty.
+ *
+ * @example
+ * ```ts
+ * storeLeftBiasedClosure({ rows: [], row: { label: '', }, }, false,);
+ * ```
+ */
+export function storeLeftBiasedClosure(leftBiased: Config, absent: boolean,): void {
+  /**
+   * Left operand, holding the capture whenever it holds anything.
+   */
+  const producer: (() => Row) | undefined = absent
+    ? undefined
+    : ((): Row => leftBiased.row);
+  callbackHolder.produce = producer ?? freshProducer;
+}

@@ -784,6 +784,13 @@ await describe({
          * report every conditional store, so a pair of branches naming nothing the caller owns
          * keeps its offer. */
         expect(structuralOpaque('storeConditionalFresh',),).toEqual([],);
+        /* The line that decides the operand table, and the only one that can. The coalescence
+         * above puts its capture on the right, so treating nullish coalescence as
+         * right-operand-only passes it and every other assertion here: measured with that
+         * mutation in place, the whole suite stayed green. This one puts the capture on the
+         * left, and the origin walk cannot reach it either, since the binding is bound to a
+         * conditional holding an arrow and an arrow has no provenance successors. */
+        expect(structuralOpaque('storeLeftBiasedClosure',),).toEqual([0,],);
       },
     },),
     it({
