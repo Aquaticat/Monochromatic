@@ -45,6 +45,29 @@ export function retentionProvenance({
 }
 
 /**
+ * Tests whether one provenance fact was written by the retention channel.
+ *
+ * Exported for the persistent-cache validator, which has to reject a retained result use
+ * whose provenance would not be read back as a retention. A payload carrying an empty or
+ * unprefixed string there passes every structural check and then reaches the diagnostic as
+ * call-caused opacity, which reports an unresolved effect naming a call that does not
+ * exist. The prefix is the whole of the retention contract, so the validator has to test
+ * it here rather than restate it.
+ *
+ * @param provenance - One recorded provenance fact.
+ *
+ * @returns whether the fact reads back as a store.
+ *
+ * @example
+ * ```ts
+ * isRetentionProvenance('stored into held [src/card.ts:60]',);
+ * ```
+ */
+export function isRetentionProvenance(provenance: string,): boolean {
+  return provenance.startsWith(RETENTION_PROVENANCE_PREFIX,);
+}
+
+/**
  * Separates provenance facts a call caused from facts a store caused.
  *
  * Kept as one pass returning both halves rather than two predicates over the same list,

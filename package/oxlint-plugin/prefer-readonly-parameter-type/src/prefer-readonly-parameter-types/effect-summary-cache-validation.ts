@@ -4,6 +4,7 @@
  * @module
  */
 
+import { isRetentionProvenance, } from './effect-retention-provenance.ts';
 import type {
   SerializedCallEdge,
   SerializedCallbackKey,
@@ -175,6 +176,13 @@ function isCallEdge({
   readonly slotCount: number;
 }): boolean {
   if ((!isRecord(value,))
+    /* Checked because a deferred result use finds its edge by this key and by nothing
+     * else. An edge accepted with a malformed one matches no application, so
+     * `propagateResultApplications` skips a use it should have resolved, and a skipped use
+     * is a missing effect rather than a loud failure: the parameter keeps an offer it
+     * should not have. Every other identity on this edge was validated while the one that
+     * decides whether an effect arrives was not. */
+    || (!isCacheString(value.callSiteKey,))
     || (!isCacheString(value.calleeKey,))
     || (!isCacheString(value.calleeFileName,))
     || (!Array.isArray(value.originsByCalleeSlot,))
@@ -319,12 +327,16 @@ function isResultApplication(value: unknown,): boolean {
     || ((typeof value.kind) !== 'string')
     || (!SERIALIZED_RESULT_APPLICATION_KINDS.has(value.kind,)))
     return false;
-  /* Provenance is required for exactly the retaining kind and meaningless for the other
-   * two, so both directions are checked: a retention without it would throw in
-   * propagation, and a mutation carrying it would mean the payload was written by
-   * something whose model does not match this one. */
+  /* Provenance is required for exactly the retaining kind and forbidden on the other two,
+   * so both directions are checked: a retention without it reaches the diagnostic as an
+   * unexplained opaque slot, and a mutation carrying one would mean the payload was
+   * written by something whose model does not match this one.
+   *
+   * The prefix is checked too, not merely the type. A retained use whose provenance is an
+   * arbitrary string passes every structural test and is then read back as call-caused
+   * opacity, producing an unresolved-effect report naming a call that does not exist. */
   return value.kind === 'retained'
-    ? isCacheString(value.provenance,)
+    ? isCacheString(value.provenance,) && isRetentionProvenance(value.provenance,)
     : value.provenance === undefined;
 }
 
@@ -350,6 +362,16 @@ function isOpaqueProvenance({
    * Parsed provenance entries narrowed from JSON array.
    */
   const entries: readonly unknown[] = value;
+  /* Rehydration builds a `Map` from these pairs, so a repeated slot keeps only the last
+   * one and every fact recorded against the earlier entries is dropped silently. The
+   * serializer cannot produce a repeat, because it writes from a `Map`, which makes a
+   * repeat proof the payload was not written by this code. Losing facts rather than
+   * failing is the outcome worth refusing: a slot that arrives with its retention facts
+   * missing is reported as an unresolved effect instead of being withheld quietly. */
+  if (new Set(entries.map(function slotOf(entry,): unknown {
+    return Array.isArray(entry,) ? entry[0] : entry;
+  },),).size !== entries.length)
+    return false;
   return entries.every(function validEntry(entry,): boolean {
     if ((!Array.isArray(entry,)) || (entry.length !== 2))
       return false;
@@ -442,6 +464,12 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
     value.invoked,
     value.opaque,
     value.directReturned,
+    /* `returned` was serialized, deserialized through `restoredSlots`, and never checked
+     * here. A payload missing it or holding a non-array passed validation and crashed
+     * inside rehydration, which is the one outcome `rejects corrupt nested persistent
+     * payloads` says must not happen. It sits beside `directReturned` because propagation
+     * seeds one from the other and both index the same slots. */
+    value.returned,
   ];
   return slotArrays.every(function validSlots(slots,): boolean {
     return isBoundedIndexes({

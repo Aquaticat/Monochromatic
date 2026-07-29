@@ -137,20 +137,32 @@ export type ElementApplication = {
  * Keyed by call site rather than by callee, because two calls of the same callee in one
  * body are separate uses and must not share a verdict.
  */
-export type ResultApplication = {
-  readonly callSiteKey: string;
-  /**
-   * What the caller did with the result.
-   *
-   * `retained` carries provenance because the retention channel is the one that names
-   * where a value went, and the diagnostic reads that text to decide whether a boundary
-   * is a store or a call. A retained application with nothing to say would arrive as an
-   * unexplained opaque slot and be reported as an unresolved effect, which is the exact
-   * confusion `effect-retention-provenance.ts` exists to prevent.
-   */
-  readonly kind: 'mutated' | 'returned' | 'retained';
-  readonly provenance?: string;
-};
+export type ResultApplication =
+  | {
+    readonly callSiteKey: string;
+    readonly kind: 'mutated' | 'returned';
+    readonly provenance?: never;
+  }
+  | {
+    /**
+     * A result handed to something outliving the call.
+     *
+     * Provenance is required here and forbidden on the other two kinds, which is why this
+     * is a union rather than one shape with an optional field. The retention channel is
+     * the one that names where a value went, and the diagnostic reads that text to decide
+     * whether a boundary is a store or a call. A retained application with nothing to say
+     * would arrive as an unexplained opaque slot and be reported as an unresolved effect
+     * addressed to an unresolved implementation, which is the exact confusion
+     * `effect-retention-provenance.ts` exists to prevent.
+     *
+     * Written as a union after the optional-field spelling let `{ kind: 'retained' }`
+     * type-check, leaving a runtime throw as the only thing standing between a
+     * well-typed literal and a crash inside the fixed point.
+     */
+    readonly callSiteKey: string;
+    readonly kind: 'retained';
+    readonly provenance: string;
+  };
 
 /**
  * One owned call edge with caller-relative argument roots.

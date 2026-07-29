@@ -224,7 +224,20 @@ function substituteRetainedOrigins({
       const facts = summary.opaqueProvenanceBySlot
         .get(origin,)
         ?? new Set<string>();
+      /**
+       * Fact count before this retention, deciding whether provenance grew.
+       */
+      const factsBefore = facts.size;
       facts.add(provenance,);
+      /* Progress has to count the provenance and not only the slot, and reporting the slot
+       * alone was wrong rather than merely conservative. A slot already opaque from some
+       * other cause gains a new retention fact here while the set does not grow, so this
+       * returned false having changed state. `propagateUncertaintyProvenance` reads a
+       * callee's `opaqueProvenanceBySlot` DURING the fixed point, and summaries are walked
+       * in map order, so a caller processed before its callee gained the fact would never
+       * be revisited and the cause would never cross the call edge. */
+      if (facts.size !== factsBefore)
+        growth.any = true;
       summary.opaqueProvenanceBySlot
         .set(
           origin,
@@ -356,15 +369,13 @@ export function propagateResultApplications({
     if (calleeSummary === undefined)
       continue;
     if (application.kind === 'retained') {
-      /* A retention with no provenance would arrive as an unexplained opaque slot, which
-       * the diagnostic reads as a genuine unknown and reports as an unresolved effect.
-       * The only way to hold one is a payload restored from a cache written by something
-       * other than this code, which `rejects corrupt nested persistent payloads` already
-       * establishes is a throwing condition rather than a silent one. */
-      if (application.provenance === undefined)
-        throw new Error(
-          `Retained result application for ${application.callSiteKey} carries no provenance.`,
-        );
+      /* No guard on the provenance, because the type carries the invariant now. A
+       * retention with nothing to say would arrive as an unexplained opaque slot and be
+       * reported as an unresolved effect, and the first spelling of this defended against
+       * that with a runtime throw over an optional field. That left `{ kind: 'retained' }`
+       * type-checking, so the throw was the only thing between a well-typed literal and a
+       * crash inside the fixed point. Making `ResultApplication` a union proved the branch
+       * unreachable: TypeScript narrowed the check to `never` and rejected it. */
       if (substituteRetainedOrigins({
         summary,
         edge,
