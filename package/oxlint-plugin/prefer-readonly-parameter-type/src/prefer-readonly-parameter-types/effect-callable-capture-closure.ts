@@ -19,11 +19,21 @@
  * scanner is answering a call-graph question, so it is wrong twice: it names bindings a
  * read-only body merely mentions, and it misses captures that leave through a call.
  *
- * The bound is the source file, and that is a soundness condition rather than a budget. A
- * declaration can only capture the bindings of the callable being summarised if it is written
- * inside it, so it is necessarily in the same file. A cross-file callee names symbols absent
- * from this callable's origin map and would contribute nothing even if followed, so refusing to
- * follow it loses no attribution and stops the walk from crossing the workspace.
+ * The bound is the source file, and it is a cost bound rather than a soundness one. An earlier
+ * version of this paragraph claimed the reverse; a mutant that deleted the bound survived the
+ * whole suite, which is what showed the claim was backwards.
+ *
+ * Why it cannot change an answer: `packagedCallableOrigins` resolves each named binding to a
+ * symbol and looks that symbol up in the origin map of the callable being summarised. A
+ * cross-file callee's body names its own symbols, which are absent from that map, so following
+ * it contributes nothing. It also loses nothing, because a callable able to capture those
+ * bindings must be written inside the callable that owns them and is therefore in the same
+ * file.
+ *
+ * So the bound exists to stop the walk crossing the workspace for answers it cannot change.
+ * No assertion can defend it, and none pretends to: the cost it avoids is unmeasured, and a
+ * mutation check over summaries is the wrong instrument for a claim about work rather than
+ * about results.
  *
  * @module
  */
@@ -92,8 +102,11 @@ export function transitiveCallableOrigins({
   readonly packaged: Node;
 },): ReadonlySet<EffectSlot> {
   /**
-   * File every followed callee must share, since only a callable written inside the one being
-   * summarised can capture its bindings.
+   * File every followed callee must share, bounding work rather than deciding an answer.
+   *
+   * A callable able to capture these bindings is written inside the one that owns them and so
+   * shares its file, and a cross-file callee names symbols this origin map does not hold. The
+   * bound therefore skips only work, which is why deleting it changes no assertion.
    */
   const { fileName, } = packaged.getSourceFile();
   /**
