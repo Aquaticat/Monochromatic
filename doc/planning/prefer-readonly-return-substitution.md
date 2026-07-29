@@ -3643,6 +3643,112 @@ The condition fails,
  so this is a false offer rather than a policy boundary,
  and it needs a fix rather than a decision.
 
+## The capture channel, and the gate a review talked me out of
+
+Task sixty-nine is fixed by carrying what a handed callable captured across the owned call
+ edge.
+The captures are recorded per formal at edge build time,
+ where the syntax is visible,
+ and consumed in the fixed point,
+ which is where the callee's summary exists.
+They are kept beside the ordinary origins rather than folded into them,
+ because the two license different conclusions:
+ an ordinary origin says the callee received the caller's value,
+ so a write or a return the callee records is a fact about it,
+ while a capture says only that running the callable can reach the parameter.
+
+Folding them together also had a measured cost.
+`parameterIndexes` feeds the unresolved boundary as well as owned edges,
+ so a bare function-like branch there would have withheld on
+ `rows.map((row) => config.row.label,)` against any callee this analysis cannot resolve.
+On the owned edge that question never arises,
+ because an unresolved call builds no edge to defer anything onto.
+
+### The gate is the callee's uncertainty, not its reason
+
+My first design gated admission on retention provenance:
+ attribute the captures only where the callee's opacity says `stored into`.
+A stronger model rejected it as unsound and was right.
+
+```ts
+export function relayCallable(relayed: () => Row,): void {
+  queueMicrotask(relayed,);
+}
+```
+
+`relayCallable` stores nothing,
+ so it carries no retention provenance at all;
+ measured, it carries `queueMicrotask`.
+Whatever it forwarded to may keep the callable and invoke it whenever it likes.
+Absent retention provenance means call-caused or unknown,
+ never proven non-retaining,
+ so the retention gate would have let a caller of this keep its offer.
+
+The gate is therefore membership in the callee's opaque set,
+ which is exactly the callee saying it could not account for that formal.
+The provenance is then copied unchanged rather than decided again,
+ which is what makes one channel produce two messages:
+ a capture reaching a callee that stored it arrives with store provenance and stays silent,
+ because a reader cannot act on it,
+ and one reaching a callee that could not inspect its own callee arrives with that call
+ named,
+ which is precisely what a reader can act on.
+
+The broader gate also covered a shape the narrow one missed for free.
+`storeResult`, which does `sink.push(callback(),)`, carries `sink.push` rather than
+ retention,
+ and its caller is now withheld too.
+That shape had been scoped out as task fifty-two's and turned out to need nothing extra.
+
+### The mutant that survived
+
+Two mutants, and the second is the one worth recording.
+
+Emptying the captures on the edge fails `handCaptureToRetainer` immediately.
+
+Restoring the retention-only gate **passed the entire suite**.
+Every fixture written for this change,
+ every control,
+ both diagnostic-level assertions,
+ all green,
+ while the analyzer carried a gate a review had already shown to be unsound.
+Nothing measured the design decision the whole change rests on.
+
+`relayCallable` and `handCaptureToRelay` exist for that reason,
+ and with them the mutant dies on one line and only that line.
+This is the same lesson as the four post-landing defects recorded earlier,
+ arriving one layer higher:
+ a mutation check asks whether the assertions discriminate the mechanism they name,
+ and no assertion named this one.
+
+### The sweep criterion, revised before the capture is read
+
+The criterion registered for task fifty-one does not transfer,
+ and saying so before running is the point of registering one.
+That change could only delete findings,
+ so any rise in argument opacity was a defect.
+This change can legitimately add them:
+ a caller handing a capturing closure to a forwarding callee inherits a call-caused cause and
+ speaks,
+ exactly as `handCaptureToRelay` does in the fixture.
+
+So, against `sweep-51-prefix.txt` at 1966,
+ with digests recorded on both sides:
+
+Offers may fall,
+ and every fall must be sampled to a callable handed to an owned callee whose formal that
+ callee could not account for.
+
+Argument opacity may rise,
+ and only by findings whose parameter also lost an offer,
+ naming the boundary the callee named.
+A rise on a parameter that never had an offer is a defect,
+ since this channel only ever adds opacity to something previously clean.
+
+Receiver opacity must not move at all,
+ because nothing here touches receivers.
+Dishonest and stale-mutates must not move either.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
