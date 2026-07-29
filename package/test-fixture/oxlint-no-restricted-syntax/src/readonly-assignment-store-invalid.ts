@@ -278,3 +278,71 @@ export function nestedHeldLabel(): string {
   return nestedHeld?.inner
     .label ?? '';
 }
+
+/**
+ * Binding a rest over an unresolved shape reaches, whose members nothing enumerated.
+ */
+let genericHeld: object | undefined;
+
+/**
+ * Stores an object rest taken over a constrained type parameter.
+ *
+ * The shape of the rest is a mapped type over `keyof T`, and an unresolved `keyof T`
+ * enumerates to nothing. Nothing enumerated must not read as nothing carried, so this
+ * case exists to tell those two apart: `T extends Row` may resolve through its
+ * constraint, and answering discharge here would be a proof by failure to look.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @param seed - Element standing in for an absent first element.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverGenericState([], { label: '', },);
+ * ```
+ */
+export function storeRestOverGenericState<T extends Row,>(items: T[], seed: T,): number {
+  const { label, ...remainder } = items.at(0,) ?? seed;
+  genericHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Stores an object rest taken over an unconstrained type parameter.
+ *
+ * The companion to `storeRestOverGenericState`, with nothing for the checker to resolve
+ * through. If the constrained case answers correctly and this one does not, the guard is
+ * reading the constraint rather than establishing that the shape was enumerable.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @param seed - Element standing in for an absent first element.
+ *
+ * @returns count of members the rest carried.
+ *
+ * @example
+ * ```ts
+ * storeRestOverUnconstrainedState([], {},);
+ * ```
+ */
+export function storeRestOverUnconstrainedState<T,>(items: T[], seed: T,): number {
+  const { ...remainder } = items.at(0,) ?? seed;
+  genericHeld = remainder;
+  return Object.keys(remainder,).length;
+}
+
+/**
+ * Reports what the generic rest binding holds, so the stores above are not dead.
+ *
+ * @returns count of members currently stored.
+ *
+ * @example
+ * ```ts
+ * genericHeldSize();
+ * ```
+ */
+export function genericHeldSize(): number {
+  return Object.keys(genericHeld ?? {},).length;
+}

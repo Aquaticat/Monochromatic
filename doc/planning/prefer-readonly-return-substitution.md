@@ -1131,3 +1131,54 @@ It is not owned by the nested body,
  and lexical capture proves nothing about lifetime.
 `storeIntoEnclosingLocal` is therefore a store this must report,
  not a hole to name.
+
+## The rest narrowing shipped unsound, and how that was caught
+
+Recorded before the fix,
+ because the shape of the mistake matters more than the patch.
+
+`membersCanCarryMutableState` answered by asking a type for its index signatures and then
+ its properties,
+ and returned whatever `.some()` returned over those lists.
+Over a type it cannot enumerate both lists are empty,
+ `.some()` over an empty list is `false`,
+ and `false` means the rest holds nothing,
+ which discharges.
+So the predicate could not tell "enumerated every member and each is primitive" from
+ "enumerated nothing",
+ and the second reading is the one that costs soundness.
+
+Both of its siblings in the same file get this right and were not consulted closely
+ enough.
+`typeCanCarryMutableState` resolves a type parameter's constraint and answers yes when
+ there is none.
+`receiverElementsArePrimitive` requires `indexes.length > 0` before it will call a
+ receiver primitive,
+ which is positive evidence before a permissive answer.
+The new predicate had neither.
+
+Measured rather than argued,
+ with two cases added to `readonly-assignment-store-invalid.ts`:
+
+```text
+storeRestOverGenericState        opaque=[]   T extends Row
+storeRestOverUnconstrainedState  opaque=[]   bare T
+storeRestOverCarriedState        opaque=[0]  control still reporting
+```
+
+Both generic cases discharge,
+ and both are wrong.
+A rest over `T extends Row` is `Omit<T, 'label'>`,
+ a mapped type over an unresolved `keyof T` that enumerates to nothing,
+ while the actual `T` may carry any number of object-typed properties the constraint does
+ not mention.
+The control still reporting is what shows the escape test runs on these at all,
+ so the discharge is the predicate's answer rather than an untaken path.
+
+Requiring a non-empty property list is not the fix by itself.
+The rest of `Row = { label: string; }` is genuinely `{}`,
+ which enumerates to nothing and genuinely holds nothing,
+ so emptiness alone cannot separate the two readings.
+What separates them is whether the shape was resolvable,
+ which needs a type-parameter branch as well as a positive-evidence requirement,
+ and failing closed on both.
