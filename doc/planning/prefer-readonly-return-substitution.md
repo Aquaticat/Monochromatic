@@ -4585,3 +4585,46 @@ This one removes attribution, so a rising offer count would have meant a false f
 None appeared.
 So nothing in this workspace was withheld on the strength of a write inside a closure that never
  runs, which is the most that measurement can say and is worth stating as exactly that much.
+
+## The one claim that rested on the retired baseline, re-measured and standing
+
+Retiring the 1939 baseline invalidated every claim of the form "the workspace did not move",
+ and left one substantive per-finding claim to check:
+ that task forty-six's fix moved three locations in each direction,
+ with boundaries changing from `Object.values` and `pending.pop` to `pending.push`.
+
+A per-finding claim is checkable even when the totals it sat beside are not,
+ which is why this one could be repaired and the others could only be withdrawn.
+
+Re-measured by disabling the spread branch in `passesValueOutward` at current HEAD and sweeping
+ against the current baseline:
+
+```text
+before 1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+added   3: argument-opacity=3
+removed 3: argument-opacity=3
+```
+
+Three locations, and the boundary identities are what the claim said:
+
+```text
+fix disabled:  used by these calls: Object...
+fix enabled:   used by these calls: pending...
+```
+
+```text
+package/oxlint-plugin/test-import/src/package-manifest.ts:270:40
+package/oxlint-plugin/test-import/src/package-manifest.ts:144:31
+package/git-policy/cli/src/trust/typescript-syntax-validation.ts:45:45
+```
+
+So the claim stands, and it stands on a comparison whose both sides carry digests,
+ which the original did not.
+
+Worth noting what this does **not** rescue.
+The four captures reading 1939 are still unusable as evidence about totals,
+ and nothing was re-run to rescue them,
+ because their conclusions were of the form the retirement invalidated.
+The fixture measurements, the falsifications, the mutation checks and the per-finding sampling
+ never depended on the absolute number and were never in question.
