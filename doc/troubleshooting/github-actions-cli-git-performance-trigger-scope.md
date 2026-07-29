@@ -2,21 +2,23 @@
 
 ## Symptom
 
-`.github/workflows/cli-git-performance.yml` starts the complete packed lifecycle benchmark for every push to `main`,
-even when a commit changes only an unrelated document or package.
+Before commit `3ab61f0d35c67a58cc56de776202e4bc86912b82`,
+`.github/workflows/cli-git-performance.yml` started the complete packed lifecycle benchmark for every push to `main`,
+even when a commit changed only an unrelated document or package.
 
 The 500-run window from run `29973695489` through run `30441334531`,
 returned by GitHub on 2026-07-29,
 contained 499 `push` runs and one `pull_request` run.
 Every run had a `failure` conclusion.
 All 499 push revisions were available in the local Git history for path classification.
-The proposed dependency and infrastructure scope matched 39 revisions and did not match 460 revisions.
+The dependency and infrastructure scope evaluated before the narrower version-boundary decision matched 39 revisions
+and did not match 460 revisions.
 This is a classification of that 499-run sample,
 not a claim about every historical run.
 
-The current red state has a second repository-local cause.
-The package was renamed to `@monochromatic-dev/git-policy-cli`,
-but the workflow still asks pnpm to install the old `@monochromatic-dev/cli-git...` dependency closure.
+The pre-fix red state had a second repository-local cause.
+The package had been renamed to `@monochromatic-dev/git-policy-cli`,
+but the workflow still asked pnpm to install the old `@monochromatic-dev/cli-git...` dependency closure.
 Run `30440155739` consequently reached the build without `rolldown` and emitted:
 
 ```text
@@ -28,7 +30,9 @@ Error: fanout child tasks failed: //package/git-policy/cli:build:js:node
 
 ### Every main push is an explicit trigger
 
-`.github/workflows/cli-git-performance.yml:3` to `9` declares `push` with only a branch filter:
+The pre-fix workflow at
+`4054134fe2eb15b9cbac5b92164f28daf2fd49cf:.github/workflows/cli-git-performance.yml:3` to `9`
+declared `push` with only a branch filter:
 
 ```yaml
 on:
@@ -40,8 +44,8 @@ on:
     branches: ['main']
 ```
 
-There is no `paths` filter.
-The job at `.github/workflows/cli-git-performance.yml:14` to `16` also has no condition:
+There was no `paths` filter.
+The job in the same revision at lines `14` to `16` also had no condition:
 
 ```yaml
 jobs:
@@ -49,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
 ```
 
-GitHub is therefore following the repository's configuration.
+GitHub was therefore following the repository's configuration.
 The workflow was introduced by commit `7244d1b94f75488b9a018c8ed36aa5c803676bc5`,
 whose commit body explicitly said it would run the benchmark "on every mainline change.
 "
@@ -99,7 +103,9 @@ but it provides no current protection.
 "name": "@monochromatic-dev/git-policy-cli"
 ```
 
-`.github/workflows/cli-git-performance.yml:39` to `40` still selects the removed name:
+The pre-fix workflow at
+`4054134fe2eb15b9cbac5b92164f28daf2fd49cf:.github/workflows/cli-git-performance.yml:39` to `40`
+still selected the removed name:
 
 ```yaml
 - name: Install cli-git dependency closure
@@ -117,11 +123,15 @@ then `mise run //package/git-policy/cli:perf:lifecycle-latency` invokes `rolldow
 
 - Repository revision first inspected:
   `bbbeb340b785fb16629fcf76fdf7c235b6dbd9c8`.
+- Corrected workflow revision:
+  `3ab61f0d35c67a58cc56de776202e4bc86912b82`.
 - GitHub documentation source:
   `github/docs@e1e4aa937308f21c411c248b4966873536bb0cba`.
 - Workflow:
   `.github/workflows/cli-git-performance.yml`.
-- Failed run inspected:
+- Version source:
+  `package/git-policy/cli/package.json`.
+- Failed pre-fix run inspected:
   [run 30440155739][failed-run].
 
 Retrieve the trigger and recent-run evidence with:
@@ -139,17 +149,25 @@ gh run view 30440155739 \
   --log-failed
 ```
 
-### Runs that belong in the automatic scope
+### Runs that start the benchmark after the correction
 
-- A change under `package/git-policy/**` can change the benchmarked CLI.
-- A change to a bundled workspace dependency can change CLI lifecycle latency.
-- A change to the build configuration,
-  package-manager resolution,
-  tool lock,
-  or performance workflow can change the artifact or harness.
-- A manual dispatch is useful after runner-image incidents or when validating a proposed budget.
+- A pull request targeting `main` starts detection when it changes
+  `package/git-policy/cli/package.json`.
+  The benchmark starts only when that manifest's `version` differs from the pull request base revision.
+- A push to `main` starts detection under the same manifest path filter.
+  The benchmark starts only when `version` differs from the push event's before revision.
+- A manual dispatch starts the benchmark without requiring a version change.
+  This explicit exception supports incident reruns and budget validation.
 
-### Runs outside the automatic scope
+### Runs detected but skipped after the correction
+
+- A dependency or metadata edit in `package/git-policy/cli/package.json` with an unchanged `version` starts only the
+  detection job.
+- A change outside `package/git-policy/cli/package.json` creates no automatic workflow run.
+- A missing automated base revision or non-string manifest version fails detection instead of silently running or skipping
+  the benchmark.
+
+### Historical runs outside the automatic scope
 
 - Revision `bbbeb340b785fb16629fcf76fdf7c235b6dbd9c8` changed only
   `doc/planning/prefer-readonly-return-substitution.md`,
@@ -166,135 +184,88 @@ or the lifecycle harness.
 
 ## Verified workarounds
 
-### Scope pull-request and main-push runs by affected paths
+### Gate the benchmark on the cli-git package version
 
-This is the recommended policy for the repository's present development flow.
-The latest 500-run API window contained 499 push runs and one pull-request run,
-so removing `push` would remove nearly all observed automatic enforcement.
-A path-scoped main push retains that enforcement without running for every unrelated commit.
+Commit `3ab61f0d35c67a58cc56de776202e4bc86912b82` implements the selected policy.
+`.github/workflows/cli-git-performance.yml:3` to `12` restricts automatic detection to the cli-git manifest and retains
+manual dispatch:
 
-Apply this trigger and package-filter patch:
-
-```diff
-diff --git a/.github/workflows/cli-git-performance.yml b/.github/workflows/cli-git-performance.yml
---- a/.github/workflows/cli-git-performance.yml
-+++ b/.github/workflows/cli-git-performance.yml
-@@
- on:
-   pull_request:
-     branches: ['main']
--  merge_group:
--    branches: ['main']
-+    paths:
-+    - 'package/git-policy/**'
-+    - 'package/module/async-time/**'
-+    - 'package/module/caught-value/**'
-+    - 'package/module/fs-id/**'
-+    - 'package/module/fs-path/**'
-+    - 'package/module/logger/**'
-+    - 'package/ownership-marker/foreign-borrowed/**'
-+    - 'package/config/rolldown/**'
-+    - 'package/config/typescript/**'
-+    - 'pnpm-lock.yaml'
-+    - 'pnpm-workspace.yaml'
-+    - 'mise.toml'
-+    - 'mise.no-env.toml'
-+    - 'mise.lock'
-+    - '.github/workflows/cli-git-performance.yml'
-   push:
-     branches: ['main']
-+    paths:
-+    - 'package/git-policy/**'
-+    - 'package/module/async-time/**'
-+    - 'package/module/caught-value/**'
-+    - 'package/module/fs-id/**'
-+    - 'package/module/fs-path/**'
-+    - 'package/module/logger/**'
-+    - 'package/ownership-marker/foreign-borrowed/**'
-+    - 'package/config/rolldown/**'
-+    - 'package/config/typescript/**'
-+    - 'pnpm-lock.yaml'
-+    - 'pnpm-workspace.yaml'
-+    - 'mise.toml'
-+    - 'mise.no-env.toml'
-+    - 'mise.lock'
-+    - '.github/workflows/cli-git-performance.yml'
-+  workflow_dispatch:
-@@
--      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
-+      run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
+```yaml
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+    - 'package/git-policy/cli/package.json'
+  push:
+    branches: ['main']
+    paths:
+    - 'package/git-policy/cli/package.json'
+  workflow_dispatch:
 ```
 
-The path behavior is backed by GitHub's current workflow syntax and by classification of recent repository revisions.
-The patch itself remains a recommendation and has not been deployed.
-After applying it,
-manually dispatch one run and require a green benchmark before treating the stale-filter correction as complete.
-A green run is needed because the current log proves the first missing tool,
-not that no later failure exists.
+The detector at lines `18` to `66` reads the current manifest,
+loads the same manifest from the event's base revision,
+and writes `should_run=true` only when the version differs or the event is manual.
+The benchmark job at lines `68` to `71` consumes that result:
+
+```yaml
+lifecycle-latency:
+  needs: detect-version-bump
+  if: ${{ needs.detect-version-bump.outputs.should_run == 'true' }}
+  runs-on: ubuntu-latest
+```
+
+Line `95` also selects the renamed package correctly:
+
+```yaml
+run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
+```
 
 Tradeoffs:
 
-- The path list must be maintained when the CLI's workspace dependency closure changes.
-- Any `pnpm-lock.yaml` or `pnpm-workspace.yaml` change triggers the workflow,
-  including changes that ultimately affect only another package.
-  This favors avoiding false negatives over maximum filtering precision.
-- A relevant pull request followed by its merge can produce both a pull-request run and a main-push run.
-  The main-push run is retained because direct main pushes dominate the observed workflow history.
+- GitHub path filters cannot distinguish one JSON property from another.
+  A non-version manifest edit creates a detector job,
+  but it does not create the benchmark job.
+- Code and dependency changes no longer receive immediate performance coverage.
+  The next cli-git version change is the automatic release boundary.
+- A version-changing pull request followed by its merge can run the benchmark for both events.
+  Keeping both preserves pull-request feedback and direct-main coverage.
+- The detector uses a full-history checkout so the event's base manifest is available across multi-commit pushes and pull
+  requests.
+- Manual dispatch intentionally bypasses the version-change requirement.
 
-### Use pull requests plus manual dispatch only
-
-Remove both `push` and `merge_group`,
-retain the filtered `pull_request`,
-and add `workflow_dispatch`.
-
-Tradeoff:
-this avoids the duplicate post-merge run,
-but direct changes to `main` receive no automatic performance check.
-That conflicts with the repository's observed 499-to-one push versus pull-request run mix.
-
-### Add a periodic trend run only when trend monitoring is a requirement
-
-A weekly `schedule` can detect runner-image or toolchain drift even when relevant source does not change.
-Use a minute away from the start of the hour because
-`github/docs@e1e4aa9:data/reusables/actions/schedule-delay.md:1` warns that high-load schedules may be delayed or dropped.
-
-Tradeoff:
-a schedule adds runs unrelated to commits,
-can detect a regression after it lands,
-and does not identify the introducing revision.
-No current requirement calls for periodic trend data,
-so it should not be part of the default patch.
-
-### Preserve a future required check with a lightweight always-reported job
+### Preserve a future required check with an always-reported workflow
 
 The current workflow is not required.
 If it becomes required later,
-do not leave a required workflow behind a trigger-level path filter.
+do not require the path-filtered `lifecycle-latency` workflow directly.
 GitHub documents at
 `content/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks.md:53` to `59`
 that a path-filtered required workflow remains pending and blocks merging.
 At that point,
 trigger a lightweight required workflow for every pull request,
-use change detection to condition the benchmark job,
-and let the lightweight required job report success after either a benchmark pass or an intentional skip.
+use version detection to condition the benchmark job,
+and let the required job report success after either a benchmark pass or an intentional skip.
 
 Tradeoff:
-every pull request would still create a workflow run,
-but only relevant changes would allocate the benchmark runner and container work.
+every pull request would create a workflow run,
+but only a version change would allocate the benchmark runner and container work.
 
 ## What does not work
 
+- Dependency-wide path filters still run before a version change,
+  which does not meet the selected release-boundary policy.
+- Filtering only on `package/git-policy/cli/package.json` runs the benchmark for dependency and metadata edits too.
+  The detector is required to compare the `version` property.
+- Version detection without the manifest path filter creates a lightweight workflow run for every commit.
 - `concurrency` can cancel superseded runs,
-  but each unrelated push still satisfies the trigger.
-- A documentation-only `paths-ignore` list does not exclude unrelated package changes and grows as new unrelated areas appear.
-  An allow-list models the benchmark's dependency boundary directly.
-- Manual dispatch alone turns an enforced budget into an optional check.
-- Pull-request-only automation does not fit the observed direct-main workflow unless that development policy changes first.
-- A schedule alone delays regression detection and weakens attribution to the introducing change.
+  but unrelated pushes still satisfy an unfiltered trigger.
+- Manual dispatch alone turns the budget into an optional check.
+- Pull-request-only automation omits direct-main version changes.
+- A schedule adds runs without a version change and weakens attribution to the release boundary.
 - Keeping `merge_group` for a check that is not required and a queue that is not configured adds no current coverage.
 - Fixing only the stale pnpm selector stops `rolldown: not found`,
   but leaves the every-main-push trigger unchanged.
-- Adding only `paths` leaves the workflow red because it preserves the stale pnpm selector.
 
 ## Upstream filing artifact
 
@@ -320,11 +291,11 @@ No upstream report is needed because the current documentation already describes
    No upstream change is needed.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    Yes at the consumer configuration boundary.
-   The patch adds documented path filters,
+   Commit `3ab61f0d35c67a58cc56de776202e4bc86912b82` adds manifest path filters,
+   compares the version against the event base revision,
    removes the currently unused merge-group trigger,
-   adds manual dispatch,
+   retains manual dispatch,
    and corrects the stale package selector.
-   It is source-reviewed and path-classified but still requires one hosted green run after deployment.
 
 ### Filing artifact
 
@@ -333,7 +304,7 @@ Do not file as-is.
 
 There is no GitHub Actions defect to report.
 Monochromatic configured an unfiltered push trigger and retained a stale package selector after renaming cli-git.
-The correction belongs in `.github/workflows/cli-git-performance.yml`.
+Commit `3ab61f0d35c67a58cc56de776202e4bc86912b82` corrected both at the repository boundary.
 ~~~
 
 [failed-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/30440155739
