@@ -4742,3 +4742,19 @@ A driver that supplies the escaping behaviour proves nothing about the callable 
 
 Three of the four pass-two candidates were real. Recording the fourth as not-a-defect is the more
  useful of the two outcomes, because it is the one that would have led to a wrong fix.
+
+### The pass-two capture
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers unchanged, nothing moved.
+
+Which is now the expected result and says less each time it happens.
+A tagged template, a callable inside a returned literal and a store of what a nested callable
+ hands back are all real escapes, all falsified, and none of them occurs in this workspace on a
+ parameter that still had an offer to lose.
