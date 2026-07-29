@@ -23,9 +23,6 @@
 - [The Rustonomicon](https://doc.rust-lang.org/nomicon/)
   Official advanced companion for unsafe Rust, data layout, aliasing, concurrency, and FFI.
   Use only after the relevant book foundations; it is incomplete and directs disagreements to The Rust Reference.
-- [TypeScript Playground](https://www.typescriptlang.org/play/)
-  Official browser playground for executable TypeScript comparisons.
-  Use for: every companion example that embeds TypeScript, through a link containing the example source.
 - [Monorepo Rust policy](../../../AGENTS.md)
   Repository-specific Rust documentation, lint, build, and verification requirements.
   Use for: separating general Rust rules from local engineering decisions.
