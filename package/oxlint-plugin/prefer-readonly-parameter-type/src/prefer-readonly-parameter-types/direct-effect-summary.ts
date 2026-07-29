@@ -27,6 +27,7 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
+import { recordResultApplication, } from './effect-result-substitution.ts';
 import {
   bindingOriginsFor,
   discoverAliasOrigins,
@@ -206,8 +207,10 @@ export function directEffectSummary({
     opaque: new Set(),
     directForeignBorrowed,
     directReturned: new Set(),
+    returned: new Set(),
     relations: [],
     elementApplications: [],
+    resultApplications: [],
     calls: [],
   };
   /**
@@ -335,7 +338,7 @@ export function directEffectSummary({
       if (expressionCanCarryMutableState({
         checker,
         node: node.expression,
-      },))
+      },)) {
         addEffectSlots({
           target: summary.directReturned,
           values: expressionOrigins({
@@ -344,6 +347,16 @@ export function directEffectSummary({
             node: node.expression,
           },),
         },);
+        /* Returning another callable's result carries whatever that result carries, and
+         * the resolver above cannot see it: a callee's summary does not exist while its
+         * callers are scanned. Without this, `b` returning `a(x,)` records no returned
+         * origin at all, so no caller of `b` can substitute through it either. */
+        recordResultApplication({
+          summary,
+          node: node.expression,
+          kind: 'returned',
+        },);
+      }
       return;
     }
     if (isForOfStatement(node,) && (node.awaitModifier !== undefined)) {

@@ -22,6 +22,7 @@ import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifie
 
 import {
   callableKey,
+  callSiteKey,
   type EffectCallableDeclaration,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
@@ -298,6 +299,7 @@ export function addOwnedCallEdge({
     },);
   summary.calls
     .push({
+    callSiteKey: callSiteKey(call,),
     calleeKey: callableKey(callee,),
     calleeFileName: callee.getSourceFile()
       .fileName,

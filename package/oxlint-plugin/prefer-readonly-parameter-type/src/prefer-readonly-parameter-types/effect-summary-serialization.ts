@@ -15,6 +15,7 @@ import {
   type CallbackRelation,
   type CallEdge,
   type ElementApplication,
+  type ResultApplication,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
   type SlotOwnership,
@@ -78,8 +79,10 @@ export type SerializedEffectSummary = {
   readonly opaque: readonly number[];
   readonly directForeignBorrowed: readonly number[];
   readonly directReturned: readonly number[];
+  readonly returned: readonly number[];
   readonly relations: readonly CallbackRelation[];
   readonly elementApplications: readonly ElementApplication[];
+  readonly resultApplications: readonly ResultApplication[];
   readonly calls: readonly SerializedCallEdge[];
 };
 
@@ -253,6 +256,7 @@ export function serializeEffectSummaries(
           opaque: [...summary.opaque,],
           directForeignBorrowed: [...summary.directForeignBorrowed,],
           directReturned: [...summary.directReturned,],
+          returned: [...summary.returned,],
           relations: summary.relations
             .map(function copyRelation(relation,) {
             return { ...relation, };
@@ -265,6 +269,10 @@ export function serializeEffectSummaries(
                 ...application.observerParameterIndexes,
               ],
             };
+          },),
+          resultApplications: summary.resultApplications
+            .map(function copyResultApplication(application,): ResultApplication {
+            return { ...application, };
           },),
           calls: summary.calls
             .map(function serializeCall(edge,): SerializedCallEdge {
@@ -352,9 +360,14 @@ export function deserializeEffectSummaries(
             return asParameterIndex(owner,);
           },),),
         directReturned: restoredSlots(summary.directReturned,),
+        returned: restoredSlots(summary.returned,),
         relations: summary.relations
           .map(function copyRelation(relation,) {
           return { ...relation, };
+        },),
+        resultApplications: summary.resultApplications
+          .map(function restoreResultApplication(application,): ResultApplication {
+          return { ...application, };
         },),
         elementApplications: summary.elementApplications
           .map(function copyApplication(application,): ElementApplication {

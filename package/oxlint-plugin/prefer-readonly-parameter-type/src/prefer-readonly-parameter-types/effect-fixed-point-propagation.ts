@@ -11,6 +11,10 @@ import { propagateElementApplications, } from './effect-element-application.ts';
 import { propagateInvokedCapabilities, } from './effect-invoked-capability.ts';
 import { propagateCalleeIndexes, } from './effect-propagation-indexes.ts';
 import {
+  propagateResultApplications,
+  seedReturnedSlots,
+} from './effect-result-substitution.ts';
+import {
   addEffectSlot,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
@@ -18,8 +22,13 @@ import { propagateUncertaintyProvenance, } from './effect-uncertainty-provenance
 
 /**
  * Mutable effect dimensions propagated per parameter.
+ *
+ * Four rather than three since result substitution landed: the propagated `returned` set
+ * grows per slot exactly as `mutated`, `invoked` and `opaque` do. The count bounds the
+ * loop and the loop THROWS at the bound, so adding a dimension without raising this turns
+ * a slow convergence into a thrown `EffectPropagationError`.
  */
-const EFFECT_DIMENSION_COUNT = 3;
+const EFFECT_DIMENSION_COUNT = 4;
 
 /**
  * Propagates direct, transitive, recursive, and higher-order effects to fixed point.
@@ -79,6 +88,16 @@ export function propagateEffects(
         // Read-only view members carry no summary, so their element flow
         // propagates per summary instead of along a call edge.
         state.changed = propagateElementApplications({
+          summaries,
+          summary,
+        },) || state.changed;
+        /* Returned state is seeded before it is substituted, so a callable that returns
+         * its own parameter is available to a caller returning that call's result on the
+         * same pass rather than the next one. Both run inside the loop rather than once
+         * ahead of it, because a callee's returned set can still grow through its own
+         * substitutions. */
+        state.changed = seedReturnedSlots({ summary, },) || state.changed;
+        state.changed = propagateResultApplications({
           summaries,
           summary,
         },) || state.changed;

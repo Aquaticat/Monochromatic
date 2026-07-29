@@ -37,6 +37,7 @@ import {
   type SlotOrigins,
 } from './effect-summary-model.ts';
 import { recordReadonlyViewApplications, } from './effect-readonly-view-application.ts';
+import { recordResultApplication, } from './effect-result-substitution.ts';
 
 /**
  * Nothing about the call was answered, so both sides stay opaque.
@@ -229,6 +230,17 @@ export function recordCollectionMemberEffect({
     addEffectSlots({
       target: summary.directMutated,
       values: mutatedParameterOrigins,
+    },);
+    /* A receiver that is itself a call carries whatever that call returns, and no walk
+     * here can know what that is: the callee's summary does not exist while its callers
+     * are being scanned. `launderMutable(rows,).push(...)` therefore recorded a mutation
+     * of nothing and offered `readonly Row[]` for an array it grows, measured in
+     * `doc/planning/prefer-readonly-return-substitution.md`. Recording the use defers the
+     * origins to `propagateResultApplications`, which has the callee summary. */
+    recordResultApplication({
+      summary,
+      node: receiver,
+      kind: 'mutated',
     },);
   }
   // The mutation above is recorded before any discharge below, because a member can

@@ -153,6 +153,7 @@ function unknownInboundSummary(
     },
     bindingOriginBySymbolId: new Map(),
     directReturned: new Set(),
+    returned: new Set(),
     directMutated: new Set(),
     directInvoked: new Set(),
     directOpaque: new Set(),
@@ -163,7 +164,12 @@ function unknownInboundSummary(
     directForeignBorrowed: new Set(),
     relations: [],
     elementApplications: [],
+    resultApplications: [],
     calls: [{
+      /* Stands for an inbound foreign relation rather than a syntactic call, so it names
+       * itself as one. Nothing looks this key up: only a deferred result use does, and
+       * this edge has no call whose result a caller could consume. */
+      callSiteKey: `foreign-inbound:${callableKey(declaration,)}`,
       calleeKey: callableKey(declaration,),
       calleeFileName: declaration.getSourceFile()
         .fileName,

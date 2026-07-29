@@ -132,8 +132,10 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
     opaque: new Set(summary.opaque,),
     directForeignBorrowed: new Set(summary.directForeignBorrowed,),
     directReturned: new Set(summary.directReturned,),
+    returned: new Set(summary.returned,),
     relations: [...summary.relations,],
     elementApplications: [...summary.elementApplications,],
+    resultApplications: [...summary.resultApplications,],
     calls: [...summary.calls,],
   };
 }

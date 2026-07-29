@@ -126,6 +126,23 @@ export type ElementApplication = {
 };
 
 /**
+ * What a caller does with the result of one owned call, before its origins are known.
+ *
+ * The syntax pass can see that a result is mutated or handed back, and cannot see which
+ * caller parameters that result carries, because a callee's summary does not exist while
+ * its callers are being walked. Recording the use and deferring the origins is what lets
+ * the two meet in propagation, where the callee summary and the edge's formal-to-actual
+ * mapping sit together.
+ *
+ * Keyed by call site rather than by callee, because two calls of the same callee in one
+ * body are separate uses and must not share a verdict.
+ */
+export type ResultApplication = {
+  readonly callSiteKey: string;
+  readonly kind: 'mutated' | 'returned';
+};
+
+/**
  * One owned call edge with caller-relative argument roots.
  *
  * Three of these arrays used to share one formal-parameter index. Slots split them, because
@@ -134,6 +151,7 @@ export type ElementApplication = {
  * therefore says in its name what indexes it, and what its values are.
  */
 export type CallEdge = {
+  readonly callSiteKey: string;
   readonly calleeKey: string;
   readonly calleeFileName: string;
   readonly originsByCalleeSlot: readonly (readonly EffectSlot[])[];
@@ -176,8 +194,17 @@ export type MutableEffectSummary = {
   readonly opaque: Set<EffectSlot>;
   readonly directForeignBorrowed: ReadonlySet<ParameterIndex>;
   readonly directReturned: Set<EffectSlot>;
+  /**
+   * Returned slots after substitution, seeded from `directReturned`.
+   *
+   * Separate from the direct set for the same reason `mutated` is separate from
+   * `directMutated`: a callable that returns another callable's result carries whatever
+   * that result carries, and only the fixed point can know it.
+   */
+  readonly returned: Set<EffectSlot>;
   readonly relations: CallbackRelation[];
   readonly elementApplications: ElementApplication[];
+  readonly resultApplications: ResultApplication[];
   readonly calls: CallEdge[];
 };
 
@@ -199,6 +226,30 @@ export function callableKey(declaration: EffectCallableDeclaration,): string {
    */
   const sourceFile = declaration.getSourceFile();
   return `${sourceFile.fileName}:${String(declaration.pos,)}:${String(declaration.end,)}:${String(declaration.kind,)}`;
+}
+
+/**
+ * Builds stable identity for one call site inside its source.
+ *
+ * Deliberately a string rather than the node. Propagation runs without a project or an
+ * AST, and a summary restored from the persistent cache has no declarations to point at,
+ * so a relation that survives caching cannot hold a node.
+ *
+ * @param call - Call expression whose site is identified.
+ *
+ * @returns source path and span identity for this call.
+ *
+ * @example
+ * ```ts
+ * const site = callSiteKey(call);
+ * ```
+ */
+export function callSiteKey(call: Node,): string {
+  /**
+   * Source file owning this call.
+   */
+  const sourceFile = call.getSourceFile();
+  return `${sourceFile.fileName}:${String(call.pos,)}:${String(call.end,)}`;
 }
 
 /**
