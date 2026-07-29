@@ -12,22 +12,21 @@ import type {
 } from '@oxlint/plugins';
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
-import { asParameterIndex, } from './effect-slot-identity.ts';
-import { bindingContainsForeignHostCapability, } from './foreign-host-capability-classifier.ts';
-import { inputUsageSubject, } from './input-diagnostic-description.ts';
+import type { ParameterIndex, } from './effect-slot-identity.ts';
 import {
   MUTATION_CONTRACT_UNAVAILABLE,
   mutationContractsForDeclaration,
   mutationTargetIndexes,
 } from './mutation-contract-query.ts';
+import { opaqueEffectReport, } from './opaque-effect-diagnostic.ts';
+import type { classifyReadonlyType, } from './readonly-classifier.ts';
 import {
-  opaqueEffectReport,
-  uncertaintyBoundaries,
-} from './opaque-effect-diagnostic.ts';
-import { classifyReadonlyType, } from './readonly-classifier.ts';
+  factsNeedForeignProof,
+  readonlyParameterFacts,
+  type ReadonlyParameterFacts,
+} from './readonly-parameter-facts.ts';
 import { reportRedundantForeignBorrowed, } from './redundant-marker-report.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
-import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 
 import {
   oxlintOffset,
@@ -118,9 +117,12 @@ function reportStaleContract({
  *
  * @param project - TypeScript project used by readonly classifier.
  *
+ * @param proveForeignBorrowed - Complete backwards-closure proof for this callable, demanded at
+ * most once and only when some parameter's verdict reads it.
+ *
  * @example
  * ```ts
- * verifyReadonlyCallable({ context, declaration, effectSummary, project });
+ * verifyReadonlyCallable({ context, declaration, effectSummary, project, proveForeignBorrowed });
  * ```
  *
  * @mutates context - Emits Oxlint diagnostics through foreign rule context.
@@ -130,11 +132,13 @@ export function verifyReadonlyCallable({
   declaration,
   effectSummary,
   project,
+  proveForeignBorrowed,
 }: ForeignBorrowed<{
   readonly context: Context;
   readonly declaration: EffectCallableDeclaration;
   readonly effectSummary: CallableEffectSummary;
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
+  readonly proveForeignBorrowed: () => ReadonlySet<ParameterIndex>;
 }>,): void {
   /**
    * Source file owning callable and authored comments.
@@ -183,70 +187,59 @@ export function verifyReadonlyCallable({
   const hasBody = ('body' in declaration) && (declaration.body !== undefined);
   if (!hasBody)
     return;
+  /**
+   * Everything every parameter's verdict reads, apart from foreign ownership.
+   */
+  const parameterFacts = readonlyParameterFacts({
+    declaration,
+    effectSummary,
+    project,
+    targetIndexes,
+    blocksByParameter,
+  },);
+  /**
+   * Parameters a marker holds under foreign ownership, proven only when a verdict reads it.
+   *
+   * The proof is the most expensive answer this rule can ask for, one complete backwards caller
+   * closure over the whole configured scope per callable, and most callables have no parameter
+   * whose report it could change. Demanded here rather than inside a branch so that a callable
+   * either has the answer before it reports anything or fails before it reports anything: the
+   * closure charges the analysis budget, and a budget exhausted midway through a parameter list
+   * would otherwise leave half a callable's diagnostics emitted.
+   */
+  const foreignBorrowedParameters = parameterFacts
+      .some(function verdictReadsForeign(facts: ReadonlyParameterFacts,): boolean {
+        return factsNeedForeignProof(facts,);
+      },)
+    ? proveForeignBorrowed()
+    : new Set<ParameterIndex>();
 
-  declaration.parameters
-    .forEach(function verifyParameter(
+  parameterFacts.forEach(function verifyParameter(facts: ReadonlyParameterFacts,): void {
+    /**
+     * Declared parameter this verdict is about.
+     */
+    const {
       parameter,
-      declaredPosition,
-    ): void {
-    /**
-     * Declared position of this parameter, as the effect index it is compared against.
-     */
-    const parameterIndex = asParameterIndex(declaredPosition,);
-    /**
-     * Authored parameter text used in diagnostics.
-     */
-    const parameterName = parameter.name
-      .getText(sourceFile,);
-    /**
-     * Bindings of this parameter whose own slot carries the opacity.
-     *
-     * Absent when nothing beneath the parameter is opaque, and then every binding is named, as
-     * every report did before per-property attribution. A destructured parameter used to name
-     * its primitive siblings in a report about one property, which `ST9` made the ordinary
-     * case rather than an unusual one.
-     */
-    const affectedNames = effectSummary.opaqueBindingsByParameter
-      .get(parameterIndex,);
-    /**
-     * Plain-language subject for singular or destructured input names.
-     */
-    const inputSubject = inputUsageSubject({
-      targetIndexes,
       parameterIndex,
-      ...(affectedNames === undefined) ? {} : { affectedNames, },
-    },);
-    /**
-     * Semantic parameter type.
-     */
-    const parameterType = project.checker
-      .getTypeAtLocation(parameter.name,);
-    if (parameterType === undefined)
-      throw new SemanticBridgeError({
-        reason: 'node-not-found',
-        message: `TypeScript did not resolve parameter type for ${parameterName}.`,
-      },);
-    /**
-     * Readonly and capability honesty classification.
-     */
-    const classification = classifyReadonlyType({
-      checker: project.checker,
-      project,
-      type: parameterType,
-    },);
+      parameterName,
+      inputSubject,
+      affectedNames,
+      parameterType,
+      classification,
+      parameterBlocks,
+      opaque,
+      acceptedHostOpacity,
+      affected,
+      mutated,
+      uncertainty,
+      foreignHostCapability,
+      redundantMarkerPossible,
+    } = facts;
     /**
      * Whether exact ownership marker provenance reaches current parameter from
      * boundary, property, element, destructuring, callback, or owned call.
      */
-    const foreignBorrowed = effectSummary.foreignBorrowedParameterIndexes
-      .has(parameterIndex,);
-    /**
-     * Whether exact marker explicitly authorizes opaque host capability use.
-     */
-    const foreignHostCapability = bindingContainsForeignHostCapability({
-      project,
-      name: parameter.name,
-    },);
+    const foreignBorrowed = foreignBorrowedParameters.has(parameterIndex,);
     /**
      * Report location spanning parameter binding.
      */
@@ -256,40 +249,6 @@ export function verifyReadonlyCallable({
         .getStart(sourceFile,),
       end: parameter.name
         .end,
-    },);
-    /**
-     * Mutation contracts targeting current parameter.
-     */
-    const parameterBlocks = blocksByParameter.get(parameterIndex,) ?? [];
-    /**
-     * Whether analyzer found unresolved external effect.
-     */
-    const opaque = effectSummary.opaqueParameterIndexes
-      .has(parameterIndex,);
-    /**
-     * Whether explicit host marker and contract bound unresolved behavior.
-     */
-    const acceptedHostOpacity = opaque
-      && foreignHostCapability
-      && (parameterBlocks.length > 0);
-    /**
-     * Whether analyzer found caller-observable or explicitly bounded host effects.
-     */
-    const affected = effectSummary.mutatedParameterIndexes
-      .has(parameterIndex,)
-      || acceptedHostOpacity;
-    /**
-     * Whether analyzer proved or explicit host authority admits referent mutation.
-     */
-    const mutated = effectSummary.referentMutatedParameterIndexes
-      .has(parameterIndex,)
-      || acceptedHostOpacity;
-    /**
-     * Human-readable provenance for unresolved uncertainty.
-     */
-    const uncertainty = uncertaintyBoundaries({
-      effectSummary,
-      parameterIndex,
     },);
 
     if (opaque
@@ -373,8 +332,11 @@ export function verifyReadonlyCallable({
         },);
       },);
     }
-    if (foreignBorrowed
-      && (!affected)) {
+    /* `redundantMarkerPossible` already carries `!affected` together with everything the report
+     * decides from the declared type, which is what let the proof above be declined for a
+     * parameter this report could not have named. The report applies the same tests again on its
+     * own behalf. */
+    if (redundantMarkerPossible && foreignBorrowed) {
       reportRedundantForeignBorrowed({
         context,
         project,

@@ -1289,7 +1289,7 @@ await describe({
         const foreignSummary = index.get(foreignDeclaration,);
         if (foreignSummary === NO_EFFECT_SUMMARY)
           throw new Error('Expected active foreign boundary summary.',);
-        expect([...foreignSummary.foreignBorrowedParameterIndexes,],).toEqual([0,],);
+        expect([...index.proveForeignBorrowed(foreignDeclaration,),],).toEqual([0,],);
         /** Shared helper source decoded by active semantic project. */
         const helperSource = session.project.program.getSourceFile(helperPath,);
         if (helperSource === undefined)
@@ -1303,7 +1303,7 @@ await describe({
         const helperSummary = index.get(helperDeclaration,);
         if (helperSummary === NO_EFFECT_SUMMARY)
           throw new Error('Expected shared helper summary.',);
-        expect([...helperSummary.foreignBorrowedParameterIndexes,],).toEqual([],);
+        expect([...index.proveForeignBorrowed(helperDeclaration,),],).toEqual([],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
@@ -1375,7 +1375,7 @@ await describe({
         const helperSummary = index.get(helperImplementation,);
         if (helperSummary === NO_EFFECT_SUMMARY)
           throw new Error('Expected overloaded helper summary.',);
-        expect([...helperSummary.foreignBorrowedParameterIndexes,],).toEqual([],);
+        expect([...index.proveForeignBorrowed(helperImplementation,),],).toEqual([],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
@@ -1814,7 +1814,7 @@ await describe({
         const foreignSummary = index.get(foreignDeclaration,);
         if (foreignSummary === NO_EFFECT_SUMMARY)
           throw new Error('Expected active foreign boundary summary.',);
-        expect([...foreignSummary.foreignBorrowedParameterIndexes,],).toEqual([0,],);
+        expect([...index.proveForeignBorrowed(foreignDeclaration,),],).toEqual([0,],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();

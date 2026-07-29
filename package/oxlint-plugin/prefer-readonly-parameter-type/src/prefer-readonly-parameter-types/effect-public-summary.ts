@@ -4,8 +4,10 @@
  * Every set crossing this boundary is projected from slots to the parameters that own them.
  * Projection loses precision and never soundness: a parameter answers for every slot beneath
  * it, so a write recorded against one property still marks the parameter affected. The rule's
- * report, foreign ownership, overload agreement and external-package effects all speak in
- * parameters, and this is the single place the two vocabularies meet.
+ * report, overload agreement and external-package effects all speak in parameters, and this is
+ * the single place the two vocabularies meet. Foreign ownership speaks in parameters too but
+ * never enters here: it is proven per callable on demand through `EffectSummaryIndex`, because
+ * it is the one fact whose cost a consumer should be able to decline.
  *
  * @module
  */
@@ -33,24 +35,20 @@ import type {
  *
  * @param summary - Completed fixed-point summary.
  *
- * @param foreignParameterIndexes - Guaranteed foreign-owned parameter indexes.
- *
  * @param declaration - Callable the summary describes, resolving binding names.
  *
  * @returns copied public effect summary.
  *
  * @example
  * ```ts
- * effectPublicSummary({ summary, foreignParameterIndexes, declaration });
+ * effectPublicSummary({ summary, declaration });
  * ```
  */
 export function effectPublicSummary({
   summary,
-  foreignParameterIndexes,
   declaration,
 }: {
   readonly summary: MutableEffectSummary;
-  readonly foreignParameterIndexes: ReadonlySet<ParameterIndex>;
   readonly declaration: EffectCallableDeclaration;
 }): CallableEffectSummary {
   /**
@@ -90,7 +88,6 @@ export function effectPublicSummary({
     },),
     invokedParameterIndexes: invoked,
     opaqueParameterIndexes: opaque,
-    foreignBorrowedParameterIndexes: foreignParameterIndexes,
     opaqueProvenanceByParameter: new Map([...opaque,].map(
       function provenanceFor(parameterIndex,): readonly [
         ParameterIndex,

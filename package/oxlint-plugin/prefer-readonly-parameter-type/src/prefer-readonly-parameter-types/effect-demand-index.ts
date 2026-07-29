@@ -18,6 +18,7 @@ import { propagateEffects, } from './effect-fixed-point-propagation.ts';
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import { effectPublicSummary, } from './effect-public-summary.ts';
 import type { ParameterIndex, } from './effect-slot-identity.ts';
+import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 import {
   assertReachedCallSummaries,
   reachedSourceFileNames,
@@ -82,9 +83,10 @@ type DemandDrivenEffectIndexOptions = {
 /**
  * Creates mutable index that expands only from requested callable sources.
  *
- * Foreign ownership is declaration-global rather than path-local.
- * Encountering one explicit foreign marker therefore expands the complete
- * owned source graph before proving propagated foreign provenance.
+ * Foreign ownership is declaration-global rather than path-local,
+ * so proving it walks the complete owned source graph rather than the reached part of it.
+ * `proveForeignBorrowed` therefore stays a separate demand:
+ * every other fact `get` answers is already paid for by the expansion that reached the callable.
  *
  * @param options - Exact project,
  * cache,
@@ -159,9 +161,15 @@ export function createDemandDrivenEffectIndex(
    * The complete backwards closure walks exactly these sources, so a scope naming no marker can
    * yield no foreign parameter for any callable and the closure would return nothing every time.
    * Skipping it there is an equivalence rather than a trade, and it matters because the closure
-   * otherwise runs once per callable the rule asks about. Measured on this workspace: running it
-   * unconditionally cost about a third of the sweep's wall time, and most packages name no
-   * marker.
+   * otherwise runs once per callable whose verdict demands it. Measured on this workspace:
+   * running it unconditionally cost about a third of the sweep's wall time, and most packages
+   * name no marker.
+   *
+   * `doc/planning/prefer-readonly-foreign-proof-cost.md` records one way this is not the pure
+   * equivalence it claims: a markerless recursive component can produce a candidate, so a scope
+   * that names a marker somewhere can withhold an offer this skip emits. The skip is the more
+   * correct of the two, since nothing is marked in either case, and the grounding pass in
+   * `foreign-borrowed-grounding.ts` closes the gap from the other side.
    */
   const scopeNamesOwnershipMarker = [...indexedSourceFiles.values(),]
     .some(function namesMarker(sourceFile,): boolean {
@@ -172,13 +180,17 @@ export function createDemandDrivenEffectIndex(
         },);
     },);
   /**
-   * Callable candidates whose exact signature inbounds were verified.
+   * Proven foreign parameters by the callable each closure was rooted at.
+   *
+   * Only the root's own entry is kept. A closure carries summaries for callers it reached, but
+   * those hold ownership seeds plus whichever outbound edges this root's walk discovered, not
+   * the summaries a closure rooted at the caller would have built: `getSignatureUsage`
+   * enumerates references rather than call edges, and a caller whose edge fails validation stays
+   * in the map with a synthetic unknown inbound in its place. Reusing those entries is what
+   * attempt two in `doc/planning/prefer-readonly-foreign-proof-cost.md` did, and it produced an
+   * offer for a parameter a write reaches. Membership doubles as the memo.
    */
-  const verifiedForeignKeys = new Set<string>();
-  /**
-   * Complete foreign results accumulated from demanded backwards closures.
-   */
-  const completeForeignByCallable = new Map<string, ReadonlySet<ParameterIndex>>();
+  const foreignByProvenRoot = new Map<string, ReadonlySet<ParameterIndex>>();
 
   /**
    * Loads one reached source from cache or exact semantic scan.
@@ -418,56 +430,79 @@ export function createDemandDrivenEffectIndex(
       const summary = summaries.get(key,);
       if (summary === undefined)
         return NO_EFFECT_SUMMARY;
-      /* The complete proof runs for every callable asked about, not only for one the reached
-       * graph already hints at. The hint is `foreignByCallable.current`, recomputed after each
-       * expansion over whatever has been reached, so gating on it made the answer a fact about
-       * which files the lint run happened to visit first. Measured in one process with no
-       * threads: `stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts`
-       * read `foreign=[]` before its siblings were expanded and `foreign=[0]` after, because
-       * `wayland-test.ts` declares the marker and reaches it. Skipping is not the safe
-       * direction either, since foreign ownership suppresses the readonly offer, so the
-       * unproven answer emits an offer the proven one withholds.
+      return effectPublicSummary({
+        summary,
+        declaration,
+      },);
+    },
+    proveForeignBorrowed(declaration,): ReadonlySet<ParameterIndex> {
+      /**
+       * Source from exact analyzer snapshot rather than foreign wrapper.
+       */
+      const sourceFile = indexedSourceFiles.get(declaration.getSourceFile()
+        .fileName,);
+      if (sourceFile === undefined) {
+        /* An empty set here would read as "proven to own nothing foreign", which is the answer
+         * that emits an offer, for a declaration this index never analyzed. `get` already
+         * answers `NO_EFFECT_SUMMARY` for the same input, so a caller reaching this point asked
+         * about a callable it had no summary for. */
+        throw new SemanticBridgeError({
+          reason: 'node-not-found',
+          message: `Foreign ownership was demanded for ${callableKey(declaration,)}, which is outside indexed owned source.`,
+        },);
+      }
+      ensureSource(sourceFile,);
+      /**
+       * Stable declaration identity shared across source wrappers.
+       */
+      const key = callableKey(declaration,);
+      /**
+       * Answer from an earlier demand for this same callable.
+       */
+      const proven = foreignByProvenRoot.get(key,);
+      if (proven !== undefined)
+        return proven;
+      /* The proof is complete or absent, never partial. The reached graph cannot narrow it: the
+       * hint that used to gate it was recomputed after each expansion over whatever had been
+       * reached, which made the answer a fact about which files the lint run happened to visit
+       * first. Measured in one process with no threads: `stateMatches` in
+       * `package/desktop-app/electron-infra/src/wayland-state.ts` read `foreign=[]` before its
+       * siblings were expanded and `foreign=[0]` after, because `wayland-test.ts` declares the
+       * marker and reaches it. Skipping is not the safe direction either, since foreign
+       * ownership suppresses the readonly offer, so the unproven answer emits an offer the
+       * proven one withholds.
        *
-       * `completeForeignBorrowedGraph` was already order-independent: it walks
-       * `indexedSourceFiles`, the whole configured scope, however little has been reached. Only
-       * its trigger had to move.
+       * `completeForeignBorrowedGraph` is order-independent: it walks `indexedSourceFiles`, the
+       * whole configured scope, however little has been reached.
        * `doc/troubleshooting/prefer-readonly-parameter-type-thread-nondeterminism.md` records
-       * the measurement. */
-      if (scopeNamesOwnershipMarker && (!verifiedForeignKeys.has(key,))) {
-        /**
-         * Exact backwards caller closure for current reached candidate.
-         */
-        const completeForeign = completeForeignBorrowedGraph({
+       * the measurement. Deferring which callables are asked about therefore cannot move an
+       * answer, only how many are computed. */
+      /**
+       * Foreign parameters proven for this root, empty when no marker exists to prove from.
+       *
+       * A scope whose sources name no marker anywhere can yield no foreign parameter for any
+       * callable, since the closure walks exactly those sources, so the walk would return
+       * nothing every time.
+       */
+      const rootForeign = scopeNamesOwnershipMarker
+        ? completeForeignBorrowedGraph({
           project,
           indexedSourceFiles,
           rootDeclaration: declaration,
           analysisBudget,
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-        },);
-        completeForeign.forEach(function retainCompleteForeign(
-          indexes,
-          callableKeyValue,
-        ): void {
-          completeForeignByCallable.set(
-            callableKeyValue,
-            indexes,
-          );
-        },);
-        verifiedForeignKeys.add(key,);
-      }
-      /* Every key reaching here has been verified, since the proof above runs for any key that
-       * has not. The lookup still defaults, because a callable the closure finds no inbound for
-       * is absent from the result rather than present and empty. */
-      /**
-       * Guaranteed foreign indexes after the complete-inbound proof.
-       */
-      const foreignParameterIndexes = completeForeignByCallable.get(key,)
-        ?? new Set<ParameterIndex>();
-      return effectPublicSummary({
-        summary,
-        foreignParameterIndexes,
-        declaration,
-      },);
+        },)
+          .get(key,)
+          /* Present for every key the closure holds a summary for, and the root is seeded into
+           * `summaries` before anything is enumerated, so this default stands for a root the
+           * walk failed to seed rather than for one it found no inbound for. */
+          ?? new Set<ParameterIndex>()
+        : new Set<ParameterIndex>();
+      foreignByProvenRoot.set(
+        key,
+        rootForeign,
+      );
+      return rootForeign;
     },
   };
 }

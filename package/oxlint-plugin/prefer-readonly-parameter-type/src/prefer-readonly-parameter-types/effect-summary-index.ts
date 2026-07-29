@@ -46,7 +46,6 @@ export type CallableEffectSummary = {
   readonly invokedParameterIndexes: ReadonlySet<ParameterIndex>;
   readonly opaqueParameterIndexes: ReadonlySet<ParameterIndex>;
   readonly opaqueProvenanceByParameter: ReadonlyMap<ParameterIndex, ReadonlySet<string>>;
-  readonly foreignBorrowedParameterIndexes: ReadonlySet<ParameterIndex>;
   readonly callbackRelations: readonly PublicCallbackRelation[];
   /**
    * Authored binding names whose own slot carries the opacity, per parameter.
@@ -69,6 +68,18 @@ export type EffectSummaryIndex = {
   readonly get: (
     declaration: EffectCallableDeclaration,
   ) => CallableEffectSummary | typeof NO_EFFECT_SUMMARY;
+  /**
+   * Proves which parameters a marker holds under foreign ownership.
+   *
+   * Separate from the summary because it is priced differently. Every other fact above is read
+   * off the callable's own fixed point, while this one walks the complete backwards caller
+   * closure of the whole configured scope, once per callable asked about, and that walk is the
+   * single largest cost the rule carries. A consumer that cannot act on the answer should not
+   * pay for it, and the only way to express that is to make asking a separate act.
+   */
+  readonly proveForeignBorrowed: (
+    declaration: EffectCallableDeclaration,
+  ) => ReadonlySet<ParameterIndex>;
 };
 
 /**

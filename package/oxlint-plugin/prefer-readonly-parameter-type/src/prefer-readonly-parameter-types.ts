@@ -180,6 +180,14 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
               declaration: semanticNode,
               effectSummary,
               project: session.project,
+              /**
+               * Demands the complete foreign-ownership proof for this callable.
+               *
+               * @returns parameters a marker holds under foreign ownership.
+               */
+              proveForeignBorrowed(): ReturnType<typeof effectIndex.proveForeignBorrowed> {
+                return effectIndex.proveForeignBorrowed(semanticNode,);
+              },
             },);
           },);
           verifyOverloadConsistency({

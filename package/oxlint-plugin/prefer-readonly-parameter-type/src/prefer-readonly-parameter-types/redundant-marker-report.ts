@@ -16,6 +16,56 @@ import { isForeignBorrowedType, } from './foreign-borrowed-identity.ts';
 import type { SemanticReportLocation, } from './semantic-location.ts';
 
 /**
+ * Tests whether a parameter type is the shape this report is ever about.
+ *
+ * Every test here is a fact about the declared type alone, so it can be asked before foreign
+ * ownership is known. That ordering is what lets the verifier decline the proof for a parameter
+ * this report could not name whatever the proof said, and it stays an equivalence because
+ * `reportRedundantForeignBorrowed` applies the same tests before emitting anything.
+ *
+ * @param project - TypeScript project resolving marker identity.
+ *
+ * @param parameterType - Semantic parameter type possibly carrying marker.
+ *
+ * @returns whether a marker is present and its underlying type is already deeply readonly.
+ *
+ * @example
+ * ```ts
+ * redundantMarkerApplies({ project, parameterType });
+ * ```
+ */
+export function redundantMarkerApplies({
+  project,
+  parameterType,
+}: {
+  readonly project: Project;
+  readonly parameterType: Type;
+},): boolean {
+  if (!isForeignBorrowedType({
+    project,
+    type: parameterType,
+  },))
+    return false;
+  /**
+   * Marked underlying type supplied as marker type argument.
+   */
+  const underlying = parameterType
+    .getAliasTypeArguments()
+    .at(0,);
+  if (underlying === undefined)
+    return false;
+  /**
+   * Classification of underlying type without marker exemption.
+   */
+  const underlyingClassification = classifyReadonlyType({
+    checker: project.checker,
+    project,
+    type: underlying,
+  },);
+  return underlyingClassification.kind === 'honest-readonly';
+}
+
+/**
  * Reports a ForeignBorrowed marker that no longer affects classification.
  *
  * A marker whose underlying type is already deeply readonly confers no
@@ -53,28 +103,13 @@ export function reportRedundantForeignBorrowed({
   readonly parameterName: string;
   readonly loc: SemanticReportLocation;
 },): void {
-  if (!isForeignBorrowedType({
+  /* Repeated rather than assumed from the caller. The predicate is the guard this report has
+   * always carried, and a caller that hoisted it for its own scheduling has not taken
+   * responsibility for it. */
+  if (!redundantMarkerApplies({
     project,
-    type: parameterType,
+    parameterType,
   },))
-    return;
-  /**
-   * Marked underlying type supplied as marker type argument.
-   */
-  const underlying = parameterType
-    .getAliasTypeArguments()
-    .at(0,);
-  if (underlying === undefined)
-    return;
-  /**
-   * Classification of underlying type without marker exemption.
-   */
-  const underlyingClassification = classifyReadonlyType({
-    checker: project.checker,
-    project,
-    type: underlying,
-  },);
-  if (underlyingClassification.kind !== 'honest-readonly')
     return;
   context.report({
     loc,
