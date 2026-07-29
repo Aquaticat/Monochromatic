@@ -28,6 +28,7 @@ import {
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import { recordResultRetention, } from './effect-result-substitution.ts';
 import { retentionProvenance, } from './effect-retention-provenance.ts';
 import type {
   MutableEffectSummary,
@@ -121,6 +122,13 @@ export function recordAssignmentStore({
    * Where the store sits, so the report can point at it.
    */
   const location = effectOriginLocation({ node, },);
+  /**
+   * Retention provenance naming where the stored value went.
+   */
+  const provenance = retentionProvenance({
+    target: targetText,
+    location,
+  },);
   parameterIndexes({
     project,
     bindingOriginBySymbolId,
@@ -130,12 +138,21 @@ export function recordAssignmentStore({
       addOpaqueEffect({
         summary,
         affectedSlot,
-        provenance: retentionProvenance({
-          target: targetText,
-          location,
-        },),
+        provenance,
       },);
     },);
+  /* `parameterIndexes` stops at a call exactly as the write-side walk did, so
+   * `held = firstRow(config,)` recorded nothing while `held = config.row` recorded
+   * opacity for the same retention. Falsified rather than inferred: the rule offered
+   * `ReadonlyDeep` to both `firstRow` and the storing callable, applying both
+   * type-checked, and a later write through the stored value changed the caller's row.
+   * Recorded in `doc/planning/prefer-readonly-return-substitution.md`, section "Stage
+   * two, a store the analysis could not see". */
+  recordResultRetention({
+    summary,
+    node: node.right,
+    provenance,
+  },);
 }
 
 /**
@@ -212,6 +229,13 @@ export function recordIterationStore({
    * Where the iteration sits, so the report can point at it.
    */
   const location = effectOriginLocation({ node, },);
+  /**
+   * Retention provenance naming where each element went.
+   */
+  const provenance = retentionProvenance({
+    target: targetText,
+    location,
+  },);
   parameterIndexes({
     project,
     bindingOriginBySymbolId,
@@ -221,10 +245,15 @@ export function recordIterationStore({
       addOpaqueEffect({
         summary,
         affectedSlot,
-        provenance: retentionProvenance({
-          target: targetText,
-          location,
-        },),
+        provenance,
       },);
     },);
+  /* `for (held of rowsOf(config,))` retains through a call the origin walk cannot see,
+   * for the same reason the assignment form could not. The iterable is the expression
+   * whose result is consumed here, so that is what the retention defers against. */
+  recordResultRetention({
+    summary,
+    node: node.expression,
+    provenance,
+  },);
 }

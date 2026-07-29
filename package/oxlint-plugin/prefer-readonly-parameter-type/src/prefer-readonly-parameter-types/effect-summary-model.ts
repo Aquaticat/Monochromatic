@@ -139,7 +139,17 @@ export type ElementApplication = {
  */
 export type ResultApplication = {
   readonly callSiteKey: string;
-  readonly kind: 'mutated' | 'returned';
+  /**
+   * What the caller did with the result.
+   *
+   * `retained` carries provenance because the retention channel is the one that names
+   * where a value went, and the diagnostic reads that text to decide whether a boundary
+   * is a store or a call. A retained application with nothing to say would arrive as an
+   * unexplained opaque slot and be reported as an unresolved effect, which is the exact
+   * confusion `effect-retention-provenance.ts` exists to prevent.
+   */
+  readonly kind: 'mutated' | 'returned' | 'retained';
+  readonly provenance?: string;
 };
 
 /**

@@ -613,11 +613,20 @@ await describe({
          * the shape above would be satisfied by a scan that never asked whether the nested
          * callable runs. */
         expect(storedFromInert,).toEqual([],);
-        /* The one store no assignment-site test can reach on its own, kept beside the
-         * others because it flips for a different reason. A callee's summary does not
-         * exist while its callers are scanned, so the right side of this store has no
-         * origins at all and the deferred result relation has to supply them. */
-        expect(storedThroughCall,).toEqual([],);
+        /* The one store no assignment-site test can reach on its own, and the deferred
+         * result relation is what supplies its origins: a callee's summary does not exist
+         * while its callers are scanned, so the right side has none of its own.
+         *
+         * This line read `[]` while the boundary stood, and the comment beside it said a
+         * fix would have to flip it. It flipped. The offer it was withholding was false,
+         * measured end to end: `ReadonlyDeep` applied to this parameter and to
+         * `firstRow`'s type-checked together, and a write through the stored value then
+         * changed the caller's row. */
+        expect(storedThroughCall,).toEqual([0,],);
+        /* And the control that keeps it an attribution rather than a rule against storing
+         * any call result. `freshRow` returns nothing the caller owns, so its returned set
+         * is empty and substitution hands over nothing. */
+        expect(structuralOpaque('storeFreshThroughOwnedCall',),).toEqual([],);
         /* The controls, which must still read empty after that flip. */
         expect(intoParameter,).toEqual([],);
         expect(intoOwnLocal,).toEqual([],);

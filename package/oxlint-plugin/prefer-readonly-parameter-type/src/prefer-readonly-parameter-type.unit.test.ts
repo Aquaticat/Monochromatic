@@ -607,16 +607,21 @@ children: [
       expect(messages.filter(function namesStore(message,): boolean {
         return message.includes('stored into',);
       },).length,).toBe(0,);
-      /* Withheld, not merely silent. Thirteen offers, and every one belongs to a shape that
-       * stores nothing beyond the callable: the two nested-store controls, an assignment
-       * into a parameter and into an own local, a counter, three readers, a projection, a
-       * fresh aggregate, an iteration that retains only a primitive, an iteration that
-       * declares its own binding, and the one store whose right side has no origins yet
-       * because a callee's summary does not exist while its callers are scanned. Were
-       * retention to stop withholding, eight more would join them. */
+      /* Withheld, not merely silent. Fourteen offers, and every one belongs to a shape
+       * that stores nothing beyond the callable: the two nested-store controls, an
+       * assignment into a parameter and into an own local, a counter, three readers, a
+       * projection, a fresh aggregate, an iteration that retains only a primitive, an
+       * iteration that declares its own binding, a callable that allocates its own row,
+       * and the store of that allocated row through a call. Were retention to stop
+       * withholding, nine more would join them.
+       *
+       * Moved from thirteen by the deferred retention. One left, `storeThroughOwnedCall`,
+       * whose offer was false. Two arrived with the control it needed, `freshRow` and
+       * `storeFreshThroughOwnedCall`, and both belong here: neither keeps anything the
+       * caller owns. Measured rather than adjusted to fit. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(13,);
+      },).length,).toBe(14,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls

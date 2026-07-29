@@ -121,6 +121,121 @@ export function recordResultApplication({
 }
 
 /**
+ * Records that a caller hands one call's result to something outliving the call.
+ *
+ * Separate from `recordResultApplication` rather than a third argument to it, because the
+ * retention channel carries provenance and the other two kinds have nothing to say. A
+ * parameter that is meaningful for one of three kinds is a parameter callers have to be
+ * told to omit.
+ *
+ * @param summary - Caller summary receiving the deferred retention.
+ *
+ * @param node - Expression whose underlying call result is handed outward.
+ *
+ * @param provenance - Retention provenance naming where the value went.
+ *
+ * @mutates summary - Appends one deferred retention when a call underlies the node.
+ *
+ * @example
+ * ```ts
+ * recordResultRetention({ summary, node: assignment.right, provenance });
+ * ```
+ */
+export function recordResultRetention({
+  summary,
+  node,
+  provenance,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly node: Node;
+  readonly provenance: string;
+},): void {
+  /**
+   * Call whose result this retention consumes, when one underlies the expression.
+   */
+  const site = deferrableResultSite({ node, },);
+  if (site === NOT_A_DEFERRABLE_RESULT)
+    return;
+  summary.resultApplications
+    .push({
+    callSiteKey: site,
+    kind: 'retained',
+    provenance,
+  },);
+}
+
+/**
+ * Adds opacity and provenance for every caller origin a retained result carries.
+ *
+ * Writes `summary.opaque` rather than `summary.directOpaque`, which is the difference
+ * between this and `addOpaqueEffect`. The direct set is seeded into the propagated one
+ * once, at the end of the syntactic pass, and this runs afterwards: an addition to the
+ * direct set here would land in the provenance map and never reach the set the verifier
+ * reads.
+ *
+ * @param summary - Caller summary receiving opacity and provenance.
+ *
+ * @param edge - Owned call edge carrying formal-to-actual origins.
+ *
+ * @param calleeReturned - Callee slots its result can carry.
+ *
+ * @param provenance - Retention provenance naming where the value went.
+ *
+ * @mutates summary - Adds each retained origin as an opaque slot with its provenance.
+ *
+ * @returns whether the caller gained an opaque slot.
+ *
+ * @example
+ * ```ts
+ * substituteRetainedOrigins({ summary, edge, calleeReturned, provenance });
+ * ```
+ */
+function substituteRetainedOrigins({
+  summary,
+  edge,
+  calleeReturned,
+  provenance,
+}: {
+  readonly summary: MutableEffectSummary;
+  readonly edge: CallEdge;
+  readonly calleeReturned: ReadonlySet<EffectSlot>;
+  readonly provenance: string;
+},): boolean {
+  /**
+   * Whether retention added an origin the caller did not already carry.
+   */
+  const growth: { any: boolean; } = { any: false, };
+  for (const calleeSlot of calleeReturned) {
+    /**
+     * Caller origins the callee reaches through this slot.
+     */
+    const origins = edge.originsByCalleeSlot[calleeSlot];
+    if (origins === undefined)
+      continue;
+    for (const origin of origins) {
+      if (addEffectSlot({
+        target: summary.opaque,
+        value: origin,
+      },))
+        growth.any = true;
+      /**
+       * Provenance already recorded for this slot, or a new accumulator.
+       */
+      const facts = summary.opaqueProvenanceBySlot
+        .get(origin,)
+        ?? new Set<string>();
+      facts.add(provenance,);
+      summary.opaqueProvenanceBySlot
+        .set(
+          origin,
+          facts,
+        );
+    }
+  }
+  return growth.any;
+}
+
+/**
  * Adds every caller origin a callee's returned slots map to, through one edge.
  *
  * @param target - Caller effect set receiving substituted origins.
@@ -240,6 +355,25 @@ export function propagateResultApplications({
     const calleeSummary = summaries.get(edge.calleeKey,);
     if (calleeSummary === undefined)
       continue;
+    if (application.kind === 'retained') {
+      /* A retention with no provenance would arrive as an unexplained opaque slot, which
+       * the diagnostic reads as a genuine unknown and reports as an unresolved effect.
+       * The only way to hold one is a payload restored from a cache written by something
+       * other than this code, which `rejects corrupt nested persistent payloads` already
+       * establishes is a throwing condition rather than a silent one. */
+      if (application.provenance === undefined)
+        throw new Error(
+          `Retained result application for ${application.callSiteKey} carries no provenance.`,
+        );
+      if (substituteRetainedOrigins({
+        summary,
+        edge,
+        calleeReturned: calleeSummary.returned,
+        provenance: application.provenance,
+      },))
+        growth.any = true;
+      continue;
+    }
     if (substituteReturnedOrigins({
       target: application.kind === 'mutated' ? summary.mutated : summary.returned,
       edge,

@@ -382,13 +382,47 @@ export function firstRow(config: Config,): Row {
 }
 
 /**
+ * Builds a fresh row, sharing no identity with its argument.
+ *
+ * Written in the local-and-conditional shape rather than as an object literal reading a
+ * parameter property. A fresh literal whose only property is a copied primitive is still
+ * recorded as returning parameter state, so a control written that way carries an origin
+ * and discriminates nothing. Measured, not assumed.
+ *
+ * @param config - Configuration read to decide the fresh label.
+ *
+ * @returns newly allocated row.
+ *
+ * @example
+ * ```ts
+ * freshRow({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function freshRow(config: Config,): Row {
+  /**
+   * Row this callable allocates and owns.
+   */
+  const fresh: Row = { label: 'fresh', };
+  if (config.row
+    .label
+    .length
+    === 0)
+    fresh.label = 'empty';
+  return fresh;
+}
+
+/**
  * Stores a structural parameter's row laundered through an owned call.
  *
  * The one store here that no assignment-site classification can catch on its own.
  * `expressionOrigins` of the right side cannot substitute another owned callable's
  * returned slots, because a callee's summary does not exist while its callers are
- * scanned, so the store sees a call result with no origins and records nothing.
- * Closing it needs the deferred result relation rather than a wider assignment test.
+ * scanned, so the store saw a call result with no origins and recorded nothing.
+ *
+ * That was a false offer, not a precision gap, and it was falsified rather than argued.
+ * The rule offered `ReadonlyDeep` to this parameter and to `firstRow`'s, applying both
+ * type-checked under TypeScript 7.0.2, and a later write through the stored value changed
+ * the caller's row.
  *
  * @param config - Configuration whose row escapes through the callee.
  *
@@ -399,6 +433,25 @@ export function firstRow(config: Config,): Row {
  */
 export function storeThroughOwnedCall(config: Config,): void {
   held = firstRow(config,);
+}
+
+/**
+ * Stores a freshly allocated row laundered through an owned call.
+ *
+ * The control for the shape above, and the reason the deferred retention is an
+ * attribution rather than a blanket withholding of every store whose right side is a
+ * call. `freshRow` returns nothing the caller owns, so its returned set is empty and
+ * substitution has nothing to hand over.
+ *
+ * @param config - Configuration read to seed a fresh row.
+ *
+ * @example
+ * ```ts
+ * storeFreshThroughOwnedCall({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshThroughOwnedCall(config: Config,): void {
+  held = freshRow(config,);
 }
 
 /**
