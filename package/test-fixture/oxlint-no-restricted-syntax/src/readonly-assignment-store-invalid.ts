@@ -346,3 +346,163 @@ export function storeRestOverUnconstrainedState<T,>(items: T[], seed: T,): numbe
 export function genericHeldSize(): number {
   return Object.keys(genericHeld ?? {},).length;
 }
+
+/**
+ * Element shape whose index signature is the only thing carrying a reference.
+ */
+type Indexed = {
+  [key: string]: Row | string;
+  label: string;
+  note: string;
+};
+
+/**
+ * Seed standing in for an absent indexed element, owned by this module.
+ */
+const INDEXED_SEED: Indexed = {
+  label: '',
+  note: '',
+};
+
+/**
+ * Stores an object rest whose named members are primitive and whose index values are not.
+ *
+ * The only case reaching the index branch of `membersCanCarryMutableState`, and the only
+ * branch of that predicate answering yes from positive evidence rather than from failing
+ * to enumerate. `note` stays in the rest, so the shape enumerates and the property walk
+ * alone would discharge it. Only the index values, which include `Row`, keep it reported.
+ * Without a member surviving the destructuring the rest would enumerate nothing and
+ * report for the fail-closed reason instead, proving nothing about the index branch.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverIndexedState([],);
+ * ```
+ */
+export function storeRestOverIndexedState(items: Indexed[],): number {
+  const { label, ...remainder } = items.at(0,) ?? INDEXED_SEED;
+  genericHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Stores an object rest whose type is a union of a carrying and a primitive shape.
+ *
+ * Reaches the union branch, which has to answer for the whole union from any constituent
+ * that carries. Discharging because one arm holds only primitives would be a claim about
+ * the arm the value did not take.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @param seed - Element standing in for an absent first element.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverUnionState([], { label: '', count: 0, },);
+ * ```
+ */
+export function storeRestOverUnionState(items: (Wide | Nested)[], seed: Wide | Nested,): number {
+  const { label, ...remainder } = items.at(0,) ?? seed;
+  genericHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Stores an object rest that leaves nothing behind at all.
+ *
+ * `Row` has one member and the destructuring takes it, so the rest is `{}`. That
+ * enumerates to nothing, which is indistinguishable from a shape nothing could enumerate,
+ * and the predicate fails closed on both. So this reports despite genuinely holding
+ * nothing, which costs an offer and is the affordable direction.
+ *
+ * @param rows - Rows whose first element is destructured.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverEmptyState([],);
+ * ```
+ */
+export function storeRestOverEmptyState(rows: Row[],): number {
+  const { label, ...remainder } = rows.at(0,) ?? { label: '', };
+  genericHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Element shape whose index signature carries nothing.
+ */
+type IndexedPrimitive = {
+  [key: string]: string;
+  label: string;
+  note: string;
+};
+
+/**
+ * Seed standing in for an absent primitive-indexed element, owned by this module.
+ */
+const INDEXED_PRIMITIVE_SEED: IndexedPrimitive = {
+  label: '',
+  note: '',
+};
+
+/**
+ * Stores an object rest whose index values are primitive.
+ *
+ * The control deciding that `storeRestOverIndexedState` reports because of its index
+ * values rather than because nothing about it enumerated. Same shape, same rest, and the
+ * only difference is what the index yields.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverPrimitiveIndex([],);
+ * ```
+ */
+export function storeRestOverPrimitiveIndex(items: IndexedPrimitive[],): number {
+  const { label, ...remainder } = items.at(0,) ?? INDEXED_PRIMITIVE_SEED;
+  genericHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Shape carrying a second primitive member, so a union of rests has two arms to walk.
+ */
+type Tall = {
+  label: string;
+  height: number;
+};
+
+/**
+ * Stores an object rest whose type is a union of two primitive-only shapes.
+ *
+ * The control for `storeRestOverUnionState`. Both arms enumerate and hold only
+ * primitives, so the union branch has to discharge or it is not answering per constituent
+ * at all.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @param seed - Element standing in for an absent first element.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverPrimitiveUnion([], { label: '', count: 0, },);
+ * ```
+ */
+export function storeRestOverPrimitiveUnion(items: (Wide | Tall)[], seed: Wide | Tall,): number {
+  const { label, ...remainder } = items.at(0,) ?? seed;
+  genericHeld = remainder;
+  return label.length;
+}

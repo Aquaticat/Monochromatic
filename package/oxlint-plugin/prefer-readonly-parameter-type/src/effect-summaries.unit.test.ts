@@ -401,6 +401,16 @@ await describe({
         const constrainedRest = opaqueIndexes('storeRestOverGenericState',);
         /** Store of an object rest over an unconstrained type parameter. */
         const unconstrainedRest = opaqueIndexes('storeRestOverUnconstrainedState',);
+        /** Store of an object rest whose index values carry a reference. */
+        const indexedRest = opaqueIndexes('storeRestOverIndexedState',);
+        /** Store of an object rest whose index values are primitive. */
+        const primitiveIndexRest = opaqueIndexes('storeRestOverPrimitiveIndex',);
+        /** Store of an object rest whose type unions a carrying and a primitive shape. */
+        const unionRest = opaqueIndexes('storeRestOverUnionState',);
+        /** Store of an object rest whose type unions two primitive shapes. */
+        const primitiveUnionRest = opaqueIndexes('storeRestOverPrimitiveUnion',);
+        /** Store of an object rest that enumerates no member at all. */
+        const emptyRest = opaqueIndexes('storeRestOverEmptyState',);
         closeSemanticBridge();
         /* The receiver keeps its opacity, because nothing follows the stored element. */
         expect(property,).toEqual([0,],);
@@ -439,6 +449,24 @@ await describe({
         expect(carriedRest,).toEqual([0,],);
         expect(constrainedRest,).toEqual([0,],);
         expect(unconstrainedRest,).toEqual([0,],);
+        /* One case per remaining branch of `membersCanCarryMutableState`, each beside the
+         * control that decides the branch answered rather than merely failed to look.
+         *
+         * The index pair is the one that matters. That branch is the only one answering
+         * yes from positive evidence, so nothing else catches it if it stops firing. Both
+         * shapes keep a primitive member through the destructuring, so both enumerate and
+         * the property walk alone would discharge either, and the only difference is
+         * whether the index values include a reference. An earlier version of this pair
+         * left no member in the rest, so both sides reported for the fail-closed reason
+         * and the pair proved nothing. */
+        expect(indexedRest,).toEqual([0,],);
+        expect(primitiveIndexRest,).toEqual([],);
+        expect(unionRest,).toEqual([0,],);
+        expect(primitiveUnionRest,).toEqual([],);
+        /* And the shape that enumerates nothing while genuinely holding nothing, which
+         * this reports because it cannot tell that apart from a shape nothing could
+         * enumerate. An offer lost, which is the affordable direction. */
+        expect(emptyRest,).toEqual([0,],);
       },
     },),
     it({
