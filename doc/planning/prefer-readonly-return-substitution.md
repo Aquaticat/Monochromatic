@@ -1985,3 +1985,36 @@ The stop signal:
  or into a binding holding only primitives.
 Both are controls in the fixture,
  and either appearing here would mean the fixture passes for a reason the sweep refutes.
+
+## Sweep result for the iteration store
+
+```text
+before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+added   0
+removed 0
+```
+
+Offers unchanged,
+ which the pre-registration named as the uninformative outcome rather than a failure,
+ and which needs corroborating instead of assuming.
+
+Searching the workspace for a `for...of` head whose target is not a declaration returns two
+ matches,
+ and both are comments in this package describing the shape.
+No repository callable iterates into a binding it does not declare,
+ so there was no offer here for this to take.
+
+`dishonest` and `stale-mutates` held,
+ which is the check that the classification stayed inside the verdict it is about.
+Wall clock 8m33s against 8m31s for the previous capture.
+
+The shape is reached only by `storeIterationTarget`,
+ and its two controls are reached only by
+ `storeIterationPrimitiveTarget` and `declareIterationBinding`.
+That is the second time in this sequence that a fixture is the only instrument for a
+ change,
+ and it is worth naming as a pattern rather than a coincidence:
+ a monorepo written to pass this rule stops containing the shapes the rule newly catches,
+ so the sweep increasingly measures the absence of regressions rather than the presence of
+ the fix.
