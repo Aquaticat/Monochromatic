@@ -11,6 +11,7 @@ Issues related to TypeScript configuration,
  and other development tools:
 
 - TypeScript path warnings with dprint
+- [Learning Rust canonical HTML conflicts with dprint and Stylelint](dprint.md#bug-4-learning-rusts-canonical-compact-html-conflicts-with-repository-formatting-policy)
 - Stylelint and postcss-html resolution
 - Type predicate assignment errors with complex conditional types
 
@@ -184,6 +185,8 @@ For common issues:
   ** → [Duplicate describe blocks](testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
 - **TypeScript path warnings?
   ** → [dprint configuration](typescript.md#typescript-path-warnings-with-dprint)
+- **Learning Rust HTML fails dprint and Stylelint?
+  ** → [Canonical HTML source-policy conflict](dprint.md#bug-4-learning-rusts-canonical-compact-html-conflicts-with-repository-formatting-policy)
 - **`Cannot find name` for DOM types in a non-browser package?
   ** → [All packages must extend config-typescript/dom](typescript.md#all-packages-must-extend-config-typescriptdom)
 - **Type errors from `node_modules` JSR packages?

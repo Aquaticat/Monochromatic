@@ -1,6 +1,6 @@
-# dprint as a workspace dev dependency: slow npm-install startup, WSL PATH gap, TS path warnings
+# dprint workspace integration and formatting conflicts
 
-This file documents three independent dprint operational issues that
+This file documents four independent dprint operational issues that
 share the same package surface.
  Each is treated as its own bug section
 with symptom,
@@ -355,3 +355,176 @@ Decision:
  no upstream report.
  Fix is on our side via the tsconfig
 `baseUrl` setting.
+
+---
+
+## Bug 4: Learning Rust's canonical compact HTML conflicts with repository formatting policy
+
+### Symptom
+
+The learning Rust package requires every standalone HTML page to repeat exact compact CSS recorded in
+`package/learning/rust/NOTES.md`.
+The source uses decimal `oklch()` lightness,
+unitless zero hue,
+nested one-line media rules,
+and one-line declaration blocks.
+
+The repository's dprint and Stylelint checks reject all five current pages:
+
+```text
+package/learning/rust/lessons/index.html
+package/learning/rust/lessons/0001-whats-different-about-this-book.html
+package/learning/rust/reference/index.html
+package/learning/rust/reference/reading-loop.html
+package/learning/rust/reference/aquascope-decoder.html
+```
+
+Run the checks from repository root:
+
+```bash
+mise run //:lint:dprint -- \
+  package/learning/rust/lessons/index.html \
+  package/learning/rust/lessons/0001-whats-different-about-this-book.html \
+  package/learning/rust/reference/index.html \
+  package/learning/rust/reference/reading-loop.html \
+  package/learning/rust/reference/aquascope-decoder.html
+
+mise run //:lint:stylelint -- 'package/learning/rust/**/*.html'
+```
+
+At dprint 0.55.2,
+every file is listed as unformatted and the task exits 20.
+At Stylelint 17.14.1 with `stylelint-config-standard` 40.0.0,
+each file emits the same eight errors:
+
+- two `lightness-notation` errors;
+- two `hue-degree-notation` errors;
+- two `at-rule-empty-line-before` errors;
+- one `declaration-block-single-line-max-declarations` error;
+- one `declaration-empty-line-before` error.
+
+The package therefore emits forty Stylelint errors in total.
+
+### Root cause
+
+This is a downstream source-policy conflict,
+not an upstream defect in dprint or Stylelint.
+
+`package/config/dprint/index.json` associates every HTML file with
+`markup_fmt` 0.23.1 and embedded CSS with Malva 0.14.1.
+The configured markup formatter uses ninety-column wrapping and single quotes.
+Formatting the decoder at commit `70e92d983` changed 3,419 diff lines:
+1,969 insertions and 1,450 deletions.
+The corrective commit `05f640f50` restored the compact package contract.
+
+`stylelint-config-standard` 40.0.0 enables the relevant rules in its `index.js`:
+
+- `lightness-notation: percentage`;
+- `hue-degree-notation: angle`;
+- `declaration-block-single-line-max-declarations: 1`;
+- blank-line rules for at-rules and ordinary rules.
+
+The workspace config also requires blank lines before ordinary declarations in
+`package/config/stylelint/index.mjs`.
+Its `unit-disallowed-list` bans `deg` and says to use `turn`.
+Stylelint's automatic fix changes unitless hue zero to `0deg`,
+then the workspace rule rejects that generated unit.
+Starting from canonical CSS,
+`stylelint --fix` therefore stops with two `unit-disallowed-list` errors and the single-line declaration error.
+
+The two tools can share a stable output.
+A disposable fixture passed both checks after it used percentage lightness,
+`0turn` hue,
+expanded declaration blocks,
+required blank lines,
+and dprint's HTML layout.
+The conflict is between that shared format and the exact compact source contract,
+not between the tools' final formats.
+
+### Resolution options
+
+#### Recommended: revise the package source contract
+
+Change `package/learning/rust/NOTES.md` from an exact compact snippet to a semantic contract,
+then update and dprint-format all five HTML files.
+Use `10%` and `90%` lightness,
+`0turn` hue,
+expanded declaration blocks,
+and required blank lines before running dprint.
+
+Pros:
+all repository checks cover the files;
+no lint rule,
+exclusion,
+or suppression is added;
+rendered light and dark behavior remains unchanged.
+
+Cons:
+the source is no longer the learner-approved compact form;
+the first formatting pass creates broad one-time HTML churn.
+
+#### Exclude the package and add a package-specific verifier
+
+Exclude `package/learning/rust/**/*.html` from dprint and Stylelint,
+then add a verifier for exact CSS,
+HTML parsing,
+local links,
+and browser rendering.
+
+Pros:
+preserves the exact authored source;
+makes the exception explicit and testable.
+
+Cons:
+removes general formatter and CSS-linter coverage;
+requires approved lint-policy loosening and permanent custom verification.
+
+#### Add repeated local ignore and disable directives
+
+Mark each file ignored by dprint and wrap its CSS in scoped Stylelint disables with rationale.
+
+Pros:
+preserves global configuration and current rendered behavior.
+
+Cons:
+clutters every teaching file;
+still removes tool coverage;
+requires suppression documentation;
+repeats maintenance in every new page.
+
+Ranking:
+revise contract > exclude plus verifier > local directives.
+Revising ranks above exclusion because it retains repository-wide guardrails without exceptions.
+Exclusion ranks above directives because one explicit package boundary is easier to audit than repeated local suppressions.
+
+### Scoped-formatting constraint
+
+The root `format` task is not a safe scoped substitute during concurrent work.
+A dry run with one HTML path sends that path to `dprint fmt`,
+but its nested Stylelint,
+Oxlint,
+and Markdown formatter tasks still run globally.
+Implementation should add an explicit scoped dprint task or use a disposable worktree,
+then copy only reviewed package files.
+
+### Verification requirements
+
+A resolution is complete when:
+
+- `package/learning/rust/NOTES.md` records the chosen source policy;
+- all five HTML files pass the scoped dprint check;
+- all five HTML files pass the scoped Stylelint check,
+  or an approved exclusion has an equivalent package verifier;
+- every page still opens through `file:///`;
+- automatic light and dark colors remain correct;
+- local navigation and interactive details still work;
+- no unrelated file is changed by a global auto-fix.
+
+### Why we do not file this upstream
+
+Both tools behave according to their current configuration.
+Dprint formats associated HTML and embedded CSS;
+Stylelint enforces rules selected by this repository.
+The exact compact snippet is also a repository decision.
+Upstream projects cannot choose which local policy should win,
+so resolution belongs in this repository.
