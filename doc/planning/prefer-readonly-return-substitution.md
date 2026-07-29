@@ -3575,6 +3575,74 @@ A capture disagreeing with expectation is not evidence about the change until th
  been removed and the capture repeated,
  because a delta that survives removing the thing under test was never about it.
 
+## Six more false offers of the same class, all falsified at once
+
+The shapes staged after the escaping-closure fix landed were measured before anything was
+ built on them,
+ which is what the previous section's lesson asks for.
+All six record nothing:
+
+```text
+storeAliasedClosure          mut=[] ret=[] opq=[]
+storeConditionalClosure      mut=[] ret=[] opq=[]
+storeAliasedContainer        mut=[] ret=[] opq=[]
+storeClosureCallingSibling   mut=[] ret=[] opq=[]
+returnCapturingClosure       mut=[] ret=[] opq=[]
+handOverCapture              mut=[] ret=[] opq=[]
+```
+
+Three shapes were already covered,
+ and one of them is the control that makes task sixty-nine precise:
+
+```text
+retain                       opq=[0]  stored into holder.produce
+retainBox                    opq=[0]  stored into holder.box
+handOverPackagedCapture      opq=[0]  stored into holder.box
+```
+
+`handOverPackagedCapture` hands the same capture inside an object literal and inherits the
+ callee's store provenance through the call edge.
+`handOverCapture` hands it as a bare function expression and inherits nothing.
+So the hole is not about arguments,
+ and not about retaining callees:
+ it is about a function expression handed directly,
+ which is not a packaged literal and so never reaches the helper that would read it.
+
+At the oxlint boundary all six are offered,
+ and the three covered shapes are not,
+ so the reading is of the rule rather than of the summaries.
+
+Falsified together,
+ with every offer in the file applied,
+ type-checked,
+ and driven:
+
+```text
+alias:       changed-by-alias
+conditional: changed-by-conditional
+container:   changed-by-container
+sibling:     changed-by-sibling
+return:      changed-by-return
+handover:    changed-by-handover
+```
+
+The control in the same file is what makes that meaningful.
+`annotationBites` carries a `@ts-expect-error` over `config.row.label = 'written'`,
+ and the directive is satisfied,
+ so `ReadonlyDeep` resolved and did reject a write in this exact file.
+Every other function type-checking clean is therefore a fact about those functions rather
+ than about an inert annotation.
+
+One of the six changes what its task is.
+Task sixty-seven was filed as a question about an accepted decision,
+ on the reading that returning parameter-reachable state is permitted policy.
+It is permitted on a stated condition,
+ that callers keep tracking the value through recorded returned origins,
+ and `returnCapturingClosure` records `ret=[]`.
+The condition fails,
+ so this is a false offer rather than a policy boundary,
+ and it needs a fix rather than a decision.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
