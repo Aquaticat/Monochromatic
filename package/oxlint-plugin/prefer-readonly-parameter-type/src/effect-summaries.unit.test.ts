@@ -68,6 +68,18 @@ const ASSIGNMENT_STORE_SOURCE = readFileSync(
   'utf8',
 );
 
+/** Fixture placing alias hops between a member result and its escaping position. */
+const ALIAS_HOP_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-alias-hop-invalid.ts',
+  import.meta.url,
+),);
+
+/** Current alias-hop fixture text. */
+const ALIAS_HOP_SOURCE = readFileSync(
+  ALIAS_HOP_PATH,
+  'utf8',
+);
+
 /** Statusline source proving audited object-property callback invocation. */
 const STATUSLINE_USAGE_PATH = fileURLToPath(new URL(
   '../../../pi-plugin/statusline/src/usage-warning.ts',
@@ -362,6 +374,97 @@ await describe({
          * turns `local` into `[0]` while leaving both cases above passing. */
         expect(local,).toEqual([],);
         expect(inPlace,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'keeps receiver opacity across alias hops, and still discharges an alias that only reads',
+      fn: async () => {
+        /* Every escaping case here was offered `readonly` before the holder set followed
+         * aliases: `resultHolderSymbolIds` collected only the identifier the call directly
+         * initializes, so `alias` never joined the set and its escaping use was never
+         * scanned. The consequence was not confined to precision. Over a structural
+         * parameter the rule projects with `ReadonlyDeep`, which does constrain elements,
+         * and the offer that followed type-checks clean under TypeScript 7.0.2 while the
+         * annotated callable rewrites the caller's state at runtime. Measured end to end
+         * in `doc/planning/prefer-readonly-return-substitution.md`, section "A false offer
+         * on the structural path".
+         *
+         * The controls carry the other half, and they are the reason this is not simply a
+         * wider net. Enlarging the holder set without skipping declaration and
+         * assignment-target occurrences classifies a destructured binding's own name as an
+         * escape, because its parent is a `BindingElement` that no attributed position
+         * matches, and classifies an assignment target the same way. Either mistake
+         * reports every alias in the workspace. */
+        const session = openSemanticFile({
+          fileName: ALIAS_HOP_PATH,
+          sourceText: ALIAS_HOP_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns opaque parameter indexes in ascending order.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            ALIAS_HOP_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /** Return reached through one alias hop. */
+        const returned = opaqueIndexes('returnAfterAliasHop',);
+        /** Module-binding store reached through one alias hop. */
+        const stored = opaqueIndexes('storeAfterAliasHop',);
+        /** Nested state extracted by destructuring, then returned. */
+        const destructured = opaqueIndexes('destructureThenReturn',);
+        /** Primitive extracted by destructuring, which can hold no caller state. */
+        const primitive = opaqueIndexes('destructurePrimitiveThenReturn',);
+        /** Nested state extracted by destructuring, then read in place. */
+        const destructuredRead = opaqueIndexes('destructureReadInPlace',);
+        /** Alias read in place, never leaving the callable. */
+        const readAlias = opaqueIndexes('aliasReadInPlace',);
+        /** Alias established by assignment, then read in place. */
+        const assignedAlias = opaqueIndexes('assignAliasReadInPlace',);
+        closeSemanticBridge();
+        /* The receiver keeps its opacity wherever the aliased result can leave. */
+        expect(returned,).toEqual([0,],);
+        expect(stored,).toEqual([0,],);
+        expect(destructured,).toEqual([0,],);
+        /* And the controls stay discharged, each one measured against the mutation it
+         * exists to catch rather than assumed to catch one. Dropping the mutable-state
+         * filter from `recordLeaf` turns `primitive` into `[0]` and moves nothing else.
+         * Dropping `occurrenceEstablishesBinding` turns `assignedAlias` and
+         * `destructuredRead` into `[0]` and moves nothing else, because the two escaping
+         * destructuring and assignment cases already keep opacity and cannot go higher. */
+        expect(primitive,).toEqual([],);
+        expect(destructuredRead,).toEqual([],);
+        expect(readAlias,).toEqual([],);
+        expect(assignedAlias,).toEqual([],);
       },
     },),
     it({
