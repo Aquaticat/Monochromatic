@@ -864,3 +864,45 @@ One thing this sweep cannot establish,
 It measures what the fix recovered.
 It does not measure what remains deleted for other causes,
  and the five panics are proof that the effect index still drops callables silently.
+
+## What the root-walk sweep measured
+
+Single-threaded,
+ against `sweep-after-40` with `sweep-compare.mjs`.
+Every pre-registered direction held.
+
+Omission warnings by cause:
+
+```text
+before   5 typescript-go tuple panic   3 parent read
+after    5 typescript-go tuple panic   0 parent read
+```
+
+No `EffectPropagationError` anywhere.
+Category totals identical on both sides:
+ argument opacity 1196,
+ receiver opacity 667,
+ dishonest contract 37,
+ offer 32,
+ stale `@mutates` 6.
+
+Exactly one finding moved,
+ and it moved in place rather than appearing or disappearing.
+`package/webapp-productivity/done/src/server.ts:224` reports the same parameter for the
+ same reason,
+ with a different name for the boundary:
+
+```text
+before   serveStatic [/var/home/user/Monochromatic/package/webapp-productivity/done/src/server.ts:225]
+after    h3@2.0.1-rc.26 . serveStatic
+```
+
+That is the whole delta,
+ and it names a call into one of the three recovered packages,
+ which is the discriminator this was pre-registered against.
+
+The offer count did not move,
+ which is the honest reading of a recovery that reached only dependency code.
+Restoring three deleted callees changed what the rule can say about one boundary.
+It did not change what the rule offers anywhere,
+ because every affected caller was already reported for a reason that survives.

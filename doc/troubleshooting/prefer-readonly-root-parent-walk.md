@@ -112,3 +112,67 @@ Silence and empty facts look identical from outside and are not the same state.
 Read the summary directly before reasoning about the rule's judgement:
  `NO_EFFECT_SUMMARY` means the callable was omitted,
  and omission means something threw.
+
+## What else the crash was doing: a boundary reported by the wrong name
+
+The same walk was corrupting a diagnostic in a package that stores nothing into a module
+ binding,
+ which is how a crash in one predicate reached code with no relation to it.
+
+`package/webapp-productivity/done/src/server.ts:224` calls `serveStatic` from `h3`.
+Before the fix the report named the boundary as authored text and a source position;
+ after it,
+ by package identity:
+
+```text
+before   serveStatic [/var/home/user/Monochromatic/package/webapp-productivity/done/src/server.ts:225]
+after    h3@2.0.1-rc.26 . serveStatic
+```
+
+Same parameter,
+ same reason,
+ different name for the thing that caused it.
+The package form is written in `external-callable-effect.ts` and requires
+ `externalCallableEffect` to return a proven effect;
+ the authored form is the fallback `recordOpaqueBoundary` writes when it does not.
+
+The route runs through h3 rather than through the workspace.
+`serveStatic` calls `resolveDotSegments`,
+ which begins by assigning to its own parameter:
+
+```js
+function resolveDotSegments(path, opts) {
+	if (path[0] !== "/" || path[1] === "/" || path[1] === "\\") path = "/" + path;
+```
+
+`targetIsCallableLocal` resolves `path` to its parameter declaration,
+ which sits beside the body rather than inside it,
+ so `nodeWithin` ascends past the function to the source file and off the end.
+The exact over-narrowness already recorded against `targetIsCallableLocal` is what
+ supplied a node outside the container for the walk to fall off.
+
+Confirmed by reverting the guard alone,
+ rebuilding,
+ and linting the one package:
+ the boundary name flips back,
+ and restoring the guard flips it forward again.
+Both readings take seconds,
+ so this needs no sweep.
+
+That retires an earlier hypothesis worth naming because it was wrong in an instructive
+ direction.
+The flip had been attributed to `DEFAULT_ANALYSIS_BUDGET_MILLISECONDS` being wall-clock,
+ making diagnostic text depend on machine load.
+It is deterministic and depends on one predicate.
+A plausible mechanism that explains a symptom is not evidence for that mechanism.
+
+One thing the reproduction shows and does not explain.
+The isolated single-package run prints no omission warning in either state,
+ while the full sweep prints one for `resolveDotSegments` in the failing state.
+`externalCallableEffect` catches at debug level and returns its unavailable sentinel,
+ and the demand index catches at warn level and omits;
+ both end in a boundary the rule cannot see through.
+Which catch received the throw in which run is not established by this measurement.
+What follows for anyone counting omission warnings to size the problem:
+ that count is a floor,
+ because one of the two channels is silent at ordinary verbosity.
