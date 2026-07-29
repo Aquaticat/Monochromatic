@@ -438,6 +438,41 @@ Matching `Parameter "[^"]*" should be readonly` returns 26 rather than 32:
  so the quoted-name pattern silently drops them.
 Count these categories by their distinctive phrase and check the parts sum to the whole.
 
+## Sweep pre-registration for the holder closure
+
+Written before the sweep finished, because the closure reports more by construction.
+Any delta at all is consistent with the fix working,
+ and equally consistent with it over-reporting exactly as the review warned,
+ so a number on its own decides nothing.
+
+Compared against `sweep-after-42.pairs` rather than the `91b261348` baseline.
+The two are byte-identical,
+ and the after-42 capture is the closest known state,
+ so it isolates this change from the commits since.
+The new fixture contributes nothing either way:
+ root `oxlint.config.ts` ignores `**/test-fixture/**`,
+ so a small delta does not mean the fixture failed to register.
+
+What each direction has to survive:
+
+-    Offers falling below 32.
+     Sample the lost ones and confirm each parameter really does have an aliased escaping
+      member result.
+     A lost offer in a callable with no alias hop means the closure adds holders through a
+      path that was not intended.
+-    Receiver opacity rising above 666.
+     Sample the new ones against the two occurrences the filter skips,
+      a destructured binding name and an assignment target.
+     Either appearing means `occurrenceEstablishesBinding` has a gap the fixture did not reach.
+-    Anything moving in a category the change cannot touch,
+      argument opacity or dishonest-readonly,
+      is a signal to stop and explain it rather than to reconcile it.
+
+The number that would narrow the change rather than ship it:
+ more than about a fifth of the 666 receiver-opacity findings appearing as new,
+ or any sampled new finding tracing to a binding occurrence rather than a value use.
+Either says the closure is catching aliasing in general instead of aliasing of a tracked result.
+
 ## Consequence carried meanwhile
 
 `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts` carries a scoped `unicorn/prefer-at` disable
