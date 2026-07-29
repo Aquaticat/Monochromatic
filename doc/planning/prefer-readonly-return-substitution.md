@@ -4388,3 +4388,51 @@ Removing the await from the transparent forms moves the fixture offer count from
  thirty-one,
  which is the async caller getting its offer back,
  and is the cleanest possible statement of what that one line does.
+
+### The capture, and the first offer this work has moved in the workspace
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+added   0:
+removed 1: offer=1
+```
+
+One offer fell, nothing else moved, nothing rose.
+That is the registered signature exactly,
+ and it is the first time in this work that an offer has moved at all.
+
+Sampled, as the criterion requires.
+`collectIgnoredKeys` in `package/pi-plugin/search-fetch/src/tools.ts`,
+ and the cause is `new Set(supportedKeys,)` where `supportedKeys` is `readonly string[]`.
+
+The rule is working as designed.
+An array is an object, so the leaf test answers yes for the parameter as a whole even though
+ its elements are primitives,
+ and a construction then records opacity because retaining its argument is what a constructor
+ usually does.
+
+`Set` is not one of those.
+It iterates its argument and copies elements,
+ retaining the elements rather than the array,
+ and here the elements are strings.
+
+So the fall is over-withholding in the safe direction,
+ one offer in 1966,
+ and it does not block the channel.
+Recorded as task seventy-four,
+ whose first move is not a catalog of trusted constructor names,
+ which the catalog-free architecture forbids,
+ but a cheaper question:
+ gate the construction rule on whether the argument's elements can carry mutable state rather
+ than the argument itself.
+That clears `readonly string[]` while `new Set(config.rows,)` keeps withholding,
+ because those rows alias.
+
+An error worth recording beside the result.
+The first comparison of this capture was run against a partial file:
+ the `.time` file was still empty because the sweep was still going,
+ and the shell chain read the incomplete output anyway and reported every finding removed.
+Nothing was wrong with the sweep.
+A capture is not a capture until the run that produces it has ended,
+ and a comparison against a file still being written is a reading of nothing.
