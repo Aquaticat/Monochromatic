@@ -3293,6 +3293,61 @@ The second is about form:
 A zero here is evidence about one syntactic form,
  never about whether escaping closures matter in this repository.
 
+### The capture did not come back zero, and the movement is not about closures
+
+```text
+before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+after  1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   83: argument-opacity=80 receiver-opacity=3
+removed 56: argument-opacity=50 receiver-opacity=6
+```
+
+By the registered criterion this is a defect signature,
+ since argument opacity moved and offers did not.
+It is not being read that way yet,
+ because the shape of the movement says something the criterion did not anticipate.
+
+Of the eighty added argument-opacity findings,
+ none names an external package boundary and seventy-nine name a local one.
+Of the fifty removed,
+ forty-three name an external package boundary and six name a local one.
+The names that arrived are `spawn`,
+ `getRouterParam`,
+ `nanoSpawn`,
+ `defineTool`,
+ `serveStatic`,
+ `defineConfig`,
+ across packages with no stored closure anywhere near them.
+The names that left are `nano-spawn@2.1.0 . default`,
+ `valibot@1.4.2 . parse`,
+ `@msgpack/msgpack@3.1.3 . encode`,
+ `h3@2.0.1-rc.26 . serveStatic`.
+
+So a boundary that was reported by package and export is now reported by the name at its
+ call site.
+That is a reporting-identity change of exactly the kind task forty-seven already
+ characterised,
+ and a store-provenance record cannot produce it:
+ the fix calls `addOpaqueEffect` with retention provenance and nothing else,
+ and retention is filtered from the reportable set.
+
+The suspect is cache generation rather than code.
+The cache key hashes analyzer implementation bytes,
+ so this change minted a fresh identity and the run was cold,
+ while the baseline ran against a populated one.
+Counted on disk:
+ the new identity holds 1184 entries written at the moment this sweep started,
+ and the two identities before it hold 27 and 22.
+
+Two runs settle it,
+ and neither is an argument.
+A warm repeat at the same commit says whether the reading is reproducible at all.
+Then the same sweep with the closure branch disabled,
+ which is the mutant the mutation check already used,
+ says whether any of the movement is attributable to this change.
+Only the second answers the question,
+ because a reproducible reading can still be a reading of something other than the fix.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
