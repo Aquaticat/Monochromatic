@@ -13,6 +13,7 @@
 
 import type {
   BinaryExpression,
+  BindingElement,
   ForOfStatement,
   Node,
   ParameterDeclaration,
@@ -351,6 +352,33 @@ export function discoverAliasOrigins({
     state.changed = false;
     state.pass++;
     variableDeclarations.forEach(function discover(declaration,): void {
+      /* A destructuring default carries origins the declaration's own initializer does not. In
+       * `const { row = config.row, } = {} as { row?: Row; }` the initializer names nothing, and
+       * the parameter is named inside a binding element, so scanning the declaration alone left
+       * `row` with no origin and a later store of it attributed nothing. Falsified.
+       *
+       * Registered against the element's own name, which is the binding the default fills. */
+      bindingElementDefaults({ name: declaration.name, },)
+        .forEach(function registerDefault(element,): void {
+          if (element.initializer === undefined)
+            return;
+          /**
+           * Name this element binds, absent for an elision in an array pattern.
+           */
+          const bound = element.name;
+          if (bound === undefined)
+            return;
+          state.changed = registerBindingOrigins({
+            project,
+            name: bound,
+            parameterOrigins: expressionOrigins({
+              project,
+              bindingOriginBySymbolId,
+              node: element.initializer,
+            },),
+            bindingOriginBySymbolId,
+          },) || state.changed;
+        },);
       if (declaration.initializer === undefined)
         return;
       /**
@@ -480,4 +508,36 @@ export function bindingOriginsFor({
     created,
   );
   return created;
+}
+
+/**
+ * Names every binding element a pattern introduces, at any depth.
+ *
+ * @param name - Binding name, which may be a pattern.
+ *
+ * @returns binding elements the pattern contains.
+ *
+ * @example
+ * ```ts
+ * bindingElementDefaults({ name });
+ * ```
+ */
+function bindingElementDefaults({ name, }: { readonly name: Node; },): readonly BindingElement[] {
+  if ((!isObjectBindingPattern(name,)) && (!isArrayBindingPattern(name,)))
+    return [];
+  return name.elements
+    .flatMap(function elementAndNested(element,): readonly BindingElement[] {
+      if (!isBindingElement(element,))
+        return [];
+      /**
+       * Name this element binds, absent for an elision in an array pattern.
+       */
+      const bound = element.name;
+      return bound === undefined
+        ? [element,]
+        : [
+          element,
+          ...bindingElementDefaults({ name: bound, },),
+        ];
+    },);
 }

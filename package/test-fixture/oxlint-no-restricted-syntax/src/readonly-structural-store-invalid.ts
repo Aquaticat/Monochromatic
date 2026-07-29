@@ -2354,3 +2354,89 @@ export function storeFreshLocalFunctionResult(viaFreshLocal: Config,): number {
   return viaFreshLocal.rows
     .length;
 }
+
+/**
+ * Throws the caller's row to whoever catches it.
+ *
+ * Falsified. A throw hands the value to a handler that outlives it by construction, which is a
+ * handoff in exactly the sense a yield is, and nothing modelled a throw anywhere. Task #64
+ * recorded that absence as the reason no body summary here can be complete enough to grant an
+ * offer.
+ *
+ * A return of caller state is permitted on the condition that callers track it through recorded
+ * returned origins. A throw has no such record and no channel to put one in, so the condition
+ * cannot hold.
+ *
+ * @param thrownOut - Configuration whose row is thrown.
+ *
+ * @example
+ * ```ts
+ * throwRowOutward({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function throwRowOutward(thrownOut: Config,): void {
+  throw thrownOut.row;
+}
+
+/**
+ * Throws a message built from a primitive read off the parameter.
+ *
+ * The leaf control. A throw records only what its expression can carry, so a message retains
+ * nothing a caller can be written through.
+ *
+ * @param thrownLabel - Configuration whose label the message carries.
+ *
+ * @example
+ * ```ts
+ * throwLabelOutward({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function throwLabelOutward(thrownLabel: Config,): void {
+  throw new Error(thrownLabel.row.label,);
+}
+
+/**
+ * Stores a row reached through a destructuring default.
+ *
+ * Falsified. The declaration scan read the declaration's own initializer, and the parameter is
+ * named inside a binding element instead, so the binding carried no origin and a later store of it
+ * attributed nothing.
+ *
+ * @param defaultReached - Configuration whose row a destructuring default retains.
+ *
+ * @example
+ * ```ts
+ * storeDestructuringDefault({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeDestructuringDefault(defaultReached: Config,): void {
+  /**
+   * Holder whose absent property falls back to the caller's row.
+   */
+  const { row = defaultReached.row, } = {} as { row?: Row; };
+  held = row;
+}
+
+/**
+ * Stores a row reached through a destructuring default that allocates.
+ *
+ * The control. A default naming nothing the caller owns retains nothing.
+ *
+ * @param defaultFresh - Configuration the default never names.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeFreshDestructuringDefault({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshDestructuringDefault(defaultFresh: Config,): number {
+  /**
+   * Holder whose absent property falls back to a fresh row.
+   */
+  const { row = { label: 'fresh', }, } = {} as { row?: Row; };
+  held = row;
+  return defaultFresh.rows
+    .length;
+}

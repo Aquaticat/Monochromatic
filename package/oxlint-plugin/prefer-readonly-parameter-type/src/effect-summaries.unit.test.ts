@@ -876,6 +876,17 @@ await describe({
         /* The control, so following a local callee attributes what it reaches rather than
          * reporting every store of a locally computed value. */
         expect(structuralOpaque('storeFreshLocalFunctionResult',),).toEqual([],);
+        /* A throw is a handoff in exactly the sense a yield is, and nothing modelled one anywhere.
+         * Task #64 recorded that absence as the reason no body summary here can be complete enough
+         * to grant an offer, and this closes the escape while that stays true. Falsified. */
+        expect(structuralOpaque('throwRowOutward',),).toEqual([0,],);
+        /* Its leaf control, since a throw records only what its expression can carry. */
+        expect(structuralOpaque('throwLabelOutward',),).toEqual([],);
+        /* A destructuring default, which the declaration scan missed by reading the declaration's
+         * own initializer while the parameter is named inside a binding element. Falsified. */
+        expect(structuralOpaque('storeDestructuringDefault',),).toEqual([0,],);
+        /* Its control, so a default naming nothing the caller owns keeps the offer. */
+        expect(structuralOpaque('storeFreshDestructuringDefault',),).toEqual([],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came

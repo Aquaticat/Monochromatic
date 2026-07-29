@@ -28,6 +28,7 @@ import type { Node, } from 'typescript/unstable/ast';
 import {
   isNewExpression,
   isTaggedTemplateExpression,
+  isThrowStatement,
   isTemplateExpression,
   isYieldExpression,
 } from 'typescript/unstable/ast/is';
@@ -269,4 +270,128 @@ export function recordTaggedTemplateHandoff({
           },);
         },);
     },);
+}
+
+/**
+ * Records opacity for caller state thrown out of the callable.
+ *
+ * A throw hands the value to whoever catches it, and that handler outlives the throw by
+ * construction, so it is a handoff in exactly the sense a yield is. Nothing modelled a throw
+ * anywhere in this analysis, which task #64 recorded as the reason no body summary here can be
+ * complete enough to grant an offer.
+ *
+ * Falsified: `throw config.row` left the parameter offered while a handler caught the row and
+ * changed it.
+ *
+ * A return of caller state is permitted by the accepted decision on the condition that callers
+ * track it through recorded returned origins. A throw has no such record and no channel to put one
+ * in, so the condition cannot hold, which is the same reasoning that made a returned callable a
+ * false offer.
+ *
+ * @param project - TypeScript project resolving thrown origins.
+ *
+ * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ *
+ * @param summary - Summary receiving opacity.
+ *
+ * @param node - Candidate throw statement from the body scan.
+ *
+ * @mutates summary - Adds an opaque slot and handoff provenance per thrown origin.
+ *
+ * @example
+ * ```ts
+ * recordThrowHandoff({ project, bindingOriginBySymbolId, summary, node });
+ * ```
+ */
+export function recordThrowHandoff({
+  project,
+  bindingOriginBySymbolId,
+  summary,
+  node,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly summary: MutableEffectSummary;
+  readonly node: Node;
+},): void {
+  if (!isThrowStatement(node,))
+    return;
+  /**
+   * Handoff provenance naming the throw that handed the value out.
+   */
+  const provenance = handoffProvenance({
+    handoff: 'a throw to whoever catches it',
+    location: effectOriginLocation({ node, },),
+  },);
+  parameterIndexes({
+    project,
+    bindingOriginBySymbolId,
+    node: node.expression,
+  },)
+    .forEach(function recordThrownSlot(affectedSlot,): void {
+      addOpaqueEffect({
+        summary,
+        affectedSlot,
+        provenance,
+      },);
+    },);
+}
+
+/**
+ * Asks every handoff site about one body node.
+ *
+ * Collected here rather than spelled out at the call site, because the body scan has a line budget
+ * and each of these is the same question asked of a different syntax: what left the callable
+ * without going through a call edge, a store or a return.
+ *
+ * @param project - TypeScript project resolving origins.
+ *
+ * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ *
+ * @param summary - Summary receiving opacity.
+ *
+ * @param node - Candidate node from the body scan.
+ *
+ * @mutates summary - Adds an opaque slot and handoff provenance per handed origin.
+ *
+ * @example
+ * ```ts
+ * recordOutwardHandoffs({ project, bindingOriginBySymbolId, summary, node });
+ * ```
+ */
+export function recordOutwardHandoffs({
+  project,
+  bindingOriginBySymbolId,
+  summary,
+  node,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly summary: MutableEffectSummary;
+  readonly node: Node;
+},): void {
+  recordConstructionHandoff({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    node,
+  },);
+  recordYieldHandoff({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    node,
+  },);
+  recordTaggedTemplateHandoff({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    node,
+  },);
+  recordThrowHandoff({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    node,
+  },);
 }

@@ -31,11 +31,7 @@ import {
   recordIterationStore,
 } from './effect-assignment-store.ts';
 import { discoverBodyBindings, } from './effect-body-bindings.ts';
-import {
-  recordConstructionHandoff,
-  recordTaggedTemplateHandoff,
-  recordYieldHandoff,
-} from './effect-outward-handoff.ts';
+import { recordOutwardHandoffs, } from './effect-outward-handoff.ts';
 import { recordReturnEffects, } from './effect-return-effects.ts';
 import { recordReturnedCallableCapture, } from './effect-returned-callable.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
@@ -328,22 +324,11 @@ export function directEffectSummary({
       }
       return;
     }
-    /* Asked of every node rather than inside another branch, because a construction and a yield
-     * are neither calls nor stores nor returns, which is why nothing answered for them. Both
-     * were found by walking escape channels and both were falsified. */
-    recordConstructionHandoff({
-      project,
-      bindingOriginBySymbolId,
-      summary,
-      node,
-    },);
-    recordYieldHandoff({
-      project,
-      bindingOriginBySymbolId,
-      summary,
-      node,
-    },);
-    recordTaggedTemplateHandoff({
+    /* Asked of every node rather than inside another branch, because a construction, a yield, a
+     * tagged template and a throw are none of them calls or stores or returns, which is why
+     * nothing answered for any of them. Each was found by walking escape channels and each was
+     * falsified. Collected behind one call for this file's line budget. */
+    recordOutwardHandoffs({
       project,
       bindingOriginBySymbolId,
       summary,

@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(36,);
+      },).length,).toBe(38,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -753,8 +753,17 @@ children: [
           || message.includes('"interpolated"',)
           || message.includes('"iteratedOut"',)
           || message.includes('"viaLocalFunction"',)
-          || message.includes('"viaArrowProperty"',);
+          || message.includes('"viaArrowProperty"',)
+          || message.includes('"thrownOut"',)
+          || message.includes('"defaultReached"',);
       },).length,).toBe(0,);
+      /* The two pass-three controls, carrying the count from thirty-six to thirty-eight. A thrown
+       * message retains nothing writable, and a destructuring default that allocates names nothing
+       * the caller owns. */
+      expect(messages.filter(function namesPassThreeControls(message,): boolean {
+        return message.includes('"thrownLabel"',)
+          || message.includes('"defaultFresh"',);
+      },).length,).toBe(2,);
       /* The nested-callee control, carrying the count from thirty-five to thirty-six. */
       expect(messages.filter(function namesFreshLocal(message,): boolean {
         return message.includes('"viaFreshLocal"',);
