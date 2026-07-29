@@ -770,6 +770,20 @@ await describe({
          * here would notice a walk that failed to terminate, because it would hang rather than
          * answer wrongly, which no assertion can catch. */
         expect(structuralOpaque('storeMutuallyRecursiveClosures',),).toEqual([0,],);
+        /* The store path asks what a value can be rather than how it is written, which is what
+         * a conditional and a container held in a local needed. Both were falsified while the
+         * syntax test saw a conditional and an identifier and stopped. */
+        expect(structuralOpaque('storeConditionalClosure',),).toEqual([0,],);
+        expect(structuralOpaque('storeAliasedContainer',),).toEqual([0,],);
+        /* Both operands of `??` can be the value, unlike `&&`, whose left operand is discarded
+         * whenever the right is produced, and that table is easy to get backwards. Two slots
+         * here rather than one, because storing the caller's own callable outward retains it
+         * exactly as storing a closure over the caller's row does. */
+        expect(structuralOpaque('storeCoalescedClosure',),).toEqual([0, 1,],);
+        /* The control. Following both branches must attribute what they capture rather than
+         * report every conditional store, so a pair of branches naming nothing the caller owns
+         * keeps its offer. */
+        expect(structuralOpaque('storeConditionalFresh',),).toEqual([],);
       },
     },),
     it({

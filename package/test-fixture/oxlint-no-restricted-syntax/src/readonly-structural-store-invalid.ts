@@ -49,6 +49,7 @@ let measured = 0;
 const callbackHolder: {
   produce?: () => Row;
   measure?: () => number;
+  container?: { produce: () => Row; };
 } = {};
 
 /**
@@ -1542,4 +1543,95 @@ export function storeMutuallyRecursiveClosures(recursed: Config,): void {
       : recursed.row;
   }
   callbackHolder.produce = (): Row => first();
+}
+
+/**
+ * Closure naming nothing the caller owns, for the conditional store to choose between.
+ */
+const freshProducer = (): Row => ({ label: 'fresh', });
+
+/**
+ * Stores whichever of two closures a condition selects.
+ *
+ * Falsified. Testing the written syntax saw a conditional rather than a callable and stopped,
+ * so neither branch was examined and the parameter was offered.
+ *
+ * @param chosen - Configuration whose row one branch hands out.
+ *
+ * @param condition - Which branch is stored.
+ *
+ * @example
+ * ```ts
+ * storeConditionalClosure({ rows: [], row: { label: '', }, }, true,);
+ * ```
+ */
+export function storeConditionalClosure(chosen: Config, condition: boolean,): void {
+  callbackHolder.produce = condition ? ((): Row => chosen.row) : freshProducer;
+}
+
+/**
+ * Stores whichever of two closures a nullish coalescence selects.
+ *
+ * Both operands of `??` and `||` can be the value, unlike `&&`, whose left operand is discarded
+ * whenever the right is produced. Pinned because the operator table is easy to get backwards.
+ *
+ * @param coalesced - Configuration whose row the fallback branch hands out.
+ *
+ * @param preferred - Closure used when present.
+ *
+ * @example
+ * ```ts
+ * storeCoalescedClosure({ rows: [], row: { label: '', }, }, undefined,);
+ * ```
+ */
+export function storeCoalescedClosure(
+  coalesced: Config,
+  preferred: (() => Row) | undefined,
+): void {
+  callbackHolder.produce = preferred ?? ((): Row => coalesced.row);
+}
+
+/**
+ * Stores a container held in a local, whose property holds a capturing closure.
+ *
+ * Falsified. The written form of this store is an identifier, and the origin walk descends an
+ * object literal only where one is written, so following the local to the literal is what makes
+ * the packaged closure visible.
+ *
+ * @param contained - Configuration whose row the packaged closure hands out.
+ *
+ * @example
+ * ```ts
+ * storeAliasedContainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeAliasedContainer(contained: Config,): void {
+  /**
+   * Container this callable allocates and then hands over by name.
+   */
+  const box = { produce: (): Row => contained.row, };
+  callbackHolder.container = box;
+}
+
+/**
+ * Stores a conditional whose branches both name nothing the caller owns.
+ *
+ * The control. Following both branches must attribute what they capture rather than report
+ * every conditional store, so this one keeps its offer.
+ *
+ * @param neither - Configuration neither branch names.
+ *
+ * @param condition - Which branch is stored.
+ *
+ * @returns count read in place off the untouched configuration.
+ *
+ * @example
+ * ```ts
+ * storeConditionalFresh({ rows: [], row: { label: '', }, }, true,);
+ * ```
+ */
+export function storeConditionalFresh(neither: Config, condition: boolean,): number {
+  callbackHolder.produce = condition ? freshProducer : ((): Row => ({ label: 'other', }));
+  return neither.rows
+    .length;
 }

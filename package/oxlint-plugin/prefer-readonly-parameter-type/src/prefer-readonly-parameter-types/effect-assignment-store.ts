@@ -31,10 +31,8 @@ import { effectOriginLocation, } from './effect-origin-location.ts';
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { targetResultSites, } from './effect-result-binding.ts';
-import {
-  recordResultRetentionSites,
-  transparentValueRoot,
-} from './effect-result-substitution.ts';
+import { possibleValueNodes, } from './effect-possible-values.ts';
+import { recordResultRetentionSites, } from './effect-result-substitution.ts';
 import { retentionProvenance, } from './effect-retention-provenance.ts';
 import {
   type MutableEffectSummary,
@@ -140,22 +138,33 @@ export function recordAssignmentStore({
     target: targetText,
     location,
   },);
-  parameterIndexes({
-    project,
-    bindingOriginBySymbolId,
-    node: node.right,
-  },)
-    .forEach(function recordEscapingSlot(affectedSlot,): void {
-      addOpaqueEffect({
-        summary,
-        affectedSlot,
-        provenance,
-      },);
-    },);
   /**
-   * Stored value with parentheses and assertions removed, so a wrapped closure is seen.
+   * Every expression the stored value can evaluate to, itself included.
+   *
+   * Asked once and used twice below, because the two questions this path puts to a stored value
+   * are questions about the same set: what origins it packages, and whether it is a callable
+   * handing its captures over. Testing the written syntax answered both only for the inline
+   * form, and missed the conditional and the container held in a local, both falsified.
    */
-  const stored = transparentValueRoot(node.right,);
+  const storedValues = possibleValueNodes({
+    project,
+    node: node.right,
+  },);
+  storedValues.forEach(function recordPackagedOrigins(value,): void {
+    parameterIndexes({
+      project,
+      bindingOriginBySymbolId,
+      node: value,
+    },)
+      .forEach(function recordEscapingSlot(affectedSlot,): void {
+        addOpaqueEffect({
+          summary,
+          affectedSlot,
+          provenance,
+        },);
+      },);
+  },);
+
   /* A stored closure hands over everything it captured, and nothing above sees that.
    * `effect-expression-provenance.ts` gives a function expression no provenance successors,
    * so `parameterIndexes` comes back empty for `holder.callback = (): Row => config.row`,
@@ -179,24 +188,24 @@ export function recordAssignmentStore({
    * structural-store fixture stores `(): number => config.row.label.length` and records
    * `opaque=[0]`. Task #64 holds the finer question. */
   /**
-   * Callable the stored value resolves to, absent when the store hands over no callable.
-   *
-   * Resolved rather than tested syntactically, which is what makes `holder.produce = producer`
-   * behave like the inline form. `callableDeclaration` follows a local to the function
-   * expression it was bound to and detects alias cycles, and it is the same resolution the
-   * call edge already uses for a callable handed as an argument. Measured before this: the
-   * aliased store recorded nothing and was falsified, with the annotation applied and type
-   * checking clean while the holder's invocation changed the caller's row.
+   * Whether any possible value of the store was a callable handing its captures over.
    */
-  const storedCallable = callableDeclaration({
-    project,
-    node: stored,
-  },);
-  if (storedCallable !== OWNED_CALLABLE_UNAVAILABLE) {
+  const handedOver: { any: boolean; } = { any: false, };
+  storedValues.forEach(function recordCapturedCallable(value,): void {
+    /**
+     * Callable this possible value resolves to, absent when it is not one.
+     */
+    const callable = callableDeclaration({
+      project,
+      node: value,
+    },);
+    if (callable === OWNED_CALLABLE_UNAVAILABLE)
+      return;
+    handedOver.any = true;
     transitiveCallableOrigins({
       project,
       bindingOriginBySymbolId,
-      packaged: storedCallable,
+      packaged: callable,
     },)
       .forEach(function recordCapturedSlot(affectedSlot,): void {
         addOpaqueEffect({
@@ -205,10 +214,11 @@ export function recordAssignmentStore({
           provenance,
         },);
       },);
-    /* Nothing below can add to a closure: a function expression is not a call, so it holds
-     * no deferred result for `targetResultSites` to substitute into. */
+  },);
+  if (handedOver.any)
+    /* Nothing below can add to a callable: a function expression is not a call, so it holds no
+     * deferred result for `targetResultSites` to substitute into. */
     return;
-  }
   /* `parameterIndexes` stops at a call exactly as the write-side walk did, so
    * `held = firstRow(config,)` recorded nothing while `held = config.row` recorded
    * opacity for the same retention. Falsified rather than inferred: the rule offered
