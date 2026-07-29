@@ -2902,6 +2902,36 @@ So closing forty-eight is a statement about its three stages,
 Anything reading the title as coverage will be wrong,
  and sixty-two is where the rest of the title lives.
 
+Six more shapes joined the queue after the escaping-closure fix landed,
+ and they group by cause rather than by syntax.
+
+Three are one cause:
+ the store path decides what a stored expression is by looking at its syntax,
+ so an alias,
+ a conditional and a container held in a local all slip past it.
+That is task sixty-six,
+ and the design question inside it is whether to keep adding syntax branches or to ask once
+ what an expression can evaluate to.
+
+Two are the opposite cause,
+ and they are the two halves of one mismatch:
+ `packagedCallableOrigins` is a lexical scanner answering a call-graph question.
+Task sixty-four is where that over-reports,
+ naming a binding a read-only closure merely mentions.
+Task sixty-eight is where it under-reports,
+ missing a capture that leaves through a call to a sibling local.
+Neither can be settled without the other,
+ because a body summary fine enough to permit an offer has to be complete enough to see
+ every way out.
+
+Sixty-five and sixty-seven stand alone.
+Sixty-five is a selection disagreement between two forms of the same local closure,
+ self-limiting and cheap.
+Sixty-seven is not a hole at all until measured:
+ it asks whether a returned closure falls under the accepted decision that permits returning
+ parameter-reachable state,
+ or breaks that decision's stated precondition.
+
 The four defects found after landing are worth naming together,
  because they have one shape:
  each was a case the tests could not ask about.
