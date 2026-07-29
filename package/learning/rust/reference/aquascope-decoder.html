@@ -548,20 +548,33 @@
           </p>
         </dd>
 
-        <dt>Reference and borrow</dt>
+        <dt>Reference</dt>
         <dd>
-          Reference is compiler-checked pointer that lets code access data owned elsewhere.
+          Reference is compiler-checked pointer value that accesses data owned elsewhere.
           Reference does not become responsible for destroying that data.
-          Borrow means using <code>&amp;</code> to create this temporary access; resulting value is reference.
-          Compiler limits what owner can do while reference will still be used.
           <p>
             <strong>Example:</strong>
-            in <code>let text = String::from("Hello"); let part = &amp;text[0..2];</code>,
-            <code>part</code> borrows the first two bytes and <code>text</code> keeps owning them.
+            after <code>let part = &amp;text[0..2];</code>,
+            <code>part</code> contains reference to first two bytes and <code>text</code> still owns them.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            TypeScript has no borrow operator and no compile-time rule that temporarily blocks the original variable this way.
+            TypeScript has no compiler-checked reference type with Rust's access rules.
+          </p>
+        </dd>
+
+        <dt>Borrow</dt>
+        <dd>
+          Borrow is temporary access created when code uses <code>&amp;</code>, as in <code>&amp;text[0..2]</code>.
+          Compiler limits what owner can do while resulting reference will still be used.
+          <p>
+            <strong>Example:</strong>
+            in <code>let text = String::from("Hello"); let part = &amp;text[0..2];</code>,
+            <code>part</code> borrows first two bytes from <code>text</code> without copying them.
+          </p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript has no borrow operator and no compile-time rule that temporarily blocks original variable this way.
           </p>
         </dd>
 
@@ -1312,6 +1325,9 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         where diagrams do carry these marks.
         This section previews only permission marks listed here;
         later diagrams may introduce additional icons that their surrounding book text explains.
+        Glyph descriptions come from current Aquascope permission renderer,
+        not opening runtime widget;
+        check them against chapter 4 diagram when you reach it.
       </p>
       <p>
         These marks describe a compile-time picture, not runtime memory.
@@ -1378,6 +1394,10 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
       </dl>
 
       <h3>Permission example without new syntax</h3>
+      <p>
+        This is a new compiled program with chapter 4 permission model applied to it,
+        not source copied from rendered Aquascope permission diagram.
+      </p>
       <pre><code>fn main() {
     let mut word = String::from("Hello");
     let first = &amp;word[0..1];
