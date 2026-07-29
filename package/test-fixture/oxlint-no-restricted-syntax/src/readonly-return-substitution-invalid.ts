@@ -157,16 +157,30 @@ export function measureThroughReturn(rows: Row[],): number {
 }
 
 /**
- * Writes a property through a returned element, which substitution does not yet reach.
+ * Writes a property through a returned element.
  *
- * Pins a known boundary rather than a fixed defect. The deferred recording sits in
- * `effect-collection-member-effect.ts`, so it fires for a collection member call on a
- * returned result. A property write travels through `inspectDirectWrite` instead, and
- * a write through a local holding the result is the alias hop that still records nothing.
+ * This was pinned as a boundary with a caution beside it: under `readonly Row[]` an
+ * element property write is legal, so the offer looked honest and withholding it looked
+ * like a precision loss the return substitution should not cause.
  *
- * Not demonstrated to be a false offer. Under `readonly Row[]` an element property write
- * is legal, exactly as the retraction recorded in the planning document established, so
- * the honest offer here is the shallow one. The structural shape is where it would bite.
+ * The caution was answered by measurement rather than by argument, because the question is
+ * not what `readonly Row[]` permits but what this analysis already does. An element
+ * property write with no call anywhere in it:
+ *
+ * ```text
+ * writeElementPropertyDirectly     mutated=[0]   const first = rows[0]; first.label = 'x';
+ * writeElementPropertyThroughCall  mutated=[0]   const first = handBack(rows,)[0]; ...
+ * ```
+ *
+ * The direct form already attributed the write to the parameter and always had, so the
+ * offer was already withheld for it. Following the result through the local made this case
+ * agree with its own direct equivalent instead of disagreeing with it, which is the
+ * opposite of the regression the caution warned about.
+ *
+ * Whether an element property write should withhold an ARRAY parameter's shallow offer at
+ * all is a real question and a different one. It predates every stage of this work, it
+ * applies to the direct form first, and it is about slot granularity for array elements
+ * rather than about result substitution.
  *
  * @param rows - Rows whose first label is rewritten.
  *
