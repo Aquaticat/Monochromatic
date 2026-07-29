@@ -31,3 +31,5 @@ It does not reproduce or replace the book.
 - Any lesson-specific JavaScript is embedded in that HTML file.
 - Graphs and diagrams use HTML and CSS rather than generated images.
 - TypeScript comparisons include a link containing the example source for the TypeScript Playground.
+- Routine edits do not require `agent-browser` verification.
+  Use browser verification when a change introduces JavaScript, a new interaction, or browser-dependent behavior.

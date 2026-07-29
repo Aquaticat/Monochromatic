@@ -22,6 +22,8 @@
 - Use HTML and CSS for graphs and diagrams.
 - JavaScript is allowed and should be embedded when a lesson needs it.
 - Every embedded TypeScript comparison must link to a TypeScript Playground URL containing that source.
+- Do not run `agent-browser` for every edit in this workspace.
+  Reserve browser verification for JavaScript, new interactions, or browser-dependent behavior.
 
 The canonical inline CSS is:
 
