@@ -489,8 +489,17 @@
           Old variable is not “empty”; compiler rejects later reads through it.
           <p>
             <strong>Example:</strong>
-            after <code>let b = s;</code> for a <code>String</code>, <code>b</code> can be used but compiler rejects later use of <code>s</code>.
-            The same two lines written for an <code>i32</code> leave both names usable, because <code>i32</code> is <code>Copy</code>.
+            after <code>let first = String::from("Hi"); let second = first;</code>,
+            <code>second</code> can be used but compiler rejects later use of <code>first</code>.
+            The same two lines written with <code>5</code> in place of the <code>String</code>
+            leave both names usable, because <code>i32</code> is <code>Copy</code>.
+          </p>
+          <p>
+            Reading <code>first</code> afterward produces
+            <code>error[E0382]: borrow of moved value: `first`</code>,
+            and that message states the reason itself:
+            “move occurs because <code>first</code> has type <code>String</code>,
+            which does not implement the <code>Copy</code> trait.”
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -533,7 +542,7 @@
         <dt><code>drop</code></dt>
         <dd>
           Rust function that receives value, ends that value immediately, and performs its cleanup.
-          It is a way to end a value <em>earlier</em> than its scope would;
+          It is a way to end a value <strong>earlier</strong> than its scope would;
           cleanup already happens at scope end without it.
           Passing an owned non-<code>Copy</code> value to <code>drop</code> moves it,
           so the original variable becomes unusable.
@@ -620,7 +629,7 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         Each displayed statement carries a badge, <code>L1</code> through <code>L4</code>, at its end.
         A badge is Aquascope's label rather than Rust syntax.
         It links one statement to the memory picture carrying the same badge,
-        and each picture shows the state <em>after</em> that statement has run.
+        and each picture shows the state <strong>after</strong> that statement has run.
       </p>
 
       <h3><code>fn main() { ... }</code></h3>
@@ -1028,7 +1037,7 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         Deleting <code>drop(s);</code> from this sample would not leak the buffer.
         It would move the deallocation from <code>L4</code> to the closing brace,
         where Rust performs it because <code>s</code>'s scope ends.
-        <code>drop</code> chooses <em>when</em> cleanup happens; it is not what causes cleanup.
+        <code>drop</code> chooses <strong>when</strong> cleanup happens; it is not what causes cleanup.
       </p>
     </section>
 
