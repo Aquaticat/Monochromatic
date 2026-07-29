@@ -538,6 +538,12 @@ await describe({
         const storedIteration = structuralOpaque('storeIterationBinding',);
         /** Property stored into a local of the enclosing callable. */
         const storedEnclosing = structuralOpaque('storeIntoEnclosingLocal',);
+        /** Rows retained one at a time through an iteration target. */
+        const storedIterationTarget = structuralOpaque('storeIterationTarget',);
+        /** Primitives read one at a time into a binding outside the callable. */
+        const iterationPrimitiveTarget = structuralOpaque('storeIterationPrimitiveTarget',);
+        /** Rows read one at a time into a binding the iteration declares. */
+        const declaredIterationBinding = structuralOpaque('declareIterationBinding',);
         /** Property stored past the enclosing callable from a nested one. */
         const storedFromNested = structuralOpaque('storeFromNestedIntoModuleBinding',);
         /** Store written inside a nested callable nothing ever runs. */
@@ -579,6 +585,15 @@ await describe({
          * `captured` is its own per-invocation local, which dies when the call returns. */
         expect(storedEnclosing,).toEqual([],);
         expect(storedFromNested,).toEqual([0,],);
+        /* An iteration target retains exactly what an assignment target retains, and no
+         * assignment expression appears anywhere in it, which is what made it invisible.
+         * The two controls beside it are the halves that would take ordinary loops with
+         * them: an element decides, so iterating primitives into an outside binding
+         * retains nothing a caller can write through, and a declaration binds afresh each
+         * time rather than storing. */
+        expect(storedIterationTarget,).toEqual([0,],);
+        expect(iterationPrimitiveTarget,).toEqual([],);
+        expect(declaredIterationBinding,).toEqual([],);
         /* The activation half of the same pair. Escaping syntax alone must not report, or
          * the shape above would be satisfied by a scan that never asked whether the nested
          * callable runs. */

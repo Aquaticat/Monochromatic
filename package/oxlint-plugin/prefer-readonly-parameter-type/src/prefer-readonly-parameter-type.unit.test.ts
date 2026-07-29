@@ -607,15 +607,16 @@ children: [
       expect(messages.filter(function namesStore(message,): boolean {
         return message.includes('stored into',);
       },).length,).toBe(0,);
-      /* Withheld, not merely silent. Eleven offers, and every one belongs to a shape that
+      /* Withheld, not merely silent. Thirteen offers, and every one belongs to a shape that
        * stores nothing beyond the callable: the two nested-store controls, an assignment
-       * into a parameter and into an own local, a counter, two readers, a projection, a
-       * fresh aggregate, and the one store whose right side has no origins yet because a
-       * callee's summary does not exist while its callers are scanned. Were retention to
-       * stop withholding, seven more would join them. */
+       * into a parameter and into an own local, a counter, three readers, a projection, a
+       * fresh aggregate, an iteration that retains only a primitive, an iteration that
+       * declares its own binding, and the one store whose right side has no origins yet
+       * because a callee's summary does not exist while its callers are scanned. Were
+       * retention to stop withholding, eight more would join them. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(11,);
+      },).length,).toBe(13,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls

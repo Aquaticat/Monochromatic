@@ -26,7 +26,10 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import { activeCallableBodyNodes, } from './closure-activity.ts';
-import { recordAssignmentStore, } from './effect-assignment-store.ts';
+import {
+  recordAssignmentStore,
+  recordIterationStore,
+} from './effect-assignment-store.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
 import { recordResultApplication, } from './effect-result-substitution.ts';
@@ -338,15 +341,28 @@ export function directEffectSummary({
       }
       return;
     }
-    if (isForOfStatement(node,) && (node.awaitModifier !== undefined)) {
-      addEffectSlots({
-        target: summary.directMutated,
-        values: expressionOrigins({
-          project,
-          bindingOriginBySymbolId,
-          node: node.expression,
-        },),
+    if (isForOfStatement(node,)) {
+      /* Asked of every iteration statement, including the awaiting form, because what the
+       * target retains does not depend on how the iterator was drained. The awaiting branch
+       * below returned first when this lived inside it, so `for await (held of rows)`
+       * recorded the drain and lost the retention. */
+      recordIterationStore({
+        project,
+        bindingOriginBySymbolId,
+        summary,
+        node,
+        body,
       },);
+      if (node.awaitModifier !== undefined) {
+        addEffectSlots({
+          target: summary.directMutated,
+          values: expressionOrigins({
+            project,
+            bindingOriginBySymbolId,
+            node: node.expression,
+          },),
+        },);
+      }
       return;
     }
     if (isCallExpression(node,)) {

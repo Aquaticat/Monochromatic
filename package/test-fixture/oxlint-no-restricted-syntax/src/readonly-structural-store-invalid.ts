@@ -630,3 +630,82 @@ export function declareDishonestProjection(encoder: Readonly<TextEncoder>,): voi
 export function storeDishonestProjection(encoder: Readonly<TextEncoder>,): void {
   heldEncoder = encoder;
 }
+
+/**
+ * Structural parameter whose elements are primitives rather than references.
+ */
+type Labels = {
+  labels: string[];
+};
+
+/**
+ * Binding retaining a primitive, which no caller can observe a write through.
+ */
+let heldLabel = '';
+
+/**
+ * Retains each row in a binding outside the callable through an iteration target.
+ *
+ * No assignment expression appears anywhere in this, which is what made it invisible to a
+ * classification that reads assignments. The retention is the same one
+ * `storePropertyIntoModuleBinding` performs, and it was measured offered while that one was
+ * reported.
+ *
+ * @param config - Configuration whose rows escape one at a time.
+ *
+ * @example
+ * ```ts
+ * storeIterationTarget({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeIterationTarget(config: Config,): void {
+  for (held of config.rows)
+    void held;
+}
+
+/**
+ * Iterates primitives into a binding outside the callable.
+ *
+ * Control for the half of this that decides from the element rather than the iterable. An
+ * array of strings is itself an object, so a classification asking only what the iterable
+ * can carry would report this, and the binding holds nothing any caller could write
+ * through.
+ *
+ * @param config - Configuration whose labels are read one at a time.
+ *
+ * @example
+ * ```ts
+ * storeIterationPrimitiveTarget({ labels: [], },);
+ * ```
+ */
+export function storeIterationPrimitiveTarget(config: Labels,): void {
+  for (heldLabel of config.labels)
+    void heldLabel;
+}
+
+/**
+ * Declares a fresh binding per iteration, which dies with the iteration.
+ *
+ * The control that stops the classification from taking every read loop with it. A
+ * declaration initializer is not a store however the loop drains.
+ *
+ * @param config - Configuration whose rows are read one at a time.
+ *
+ * @returns count of rows carrying a label.
+ *
+ * @example
+ * ```ts
+ * declareIterationBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function declareIterationBinding(config: Config,): number {
+  /**
+   * Rows whose label is not empty.
+   */
+  let labelled = 0;
+  for (const row of config.rows) {
+    if (row.label !== '')
+      labelled += 1;
+  }
+  return labelled;
+}

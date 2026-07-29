@@ -15,7 +15,11 @@ import {
   type Node,
   SyntaxKind,
 } from 'typescript/unstable/ast';
-import { isBinaryExpression, } from 'typescript/unstable/ast/is';
+import {
+  isBinaryExpression,
+  isForOfStatement,
+  isVariableDeclarationList,
+} from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
@@ -23,6 +27,7 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
+import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { retentionProvenance, } from './effect-retention-provenance.ts';
 import type {
   MutableEffectSummary,
@@ -120,6 +125,97 @@ export function recordAssignmentStore({
     project,
     bindingOriginBySymbolId,
     node: node.right,
+  },)
+    .forEach(function recordEscapingSlot(affectedSlot,): void {
+      addOpaqueEffect({
+        summary,
+        affectedSlot,
+        provenance: retentionProvenance({
+          target: targetText,
+          location,
+        },),
+      },);
+    },);
+}
+
+/**
+ * Records opacity for a parameter an iteration statement hands to a binding it does not own.
+ *
+ * `for (held of config.rows)` retains a caller-owned row past the call exactly as
+ * `held = config.rows[0]` does, and no assignment expression appears anywhere in it, so the
+ * classification that reads assignments cannot see it. Measured before this existed:
+ * `opaque=[]` and the parameter offered, beside `held = config.rows.at(0,)` recording
+ * `opaque=[0]` for the same retention.
+ *
+ * A declaration initializer is not a store. `for (const row of config.rows)` binds a fresh
+ * local per iteration, which dies with the iteration, and reporting it would take every
+ * ordinary read loop with it.
+ *
+ * @param project - TypeScript project resolving origins and targets.
+ *
+ * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
+ *
+ * @param summary - Summary receiving opacity.
+ *
+ * @param node - Candidate iteration statement from the body scan.
+ *
+ * @param body - Body of callable being summarised.
+ *
+ * @mutates summary - Adds an opaque slot and store provenance per retained origin.
+ *
+ * @example
+ * ```ts
+ * recordIterationStore({ project, bindingOriginBySymbolId, summary, node, body, });
+ * ```
+ */
+export function recordIterationStore({
+  project,
+  bindingOriginBySymbolId,
+  summary,
+  node,
+  body,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly summary: MutableEffectSummary;
+  readonly node: Node;
+  readonly body: Node;
+},): void {
+  if (!isForOfStatement(node,))
+    return;
+  /**
+   * What each element is assigned to, either a fresh declaration or an existing binding.
+   */
+  const { initializer, } = node;
+  if (isVariableDeclarationList(initializer,))
+    return;
+  if (targetIsCallableLocal({
+    project,
+    target: initializer,
+    body,
+  },))
+    return;
+  /* The element decides, not the iterable. `parameterIndexes` gates the leaves of the
+   * iterable expression, and an array of strings is itself an object, so asking only that
+   * question would report a loop that retains nothing but a `string`. The target's type is
+   * the element type here, which is what the binding actually holds after the loop. */
+  if (!expressionCanCarryMutableState({
+    checker: project.checker,
+    node: initializer,
+  },))
+    return;
+  /**
+   * Authored target text, naming what each element was handed to.
+   */
+  const targetText = initializer.getText();
+  /**
+   * Where the iteration sits, so the report can point at it.
+   */
+  const location = effectOriginLocation({ node, },);
+  parameterIndexes({
+    project,
+    bindingOriginBySymbolId,
+    node: node.expression,
   },)
     .forEach(function recordEscapingSlot(affectedSlot,): void {
       addOpaqueEffect({
