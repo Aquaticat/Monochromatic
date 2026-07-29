@@ -226,12 +226,41 @@ The probe uses one element shape and one collection.
 already records iterator members as separately unproven.
 The compile check covers the offers this probe produced,
  not every offer the rule can produce.
-One shape stays open and is the one worth probing next:
- a resolved callee that launders a `readonly` parameter back to a mutable array through a cast,
- letting a caller structurally mutate what it was offered `readonly` for.
-Casts are an acknowledged escape hatch,
- so that may well be out of scope,
- but it is the only route measured here by which the missing consumer could produce a false offer.
+
+One shape is half-measured and matters,
+ because it is the one route by which the missing consumer could produce a genuinely false offer.
+Element writes cannot make a `ReadonlyArray` offer false.
+A structural write can,
+ and a resolved callee can launder one through a cast:
+
+```ts
+function self(rows: readonly Row[],): Row[] {
+  return rows as Row[];
+}
+
+export function structuralThroughLaunderedReturn(rows: readonly Row[],): void {
+  self(rows,)
+    .push({ label: 'appended', },);
+}
+```
+
+Measured,
+ with the offer already applied:
+ this type-checks clean under TypeScript 7.0.2,
+ and executing it grows the caller's own array from one element to two.
+So `readonly Row[]` here is a false annotation in the strict sense,
+ not merely an imprecise one:
+ the callable structurally mutates exactly what the annotation says it will not.
+
+What is still unmeasured is the half that decides whether this is a live defect:
+ whether the rule actually offers `readonly` for that callable.
+It should,
+ by the same reasoning that made `writeThroughReturnedIndex` clean,
+ since nothing maps `self`'s returned parameter back through the argument.
+Confirm it before treating this as established.
+If confirmed,
+ #40 recovers a soundness justification that the element-write case does not give it,
+ and the ranking in "Recommendation" should be revisited.
 
 Whether any of these shapes occurs in the workspace today is unmeasured,
  and no sweep has looked.
