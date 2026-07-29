@@ -377,10 +377,19 @@ await describe({
         const local = opaqueIndexes('assignToLocal',);
         /** Result consumed in place, never bound. */
         const inPlace = opaqueIndexes('readInPlace',);
+        /** Store into a binding declared outside every callable body. */
+        const moduleBinding = opaqueIndexes('storeIntoModuleBinding',);
         closeSemanticBridge();
         /* The receiver keeps its opacity, because nothing follows the stored element. */
         expect(property,).toEqual([0,],);
         expect(element,).toEqual([0,],);
+        /* The module target is the one this classification most needed to cover, and it
+         * threw instead. `targetIsCallableLocal` walks the target's declaration toward the
+         * body, a module binding's ascent runs past the source file, and that file's
+         * `parent` is `undefined` while `Node` types it as present. The demand index caught
+         * the throw and omitted the callable, so this read `NO_EFFECT_SUMMARY` rather than
+         * any verdict. Restoring the self-reference-only guard reproduces that. */
+        expect(moduleBinding,).toEqual([0,],);
         /* And the controls stay discharged. Removing the locality test from
          * `targetIsCallableLocal`, so that every assignment target counts as a store,
          * turns `local` into `[0]` while leaving both cases above passing. */

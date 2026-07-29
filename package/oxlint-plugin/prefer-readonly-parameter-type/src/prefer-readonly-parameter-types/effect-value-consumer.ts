@@ -130,7 +130,47 @@ export function valueConsumer({ node, }: { readonly node: Node; },): Node {
 }
 
 /**
+ * Tests whether a walk step produced a node at all.
+ *
+ * `Node.parent` is declared present and is absent at a source file, measured by ascending
+ * from a declaration and reading what comes back rather than inferred from the type. Every
+ * root walk in this package needs the same guard, so it is written once and named for what
+ * it answers rather than repeated as a comparison whose point a reader has to reconstruct.
+ *
+ * @param candidate - Value a parent step produced.
+ *
+ * @returns whether the step reached a node.
+ *
+ * @example
+ * ```ts
+ * isPresentNode({ candidate: node.parent });
+ * ```
+ */
+export function isPresentNode(
+  { candidate, }: { readonly candidate: Node; },
+): boolean {
+  /* `Object.is` rather than a comparison against `undefined`, because writing that
+   * comparison needs a `Node | undefined` type to compare through, and a nullish union is
+   * exactly what this codebase forbids. The question here is not whether a value is
+   * absent by the type system's account; it is whether the runtime handed one back at
+   * all, and `Object.is` asks that without widening any declared type. */
+  return !Object.is(
+    candidate,
+    undefined,
+  );
+}
+
+/**
  * Tests whether a node sits inside a container node.
+ *
+ * The ascent stops on both root conventions, which is not defensive coding. A source
+ * file's `parent` is `undefined` in this AST, measured by walking one up rather than
+ * assumed, while `Node` types it as non-optional. Guarding only against a self-referential
+ * root therefore stepped onto `undefined` and threw for any node outside the container,
+ * which is exactly what this is asked about a module-level binding. The demand index
+ * caught the throw and omitted the whole callable from the effect index, so a callable
+ * storing a member result into a module binding was silently unanalysed rather than
+ * reported. Recorded in `doc/troubleshooting/prefer-readonly-root-parent-walk.md`.
  *
  * @param node - Node whose containment is tested.
  *
@@ -155,12 +195,15 @@ function nodeWithin({
    */
   const cursor: { current: Node; } = { current: node, };
   while (cursor.current !== container) {
-    if (cursor.current
-      .parent
-      === cursor.current)
+    /**
+     * Enclosing node, absent at the root whatever the declared type says.
+     */
+    const { parent, } = cursor.current;
+    if (!isPresentNode({ candidate: parent, },))
       return false;
-    cursor.current = cursor.current
-      .parent;
+    if (parent === cursor.current)
+      return false;
+    cursor.current = parent;
   }
   return true;
 }

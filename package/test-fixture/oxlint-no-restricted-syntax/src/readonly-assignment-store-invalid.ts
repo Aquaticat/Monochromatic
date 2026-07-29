@@ -95,3 +95,43 @@ export function readInPlace(rows: Row[],): number {
     ?.label
     .length ?? 0;
 }
+
+/**
+ * Module binding declared outside every callable body.
+ */
+let escaped: Row | undefined;
+
+/**
+ * Stores a member result into a binding declared outside the callable.
+ *
+ * The case that exposed the root walk. `targetIsCallableLocal` asks whether the target's
+ * declaration sits inside the body, and for a module binding the ascent runs past the
+ * source file, whose `parent` is `undefined` in this AST while `Node` types it otherwise.
+ * The walk stepped onto that and threw, the demand index caught it, and the whole callable
+ * was omitted from the effect index rather than analysed. So the store classification this
+ * fixture exists for was unreachable here for the one target kind it most needed to cover.
+ *
+ * @param rows - Rows whose first element is stored beyond every callable.
+ *
+ * @example
+ * ```ts
+ * storeIntoModuleBinding([],);
+ * ```
+ */
+export function storeIntoModuleBinding(rows: Row[],): void {
+  escaped = rows.at(0,);
+}
+
+/**
+ * Reports what the module binding holds, so the store above is not dead.
+ *
+ * @returns stored label, empty when nothing was stored.
+ *
+ * @example
+ * ```ts
+ * escapedLabel();
+ * ```
+ */
+export function escapedLabel(): string {
+  return escaped?.label ?? '';
+}

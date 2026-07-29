@@ -42,6 +42,7 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import {
   assignmentStoreEscapes,
+  isPresentNode,
   valueConsumer,
 } from './effect-value-consumer.ts';
 import {
@@ -350,18 +351,27 @@ function enclosedByNestedCallable({
   readonly body: Node;
 },): boolean {
   /**
-   * Cursor ascending toward the outer body.
+   * Cursor ascending toward the outer body, absent once the root is passed.
+   *
+   * Stops on an absent parent as well as a self-referential one, for the reason recorded
+   * on `nodeWithin` in `effect-value-consumer.ts`: a source file's parent is `undefined`
+   * here while the type says otherwise. Every caller passes a node inside `body`, so this
+   * walk should meet the boundary first, and carrying the same false assumption as the
+   * function that did throw is not worth the wager.
    */
   const cursor: { current: Node; } = { current: node.parent, };
   while (cursor.current !== body) {
     if (isEffectCallableDeclaration(cursor.current,))
       return true;
-    if (cursor.current
-      .parent
-      === cursor.current)
+    /**
+     * Enclosing node, absent at the root whatever the declared type says.
+     */
+    const { parent, } = cursor.current;
+    if (!isPresentNode({ candidate: parent, },))
       return false;
-    cursor.current = cursor.current
-      .parent;
+    if (parent === cursor.current)
+      return false;
+    cursor.current = parent;
   }
   return false;
 }
