@@ -32,6 +32,7 @@
 
 - Use plain, standalone HTML that works through `file:///` with no build step.
 - Repeat the automatic-dark-mode CSS in every HTML file; do not extract a stylesheet.
+- Declare `<meta name="color-scheme" content="light dark">` so browser-default link colors follow active theme.
 - Keep CSS near ten lines and add no presentation rules beyond the approved foreground and background colors.
 - Use HTML and CSS for graphs and diagrams.
 - JavaScript is allowed and should be embedded when a lesson needs it.
