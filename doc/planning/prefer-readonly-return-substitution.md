@@ -2110,3 +2110,69 @@ A guard removed for a good reason took an unrelated guarantee with it,
  and as the store classification added for a good reason took the message with it.
 Each was caught by asking what else the removed thing was doing,
  and none of the three was visible in a workspace capture.
+
+## A false offer that meets the bar, through a returned projection
+
+Found while investigating what looked like a precision task.
+This is the first finding in the sequence to satisfy every clause of the falsification bar
+ at once,
+ and the shape is ordinary code rather than a corner.
+
+```ts
+export function firstRow(config: Config,): Row {
+  return config.row;
+}
+
+export function writeThroughOwnedCall(config: Config,): void {
+  firstRow(config,).label = 'written';
+}
+```
+
+The rule offers `ReadonlyDeep` for both parameters.
+Applying both annotations type-checks clean.
+At runtime the caller's `config.row.label` changes from `original` to `written`.
+
+Rule produces the annotation,
+ annotation compiles,
+ caller observes a mutation the annotation denies.
+
+The reason it compiles is the part worth carrying forward.
+TypeScript does not consider `readonly` property modifiers when deciding assignability,
+ so `ReadonlyDeep<Row>` is assignable to `Row`,
+ and a callee whose declared return type is `Row` launders a deeply readonly value back
+ into a mutable one without a diagnostic.
+The projection the rule offers is therefore not self-protecting across a call boundary,
+ which is what an earlier reading of this assumed.
+
+I reasoned my way to the opposite conclusion first,
+ that annotating the caller alone fails to compile and the offer is therefore
+ self-limiting.
+That is true and irrelevant:
+ the rule offers both parameters,
+ a reader applying its suggestions applies both,
+ and the pair compiles.
+Checking one annotation at a time is the wrong experiment for a rule that reports per
+ parameter and is applied per file.
+
+What the analysis records for every shape of this:
+
+```text
+firstRow                    returned=[0]
+storeThroughOwnedCall       everything empty
+writeThroughOwnedCall       everything empty
+writeThroughHeldResult      everything empty
+writeThroughAliasedResult   everything empty
+storeHeldResult             everything empty
+```
+
+`firstRow` knows its result carries parameter zero,
+ and the machinery to substitute that caller-side exists and is used,
+ but only from two places:
+ a return statement and a collection member effect.
+No write path records a deferred result use,
+ so the fact `firstRow` publishes is never consulted by the callable that writes through
+ the result.
+
+The task tracking this was written as precision work about aliases.
+It is a soundness defect,
+ and its first stage is one call at the write site.
