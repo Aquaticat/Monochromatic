@@ -4436,3 +4436,63 @@ The first comparison of this capture was run against a partial file:
 Nothing was wrong with the sweep.
 A capture is not a capture until the run that produces it has ended,
  and a comparison against a file still being written is a reading of nothing.
+
+## One cause behind eight queue tasks
+
+Applying the measure-first pass to the **queue** rather than to new channels resolved most of it
+ at once, which is worth recording as method: the tasks had been filed one defect at a time and
+ turned out to name one cause eight times.
+
+One file, one shape per task, every parameter leaking for real, three controls.
+Six offers came back, and every one falsified:
+
+```text
+push:        changed-by-push
+retainer:    changed-by-retainer
+pattern:     written
+default:     written
+logical:     written
+conditional: written
+projection:  changed-by-projection
+```
+
+The cause is a call result reaching a use site the deferred relation did not cover.
+Every fix is a variation on asking where a value can have **come from** rather than what layer
+ sits over it.
+
+- a conditional write target: the normalisation walk strips access layers and wrappers, and a
+  conditional is neither
+- a property of an authored literal, and an element of one: same reason
+- a destructuring pattern: the registration refused every non-identifier name
+- a logical assignment: the binding scan collected plain assignment alone
+- a parameter default: it collected local declarations and not the callable's own parameters
+- a return of any of the above: the return branch asked the expression alone, where every write
+  and store site has consulted the binding record since the relation existed
+- an argument that is a call result: no origin exists for it during the syntactic pass, so it is
+  deferred to the inner call site and resolved in the fixed point
+
+Three separate omissions lived in one record, which is why the queue read as eight tasks.
+
+### The one decision that costs precision
+
+An argument that is a call result is recorded as a **retention** against the inner call site,
+ with provenance naming the receiving call.
+
+That over-approximates: the receiving call may only read what it was given.
+Retention rather than a mutation claim, because handing a value to a call is a handoff and not a
+ write, and retention withholds silently, which is right for something a reader can do nothing
+ about.
+The leaf gate removes the common half of the imprecision, since an argument that cannot carry
+ mutable state records nothing, and `handCountToCollection` pins that.
+
+The alternative is a new application kind resolved against the receiving callee's own summary,
+ which is more precise and larger. The sweep decides whether it is needed.
+
+### What was already correct
+
+Four queue tasks needed no fix, and measuring them said so.
+A store through a destructuring pattern into a binding outside the callable, an object literal
+ property holding caller state, a store from a parameter initializer, and an element property
+ write on an array parameter all already recorded what they should.
+Their tasks were filed from reading rather than from measuring, which is the cost of filing
+ before probing.
