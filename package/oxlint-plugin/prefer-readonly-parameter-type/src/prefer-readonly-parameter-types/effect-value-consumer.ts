@@ -32,16 +32,22 @@ import type { Project, } from 'typescript/unstable/sync';
 
 /**
  * Operators whose value may be either operand's.
+ *
+ * Exported so `effect-result-holders.ts` descends by the same policy this file ascends
+ * by. Two copies of the operand rules would let the holder closure disagree with the
+ * consumer walk about which operand carries a value.
  */
-const EITHER_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
+export const EITHER_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.QuestionQuestionToken,
   SyntaxKind.BarBarToken,
 ],);
 
 /**
  * Operators whose value is always the right operand's.
+ *
+ * {@inheritDoc EITHER_OPERAND_PASSES}
  */
-const RIGHT_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
+export const RIGHT_OPERAND_PASSES: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.AmpersandAmpersandToken,
   SyntaxKind.EqualsToken,
   SyntaxKind.CommaToken,
@@ -180,7 +186,7 @@ function nodeWithin({
  * targetIsCallableLocal({ project, target: assignment.left, body, });
  * ```
  */
-function targetIsCallableLocal({
+export function targetIsCallableLocal({
   project,
   target,
   body,

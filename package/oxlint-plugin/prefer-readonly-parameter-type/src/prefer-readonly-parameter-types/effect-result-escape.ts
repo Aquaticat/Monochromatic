@@ -24,6 +24,7 @@ import {
 import {
   isArrayLiteralExpression,
   isBinaryExpression,
+  isBindingElement,
   isCallExpression,
   isElementAccessExpression,
   isExpressionStatement,
@@ -47,6 +48,7 @@ import {
   collectAstNodes,
   isEffectCallableDeclaration,
 } from './effect-summary-model.ts';
+import { resultReachableSymbolIds, } from './effect-result-holders.ts';
 
 /**
  * Binary operators that only test a value and keep no reference to it.
@@ -217,50 +219,37 @@ function useEscapes({ node, }: { readonly node: Node; },): boolean {
 }
 
 /**
- * Collects the local bindings that receive a call's result, directly or by alias.
+ * Tests whether an identifier occurrence establishes a binding rather than using it.
  *
- * @param project - TypeScript project resolving binding symbols.
+ * Once the holder set follows aliases, the bindings it collects have declaration and
+ * assignment-target occurrences of their own, and those are not uses of the result. A
+ * destructured leaf's identifier has a `BindingElement` parent, which no attributed
+ * position matches, so it would fall through to escaping and make every destructuring
+ * declaration report. An assignment target's identifier has a binary-expression parent
+ * whose operator is not a testing operator, so it would report every assignment alias.
+ * Neither occurrence reads the value, so both are skipped before classification.
  *
- * @param call - Call whose result holders are wanted.
+ * @param node - Identifier occurrence resolving to a holder.
  *
- * @returns symbol ids holding the result, empty when it is never bound.
+ * @returns whether this occurrence declares or overwrites rather than reads.
  *
  * @example
  * ```ts
- * resultHolderSymbolIds({ project, call });
+ * occurrenceEstablishesBinding({ node: identifier });
  * ```
  */
-function resultHolderSymbolIds({
-  project,
-  call,
-}: {
-  readonly project: Project;
-  readonly call: CallExpression;
-},): ReadonlySet<number> {
+function occurrenceEstablishesBinding({ node, }: { readonly node: Node; },): boolean {
   /**
-   * Symbol ids of bindings initialized from this call.
+   * Syntactic context this occurrence sits in.
    */
-  const holders = new Set<number>();
-  /**
-   * Declaration receiving the call result, when the call initializes one.
-   */
-  const { parent: declaration, } = valueConsumer({ node: call, },);
-  if (!isVariableDeclaration(declaration,))
-    return holders;
-  if (!isIdentifier(declaration.name,))
-    /* A destructuring pattern spreads the result across several bindings. Those
-     * bindings already receive the initializer's origins, because
-     * `registerBindingOrigin` recurses into binding patterns, so each extracted part
-     * is attributed and no holder needs following here. */
-    return holders;
-  /**
-   * Symbol declared by the receiving binding.
-   */
-  const symbol = project.checker
-    .getSymbolAtLocation(declaration.name,);
-  if (symbol !== undefined)
-    holders.add(symbol.id,);
-  return holders;
+  const { parent, } = node;
+  if (isVariableDeclaration(parent,) || isBindingElement(parent,))
+    return parent.name === node;
+  return isBinaryExpression(parent,)
+    && (parent.operatorToken
+      .kind
+      === SyntaxKind.EqualsToken)
+    && (parent.left === node);
 }
 
 /**
@@ -302,11 +291,12 @@ export function resultEscapesCallable({
   },))
     return true;
   /**
-   * Bindings that hold this call's result.
+   * Bindings that hold state reachable from this call's result.
    */
-  const holders = resultHolderSymbolIds({
+  const holders = resultReachableSymbolIds({
     project,
     call,
+    body,
   },);
   if (holders.size === 0)
     /* Not bound and not escaping by position: the result is consumed in place, which
@@ -314,7 +304,7 @@ export function resultEscapesCallable({
     return false;
   return collectAstNodes(body,)
     .some(function referenceEscapes(node,): boolean {
-      if (!isIdentifier(node,))
+      if ((!isIdentifier(node,)) || occurrenceEstablishesBinding({ node, },))
         return false;
       /**
        * Symbol this identifier resolves to.
