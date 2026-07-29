@@ -1310,6 +1310,62 @@ await describe({
       },
     },),
     it({
+      name: 'refuses a marker declared in a declaration file',
+      fn: async () => {
+        using projectRoot = disposableCacheDirectory();
+        /** Marker directory matching the identity check's expected shape. */
+        const markerRoot = join(
+          projectRoot.path,
+          'ownership-marker',
+          'foreign-borrowed',
+          'src',
+        );
+        /** Boundary source naming the marker it imports. */
+        const foreignPath = join(projectRoot.path, 'foreign.ts',);
+        /** Boundary whose parameter carries the marker. */
+        const foreignSource = "import type { ForeignBorrowed, } from './ownership-marker/foreign-borrowed/src/index.js';\nexport function readForeign(value: ForeignBorrowed<{ text: string; }>,): string { return value.text; }\n";
+        mkdirSync(markerRoot, { recursive: true, },);
+        writeFileSync(
+          join(projectRoot.path, 'tsconfig.json',),
+          '{"compilerOptions":{"strict":true},"include":["**/*.ts"]}\n',
+        );
+        /* Declaration file rather than `index.ts`, which is the whole point: the identity
+         * check names one exact `.ts` path, and a marker anywhere else is not this marker.
+         * `foreign-borrowed-demand.ts` depends on that. Its scope pre-scan reads source text,
+         * so it could only miss a marker whose declaring file is absent from the indexed
+         * scope, and the only file that can declare one has no `node_modules` segment and is
+         * therefore always indexed. Accepting a declaration file here would break that
+         * reasoning and make the pre-scan skip a scope whose parameters are genuinely
+         * foreign, which withholds nothing and emits an offer. */
+        writeFileSync(
+          join(markerRoot, 'index.d.ts',),
+          'declare const FOREIGN_BORROWED_MARKER: unique symbol;\nexport type ForeignBorrowed<Value> = Value & { readonly [FOREIGN_BORROWED_MARKER]?: true; };\n',
+        );
+        writeFileSync(foreignPath, foreignSource,);
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+        const session = openSemanticFile({
+          fileName: foreignPath,
+          sourceText: foreignSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+          cacheRootOverride: join(projectRoot.path, '.effect-cache',),
+        },);
+        /** Boundary declaration whose parameter names the marker alias. */
+        const foreignDeclaration = session.nodeAtOffset(foreignSource.indexOf('readForeign',),)
+          .parent;
+        if (!isFunctionLikeDeclaration(foreignDeclaration,))
+          throw new Error('Expected active foreign boundary declaration.',);
+        expect([...index.proveForeignBorrowed(foreignDeclaration,),],).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'proves the same parameters whichever callable was asked about first',
       fn: async () => {
         using projectRoot = disposableCacheDirectory();

@@ -34,14 +34,21 @@ const OWNERSHIP_MARKER_NAMES: readonly string[] = [
  * equivalence. It matters because the closure otherwise runs once per callable whose verdict
  * demands it, and most packages name no marker.
  *
- * Two ways it is not the equivalence its original comment claimed, both recorded in
- * `doc/planning/prefer-readonly-foreign-proof-cost.md`:
- * a markerless recursive component can produce a candidate, where the skip is the more correct of
- * the two answers and `foreign-borrowed-grounding.ts` closes the gap from the other side;
- * and this is a syntactic test over owned source text while the classifiers inspect checker types,
- * so a value typed `ForeignBorrowed<T>` through a declaration file this scope never spells can
- * seed provenance the skip then misses. That second one withholds nothing and emits an offer, so
- * it is the unsound direction and is tracked rather than hidden here.
+ * It is not quite the equivalence its original comment claimed, in one way recorded in
+ * `doc/planning/prefer-readonly-foreign-proof-cost.md`: a markerless recursive component can
+ * produce a candidate, so a scope naming a marker somewhere can withhold an offer this skip emits.
+ * The skip is the more correct of the two answers there, since nothing is marked in either case,
+ * and `foreign-borrowed-grounding.ts` closes the gap from the other side.
+ *
+ * The tempting second objection is that this is a syntactic test over source text while the
+ * classifiers inspect checker types, so a marker applied through inference in a file that spells
+ * nothing would be missed. It does not reach: `isForeignBorrowedType` only recognizes an alias
+ * whose declaration sits at a path ending `/ownership-marker/foreign-borrowed/src/index.ts`, and
+ * that file has no `node_modules` segment, so `indexedSourceFileMap` always admits it and its own
+ * text always names the marker. Measured, not argued: the same marker moved to `index.d.ts` proves
+ * nothing foreign at all, because the identity check rejects it before ownership is ever inferred.
+ * `effect-summaries.unit.test.ts` pins that, since relaxing the identity check to accept a
+ * declaration file is exactly what would make this skip unsound.
  *
  * @param indexedSourceFiles - Complete owned source scope the closure would walk.
  *
