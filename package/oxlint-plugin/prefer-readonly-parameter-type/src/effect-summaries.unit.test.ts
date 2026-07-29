@@ -469,6 +469,8 @@ await describe({
         const direct = writtenIndexes('growDirectly',);
         /** A read through a returning callable, which changes nothing. */
         const read = writtenIndexes('measureThroughReturn',);
+        /** A property write through a returned element, which substitution misses today. */
+        const propertyWrite = writtenIndexes('writePropertyThroughReturn',);
         /** Returned parameters of the single-hop callable. */
         const handedBack = [...summaryOf('handBack',)
           .returnedParameterIndexes,];
@@ -507,6 +509,13 @@ await describe({
         expect(handedBack,).toEqual([0,],);
         expect(handedBackTwice,).toEqual([0,],);
         expect(allocated,).toEqual([],);
+        /* A boundary, pinned rather than a behaviour defended. The deferred recording
+         * sits in the collection-member path, so a property write through a returned
+         * element is not reached. Asserting the current empty set means closing that gap
+         * fails this line rather than changing behaviour silently, which is the point of
+         * writing it down. Whoever closes it should change this to `[0,]` and move the
+         * case out of the boundary comment in the fixture. */
+        expect(propertyWrite,).toEqual([],);
       },
     },),
     it({

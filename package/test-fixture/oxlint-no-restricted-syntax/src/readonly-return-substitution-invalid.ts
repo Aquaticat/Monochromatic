@@ -155,3 +155,31 @@ export function measureThroughReturn(rows: Row[],): number {
   return handBack(rows,)
     .length;
 }
+
+/**
+ * Writes a property through a returned element, which substitution does not yet reach.
+ *
+ * Pins a known boundary rather than a fixed defect. The deferred recording sits in
+ * `effect-collection-member-effect.ts`, so it fires for a collection member call on a
+ * returned result. A property write travels through `inspectDirectWrite` instead, whose
+ * origin walk reaches the call and comes back with nothing, so this records no write.
+ *
+ * Not demonstrated to be a false offer. Under `readonly Row[]` an element property write
+ * is legal, exactly as the retraction recorded in the planning document established, so
+ * the honest offer here is the shallow one. The structural shape is where it would bite.
+ *
+ * @param rows - Rows whose first label is rewritten.
+ *
+ * @example
+ * ```ts
+ * writePropertyThroughReturn([],);
+ * ```
+ */
+export function writePropertyThroughReturn(rows: Row[],): void {
+  /**
+   * Row handed back by the returning callable.
+   */
+  const first = handBack(rows,)[0];
+  if (first !== undefined)
+    first.label = 'changed';
+}
