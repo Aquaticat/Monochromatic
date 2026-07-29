@@ -50,7 +50,8 @@ jobs:
 
 GitHub is therefore following the repository's configuration.
 The workflow was introduced by commit `7244d1b94f75488b9a018c8ed36aa5c803676bc5`,
-whose commit body explicitly said it would run the benchmark "on every mainline change."
+whose commit body explicitly said it would run the benchmark "on every mainline change.
+"
 
 GitHub's documentation source was inspected at `github/docs@e1e4aa937308f21c411c248b4966873536bb0cba`.
 `data/reusables/actions/workflows/triggering-a-workflow-paths1.md:1` to `3` identifies path filtering as the supported
