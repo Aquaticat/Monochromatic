@@ -2069,3 +2069,44 @@ An aliased import used to be preserved,
 An alias exists to name an import statement,
  and the inline form has none,
  so the alias has nothing left to name.
+
+### Removing the gate traded one broken emission for another
+
+Caught by review rather than by the sweep,
+ and then measured.
+
+```text
+package/module/logger, which does not declare type-fest
+error TS2307: Cannot find module 'type-fest' or its corresponding type declarations.
+```
+
+The import gate was the wrong test for the right reason.
+A file that imports a package can certainly resolve it,
+ so requiring the import guaranteed the emitted name would compile.
+Dropping it made the suggestion available everywhere,
+ including the hundred and thirty-two workspace packages that do not depend on `type-fest`,
+ where the inline form produces `TS2307` in place of the `TS2552` it was meant to fix.
+
+Eighteen of a hundred and fifty packages declare the dependency.
+The unreachable case is the common one.
+
+The replacement asks the question directly,
+ by walking ancestors for an installed package the way Node resolves one.
+A manifest states intent and the walk states fact,
+ and what decides whether the emitted type compiles is fact.
+
+Both directions verified after the guard.
+A fixture-package source still receives the projection and the emitted file exits zero
+ under `tsc`.
+A source in a package without the dependency is left alone.
+The negative case pinned in the test is this package itself,
+ which emits the projection and cannot resolve it,
+ so it can never suggest it for its own sources.
+
+Worth naming as a pattern,
+ because it is the third time in this sequence.
+A guard removed for a good reason took an unrelated guarantee with it,
+ exactly as the silent return removed for a good reason took four unrelated verdicts,
+ and as the store classification added for a good reason took the message with it.
+Each was caught by asking what else the removed thing was doing,
+ and none of the three was visible in a workspace capture.
