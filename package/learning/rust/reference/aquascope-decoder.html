@@ -294,8 +294,8 @@
           Function attached to type and called with dot syntax on value of that type.
           <p>
             <strong>Example:</strong>
-            <code>s.len()</code> calls <code>String</code> method <code>len</code>;
-            it returns current byte count without changing <code>s</code>.
+            <code>let s = String::from("Hi"); let n = s.len();</code> creates <code>s</code>,
+            calls <code>len</code>, and binds byte count <code>2</code> to <code>n</code> without changing <code>s</code>.
           </p>
           <p><strong>TypeScript relationship:</strong> TypeScript object and class methods use similar dot-call syntax.</p>
         </dd>
@@ -636,7 +636,11 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
           Argument passed to <code>drop</code>.
           Passing owned <code>String</code> moves it out of <code>s</code> and into function;
           <code>s</code> cannot be used afterward.
-          <p><strong>Example:</strong> adding <code>s.push_str("?");</code> after <code>drop(s);</code> produces compile-time use-after-move error.</p>
+          <p>
+            <strong>Example:</strong>
+            after <code>drop(s);</code>, compiler rejects later <code>s.push_str("?");</code>
+            because <code>s</code>'s value was moved into <code>drop</code>.
+          </p>
         </dd>
       </dl>
     </section>
@@ -666,7 +670,7 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
 
         <dt>Binocular icon</dt>
         <dd>
-          Switches compact value picture to expanded standard-library implementation picture.
+          Switches compact value picture to expanded picture of Rust's internal implementation.
           <p><strong>Example:</strong> compact <code>s ●</code> expands into <code>String</code>, <code>Vec</code>, <code>RawVec</code>, and pointer wrappers.</p>
         </dd>
 
@@ -823,7 +827,9 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
     <section aria-labelledby="concrete">
       <h2 id="concrete">Every label in the binocular picture</h2>
       <p>
-        These are private details of Rust code shipped with Rust itself, called standard library.
+        <strong>Standard library</strong> means reusable types and functions shipped with Rust.
+        <strong>Example:</strong> <code>String</code>, <code>Vec</code>, and <code>drop</code> come from Rust's standard library.
+        Binocular picture exposes private details inside that library.
         Their names and nesting can change with Rust version.
         Learn them only well enough to decode this picture.
       </p>
