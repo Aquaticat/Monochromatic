@@ -3888,6 +3888,88 @@ That is a genuine capture and should attribute,
  but it is the direction where this reaches furthest,
  so the sweep is run on this change alone rather than batched with the next.
 
+It moved the workspace by nothing:
+ 1967 before and after,
+ no category touched,
+ offers unchanged.
+Which says the aliased store does not occur in this repository in a shape that was still
+ offered,
+ and says nothing about whether the shape matters,
+ exactly as the zero for the escaping closure did.
+
+## A returned callable breaks a precondition rather than falling under a policy
+
+The accepted decision permits returning parameter-reachable state,
+ and it names the condition that makes that sound:
+ callers keep tracking the value through recorded returned origins.
+`return config.row` satisfies it.
+`return (): Row => config.row` does not,
+ because a function expression has no provenance successors,
+ so nothing is recorded and no caller can substitute through it.
+
+That distinction is the whole finding.
+Running the shape and watching the caller's row change does not by itself separate it from the
+ direct return,
+ which the decision treats as benign and which can also expose a mutable row.
+What separates them is that one is tracked and one is not.
+
+### Opacity, not a returned origin
+
+The reuse was tempting and is wrong.
+A returned origin asserts that a caller can reach these parameters through this result.
+What a returned closure carries is the capability to reach them by invoking it,
+ which is a different relation,
+ and `packagedCallableOrigins` over-approximates by scanning the complete subtree.
+
+An over-approximation is safe on a channel that withholds and unsafe on one that claims.
+
+Checked rather than assumed:
+ under today's consumers an over-approximated returned set cannot produce a false offer,
+ because every consumer is monotone and `effect-result-substitution.ts` states the invariant
+ that nothing discharges on the strength of a returned set being empty.
+So the objection is not that the reuse breaks now.
+It is that it states the wrong relation,
+ and becomes unsound the day a consumer treats presence in `returned` as authority to
+ discharge.
+
+### Three fixtures, and the third is the one that matters
+
+`returnCapturingClosure` withholds.
+`returnFreshClosure` returns a closure naming nothing the caller owns and keeps its offer,
+ so this attributes captures rather than refusing returns.
+
+`returnRowDirectly` returns caller state directly and keeps its offer.
+That one is not a control on this change at all;
+ it is the accepted policy working,
+ and without it the change reads as a rule against returning caller state,
+ which is precisely what the decision permits.
+
+### What the mutants proved
+
+Recording nothing fails the new assertion and the broad effects assertion together.
+
+Scanning the returned expression without resolving it first fails widely:
+ sixteen diagnostics become nine in one fixture and a local transfer stops discharging,
+ because treating every returned expression as a callable body attributes almost everything to
+ almost everything.
+The resolver is load-bearing rather than decorative.
+
+### One existing expectation moved, and why it is not a regression
+
+`returnedClosureSemanticEffect` in the sync-adapter fixture returns a closure that writes
+ through its capture.
+It recorded `mutated=[0]` and now records `opaque=[0]` beside it.
+
+Redundant there and load-bearing next door:
+ the active-body scan already attributed that write,
+ while a returned closure that only hands the capture back records no mutation and nothing
+ else would withhold it.
+
+Nothing a reader sees changed.
+A mutation withholds silently and a retention withholds silently,
+ and that callable emits no diagnostic before or after,
+ which was checked at the oxlint boundary rather than reasoned about.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
