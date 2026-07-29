@@ -1006,3 +1006,62 @@ Four signatures gained the projection and the import was deleted in the same pas
  leaving a file that does not compile.
 Reproduced twice on separate copies,
  with only this rule enabled in the fixture config.
+
+## Sweep pre-registration for the two holder-closure narrowings
+
+Written before the sweep ran.
+Unlike the three changes before it,
+ this one moves in the direction that costs soundness if it is wrong,
+ so the reading is stricter and the controls matter more than the totals.
+
+Both narrowings make the analysis discharge more.
+Counting a callable's own parameter as local removes a store classification.
+Treating an object rest of primitives as holding nothing removes a holder.
+Fewer stores and fewer holders mean fewer escapes,
+ fewer escapes mean more discharges,
+ and every discharge is an offer the rule did not previously make.
+
+What each direction has to survive:
+
+-    Receiver opacity falling.
+     Expected,
+      and the only expected movement.
+     Each lost report must be a callable that either rebinds one of its own parameters or
+      destructures an object rest whose every member is primitive.
+     A lost report matching neither shape is the stop signal,
+      because it means one of the two predicates is answering about something else.
+-    Offers rising by the same callables.
+     Each new offer must be sampled and the parameter checked by hand for a write.
+     An offer on a parameter the callable writes through is unsound and reverts the change.
+-    Argument opacity moving.
+     Not expected.
+     Neither predicate runs on an argument position.
+-    Anything at all in the mutation categories.
+     Not expected,
+      and not possible by inspection:
+      neither change touches `directMutated`.
+     Movement there would mean the discharge is reaching a write attribution.
+
+The controls that decide whether this narrowed or simply disabled,
+ all measured before the sweep:
+
+```text
+storeIntoParameter            [0] -> []   own parameter, must discharge
+storeRestOverPrimitiveState   [0] -> []   fresh rest of primitives, must discharge
+storeRestOverCarriedState     [0] -> [0]  rest copying a reference, must not
+storeIntoModuleBinding        [0] -> [0]  outer binding, must not
+assignToLocal                 []  -> []   body-local target, unchanged
+readInPlace                   []  -> []   no binding at all, unchanged
+```
+
+The number that would revert rather than ship:
+ any sampled new offer on a parameter the callable writes through,
+ or `storeRestOverCarriedState` discharging.
+
+What this cannot establish.
+The rest narrowing reads declared types,
+ so a source whose declared shape is narrower than its runtime shape can defeat it.
+That is true of the whole analysis and is not new here,
+ and stating it is not a defence:
+ it means a workspace clean result is evidence about this workspace's declarations rather
+ than about the predicate.
