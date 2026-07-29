@@ -135,6 +135,72 @@ await describe({
       },
     },),
     it({
+      name: 'breaks after a bold span rather than inside its closing delimiter',
+      fn: async function boldTail() {
+        /**
+         * Fixed definition-list item, the shape the documentation tree is full of.
+         */
+        const fixed = fix('- **Term.** Explanation continues.\n',);
+        expect(fixed.source.includes('- **Term.**\n',),).toBe(true,);
+        expect(fixed.source.includes('**Term.\n',),).toBe(false,);
+        expect(fixed.diagnostics.length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'leaves a bold span alone once the break sits after it',
+      fn: async function boldAlreadyBroken() {
+        // The break belongs after the closing delimiter, so a document already
+        // written that way is correct and reporting it is a false positive.
+        expect(count('- **Term.**\n  Explanation continues.\n',),).toBe(0,);
+      },
+    },),
+    it({
+      name: 'leaves a bold span ending its paragraph alone',
+      fn: async function boldParagraphTail() {
+        // The paragraph's last child is the span, not the text inside it, so the
+        // final punctuation has to be recognized through the delimiter.
+        expect(count('**the end.**\n',),).toBe(0,);
+        expect(count('a lead-in and **the end.**\n',),).toBe(0,);
+        // Not simply "a span tail never breaks": the same span breaks when prose
+        // follows it.
+        expect(count('**the end.** and more here.\n',),).toBe(1,);
+      },
+    },),
+    it({
+      name: 'still breaks between sentences inside one bold span',
+      fn: async function boldInternalBreak() {
+        /**
+         * Fixed multi-sentence bold run.
+         */
+        const fixed = fix('**First. Second.** Tail text here.\n',);
+        expect(fixed.source.includes('**First.\n',),).toBe(true,);
+        expect(fixed.source.includes('Second.**\n',),).toBe(true,);
+        expect(fixed.diagnostics.length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'treats every break-point character the same at a span tail',
+      fn: async function boldTailCharacters() {
+        // One break each, after the closing delimiter rather than before it.
+        expect(count('- **Term,** rest of it here.\n',),).toBe(1,);
+        expect(count('- **Term;** rest of it here.\n',),).toBe(1,);
+        expect(count('- **Term:** rest of it here.\n',),).toBe(1,);
+        expect(count('- **Term?** rest of it here.\n',),).toBe(1,);
+        expect(count('- **Term!** rest of it here.\n',),).toBe(1,);
+        expect(fix('- **Term!** rest of it here.\n',).source
+          .includes('**Term!**\n',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'reaches the tail through italics and through nesting',
+      fn: async function emphasisTail() {
+        expect(fix('- *Term.* Explanation continues.\n',).source
+          .includes('*Term.*\n',),).toBe(true,);
+        expect(fix('- **_Term._** Explanation continues.\n',).source
+          .includes('**_Term._**\n',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'the add-only fix is clean and idempotent in one pass',
       fn: async function idempotent() {
         /**
