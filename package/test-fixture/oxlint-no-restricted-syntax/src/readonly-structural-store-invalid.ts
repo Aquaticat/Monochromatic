@@ -1300,3 +1300,56 @@ export function relayCallable(relayed: () => Row,): void {
 export function handCaptureToRelay(forwarded: Config,): void {
   relayCallable((): Row => forwarded.row,);
 }
+
+/**
+ * Stores a capturing closure the callable bound to a local first.
+ *
+ * Falsified before the store path resolved callables rather than testing their syntax. The
+ * gate saw an identifier and stopped, and `parameterIndexes` found nothing either, because a
+ * local bound to a function expression carries no parameter origin for the same reason the
+ * inline form needed a fix at all.
+ *
+ * `holder.on = handler` is what real code writes far more often than the inline store, so
+ * this shape rather than the inline one is what decides whether the store path reaches
+ * ordinary source.
+ *
+ * @param aliased - Configuration whose row the named closure hands out.
+ *
+ * @example
+ * ```ts
+ * storeNamedCapturingClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeNamedCapturingClosure(aliased: Config,): void {
+  /**
+   * Closure this callable allocates and then stores by name.
+   */
+  const producer = (): Row => aliased.row;
+  callbackHolder.produce = producer;
+}
+
+/**
+ * Stores a named closure that captures nothing.
+ *
+ * The control. Resolving the identifier must attribute what the closure captured rather than
+ * report every named callable ever stored, so this one allocates its own row and keeps its
+ * offer.
+ *
+ * @param unnamed - Configuration the stored closure never names.
+ *
+ * @returns count read in place off the untouched configuration.
+ *
+ * @example
+ * ```ts
+ * storeNamedFreshClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeNamedFreshClosure(unnamed: Config,): number {
+  /**
+   * Closure this callable allocates, naming nothing the caller owns.
+   */
+  const producer = (): Row => ({ label: 'fresh', });
+  callbackHolder.produce = producer;
+  return unnamed.rows
+    .length;
+}

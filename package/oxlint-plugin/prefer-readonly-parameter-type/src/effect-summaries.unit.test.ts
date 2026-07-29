@@ -732,6 +732,13 @@ await describe({
          * whole suite stayed green. Absent retention means call-caused or unknown, never
          * proven non-retaining. */
         expect(structuralOpaque('handCaptureToRelay',),).toEqual([0,],);
+        /* The store side of the same resolution. `callbackHolder.produce = producer` is what
+         * ordinary source writes where the fixtures above write the closure inline, and the
+         * syntax gate saw only an identifier. Its control stores a named closure that
+         * allocates its own row and keeps its offer, so this attributes what a stored
+         * callable captured rather than reporting every callable ever stored. */
+        expect(structuralOpaque('storeNamedCapturingClosure',),).toEqual([0,],);
+        expect(structuralOpaque('storeNamedFreshClosure',),).toEqual([],);
       },
     },),
     it({

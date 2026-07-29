@@ -18,13 +18,13 @@ import {
 import {
   isBinaryExpression,
   isForOfStatement,
-  isFunctionLikeDeclaration,
   isVariableDeclarationList,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
   addOpaqueEffect,
+  callableDeclaration,
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
@@ -36,9 +36,10 @@ import {
   transparentValueRoot,
 } from './effect-result-substitution.ts';
 import { retentionProvenance, } from './effect-retention-provenance.ts';
-import type {
-  MutableEffectSummary,
-  SlotOrigins,
+import {
+  type MutableEffectSummary,
+  OWNED_CALLABLE_UNAVAILABLE,
+  type SlotOrigins,
 } from './effect-summary-model.ts';
 import { targetIsCallableLocal, } from './effect-value-consumer.ts';
 
@@ -177,11 +178,25 @@ export function recordAssignmentStore({
    * reads its capture withholds too. Measured, not assumed: `storeReadingClosure` in the
    * structural-store fixture stores `(): number => config.row.label.length` and records
    * `opaque=[0]`. Task #64 holds the finer question. */
-  if (isFunctionLikeDeclaration(stored,)) {
+  /**
+   * Callable the stored value resolves to, absent when the store hands over no callable.
+   *
+   * Resolved rather than tested syntactically, which is what makes `holder.produce = producer`
+   * behave like the inline form. `callableDeclaration` follows a local to the function
+   * expression it was bound to and detects alias cycles, and it is the same resolution the
+   * call edge already uses for a callable handed as an argument. Measured before this: the
+   * aliased store recorded nothing and was falsified, with the annotation applied and type
+   * checking clean while the holder's invocation changed the caller's row.
+   */
+  const storedCallable = callableDeclaration({
+    project,
+    node: stored,
+  },);
+  if (storedCallable !== OWNED_CALLABLE_UNAVAILABLE) {
     packagedCallableOrigins({
       project,
       bindingOriginBySymbolId,
-      packaged: stored,
+      packaged: storedCallable,
     },)
       .forEach(function recordCapturedSlot(affectedSlot,): void {
         addOpaqueEffect({

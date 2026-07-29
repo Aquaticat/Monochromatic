@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(22,);
+      },).length,).toBe(23,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -683,6 +683,17 @@ children: [
       expect(messages.filter(function namesForwarded(message,): boolean {
         return message.includes('"forwarded"',);
       },).length,).toBe(1,);
+      /* The store-side alias, withheld and silent for the same reason the handed one is: its
+       * cause is a store, which a reader cannot act on. Its control keeps the offer that
+       * carries the count above from twenty-two to twenty-three. */
+      expect(messages.filter(function namesAliased(message,): boolean {
+        return message.includes('"aliased"',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesUnnamed(message,): boolean {
+        return message.includes('"unnamed"',);
+      },),).toEqual([
+        'Parameter "unnamed" should be readonly: property rows is writable.',
+      ],);
       expect(messages.some(function forwardedNamesBoundary(message,): boolean {
         return message.includes('"forwarded"',)
           && message.includes('queueMicrotask',);
