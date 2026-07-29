@@ -115,12 +115,13 @@
         <dt><code>main</code> and automatic startup</dt>
         <dd>
           <code>main</code> is special in a Rust executable.
-          When the executable is started, Rust's startup code automatically makes the initial call to <code>main</code>.
-          The programmer does not add <code>main();</code> at the end of the Rust file.
+          Small startup support runs first, then automatically makes required initial call to <code>main</code>.
+          <code>main</code> is first function body written in this source that runs.
+          Programmer does not add <code>main();</code> at end of Rust file.
           <p>
             <strong>Example:</strong>
-            starting this sample enters <code>fn main() { ... }</code>,
-            then runs its first statement.
+            starting this sample performs startup setup, enters <code>fn main() { ... }</code>,
+            then runs line <code>let mut s = ...</code>.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -135,8 +136,9 @@
           Argument is value supplied by particular function call.
           <p>
             <strong>Example:</strong>
-            sample's <code>main()</code> has no parameters;
-            <code>s</code> inside call <code>drop(s)</code> is argument supplied to <code>drop</code>.
+            in <code>fn double(number: i32)</code>, <code>number</code> is parameter
+            and <code>i32</code> means whole-number type;
+            in <code>double(5)</code>, value <code>5</code> is argument.
           </p>
           <p><strong>TypeScript relationship:</strong> TypeScript uses the same parameter and argument distinction.</p>
         </dd>
@@ -292,7 +294,8 @@
           Function attached to type and called with dot syntax on value of that type.
           <p>
             <strong>Example:</strong>
-            <code>s.push_str("!")</code> calls <code>String</code> method <code>push_str</code> on <code>s</code>.
+            <code>s.len()</code> calls <code>String</code> method <code>len</code>;
+            it returns current byte count without changing <code>s</code>.
           </p>
           <p><strong>TypeScript relationship:</strong> TypeScript object and class methods use similar dot-call syntax.</p>
         </dd>
@@ -509,7 +512,8 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <dt><code>mut</code></dt>
         <dd>
           Keyword allowing later assignment to this variable and operations that alter its current value.
-          Permission belongs to variable declaration; it does not automatically transfer to another variable after move.
+          <code>mut</code> is written as part of one variable declaration.
+          Another variable needs its own <code>mut</code> if code will alter value through that other name.
           <p>
             <strong>Example:</strong>
             <code>s.push_str("!")</code> changes <code>s</code>'s text from <code>Hello world</code> to <code>Hello world!</code>
@@ -603,9 +607,12 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <dt><code>push_str</code></dt>
         <dd>
           <code>String</code> method that appends bytes from string slice.
+          Its input type is <code>&amp;str</code>; literal <code>"!"</code> has that string-slice type,
+          so method reads literal's byte without taking ownership of literal.
           It adds exclamation-mark byte, increasing length from <code>11</code> to <code>12</code>.
-          Because current capacity is only <code>11</code>, this Aquascope run obtains larger allocation,
+          Because current capacity is only <code>11</code>, this Aquascope run obtains capacity-<code>22</code> allocation,
           copies eleven existing bytes, appends new byte, and deallocates old allocation.
+          Capacity <code>22</code> is observed here, not guaranteed growth rule.
           <p><strong>Example:</strong> before call, <code>s</code> contains <code>Hello world</code>; after call, it contains <code>Hello world!</code>.</p>
         </dd>
 
