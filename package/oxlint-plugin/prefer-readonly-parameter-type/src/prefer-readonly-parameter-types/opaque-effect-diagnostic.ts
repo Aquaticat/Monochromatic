@@ -8,6 +8,7 @@ import type { Context, } from '@oxlint/plugins';
 
 import type { ParameterIndex, } from './effect-slot-identity.ts';
 import type { CallableEffectSummary, } from './effect-summaries.ts';
+import { splitRetentionBoundaries, } from './effect-retention-provenance.ts';
 import {
   everyBoundaryIsInputMethod,
   inputMethodUsageSubject,
@@ -16,17 +17,26 @@ import {
 /**
  * Sorted uncertainty provenance and display text for one parameter.
  *
+ * `facts` carries only the causes this report can address, which are unresolved calls.
+ * A store is recorded as opacity too, because an escaped reference is exactly a value the
+ * analysis cannot prove stays unwritten, but it is not a call and no remedy this report
+ * offers applies to it. Keeping it out of `facts` also keeps it out of
+ * `everyBoundaryIsInputMethod`, which is an `every` over the same list and would otherwise
+ * lose the method-specific message for any parameter that is both called and stored.
+ *
  * @example
  * ```ts
  * const uncertainty: UncertaintyBoundaries = {
  *   facts: ['JSON.stringify'],
  *   names: 'JSON.stringify',
+ *   retentions: [],
  * };
  * ```
  */
 export type UncertaintyBoundaries = {
   readonly facts: readonly string[];
   readonly names: string;
+  readonly retentions: readonly string[];
 };
 
 /**
@@ -51,18 +61,31 @@ export function uncertaintyBoundaries({
   readonly parameterIndex: ParameterIndex;
 },): UncertaintyBoundaries {
   /**
-   * Sorted upstream boundary names retained by effect propagation.
+   * Sorted upstream boundary names retained by effect propagation, whatever caused them.
    */
-  const facts = [
+  const boundaries = [
     ...effectSummary.opaqueProvenanceByParameter
       .get(parameterIndex,)
       ?? [],
   ].toSorted();
+  /**
+   * Boundaries split into causes this report can address and stores it cannot.
+   */
+  const {
+    callBoundaries,
+    retentionBoundaries,
+  } = splitRetentionBoundaries({ boundaries, },);
   return {
-    facts,
-    names: facts.length === 0
+    facts: callBoundaries,
+    /* The fallback belongs to the call half alone. Opacity with no provenance at all is a
+     * genuine unknown and has to speak, but a parameter whose every recorded cause is a
+     * store must not borrow that sentence: it would claim the rule could not determine a
+     * name for something it named exactly. Whether that case reports is decided by
+     * `reportableOpacity`, which is why this is safe to leave as the call half's text. */
+    names: callBoundaries.length === 0
       ? 'a call whose name this rule could not determine'
-      : facts.join(', ',),
+      : callBoundaries.join(', ',),
+    retentions: retentionBoundaries,
   };
 }
 

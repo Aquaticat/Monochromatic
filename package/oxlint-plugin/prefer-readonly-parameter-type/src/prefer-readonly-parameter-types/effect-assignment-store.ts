@@ -23,6 +23,7 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
+import { retentionProvenance, } from './effect-retention-provenance.ts';
 import type {
   MutableEffectSummary,
   SlotOrigins,
@@ -124,7 +125,10 @@ export function recordAssignmentStore({
       addOpaqueEffect({
         summary,
         affectedSlot,
-        provenance: `stored into ${targetText} [${location}]`,
+        provenance: retentionProvenance({
+          target: targetText,
+          location,
+        },),
       },);
     },);
 }

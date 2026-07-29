@@ -54,6 +54,16 @@ export type ReadonlyParameterFacts = {
   readonly classification: ReadonlyClassification;
   readonly parameterBlocks: readonly ParsedMutationContractBlock[];
   readonly opaque: boolean;
+  /**
+   * Whether this parameter's opacity has a cause a report can ask the reader to resolve.
+   *
+   * Additive on purpose, leaving `opaque` exactly what it was. Every other verdict reads
+   * `opaque`, directly or through `acceptedHostOpacity`, and narrowing it would move the
+   * stale-contract gate and the foreign-ownership proof for reasons that have nothing to
+   * do with what a message says. False only when a store is the sole recorded cause, so
+   * opacity with no provenance at all keeps reporting the unknown it is.
+   */
+  readonly reportableOpacity: boolean;
   readonly acceptedHostOpacity: boolean;
   readonly affected: boolean;
   readonly mutated: boolean;
@@ -142,6 +152,25 @@ function factsForParameter({
   const opaque = effectSummary.opaqueParameterIndexes
     .has(parameterIndex,);
   /**
+   * Provenance for this parameter's opacity, split by cause.
+   */
+  const uncertainty = uncertaintyBoundaries({
+    effectSummary,
+    parameterIndex,
+  },);
+  /**
+   * Recorded causes of this parameter's opacity, separated by what a report can ask about.
+   */
+  const {
+    facts: callBoundaries,
+    retentions: retentionBoundaries,
+  } = uncertainty;
+  /**
+   * Whether some recorded cause of this opacity is one a report can ask about.
+   */
+  const reportableOpacity = (callBoundaries.length > 0)
+    || (retentionBoundaries.length === 0);
+  /**
    * Whether exact marker explicitly authorizes opaque host capability use.
    */
   const foreignHostCapability = bindingContainsForeignHostCapability({
@@ -189,13 +218,11 @@ function factsForParameter({
     },),
     parameterBlocks,
     opaque,
+    reportableOpacity,
     acceptedHostOpacity,
     affected,
     mutated,
-    uncertainty: uncertaintyBoundaries({
-      effectSummary,
-      parameterIndex,
-    },),
+    uncertainty,
     foreignHostCapability,
     /* Guarded by `affected` first, so the classifier runs over a marker's underlying type only
      * for a parameter the report could still be about. */

@@ -1604,9 +1604,25 @@ Every added finding names `stored into` somewhere in its call list,
 Every removed finding has a counterpart at the same file,
  line and column in the added set,
  so nothing went silent:
- the removals are re-wordings,
- three of them the channel flip already explained in
- `doc/troubleshooting/prefer-readonly-root-parent-walk.md`.
+ the removals are re-wordings.
+Three of them were first recorded here as the channel flip explained in
+ `doc/troubleshooting/prefer-readonly-root-parent-walk.md`,
+ which was a guess of the same kind as the nested-store one and is wrong for the same
+ reason.
+Reading the pair settles it:
+
+```text
+before  receiver-opacity  "region" is used as the object for these method calls: region.join
+after   argument-opacity  "region" is used by these calls: region.join, stored into this.region
+```
+
+`everyBoundaryIsInputMethod` is an `every` over the provenance facts,
+ and `stored into this.region` does not begin with `region.`,
+ so one store joining the list flips the predicate and swaps `opaqueMethodEffect` for
+ `opaqueEffect`.
+Nothing about a parent walk is involved,
+ and the prediction that follows from the real mechanism is testable:
+ keeping stores out of that list restores all three by itself.
 `EffectPropagationError` stays absent and the panic and omission counts are identical
  across the pair.
 

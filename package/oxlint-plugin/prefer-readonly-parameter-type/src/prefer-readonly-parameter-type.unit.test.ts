@@ -588,6 +588,49 @@ children: [
     },
   },),
   it({
+    name: 'withholds an offer from a stored parameter without asking the reader anything',
+    fn: async () => {
+      /* A store withholds the offer and says nothing, the way a mutation always has. The
+       * classification that records it routes through opacity, which is right about the
+       * decision and was wrong about the channel: opacity carries a message that names its
+       * causes as calls, says the rule could not inspect them, and lists four remedies
+       * addressed to an unresolved implementation. A reader who retains a constructor
+       * argument can act on none of that, and a sweep measured thirty-two locations in
+       * this repository that started saying it while no offer anywhere changed. */
+      const diagnostics = await lintReadonly('readonly-structural-store-invalid.ts',);
+      const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
+        return diagnostic.message;
+      },);
+      /* The store provenance never reaches a reader. It stays recorded on the summary,
+       * because every analysis consumer still needs it, and this is the boundary it must
+       * not cross. */
+      expect(messages.filter(function namesStore(message,): boolean {
+        return message.includes('stored into',);
+      },).length,).toBe(0,);
+      /* Withheld, not merely silent. Eleven offers, and every one belongs to a shape that
+       * stores nothing beyond the callable: the two nested-store controls, an assignment
+       * into a parameter and into an own local, a counter, two readers, a projection, a
+       * fresh aggregate, and the one store whose right side has no origins yet because a
+       * callee's summary does not exist while its callers are scanned. Were retention to
+       * stop withholding, seven more would join them. */
+      expect(messages.filter(function isOffer(message,): boolean {
+        return message.includes('should be readonly',);
+      },).length,).toBe(11,);
+      /* What still speaks, and in the words that fit it. Both are member calls on the
+       * parameter, so both keep the method-specific message rather than the generic one.
+       * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls
+       * `config.rows.at` and stores the result, and before the split its store joined the
+       * boundary list, which is an `every` over that list, and cost it this message. */
+      const opacityMessages = messages.filter(function isOpacity(message,): boolean {
+        return message.includes('used as the object for these method calls',);
+      },);
+      expect(opacityMessages.length,).toBe(2,);
+      expect(opacityMessages.every(function namesMemberCall(message,): boolean {
+        return message.includes('.rows.at',);
+      },),).toBe(true,);
+    },
+  },),
+  it({
     name: 'credits a reassigned alias with every parameter it can hold',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-binding-origin-invalid.ts',);
