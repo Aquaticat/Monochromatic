@@ -3464,6 +3464,53 @@ One node,
  a returned origin the outer callable never wrote,
  beside a capture still missed.
 
+### The movement is not this change, and the baseline is what has to be explained
+
+With the closure branch disabled and nothing else altered,
+ the sweep is identical to the enabled one:
+
+```text
+before 1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1966: argument-opacity=1227 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+The same disabled run still differs from the baseline by exactly the original 83 added and
+ 56 removed.
+So this change contributes nothing to the workspace,
+ which is the outcome the registered criterion expected,
+ arrived at by a route the criterion did not anticipate:
+ not a zero delta,
+ but a delta that survives removing the thing under test.
+
+That reverses which side is under suspicion.
+No code changed between the baseline capture and these runs except this fix,
+ and this fix demonstrably changes nothing,
+ so a capture taken at that commit should have read 1966.
+It read 1939.
+
+The standing hypothesis is the two-artifact hazard the discipline already names:
+ the plugin bundle and the sidecar oxlint actually loads are separate builds,
+ a sweep silently uses whichever sidecar is on disk,
+ and the baseline has no digest recorded to rule it out.
+That fits the shape of the delta,
+ which is boundaries reported by package and export becoming boundaries reported by the name
+ at their call site,
+ across packages unrelated to any of this work.
+
+Running now:
+ the exact pre-fix source restored from `06fc7bce3`,
+ both artifacts rebuilt in order,
+ digests recorded beside the capture.
+If it reads 1966,
+ the baseline was stale and 1966 is the standing number,
+ which means several earlier captures in this document were compared against a number that
+ did not describe the code they claimed to measure.
+If it reads 1939,
+ something in this commit other than the disabled branch moved the workspace,
+ and the only candidates left are the import edits and the early return the mutant kept.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
