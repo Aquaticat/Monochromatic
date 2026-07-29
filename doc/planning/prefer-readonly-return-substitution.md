@@ -2691,3 +2691,32 @@ A structural parameter is a different matter,
 The effect model records that a parameter was written through and lets one gate serve both
  annotation shapes.
 Filed rather than folded into work about soundness.
+
+## A sweep discipline, learned twice
+
+Two captures in this session were contaminated by my own work while they ran.
+
+The first:
+ I rebuilt the plugin and the sidecar three minutes into the stage one lint phase,
+ overwriting the bundle oxlint had loaded.
+
+The second:
+ I edited `direct-effect-summary.ts` while the stage three capture was running,
+ to split it under the line budget.
+Oxlint reads source at lint time,
+ so that file was one thing when the run started and another by the time the run reached
+ it,
+ and a `max-lines` finding for it may or may not be in the output depending on when the
+ file was visited.
+
+Both were avoidable and neither was noticed until afterwards.
+The rule for the rest of this work:
+ while a sweep is running,
+ no rebuilds and no edits to any file the sweep lints.
+Documentation is fine.
+Reading is fine.
+Probing the built artifact is fine,
+ since that reads what the sweep already loaded.
+
+Everything else waits,
+ and a capture taken under either violation is reported as contaminated rather than cited.
