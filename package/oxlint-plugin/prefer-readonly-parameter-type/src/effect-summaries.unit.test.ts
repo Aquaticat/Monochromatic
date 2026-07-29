@@ -921,6 +921,49 @@ await describe({
         const readAlias = opaqueIndexes('aliasReadInPlace',);
         /** Alias established by assignment, then read in place. */
         const assignedAlias = opaqueIndexes('assignAliasReadInPlace',);
+        /**
+         * Reads the boundary names recorded against one fixture function's first parameter.
+         *
+         * Names only, with the source location dropped, because the location is an absolute
+         * path and what this asks about is which boundaries appear rather than where.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns boundary names in ascending order.
+         */
+        function boundaryNames(functionName: string,): readonly string[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            ALIAS_HOP_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueProvenanceByParameter
+            .get(asParameterIndex(0,),) ?? [],]
+            .map(function withoutLocation(fact: string,): string {
+              return fact.split(' [',)[0] ?? fact;
+            },)
+            .toSorted();
+        }
+        /** Boundaries named for the spread form of the work-stack drain. */
+        const spreadBoundaries = boundaryNames('drainWithSpread',);
+        /** Boundaries named for the direct form of the same drain. */
+        const directBoundaries = boundaryNames('drainWithDirectPush',);
+        /** Receiver opacity for a spread into a literal that is stored rather than called. */
+        const spreadIntoStored = opaqueIndexes('spreadIntoStoredLiteral',);
         closeSemanticBridge();
         /* The receiver keeps its opacity wherever the aliased result can leave. */
         expect(returned,).toEqual([0,],);
@@ -936,6 +979,23 @@ await describe({
         expect(destructuredRead,).toEqual([],);
         expect(readAlias,).toEqual([],);
         expect(assignedAlias,).toEqual([],);
+        /* A spread argument names the same boundaries a direct argument names, which it
+         * did not before the consumer walk ascended a `SpreadElement`. The parent of a
+         * spread operand is the spread rather than the call, so the walk stopped there and
+         * skipped every attributed position, and the escape test then disagreed with the
+         * argument analysis it defers to about identical state.
+         *
+         * Measured before the ascent: the spread form named `pending.pop` beside
+         * `pending.push` while the direct form named `pending.push` alone. Asserting they
+         * are EQUAL rather than asserting a literal list, because what was wrong was the
+         * disagreement and any future change should move both or neither. */
+        expect(spreadBoundaries,).toEqual(directBoundaries,);
+        expect(spreadBoundaries,).toEqual(['pending.push',],);
+        /* And the control that stops the ascent from being a blanket discharge. A spread
+         * element now sits where a direct element sits, and a direct element in a literal
+         * escapes whenever the literal is stored rather than handed to a call, so the
+         * receiver keeps its opacity here. */
+        expect(spreadIntoStored,).toEqual([0,],);
       },
     },),
     it({

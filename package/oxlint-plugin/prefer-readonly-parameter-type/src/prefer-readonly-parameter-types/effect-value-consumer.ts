@@ -28,6 +28,7 @@ import {
   isSatisfiesExpression,
   isShorthandPropertyAssignment,
   isSpreadAssignment,
+  isSpreadElement,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
@@ -85,6 +86,28 @@ export function passesValueOutward({ node, }: { readonly node: Node; },): boolea
   if (isPropertyAssignment(parent,)
     || isShorthandPropertyAssignment(parent,)
     || isSpreadAssignment(parent,))
+    return true;
+  /* The same step for the element form, which was missing while the object form above was
+   * present. `push(...fallbacks,)` makes the parent of `fallbacks` a `SpreadElement`, so
+   * the ascent stopped there, every attributed position was skipped, and the escape test
+   * answered escaping for a value the argument analysis was already tracking.
+   *
+   * Measured on two bodies differing only in their last statement, with `fallbacks` an
+   * assertion alias of `pending.pop()`:
+   *
+   * ```text
+   * pending.push(...fallbacks,)   boundaries {pending.push | pending.pop}
+   * pending.push(fallbacks,)      boundaries {pending.push}
+   * ```
+   *
+   * Same state, same escape, two answers. `parameterIndexes` walks spread arguments and
+   * `provenanceSuccessors` handles `SpreadElement` explicitly, so the argument analysis
+   * this defers to had always looked inside one.
+   *
+   * Ascending puts the spread element itself in the position the direct element occupies,
+   * which is what makes the two agree: a call's `arguments` array holds the `SpreadElement`
+   * node, and an array literal's elements do too. */
+  if (isSpreadElement(parent,))
     return true;
   if (!isBinaryExpression(parent,))
     return false;
