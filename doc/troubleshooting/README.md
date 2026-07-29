@@ -101,6 +101,14 @@ Issues with C-style comment syntax that affect multiple programming languages:
 - IDE comment features and best practices
 - Language-specific comment syntax differences
 
+### [Aquascope connectors in Firefox](aquascope-firefox-connectors.md)
+
+Aquascope interpreter connector lines can disappear in Firefox:
+
+- Chromium paints generated LeaderLine SVG connectors while an observed Firefox view omits them
+- Pointer dots and targets still describe the same embedded interpreter state
+- Exact Firefox rendering mechanism remains unconfirmed
+
 ### [iOS Safari touch events](ios-safari-touch.md)
 
 iOS Safari claims `touch-action: none` support but does not reliably honor it:
@@ -192,6 +200,8 @@ For common issues:
   ** → [pathSignals false positive on /var/home](pi-safeguard.md#pi-safeguard-flags-every-file-under-varhome-as-a-system-path)
 - **Unrelated Pi tools blocked after `/goal` interruption?
   ** → [Retired goal package blocker](pi-goal-stale-global-blocker.md)
+- **Aquascope pointer lines missing in Firefox?
+  ** → [Aquascope connector discrepancy](aquascope-firefox-connectors.md)
 - **Touch gestures broken on iPhone?
   ** → [iOS Safari touch-action betrayal](ios-safari-touch.md)
 - **dprint exec plugin not running?

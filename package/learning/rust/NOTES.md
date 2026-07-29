@@ -22,6 +22,11 @@
 - Do not force ownership, moves, borrows, pointers, or deterministic cleanup into misleading TypeScript analogies.
 - Avoid vague teaching verbs such as “changes,” “uses,” or “manages” unless the affected value and effect are named.
 - Examples may use only established syntax, or must explain every new piece of syntax at the point of use.
+- Structural HTML checks do not verify Rust or tool facts.
+  Before completion, classify factual claims as language guarantee, library detail, tool behavior, or simplification;
+  verify each class against its primary source and executable counterexample where possible.
+- Final factual review must be adversarial and source-specific,
+  not prompt reviewer only to recheck previously known wording issues.
 
 ## Presentation
 
@@ -55,6 +60,10 @@
 - Binocular labels render without generic arguments:
   the `vec` field shows as `Vec`, never `Vec<u8>`.
 - The compact view omits `len` and `cap`; only the binocular view shows them.
+- Connector lines rendered in Chromium through `agent-browser` on 2026-07-29.
+  Learner's Firefox view omitted them.
+  Treat missing connectors as browser rendering discrepancy, not different Rust state;
+  pointer dots and surrounding labels remain source of meaning.
 - An embed can hold more interpreter steps than it has `state_locations`.
   The opening diagram holds a fifth state at `main`'s closing brace and draws no badge for it.
 - Verify decoded claims against the rendered widget rather than the extracted markup alone.

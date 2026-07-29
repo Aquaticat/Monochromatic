@@ -34,8 +34,8 @@
       </p>
       <p>
         <strong>Read this page in order.</strong>
-        “Words used by the decoder” explains the vocabulary that every later section relies on,
-        and its examples never refer to the sample program or the diagram's labels.
+        “Words used by the decoder” explains the vocabulary that every later section relies on.
+        When an example needs new syntax, that same entry explains it immediately.
         No knowledge of Rust, computer memory, or systems programming is assumed.
       </p>
     </header>
@@ -51,7 +51,11 @@
           Rust source files normally end in <code>.rs</code>.
           <p>
             <strong>Example:</strong>
-            <code>let mut s = String::from("Hello world");</code> is one line of Rust source code.
+            <code>fn main() {}</code> is complete minimal Rust source:
+            <code>fn</code> starts a function definition,
+            <code>main</code> is its name,
+            <code>()</code> says it has no inputs,
+            and <code>{}</code> encloses its empty body.
           </p>
           <p><strong>TypeScript relationship:</strong> a <code>.ts</code> file is TypeScript source code.</p>
         </dd>
@@ -70,8 +74,9 @@
 
         <dt>Compiler</dt>
         <dd>
-          Tool that reads source code before it can run.
-          It either reports why the source is rejected or produces executable file that computer can start.
+          Tool that reads and translates source code.
+          For this binary sample, Rust's compiler either reports why the source is rejected
+          or produces executable file that computer can start.
           Rust's compiler is named <code>rustc</code>.
           <p>
             <strong>Example:</strong>
@@ -80,8 +85,10 @@
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            <code>tsc</code> also checks source before running.
-            Rust and TypeScript check different sets of rules; later sections explain Rust's additional checks.
+            <code>tsc</code> also checks source,
+            but TypeScript errors do not inherently stop JavaScript emission:
+            <code>noEmitOnError</code> must be enabled to make errors block emitted files.
+            Rust and TypeScript also check different sets of rules.
           </p>
         </dd>
 
@@ -89,7 +96,11 @@
         <dd>
           Period when the compiler is reading and checking source code, before the executable starts.
           <p><strong>Example:</strong> compiler reporting unknown variable name is compile-time event.</p>
-          <p><strong>TypeScript relationship:</strong> TypeScript type errors are also reported before the emitted JavaScript runs.</p>
+          <p>
+            <strong>TypeScript relationship:</strong>
+            TypeScript type errors also come from compiler,
+            but emitted JavaScript can still run when project configuration permits emission.
+          </p>
         </dd>
 
         <dt>Runtime</dt>
@@ -97,8 +108,8 @@
           Period after an executable has started and its instructions are running.
           <p>
             <strong>Example:</strong>
-            text stored by <code>let greeting = String::from("Hi");</code> occupies memory only at runtime;
-            before the program starts, that text exists solely as source characters.
+            for minimal source <code>fn main() {}</code>,
+            entering empty function body and returning from it are runtime events.
           </p>
           <p><strong>TypeScript relationship:</strong> JavaScript executing inside Node.js or a browser is runtime behavior.</p>
         </dd>
@@ -125,10 +136,9 @@
 
         <dt><code>main</code> and automatic startup</dt>
         <dd>
-          <code>main</code> is special in a Rust executable.
-          Rust-provided startup code runs first, then automatically makes required initial call to <code>main</code>.
-          That startup code is supplied by Rust and is not written in <code>main.rs</code>.
-          <code>main</code> is first function body written in the programmer's source that runs.
+          <code>main</code> is entry point into this executable's Rust code.
+          Operating-system and Rust-provided startup work happens first;
+          Rust's runtime then calls <code>main</code> automatically.
           Programmer does not add <code>main();</code> at end of Rust file.
           <p>
             <strong>Example:</strong>
@@ -148,9 +158,9 @@
           Argument is value supplied by particular function call.
           <p>
             <strong>Example:</strong>
-            in <code>fn double(number: i32)</code>, <code>number</code> is parameter
+            in complete definition <code>fn show(number: i32) {}</code>, <code>number</code> is parameter
             and <code>i32</code> means whole-number type;
-            in <code>double(5)</code>, value <code>5</code> is argument.
+            in <code>show(5)</code>, value <code>5</code> is argument.
           </p>
           <p><strong>TypeScript relationship:</strong> TypeScript uses the same parameter and argument distinction.</p>
         </dd>
@@ -166,8 +176,8 @@
         <dd>
           Block is code between matching braces.
           Scope is region of source where a name is usable.
-          Local variable's scope starts at its declaration and ends at closing brace of the block containing it.
-          This boundary matters later: Rust attaches cleanup to it.
+          In simple <code>let</code> declaration used here,
+          local variable's name is visible from its declaration to end of enclosing block.
           <p>
             <strong>Example:</strong>
             in <code>fn demo() { let count = 5; }</code>,
@@ -175,8 +185,8 @@
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            TypeScript <code>let</code> is also block-scoped, so the region rule matches.
-            What Rust adds at that closing brace is cleanup, not just the end of a name.
+            TypeScript <code>let</code> is also block-scoped, so this name-visibility rule matches.
+            A later entry separately explains when Rust destroys values.
           </p>
         </dd>
 
@@ -194,12 +204,18 @@
           <p><strong>TypeScript relationship:</strong> <code>2 + 3</code> is also TypeScript expression.</p>
         </dd>
 
-        <dt>Statement</dt>
+        <dt>Statement and semicolon</dt>
         <dd>
-          Complete action written in function body.
-          Statements in the sample on this page end with semicolons.
-          <p><strong>Example:</strong> <code>2 + 3;</code> is one statement containing expression <code>2 + 3</code>.</p>
-          <p><strong>TypeScript relationship:</strong> TypeScript also has statements and commonly uses semicolons.</p>
+          Statement is component of block that declares name or evaluates expression for its effect.
+          After ordinary expression, <code>;</code> makes it an expression statement and discards expression's result.
+          <code>let</code> declaration also ends with semicolon.
+          <p>
+            <strong>Example:</strong>
+            <code>let score = 5;</code> is declaration statement:
+            <code>let</code> declares name <code>score</code> with initial value <code>5</code>;
+            <code>2 + 3;</code> computes <code>5</code> and then discards it.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript also has statements, but its expression and return rules differ.</p>
         </dd>
 
         <dt>Type and field</dt>
@@ -214,9 +230,9 @@
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            TypeScript also checks types and object properties,
-            but TypeScript types are removed before JavaScript runs;
-            Rust types also determine how runtime data is represented.
+            TypeScript also checks types and object properties.
+            Type annotations and type-only declarations are erased before JavaScript runs;
+            Rust types also constrain runtime representation and operations.
           </p>
         </dd>
 
@@ -249,21 +265,33 @@
           <p><strong>TypeScript relationship:</strong> a variable declared inside a TypeScript function is also local to that function body.</p>
         </dd>
 
-        <dt>Assignment</dt>
+        <dt>Initialization and assignment</dt>
         <dd>
-          Operation that puts a value under a variable name.
-          <p><strong>Example:</strong> in <code>let score = 5;</code>, <code>=</code> assigns value <code>5</code> to new variable <code>score</code>.</p>
-          <p><strong>TypeScript relationship:</strong> <code>=</code> serves the same broad assignment role in TypeScript.</p>
+          Initialization supplies variable's first value as part of declaration.
+          Assignment later replaces value at already initialized variable.
+          Both spellings contain <code>=</code>, but they are different operations.
+          <p>
+            <strong>Example:</strong>
+            in <code>let mut score = 5; score = 6;</code>,
+            first <code>=</code> initializes <code>score</code> to <code>5</code>;
+            second assigns <code>6</code> and replaces previous value <code>5</code>.
+            Rust drops replaced value first, but dropping plain <code>i32</code> performs no visible cleanup.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript makes same declaration-versus-later-assignment distinction.</p>
         </dd>
 
         <dt>Mutation and <code>mut</code></dt>
         <dd>
-          Mutation means operation alters current value reached through existing variable.
-          Rust's <code>let</code> does not permit such alteration unless <code>mut</code> follows <code>let</code>.
+          Mutation means operation alters existing data or assigns replacement value.
+          For local value in this sample,
+          <code>mut</code> on declaration permits later assignment and mutable borrowing through that binding.
+          <code>mut</code> describes allowed access through binding; it is not permanent property carried by moved value.
           <p>
             <strong>Example:</strong>
-            <code>let mut score = 5; score = 6;</code> changes current value reached through <code>score</code>
-            from <code>5</code> to <code>6</code>.
+            <code>let mut score = 5; score = 6;</code> replaces <code>5</code> with <code>6</code> through <code>score</code>.
+            By contrast, <code>let reference = &amp;mut score;</code> needs no <code>mut</code> on name <code>reference</code>
+            to write <code>*reference = 7;</code>.
+            Here <code>&amp;mut</code> creates mutable reference and prefix <code>*</code> reaches value through it.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -287,17 +315,17 @@
           Space inside computer used to hold program data while program runs.
           <p>
             <strong>Example:</strong>
-            a program holding one number and one piece of text occupies memory for both while it runs,
-            and occupies none of it before it starts.
+            while a program runs, it needs runtime memory for current values and other program data.
+            Source and executable files occupy storage too, but they are not runtime memory pictures Aquascope draws.
           </p>
           <p><strong>TypeScript relationship:</strong> TypeScript programs also use memory, but JavaScript normally hides its layout.</p>
         </dd>
 
         <dt>ASCII</dt>
         <dd>
-          Older rule that assigns one number from <code>0</code> through <code>127</code>
-          to each unaccented English letter, digit, space, and common punctuation mark.
-          Text using only those characters is called ASCII-only.
+          Text encoding with <code>128</code> numbered codes, from <code>0</code> through <code>127</code>.
+          Codes include control signals plus printable unaccented English letters, digits, space, and punctuation.
+          Text using only these codes is called ASCII-only.
           <p><strong>Example:</strong> ASCII assigns number <code>72</code> to <code>H</code> and number <code>32</code> to the space character.</p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -306,21 +334,25 @@
           </p>
         </dd>
 
-        <dt>Byte</dt>
+        <dt>Bit and byte</dt>
         <dd>
-          Whole number from <code>0</code> through <code>255</code> used as a basic unit of computer memory.
-          <p><strong>Example:</strong> ASCII letter <code>H</code> has byte value <code>72</code>.</p>
+          Bit is binary digit, either <code>0</code> or <code>1</code>.
+          In Rust, byte is storage unit of eight bits.
+          Eight bits can encode <code>256</code> patterns;
+          Rust type <code>u8</code> interprets them as whole numbers from <code>0</code> through <code>255</code>.
+          <p><strong>Example:</strong> byte holding ASCII <code>H</code> has numeric value <code>72</code>.</p>
           <p><strong>TypeScript relationship:</strong> one element of a TypeScript <code>Uint8Array</code> holds one byte.</p>
         </dd>
 
         <dt>UTF-8</dt>
         <dd>
-          Rule for representing text as one or more bytes per written character.
-          It agrees with ASCII for every ASCII character, and uses more bytes for the rest.
+          Unicode assigns numbers to text symbols from many writing systems.
+          UTF-8 represents each Unicode scalar value with one to four bytes.
+          It uses same one-byte representation as ASCII for every ASCII code.
           <p>
             <strong>Example:</strong>
             ASCII-only text <code>Hello</code> uses five UTF-8 bytes;
-            character <code>é</code> uses two UTF-8 bytes.
+            literal scalar value <code>é</code>, Unicode <code>U+00E9</code>, uses two UTF-8 bytes.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -356,12 +388,12 @@
         <dt>Allocation, deallocation, and buffer</dt>
         <dd>
           Allocation is block of memory reserved for a value.
-          Deallocation returns that block so it can be reused.
+          Deallocation returns that block to allocator so it can be reused.
           Buffer is allocated block reserved to hold a sequence of items such as bytes.
           <p>
             <strong>Example:</strong>
-            <code>String::from("Hi")</code> obtains allocation holding two text bytes;
-            that allocation is a buffer, and returning it later is deallocation.
+            in this Aquascope model, <code>String::from("Hi")</code> would obtain buffer for two text bytes;
+            returning that buffer to allocator later is deallocation.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -385,11 +417,11 @@
 
         <dt>Heap</dt>
         <dd>
-          Memory area used for allocations whose size is chosen while the program runs.
+          Memory area used for dynamically allocated buffers and other values.
           <p>
             <strong>Example:</strong>
-            a <code>String</code>'s text bytes live in the heap,
-            because their count is decided while the program runs rather than while it is compiled.
+            even though compiler already knows literal <code>"Hello world"</code>'s byte count,
+            <code>String::from</code> creates owned growable buffer on heap when statement runs.
           </p>
           <p><strong>TypeScript relationship:</strong> JavaScript objects use heap memory, but TypeScript does not expose their addresses or cleanup timing.</p>
         </dd>
@@ -412,8 +444,10 @@
 
         <dt>Length, capacity, and metadata</dt>
         <dd>
-          Length says how many positions currently contain part of value.
-          Capacity says how many positions fit in current allocation before larger allocation is needed.
+          For <code>String</code>, length is number of bytes currently used.
+          Capacity is number of bytes current buffer can hold before <code>String</code> must obtain more capacity.
+          Obtaining more capacity may grow allocation in place or replace it;
+          this Aquascope run replaces it.
           Metadata means small values that describe other data; pointer, length, and capacity describe <code>String</code>'s bytes.
           <p>
             <strong>Example:</strong>
@@ -429,27 +463,27 @@
       <dl>
         <dt>Ownership and owner</dt>
         <dd>
-          For each allocation, Rust tracks value currently responsible for cleanup.
-          That value is allocation's owner.
-          When owner ends, Rust performs cleanup at that point.
+          Ownership is responsibility to destroy value and release resources that value owns.
+          This sample has one <code>String</code> that is sole owner of one heap buffer.
+          This is sample-specific model, not claim that every Rust allocation always has exactly one owner.
           <p>
             <strong>Example:</strong>
             <code>String</code> value created by <code>String::from("Hi")</code> owns its heap buffer;
-            when that <code>String</code> ends, Rust deallocates the buffer.
+            destroying that <code>String</code> deallocates buffer.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            ordinary TypeScript does not assign one variable responsibility for cleanup;
+            ordinary TypeScript runtime does not enforce Rust's deterministic owner-and-drop rules;
             garbage collection has no direct ownership equivalent.
           </p>
         </dd>
 
         <dt>Scope end and automatic cleanup</dt>
         <dd>
-          Owning value held by local variable ends when that variable's scope ends,
-          and Rust performs its cleanup there with nothing written in the source to request it.
-          This is the ordinary case.
-          Everything later on this page that ends a value earlier is an option, not a requirement.
+          When normal control leaves block,
+          Rust drops each initialized local value still associated with that block.
+          Value already moved or explicitly dropped is no longer initialized there and is not dropped again.
+          Explicit <code>drop</code> is an option for ending value earlier, not requirement for cleanup.
           <p>
             <strong>Example:</strong>
             in <code>fn demo() { let text = String::from("Hi"); }</code>,
@@ -464,22 +498,27 @@
           </p>
         </dd>
 
-        <dt>Copy values and non-copy values</dt>
+        <dt><code>Copy</code>, <code>Clone</code>, and non-copy values</dt>
         <dd>
-          Some Rust types are marked <code>Copy</code>.
-          Assigning or passing such a value duplicates it and leaves the original usable.
+          Trait is named capability a type can implement.
+          <code>Copy</code> trait permits implicit bit-for-bit duplication,
+          so assignment or argument passing leaves source usable.
           Whole-number types such as <code>i32</code> and <code>u8</code> are <code>Copy</code>.
-          <code>String</code> is not, because duplicating it would require a second heap allocation.
+          Bitwise-copying <code>String</code> would duplicate pointer and cleanup responsibility,
+          risking deallocation of same buffer twice, so <code>String</code> is not <code>Copy</code>.
+          Its explicit <code>clone()</code> instead allocates and copies text safely.
           <strong>Every move rule below applies to non-<code>Copy</code> types only.</strong>
           <p>
             <strong>Example:</strong>
             after <code>let a = 5; let b = a;</code> both <code>a</code> and <code>b</code> are usable;
-            after <code>let a = String::from("Hi"); let b = a;</code> only <code>b</code> is usable.
+            after <code>let a = String::from("Hi"); let b = a;</code> only <code>b</code> is usable;
+            after <code>let b = a.clone();</code>, both strings are usable and own separate buffers.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            TypeScript has no such split.
-            Every TypeScript assignment leaves the source variable usable.
+            TypeScript assignment copies primitive value or object reference,
+            and source variable remains usable in both cases.
+            It has no equivalent of move invalidating source variable.
           </p>
         </dd>
 
@@ -525,12 +564,14 @@
           </p>
         </dd>
 
-        <dt>Slice and <code>&amp;str</code></dt>
+        <dt>Slice, <code>str</code>, and <code>&amp;str</code></dt>
         <dd>
-          Slice is reference to contiguous part of existing sequence plus its length.
-          Contiguous means the included positions sit next to each other with no gaps.
-          <code>&amp;str</code> is Rust type for string slice.
-          It does not own or copy bytes it refers to.
+          Slice is view into contiguous sequence whose length is known at runtime rather than fixed in type.
+          Rust calls such type dynamically sized.
+          Contiguous means included positions sit next to each other with no gaps.
+          <code>str</code> is dynamically sized string-slice type containing valid UTF-8 bytes;
+          code normally accesses it through pointer type such as <code>&amp;str</code>.
+          Shared reference <code>&amp;str</code> carries pointer and byte length without owning or copying referred bytes.
           <p>
             <strong>Example:</strong>
             <code>&amp;text[0..2]</code> for a <code>String</code> holding <code>Hello</code>
@@ -546,8 +587,9 @@
           cleanup already happens at scope end without it.
           Passing an owned non-<code>Copy</code> value to <code>drop</code> moves it,
           so the original variable becomes unusable.
-          Passing a <code>Copy</code> value such as an <code>i32</code> accomplishes nothing,
-          and <code>rustc</code> warns about it.
+          Passing existing <code>Copy</code> variable such as an <code>i32</code> copies its value into <code>drop</code>;
+          copied argument is dropped and original variable remains usable.
+          <code>rustc</code> warns about this ineffective call.
           <p>
             <strong>Example:</strong>
             <code>drop(text);</code> ends a <code>String</code> and deallocates its heap buffer at that line
@@ -560,13 +602,17 @@
           </p>
         </dd>
 
-        <dt>Undefined behavior</dt>
+        <dt>Undefined behavior, safe Rust, and <code>unsafe</code></dt>
         <dd>
-          Situation for which Rust provides no promise about result.
+          Undefined behavior is execution for which Rust provides no promise about result.
           Reading from deallocated memory is one example.
-          Ordinary Rust source cannot reach such a situation: the compiler rejects the program instead.
-          Those checks are deliberately cautious,
-          so they also reject some programs that would in fact have been safe.
+          Safe Rust operations cannot perform dangling read in this sample:
+          compiler rejects source before executable is produced.
+          <code>unsafe</code> Rust and foreign code, meaning linked code written in another language,
+          can perform operations compiler cannot fully check;
+          programmer must uphold their safety requirements or program can cause undefined behavior.
+          Safe checks are deliberately cautious,
+          so they also reject some programs that would have been safe at runtime.
           <p>
             <strong>Example:</strong>
             code that read a borrowed slice after its allocation had been deallocated
@@ -655,7 +701,7 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <dt><code>{ }</code></dt>
         <dd>
           Braces marking start and end of function body.
-          The closing brace is also where any value still owned by a local variable would be cleaned up.
+          On normal exit, closing brace drops each initialized local value still associated with this block.
           <p><strong>Example:</strong> all four sample statements are between <code>main</code>'s braces.</p>
         </dd>
       </dl>
@@ -671,9 +717,10 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
 
         <dt><code>mut</code></dt>
         <dd>
-          Keyword allowing later assignment to this variable and operations that alter its current value.
-          <code>mut</code> is written as part of one variable declaration.
-          Another variable needs its own <code>mut</code> if code will alter value through that other name.
+          Keyword permitting mutable access through this <code>String</code> binding.
+          Here it allows compiler to create temporary <code>&amp;mut String</code> reference required by <code>push_str</code>.
+          If this <code>String</code> later moves into new binding,
+          new declaration independently decides whether mutable access through new name is permitted.
           <p>
             <strong>Example:</strong>
             <code>s.push_str("!")</code> changes <code>s</code>'s text from <code>Hello world</code> to <code>Hello world!</code>
@@ -691,8 +738,9 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
 
         <dt><code>=</code></dt>
         <dd>
-          Assignment operator connecting new variable to value produced on right.
-          <p><strong>Example:</strong> value produced by <code>String::from(...)</code> becomes value reached through <code>s</code>.</p>
+          In this <code>let</code> declaration, equals sign introduces initializer on right.
+          This is initialization, not later assignment to existing variable.
+          <p><strong>Example:</strong> value produced by <code>String::from(...)</code> becomes initial value reached through <code>s</code>.</p>
         </dd>
 
         <dt><code>String</code></dt>
@@ -720,8 +768,10 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
 
         <dt><code>;</code></dt>
         <dd>
-          Mark ending statement.
-          <p><strong>Example:</strong> each of four statements in sample ends with semicolon.</p>
+          Semicolon ends every statement shown here.
+          It is required after <code>let</code>;
+          after standalone method or function call, it makes expression statement that keeps call's effect and discards returned value.
+          <p><strong>Example:</strong> <code>s.push_str("!");</code> keeps text mutation and discards call's <code>()</code> result.</p>
         </dd>
       </dl>
 
@@ -748,7 +798,12 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <dt><code>0..5</code></dt>
         <dd>
           Range starting at byte position <code>0</code> and stopping before byte position <code>5</code>.
-          <p><strong>Example:</strong> included positions <code>0</code> through <code>4</code> spell <code>Hello</code>.</p>
+          Both endpoints must be UTF-8 character boundaries or range indexing panics at runtime.
+          <p>
+            <strong>Example:</strong>
+            positions <code>0</code> through <code>4</code> spell <code>Hello</code>, so this range is valid;
+            <code>0..1</code> would panic for <code>é</code>, whose encoding occupies bytes <code>0</code> and <code>1</code>.
+          </p>
         </dd>
       </dl>
       <p>
@@ -915,14 +970,14 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
 
         <dt>Arrow or connector</dt>
         <dd>
-          Aquascope can draw a line from a pointer mark to the data that pointer identifies.
-          Whether the line is visible depends on how the widget renders,
-          and compact snapshots may show only the dot.
-          Read the dot as “this cell holds a pointer,” and use the surrounding labels to decide what it reaches.
+          Curved line links pointer dot to heap data it identifies.
+          Chromium verification displays these lines;
+          learner's Firefox view can omit them even though pointer dots and target bytes still render.
+          Missing line is browser-rendering issue, not different Rust state.
           <p>
             <strong>Example:</strong>
-            at <code>L1</code>, <code>s</code>'s dot identifies the start of the heap text
-            whether or not a connector line is drawn for you.
+            at <code>L1</code>, visible Chromium line connects <code>s</code>'s dot to first heap byte <code>H</code>.
+            If Firefox omits line, same dot still represents pointer to start of text.
           </p>
         </dd>
 
@@ -1253,8 +1308,9 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
       <p>
         Read this section when the book reaches
         <a href="https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places">References Change Permissions on Places</a>,
-        where the diagrams do carry these marks.
-        It is placed here so one page decodes every Aquascope mark you will meet in chapter 4.
+        where diagrams do carry these marks.
+        This section previews only permission marks listed here;
+        later diagrams may introduce additional icons that their surrounding book text explains.
       </p>
       <p>
         These marks describe a compile-time picture, not runtime memory.
@@ -1377,8 +1433,12 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <ol>
           <li>No. Starting executable automatically makes initial call to <code>main</code>.</li>
           <li>Connection from variable name <code>s</code> to <code>String</code> value.</li>
-          <li>Before call text is <code>Hello world</code>; afterward text is <code>Hello world!</code>.</li>
-          <li>Move makes old Rust variable unusable; TypeScript assignment leaves source variable usable.</li>
+          <li>
+            Before call text is <code>Hello world</code>, length is <code>11</code>, and capacity is <code>11</code>.
+            Afterward text is <code>Hello world!</code>, length is <code>12</code>, and this run's capacity is <code>22</code>.
+            Aquascope shows old allocation deallocated after eleven bytes are copied and <code>!</code> is appended.
+          </li>
+          <li>Move of non-<code>Copy</code> value makes old Rust variable unusable; TypeScript assignment leaves source variable usable.</li>
           <li>
             <code>a</code> stays usable when its type is <code>Copy</code>, such as <code>i32</code>.
             It becomes unusable when its type is not, such as <code>String</code>.
@@ -1409,9 +1469,17 @@ main(); // main has no automatic meaning in TypeScript</code></pre>
         <li><a href="https://doc.rust-lang.org/stable/book/ch01-02-hello-world.html#the-anatomy-of-a-rust-program">Official book explanation of automatic <code>main</code> startup</a></li>
         <li><a href="https://rust-book.cs.brown.edu/ch04-01-what-is-ownership.html">Experimental book explanation of stack, heap, pointers, moves, and drops</a></li>
         <li><a href="https://rust-book.cs.brown.edu/ch04-02-references-and-borrowing.html#references-change-permissions-on-places">Experimental book definition of R, W, and O permissions</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/statements.html">Rust Reference definitions of <code>let</code> and expression statements</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/expressions/operator-expr.html#assignment-expressions">Rust Reference definition of assignment</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/destructors.html">Rust Reference rules for drops and local-variable drop scopes</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/types/str.html">Rust Reference definition and layout of <code>str</code> and <code>&amp;str</code></a></li>
+        <li><a href="https://doc.rust-lang.org/reference/unsafe-keyword.html">Rust Reference explanation of unchecked obligations in <code>unsafe</code> code</a></li>
+        <li><a href="https://doc.rust-lang.org/reference/behavior-considered-undefined.html">Rust Reference catalog of behavior considered undefined</a></li>
         <li><a href="https://doc.rust-lang.org/stable/std/primitive.slice.html">Standard-library definition of a slice as a view into a contiguous sequence</a></li>
-        <li><a href="https://doc.rust-lang.org/stable/std/marker/trait.Copy.html">Standard-library documentation for <code>Copy</code></a></li>
+        <li><a href="https://doc.rust-lang.org/stable/std/marker/trait.Copy.html">Standard-library documentation for <code>Copy</code> and <code>String</code>'s non-<code>Copy</code> behavior</a></li>
+        <li><a href="https://doc.rust-lang.org/stable/std/string/struct.String.html">Standard-library guarantees for <code>String</code> representation, slicing, and growth</a></li>
         <li><a href="https://doc.rust-lang.org/stable/std/ptr/struct.NonNull.html">Standard-library documentation for <code>NonNull</code></a></li>
+        <li><a href="https://www.typescriptlang.org/tsconfig/noEmitOnError.html">TypeScript documentation for error-gated emission</a></li>
         <li><a href="https://doc.rust-lang.org/stable/src/alloc/string.rs.html">Rust standard-library <code>String</code> source and representation</a></li>
         <li><a href="https://doc.rust-lang.org/stable/src/alloc/vec/mod.rs.html">Rust standard-library <code>Vec</code> source and guarantees</a></li>
         <li><a href="https://doc.rust-lang.org/stable/src/alloc/raw_vec/mod.rs.html">Rust standard-library <code>RawVec</code> internals</a></li>
