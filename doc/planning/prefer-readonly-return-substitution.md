@@ -3826,6 +3826,68 @@ The cost is one new message in 1967 on a parameter no reader can act on by annot
  offer.
 That question is not opened here.
 
+### The sweep criterion, in the form it should have had
+
+Two changes in a row have now needed a criterion,
+ and the second one showed the first was written around an accident of its own change.
+The reusable form drops the coupling between offers and opacity entirely:
+
+Offers must not rise.
+That is the soundness statement,
+ and it is the only one that matters:
+ every fix in this class adds attribution,
+ so an offer appearing means attribution was lost.
+
+No category other than argument opacity may move.
+Receiver opacity,
+ dishonest,
+ stale-mutates,
+ host-capability and the rest are untouched by any of this work,
+ and one of them moving means a change reached further than its author thought.
+
+Offers falling is expected and each fall is sampled to its cause.
+
+Argument opacity rising is expected and is **not** required to accompany an offer loss.
+That requirement is what the previous criterion got wrong,
+ and it fails whenever a capture lands on a parameter that could never be offered,
+ which will keep happening:
+ a callable-typed parameter is classified an opaque capability and has no offer to lose.
+
+## The store side of the same resolution
+
+`callbackHolder.produce = producer` is what ordinary source writes where every fixture so far
+ wrote the closure inline,
+ and it recorded nothing:
+ the gate tested syntax and saw an identifier,
+ while `parameterIndexes` found nothing either,
+ because a local bound to a function expression carries no parameter origin.
+Falsified with the annotation applied and type checking clean.
+
+The fix is one substitution.
+`recordAssignmentStore` resolves the stored value with `callableDeclaration` rather than
+ testing `isFunctionLikeDeclaration`,
+ which is the same resolution the call edge already uses for a handed callable,
+ follows a local to the function expression it was bound to,
+ and detects alias cycles.
+
+Two of task sixty-six's three shapes remain,
+ measured empty after the fix:
+ the conditional and the container held in a local.
+Those need the value-source walk rather than another syntax branch,
+ which is the whole point of the task,
+ and the two relations it needs are recorded on it.
+
+The risk this change carries is not the alias.
+`callableDeclaration` resolves identifiers,
+ so a module-level or imported callable stored outward now has its body scanned.
+Out of scope symbols are absent from the origin map and contribute nothing,
+ which makes that harmless for parameters,
+ and the case worth watching is a nested callable stored outward,
+ whose resolved body does name symbols the enclosing callable owns.
+That is a genuine capture and should attribute,
+ but it is the direction where this reaches furthest,
+ so the sweep is run on this change alone rather than batched with the next.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
