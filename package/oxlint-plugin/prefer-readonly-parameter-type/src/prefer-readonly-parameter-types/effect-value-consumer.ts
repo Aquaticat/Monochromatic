@@ -22,6 +22,7 @@ import {
   isConditionalExpression,
   isIdentifier,
   isNonNullExpression,
+  isParameterDeclaration,
   isParenthesizedExpression,
   isPropertyAssignment,
   isSatisfiesExpression,
@@ -209,6 +210,46 @@ function nodeWithin({
 }
 
 /**
+ * Tests whether a declaration is a parameter of the callable owning this body.
+ *
+ * Rebinding a parameter changes only the callee's own binding. The caller passed a value
+ * and holds no reference to the slot it was passed in, so nothing the caller can observe
+ * follows from the assignment, which makes the parameter as local as any `let` in the
+ * body despite sitting beside it in the tree.
+ *
+ * Restricted to the immediate callable on purpose. A parameter of an enclosing callable
+ * reached through lexical capture is a different question: sibling closures and later
+ * invocations can observe what a nested body stores there, so that stays an escape.
+ *
+ * @param declaration - Resolved declaration of the assigned binding.
+ *
+ * @param body - Body of callable containing the assignment.
+ *
+ * @returns whether declaration is a parameter of that same callable.
+ *
+ * @example
+ * ```ts
+ * declaresOwnParameter({ declaration, body, });
+ * ```
+ */
+function declaresOwnParameter({
+  declaration,
+  body,
+}: {
+  readonly declaration: Node;
+  readonly body: Node;
+},): boolean {
+  if (!isParameterDeclaration(declaration,))
+    return false;
+  /**
+   * Callable owning this body, absent when the body is itself a root.
+   */
+  const { parent: owner, } = body;
+  return isPresentNode({ candidate: owner, },)
+    && (declaration.parent === owner);
+}
+
+/**
  * Tests whether an assignment target is a binding declared inside this callable.
  *
  * An identifier alone does not establish it, which is why the symbol is resolved rather
@@ -216,11 +257,12 @@ function nodeWithin({
  * is an identifier target and is nonetheless a store this analysis cannot follow, so
  * treating every identifier as local would launder exactly the case the check exists for.
  *
- * Narrower than its name suggests, in one direction that costs offers rather than
- * soundness. A parameter is local to the callable in every sense a reader would mean, but
- * its declaration sits outside the body node, so `temporary = rows.at(0,)` on a parameter
- * named `temporary` is classified as an escaping store. Tracked as its own task rather
- * than widened here, because widening moves workspace findings.
+ * A parameter of the same callable counts as local, through `declaresOwnParameter` rather
+ * than through containment, because a parameter's declaration sits beside the body rather
+ * than inside it. Without that branch `temporary = rows.at(0,)` on a parameter named
+ * `temporary` was classified as an escaping store and kept receiver opacity on `rows`,
+ * measured as `opaque=[0]` on `storeIntoParameter` in
+ * `readonly-assignment-store-invalid.ts`.
  *
  * @param project - TypeScript project resolving the target symbol.
  *
@@ -259,10 +301,15 @@ export function targetIsCallableLocal({
        * Resolved declaration of the assigned binding.
        */
       const declaration = handle.resolve(project,);
-      return (declaration !== undefined)
-        && nodeWithin({
-          node: declaration,
-          container: body,
+      if (declaration === undefined)
+        return false;
+      return nodeWithin({
+        node: declaration,
+        container: body,
+      },)
+        || declaresOwnParameter({
+          declaration,
+          body,
         },);
     },);
 }
