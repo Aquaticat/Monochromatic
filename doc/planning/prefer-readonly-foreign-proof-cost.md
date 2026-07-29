@@ -426,6 +426,50 @@ An eighth location appears in the floor list and is an artifact:
 which the linter reported against itself.
 Recorded so the count is not read as eight.
 
+### What the sweep does not prove, and what does
+
+The floor run measures something beyond wall time,
+and it narrows what the equivalence is worth.
+Disabling the proof outright leaves `dishonestReadonly` at 37 and `redundantForeignBorrowed` at 0,
+exactly as both other runs report them.
+Only offers move, and only by seven.
+
+So across 128 packages the foreign answer is true-and-read in one verdict:
+the offer suppression.
+The other three have no instance anywhere in this workspace.
+That makes "all 7201 locations identical" strong evidence about one branch and no evidence at all
+about the other three,
+including the one whose condition this change actually rewrote,
+`foreignBorrowed && (!affected)` becoming `redundantMarkerPossible && foreignBorrowed`.
+
+The proof for those is readable rather than measurable,
+so it is written out here instead of being re-derived from a sweep that cannot show it.
+`factsNeedForeignProof` returns false for a parameter that is `opaque` without
+`acceptedHostOpacity`,
+which is exactly the set that reports and returns before any verdict reads the answer.
+For the rest, each clause stands for one reading verdict:
+
+-    `kind === 'dishonest-readonly'`, unconditional,
+     covers the dishonest arm of the `mutated` verdict and the whole of the `(!mutated)` one.
+     It is unconditional because both of those fire on that classification regardless of `mutated`.
+-    `mutated && (kind === 'honest-readonly')` covers the honest arm of the `mutated` verdict.
+-    `(!mutated) && (kind === 'mutable')` covers the offer suppression.
+-    `redundantMarkerPossible` covers the redundant-marker report,
+     and carries `(!affected)` inside itself together with everything that report decides from the
+     declared type.
+
+The union is exact rather than a superset in either direction.
+Nothing satisfies a clause without some verdict reading the answer,
+so no proof is demanded that could not have mattered;
+and no verdict reads the answer without its clause holding,
+which is the direction that would emit a report the eager build withheld.
+
+The fixture suite is what covers the three branches the workspace never exercises.
+`reports inert ForeignBorrowed markers over deeply readonly types` is the redundant-marker report,
+and `admits exact contracted host capability only after ordinary inference fails` is the
+`acceptedHostOpacity` path that keeps `opaque` from being usable as a skip on its own.
+Both pass.
+
 ### Why deferral reaches the floor rather than approaching it
 
 Worth stating, because "no measurable cost" invites the suspicion that the proof stopped running.
