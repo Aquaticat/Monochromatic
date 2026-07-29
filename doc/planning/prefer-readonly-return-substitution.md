@@ -2615,3 +2615,79 @@ The design that fits is a second map keyed the same way,
  identifier initializers and alias assignments by the convergence loop already there.
 Alias hops then come for free,
  which is what `writeThroughAliasedResult` is in the list to prove.
+
+## Stage three, and one question it turned out not to be
+
+A second map beside `bindingOriginBySymbolId`,
+ keyed the same way,
+ recording which call filled each binding rather than which parameter slots it can reach.
+It converges in the same loop shape,
+ so an alias of an alias costs a pass and nothing else,
+ and `writeThroughAliasedResult` is in the fixture to prove that hop rather than to assume
+ it:
+ a fix reading only declarations directly initialized by a call passes the plain shape and
+ fails that one.
+
+The question a write site asks became one question instead of two.
+`targetResultSites` strips the access layers,
+ names the call when one sits underneath,
+ and otherwise follows the identifier through the binding map.
+So the direct case stage one added is subsumed rather than sitting beside this,
+ and the store site asks the identical question about what it stores.
+
+Every assertion passed on the first build,
+ including both controls.
+The controls need no special case:
+ a local fed by an allocating callee still records which call filled it,
+ that callee's returned set is empty,
+ and substitution hands over nothing.
+
+At the boundary:
+
+```text
+firstRow                   offered
+freshRow                   offered
+writeThroughHeldFresh      offered
+writeThroughAliasedResult  withheld
+```
+
+### The pin that flipped, and why that was not the regression it looked like
+
+`writePropertyThroughReturn` was pinned empty with prose saying the withheld offer would
+ be a precision loss:
+ the parameter is `rows: Row[]`,
+ the offer implies `readonly Row[]`,
+ and that annotation permits `rows[0].label = 'x'` because the element type stays mutable.
+By that reading,
+ flipping the pin makes the rule withhold an offer that was honest.
+
+The reading is about what the annotation permits.
+The question is what this analysis already does,
+ and it is measurable:
+
+```text
+writeElementPropertyDirectly     mutated=[0]   const first = rows[0]; first.label = 'x';
+writeElementPropertyInline       mutated=[0]   rows[0].label = 'x';
+writeElementPropertyThroughCall  mutated=[0]   const first = handBack(rows,)[0]; ...
+pushDirectly                     mutated=[0]   rows.push({ label: 'appended', },);
+```
+
+The direct element property write already attributed to the parameter,
+ with no call anywhere in it,
+ and stage three cannot have changed that because it only touches paths through a call.
+So the offer was already withheld for the direct form,
+ and following the result through the local made this case agree with its own direct
+ equivalent instead of disagreeing with it.
+
+The prose was stale,
+ not the behaviour.
+
+What survives the correction is a real question aimed at a different place:
+ an array parameter is withheld for a write `readonly T[]` permits,
+ which is true of the direct form first and has nothing to do with result substitution.
+A structural parameter is a different matter,
+ because `ReadonlyDeep<Config>` does forbid the nested write,
+ so the same attribution is correct there and necessary.
+The effect model records that a parameter was written through and lets one gate serve both
+ annotation shapes.
+Filed rather than folded into work about soundness.
