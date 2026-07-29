@@ -135,3 +135,86 @@ export function storeIntoModuleBinding(rows: Row[],): void {
 export function escapedLabel(): string {
   return escaped?.label ?? '';
 }
+
+/**
+ * Stores a member result into another parameter of the same callable.
+ *
+ * A parameter is local to the callable in every sense a reader would mean, and its
+ * declaration nonetheless sits beside the body rather than inside it, so a containment
+ * test against the body answers no and the transfer is classified as an escape. The value
+ * never leaves, so this must discharge exactly as `assignToLocal` does.
+ *
+ * @param rows - Rows whose first element is copied.
+ *
+ * @param temporary - Parameter reused as scratch space.
+ *
+ * @returns label length after the copy.
+ *
+ * @example
+ * ```ts
+ * storeIntoParameter([], undefined,);
+ * ```
+ */
+export function storeIntoParameter(rows: Row[], temporary: Row | undefined,): number {
+  temporary = rows.at(0,);
+  return temporary?.label
+    .length ?? 0;
+}
+
+/**
+ * Wider element shape, so an object rest over it leaves something behind.
+ */
+type Wide = {
+  label: string;
+  count: number;
+};
+
+/**
+ * Seed standing in for an absent element, owned by this module rather than a caller.
+ */
+const SEED: Wide = {
+  label: '',
+  count: 0,
+};
+
+/**
+ * Binding a rest object holds nothing of the caller's, and is recorded as a holder anyway.
+ */
+let restHeld: { count: number; } | undefined;
+
+/**
+ * Stores an object rest of a member result, which carries only primitive state.
+ *
+ * A rest pattern allocates a fresh object, so `remainder` shares no identity with the
+ * caller's element and storing it grants nothing. `recordLeaf` records any leaf whose type
+ * can carry mutable state, and a fresh object of primitive properties passes that test, so
+ * the rest joins the holder set and its escape keeps receiver opacity on `wide`.
+ *
+ * @param wide - Elements whose first element is destructured.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverPrimitiveState([],);
+ * ```
+ */
+export function storeRestOverPrimitiveState(wide: Wide[],): number {
+  const { label, ...remainder } = wide.at(0,) ?? SEED;
+  restHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Reports what the rest binding holds, so the store above is not dead.
+ *
+ * @returns stored count, or zero when nothing was stored.
+ *
+ * @example
+ * ```ts
+ * restHeldCount();
+ * ```
+ */
+export function restHeldCount(): number {
+  return restHeld?.count ?? 0;
+}
