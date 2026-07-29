@@ -538,6 +538,12 @@ await describe({
         const storedIteration = structuralOpaque('storeIterationBinding',);
         /** Property stored into a local of the enclosing callable. */
         const storedEnclosing = structuralOpaque('storeIntoEnclosingLocal',);
+        /** Row destructured into a binding outside the callable. */
+        const destructuredOutward = structuralOpaque('destructureIntoModuleBinding',);
+        /** First row destructured into a binding outside the callable. */
+        const destructuredElement = structuralOpaque('destructureElementIntoModuleBinding',);
+        /** Row destructured into a binding the callable declares. */
+        const destructuredLocal = structuralOpaque('destructureIntoOwnLocal',);
         /** Rows retained one at a time through an iteration target. */
         const storedIterationTarget = structuralOpaque('storeIterationTarget',);
         /** Primitives read one at a time into a binding outside the callable. */
@@ -594,6 +600,15 @@ await describe({
         expect(storedIterationTarget,).toEqual([0,],);
         expect(iterationPrimitiveTarget,).toEqual([],);
         expect(declaredIterationBinding,).toEqual([],);
+        /* Both destructuring forms reach a binding outside the callable and are reported,
+         * which the target policy gets right by answering no for every non-identifier. */
+        expect(destructuredOutward,).toEqual([0,],);
+        expect(destructuredElement,).toEqual([0,],);
+        /* The same answer where it is wrong, pinned so a fix has something to flip. Every
+         * leaf of this pattern is a local, which makes it no more an escape than a
+         * declaration is, and the policy cannot see leaves. Withholding costs precision
+         * only, so it is recorded rather than fixed inside work about soundness. */
+        expect(destructuredLocal,).toEqual([0,],);
         /* The activation half of the same pair. Escaping syntax alone must not report, or
          * the shape above would be satisfied by a scan that never asked whether the nested
          * callable runs. */

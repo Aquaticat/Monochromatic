@@ -709,3 +709,63 @@ export function declareIterationBinding(config: Config,): number {
   }
   return labelled;
 }
+
+/**
+ * Destructures a structural parameter's row into a binding outside the callable.
+ *
+ * A destructuring assignment is an assignment, so the classification that reads assignments
+ * reaches it, and the target is a pattern rather than an identifier. Kept because that was
+ * measured rather than assumed: the target policy answers no for every non-identifier, and
+ * this is the shape that makes the answer right.
+ *
+ * @param config - Configuration whose row escapes through a pattern.
+ *
+ * @example
+ * ```ts
+ * destructureIntoModuleBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function destructureIntoModuleBinding(config: Config,): void {
+  ({ row: held, } = config);
+}
+
+/**
+ * Destructures a structural parameter's first row into a binding outside the callable.
+ *
+ * @param config - Configuration whose first row escapes through an array pattern.
+ *
+ * @example
+ * ```ts
+ * destructureElementIntoModuleBinding({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function destructureElementIntoModuleBinding(config: Config,): void {
+  [held,] = config.rows;
+}
+
+/**
+ * Destructures a structural parameter into a binding the callable declares.
+ *
+ * Reported, and it should not be. The target policy answers no for every non-identifier,
+ * which is right for a property and an element and wrong for a pattern whose every leaf is
+ * a local. Withholding costs only precision, so this stays recorded rather than fixed
+ * inside a change about soundness, and the assertion below pins what it currently does so
+ * the fix has something to flip. Tracked as its own task.
+ *
+ * @param config - Configuration whose row reaches a local through a pattern.
+ *
+ * @returns label reached through the destructured local.
+ *
+ * @example
+ * ```ts
+ * destructureIntoOwnLocal({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function destructureIntoOwnLocal(config: Config,): string {
+  /**
+   * Local the pattern fills, which no caller can reach after this returns.
+   */
+  let localRow: Row | undefined;
+  ({ row: localRow, } = config);
+  return localRow?.label ?? '';
+}
