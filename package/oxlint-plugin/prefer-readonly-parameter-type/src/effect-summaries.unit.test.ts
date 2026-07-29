@@ -752,6 +752,10 @@ await describe({
          * holds. Without this line the change would read as a rule against returning caller
          * state, which is precisely what the decision permits. */
         expect(structuralOpaque('returnRowDirectly',),).toEqual([],);
+        /* The async twin of the permitted return, which stays permitted. The precondition the
+         * decision names was failing at the caller rather than here: this recorded its returned
+         * origin all along, and no caller could substitute through an await. */
+        expect(structuralOpaque('returnRowAsync',),).toEqual([],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came
@@ -791,6 +795,19 @@ await describe({
          * left, and the origin walk cannot reach it either, since the binding is bound to a
          * conditional holding an arrow and an arrow has no provenance successors. */
         expect(structuralOpaque('storeLeftBiasedClosure',),).toEqual([0,],);
+        /* Three channels found by walking escape shapes rather than by working a queue, all
+         * three falsified, none of them a call edge or a store or a return. A construction hands
+         * its argument to an object that keeps it, and `NewExpression` appeared nowhere in this
+         * analysis at all. */
+        expect(structuralOpaque('handRowToConstructor',),).toEqual([0,],);
+        /* A yield hands its value to a driver that outlives it, and nothing about a yielded
+         * value reaches the enclosing callable's returned set, so the tracking that makes a
+         * return benign is unavailable. */
+        expect(structuralOpaque('yieldRowOutward',),).toEqual([0,],);
+        /* Both leaf controls, which keep their offers because a construction and a yield record
+         * only what their operands can carry, and a count carries nothing. */
+        expect(structuralOpaque('handLabelToConstructor',),).toEqual([],);
+        expect(structuralOpaque('yieldCountOutward',),).toEqual([],);
       },
     },),
     it({

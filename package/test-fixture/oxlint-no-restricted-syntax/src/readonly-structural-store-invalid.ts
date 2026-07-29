@@ -1665,3 +1665,155 @@ export function storeLeftBiasedClosure(leftBiased: Config, absent: boolean,): vo
     : ((): Row => leftBiased.row);
   callbackHolder.produce = producer ?? freshProducer;
 }
+
+/**
+ * Keeps whatever row it is constructed with, so a construction retains its argument.
+ */
+class RowKeeper {
+  /**
+   * Row this instance keeps.
+   */
+  readonly #kept: Row;
+
+  /**
+   * Keeps the row handed to the constructor.
+   *
+   * @param kept - Row retained by this instance.
+   */
+  constructor(kept: Row,) {
+    this.#kept = kept;
+  }
+
+  /**
+   * Hands back the kept row.
+   *
+   * @returns row this instance kept.
+   */
+  read = (): Row => this.#kept;
+}
+
+/**
+ * Hands a row to a constructor that keeps it.
+ *
+ * Falsified. A construction is neither a call edge nor a store nor a return, and
+ * `NewExpression` appeared nowhere in this analysis, so nothing recorded that the constructed
+ * object retains what it was given.
+ *
+ * @param handedToNew - Configuration whose row the constructed holder keeps.
+ *
+ * @example
+ * ```ts
+ * handRowToConstructor({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handRowToConstructor(handedToNew: Config,): void {
+  callbackHolder.produce = new RowKeeper(handedToNew.row,)
+    .read;
+}
+
+/**
+ * Constructs with a primitive read off the parameter.
+ *
+ * The leaf control. A construction records only what its arguments can carry, so handing over a
+ * `string` retains nothing a caller can be written through, and the offer stands.
+ *
+ * @param primitiveToNew - Configuration whose label is handed to a construction.
+ *
+ * @returns message carrying the label.
+ *
+ * @example
+ * ```ts
+ * handLabelToConstructor({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handLabelToConstructor(primitiveToNew: Config,): Error {
+  return new Error(primitiveToNew.row.label,);
+}
+
+/**
+ * Yields the caller's row to whoever drives the iterator.
+ *
+ * Falsified. A yield hands the value to a driver that outlives it by construction, and nothing
+ * about a yielded value reaches the enclosing callable's returned set, so the tracking that
+ * makes a return benign is not available.
+ *
+ * @param yieldedOut - Configuration whose row the generator yields.
+ *
+ * @returns iterator handing out the caller's row.
+ *
+ * @example
+ * ```ts
+ * yieldRowOutward({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function yieldRowOutward(yieldedOut: Config,): Iterator<Row> {
+  /**
+   * Generator handing out the caller's row.
+   */
+  function* rows(): Generator<Row> {
+    yield yieldedOut.row;
+  }
+  return rows();
+}
+
+/**
+ * Yields a count read off the parameter.
+ *
+ * The yield control, for the same reason as the construction control.
+ *
+ * @param yieldedCount - Configuration whose row count is yielded.
+ *
+ * @returns iterator handing out a count.
+ *
+ * @example
+ * ```ts
+ * yieldCountOutward({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function yieldCountOutward(yieldedCount: Config,): Iterator<number> {
+  /**
+   * Generator handing out a count.
+   */
+  function* counts(): Generator<number> {
+    yield yieldedCount.rows
+      .length;
+  }
+  return counts();
+}
+
+/**
+ * Hands back caller state from an async callable.
+ *
+ * The accepted decision permits this, on the condition that callers keep tracking the value.
+ * The condition was failing: the returned origin was recorded here and lost at every caller,
+ * because an await was not a transparent step in the walk that finds a write's target.
+ *
+ * @param asyncReturned - Configuration whose row is handed back.
+ *
+ * @returns caller's own row.
+ *
+ * @example
+ * ```ts
+ * returnRowAsync({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export async function returnRowAsync(asyncReturned: Config,): Promise<Row> {
+  return asyncReturned.row;
+}
+
+/**
+ * Writes through an awaited piece of caller state.
+ *
+ * The caller half, and the one that decides whether the fix worked. Its synchronous twin
+ * recorded `mutated=[0]` all along while this recorded nothing.
+ *
+ * @param awaitedThrough - Configuration this callable writes through.
+ *
+ * @example
+ * ```ts
+ * writeThroughAwaitedRow({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export async function writeThroughAwaitedRow(awaitedThrough: Config,): Promise<void> {
+  (await returnRowAsync(awaitedThrough,)).label = 'written';
+}

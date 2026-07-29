@@ -21,6 +21,16 @@
 const RETENTION_PROVENANCE_PREFIX = 'stored into ';
 
 /**
+ * Prefix marking a provenance fact as a handoff that is neither a store nor a return.
+ *
+ * A construction and a yield both give caller state to something outliving the call, and
+ * neither stores it anywhere a target could be named. Reusing the store prefix produced facts
+ * like `stored into a construction of RowKeeper`, which reads as a store into the construction
+ * rather than as a handoff to it, so the vocabulary gained a third entry instead.
+ */
+const HANDOFF_PROVENANCE_PREFIX = 'handed outward by ';
+
+/**
  * Prefix marking a provenance fact as a callable the callable handed back.
  *
  * A second prefix rather than a second target text, because nothing is stored when a callable
@@ -76,6 +86,7 @@ export function retentionProvenance({
  */
 export function isRetentionProvenance(provenance: string,): boolean {
   return provenance.startsWith(RETENTION_PROVENANCE_PREFIX,)
+    || provenance.startsWith(HANDOFF_PROVENANCE_PREFIX,)
     || provenance.startsWith(RETURNED_CALLABLE_PROVENANCE_PREFIX,);
 }
 
@@ -172,4 +183,28 @@ export function returnedCallableProvenance({
   readonly location: string;
 },): string {
   return `${RETURNED_CALLABLE_PROVENANCE_PREFIX}${location}`;
+}
+
+/**
+ * Builds one provenance fact for caller state handed to something outliving the call.
+ *
+ * @param handoff - What received the value, phrased to follow "handed outward by".
+ *
+ * @param location - Where the handoff sits, so a summary dump can point at it.
+ *
+ * @returns provenance fact naming the handoff as the escape.
+ *
+ * @example
+ * ```ts
+ * handoffProvenance({ handoff: 'a yield', location: 'src/card.ts:60', });
+ * ```
+ */
+export function handoffProvenance({
+  handoff,
+  location,
+}: {
+  readonly handoff: string;
+  readonly location: string;
+},): string {
+  return `${HANDOFF_PROVENANCE_PREFIX}${handoff} [${location}]`;
 }

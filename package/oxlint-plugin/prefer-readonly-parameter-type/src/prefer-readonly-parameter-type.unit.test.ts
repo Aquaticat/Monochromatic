@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(27,);
+      },).length,).toBe(30,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -735,7 +735,10 @@ children: [
           || message.includes('"coalesced"',)
           || message.includes('"preferred"',)
           || message.includes('"contained"',)
-          || message.includes('"leftBiased"',);
+          || message.includes('"leftBiased"',)
+          || message.includes('"handedToNew"',)
+          || message.includes('"yieldedOut"',)
+          || message.includes('"awaitedThrough"',);
       },).length,).toBe(0,);
       /* And their control, carrying the count from twenty-six to twenty-seven. */
       expect(messages.filter(function namesNeither(message,): boolean {

@@ -31,6 +31,11 @@ import {
   recordIterationStore,
 } from './effect-assignment-store.ts';
 import { discoverBodyBindings, } from './effect-body-bindings.ts';
+import {
+  recordConstructionHandoff,
+  recordYieldHandoff,
+} from './effect-outward-handoff.ts';
+import { recordReturnEffects, } from './effect-return-effects.ts';
 import { recordReturnedCallableCapture, } from './effect-returned-callable.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
@@ -286,66 +291,14 @@ export function directEffectSummary({
       },);
       return;
     }
-    /* Returning parameter-reachable state is not itself an effect: the caller already
-     * holds the parameter, so handing back a piece of it grants no capability the
-     * caller lacked. Recording which parameters a result can carry is what lets a
-     * caller keep tracking that value, and that tracking is the condition under which
-     * treating a return as benign stays sound. Until callers substitute through this
-     * fact, no receiver opacity may be discharged on the strength of it.
-     * `doc/decision/prefer-readonly-result-provenance.md` records the policy. */
     if (isReturnStatement(node,) && (node.expression !== undefined)) {
-      /* Returning a callable is not returning a value the caller can track. The accepted
-       * decision permits returning parameter-reachable state on one stated condition, that
-       * callers keep tracking it through the recorded returned origins, and
-       * `expressionOrigins` has no provenance successors for a function expression, so
-       * `return (): Row => config.row` records no returned origin and no caller can
-       * substitute through it. The condition fails rather than the policy applying.
-       *
-       * Falsified rather than argued: `ReadonlyDeep` applied, type-checked clean beside a
-       * control whose direct write was rejected, and the driver changed the caller's row
-       * through the returned closure.
-       *
-       * Opacity rather than a returned origin, which was the tempting reuse. A returned
-       * origin asserts a caller can reach these parameters through this result, and what a
-       * returned closure carries is the capability to reach them by invoking it.
-       * `packagedCallableOrigins` over-approximates, scanning nested callable bodies, and
-       * an over-approximation is safe on a channel that withholds and unsafe on one that
-       * claims. Nothing today discharges on a returned set, so this would not break yet;
-       * it would state the wrong relation and break whenever something did. */
-      recordReturnedCallableCapture({
+      recordReturnEffects({
         project,
+        checker,
         bindingOriginBySymbolId,
         summary,
         returned: node.expression,
       },);
-      /* Only a returned value that can carry state records anything. A returned
-       * primitive derived from a parameter grants the caller nothing: measured on
-       * `readOnlyLookupEffect`, which returns `(facts.get(key) ?? new Set()).size`,
-       * where the resolver correctly reaches `facts` through the property access and
-       * the `??`, and recording that as a returned origin would claim the caller can
-       * reach the map through a `number`. */
-      if (expressionCanCarryMutableState({
-        checker,
-        node: node.expression,
-      },)) {
-        addEffectSlots({
-          target: summary.directReturned,
-          values: expressionOrigins({
-            project,
-            bindingOriginBySymbolId,
-            node: node.expression,
-          },),
-        },);
-        /* Returning another callable's result carries whatever that result carries, and
-         * the resolver above cannot see it: a callee's summary does not exist while its
-         * callers are scanned. Without this, `b` returning `a(x,)` records no returned
-         * origin at all, so no caller of `b` can substitute through it either. */
-        recordResultApplication({
-          summary,
-          node: node.expression,
-          kind: 'returned',
-        },);
-      }
       return;
     }
     if (isForOfStatement(node,)) {
@@ -373,6 +326,21 @@ export function directEffectSummary({
       }
       return;
     }
+    /* Asked of every node rather than inside another branch, because a construction and a yield
+     * are neither calls nor stores nor returns, which is why nothing answered for them. Both
+     * were found by walking escape channels and both were falsified. */
+    recordConstructionHandoff({
+      project,
+      bindingOriginBySymbolId,
+      summary,
+      node,
+    },);
+    recordYieldHandoff({
+      project,
+      bindingOriginBySymbolId,
+      summary,
+      node,
+    },);
     if (isCallExpression(node,)) {
       inspectEffectCall({
         project,

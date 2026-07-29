@@ -27,6 +27,7 @@ import type { Node, } from 'typescript/unstable/ast';
 import {
   isAssertionExpression,
   isCallExpression,
+  isAwaitExpression,
   isNonNullExpression,
   isParenthesizedExpression,
   isSatisfiesExpression,
@@ -105,9 +106,20 @@ export function transparentValueRoot(node: Node,): Node {
    * Cursor descending through wrappers that keep the value's identity.
    */
   const cursor: { current: Node; } = { current: node, };
+  /* `await` joined the transparent forms because an async return was tracked at the callee and
+   * lost at the caller. `rowAsync` records `returned=[0]` exactly as `rowSync` does, and a
+   * caller writing through `(await rowAsync(config,)).label` recorded nothing while the
+   * synchronous caller recorded `mutated=[0]`. The accepted decision permits returning caller
+   * state on the condition that callers keep tracking it, so the condition was failing for
+   * every async return.
+   *
+   * Transparent for this purpose rather than in general: what an await yields is whatever the
+   * awaited promise resolves to, which is what the callee handed back, and that is the only
+   * question this walk asks. */
   while (isParenthesizedExpression(cursor.current,)
     || isNonNullExpression(cursor.current,)
     || isAssertionExpression(cursor.current,)
+    || isAwaitExpression(cursor.current,)
     || isSatisfiesExpression(cursor.current,))
     cursor.current = cursor.current
       .expression;
