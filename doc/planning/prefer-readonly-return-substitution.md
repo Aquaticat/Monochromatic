@@ -4523,3 +4523,65 @@ The other reason is the same one behind every zero here:
 
 So the precise alternative is not needed, and the evidence for that is weaker than it looks.
 Recorded rather than dressed up.
+
+## Activation gated on ancestry, and the one sweep where a rise was the risk
+
+The scan discovering activations visited every node in the body, so a call written inside a
+ closure nothing runs activated its target, and the target's body was then read as though the
+ enclosing callable had run it.
+
+```ts
+export function storeClosureReachingWriter(neverReached: Config,): number {
+  function writeIt(): void {
+    neverReached.row.label = 'written';
+  }
+  callbackHolder.produce = (): Row => {
+    writeIt();
+    return { label: 'fresh', };
+  };
+  return neverReached.rows.length;
+}
+```
+
+Measured before the gate: `mutated=[0]`, for a write this callable never reaches.
+And a sibling returning caller state gave `returned=[0]`, an origin it never returns.
+
+The earlier note in this document saying the predicted consequence did not reproduce was true of
+ the shape it tested and false of the defect.
+A sibling bound to a `const` arrow does not reproduce it, because overload resolution answers
+ with the arrow and its key matched nothing the scan had reached.
+A sibling written as a function declaration does.
+Two forms, and the first probe picked the one that hides it.
+
+Activation is now iterated to a fixed point over sites the callable can actually reach.
+It terminates because the active set only grows and is bounded by the fixed set of nested
+ callables.
+
+### Assertions in pairs, because the obvious assertion is the wrong one
+
+Each of these shapes asserts twice:
+ the false fact is gone,
+ **and** the offer is still withheld.
+
+The withholding comes from the capture walk, which is right: the stored closure genuinely
+ captures the configuration.
+A fix that removed the false mutation and the withholding together would be a regression dressed
+ as a correction, and an assertion on emptiness alone would call it a success.
+
+### The capture
+
+```text
+before 1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+added   0:
+removed 0:
+```
+
+This is the one sweep in the whole effort where a **rise** was the thing to watch.
+Every other change added attribution, so a rising offer count meant lost attribution.
+This one removes attribution, so a rising offer count would have meant a false fact had been
+ doing real work somewhere, holding back an offer that is now granted.
+
+None appeared.
+So nothing in this workspace was withheld on the strength of a write inside a closure that never
+ runs, which is the most that measurement can say and is worth stating as exactly that much.
