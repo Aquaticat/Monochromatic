@@ -4496,3 +4496,30 @@ A store through a destructuring pattern into a binding outside the callable, an 
  write on an array parameter all already recorded what they should.
 Their tasks were filed from reading rather than from measuring, which is the cost of filing
  before probing.
+
+### The capture, and an over-approximation that turned out to be free
+
+```text
+before 1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+after  1966: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=31 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers did not rise and no category moved.
+
+The interesting part is what did **not** happen.
+Treating every call-result argument as retained was recorded as the decision that costs precision,
+ with the receiving call possibly only reading what it was given,
+ and the more precise alternative was left as a follow-up if the sweep showed a cost.
+It shows none.
+
+Two reasons, and only one of them is comfortable.
+The leaf gate removes the common half, since an argument that cannot carry mutable state records
+ nothing at all.
+The other reason is the same one behind every zero here:
+ of 1966 findings only 31 are offers,
+ so there is almost nothing left for a withholding change to take.
+
+So the precise alternative is not needed, and the evidence for that is weaker than it looks.
+Recorded rather than dressed up.
