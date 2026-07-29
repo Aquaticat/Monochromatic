@@ -25,6 +25,7 @@
 
 import type {
   BinaryExpression,
+  ParameterDeclaration,
   ForOfStatement,
   Node,
   VariableDeclaration,
@@ -248,7 +249,12 @@ function registerResultSites({
  *
  * @param project - TypeScript project resolving binding symbols.
  *
- * @param variableDeclarations - Declarations that may bind a call result.
+ * @param variableDeclarations - Declarations that may bind a call result, parameters included.
+ *
+ * A parameter default binds a result exactly as a local declaration does, and only `name` and
+ * `initializer` are read here, so the two forms need no separate pass. Parameters were absent,
+ * so `row: Row = firstRow(config,)` bound a result the record never learned about and a later
+ * write through `row` attributed nothing to `config`. Falsified.
  *
  * @param aliasAssignments - Simple assignments that may rebind one.
  *
@@ -271,7 +277,7 @@ export function discoverResultBindings({
   resultSitesBySymbolId,
 }: {
   readonly project: Project;
-  readonly variableDeclarations: readonly VariableDeclaration[];
+  readonly variableDeclarations: readonly (VariableDeclaration | ParameterDeclaration)[];
   readonly aliasAssignments: readonly BinaryExpression[];
   readonly forOfStatements: readonly ForOfStatement[];
   readonly resultSitesBySymbolId: Map<number, Set<string>>;

@@ -17,6 +17,7 @@ import {
   type BinaryExpression,
   type ForOfStatement,
   type Node,
+  type ParameterDeclaration,
   SyntaxKind,
   type VariableDeclaration,
 } from 'typescript/unstable/ast';
@@ -115,6 +116,17 @@ export function discoverBodyBindings({
     return isVariableDeclaration(node,);
   },);
   /**
+   * Declarations that may bind a call result, this callable's own parameters included.
+   *
+   * A parameter default binds a result exactly as a local declaration does, and the alias scan
+   * beside this one already reads parameter initializers for their origins, so the asymmetry was
+   * in the result record alone.
+   */
+  const resultBindingDeclarations: readonly (VariableDeclaration | ParameterDeclaration)[] = [
+    ...variableDeclarations,
+    ...declaration.parameters,
+  ];
+  /**
    * Assignments that may establish aliases after declaration.
    *
    * The logical forms belong here beside plain assignment, because each stores the right
@@ -151,7 +163,7 @@ export function discoverBodyBindings({
   const resultSitesBySymbolId = new Map<number, Set<string>>();
   discoverResultBindings({
     project,
-    variableDeclarations,
+    variableDeclarations: resultBindingDeclarations,
     aliasAssignments,
     forOfStatements,
     resultSitesBySymbolId,
