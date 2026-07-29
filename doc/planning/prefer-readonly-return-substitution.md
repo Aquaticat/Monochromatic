@@ -3423,6 +3423,47 @@ Wall clock is not on that list,
 This one records all three,
  which is why the disabled-branch run can be compared to it at all.
 
+### The helper over-approximates further than the fix's own comment says
+
+A stronger model read `effect-packaged-callable-origins.ts` and corrected the description
+ recorded beside the fix.
+The scan is not over the stored callable's body.
+It is over the complete subtree,
+ nested callable bodies included,
+ so a callable authored inside the stored one contributes even when nothing can ever reach
+ it:
+
+```ts
+holder.callback = (): number => {
+  const unreachable = (): Row => config.row;
+  return 0;
+};
+```
+
+That is still the withholding direction,
+ and it is still what the argument path has always done,
+ so nothing about the landed fix changes.
+It sharpens task sixty-four,
+ which now has two distinct over-approximations to answer for rather than one:
+ naming a binding a read-only body merely mentions,
+ and naming one reachable only through a nested callable nothing invokes.
+
+The same reading also found a defect in activation discovery that has nothing to do with
+ stores,
+ recorded as task seventy.
+`activeCallableBodyNodes` walks every node in the body when looking for activations,
+ with nothing restricting the walk to the outer body and to closures already proven active,
+ so a call written inside a closure that never runs activates its target anyway.
+The shape that shows it is the sibling-call shape from task sixty-eight,
+ where the stored arrow is correctly inactive,
+ its `read()` is visited anyway,
+ and `read`'s own `return config.row` is then processed as though the outer callable had
+ returned it.
+One node,
+ wrong in both directions at once:
+ a returned origin the outer callable never wrote,
+ beside a capture still missed.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
