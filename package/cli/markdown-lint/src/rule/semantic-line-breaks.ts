@@ -135,11 +135,14 @@ function tailThroughDelimiters({
      * Children of the candidate wrapper.
      */
     const { children, } = ancestor;
-    /* oxlint-disable-next-line unicorn/prefer-at -- `children` is a union of array
-     * types across the `Parents` union, and `prefer-readonly-parameter-type` resolves
-     * an index on that receiver while it cannot resolve `at`, so the `at` form reports
-     * every `ancestors` input as reaching unresolved code. Tracked as a member-channel
-     * gap; the index form is what the stricter rule can prove. */
+    /* oxlint-disable-next-line unicorn/prefer-at -- measured, not assumed: `at` on an
+     * array whose elements are objects reports the receiver as reaching unresolved
+     * code, while an index read of the same element does not, and the same `at` on an
+     * array of primitives is silent. `receiverClaimAnswerable` discharges a
+     * verified-narrow member only when its result carries no caller-owned state or
+     * provably does not escape, and the index path is not held to that. Suppressing the
+     * stylistic rule keeps the correctness rule satisfied, which is the way round that
+     * ordering goes. */
     if (children[children.length - 1] !== inner) {
       break;
     }
