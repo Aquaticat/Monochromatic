@@ -4054,15 +4054,43 @@ Three of the last four sweeps came back at zero:
 Only the handed-argument capture moved anything,
  and it moved by one true finding.
 
-That pattern is worth naming rather than repeating.
-Of 1967 findings in this workspace only 32 are offers,
- so nearly everything is already withheld for some other reason,
- and a change that withholds more has almost nowhere left to act.
-A zero here is evidence that the shape is absent from this repository in a still-offered
- form.
-It is not evidence that the shape is rare in general,
- not evidence that the fix is unnecessary,
- and not evidence that the fix is correct.
+That pattern is worth naming rather than repeating,
+ and the reading I gave it three times was wrong in a way worth correcting rather than
+ quietly dropping.
+
+I wrote that a zero means the shape is absent from this repository in a still-offered form.
+That has an untested branch.
+Of 1967 findings only 32 are offers,
+ so 1935 parameters are already withheld for some other reason,
+ and a shape that occurs constantly but always lands on an already-withheld parameter produces
+ exactly the same zero as a shape that never occurs at all.
+The sweep cannot tell those apart,
+ and I drew the absent reading from it three times without checking which one it was.
+
+Counting the syntax rather than the findings settles it,
+ and the shapes are common:
+
+```text
+25   store of a function expression into a property or element target
+37   return of a function expression
+356  store of an identifier into a property or element target
+```
+
+Those are lower bounds,
+ anchored to line starts,
+ so multi-line forms are missed.
+Sampled to confirm they are real rather than pattern noise:
+ `runtime.appendEntry = function appendDisposableEntry(`,
+ `editor.onSubmit = function submitRejection(reason,)`,
+ `request.onupgradeneeded = function createBatchStore()`,
+ and returns like `return function expandApplyNode(node,)`.
+
+So the shapes this work covers occur dozens of times in this workspace.
+The zeros say those occurrences capture no parameter,
+ or capture parameters that were already withheld,
+ which is a statement about the offer population rather than about the syntax.
+None of it is evidence that the fixes are unnecessary,
+ and none of it is evidence that they are correct.
 
 What carries the correctness in every one of these is the falsification:
  the rule produced the annotation,
