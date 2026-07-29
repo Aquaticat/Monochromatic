@@ -114,6 +114,16 @@ export {
 export { ancestorDirectories, } from './prefer-readonly-parameter-types/ancestor-directories.ts';
 
 /**
+ * Reachability of the structural projection helper, exported for its built-artifact test.
+ *
+ * @internal
+ */
+export {
+  clearTypeFestReachabilityCache,
+  typeFestResolvesFrom,
+} from './prefer-readonly-parameter-types/type-fest-reachability.ts';
+
+/**
  * Verified member result relations, exported for the built-artifact probe test.
  *
  * @internal

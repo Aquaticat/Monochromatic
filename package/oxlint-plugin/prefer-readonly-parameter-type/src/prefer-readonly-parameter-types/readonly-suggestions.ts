@@ -15,6 +15,7 @@ import { isArrayTypeNode, } from 'typescript/unstable/ast/is';
 
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import { readonlyCollectionSuggestions, } from './readonly-collection-suggestions.ts';
+import { typeFestResolvesFrom, } from './type-fest-reachability.ts';
 
 /**
  * Converts TypeScript offset to Oxlint offset after BOM stripping.
@@ -147,6 +148,15 @@ function readonlyDeepSuggestions({
   readonly project: Parameters<typeof classifyReadonlyType>[0]['project'];
 }>,): Suggestion[] {
   if (parameter.type === undefined)
+    return [];
+  /* Emitting a name the file cannot resolve replaces one broken emission with another,
+   * measured as `TS2307` in a package that does not depend on `type-fest` where the old
+   * form produced `TS2552`. The import this used to require was never the right test, but
+   * it did answer this question by accident, so dropping it means asking directly. */
+  if (!typeFestResolvesFrom({
+    fileName: parameter.getSourceFile()
+      .fileName,
+  },))
     return [];
   /**
    * Semantic parameter type used to reject collection projection guesses.
