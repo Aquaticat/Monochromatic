@@ -3083,3 +3083,59 @@ The opacity is unchanged in every case,
  which is the part that had to hold:
  the obligation moved to the sink rather than disappearing,
  which is exactly what the call-argument branch of `useEscapes` says it does.
+
+## The escaping closure is a false offer, falsified
+
+Same bar as every other in this document.
+
+```ts
+const holder: { callback?: () => Row; } = {};
+
+export function storeCapturingClosure(config: Config,): void {
+  holder.callback = (): Row => config.row;
+}
+
+export function mutateThroughHeld(): void {
+  if (holder.callback !== undefined)
+    holder.callback()
+      .label = 'written';
+}
+```
+
+The rule offers `ReadonlyDeep<Config>` for `storeCapturingClosure`.
+Applying it type-checks clean.
+The driver prints:
+
+```text
+caller row label is now: written
+```
+
+So it belongs to the class this session has been closing,
+ and it is the fourth member of it:
+ a write through a returned value,
+ a store of one,
+ a store through a local holding one,
+ and now a store of a closure that can hand one back.
+
+The mechanism is the same shape too.
+`holder.callback = (): Row => config.row` is a store whose right side has no origins,
+ because `effect-expression-provenance.ts` gives a function expression no provenance
+ successors,
+ so `parameterIndexes` comes back empty and the store records nothing.
+Every earlier member of the class had a call where this has a closure.
+
+What has to be recorded is the capture:
+ the closure reaches `config.row`,
+ the closure escapes,
+ so the caller's row escapes.
+What the closure DOES inside cannot matter,
+ because whoever holds it decides that.
+This one only reads,
+ and returning a mutable `Row` from a deeply readonly parameter is enough,
+ which is the same laundering that makes every falsification here compile.
+
+The control is already measured and must not move:
+ a closure assigned to a callable-local binding and invoked is not a store,
+ `targetIsCallableLocal` answers that,
+ and `invokeLocalClosureWriting` keeps its `mutated=[0]` through the ordinary active-body
+ scan.
