@@ -7,10 +7,14 @@ Scope:
 Opened from task #38,
  which asked whether a member read should face escape analysis an index read does not.
 
-The question was posed backwards.
-Measurement says the member path is not over-reporting.
-The index path is under-protecting,
- and that under-protection is a live unsound offer.
+The answer is that neither path is wrong about soundness,
+ and the asymmetry is a precision inconsistency the rule carries in two places.
+Every offer measured here was checked by applying it and type-checking,
+ and every one of them holds.
+An earlier revision of this document claimed an unsound offer.
+That claim was inferred rather than measured,
+ the measurement refuted it,
+ and the correction is recorded in "What the caller-side gap costs".
 
 ## What was measured
 
@@ -18,7 +22,8 @@ A probe fixture placed nine,
  then fourteen,
  functions over `rows: Row[]` with `type Row = { label: string }`,
 read both through `buildEffectSummaryIndex` summaries directly and through `oxlint` at the user boundary.
-Both agree on every function.
+The two readings agree on every function,
+ though for the silent ones that is agreement by absence rather than a matching verdict.
 The fixture and the reading script are disposable and were run in a `git worktree` fork,
  not the main worktree.
 
@@ -55,7 +60,7 @@ Both record the identical `returnedParameterIndexes`.
 The member path additionally keeps the receiver-opacity report,
 because `resultEscapesCallable` counts a return as an escape and `receiverClaimAnswerable` therefore refuses to discharge.
 
-## Why aligning the member path down would be wrong
+## What the caller-side gap costs
 
 Two functions decide this,
  and neither was in the original probe.
@@ -76,18 +81,47 @@ Measured:
 `writeThroughReturnedMember` records `opaque=[0]` and reports.
 
 Both write `rows[0].label` through a resolved same-file callee.
-The rule's own standard treats that write as disqualifying:
 `writeThroughIndex`,
  performing the identical write directly,
- records `mutated=[0]` and is correctly withheld.
-So the offer on `writeThroughReturnedIndex` is unsound by the definition this package works to,
-a `readonly` offer for a parameter whose reachable state the callable writes.
+ records `mutated=[0]` and is withheld.
 
-The member path's report is currently the only thing blocking the same unsound offer on the member side.
-Aligning the member path down to the index path would not remove a false report.
-It would widen a live defect from one path to both.
+An earlier revision of this document called the offer on `writeThroughReturnedIndex` unsound.
+That was wrong,
+ and the correction matters more than the original claim.
+The wrongness was an inference:
+ that because the rule withholds from `writeThroughIndex`,
+ an element write must violate what the rule offers.
+Applying the offer settles it instead of inferring it.
 
-## The actual defect
+Measured against TypeScript 7.0.2,
+ the way #18 established its genuinely unsound offer:
+annotating `rows` as `readonly Row[]` on `writeThroughReturnedIndex`,
+ on `aliasedEscapeThroughMember`,
+ and on `writeThroughIndex` itself type-checks clean,
+ exit zero.
+The control in the same file,
+ `rows.push({ label: 'added', },)`,
+ does fail,
+ so the annotation does bite where `ReadonlyArray` bites.
+
+`ReadonlyArray<Row>` constrains structure,
+ not elements.
+`rows[0].label = 'x'` is legal under it.
+So none of these offers is false,
+ and the rule's effect model tracks writes that the only projection it can offer does not constrain.
+
+The finding is therefore a precision inconsistency,
+ not unsoundness:
+the same write receives opposite verdicts depending on whether it is routed through a resolved callee,
+and `writeThroughIndex` is withheld an offer that would have been honest.
+Withholding is always safe,
+ so that half costs nothing but noise.
+
+This weakens the ordering in "Recommendation" rather than removing the finding.
+Caller-side substitution is not a soundness prerequisite,
+ so the items can be sequenced freely.
+
+## The unconsumed return fact
 
 `returnedParameterIndexes` has no caller-side consumer.
 Grepped across the workspace:
@@ -100,9 +134,12 @@ Nothing substitutes.
 returns are named among the sinks needing coverage before discharge,
 and the closing section states that `directReturned` and `returnedParameterIndexes` have no consumer,
 so nothing rests on them.
-That record is current.
-What is new is the measurement that the missing consumer is not merely inert:
-it produces an unsound offer on the index path today.
+That record is current,
+ including its claim that nothing rests on the unconsumed fact.
+What is new is only that the gap is observable from outside:
+it makes the same write receive opposite verdicts,
+ and it withholds honest offers.
+No false offer was produced by it in anything measured here.
 
 ## A second defect, in the escape test itself
 
@@ -130,48 +167,56 @@ The module doc claims to collect holders "directly or by alias",
  which overstates what the code does.
 Assignment-established aliases and destructuring have the same gap.
 
-This does not change the recommendation,
- because the member path's protection is the conservative side.
-It does mean that protection is not reliable where it exists.
+Like the first defect,
+ this one is a consistency failure rather than a false offer:
+`readonly Row[]` on `aliasedEscapeThroughMember` type-checks,
+ measured in the same run.
+Two functions with identical semantics get opposite verdicts,
+ and the discharge rests on a claim the code does not honor.
 
 ## Recommendation
 
 Ranking:
- build the consumer first,
- then relax the escape test,
- and do not align the paths before either.
+ fix the escape test first,
+ then build the consumer,
+ and decide the alignment question separately once both are done.
 
-1.   Build caller-side substitution for `returnedParameterIndexes`.
+The ordering argument that an earlier revision made,
+ that the consumer must land first or a false offer spreads,
+ does not survive the compile check.
+Nothing measured here produces a false offer,
+ so neither item gates the other and the smaller one goes first.
+
+1.   Fix `resultHolderSymbolIds` to follow alias hops,
+      assignments and destructuring,
+     or narrow the module doc to what it actually proves.
+     Fixing is preferred,
+      since the claim is what the discharge rests on.
+     Smallest of the items,
+      independent of the others,
+      and it makes the rule report more,
+      which is the safe direction.
+2.   Build caller-side substitution for `returnedParameterIndexes`.
      At a resolved call,
       map each callee returned parameter index through that argument's origins,
      feed the result into `expressionValueOrigins`,
       and propagate transitively when a caller returns the result.
      Keep unsupported return paths opaque.
-     This closes the unsound offer on the index path and is the prerequisite the accepted decision already names.
-2.   Fix `resultHolderSymbolIds` to follow alias hops,
-      assignments and destructuring,
-     or narrow the module doc to what it actually proves.
-     Independent of the first item and smaller.
-3.   Only after the consumer exists,
-      let a verified direct return discharge receiver opacity.
-     The paths then align because the return became attributed,
-      not because the test was dropped.
-
-Doing the third alone is the tempting move and the wrong one,
- for the reason measured above.
+     This is the prerequisite the accepted decision names for discharging receiver opacity.
+3.   Only then decide whether a verified direct return may discharge receiver opacity.
+     Deferred rather than recommended:
+      the compile check removed the reason to hurry it,
+      and #35 refuted a closely related refinement after it looked obviously safe.
 
 ## Consequence carried meanwhile
 
 `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts` carries a scoped `unicorn/prefer-at` disable
 whose justification cites this asymmetry.
-Its description of the behaviour is accurate and stays.
-Its framing is not:
- it reads as though the index path were the correct reference,
- and the index path is the
-defective one.
-Update that comment when the first recommendation lands,
- not before,
- since the suppression is still required.
+Its description of the behaviour is accurate and its framing is defensible:
+ the index path is the one whose offers were shown honest,
+ so treating it as the reference is fair.
+The comment stays as written,
+ and the suppression is still required either way.
 
 ## What this proposal does not establish
 
@@ -179,6 +224,14 @@ The probe uses one element shape and one collection.
 `Map` and iterator members are not covered,
  and `doc/decision/prefer-readonly-result-provenance.md`
 already records iterator members as separately unproven.
-Whether the unsound index offer appears anywhere in the workspace today is unmeasured:
-it needs a resolved callee that returns caller-owned element state and a caller that writes through the result,
-and no sweep has looked for that shape.
+The compile check covers the offers this probe produced,
+ not every offer the rule can produce.
+One shape stays open and is the one worth probing next:
+ a resolved callee that launders a `readonly` parameter back to a mutable array through a cast,
+ letting a caller structurally mutate what it was offered `readonly` for.
+Casts are an acknowledged escape hatch,
+ so that may well be out of scope,
+ but it is the only route measured here by which the missing consumer could produce a false offer.
+
+Whether any of these shapes occurs in the workspace today is unmeasured,
+ and no sweep has looked.

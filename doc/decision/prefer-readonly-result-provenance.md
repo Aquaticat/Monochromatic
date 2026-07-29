@@ -291,12 +291,15 @@ together with a third defect in the same family that predates every provenance c
 The fact is recorded and the escape classifier still counts a return as an escape,
 so nothing rests on it; caller-side substitution is what would make it load-bearing.
 
-That last clause was too generous, and task #38 measured why.
-Nothing rests on it inside the callable that returns.
-A caller that writes through the returned value is a different matter: it recovers no origin,
-records no mutation, and is offered `readonly` for a parameter whose element it writes.
-The member path escapes this only because its receiver opacity survives into the caller.
-`doc/planning/prefer-readonly-return-substitution.md` records the measurement and the ordering it implies.
+Task #38 tested that last clause and it holds.
+A caller that writes through the returned value recovers no origin and records no mutation,
+so the same write receives opposite verdicts depending on whether it is routed through a resolved callee.
+That is visible from outside, but it is not a false offer:
+applying the offered `readonly Row[]` to such a caller type-checks under TypeScript 7.0.2,
+because `ReadonlyArray` constrains structure and the write lands on an element.
+So the gap costs precision and consistency, not soundness.
+`doc/planning/prefer-readonly-return-substitution.md` records the measurement,
+and the correction of an earlier revision that called it unsound.
 
 ## Remaining work
 
