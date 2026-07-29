@@ -53,7 +53,7 @@
         <dd>
           File that a computer can start and run.
           This page sometimes shortens “executable program” to “program.”
-          <p><strong>Example:</strong> after the sample has been prepared successfully, starting its executable begins at <code>main</code>.</p>
+          <p><strong>Example:</strong> <code>main.rs</code> is source text; a separate file produced from it is executable program.</p>
           <p>
             <strong>TypeScript relationship:</strong>
             TypeScript is normally turned into JavaScript and run by Node.js or a browser;
@@ -64,7 +64,7 @@
         <dt>Compiler</dt>
         <dd>
           Tool that reads source code before it can run.
-          It either reports why the source is rejected or produces a runnable result.
+          It either reports why the source is rejected or produces executable file that computer can start.
           Rust's compiler is named <code>rustc</code>.
           <p>
             <strong>Example:</strong>
@@ -73,15 +73,15 @@
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
-            <code>tsc</code> also checks source before running,
-            but Rust additionally checks rules for access to computer memory.
+            <code>tsc</code> also checks source before running.
+            Rust checks additional rules that later sections call ownership and borrowing.
           </p>
         </dd>
 
         <dt>Compile time</dt>
         <dd>
           Period when the compiler is reading and checking source code, before the executable starts.
-          <p><strong>Example:</strong> the rule that prevents changing an immutable variable is enforced at compile time.</p>
+          <p><strong>Example:</strong> compiler reporting unknown variable name is compile-time event.</p>
           <p><strong>TypeScript relationship:</strong> TypeScript type errors are also reported before the emitted JavaScript runs.</p>
         </dd>
 
@@ -105,8 +105,8 @@
 
         <dt>Function and function call</dt>
         <dd>
-          Function is named group of instructions.
-          A function's instructions run when code calls it.
+          Function is named section of code.
+          Code inside function runs when function is called.
           A call is written with a function name followed by parentheses.
           <p><strong>Example:</strong> <code>greet();</code> calls a function named <code>greet</code>.</p>
           <p><strong>TypeScript relationship:</strong> TypeScript functions and calls have the same broad role.</p>
@@ -131,20 +131,20 @@
 
         <dt>Parameter and argument</dt>
         <dd>
-          Parameter is input name written in a function definition.
-          Argument is value supplied by a particular function call.
+          Parameter is input name written in function definition.
+          Argument is value supplied by particular function call.
           <p>
             <strong>Example:</strong>
-            in <code>fn greet(name: String)</code>, <code>name</code> is a parameter;
-            in <code>greet(s)</code>, <code>s</code>'s value is the argument.
+            sample's <code>main()</code> has no parameters;
+            <code>s</code> inside call <code>drop(s)</code> is argument supplied to <code>drop</code>.
           </p>
           <p><strong>TypeScript relationship:</strong> TypeScript uses the same parameter and argument distinction.</p>
         </dd>
 
         <dt>Function body</dt>
         <dd>
-          Instructions enclosed by a function's braces, <code>{</code> and <code>}</code>.
-          <p><strong>Example:</strong> the four statements between <code>main</code>'s braces form its body.</p>
+          Code enclosed by function's braces, <code>{</code> and <code>}</code>.
+          <p><strong>Example:</strong> everything between <code>main</code>'s opening and closing brace is its body.</p>
           <p><strong>TypeScript relationship:</strong> TypeScript also uses braces around a normal function body.</p>
         </dd>
 
@@ -158,15 +158,15 @@
         <dt>Expression</dt>
         <dd>
           Piece of code that produces a value.
-          <p><strong>Example:</strong> <code>String::from("Hello world")</code> produces a new <code>String</code> value.</p>
-          <p><strong>TypeScript relationship:</strong> <code>new URL("https://example.com")</code> is a TypeScript expression.</p>
+          <p><strong>Example:</strong> <code>2 + 3</code> is expression producing value <code>5</code>.</p>
+          <p><strong>TypeScript relationship:</strong> <code>2 + 3</code> is also TypeScript expression.</p>
         </dd>
 
         <dt>Statement</dt>
         <dd>
-          Complete instruction in a function body.
+          Complete action written in function body.
           Statements in this sample end with semicolons.
-          <p><strong>Example:</strong> <code>drop(s);</code> is one statement.</p>
+          <p><strong>Example:</strong> <code>2 + 3;</code> is one statement containing expression <code>2 + 3</code>.</p>
           <p><strong>TypeScript relationship:</strong> TypeScript also has statements and commonly uses semicolons.</p>
         </dd>
 
@@ -189,14 +189,14 @@
 
         <dt>Variable, variable declaration, and binding</dt>
         <dd>
-          Variable is programmer-chosen name used to reach a value.
+          Variable is programmer-chosen name for value while relevant code runs.
           Variable declaration creates that name.
-          Rust documentation calls the connection between the name and its value a <strong>binding</strong>.
-          After this definition, the decoder may use “binding” for that connection.
+          Rust documentation calls connection between name and current value a <strong>binding</strong>.
+          After this definition, decoder may use “binding” for that connection.
           <p>
             <strong>Example:</strong>
-            <code>let s = String::from("Hi");</code> declares variable <code>s</code>
-            and binds the name <code>s</code> to a <code>String</code> value.
+            <code>let score = 5;</code> declares variable <code>score</code>
+            and binds name <code>score</code> to value <code>5</code>.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -221,13 +221,12 @@
 
         <dt>Mutation and <code>mut</code></dt>
         <dd>
-          Mutation means making data reachable through an existing variable different from before.
-          Rust's <code>let</code> does not permit that through the new variable unless <code>mut</code> follows <code>let</code>.
+          Mutation means operation alters current value reached through existing variable.
+          Rust's <code>let</code> does not permit such alteration unless <code>mut</code> follows <code>let</code>.
           <p>
             <strong>Example:</strong>
-            before <code>s.push_str("!")</code>, <code>s</code> contains <code>Hello world</code>;
-            afterward it contains <code>Hello world!</code>.
-            That exact operation requires the declaration <code>let mut s</code>.
+            <code>let mut score = 5; score = 6;</code> changes current value reached through <code>score</code>
+            from <code>5</code> to <code>6</code>.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -236,26 +235,11 @@
           </p>
         </dd>
 
-        <dt>Method</dt>
-        <dd>
-          Function attached to a type and called with dot syntax on a value of that type.
-          <p><strong>Example:</strong> <code>s.push_str("!")</code> calls method <code>push_str</code> on <code>s</code>.</p>
-          <p><strong>TypeScript relationship:</strong> TypeScript object and class methods use similar dot-call syntax.</p>
-        </dd>
-
         <dt>Literal</dt>
         <dd>
           Source-code spelling that directly represents a value.
           <p><strong>Example:</strong> <code>"Hello world"</code> is a string literal; quotation marks mark its boundaries.</p>
           <p><strong>TypeScript relationship:</strong> <code>"Hello world"</code> is also a TypeScript string literal.</p>
-        </dd>
-
-        <dt>Macro</dt>
-        <dd>
-          Rust construct that the compiler expands into other Rust code during compilation.
-          Macro calls use an exclamation mark after the macro name.
-          <p><strong>Example:</strong> <code>vec![1, 2, 3]</code> calls macro <code>vec!</code> to construct a <code>Vec</code>.</p>
-          <p><strong>TypeScript relationship:</strong> TypeScript has no direct language feature with Rust's macro-call syntax.</p>
         </dd>
       </dl>
 
@@ -294,6 +278,16 @@
             an expression such as <code>text += "!"</code> produces a different string value.
             Rust <code>String</code> has no exact TypeScript <code>string</code> mirror.
           </p>
+        </dd>
+
+        <dt>Method</dt>
+        <dd>
+          Function attached to type and called with dot syntax on value of that type.
+          <p>
+            <strong>Example:</strong>
+            <code>s.push_str("!")</code> calls <code>String</code> method <code>push_str</code> on <code>s</code>.
+          </p>
+          <p><strong>TypeScript relationship:</strong> TypeScript object and class methods use similar dot-call syntax.</p>
         </dd>
 
         <dt>Memory</dt>
@@ -364,12 +358,13 @@
       <dl>
         <dt>Ownership and owner</dt>
         <dd>
-          Rust assigns responsibility for eventually cleaning up each allocation.
-          Value with that responsibility is its owner.
+          For each allocation, Rust tracks value currently responsible for cleanup.
+          That value is allocation's owner.
+          When owner ends, Rust performs cleanup at that point.
           <p>
             <strong>Example:</strong>
-            <code>String</code> value held through <code>s</code> owns the heap buffer;
-            destroying that <code>String</code> deallocates the buffer.
+            <code>String</code> value reached through <code>s</code> owns heap buffer;
+            when that <code>String</code> ends, Rust deallocates buffer.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -380,11 +375,12 @@
 
         <dt>Move</dt>
         <dd>
-          Move transfers value and its cleanup responsibility to a new destination.
-          Afterward, old variable cannot be used to reach that value.
+          Move transfers value and its ownership from one variable or function input to another.
+          Old variable is not “empty”; compiler rejects later reads through it.
           <p>
             <strong>Example:</strong>
-            after <code>let b = s;</code> for a <code>String</code>, <code>b</code> can be used but <code>s</code> cannot.
+            after <code>let b = s;</code> for a <code>String</code>, <code>b</code> can be used but compiler rejects later use of <code>s</code>.
+            Calling <code>drop(s)</code> similarly moves value from <code>s</code> into <code>drop</code>.
           </p>
           <p>
             <strong>TypeScript relationship:</strong>
@@ -395,8 +391,9 @@
 
         <dt>Reference and borrow</dt>
         <dd>
-          Reference is compiler-checked pointer that gives temporary access without receiving cleanup responsibility.
-          Borrow means create such reference with <code>&amp;</code>.
+          Reference is compiler-checked pointer that lets code access data owned elsewhere.
+          Reference does not become responsible for destroying that data.
+          Borrow means using <code>&amp;</code> to create this temporary access; resulting value is reference.
           Compiler limits what owner can do while reference will still be used.
           <p><strong>Example:</strong> <code>let hello = &amp;s[0..5];</code> borrows first five bytes from <code>s</code>.</p>
           <p>
@@ -430,7 +427,7 @@
         <dd>
           Situation for which Rust provides no promise about result.
           Reading from deallocated memory is one example.
-          Safe Rust compiler rejects code that could perform such read.
+          Compiler rejects ordinary Rust source when its checks can see such invalid read.
           <p>
             <strong>Example:</strong>
             if code read <code>hello</code> after old allocation had been deallocated,
@@ -444,11 +441,25 @@
         </dd>
       </dl>
 
-      <p>
-        <a href="https://www.typescriptlang.org/play/?#code/GYVwdgxgLglg9mABAWwIYzACgJQC5EBucMAJogN4BQiiANgKZSJT0AeU+AzlAE4YDmiALyIARAAl6tWnEQB3OD1olRAbmrM2TANQjRAQjUaICTnAYA6Gf0wt22dQF9KlE2G6JgMHh5HlN7PgSUjKiiI7qbh6c9G5kIl4+UOoxcRZ2OnqGkabm9FZwNonc6VoOiAD0FYiS0nD6ADSIAEZwUAAWiGCoyPSciDz0aBiIIJyozQwuw1jlVSjoSDD9qEiKJBioPACenuDQ8GBNZszty4gQqNKI52wADrQwEDBQlEA">
-          Run the TypeScript comparison for ordinary <code>main</code>, mutable <code>let</code>, and shared object references
-        </a>.
-      </p>
+      <details>
+        <summary>Copyable TypeScript anchor example</summary>
+        <pre><code>function main(): void {
+  let text = "Hello world";
+  text += "!";
+}
+
+const first = { text: "Hello" };
+const second = first;
+second.text += "!";
+
+main(); // main has no automatic meaning in TypeScript</code></pre>
+        <p>
+          This one example shows three contrasts:
+          TypeScript calls <code>main</code> explicitly,
+          <code>let</code> needs no <code>mut</code>,
+          and both <code>first</code> and <code>second</code> remain usable after assignment.
+        </p>
+      </details>
     </section>
 
     <section aria-labelledby="program">
@@ -470,8 +481,8 @@
 
         <dt><code>main</code></dt>
         <dd>
-          Special function name for initial automatically started code in executable.
-          <p><strong>Example:</strong> launching this executable automatically enters <code>main</code>; source does not contain separate <code>main();</code> call.</p>
+          Special function whose initial call is performed automatically when executable starts.
+          <p><strong>Example:</strong> launching this executable enters <code>main</code>; Rust source does not contain separate <code>main();</code> call.</p>
         </dd>
 
         <dt><code>()</code></dt>
@@ -498,12 +509,14 @@
 
         <dt><code>mut</code></dt>
         <dd>
-          Keyword permitting mutation through this variable.
+          Keyword allowing later assignment to this variable and operations that alter its current value.
+          Permission belongs to variable declaration; it does not automatically transfer to another variable after move.
           <p>
             <strong>Example:</strong>
-            this sample changes <code>s</code>'s text from <code>Hello world</code> to <code>Hello world!</code> with
-            <code>s.push_str("!")</code>;
-            without <code>mut</code>, compiler rejects that exact call.
+            <code>s.push_str("!")</code> changes <code>s</code>'s text from <code>Hello world</code> to <code>Hello world!</code>
+            and byte length from <code>11</code> to <code>12</code>.
+            It may reuse current buffer or replace full buffer with larger allocation.
+            Without <code>mut</code>, compiler rejects this exact call.
           </p>
         </dd>
 
@@ -591,6 +604,9 @@
         <dt><code>push_str</code></dt>
         <dd>
           <code>String</code> method that appends bytes from string slice.
+          It adds exclamation-mark byte, increasing length from <code>11</code> to <code>12</code>.
+          Because current capacity is only <code>11</code>, this Aquascope run obtains larger allocation,
+          copies eleven existing bytes, appends new byte, and deallocates old allocation.
           <p><strong>Example:</strong> before call, <code>s</code> contains <code>Hello world</code>; after call, it contains <code>Hello world!</code>.</p>
         </dd>
 
@@ -855,6 +871,14 @@
           <code>Vec</code> is Rust list type whose length can change.
           <code>&lt;u8&gt;</code> says each list element has type <code>u8</code>, Rust byte-sized number type.
           <p><strong>Example:</strong> <code>vec![72_u8, 105_u8]</code> constructs <code>Vec&lt;u8&gt;</code> containing byte values for <code>Hi</code>.</p>
+        </dd>
+
+        <dt>Macro</dt>
+        <dd>
+          Rust construct that compiler expands into other Rust code during compilation.
+          Macro calls use exclamation mark after name.
+          <p><strong>Example:</strong> <code>vec![1, 2, 3]</code> is call to macro named <code>vec!</code>.</p>
+          <p><strong>TypeScript relationship:</strong> TypeScript has no direct language feature with Rust's macro-call syntax.</p>
         </dd>
 
         <dt><code>vec!</code></dt>

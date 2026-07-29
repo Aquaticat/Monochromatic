@@ -30,21 +30,17 @@
 - Keep CSS near ten lines and add no presentation rules beyond the approved foreground and background colors.
 - Use HTML and CSS for graphs and diagrams.
 - JavaScript is allowed and should be embedded when a lesson needs it.
-- Every embedded TypeScript comparison must link to a TypeScript Playground URL containing that source.
+- Keep TypeScript comparisons self-contained and copyable; do not add TypeScript Playground links.
 - Do not run `agent-browser` for every edit in this workspace.
   Reserve browser verification for JavaScript, new interactions, or browser-dependent behavior.
 
 ## Tooling discoveries
 
-- TypeScript Playground share links preserve source in a compressed fragment shaped like
-  `https://www.typescriptlang.org/play/?#code/<payload>`.
-  Generate the payload through the current Playground rather than hand-encoding source.
-- In the July 2026 browser check, setting Monaco's model with `setValue` changed editor text
-  but did not update the Playground URL until an actual editor input event occurred.
-- The headless browser could not read the clipboard after pressing Playground's Share button.
-  Read the updated page URL instead of depending on clipboard access.
-- Before embedding a Playground link, reopen it, compare the restored editor source with the intended source,
-  run it, and inspect its Errors and Logs tabs.
+- Do not generate TypeScript Playground links.
+  Its compressed `#code` share format required brittle browser interaction:
+  Monaco's `setValue` did not update the URL until a real input event,
+  and headless clipboard reads were denied after pressing Share.
+  The learner is fluent in TypeScript, so copyable source provides more value than maintaining these links.
 - Aquascope's binocular view exposes private Rust standard-library layout from its selected toolchain.
   Explain visible labels, but mark the exact wrapper chain as version-dependent and not vocabulary to memorize.
 - Aquascope's eye control changes visibility of book-hidden helper source lines;

@@ -21,7 +21,7 @@ without becoming a replacement course.
 - Every HTML file works when opened directly through a `file:///` URL; this workspace has no build tasks.
 - Each HTML file repeats the minimal automatic-dark-mode CSS inline; there is no shared stylesheet.
 - Graphs and diagrams use HTML and CSS. JavaScript is allowed when it produces a tighter feedback loop.
-- TypeScript comparison examples link to runnable TypeScript Playground examples.
+- TypeScript comparisons are self-contained and copyable; they do not require Playground links.
 - Label every unfamiliar term, symbol, control, and diagram mark when it first appears.
 - Demonstrate every introduced concept with a concrete example rather than only defining it.
 - Explain each technical term before using it to explain another term.
