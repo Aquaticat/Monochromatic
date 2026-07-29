@@ -4033,3 +4033,40 @@ A returned closure looks like it breaks the condition rather than falling under 
  origin.
 That is a measurement to run before it is an argument,
  and a change there touches a decision rather than a hole.
+
+### The capture, and what three zeros in a row mean
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers did not rise and no category moved,
+ which is the criterion in its reusable form,
+ satisfied.
+
+Three of the last four sweeps came back at zero:
+ the escaping closure,
+ the aliased store,
+ and now the returned callable.
+Only the handed-argument capture moved anything,
+ and it moved by one true finding.
+
+That pattern is worth naming rather than repeating.
+Of 1967 findings in this workspace only 32 are offers,
+ so nearly everything is already withheld for some other reason,
+ and a change that withholds more has almost nowhere left to act.
+A zero here is evidence that the shape is absent from this repository in a still-offered
+ form.
+It is not evidence that the shape is rare in general,
+ not evidence that the fix is unnecessary,
+ and not evidence that the fix is correct.
+
+What carries the correctness in every one of these is the falsification:
+ the rule produced the annotation,
+ the annotation was applied and type-checked clean beside a control proving it was live,
+ and a driver observed the caller's state change.
+The sweep only ever answered a different question,
+ which is what the change costs everything else.
