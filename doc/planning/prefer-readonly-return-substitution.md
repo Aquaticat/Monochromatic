@@ -1798,3 +1798,61 @@ That also settles what a confirming sweep after the subject fix can show.
 No repository finding had its name set widened by a store,
  so filtering stores out of that set cannot narrow one,
  and the capture has to stay at equality.
+
+## The silent return was wider than the thing it was silencing
+
+Measured after the equality capture,
+ which is exactly why equality is necessary and not sufficient.
+
+```ts
+export function declareOnly(encoder: Readonly<TextEncoder>,): void {
+  void encoder;
+}
+
+export function declareAndStore(encoder: Readonly<TextEncoder>,): void {
+  heldEncoder = encoder;
+}
+```
+
+`declareOnly` reports that the parameter claims readonly semantics dishonestly,
+ because `Readonly<TextEncoder>` keeps `encodeInto` and that writes a supplied destination.
+`declareAndStore` reports nothing.
+Adding a store silenced a verdict about the declared type,
+ which the store has nothing to do with.
+
+The cause is placement.
+The silent return sits ahead of every branch,
+ so a retention-only parameter skips the mutation report through a declared readonly type,
+ the independently dishonest declared type,
+ the stale `@mutates` report and the redundant marker report,
+ none of which the change was about.
+
+The repository cannot show this.
+`dishonest` held at thirty-seven and `stale-mutates` at six across all three captures,
+ which proves those shapes do not coincide with retention here,
+ not that the branches are unreachable.
+A sweep can only refute a claim about the code it contains.
+
+The invariant to hold instead,
+ stated so the next capture can be read against it:
+ a retention-only parameter behaves exactly as it did before the store classification
+ existed,
+ except that it is not offered readonly.
+
+That is not what gating two report branches achieves either.
+`acceptedHostOpacity` is computed from opacity,
+ and it feeds `affected`,
+ which gates the stale contract report,
+ and `mutated`,
+ which gates the dishonest report.
+A retention-only parameter carrying a host marker and a contract would take both of those
+ away from their baseline while its two opacity reports stayed correctly quiet.
+
+The shape that satisfies the invariant is to fold the cause test into the fact every
+ verdict already reads,
+ and to gate the offer separately.
+Opacity that no report can ask about is invisible to every verdict,
+ which is what it was before the classification existed,
+ and retention withholds the offer on its own.
+The analysis-level opaque set is untouched throughout,
+ because propagation and discharge must keep treating a store as full opacity.
