@@ -1714,3 +1714,41 @@ The tree carries the two commits of this work and nothing else,
 Both the plugin bundle and the `config-oxlint` sidecar are rebuilt before launching,
  because the sidecar is what oxlint actually loads and a stale one measured the old
  behaviour once already today.
+
+### A fifth residue, predicted before the capture landed
+
+Measured while the sweep ran,
+ on a probe rather than the fixture tree,
+ so the running capture stays a measurement of what was committed.
+
+```ts
+export function configure({ task, api, }: Input,): void {
+  held = task;
+  JSON.stringify(api,);
+}
+```
+
+```text
+The function inputs named "task" and "api" are used by these calls: JSON.stringify
+```
+
+`task` is not used by `JSON.stringify`.
+It was stored,
+ and the split fixed the boundary list without fixing the subject that introduces it.
+`opaqueBindingsByParameter` is derived from every opaque slot without asking what made the
+ slot opaque,
+ so a destructured parameter whose bindings have different causes names them all against
+ whichever cause survived filtering.
+
+This is the same regression one layer down,
+ and it is imprecision rather than unsoundness:
+ the message over-names a binding, and no offer moves.
+Before the store classification the stored binding's slot was not opaque at all,
+ so the subject was right by construction and this is new.
+
+The consequence for the running capture is worth stating in advance.
+If the repository contains a destructured parameter with one stored binding and one called
+ binding,
+ the capture will differ from the baseline at exactly that site,
+ the difference will be an extra name in a subject,
+ and it will be this and not a failure of the cause split.
