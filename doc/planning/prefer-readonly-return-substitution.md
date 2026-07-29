@@ -3308,6 +3308,10 @@ The callee half should now record opacity;
 The returned closure,
  task #67,
  which is not the same question as the other three.
+See also "Where the queue stands",
+ whose reading of task forty-eight applies here word for word:
+ closing a task is a statement about the shapes it measured,
+ never about the class of defect it belongs to.
 Returning parameter-reachable state is governed by an accepted decision that permits it on a
  stated condition:
  that callers keep tracking the value through the recorded returned origins.
