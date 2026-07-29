@@ -4166,3 +4166,22 @@ It is the termination control,
  a walk that failed to terminate would hang rather than answer wrongly,
  so no ordinary assertion could catch it.
 What makes the fixture a test is that the suite completes at all.
+
+### The capture
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers did not rise and no category moved.
+Read against the corrected reading of a zero:
+ the syntax count says stores and returns of callables occur dozens of times here,
+ so the sibling-call form of them either does not occur or lands on parameters already
+ withheld.
+
+Wall clock came in at 8m03s against 8m13s for the previous capture,
+ which is faster while doing strictly more work.
+That is the third time wall clock has moved in the wrong direction here and it remains retired.
