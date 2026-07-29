@@ -1234,3 +1234,42 @@ So the workspace delta from both narrowings is zero,
 Concurrent commits from another session are ordinary here and are not an obstacle;
  what they cost is the ability to read a delta without attributing every record,
  which is worth knowing before the next sweep is pre-registered as a bare count.
+
+## A sweep hazard worth naming: the test task builds
+
+The confirming sweep for the fail-closed predicate was compromised by its own operator,
+ and the mechanism is worth writing down because nothing about it is visible while it
+ happens.
+
+`mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:unit` carries
+ `depends = ["build"]`.
+Running it to check an assertion therefore rebuilds the plugin,
+ and running it during a sweep rebuilds the plugin the sweep is running.
+Measured rather than assumed:
+ the sweep started at 08:55:09 and `dist/final/node/index.mjs` was rewritten at 08:59:42.
+
+Whether that changed the sweep's answer is unknown and was not established.
+The analyzer sources had not changed since the run began,
+ so a deterministic build would have written the same bytes,
+ but no digest was taken before the rewrite and determinism was not measured either.
+The honest position is that the capture has no authority,
+ not that it is probably fine.
+
+Two smaller hazards travel with it.
+The plugin lints its own sources,
+ so editing anything under its `src/` mid-run changes what the sweep reads for those
+ files.
+And the persistent cache digests analyzer sources once per process,
+ which is why editing them mid-run does not corrupt a running capture,
+ measured in `effect-summary-cache-identity.ts` where the comment says the digest is
+ computed once per process.
+
+What follows for the method.
+A sweep is a quiet-tree measurement.
+Before launching one,
+ finish every edit,
+ build once,
+ and then run nothing that builds until the capture lands.
+The tasks that build are not only `build`:
+ `test:unit` depends on it,
+ and any task that does is a rebuild in disguise.
