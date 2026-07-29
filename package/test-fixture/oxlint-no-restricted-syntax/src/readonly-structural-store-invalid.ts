@@ -555,3 +555,35 @@ export function mutateEscapedRest(): void {
     && ('label' in escapedRest.inner))
     escapedRest.inner.label = 'changed';
 }
+
+/**
+ * Destructured input whose two bindings take their opacity from different causes.
+ */
+type MixedCauses = {
+  stored: Row;
+  called: Row;
+};
+
+/**
+ * Stores one destructured binding and hands the other to an unresolved call.
+ *
+ * The subject of a report names authored bindings, and it is built from every opaque slot
+ * without asking what made the slot opaque. One cause per binding is what separates the
+ * two, so a subject that speaks about the call must name `called` alone.
+ *
+ * @param stored - Binding retained beyond this callable.
+ *
+ * @param called - Binding handed to a call this rule cannot inspect.
+ *
+ * @example
+ * ```ts
+ * reportMixedBindingCauses({ stored: { label: '', }, called: { label: '', }, },);
+ * ```
+ */
+export function reportMixedBindingCauses({
+  stored,
+  called,
+}: MixedCauses,): void {
+  held = stored;
+  JSON.stringify(called,);
+}
