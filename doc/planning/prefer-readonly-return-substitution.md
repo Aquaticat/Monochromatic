@@ -2554,3 +2554,26 @@ The serializer writes from a `Map` and cannot produce a repeat,
 Every one of these was reachable only through a payload edited rather than superseded,
  since the cache digest covers version skew.
 That is a narrow door and it was standing open.
+
+### The progress fix, checked at the boundary on the shape it is about
+
+A parameter retained twice,
+ through two different calls into two different targets,
+ which is where the second retention finds the slot already opaque:
+
+```ts
+export function storeTwice(config: Config,): void {
+  holder.held = firstRow(config,);
+  second.held = alsoFirstRow(config,);
+}
+```
+
+`alsoFirstRow` returns `firstRow(config,)`,
+ so its own returned set arrives through the return-branch deferral and the retention of
+ its result substitutes through that,
+ which makes this a transitivity check as well.
+
+Two findings on the file,
+ both offers,
+ both for the callables that hand back what the caller already holds.
+`storeTwice` is withheld and silent.
