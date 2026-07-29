@@ -347,6 +347,7 @@ export function directEffectSummary({
         project,
         checker,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         call: node,
         summary,
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },
