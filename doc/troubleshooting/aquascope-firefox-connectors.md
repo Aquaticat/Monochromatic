@@ -29,11 +29,15 @@ The browser draws connectors after loading that same data.
 Treat each pointer dot as a pointer value and the intended target as the value it addresses.
 For the opening example:
 
-- At `L1`, `s` points to the heap bytes for `Hello world`.
-- At `L2`, `hello` points to the first five bytes of that allocation.
-- At `L3`, `s` points to the replacement allocation containing `Hello world!`;
+- At `L1`,
+  `s` points to the heap bytes for `Hello world`.
+- At `L2`,
+  `hello` points to the first five bytes of that allocation.
+- At `L3`,
+  `s` points to the replacement allocation containing `Hello world!`;
   `hello` is crossed out because its borrow has ended before mutation.
-- At `L4`, `drop(s)` has deallocated the buffer,
+- At `L4`,
+  `drop(s)` has deallocated the buffer,
   so the pointer inside `s` is crossed out.
 
 Use a Chromium browser when seeing connector geometry is necessary.
