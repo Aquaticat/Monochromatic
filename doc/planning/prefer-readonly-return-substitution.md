@@ -178,36 +178,81 @@ Like the first defect,
 Two functions with identical semantics get opposite verdicts,
  and the discharge rests on a claim the code does not honor.
 
+## A third defect: a branch that cannot execute
+
+`useEscapes` carries a branch for assignment,
+ and nothing can reach it.
+Proven from source rather than probed,
+ because the proof is three facts and no fixture is needed:
+
+-    `useEscapes` has exactly two call sites,
+      `effect-result-escape.ts:394` and `:423`,
+      and both pass `valueConsumer({ node, },)` rather than the node.
+-    `RIGHT_OPERAND_PASSES` contains `SyntaxKind.EqualsToken`.
+-    `passesValueOutward` returns true when the parent is a binary expression
+      whose operator is in that set and whose `right` is the node.
+
+So `valueConsumer` always ascends past an assignment before `useEscapes` is called,
+ and the branch testing `parent.right === node` on an assignment can never match.
+For `sink.value = selected` the classifier receives the assignment expression,
+ whose parent is an `ExpressionStatement`,
+ and returns false at the discard branch.
+
+Property and element stores are therefore not covered by the escape test at all,
+ and `doc/decision/prefer-readonly-result-provenance.md` names them among the sinks
+ requiring coverage before discharge.
+The code does not implement the constraint its own accepted decision states.
+
+Whether that yields a false offer is unmeasured and is not assumed here.
+Tracked as #42.
+
 ## Recommendation
 
 Ranking:
- fix the escape test first,
+ make the assignment branch reachable first,
+ then close the holder set,
  then build the consumer,
- and decide the alignment question separately once both are done.
+ and decide the alignment question last.
 
-The ordering argument that an earlier revision made,
- that the consumer must land first or a false offer spreads,
- does not survive the compile check.
-Nothing measured here produces a false offer,
- so neither item gates the other and the smaller one goes first.
+Two revisions of this ranking were wrong,
+ so the reasoning is given rather than just the order.
+The first claimed the consumer had to land first or a false offer would spread;
+ the compile check refuted that.
+The second called the holder-set fix the smallest and independent item;
+ external review refuted that too,
+ because closing the holder set without fixing reference-position classification
+ makes every assignment-created alias and every destructured binding report.
 
-1.   Fix `resultHolderSymbolIds` to follow alias hops,
-      assignments and destructuring,
-     or narrow the module doc to what it actually proves.
-     Fixing is preferred,
-      since the claim is what the discharge rests on.
-     Smallest of the items,
-      independent of the others,
-      and it makes the rule report more,
-      which is the safe direction.
-2.   Build caller-side substitution for `returnedParameterIndexes`.
+What actually orders these is that #42 is a precondition for #41:
+ assignment-established aliases cannot be classified correctly
+ while the branch that classifies assignment cannot run.
+
+1.   Make the assignment branch in `useEscapes` reachable,
+      #42.
+     Assignment needs edge-aware handling,
+      because one terminal consumer node cannot represent both an assignment's store
+      and the assignment expression's own later consumer.
+     Establish target locality from the target symbol's declaration,
+      not from `isIdentifier(parent.left,)`,
+      since an identifier can name an outer or module binding.
+2.   Close the holder set in `resultHolderSymbolIds`,
+      #41.
+     Call-specific least fixed point over transfer sites,
+      never derived from `bindingOriginBySymbolId`,
+      since two calls on the same receiver share an origin and must not share a verdict.
+     Recurse into binding patterns for destructuring,
+      adding a leaf only when its type can carry mutable state.
+     Skip declaration and assignment-target occurrences before classifying a reference,
+      or every alias and every destructured binding reports.
+3.   Build caller-side substitution for `returnedParameterIndexes`,
+      #40.
      At a resolved call,
       map each callee returned parameter index through that argument's origins,
      feed the result into `expressionValueOrigins`,
       and propagate transitively when a caller returns the result.
      Keep unsupported return paths opaque.
      This is the prerequisite the accepted decision names for discharging receiver opacity.
-3.   Only then decide whether a verified direct return may discharge receiver opacity.
+4.   Only then decide whether a verified direct return may discharge receiver opacity.
      Deferred rather than recommended:
       the compile check removed the reason to hurry it,
       and #35 refuted a closely related refinement after it looked obviously safe.
