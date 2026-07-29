@@ -2989,3 +2989,43 @@ Rule for the rest of this work:
  so `git checkout --` restores the fix rather than removing it.
 If a fix is not ready to commit,
  restore by re-applying the edit rather than by checkout.
+
+## The next false offer of the same class, measured but not yet falsified
+
+Task fifty-one was written as a capture-tracking gap.
+Measuring it found a second silence beside the one it named:
+
+```text
+storeCapturingClosure          all empty   escapedCallback = (): Row => config.row;
+storeCapturingClosureWriting   all empty   escapedCallback = (): Row => { config.row.label = 'x'; ... };
+invokeLocalClosure             all empty   const read = (): Row => config.row; return read().label;
+invokeLocalClosureWriting      mutated=[0] const write = (): void => { config.row.label = 'x'; }; write();
+```
+
+The last row is the control and it passes,
+ so this is not a blanket failure to look inside closures.
+A synchronously invoked local closure has its write attributed.
+`activeCallableBodyNodes` filters by `insideOnlyActiveClosures`,
+ and a closure that is stored rather than invoked is not active,
+ which is right for a closure that never runs and wrong here:
+ whoever holds it can run it.
+
+The two escaping shapes differ in whether the offer can be acted on,
+ and that decides which is urgent.
+
+The writing closure is self-limiting.
+Applying `ReadonlyDeep<Config>` puts `config.row.label = 'x'` under a deeply readonly
+ type,
+ which is a direct write TypeScript rejects,
+ so the annotation does not compile.
+
+The reading closure is not.
+`config.row` returned as `Row` from a `ReadonlyDeep<Config>` parameter compiles,
+ for the same reason every falsification in this document compiles,
+ and the holder then writes through the returned row.
+That is the stage two shape with a closure in place of the call.
+
+Not falsified yet,
+ so it is recorded as a suspicion with a measurement behind it rather than as a defect.
+The falsification is the next thing that task needs,
+ before any design.
