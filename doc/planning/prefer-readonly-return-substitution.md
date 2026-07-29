@@ -3256,3 +3256,63 @@ Zero delta is the expected outcome and is not evidence of anything.
 Of the 1939 findings in the standing baseline,
  1864 are already opacity and only 32 are offers,
  so a withholding fix has almost nowhere to act.
+
+### What this fix does not close
+
+A stronger model read the helper and the store path and named four shapes that carry the same
+ capture past the new gate.
+None was measured yet,
+ so each is filed as a shape to measure and falsify rather than as a known defect,
+ and none of them makes the landed fix wrong.
+They make it partial,
+ which is worth writing down here because a green suite and a killed mutant say nothing about
+ syntax no fixture contains.
+
+The callable alias,
+ task #66:
+
+```ts
+const callback = (): Row => config.row;
+holder.callback = callback;
+```
+
+The gate asks whether the stored value is syntactically a callable,
+ and this stores an identifier.
+`parameterIndexes` does not rescue it either,
+ because a local bound to a function expression carries no parameter origin,
+ for the same reason the bare store needed this fix at all.
+A conditional and a container held in a local ride along with it.
+
+The sibling call,
+ task #68:
+
+```ts
+const read = (): Row => config.row;
+holder.callback = (): Row => read();
+```
+
+`packagedCallableOrigins` is lexical.
+It names every binding the stored body mentions and follows no call out of it,
+ so the capture leaves through a callable the scan never enters.
+This is the same cause as the over-reporting in task #64,
+ pointing the other way:
+ a lexical scanner answering a call-graph question is wrong in both directions at once.
+
+The retaining callee,
+ task #69,
+ where `retain` stores its own parameter and the caller hands it a bare function expression.
+The callee half should now record opacity;
+ the caller half has to map that formal back through a direct function argument,
+ which is not a packaged literal.
+
+The returned closure,
+ task #67,
+ which is not the same question as the other three.
+Returning parameter-reachable state is governed by an accepted decision that permits it on a
+ stated condition:
+ that callers keep tracking the value through the recorded returned origins.
+A returned closure looks like it breaks the condition rather than falling under the policy,
+ since a function expression has no provenance successors and so contributes no returned
+ origin.
+That is a measurement to run before it is an argument,
+ and a change there touches a decision rather than a hole.
