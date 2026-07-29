@@ -2018,3 +2018,54 @@ That is the second time in this sequence that a fixture is the only instrument f
  a monorepo written to pass this rule stops containing the shapes the rule newly catches,
  so the sweep increasingly measures the absence of regressions rather than the presence of
  the fix.
+
+## The suggestion depended on a statement it could not keep alive
+
+Reproduced at the boundary rather than argued from the code.
+
+```text
+before                                    tsc exits 0
+oxlint --threads 1 --fix --fix-suggestions
+after   TS2552: Cannot find name 'ReadonlyDeep'. Did you mean 'Readonly'?
+```
+
+The structural suggestion fired only for a file already importing `ReadonlyDeep` and
+ emitted that local name.
+Until the suggestion is applied that import is unused,
+ so the unused-import fix removes it in the same pass,
+ and the removal wins.
+The pipeline emitted a file oxlint calls clean and TypeScript rejects.
+
+The two halves are not separable.
+Keeping the gate and fixing only the emitted text leaves the import removed on the first
+ pass,
+ so the offer disappears on the next run instead of breaking the file.
+An inline import type has no statement to remove,
+ which dissolves the conflict rather than sequencing it.
+
+Both halves verified with `tsc` on the emitted file.
+The reproduction above now exits zero,
+ and so does a file that imports nothing at all,
+ which is the case the gate refused outright.
+
+What removing the gate widens,
+ stated because no sweep can show it.
+A suggestion is attached to a report,
+ and the report is emitted either way,
+ so the offer count cannot move.
+Measured across the workspace:
+ thirty-two offers in ten files,
+ of which one file imported the helper.
+Nine files carried an offer the rule could not help with,
+ for a reason that was mechanical rather than about correctness.
+
+Every guard that is about correctness stays.
+Array and tuple parameter types are still rejected outright,
+ and the classification must still be mutable through a property or an index signature.
+
+The cost is recorded rather than hidden.
+An aliased import used to be preserved,
+ and a test pinned it.
+An alias exists to name an import statement,
+ and the inline form has none,
+ so the alias has nothing left to name.
