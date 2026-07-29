@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Companion 0001: What's different about this book?</title>
+  <style>
+    :root {
+      --dark: oklch(0.1 0 0);
+      --light: oklch(0.9 0 0);
+      @media (prefers-color-scheme: light) { --fg: var(--dark); --bg: var(--light); }
+      @media (prefers-color-scheme: dark) { --fg: var(--light); --bg: var(--dark); }
+    }
+    html { color: var(--fg); background-color: var(--bg); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p>Companion 0001</p>
+      <h1>What's different about this book?</h1>
+      <p>
+        Primary source:
+        <a href="https://rust-book.cs.brown.edu/experiment-intro.html">read the experimental edition's opening page</a>
+        before using this companion.
+      </p>
+    </header>
+
+    <section aria-labelledby="win">
+      <h2 id="win">One win</h2>
+      <p>
+        Complete one read-hide-retrieve-check cycle and diagnose any missed detail.
+        This is the practice loop later companions will apply to Rust concepts.
+      </p>
+    </section>
+
+    <section aria-labelledby="retrieve">
+      <h2 id="retrieve">Retrieve</h2>
+      <p>Hide the source page. Answer from memory before opening the feedback.</p>
+      <ol>
+        <li>What two interactive mechanics does this edition add?</li>
+        <li>Which chapter receives the largest content change, and what does that change emphasize?</li>
+        <li>What two kinds of Rust behavior do the Aquascope diagrams visualize?</li>
+      </ol>
+      <details>
+        <summary>Reveal feedback</summary>
+        <ol>
+          <li>Quizzes and annotations attached to selected text.</li>
+          <li>
+            Understanding Ownership.
+            It uses research-informed explanations and visualizations intended to improve the learner's ownership model.
+          </li>
+          <li>Compile-time behavior and runtime behavior.</li>
+        </ol>
+        <p>
+          Recheck
+          <a href="https://rust-book.cs.brown.edu/experiment-intro.html#interactive-mechanics">Interactive Mechanics</a>
+          and
+          <a href="https://rust-book.cs.brown.edu/experiment-intro.html#content-changes">Content Changes</a>
+          for any answer you could not retrieve.
+        </p>
+      </details>
+      <details>
+        <summary>Choose the next action from your result</summary>
+        <ul>
+          <li>If you omitted either mechanic, reread Interactive Mechanics and retry the first prompt.</li>
+          <li>If you named ownership but missed compile time or runtime, reread Content Changes and retry the last prompts.</li>
+          <li>If all three answers were available before the reveal, continue.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section aria-labelledby="mission">
+      <h2 id="mission">Mission connection</h2>
+      <p>
+        The destination is first-party Rust ranging from a
+        <a href="../../../rust-module/forbidden-regex/src/lib.rs">restricted regular-expression engine</a>
+        and a
+        <a href="../../../linter/rust/src/main.rs">Rust linter</a>
+        to a
+        <a href="../../../music-player/truepeak-core/src/lib.rs">shared audio core</a>.
+        These entry points are destination markers, not current exercises.
+        Later companions will inspect them only after the book introduces the required concepts.
+      </p>
+    </section>
+
+    <section aria-labelledby="checkpoint">
+      <h2 id="checkpoint">Checkpoint</h2>
+      <p>Complete this sentence without reopening the source:</p>
+      <blockquote>
+        I am using the experimental edition rather than treating the original book as interchangeable because …
+      </blockquote>
+      <details>
+        <summary>Check the sentence</summary>
+        <p>
+          The sentence is grounded in the source if it names quizzes,
+          selected-text annotations,
+          the research-informed ownership material,
+          or a combination of them.
+        </p>
+      </details>
+      <p>
+        At the start of the next reading session,
+        answer the retrieval prompts once more before opening the source or this feedback.
+      </p>
+    </section>
+
+    <p>
+      Ask the teaching agent any follow-up question,
+      especially if “compile time” and “runtime” are not yet a clear distinction.
+    </p>
+    <nav aria-label="Companion navigation">
+      <a href="index.html">Lesson index</a> ·
+      <a href="../reference/reading-loop.html">Reading loop</a>
+    </nav>
+  </main>
+</body>
+</html>
