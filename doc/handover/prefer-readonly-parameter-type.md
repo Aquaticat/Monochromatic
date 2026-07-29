@@ -16,6 +16,14 @@ Falsification means all four of:
 - every suggestion in the file is applied, not just the one under test
 - the result type-checks clean
 - a driver observes the caller's state change
+- **the escape comes from something the annotated callable does, not from something the caller
+  hands it**
+
+That last clause was implicit until it caught me out. A driver that supplies the escaping
+ behaviour proves nothing about the callable it is driving: handing a value to a callback the
+ caller wrote is handing it back to the caller, who already had it, and the callback relation
+ defers that decision to the caller on purpose. The same invalid driver would equally "falsify"
+ `returnRowDirectly`, which is kept offered as the policy control.
 
 The third point needs a control in the same file,
  usually a callable carrying `@ts-expect-error` over a direct write,
@@ -266,7 +274,8 @@ Open, and none of them is a false offer:
 
 - #71, re-measuring task #46's per-finding claim against the current baseline, running
 - #74, discharging a construction whose constructor copies rather than retains
-- #73, the next escape-channel hunt pass, staged and waiting for the queue to clear
+- #76, a method on a local literal whose result is stored outward, from hunt pass two
+- #73, further hunt passes; pass one found three defects, pass two found three
 
 Declined with the reason recorded, because building each the obvious way is worse than leaving
  it:
