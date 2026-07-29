@@ -3396,6 +3396,33 @@ That leaves the movement attributable either to this change or to something that
  between the baseline capture and now,
  and only the disabled-branch run separates those.
 
+### A gap in the sweep discipline, found while trying to use it
+
+The discipline recorded so far covers what must not happen during a sweep:
+ no rebuilds,
+ no edits to any file it lints.
+It says nothing about what must be recorded alongside one,
+ and the attempt to attribute this movement ran straight into that.
+
+The baseline capture has no artifact digest beside it.
+Digests exist in the scratch directory for four earlier points,
+ the most recent almost three hours before the baseline was taken,
+ so what the baseline actually ran is unverifiable after the fact.
+Since two artifacts have to be rebuilt in order,
+ and a sweep silently uses whichever sidecar is on disk,
+ a capture without digests cannot be told apart from a capture taken against a stale one.
+
+So a capture is not a measurement unless it records,
+ beside its output:
+ the commit,
+ the digest of the plugin bundle,
+ and the digest of the sidecar oxlint loads.
+Wall clock is not on that list,
+ having failed twice now as an instrument.
+
+This one records all three,
+ which is why the disabled-branch run can be compared to it at all.
+
 ### What this fix does not close
 
 A stronger model read the helper and the store path and named four shapes that carry the same
