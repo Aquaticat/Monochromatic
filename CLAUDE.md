@@ -1492,6 +1492,12 @@ CLG:
 Stage explicit scoped pathspecs.
 `--no-enforce-*` only when no scoped pathspec fits the change.
 
+CPN:
+ Commit pathspecs must name every new file.
+`git add F` then `git commit -- other/paths` commits without `F`,
+ leaving imports unresolvable at that commit while the working tree still builds.
+Verify with `git status --short` after committing.
+
 XCM:
  External communications report result,
  never work-inviting offers ("happy to",
