@@ -381,14 +381,39 @@ Three sweeps, one thread, from the repository root, same tree.
 
 The deferred run is not slower than the floor.
 It is 26.8s faster,
-which no amount of doing strictly more work explains,
-so the reading is that both sit at the same place and the difference is run-to-run variation.
-Arithmetically the recovered fraction is `373.7 / 346.9`, above one,
-which is the shape of a measurement whose residual is under its own noise rather than of a change
-that beat its own floor.
-What can be claimed:
-the proof's remaining cost after deferral is smaller than the variation between two sweeps,
-which the pair of runs here bounds at about 5 percent of sweep wall time.
+which no amount of doing strictly more work explains.
+
+That invites a claim these numbers cannot support,
+and the first version of this section made it:
+that the residual sits "under the variation between runs, bounded at about 5 percent".
+There is one observation per variant,
+so no variation was measured,
+and wall time is not monotonic in one component's work anyway.
+The three numbers support only this:
+the deferred build finished in 511.1s against 884.8s eager,
+and a build that never proves foreign ownership finished in 537.9s,
+so whole-sweep timing does not resolve the deferred build's residual.
+
+### So the residual was measured directly instead
+
+A throwaway build timed every `completeForeignBorrowedGraph` call and logged each duration.
+One sweep, one thread, whole workspace:
+
+-    67 closures ran, across 128 packages.
+-    9 more were skipped by the marker pre-scan, costing 0.04ms in total.
+-    5301.7ms in closures altogether, a median of 13.8ms and a longest of 1084.0ms.
+
+Five point three seconds, which is 1.04 percent of a 511s sweep.
+That is the residual, without inferring anything from a wall-time difference between builds.
+
+The eager build ran one closure per callable the rule asked about,
+which is what the 373.7s difference is made of.
+Sixty-seven is what "only when a verdict reads it" reduces that to,
+and seven of those sixty-seven are the offers the mechanism exists to withhold.
+
+The instrumented sweep itself took 561s, above both clean runs,
+which is the logging plus the same run-to-run noise that made the wall-time reading unsafe.
+It is reported here rather than omitted, because it is the evidence that the noise is real.
 
 The prediction held exactly.
 Deferred against baseline:
@@ -398,7 +423,16 @@ Deferred against baseline:
 37 dishonest-readonly reports,
 6 stale contracts on both sides;
 3902 warnings and 3299 errors across every rule on both sides;
-and all 7201 finding locations identical as sorted sets.
+and 7201 diagnostics identical as message-plus-location pairs, compared with multiplicity.
+
+Pairs rather than locations,
+because a sorted location set proves nothing about what was said at each location,
+and category counts can agree while two messages swap places.
+A raw diff is not available as a stronger check:
+package order varies between runs even at one thread,
+so the same 7201 diagnostics arrive in a different order and the diff is 60805 lines of noise.
+A second deferred run produced the identical set,
+so the result is reproducible rather than a single sample.
 `package/module/ts-morph-shim/src/visit-node.ts:167:60`,
 the offer attempt 2 invented,
 stays absent.

@@ -226,15 +226,16 @@ The proof left `CallableEffectSummary` for `EffectSummaryIndex.proveForeignBorro
 so the verifier demands it only when one of the four verdicts that read it could move,
 and `includeActiveSource` and `verifyOverloadConsistency`, which never read it, stopped paying.
 
-Measured at one thread from the repository root, same tree, three sweeps:
-884.8s with the proof eager, 511.1s deferred, and 537.9s with the proof disabled outright.
-The deferred run is not slower than a build that does not prove foreign ownership at all,
-so its residual cost is under the variation between runs.
+Measured at one thread from the repository root, same tree:
+884.8s with the proof eager against 511.1s deferred.
+The residual was then measured directly rather than inferred from that difference,
+by timing every closure call in an instrumented build:
+67 closures across 128 packages, 5301.7ms in total, which is 1.04 percent of the sweep.
 
 The findings are unchanged:
 1937 findings and 32 offers on both sides,
 3902 warnings and 3299 errors across every rule,
-and all 7201 finding locations identical as sorted sets.
+and 7201 diagnostics identical as message-plus-location pairs compared with multiplicity.
 Switching the proof off instead adds exactly seven offers,
 one of which is the flaky `wayland-state.ts:166:3` characterized here,
 which is what the whole mechanism buys in this workspace.
