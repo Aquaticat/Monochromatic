@@ -850,6 +850,18 @@ await describe({
         /* Its control, since a collection of writable rows retains writable rows. Without it the
          * gate would read as a rule against constructing from any array at all. */
         expect(structuralOpaque('constructFromMutableRows',),).toEqual([0,],);
+        /* A tag is a call, and a tagged template is not a call expression, so the call branch
+         * skipped it and every interpolated value reached the tag unrecorded. Falsified. */
+        expect(structuralOpaque('handRowToTag',),).toEqual([0,],);
+        /* Its leaf control, since a tag records only what its interpolated values can carry. */
+        expect(structuralOpaque('handLabelToTag',),).toEqual([],);
+        /* A callable held inside a returned literal, which the returned-callable capture missed by
+         * resolving the returned expression itself, an object literal being no callable.
+         * Falsified. */
+        expect(structuralOpaque('handBackIteratorObject',),).toEqual([0,],);
+        /* Its control, so descending a returned literal attributes what its callables captured
+         * rather than reporting every returned literal that holds one. */
+        expect(structuralOpaque('handBackFreshIterator',),).toEqual([],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came

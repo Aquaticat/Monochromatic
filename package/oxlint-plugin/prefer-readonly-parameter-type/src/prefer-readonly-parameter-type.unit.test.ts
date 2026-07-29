@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(33,);
+      },).length,).toBe(35,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -749,8 +749,17 @@ children: [
           || message.includes('"conditionalTarget"',)
           || message.includes('"neverReached"',)
           || message.includes('"neverReturned"',)
-          || message.includes('"actuallyReached"',);
+          || message.includes('"actuallyReached"',)
+          || message.includes('"interpolated"',)
+          || message.includes('"iteratedOut"',);
       },).length,).toBe(0,);
+      /* The two pass-two controls, carrying the count from thirty-three to thirty-five. A tag
+       * handed a label retains nothing writable, and a returned iterator whose closure allocates
+       * its own row captures nothing. */
+      expect(messages.filter(function namesInterpolatedLabel(message,): boolean {
+        return message.includes('"interpolatedLabel"',)
+          || message.includes('"iteratedFresh"',);
+      },).length,).toBe(2,);
       /* The cluster's leaf control, and the three offers that carry the count from thirty to
        * thirty-three. A count handed to a collection retains nothing a caller can be written
        * through, and the two returns of caller state are the permitted return whose callers now

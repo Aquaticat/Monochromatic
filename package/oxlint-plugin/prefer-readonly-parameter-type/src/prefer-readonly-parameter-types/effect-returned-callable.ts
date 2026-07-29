@@ -32,8 +32,10 @@ import {
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
+import { reachableValueSources, } from './effect-result-reach.ts';
 import { returnedCallableProvenance, } from './effect-retention-provenance.ts';
 import {
+  type EffectCallableDeclaration,
   type MutableEffectSummary,
   OWNED_CALLABLE_UNAVAILABLE,
   type SlotOrigins,
@@ -74,11 +76,31 @@ export function recordReturnedCallableCapture({
    * Resolved rather than tested syntactically, so returning a closure by name behaves like
    * returning it inline, which is the same resolution the store path and the call edge use.
    */
-  const callable = callableDeclaration({
+  /* Asked of every source the returned value can have come from, not of the expression alone.
+   * `return { next: () => ({ value: config.row, }), }` hands back a callable inside a literal, and
+   * resolving the literal answers with no callable, so the capture went unrecorded and a caller
+   * driving the iterator changed the caller's row. Falsified.
+   *
+   * `reachableValueSources` already descends an authored aggregate for the result-site walk, and
+   * this is the same descent asking a different question of each answer. */
+  /**
+   * Callables the returned value can be, or can be reached through.
+   */
+  const callables = reachableValueSources({
     project,
     node: returned,
-  },);
-  if (callable === OWNED_CALLABLE_UNAVAILABLE)
+  },)
+    .flatMap(function resolveSource(source,): readonly EffectCallableDeclaration[] {
+      /**
+       * Callable this source resolves to, absent when it is not one.
+       */
+      const candidate = callableDeclaration({
+        project,
+        node: source,
+      },);
+      return candidate === OWNED_CALLABLE_UNAVAILABLE ? [] : [candidate,];
+    },);
+  if (callables.length === 0)
     return;
   /**
    * Where the return sits, so the fact points at the escape rather than at the callable.
@@ -88,16 +110,18 @@ export function recordReturnedCallableCapture({
    * Provenance naming the return as the escape, silent like every other retention.
    */
   const provenance = returnedCallableProvenance({ location, },);
-  transitiveCallableOrigins({
-    project,
-    bindingOriginBySymbolId,
-    packaged: callable,
-  },)
-    .forEach(function recordCapturedSlot(affectedSlot,): void {
-      addOpaqueEffect({
-        summary,
-        affectedSlot,
-        provenance,
+  callables.forEach(function recordCallable(callable,): void {
+    transitiveCallableOrigins({
+      project,
+      bindingOriginBySymbolId,
+      packaged: callable,
+    },)
+      .forEach(function recordCapturedSlot(affectedSlot,): void {
+        addOpaqueEffect({
+          summary,
+          affectedSlot,
+          provenance,
+        },);
       },);
-    },);
+  },);
 }

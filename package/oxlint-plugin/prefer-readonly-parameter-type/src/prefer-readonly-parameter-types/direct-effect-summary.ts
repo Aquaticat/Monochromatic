@@ -33,6 +33,7 @@ import {
 import { discoverBodyBindings, } from './effect-body-bindings.ts';
 import {
   recordConstructionHandoff,
+  recordTaggedTemplateHandoff,
   recordYieldHandoff,
 } from './effect-outward-handoff.ts';
 import { recordReturnEffects, } from './effect-return-effects.ts';
@@ -337,6 +338,12 @@ export function directEffectSummary({
       node,
     },);
     recordYieldHandoff({
+      project,
+      bindingOriginBySymbolId,
+      summary,
+      node,
+    },);
+    recordTaggedTemplateHandoff({
       project,
       bindingOriginBySymbolId,
       summary,

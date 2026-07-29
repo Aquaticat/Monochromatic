@@ -27,6 +27,8 @@
 import type { Node, } from 'typescript/unstable/ast';
 import {
   isNewExpression,
+  isTaggedTemplateExpression,
+  isTemplateExpression,
   isYieldExpression,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -196,5 +198,75 @@ export function recordYieldHandoff({
         affectedSlot,
         provenance,
       },);
+    },);
+}
+
+/**
+ * Records opacity for caller state interpolated into a tagged template.
+ *
+ * A tag is a call, and the analysis never saw it as one: a `TaggedTemplateExpression` is not a
+ * `CallExpression`, so the call branch skipped it entirely and every interpolated value reached
+ * the tag unrecorded. Falsified, with a tag pushing its first interpolated row into a collection
+ * and the caller's row changing afterwards.
+ *
+ * Recorded as a handoff rather than routed through the call machinery. A tag receives a strings
+ * array and the interpolated values as arguments, so the honest minimum is that whatever the
+ * values carry reached something this analysis did not inspect, and that is what a handoff says.
+ * Routing it as a proper call edge would be more precise and needs the formal mapping a tag's
+ * signature implies, which is a larger change than the falsification requires.
+ *
+ * @param project - TypeScript project resolving interpolated origins.
+ *
+ * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ *
+ * @param summary - Summary receiving opacity.
+ *
+ * @param node - Candidate tagged template from the body scan.
+ *
+ * @mutates summary - Adds an opaque slot and handoff provenance per interpolated origin.
+ *
+ * @example
+ * ```ts
+ * recordTaggedTemplateHandoff({ project, bindingOriginBySymbolId, summary, node });
+ * ```
+ */
+export function recordTaggedTemplateHandoff({
+  project,
+  bindingOriginBySymbolId,
+  summary,
+  node,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly summary: MutableEffectSummary;
+  readonly node: Node;
+},): void {
+  if (!isTaggedTemplateExpression(node,))
+    return;
+  if (!isTemplateExpression(node.template,))
+    return;
+  /**
+   * Handoff provenance naming the tag that received the values.
+   */
+  const provenance = handoffProvenance({
+    handoff: `a tagged template call to ${node.tag
+      .getText()}`,
+    location: effectOriginLocation({ node, },),
+  },);
+  node.template
+    .templateSpans
+    .forEach(function recordSpan(span,): void {
+      parameterIndexes({
+        project,
+        bindingOriginBySymbolId,
+        node: span.expression,
+      },)
+        .forEach(function recordInterpolatedSlot(affectedSlot,): void {
+          addOpaqueEffect({
+            summary,
+            affectedSlot,
+            provenance,
+          },);
+        },);
     },);
 }

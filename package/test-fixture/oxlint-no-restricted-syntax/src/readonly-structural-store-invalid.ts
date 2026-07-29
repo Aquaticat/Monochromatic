@@ -2146,3 +2146,132 @@ export function constructFromReadonlyKeys(readonlyKeys: readonly string[],): num
 export function constructFromMutableRows(mutableRows: readonly Row[],): number {
   return new Set(mutableRows,).size;
 }
+
+/**
+ * Retains the first interpolated row.
+ *
+ * @param strings - Literal parts, unused.
+ *
+ * @param values - Interpolated values, whose first row is retained.
+ *
+ * @example
+ * ```ts
+ * keepInterpolated([''], { label: '', },);
+ * ```
+ */
+export function keepInterpolated(
+  strings: readonly string[],
+  ...values: readonly Row[]
+): void {
+  void strings;
+  /**
+   * First interpolated row.
+   */
+  const first = values[0];
+  if (first !== undefined)
+    pushTarget.push(first,);
+}
+
+/**
+ * Hands the caller's row to a tag.
+ *
+ * Falsified. A tag is a call and the analysis never saw it as one, because a tagged template is
+ * not a call expression, so the call branch skipped it and every interpolated value reached the
+ * tag unrecorded.
+ *
+ * @param interpolated - Configuration whose row the tag retains.
+ *
+ * @example
+ * ```ts
+ * handRowToTag({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handRowToTag(interpolated: Config,): void {
+  keepInterpolated`holds ${interpolated.row}`;
+}
+
+/**
+ * Hands a primitive to a tag.
+ *
+ * The leaf control. A tag records only what its interpolated values can carry, so a label retains
+ * nothing a caller can be written through.
+ *
+ * @param interpolatedLabel - Configuration whose label the tag receives.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handLabelToTag({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handLabelToTag(interpolatedLabel: Config,): number {
+  keepLabel`holds ${interpolatedLabel.row.label}`;
+  return interpolatedLabel.rows
+    .length;
+}
+
+/**
+ * Retains nothing, taking only labels.
+ *
+ * @param strings - Literal parts, unused.
+ *
+ * @param values - Interpolated labels, retained as text.
+ *
+ * @example
+ * ```ts
+ * keepLabel([''], '',);
+ * ```
+ */
+export function keepLabel(strings: readonly string[], ...values: readonly string[]): void {
+  void strings;
+  heldLabel = values[0] ?? '';
+}
+
+/**
+ * Hands back an iterator object whose closure reaches the caller's row.
+ *
+ * Falsified. The returned-callable capture resolved the returned expression itself, and an object
+ * literal is not a callable, so a callable held inside one went unrecorded.
+ *
+ * @param iteratedOut - Configuration whose row the iterator hands out.
+ *
+ * @returns iterator handing out the caller's row.
+ *
+ * @example
+ * ```ts
+ * handBackIteratorObject({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handBackIteratorObject(
+  iteratedOut: Config,
+): { next: () => { value: Row; }; } {
+  return {
+    next: (): { value: Row; } => ({ value: iteratedOut.row, }),
+  };
+}
+
+/**
+ * Hands back an iterator object whose closure allocates its own row.
+ *
+ * The control. Descending a returned literal must attribute what its callables captured rather
+ * than report every returned literal holding one.
+ *
+ * @param iteratedFresh - Configuration the returned closure never names.
+ *
+ * @returns iterator handing out a fresh row.
+ *
+ * @example
+ * ```ts
+ * handBackFreshIterator({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handBackFreshIterator(
+  iteratedFresh: Config,
+): { next: () => { value: Row; }; } {
+  void iteratedFresh.rows
+    .length;
+  return {
+    next: (): { value: Row; } => ({ value: { label: 'fresh', }, }),
+  };
+}
