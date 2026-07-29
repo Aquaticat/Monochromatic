@@ -80,6 +80,18 @@ const ALIAS_HOP_SOURCE = readFileSync(
   'utf8',
 );
 
+/** Fixture storing structural parameter state beyond the callable that read it. */
+const STRUCTURAL_STORE_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-structural-store-invalid.ts',
+  import.meta.url,
+),);
+
+/** Current structural-store fixture text. */
+const STRUCTURAL_STORE_SOURCE = readFileSync(
+  STRUCTURAL_STORE_PATH,
+  'utf8',
+);
+
 /** Fixture writing caller state through a callee's returned parameter. */
 const RETURN_SUBSTITUTION_PATH = fileURLToPath(new URL(
   '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-return-substitution-invalid.ts',
@@ -395,6 +407,113 @@ await describe({
          * turns `local` into `[0]` while leaving both cases above passing. */
         expect(local,).toEqual([],);
         expect(inPlace,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'records what the escape test currently sees for a structural store, before that changes',
+      fn: async () => {
+        /* A characterization, not a specification. Seven of these callables hand a piece
+         * of a caller-owned structure to a binding that outlives the call, and one of them
+         * is caught. That one is caught incidentally: only a verified member call carries
+         * receiver opacity, and discharging receiver opacity is the sole trigger for the
+         * escape test, so an index read, a property read, an alias hop, a logical
+         * assignment, an iteration binding and a nested store never reach it.
+         *
+         * On the structural path this is a false offer rather than an imprecision. The
+         * rule's own `--fix-suggestions --fix` writes `ReadonlyDeep<Config>` onto them,
+         * the annotated file type-checks clean under TypeScript 7.0.2, and driving it
+         * changes the caller's own `config.row.label` through the escaped reference.
+         * Measured in `doc/planning/prefer-readonly-return-substitution.md`, section
+         * "A third false offer, on a store into a module binding".
+         *
+         * The five reads carry the other half, and they are why this is pinned before the
+         * classification widens. Reporting an assignment because its target is not
+         * declared inside the body would take `assignIntoParameter` with it, since a
+         * parameter's declaration sits beside the body rather than inside it, and would
+         * take `countIntoModuleBinding` too, since a primitive stored beyond the callable
+         * grants nothing. */
+        const session = openSemanticFile({
+          fileName: STRUCTURAL_STORE_PATH,
+          sourceText: STRUCTURAL_STORE_SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one structural-store fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns opaque parameter indexes in ascending order.
+         */
+        function structuralOpaque(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            STRUCTURAL_STORE_SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /** Indexed element stored into a module binding. */
+        const storedElement = structuralOpaque('storeElementIntoModuleBinding',);
+        /** Member result stored into a module binding. */
+        const storedMember = structuralOpaque('storeMemberIntoModuleBinding',);
+        /** Plain property stored into a module binding. */
+        const storedProperty = structuralOpaque('storePropertyIntoModuleBinding',);
+        /** Property stored after an alias hop. */
+        const storedAlias = structuralOpaque('storeAliasedIntoModuleBinding',);
+        /** Property stored through a logical assignment. */
+        const storedLogical = structuralOpaque('storeThroughLogicalAssignment',);
+        /** Iteration binding stored into a module binding. */
+        const storedIteration = structuralOpaque('storeIterationBinding',);
+        /** Property stored into a local of the enclosing callable. */
+        const storedEnclosing = structuralOpaque('storeIntoEnclosingLocal',);
+        /** Property assigned to another parameter. */
+        const intoParameter = structuralOpaque('assignIntoParameter',);
+        /** Property assigned to a local the callable declares. */
+        const intoOwnLocal = structuralOpaque('assignIntoOwnLocal',);
+        /** Primitive accumulated into a module binding. */
+        const intoCount = structuralOpaque('countIntoModuleBinding',);
+        /** Structure read in place without binding. */
+        const readInPlaceOnly = structuralOpaque('readStructureInPlace',);
+        /** Rows iterated while reading only primitives. */
+        const iterated = structuralOpaque('iterateStructureRows',);
+        closeSemanticBridge();
+        /* The one shape a discharge decision happens to cover. */
+        expect(storedMember,).toEqual([0,],);
+        /* Every other store, currently silent, and each one a false offer. Flipping these
+         * to `[0,]` is what the classification has to achieve. */
+        expect(storedElement,).toEqual([],);
+        expect(storedProperty,).toEqual([],);
+        expect(storedAlias,).toEqual([],);
+        expect(storedLogical,).toEqual([],);
+        expect(storedIteration,).toEqual([],);
+        expect(storedEnclosing,).toEqual([],);
+        /* The controls, which must still read empty after that flip. */
+        expect(intoParameter,).toEqual([],);
+        expect(intoOwnLocal,).toEqual([],);
+        expect(intoCount,).toEqual([],);
+        expect(readInPlaceOnly,).toEqual([],);
+        expect(iterated,).toEqual([],);
       },
     },),
     it({
