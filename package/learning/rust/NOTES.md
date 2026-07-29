@@ -45,6 +45,20 @@
   Explain visible labels, but mark the exact wrapper chain as version-dependent and not vocabulary to memorize.
 - Aquascope's eye control changes visibility of book-hidden helper source lines;
   it does not alter the program state represented by the snapshots.
+- Read an embed's `data-operations` before decoding its marks.
+  An embed listing only `interpreter` draws runtime memory and no `R`, `W`, or `O` permission letters,
+  so permission material cannot be matched against it.
+  The opening diagram on `experiment-intro.html` is such an embed.
+- `data-no-interact` does not disable the copy, eye, and binocular controls.
+- The copy control copies the full source the widget holds, including every line listed in
+  `hidden_lines`, not the displayed subset.
+- Binocular labels render without generic arguments:
+  the `vec` field shows as `Vec`, never `Vec<u8>`.
+- The compact view omits `len` and `cap`; only the binocular view shows them.
+- An embed can hold more interpreter steps than it has `state_locations`.
+  The opening diagram holds a fifth state at `main`'s closing brace and draws no badge for it.
+- Verify decoded claims against the rendered widget rather than the extracted markup alone.
+  `agent-browser eval` reading `.aquascope` `innerText` reports exactly what a learner sees.
 
 The canonical inline CSS is:
 
