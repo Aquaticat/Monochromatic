@@ -187,8 +187,10 @@ Proven from source rather than probed,
  because the proof is three facts and no fixture is needed:
 
 -    `useEscapes` has exactly two call sites,
-      `effect-result-escape.ts:394` and `:423`,
+      at `effect-result-escape.ts:394` and `:423` as of `91b261348`,
       and both pass `valueConsumer({ node, },)` rather than the node.
+     The fix moved those lines,
+      so read them at that commit rather than at the tip.
 -    `RIGHT_OPERAND_PASSES` contains `SyntaxKind.EqualsToken`.
 -    `passesValueOutward` returns true when the parent is a binary expression
       whose operator is in that set and whose `right` is the node.
