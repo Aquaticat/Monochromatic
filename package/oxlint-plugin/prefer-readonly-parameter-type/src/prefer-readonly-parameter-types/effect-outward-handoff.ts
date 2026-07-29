@@ -37,6 +37,7 @@ import {
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { handoffProvenance, } from './effect-retention-provenance.ts';
+import { classifyReadonlyType, } from './readonly-classifier.ts';
 import type {
   MutableEffectSummary,
   SlotOrigins,
@@ -94,6 +95,37 @@ export function recordConstructionHandoff({
   },);
   node.arguments
     .forEach(function recordArgument(argument,): void {
+      /* An argument nothing can be written through grants the construction nothing, however the
+       * constructor keeps it. `expressionCanCarryMutableState` answers yes for a
+       * `readonly string[]`, because an array is an object, and that cost the one offer this
+       * channel moved across the workspace: `new Set(supportedKeys,)` withheld a parameter whose
+       * only handed value was a deeply readonly array of strings.
+       *
+       * The classifier answers the question exactly. `honest-readonly` means every reachable
+       * position is readonly, so no write can travel through the value, which is a stronger and
+       * more precise statement than the leaf test makes. Asked only here, because widening the
+       * leaf test itself would move every path at once. */
+      /**
+       * Type of the handed value, absent when the checker cannot answer for it.
+       */
+      const handedType = project.checker
+        .getTypeAtLocation(argument,);
+      /* Absent type falls through to recording, not to skipping. Reversing that would make an
+       * argument the checker cannot answer for the safest kind to hand a constructor, which is
+       * the wrong direction for a channel whose whole purpose is to withhold on what it cannot
+       * prove. */
+      /**
+       * What the handed type promises about writes reaching through it, absent when unknown.
+       */
+      const handedClassification = handedType === undefined
+        ? undefined
+        : classifyReadonlyType({
+          checker: project.checker,
+          project,
+          type: handedType,
+        },);
+      if (handedClassification?.kind === 'honest-readonly')
+        return;
       parameterIndexes({
         project,
         bindingOriginBySymbolId,

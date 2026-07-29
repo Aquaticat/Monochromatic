@@ -2106,3 +2106,43 @@ export function invokeWritingSibling(actuallyReached: Config,): void {
   }
   writeIt();
 }
+
+/**
+ * Constructs a collection from a deeply readonly array of primitives.
+ *
+ * Nothing can be written through the argument, so the construction gains nothing however the
+ * constructor keeps it. This is the shape that cost the construction channel the one offer it
+ * moved across the workspace, because the leaf test answers yes for any array, an array being an
+ * object, while the classifier answers the question exactly.
+ *
+ * @param readonlyKeys - Deeply readonly keys handed to a construction.
+ *
+ * @returns count of keys the construction received.
+ *
+ * @example
+ * ```ts
+ * constructFromReadonlyKeys(['one',],);
+ * ```
+ */
+export function constructFromReadonlyKeys(readonlyKeys: readonly string[],): number {
+  return new Set(readonlyKeys,).size;
+}
+
+/**
+ * Constructs a collection from rows the caller can be written through.
+ *
+ * The control. A collection of rows retains the rows, and each row is writable, so this must keep
+ * withholding. Without it the gate would read as a rule against constructing from any array.
+ *
+ * @param mutableRows - Rows handed to a construction.
+ *
+ * @returns count of rows the construction received.
+ *
+ * @example
+ * ```ts
+ * constructFromMutableRows([],);
+ * ```
+ */
+export function constructFromMutableRows(mutableRows: readonly Row[],): number {
+  return new Set(mutableRows,).size;
+}

@@ -842,6 +842,14 @@ await describe({
         /* The control. A sibling the callable actually calls must still activate, or the gate
          * would silence every ordinary nested helper. */
         expect(structuralMutated('invokeWritingSibling',),).toEqual([0,],);
+        /* The construction channel asks the classifier rather than the leaf test, because the
+         * leaf test answers yes for any array and cost the one offer this channel moved across
+         * the workspace. `honest-readonly` means every reachable position is readonly, so no
+         * write can travel through the value, whatever the constructor keeps. */
+        expect(structuralOpaque('constructFromReadonlyKeys',),).toEqual([],);
+        /* Its control, since a collection of writable rows retains writable rows. Without it the
+         * gate would read as a rule against constructing from any array at all. */
+        expect(structuralOpaque('constructFromMutableRows',),).toEqual([0,],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came
