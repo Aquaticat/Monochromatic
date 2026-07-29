@@ -4185,3 +4185,82 @@ Read against the corrected reading of a zero:
 Wall clock came in at 8m03s against 8m13s for the previous capture,
  which is faster while doing strictly more work.
 That is the third time wall clock has moved in the wrong direction here and it remains retired.
+
+## Asking what a stored value can be, rather than how it is written
+
+The last two shapes of task sixty-six needed one change, not two.
+
+```ts
+holder.produce = condition ? ((): Row => config.row) : fallback;
+
+const box = { produce: (): Row => config.row, };
+holder.box = box;
+```
+
+The store path tested syntax, so the first looked like a conditional and the second like an
+ identifier,
+ and neither was examined.
+Both falsified.
+
+One walk answers both, and the callers then ask their own questions of each answer:
+ whether it is a callable handing captures over,
+ or what origins it packages.
+It follows transparent wrappers,
+ both branches of a conditional,
+ both operands of nullish and disjunction,
+ the right operand of conjunction and assignment and comma,
+ and an identifier to the initializer it was bound to.
+It refuses calls,
+ conditions,
+ assignment targets,
+ computed keys,
+ discarded operands and nested callable bodies,
+ none of which is a value the expression evaluates to.
+
+Additive rather than substitutive:
+ every node answers with itself as well as with what it can be followed to,
+ so a caller that already handled the written form keeps handling it.
+
+One result was not designed for and is right anyway.
+`storeCoalescedClosure` withholds both its parameters,
+ because storing a caller-supplied callable outward retains it exactly as storing a closure over
+ caller state does.
+
+### Three surviving mutants, three different resolutions
+
+Worth collecting, because they are not the same lesson.
+
+Task sixty-nine's surviving mutant restored a gate a review had already shown unsound,
+ and passed everything.
+The design was right and nothing measured it.
+Resolution: a new fixture, `relayCallable`.
+
+Task sixty-eight's surviving mutant deleted the source-file bound,
+ and passed everything.
+The code was right and my account of why was backwards:
+ a cost bound described as a soundness condition.
+Resolution: correct the claim, and record that no assertion can defend it.
+
+Task sixty-six's surviving mutant treated nullish coalescence as right-operand-only,
+ and passed everything,
+ because the coalescence fixture happened to put its capture on the right.
+Resolution: a fixture putting it on the left,
+ built so the origin walk cannot reach it either,
+ which took a binding bound to a conditional holding an arrow.
+
+The common thread is that a green suite says nothing about a rule no fixture exercises,
+ and that a mutation check is the only instrument here that finds those.
+The differing thread is what a survivor means:
+ sometimes the test is missing,
+ and sometimes the explanation is wrong.
+
+### The capture
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers did not rise and no category moved.
