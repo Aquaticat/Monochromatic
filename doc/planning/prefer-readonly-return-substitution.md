@@ -336,7 +336,10 @@ Caller-side substitution,
  which is the precise route.
 Neither is redundant:
  the first restores the invariant the accepted decision states,
- the second recovers the offers the first will suppress.
+ the second attributes the write instead of merely refusing to discharge.
+An earlier revision of this passage said the second recovers offers the first suppresses.
+The sweep measured zero offers suppressed workspace-wide,
+ so that prediction is withdrawn rather than restated.
 
 A type error on an applied suggestion would not have been enough to claim this.
 A suggestion that fails to compile is self-limiting,
