@@ -1752,3 +1752,49 @@ If the repository contains a destructured parameter with one stored binding and 
  the capture will differ from the baseline at exactly that site,
  the difference will be an extra name in a subject,
  and it will be this and not a failure of the cause split.
+
+## Sweep result for the retention channel
+
+```text
+before 1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+after  1939: argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32 stale-mutates=6
+added   0
+removed 0
+```
+
+Equality with `sweep-after-45-reverted`,
+ which was the pre-registered test rather than a count to interpret.
+Both digests were identical before and after the run,
+ the plugin bundle and the `config-oxlint` sidecar,
+ so nothing rebuilt underneath it.
+
+Every named residue is absent.
+No message names a store.
+No baseline finding was swallowed by the silent return,
+ so `reportableOpacity` is reading the half it was meant to read.
+`offer` holds at thirty-two,
+ which was the one number that would have reverted the change.
+
+The thirty-two locations the classification made speak are silent again,
+ and the ten it re-worded carry their baseline text and category again,
+ including the three whose message identity flipped through an `every` over a boundary
+ list.
+That flip was predicted to fix itself once stores stopped joining the list,
+ and it did.
+
+The fifth residue predicted while the sweep ran is also absent,
+ and its absence is informative rather than reassuring.
+It would have appeared only at a destructured parameter with one stored binding and one
+ called binding,
+ and this repository contains none:
+ equality proves it,
+ because such a site would have gained a name when the store cause was added and would
+ therefore differ from the baseline now.
+The defect is real and reachable,
+ which `reportMixedBindingCauses` demonstrates in the fixture tree,
+ and it is latent here.
+
+That also settles what a confirming sweep after the subject fix can show.
+No repository finding had its name set widened by a store,
+ so filtering stores out of that set cannot narrow one,
+ and the capture has to stay at equality.
