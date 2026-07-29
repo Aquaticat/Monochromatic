@@ -607,21 +607,27 @@ children: [
       expect(messages.filter(function namesStore(message,): boolean {
         return message.includes('stored into',);
       },).length,).toBe(0,);
-      /* Withheld, not merely silent. Fourteen offers, and every one belongs to a shape
-       * that stores nothing beyond the callable: the two nested-store controls, an
+      /* Withheld, not merely silent. Seventeen offers, and every one belongs to a shape
+       * that keeps nothing beyond the callable: the two nested-store controls, an
        * assignment into a parameter and into an own local, a counter, three readers, a
        * projection, a fresh aggregate, an iteration that retains only a primitive, an
-       * iteration that declares its own binding, a callable that allocates its own row,
-       * and the store of that allocated row through a call. Were retention to stop
-       * withholding, nine more would join them.
+       * iteration that declares its own binding, two callables that hand back what the
+       * caller already holds, two that allocate their own, and the two stores of an
+       * allocated value through a call. Were retention to stop withholding, ten more would
+       * join them.
        *
-       * Moved from thirteen by the deferred retention. One left, `storeThroughOwnedCall`,
-       * whose offer was false. Two arrived with the control it needed, `freshRow` and
-       * `storeFreshThroughOwnedCall`, and both belong here: neither keeps anything the
-       * caller owns. Measured rather than adjusted to fit. */
+       * Moved from thirteen by the deferred retention, in two steps and by measurement
+       * each time rather than by adjusting the number to fit. Two offers left, whose
+       * shapes were falsified: `storeThroughOwnedCall` and `storeIterationThroughCall`.
+       * Six arrived with the controls those needed, `firstRow` having already been here:
+       * `freshRow`, `storeFreshThroughOwnedCall`, `rowsOf`, `freshRows`,
+       * `storeIterationThroughFreshCall`, and the allocating callable each of the last two
+       * depends on. Every arrival belongs: a callable that hands back a piece of its own
+       * parameter grants the caller no capability it lacked, and one that allocates shares
+       * no identity with its argument. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(14,);
+      },).length,).toBe(17,);
       /* What still speaks, and in the words that fit it. Both are member calls on the
        * parameter, so both keep the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls

@@ -286,6 +286,49 @@ function isElementApplication({
 }
 
 /**
+ * Kinds a persisted deferred result use may name.
+ *
+ * Held here rather than imported from the model so the validator states the payload
+ * shape it accepts in its own terms. A kind added to the model and not to this set is
+ * rejected as corrupt, which is the safe direction: a summary missing one deferred use
+ * withholds offers, while one carrying an uninterpretable use would reach propagation.
+ */
+const SERIALIZED_RESULT_APPLICATION_KINDS: ReadonlySet<string> = new Set([
+  'mutated',
+  'retained',
+  'returned',
+],);
+
+/**
+ * Tests one serialized deferred result use.
+ *
+ * This field went unvalidated while every sibling was checked, and the gap was harmless
+ * only by accident: an unrecognised payload contributed a call-site key that matched no
+ * edge and was skipped. The retaining kind ended that, because it carries provenance the
+ * propagation requires, and a payload naming that kind without it now reaches a throw
+ * rather than a skip. Validating here is what keeps `rejects corrupt nested persistent
+ * payloads` the behaviour for corrupt input instead of a crash inside the fixed point.
+ *
+ * @param value - Parsed JSON value.
+ *
+ * @returns whether the deferred use names a known kind and carries what that kind needs.
+ */
+function isResultApplication(value: unknown,): boolean {
+  if ((!isRecord(value,))
+    || (!isCacheString(value.callSiteKey,))
+    || ((typeof value.kind) !== 'string')
+    || (!SERIALIZED_RESULT_APPLICATION_KINDS.has(value.kind,)))
+    return false;
+  /* Provenance is required for exactly the retaining kind and meaningless for the other
+   * two, so both directions are checked: a retention without it would throw in
+   * propagation, and a mutation carrying it would mean the payload was written by
+   * something whose model does not match this one. */
+  return value.kind === 'retained'
+    ? isCacheString(value.provenance,)
+    : value.provenance === undefined;
+}
+
+/**
  * Tests opaque provenance entries.
  *
  * @param value - Parsed JSON value.
@@ -436,6 +479,16 @@ function isEffectSummary(value: unknown,): value is SerializedEffectSummary {
         slotCount,
       },);
     },)
+    && Array.isArray(value.resultApplications,)
+    /* Bounded like `calls` and `elementApplications` beside it. The cap is a sanity limit
+     * rather than a real arity, and one body can defer more result uses than a callable
+     * has parameters, but accepting an unbounded array from a file on disk is the part
+     * worth refusing. */
+    && (value.resultApplications
+      .length
+      <= MAX_CALLABLE_ARITY)
+    && value.resultApplications
+    .every(isResultApplication,)
     && Array.isArray(value.calls,)
     && (value.calls
       .length

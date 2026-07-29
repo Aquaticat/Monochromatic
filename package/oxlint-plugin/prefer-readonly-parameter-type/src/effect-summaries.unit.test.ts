@@ -627,6 +627,12 @@ await describe({
          * any call result. `freshRow` returns nothing the caller owns, so its returned set
          * is empty and substitution hands over nothing. */
         expect(structuralOpaque('storeFreshThroughOwnedCall',),).toEqual([],);
+        /* The iteration form of the same store, with its own control. The retention is
+         * recorded from two sites and a fixture covering one of them proves nothing about
+         * the other: an iterable that came back from a call has no origins of its own,
+         * exactly as an assigned call result has none. */
+        expect(structuralOpaque('storeIterationThroughCall',),).toEqual([0,],);
+        expect(structuralOpaque('storeIterationThroughFreshCall',),).toEqual([],);
         /* The controls, which must still read empty after that flip. */
         expect(intoParameter,).toEqual([],);
         expect(intoOwnLocal,).toEqual([],);
@@ -2520,12 +2526,31 @@ await describe({
           join(project.path, 'tsconfig.json',),
           '{"compilerOptions":{"strict":true},"include":["input.ts"]}\n',
         );
+        /* The source carries a deferred RETAINED result use, and that is the whole reason
+         * it is not the one-liner it used to be.
+         *
+         * This test read `inspect(value) { return value.text; }`, which produces no
+         * deferred result use of any kind, so it asserted that the counters move and
+         * nothing about what survives the round trip. When the retaining kind arrived it
+         * would have stayed green while serialization dropped the new field, while the
+         * validator rejected the payload, or while the restored application reached the
+         * propagation throw, because none of those paths were entered. A cache test over a
+         * fixture that exercises none of the cached shapes measures the counters only.
+         *
+         * `storeItem` stores what `firstItem` handed back, which is a piece of its own
+         * parameter, so the retention is real and the warm process must arrive at the same
+         * verdict as the cold one. */
         writeFileSync(
           inputPath,
-          'export function inspect(value: { text: string; }): string { return value.text; }\n',
+          'type Item = { text: string; };\n'
+          + 'type Box = { item: Item; };\n'
+          + 'let held: Item | undefined;\n'
+          + 'export function firstItem(box: Box): Item { return box.item; }\n'
+          + 'export function storeItem(box: Box): void { held = firstItem(box); }\n'
+          + 'export function readHeld(): string { return held === undefined ? \'\' : held.text; }\n',
         );
-        /** Probe source printing cache counters for exact fixture analysis. */
-        const probeSource = `import { readFileSync } from 'node:fs';\nimport { buildEffectSummaryIndex, closeSemanticBridge, effectSummaryCacheStats, openSemanticFile } from ${JSON.stringify(BUILT_ENTRY_URL)};\nconst [fileName, cacheRoot] = process.argv.slice(2);\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nbuildEffectSummaryIndex({ project: session.project, activeSourceFile: session.sourceFile, cacheRootOverride: cacheRoot });\nconsole.log(JSON.stringify(effectSummaryCacheStats()));\ncloseSemanticBridge();\n`;
+        /** Probe source printing cache counters and the retained verdict itself. */
+        const probeSource = `import { readFileSync } from 'node:fs';\nimport { buildEffectSummaryIndex, closeSemanticBridge, effectSummaryCacheStats, openSemanticFile, NO_EFFECT_SUMMARY } from ${JSON.stringify(BUILT_ENTRY_URL)};\nconst [fileName, cacheRoot] = process.argv.slice(2);\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nconst index = buildEffectSummaryIndex({ project: session.project, activeSourceFile: session.sourceFile, cacheRootOverride: cacheRoot });\nconst declaration = session.nodeAtOffset(sourceText.indexOf('function storeItem') + 'function '.length).parent;\nconst summary = index.get(declaration);\nconst opaque = summary === NO_EFFECT_SUMMARY ? 'NO_SUMMARY' : [...summary.opaqueParameterIndexes].sort().join(',');\nconsole.log(JSON.stringify({ ...effectSummaryCacheStats(), opaque }));\ncloseSemanticBridge();\n`;
         writeFileSync(probePath, probeSource,);
         const first = await spawn(
           'node',
@@ -2535,20 +2560,29 @@ await describe({
           'node',
           [probePath, inputPath, cacheRoot,],
         );
-        /** Cold-process counters showing direct analysis and writes. */
+        /** Cold-process counters and verdict from direct analysis. */
         const coldStats = JSON.parse(first.stdout.trim(),) as {
           readonly directSummaryBuildCount: number;
           readonly persistentSourceCacheHitCount: number;
+          readonly opaque: string;
         };
-        /** Warm-process counters showing persistent reuse without direct analysis. */
+        /** Warm-process counters and verdict rebuilt from the persisted payload. */
         const warmStats = JSON.parse(second.stdout.trim(),) as {
           readonly directSummaryBuildCount: number;
           readonly persistentSourceCacheHitCount: number;
+          readonly opaque: string;
         };
         expect(coldStats.directSummaryBuildCount > 0,).toBe(true,);
         expect(coldStats.persistentSourceCacheHitCount,).toBe(0,);
         expect(warmStats.directSummaryBuildCount,).toBe(0,);
         expect(warmStats.persistentSourceCacheHitCount > 0,).toBe(true,);
+        /* The verdict, not just the counters. The cold process computes the retention from
+         * syntax and the warm one restores it from disk, so agreement here is the only
+         * thing proving the retained application survives serialization, validation and
+         * rehydration. Asserting the exact value rather than equality of the two, because
+         * two processes that both lost it would agree on `''` and pass. */
+        expect(coldStats.opaque,).toBe('0',);
+        expect(warmStats.opaque,).toBe('0',);
       },
     },),
     it({

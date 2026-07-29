@@ -272,7 +272,9 @@ export function writeThroughOwnedCall(config: Config,): void {
  * ```
  */
 export function deleteThroughOwnedCall(config: Config,): void {
-  // oxlint-disable-next-line no-restricted-syntax/no-delete -- Fixture proving the delete form reaches the same write seam as assignment; the effect under test is the point.
+  /* The cast is what makes the operand deletable, since `label` is not optional on `Row`.
+   * What matters for this fixture is the operand shape reaching `inspectDirectWrite` with
+   * a call under its access layers, which the cast does not change. */
   delete (firstRow(config,) as Partial<Row>).label;
 }
 

@@ -717,6 +717,87 @@ export function storeIterationTarget(config: Config,): void {
 }
 
 /**
+ * Hands the caller's own rows straight back.
+ *
+ * @param config - Configuration whose rows are handed back.
+ *
+ * @returns same array.
+ *
+ * @example
+ * ```ts
+ * rowsOf({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function rowsOf(config: Config,): Row[] {
+  return config.rows;
+}
+
+/**
+ * Builds a fresh array, sharing no identity with its argument.
+ *
+ * @param config - Configuration whose row count seeds a fresh array.
+ *
+ * @returns newly allocated array.
+ *
+ * @example
+ * ```ts
+ * freshRows({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function freshRows(config: Config,): Row[] {
+  /**
+   * Array this callable allocates and owns.
+   */
+  const fresh: Row[] = [];
+  if (config.rows
+    .length
+    > 0)
+    fresh.push({ label: 'fresh', },);
+  return fresh;
+}
+
+/**
+ * Retains each row through an iterable that came back from an owned call.
+ *
+ * The iteration form of the store `storeThroughOwnedCall` performs, and it needs the same
+ * deferred retention for the same reason: the iterable is a call result, so the origin
+ * walk over it comes back with nothing while `for (held of config.rows)` beside it records
+ * the retention directly.
+ *
+ * Present because `recordResultRetention` is called from two sites and a fixture covering
+ * one of them proves nothing about the other.
+ *
+ * @param config - Configuration whose rows escape through the callee.
+ *
+ * @example
+ * ```ts
+ * storeIterationThroughCall({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeIterationThroughCall(config: Config,): void {
+  for (held of rowsOf(config,))
+    void held;
+}
+
+/**
+ * Retains each element of a freshly allocated iterable, which the caller does not own.
+ *
+ * The control keeping the iteration half an attribution rather than a rule against
+ * iterating any call result.
+ *
+ * @param config - Configuration read to seed a fresh array.
+ *
+ * @example
+ * ```ts
+ * storeIterationThroughFreshCall({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeIterationThroughFreshCall(config: Config,): void {
+  for (held of freshRows(config,))
+    void held;
+}
+
+/**
  * Iterates primitives into a binding outside the callable.
  *
  * Control for the half of this that decides from the element rather than the iterable. An
