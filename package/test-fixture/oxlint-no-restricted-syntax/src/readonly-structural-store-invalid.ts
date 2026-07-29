@@ -381,3 +381,123 @@ export function storeFreshAggregate(config: Config,): void {
 export function storedState(): string {
   return `${held?.label ?? ''}:${String(measured,)}`;
 }
+
+/**
+ * Mutates a caller-owned object copied into an object rest but absent from its type.
+ *
+ * The case that decides whether a rest may be discharged from type members at all. A
+ * TypeScript object type states which members a value must have, never which members it
+ * may have besides, so a value assignable to `{ label: string; count: number; }` can
+ * carry an `inner` reference the annotation never mentions. Object rest copies own
+ * enumerable properties at runtime rather than declared ones, so that reference lands in
+ * the rest, and the `in` checks below narrow to it without a single assertion.
+ *
+ * @param wide - Configuration whose rows may carry members their type omits.
+ *
+ * @param seed - Row standing in for an absent first row.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * mutateExcessRestMember({ rows: [], }, { label: '', count: 0, },);
+ * ```
+ */
+export function mutateExcessRestMember(
+  wide: { rows: { label: string; count: number; }[]; },
+  seed: { label: string; count: number; },
+): number {
+  const { label, ...remainder } = wide.rows
+    .at(0,) ?? seed;
+  if (('inner' in remainder)
+    && ((typeof remainder.inner) === 'object')
+    && (remainder.inner !== null)
+    && ('label' in remainder.inner))
+    remainder.inner.label = 'changed';
+  return label.length;
+}
+
+/**
+ * Mutates parameter state through a closure created outside the callable body.
+ *
+ * A parameter initializer is a sibling of the body, exactly as a parameter declaration
+ * is, so the holder scan walking the body never sees a closure written there. The
+ * rebinding is classified local, its only body occurrence is the assignment target the
+ * scan skips, and the closure observes the rebound value afterwards.
+ *
+ * @param config - Configuration supplying the caller-owned row.
+ *
+ * @param temporary - Scratch parameter replaced inside the body.
+ *
+ * @param mutate - Closure observing that scratch parameter after the replacement.
+ *
+ * @example
+ * ```ts
+ * mutateThroughParameterInitializer({ rows: [], row: { label: '', }, }, undefined,);
+ * ```
+ */
+export function mutateThroughParameterInitializer(
+  config: Config,
+  temporary: Row | undefined,
+  mutate: () => void = (): void => {
+    if (temporary !== undefined)
+      temporary.label = 'changed';
+  },
+): void {
+  temporary = config.rows
+    .at(0,);
+  mutate();
+}
+
+/**
+ * Binding holding an object rest that escaped every callable.
+ */
+let escapedRest: { count: number; } | undefined;
+
+/**
+ * Lets an object rest escape without writing through it anywhere in this callable.
+ *
+ * The decisive case for discharging a rest from its type members. Nothing here writes,
+ * so the direct-write attribution that catches `mutateExcessRestMember` never fires, and
+ * the only thing standing between this and an offer is whether the rest counts as
+ * holding caller state. Its type says two primitives; a value assignable to that type may
+ * carry any number of references besides, and object rest copies what the value has
+ * rather than what its type declares.
+ *
+ * @param wide - Configuration whose rows may carry members their type omits.
+ *
+ * @param seed - Row standing in for an absent first row.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * leakExcessRestMember({ rows: [], }, { label: '', count: 0, },);
+ * ```
+ */
+export function leakExcessRestMember(
+  wide: { rows: { label: string; count: number; }[]; },
+  seed: { label: string; count: number; },
+): number {
+  const { label, ...remainder } = wide.rows
+    .at(0,) ?? seed;
+  escapedRest = remainder;
+  return label.length;
+}
+
+/**
+ * Writes through whatever the escaped rest carried beyond its declared members.
+ *
+ * @example
+ * ```ts
+ * mutateEscapedRest();
+ * ```
+ */
+export function mutateEscapedRest(): void {
+  if ((escapedRest !== undefined)
+    && ('inner' in escapedRest)
+    && ((typeof escapedRest.inner) === 'object')
+    && (escapedRest.inner !== null)
+    && ('label' in escapedRest.inner))
+    escapedRest.inner.label = 'changed';
+}

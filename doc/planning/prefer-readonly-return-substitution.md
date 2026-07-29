@@ -1273,3 +1273,67 @@ Before launching one,
 The tasks that build are not only `build`:
  `test:unit` depends on it,
  and any task that does is a rebuild in disguise.
+
+## Why the rest narrowing was reverted rather than repaired
+
+The fail-closed version was still wrong,
+ and the reason is about TypeScript rather than about the predicate.
+
+An object type states which members a value must have.
+It never states which members it may have besides.
+A value assignable to `{ label: string; count: number; }` can carry an `inner` reference
+ the annotation never mentions,
+ and object rest copies own enumerable properties at runtime rather than declared ones,
+ so that reference lands in the rest.
+No reading of declared members can establish what a rest copied,
+ which means no amount of extra type-flag checking rescues the approach.
+The generic cases were a symptom of this and not the disease:
+ the same openness applies to an ordinary structural type.
+
+Measured,
+ with the fail-closed predicate in place:
+
+```text
+mutateExcessRestMember            mutated=[1,0] withheld
+mutateThroughParameterInitializer mutated=[1,0,2] withheld
+leakExcessRestMember              mutated=[] opaque=[] OFFERED
+```
+
+The first two were offered as counter-examples and are not.
+Both write through the excess member inside the callable,
+ and the direct-write attribution reaches the parameter through the destructured alias
+ independently of any holder reasoning,
+ so both are withheld already.
+Reporting them as the defect would have been wrong,
+ and checking before believing them is why the third case exists.
+
+The third has no write at all.
+It destructures,
+ stores the rest into a module binding,
+ and returns a string.
+Nothing about it triggers write attribution,
+ so the reading of the rest's declared members was the only thing between it and an offer,
+ and it was offered.
+A caller passing a row that carries an `inner` reference has that reference mutated by a
+ later call the annotation says cannot reach it.
+
+So the narrowing is reverted.
+Every object rest keeps its opacity again,
+ which costs the offers the narrowing was written to recover,
+ and withholding is the affordable direction.
+
+The fixtures stay.
+Nine rest shapes and their controls are the record of exactly what a type-member reading
+ can and cannot establish,
+ and they now all agree because the reading was the mistake rather than any branch of it.
+A future discharge would need provenance proving the source shape is exact,
+ which is a different argument from anything the type system offers,
+ and these cases are what it would have to satisfy.
+
+The parameter half stands.
+`storeIntoParameter` still discharges,
+ no case constructed against it produced a false offer,
+ and the one hole named against it,
+ a closure written in a parameter initializer,
+ is invisible to the holder scan because parameter initializers are siblings of the body.
+That is recorded as its own task rather than folded in here.

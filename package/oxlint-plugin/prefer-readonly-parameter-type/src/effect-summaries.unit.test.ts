@@ -427,45 +427,30 @@ await describe({
          * turns `local` into `[0]` while leaving both cases above passing. */
         expect(local,).toEqual([],);
         expect(inPlace,).toEqual([],);
-        /* Two shapes the classification used to take with it, each measured at `[0,]`
-         * before its own fix and `[]` after. A parameter's declaration sits beside the
-         * body rather than inside it, so a containment test called rebinding one an
-         * escape. An object rest allocates, so `recordLeaf` saw a reference and recorded
-         * it however primitive what the rest copied was. */
+        /* One shape the classification used to take with it, measured at `[0,]` before
+         * its fix and `[]` after. A parameter's declaration sits beside the body rather
+         * than inside it, so a containment test called rebinding one an escape. */
         expect(ownParameter,).toEqual([],);
-        expect(primitiveRest,).toEqual([],);
-        /* And the rest controls, which decide that the second fix narrowed rather than
-         * disabled. A property copy of a reference is the caller's same object, so that
-         * rest does hold caller state and keeps its opacity.
+        /* Every object rest keeps its opacity, including the ones whose declared members
+         * are all primitive. A narrowing that discharged those shipped and was reverted
+         * rather than repaired: a TypeScript object type states which members a value
+         * must have and never which it may have besides, so a value assignable to
+         * `{ label: string; count: number; }` can carry a reference the type never
+         * mentions, and object rest copies what the value has rather than what its type
+         * declares. `leakExcessRestMember` measures the offer that produced.
          *
-         * The generic pair covers the way the first attempt at that fix was unsound.
-         * `membersCanCarryMutableState` answered from `.some()` over the index and
-         * property lists, and a type it cannot enumerate produces two empty lists, so
-         * `Omit<T, 'label'>` over an unresolved `keyof T` read as carrying nothing and
-         * discharged. Both measured `[]` then and `[0,]` now. A constraint of primitives
-         * proves nothing either, since it bounds what `T` must have rather than what an
-         * argument may bring, which is why the constrained case is here beside the bare
-         * one. */
+         * These cases are kept rather than deleted because they are the record of what a
+         * type-member reading can and cannot establish. Each pair was built to
+         * discriminate one branch of that reading, and all of them now agree, which is
+         * the point: the reading itself was the mistake, not any particular branch. */
+        expect(primitiveRest,).toEqual([0,],);
         expect(carriedRest,).toEqual([0,],);
         expect(constrainedRest,).toEqual([0,],);
         expect(unconstrainedRest,).toEqual([0,],);
-        /* One case per remaining branch of `membersCanCarryMutableState`, each beside the
-         * control that decides the branch answered rather than merely failed to look.
-         *
-         * The index pair is the one that matters. That branch is the only one answering
-         * yes from positive evidence, so nothing else catches it if it stops firing. Both
-         * shapes keep a primitive member through the destructuring, so both enumerate and
-         * the property walk alone would discharge either, and the only difference is
-         * whether the index values include a reference. An earlier version of this pair
-         * left no member in the rest, so both sides reported for the fail-closed reason
-         * and the pair proved nothing. */
         expect(indexedRest,).toEqual([0,],);
-        expect(primitiveIndexRest,).toEqual([],);
+        expect(primitiveIndexRest,).toEqual([0,],);
         expect(unionRest,).toEqual([0,],);
-        expect(primitiveUnionRest,).toEqual([],);
-        /* And the shape that enumerates nothing while genuinely holding nothing, which
-         * this reports because it cannot tell that apart from a shape nothing could
-         * enumerate. An offer lost, which is the affordable direction. */
+        expect(primitiveUnionRest,).toEqual([0,],);
         expect(emptyRest,).toEqual([0,],);
       },
     },),
@@ -561,6 +546,8 @@ await describe({
         const intoCount = structuralOpaque('countIntoModuleBinding',);
         /** Fresh object built from a parameter's primitive, then stored. */
         const freshAggregate = structuralOpaque('storeFreshAggregate',);
+        /** Object rest escaping with members its declared type never mentions. */
+        const excessRest = structuralOpaque('leakExcessRestMember',);
         /** Structure read in place without binding. */
         const readInPlaceOnly = structuralOpaque('readStructureInPlace',);
         /** Rows iterated while reading only primitives. */
@@ -595,6 +582,12 @@ await describe({
          * filling it, while the only thing stored is a string in an object this callable
          * allocated. */
         expect(freshAggregate,).toEqual([],);
+        /* And the case that decided an object rest may not be discharged from its
+         * declared members at all. Nothing here writes, so the direct-write attribution
+         * that catches the mutating form never fires, and the reading of the rest's type
+         * was the only thing between this and an offer. It measured `[]` while that
+         * reading was in place. */
+        expect(excessRest,).toEqual([0,],);
       },
     },),
     it({
