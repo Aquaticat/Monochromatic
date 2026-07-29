@@ -129,6 +129,34 @@ export function storeThroughLogicalAssignment(config: Config,): void {
 }
 
 /**
+ * Stores a structural parameter's row through a nullish assignment.
+ *
+ * @param config - Configuration whose row escapes when nothing is stored yet.
+ *
+ * @example
+ * ```ts
+ * storeThroughNullishAssignment({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeThroughNullishAssignment(config: Config,): void {
+  held ??= config.row;
+}
+
+/**
+ * Stores a structural parameter's row through a conjunction assignment.
+ *
+ * @param config - Configuration whose row escapes when something is stored already.
+ *
+ * @example
+ * ```ts
+ * storeThroughAndAssignment({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeThroughAndAssignment(config: Config,): void {
+  held &&= config.row;
+}
+
+/**
  * Stores an iteration binding of a structural parameter into a module binding.
  *
  * @param config - Configuration whose rows escape one at a time.
@@ -277,6 +305,67 @@ export function iterateStructureRows(config: Config,): number {
     total.value += row.label
       .length;
   return total.value;
+}
+
+/**
+ * Returns a structural parameter's row, which the recorded policy calls benign.
+ *
+ * The caller already holds `config`, so handing back a piece of it grants no capability
+ * it lacked. What makes that sound is the caller keeping track of the result, which is
+ * what `storeThroughOwnedCall` then fails to do.
+ *
+ * @param config - Configuration whose row is handed back.
+ *
+ * @returns row belonging to caller.
+ *
+ * @example
+ * ```ts
+ * firstRow({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function firstRow(config: Config,): Row {
+  return config.row;
+}
+
+/**
+ * Stores a structural parameter's row laundered through an owned call.
+ *
+ * The one store here that no assignment-site classification can catch on its own.
+ * `expressionOrigins` of the right side cannot substitute another owned callable's
+ * returned slots, because a callee's summary does not exist while its callers are
+ * scanned, so the store sees a call result with no origins and records nothing.
+ * Closing it needs the deferred result relation rather than a wider assignment test.
+ *
+ * @param config - Configuration whose row escapes through the callee.
+ *
+ * @example
+ * ```ts
+ * storeThroughOwnedCall({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeThroughOwnedCall(config: Config,): void {
+  held = firstRow(config,);
+}
+
+/**
+ * Stores a fresh object built from a structural parameter's primitive.
+ *
+ * The control against reading the whole right side for whether it can carry state. The
+ * literal is a mutable object, and the origin walk reaches `config` through the property
+ * read that fills it, so a classification gated on the right side alone reports here. No
+ * caller-owned object was retained: the label is a string, and the object holding it was
+ * allocated by this callable.
+ *
+ * @param config - Configuration whose label is copied.
+ *
+ * @example
+ * ```ts
+ * storeFreshAggregate({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshAggregate(config: Config,): void {
+  held = { label: config.row
+    .label, };
 }
 
 /**

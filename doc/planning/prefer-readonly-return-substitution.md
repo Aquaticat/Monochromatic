@@ -1065,3 +1065,69 @@ That is true of the whole analysis and is not new here,
  and stating it is not a defence:
  it means a workspace clean result is evidence about this workspace's declarations rather
  than about the predicate.
+
+## What the store classification has to look like
+
+Written after a stronger-model review of the first sketch,
+ which was to record opacity whenever a binary `=` assignment's left side is an identifier
+ that is not callable-local and whose right side can carry mutable state.
+Six things are wrong with that sketch,
+ and each names a fixture case rather than a preference.
+
+Opacity is the right carrier,
+ not a new dimension.
+An escaped reference is exactly a value the analysis cannot prove stays unwritten,
+ which is what an opaque slot already means.
+It propagates through owned calls,
+ withholds the offer,
+ and carries provenance,
+ and it leaves `EFFECT_DIMENSION_COUNT` at four.
+A dedicated escape bit would give the same verdict until a sink-lifetime analysis exists
+ to read it,
+ so it buys machinery rather than precision.
+Provenance should still say what happened,
+ naming the store rather than borrowing the vocabulary of an unresolved call.
+
+What the sketch gets wrong:
+
+-    Restricting the target to an identifier.
+     `assignmentStoreEscapes` already encodes the policy,
+      and it deliberately covers property,
+      element and destructuring targets too.
+     `sink.value = config.row` and `[held] = config.rows` are stores the sketch misses.
+-    Trusting the containment test about parameters.
+     Fixed first,
+      as its own change,
+      because leaving it would have made every callable that rebinds a parameter report
+      and given the sweep two causes with no way to attribute either.
+-    Gating on whether the whole right side can carry state.
+     `held = { label: config.row.label, }` allocates a mutable object and the origin walk
+      reaches `config` through the property read that fills it,
+      so the gate says yes and no caller-owned object was retained.
+     The gate has to ask what the stored value can carry,
+      not whether its expression is a reference.
+-    Handling only `=`.
+     `||=`,
+      `&&=` and `??=` all store the right operand's reference.
+     Arithmetic compound assignment does not:
+      `total += config.rows.length` coerces,
+      and treating the operator set as one class would report it.
+-    Expecting `expressionOrigins` to see through an owned call.
+     `held = firstRow(config,)` has no origins during direct scanning,
+      because a callee's summary does not exist while its callers are scanned.
+     That one needs the deferred result relation,
+      and it is the reason this cannot be finished at the assignment site alone.
+-    Reusing `addOpaqueEffect` without widening its contract.
+     Its documentation says it records an unresolved external call.
+     Either the vocabulary widens to cover a store or a store-specific wrapper owns the
+      provenance.
+
+One disagreement resolved rather than split.
+A nested callable storing into a local of an enclosing callable was proposed as a case to
+ leave out of a first stage,
+ on the grounds that the enclosing local is owned.
+It is not owned by the nested body,
+ sibling closures and later invocations can observe what was stored there,
+ and lexical capture proves nothing about lifetime.
+`storeIntoEnclosingLocal` is therefore a store this must report,
+ not a hole to name.
