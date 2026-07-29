@@ -27,6 +27,7 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+
 import { discoverAliasOrigins, } from './effect-binding-origins.ts';
 import { discoverResultBindings, } from './effect-result-binding.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
@@ -34,6 +35,19 @@ import {
   collectAstNodes,
   type EffectCallableDeclaration,
 } from './effect-summary-model.ts';
+
+/**
+ * Assignment operators that bind the right operand's own reference to the target.
+ *
+ * The arithmetic forms are absent on purpose: `total += config.rows.length` coerces its operand
+ * to a primitive, so the target holds a number rather than anything the operand referenced.
+ */
+const ALIAS_ESTABLISHING_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
+  SyntaxKind.EqualsToken,
+  SyntaxKind.BarBarEqualsToken,
+  SyntaxKind.AmpersandAmpersandEqualsToken,
+  SyntaxKind.QuestionQuestionEqualsToken,
+],);
 
 /**
  * What the body scan needs from the binding discovery phase.
@@ -101,13 +115,17 @@ export function discoverBodyBindings({
     return isVariableDeclaration(node,);
   },);
   /**
-   * Simple assignments that may establish aliases after declaration.
+   * Assignments that may establish aliases after declaration.
+   *
+   * The logical forms belong here beside plain assignment, because each stores the right
+   * operand's own reference whenever it stores anything. Plain assignment alone was collected,
+   * so `row ??= firstRow(config,)` bound a result the record never learned about and a later
+   * write through `row` attributed nothing. Falsified.
    */
   const aliasAssignments = allBodyNodes.filter(function aliasAssignment(node,): node is BinaryExpression {
     return isBinaryExpression(node,)
-      && (node.operatorToken
-        .kind
-        === SyntaxKind.EqualsToken);
+      && ALIAS_ESTABLISHING_OPERATORS.has(node.operatorToken
+        .kind,);
   },);
   /**
    * Iteration statements binding elements reached through parameter-owned iterables.

@@ -296,6 +296,7 @@ export function directEffectSummary({
         project,
         checker,
         bindingOriginBySymbolId,
+        resultSitesBySymbolId,
         summary,
         returned: node.expression,
       },);

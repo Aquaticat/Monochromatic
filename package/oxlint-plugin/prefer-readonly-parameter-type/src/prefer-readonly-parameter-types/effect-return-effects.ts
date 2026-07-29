@@ -22,7 +22,8 @@ import type {
 
 import { expressionOrigins, } from './effect-binding-origins.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
-import { recordResultApplication, } from './effect-result-substitution.ts';
+import { targetResultSites, } from './effect-result-binding.ts';
+import { recordResultApplicationSites, } from './effect-result-substitution.ts';
 import { recordReturnedCallableCapture, } from './effect-returned-callable.ts';
 import {
   addEffectSlots,
@@ -39,6 +40,8 @@ import {
  *
  * @param bindingOriginBySymbolId - Parameter and alias origins of this callable.
  *
+ * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ *
  * @param summary - Summary receiving returned origins, captures and deferred uses.
  *
  * @param returned - Expression handed back by one return statement.
@@ -54,12 +57,14 @@ export function recordReturnEffects({
   project,
   checker,
   bindingOriginBySymbolId,
+  resultSitesBySymbolId,
   summary,
   returned,
 }: {
   readonly project: Project;
   readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
   readonly summary: MutableEffectSummary;
   readonly returned: Node;
 },): void {
@@ -109,9 +114,18 @@ export function recordReturnEffects({
      * the resolver above cannot see it: a callee's summary does not exist while its
      * callers are scanned. Without this, `b` returning `a(x,)` records no returned
      * origin at all, so no caller of `b` can substitute through it either. */
-    recordResultApplication({
+    /* Asked of the binding record rather than of the expression alone, which every write and
+     * store site has done since the deferred relation existed while this one had not. So
+     * `return [firstRow(config,),][0] as Row` named no site: a call underlies neither the
+     * element access nor the array literal, it underlies a member of the literal, and only the
+     * widened walk looks there. Falsified. */
+    recordResultApplicationSites({
       summary,
-      node: returned,
+      sites: targetResultSites({
+        project,
+        resultSitesBySymbolId,
+        node: returned,
+      },),
       kind: 'returned',
     },);
   }
