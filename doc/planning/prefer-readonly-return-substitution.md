@@ -2720,3 +2720,58 @@ Probing the built artifact is fine,
 
 Everything else waits,
  and a capture taken under either violation is reported as contaminated rather than cited.
+
+## What three soundness fixes changed in this repository
+
+Nothing.
+
+Four captures,
+ each compared on all five counters:
+
+```text
+after stage one       1939  argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
+after stage two       1939  argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
+after the progress fix 1939 argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
+after stage three     1939  argument-opacity=1197 receiver-opacity=667 dishonest=37 offer=32
+```
+
+Stage three was the one I expected to move,
+ because a write through a local holding a call result is an ordinary shape.
+It did not,
+ and the reason is visible in the counters themselves.
+Of one thousand nine hundred thirty-nine findings,
+ one thousand eight hundred sixty-four are already opacity of one kind or the other,
+ and thirty-two are offers.
+A fix that withholds offers has thirty-two places it could possibly act,
+ and every one of them survived.
+
+The other half of the reason is what these fixes need to fire:
+ a callee whose `returned` set is non-empty,
+ which means a callee that hands back a piece of its own parameter rather than something
+ it built.
+This codebase mostly returns fresh values.
+
+So the fixtures are the entire evidence for all three stages,
+ which is the fourth,
+ fifth and sixth instance of that pattern in this work.
+The falsifications are what establish the defects were real;
+ the sweeps establish only that the repository did not contain them.
+
+### The capture I contaminated still earned its cost
+
+Editing `direct-effect-summary.ts` mid-run left two extra `max-lines` findings in the
+ stage three output,
+ one for that file at 423 lines and one for `effect-summary-cache-validation.ts` at 576.
+
+The first was mine and already fixed by the time the capture landed.
+The second was mine and I had not noticed it at all:
+ the cache validation work took that file from under the limit to three hundred
+ twenty-five code lines,
+ and nothing in the package test suite checks line budgets.
+
+A contaminated capture reported a regression I would otherwise have pushed.
+That does not make the contamination acceptable,
+ and it does not make the capture citable for the rule's own numbers,
+ but it is worth recording that the sweep is the only check in this workflow that reads
+ the whole repository's lint state,
+ and the package suite is not a substitute for it.
