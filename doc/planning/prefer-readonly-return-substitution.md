@@ -7,14 +7,18 @@ Scope:
 Opened from task #38,
  which asked whether a member read should face escape analysis an index read does not.
 
-The answer is that neither path is wrong about soundness,
- and the asymmetry is a precision inconsistency the rule carries in two places.
-Every offer measured here was checked by applying it and type-checking,
+The answer for the asymmetry itself is that neither path is wrong about soundness,
+ and the difference is a precision inconsistency the rule carries in two places.
+Every offer the probe actually produced was checked by applying it and type-checking,
  and every one of them holds.
 An earlier revision of this document claimed an unsound offer.
 That claim was inferred rather than measured,
  the measurement refuted it,
  and the correction is recorded in "What the caller-side gap costs".
+
+One separate shape does yield a false annotation and is only half measured.
+It is set out in "What this proposal does not establish",
+ and it is the thing to resolve before the ranking is trusted.
 
 ## What was measured
 
