@@ -587,3 +587,46 @@ export function reportMixedBindingCauses({
   held = stored;
   JSON.stringify(called,);
 }
+
+/**
+ * Binding retaining a projection whose declared readonly is dishonest.
+ */
+let heldEncoder: Readonly<TextEncoder> | undefined;
+
+/**
+ * Declares a readonly projection that still writes a supplied destination.
+ *
+ * Paired with `storeDishonestProjection` as the control half. `Readonly<TextEncoder>` keeps
+ * `encodeInto`, so the declared type claims something the value does not honour, and this
+ * shape must report that whatever else the callable does.
+ *
+ * @param encoder - Projection whose declared readonly is dishonest.
+ *
+ * @example
+ * ```ts
+ * declareDishonestProjection(new TextEncoder(),);
+ * ```
+ */
+export function declareDishonestProjection(encoder: Readonly<TextEncoder>,): void {
+  void encoder;
+}
+
+/**
+ * Stores that same projection, which must not change what its declared type reports.
+ *
+ * The pair exists because a sweep of this repository cannot catch what it protects. Nothing
+ * here pairs retention with a dishonest declared type, so the count of dishonest reports
+ * held constant across three captures while this verdict was being suppressed. A store
+ * silencing a verdict about a declared type is a placement mistake that only a shape built
+ * to collide can show.
+ *
+ * @param encoder - Projection stored beyond this callable.
+ *
+ * @example
+ * ```ts
+ * storeDishonestProjection(new TextEncoder(),);
+ * ```
+ */
+export function storeDishonestProjection(encoder: Readonly<TextEncoder>,): void {
+  heldEncoder = encoder;
+}
