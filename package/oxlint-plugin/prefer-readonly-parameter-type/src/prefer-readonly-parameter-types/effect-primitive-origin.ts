@@ -188,3 +188,67 @@ export function expressionCanCarryMutableState({
       type,
     },);
 }
+
+/**
+ * Tests whether anything reachable through a type's own members can carry caller state.
+ *
+ * Different from `typeCanCarryMutableState` in what it asks about. That predicate asks
+ * whether a value is a reference at all, and an object rest is always a reference: the
+ * rest expression allocates. What decides whether the rest holds anything of the caller's
+ * is what it copied, and a property copy of a reference is the same reference while a
+ * property copy of a primitive is a value the caller cannot observe again.
+ *
+ * Fails closed at every step where the shape is not established. An unresolved property
+ * type, `any`, `unknown`, and any index signature whose values are references all answer
+ * yes, so the only answer of no is over a shape whose every member is known primitive.
+ *
+ * @param checker - TypeScript checker resolving member types.
+ *
+ * @param type - Semantic type whose members are inspected.
+ *
+ * @returns whether some member of type can carry caller-owned mutable state.
+ *
+ * @example
+ * ```ts
+ * membersCanCarryMutableState({ checker, type });
+ * ```
+ */
+export function membersCanCarryMutableState({
+  checker,
+  type,
+}: {
+  readonly checker: Checker;
+  readonly type: Type;
+},): boolean {
+  if ((type.flags & TypeFlags.AnyOrUnknown) !== 0)
+    return true;
+  if (type.isUnionType() || type.isIntersectionType()) {
+    return type.getTypes()
+      .some(function constituentMembersCarry(constituent,): boolean {
+        return membersCanCarryMutableState({
+          checker,
+          type: constituent,
+        },);
+      },);
+  }
+  if (checker.getIndexInfosOfType(type,)
+    .some(function indexValueCarries(index,): boolean {
+      return typeCanCarryMutableState({
+        checker,
+        type: index.valueType,
+      },);
+    },))
+    return true;
+  return checker.getPropertiesOfType(type,)
+    .some(function propertyCarries(property,): boolean {
+      /**
+       * Declared type of one member, absent when the bridge cannot resolve it.
+       */
+      const propertyType = checker.getTypeOfSymbol(property,);
+      return (propertyType === undefined)
+        || typeCanCarryMutableState({
+          checker,
+          type: propertyType,
+        },);
+    },);
+}

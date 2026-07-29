@@ -178,7 +178,7 @@ const SEED: Wide = {
 };
 
 /**
- * Binding a rest object holds nothing of the caller's, and is recorded as a holder anyway.
+ * Binding a rest object holds nothing of the caller's.
  */
 let restHeld: { count: number; } | undefined;
 
@@ -186,9 +186,11 @@ let restHeld: { count: number; } | undefined;
  * Stores an object rest of a member result, which carries only primitive state.
  *
  * A rest pattern allocates a fresh object, so `remainder` shares no identity with the
- * caller's element and storing it grants nothing. `recordLeaf` records any leaf whose type
- * can carry mutable state, and a fresh object of primitive properties passes that test, so
- * the rest joins the holder set and its escape keeps receiver opacity on `wide`.
+ * caller's element, and every property it copied is a primitive the caller cannot reach
+ * through it. Storing it grants nothing. Before `objectRestHoldsNothing`, `recordLeaf`
+ * recorded any leaf whose own type can carry mutable state, which a fresh object of
+ * primitive properties passes, so the rest joined the holder set and its escape kept
+ * receiver opacity on `wide`.
  *
  * @param wide - Elements whose first element is destructured.
  *
@@ -217,4 +219,62 @@ export function storeRestOverPrimitiveState(wide: Wide[],): number {
  */
 export function restHeldCount(): number {
   return restHeld?.count ?? 0;
+}
+
+/**
+ * Element shape whose rest keeps a caller-owned reference.
+ */
+type Nested = {
+  label: string;
+  inner: Row;
+};
+
+/**
+ * Seed standing in for an absent nested element, owned by this module.
+ */
+const NESTED_SEED: Nested = {
+  label: '',
+  inner: { label: '', },
+};
+
+/**
+ * Binding a rest object holds a caller-owned reference through.
+ */
+let nestedHeld: { inner: Row; } | undefined;
+
+/**
+ * Stores an object rest that copies a reference rather than only primitives.
+ *
+ * The control for `storeRestOverPrimitiveState`. A property copy of a reference is the
+ * caller's same object, so this rest does hold caller state and its escape must keep
+ * receiver opacity. Without this case, discharging every object rest would look correct.
+ *
+ * @param items - Elements whose first element is destructured.
+ *
+ * @returns label length read through the destructured primitive.
+ *
+ * @example
+ * ```ts
+ * storeRestOverCarriedState([],);
+ * ```
+ */
+export function storeRestOverCarriedState(items: Nested[],): number {
+  const { label, ...remainder } = items.at(0,) ?? NESTED_SEED;
+  nestedHeld = remainder;
+  return label.length;
+}
+
+/**
+ * Reports what the nested rest binding holds, so the store above is not dead.
+ *
+ * @returns stored inner label, or empty when nothing was stored.
+ *
+ * @example
+ * ```ts
+ * nestedHeldLabel();
+ * ```
+ */
+export function nestedHeldLabel(): string {
+  return nestedHeld?.inner
+    .label ?? '';
 }

@@ -391,6 +391,12 @@ await describe({
         const inPlace = opaqueIndexes('readInPlace',);
         /** Store into a binding declared outside every callable body. */
         const moduleBinding = opaqueIndexes('storeIntoModuleBinding',);
+        /** Copy into another parameter of the same callable. */
+        const ownParameter = opaqueIndexes('storeIntoParameter',);
+        /** Store of an object rest holding only primitives. */
+        const primitiveRest = opaqueIndexes('storeRestOverPrimitiveState',);
+        /** Store of an object rest holding a caller-owned reference. */
+        const carriedRest = opaqueIndexes('storeRestOverCarriedState',);
         closeSemanticBridge();
         /* The receiver keeps its opacity, because nothing follows the stored element. */
         expect(property,).toEqual([0,],);
@@ -407,6 +413,17 @@ await describe({
          * turns `local` into `[0]` while leaving both cases above passing. */
         expect(local,).toEqual([],);
         expect(inPlace,).toEqual([],);
+        /* Two shapes the classification used to take with it, each measured at `[0,]`
+         * before its own fix and `[]` after. A parameter's declaration sits beside the
+         * body rather than inside it, so a containment test called rebinding one an
+         * escape. An object rest allocates, so `recordLeaf` saw a reference and recorded
+         * it however primitive what the rest copied was. */
+        expect(ownParameter,).toEqual([],);
+        expect(primitiveRest,).toEqual([],);
+        /* And the rest control, which decides that the second fix narrowed rather than
+         * disabled. A property copy of a reference is the caller's same object, so this
+         * rest does hold caller state and keeps its opacity. */
+        expect(carriedRest,).toEqual([0,],);
       },
     },),
     it({

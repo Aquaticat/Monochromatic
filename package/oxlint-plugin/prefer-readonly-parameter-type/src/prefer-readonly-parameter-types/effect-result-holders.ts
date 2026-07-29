@@ -49,7 +49,10 @@ import {
   targetIsCallableLocal,
 } from './effect-value-consumer.ts';
 import { collectAstNodes, } from './effect-summary-model.ts';
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  membersCanCarryMutableState,
+} from './effect-primitive-origin.ts';
 
 /**
  * One place a value moves from an expression into a binding.
@@ -223,6 +226,53 @@ function recordLeaf({
 }
 
 /**
+ * Tests whether one object rest binding holds nothing the caller can observe again.
+ *
+ * An object rest allocates, so `recordLeaf` sees a reference and records it whatever the
+ * rest actually copied. What it copied is the question: a copied reference is the caller's
+ * same object, and a copied primitive is a value the caller cannot reach through this
+ * binding at all. `const { label, ...remainder, } = wide.at(0,)` over
+ * `{ label: string; count: number; }` binds a fresh `{ count: number; }`, and treating
+ * that as a holder kept receiver opacity on `wide` for a value sharing nothing with it.
+ *
+ * Object rest only. An array rest copies element references into a fresh array, so its
+ * elements are the caller's own and the binding does hold them.
+ *
+ * @param project - TypeScript project resolving the rest type.
+ *
+ * @param element - Binding element that may be a rest.
+ *
+ * @returns whether element is an object rest whose members are all primitive.
+ *
+ * @example
+ * ```ts
+ * objectRestHoldsNothing({ project, element, });
+ * ```
+ */
+function objectRestHoldsNothing({
+  project,
+  element,
+}: {
+  readonly project: Project;
+  readonly element: Node;
+},): boolean {
+  if ((!isBindingElement(element,))
+    || (element.dotDotDotToken === undefined)
+    || (!isObjectBindingPattern(element.parent,)))
+    return false;
+  /**
+   * Semantic type of the freshly allocated rest, absent when unresolvable.
+   */
+  const restType = project.checker
+    .getTypeAtLocation(element,);
+  return (restType !== undefined)
+    && (!membersCanCarryMutableState({
+      checker: project.checker,
+      type: restType,
+    },));
+}
+
+/**
  * Records every leaf of one transfer target that can carry mutable state.
  *
  * Binding patterns are walked with a work stack rather than by recursion, per `ITR`:
@@ -283,8 +333,14 @@ function recordTargetLeaves({
       /* A binding element without a name binds nothing this walk can follow, which
        * happens only for recovered syntax. Skipping it leaves the leaf unrecorded, and
        * an unrecorded leaf keeps opacity rather than discharging it. */
-      if (current.name !== undefined)
-        pending.push(current.name,);
+      if (current.name === undefined)
+        continue;
+      if (objectRestHoldsNothing({
+        project,
+        element: current,
+      },))
+        continue;
+      pending.push(current.name,);
       continue;
     }
     if (isObjectBindingPattern(current,) || isArrayBindingPattern(current,))
