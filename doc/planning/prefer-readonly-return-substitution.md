@@ -1856,3 +1856,50 @@ Opacity that no report can ask about is invisible to every verdict,
  and retention withholds the offer on its own.
 The analysis-level opaque set is untouched throughout,
  because propagation and discharge must keep treating a store as full opacity.
+
+## Whether an opaque slot can exist with nothing recorded against it
+
+Raised twice as the one hole in the cause split,
+ and worth settling rather than defending against.
+If a slot can be opaque with no provenance,
+ then a parameter owning that slot beside a store-only slot merges to a list with one
+ retention fact and no call fact,
+ reads as store-only,
+ and goes silent while carrying a genuine unknown.
+
+Every writer of the opaque set attaches provenance in the same statement.
+
+-    `addOpaqueEffect` records the fact and the provenance together,
+      and is the only writer of `directOpaque`.
+-    The unresolved-callee branch of the fixed point pairs the slot with
+      `callable without an effect summary`.
+-    Both callback-relation paths pair theirs with
+      `callback supplied to ... that this rule cannot name`.
+-    Element application pairs its slot with the observer's own provenance.
+-    The bodyless summary seeds from `directOpaque`,
+      so it inherits the pairing rather than adding one.
+-    Propagation across a call edge runs `propagateCalleeIndexes` and
+      `propagateUncertaintyProvenance` over the same `calleeSummary.opaque`,
+      through the same `calleeSlotOrigins` mapping,
+      in the same pass.
+
+The sentinel cannot separate them either:
+ `addEffectSlot` and `addOpaqueEffect` both return early on `EFFECT_SLOT_UNAVAILABLE`,
+ so a slot that one skips the other skips too.
+
+By induction over the fixed point every opaque slot carries at least one fact,
+ the merged-list rule and a per-slot union rule coincide,
+ and the silence described above is unreachable.
+
+Measurement agrees.
+The wording a provenance-free parameter would produce,
+ "a call whose name this rule could not determine",
+ appears zero times in all three full captures,
+ including the one taken before stores existed,
+ where any such parameter would have reported it.
+
+The clause that treats absent provenance as reportable stays.
+It is unreachable today and it errs toward speaking,
+ which is the direction a fail-safe should point,
+ and the induction above is exactly the kind of argument that stops holding after an
+ unrelated change.
