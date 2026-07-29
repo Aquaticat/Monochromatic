@@ -2775,3 +2775,65 @@ That does not make the contamination acceptable,
  but it is worth recording that the sweep is the only check in this workflow that reads
  the whole repository's lint state,
  and the package suite is not a substitute for it.
+
+## Two defects in stage three that the review found and the tests did not
+
+Both measured before touching anything,
+ and both in code I had just written and just mutation-checked.
+
+### An alias inside a wrapper lost its write entirely
+
+```text
+writeThroughPlainAlias      mutated=[0]   const alias = local;
+writeThroughAssertedAlias   mutated=[]    const alias = local as Row;
+writeThroughParenAlias      mutated=[]    const alias = (local);
+```
+
+`expressionResultSites` removed access layers,
+ then asked `deferrableResultSite` about the result,
+ then tested the ORIGINAL root for being an identifier.
+An alias carrying no access layer therefore left its wrapper in place:
+ the call test looked inside the assertion,
+ correctly found no call,
+ and the identifier test then ran against the assertion rather than against `local`.
+
+One loop over both removals fixes it.
+The two also interleave,
+ as in `firstRow(config,).row as Row`,
+ so neither order alone would have been enough.
+
+The mutation check did not catch this because it asks whether the assertions discriminate
+ the mechanism,
+ and they do.
+It cannot ask about a shape no assertion names.
+
+### The retention path never learned what the store path already knew
+
+```text
+storePrimitiveProjection   opaque=[0]  stored into heldLabel   heldLabel = firstRow(config,).label;
+```
+
+A `string`,
+ recorded as retained caller state.
+`parameterIndexes` gates every leaf on whether it can carry mutable state,
+ which is exactly why the object-literal control beside it stays silent,
+ and the deferred retention does not travel through that resolver at all.
+
+`storeHeldFresh` could not catch it.
+That control stays empty because its callee returns nothing the caller owns,
+ not because anything recognised a primitive,
+ so the two controls fail for different reasons and neither substitutes for the other.
+Writing a control per mechanism rather than per outcome is the lesson,
+ and it is the second time in this session that a control agreed with the defect.
+
+### One comment that said the opposite of what the code does
+
+`expressionResultSites` carried a comment claiming that naming no call site withholds.
+It does not.
+Both consumers iterate the returned set,
+ so an empty one records nothing and the offer stands.
+Every shape the walk does not model is a hole rather than a conservative choice,
+ and the comment was telling a future reader the reverse.
+
+Corrected in place,
+ and the shapes are filed rather than left in prose.
