@@ -369,7 +369,7 @@ unitless zero hue,
 nested one-line media rules,
 and one-line declaration blocks.
 
-The repository's dprint and Stylelint checks reject all five current pages:
+The repository's dprint and Stylelint checks reject every current page:
 
 ```text
 package/learning/rust/lessons/index.html
@@ -395,15 +395,15 @@ mise run //:lint:stylelint -- 'package/learning/rust/**/*.html'
 At dprint 0.55.2,
 every file is listed as unformatted and the task exits 20.
 At Stylelint 17.14.1 with `stylelint-config-standard` 40.0.0,
-each file emits the same eight errors:
+each file emits the same 8 errors:
 
-- two `lightness-notation` errors;
-- two `hue-degree-notation` errors;
-- two `at-rule-empty-line-before` errors;
-- one `declaration-block-single-line-max-declarations` error;
-- one `declaration-empty-line-before` error.
+- 2 `lightness-notation` errors;
+- 2 `hue-degree-notation` errors;
+- 2 `at-rule-empty-line-before` errors;
+- 1 `declaration-block-single-line-max-declarations` error;
+- 1 `declaration-empty-line-before` error.
 
-The package therefore emits forty Stylelint errors in total.
+The package therefore emits 40 Stylelint errors in total.
 
 ### Root cause
 
@@ -412,7 +412,7 @@ not an upstream defect in dprint or Stylelint.
 
 `package/config/dprint/index.json` associates every HTML file with
 `markup_fmt` 0.23.1 and embedded CSS with Malva 0.14.1.
-The configured markup formatter uses ninety-column wrapping and single quotes.
+The configured markup formatter uses 90-column wrapping and single quotes.
 Formatting the decoder at commit `70e92d983` changed 3,419 diff lines:
 1,969 insertions and 1,450 deletions.
 The corrective commit `05f640f50` restored the compact package contract.
@@ -430,9 +430,9 @@ Its `unit-disallowed-list` bans `deg` and says to use `turn`.
 Stylelint's automatic fix changes unitless hue zero to `0deg`,
 then the workspace rule rejects that generated unit.
 Starting from canonical CSS,
-`stylelint --fix` therefore stops with two `unit-disallowed-list` errors and the single-line declaration error.
+`stylelint --fix` therefore stops with 2 `unit-disallowed-list` errors and the single-line declaration error.
 
-The two tools can share a stable output.
+Both tools can share a stable output.
 A disposable fixture passed both checks after it used percentage lightness,
 `0turn` hue,
 expanded declaration blocks,
@@ -446,7 +446,7 @@ not between the tools' final formats.
 #### Recommended: revise the package source contract
 
 Change `package/learning/rust/NOTES.md` from an exact compact snippet to a semantic contract,
-then update and dprint-format all five HTML files.
+then update and dprint-format every affected HTML file.
 Use `10%` and `90%` lightness,
 `0turn` hue,
 expanded declaration blocks,
@@ -461,7 +461,7 @@ rendered light and dark behavior remains unchanged.
 
 Cons:
 the source is no longer the learner-approved compact form;
-the first formatting pass creates broad one-time HTML churn.
+the initial formatting pass creates broad one-time HTML churn.
 
 #### Exclude the package and add a package-specific verifier
 
@@ -495,12 +495,12 @@ repeats maintenance in every new page.
 Ranking:
 revise contract > exclude plus verifier > local directives.
 Revising ranks above exclusion because it retains repository-wide guardrails without exceptions.
-Exclusion ranks above directives because one explicit package boundary is easier to audit than repeated local suppressions.
+Exclusion ranks above directives because a single explicit package boundary is easier to audit than repeated local suppressions.
 
 ### Scoped-formatting constraint
 
 The root `format` task is not a safe scoped substitute during concurrent work.
-A dry run with one HTML path sends that path to `dprint fmt`,
+A dry run with a single HTML path sends that path to `dprint fmt`,
 but its nested Stylelint,
 Oxlint,
 and Markdown formatter tasks still run globally.
@@ -512,8 +512,8 @@ then copy only reviewed package files.
 A resolution is complete when:
 
 - `package/learning/rust/NOTES.md` records the chosen source policy;
-- all five HTML files pass the scoped dprint check;
-- all five HTML files pass the scoped Stylelint check,
+- every affected HTML file passes the scoped dprint check;
+- every affected HTML file passes the scoped Stylelint check,
   or an approved exclusion has an equivalent package verifier;
 - every page still opens through `file:///`;
 - automatic light and dark colors remain correct;
