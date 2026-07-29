@@ -18,7 +18,8 @@ without becoming a replacement course.
 
 - Learning is self-paced and follows the experimental Rust Book's page order and emphasis.
 - Lessons are short, plain HTML companions rather than a newly sequenced curriculum.
-- Styling is limited to a shared, minimal stylesheet with automatic dark mode.
+- Every HTML file works when opened directly through a `file:///` URL; this workspace has no build tasks.
+- Each HTML file repeats the minimal automatic-dark-mode CSS inline; there is no shared stylesheet.
 - Graphs and diagrams use HTML and CSS. JavaScript is allowed when it produces a tighter feedback loop.
 - TypeScript comparison examples link to runnable TypeScript Playground examples.
 
