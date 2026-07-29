@@ -2,9 +2,12 @@
 
 In progress, accepted in direction on 2026-07-27.
 Scope: `package/oxlint-plugin/prefer-readonly-parameter-type`.
-This document records the design and the first landed increment.
-It is not a record of completed work: the resolver and the escape reporting that make the
-receiver discharge sound are not built yet, and the sequencing constraint below is why.
+This document records the design and the increments that landed against it.
+The opening previously said the resolver and the escape reporting were not built yet, which the
+"What landed" section already contradicted; both are built, and the sequencing constraint in
+"The sequencing constraint" is why they had to land together.
+Caller-side substitution is still not built, and
+`doc/planning/prefer-readonly-return-substitution.md` measures what that costs.
 
 ## Problem
 
@@ -287,6 +290,13 @@ together with a third defect in the same family that predates every provenance c
 `directReturned` and `returnedParameterIndexes` have no consumer yet.
 The fact is recorded and the escape classifier still counts a return as an escape,
 so nothing rests on it; caller-side substitution is what would make it load-bearing.
+
+That last clause was too generous, and task #38 measured why.
+Nothing rests on it inside the callable that returns.
+A caller that writes through the returned value is a different matter: it recovers no origin,
+records no mutation, and is offered `readonly` for a parameter whose element it writes.
+The member path escapes this only because its receiver opacity survives into the caller.
+`doc/planning/prefer-readonly-return-substitution.md` records the measurement and the ordering it implies.
 
 ## Remaining work
 
