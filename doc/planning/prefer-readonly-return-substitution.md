@@ -4301,3 +4301,90 @@ Left open with both sides recorded.
 The shape is self-limiting,
  since the write is on the parameter directly and the offered annotation stops type-checking,
  so no falsification rides on it and the work it would take is not justified yet.
+
+## Hunting shapes instead of working a queue, and what it found immediately
+
+The queue was built from defects as they surfaced.
+Walking the escape channels on purpose found three more in one pass,
+ and the method is worth recording because it is cheaper than the queue was.
+
+Write one file where **every** parameter genuinely leaks,
+ each through a different channel,
+ each with a unique name.
+Then any offer the file draws is a false offer by construction,
+ and oxlint names them without any reasoning about the analyzer at all.
+Two controls that must still be offered keep the file honest.
+
+Fourteen channels, and the file drew six offers.
+Two were the controls.
+Four were candidates:
+ a construction,
+ a yield,
+ an async return,
+ and a callback parameter named `row` inside an iteration.
+
+Then the ordinary bar: apply every offer, type-check, drive.
+
+```text
+constructor: changed-by-constructor
+generator:   changed-by-generator
+promise:     changed-by-promise
+```
+
+### Two channels answered by nothing at all
+
+`NewExpression` appeared nowhere in this analysis.
+Not in the call-edge builder, not in the store path, not in the origin walk.
+A construction is not a call edge, not a store and not a return,
+ so a row handed to a constructor that keeps it in a private field was invisible.
+
+`YieldExpression` appeared once, in `effect-result-escape.ts`,
+ where a result's escape is classified,
+ and never where a return records its origins.
+A yield hands its value to whoever drives the iterator,
+ and that driver outlives the yield by construction.
+
+Both take opacity.
+Both are handoffs rather than stores,
+ which is why they got a third provenance prefix instead of borrowing the store one;
+ `stored into a construction of RowKeeper` reads as a store into the construction.
+
+Constructions are everywhere in this workspace,
+ so this is the first change in this work where a large offer fall would be plausible rather
+ than surprising.
+
+### The third was not a withholding
+
+`resolveRow` records `returned=[0]`.
+It is tracked, which means it is the return the accepted decision permits,
+ exactly like `returnRowDirectly`,
+ and treating it as a new false offer would have been wrong.
+
+The defect is one layer over, and measuring the caller settled it:
+
+```text
+writeThroughSync    mut=[0]
+writeThroughAwait   mut=[]
+```
+
+Substitution does not follow an await.
+So the decision's precondition, that callers keep tracking the value,
+ was failing for every async return in the workspace,
+ which is the same argument that made the returned closure a false offer.
+
+The fix is therefore a tracking repair rather than a withholding:
+ `await` joins the transparent forms in the walk that finds a write's target,
+ because what an await yields is whatever the awaited promise resolved to,
+ which is what the callee handed back.
+That is the only question the walk asks.
+
+`returnRowAsync` keeps its offer, and should.
+`writeThroughAwaitedRow` now records `mutated=[0]`, matching its synchronous twin.
+
+### What the mutants proved
+
+Each of the three dies on its own assertion.
+Removing the await from the transparent forms moves the fixture offer count from thirty to
+ thirty-one,
+ which is the async caller getting its offer back,
+ and is the cleanest possible statement of what that one line does.
