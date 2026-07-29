@@ -42,10 +42,11 @@
         A pointer connects the two.
       </p>
       <ol>
+        <li>Read “The program at the top,” “Controls and framing,” and the simple runtime labels now.</li>
         <li>Match each <code>L</code> badge beside the code with the diagram carrying the same badge.</li>
         <li>Read <code>Stack</code>, the local variables, pointer dots, and <code>Heap</code>.</li>
-        <li>Ignore the binocular button until the simple view makes sense.</li>
-        <li>Treat <code>RawVec</code> and similar names as optional implementation details, not required vocabulary.</li>
+        <li>Use “The binocular view, decoded” only after pressing the binocular button.</li>
+        <li>Use the permission section only when a diagram shows <code>R</code>, <code>W</code>, or <code>O</code>.</li>
       </ol>
       <p>
         <strong>Example:</strong>
@@ -131,7 +132,12 @@
         <dd>
           Allows the bound value to be changed through this variable.
           Without it, calling a method that changes <code>s</code> would be rejected.
-          <p><strong>Example:</strong> <code>let mut score = 5; score = 6;</code> changes <code>score</code>.</p>
+          Mutability belongs to this binding; moving its value to another binding does not make that binding mutable.
+          <p>
+            <strong>Example:</strong>
+            <code>let mut a = String::from("x"); a.push_str("y");</code> can change <code>a</code>,
+            but after <code>let b = a;</code>, changing <code>b</code> would require <code>let mut b = a;</code>.
+          </p>
         </dd>
 
         <dt><code>s</code></dt>
@@ -169,7 +175,9 @@
         <dt><code>"Hello world"</code></dt>
         <dd>
           String literal embedded in the program. The quotation marks delimit the text and are not stored as characters.
-          <p><strong>Example:</strong> this literal contains eleven ASCII bytes, including one space.</p>
+          <code>String::from</code> makes the owned heap copy shown by Aquascope;
+          the literal itself is not the heap value inside <code>s</code>.
+          <p><strong>Example:</strong> this literal supplies eleven ASCII bytes, including one space, to the new <code>String</code>.</p>
         </dd>
 
         <dt><code>;</code></dt>
@@ -183,8 +191,10 @@
       <dl>
         <dt><code>hello</code></dt>
         <dd>
-          New local variable name. It will refer to part of the text owned by <code>s</code>.
-          <p><strong>Example:</strong> in this run, <code>hello</code> refers to the five bytes spelling <code>Hello</code>.</p>
+          New local variable name whose inferred type is <code>&amp;str</code>, pronounced “reference to string slice.”
+          It points into <code>s</code>'s current heap bytes and records a length,
+          but it neither owns nor copies those bytes.
+          <p><strong>Example:</strong> in this run, <code>hello</code> refers to the five existing bytes spelling <code>Hello</code>.</p>
         </dd>
 
         <dt><code>&amp;</code></dt>
@@ -212,12 +222,20 @@
           <p><strong>Example:</strong> <code>hello</code> is a reference to the first five bytes owned by <code>s</code>.</p>
         </dd>
 
-        <dt>Slice</dt>
+        <dt>Slice and <code>&amp;str</code></dt>
         <dd>
-          View into a contiguous part of existing data. A string slice tracks a starting pointer and byte length.
+          View into a contiguous part of existing data. A string slice has type <code>&amp;str</code>
+          and tracks a starting pointer and byte length.
           <p><strong>Example:</strong> the expanded <code>L2</code> view shows <code>hello</code> with a pointer and <code>len 5</code>.</p>
         </dd>
       </dl>
+      <p>
+        This program never reads <code>hello</code> after creating it,
+        so the compiler can end its borrow immediately after that statement.
+        <strong>Example:</strong>
+        adding <code>println!("{hello}");</code> after <code>push_str</code> would keep the borrow active
+        and make Rust reject the mutation.
+      </p>
 
       <h3><code>s.push_str("!");</code></h3>
       <dl>
@@ -282,9 +300,13 @@
 
         <dt>Eye icon</dt>
         <dd>
-          Reveals or hides helper source lines that the book chose to conceal.
+          Reveals or hides helper source lines that the current book widget chose to conceal.
           It does not change the program's meaning.
-          <p><strong>Example:</strong> a hidden surrounding <code>fn main() { ... }</code> can be revealed without changing a snapshot.</p>
+          <p>
+            <strong>Example:</strong>
+            the screenshot omits the surrounding <code>fn main() { ... }</code> scaffolding;
+            revealing helper lines does not change a snapshot's values.
+          </p>
         </dd>
 
         <dt>Binocular icon</dt>
@@ -340,15 +362,29 @@
 
         <dt><code>⦻</code></dt>
         <dd>
-          Pointer whose old pointee is no longer allocated. Aquascope uses it to show invalid memory.
+          Aquascope marker for a pointer whose old pointee is no longer allocated.
+          It is neither Rust syntax nor necessarily a value stored in program memory.
           The program causes undefined behavior only if it later tries to use such a pointer.
-          <p><strong>Example:</strong> after reallocation at <code>L3</code>, <code>hello</code>'s old target has been freed, so Aquascope shows <code>⦻</code>.</p>
+          <p><strong>Example:</strong> after replacement at <code>L3</code>, <code>hello</code>'s old target has been freed, so Aquascope shows <code>⦻</code>.</p>
         </dd>
 
-        <dt>Faded or striped value</dt>
+        <dt>Moved-out value, visually faded or striped</dt>
         <dd>
           Value that has been moved and can no longer be used through that variable.
-          <p><strong>Example:</strong> <code>s</code> is striped at <code>L4</code> because <code>drop(s)</code> moved it.</p>
+          The visual style may appear faded, striped, or both.
+          <p><strong>Example:</strong> <code>s</code> is moved-out at <code>L4</code> because <code>drop(s)</code> consumed it.</p>
+        </dd>
+
+        <dt>Dashed <code>Stack</code> or <code>Heap</code> rectangle</dt>
+        <dd>
+          Groups values by memory region; it is not a Rust value itself.
+          <p><strong>Example:</strong> <code>s</code> sits inside the dashed stack region, while text bytes sit inside the dashed heap region.</p>
+        </dd>
+
+        <dt>Nested solid rectangles</dt>
+        <dd>
+          Show a value's type and fields in the concrete view. Nesting means “contains,” not “points to.”
+          <p><strong>Example:</strong> the <code>String</code> rectangle contains field <code>vec</code>, whose <code>Vec</code> rectangle contains <code>buf</code> and <code>len</code>.</p>
         </dd>
 
         <dt>One box per character</dt>
@@ -372,7 +408,7 @@
           <tr>
             <td><code>main</code> contains <code>s</code>, whose compact value is a pointer.</td>
             <td>Eleven bytes spell <code>Hello world</code>.</td>
-            <td><code>String::from</code> allocated and copied the literal's text.</td>
+            <td><code>String::from</code> allocated an owned buffer and copied the literal's bytes into it.</td>
           </tr>
         </tbody>
       </table>
@@ -408,7 +444,7 @@
           <tr>
             <td><code>s</code> points to the current allocation; <code>hello</code>'s old target is shown as invalid.</td>
             <td>Twelve bytes spell <code>Hello world!</code>.</td>
-            <td>The full eleven-byte allocation grew to capacity <code>22</code> in this Aquascope run.</td>
+            <td><code>String</code> replaced the full allocation with a new capacity-<code>22</code> allocation in this run.</td>
           </tr>
         </tbody>
       </table>
@@ -443,6 +479,11 @@
 
     <section aria-labelledby="concrete-view">
       <h2 id="concrete-view">The binocular view, decoded</h2>
+      <p>
+        This view exposes private, unstable standard-library details from Aquascope's selected Rust toolchain.
+        Exact labels and nesting can change between Rust versions;
+        recognize them only so the expanded diagram is readable.
+      </p>
       <p>
         The nested rectangles show containment.
         A capitalized label is generally a type name,
@@ -501,9 +542,10 @@
           <p><strong>Example:</strong> for <code>String::from("Hi")</code>, the <code>vec</code> field manages bytes <code>H</code> and <code>i</code>.</p>
         </dd>
 
-        <dt><code>Vec&lt;u8&gt;</code></dt>
+        <dt><code>Vec&lt;u8&gt;</code> and its type argument</dt>
         <dd>
           Growable sequence whose elements have type <code>u8</code>.
+          Angle brackets supply a type argument, so <code>&lt;u8&gt;</code> means “this <code>Vec</code> contains <code>u8</code> values.”
           <code>Vec</code> is short for vector, not a mathematical direction in this context.
           <p><strong>Example:</strong> <code>vec![1_u8, 2_u8]</code> creates a two-element <code>Vec&lt;u8&gt;</code>.</p>
         </dd>
@@ -517,7 +559,8 @@
 
         <dt><code>u8</code></dt>
         <dd>
-          Unsigned eight-bit integer type. A <code>String</code> stores UTF-8 encoded bytes of this type.
+          Unsigned eight-bit integer type for whole numbers from <code>0</code> through <code>255</code>.
+          It is commonly used for a byte, and a <code>String</code> stores UTF-8 encoded bytes of this type.
           <p><strong>Example:</strong> ASCII <code>H</code> is stored as the <code>u8</code> value <code>72</code>.</p>
         </dd>
 
@@ -545,7 +588,8 @@
         <dt><code>RawVecInner</code></dt>
         <dd>
           Internal standard-library type that groups a buffer pointer, capacity, and allocator information.
-          <p><strong>Example:</strong> at <code>L1</code>, its pointer targets the heap text and its capacity value is <code>11</code>.</p>
+          A default allocator can carry no runtime data, so Aquascope may have no visible allocator value to draw.
+          <p><strong>Example:</strong> at <code>L1</code>, the visible fields show a pointer to the heap text and capacity <code>11</code>.</p>
         </dd>
 
         <dt><code>ptr</code></dt>
@@ -613,8 +657,13 @@
         <dt><code>len</code></dt>
         <dd>
           Abbreviation of “length,” meaning how many elements are currently initialized and part of the value.
-          For this ASCII <code>String</code>, it is also the visible character count.
-          <p><strong>Example:</strong> <code>len</code> changes from <code>11</code> to <code>12</code> after appending <code>!</code>.</p>
+          For this particular ASCII-only example, byte count and visible character count coincide;
+          that is not true for every UTF-8 string.
+          <p>
+            <strong>Example:</strong>
+            <code>len</code> changes from <code>11</code> to <code>12</code> after appending <code>!</code>,
+            while the one-character string <code>"é"</code> has a byte length of <code>2</code>.
+          </p>
         </dd>
       </dl>
 
@@ -631,8 +680,10 @@
       <h2 id="permissions">The permission letters <code>R</code>, <code>W</code>, and <code>O</code></h2>
       <p>
         Permissions belong to the compile-time view.
-        They describe operations the borrow checker permits on a <strong>place</strong>,
-        meaning a storage location expression such as a variable, field, index, or dereference.
+        They are compiler facts about one <strong>place</strong> at one program point,
+        not attributes stored on an object.
+        A place is a storage location expression such as a variable, field, index, or dereference.
+        The same place can have different permissions before, during, and after a borrow.
       </p>
       <p>
         <strong>Example:</strong>
@@ -697,6 +748,15 @@
     println!("{first}");
     values.push(4);
 }</code></pre>
+      <p>
+        <code>println!</code> is a printing macro, and <code>{first}</code> inserts <code>first</code>'s value into its output.
+        <strong>Example:</strong> this call prints <code>1</code> and is the last use of <code>first</code>.
+      </p>
+      <ul>
+        <li>Before the borrow, <code>values</code> has <code>RWO</code>.</li>
+        <li>While <code>first</code> is in use, <code>values</code> has <code>R</code> but lacks <code>W</code> and <code>O</code>.</li>
+        <li>After the last use of <code>first</code>, <code>values</code> has <code>RWO</code> again.</li>
+      </ul>
       <ol>
         <li><code>values</code> starts with <code>RWO</code> because it is initialized and mutable.</li>
         <li>Creating <code>first</code> borrows from <code>values</code>, temporarily removing <code>W</code> and <code>O</code>.</li>
