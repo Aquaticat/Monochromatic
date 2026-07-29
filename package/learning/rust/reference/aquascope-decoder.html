@@ -115,7 +115,8 @@
         <dt><code>main</code> and automatic startup</dt>
         <dd>
           <code>main</code> is special in a Rust executable.
-          Small startup support runs first, then automatically makes required initial call to <code>main</code>.
+          Rust-provided startup code runs first, then automatically makes required initial call to <code>main</code>.
+          That startup code is supplied by Rust and is not written in <code>main.rs</code>.
           <code>main</code> is first function body written in this source that runs.
           Programmer does not add <code>main();</code> at end of Rust file.
           <p>
