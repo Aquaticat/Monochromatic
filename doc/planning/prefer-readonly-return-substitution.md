@@ -2577,3 +2577,41 @@ Two findings on the file,
  both offers,
  both for the callables that hand back what the caller already holds.
 `storeTwice` is withheld and silent.
+
+## Stage three, measured before it is built
+
+Every shape a local puts between the call and the use,
+ from the built artifact carrying stages one and two:
+
+```text
+writeThroughHeldResult       everything empty
+writeThroughAliasedResult    everything empty
+storeHeldResult              everything empty
+writeThroughHeldElement      everything empty
+writeThroughHeldFresh        everything empty
+readHeldResult               everything empty
+```
+
+The last two are the controls and must stay empty:
+ a local holding a freshly allocated row,
+ and a local that is only read.
+The first four are the hole,
+ and they are the hole in both directions,
+ write and store,
+ through a direct local,
+ through an alias of one,
+ and through an element of a returned container.
+
+`discoverAliasOrigins` cannot close this by growing.
+It iterates to a fixed point over `bindingOriginBySymbolId` using `expressionOrigins`,
+ which stops at a call,
+ and filling those origins later does not help:
+ the write is attributed during the syntactic pass,
+ before any callee summary exists.
+
+The design that fits is a second map keyed the same way,
+ symbol identity to call-site keys,
+ seeded by a declaration whose initializer descends to a call and propagated through
+ identifier initializers and alias assignments by the convergence loop already there.
+Alias hops then come for free,
+ which is what `writeThroughAliasedResult` is in the list to prove.
