@@ -2,7 +2,7 @@
 
 ## Symptom
 
-Before commit `3ab61f0d35c67a58cc56de776202e4bc86912b82`,
+Before commit `3ab61f0d3bfddbf017127617591d8b8c7abd4910`,
 `.github/workflows/cli-git-performance.yml` started the complete packed lifecycle benchmark for every push to `main`,
 even when a commit changed only an unrelated document or package.
 
@@ -124,7 +124,7 @@ then `mise run //package/git-policy/cli:perf:lifecycle-latency` invokes `rolldow
 - Repository revision first inspected:
   `bbbeb340b785fb16629fcf76fdf7c235b6dbd9c8`.
 - Corrected workflow revision:
-  `3ab61f0d35c67a58cc56de776202e4bc86912b82`.
+  `3ab61f0d3bfddbf017127617591d8b8c7abd4910`.
 - GitHub documentation source:
   `github/docs@e1e4aa937308f21c411c248b4966873536bb0cba`.
 - Workflow:
@@ -186,7 +186,7 @@ or the lifecycle harness.
 
 ### Gate the benchmark on the cli-git package version
 
-Commit `3ab61f0d35c67a58cc56de776202e4bc86912b82` implements the selected policy.
+Commit `3ab61f0d3bfddbf017127617591d8b8c7abd4910` implements the selected policy.
 `.github/workflows/cli-git-performance.yml:3` to `12` restricts automatic detection to the cli-git manifest and retains
 manual dispatch:
 
@@ -291,7 +291,7 @@ No upstream report is needed because the current documentation already describes
    No upstream change is needed.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
    Yes at the consumer configuration boundary.
-   Commit `3ab61f0d35c67a58cc56de776202e4bc86912b82` adds manifest path filters,
+   Commit `3ab61f0d3bfddbf017127617591d8b8c7abd4910` adds manifest path filters,
    compares the version against the event base revision,
    removes the currently unused merge-group trigger,
    retains manual dispatch,
@@ -304,7 +304,7 @@ Do not file as-is.
 
 There is no GitHub Actions defect to report.
 Monochromatic configured an unfiltered push trigger and retained a stale package selector after renaming cli-git.
-Commit `3ab61f0d35c67a58cc56de776202e4bc86912b82` corrected both at the repository boundary.
+Commit `3ab61f0d3bfddbf017127617591d8b8c7abd4910` corrected both at the repository boundary.
 ~~~
 
 [failed-run]: https://github.com/Aquaticat/Monochromatic/actions/runs/30440155739
