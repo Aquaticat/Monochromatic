@@ -931,7 +931,7 @@ children: [
     },
   },),
   it({
-    name: 'suggests imported type-fest ReadonlyDeep for structural data only explicitly',
+    name: 'suggests type-fest ReadonlyDeep for structural data without depending on an import',
     fn: async () => {
       /** Source with mutable nested data and aliased type-fest import. */
       const source = `import type { ReadonlyDeep as DeepReadonly, } from 'type-fest';
@@ -954,7 +954,46 @@ export function readNested(state: { nested: { value: string; }; },): string {
         source,
         fixSuggestions: true,
       },);
-      expect(suggestionFixed.includes('state: DeepReadonly<{ nested:',),).toBe(true,);
+      /* This asserted `DeepReadonly<{ nested:` and the alias preservation it pinned is
+       * gone on purpose. The suggestion used to fire only for a file already importing
+       * `ReadonlyDeep`, and it emitted that local name, so it depended on a statement it
+       * could not keep alive: until the suggestion is applied the import is unused, and
+       * the unused-import fix removes it in the same pass. Measured end to end, a file
+       * that type-checked clean before `oxlint --fix --fix-suggestions` failed afterwards
+       * with `TS2552: Cannot find name 'ReadonlyDeep'`. An inline import type needs no
+       * statement, so an alias has nothing left to name. */
+      expect(suggestionFixed.includes(
+        "state: import('type-fest').ReadonlyDeep<{ nested:",
+      ),).toBe(true,);
+    },
+  },),
+  it({
+    name: 'suggests the structural projection for a source that imports nothing',
+    fn: async () => {
+      /* The half the import gate blocked. Measured across the workspace before this
+       * changed: thirty-two offers in ten files, of which one file imported
+       * `ReadonlyDeep`, so nine files carried an offer the rule could not help with for a
+       * reason that was mechanical rather than about correctness. Every guard that is
+       * about correctness stays, which the array case beside this one covers. */
+      const source = `/**
+ * Reads nested state.
+ *
+ * @param state - Nested state read without mutation.
+ */
+export function readNested(state: { nested: { value: string; }; },): string {
+  return state.nested.value;
+}
+`;
+      const suggestionFixed = await fixReadonlyGeneratedSource({
+        source,
+        fixSuggestions: true,
+      },);
+      expect(suggestionFixed.includes(
+        "state: import('type-fest').ReadonlyDeep<{ nested:",
+      ),).toBe(true,);
+      /* Nothing was added above the declaration, which is the whole point of the inline
+       * form: no import statement means no statement to race with. */
+      expect(suggestionFixed.includes('from \'type-fest\'',),).toBe(false,);
     },
   },),
   it({

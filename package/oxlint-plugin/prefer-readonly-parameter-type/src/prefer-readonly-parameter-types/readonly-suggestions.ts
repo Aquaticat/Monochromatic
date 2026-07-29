@@ -10,16 +10,8 @@ import type {
   Suggestion,
 } from '@oxlint/plugins';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import type {
-  ParameterDeclaration,
-  SourceFile,
-} from 'typescript/unstable/ast';
-import {
-  isArrayTypeNode,
-  isImportDeclaration,
-  isNamedImports,
-  isStringLiteral,
-} from 'typescript/unstable/ast/is';
+import type { ParameterDeclaration, } from 'typescript/unstable/ast';
+import { isArrayTypeNode, } from 'typescript/unstable/ast/is';
 
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import { readonlyCollectionSuggestions, } from './readonly-collection-suggestions.ts';
@@ -44,55 +36,6 @@ function oxlintOffset({
     0,
     offset - 1,
   ) : offset;
-}
-
-/**
- * Sentinel when source lacks named type-fest ReadonlyDeep import.
- */
-const READONLY_DEEP_IMPORT_UNAVAILABLE: unique symbol = Symbol(
-  'source lacks type-fest ReadonlyDeep import',
-);
-
-/**
- * Finds local name for named type-fest ReadonlyDeep import.
- *
- * @param sourceFile - Source file whose imports are inspected.
- *
- * @returns local import name or sentinel.
- */
-function readonlyDeepLocalName(
-  sourceFile: SourceFile,
-): string | typeof READONLY_DEEP_IMPORT_UNAVAILABLE {
-  /**
-   * Named import specifier for ReadonlyDeep, when available.
-   */
-  const specifier = sourceFile.statements
-    .filter(isImportDeclaration,)
-    .filter(function typeFestImport(declaration,): boolean {
-      return isStringLiteral(declaration.moduleSpecifier,)
-        && (declaration.moduleSpecifier
-          .text
-          === 'type-fest');
-    },)
-    .flatMap(function namedBindings(declaration,) {
-      /**
-       * Named import bindings from type-fest declaration.
-       */
-      const bindings = declaration.importClause
-        ?.namedBindings;
-      return (bindings !== undefined) && isNamedImports(bindings,)
-        ? [...bindings.elements,]
-        : [];
-    },)
-    .find(function readonlyDeepSpecifier(element,): boolean {
-      return (element.propertyName
-        ?.text
-        ?? element.name
-        .text) === 'ReadonlyDeep';
-    },);
-  return specifier?.name
-    .text
-    ?? READONLY_DEEP_IMPORT_UNAVAILABLE;
 }
 
 /**
@@ -206,12 +149,6 @@ function readonlyDeepSuggestions({
   if (parameter.type === undefined)
     return [];
   /**
-   * Local imported name preserving authored import alias.
-   */
-  const localName = readonlyDeepLocalName(parameter.getSourceFile(),);
-  if (localName === READONLY_DEEP_IMPORT_UNAVAILABLE)
-    return [];
-  /**
    * Semantic parameter type used to reject collection projection guesses.
    */
   const parameterType = project.checker
@@ -246,9 +183,20 @@ function readonlyDeepSuggestions({
   const authoredType = parameter.type
     .getText(sourceFile,);
   /**
-   * Exact projection using locally imported type-fest helper.
+   * Exact projection naming the helper through an inline import type.
+   *
+   * Written this way because the suggestion used to depend on an import statement it could
+   * not keep alive. It fired only for a file already importing `ReadonlyDeep` and emitted
+   * that local name, and until the suggestion is applied the import is unused, so the
+   * unused-import fix removes it in the same pass and wins. Measured end to end: a file
+   * that type-checked clean before `oxlint --fix --fix-suggestions` failed afterwards with
+   * `TS2552: Cannot find name 'ReadonlyDeep'`.
+   *
+   * An inline import type needs no statement, so nothing can delete what it depends on.
+   * The authored alias is lost with the gate, which is the honest trade: an alias exists to
+   * name an import statement, and there is no longer one to name.
    */
-  const replacement = `${localName}<${authoredType}>`;
+  const replacement = `import('type-fest').ReadonlyDeep<${authoredType}>`;
   /**
    * Oxlint replacement range spanning authored parameter type.
    */
@@ -271,7 +219,7 @@ function readonlyDeepSuggestions({
   ];
   return [
     {
-      desc: `Wrap ${authoredType} with ${localName}.`,
+      desc: `Wrap ${authoredType} with type-fest ReadonlyDeep.`,
       fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
         return fixer.replaceTextRange(
           range,
