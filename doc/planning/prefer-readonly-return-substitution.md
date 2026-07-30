@@ -6759,3 +6759,37 @@ Making one external effect resolve is now its own task, and it is worth more tha
 
 It unlocks the capture wiring, gives the formal mapping an end-to-end test beside its direct one, and gives
  the external channel its first coverage of any kind. The last of those is the real reason to do it.
+
+### Correcting the claim I just made about the external channel
+
+I wrote that `applyExternalEffect` never fires anywhere in this workspace. That is stronger than what was
+ measured and it is wrong as stated.
+
+What was measured: zero findings carry package-version provenance. What that proves: the external channel
+ never **charges** anything in this workspace. What it does not prove: that the resolver never **succeeds**.
+
+The two come apart because a resolved external summary whose effect sets are all empty records nothing at
+ all. `applyExternalEffect` iterates `referentMutatedParameterIndexes`, `invokedParameterIndexes`,
+ `callbackRelations` and `opaqueParameterIndexes`, so a package function proven to do none of those produces
+ no provenance and no finding. A clean external callee is indistinguishable in the capture from one that never
+ resolved.
+
+So the honest version of the finding, and it is still the finding:
+
+-    The external channel charges nothing anywhere in this workspace, measured.
+-    Whether it resolves anything is **unmeasured**, and the distinction matters because the two failure modes
+     need different work. If it resolves and finds clean callees, the channel works and only its charging
+     paths are untested. If it resolves nothing, the resolver's four requirements are not met by any call
+     here and the untested surface is far larger.
+
+Settling it needs either instrumentation on the resolver's success path or an installed dependency whose
+ shipped implementation provably mutates a formal. The second is #113 and answers both questions at once,
+ which is the reason to prefer it.
+
+What does not change: the capture wiring stays reverted, because neither pinning route was available either
+ way, and `exposedCaptureOrigins` stays landed and pinned.
+
+The general lesson, which is the same one this document has recorded twice already in other forms. **An
+ absence in a capture is evidence about what the rule said, never about what the rule did.** A silent channel
+ and an absent channel produce identical output, which is precisely the instrument limit already recorded for
+ store-caused withholding, arriving here from the opposite direction.
