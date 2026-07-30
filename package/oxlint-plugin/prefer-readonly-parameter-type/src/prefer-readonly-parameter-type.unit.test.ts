@@ -657,7 +657,7 @@ children: [
        * count cannot tell which offer moved. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(48,);
+      },).length,).toBe(49,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -764,6 +764,20 @@ children: [
           || message.includes('"thrownOut"',)
           || message.includes('"defaultReached"',)
           || message.includes('"throughThis"',);
+      },).length,).toBe(0,);
+      /* The accessor group, and the offer that carries the count from forty-eight to forty-nine. The
+       * reach walk follows calls, and a property read is not one, so a closure naming a local whose
+       * getter reaches caller state answered empty. `gottenThrough` is the subject and `freshGotten`
+       * is the control: collecting every callable a literal declares must not report a literal built
+       * from nothing the caller handed in. */
+      expect(messages.filter(function namesFreshGetter(message,): boolean {
+        return message.includes('"freshGotten"',);
+      },),).toEqual([
+        'Parameter "freshGotten" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesGottenThrough(message,): boolean {
+        return message.includes('"gottenThrough"',)
+          && message.includes('should be readonly',);
       },).length,).toBe(0,);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
@@ -962,7 +976,7 @@ children: [
        * `config.rows.at` and stores the result, and before the split its store joined the
        * boundary list, which is an `every` over that list, and cost it this message.
        *
-       * Seven since the registry arrived. Two name `.rows.at`, one names `.register` and four name
+       * Nine since the registry arrived. Two name `.rows.at`, one names `.register` and six name
        * `.keep`, each the receiver of a method the capture channel answers for, so the list is
        * asserted per boundary rather than by one shared substring. Every registry parameter reports
        * this way and none of them is a subject: what the shapes are about is the closure handed to
@@ -971,7 +985,7 @@ children: [
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(7,);
+      expect(opacityMessages.length,).toBe(9,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)

@@ -3133,3 +3133,77 @@ export function handLibraryStringOut(
   registry.keep((): string => String(stringifiedThrough.row
     .label,),);
 }
+
+/**
+ * Hands a closure whose completion reads a getter over the caller's row.
+ *
+ * The reach walk follows calls, and a property read is not one, so the closure named only a local and
+ * the walk answered empty while reading that property runs a body handing back caller state.
+ *
+ * @param gottenThrough - Configuration the getter reaches.
+ *
+ * @param registry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handGetterResultOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handGetterResultOut(
+  gottenThrough: Config,
+  registry: CaptureRegistry,
+): void {
+  /**
+   * Holder whose getter reaches the caller's row.
+   */
+  const gotten = {
+    /**
+     * Hands back the caller's row.
+     *
+     * @returns row the caller already holds.
+     */
+    get row(): Row {
+      return gottenThrough.row;
+    },
+  };
+  registry.keep((): Row => gotten.row,);
+}
+
+/**
+ * Hands a closure whose completion reads a getter over nothing the caller owns.
+ *
+ * The control. Collecting every callable a literal declares must not report a literal built from
+ * nothing the caller handed in.
+ *
+ * @param freshGotten - Configuration the getter never names.
+ *
+ * @param registry - Registry keeping the closure.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handFreshGetterOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handFreshGetterOut(
+  freshGotten: Config,
+  registry: CaptureRegistry,
+): number {
+  /**
+   * Holder whose getter allocates its own row.
+   */
+  const allocated = {
+    /**
+     * Hands back a freshly allocated row.
+     *
+     * @returns row nobody else holds.
+     */
+    get row(): Row {
+      return { label: 'fresh', };
+    },
+  };
+  registry.keep((): Row => allocated.row,);
+  return freshGotten.rows
+    .length;
+}

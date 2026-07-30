@@ -49,6 +49,7 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { accessedCallables, } from './effect-accessor-reach.ts';
 import { callableDeclaration, } from './effect-call-resolution.ts';
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
 import { reachableValueSources, } from './effect-result-reach.ts';
@@ -146,11 +147,21 @@ export function transitiveCallableOrigins({
       .forEach(function collectOrigin(origin,): void {
         origins.add(origin,);
       },);
-    calledCallables({
-      project,
-      within: current,
-      fileName,
-    },)
+    [
+      ...calledCallables({
+        project,
+        within: current,
+        fileName,
+      },),
+      /* And the callables a property read reaches, which the call walk cannot see because a read is
+       * not a call. A getter over caller state is the sharp case: reading it runs a body the walk
+       * never entered. */
+      ...accessedCallables({
+        project,
+        within: current,
+        fileName,
+      },),
+    ]
       .forEach(function enqueueCallee(callee,): void {
         /**
          * Stable key for the callee, so each is folded in once.
