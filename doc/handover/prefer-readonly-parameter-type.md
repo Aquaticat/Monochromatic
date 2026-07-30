@@ -790,10 +790,31 @@ Reservations exist at eight workers too, and the child spawns there, so "started
 Plain `node` driving `buildEffectSummaryIndex` succeeds, matching the single-threaded run, which is why
  the fixture test drives the summaries rather than oxlint.
 
-Two consequences for measurement. A sweep at the default threads measures nothing about the external
- channel, so nobody should spend nine minutes proving a zero. And a cold sweep at `--threads=8` would be
- this channel's **first real measurement against installed dependencies**, which no sweep in this record
- has ever performed.
+### What fixed it, and the one thing still unpinned
+
+One shared native child, started beside `initializeSemanticBridge` instead of one per generated project
+ created on demand. `f4eae57f2`. At the default sixteen threads the fixture now yields four reports all
+ carrying external provenance and no false offer, against five reports with no provenance before.
+
+Sessions release only their snapshot now, since the client outlives them. `closeExternalImplementationProjects`
+ closes it, which runs from `closeSemanticBridge` alone, so nothing closes it between linted files. The
+ lazy fallback in `openExternalProject` still creates one on demand when the initializer never ran, which
+ degrades to the old behaviour rather than failing, and that is deliberate.
+
+Cost, measured rather than assumed: creating the child takes 1.6 ms to 4.7 ms, and it idles at 7.2 MiB
+ resident against 1.19 GiB virtual. The virtual reservation is the Go runtime's, and it is the same kind of
+ quantity that causes the failure, which is the argument for starting it early rather than never.
+
+**Not pinned by any test.** No case fails if the eager call is deleted, because every test either drives
+ the summaries directly from `node`, where the spawn succeeds anyway, or runs oxlint without reaching an
+ external call. A regression test has to run oxlint at the default worker count over a consumer with an
+ authored dependency and assert that external provenance appears. Until that exists this fix is measured
+ but unguarded, and it is the next thing to do here.
+
+Two consequences for measurement. A sweep at the default threads measured nothing about the external
+ channel before this fix, so no earlier sweep in this record says anything about it. And a cold sweep now
+ would be this channel's **first real measurement against installed dependencies**, which can move offers
+ in either direction.
 
 `externalCallableEffect` catches the throw, logs at debug and returns its generic unavailable sentinel, so
  the failure is indistinguishable from an unresolvable package. That is sound, since it withholds, and it
