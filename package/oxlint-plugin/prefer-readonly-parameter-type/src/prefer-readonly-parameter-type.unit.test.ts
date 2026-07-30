@@ -664,9 +664,12 @@ children: [
       /* Fifty-seven once a capture handed to a callback parameter was charged. Four shapes joined and
        * the two controls keep their offers, so the net arrival is two and both subjects contribute
        * none. */
+      /* Sixty once a default naming an ordinary function resolved to it. Four shapes joined, the two
+       * named helpers keep offers on their own row parameters, the control keeps its configuration,
+       * and the subject contributes none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(57,);
+      },).length,).toBe(60,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -865,6 +868,23 @@ children: [
         return message.includes('"forwardedToCallback"',);
       },),).toEqual([
         'Parameter "forwardedToCallback" should be readonly: property rows is writable.',
+      ],);
+      /* The named-default group. The value walk hands back the identifier a default names, and an
+       * identifier is not a callable declaration, so the syntax filter that answered for an inline
+       * default answered nothing for a named one and built no call edge. The same callee reached
+       * directly or through a local alias charged correctly, which located the defect in resolution
+       * rather than in substitution. Every candidate value is now resolved rather than tested.
+       *
+       * `namedDefaultStored` is the subject and `namedFreshStored` controls that resolving a name must
+       * not charge a configuration the named callee never hands back. */
+      expect(messages.filter(function namesNamedDefaultStored(message,): boolean {
+        return message.includes('"namedDefaultStored"',)
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesNamedFreshStored(message,): boolean {
+        return message.includes('"namedFreshStored"',);
+      },),).toEqual([
+        'Parameter "namedFreshStored" should be readonly: property rows is writable.',
       ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,

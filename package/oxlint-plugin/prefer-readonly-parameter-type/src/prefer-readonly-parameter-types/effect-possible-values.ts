@@ -51,7 +51,11 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
-import { isEffectCallableDeclaration, } from './effect-summary-model.ts';
+import { callableDeclaration, } from './effect-call-resolution.ts';
+import {
+  isEffectCallableDeclaration,
+  OWNED_CALLABLE_UNAVAILABLE,
+} from './effect-summary-model.ts';
 
 /**
  * Operators whose right operand alone is the value of the expression.
@@ -260,13 +264,24 @@ function aliasedInitializer({
 }
 
 /**
- * Names every callable one actual can hold, beyond the single one the resolver reports.
+ * Names every callable one actual can hold.
  *
- * Asked alongside the resolver rather than instead of it, because the two see different things.
+ * The two ways to answer see different things, and this composes them rather than choosing.
  * `callableDeclaration` follows a local's initializer and stops at a parameter, so a callable
  * arriving as a parameter default was named by nothing: `retain(callback,)`, where `callback`
  * defaults to a closure over the caller's configuration, offered that configuration while the
  * closure `retain` kept wrote through it. Falsified.
+ *
+ * Filtering the value walk to values already written as callable declarations was the first repair,
+ * and it answered for a default written inline and for nothing named. `possibleValueNodes` follows a
+ * parameter to the identifier its default names and stops there, and an identifier is not a callable
+ * declaration, so a default naming an ordinary function resolved to no callable at all. Measured:
+ * storing what a block-bodied named default handed back left the configuration offered, while the
+ * same callee reached directly or through a local alias charged it.
+ *
+ * So every value is now resolved rather than tested, and the results are keyed by source span so one
+ * declaration reached by several values answers once. That also picks up a conditional and an alias,
+ * which the filter missed for the same reason it missed the named default.
  *
  * Kept out of the callback identity beside it, which stays with the narrow resolver: naming a
  * default as the callable a callee invokes would claim the default's effects for a call where the
@@ -300,11 +315,32 @@ export function packagedActualCallables({
   readonly project: Project;
   readonly actual: Node;
 },): readonly Node[] {
-  return possibleValueNodes({
+  /**
+   * Callables found so far, keyed by source span so one declaration answers once however many values
+   * reached it.
+   */
+  const found = new Map<string, Node>();
+  possibleValueNodes({
     project,
     node: actual,
   },)
-    .filter(function packagedCallable(value,): boolean {
-      return isEffectCallableDeclaration(value,);
+    .forEach(function candidateCallable(value,): void {
+      /**
+       * Callable this value is, whether written here or named.
+       */
+      const callable = isEffectCallableDeclaration(value,)
+        ? value
+        : callableDeclaration({
+          project,
+          node: value,
+        },);
+      if (callable === OWNED_CALLABLE_UNAVAILABLE)
+        return;
+      found.set(
+        `${callable.getSourceFile()
+          .fileName}:${String(callable.pos,)}:${String(callable.end,)}`,
+        callable,
+      );
     },);
+  return [...found.values(),];
 }

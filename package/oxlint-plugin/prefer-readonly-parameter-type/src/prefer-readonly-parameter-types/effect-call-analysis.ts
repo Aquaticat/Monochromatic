@@ -53,7 +53,10 @@ import {
 import { effectCallName, } from './effect-call-name.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
 import { recordUnresolvedCaptureOpacity, } from './effect-unresolved-capture.ts';
-import { possibleValueNodes, } from './effect-possible-values.ts';
+import {
+  packagedActualCallables,
+  possibleValueNodes,
+} from './effect-possible-values.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
@@ -182,9 +185,14 @@ export function inspectEffectCall({
      * does supply a callback still needs the relation, and because the default's effects can only
      * add to what this call already claims. Claiming the default's write when the caller supplied
      * something else withholds an offer that might have stood, which is the safe direction. */
-    possibleValueNodes({
+    /* Asked through the shared resolver rather than by filtering the value walk here. The walk hands
+     * back the identifier a default names, and an identifier is not a callable declaration, so a
+     * default naming an ordinary function built no edge at all while one written inline built one.
+     * Measured: storing what a block-bodied named default handed back left the configuration offered,
+     * where the same callee reached directly or through a local alias charged it. */
+    packagedActualCallables({
       project,
-      node: call.expression,
+      actual: call.expression,
     },)
       .forEach(function edgeToDefault(value,): void {
         if (!isEffectCallableDeclaration(value,))

@@ -3499,3 +3499,89 @@ export function forwardRowToCallbackParameter(
 ): void {
   rowCallee(forwardedToCallback.row,);
 }
+
+/**
+ * Hands back its formal from a block body, under a name.
+ *
+ * The callee a default can only reach by name. Its own returned fact is correct, which is what makes
+ * this a resolution question rather than a substitution one.
+ *
+ * @param namedPassed - Row handed straight back.
+ *
+ * @returns same row.
+ *
+ * @example
+ * ```ts
+ * passNamedRow({ label: '', });
+ * ```
+ */
+export function passNamedRow(namedPassed: Row,): Row {
+  return namedPassed;
+}
+
+/**
+ * Hands back a freshly allocated row, under a name.
+ *
+ * @param namedIgnored - Row never handed back.
+ *
+ * @returns row nobody else holds.
+ *
+ * @example
+ * ```ts
+ * allocateNamedRow({ label: '', });
+ * ```
+ */
+export function allocateNamedRow(namedIgnored: Row,): Row {
+  return namedIgnored.label === ''
+    ? { label: 'empty', }
+    : { label: 'fresh', };
+}
+
+/**
+ * Stores what a default naming an ordinary function handed back.
+ *
+ * The subject. The value walk hands back the identifier a default names, and an identifier is not a
+ * callable declaration, so the syntax filter that answered for an inline default answered nothing for
+ * a named one and no call edge was built. The same callee reached directly or through a local alias
+ * charged correctly, which is what located the defect in resolution rather than in substitution.
+ *
+ * @param namedDefaultStored - Configuration whose row reaches the holder.
+ *
+ * @param namedPass - Default naming an ordinary function.
+ *
+ * @example
+ * ```ts
+ * storeNamedDefaultResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeNamedDefaultResult(
+  namedDefaultStored: Config,
+  namedPass: (row: Row,) => Row = passNamedRow,
+): void {
+  held = namedPass(namedDefaultStored.row,);
+}
+
+/**
+ * Stores what a default naming an allocating function handed back.
+ *
+ * The control. Resolving a name must not charge a configuration the named callee never hands back.
+ *
+ * @param namedFreshStored - Configuration whose row is only read.
+ *
+ * @param namedFreshPass - Default naming an allocating function.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeNamedFreshDefault({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeNamedFreshDefault(
+  namedFreshStored: Config,
+  namedFreshPass: (row: Row,) => Row = allocateNamedRow,
+): number {
+  held = namedFreshPass(namedFreshStored.row,);
+  return namedFreshStored.rows
+    .length;
+}
