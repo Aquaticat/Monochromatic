@@ -14,6 +14,7 @@ import type {
 } from 'typescript/unstable/ast';
 import { isIdentifier, } from 'typescript/unstable/ast/is';
 
+import { recordArgumentRetentions, } from './effect-argument-retention.ts';
 import { applyExternalEffect, } from './effect-external-application.ts';
 import {
   type ExternalCallableEffectResolver,
@@ -231,6 +232,22 @@ export function inspectEffectCall({
         node: call,
       },)}]`,
     },);
+    /* And the retention every argument carries, which this branch used to return before recording. A
+     * relation cannot see through an inner call result, because a callee's summary does not exist while
+     * its callers are walked, so `rowCallee(passResultRow(cfg.row,),)` recorded nothing at all and was
+     * indistinguishable from a control handing over a freshly allocated row, while the same result
+     * handed to an unresolvable member recorded `opaque=[0]`. Falsified with a driver whose supplied
+     * callee retained the row and wrote through it.
+     *
+     * Third instance of one pattern, after the capture gate above: a branch answers its own question
+     * and returns before something every call needs. */
+    recordArgumentRetentions({
+      project,
+      checker,
+      resultSitesBySymbolId,
+      call,
+      summary,
+    },);
     return;
   }
 
@@ -343,40 +360,13 @@ export function inspectEffectCall({
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },)
     : signatureCallee;
-  /* An argument that is a call result carries caller state the origin walk cannot see, because
-   * a callee's summary does not exist while its callers are walked. So `sink.push(firstRow(
-   * config,),)` handed the caller's row to a container and attributed nothing, and
-   * `keepRow(firstRow(config,),)` did the same through an owned callee. Both falsified.
-   *
-   * Recorded as a retention against the inner call site and resolved in the fixed point, which
-   * is the same deferral the write and store sites use. Retention rather than a mutation claim
-   * because handing a value to a call is a handoff and not a write, and it withholds silently,
-   * which is what a reader can do nothing about.
-   *
-   * Over-approximating: the receiving call may only read what it was given. The leaf gate takes
-   * the common half of that away, since an argument that cannot carry mutable state records
-   * nothing, and what remains withholds rather than offers. */
-  call.arguments
-    .forEach(function recordArgumentRetention(argument,): void {
-      if (!expressionCanCarryMutableState({
-        checker,
-        node: argument,
-      },))
-        return;
-      recordResultRetentionSites({
-        summary,
-        sites: targetResultSites({
-          project,
-          resultSitesBySymbolId,
-          node: argument,
-        },),
-        provenance: handoffProvenance({
-          handoff: `a call to ${call.expression
-            .getText()}`,
-          location: effectOriginLocation({ node: call, },),
-        },),
-      },);
-    },);
+  recordArgumentRetentions({
+    project,
+    checker,
+    resultSitesBySymbolId,
+    call,
+    summary,
+  },);
   if ((callee === OWNED_CALLABLE_UNAVAILABLE)
     && (resolvedDeclaration !== undefined)) {
     /**

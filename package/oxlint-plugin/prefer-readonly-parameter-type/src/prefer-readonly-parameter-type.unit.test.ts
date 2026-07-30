@@ -669,9 +669,11 @@ children: [
        * and the subject contributes none. */
       /* Sixty-one once the reach walk followed a conditional callee. Two shapes joined, the control
        * keeps its offer and the subject contributes none. */
+      /* Sixty-two once a call result handed to a callback parameter was charged. Two shapes joined, the
+       * control keeps its offer and the subject contributes none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(61,);
+      },).length,).toBe(62,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -926,6 +928,25 @@ children: [
         return message.includes('"neitherReached"',);
       },),).toEqual([
         'Parameter "neitherReached" should be readonly: property rows is writable.',
+      ],);
+      /* The callback call-result group, and the second thing the callback branch returned before doing.
+       * A relation cannot see through an inner call result, because a callee's summary does not exist
+       * while its callers are walked, so the retention every argument carries was never recorded here
+       * and this was indistinguishable from a control handing over a freshly allocated row, while the
+       * same result handed to an unresolvable member recorded opacity.
+       *
+       * `resultHandedToCallback` is the subject and `freshResultHanded` controls that a retention per
+       * argument must leave an offer standing when nothing the caller owns comes back out. The deferral
+       * control `forwardedToCallback` asserted above covers this fix too: it forwards a
+       * parameter-derived row rather than a call result and must keep its relation. */
+      expect(messages.filter(function namesResultHandedToCallback(message,): boolean {
+        return message.includes('"resultHandedToCallback"',)
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesFreshResultHanded(message,): boolean {
+        return message.includes('"freshResultHanded"',);
+      },),).toEqual([
+        'Parameter "freshResultHanded" should be readonly: property rows is writable.',
       ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,

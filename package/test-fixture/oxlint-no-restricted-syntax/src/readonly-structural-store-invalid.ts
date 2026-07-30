@@ -3712,3 +3712,57 @@ export function handFreshConditionalCalleeOut(
   return neitherReached.rows
     .length;
 }
+
+/**
+ * Hands a call result to a callback parameter.
+ *
+ * The subject. A relation cannot see through an inner call result, because a callee's summary does not
+ * exist while its callers are walked, and the branch that classifies a call to a callback parameter
+ * answered its own question and returned before the retention every argument carries was recorded. So
+ * this was indistinguishable from a control handing over a freshly allocated row, while the same result
+ * handed to an unresolvable member recorded opacity.
+ *
+ * Falsified while offered: the annotation applied, type-checked clean beside a control whose direct
+ * write was rejected, and the driver's supplied callee retained the row and wrote through it.
+ *
+ * @param resultHandedToCallback - Configuration whose row the inner call hands back.
+ *
+ * @param rowCallee - Callee supplied by the caller.
+ *
+ * @example
+ * ```ts
+ * handResultToCallbackParameter({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function handResultToCallbackParameter(
+  resultHandedToCallback: Config,
+  rowCallee: RowCallee,
+): void {
+  rowCallee(passNamedRow(resultHandedToCallback.row,),);
+}
+
+/**
+ * Hands a freshly allocated call result to a callback parameter.
+ *
+ * The control. Nothing the caller owns comes back out of the inner call, so recording a retention per
+ * argument must leave this offer standing.
+ *
+ * @param freshResultHanded - Configuration whose row is only read.
+ *
+ * @param rowCallee - Callee supplied by the caller.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handFreshResultToCallbackParameter({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function handFreshResultToCallbackParameter(
+  freshResultHanded: Config,
+  rowCallee: RowCallee,
+): number {
+  rowCallee(allocateNamedRow(freshResultHanded.row,),);
+  return freshResultHanded.rows
+    .length;
+}
