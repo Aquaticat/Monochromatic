@@ -3585,3 +3585,54 @@ export function storeNamedFreshDefault(
   return namedFreshStored.rows
     .length;
 }
+
+/**
+ * Stores a conditionally defaulted result, returning branch written first.
+ *
+ * One of a pair that differ only in the order the two branches are written. Both defaults resolve to
+ * the same two callables, so both must answer the same way, and an answer that flips with source order
+ * is the whole defect: one call site carried two edges keyed alike, and the consumer built its lookup
+ * with `new Map(entries)`, which keeps the last pair and discarded the other.
+ *
+ * @param orderPassFirst - Configuration whose row one branch hands back.
+ *
+ * @param branchPick - Which branch the default takes.
+ *
+ * @param branchPass - Default naming two callables with different returned facts.
+ *
+ * @example
+ * ```ts
+ * storeReturningBranchFirst({ rows: [], row: { label: '', }, }, true,);
+ * ```
+ */
+export function storeReturningBranchFirst(
+  orderPassFirst: Config,
+  branchPick: boolean,
+  branchPass: (row: Row,) => Row = branchPick ? passNamedRow : allocateNamedRow,
+): void {
+  held = branchPass(orderPassFirst.row,);
+}
+
+/**
+ * Stores a conditionally defaulted result, allocating branch written first.
+ *
+ * The other half of the pair, and the half that was offered while its twin withheld.
+ *
+ * @param orderAllocFirst - Configuration whose row one branch hands back.
+ *
+ * @param branchPick - Which branch the default takes.
+ *
+ * @param branchPass - Default naming two callables with different returned facts.
+ *
+ * @example
+ * ```ts
+ * storeAllocatingBranchFirst({ rows: [], row: { label: '', }, }, true,);
+ * ```
+ */
+export function storeAllocatingBranchFirst(
+  orderAllocFirst: Config,
+  branchPick: boolean,
+  branchPass: (row: Row,) => Row = branchPick ? allocateNamedRow : passNamedRow,
+): void {
+  held = branchPass(orderAllocFirst.row,);
+}

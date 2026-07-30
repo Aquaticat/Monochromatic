@@ -886,6 +886,27 @@ children: [
       },),).toEqual([
         'Parameter "namedFreshStored" should be readonly: property rows is writable.',
       ],);
+      /* The source-order pair, which adds no offer and is asserted for agreement rather than for a
+       * count. Both defaults resolve to the same two callables and differ only in which branch is
+       * written first, so both must answer the same way. One call site carried two edges keyed alike
+       * and the consumer built its lookup with `new Map(entries)`, which keeps the last pair, so the
+       * half whose returning branch was discarded offered its caller's configuration while its twin
+       * withheld. An answer that flips with source order is the diagnosis, and it only became
+       * reachable once the shared resolver reached a default naming an ordinary function. */
+      expect(messages.filter(function namesOrderPassFirst(message,): boolean {
+        return message.includes('"orderPassFirst"',)
+          && message.includes('should be readonly',);
+      },).length,).toBe(
+        messages.filter(function namesOrderAllocFirst(message,): boolean {
+          return message.includes('"orderAllocFirst"',)
+            && message.includes('should be readonly',);
+        },).length,
+      );
+      expect(messages.filter(function namesEitherOrder(message,): boolean {
+        return (message.includes('"orderPassFirst"',)
+          || message.includes('"orderAllocFirst"',))
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
        * and a declared type can lie about that in two ways. `erasedThrough` holds a local annotated

@@ -483,6 +483,11 @@ function resultCarriedOrigins({
 }
 
 /**
+ * Edges shared by no call site, so a deferred use with no owned edge allocates none.
+ */
+const NO_EDGES: readonly CallEdge[] = [];
+
+/**
  * Resolves one caller's deferred result uses against its callees' returned state.
  *
  * @param summaries - Owned callable summaries by declaration key.
@@ -510,34 +515,52 @@ export function propagateResultApplications({
     === 0)
     return false;
   /**
-   * Edges of this caller by call site, so a deferred use finds the call it belongs to.
+   * Edges of this caller by call site, so a deferred use finds every call it belongs to.
+   *
+   * Every edge rather than one. One call site carries several edges whenever the callee expression
+   * resolves to more than one callable, which a conditional default does, and this was built with
+   * `new Map(entries)`, which keeps the last pair and silently discarded the rest. The effect and
+   * capability passes iterate `summary.calls` directly and saw them all, so only a deferred result use
+   * lost anything, which is why no effect probe showed it.
+   *
+   * Demonstrated once the shared resolver reached a default naming an ordinary function: two
+   * conditional defaults differing only in which branch was written first answered differently, one
+   * charging its caller's configuration and the other offering it. An answer that flips with source
+   * order is the diagnosis.
+   *
+   * Unioned rather than merged into one edge. Different callees have different slot layouts, summaries,
+   * captures and formal-to-actual mappings, so a merged edge would state a relation neither callee
+   * has.
    */
-  const edgeByCallSite = new Map<string, CallEdge>(
-    summary.calls
-      .map(function keyed(edge,): [
-        string,
-        CallEdge,
-      ] {
-        return [
+  const edgesByCallSite = new Map<string, CallEdge[]>();
+  summary.calls
+    .forEach(function keyed(edge,): void {
+      /**
+       * Edges already recorded for this call site.
+       */
+      const already = edgesByCallSite.get(edge.callSiteKey,);
+      if (already === undefined) {
+        edgesByCallSite.set(
           edge.callSiteKey,
-          edge,
-        ];
-      },),
-  );
+          [edge,],
+        );
+        return;
+      }
+      already.push(edge,);
+    },);
   /**
    * Whether any deferred use contributed an origin this pass.
    */
   const growth: { any: boolean; } = { any: false, };
   for (const application of summary.resultApplications) {
     /**
-     * Edge for the call whose result this use consumes.
+     * Edges for the call whose result this use consumes.
      *
-     * Absent when the callee was never resolved as owned, in which case the call already
+     * Empty when the callee was never resolved as owned, in which case the call already
      * took an opaque boundary of its own and this use needs no separate treatment.
      */
-    const edge = edgeByCallSite.get(application.callSiteKey,);
-    if (edge === undefined)
-      continue;
+    const edges = edgesByCallSite.get(application.callSiteKey,) ?? NO_EDGES;
+    for (const edge of edges) {
     /**
      * Summary of the callee whose result this use consumes.
      *
@@ -581,6 +604,7 @@ export function propagateResultApplications({
       capturedByCalleeSlot,
     },))
       growth.any = true;
+    }
   }
   return growth.any;
 }
