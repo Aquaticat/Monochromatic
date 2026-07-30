@@ -517,25 +517,26 @@ What that claim does and does not cover, since the distinction is the whole valu
      the same line-break debt, so this file is the largest instance rather than an outlier, and conforming it alone
      buys no consistency while risking prose damage to the primary record.
 
-**One defect stays open, and closing it would be dishonest.** #100, the external channel's missing capture channel.
- It is a real false offer for a consumer whose code calls a package export whose shipped implementation retains a
- callback, its design is complete, and it was written once and reverted because **neither** verification route exists
- here: no call in this workspace reaches `applyExternalEffect` at all, and exporting the unit does not help because
- proving a capture is charged needs binding origins the analyzer does not expose.
+**#100 is closed, and the prerequisite it was waiting on was the wrong one.** It was recorded as blocked on
+ finding a dependency whose shipped implementation the resolver can load. The answer was to **write one**. A
+ disposable consumer that owns its own lockfile passes every gate, the false offer reproduced end to end, and
+ `6a98f371a` closes it. Recorded under the external-channel section of this file.
 
-Its prerequisite is sharper than it was: not "make one external effect resolve", but find or add a dependency whose
- **shipped implementation the resolver can load**. #113 measured that even `ignore`, a real npm package, gets an
- identity and then fails at implementation resolution.
+What that supersedes: the claim that neither verification route exists here. The seam route was correctly
+ rejected, and the end-to-end route was rejected on a premise about installed packages rather than about
+ authored ones. The reasoning that kept it open, which was that landing a path no test reaches is worse than
+ leaving a finding recorded, still stands and is what forced the fixture to exist first.
 
-The contrast with #114 is the rule at work rather than an inconsistency. The decorator gap was landed because a
- fixture file can contain a decorator; this one cannot be reached by any fixture without a new dependency. Landing a
- path no test reaches, documented as a fix, is worse than leaving the finding recorded.
+Measuring it also found #117, which reframes #113. The external channel fails with `spawn ENOMEM` under
+ oxlint's default worker count, so it never ran during any sweep in this record, and #113's conclusion that its
+ narrowness is its design was drawn on a channel that was not executing.
 
-So what is left is one recorded gap that cannot be verified here, #115 as a linter-scope decision for whoever owns
- markdown style, and the standing question below.
+So what is left is #115 as a linter-scope decision for whoever owns markdown style, #117 as a precision defect
+ with a measured cause, and the standing question below.
 
-So the honest summary is that the soundness queue is empty and the precision, cost and documentation queue is not.
- Anyone resuming should start by asking what shape has not been probed, rather than by working these three.
+So the honest summary is that the soundness queue is empty and the precision, cost and documentation queue is
+ not. Anyone resuming should start with #117, because until it is fixed the external channel's soundness is
+ untested by anything except the authored fixture.
 
 ### Open
 
@@ -703,7 +704,7 @@ Both artifact digests were recorded before the run and re-verified after it, and
 
 Two findings, measured together, and each one changes what the other means.
 
-### Authoring the dependency works, and #100's false offer is now demonstrated
+### Authoring the dependency works, and it closed #100
 
 The blocker recorded against #100 was "find or add a dependency whose shipped implementation the resolver
  can load". The answer is to write one. A disposable consumer directory outside the repo satisfies every
@@ -733,6 +734,17 @@ consumer.ts:25: Parameter "config" should be readonly: property row is writable.
 Those two lines are the whole falsification. Line 15 carries external provenance, which only
  `applyExternalEffect` writes, so the exact export resolved and applied. Line 25 offers `readonly` for a
  parameter whose row is handed out by a closure that same package retains.
+
+After `6a98f371a` the same run reports
+ `capture-retainer-probe@1.0.0 . retainCallback handed callable capture` on line 25 instead, while line 15
+ is unchanged, so the channel that opened is the capture one rather than a wholesale loss of precision.
+
+The fix charges **per formal**, not per call, which is the design `exposedCaptureOrigins` recorded in its own
+ documentation before anything could be measured: only formals the external summary reports as invoked,
+ opaque, or a callback-relation source charge what their actual exposes, and a formal the mapping cannot place
+ charges every argument. Charging unconditionally would also have been sound and would have thrown away the
+ precision the early return exists for, since a summary that reports no fact about a formal is a proof the
+ shipped implementation does not invoke, keep or write through it.
 
 The discriminator worth reusing: **prove the external path ran by which channel carried the fact, not by
  a log.** A consumer function passing the row directly reports opacity with package provenance; if any
