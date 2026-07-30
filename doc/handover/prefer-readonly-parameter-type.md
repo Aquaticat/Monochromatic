@@ -404,8 +404,19 @@ Two consequences for anyone working here:
      rejection and is stopped at `packageCallIdentity` and its declaration-owner fallback for 161 of 164 calls.
 
      That is why no finding carries package-version provenance. It is a **defect in one gate**, not a coverage
-     gap, and a fixture dependency would have produced one more call that also fails there. #113 is now that
-     diagnosis rather than a fixture chore.
+     gap, and a fixture dependency would have produced one more call that also fails there.
+
+     **Narrowed further, to one syntax.** Printing the callee's kind at the rejection: property-access callees
+     156 and 133 across two packages, identifiers 4 and 17. And identity **does** work for an imported
+     identifier, proven by the later gate naming `node:path join`, `node:fs/promises readFile`,
+     `node:child_process spawn` and `ignore Ignore` on its way to failing because a builtin has no shipped
+     implementation, which is correct.
+
+     **So the channel is dark because a member call gets no package identity, and member calls are about 95
+     percent of external calls.** `packageCallIdentity`'s property-access handling and the
+     `packageDeclarationCallIdentity` fallback are the fix target. A refuted hypothesis is recorded on #113 so
+     it is not retried: `getSymbolAtLocation` versus `getResolvedSymbol` in `importBinding` changed the counts
+     by nothing.
 
      Reproduction: **cold-run only.** The persistent cache makes a second lint of the same package emit
      nothing, because summaries are reused and the resolver never re-runs.
