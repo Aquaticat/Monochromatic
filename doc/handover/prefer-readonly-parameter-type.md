@@ -83,6 +83,19 @@ The panic count is the newer of the four. The upstream tuple panic in
  counts differ are not comparable. Measured at `851b0fd3f`: five panics, and no per-file warning naming the
  affected files was locatable, because the panic output interleaves with the report stream.
 
+**Opacity is a merged channel, so no assertion on it can name which path wrote it.** The unresolved
+ boundary and a resolved external retention both add to `opaqueParameterIndexes`, and nothing in the set
+ records which. An assertion that a capture is charged is therefore satisfied by the resolution failing,
+ which is the opposite of what such a test usually means to claim.
+
+Measured, on the resolution fix for a package declaring no runtime entry: a first test handed that package
+ a capturing closure and asserted the capture was charged. It passed, and **both** mutants survived it. The
+ replacement asserts a **proven mutation** and its absence of opacity, which only a resolved
+ implementation can produce, and both mutants then died.
+
+So when a fix makes something resolve, assert a fact that only resolution writes: a proven mutation, or
+ provenance naming the package. Not opacity, and not a charged capture.
+
 Two ways of misreading a capture, both paid for:
 
 -   **Never attribute a finding to a file by line proximity.** The interleaved panic traces put unrelated

@@ -7946,3 +7946,60 @@ That is the upstream defect already diagnosed in `doc/troubleshooting/typescript
 Which means the panic count belongs beside the commit and the two digests in every capture, and two sweeps
  whose panic counts differ are not comparable. That is a gap in the recorded sweep discipline rather than a
  new defect.
+
+## The entryless-package resolution, and the assertion that proved nothing
+
+`manifestRuntimeTarget` required `exports`, `module` or `main`. A package declaring none of them returned
+ the unavailable sentinel immediately, so `implementationPath`'s own directory-index fallback could never
+ run for want of a relative target. Node resolves such a package by the legacy rule that falls back to an
+ index file.
+
+The one non-builtin package that ever reached implementation resolution and failed says it exactly:
+
+```text
+ignore@7.0.6    main: undefined   module: undefined   exports: undefined   types: index.d.ts
+```
+
+`index.js` is present. **31 installed packages here share that shape**, `strip-ansi`, `string-width`,
+ `path-key`, `resolve-from` and `parse-json` among them.
+
+Fixed by answering the package root when nothing is declared, which lets the existing index candidates run.
+ Candidates must now be **files** rather than merely exist, because a package root whose own name ends in a
+ code suffix would otherwise be returned as its own implementation. That failed closed rather than wrongly,
+ since nothing loads from a directory, and exactly one entryless package here has a dotted name at all,
+ `lodash.truncate`, whose suffix is not a supported one.
+
+### The assertion that passed while proving nothing
+
+The first test handed the authored entryless package a capturing closure and asserted the capture was
+ charged. It passed. Both mutants survived it:
+
+```text
+decline when no entry is declared:      SURVIVED
+accept a directory candidate:           SURVIVED
+```
+
+**Because opacity is a merged channel.** The unresolved boundary and a resolved external retention both add
+ to `opaqueParameterIndexes`, and the set records nothing about which wrote it. So "the capture is charged"
+ was satisfied by the resolution *failing*, which is the opposite of the claim.
+
+The replacement gives that package an export that **writes its formal**, and asserts the proven mutation
+ together with the absence of opacity. An unresolved call records opacity and no mutation; a resolved one
+ records the mutation its implementation performs. Both mutants then died, the first at the mutation
+ assertion.
+
+The package is also named to end in `.js`, so its root carries a supported suffix and the directory-guard
+ mutant dies on the same pair.
+
+### Where this sits in the sequence of the same mistake
+
+Third variant, each in a different disguise:
+
+1.   Reading findings for version provenance to test a gate, when a resolved-but-clean callee records
+     nothing.
+2.   Attributing a sweep finding to a file by line proximity, in output interleaved with panic traces.
+3.   This one, asserting a fact that both the working and the broken path write.
+
+The common shape is not carelessness about evidence. It is **asserting on a channel that merges the two
+ outcomes being distinguished**, which looks like evidence and is not. The cheap defence is to name, before
+ writing the assertion, which path writes the fact and whether anything else can write it too.
