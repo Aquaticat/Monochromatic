@@ -83,8 +83,8 @@ import {
   addOpaqueEffect,
   callableDeclaration,
 } from './effect-call-resolution.ts';
-import { packagedActualCallables, } from './effect-captured-argument-origins.ts';
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
+import { packagedActualCallables, } from './effect-possible-values.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { returnBelongsToCallable, } from './effect-return-effects.ts';
 import { transparentValueRoot, } from './effect-result-substitution.ts';

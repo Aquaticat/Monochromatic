@@ -655,9 +655,12 @@ children: [
        * and a return. `unreachedDefault` is the arrival, and its whole claim is that a closure
        * nothing invokes and nothing keeps performs no write. Asserted by name below, because a
        * count cannot tell which offer moved. */
+      /* Fifty-one once a defaulted producer's invoked result could be stored. Three shapes joined and
+       * two of them keep their offers, so the net arrival is two rather than three. Asserted by name
+       * in the defaulted-producer group below, for the reason that group records. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(49,);
+      },).length,).toBe(51,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -779,6 +782,31 @@ children: [
         return message.includes('"gottenThrough"',)
           && message.includes('should be readonly',);
       },).length,).toBe(0,);
+      /* The defaulted-producer group, whose three shapes carry the count from forty-nine to
+       * fifty-one: two of them keep an offer and the subject loses one, so the net arrival is two.
+       * A store of an invoked result withholds when the callable was handed in, and a defaulted
+       * callable is selected when it is stored or handed onward, and neither covered a default that
+       * is invoked and whose result is then stored.
+       *
+       * `producedDefault` is the subject. `untouchedByProducer` controls that selecting a default
+       * must not charge a configuration the default never names, and `countedByProducer` controls
+       * that the charge belongs to the store rather than to the invocation: the capture does reach
+       * the result there, and a primitive read off it lets nothing out. Asserted by name because all
+       * three record the same producer effects, so a count cannot tell which one moved. */
+      expect(messages.filter(function namesProducedDefault(message,): boolean {
+        return message.includes('"producedDefault"',)
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesUntouchedByProducer(message,): boolean {
+        return message.includes('"untouchedByProducer"',);
+      },),).toEqual([
+        'Parameter "untouchedByProducer" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesCountedByProducer(message,): boolean {
+        return message.includes('"countedByProducer"',);
+      },),).toEqual([
+        'Parameter "countedByProducer" should be readonly: property rows is writable.',
+      ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
        * and a declared type can lie about that in two ways. `erasedThrough` holds a local annotated

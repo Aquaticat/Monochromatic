@@ -3207,3 +3207,87 @@ export function handFreshGetterOut(
   return freshGotten.rows
     .length;
 }
+
+/**
+ * Stores what invoking its own defaulted producer handed back.
+ *
+ * The cross of two relations each already answered alone. A store of an invoked result withholds
+ * when the invoked callable was handed in, and a defaulted callable is selected when it is stored or
+ * handed onward. Neither covered a default that is invoked and whose result is then stored: the store
+ * site is seen, which is why the producer parameter is charged, and the default closure is selected,
+ * but the capture it hands back reaches nothing. The substitution walk files origins per formal of
+ * the invoked callable, and this origin is not a formal of anything, it is a capture of the enclosing
+ * callable by a closure written in its own parameter list.
+ *
+ * Reading rather than writing, for the reason `storeDefaultClosure` records: a default closure that
+ * writes through the parameter stops type-checking once the offer is applied, so only a reader can
+ * falsify.
+ *
+ * @param producedDefault - Configuration whose row the default hands back.
+ *
+ * @param defaultRowProducer - Default producer, invoked rather than stored.
+ *
+ * @example
+ * ```ts
+ * storeDefaultProducerResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeDefaultProducerResult(
+  producedDefault: Config,
+  defaultRowProducer: () => Row = (): Row => producedDefault.row,
+): void {
+  held = defaultRowProducer();
+}
+
+/**
+ * Stores what invoking a defaulted producer that allocates handed back.
+ *
+ * The first control. Selecting the default must not charge a configuration the default never names,
+ * so this keeps its offer on the configuration and reports only the producer.
+ *
+ * @param untouchedByProducer - Configuration the default never reads.
+ *
+ * @param allocatingProducer - Default producer allocating its own row.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeAllocatingProducerResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeAllocatingProducerResult(
+  untouchedByProducer: Config,
+  allocatingProducer: () => Row = (): Row => ({ label: 'fresh', }),
+): number {
+  held = allocatingProducer();
+  return untouchedByProducer.rows
+    .length;
+}
+
+/**
+ * Reads a primitive off what invoking its own defaulted producer handed back.
+ *
+ * The second control, and the one that says the fix must charge a store rather than an invocation.
+ * The capture does reach the result here, and the result goes nowhere: a primitive read off it lets
+ * nothing out, so the configuration keeps its offer.
+ *
+ * @param countedByProducer - Configuration whose row the default hands back.
+ *
+ * @param countingProducer - Default producer whose result is read for a primitive.
+ *
+ * @returns label length read off the produced row.
+ *
+ * @example
+ * ```ts
+ * countDefaultProducerResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function countDefaultProducerResult(
+  countedByProducer: Config,
+  countingProducer: () => Row = (): Row => countedByProducer.row,
+): number {
+  return countingProducer()
+    .label
+    .length;
+}

@@ -28,7 +28,7 @@ import type { Node, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
-import { possibleValueNodes, } from './effect-possible-values.ts';
+import { packagedActualCallables, } from './effect-possible-values.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
   isEffectCallableDeclaration,
@@ -111,52 +111,6 @@ export function argumentCapturedOrigins({
       },);
     return captured.size === 0 ? NO_CAPTURED_ORIGINS : [...captured,];
   },);
-}
-
-/**
- * Names every callable one actual can hold, beyond the single one the resolver reports.
- *
- * Asked alongside the resolver rather than instead of it, because the two see different things.
- * `callableDeclaration` follows a local's initializer and stops at a parameter, so a callable
- * arriving as a parameter default was named by nothing: `retain(callback,)`, where `callback`
- * defaults to a closure over the caller's configuration, offered that configuration while the
- * closure `retain` kept wrote through it. Falsified.
- *
- * Kept out of the callback identity beside it, which stays with the narrow resolver: naming a
- * default as the callable a callee invokes would claim the default's effects for a call where the
- * caller supplied something else, and that claim can be wrong in the offering direction. Whereas
- * every consumer of a capture asks what the callee stated about its own formal first, so widening
- * what fills a formal can only ever add an effect the callee already declared.
- *
- * Exported because the unresolved boundary needs the same answer. An earlier note here said a
- * capture only ever adds opacity, which stopped being true once captures began feeding the mutation
- * and returned-origin channels as well.
- *
- * @param project - TypeScript project resolving values an expression can hold.
- *
- * @param actual - Argument expression whose callables are wanted.
- *
- * @returns callables the actual can hold.
- *
- * @example
- * ```ts
- * packagedActualCallables({ project, actual });
- * ```
- */
-export function packagedActualCallables({
-  project,
-  actual,
-}: {
-  readonly project: Project;
-  readonly actual: Node;
-},): readonly Node[] {
-  return possibleValueNodes({
-    project,
-    node: actual,
-  },)
-    .filter(function packagedCallable(value,): boolean {
-      return isEffectCallableDeclaration(value,);
-    },);
 }
 
 /**

@@ -52,6 +52,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import { accessedCallables, } from './effect-accessor-reach.ts';
 import { callableDeclaration, } from './effect-call-resolution.ts';
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { packagedActualCallables, } from './effect-possible-values.ts';
 import { reachableValueSources, } from './effect-result-reach.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
@@ -297,6 +298,28 @@ export function calledCallableOrigins({
       .forEach(function collectCalleeOrigin(origin,): void {
         reached.add(origin,);
       },);
+  /* And every other callable the callee expression can hold, because the resolver stops at a
+   * parameter and a parameter can carry a default. Measured: a store of what invoking a defaulted
+   * producer handed back recorded nothing against the configuration the default reads, while the
+   * same store through a named callee recorded it, so the offer stood on the resolver's silence
+   * rather than on anything about the store. Falsified.
+   *
+   * Asked alongside the resolver rather than instead of it, on the same grounds the capture channel
+   * asks it: an origin the result can carry only ever withholds. */
+  packagedActualCallables({
+    project,
+    actual: node.expression,
+  },)
+    .forEach(function collectCandidate(candidate,): void {
+      transitiveCallableOrigins({
+        project,
+        bindingOriginBySymbolId,
+        packaged: candidate,
+      },)
+        .forEach(function collectCandidateOrigin(origin,): void {
+          reached.add(origin,);
+        },);
+    },);
   if (!isPropertyAccessExpression(node.expression,))
     return reached;
   /* The receiver is asked as well as the callee, never instead of it, and unioning rather than
