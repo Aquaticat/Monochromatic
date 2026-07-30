@@ -91,9 +91,15 @@ A delta that disagrees with expectation is not evidence about the change until t
  been removed and the capture repeated.
 A delta that survives removing the thing under test was never about it.
 
-Wall clock is retired as an instrument, three times over.
+Wall clock is not an instrument for *finding* anything.
 Identical findings have come back at 169s, 543s, 8m16s and 3m00s,
  and the transitive-capture walk came in faster while doing strictly more work.
+
+It is still worth **recording**, for a different question. Cache state and machine load dominate short
+ runs, so a single runtime proves nothing on its own; a series of full sweeps at the same thread count is
+ comparable enough to answer whether a widened walk changed the cost class. Record it beside the finding
+ deltas rather than as an aside, because #87 stayed a hunch for as long as it did precisely because
+ nobody wrote the number down.
 
 ## What the baseline is, and what a zero means
 
@@ -348,6 +354,14 @@ A property read is not a call, so the reach walk missed a getter over caller sta
  collects every callable an authored literal or class expression declares whenever a body reads a
  property off one.
 
+Every spelling of that read now answers: element access, a destructuring pattern, a class declaration
+ reached through the construction naming it, and both spread kinds. The two spread kinds were first
+ justified by one shared reason that only one of them has. Measured: an object spread runs every getter,
+ an array or argument spread runs `Symbol.iterator` and no getter at all. Both still belong, because both
+ reach a callable the aggregate declares without writing a call, but only the object form reads getters.
+ No fixture charges the array form yet, since the reachable shape needs a receiver declaring
+ `Symbol.iterator`, which raises an untested question about whether a yield carries a returned fact.
+
 ### Open
 
 -    **#82**, two activation forms that still cannot reach a parameter default: a binding filled by
@@ -358,11 +372,28 @@ A property read is not a call, so the reach walk missed a getter over caller sta
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
 -    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix: the sweep
      with the gate ran faster than the one before it, so nothing measured shows a problem.
--    **#90** and **#92**, both sharing the `completionCanCarryState` fallback. #90 is that a `void`
-     completion certifies a capture as inert, and `void` describes an ignored return value rather than a
-     runtime guarantee. #92 is that a nonempty `heldCallables` replaces the static classification instead
-     of joining it, so a parameter default is treated as the only possible runtime value. Both located by
-     reading, neither measured, and a fix to either changes what the other sees.
+-    **#90** and **#92**, both sharing the `completionCanCarryState` fallback, and now established by
+     reading to be **two changes in one function rather than one change covering both**. #90's shape
+     reaches the `callees.length === 0` branch, where there is no candidate answer to join and the static
+     `void` decides alone; #92's remedy is a disjunct on the branch below it. So #90 goes first, because
+     making `void` untrusted in the fallback changes what #92's disjunction joins against.
+
+     #90's basis is narrower than "void describes an ignored return value". TypeScript specifically
+     permits assigning `() => Row` where `() => void` is expected, and does **not** permit assigning
+     `() => Row` where `() => string` is expected. So a `void` return annotation on a callable *type*
+     constrains nothing about what the callable returns, while a `string` one does. That asymmetry, not
+     void's meaning, is what would justify distrusting one and trusting the other, and it needs verifying
+     against the compiler before anything is built on it.
+
+     The scoping problem #90 must solve: a call to a genuinely void-returning named declaration must keep
+     its offer, or every closure ending in a logging call is withheld. The candidate distinction is
+     between a declaration whose own body hands nothing back and a value whose annotation says so.
+
+     #92 needs one more thing before it counts as unsoundness rather than imprecision, and the fifth
+     clause of the bar is why. If a caller supplies the callable that produces the row, the caller
+     supplied the escape and nothing about the callee's offer was falsified. So #92's shape must fill the
+     candidate binding **from inside** the callable, which is why it is being measured as a binding filled
+     by assignment after a leaf-returning initializer, and why it overlaps #82.
 -    **#95**, tagged templates as invocations. Located by reading.
 -    **#100**, a capture channel for external effect application. Confirmed reachable rather than
      theoretical: `applyExternalEffect` does handle callback relations and maps them only through
