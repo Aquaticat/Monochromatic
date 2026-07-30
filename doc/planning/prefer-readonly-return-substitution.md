@@ -6869,3 +6869,57 @@ Both paths resolve through a **symbol** rather than by walking structure to the 
  the checker has already decided which declaration a name refers to. Walking the receiver instead would have
  needed a case per way a receiver can be written, which is the shape of bug this effort has fixed repeatedly
  by asking where a value can have come from rather than what layer sits over it.
+
+## The tagged template, whose defect was not where the task said
+
+Filed as tagged templates going unrecorded. Measured, the recording was never the problem.
+
+```text
+storeThroughBareTag    opq=[]    nothing recorded
+storeThroughBareCall   opq=[0]   recorded correctly
+handClosureToTag       opq=[0]   already charged before any change
+```
+
+The same closure, written two ways:
+
+```ts
+const storingTag = (_strings: TemplateStringsArray,): void => { holder.kept = gotten.row; };
+storingTag``;
+storingCall();
+```
+
+The **activation walk** matched `CallExpression` and nothing else. So the tag was never activated, its body
+ was never scanned, and the store inside it was attributed to nobody. Nothing about what a tag receives was
+ involved.
+
+That is a sharper defect than the one filed, and a more general one: **an unseen invocation is an unscanned
+ body.** Every channel that depends on a closure's body being read depends on the invocation being seen
+ first, and the activation gate is the single place that decides it.
+
+Fixed by writing the branch against what a node **invokes** rather than against one syntax that invokes.
+ `invokedParts` names callee and actuals once, and overload resolution, assigned values, declared values and
+ actual activation all read those. The next invoking syntax needs one clause rather than four edits.
+
+After the fix both spellings read `opaque=[0]`, fixture offers moved 69 to 70 by exactly the control, and the
+ mutant restoring the old gate restored exactly the subject's offer.
+
+### Two things this closes without changing code
+
+The capture half of the same item, since a closure interpolated into a retaining tag was already charged. The
+ reading of `recordTaggedTemplateHandoff` was correct, it does map ordinary origins only, and another channel
+ covers the shape regardless.
+
+And the eight `isCallExpression` gates that item counted as suspect. They are not all suspect, and the reason
+ is worth keeping: the gate that mattered was **activation**, because activation decides whether a body is
+ read at all. The gates in the completion walk and the reach walk ask what a callable hands back, and a tag
+ whose result is used reaches those through its result rather than through its invocation form.
+
+### The tally that is now a pattern rather than a coincidence
+
+Four times in this effort a hole predicted by reading one module turned out closed by another: the throw
+ completion, the external channel probe, the aggregate descent, and now the tag's capture half. Every one was
+ a correct reading of the module in front of the reader and a wrong conclusion about the system.
+
+Against that, the defects that were real were found by **measuring a shape**, not by reading a gate. The
+ discipline that follows is already written here as probe before filing, and this is the strongest evidence
+ for it so far: reading produces true statements about code and unreliable statements about behaviour.
