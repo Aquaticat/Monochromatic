@@ -74,8 +74,23 @@ Commit before mutation-checking.
 While a sweep runs: no rebuilds, and no edits to any file it lints.
 Docs, reads and probes of the built artifact are fine.
 
-Record beside every capture: the commit, the plugin digest, the sidecar digest.
-A capture without those cannot be told from one taken against a stale sidecar.
+Record beside every capture: the commit, the plugin digest, the sidecar digest, **and the panic count**.
+A capture without the first three cannot be told from one taken against a stale sidecar.
+
+The panic count is the newer of the four. The upstream tuple panic in
+ `doc/troubleshooting/typescript-go-tuple-type-panic.md` leaves each file it hits without readonly analysis
+ for the run, so **every count in a capture that panicked is a lower bound**, and two captures whose panic
+ counts differ are not comparable. Measured at `851b0fd3f`: five panics, and no per-file warning naming the
+ affected files was locatable, because the panic output interleaves with the report stream.
+
+Two ways of misreading a capture, both paid for:
+
+-   **Never attribute a finding to a file by line proximity.** The interleaved panic traces put unrelated
+     lines inside any context window, and a `nano-spawn` finding read that way was attributed to the wrong
+     package entirely. Every message names its own subject, so grep for a parameter name from the message.
+-   **Cold means the repository root.** The summary cache root resolves through `dependencyRoot`, which for a
+     workspace package is the repo root, so clearing `package/<name>/node_modules/.cache` clears nothing that
+     matters. A warm reading looks exactly like a measurement.
 
 Registered criterion, in its reusable form:
 
