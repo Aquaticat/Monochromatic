@@ -4649,3 +4649,64 @@ export function keepAsyncRow(
 }
 
 //endregion
+
+//region A callee binding filled by assignment
+
+/**
+ * Keeps a closure calling a binding filled by assignment after its initializer.
+ *
+ * The initializer names a callable handing back a fresh row, and the assignment names one handing back the
+ * caller's row. Only the initializer was followed, so this recorded nothing and read identically to its
+ * control.
+ *
+ * @param assignedGotten - Configuration whose row the assigned selector hands out.
+ *
+ * @param assignedRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * keepAssignedSelector({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function keepAssignedSelector(
+  assignedGotten: Config,
+  assignedRegistry: CaptureRegistry,
+): void {
+  /**
+   * Selector whose first value hands back a fresh row.
+   */
+  let assignedSelect: () => Row = allocateHandedRow;
+  assignedSelect = (): Row => assignedGotten.row;
+  assignedRegistry.register((): Row => assignedSelect(),);
+}
+
+/**
+ * Keeps a closure calling a binding never reassigned.
+ *
+ * The control. Following assignments must not charge a binding whose every value allocates.
+ *
+ * @param neitherAssignedGotten - Configuration read in place.
+ *
+ * @param assignedRegistry - Registry keeping the closure.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * keepUnassignedSelector({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function keepUnassignedSelector(
+  neitherAssignedGotten: Config,
+  assignedRegistry: CaptureRegistry,
+): number {
+  /**
+   * Selector handing back a fresh row, never reassigned.
+   */
+  const unassignedSelect: () => Row = allocateHandedRow;
+  assignedRegistry.register((): Row => unassignedSelect(),);
+  return neitherAssignedGotten.rows
+    .length;
+}
+
+//endregion

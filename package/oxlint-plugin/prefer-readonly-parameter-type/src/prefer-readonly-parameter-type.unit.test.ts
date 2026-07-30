@@ -694,9 +694,23 @@ children: [
        * three keep offers: the precision subject, whose closure resolves to a label, and both async readers,
        * whose own parameters are read rather than handed out. The control resolving to the caller's row
        * contributes none, which is what shows the promise was looked through and the question was not. */
+      /* Seventy-six once the reach walk followed a callee binding filled by assignment. Two shapes joined,
+       * the control keeping its offer and the subject contributing none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(75,);
+      },).length,).toBe(76,);
+      /* The assignment pair. Two earlier placements of the same question read identically on both halves,
+       * one by breaking an unrelated invariant and one by changing nothing, so this pair is what tells the
+       * working placement from either. */
+      expect(messages.filter(function namesAssigned(message,): boolean {
+        return message.includes('"assignedGotten"',)
+          && message.includes('should be readonly',);
+      },),).toEqual([],);
+      expect(messages.filter(function namesNeitherAssigned(message,): boolean {
+        return message.includes('"neitherAssignedGotten"',);
+      },),).toEqual([
+        'Parameter "neitherAssignedGotten" should be readonly: property rows is writable.',
+      ],);
       /* The promise pair, and this one is the reverse of every other pair here: the subject must be OFFERED
        * because the fix recovers precision, and the control must be withheld. A fix that looked through the
        * question rather than the wrapper would offer to both. */
@@ -1320,11 +1334,13 @@ children: [
        * parameters is the receiver of a `.register` call.
        *
        * Twenty-six since the awaited-completion group arrived, one for each of its two registry
-       * parameters. */
+       * parameters.
+       *
+       * Twenty-eight since the assignment group arrived, one for each of its two registry parameters. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(26,);
+      expect(opacityMessages.length,).toBe(28,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)
