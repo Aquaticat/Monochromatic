@@ -4,6 +4,7 @@ import {
 } from '@oxlint/plugins';
 
 import { preferReadonlyParameterTypes, } from './prefer-readonly-parameter-types.ts';
+import { initializeExternalImplementationApi, } from './prefer-readonly-parameter-types/external-implementation-project.ts';
 import { initializeSemanticBridge, } from './prefer-readonly-parameter-types/typescript-sync-adapter.ts';
 
 export {
@@ -69,6 +70,10 @@ export {
 } from './prefer-readonly-parameter-types/effect-slot-identity.ts';
 
 initializeSemanticBridge();
+/* Beside it, and for the same reason. The external implementation child was created on first demand,
+ * which happens mid-lint after oxlint has reserved its per-worker buffers, and that spawn fails with
+ * `ENOMEM` at this host's default worker count. */
+initializeExternalImplementationApi();
 
 /**
  * Oxlint plugin enforcing honest readonly parameter and mutation contracts.

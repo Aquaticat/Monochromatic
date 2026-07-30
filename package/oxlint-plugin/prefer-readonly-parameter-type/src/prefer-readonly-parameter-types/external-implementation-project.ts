@@ -48,6 +48,44 @@ export type ExternalImplementationSession = {
 const sessionByConfig = new Map<string, ExternalImplementationSession>();
 
 /**
+ * Sentinel for the external API before it is started.
+ */
+const NO_EXTERNAL_API = undefined;
+
+/**
+ * One native child shared by every external implementation project in this process.
+ *
+ * A child was created per generated config, mid-lint, and under oxlint's default worker count that
+ * spawn fails with `ENOMEM`: the analysis then reports every external call as unresolved, which is sound
+ * and silently discards the entire channel. Measured at every thread count on a 16-core host, the
+ * channel works through eight workers and dies at sixteen, so the deciding quantity is the reserved size
+ * at spawn time rather than merely spawning after the reservations exist.
+ */
+const externalApiState: { current: API | typeof NO_EXTERNAL_API; } = { current: NO_EXTERNAL_API, };
+
+/**
+ * Starts the shared external child before oxlint reserves its per-worker buffers.
+ *
+ * Called beside `initializeSemanticBridge` for exactly the reason that call exists, and the cost is one
+ * extra native child per lint process whether or not any external call appears.
+ *
+ * @example
+ * ```ts
+ * initializeExternalImplementationApi();
+ * ```
+ */
+export function initializeExternalImplementationApi(): void {
+  if (externalApiState.current !== NO_EXTERNAL_API)
+    return;
+  /**
+   * Shared client whose cwd is the process cwd, since every generated project names absolute files.
+   */
+  const api = new API({ cwd: process.cwd(), },);
+  configureNativeApiChildShutdown(nativeApiChild(api,),);
+  externalApiState.current = api;
+}
+
+/**
  * Computes stable identity from project source snapshot signatures.
  *
  * @param project - External implementation project.
@@ -86,11 +124,14 @@ function openExternalProject({
   readonly configPath: string;
   readonly implementationPath: string;
 }): ExternalImplementationSession | typeof EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE {
+  /* The shared child when one was started early, and a fresh one otherwise, so a consumer that never
+   * called the initializer still works wherever the spawn can succeed. */
+  if (externalApiState.current === NO_EXTERNAL_API)
+    initializeExternalImplementationApi();
   /**
-   * Independent TypeScript client for current generated project.
+   * Client hosting this generated project, shared across every external implementation.
    */
-  const api = new API({ cwd: dirname(configPath,), },);
-  configureNativeApiChildShutdown(nativeApiChild(api,),);
+  const api = externalApiState.current ?? new API({ cwd: dirname(configPath,), },);
   /**
    * Configured project snapshot for shipped implementation.
    */
@@ -106,9 +147,10 @@ function openExternalProject({
    */
   const implementationSource = project?.program
     .getSourceFile(implementationPath,);
+  /* Only the snapshot is released here, never the client. It is shared by every generated project in
+   * this process, so closing it on one project's failure would take the channel down for the rest. */
   if ((project === undefined) || (implementationSource === undefined)) {
     snapshot.dispose();
-    api.close();
     return EXTERNAL_IMPLEMENTATION_PROJECT_UNAVAILABLE;
   }
   return {
@@ -120,7 +162,6 @@ function openExternalProject({
     },),
     close(): void {
       snapshot.dispose();
-      api.close();
     },
   };
 }
@@ -227,4 +268,9 @@ export function closeExternalImplementationProjects(): void {
     session.close();
   },);
   sessionByConfig.clear();
+  if (externalApiState.current === NO_EXTERNAL_API)
+    return;
+  externalApiState.current
+    .close();
+  externalApiState.current = NO_EXTERNAL_API;
 }
