@@ -6032,3 +6032,102 @@ The honest limit on it: the audit says which channels lack the capture channel, 
  #103's are unmeasured. Each still needs its own falsification at the five-clause bar before anything is
  built, and a shape that turns out unreachable is worth recording as unreachable rather than quietly
  fixing.
+
+## Sweep five, against its own pre-registration
+
+Commit `5e7cdfd83`, both artifacts rebuilt in order, both digests recorded before the run and re-verified
+ identical after it. The two doc commits that landed while it ran left both unchanged.
+
+```text
+before 2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+after  2005: argument-opacity=1283 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+added   3: argument-opacity=3
+removed 2: argument-opacity=2
+runtime 8m54s
+```
+
+### Job two answered, and #87 closes on it
+
+Predicted near the prior runs rather than doubled. Measured:
+
+```text
+sweep-86   7m58s
+sweep-91   8m44s
+sweep-94   8m54s
+```
+
+Three full sweeps, each after a rebuild, so each cold. Four walk-widening fixes landed between the first
+ and the last, and the total movement is under a minute across the series, well inside what machine load
+ accounts for. No cost class changed.
+
+So **#87 closes as declined with a measured reason** rather than staying open as insurance. The gate it
+ carried was that memoisation must be justified by measurement, and the measurement says there is nothing
+ to justify. Should a later change move this series materially, the memo keys are already named:
+ `callableResultCanCarryState`, `transitiveCallableOrigins`, `packagedActualCallables`.
+
+### Job one, where the pre-registration was wrong
+
+Predicted: offers fall, and every loss is explained by #93 or #94.
+
+**Offers held at 31 and not one fell.** The prediction was wrong, and the sampling rule it existed to
+ govern went untested for a second consecutive sweep.
+
+The criterion itself is satisfied on every clause that matters. Offers did not rise, which is the only
+ soundness statement available. No category other than argument opacity moved: receiver opacity held at
+ 648, dishonest at 37, stale-mutates at 6.
+
+### The five that moved, each attributed
+
+Two of the three additions are two of the removals with an enriched call list, not findings appearing
+ beside findings leaving:
+
+-    `watch-supervisor.ts:237` on `signal` gained `signal.addEventListener [watch-dir.ts:243]` beside the
+     `wait` call it already named.
+-    `watch.ts:190` on `controller` gained a signal call beside the ones it already named.
+
+The one genuine addition is `browserslist-targets.ts:905` on `generatedFileUrl`, naming
+ `fileURLToPath [generated-file-exists.ts:18]`.
+
+All three trace to one cause, and it is the same cause:
+
+```ts
+export async function browserslistTargets({
+  generatedFileUrl = GENERATED_BROWSERSLIST_URL,
+  exists = generatedFileExists,
+  ...
+
+export async function watchDirectoryWithRestarts({
+  signal,
+  watchDirectoryImpl = watchDirectory,
+  ...
+```
+
+A **defaulted callable parameter**, resolved to the callable its default names, followed into another
+ file, and the caller's value found reaching an unresolved call inside it. `generatedFileExists` calls
+ `fileURLToPath(fileUrl,)`; `watchDirectory` calls `signal.addEventListener` at `watch-dir.ts:243`. Both
+ run whenever a caller omits the argument, so all three findings are true at their own source, and the
+ rule's text is literally correct: it cannot inspect `fileURLToPath`.
+
+That is #93, the one shared callable-value resolver, which is exactly a fix the prediction named. So the
+ attribution half of the sampling rule worked. The direction was what the prediction got wrong.
+
+### Why the direction was wrong, stated so it does not have to be learned again
+
+The prediction reasoned that a fix which resolves more callables withholds more, and withholding more
+ costs offers. The first half is right and the second does not follow.
+
+Offers are 31 findings out of 2005, and they are not a random 31. They are the parameters that have
+ already survived every other channel this rule has. A new withholding reason lands on the population it
+ finds, and that population is 1974 parameters already withheld for some other reason. Seeing more calls
+ therefore enriches existing reports and adds reports on already-withheld parameters, which is precisely
+ what all five movers are.
+
+This is the null sweep's explanation confirmed a second time, and now with a nonzero delta rather than
+ with zero, which is the stronger form of the same evidence. The instrument note stands and gains a
+ direction: **a sweep measures what a fix does to the already-withheld majority, and says almost nothing
+ about the offered minority either way.**
+
+The honest consequence for the criterion. The clause "offers falling is expected, and each fall is
+ sampled to its cause" has now gone untested three sweeps running. It should be rewritten to say what is
+ actually true: an offer falling would be surprising, worth sampling hard when it happens, and its
+ absence is not evidence that a fix withheld nothing.
