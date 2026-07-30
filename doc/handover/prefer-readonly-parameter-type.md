@@ -421,9 +421,14 @@ Against that, every defect that was real was found by **measuring a shape**: the
 Two corollaries worth carrying:
 
 **An unseen invocation is an unscanned body.** Every channel that depends on a closure's body being read
- depends first on the invocation being seen, and the activation gate in `closure-activity.ts` is the single
- place that decides it. `invokedParts` there is now the shared predicate for what a node invokes; reuse it
- rather than adding a second.
+ depends first on the invocation being seen, and one gate decides it: `invokedParts` in
+ `effect-invoked-parts.ts`. Three invoking syntaxes existed and one was recognised. The tagged template and
+ the construction each cost one clause there, and the second cost only one clause **because** the first was
+ written as "what does this node invoke" rather than as a second `if`.
+
+So the syntaxes that can carry this defect are now short and enumerable rather than a matter of inspecting
+ call sites: a call, a tagged template, a construction, and whatever else invokes. Decorators are the
+ candidate not yet measured, filed as #114 with a probe rather than a clause.
 
 **Two relations that look like duplicates often are not.** Captures against ordinary origins, reach against
  the value walk, and the accessor reach walk against the value walk all share syntax and answer different
