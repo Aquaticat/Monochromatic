@@ -939,6 +939,17 @@ STB:
  command separators,
  source-escaped variants.
 
+PRV:
+ Shared-media sanitization:
+ inspect every region in dense encoded samples.
+Mask status bars,
+ notifications,
+ paths,
+ titles,
+ accounts,
+ and identifiers;
+strip metadata and unintended audio.
+
 ### TSDoc comments
 
 TSD:
