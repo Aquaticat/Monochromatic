@@ -39,6 +39,7 @@ import {
   isParameterDeclaration,
   isPropertyAccessExpression,
   isSpreadAssignment,
+  isSpreadElement,
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
@@ -111,10 +112,13 @@ export function accessedCallables({
  * registry.keep((): Row => { const { row, } = holder; return row; },);
  * ```
  *
- * A spread reads every property the source declares, so it runs every getter on it, and is included on
- * the same grounds. Which property was read is not tracked here, exactly as the aggregate descent
- * declines to track keys, so an element access with a computed key needs no special handling: the
- * receiver is what matters and taking every member can only add an origin.
+ * Both spread kinds are included, though not on identical grounds: an object spread runs every getter,
+ * while an array or argument spread runs `Symbol.iterator` instead. What they share is what this walk
+ * asks about, reaching a callable the aggregate declares without writing a call.
+ *
+ * Which property was read is not tracked here, exactly as the aggregate descent declines to track keys,
+ * so an element access with a computed key needs no special handling: the receiver is what matters and
+ * taking every member can only add an origin.
  *
  * @param node - Node that may read a property off something.
  *
@@ -128,7 +132,12 @@ export function accessedCallables({
 function readReceivers({ node, }: { readonly node: Node; },): readonly Node[] {
   if (isPropertyAccessExpression(node,) || isElementAccessExpression(node,))
     return [node.expression,];
-  if (isSpreadAssignment(node,))
+  /* Both spread node kinds, for two different measured reasons rather than one shared one. An object
+   * spread runs every getter the source declares; an array or argument spread runs its `Symbol.iterator`
+   * and no getter at all. Measured directly: `{ ...holder }` logged `getter`, `[...holder]` logged
+   * `iterator`. Either way the read reaches a callable the aggregate declares without writing a call,
+   * which is the relation this walk exists to answer, so both kinds name their receiver. */
+  if (isSpreadAssignment(node,) || isSpreadElement(node,))
     return [node.expression,];
   /* A pattern runs a getter for every name it binds, and the receiver is what the pattern was filled
    * from. Both spellings answer here, `const { row, } = holder` and a parameter defaulting to one,
