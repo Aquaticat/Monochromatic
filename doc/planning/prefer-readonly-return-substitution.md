@@ -5888,9 +5888,18 @@ The class form needed two hops rather than one, which the first attempt got wron
  `new Holder()` and a construction is not an aggregate. Following the construction to the class it names
  closed it.
 
-A spread joins on the same grounds, since it reads every property the source declares and so runs every
- getter on it. Which property was read stays untracked, exactly as the aggregate descent declines to
- track keys, so a computed key needs no separate handling.
+Both spread kinds join, though a first draft of this paragraph gave them one shared reason that only one
+ of them has. Measured directly rather than reasoned about: `{ ...holder }` logged `getter`, and
+ `[...holder]` logged `iterator` and never touched the getter. An object spread runs every getter the
+ source declares; an array or argument spread runs `Symbol.iterator` instead. What they share is the
+ relation this walk asks about, reaching a callable the aggregate declares without writing a call.
+
+Which property was read stays untracked, exactly as the aggregate descent declines to track keys, so a
+ computed key needs no separate handling.
+
+No fixture charges the array-spread clause, and the honest reason is that the reachable shape needs a
+ receiver declaring `Symbol.iterator`, which raises a separate untested question about whether a yield
+ carries a returned fact. The clause can only add an origin, so an unreachable one withholds nothing.
 
 Mutant removing element access and the construction hop restored exactly those two offers, 63 to 65,
  leaving the destructuring hop's subject charged.
@@ -5915,3 +5924,53 @@ Open, with what is known about each:
 The instrument note from the null sweep applies to everything above: each of these fixes withholds
  silently, so a sweep can only fail them and never confirm them, and the fixture group plus the mutation
  check carry the whole weight.
+
+## Sweep five, pre-registered before the capture
+
+Written before the run, so the capture can contradict it.
+
+Four of the landed fixes widen walks rather than adding a branch to one. `calledCallables` went from one
+ resolution per call to a `possibleValueNodes` walk plus a resolve per candidate, and `accessedCallables`
+ now triggers a reach walk for element accesses, destructuring declarations and both spread kinds, plus a
+ symbol resolution per construction. Both of those run per item of a worklist.
+
+So this sweep has two jobs rather than one, and the second is free.
+
+### Job one, the offer-loss sampling rule
+
+Every prior sweep in this document made the same negative claim, that offers did not move, and the last
+ one moved nothing at all. That makes the clause about falling offers untested rather than satisfied.
+
+This is the first sweep where a drop is likely. #93 makes a named callable resolvable through defaults,
+ conditionals and aliases at every site that resolves one, and #94 makes every destructuring declaration
+ a getter-read site. The workspace stood at thirty-one offers, so a large proportional drop is available.
+
+The rule, fixed now: for each offer that leaves, name which landed fix explains it, and confirm the
+ escape it now withholds for is real by the same five-clause bar a fixture subject faces. An offer that
+ leaves with no fix explaining it is over-withholding, and over-withholding at scale is a decision to
+ surface rather than a line in a log.
+
+Predicted: offers fall, and every loss is explained by #93 or #94.
+
+### Job two, the cost measurement #87 was waiting for
+
+#87 has been open as insurance with an explicit gate, that it must be justified by measurement before
+ anything is memoised. The measurement is available here at no extra cost, because a sweep is a full
+ workspace run and its runtime is a number.
+
+The comparable runs, all full workspace sweeps at the same thread count:
+
+```text
+sweep-86   7m58s
+sweep-91   8m44s
+```
+
+Predicted: this run lands near those rather than doubling, because the widened walks are bounded by the
+ same file filter the narrow ones were. If it lands near them, #87 closes as declined with a measured
+ reason instead of staying open as a hunch. If it doubles, #87 becomes a measured problem, and the memo
+ keys are already named by the walks that grew: `callableResultCanCarryState`,
+ `transitiveCallableOrigins`, and now `packagedActualCallables`.
+
+Runtime is recorded beside the finding deltas from here on, not as an aside. A correctness sweep that
+ also answers a cost question is the cheapest measurement available, and treating runtime as incidental
+ is how #87 stayed a hunch for as long as it did.
