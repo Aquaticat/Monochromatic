@@ -17,17 +17,20 @@
  * `pnpm-lock.yaml`, and the gate under test reads a lockfile rather than an installer, so a copied shape
  * is the honest input. The boundary is worth stating rather than leaving implied.
  *
- * Driven through the effect summaries rather than through oxlint deliberately. Under oxlint the whole
- * external channel fails with `spawn ENOMEM`, because `openExternalImplementation` starts a second
- * TypeScript child mid-lint after oxlint has reserved a multi-gigabyte virtual buffer per worker, which
- * is the failure `initializeSemanticBridge` exists to avoid for the first child. Task #117 holds that.
- * The end-to-end falsification was run separately under `oxlint --threads=1`, where the channel does
- * work, and it produced both halves at once:
+ * Driven through the effect summaries rather than through oxlint, which keeps this test about one thing.
+ * The end-to-end falsification was run separately, and it produced both halves at once:
  *
  * ```text
  * consumer.ts:15: ... used by these calls: capture-retainer-probe@1.0.0 . retainCallback
  * consumer.ts:25: Parameter "config" should be readonly: property row is writable.
  * ```
+ *
+ * That run needed `--threads=1` at the time, because the whole external channel was then failing with
+ * `spawn ENOMEM` under oxlint's default worker count. That was a separate defect, since fixed by starting
+ * the external implementation child before oxlint reserves its per-worker buffers, and
+ * `external-channel-workers.unit.test.ts` guards it at the default count. This test cannot see that
+ * failure at all: plain `node` spawns the second child without trouble, which is exactly why the other
+ * test exists.
  *
  * @module
  */
@@ -98,6 +101,11 @@ export function retainRow(row) {
 export function runCallback(callback) {
   return callback();
 }
+
+export function stampAndIgnoreCallback(callback, row) {
+  row.label = 'external';
+  return 0;
+}
 `;
 
 /**
@@ -110,12 +118,13 @@ const DECLARATION_SOURCE = `export declare function retainCallback(callback: () 
 export declare function stampRow(row: { label: string; }): void;
 export declare function retainRow(row: { label: string; }): number;
 export declare function runCallback(callback: () => void): void;
+export declare function stampAndIgnoreCallback(callback: () => void, row: { label: string; }): number;
 `;
 
 /**
  * Consumer source, one callable per claim.
  */
-const CONSUMER_SOURCE = `import { retainCallback, retainRow, runCallback, stampRow, } from '${PACKAGE_NAME}';
+const CONSUMER_SOURCE = `import { retainCallback, retainRow, runCallback, stampAndIgnoreCallback, stampRow, } from '${PACKAGE_NAME}';
 
 export type Row = { label: string; };
 
@@ -163,6 +172,24 @@ export function handCaptureWriterToExternalRetainer(config: Config,): number {
       config.row.label = 'external';
     },
     { label: 'own', },
+  );
+}
+
+export function handRowProducerToIgnoredPosition(config: Config,): number {
+  return stampAndIgnoreCallback(
+    function produceIgnored(): Row {
+      return config.row;
+    },
+    { label: 'own', },
+  );
+}
+
+export function stampThroughIgnoringExport(config: Config,): number {
+  return stampAndIgnoreCallback(
+    function produceOwn(): Row {
+      return { label: 'fresh', };
+    },
+    config.row,
   );
 }
 
@@ -448,6 +475,10 @@ await describe({
         const writtenCapture = consumerWritten('handCaptureWriterToExternalRetainer',);
         /** Capture handed to an export that invokes rather than keeps. */
         const invokedCapture = consumerOpaque('handRowProducerToExternalRunner',);
+        /** Capture handed to a formal the implementation neither invokes, keeps, nor writes through. */
+        const ignoredCapture = consumerOpaque('handRowProducerToIgnoredPosition',);
+        /** Proven mutation by that same export, of the formal it does use. */
+        const ignoringExportStamped = consumerWritten('stampThroughIgnoringExport',);
         closeSemanticBridge();
         /* The gates opened. A proven mutation arrives through the external summary, so this parameter is
          * written rather than merely unknown, and no unresolved boundary was recorded beside it. Both
@@ -483,6 +514,16 @@ await describe({
          * `Parameter "config" should be readonly` under `oxlint --threads=1` before the channel
          * existed. */
         expect(invokedCapture,).toEqual([0,],);
+        /* The precision the per-formal charge exists for, and the pair that would fail if captures were
+         * charged for every argument instead. `stampAndIgnoreCallback` writes its second formal and does
+         * nothing whatever with its first, so a closure handing back caller state in that first position
+         * exposes nothing and the parameter keeps its offer.
+         *
+         * The second line is what makes the first mean something. An empty result is otherwise
+         * indistinguishable from a gate that rejected the dependency, and the proven mutation says the
+         * same export resolved and applied. */
+        expect(ignoredCapture,).toEqual([],);
+        expect(ignoringExportStamped,).toEqual([0,],);
       },
     },),
   ],
