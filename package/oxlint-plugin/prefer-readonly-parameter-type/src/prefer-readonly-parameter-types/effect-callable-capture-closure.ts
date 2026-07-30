@@ -33,7 +33,16 @@
  * So the bound exists to stop the walk crossing the workspace for answers it cannot change.
  * No assertion can defend it, and none pretends to: the cost it avoids is unmeasured, and a
  * mutation check over summaries is the wrong instrument for a claim about work rather than
- * about results.
+ * about results. *
+ * ## The activation premise, which decides what this walk does not have to answer for
+ *
+ * A callable handed as an argument is activated, and an activated closure's body is scanned inline as
+ * part of the enclosing callable, so every channel the enclosing callable has applies inside that
+ * closure too. Stated in full in `effect-unresolved-capture.ts` under what decides whether to withhold.
+ *
+ * It is not visible from this file and it has caused the same wrong conclusion three times: a reading
+ * of one module predicts a hole another module has already closed. Writes a reached callable performs
+ * are already charged for that reason, so this walk answers only for what invoking one hands back.
  *
  * @module
  */

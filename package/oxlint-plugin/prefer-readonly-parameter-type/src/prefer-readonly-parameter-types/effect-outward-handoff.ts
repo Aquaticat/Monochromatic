@@ -42,7 +42,23 @@
  * activated closure are both charged. Returning `config.row` is neither a mutation nor an outward
  * handoff from the enclosing callable, and the consumer's later use of that returned value has no call
  * edge to carry it. `registry.register((): Row => registered.row,)` is the same semantic shape, was
- * activated, and still needed the capture channel.
+ * activated, and still needed the capture channel. *
+ * ## The activation premise, which decides what this module does not have to answer for
+ *
+ * A callable handed as an argument is activated, and an activated closure's body is scanned inline as
+ * part of the enclosing callable, so every channel the enclosing callable has applies inside that
+ * closure too. Stated in full in `effect-unresolved-capture.ts` under what decides whether to withhold.
+ *
+ * It is not visible from this file and it has caused the same wrong conclusion three times, always in
+ * the same direction: a reading of one module predicts a hole that another module has already closed.
+ * Measured instance, filed as a defect and closed as not one:
+ * `registry.keep((): never => { throw config.row; },)` is charged, because the activated closure's body
+ * is scanned here and `recordThrowHandoff` fires for the enclosing callable.
+ *
+ * So when reading this file, a channel here also applies to the body of any closure the enclosing
+ * callable handed out. What activation does **not** cover is what invoking such a closure hands back,
+ * because the consumer receives that value and no call edge carries it, which is why the capture
+ * question is asked separately.
  *
  * @module
  */
