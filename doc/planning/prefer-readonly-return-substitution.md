@@ -5686,3 +5686,59 @@ Argument-opacity should rise, because the capture gate names the call it could n
 A returned fact alone must not cost an offer, since returning caller state is permitted on the
  condition that callers substitute. So an offer that disappears with no store and no capture anywhere
  near it would be the shape to investigate.
+
+## The sweep for those three fixes found nothing, and the prediction was wrong
+
+```text
+before 2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+after  2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Byte-for-byte the same finding set. The prediction written before the capture said offers should fall by
+ more than any previous sweep and argument-opacity should rise. Neither happened, and not one finding
+ moved in any category.
+
+### The sweep did run the new code
+
+Worth settling first, because "no change" and "the fix is not in the artifact" look identical. Both
+ digests differ from the previous sweep's, which is what a rebuild from changed source produces:
+
+```text
+index.mjs                                  764b1eed -> 8bf6f23d
+plugin-prefer-readonly-parameter-type.mjs  4fd4f4bb -> fc907479
+```
+
+Runtime was 8m44 against 8m42 and 7m58 for the two before it, so nothing was skipped wholesale, and the
+ previous sweep showed six additions in files nobody had edited, so analyzer changes do reach unedited
+ sources through this pipeline.
+
+### Why nothing moved, and what that says about the instrument
+
+A store-caused withholding is silent by design. The decision recorded for the opacity channel is that a
+ store is not a cause a reader can act on, so a parameter withheld because of a store emits no message
+ at all. So the only way #98 or #91 can show up in a sweep is an offer disappearing, and an offer can
+ only disappear if that parameter was not already withheld for some other reason.
+
+The ratio settles it. There are 1282 argument-opacity findings and 31 offers, so nearly every parameter
+ in the workspace is already charged through some channel. A new charge against an already-charged
+ parameter changes no output. For an offer to move, all three of these have to hold at once: a callable
+ with a concise body handing back parameter-reachable state, a caller storing that result beyond itself,
+ and that caller's parameter otherwise clean. None of the 31 is that shape.
+
+So the honest reading is narrow. The sweep confirms the soundness statement, that no offer rose, and it
+ cannot confirm these fixes fire anywhere in the workspace, because their effect is silent wherever it
+ does fire. That is a limit of the instrument rather than a fact about the fixes, which were each
+ falsified against a driver and each pinned by a mutant that died with an exact delta.
+
+It also justifies after the fact the decision to add fixture groups for both. Neither fix moved a single
+ fixture offer before its group existed, and the sweep cannot see them either, so the fixture is the
+ only standing guard on all three.
+
+### The criterion gains a clause
+
+A sweep is evidence about offers and about the message channels. It is not evidence about any channel
+ that withholds silently. When a fix's whole effect is silent withholding, a sweep can only fail it, by
+ raising an offer, and can never confirm it, so the fixture group and the mutation check carry the whole
+ weight and must be written before the fix is called done.
