@@ -6825,3 +6825,47 @@ The narrower claim recorded in the previous section stands as the reasoning that
 That makes #113 a coverage prerequisite rather than a convenience. A dependency satisfying all four resolver
  requirements, whose shipped implementation provably mutates or retains a formal, is the first test this
  channel would ever have.
+
+## Two walks, two questions, one syntax
+
+The value walk did not follow a destructuring source or a property read, and both were real. Measured
+ first, with a control beside each subject:
+
+```text
+handDirectClosure             opq=[1,0]   baseline charges
+handDestructuredClosure       opq=[1]     clean
+handPropertyReadClosure       opq=[1]     clean
+handFreshPropertyReadClosure  opq=[1]     clean, correctly
+```
+
+Both subjects now charge, the control is untouched, fixture offers moved 68 to 69 by exactly that control,
+ and the mutant removing both paths restored both subjects at 69 to 71. Both falsified with a driver.
+
+### The part worth carrying forward
+
+#94 widened the **accessor reach** walk, which already handled a property read. It could not answer this.
+
+Reach asks what a body can **get to**. The value walk asks what a given expression **holds**. The same
+ syntax, `holder.producer`, appears in both questions and needs a separate answer in each. Nothing in either
+ module said so, and reading one would have suggested the other was covered.
+
+That is the third distinct instance of one shape in this effort: two relations that look like duplicates and
+ are not. The others were captures against ordinary origins, and reach against the value walk in #93. The
+ tell is the same each time: the same syntax appears in both, so a fix to one leaves the other silent, and
+ only measuring the shape separates them.
+
+### What it settles beside itself
+
+The `exposingCallables` fail-open, folded into this task rather than tracked separately. Empty reads as
+ "exposes nothing" there, and the only actual reaching it past the ordinary-origin channel is a
+ non-parameter one, since a parameter handed straight to an unresolved call is already charged.
+ `holder.producer` was exactly that non-parameter actual, and it is now followed. The fail-open has no
+ remaining shape named for it, and the note stands should one appear.
+
+### Method note on the fix itself
+
+Both paths resolve through a **symbol** rather than by walking structure to the receiver. That is why an
+ aliased holder, a conditionally chosen one and a parameter default all answer without their own branches:
+ the checker has already decided which declaration a name refers to. Walking the receiver instead would have
+ needed a case per way a receiver can be written, which is the shape of bug this effort has fixed repeatedly
+ by asking where a value can have come from rather than what layer sits over it.
