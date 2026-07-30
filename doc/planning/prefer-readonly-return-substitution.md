@@ -5798,3 +5798,40 @@ The pair is now a fixture asserted for agreement rather than for a count, since 
  every arrival a control or a helper's own parameter and never a subject. Four mutants, four exact
  deltas: 57 to 58, 57 to 59, 60 to 61 for the resolver, and 60 to 61 for the edge union, that last one
  restoring exactly one half of the order pair.
+
+### The third site, found by checking rather than assuming
+
+#93 was marked done after the argument path and the edge builder were converted. Measuring the shape the
+ remaining site owns showed it still offered:
+
+```text
+handSingleCalleeOut:       {"opaque":[1,0]}  closure invoking one named callee, charged
+handConditionalCalleeOut:  {"opaque":[2]}    closure invoking a conditional callee, slot 0 OFFERED
+```
+
+`calledCallables` in the reach walk still used the narrow resolver alone. The handed closure names
+ neither the configuration nor the body reading it, so the reach walk is the only channel that can
+ answer, and a conditional callee has no single declaration for that resolver to return. Converted, and
+ both shapes now agree.
+
+Worth keeping as a method note: the task was closed on the strength of having changed the sites the
+ investigation had named, not on having measured the relation again. One more measurement reopened it.
+
+### #97 closed without a change of its own
+
+Every form it collected now charges, which is what its reduced description predicted:
+
+```text
+storeSinglePassDefault   {"opaque":[1,0]}    named default, closed by the shared resolver
+storeIdentityPassDefault {"opaque":[1,0]}    concise default, closed by the concise-body fix
+storeInlinePassDefault   {"opaque":[1,0]}    concise default, same
+storePassFirstDefault    {"opaque":[2,0]}    conditional default, closed by the edge union
+storeAllocFirstDefault   {"opaque":[2,0]}    conditional default, same
+storeDirectPassResult    {"opaque":[0]}      unchanged
+storeAliasPassResult     {"opaque":[0]}      unchanged
+```
+
+So the symptom that opened #97, a defaulted callee's returned fact never reaching a store of its result,
+ was three separate defects wearing one appearance: an empty returned set for concise bodies, a resolver
+ that could not name a callable through an identifier, and a lookup that kept one edge per call site.
+None of them lived in the substitution walk, where two reviews and my own first two readings placed it.
