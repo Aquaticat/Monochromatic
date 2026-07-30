@@ -7306,3 +7306,39 @@ Worth recording as a failure of my own discipline rather than as a neutral step.
  two sections earlier after reaching the same conclusion from the opposite direction, and I then looked at an
  absence in a capture. Writing a rule down is not the same as having it available at the moment it applies, and
  the cheap defence is mechanical: **when a gate is under test, instrument the gate.**
+
+### The hypothesis, measured properly and refuted
+
+Re-applied the `getResolvedSymbol` change **with the gates still instrumented**, which is the measurement the
+ previous section said was the only valid one:
+
+```text
+EXT-REJECT call-identity     161
+EXT-REJECT implementation      3
+EXT-RESOLVED                   0
+```
+
+Identical to the counts without the change. **Symbol resolution was never the blocker**, so the hypothesis is
+ refuted rather than untested, and this time the measurement can say so.
+
+Worth noting the cost of getting there: the same change was applied twice, once tested invalidly and once
+ validly, and the second run took one command. The invalid test cost more than the valid one, which is the usual
+ shape of this mistake.
+
+### The next lead, which the count itself names
+
+161 of 164 is not a subtle failure rate. It is nearly every external call, and most external calls in TypeScript
+ are **member** calls: `console.log(...)`, `signal.addEventListener(...)`, `rows.map(...)`. For all of those
+ `call.expression` is a `PropertyAccessExpression`, so the identifier branch of `packageCallIdentity` does not
+ apply at all and never could.
+
+That reframes the question from "why does identity fail" to "what does identity do for a member call", which is
+ a different piece of code to read: the member path from line 218 onward, and the `packageDeclarationCallIdentity`
+ fallback both paths land on.
+
+And the **three** `implementation` rejections are the more informative number. Those three obtained an identity
+ and failed later, so they are the shape that works. Printing their identity names the difference between three
+ and 161 directly, which is cheaper than reading two functions and guessing.
+
+That is the same move that worked on the value walk and on the type-reference shortcut: find the case that
+ already succeeds and ask what it has.
