@@ -657,7 +657,7 @@ children: [
        * count cannot tell which offer moved. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(45,);
+      },).length,).toBe(48,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -764,6 +764,35 @@ children: [
           || message.includes('"thrownOut"',)
           || message.includes('"defaultReached"',)
           || message.includes('"throughThis"',);
+      },).length,).toBe(0,);
+      /* The laundered-completion group, and the three offers that carry the count from forty-five to
+       * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
+       * and a declared type can lie about that in two ways. `erasedThrough` holds a local annotated
+       * `() => void` whose callable hands back a row, and `assertedThrough` asserts a row to a
+       * string. Both really produce caller state. A completion is now followed to its callable
+       * instead of read off an annotation, and an assertion is stripped before judging.
+       *
+       * `boundThrough` is the third subject and a different miss: the inspection took arguments
+       * alone, so a capturing closure reaching an uninspectable implementation as the **receiver**
+       * was recorded by nothing.
+       *
+       * Two of the three arrivals are the precision controls that decide how far following goes.
+       * `countedThrough` hands back a count through an owned callee, whose body is followed and says
+       * so. `stringifiedThrough` hands back a string through a library callee, whose declared return
+       * type stands, because an external declaration's return type is what this rule trusts
+       * everywhere else and distrusting it here would withhold on every primitive handed back
+       * through a library call. `countedRows` is the third and is incidental: the counting callee's
+       * own parameter, offered because a `readonly Row[]` still has mutable elements. */
+      expect(messages.filter(function namesLaunderedControls(message,): boolean {
+        return message.includes('"countedThrough"',)
+          || message.includes('"stringifiedThrough"',)
+          || message.includes('"countedRows"',);
+      },).length,).toBe(3,);
+      expect(messages.filter(function namesLaunderedSubjects(message,): boolean {
+        return (message.includes('"erasedThrough"',)
+          || message.includes('"assertedThrough"',)
+          || message.includes('"boundThrough"',))
+          && message.includes('should be readonly',);
       },).length,).toBe(0,);
       /* The default-callback group, and the three offers that carry the count from forty-two to
        * forty-five. A callback relation defers to the caller, because the caller supplies the
@@ -933,16 +962,20 @@ children: [
        * `config.rows.at` and stores the result, and before the split its store joined the
        * boundary list, which is an `every` over that list, and cost it this message.
        *
-       * Three since the registry arrived. Two name `.rows.at` and the third names `.register`,
-       * which is the receiver of the method the capture channel now answers for, so the list is
-       * asserted per boundary rather than by one shared substring. */
+       * Seven since the registry arrived. Two name `.rows.at`, one names `.register` and four name
+       * `.keep`, each the receiver of a method the capture channel answers for, so the list is
+       * asserted per boundary rather than by one shared substring. Every registry parameter reports
+       * this way and none of them is a subject: what the shapes are about is the closure handed to
+       * the method, and the receiver speaking is the ordinary consequence of calling a method this
+       * rule cannot inspect. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(3,);
+      expect(opacityMessages.length,).toBe(7,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
-          || message.includes('.register',);
+          || message.includes('.register',)
+          || message.includes('.keep',);
       },),).toBe(true,);
       /* The subject that introduces the boundary list, held to the same rule as the list.
        * `reportMixedBindingCauses` stores one destructured binding and passes the other to

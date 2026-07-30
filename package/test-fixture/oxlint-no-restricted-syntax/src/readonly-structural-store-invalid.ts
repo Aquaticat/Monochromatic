@@ -2798,6 +2798,20 @@ export class CaptureRegistry {
   register(callback: () => Row,): void {
     callbackHolder.produce = callback;
   }
+
+  /**
+   * Keeps whatever it is handed, whatever its declared shape.
+   *
+   * @param value - Value kept beyond this call.
+   *
+   * @example
+   * ```ts
+   * new CaptureRegistry().keep((): void => {},);
+   * ```
+   */
+  keep(value: unknown,): void {
+    void value;
+  }
 }
 
 /**
@@ -2982,4 +2996,140 @@ export function writeThroughPatternCallback(
   }, }: { patternWriter?: (row: Row) => void; } = {},
 ): void {
   patternWriter(patternTarget.row,);
+}
+
+/**
+ * Hands a closure whose completion is a call through a signature that hides its result.
+ *
+ * A completion's declared type can lie, and trusting it certified this capture as inert. The local
+ * binding is annotated `() => void` while the callable it holds hands back a row, so the closure
+ * really produces caller state and the type says otherwise. The completion is followed to the
+ * callable rather than read off the annotation.
+ *
+ * @param erasedThrough - Configuration the inner callable hands back at runtime.
+ *
+ * @param registry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handErasedResultOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handErasedResultOut(
+  erasedThrough: Config,
+  registry: CaptureRegistry,
+): void {
+  /**
+   * Callable handing back the caller's row.
+   */
+  const reveal = (): Row => erasedThrough.row;
+  /**
+   * Same callable seen through a signature that hides its result.
+   */
+  const erased: () => void = reveal;
+  registry.keep((): void => erased(),);
+}
+
+/**
+ * Hands a closure whose completion is asserted to a primitive.
+ *
+ * The second way a declared type lies. An assertion is stripped before the completion is judged, so
+ * the expression answers for what it asserts rather than for what it claims.
+ *
+ * @param assertedThrough - Configuration the closure hands back at runtime.
+ *
+ * @param registry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handAssertedResultOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handAssertedResultOut(
+  assertedThrough: Config,
+  registry: CaptureRegistry,
+): void {
+  registry.keep((): string => assertedThrough.row as unknown as string,);
+}
+
+/**
+ * Hands a capturing closure as the receiver of an uninspectable member call.
+ *
+ * The inspection took arguments alone, so a callable reaching an uninspectable implementation as the
+ * receiver was recorded by nothing. `call`, `apply` and any method that retains or invokes its
+ * receiver are the same shape.
+ *
+ * @param boundThrough - Configuration the bound closure reaches.
+ *
+ * @returns bound closure the caller receives.
+ *
+ * @example
+ * ```ts
+ * handBoundReceiverOut({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handBoundReceiverOut(boundThrough: Config,): () => Row {
+  return ((): Row => boundThrough.row).bind(undefined,);
+}
+
+/**
+ * Counts rows handed to it.
+ *
+ * @param countedRows - Rows counted in place.
+ *
+ * @returns count of rows.
+ *
+ * @example
+ * ```ts
+ * countOfRows([],);
+ * ```
+ */
+export function countOfRows(countedRows: readonly Row[],): number {
+  return countedRows.length;
+}
+
+/**
+ * Hands a closure whose completion is an owned call handing back a count.
+ *
+ * The precision control for following a completion to its callable. The callee's own body hands back
+ * a number, so the offer stands and following costs nothing here.
+ *
+ * @param countedThrough - Configuration only read.
+ *
+ * @param registry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handOwnedCountOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handOwnedCountOut(
+  countedThrough: Config,
+  registry: CaptureRegistry,
+): void {
+  registry.keep((): number => countOfRows(countedThrough.rows,),);
+}
+
+/**
+ * Hands a closure whose completion is a library call handing back a string.
+ *
+ * The precision control for declining to follow an external callee. An external declaration's return
+ * type is what this rule trusts everywhere else, and distrusting it here would withhold on every
+ * closure that hands back a primitive through a library call.
+ *
+ * @param stringifiedThrough - Configuration only read.
+ *
+ * @param registry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handLibraryStringOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handLibraryStringOut(
+  stringifiedThrough: Config,
+  registry: CaptureRegistry,
+): void {
+  registry.keep((): string => String(stringifiedThrough.row
+    .label,),);
 }

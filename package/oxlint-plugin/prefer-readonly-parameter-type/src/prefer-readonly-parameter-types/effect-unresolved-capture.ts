@@ -72,6 +72,7 @@
 import type { Node, } from 'typescript/unstable/ast';
 import {
   isBlock,
+  isCallExpression,
   isFunctionLikeDeclaration,
   isReturnStatement,
   isYieldExpression,
@@ -86,6 +87,7 @@ import { packagedActualCallables, } from './effect-captured-argument-origins.ts'
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { returnBelongsToCallable, } from './effect-return-effects.ts';
+import { transparentValueRoot, } from './effect-result-substitution.ts';
 import {
   collectAstNodes,
   type MutableEffectSummary,
@@ -178,26 +180,58 @@ function exposingCallables({
   readonly project: Project;
   readonly actual: Node;
 },): readonly Node[] {
+  return heldCallables({
+    project,
+    expression: actual,
+  },)
+    .filter(function exposesState(packaged,): boolean {
+      return callableResultCanCarryState({
+        project,
+        packaged,
+        visited: new Set<string>(),
+      },);
+    },);
+}
+
+/**
+ * Names every callable one expression can hold, by resolution and by value.
+ *
+ * Both walks are asked, never one instead of the other. The resolver follows a local's initializer
+ * and an import, and the value walk follows a conditional, a logical operand and a parameter or
+ * binding-element default, so each sees shapes the other does not.
+ *
+ * @param project - TypeScript project resolving what the expression holds.
+ *
+ * @param expression - Expression whose callables are wanted.
+ *
+ * @returns callables the expression can hold.
+ *
+ * @example
+ * ```ts
+ * heldCallables({ project, expression });
+ * ```
+ */
+function heldCallables({
+  project,
+  expression,
+}: {
+  readonly project: Project;
+  readonly expression: Node;
+},): readonly Node[] {
   /**
-   * Callable the resolver names for this actual, absent when nothing owned answers.
+   * Callable the resolver names for this expression, absent when nothing owned answers.
    */
   const resolved = callableDeclaration({
     project,
-    node: actual,
+    node: expression,
   },);
   return [
     ...(resolved === OWNED_CALLABLE_UNAVAILABLE) ? [] : [resolved,],
     ...packagedActualCallables({
       project,
-      actual,
+      actual: expression,
     },),
-  ]
-    .filter(function exposesState(packaged,): boolean {
-      return callableResultCanCarryState({
-        project,
-        packaged,
-      },);
-    },);
+  ];
 }
 
 /**
@@ -217,10 +251,23 @@ function exposingCallables({
 function callableResultCanCarryState({
   project,
   packaged,
+  visited,
 }: {
   readonly project: Project;
   readonly packaged: Node;
+  readonly visited: Set<string>;
 },): boolean {
+  /**
+   * Span identifying this callable, so a recursive or mutually recursive callee terminates.
+   */
+  const key = `${packaged.getSourceFile()
+    .fileName}:${String(packaged.pos,)}:${String(packaged.end,)}`;
+  /* A callable already being judged answers that it exposes nothing, which is the least fixed point
+   * of the recursion rather than a fail-open: every other completion is still judged, so a cycle
+   * whose exit hands back state still says so. */
+  if (visited.has(key,))
+    return false;
+  visited.add(key,);
   /* A signature, a type node or a class expression has no readable body, and a body this walk
    * cannot read is a body whose completions it cannot enumerate. Both answer that the result can
    * carry state, which withholds. */
@@ -233,17 +280,96 @@ function callableResultCanCarryState({
   if (body === undefined)
     return true;
   if (!isBlock(body,))
-    return expressionCanCarryMutableState({
-      checker: project.checker,
-      node: body,
+    return completionCanCarryState({
+      project,
+      expression: body,
+      visited,
     },);
   return completionExpressions({ body, },)
     .some(function carriesState(expression,): boolean {
-      return expressionCanCarryMutableState({
-        checker: project.checker,
-        node: expression,
+      return completionCanCarryState({
+        project,
+        expression,
+        visited,
       },);
     },);
+}
+
+/**
+ * Tests whether one completion expression can hand back something writable.
+ *
+ * A completion's declared type can lie in two ways, both measured, and both leaving the captured
+ * parameter offered before this existed:
+ *
+ * ```ts
+ * const reveal = (): Row => erasedOut.row;
+ * const erased: () => void = reveal;
+ * registry.keep((): void => { erased(); },);
+ *
+ * registry.keep((): string => assertedOut.row as unknown as string,);
+ * ```
+ *
+ * An assertion is stripped, so the expression is judged by what it asserts rather than by what it
+ * claims. `transparentValueRoot` is the same normalisation the substitution walk uses, and it
+ * removes `await` too, which is right here: what an await yields is what the awaited value resolves
+ * to.
+ *
+ * A call is followed to its callee when the callee is a callable this analysis can read, and judged
+ * by that callable's own completions rather than by its annotation. When it resolves to nothing
+ * owned the declared return type stands, which keeps `(): string => String(config.row,)` offered:
+ * an external declaration's return type is what this rule trusts everywhere else, and distrusting
+ * it here would withhold on every closure that hands back a primitive through a library call.
+ *
+ * @param project - TypeScript project resolving callees and types.
+ *
+ * @param expression - Completion expression being judged.
+ *
+ * @param visited - Callables already judged, so a recursive callee terminates.
+ *
+ * @returns whether the completion can carry mutable state.
+ *
+ * @example
+ * ```ts
+ * completionCanCarryState({ project, expression, visited });
+ * ```
+ */
+function completionCanCarryState({
+  project,
+  expression,
+  visited,
+}: {
+  readonly project: Project;
+  readonly expression: Node;
+  readonly visited: Set<string>;
+},): boolean {
+  /**
+   * Expression past every wrapper that keeps its value, assertions included.
+   */
+  const root = transparentValueRoot(expression,);
+  if (!isCallExpression(root,))
+    return expressionCanCarryMutableState({
+      checker: project.checker,
+      node: root,
+    },);
+  /**
+   * Callables the callee expression can be, by resolution and by value.
+   */
+  const callees = heldCallables({
+    project,
+    expression: root.expression,
+  },);
+  if (callees.length === 0)
+    return expressionCanCarryMutableState({
+      checker: project.checker,
+      node: root,
+    },);
+  return callees.some(function calleeCarriesState(callee,): boolean {
+    return callableResultCanCarryState({
+      project,
+      packaged: callee,
+      visited,
+    },);
+  },);
 }
 
 /**

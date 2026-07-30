@@ -142,7 +142,18 @@ export function recordOpaqueBoundary({
     project,
     bindingOriginBySymbolId,
     summary,
-    actuals: call.arguments,
+    /* The receiver and the callee expression are inspected beside the arguments, because a callable
+     * reaches an uninspectable implementation through any of the three. Measured before this:
+     * `((): Row => boundOut.row).bind(undefined,)` recorded nothing at all and offered `boundOut`
+     * while handing its caller a callable that produces the caller's own row. `call`, `apply` and
+     * any method that retains or invokes its receiver are the same shape, and an unresolved
+     * invocation of a dynamically selected local closure has no argument or receiver to look at,
+     * only a callee. */
+    actuals: [
+      ...call.arguments,
+      ...(callReceiver === NO_MEMBER_RECEIVER) ? [] : [callReceiver,],
+      call.expression,
+    ],
     provenance: `${opaqueProvenance} [${originLocation}]`,
   },);
 }
