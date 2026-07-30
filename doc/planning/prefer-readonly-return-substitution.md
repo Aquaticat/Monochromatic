@@ -7679,3 +7679,47 @@ A flag count is a property of a file's size and its family's conventions before 
 
 The same question is worth asking of any large lint count: **compare against siblings before conforming.** A number
  that looks like debt in isolation can be the convention.
+
+## The store-into-parameter precision item, declined on a measurement
+
+The last item in the queue, and it closes without code.
+
+Everything it established stands. `slot.value = value` does cost `value` its offer, in both the property and element
+ form. The obvious fix, skipping the retention when the target's root is a parameter, is **unsound** and must not be
+ built, because a callee seeing two parameters would conclude nothing escaped while the caller has its row reachable
+ from a module binding. The sound design is a parameter-to-parameter reachability relation propagated at call edges.
+
+**What closes it is the measurement its own note asked for.** The note estimated the gain as "probably nil".
+ Instrumented the store channel to count how often a store's target root is itself a parameter, the only case the
+ change would affect:
+
+```text
+package/dev-script/file-enforcer 0
+package/config/rolldown          0
+package/pi-plugin/spawn          0
+```
+
+Zero. The offers this would restore are two in a synthetic fixture and nothing else.
+
+**Why declined rather than deferred.** The sound design is a new **propagated summary fact**: its own relation list,
+ both slots mapped to caller origins at every edge, opacity when the source maps to nothing, and re-recording at the
+ caller so it composes through a chain. That touches the summary contract, its serialization and its cache
+ validation, for a shape measured at zero with no soundness consequence.
+
+This document has twice recorded that landing a path no shape reaches, documented as a fix, is worse than leaving the
+ finding recorded. A whole propagated fact for a shape measured at zero is the larger version of that error.
+
+### What the four dispositions in this stretch have in common
+
+Four items closed without changing behaviour, and each on a measurement rather than a judgement:
+
+-    the type-reference shortcut, sound within the bound its callers impose
+-    the external channel's narrowness, its design rather than a defect
+-    the ownership scan's parameter-default gap, behind a graph entry condition ordinary code never meets
+-    this one, a precision fix whose shape occurs zero times
+
+Every one looked like a defect when read and was not when measured. The reverse also happened repeatedly in this
+ effort, shapes that looked fine and were not, which is why neither reading nor measuring is sufficient alone.
+
+**The disposition that costs least is the one stated with its evidence.** A declined item with a number beside it does
+ not get reopened by the next reader; an item declined on judgement does.
