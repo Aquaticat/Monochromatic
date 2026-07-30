@@ -108,6 +108,12 @@ jobs:
       run: |
         set -euo pipefail
         if [ "$EVENT_NAME" = 'push' ]; then
+          # A rewritten main branch can leave the event's before commit outside
+          # every fetched ref even with fetch-depth 0. Fetch that exact object
+          # before comparing trees instead of falling back to a full-tree scan.
+          if ! git cat-file -e "$PUSH_BASE_SHA^{commit}"; then
+            git fetch --no-tags --depth=1 origin "$PUSH_BASE_SHA"
+          fi
           mapfile -d '' -t changed < <(
             git diff --name-only --diff-filter=ACMRT -z "$PUSH_BASE_SHA" "$HEAD_SHA"
           )
