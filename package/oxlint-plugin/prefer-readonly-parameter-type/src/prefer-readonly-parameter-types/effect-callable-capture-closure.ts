@@ -233,8 +233,7 @@ function calledCallables({
 /**
  * Collects caller origins the result of calling a locally defined callable can carry.
  *
- * A callable written inside the one being summarised has no summary of its own: its body is
- * scanned inline, so the deferred result relation has nothing to substitute against its call
+ * The deferred result relation had nothing to substitute against a locally defined callee's call
  * site. Measured before this existed:
  *
  * ```ts
@@ -251,8 +250,23 @@ function calledCallables({
  *
  * Answered with what the callable can reach rather than with what it returns. Over-approximating,
  * since the callable may return something freshly allocated, and it is the direction that
- * withholds. A precise answer needs nested callables to carry summaries of their own, which is a
- * larger change than the falsification requires.
+ * withholds.
+ *
+ * An earlier version of this paragraph said a callable written inside the one being summarised has no
+ * summary of its own, and that a precise answer would need nested callables to carry one. Both halves
+ * are false and the claim was load-bearing enough that two separate reviews reasoned from it, one of
+ * them concluding a defect had a cause it did not have.
+ *
+ * A nested callable does have a summary, and consumers do read it. Measured twice. A write through a
+ * defaulted closure's own formal reaches the caller, `invokeWritingDefault` recording
+ * `mutated=[0,1]`, which can only travel through that callable's summary. And once #98 gave a concise
+ * body its returned fact, a store of what a nested default handed back began charging through
+ * `propagateResultApplications`, which reads `summaries.get(edge.calleeKey)` and skips when it finds
+ * nothing.
+ *
+ * What was true is narrower: the old result path did not consult that summary. This walk stays as the
+ * over-approximating answer for what a callee reaches, which is a different question from what it
+ * hands back.
  *
  * @param project - TypeScript project resolving the callee.
  *
