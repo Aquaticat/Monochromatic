@@ -766,18 +766,34 @@ One shape does not falsify and is worth keeping as a control. A closure that **w
   capture-retainer-probe@1.0.0 ... retainCallback: Error: spawn ENOMEM
 ```
 
-This is precisely the failure `initializeSemanticBridge` exists to prevent. Its own TSDoc records that
- oxlint reserves a multi-gigabyte virtual buffer per Rust worker when a JavaScript plugin is active, so
- starting TypeScript after those reservations can fail with `ENOMEM`. The eager call protects the first
- child; the external implementation project's child is created mid-lint and is structurally exposed.
+`initializeSemanticBridge` exists to prevent this failure for the first child, and its TSDoc records that
+ oxlint reserves a multi-gigabyte virtual buffer per Rust worker when a JavaScript plugin is active. The
+ external implementation project's child is created mid-lint instead, so it is structurally exposed.
 
-Measured on a 16-core host with 63 GiB RAM and `/proc/sys/vm/overcommit_memory` at 0:
+**The ordering is not the whole explanation, and the sweep is what says so.** Reports, and how many of
+ them carry external provenance, on a 16-core host with 63 GiB RAM and `/proc/sys/vm/overcommit_memory`
+ at 0:
 
--   Default threads: all eight inference attempts fail with `ENOMEM`, and every consumer function reports
-     ordinary opacity.
--   `oxlint --threads=1`, identical fixture: inference succeeds, provenance strings appear, and the
-     directly-mutating case stops being reported because the external summary proved the mutation.
--   Plain `node` driving `buildEffectSummaryIndex`: succeeds, matching the single-threaded run.
+```text
+threads=1    4 reports, 4 with provenance
+threads=2    4 reports, 4 with provenance
+threads=4    4 reports, 4 with provenance
+threads=8    4 reports, 4 with provenance
+threads=16   5 reports, 0 with provenance
+```
+
+Reservations exist at eight workers too, and the child spawns there, so "started after the reservations"
+ cannot be the criterion. What decides it is the **aggregate reserved size at spawn time**, and the
+ failing configuration is the core count, which is oxlint's default. Anyone designing against the
+ ordering story alone will build the wrong fix.
+
+Plain `node` driving `buildEffectSummaryIndex` succeeds, matching the single-threaded run, which is why
+ the fixture test drives the summaries rather than oxlint.
+
+Two consequences for measurement. A sweep at the default threads measures nothing about the external
+ channel, so nobody should spend nine minutes proving a zero. And a cold sweep at `--threads=8` would be
+ this channel's **first real measurement against installed dependencies**, which no sweep in this record
+ has ever performed.
 
 `externalCallableEffect` catches the throw, logs at debug and returns its generic unavailable sentinel, so
  the failure is indistinguishable from an unresolvable package. That is sound, since it withholds, and it
