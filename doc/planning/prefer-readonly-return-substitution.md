@@ -7528,3 +7528,35 @@ Two walks that look independent are coupled through a third thing. Captures agai
 
 The defence is the one that caught it: a test outside the fixture corpus, exercising real workspace source. The
  corpus is where shapes are pinned; it is not where invariants are.
+
+### Placement two, also reverted, and it names the third site
+
+The regression said the widening must not feed call edges. So the same question was asked in `heldCallables`
+ instead, which builds none.
+
+Lint clean, and the **full suite green including the workspace-source test that caught the regression**. So the
+ confinement argument was correct: widening a query that records opacity rather than building edges cannot break
+ the completeness invariant.
+
+And it changed nothing. `storeAssignedSelector` still read `opq=[1]`, so it was reverted as a no-op.
+
+**Why, and this is the useful part.** `heldCallables` decides whether a **completion** can carry state. Charging
+ the subject also needs the origin to be **reachable**, and that is `transitiveCallableOrigins`: the closure names
+ `select`, and reaching `config` means following `select` to the assigned arrow. Two walks, two questions, for the
+ third time in this effort.
+
+So the fix is assignment following in the **reach** walk, kept out of the value walk. Both halves are load-bearing:
+ the reach walk records opacity and builds no edges, which is the same argument that made this placement safe, and
+ the value walk feeds edges, which is why the first placement broke.
+
+### The tally this item has produced, which is worth more than the fix
+
+Three times now, two walks that looked independent were coupled through a third thing:
+
+-    captures and ordinary origins, coupled through `bindingOriginBySymbolId`
+-    the reach walk and the value walk, coupled through nothing, each needing its own answer for one syntax
+-    the value walk and the **call graph**, so a locally sound widening broke an invariant two modules away
+
+And two placements of one three-line question produced: one invariant break, one no-op, and one correct site
+ identified only by elimination. The question was never the hard part. **Where a question is asked decides what it
+ can break and what it can fix**, and neither is visible from the question itself.
