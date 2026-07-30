@@ -648,9 +648,16 @@ children: [
        * closure to a callee that only invokes it. Both keep their offers, which is what
        * separates attributing what a callable captured from refusing every callable handed to
        * an owned callee. */
+      /* Thirty-nine once packaged parameter defaults stopped being attributed unconditionally,
+       * and the single arrival is the subject rather than a side effect. Six shapes joined and
+       * five of them withhold: the invoked default, the initializer expression that writes on
+       * entry, and the three that hand the default outward through a store, a retaining callee
+       * and a return. `unreachedDefault` is the arrival, and its whole claim is that a closure
+       * nothing invokes and nothing keeps performs no write. Asserted by name below, because a
+       * count cannot tell which offer moved. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(38,);
+      },).length,).toBe(39,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -757,6 +764,28 @@ children: [
           || message.includes('"thrownOut"',)
           || message.includes('"defaultReached"',)
           || message.includes('"throughThis"',);
+      },).length,).toBe(0,);
+      /* The packaged-default group, asserted by name because the count alone cannot say which
+       * offer moved. One arrival and five that withhold, and the five matter more: each is a way
+       * the default leaves the callable, and the activation gate stops attributing the write
+       * inside it, so every one of them has to be caught by the channel that carries what a
+       * callable can reach rather than by the write itself.
+       *
+       * `handedDefault` is the one that was not. Nothing named the callable an argument holds
+       * when it arrives as a parameter default, so the capture channel saw an unresolvable
+       * identifier and said nothing, which offered a configuration the retained closure writes
+       * through. */
+      expect(messages.filter(function namesUnreachedDefault(message,): boolean {
+        return message.includes('"unreachedDefault"',);
+      },),).toEqual([
+        'Parameter "unreachedDefault" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesPackagedDefaults(message,): boolean {
+        return message.includes('"reachedDefault"',)
+          || message.includes('"entryWritten"',)
+          || message.includes('"storedDefault"',)
+          || message.includes('"handedDefault"',)
+          || message.includes('"returnedDefault"',);
       },).length,).toBe(0,);
       /* The last known false offer's control, carrying the count from thirty-eight to
        * thirty-nine. A holder built from nothing the caller owns keeps the offer. */

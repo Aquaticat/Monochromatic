@@ -2515,3 +2515,167 @@ export function storeFreshMethodThisResult(freshHolder: Config,): number {
   return freshHolder.rows
     .length;
 }
+
+/**
+ * Takes a callable default that would write, and never runs or hands it anywhere.
+ *
+ * The subject. A parameter initializer runs on entry whenever the argument is omitted, and a
+ * callable packaged inside one runs only when something invokes it. Attributing the write here
+ * would be a fact about a body this callable never reaches.
+ *
+ * @param unreachedDefault - Configuration nothing here writes through.
+ *
+ * @param unreachedCallback - Default closure, read and never invoked.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * defaultClosureNeverInvoked({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function defaultClosureNeverInvoked(
+  unreachedDefault: Config,
+  unreachedCallback: () => void = (): void => {
+    unreachedDefault.row
+      .label = 'written';
+  },
+): number {
+  return typeof unreachedCallback === 'function'
+    ? unreachedDefault.rows
+      .length
+    : 0;
+}
+
+/**
+ * Takes a callable default that would write, and invokes it.
+ *
+ * The control for reaching. This callable does run the packaged body, so the write is its own.
+ *
+ * @param reachedDefault - Configuration this callable writes through.
+ *
+ * @param reachedCallback - Default closure, invoked.
+ *
+ * @example
+ * ```ts
+ * defaultClosureInvoked({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function defaultClosureInvoked(
+  reachedDefault: Config,
+  reachedCallback: () => void = (): void => {
+    reachedDefault.row
+      .label = 'written';
+  },
+): void {
+  reachedCallback();
+}
+
+/**
+ * Takes a default whose own expression writes on entry.
+ *
+ * The control for the initializer itself. An initializer expression is not a packaged body, so
+ * gating packaged bodies on activation must leave it attributed.
+ *
+ * @param entryWritten - Configuration written on entry.
+ *
+ * @param entryLabel - Default whose evaluation writes.
+ *
+ * @returns label the default produced.
+ *
+ * @example
+ * ```ts
+ * defaultExpressionWrites({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function defaultExpressionWrites(
+  entryWritten: Config,
+  entryLabel: string = ((): string => {
+    entryWritten.row
+      .label = 'written';
+    return 'written';
+  })(),
+): string {
+  return entryLabel;
+}
+
+/**
+ * Stores its callable default past the callable without invoking it.
+ *
+ * The first escape control. Nothing here runs the packaged body, so the activation gate keeps its
+ * write unattributed, and the store must withhold on what the closure can reach instead.
+ *
+ * @param storedDefault - Configuration reachable through the stored closure.
+ *
+ * @param storedCallback - Default closure, stored rather than invoked.
+ *
+ * @example
+ * ```ts
+ * storeDefaultClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeDefaultClosure(
+  storedDefault: Config,
+  storedCallback: () => Row = (): Row => {
+    storedDefault.row
+      .label = 'written';
+    return storedDefault.row;
+  },
+): void {
+  callbackHolder.produce = storedCallback;
+}
+
+/**
+ * Hands its callable default to a callee that keeps it.
+ *
+ * The second escape control, and the one the activation gate exposed. The resolver naming the
+ * callable an argument holds stops at a parameter, so the capture channel saw nothing and offered
+ * the configuration while the kept closure wrote through it.
+ *
+ * @param handedDefault - Configuration reachable through the handed closure.
+ *
+ * @param handedCallback - Default closure, handed to a retaining callee.
+ *
+ * @example
+ * ```ts
+ * handDefaultClosureToRetainer({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handDefaultClosureToRetainer(
+  handedDefault: Config,
+  handedCallback: () => Row = (): Row => {
+    handedDefault.row
+      .label = 'written';
+    return handedDefault.row;
+  },
+): void {
+  retainCallable(handedCallback,);
+}
+
+/**
+ * Returns its callable default to the caller.
+ *
+ * The third escape control. A returned callable is a false offer whatever fills it, so the return
+ * channel must reach a default the same way it reaches an inline closure.
+ *
+ * @param returnedDefault - Configuration reachable through the returned closure.
+ *
+ * @param returnedCallback - Default closure, returned.
+ *
+ * @returns closure carrying the configuration.
+ *
+ * @example
+ * ```ts
+ * returnDefaultClosure({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function returnDefaultClosure(
+  returnedDefault: Config,
+  returnedCallback: () => Row = (): Row => {
+    returnedDefault.row
+      .label = 'written';
+    return returnedDefault.row;
+  },
+): () => Row {
+  return returnedCallback;
+}

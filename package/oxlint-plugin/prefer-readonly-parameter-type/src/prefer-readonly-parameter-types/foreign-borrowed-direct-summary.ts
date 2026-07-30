@@ -194,6 +194,10 @@ export function foreignBorrowedDirectSummary({
   activeCallableBodyNodes({
     project,
     body,
+    boundary: declaration,
+    /* This scan looks for owned calls only, and a parameter default cannot contain one that the
+     * body does not, so it passes none rather than duplicating the body scan's universe. */
+    parameterInitializerNodes: [],
     bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
   },)
     .forEach(function inspectOwnedCall(node,): void {

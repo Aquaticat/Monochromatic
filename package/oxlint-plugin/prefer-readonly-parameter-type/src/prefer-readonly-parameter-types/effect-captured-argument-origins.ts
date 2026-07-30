@@ -28,8 +28,10 @@ import type { Node, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
+import { possibleValueNodes, } from './effect-possible-values.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
+  isEffectCallableDeclaration,
   OWNED_CALLABLE_UNAVAILABLE,
   type SlotOrigins,
 } from './effect-summary-model.ts';
@@ -55,37 +57,102 @@ const NO_CAPTURED_ORIGINS: readonly EffectSlot[] = [];
  *
  * @param callables - Resolved callable per actual position, or the unavailable sentinel.
  *
- * @returns captured origins per actual position, empty where no callable was resolved.
+ * @param actuals - Argument expressions, asked separately for callables the resolver declines to
+ * name.
+ *
+ * @returns captured origins per actual position, empty where no callable was reached.
  *
  * @example
  * ```ts
- * argumentCapturedOrigins({ project, bindingOriginBySymbolId, callables });
+ * argumentCapturedOrigins({ project, bindingOriginBySymbolId, callables, actuals });
  * ```
  */
 export function argumentCapturedOrigins({
   project,
   bindingOriginBySymbolId,
   callables,
+  actuals,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly callables: readonly (Node | typeof OWNED_CALLABLE_UNAVAILABLE)[];
+  readonly actuals: readonly Node[];
 },): readonly (readonly EffectSlot[])[] {
   return callables.map(function capturesOfPosition(
     callable,
+    position,
   ): readonly EffectSlot[] {
-    if (callable === OWNED_CALLABLE_UNAVAILABLE)
-      return NO_CAPTURED_ORIGINS;
     /**
-     * Caller origins any binding named inside that callable can carry.
+     * Caller origins any binding named inside a callable filling this position can carry.
      */
-    const captured = transitiveCallableOrigins({
-      project,
-      bindingOriginBySymbolId,
-      packaged: callable,
-    },);
+    const captured = new Set<EffectSlot>();
+    /**
+     * Argument at this position, absent when the mapping outruns the call.
+     */
+    const actual = actuals[position];
+    [
+      ...(callable === OWNED_CALLABLE_UNAVAILABLE) ? [] : [callable,],
+      ...(actual === undefined)
+        ? []
+        : packagedActualCallables({
+          project,
+          actual,
+        },),
+    ]
+      .forEach(function collectPackaged(packaged,): void {
+        transitiveCallableOrigins({
+          project,
+          bindingOriginBySymbolId,
+          packaged,
+        },)
+          .forEach(function collectCapture(origin,): void {
+            captured.add(origin,);
+          },);
+      },);
     return captured.size === 0 ? NO_CAPTURED_ORIGINS : [...captured,];
   },);
+}
+
+/**
+ * Names every callable one actual can hold, beyond the single one the resolver reports.
+ *
+ * Asked alongside the resolver rather than instead of it, because the two see different things.
+ * `callableDeclaration` follows a local's initializer and stops at a parameter, so a callable
+ * arriving as a parameter default was named by nothing: `retain(callback,)`, where `callback`
+ * defaults to a closure over the caller's configuration, offered that configuration while the
+ * closure `retain` kept wrote through it. Falsified.
+ *
+ * Confined to this channel on purpose. A capture only ever adds opacity, so widening here can
+ * only withhold more. The invoked-callback identity beside it stays with the narrow resolver,
+ * because naming a default as the callable a callee invokes would claim the default's effects for
+ * a call where the caller supplied something else, and that claim can be wrong in the offering
+ * direction.
+ *
+ * @param project - TypeScript project resolving values an expression can hold.
+ *
+ * @param actual - Argument expression whose callables are wanted.
+ *
+ * @returns callables the actual can hold.
+ *
+ * @example
+ * ```ts
+ * packagedActualCallables({ project, actual });
+ * ```
+ */
+function packagedActualCallables({
+  project,
+  actual,
+}: {
+  readonly project: Project;
+  readonly actual: Node;
+},): readonly Node[] {
+  return possibleValueNodes({
+    project,
+    node: actual,
+  },)
+    .filter(function packagedCallable(value,): boolean {
+      return isEffectCallableDeclaration(value,);
+    },);
 }
 
 /**

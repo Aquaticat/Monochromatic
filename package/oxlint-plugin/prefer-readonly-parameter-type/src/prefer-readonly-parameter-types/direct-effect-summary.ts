@@ -234,14 +234,13 @@ export function directEffectSummary({
    * Over-attribution, so it withholds rather than offering, and it stays until something
    * distinguishes an initializer's own expression from a callable packaged inside one.
    */
-  const bodyNodes = [
-    ...parameterInitializerNodes,
-    ...activeCallableBodyNodes({
-      project,
-      body,
-      bindingOriginBySymbolId,
-    },),
-  ];
+  const bodyNodes = activeCallableBodyNodes({
+    project,
+    body,
+    boundary: declaration,
+    parameterInitializerNodes,
+    bindingOriginBySymbolId,
+  },);
   bodyNodes.forEach(function inspect(node,): void {
     if (isBinaryExpression(node,)
       && isAssignmentOperator(node.operatorToken

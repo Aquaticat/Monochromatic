@@ -44,6 +44,7 @@ import {
   isIdentifier,
   isNonNullExpression,
   isParenthesizedExpression,
+  isParameterDeclaration,
   isSatisfiesExpression,
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
@@ -231,9 +232,14 @@ function aliasedInitializer({
     ?.resolve(project,);
   if (declaration === undefined)
     return [];
-  if (!isVariableDeclaration(declaration,))
+  /* A parameter's default is what the binding holds whenever the argument is omitted, which is the
+   * same relation a local declaration's initializer states. Parameters were excluded, so a call to
+   * a parameter with a callable default resolved to the declared function type and activated
+   * nothing, and gating an initializer's callables through activation would have lost a write the
+   * callable genuinely performs. */
+  if (isVariableDeclaration(declaration,))
+    return declaration.initializer === undefined ? [] : [declaration.initializer,];
+  if (!isParameterDeclaration(declaration,))
     return [];
-  if (declaration.initializer === undefined)
-    return [];
-  return [declaration.initializer,];
+  return declaration.initializer === undefined ? [] : [declaration.initializer,];
 }

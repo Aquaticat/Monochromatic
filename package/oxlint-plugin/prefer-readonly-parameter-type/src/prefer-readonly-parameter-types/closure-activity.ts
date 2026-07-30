@@ -20,6 +20,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import {
   expressionHasParameterOrigin,
 } from './effect-binding-origins.ts';
+import { possibleValueNodes, } from './effect-possible-values.ts';
 import {
   callableKey,
   type EffectCallableDeclaration,
@@ -120,7 +121,8 @@ function activateEscapedCallables({
  *
  * @param node - Descendant whose closure ancestry is checked.
  *
- * @param body - Outer callable body boundary.
+ * @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
+ * than to the body.
  *
  * @param activeKeys - Nested callables proven active.
  *
@@ -128,18 +130,18 @@ function activateEscapedCallables({
  */
 function insideOnlyActiveClosures({
   node,
-  body,
+  boundary,
   activeKeys,
 }: {
   readonly node: Node;
-  readonly body: Node;
+  readonly boundary: Node;
   readonly activeKeys: ReadonlySet<string>;
 }): boolean {
   /**
    * Parent cursor ascending through every nested closure.
    */
   const cursor: { current: Node; } = { current: node.parent, };
-  while (cursor.current !== body) {
+  while (cursor.current !== boundary) {
     if (isEffectCallableDeclaration(cursor.current,)
       && (!activeKeys.has(callableKey(cursor.current,),)))
       return false;
@@ -165,28 +167,58 @@ function insideOnlyActiveClosures({
  *
  * @param body - Outer callable body.
  *
+ * @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
+ * than to the body.
+ *
+ * @param parameterInitializerNodes - Nodes of every parameter default, joining the same universe
+ * the body contributes so one ancestry filter gates both.
+ *
  * @param bindingOriginBySymbolId - Binding symbols mapped to source parameters.
  *
  * @returns effect-relevant body nodes.
  *
  * @example
  * ```ts
- * const nodes = activeCallableBodyNodes({ project, body });
+ * const nodes = activeCallableBodyNodes({
+ *   project,
+ *   body,
+ *   boundary,
+ *   parameterInitializerNodes,
+ *   bindingOriginBySymbolId,
+ * });
  * ```
  */
 export function activeCallableBodyNodes({
   project,
   body,
+  boundary,
+  parameterInitializerNodes,
   bindingOriginBySymbolId,
 }: {
   readonly project: Project;
   readonly body: Node;
+  readonly boundary: Node;
+  readonly parameterInitializerNodes: readonly Node[];
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
 }): readonly Node[] {
+  /* Parameter initializers join the universe rather than bypassing it. They used to be added to the
+   * selected set unconditionally, on the correct grounds that an initializer expression runs on
+   * entry whenever the argument is omitted, and that took every callable packaged inside one with
+   * them. So a default closure nothing ever invokes had its write attributed, which is a fact about
+   * a body that never runs.
+   *
+   * The ancestry filter answers both halves without a special case. An initializer's own expression
+   * has no callable between it and the declaration, so it passes. A callable packaged inside one is
+   * gated on being activated, and a call to the parameter now resolves through its default, so
+   * `closureDefaultInvoked` keeps the write it genuinely performs while
+   * `closureDefaultNeverInvoked` loses the one it never reaches. */
   /**
    * Complete descendants used to discover nested declarations and activations.
    */
-  const allNodes = collectAstNodes(body,);
+  const allNodes = [
+    ...parameterInitializerNodes,
+    ...collectAstNodes(body,),
+  ];
   /**
    * Stable keys for every nested callable declaration.
    */
@@ -231,7 +263,7 @@ export function activeCallableBodyNodes({
       project,
       bindingOriginBySymbolId,
       allNodes,
-      body,
+      boundary,
       nestedKeys,
       activeKeys,
     },);
@@ -240,7 +272,7 @@ export function activeCallableBodyNodes({
   return allNodes.filter(function activeNode(node,): boolean {
     return insideOnlyActiveClosures({
       node,
-      body,
+      boundary,
       activeKeys,
     },);
   },);
@@ -255,7 +287,8 @@ export function activeCallableBodyNodes({
  *
  * @param allNodes - Every node of the body.
  *
- * @param body - Outer callable body boundary.
+ * @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
+ * than to the body.
  *
  * @param nestedKeys - Keys of every callable nested under the body.
  *
@@ -265,21 +298,28 @@ export function activeCallableBodyNodes({
  *
  * @example
  * ```ts
- * activationSites({ project, bindingOriginBySymbolId, allNodes, body, nestedKeys, activeKeys });
+ * activationSites({
+ *   project,
+ *   bindingOriginBySymbolId,
+ *   allNodes,
+ *   boundary,
+ *   nestedKeys,
+ *   activeKeys,
+ * });
  * ```
  */
 function activationSites({
   project,
   bindingOriginBySymbolId,
   allNodes,
-  body,
+  boundary,
   nestedKeys,
   activeKeys,
 }: {
   readonly project: Project;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly allNodes: readonly Node[];
-  readonly body: Node;
+  readonly boundary: Node;
   readonly nestedKeys: ReadonlySet<string>;
   readonly activeKeys: Set<string>;
 },): void {
@@ -288,7 +328,7 @@ function activationSites({
      * because the enclosing callable does not reach it. */
     if (!insideOnlyActiveClosures({
       node,
-      body,
+      boundary,
       activeKeys,
     },))
       return;
@@ -337,15 +377,24 @@ function activationSites({
        * attributes more and therefore withholds more, and reaching-definition filtering is what
        * would narrow it. Activating too much is the safe direction here; activating too little
        * loses a write. */
-      assignedValues({
-        allNodes,
-        project,
-        target: node.expression,
-      },)
-        .forEach(function activateAssigned(assigned,): void {
+      [
+        ...assignedValues({
+          allNodes,
+          project,
+          target: node.expression,
+        },),
+        /* And whatever the called binding was declared holding, which covers a parameter with a
+         * callable default. Overload resolution answers with the declared function type there too,
+         * so `callback()` where `callback` defaults to an arrow activated nothing. */
+        ...possibleValueNodes({
+          project,
+          node: node.expression,
+        },),
+      ]
+        .forEach(function activateResolved(resolved,): void {
           activateEscapedCallables({
             project,
-            node: assigned,
+            node: resolved,
             nestedKeys,
             activeKeys,
           },);

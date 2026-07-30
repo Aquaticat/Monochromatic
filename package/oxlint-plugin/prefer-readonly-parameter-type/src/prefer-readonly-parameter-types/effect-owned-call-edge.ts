@@ -318,6 +318,7 @@ export function addOwnedCallEdge({
         project,
         bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
         callables: callbacks,
+        actuals: call.arguments,
       },),
     },),
     /* Foreign ownership is a marker on a whole parameter, and its consumer compares against
