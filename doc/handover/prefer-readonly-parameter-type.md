@@ -380,6 +380,30 @@ Two lessons, separated because only one is about git:
      that it reads correctly and is provably safe would have been the error this document already warns
      about, made knowingly rather than by accident.
 
+### The external channel has never run on real input
+
+Measured by instrumentation, not inferred: a temporary line on the resolver's success path, seven packages
+ chosen for third-party usage including consumers of the two most-used runtime dependencies here, **zero
+ successful resolutions**.
+
+So `applyExternalEffect`, its four position kinds, its version-locking gate and its callback-relation mapping
+ have never run on real input in this workspace. Zero findings carry package-version provenance, which is the
+ only provenance that path emits.
+
+Two consequences for anyone working here:
+
+-    A fix to that channel cannot be pinned by the fixture corpus, and #100's capture wiring could not be
+     pinned by exporting the unit either, because proving a capture is charged needs real
+     `bindingOriginBySymbolId` origins the analyzer does not expose. It is reverted with its design recorded.
+-    **Diagnose which of the four resolver requirements fails before adding a fixture dependency.** If a gate
+     over-rejects, this is a defect and a fixture would paper over it. Instrumenting the rejection paths
+     answers that and is as cheap as the success-path line was.
+
+One method note that generalises beyond this channel. **An absence in a capture is evidence about what the
+ rule said, never about what the rule did.** A silent channel and an absent channel produce identical output.
+ That is the same instrument limit already recorded for store-caused withholding, reached from the opposite
+ direction, and instrumentation is the only thing that separates them.
+
 ### Open
 
 -    **#82**, two activation forms that still cannot reach a parameter default: a binding filled by
