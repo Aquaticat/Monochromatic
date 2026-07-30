@@ -109,6 +109,51 @@ and `declaration-empty-line-before`.
 Option 1 therefore necessarily destroys the compact form;
 it is not the same CSS in different notation.
 
+### No markup_fmt configuration agrees with the authored form
+
+This closes the option the issue never raised:
+tuning the formatter to match the contract instead of excluding the files or rewriting them.
+Measured against the markup_fmt 0.23.1 option schema,
+which has 46 options.
+
+`whitespaceSensitivity: 'strict'` keeps tags tight against their text
+but still wraps prose at `printWidth`,
+so the sentence still breaks between `required` and `concepts`.
+`css` and `ignore` both behave as the current default.
+
+Raising `printWidth` does not preserve authored breaks either.
+At `printWidth: 10000` markup_fmt joins the authored lines onto one long line,
+which is the same rewrite in the opposite direction, 73 changed lines.
+markup_fmt always re-decides line breaks from the column budget;
+it has no option to keep the authored ones.
+
+Even with every cosmetic lever set to match the authored style
+(`doctypeKeywordCase: 'lower'`,
+`quotes: 'double'`,
+`html.styleIndent: false`,
+`whitespaceSensitivity: 'strict'`,
+and no `maxAttrsPerLine`),
+70 lines of the 36-line `reading-loop.html` still change,
+because markup_fmt unconditionally indents `<head>` and `<body>` inside `<html>`
+and no option disables that.
+
+So the formatter cannot be made to agree.
+The choice really is between excluding these files and rewriting them.
+
+### The dprint config carries a stale comment
+
+`package/config/dprint/index.json` records this next to the `markup` section:
+
+```text
+[dprint_plugin_markup]: Unknown property in configuration (ignoreCommentDirective)
+```
+
+That is no longer true.
+The markup_fmt 0.23.1 schema lists both `ignoreCommentDirective` and `ignoreFileCommentDirective`,
+and dprint 0.55.2 accepts each of them as a `markup` config key without diagnostics.
+The repository can therefore choose its own HTML ignore-directive names.
+This is worth correcting regardless of which option wins here.
+
 ### Stylelint coverage is not all-or-nothing
 
 Issue 401 framed the choice as keeping every check or excluding the files.
@@ -354,6 +399,46 @@ Links on the four affected pages are therefore close to unreadable in a dark-the
 
 This is a user-visible contract violation unrelated to formatting,
 tracked in issue 402.
+
+## What is actually at stake
+
+These facts bound the decision and were measured after the first pass.
+
+Nothing is blocked.
+No workflow under `.github/workflows/` runs `lint:dprint` or `lint:stylelint`.
+The only lint invocations in CI are `//package/module/toml-edit:lint:types`
+and the `readonly-semantic-bridge` build and test tasks.
+Leaving issue 401 open costs nothing beyond local lint noise.
+
+Resolving issue 401 does not make Stylelint green.
+Repo-wide, `stylelint --ignore-path .gitignore '**/*.{css,astro,html}'` reports 185 problems.
+The learning pages are 40 of them.
+The other 145 are unrelated and stay after any option here.
+
+Resolving issue 401 does clear most of the dprint noise.
+Repo-wide, `dprint check --list-different` lists 7 files.
+Five are the learning pages;
+the other two are `package/pi-shared/model-review/tsconfig.json`
+and `package/pi-plugin/goal/tsconfig.json`.
+
+The `5 of 15 HTML files` figure understates how isolated these pages are.
+The other ten dprint-covered HTML files are
+`playwright/test-harness.html`,
+`doc/secret-management-caveman.html`,
+`doc/audit/file-manager-sticky-flow.html`,
+two Electron `src/index.html` shells,
+`package/module/dom/test/harness.html`,
+`package/module/dom/test/fixture/redirect-target.html`,
+an oxlint benchmark fixture,
+and one file each in `package-deprecated/` and `package-paused/`.
+None is a hand-authored prose document.
+The learning pages are the only hand-authored prose HTML in the repository,
+so excluding them does not leave a category of comparable files unprotected.
+
+Option 1 rewrites almost the whole corpus.
+Formatting all five pages with the repository's real markup and Malva settings produced
+1,677 deletions and 2,270 insertions against 1,756 authored lines:
+roughly 95 percent of the corpus rewritten, and 29 percent longer afterwards.
 
 ## Open question for the repository owner
 
