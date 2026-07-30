@@ -699,6 +699,83 @@ Offers held at 31 and only argument-opacity moved, six added and one removed. Th
 Both artifact digests were recorded before the run and re-verified after it, and the two doc-only
  commits that landed while it ran left both unchanged.
 
+## The external channel is reachable after all, and it was dead for a different reason
+
+Two findings, measured together, and each one changes what the other means.
+
+### Authoring the dependency works, and #100's false offer is now demonstrated
+
+The blocker recorded against #100 was "find or add a dependency whose shipped implementation the resolver
+ can load". The answer is to write one. A disposable consumer directory outside the repo satisfies every
+ gate, because `packageVersionIsLocked` walks ancestors of `consumerProject.configFileName` rather than
+ the repo root, so the fixture owns its own `pnpm-lock.yaml`.
+
+What the gates actually require, read rather than guessed:
+
+-   `workspace:*` cannot work. pnpm records workspace dependencies only as `link:package/...` under
+     importers, never as a `name@version` package key, so `packageVersionIsLocked` answers false. This is
+     the one form to not spend time on.
+-   `lockfileLinePackageKey` is a section-unaware text scan, so any key at two-space indentation counts
+     and a minimal authored lockfile suffices.
+-   The generated external project already sets `allowJs`, `checkJs` and NodeNext, so a shipped `.js`
+     implementation opens without special handling.
+-   The fixture needs `type-fest` resolvable, since `typeFestResolvesFrom` gates the offer that the
+     falsification depends on.
+
+The false offer, through the real rule under oxlint, on a hand-authored package retaining a callback:
+
+```text
+consumer.ts:15: The function input named "config" is used by these calls:
+  capture-retainer-probe@1.0.0 . retainCallback
+consumer.ts:25: Parameter "config" should be readonly: property row is writable.
+```
+
+Those two lines are the whole falsification. Line 15 carries external provenance, which only
+ `applyExternalEffect` writes, so the exact export resolved and applied. Line 25 offers `readonly` for a
+ parameter whose row is handed out by a closure that same package retains.
+
+The discriminator worth reusing: **prove the external path ran by which channel carried the fact, not by
+ a log.** A consumer function passing the row directly reports opacity with package provenance; if any
+ gate had failed, the same function would report ordinary unresolved-boundary opacity instead. Two
+ outcomes that look alike in a count are distinguishable in the message.
+
+One shape does not falsify and is worth keeping as a control. A closure that **writes** its capture is
+ already charged, because the direct-write scan attributes it whatever the callee is. Only a closure that
+ reads and hands back its capture reaches the hole, which is the void-slot asymmetry from #90 again:
+ `() => Row` is assignable to `() => void`.
+
+### Why every earlier reading said no implementation resolves
+
+`openExternalImplementation` creates a second TypeScript API child during linting, and under oxlint that
+ spawn fails:
+
+```text
+[external-callable-effect] external effect inference failed for
+  capture-retainer-probe@1.0.0 ... retainCallback: Error: spawn ENOMEM
+```
+
+This is precisely the failure `initializeSemanticBridge` exists to prevent. Its own TSDoc records that
+ oxlint reserves a multi-gigabyte virtual buffer per Rust worker when a JavaScript plugin is active, so
+ starting TypeScript after those reservations can fail with `ENOMEM`. The eager call protects the first
+ child; the external implementation project's child is created mid-lint and is structurally exposed.
+
+Measured on a 16-core host with 63 GiB RAM and `/proc/sys/vm/overcommit_memory` at 0:
+
+-   Default threads: all eight inference attempts fail with `ENOMEM`, and every consumer function reports
+     ordinary opacity.
+-   `oxlint --threads=1`, identical fixture: inference succeeds, provenance strings appear, and the
+     directly-mutating case stops being reported because the external summary proved the mutation.
+-   Plain `node` driving `buildEffectSummaryIndex`: succeeds, matching the single-threaded run.
+
+`externalCallableEffect` catches the throw, logs at debug and returns its generic unavailable sentinel, so
+ the failure is indistinguishable from an unresolvable package. That is sound, since it withholds, and it
+ is why this stayed invisible through four hunt passes. #117 holds it.
+
+The consequence to carry forward: **the external channel has been dead under real oxlint on this host, so
+ every sweep in this record ran without it.** Earlier statements that no dependency's implementation
+ resolves were measuring this, not resolution. #113 concluded the external channel's narrowness was its
+ design; that conclusion was drawn on a channel that never ran.
+
 ## Primary records
 
 - `doc/planning/prefer-readonly-return-substitution.md`, the running measurement log
