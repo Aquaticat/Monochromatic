@@ -190,6 +190,10 @@ So writing `producer: () => Row | string = (): string => 'leaf'` does not narrow
 default,
 and both the default's own body and the declared union decide together.
 
+If a parameter you expected to be offered is withheld for either reason,
+[the retained-closure guide](../../../doc/troubleshooting/oxlint-prefer-readonly-retained-closure.md)
+lists every way to recover the offer and which of them change what is true rather than what the rule sees.
+
 ## Self-hosting boundary
 
 The strict rule does not lint its own package under its effect policy.
