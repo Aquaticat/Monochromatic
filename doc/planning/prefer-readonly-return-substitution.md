@@ -6423,3 +6423,125 @@ The commit that landed the join said its cost is "precision only where a declara
  shape is rare but that the parameters it reaches are already withheld.
 
 That is worth separating, because the two would come apart in a codebase with more offers.
+
+## The capture-channel audit, reviewed before implementing any of it
+
+The audit named five channels lacking a capture channel and I planned the external one first. Review
+ corrected the plan on a soundness point, which is worth recording as the reason to review a plan and not
+ only a diff.
+
+### My split of the external summary was unsound
+
+The plan charged captures at positions the external summary marks opaque or as a callback-relation source,
+ and charged nothing at `invokedParameterIndexes`, reasoning that invoked-but-not-retained is the mapping
+ case that must keep its offer.
+
+`invokedParameterIndexes` proves the callback is **invoked**. It does not prove its result is **discarded**:
+
+```ts
+export function reveal(producer: () => Row,): Row {
+  return producer();
+}
+
+export function retainResult(producer: () => Row,): void {
+  retainedRow = producer();
+}
+```
+
+Neither retains `producer` and both expose what invoking it hands back. The summary can say only that
+ `producer` was invoked, because that result has no ordinary parameter origin. `map` and `filter` differ the
+ same way: `filter` consumes results as predicates while `map` keeps them in the array it returns.
+
+So the corrected mapping charges exposed captures at invoked positions too, and the load-bearing precision
+ case survives for a different reason than the plan assumed. `rows.map((row) => config.row.label,)` keeps
+ its offer not because `map` was skipped but because the **result-sensitive gate** answers that a closure
+ completing with a string exposes nothing. The gate has to be the existing one from
+ `effect-unresolved-capture.ts`, never raw lexical captures.
+
+Three options were ranked, and the ranking is worth keeping because the top one is deferred rather than
+ rejected:
+
+-    **An explicit result-disposition fact**, positively certifying that an implementation discards every
+     invocation result, with absence meaning unknown and therefore charging. Distinguishes `filter` from
+     `map` and preserves offers where the implementation proves discard. Costs agreement between summary
+     production, transport and application.
+-    **Charging exposed captures at every invoked position.** Sound against the summary that exists today,
+     and primitive-returning callbacks keep their offers. Withholds for a mutable-returning callback whose
+     result is demonstrably discarded.
+-    **Skipping every invoked position**, which was my plan. Maximum precision and unsound for a returned,
+     stored, forwarded or mutated callback result.
+
+Disposition beats conservative charging on proven precision; conservative charging beats skipping because it
+ is sound at all. So the second lands now and the first is filed.
+
+Captures must travel beside ordinary origins rather than appended to them, which is the same separation the
+ whole design rests on.
+
+### Activation does not cover the construction handoff, and the argument is precise
+
+I had asked whether the activation premise covers `new Keeper((): Row => config.row,)`, having already been
+ caught once by that premise covering a throw I thought was a hole.
+
+It does not, and the distinction is exact. Activation covers effects the closure body **performs**, which is
+ why a direct write or a `throw config.row` inside an activated closure is charged. Returning `config.row`
+ is neither a mutation nor an outward handoff from the enclosing callable, and the constructor's later use
+ of that returned value has no call edge to carry it.
+
+The proof that this is the right reading is already in the repository: the measured
+ `registry.register((): Row => registered.row,)` case is the same semantic shape, that closure was
+ activated, and it still required the capture channel. So the two cases agree.
+
+One implementation constraint follows. The `honest-readonly` early return in `recordConstructionHandoff`
+ does not prove safety for a capture, because it describes writes reaching **through** the handed value and
+ not values obtainable by **invoking** a callable that value carries. Capture processing has to happen before
+ that early return, or independently of it.
+
+### Yield and throw are reachable, and the capture query must descend through aggregates
+
+```ts
+function* expose(config: Config,): Generator<() => Row> {
+  yield (): Row => config.row;
+}
+
+function exposeByThrow(config: Config,): never {
+  throw { produce: (): Row => config.row, };
+}
+```
+
+The distinction that matters, because it is the one that made the earlier throw finding a non-defect:
+ `throw config.row` is covered by ordinary origins, and `throw config.row` inside an activated closure is
+ covered by the throw handoff scan. Throwing a **closure**, or an object **carrying** one, is neither: the
+ thrown expression has no ordinary origin and the closure only returns the captured value.
+
+So the capture query cannot be the direct-callable helper alone. It must descend through aggregates, and the
+ same requirement applies to arrays, yielded aggregates and constructor argument objects. Exporting the
+ direct helper and testing only the bare-closure form would leave the object form open while looking done.
+
+### The grouping this settles
+
+The four outward handoffs are **one change**: construction arguments, yielded values, tagged-template
+ interpolations and thrown values all hand a value to an uncontrolled consumer, and they differ in syntax
+ only. External invocation-result disposition is a **separate semantic change**, because an inspected
+ implementation can prove more than an opaque handoff can.
+
+Order: characterise external callback result escape and discard first, since that decides the summary
+ contract; extract one reusable query returning result-exposing captured origins with ordinary origins kept
+ separate; apply it to external application; then update all four handoffs together.
+
+### Four more findings from the same review
+
+The tagged template misses the **tag itself**, not only its interpolations. `tag\`\`` has no template spans,
+ so the recorder adds nothing at all, and `config.mutatingTag\`\`` can affect its receiver with no
+ interpolation either. Adding capture handling to interpolations alone does not close it, which changes #95
+ from one fix into two.
+
+The construction handoff misses invocation of the **constructor expression** itself. A local class or
+ constructable function can close over the configuration and run that closure during `new C()` with no
+ arguments at all.
+
+The external positional mapping rests on an unproven precondition. `applyExternalEffect` indexes an
+ actual-position array with formal parameter indexes, and its own comment says that holds only for a plain
+ positional call. Whether `externalEffectResolver` rejects spread and rest mappings is unverified; if it does
+ not, `external(...tuple,)` is an existing ordinary-origin hole and a new capture array would inherit it.
+
+And `effect-outward-handoff.ts`'s module header still says two syntax sites while the module handles four.
