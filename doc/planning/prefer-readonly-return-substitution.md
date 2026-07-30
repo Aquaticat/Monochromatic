@@ -5904,7 +5904,7 @@ No fixture charges the array-spread clause, and the honest reason is that the re
 Mutant removing element access and the construction hop restored exactly those two offers, 63 to 65,
  leaving the destructuring hop's subject charged.
 
-## Where the queue stands
+## Where the queue stood after the capture-channel stretch
 
 Landed in this stretch, each falsified at the five-clause bar, each pinned by a fixture group with
  controls, each with a mutant that died at an exact delta: #88, #98, #91, #93, #89, #99, #94, plus the
