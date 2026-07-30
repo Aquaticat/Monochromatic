@@ -299,18 +299,18 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'records what the external path currently charges for a retained capture, before that changes',
+      name: 'charges a capture handed to an external formal the implementation keeps',
       fn: async () => {
-        /* A characterization, not a specification. Two of these callables hand a closure to a package
-         * that keeps it, the closure hands back caller state, and nothing is charged. That is a false
-         * offer rather than an imprecision: the rule writes `Parameter "config" should be readonly` for
-         * both under `oxlint --threads=1`, and the retained closure returns the caller's own row.
+        /* The callable handing a closure to a package that keeps it was offered `readonly` before
+         * `recordExternalCaptureOpacity`. That was a false offer rather than an imprecision: the rule
+         * wrote `Parameter "config" should be readonly: property row is writable.` under
+         * `oxlint --threads=1`, and the retained closure hands back the caller's own row.
          *
-         * The proof callables carry the other half, and they are why this is pinned before the channel
-         * widens. If any gate had rejected the authored dependency, `stampThroughExternal` would report
-         * ordinary unresolved opacity instead of a proven mutation, and `proveRetainCallbackResolves`
-         * would carry no package provenance. Those two shapes are what separate "the hole is real" from
-         * "my fixture never reached the code". */
+         * The proof callables carry the other half, and they are why the subject means anything. If any
+         * gate had rejected the authored dependency, `stampThroughExternal` would report ordinary
+         * unresolved opacity instead of a proven mutation, and `proveRetainCallbackResolves` would carry
+         * no package provenance. Those two shapes separate "the hole is closed" from "my fixture never
+         * reached the code", and a fixture that stopped reaching it would otherwise look like a pass. */
         using fixture = externalCaptureFixture();
         /**
          * Consumer session, whose configured project is the fixture's own.
@@ -445,15 +445,14 @@ await describe({
         /* The per-export proof. This is the same `retainCallback` the two capture cases call, so it
          * settles that the gate opens for that exact export rather than merely for the package. */
         expect(retainerReached,).toEqual([0,],);
-        /* The hole. `applyExternalEffect` maps external formals onto caller origins taken from argument
-         * positions, and a closure argument carries no origin of its own, so a capture inside it is
-         * charged by nothing. `recordOpaqueBoundary` is what charges captures, and the external branch
-         * returns before reaching it.
-         *
-         * This line is the one a fix must flip, to `[0,]`. */
-        expect(producedCapture,).toEqual([],);
-        /* The control, which reads the same today and must not move when the line above flips. Without
-         * it, charging every closure handed to an external retainer would look like a fix. */
+        /* The subject. `applyExternalEffect` maps external formals onto caller origins taken from
+         * argument positions, and a closure argument carries no origin of its own, so a capture inside
+         * one was charged by nothing: `recordOpaqueBoundary` is what charges captures, and the external
+         * branch returns before reaching it. Measured `[]` before the channel existed. */
+        expect(producedCapture,).toEqual([0,],);
+        /* The control, and the one that decides this is an attribution rather than a rule against
+         * handing any closure to an external callee. The same export, the same position, a closure
+         * allocating its own row: nothing captured travels, so the offer stands. */
         expect(freshCapture,).toEqual([],);
         /* The shape that is already covered, and the reason the falsification needed a reading closure
          * rather than a writing one. A write inside the closure is attributed by the direct-write scan

@@ -16,6 +16,7 @@ import { isIdentifier, } from 'typescript/unstable/ast/is';
 
 import { recordArgumentRetentions, } from './effect-argument-retention.ts';
 import { applyExternalEffect, } from './effect-external-application.ts';
+import { recordExternalCaptureOpacity, } from './effect-external-capture.ts';
 import {
   type ExternalCallableEffectResolver,
   EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE,
@@ -378,6 +379,19 @@ export function inspectEffectCall({
       declaration: resolvedDeclaration,
     },);
     if (externalEffect !== EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE) {
+      /* Before the application, and the early return below is why it has to be here rather than left to
+       * `recordOpaqueBoundary`. Captures are kept beside ordinary origins, so the origin mapping
+       * `applyExternalEffect` performs cannot see one, and returning on a proven external effect skipped
+       * the only channel that could. Charged per formal, so a formal the implementation provably ignores
+       * still keeps its offer. */
+      recordExternalCaptureOpacity({
+        project,
+        bindingOriginBySymbolId,
+        externalEffect,
+        declaration: resolvedDeclaration,
+        call,
+        summary,
+      },);
       applyExternalEffect({
         externalEffect,
         declaration: resolvedDeclaration,
