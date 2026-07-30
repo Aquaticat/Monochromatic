@@ -527,16 +527,18 @@ What that supersedes: the claim that neither verification route exists here. The
  authored ones. The reasoning that kept it open, which was that landing a path no test reaches is worse than
  leaving a finding recorded, still stands and is what forced the fixture to exist first.
 
-Measuring it also found #117, which reframes #113. The external channel fails with `spawn ENOMEM` under
- oxlint's default worker count, so it never ran during any sweep in this record, and #113's conclusion that its
- narrowness is its design was drawn on a channel that was not executing.
+Measuring it also found #117, closed the same session: the external channel failed with `spawn ENOMEM` at
+ oxlint's default worker count, which is what an ordinary consumer runs. It does **not** follow that #113 was
+ wrong, and a first version of this record claimed that. One worker avoids the failure, and the measurement
+ log records a sweep invoked that way, so #113's question of whether installed dependencies reach the channel
+ at all is still open on its own terms.
 
-So what is left is #115 as a linter-scope decision for whoever owns markdown style, #117 as a precision defect
- with a measured cause, and the standing question below.
+So what is left is #115 as a linter-scope decision for whoever owns markdown style, and the standing question
+ below.
 
 So the honest summary is that the soundness queue is empty and the precision, cost and documentation queue is
- not. Anyone resuming should start with #117, because until it is fixed the external channel's soundness is
- untested by anything except the authored fixture.
+ not. Anyone resuming should read the sweep that answers whether any installed dependency reaches the external
+ channel, since that is what decides whether #113's conclusion needs revisiting.
 
 ### Open
 
@@ -824,10 +826,19 @@ Two consequences for measurement. A sweep at the default threads measured nothin
  the failure is indistinguishable from an unresolvable package. That is sound, since it withholds, and it
  is why this stayed invisible through four hunt passes. #117 holds it.
 
-The consequence to carry forward: **the external channel has been dead under real oxlint on this host, so
- every sweep in this record ran without it.** Earlier statements that no dependency's implementation
- resolves were measuring this, not resolution. #113 concluded the external channel's narrowness was its
- design; that conclusion was drawn on a channel that never ran.
+**A first reading of this went too far, and the configuration is why.** It was recorded here that every
+ sweep in this record therefore ran with the channel dead, and that #113's conclusion rested on code that
+ never executed. Neither follows.
+
+`--threads` reaches oxlint only when `OXLINT_THREADS` is set, and that variable is set on the root `lint`
+ task's own env block rather than on `lint:oxlint`. The measurement log records at least one sweep invoked
+ as `OXLINT_THREADS=1 mise run lint:oxlint`, and at one worker this failure does not occur. So whether a
+ given sweep had the channel alive depends on how that sweep was invoked, and the answer is not uniform.
+
+What survives without qualification: the defect is real at the default worker count, which is what an
+ ordinary consumer runs, and a silent fail-closed made it indistinguishable from an unresolvable package.
+ What needs measuring rather than asserting is whether this workspace's installed dependencies reach the
+ channel at all, which is what #113 was actually about and which one worker does not prevent.
 
 ## Primary records
 
