@@ -7079,3 +7079,53 @@ Its priority for the **published** rule is not, because a consumer using decorat
 Recorded as the reason #114 stays open rather than being closed as theoretical. A defect that only consumers
  can reach is still a false offer, and the goal in force is no false offers rather than no false offers in
  this repository.
+
+### The decorator, closed by two changes that were each a no-op alone
+
+Recorded above as open with three candidate causes and a fixed order for settling them. The answer was the
+ first candidate **and** the recognition clause together, and neither alone moved a single reading:
+
+```text
+recognition clause alone      subject opq=[]    no change
+ancestry repair alone         subject opq=[]    no change
+both                          subject opq=[0]   control opq=[]
+```
+
+The cause. A decorator is lexically inside the declaration it decorates and **does not run inside it**. It
+ runs when the class is defined, whether or not the decorated member is ever called. So #70's ancestry gate
+ ascended from the decorator, reached the undecorated method, found it inactive and stopped. Past that gate,
+ the decorator still had to be recognised as invoking its own expression, which the bare form writes no call
+ for.
+
+The ascent now skips exactly one declaration after leaving a decorator and keeps gating on everything above
+ it, so a decorator written inside a genuinely inactive closure is still excluded.
+
+Offers moved 71 to 72 by exactly the control, and **both halves were mutated independently and both died at
+ 72 to 73**, which is the correct pattern when each part is necessary rather than sufficient.
+
+### Why the first attempt's revert was right and its lesson needs qualifying
+
+That no-op clause was reverted on the recorded rule: do not land a path no shape reaches. Correct, and the
+ reason it read as unreachable was that a **second** defect was masking it. Two necessary changes each look
+ like a no-op when measured alone.
+
+So the rule survives with a qualification worth carrying. A no-op is evidence that the change alone is
+ insufficient, **not** that the path is unreachable. The distinction is what to do next: reverting was right,
+ and concluding "unreachable" would have been wrong, and this document did in fact record the weaker
+ "downstream of recognition" rather than the stronger claim, which is what made resuming cheap.
+
+### The rule about invocations, corrected
+
+Stated two sections ago: an unseen invocation is an unscanned body. True and one-directional.
+
+**A seen invocation is not necessarily a scanned body.** Recognition, activation, ancestry and the body scan
+ are four steps and the gate is only the first. `super()` needed no clause at all because recognising its
+ enclosing construction sufficed, and the decorator needed a clause plus an ancestry repair. Both ends of that
+ came from the same probe run.
+
+### Reachability, counted before deciding to land it
+
+Zero TypeScript decorators in this workspace: every `@` beginning an indented line in package sources is a CSS
+ at-rule inside a template literal. So this is a fix for consumers of the published rule and for nothing here,
+ which is exactly why it was landed rather than closed as theoretical. The goal in force is no false offers,
+ not no false offers in this repository.
