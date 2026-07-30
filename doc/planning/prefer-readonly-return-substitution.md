@@ -5458,3 +5458,56 @@ Every one of the last seven defects is a **relation answered for some of its cas
 So the method that is working is: state the relation in full, enumerate its cases, and check each. The
  three-way statement about what a callee does with a handed callable is the clearest instance, and the
  three-position statement about where a callable reaches an implementation is the second.
+
+## The sweep for the four capture-channel fixes
+
+Run at `04679bb03`, single-threaded, with both artifact digests recorded in `sweep-86.digest` before
+ the run and re-verified after it. The two doc-only commits that landed while it ran moved `HEAD` to
+ `e88ccac01` without touching either artifact, which the identical digests on both sides establish.
+Runtime 7m58, against 8m42 for the previous sweep.
+
+```text
+before 1999: argument-opacity=1277 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+after  2004: argument-opacity=1282 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+added   6: argument-opacity=6
+removed 1: argument-opacity=1
+```
+
+This is the cleanest of the three sweeps against the reusable criterion. Offers did not move, which is
+ the only soundness statement the criterion makes. No category but argument-opacity moved at all, so
+ neither the receiver-opacity pairing clause nor the offer-loss sampling clause had anything to apply
+ to.
+
+Two predictions written before the capture was read did not come true, and both are worth recording as
+ not-yet-exercised rather than as refuted. The first was that #84 could raise offers soundly, by
+ following a completion into an owned body whose declared type is wider than what it returns, so that
+ `function widen(): unknown { return 1; }` becomes a leaf answer where the declared type withheld one.
+Nothing in the workspace is written that way. The second was that #85 and #86 would give more
+ parameters a capture boundary and so break the `every`-over-boundaries test that selects the
+ receiver-specific message. Receiver-opacity did not move by one finding, so no boundary list changed
+ membership anywhere.
+
+### The six added findings are one shape
+
+All six are `fragment.parts.map`, in three locales times two layers: the renderer factory that owns
+ the parameter, and the `index.ts` that hands its own parameter in. The finding is true. The mapped
+ callback calls `renderPart`, `renderPart` reads the destructured members of `deps`, and those members
+ come from `deps`, so `deps` does reach a call this rule cannot inspect.
+
+### The one removed finding is a derivation replacing a fallback
+
+`package/pi-plugin/spawn/src/state.ts:531` stopped reporting `env` at `entries.map`, and the anchor is
+ now silent rather than speaking through some other channel, which is the case that has to be
+ explained rather than sampled.
+
+It is #84 answering where a fallback used to. The mapped callback `readCandidate` returns
+ `Promise<string | typeof SKIPPED_CHILD>`, so invoking it can hand back nothing but a string: a callee
+ that keeps it cannot get caller state out through its result. What `readCandidate` does with `env` in
+ its body is a separate obligation, and it is discharged rather than dropped, because the body of an
+ activated closure is scanned inline: `env` goes to `consumeMatchingChild`, which is owned, and from
+ there to `spawnStatePath`, which is owned and returns a string. Nothing escapes, so silence is earned
+ rather than lost.
+
+That the loss is precision-only is settled independently of the reading: the offer total did not move,
+ and a compare that reports no added and no removed offer anywhere cannot be hiding one that traded
+ places.
