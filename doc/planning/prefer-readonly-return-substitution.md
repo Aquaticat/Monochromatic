@@ -4869,3 +4869,61 @@ Forty-four channels drawn across four passes, eight real defects, two candidates
 The conclusion worth writing down is the one about method rather than about coverage:
  hunting channels on purpose found eight defects that a queue built from incident reports had not,
  and it found them in four sittings.
+
+## The last known false offer, and a mutant of mine that proved nothing
+
+Three sibling shapes hid it by passing.
+
+```text
+methodClosesDirectly     opq=[0]   method names the parameter directly
+arrowWithProperty        opq=[0]   arrow property names it
+propertyOnly             opq=[0]   plain property read
+methodReadsThroughThis   opq=[]    the only failure
+```
+
+A method reading `this.row` names no binding at all, because `this` is a keyword, so scanning the
+ method body answers empty while the state it reaches sits in the literal the method was written in.
+
+And the reason the first attempt at this missed it: resolving the callee **succeeds** for such a
+ method, so returning early on that success scanned exactly the body that cannot see the capture.
+The receiver is asked as well as the callee now, never instead of it.
+Unioning rather than choosing is the whole fix.
+
+Writing four shapes side by side is what found it. Reading the code had produced a plausible and
+ wrong account twice.
+
+### The fifth mutant story, and it is a new kind
+
+The first mutant written for this fix **survived**, and the earlier three surviving mutants had all
+ meant something: a missing fixture, a backwards claim, a half-exercised rule.
+
+This one meant nothing. It was built wrong.
+
+It restored the early return only when origins had already been found, and for this shape none have
+ been, so the guard never fired and the mutant behaved exactly like the fixed code. It was not
+ testing the thing its name said.
+
+Rebuilt to return on a resolved callee unconditionally, which is precisely what the fix removed, it
+ dies immediately.
+
+So a surviving mutant has one more reading than this document had recorded:
+ the test may be missing,
+ the explanation may be backwards,
+ the rule may be half-exercised,
+ **or the mutant may not implement the defect it claims to.**
+Check the last of those first, because it is the cheapest to rule out and the easiest to mistake for
+ the others.
+
+### The capture
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers unchanged, nothing moved, digests on both sides, and the built artifact verified against the
+ digest the sweep ran with.
+
+With this, every false offer this work found and falsified is closed.
