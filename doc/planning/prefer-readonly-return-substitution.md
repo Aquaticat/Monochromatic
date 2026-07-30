@@ -5300,3 +5300,77 @@ At the enclosing callable's own invocation the reason does not hold, because the
  that might have stood, and withholding is always safe. The trap is elsewhere: the invocation
  currently produces an invoked-capability fact, and replacing that with an owned edge could remove
  it. The union is what to build, not the substitution.
+
+### The capture, and the prediction it confirms
+
+```text
+commit 6da571326
+90fd87f2161a1ddcc2d8c3548adfddd888b31132d35a268b1a205fb849dcd168  plugin index.mjs
+65f82458808ed5abdc3dec40813316af8c76a4642026c5440709c70744e65b28  oxlint sidecar
+
+before 1968: argument-opacity=1229 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1999: argument-opacity=1277 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+added   133: argument-opacity=129 receiver-opacity=4
+removed 102: argument-opacity=81  receiver-opacity=20 offer=1
+```
+
+Run ended before the capture was read, `real 8m42`, both artifacts re-hashed identical to the
+ digests recorded before it started.
+
+Offers fell by one, which is the direction the soundness statement permits. The lost offer is the
+ predicted shape, and it is worth quoting because the prediction named it before the capture was
+ read:
+
+```ts
+function findRegressions({ map, baseline, }: { readonly map: CoverageMap; baseline: Record<string, number>; },): readonly Regression[] {
+  return Object.keys(baseline,)
+    .toSorted()
+    .flatMap(function check(file,) {
+      return [{ file, baseline: baselineCovered, current: currentCovered, },];
+    },);
+}
+```
+
+The closure names `baseline` and hands back an object built of a string and two numbers. Nothing of
+ `baseline` is inside it. The gate conjoins "the closure reaches the origin" with "the completion can
+ carry mutable state" and does not ask whether the completion **carries** the origin, so it withholds.
+ Recovering it needs the exposure analysis that walks returned callables, getters, aggregates, async
+ results and every value branch, which is a larger change than soundness requires.
+
+### The criterion needs a clause, and this is why
+
+The reusable criterion said no category but argument-opacity may move. Receiver opacity fell by
+ sixteen, so either the criterion is wrong or the change is. Checked rather than assumed: **all
+ twenty** removed receiver-opacity findings are the same parameter at the same anchor now reporting
+ argument opacity instead.
+
+That is a message-form consequence with a known cause. The receiver-specific message requires every
+ boundary in a parameter's list to be a member call on that parameter, an `every` over the list, and
+ a capture boundary joining the list breaks it. The parameter was withheld before and is withheld
+ now; only the words changed.
+
+So the clause to add: **receiver-opacity may lose a finding to argument-opacity for the same
+ parameter at the same anchor, and a sweep must pair them before reading the movement as a
+ regression.** Net counts cannot show this, which is why the comparison has to be read per finding.
+
+The four added receiver-opacity findings are parameters that spoke nothing before and now do, each
+ with a boundary list made only of member calls on itself. Sampled the first, and the claim is true:
+
+```ts
+return {
+  localRef,
+  localOid,
+  remoteLocation: capture.remoteLocation,
+  remoteName: capture.remoteName,
+  advertisedRemoteOid,
+  remoteRef,
+};
+```
+
+The closure handed to `.map` does name `capture`, so the diagnostic is honest. The conservative part
+ is the same one the lost offer shows: what the closure hands back holds only strings read off
+ `capture`, not `capture` itself.
+
+A closure naming nothing of the parameter attributes nothing, which was measured separately rather
+ than assumed: the same shape with closures naming only their own parameters records clean, and
+ naming the parameter records `opaque=[0]`.
