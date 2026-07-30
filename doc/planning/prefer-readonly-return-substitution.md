@@ -7593,3 +7593,49 @@ The three coupling instances this effort has now produced, worth keeping togethe
 And one corollary about tests: the fixture corpus pins **shapes**, and the workspace-source test pins
  **invariants**. Placement one passed every fixture. Anything that widens a walk needs the second kind of test to
  have any meaning.
+
+## The parameter-default gap in the ownership scan, established as costing nothing here
+
+`foreignBorrowedDirectSummary` passes `parameterInitializerNodes: []`, so an owned call written only in a parameter
+ default is invisible to it. The premise was never in dispute and the comment denying it was corrected long ago.
+ What was unmeasured is the consequence.
+
+**Counting the shape failed as a method**, and that is worth recording because it looked like the obvious approach.
+ A broad regex for an assignment containing a call returned 6815 hits, which counts ordinary assignments; a targeted
+ one found none. Regex cannot tell a parameter default from any other assignment, because the distinguishing context
+ is the enclosing parameter list.
+
+**Instrumenting the scan answered it in one run.** Printing every parameter carrying an initializer at the point the
+ exclusion is made, across four packages:
+
+```text
+package/module/css-edit          0
+package/dev-script/file-enforcer 0
+package/config/rolldown          0
+package/pi-plugin/spawn          0
+```
+
+`config/rolldown` is the decisive line. It contains `browserslistTargets({ generatedFileUrl = ..., exists =
+ generatedFileExists, ... })`, whose parameters carry defaults and one of which names an owned function. The shape
+ is there and the scan never sees that callable at all.
+
+**So the gap sits behind a graph entry condition.** This is the *foreign-ownership* summary, reached only for
+ declarations inside the ownership graph, which is entered from a `ForeignBorrowed` marker. Ordinary callables never
+ reach it. The exclusion can cost something only for a callable that is both inside that graph and has an owned call
+ written only in a default.
+
+That is a closure by **mechanism** rather than by count, which matters: four packages is a sample, and a sample of
+ zero would have been weak evidence on its own. What makes it an answer is that the number and the reason agree.
+
+### The method rule, on its third confirmation
+
+Instrument the code that makes the decision; do not count shapes that might reach it.
+
+-    #113: instrumenting four resolver gates found one rejecting nearly everything, and reading it then showed the
+     rejection was correct. Counting external calls would have found nothing.
+-    #114: counting decorators worked, and only because the answer was zero. Had it been nonzero the count would
+     have said nothing about whether the gate admitted them.
+-    #81: counting failed outright, and instrumenting answered in one run.
+
+The pattern is that a count measures the population and a decision measures the behaviour, and every question worth
+ asking here has been about behaviour.
