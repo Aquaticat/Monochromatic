@@ -374,56 +374,6 @@ Every spelling of that read now answers: element access, a destructuring pattern
      spanning the four walk-widening fixes came in at 7m58s, 8m44s and 8m54s, so no cost class changed
      and there is nothing for memoisation to justify. Memo keys recorded in case a later change moves
      that series: `callableResultCanCarryState`, `transitiveCallableOrigins`, `packagedActualCallables`.
--    **#92**, callable candidates treated as exhaustive, now measured and stated better than it was
-     filed. Two forwarders differing in exactly one token sequence:
-
-     ```ts
-     export function forwardBareProducer(registry: Registry, producer: () => Row | string,): void {
-       registry.keep((): Row | string => producer(),);
-     }
-
-     export function forwardDefaultedProducer(
-       registry: Registry,
-       producer: () => Row | string = (): string => 'leaf',
-     ): void {
-       registry.keep((): Row | string => producer(),);
-     }
-     ```
-
-     **Writing a default removes a withholding that the same code without the default has.** With no
-     default the list is empty, the static type decides, and the caller's configuration is charged. With
-     the default the list holds one leaf-returning callable, `some` answers false, and the caller's
-     configuration is offered. No void and no assignment involved, so the exhaustiveness assumption is
-     isolated by elimination.
-
-     The design is a completeness-aware join rather than an unconditional disjunct, because only the
-     former distinguishes evidence from a guess: any known candidate carrying state answers true, an
-     exhaustive list answers false, and anything else falls through to #90's fallback. That unifies the
-     two rather than stacking them, and it answers the shape neither fix alone handles, a formal
-     defaulting to `(): void => {}`.
-
-     **Exhaustiveness must be reported by the resolver, not reconstructed afterward.**
-     `packagedActualCallables` silently drops any value whose callable cannot be resolved, so
-     `const select = flag ? ownedFn : externalFn` yields one candidate while a `const` binding looks
-     complete. Deriving exhaustiveness from `const` versus `let` is therefore unsound in the `const`
-     direction. No witness was built for this, and it is adopted anyway because the alternative
-     derivation is unsound by construction.
-
-     The precision control it needs is not the one filed with it. `storeFreshSelector` is clean because
-     no configuration origin reaches its closure at all, so it never exercises the gate. The real control
-     is reachable origin plus exhaustive list plus leaf-returning candidate, which must stay offered:
-
-     ```ts
-     const select: () => string = (): string => config.row.label;
-     registry.keep((): string => select(),);
-     ```
-
-     And the same fail-open exists at a second site. `exposingCallables` returns the filtered candidate
-     list, and `recordUnresolvedCaptureOpacity` records nothing for an empty one, so empty reads as
-     "exposes nothing" there too. The direct-argument path is covered today by the ordinary origin
-     channel, which charges a parameter handed straight to an unresolved call, so the hole needs a
-     non-parameter actual to reach. Measure before changing that site.
-
 -    **#95**, tagged templates as invocations. Located by reading.
 -    **#100**, a capture channel for external effect application. Confirmed reachable rather than
      theoretical: `applyExternalEffect` does handle callback relations and maps them only through
@@ -459,6 +409,19 @@ Eight items, each falsified at the five-clause bar, each pinned by a fixture gro
      their price: a closure completing with `console.log` now withholds, since that name resolves to a
      member signature on a variable's type, and a member signature returning `void` is trusted nowhere.
 
+-    **#92**, a candidate list standing in for a closed set. Nothing the resolver follows closes that set,
+     so a nonempty list is evidence about what a callee can be and never proof of what it cannot be. The
+     statement that made it obvious is a diff of two forwarders differing in one token sequence, where the
+     one carrying a leaf-returning default **loses** a withholding the one without it has. The join is
+     unconditional rather than gated on list completeness, which is less precise than the reviewed
+     recommendation and was chosen on the discipline that closed #87: build the simpler thing, then measure
+     whether it costs. Completeness would also have to be reported by the resolver rather than derived from
+     `const` against `let`, because unresolvable candidates are dropped silently, so a `const` binding can
+     look complete while its list is a strict subset.
+
+     One line now carries both #90 and #92, which the mutation check showed rather than the code: removing
+     the join restored two offers rather than one, because the empty-candidate case flows through the same
+     expression.
 ### The pattern worth carrying forward
 
 Three of those eight were one shape: a branch in `inspectEffectCall` classifies a call, answers its own
