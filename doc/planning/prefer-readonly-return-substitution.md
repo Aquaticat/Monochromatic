@@ -7845,3 +7845,104 @@ Scope, since one example decides nothing: **31 installed packages declare no run
  file**, `strip-ansi`, `string-width`, `path-key`, `resolve-from` and `parse-json` among them. All are unresolvable
  today. Filed, with the direction noted that adding resolution converts unresolved opacity into proven effects and so
  must be read for which way offers move.
+
+## The sweep that refutes "the external channel has never run on real input"
+
+Single-threaded `OXLINT_THREADS=1 mise run lint:oxlint` at `851b0fd3f`, both artifacts rebuilt in order and
+ their digests recorded:
+
+```text
+plugin   1d5f3ba590fecc786904372f125f2ff07bdbfd403b355cefc8da2c73b2cc559b
+sidecar  fecea8513aa45421be280e36ad67ac7c37662adb657c96657a33dc3bcf1303b1
+```
+
+### The criterion, satisfied
+
+```text
+offers                31    unchanged from the recorded baseline
+rule findings       1992
+```
+
+Offers did not rise, which is the only soundness statement the criterion makes. Both fixes this session
+ withhold rather than offer, so that is the expected direction.
+
+### Ten packages resolve, and this is what refutes the earlier claim
+
+Findings carrying package-version provenance, which only the external channel writes:
+
+```text
+nano-spawn@2.1.0 . default                                    24
+h3@2.0.1-rc.26 . getRouterParam                               14
+valibot@1.4.2 . parse                                          4
+valibot@1.4.2 . safeParse                                      3
+fast-check@4.9.0 . Arbitrary.map                               3
+h3@2.0.1-rc.26 . serveStatic                                   2
+fast-check@4.9.0 . Arbitrary.chain, . array                    2
+find-up@8.0.0 . findUp                                         1
+dot-prop@10.2.0 . getProperty                                  1
+@msgpack/msgpack@3.1.3 . encode                                1
+@optique/run@1.2.0 . runSync                                   1
+yuku-ast@0.8.0 . walk                                          1
+@earendil-works/pi-coding-agent@0.82.1 . discoverAndLoad...    1
+```
+
+Ten distinct packages, real exports, proven summaries applied. The sections above say the channel "has
+ never run on real input" and that it is "dark". **Both statements are refuted.** What was true is the
+ narrowness: most external calls are member calls on non-import receivers and are correctly rejected, and
+ that conclusion is untouched.
+
+### The new capture channel fired four times, all on one shape
+
+```text
+fast-check@4.9.0 . Arbitrary.chain handed callable capture   inputs "items" and "make"
+fast-check@4.9.0 . Arbitrary.map handed callable capture     inputs "collected", "block", "tail"
+```
+
+Property-based test code handing `map` and `chain` a closure over caller state. Correct: fast-check keeps
+ the mapper inside the arbitrary it returns and invokes it later, so what the closure hands back is
+ reachable by whoever drives it.
+
+### Attribution of the worker-count fix, on real code rather than the fixture
+
+The sweep cannot attribute anything to that fix, because one worker never hit the failure. A package lint
+ at the **default** worker count can, and does. Cold cache, `package/cli/rgffplay`:
+
+```text
+without the eager initializer   1 rule finding, 0 with provenance
+with the eager initializer      1 rule finding, 1 with provenance
+```
+
+Same finding either way. Only the resolution differs, so the fix is what makes the external channel reach
+ a real installed dependency under the linter as shipped.
+
+### Two mistakes I made reading this capture, both worth the warning
+
+**Attributing a finding to a file by line proximity.** The sweep's stderr carries interleaved
+ typescript-go panic stack traces, so a context window around a finding contains lines from an unrelated
+ stream. I read a `nano-spawn` provenance finding as belonging to `package/cli/git-clone-size`, linted that
+ package, found no provenance, and briefly believed the fix did not work on real code. The finding was in
+ `package/cli/rgffplay`, which I located by grepping for a parameter name from the message itself.
+
+ The message names its own subject. **Grep for that, not for whatever is nearby.**
+
+**Clearing the wrong cache.** The summary cache root resolves through `dependencyRoot`, which for a
+ workspace package is the **repository** root, not the package. Clearing
+ `package/<name>/node_modules/.cache` therefore does nothing, and the second reading was a cache hit that
+ looked like a measurement. Cold means `node_modules/.cache/prefer-readonly-parameter-type` at the root.
+
+### One caveat on the capture's completeness
+
+Five identical panics occurred during the run:
+
+```text
+panic: interface conversion: checker.TypeData is *checker.TypeReference, not *checker.TupleType
+```
+
+That is the upstream defect already diagnosed in `doc/troubleshooting/typescript-go-tuple-type-panic.md`,
+ whose documented consequence is that a panicking file is left without readonly analysis for the run. So
+ **these counts are lower bounds**, and no per-file warning naming the affected files was locatable in this
+ capture, because the panic output interleaves with the report stream.
+
+Which means the panic count belongs beside the commit and the two digests in every capture, and two sweeps
+ whose panic counts differ are not comparable. That is a gap in the recorded sweep discipline rather than a
+ new defect.
