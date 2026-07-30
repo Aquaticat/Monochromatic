@@ -461,6 +461,15 @@ Placed on line 2, after the doctype, the directive is ignored:
 `dprint check` exits 20 and `dprint fmt` reformats the file.
 The rejected `markup.ignoreCommentDirective` configuration key is unrelated to the built-in directive.
 
+The pre-doctype placement is safe in Chromium.
+Measured through `agent-browser` on a disposable copy:
+`document.compatMode` stays `CSS1Compat`,
+`document.doctype.name` stays `html`,
+`document.firstChild.nodeType` is 8, the comment node,
+and no console errors appear.
+The HTML parser's initial insertion mode inserts a leading comment into the document
+without entering quirks mode.
+
 `<!-- dprint-ignore -->` placed immediately before `<style>` does not protect the embedded CSS.
 Malva still expands the compact one-line `@media` rules.
 

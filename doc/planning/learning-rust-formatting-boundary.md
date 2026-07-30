@@ -257,6 +257,16 @@ Malva still expanded the compact one-liners.
 A Malva `/* formatter-ignore */` comment as the first thing inside `<style>` does protect it,
 because the repository already sets `"ignoreCommentDirective": "formatter-ignore"`.
 
+The whole-file directive `<!-- dprint-ignore-file -->` is also honoured,
+but only as the very first line, ahead of `<!doctype html>`;
+on line 2 it is ignored and the file is reformatted.
+That placement is safe in Chromium:
+measured through `agent-browser`,
+`document.compatMode` stays `CSS1Compat`,
+`document.doctype.name` stays `html`,
+`document.firstChild.nodeType` is 8, the comment node,
+and no console errors appear.
+
 Pros:
 preserves the exact CSS;
 keeps dprint formatting the rest of each document.
@@ -335,8 +345,15 @@ These four pages do not:
 - `package/learning/rust/reference/index.html`;
 - `package/learning/rust/reference/reading-loop.html`.
 
+Measured in Chromium through `agent-browser` with `--color-scheme dark`
+on a disposable copy pair of `reference/reading-loop.html`:
+the computed link colour is `rgb(0, 0, 238)` without the declaration
+and `rgb(158, 158, 255)` with it,
+against an `oklch(0.1 0 0)` background in both cases.
+Links on the four affected pages are therefore close to unreadable in a dark-theme browser.
+
 This is a user-visible contract violation unrelated to formatting,
-tracked separately from issue 401.
+tracked in issue 402.
 
 ## Open question for the repository owner
 
