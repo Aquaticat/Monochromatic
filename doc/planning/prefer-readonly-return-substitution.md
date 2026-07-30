@@ -6708,3 +6708,54 @@ The general point, since this is the second time an unpinnable path has come up.
  survives, the question is not whether the fix is right but whether anything reaches it.** If the corpus
  structurally cannot, exporting the unit under test is not a workaround; it is the only honest way to hold it
  to the same standard as everything else here.
+
+## The external channel has no coverage at all, which is the finding here
+
+Measured while preparing the external capture channel, and it matters more than that fix does.
+
+**Zero findings in the sweep-six capture carry package-version provenance.** That string is the only
+ provenance the external path emits, built at `external-callable-effect.ts:268` as
+ `name@version exportKey ...`. Grepped across the full 2006-finding capture: no match.
+
+So `applyExternalEffect` never fires anywhere in this workspace. The entire external channel, with its
+ documented contract, its version-locking guard, its four position kinds and its callback-relation mapping,
+ is exercised by nothing.
+
+That explains two things retrospectively. It is why the formal-mapping fix had to be pinned by exporting the
+ unit rather than through a diagnostic. And it is why the capture wiring could not be pinned at all.
+
+### The capture wiring was written and reverted, and both routes were closed
+
+The design is settled and recorded on the task: captures computed per argument with the extracted gate,
+ mapped through the same formal positions the ordinary origins now use, and charged as opacity at the opaque,
+ callback-source and invoked positions, but not at the referent-mutated position.
+
+Neither route that worked before is available:
+
+-    **End to end** is impossible, since nothing resolves an external effect.
+-    **Exporting the unit** does not help either. Proving a capture is charged needs a real
+     `bindingOriginBySymbolId` for the enclosing callable, and the analyzer does not expose one. Passing an
+     empty map makes the query answer empty, so the test would assert nothing.
+
+So it was reverted, for the same reason the mapping's first attempt was: a fix whose mutant survives is not
+ finished, and this one could not even be given a mutant that means anything.
+
+### What did land, and it is pinned hard
+
+`exposedCaptureOrigins`, split out of `recordUnresolvedCaptureOpacity` so a channel deciding **per position**
+ can ask the same question the recorder asks. One gate rather than two, which is the point: a channel asking
+ about raw lexical captures instead would withhold on every mapping closure, and keeping the
+ result-sensitive gate as the single answer stops that being reinvented per channel.
+
+The existing capture fixtures cover it thoroughly. Mutant emptying the query restored **17 offers**, 68 to
+ 85.
+
+### The prerequisite this creates
+
+Making one external effect resolve is now its own task, and it is worth more than the fix waiting on it. It
+ needs a dependency satisfying all four resolver requirements, installed-package identity, an import or
+ declaration-owner identity, a **locked** version, and a shipped implementation resolvable through package
+ exports, whose implementation provably mutates or retains a formal.
+
+It unlocks the capture wiring, gives the formal mapping an end-to-end test beside its direct one, and gives
+ the external channel its first coverage of any kind. The last of those is the real reason to do it.
