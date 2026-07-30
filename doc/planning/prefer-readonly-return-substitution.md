@@ -5592,3 +5592,97 @@ The two defaulted forms fail for what look like two different reasons, and the i
  and `propagateResultApplications` then needs `summaries.get(edge.calleeKey)`, which a callable written
  inside the one being summarised does not have. Both readings are inferred from source and neither is
  measured yet.
+
+## The returned fact a concise arrow body carries
+
+The direct scan recorded a returned effect under `isReturnStatement` alone. A concise arrow body is the
+ callable's own body expression with no return statement anywhere, so such a callable recorded an empty
+ returned set, and every caller that stored its result was offered.
+
+This was found while chasing what looked like a defaulted-callee defect, and the measurement that
+ reframed it took the default out entirely:
+
+```text
+storeThroughTopLevelConcise: {"opaque":[]}     concise identity at top level, slot 0 OFFERED
+storeThroughTopLevelBlock:   {"opaque":[0]}    same identity with a block body, charged
+storeThroughBlockDefault:    {"opaque":[1,0]}  block-bodied default, charged
+```
+
+So the default machinery was never the problem and the body form was. Three earlier probes read as
+ default failures, `storeIdentityPassDefault` and `storeInlinePassDefault` among them, were concise
+ defaults.
+
+Falsified at the five-clause bar with no default in sight: annotation applied, `tsc` exit zero, control
+ carrying `@ts-expect-error` over a direct write drawing no TS2578, driver printing `before: original`
+ then `after: written`.
+
+The nested case needs no gate here, unlike the statement branch it mirrors. `body` is the callable's
+ own body, so a nested concise arrow inside it is never what this reads, and a nested return stays the
+ nested callable's own exactly as #77 established.
+
+### It also settles a claim two reviewers reasoned from
+
+`effect-callable-capture-closure.ts` states that a callable written inside the one being summarised has
+ no summary of its own. After this fix, `storeIdentityPassDefault` and `storeInlinePassDefault` both
+ charge through `propagateResultApplications`, which reads `summaries.get(edge.calleeKey)` and skips
+ when it is absent. It is not absent.
+
+Sol's fourth review reasoned from that same false claim and concluded the inline default failed for
+ want of a summary. The measurement says the concise body was the entire cause for the inline forms.
+The claim is #96 and is now falsified twice, the other measurement being `invokeWritingDefault`
+ recording `mutated=[0,1]`.
+
+Instrumentation is what settled it rather than reading: printing inside `propagateResultApplications`
+ showed one application and one edge with matching keys, the callee summary present, and
+ `originsByCalleeSlot [[0]]` correct, with `returned []` the single wrong value.
+
+## A capture handed to a callback parameter
+
+A callback relation names which caller-owned value reached which callback argument position, and the
+ caller can reconstruct that because the caller chose the value. A closure written inside the callee is
+ not the caller's choice, and what it captures is visible only there, so `parameterIndexes` answered
+ empty and the relation held nothing at all.
+
+```text
+handCaptureToCallbackParameter: {"mutated":[1],"opaque":[],  "returned":[]}  slot 0 OFFERED
+handFreshToCallbackParameter:   {"mutated":[1],"opaque":[],  "returned":[]}  control, correctly offered
+handCaptureToMemberCall:        {"mutated":[], "opaque":[0], "returned":[]}  same closure, charged
+```
+
+Two paths, one relation, disagreeing, which is the argument for routing this branch to the gate that
+ already answers rather than building a second mechanism. That makes the fix a consistency repair
+ rather than a policy change: the deferral #75 settled is incomplete rather than wrong.
+
+Falsified with a driver whose supplied callee kept the producer, invoked it, and wrote through the row
+ it handed back.
+
+The capture gate alone runs here, not the whole boundary, because the boundary would also mark ordinary
+ direct arguments opaque and that is exactly what the relation exists to defer. The control that
+ decides whether this is safe to land is a parameter-derived non-callable, `rowCallee(cfg.row,)`, and it
+ keeps its relation and gains no opacity before and after. A second subject was added in the same run,
+ a closure reaching its capture only through a sibling, which the reach walk answers through the new
+ path.
+
+### Neither fix moved a fixture offer until fixtures were written for it
+
+Both suites passed unchanged across both fixes: nothing in the fixture stored a concise arrow's result,
+ and nothing handed a capture to a callback parameter. An unpinned fix is an unprotected one, so each
+ gained a group with its controls, moving the count 51 to 55 to 57. Both mutants died with exact
+ deltas, 57 to 58 restoring the concise subject and 57 to 59 restoring both callback subjects.
+
+### Prediction for the sweep, written before the capture is read
+
+Offers must not rise, which is the only soundness statement.
+
+Offers should fall, and by more than any previous sweep, because #98 is general rather than shaped: a
+ concise arrow body is ordinary style throughout this workspace, and every caller that stores such a
+ result now withholds. #91 should lower them further wherever a capture is handed to a callback
+ parameter.
+
+Argument-opacity should rise, because the capture gate names the call it could not inspect, and that is
+ the message a reader can act on. Receiver-opacity may move, and the existing clause applies: pair any
+ movement per finding before reading it as a regression.
+
+A returned fact alone must not cost an offer, since returning caller state is permitted on the
+ condition that callers substitute. So an offer that disappears with no store and no capture anywhere
+ near it would be the shape to investigate.
