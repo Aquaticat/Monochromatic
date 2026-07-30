@@ -627,7 +627,7 @@ shared appendix and optional repository secret,
  then invokes the scanner binary directly.
 Pull-request and merge-queue jobs scan changed files relative to `origin/main`;
  pushes to
-`main` scan the complete tracked tree.
+`main` scan files changed across the push event's before and after commits.
  The same precedence applies locally and in CI:
 `--rules` > `FORBIDDEN_STRINGS_RULES` > `./forbidden-strings.local.txt`.
 

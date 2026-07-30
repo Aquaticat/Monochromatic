@@ -96,25 +96,32 @@ jobs:
           echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline + shared appendix scan."
         fi
 
-    - name: Scan changed files (PR and merge_group only)
-      # Skipped on push-to-main because the full-tree scan below already
-      # covers everything; on push events `git diff origin/main...HEAD`
-      # is a no-op anyway (HEAD == origin/main after the push). Replaces
-      # the previous `mise exec -- hk check` step, which was forcing mise
-      # to auto-install ~25 unrelated tools (including cargo crates that
-      # compile from source) before running the actual scan.
-      if: github.event_name != 'push'
+    - name: Scan changed files
+      # Pushes use the event's before/after range because origin/main already
+      # points at HEAD after checkout. Pull requests and merge groups retain
+      # their merge-base comparison with main. Replaces both the old full-tree
+      # push scan and the earlier `mise exec -- hk check` step.
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        HEAD_SHA: ${{ github.sha }}
+        PUSH_BASE_SHA: ${{ github.event.before }}
       run: |
         set -euo pipefail
-        mapfile -t changed < <(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
+        if [ "$EVENT_NAME" = 'push' ]; then
+          mapfile -d '' -t changed < <(
+            git diff --name-only --diff-filter=ACMRT -z "$PUSH_BASE_SHA" "$HEAD_SHA"
+          )
+          comparison="$PUSH_BASE_SHA..$HEAD_SHA"
+        else
+          mapfile -d '' -t changed < <(
+            git diff --name-only --diff-filter=ACMRT -z origin/main...HEAD
+          )
+          comparison='origin/main...HEAD'
+        fi
         if [ ${#changed[@]} -eq 0 ]; then
-          echo "No changed files vs origin/main; nothing to scan."
+          echo "No changed files in $comparison; nothing to scan."
           exit 0
         fi
-        printf 'Scanning %d changed file(s):\n' "${#changed[@]}"
+        printf 'Scanning %d changed file(s) from %s:\n' "${#changed[@]}" "$comparison"
         printf '  %s\n' "${changed[@]}"
         forbidden-strings --builtin-rules --rules "$RUNNER_TEMP/forbidden-strings.rules.txt" "${changed[@]}"
-
-    - name: Scan full tree (push to main only)
-      if: github.event_name == 'push'
-      run: forbidden-strings --builtin-rules --rules "$RUNNER_TEMP/forbidden-strings.rules.txt" --all
