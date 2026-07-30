@@ -742,11 +742,29 @@ After `6a98f371a` the same run reports
  is unchanged, so the channel that opened is the capture one rather than a wholesale loss of precision.
 
 The fix charges **per formal**, not per call, which is the design `exposedCaptureOrigins` recorded in its own
- documentation before anything could be measured: only formals the external summary reports as invoked,
- opaque, or a callback-relation source charge what their actual exposes, and a formal the mapping cannot place
- charges every argument. Charging unconditionally would also have been sound and would have thrown away the
- precision the early return exists for, since a summary that reports no fact about a formal is a proof the
- shipped implementation does not invoke, keep or write through it.
+ documentation before anything could be measured: only formals the external summary reports as invoked or
+ opaque charge what their actual exposes, and a formal the mapping cannot place charges every argument.
+ Charging unconditionally would also have been sound and would have thrown away the precision the early
+ return exists for, since a summary that reports no fact about a formal is a proof the shipped
+ implementation does not invoke, keep or write through it.
+
+That precision is measured rather than argued, on an export that stamps its second formal and ignores its
+ first:
+
+```text
+handRowProducerToIgnoredPosition   all sets empty      capture keeps its offer
+stampThroughIgnoringExport         referentMutated=[0] same export resolved and applied
+```
+
+The pair is what makes the first line mean anything. Without the second, an empty result is
+ indistinguishable from a gate that rejected the dependency, and it is also the pair that fails under the
+ unconditional alternative.
+
+Two branch facts, each pinned by its own case, because they arrive differently: an implementation that
+ **keeps** a handed callable records opacity, and one that **calls** it records invocation. A third branch
+ reading `callbackRelations` was removed rather than kept: no mutant could kill it, and reading it was
+ asking about the wrong argument, since a relation names the formal fed **into** a callback and never the
+ formal holding one.
 
 The discriminator worth reusing: **prove the external path ran by which channel carried the fact, not by
  a log.** A consumer function passing the row directly reports opacity with package provenance; if any
