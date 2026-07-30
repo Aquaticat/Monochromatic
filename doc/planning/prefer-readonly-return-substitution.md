@@ -4758,3 +4758,68 @@ Which is now the expected result and says less each time it happens.
 A tagged template, a callable inside a returned literal and a store of what a nested callable
  hands back are all real escapes, all falsified, and none of them occurs in this workspace on a
  parameter that still had an offer to lose.
+
+## Hunt pass three
+
+Fourteen more channels, five offers drawn, one of them the intended control.
+Two were real and are fixed. Two were not defects, and saying why is the useful part.
+
+### A throw was modelled nowhere
+
+```ts
+export function throwRowOutward(thrownOut: Config,): void {
+  throw thrownOut.row;
+}
+```
+
+A throw hands its value to a handler that outlives it by construction, so it is a handoff in
+ exactly the sense a yield is.
+
+This closes a gap that was already recorded elsewhere as a blocker. Task sixty-four declined a
+ precision improvement precisely because a throw is modelled nowhere, which meant no body summary
+ could be complete enough to grant an offer on. That reason is now weaker, though not gone: a throw
+ is recorded here as an escape, which is what task sixty-four needed, and the rest of what it asked
+ for is still missing.
+
+The reasoning that makes it a defect rather than a permitted handoff is the same one that decided
+ the returned callable. A return of caller state is permitted on the condition that callers track
+ it through recorded returned origins. A throw has no such record and no channel to put one in, so
+ the condition cannot hold.
+
+### A destructuring default names its parameter where nothing looked
+
+```ts
+const { row = defaultReached.row, } = {} as { row?: Row; };
+held = row;
+```
+
+The declaration scan read the declaration's own initializer, and that initializer names nothing.
+The parameter is named inside a binding element, so the binding carried no origin and a later
+ store of it attributed nothing.
+
+Binding element defaults are now scanned at any depth, registered against the name each element
+ binds.
+
+### The two that were not defects
+
+A setter parameter, `set kept(row) { this.#kept = row; }`, keeps its offer. That is task
+ fifty-four's shape with `this` as the target rather than a parameter: the instance belongs to
+ whoever called the setter, so storing into it grants that caller nothing it lacked, and deciding
+ otherwise needs the caller-side reachability relation task fifty-four specifies. Not a new
+ finding.
+
+An explicit `this` formal returning `this.row` keeps its offer, which is the permitted return.
+
+### What three passes have established, and what they have not
+
+Passes one, two and three drew forty-two channels and found eight real defects: a construction, a
+ yield, an awaited return, a tagged template, a callable inside a returned literal, a store of what
+ a nested callable hands back, a throw, and a destructuring default.
+
+Two candidates turned out to be correct behaviour, and both were instructive: the callback relation
+ deferring to the caller, and a setter storing into its own instance.
+
+What this does not establish is that the shape space is closed. Each pass has found something, so
+ the honest reading is that passes are still productive rather than that they are converging. The
+ channels covered are listed on task seventy-three so a later reader knows what was actually
+ swept.
