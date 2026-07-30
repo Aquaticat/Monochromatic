@@ -38,10 +38,14 @@ import {
 } from 'typescript/unstable/ast/is';
 import {
   type Project,
+  type Type,
   TypeFlags,
 } from 'typescript/unstable/sync';
 
-import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  typeCanCarryMutableState,
+} from './effect-primitive-origin.ts';
 
 /**
  * Tests whether one call's result can carry mutable state when no owned callee answered.
@@ -78,10 +82,100 @@ export function unresolvedResultCanCarryState({
       callee: root.expression,
     },)))
     return true;
-  return expressionCanCarryMutableState({
-    checker: project.checker,
+  /**
+   * Types the ambient promise resolves to, empty when the result is not one.
+   */
+  const resolved = ambientPromiseResolutions({
+    project,
     node: root,
   },);
+  if (resolved.length === 0)
+    return expressionCanCarryMutableState({
+      checker: project.checker,
+      node: root,
+    },);
+  /* What an await yields is what the awaited value resolves to, so the resolved type decides. `await` is
+   * already transparent one level up at the syntax; this is the same idea at the type. */
+  return resolved.some(function resolvedCarriesState(argument,): boolean {
+    return typeCanCarryMutableState({
+      checker: project.checker,
+      type: argument,
+    },);
+  },);
+}
+
+/**
+ * Names what the ambient promise resolves to, when a result is one.
+ *
+ * Every `async` function's declared return type is an object even when what it resolves to is a leaf, so
+ * the leaf test alone answers that every awaited completion carries state. Measured: that produced the one
+ * new finding of an entire workspace sweep, on a mapping closure completing with an owned async call whose
+ * body returns strings.
+ *
+ * Answers with the resolved types rather than a boolean, because a type predicate cannot narrow a subject
+ * taken from a binding pattern, which is what this codebase's parameter convention requires.
+ *
+ * Bounded to the promise the **language** declares, by requiring every declaration of its symbol to be in a
+ * declaration file. A `Promise` written in analysed source is a different type sharing a name, its members
+ * are whatever someone wrote, and judging it by its type argument would be the mistake this rule avoids
+ * elsewhere. Such a type answers empty and keeps withholding, which costs precision and nothing else.
+ *
+ * The ambient one is safe to look through because its own members are `then`, `catch` and `finally`, and
+ * none of those reaches caller state except through the value it resolves to.
+ *
+ * @param project - TypeScript project typing the result and resolving its symbol.
+ *
+ * @param node - Expression whose result type is inspected.
+ *
+ * @returns types it resolves to, empty when it is not the ambient promise.
+ *
+ * @example
+ * ```ts
+ * ambientPromiseResolutions({ project, node });
+ * ```
+ */
+function ambientPromiseResolutions({
+  project,
+  node,
+}: {
+  readonly project: Project;
+  readonly node: Node;
+},): readonly Type[] {
+  /**
+   * Semantic type of the expression, absent when the bridge cannot classify it.
+   */
+  const type = project.checker
+    .getTypeAtLocation(node,);
+  if ((type === undefined) || (!type.isTypeReference()))
+    return [];
+  /**
+   * Symbol naming this type.
+   */
+  const symbol = type.getSymbol();
+  if ((symbol === undefined) || (symbol.name !== 'Promise'))
+    return [];
+  /**
+   * Declarations that symbol names, as handles needing resolution before their file can be read.
+   */
+  const { declarations, } = symbol;
+  if (declarations.length === 0)
+    return [];
+  if (!declarations.every(function declaredAmbiently(declared,): boolean {
+    /**
+     * Declaration resolved into the project owning it.
+     */
+    const declaration = declared.resolve(project,);
+    if (declaration === undefined)
+      return false;
+    /**
+     * File the declaration is written in.
+     */
+    const { fileName, } = declaration.getSourceFile();
+    return fileName.endsWith('.d.ts',);
+  },))
+    return [];
+  return project.checker
+    .getTypeArguments(type,);
 }
 
 /**

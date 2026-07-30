@@ -690,9 +690,25 @@ children: [
        * keeping its offer and the subject contributing none. */
       /* Seventy-two once a decorator counted as an invocation and stopped being gated on the member it
        * decorates. Two shapes joined, the control keeping its offer and the subject contributing none. */
+      /* Seventy-five once an awaited completion was judged by what it resolves to. Four shapes joined and
+       * three keep offers: the precision subject, whose closure resolves to a label, and both async readers,
+       * whose own parameters are read rather than handed out. The control resolving to the caller's row
+       * contributes none, which is what shows the promise was looked through and the question was not. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(72,);
+      },).length,).toBe(75,);
+      /* The promise pair, and this one is the reverse of every other pair here: the subject must be OFFERED
+       * because the fix recovers precision, and the control must be withheld. A fix that looked through the
+       * question rather than the wrapper would offer to both. */
+      expect(messages.filter(function namesAsyncLabel(message,): boolean {
+        return message.includes('"asyncLabelGotten"',);
+      },),).toEqual([
+        'Parameter "asyncLabelGotten" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesAsyncRow(message,): boolean {
+        return message.includes('"asyncRowGotten"',)
+          && message.includes('should be readonly',);
+      },),).toEqual([],);
       /* The decorator pair. Two changes were needed together and each was a no-op alone, so this pair is
        * the only thing that distinguishes having both from having either. */
       expect(messages.filter(function namesDecorated(message,): boolean {
@@ -1301,11 +1317,14 @@ children: [
        * report.
        *
        * Twenty-four since the held-callable group arrived, one per shape: each of its three registry
-       * parameters is the receiver of a `.register` call. */
+       * parameters is the receiver of a `.register` call.
+       *
+       * Twenty-six since the awaited-completion group arrived, one for each of its two registry
+       * parameters. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(24,);
+      expect(opacityMessages.length,).toBe(26,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)

@@ -4568,3 +4568,84 @@ export function storeFreshThroughDecorator(
 }
 
 //endregion
+
+//region An awaited completion is judged by what it resolves to
+
+/**
+ * Hands back a label, asynchronously.
+ *
+ * @param labelRead - Configuration whose label is read.
+ *
+ * @returns label read in place.
+ *
+ * @example
+ * ```ts
+ * readLabelAsync({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export async function readLabelAsync(labelRead: Config,): Promise<string> {
+  return labelRead.row
+    .label;
+}
+
+/**
+ * Hands back the caller's row, asynchronously.
+ *
+ * @param rowRead - Configuration whose row is handed back.
+ *
+ * @returns caller's row.
+ *
+ * @example
+ * ```ts
+ * readRowAsync({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export async function readRowAsync(rowRead: Config,): Promise<Row> {
+  return rowRead.row;
+}
+
+/**
+ * Keeps a closure completing with an async call resolving to a leaf.
+ *
+ * The precision subject. Every async function's declared return type is an object even when what it
+ * resolves to is a leaf, so the leaf test alone charged this and withheld an honest offer.
+ *
+ * @param asyncLabelGotten - Configuration whose label the closure reads.
+ *
+ * @param asyncRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * keepAsyncLabel({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function keepAsyncLabel(
+  asyncLabelGotten: Config,
+  asyncRegistry: CaptureRegistry,
+): void {
+  asyncRegistry.keep((): Promise<string> => readLabelAsync(asyncLabelGotten,),);
+}
+
+/**
+ * Keeps a closure completing with an async call resolving to the caller's row.
+ *
+ * The control that must still withhold, so looking through the promise is shown to look through the
+ * wrapper rather than through the question.
+ *
+ * @param asyncRowGotten - Configuration whose row the closure hands out.
+ *
+ * @param asyncRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * keepAsyncRow({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function keepAsyncRow(
+  asyncRowGotten: Config,
+  asyncRegistry: CaptureRegistry,
+): void {
+  asyncRegistry.keep((): Promise<Row> => readRowAsync(asyncRowGotten,),);
+}
+
+//endregion
