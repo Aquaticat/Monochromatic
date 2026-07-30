@@ -370,30 +370,60 @@ Every spelling of that read now answers: element access, a destructuring pattern
      activation. Falsify the assignment-alias form before fixing.
 -    **#81**, an owned call written only in a parameter default is invisible to the ownership scan.
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
--    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix: the sweep
-     with the gate ran faster than the one before it, so nothing measured shows a problem.
--    **#90** and **#92**, both sharing the `completionCanCarryState` fallback, and now established by
-     reading to be **two changes in one function rather than one change covering both**. #90's shape
-     reaches the `callees.length === 0` branch, where there is no candidate answer to join and the static
-     `void` decides alone; #92's remedy is a disjunct on the branch below it. So #90 goes first, because
-     making `void` untrusted in the fallback changes what #92's disjunction joins against.
+-    **#87** is **closed as declined**, with a measurement rather than a hunch. Three cold full sweeps
+     spanning the four walk-widening fixes came in at 7m58s, 8m44s and 8m54s, so no cost class changed
+     and there is nothing for memoisation to justify. Memo keys recorded in case a later change moves
+     that series: `callableResultCanCarryState`, `transitiveCallableOrigins`, `packagedActualCallables`.
+-    **#92**, callable candidates treated as exhaustive, now measured and stated better than it was
+     filed. Two forwarders differing in exactly one token sequence:
 
-     #90's basis is narrower than "void describes an ignored return value". TypeScript specifically
-     permits assigning `() => Row` where `() => void` is expected, and does **not** permit assigning
-     `() => Row` where `() => string` is expected. So a `void` return annotation on a callable *type*
-     constrains nothing about what the callable returns, while a `string` one does. That asymmetry, not
-     void's meaning, is what would justify distrusting one and trusting the other, and it needs verifying
-     against the compiler before anything is built on it.
+     ```ts
+     export function forwardBareProducer(registry: Registry, producer: () => Row | string,): void {
+       registry.keep((): Row | string => producer(),);
+     }
 
-     The scoping problem #90 must solve: a call to a genuinely void-returning named declaration must keep
-     its offer, or every closure ending in a logging call is withheld. The candidate distinction is
-     between a declaration whose own body hands nothing back and a value whose annotation says so.
+     export function forwardDefaultedProducer(
+       registry: Registry,
+       producer: () => Row | string = (): string => 'leaf',
+     ): void {
+       registry.keep((): Row | string => producer(),);
+     }
+     ```
 
-     #92 needs one more thing before it counts as unsoundness rather than imprecision, and the fifth
-     clause of the bar is why. If a caller supplies the callable that produces the row, the caller
-     supplied the escape and nothing about the callee's offer was falsified. So #92's shape must fill the
-     candidate binding **from inside** the callable, which is why it is being measured as a binding filled
-     by assignment after a leaf-returning initializer, and why it overlaps #82.
+     **Writing a default removes a withholding that the same code without the default has.** With no
+     default the list is empty, the static type decides, and the caller's configuration is charged. With
+     the default the list holds one leaf-returning callable, `some` answers false, and the caller's
+     configuration is offered. No void and no assignment involved, so the exhaustiveness assumption is
+     isolated by elimination.
+
+     The design is a completeness-aware join rather than an unconditional disjunct, because only the
+     former distinguishes evidence from a guess: any known candidate carrying state answers true, an
+     exhaustive list answers false, and anything else falls through to #90's fallback. That unifies the
+     two rather than stacking them, and it answers the shape neither fix alone handles, a formal
+     defaulting to `(): void => {}`.
+
+     **Exhaustiveness must be reported by the resolver, not reconstructed afterward.**
+     `packagedActualCallables` silently drops any value whose callable cannot be resolved, so
+     `const select = flag ? ownedFn : externalFn` yields one candidate while a `const` binding looks
+     complete. Deriving exhaustiveness from `const` versus `let` is therefore unsound in the `const`
+     direction. No witness was built for this, and it is adopted anyway because the alternative
+     derivation is unsound by construction.
+
+     The precision control it needs is not the one filed with it. `storeFreshSelector` is clean because
+     no configuration origin reaches its closure at all, so it never exercises the gate. The real control
+     is reachable origin plus exhaustive list plus leaf-returning candidate, which must stay offered:
+
+     ```ts
+     const select: () => string = (): string => config.row.label;
+     registry.keep((): string => select(),);
+     ```
+
+     And the same fail-open exists at a second site. `exposingCallables` returns the filtered candidate
+     list, and `recordUnresolvedCaptureOpacity` records nothing for an empty one, so empty reads as
+     "exposes nothing" there too. The direct-argument path is covered today by the ordinary origin
+     channel, which charges a parameter handed straight to an unresolved call, so the hole needs a
+     non-parameter actual to reach. Measure before changing that site.
+
 -    **#95**, tagged templates as invocations. Located by reading.
 -    **#100**, a capture channel for external effect application. Confirmed reachable rather than
      theoretical: `applyExternalEffect` does handle callback relations and maps them only through
@@ -420,6 +450,14 @@ Eight items, each falsified at the five-clause bar, each pinned by a fixture gro
 -    **#99**, argument retention at a callback call.
 -    **#94**, every way source spells a property read.
 -    **#96**, correcting the claim that a nested callable has no summary of its own.
+-    **#90**, a declared `void` result answering for a slot rather than for a body. TypeScript permits
+     assigning a value-returning function where a void-returning one is expected and permits no other
+     such substitution, which was verified against the compiler with an expect-error control rather than
+     recalled. The line the fix draws is body against slot: a declaration states `void` about its own
+     implementation, while a parameter, a mutable local or a member signature names a slot the language
+     permits to return something. Two costs are recorded rather than hidden, both awaiting a sweep for
+     their price: a closure completing with `console.log` now withholds, since that name resolves to a
+     member signature on a variable's type, and a member signature returning `void` is trusted nowhere.
 
 ### The pattern worth carrying forward
 
@@ -427,6 +465,52 @@ Three of those eight were one shape: a branch in `inspectEffectCall` classifies 
  question, and returns before something every call needs. An early return there is a claim that
  everything after it is irrelevant to that kind of call, and the claim has been wrong three times out of
  three. #100 is the remaining instance.
+
+### The audit that replaces finding this class one at a time
+
+Six defects in this work are one defect: a channel maps ordinary parameter origins and has no capture
+ channel. #69, #79, #86, #91, #100 and #95 were each found and filed separately.
+
+Captures are kept beside ordinary origins rather than folded into them, which stays right. The
+ consequence nobody stated is that every channel written against ordinary origins has a capture hole
+ until someone adds one, and nothing in the code says which channels have.
+
+The audit is one grep against another, every caller of `parameterIndexes` against every site with a
+ capture channel. Its result is sharper than expected: the five channels lacking one are every function
+ in `effect-outward-handoff.ts` plus `applyExternalEffect`, and those are exactly the two modules among
+ the candidates that never import `effect-callable-capture-closure.ts`. The boundary of the hole is a
+ module import boundary, visible without reading a function body.
+
+Generalised: **when a design deliberately keeps two kinds of fact apart, enumerate every consumer of the
+ first and ask which consume the second.** Four hunt passes drew 44 channels and found none of these
+ five, because a hunt pass samples shapes while this samples the code.
+
+The limit travels with it. The audit says which channels lack the channel, not which of them a real
+ escape reaches. #100's shape is confirmed reachable, #95's argued, #102's and #103's unmeasured, and
+ each still needs its own falsification.
+
+### What sweep five settled, and the one prediction it broke
+
+Offers held at 31, no category but argument opacity moved, three findings added and two removed, runtime
+ 8m54s. Two of the additions are two of the removals with enriched call lists.
+
+All five movers trace to one cause, a defaulted callable formal resolved to the callable its default
+ names and followed into another file: `exists = generatedFileExists` and
+ `watchDirectoryImpl = watchDirectory`. All are true at their own source, since a default runs whenever a
+ caller omits the argument.
+
+The pre-registered prediction that offers would fall was wrong, and the reason matters more than the
+ prediction. Offers are 31 findings out of 2005, and they are the parameters that already survived every
+ other channel, so a new withholding reason lands on the already-withheld majority. **A sweep measures
+ what a fix does to that majority and says almost nothing about the offered minority either way.**
+
+So the criterion clause about sampling falling offers has gone untested three sweeps running and needs
+ rewriting rather than repeating: an offer falling would be surprising, worth sampling hard when it
+ happens, and its absence is not evidence that a fix withheld nothing.
+
+One caveat against carrying that too far. Defaulted callable formals demonstrably occur in this
+ workspace, since this sweep's own deltas named two, so #92 is the first fix whose target shape a sweep
+ has actually found. An offer loss there is genuinely plausible.
 
 ### The instrument limit the null sweep established
 
