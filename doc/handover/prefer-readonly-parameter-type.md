@@ -426,9 +426,22 @@ Two corollaries worth carrying:
  the construction each cost one clause there, and the second cost only one clause **because** the first was
  written as "what does this node invoke" rather than as a second `if`.
 
-So the syntaxes that can carry this defect are now short and enumerable rather than a matter of inspecting
- call sites: a call, a tagged template, a construction, and whatever else invokes. Decorators are the
- candidate not yet measured, filed as #114 with a probe rather than a clause.
+All four invoking syntaxes are now recognised: a call, a tagged template, a construction, and a decorator.
+ `super()` and an optional call needed nothing, the first because recognising its enclosing construction
+ sufficed and the second because it is already a call.
+
+**But recognition is only the first of four steps**, and the decorator proved it. Recognition, activation,
+ ancestry and the body scan all have to admit a shape. The decorator needed its clause **and** a repair to
+ #70's ancestry gate, because a decorator is lexically inside the declaration it decorates and does not run
+ inside it: it runs when the class is defined, whether or not the decorated member is ever called. Each change
+ was a no-op alone and both halves die independently under mutation.
+
+So the rule is one-directional. An unseen invocation is an unscanned body; **a seen invocation is not
+ necessarily a scanned one.**
+
+And one qualification to the do-not-land-a-no-op rule, learned by tripping over it here. **A no-op means the
+ change alone is insufficient, not that the path is unreachable.** Reverting is still right; concluding
+ "unreachable" is not. Record the weaker claim, which is what made resuming this cheap.
 
 **Two relations that look like duplicates often are not.** Captures against ordinary origins, reach against
  the value walk, and the accessor reach walk against the value walk all share syntax and answer different
