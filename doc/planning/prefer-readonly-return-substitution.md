@@ -6347,3 +6347,79 @@ An offer that vanishes with no added finding naming it is not noise. It means so
  tallying.
 
 This replaces per-loss manual reasoning with a rule that can fail, which is the point.
+
+## Sweep six, read against a prediction whose premise was already withdrawn
+
+Commit `d1586f194`, both artifacts rebuilt in order, both digests recorded before the run and re-verified
+ byte-identical after it.
+
+```text
+before 2005: argument-opacity=1283 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+after  2006: argument-opacity=1284 receiver-opacity=648 dishonest=37 offer=31 stale-mutates=6
+added   1: argument-opacity=1
+removed 0:
+runtime 8m48s
+```
+
+Runtime lands in the series at 7m58s, 8m44s, 8m54s, 8m48s. No cost class changed, which is what #87's
+ closure already concluded and this confirms across two more landed fixes.
+
+**Offers held at 31 and the prediction that they would fall was wrong again.** Its premise had already been
+ withdrawn in the section above, before the capture was read, so this is a prediction failing on a reason
+ already recorded rather than a new surprise.
+
+The attribution invariant is vacuously satisfied: no offer was lost, so there is no loss needing a matching
+ finding. It remains the right instrument and has still never been exercised.
+
+### The one added finding, and the cause is sharper than the prediction expected
+
+```ts
+async function checkCompletedChildren(
+  { parentSessionId, consume, env = process.env, }: { /* ... */ },
+): Promise<string | typeof NOTHING_TO_REPORT> {
+  const entries = await readSpawnsDir(env,);
+  const candidates = await Promise.all(entries.map(
+    function readCandidate(filename,): Promise<string | typeof SKIPPED_CHILD> {
+      return consumeMatchingChild({ filename, parentSessionId, consume, env, },);
+    },
+  ),);
+```
+
+`env` is captured by a closure handed to `entries.map`, and the finding names that call.
+
+It is the candidate-list join that produced it, and not through the shape the join was built for. The
+ completion is `consumeMatchingChild(...)`, an owned call whose body returns strings, so the candidate
+ answer is false exactly as before. The declared answer now joins it, and the declared type is
+ `Promise<string | typeof SKIPPED_CHILD>`. A promise is an object by the leaf test, so the declared answer
+ is true, so the capture is charged.
+
+**Every async function's declared return type is an object even when what it resolves to is a leaf.** That
+ is the precision cost the review predicted for an unconditional join, and it arrives through the most
+ ordinary idiom in this workspace rather than through an exotic one: a mapping closure that returns a
+ promise.
+
+The finding is conservative rather than true. `Array.prototype.map` does not retain its callback, and the
+ promises it collects come back to this caller. Withholding on it is safe and imprecise.
+
+### What it actually cost, measured rather than feared
+
+Nothing that a reader can act on and nothing a consumer can observe:
+
+-    No offer moved, so `env` was already withheld for other reasons and remains so.
+-    One diagnostic gained one more call in its list.
+-    The load-bearing precision claim survives unchanged, because
+     `rows.map((row) => config.row.label,)` completes with a string and is untouched.
+
+So the cost is one sentence in one existing diagnostic, workspace-wide. Filed rather than fixed, because
+ the fix is a narrow one worth doing on its own evidence rather than bundled here, and because the safe
+ direction is the one it currently takes.
+
+### The correction this makes to how the join was justified
+
+The commit that landed the join said its cost is "precision only where a declaration is looser than its
+ body". That is true and it undersold the frequency, because it read as an unusual case. An `async`
+ function's declaration is looser than its body by construction, for every async function ever written, so
+ the affected population is not unusual at all. What keeps the measured cost at one finding is not that the
+ shape is rare but that the parameters it reaches are already withheld.
+
+That is worth separating, because the two would come apart in a codebase with more offers.
