@@ -6545,3 +6545,60 @@ The external positional mapping rests on an unproven precondition. `applyExterna
  not, `external(...tuple,)` is an existing ordinary-origin hole and a new capture array would inherit it.
 
 And `effect-outward-handoff.ts`'s module header still says two syntax sites while the module handles four.
+
+## The outward handoffs, measured, fixed and mutation-checked as one change
+
+Before, with a control beside every subject:
+
+```text
+handClosureToConstruction        opq=[]   handFreshClosureToConstruction  opq=[]
+yieldClosureOut                  opq=[]   yieldFreshClosureOut            opq=[]
+throwClosureOut                  opq=[]   throwFreshClosureOut            opq=[]
+handClosureToExternalMapper      opq=[]
+```
+
+Subject and control identical at every site, which is the signature of a channel that does not run rather
+ than one that answers wrongly.
+
+After:
+
+```text
+handClosureToConstruction        opq=[0]  handFreshClosureToConstruction  opq=[]
+yieldClosureOut                  opq=[0]  yieldFreshClosureOut            opq=[]
+throwClosureOut                  opq=[0]  throwFreshClosureOut            opq=[]
+handClosureToExternalMapper      opq=[]
+```
+
+Fixture offers 65 to 68, exactly the three controls. The mutant emptying the shared recorder restored all
+ three, 68 to 71. Construction and yield were falsified at the bar with a driver observing the caller's own
+ state change.
+
+### Two shapes the review expected to be open and were not, or were
+
+The aggregate-descent worry was that a thrown object carrying a closure has no ordinary origin, so the
+ capture query would need to descend through aggregates or the object form would stay open while the bare
+ form looked done. Measured:
+
+```text
+throwAggregateClosureOut     opq=[0]   already charged
+handAggregateToConstruction  opq=[]    still clean
+```
+
+`throw { produce: (): Row => config.row, }` was **already charged** before this fix, through the
+ object-literal descent the ordinary origin channel gained in #57. So the descent exists and this change
+ needed nothing for it.
+
+What stayed clean is `new ProducerKeeper({ produce: ... }.produce,)`, a **property read** off the literal
+ rather than the literal itself. That is the value walk's gap, not the handoff channel's, and it is
+ #106. Recording which of the two forms is open matters, because "aggregates" named both and only one is.
+
+### The external channel is not the shape I probed
+
+`handClosureToExternalRetainer`, handing a capturing closure to `setTimeout`, measured `opq=[0]` **before**
+ any of this. A host global has no shipped implementation to resolve, so that call never reaches
+ `applyExternalEffect` at all; it goes to the unresolved boundary, which has had a capture channel since
+ #79.
+
+So #100 needs a callee with a resolvable shipped implementation, a workspace or package export, and the
+ probe written for it measured a different channel entirely. Worth recording because a green-looking probe
+ there would have "confirmed" a fix that never ran.
