@@ -136,10 +136,21 @@ a property,
 or an interface member with a call to a function declaration in the configured project.
 The rule reads the body and judges by what it actually returns.
 
-Bring the callee into the analysis.
-If the retaining callee is repository-owned,
-including it in the nearest `tsconfig.json` lets the rule resolve it,
+Bring the callee into the analysis,
+but only if it is a plain function or a `static` method.
+Including a repository-owned callee in the nearest `tsconfig.json` lets the rule resolve it,
 after which the closure is judged against what that callee really does with it.
+
+This does **not** work for an ordinary instance method,
+however visible its body is.
+An instance method can be overridden by a subclass that need not exist in this project,
+and an override can retain what the base only reads,
+so the rule treats every overridable method as unresolved on purpose.
+Adding the file to a `tsconfig.json` changes nothing for `registry.keep(...)` where `keep` is an instance
+method.
+Making the method `static`,
+or extracting the retaining logic into a plain function,
+is what makes it resolvable.
 
 Hand over a snapshot rather than a capability.
 Compute the value before the closure exists and let the closure close over the copy:
