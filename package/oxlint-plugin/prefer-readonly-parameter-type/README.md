@@ -200,6 +200,41 @@ which then correctly fail because a builtin ships no implementation to inspect.
 So in ordinary code this path resolves rarely,
 and a parameter is withheld by the unresolved boundary rather than by a proven external effect.
 
+### A closure handed to an export whose implementation keeps or calls it
+
+When the shipped implementation **is** inspected, what it proves is read per parameter position.
+A closure argument is judged by what that position does with it:
+
+```ts
+import { retainCallback, ignoreCallback, } from 'some-package';
+
+// Withheld. The implementation keeps this callback past its own return,
+// and invoking it later hands back the caller's own row.
+export function keep(config: Config,): void {
+  retainCallback((): Row => config.row,);
+}
+
+// Offered. The implementation never invokes, keeps, or writes through this position,
+// so nothing the closure could hand back is reachable.
+export function ignore(config: Config,): void {
+  ignoreCallback((): Row => config.row,);
+}
+```
+
+The second case is the reason this is decided per position rather than per call.
+An external summary is a proof about the shipped implementation,
+so a position it reports no fact about is a position that implementation demonstrably does not use.
+
+Two details worth knowing when reading a report:
+
+-   A closure that **writes** its capture is withheld anyway,
+     by the ordinary direct-write attribution, whatever the callee is.
+     Only a closure that reads and hands its capture back depends on this rule.
+-   The declared callback type does not decide it.
+     TypeScript accepts a value-returning function where `() => void` is expected,
+     so `(): Row => config.row` passes for a `() => void` parameter,
+     and the closure that was actually written is what gets inspected.
+
 ## Retained closures
 
 Handing a closure to a callee this rule cannot inspect does not by itself withhold an offer.
