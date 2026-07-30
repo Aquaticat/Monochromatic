@@ -7212,3 +7212,25 @@ And `symbol.declarations` holds handles rather than nodes, so `.resolve(project,
 The revert follows the same rule as the two before it, and the reason differs: those were reverted because
  nothing exercised them, this because the edit damaged the file. Worth distinguishing, since only the first
  kind says anything about the fix.
+
+### And it landed, with the first inverse mutation signature in this effort
+
+Second attempt, using anchored replacements rather than index slicing, which is the only thing that had gone
+ wrong the first time.
+
+```text
+keepAsyncLabel   opq=[1]     offered, precision recovered
+keepAsyncRow     opq=[1,0]   still withheld, control holds
+```
+
+Fixture offers 72 to 75, receiver opacity 24 to 26, and the mutation check reads **75 to 74**.
+
+That delta is worth pausing on. Every other fix in this effort kills its mutant by **raising** the offer count,
+ because removing a withholding restores a false offer. This one kills by **lowering** it, because removing a
+ precision recovery re-withholds an honest one. Both are correct kills and they point in opposite directions,
+ so a mutation check read only as "the number moved" would have been satisfied by either. Reading which way it
+ moved is what confirms the fix does what it claims.
+
+The same asymmetry appears in the fixture pair. Every other pair in that file wants its subject withheld and
+ its control offered; this pair wants the reverse. A fix that looked through the **question** rather than
+ through the wrapper would offer to both, which is exactly what the pair is there to catch.
