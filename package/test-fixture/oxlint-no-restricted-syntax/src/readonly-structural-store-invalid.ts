@@ -4265,3 +4265,88 @@ export function throwFreshClosureOut(neitherThrownGotten: Config,): void {
 }
 
 //endregion
+
+//region Callable values the value walk did not follow
+
+/**
+ * Hands over a closure pulled out of an object literal by a destructuring pattern.
+ *
+ * A binding element declaring no default of its own named nothing, so the pattern's source was never
+ * followed and this recorded no effect at all while the registry retained a closure over the caller's
+ * row.
+ *
+ * @param patternHeldGotten - Configuration whose row the carried closure hands out.
+ *
+ * @param walkRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handDestructuredClosure({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handDestructuredClosure(
+  patternHeldGotten: Config,
+  walkRegistry: CaptureRegistry,
+): void {
+  const { producer, } = { producer: (): Row => patternHeldGotten.row, };
+  walkRegistry.register(producer,);
+}
+
+/**
+ * Hands over a closure read off an object literal held in a local.
+ *
+ * A property read names a value exactly as an identifier does, and only the identifier was followed.
+ * Distinct from the accessor reach walk, which answers what a body can get to rather than what a given
+ * expression holds.
+ *
+ * @param readHeldGotten - Configuration whose row the carried closure hands out.
+ *
+ * @param walkRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handPropertyReadClosure({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handPropertyReadClosure(
+  readHeldGotten: Config,
+  walkRegistry: CaptureRegistry,
+): void {
+  /**
+   * Holder carrying a closure that hands back the caller's row.
+   */
+  const readHolder = { producer: (): Row => readHeldGotten.row, };
+  walkRegistry.register(readHolder.producer,);
+}
+
+/**
+ * Hands over a closure read off a literal whose closure allocates.
+ *
+ * The control for both forms. Following a property read must not charge a holder whose closure hands
+ * back nothing the caller owns.
+ *
+ * @param neitherHeldGotten - Configuration read in place.
+ *
+ * @param walkRegistry - Registry keeping the closure.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handFreshHeldClosure({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handFreshHeldClosure(
+  neitherHeldGotten: Config,
+  walkRegistry: CaptureRegistry,
+): number {
+  /**
+   * Holder carrying a closure that allocates.
+   */
+  const freshHolder = { producer: allocateHandedRow, };
+  walkRegistry.register(freshHolder.producer,);
+  return neitherHeldGotten.rows
+    .length;
+}
+
+//endregion

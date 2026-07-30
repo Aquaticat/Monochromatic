@@ -33,6 +33,7 @@
  */
 
 import {
+  type BindingElement,
   type Identifier,
   type Node,
   SyntaxKind,
@@ -44,15 +45,20 @@ import {
   isConditionalExpression,
   isIdentifier,
   isNonNullExpression,
+  isObjectLiteralExpression,
   isParenthesizedExpression,
   isParameterDeclaration,
+  isPropertyAccessExpression,
+  isPropertyAssignment,
   isSatisfiesExpression,
+  isShorthandPropertyAssignment,
   isVariableDeclaration,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import { callableDeclaration, } from './effect-call-resolution.ts';
 import {
+  collectAstNodes,
   isEffectCallableDeclaration,
   OWNED_CALLABLE_UNAVAILABLE,
 } from './effect-summary-model.ts';
@@ -182,12 +188,69 @@ function followedValues({
       return [node.right,];
     return [];
   }
+  /* A property read names a value the same way an identifier does, and this walk followed only the
+   * identifier. Measured: `registry.keep(holder.producer,)`, where `holder` is a literal carrying a
+   * closure over the caller's row, recorded nothing at all and read identically to a control whose
+   * literal allocates. The reach walk added elsewhere answers a different question, what a body can
+   * get to, and cannot answer this one, which is what a given expression holds. */
+  if (isPropertyAccessExpression(node,))
+    return propertyAssignedValues({
+      project,
+      name: node.name,
+    },);
   if (!isIdentifier(node,))
     return [];
   return aliasedInitializer({
     project,
     node,
   },);
+}
+
+/**
+ * Follows one property name to the values a property assignment gives it.
+ *
+ * Resolved through the name's own symbol rather than by walking the receiver, so an aliased or
+ * conditionally chosen holder needs no separate case: the checker already decided which declaration
+ * this name refers to.
+ *
+ * A shorthand assignment answers with its own name, which the worklist then expands, so
+ * `{ producer, }` reaches whatever `producer` holds without a second branch here.
+ *
+ * @param project - TypeScript project resolving the property name.
+ *
+ * @param name - Property name being read.
+ *
+ * @returns values the property assignments naming it hold.
+ *
+ * @example
+ * ```ts
+ * propertyAssignedValues({ project, name });
+ * ```
+ */
+function propertyAssignedValues({
+  project,
+  name,
+}: {
+  readonly project: Project;
+  readonly name: Node;
+},): readonly Node[] {
+  return (project.checker
+    .getSymbolAtLocation(name,)
+    ?.declarations
+    ?? [])
+    .flatMap(function assignedValue(declared,): readonly Node[] {
+      /**
+       * Declaration resolved into the project owning it.
+       */
+      const declaration = declared.resolve(project,);
+      if (declaration === undefined)
+        return [];
+      if (isPropertyAssignment(declaration,))
+        return [declaration.initializer,];
+      if (isShorthandPropertyAssignment(declaration,))
+        return [declaration.name,];
+      return [];
+    },);
 }
 
 /**
@@ -256,8 +319,17 @@ function aliasedInitializer({
    * declares the default on the element rather than on the parameter, and excluding it left a call
    * to that binding resolving to the declared type and reaching nothing, so a default closure
    * writing through what it receives had that write attributed to nobody. */
+  /* Without a default, a binding element still names a value: whatever the pattern was filled from
+   * holds at that property. Measured: `const { producer, } = { producer: (): Row => config.row, },`
+   * handed to a retaining callee recorded nothing, because the element declares no initializer and
+   * nothing followed the pattern back to its source. */
   if (isBindingElement(declaration,))
-    return declaration.initializer === undefined ? [] : [declaration.initializer,];
+    return declaration.initializer === undefined
+      ? destructuredPropertyValues({
+        project,
+        element: declaration,
+      },)
+      : [declaration.initializer,];
   if (!isParameterDeclaration(declaration,))
     return [];
   return declaration.initializer === undefined ? [] : [declaration.initializer,];
@@ -343,4 +415,120 @@ export function packagedActualCallables({
       );
     },);
   return [...found.values(),];
+}
+
+/**
+ * Follows one binding element back to the property its pattern was filled from.
+ *
+ * Answers only for a named property in an object pattern whose declaration carries an initializer.
+ * An array pattern, a rest element and a pattern filled by assignment all hand back nothing, which is
+ * correct for this walk: what they hold is not written where the binding is declared, and guessing
+ * would claim a value the source never gave.
+ *
+ * @param project - TypeScript project resolving the pattern's source.
+ *
+ * @param element - Binding element declaring no default of its own.
+ *
+ * @returns values the matching property holds.
+ *
+ * @example
+ * ```ts
+ * destructuredPropertyValues({ project, element });
+ * ```
+ */
+function destructuredPropertyValues({
+  project,
+  element,
+}: {
+  readonly project: Project;
+  readonly element: BindingElement;
+},): readonly Node[] {
+  /**
+   * Name the element binds under, which is the property name unless it was renamed.
+   */
+  const bound = element.propertyName ?? element.name;
+  if ((bound === undefined) || (!isIdentifier(bound,)))
+    return [];
+  /**
+   * Pattern this element belongs to.
+   */
+  const pattern = element.parent;
+  /**
+   * Declaration the pattern containing this element belongs to.
+   */
+  const owner = pattern.parent;
+  /**
+   * Whether the owning declaration is one that can carry an initializer.
+   */
+  const declaresInitializer = isVariableDeclaration(owner,)
+    || isParameterDeclaration(owner,)
+    || isBindingElement(owner,);
+  /**
+   * Expression the pattern was filled from, absent when nothing was written there.
+   */
+  const filled = declaresInitializer ? owner.initializer : undefined;
+  if (filled === undefined)
+    return [];
+  return propertyValuesOfLiteral({
+    project,
+    filled,
+    propertyName: bound.text,
+  },);
+}
+
+/**
+ * Names the values one literal gives a named property.
+ *
+ * The literal is reached through this walk rather than taken as written, so an alias, a conditional
+ * and a parameter default all answer, and each candidate that is not a literal contributes nothing.
+ *
+ * @param project - TypeScript project resolving what the expression holds.
+ *
+ * @param filled - Expression the pattern was filled from.
+ *
+ * @param propertyName - Property the binding takes its value from.
+ *
+ * @returns values that property holds across every literal the expression can be.
+ *
+ * @example
+ * ```ts
+ * propertyValuesOfLiteral({ project, filled, propertyName });
+ * ```
+ */
+function propertyValuesOfLiteral({
+  project,
+  filled,
+  propertyName,
+}: {
+  readonly project: Project;
+  readonly filled: Node;
+  readonly propertyName: string;
+},): readonly Node[] {
+  return possibleValueNodes({
+    project,
+    node: filled,
+  },)
+    .filter(function isLiteral(value,): boolean {
+      return isObjectLiteralExpression(value,);
+    },)
+    .flatMap(function matchingProperties(literal,): readonly Node[] {
+      return collectAstNodes(literal,)
+        .flatMap(function matchingProperty(member,): readonly Node[] {
+          if (isPropertyAssignment(member,) && isIdentifier(member.name,)) {
+            /**
+             * Name this assignment gives its value.
+             */
+            const { text, } = member.name;
+            return text === propertyName ? [member.initializer,] : [];
+          }
+          if (isShorthandPropertyAssignment(member,) && isIdentifier(member.name,)) {
+            /**
+             * Name this shorthand both reads and gives.
+             */
+            const { text, } = member.name;
+            return text === propertyName ? [member.name,] : [];
+          }
+          return [];
+        },);
+    },);
 }

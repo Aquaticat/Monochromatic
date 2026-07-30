@@ -682,9 +682,28 @@ children: [
        * leaves. The subject contributes none, and the two forwarders' own producers are callables. */
       /* Sixty-eight once the outward handoffs asked about captures. Six shapes joined, three subjects
        * contributing none and three controls keeping their offers, one pair per handoff syntax. */
+      /* Sixty-nine once the value walk followed a destructuring source and a property read. Three
+       * shapes joined and exactly one keeps an offer, the control whose held closure allocates. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(68,);
+      },).length,).toBe(69,);
+      /* Both held-callable subjects charged and the shared control offered. Asserted as agreement,
+       * because following a receiver too eagerly would charge all three and following nothing charges
+       * none, and only the pairing separates those. */
+      expect([
+        'patternHeldGotten',
+        'readHeldGotten',
+      ].flatMap(function heldSubjectOffers(name,): readonly string[] {
+        return messages.filter(function namesHeldSubject(message,): boolean {
+          return message.includes(`"${name}"`,)
+            && message.includes('should be readonly',);
+        },);
+      },),).toEqual([],);
+      expect(messages.filter(function namesNeitherHeld(message,): boolean {
+        return message.includes('"neitherHeldGotten"',);
+      },),).toEqual([
+        'Parameter "neitherHeldGotten" should be readonly: property rows is writable.',
+      ],);
       /* One pair per handoff syntax, asserted as agreement across all six at once. The three subjects
        * must draw no offer and the three controls must each draw exactly one, and only the pairing tells
        * a working channel from one that charges every handed value. */
@@ -1240,11 +1259,14 @@ children: [
        * Twenty-one since the candidate-list group arrived, which added three the same way: its two
        * forwarders call `.keep` on their own registry, and its subject and control each hand a registry
        * to one of them, with one of those four sharing a registry parameter rather than adding a
-       * report. */
+       * report.
+       *
+       * Twenty-four since the held-callable group arrived, one per shape: each of its three registry
+       * parameters is the receiver of a `.register` call. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(21,);
+      expect(opacityMessages.length,).toBe(24,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)
