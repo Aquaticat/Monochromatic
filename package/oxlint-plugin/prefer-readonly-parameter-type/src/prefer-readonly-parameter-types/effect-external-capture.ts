@@ -52,7 +52,11 @@ import type { Project, } from 'typescript/unstable/sync';
 
 import { addOpaqueEffect, } from './effect-call-resolution.ts';
 import { formalActualPositions, } from './effect-formal-actual-mapping.ts';
-import { isEffectCallableDeclaration, type MutableEffectSummary, type SlotOrigins, } from './effect-summary-model.ts';
+import {
+  isEffectCallableDeclaration,
+  type MutableEffectSummary,
+  type SlotOrigins,
+} from './effect-summary-model.ts';
 import { exposedCaptureOrigins, } from './effect-unresolved-capture.ts';
 import type { ExternalCallableEffect, } from './external-callable-effect.ts';
 
