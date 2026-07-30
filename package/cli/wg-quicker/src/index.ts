@@ -93,6 +93,9 @@ l.debug(`${subcommand} ${target}`,);
 /**
  * Parsed config for the requested interface.
  */
-const config = await loadConfig({ arg: target, },);
+const config = await loadConfig({
+  arg: target,
+  expandAllowedIps: subcommand === 'up',
+},);
 
 await (subcommand === 'up' ? up({ config, },) : down({ config, },));

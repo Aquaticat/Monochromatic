@@ -1,8 +1,50 @@
 import { homedir, } from 'node:os';
 
 import { ConfigError, } from './errors.ts';
-import type { AllowedFromFiles, } from './config.ts';
-import { splitWords, } from './text.ts';
+import {
+  splitWords,
+  trimLinear,
+} from './text.ts';
+
+/**
+ * Paths parsed from one peer's `AllowedIPsFromFiles` value.
+ */
+export type AllowedFromFilesPaths = {
+  /**
+   * File containing allowed address-set entries.
+   */
+  readonly allowed: string;
+
+  /**
+   * File containing disallowed address-set entries.
+   */
+  readonly disallowed: string;
+};
+
+/**
+ * Strips inline comment and trims without regular expression.
+ *
+ * @param line - Raw config line.
+ *
+ * @returns Content before first comment introducer.
+ *
+ * @example
+ * ```ts
+ * stripComment({ line: 'Address = 10.0.0.1/32 # tunnel' });
+ * ```
+ */
+export function stripComment(
+  { line, }: { readonly line: string; },
+): string {
+  /**
+   * First comment introducer or absent index.
+   */
+  const hash = line.indexOf('#',);
+  return trimLinear({ value: hash === (-1) ? line : line.slice(
+    0,
+    hash,
+  ), },);
+}
 
 /**
  * Parses the `AllowedIPsFromFiles` value into its two file paths.
@@ -20,7 +62,7 @@ import { splitWords, } from './text.ts';
  */
 export function parseAllowedFromFiles(
   { value, }: { readonly value: string; },
-): AllowedFromFiles {
+): AllowedFromFilesPaths {
   /**
    * Whitespace-separated path tokens.
    */
@@ -59,6 +101,27 @@ export function expandHome({ path, }: { readonly path: string; },): string {
   if (path.startsWith('~/',))
     return `${homedir()}${path.slice(1,)}`;
   return path;
+}
+
+/**
+ * Reports whether DNS token is IP literal rather than search domain.
+ *
+ * @param token - One comma-separated DNS token.
+ *
+ * @returns True when token is digits/dots or contains IPv6 colon.
+ *
+ * @example
+ * ```ts
+ * isIpLiteral({ token: '198.245.51.147' });
+ * ```
+ */
+export function isIpLiteral(
+  { token, }: { readonly token: string; },
+): boolean {
+  if (token.includes(':',))
+    return true;
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Anchored IPv4 token classification on short DNS field avoids rescanning giant AllowedIPs values and has no backtracking.
+  return /^[0-9.]+$/u.test(token,);
 }
 
 /**
