@@ -805,11 +805,15 @@ Cost, measured rather than assumed: creating the child takes 1.6 ms to 4.7 ms, a
  resident against 1.19 GiB virtual. The virtual reservation is the Go runtime's, and it is the same kind of
  quantity that causes the failure, which is the argument for starting it early rather than never.
 
-**Not pinned by any test.** No case fails if the eager call is deleted, because every test either drives
- the summaries directly from `node`, where the spawn succeeds anyway, or runs oxlint without reaching an
- external call. A regression test has to run oxlint at the default worker count over a consumer with an
- authored dependency and assert that external provenance appears. Until that exists this fix is measured
- but unguarded, and it is the next thing to do here.
+Pinned by `external-channel-workers.unit.test.ts`, which runs oxlint over an authored dependency and
+ asserts external provenance in the reports. It passes **no** `--threads` flag on purpose: the failure
+ depends on aggregate reserved size at spawn time, so choosing a count would pin a quantity that is not
+ the shipped one.
+
+The mutant settles which test was needed. Deleting the eager initializer **kills the oxlint test and
+ leaves the summary-driven one passing**, which is the measured form of the claim that no existing shape
+ could fail. Worth keeping in mind generally: a test that reaches the same code through a different host
+ can be blind to a defect that only the shipped host exhibits.
 
 Two consequences for measurement. A sweep at the default threads measured nothing about the external
  channel before this fix, so no earlier sweep in this record says anything about it. And a cold sweep now
