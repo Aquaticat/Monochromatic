@@ -3636,3 +3636,79 @@ export function storeAllocatingBranchFirst(
 ): void {
   held = branchPass(orderAllocFirst.row,);
 }
+
+/**
+ * Hands over a closure whose callee is chosen by a conditional.
+ *
+ * The subject. The reach walk resolved a callee with the narrow resolver alone, which answers for one
+ * declaration and nothing for a conditional, so the handed closure reached nothing at all. It names
+ * neither the configuration nor the body that reads it, which is what leaves the reach walk as the only
+ * channel that can answer.
+ *
+ * @param conditionalReached - Configuration one branch reads.
+ *
+ * @param pickReveal - Which branch the conditional takes.
+ *
+ * @param conditionalRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handConditionalCalleeOut({ rows: [], row: { label: '', }, }, true, new CaptureRegistry(),);
+ * ```
+ */
+export function handConditionalCalleeOut(
+  conditionalReached: Config,
+  pickReveal: boolean,
+  conditionalRegistry: CaptureRegistry,
+): void {
+  /**
+   * Branch reading the configuration.
+   */
+  const revealConditionalRow = (): Row => conditionalReached.row;
+  /**
+   * Branch allocating its own row.
+   */
+  const freshConditionalRow = (): Row => ({ label: 'fresh', });
+  conditionalRegistry.register(
+    (): Row => (pickReveal ? revealConditionalRow : freshConditionalRow)(),
+  );
+}
+
+/**
+ * Hands over a closure whose conditional callee reads nothing the caller owns.
+ *
+ * The control. Following every branch of a conditional callee must not report a branch built from
+ * nothing the caller handed in.
+ *
+ * @param neitherReached - Configuration no branch reads.
+ *
+ * @param pickFirst - Which branch the conditional takes.
+ *
+ * @param conditionalRegistry - Registry keeping the closure.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handFreshConditionalCalleeOut({ rows: [], row: { label: '', }, }, true, new CaptureRegistry(),);
+ * ```
+ */
+export function handFreshConditionalCalleeOut(
+  neitherReached: Config,
+  pickFirst: boolean,
+  conditionalRegistry: CaptureRegistry,
+): number {
+  /**
+   * First branch, allocating its own row.
+   */
+  const firstFreshRow = (): Row => ({ label: 'first', });
+  /**
+   * Second branch, allocating its own row.
+   */
+  const secondFreshRow = (): Row => ({ label: 'second', });
+  conditionalRegistry.register(
+    (): Row => (pickFirst ? firstFreshRow : secondFreshRow)(),
+  );
+  return neitherReached.rows
+    .length;
+}

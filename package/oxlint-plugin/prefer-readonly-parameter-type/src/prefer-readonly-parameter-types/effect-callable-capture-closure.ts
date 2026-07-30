@@ -180,9 +180,13 @@ export function transitiveCallableOrigins({
 /**
  * Resolves every call inside one callable to a same-file callable declaration.
  *
- * The callee expression is resolved rather than the call, because `callableDeclaration` answers
- * what a value is and the value here is whatever sits before the parentheses. That is what
- * follows `read()` to the arrow `read` was bound to.
+ * The callee expression is resolved rather than the call, because what is wanted is what the value
+ * before the parentheses can be. That is what follows `read()` to the arrow `read` was bound to.
+ *
+ * Asked through the shared resolver, which is the same relation the argument and edge paths ask. The
+ * narrow resolver alone answers for one declaration and nothing for a conditional, so a handed closure
+ * invoking `(pick ? revealRow : freshRow)()` reached nothing and offered the configuration `revealRow`
+ * reads, while the same closure invoking one named callee charged it. Measured before and after.
  *
  * @param project - TypeScript project resolving call targets.
  *
@@ -211,22 +215,17 @@ function calledCallables({
       return isCallExpression(node,);
     },)
     .flatMap(function resolveCallee(call,): readonly Node[] {
-      /**
-       * Callable the callee expression resolves to, absent when nothing owned answers.
-       */
-      const callee = callableDeclaration({
+      return packagedActualCallables({
         project,
-        node: call.expression,
-      },);
-      if (callee === OWNED_CALLABLE_UNAVAILABLE)
-        return [];
-      /**
-       * File the resolved callee is written in.
-       */
-      const { fileName: calleeFileName, } = callee.getSourceFile();
-      if (calleeFileName !== fileName)
-        return [];
-      return [callee,];
+        actual: call.expression,
+      },)
+        .filter(function sameFileCallee(callee,): boolean {
+          /**
+           * File the resolved callee is written in.
+           */
+          const { fileName: calleeFileName, } = callee.getSourceFile();
+          return calleeFileName === fileName;
+        },);
     },);
 }
 

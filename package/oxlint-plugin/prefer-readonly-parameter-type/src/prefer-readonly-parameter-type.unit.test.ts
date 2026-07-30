@@ -667,9 +667,11 @@ children: [
       /* Sixty once a default naming an ordinary function resolved to it. Four shapes joined, the two
        * named helpers keep offers on their own row parameters, the control keeps its configuration,
        * and the subject contributes none. */
+      /* Sixty-one once the reach walk followed a conditional callee. Two shapes joined, the control
+       * keeps its offer and the subject contributes none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(60,);
+      },).length,).toBe(61,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -907,6 +909,24 @@ children: [
           || message.includes('"orderAllocFirst"',))
           && message.includes('should be readonly',);
       },).length,).toBe(0,);
+      /* The conditional-callee group, and the third site the shared resolver had to reach. The reach
+       * walk resolved a callee with the narrow resolver alone, which answers for one declaration and
+       * nothing for a conditional, so a handed closure invoking `(pick ? reveal : fresh)()` reached
+       * nothing while the same closure invoking one named callee charged correctly. The handed closure
+       * names neither the configuration nor the body reading it, which leaves the reach walk as the
+       * only channel that can answer.
+       *
+       * `conditionalReached` is the subject and `neitherReached` controls that following every branch
+       * must not report one built from nothing the caller handed in. */
+      expect(messages.filter(function namesConditionalReached(message,): boolean {
+        return message.includes('"conditionalReached"',)
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesNeitherReached(message,): boolean {
+        return message.includes('"neitherReached"',);
+      },),).toEqual([
+        'Parameter "neitherReached" should be readonly: property rows is writable.',
+      ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
        * and a declared type can lie about that in two ways. `erasedThrough` holds a local annotated
@@ -1104,16 +1124,16 @@ children: [
        * `config.rows.at` and stores the result, and before the split its store joined the
        * boundary list, which is an `every` over that list, and cost it this message.
        *
-       * Nine since the registry arrived. Two name `.rows.at`, one names `.register` and six name
-       * `.keep`, each the receiver of a method the capture channel answers for, so the list is
-       * asserted per boundary rather than by one shared substring. Every registry parameter reports
-       * this way and none of them is a subject: what the shapes are about is the closure handed to
-       * the method, and the receiver speaking is the ordinary consequence of calling a method this
-       * rule cannot inspect. */
+       * Eleven since the conditional-callee group arrived, which added two more `.register`
+       * receivers. Two name `.rows.at` and the rest name `.register` or `.keep`, each the receiver of
+       * a method the capture channel answers for, so the list is asserted per boundary rather than by
+       * one shared substring. Every registry parameter reports this way and none of them is a
+       * subject: what the shapes are about is the closure handed to the method, and the receiver
+       * speaking is the ordinary consequence of calling a method this rule cannot inspect. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(9,);
+      expect(opacityMessages.length,).toBe(11,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)
