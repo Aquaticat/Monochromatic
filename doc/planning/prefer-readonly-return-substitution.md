@@ -5109,3 +5109,48 @@ Four hunt passes drew 44 channels by writing shapes. The three defects found aft
 That suggests where the remaining ones are. Not in the syntax any single channel scans, but between
  channels: in a set one propagation reads and another does not, in a gate that names one of three
  possibilities, in an index two modules disagree about.
+
+## The sweep for #77, #65, #63, #78 and the write-through channel
+
+```text
+commit c44ea07ea
+06016e74673c7f2d47a5a0453926780230e72b2790359781b4a488344408f359  plugin index.mjs
+4bb8b08afcd5e7850fecdc2af7dd32da95c25a8ea84c5e061141c95fc16f8617  oxlint sidecar
+
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1968: argument-opacity=1229 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   1: argument-opacity=1
+removed 0:
+```
+
+Run ended before the capture was read, `real 9m23`, and both artifacts re-hashed identical to the
+ digests recorded before the run started.
+
+Against the reusable criterion: offers unchanged, so the soundness statement holds; no category but
+ argument-opacity moved; argument-opacity rose by one, which the criterion expects and does not
+ require an accompanying offer loss.
+
+Worth noting what did **not** happen. #63 raises offers by construction, and none rose here, so the
+ shape it releases (a parameter default packaging a callable that nothing invokes and nothing keeps)
+ does not occur anywhere in this workspace. That is a fact about the workspace rather than about the
+ fix, and it means the sweep gives the fix no support beyond the absence of harm.
+
+### The one added finding
+
+`installKeyboard` in `package/desktop-app/file-manager-electron/src/renderer-keys.ts:272`, whose
+ `session` parameter had no diagnostic at all in the baseline and now reports argument opacity
+ naming a bodyless callable in `render-dom.ts` and `column.append`.
+
+The claim is true. `installKeyboard` builds a record of closures that each pass `session` to
+ `moveSelection`, `moveColumnFocus`, `closeActivePane` or `openSelectedEntry`, and those callees
+ already reported opacity naming exactly those boundaries in the baseline. So invoking one of the
+ packaged closures does reach a call this rule could not inspect, with `session` as its argument.
+
+What is **not** established is which of the four changes produced it. The baseline predates all four,
+ and attributing one finding would need a capture per change, which is four more nine-minute runs to
+ name a cause that changes no decision. Recorded as unattributed rather than guessed at.
+
+The direction is worth stating plainly: a parameter that was silently withheld now says why, and
+ names a boundary a reader can inspect. That is the intended behaviour of the capture channel, and
+ it is also the shape of that channel's known failure mode, a store's cause arriving dressed as a
+ call. Here it is not that, because the cause really is a call.
