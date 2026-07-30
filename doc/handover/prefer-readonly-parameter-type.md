@@ -429,6 +429,37 @@ Three of those eight were one shape: a branch in `inspectEffectCall` classifies 
  everything after it is irrelevant to that kind of call, and the claim has been wrong three times out of
  three. #100 is the remaining instance.
 
+### What landed from the audit, and what the audit got wrong about itself
+
+The four outward handoffs now share one capture recorder, which is one change rather than four because they
+ differ in syntax and nothing else. Construction, yield and throw each charge their subject and spare their
+ control; the tagged-template site joins on the same reasoning. Falsified at construction and yield,
+ mutation-checked at 68 to 71.
+
+Two implementation points are load-bearing and neither is obvious from the site being edited:
+
+-    Construction asks **before** its per-argument classification. The `honest-readonly` discharge there
+     proves no write reaches *through* a handed value, and says nothing about a value obtained by *invoking*
+     a callable that value carries, so a discharge must never be able to skip the capture question.
+-    The activation premise does not cover any of these. Activation covers what a closure body **performs**,
+     so a direct write and a `throw config.row` inside an activated closure are already charged. Returning
+     caller state is neither, and the consumer's later use of that returned value has no call edge.
+
+The audit named five channels and its own framing was slightly wrong about two of them.
+
+**The external channel is not reachable by the obvious probe.** Handing a capturing closure to `setTimeout`
+ was already charged before any of this work, because a host global has no shipped implementation to resolve
+ and the call goes to the unresolved boundary, which has had a capture channel since #79. #100 therefore
+ needs a callee with a resolvable shipped implementation, and a probe against a host global would have
+ confirmed a fix that never ran.
+
+**"Descend through aggregates" named two shapes and only one was open.** A thrown object literal carrying a
+ closure was already charged through the object-literal descent from #57. What stayed clean is a property
+ read off such a literal, which is the value walk's gap and is #106.
+
+Both corrections have the same moral as the throw-completion finding: a reading of one module predicts a
+ hole that another module already closed, and the only way to tell is to measure the shape.
+
 ### The audit that replaces finding this class one at a time
 
 Six defects in this work are one defect: a channel maps ordinary parameter origins and has no capture
