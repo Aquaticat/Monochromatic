@@ -650,7 +650,7 @@ children: [
        * an owned callee. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(38,);
+      },).length,).toBe(39,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -755,8 +755,16 @@ children: [
           || message.includes('"viaLocalFunction"',)
           || message.includes('"viaArrowProperty"',)
           || message.includes('"thrownOut"',)
-          || message.includes('"defaultReached"',);
+          || message.includes('"defaultReached"',)
+          || message.includes('"throughThis"',);
       },).length,).toBe(0,);
+      /* The last known false offer's control, carrying the count from thirty-eight to
+       * thirty-nine. A holder built from nothing the caller owns keeps the offer. */
+      expect(messages.filter(function namesFreshHolder(message,): boolean {
+        return message.includes('"freshHolder"',);
+      },),).toEqual([
+        'Parameter "freshHolder" should be readonly: property rows is writable.',
+      ],);
       /* The two pass-three controls, carrying the count from thirty-six to thirty-eight. A thrown
        * message retains nothing writable, and a destructuring default that allocates names nothing
        * the caller owns. */

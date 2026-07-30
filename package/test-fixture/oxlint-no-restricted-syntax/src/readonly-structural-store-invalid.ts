@@ -2440,3 +2440,78 @@ export function storeFreshDestructuringDefault(defaultFresh: Config,): number {
   return defaultFresh.rows
     .length;
 }
+
+/**
+ * Stores what a method reading through this hands back.
+ *
+ * Falsified, and the last of the known false offers to close. A method reading `this.row` names no
+ * binding at all, because `this` is a keyword, so scanning the method body answers empty while the
+ * state it reaches sits in the literal the method was written in.
+ *
+ * Resolving the callee succeeds for such a method, so returning on that success scanned exactly the
+ * body that cannot see the capture. The receiver is now asked as well as the callee rather than
+ * instead of it.
+ *
+ * Three sibling shapes hid this one by passing: a method naming the parameter directly, an arrow
+ * property naming it, and a plain property read. Only the `this` form failed, which is why
+ * isolating it needed all four written side by side.
+ *
+ * @param throughThis - Configuration whose row the method reaches through this.
+ *
+ * @example
+ * ```ts
+ * storeMethodThisResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeMethodThisResult(throughThis: Config,): void {
+  /**
+   * Holder whose method reads the row it was built with.
+   */
+  const holder = {
+    row: throughThis.row,
+    /**
+     * Hands back the row this holder keeps.
+     *
+     * @returns caller's own row.
+     */
+    read(): Row {
+      return this.row;
+    },
+  };
+  held = holder.read();
+}
+
+/**
+ * Stores what a method on a holder built from nothing the caller owns hands back.
+ *
+ * The control. Asking the receiver as well as the callee must attribute what the literal mentions
+ * rather than report every method call on a local holder.
+ *
+ * @param freshHolder - Configuration the holder never names.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeFreshMethodThisResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshMethodThisResult(freshHolder: Config,): number {
+  /**
+   * Holder built from nothing the caller owns.
+   */
+  const holder = {
+    row: { label: 'fresh', },
+    /**
+     * Hands back the row this holder keeps.
+     *
+     * @returns freshly allocated row.
+     */
+    read(): Row {
+      return this.row;
+    },
+  };
+  held = holder.read();
+  return freshHolder.rows
+    .length;
+}

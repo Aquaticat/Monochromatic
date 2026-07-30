@@ -887,6 +887,18 @@ await describe({
         expect(structuralOpaque('storeDestructuringDefault',),).toEqual([0,],);
         /* Its control, so a default naming nothing the caller owns keeps the offer. */
         expect(structuralOpaque('storeFreshDestructuringDefault',),).toEqual([],);
+        /* The last known false offer. A method reading `this.row` names no binding, because `this`
+         * is a keyword, so scanning the method body answers empty while the capture sits in the
+         * literal the method was written in. Resolving the callee succeeds for such a method, so
+         * returning on that success scanned exactly the body that cannot see it. The receiver is
+         * asked as well as the callee now, never instead of it.
+         *
+         * Three sibling shapes hid this by passing: a method naming the parameter directly, an
+         * arrow property naming it, and a plain property read. */
+        expect(structuralOpaque('storeMethodThisResult',),).toEqual([0,],);
+        /* Its control, so asking the receiver attributes what the literal mentions rather than
+         * reporting every method call on a local holder. */
+        expect(structuralOpaque('storeFreshMethodThisResult',),).toEqual([],);
         /* The capture walk follows calls now, because a lexical scan was answering a call-graph
          * question. A stored closure naming only `read` reached caller state through it, and a
          * local bound to a function expression carries no parameter origin, so the scan came

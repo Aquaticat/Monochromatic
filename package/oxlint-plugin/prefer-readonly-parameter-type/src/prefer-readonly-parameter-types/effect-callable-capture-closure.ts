@@ -273,26 +273,33 @@ export function calledCallableOrigins({
     project,
     node: node.expression,
   },);
+  /**
+   * Origins reachable through the callee and through whatever it was called on.
+   */
+  const reached = new Set<EffectSlot>();
   if (callee !== OWNED_CALLABLE_UNAVAILABLE)
-    return transitiveCallableOrigins({
+    transitiveCallableOrigins({
       project,
       bindingOriginBySymbolId,
       packaged: callee,
-    },);
-  /* A member call on a local holder resolves to no callable, because the resolver answers about a
-   * value and `holder.read` is a property of one. Both `holder.read()` where `read` is a method
-   * and where it is an arrow property were falsified for that reason.
-   *
-   * The receiver's authored literal is what answers. Every binding the literal mentions is
-   * collected, without asking which property the call selected, exactly as the aggregate descent
-   * elsewhere declines to track keys: the name is recorded nowhere, narrowing would need a claim
-   * this cannot support, and taking all of them only withholds more. */
+    },)
+      .forEach(function collectCalleeOrigin(origin,): void {
+        reached.add(origin,);
+      },);
   if (!isPropertyAccessExpression(node.expression,))
-    return NO_REACHED_ORIGINS;
-  /**
-   * Origins reachable through anything the receiver can be.
-   */
-  const reached = new Set<EffectSlot>();
+    return reached;
+  /* The receiver is asked as well as the callee, never instead of it, and unioning rather than
+   * choosing is the whole fix. A method reading `this.row` names no binding at all, because `this`
+   * is a keyword, so scanning the method body answers empty while the state it reaches sits in the
+   * literal the method was written in. Resolving the callee succeeds for such a method, so an
+   * early return on that success scanned exactly the body that cannot see the capture.
+   *
+   * Measured, which is how the three passing shapes hid this one: a method naming the parameter
+   * directly, an arrow property naming it, and a plain property read all answered correctly, and
+   * only the `this` form did not. Falsified.
+   *
+   * Every binding the receiver's literal mentions is collected, without asking which property the
+   * call selected, exactly as the aggregate descent elsewhere declines to track keys. */
   reachableValueSources({
     project,
     node: node.expression
