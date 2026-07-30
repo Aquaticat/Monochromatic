@@ -358,46 +358,52 @@ A property read is not a call, so the reach walk missed a getter over caller sta
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
 -    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix: the sweep
      with the gate ran faster than the one before it, so nothing measured shows a problem.
--    **#89**, whether two call edges may share one call-site key. Sol settled the fix shape: the
-     consumer should take a multimap and union every candidate edge, never merge different callees
-     into one edge, since their slot layouts, summaries, captures, and formal-to-actual mappings
-     differ. Not demonstrable yet, and #93 makes more forms reachable.
--    **#90**, a `void` completion certifying a capture as inert. Located by reading, not measured.
-     `void` describes an ignored return value rather than a runtime guarantee.
--    **#92**, candidates treated as exhaustive. Confirmed at the source: a nonempty `heldCallables`
-     replaces the static classification instead of joining it.
--    **#93**, one shared callable-value resolver. This is the root of several defects rather than a
-     two-walk mismatch: `packagedActualCallables` keeps only nodes already written as callable
-     declarations, so a named function reached through a default, a conditional, or an alias is lost
-     in four places, and `calledCallables` separately uses only `callableDeclaration`.
--    **#94** and **#95**, accessor reach past plain property access, and tagged templates as
-     invocations.
--    **#96**, correcting the claim that a nested callable has no summary of its own. Falsified twice
-     now, and both reviewers reasoned from it, so the comment is actively misleading.
--    **#97**, reduced to a verification task. Its two causes turned out to be #98 and #93.
--    **#99**, call-result retention at a callback call, and **#100**, a capture channel for external
-     effect application. Both are the same pattern as #91: a branch that answers its own question and
-     returns before the capture gate. #100 is confirmed reachable, because `applyExternalEffect` does
-     handle callback relations and maps them only through ordinary argument origins.
--    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix.
--    The sweep for #88, #98 and #91, running at time of writing, with its prediction pre-registered in
-     the planning doc.
+-    **#90** and **#92**, both sharing the `completionCanCarryState` fallback. #90 is that a `void`
+     completion certifies a capture as inert, and `void` describes an ignored return value rather than a
+     runtime guarantee. #92 is that a nonempty `heldCallables` replaces the static classification instead
+     of joining it, so a parameter default is treated as the only possible runtime value. Both located by
+     reading, neither measured, and a fix to either changes what the other sees.
+-    **#95**, tagged templates as invocations. Located by reading.
+-    **#100**, a capture channel for external effect application. Confirmed reachable rather than
+     theoretical: `applyExternalEffect` does handle callback relations and maps them only through
+     ordinary argument origins, which are empty for a closure argument. Last instance of the early-return
+     pattern.
+-    **#81**, **#82**, **#87**, precision or cost rather than soundness.
 
 ### What landed since the capture-channel sweep
 
--    **#88**, a store that takes a defaulted producer's invoked result. The reach walk resolved a
-     callee with `callableDeclaration`, which stops at a parameter.
--    **#98**, the returned fact a concise arrow body carries. The direct scan recorded returned effects
-     under `isReturnStatement` alone, so any callable with a concise body recorded an empty returned
-     set and every caller storing its result was offered. General rather than default-specific, and
-     the largest-reaching fix in this stretch.
--    **#91**, a capture handed to a callback parameter. The callback relation carries what the caller
-     chose, and a closure the callee wrote is not that, so the deferral #75 settled was incomplete
-     rather than wrong.
+Eight items, each falsified at the five-clause bar, each pinned by a fixture group with controls, each
+ with a mutant that died at an exact delta. Fixture offers moved 49 to 63 across them, and every arrival
+ was a control or a helper's own parameter, never a subject.
 
-Each was falsified at the five-clause bar, each gained fixture groups with controls because neither
- #98 nor #91 moved a single fixture offer until fixtures were written for them, and each mutant died
- with an exact delta.
+-    **#88**, a store taking a defaulted producer's invoked result.
+-    **#98**, the returned fact a concise arrow body carries. The direct scan recorded returned effects
+     under `isReturnStatement` alone, so any callable with a concise body recorded an empty returned set.
+     General rather than default-specific and the widest-reaching of the eight.
+-    **#91**, a capture handed to a callback parameter.
+-    **#93**, one shared callable-value resolver, at three sites. The third was found by measuring again
+     after the task had been marked done on the strength of having changed the sites the investigation
+     named.
+-    **#89**, the two-edge collision, which #93 finally made demonstrable as an answer that flips with
+     source order.
+-    **#99**, argument retention at a callback call.
+-    **#94**, every way source spells a property read.
+-    **#96**, correcting the claim that a nested callable has no summary of its own.
+
+### The pattern worth carrying forward
+
+Three of those eight were one shape: a branch in `inspectEffectCall` classifies a call, answers its own
+ question, and returns before something every call needs. An early return there is a claim that
+ everything after it is irrelevant to that kind of call, and the claim has been wrong three times out of
+ three. #100 is the remaining instance.
+
+### The instrument limit the null sweep established
+
+A store-caused withholding is silent by design, so a sweep can only ever fail such a fix by raising an
+ offer and can never confirm one. The sweep after #88, #98 and #91 moved not one finding in any category,
+ with both artifact digests verified different from the previous run, and the explanation is the ratio:
+ 1282 argument-opacity findings against 31 offers means nearly every workspace parameter is already
+ withheld for some other reason. The fixture group and the mutation check carry the whole weight.
 
 ## What the capture-channel sweep settled
 
