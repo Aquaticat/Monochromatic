@@ -5374,3 +5374,87 @@ The closure handed to `.map` does name `capture`, so the diagnostic is honest. T
 A closure naming nothing of the parameter attributes nothing, which was measured separately rather
  than assumed: the same shape with closures naming only their own parameters records clean, and
  naming the parameter records `opaque=[0]`.
+
+## Four more holes in the same relation, three of them found by reading
+
+A reviewer read the landed gate and named nine candidate holes. Measuring them separated the two
+ kinds cleanly, which is the useful part of the exercise: **three were already covered** and the
+ reviewer could not have known, because the measurements that cover them were taken after its prompt
+ was assembled.
+
+Covered, each recording `opaque=[0]` already:
+
+```text
+async closure rejecting with the caller row          throw handoff charged it
+closure storing the row into its own receiver        store charged it
+closure storing the row into a callee parameter      store charged it
+```
+
+Real, each leaving the parameter offered:
+
+```text
+() => erased()  where erased: () => void holds a row-returning callable   erasedThrough offered
+() => assertedThrough.row as unknown as string                           assertedThrough offered
+() => gotten.row  where gotten is a literal with a getter over the row    gottenThrough offered
+((): Row => boundOut.row).bind(undefined,)                               boundOut offered
+```
+
+### A declared type can lie, in two ways
+
+The gate asked whether a completion can carry mutable state and trusted the completion's static
+ type. The first two shapes are that trust being abused: an annotation that hides a row behind
+ `void`, and an assertion that renames one to `string`.
+
+Fixed by judging what a completion **is** rather than what it claims. An assertion is stripped, using
+ the same normalisation the substitution walk uses, which removes `await` too. A call completion is
+ followed to its callable and judged by that callable's own completions, bounded by a visited set.
+
+Following stops at an external callee, and that boundary is a decision rather than an omission. An
+ external declaration's return type is what this rule trusts everywhere else, and distrusting it here
+ would withhold on every closure that hands back a primitive through a library call. Both sides have
+ a control: `(): number => countOfRows(rows,)` follows to an owned body that says number and keeps its
+ offer, and `(): string => String(label,)` trusts the declaration and keeps its offer.
+
+### A read is not a call
+
+The reach walk follows calls, so a closure reading a getter over caller state answered empty: the
+ closure names a local, resolving the local finds no parameter origin, and there is no call to follow.
+
+Fixed by collecting every callable an authored literal or class expression declares whenever a body
+ reads a property off one. Accessors and methods alike, because a property read can hand a method
+ onward as a value just as it can run a getter, and without tracking which property was read, the same
+ decision the aggregate descent already makes about keys. Its control is a literal whose getter
+ allocates its own row, which keeps its offer.
+
+### A capture reaches an implementation through three positions, not one
+
+The inspection took `call.arguments` alone. A capturing closure can also be the **receiver**, which is
+ what `.bind`, `.call`, `.apply` and any retaining method look like, or the **callee** itself, which is
+ what an unresolved invocation of a dynamically selected closure looks like. All three are inspected
+ now.
+
+### And one at the edge of what #75 settled
+
+Recorded above under its own heading, since it is a different relation: a callback relation defers to
+ the caller because the caller supplies the callback, and a parameter default is supplied by the
+ callee, so deferring loses whatever the default does.
+
+### Mutants, one per channel
+
+```text
+default-callback edge removed        51 offers, expected 49
+assertion stripping removed          50 offers, expected 49
+call following removed               50 offers, expected 49
+accessor reach removed               50 offers, expected 49
+receiver and callee inspection removed  50 offers, expected 49
+```
+
+### What this says about where the remaining holes are
+
+Every one of the last seven defects is a **relation answered for some of its cases**, not a syntactic
+ form nobody wrote a fixture for. Four hunt passes writing shapes found none of them. Two reviewers
+ reading the source found six.
+
+So the method that is working is: state the relation in full, enumerate its cases, and check each. The
+ three-way statement about what a callee does with a handed callable is the clearest instance, and the
+ three-position statement about where a callable reaches an implementation is the second.
