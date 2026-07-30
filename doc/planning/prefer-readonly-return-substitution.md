@@ -4823,3 +4823,14 @@ What this does not establish is that the shape space is closed. Each pass has fo
  the honest reading is that passes are still productive rather than that they are converging. The
  channels covered are listed on task seventy-three so a later reader knows what was actually
  swept.
+
+### The pass-three capture
+
+```text
+before 1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+after  1967: argument-opacity=1228 receiver-opacity=664 dishonest=37 offer=32 stale-mutates=6
+added   0:
+removed 0:
+```
+
+Offers unchanged, nothing moved, with digests on both sides.
