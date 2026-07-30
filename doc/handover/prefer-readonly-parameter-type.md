@@ -362,6 +362,24 @@ Every spelling of that read now answers: element access, a destructuring pattern
  No fixture charges the array form yet, since the reachable shape needs a receiver declaring
  `Symbol.iterator`, which raises an untested question about whether a yield carries a returned fact.
 
+### Commit before mutating, without exception
+
+This is already stated under how to work here and it cost an implementation anyway, so the incident is
+ attached to it.
+
+The external formal-to-actual mapping fix was written, type-checked, linted and suite-green. The mutation
+ check then showed that a mutant restoring the broken indexing survives the **entire** suite, because
+ reaching that path through a diagnostic needs an installed package whose shipped implementation provably
+ mutates a formal, invoked with a spread, and the corpus has no such call. The revert that followed deleted
+ **the fix** rather than the mutant, because the fix had never been committed.
+
+Two lessons, separated because only one is about git:
+
+-    `git checkout --` restores to HEAD, so an uncommitted fix is what it removes. Commit first, always.
+-    A fix whose mutant survives is not finished. Reverting it was correct, and landing it on the grounds
+     that it reads correctly and is provably safe would have been the error this document already warns
+     about, made knowingly rather than by accident.
+
 ### Open
 
 -    **#82**, two activation forms that still cannot reach a parameter default: a binding filled by
