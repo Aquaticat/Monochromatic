@@ -7166,3 +7166,49 @@ That is worth stating as a positive rather than as another near-miss. The void-s
 
 The negative reading of the same fact: the queue held an item that had been fixed, and only measuring it said
  so. Nothing in the code or the queue could have.
+
+## The promise unwrap, designed and not landed
+
+The one finding sweep six produced traces to the declared-answer fallback treating `Promise<string>` as an
+ object, which it is. Every `async` function's declared return type is an object even when what it resolves to
+ is a leaf.
+
+An attempt was made and reverted, for a mechanical reason rather than a design one: a slice-based edit removed
+ two existing functions from the file. Recorded because the design survived the revert and is worth not
+ re-deriving.
+
+### The design, settled rather than open
+
+The checker here has **no `getAwaitedType`**, so the promise has to be identified. #107's lesson says to bound
+ the question instead of generalising the predicate, so the helper answers what the **ambient** promise
+ resolves to and nothing else:
+
+-    not a type reference, or not named `Promise`, or any declaration outside a `.d.ts`: answer empty
+-    otherwise answer its type arguments
+
+Empty falls through to the existing leaf test, so nothing changes for anything that is not the language's own
+ promise.
+
+Soundness. An ambient promise's own members are `then`, `catch` and `finally`, none of which reaches caller
+ state except through the resolved value, so judging the resolved type is judging what a caller can get. A
+ `Promise` declared in analysed source is a different type sharing a name, its members are whatever someone
+ wrote, and it answers empty and keeps withholding, which costs precision only.
+
+That is the same shape as the `void` rule: ask what the type is a claim **about**, rather than trusting or
+ distrusting a name.
+
+### Two mechanical constraints, since both cost a cycle
+
+A **type predicate cannot** be used. TS1230 rejects a predicate referencing an element of a binding pattern,
+ and the destructured object parameter is required by the repository's own rule, so the helper returns the
+ resolutions instead of narrowing its subject.
+
+And `symbol.declarations` holds handles rather than nodes, so `.resolve(project,)` comes before
+ `getSourceFile()`, exactly as the callee-declaration helper in the same file already does. Reading the
+ neighbour first would have saved the cycle.
+
+### Method note
+
+The revert follows the same rule as the two before it, and the reason differs: those were reverted because
+ nothing exercised them, this because the edit damaged the file. Worth distinguishing, since only the first
+ kind says anything about the fix.
