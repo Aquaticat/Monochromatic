@@ -3924,3 +3924,89 @@ export function handFreshClassAccessOut(
   return neitherClassGotten.rows
     .length;
 }
+
+//region A declared void result, which constrains a body and not a slot
+
+/**
+ * Keeps a closure completing with a call through a formal annotated void.
+ *
+ * The annotation says the producer hands nothing back, and TypeScript permits a caller to pass one
+ * that hands back a row, because a value-returning function is assignable where a void-returning one
+ * is expected. Verified against the compiler with an expect-error control, so the substitution is
+ * ordinary well-typed source rather than a cast.
+ *
+ * @param voidProducer - Producer whose annotation claims it hands nothing back.
+ *
+ * @param voidRegistry - Registry keeping the closure past this call.
+ *
+ * @example
+ * ```ts
+ * forwardVoidAnnotatedProducer((): void => {}, new CaptureRegistry(),);
+ * ```
+ */
+export function forwardVoidAnnotatedProducer(
+  voidProducer: () => void,
+  voidRegistry: CaptureRegistry,
+): void {
+  voidRegistry.keep((): void => voidProducer(),);
+}
+
+/**
+ * Hands a row-producing closure to a formal annotated void.
+ *
+ * The subject. Its configuration was offered while the registry handed the row out.
+ *
+ * @param voidGotten - Configuration whose row the produced closure hands out.
+ *
+ * @param voidRegistry - Registry keeping whatever the forwarder keeps.
+ *
+ * @example
+ * ```ts
+ * handRowThroughVoidAnnotation({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handRowThroughVoidAnnotation(
+  voidGotten: Config,
+  voidRegistry: CaptureRegistry,
+): void {
+  forwardVoidAnnotatedProducer((): Row => voidGotten.row, voidRegistry,);
+}
+
+/**
+ * Keeps a closure completing with a call to a named declaration returning void.
+ *
+ * The control that decides the whole scope of this fix. The callee is a declaration whose own body is
+ * readable, so the resolver answers and the fallback never runs, and the offer stands. Distrusting
+ * every void result rather than every void slot would withhold here.
+ *
+ * @param reportedGotten - Configuration read in place.
+ *
+ * @param voidRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * forwardDeclaredVoidResult({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function forwardDeclaredVoidResult(
+  reportedGotten: Config,
+  voidRegistry: CaptureRegistry,
+): void {
+  voidRegistry.keep((): void => reportVoidLabel(reportedGotten.row.label,),);
+}
+
+/**
+ * Reports a label and hands nothing back.
+ *
+ * @param reportedLabel - Label reported.
+ *
+ * @example
+ * ```ts
+ * reportVoidLabel('');
+ * ```
+ */
+export function reportVoidLabel(reportedLabel: string,): void {
+  void reportedLabel;
+}
+
+//endregion

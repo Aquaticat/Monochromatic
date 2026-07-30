@@ -673,9 +673,27 @@ children: [
        * control keeps its offer and the subject contributes none. */
       /* Sixty-three once the accessor walk recognised the other ways source spells a property read.
        * Four shapes joined, three subjects contributing none and one control keeping its offer. */
+      /* Sixty-four once a declared void result stopped answering for a slot. Four shapes joined and
+       * exactly one keeps an offer, the control whose callee is a readable declaration. The subject
+       * contributes none, the forwarder's own producer is a callable and so was never offered, and the
+       * reporter's own parameter is a string. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(63,);
+      },).length,).toBe(64,);
+      /* The void-slot subject is charged and its control is not, which is the whole scope of that fix.
+       * Asserted as agreement between the two rather than as a count, because a fallback that
+       * distrusted every void result would withhold from both and a fallback that trusted every slot
+       * would offer to both, and only the pair tells those apart. */
+      expect(messages.filter(function namesVoidGotten(message,): boolean {
+        return message.includes('"voidGotten"',);
+      },).filter(function isOffer(message,): boolean {
+        return message.includes('should be readonly',);
+      },),).toEqual([],);
+      expect(messages.filter(function namesReportedGotten(message,): boolean {
+        return message.includes('"reportedGotten"',);
+      },),).toEqual([
+        'Parameter "reportedGotten" should be readonly: property rows is writable.',
+      ],);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -1172,11 +1190,15 @@ children: [
        * a method the capture channel answers for, so the list is asserted per boundary rather than by
        * one shared substring. Every registry parameter reports this way and none of them is a
        * subject: what the shapes are about is the closure handed to the method, and the receiver
-       * speaking is the ordinary consequence of calling a method this rule cannot inspect. */
+       * speaking is the ordinary consequence of calling a method this rule cannot inspect.
+       *
+       * Eighteen since the void-slot group arrived, which added three: the two forwarders calling
+       * `.keep` on their own registry, and the subject that hands its registry to one of them and
+       * receives the propagated report. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(15,);
+      expect(opacityMessages.length,).toBe(18,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)

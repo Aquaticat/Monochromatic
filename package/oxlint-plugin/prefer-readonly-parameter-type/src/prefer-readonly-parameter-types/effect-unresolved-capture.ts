@@ -84,6 +84,7 @@ import {
   callableDeclaration,
 } from './effect-call-resolution.ts';
 import { transitiveCallableOrigins, } from './effect-callable-capture-closure.ts';
+import { unresolvedResultCanCarryState, } from './effect-callable-slot-trust.ts';
 import { packagedActualCallables, } from './effect-possible-values.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { returnBelongsToCallable, } from './effect-return-effects.ts';
@@ -358,10 +359,12 @@ function completionCanCarryState({
     project,
     expression: root.expression,
   },);
+  /* No owned callee answered, so the declared type is all that is left, and one declared type is a
+   * claim about a slot rather than about a body. `unresolvedResultCanCarryState` states which and why. */
   if (callees.length === 0)
-    return expressionCanCarryMutableState({
-      checker: project.checker,
-      node: root,
+    return unresolvedResultCanCarryState({
+      project,
+      root,
     },);
   return callees.some(function calleeCarriesState(callee,): boolean {
     return callableResultCanCarryState({
