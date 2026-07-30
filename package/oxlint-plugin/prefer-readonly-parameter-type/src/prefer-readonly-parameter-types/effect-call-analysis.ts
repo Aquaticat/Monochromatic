@@ -380,7 +380,9 @@ export function inspectEffectCall({
     if (externalEffect !== EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE) {
       applyExternalEffect({
         externalEffect,
-        argumentIndexes: allArgumentIndexes,
+        declaration: resolvedDeclaration,
+        call,
+        allArgumentIndexes,
         summary,
       },);
       return;

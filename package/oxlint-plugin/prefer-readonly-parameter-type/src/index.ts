@@ -107,6 +107,18 @@ export {
 } from './prefer-readonly-parameter-types/effect-member-channel-authority.ts';
 
 /**
+ * External formal-to-actual mapping, exported for its own test.
+ *
+ * No shape in the fixture corpus reaches it through a diagnostic, because that needs an installed
+ * package with a locked version whose shipped implementation provably mutates a formal, invoked with
+ * a spread. A mutant restoring the previous actual-position indexing survived the whole suite, which
+ * is what this export answers.
+ *
+ * @internal
+ */
+export { formalArgumentIndexes, } from './prefer-readonly-parameter-types/effect-external-application.ts';
+
+/**
  * Ancestor directory walk, exported so its test can exercise built output.
  *
  * @internal
