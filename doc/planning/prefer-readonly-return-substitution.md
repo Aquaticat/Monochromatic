@@ -7437,3 +7437,45 @@ One confirming measurement: instrument the property-access branch to print the r
 
 And a sharper requirement for the two items waiting on this. Their end-to-end coverage needs a fixture calling a
  **package export** whose shipped implementation mutates a formal, not merely any external call.
+
+### Confirmed, and closed as a documentation fix
+
+The confirming measurement ran. Why each member call fails identity:
+
+```text
+MEMBER receiver-not-import        104
+MEMBER receiver-not-identifier     52
+MEMBER not-property-access          1
+```
+
+And the receivers that are not imports, sampled:
+
+```text
+self 15, filters 9, process 8, Promise 7, re 6, child 5, path 3, ig 3
+```
+
+Globals and locals. **Not one is a package import binding.** So every rejection is correct, and the channel
+ resolves a call to a package export exactly as its own words say.
+
+Closed as a documentation fix rather than a code fix. The README now states the boundary, shows the two spellings
+ that reach the channel and three that do not, and gives the measured consequence rather than implying it.
+
+### The whole arc, because the shape of it is the lesson
+
+Four instrumented cold runs and one reading, each answering one question:
+
+1.   Which of the four gates rejects? One, overwhelmingly.
+2.   Does the obvious cause explain it? No, and only a properly instrumented test said so.
+3.   What do the rejected calls share? A syntax kind.
+4.   Why does that syntax fail? A receiver that is a global or a local.
+
+Then reading the gate turned four correct measurements into the opposite conclusion from the one they suggested.
+
+Every number was right at every step. The interpretation was wrong until the last one, and it was wrong in the
+ direction that would have produced work: a fixture dependency, then a fix to a gate that was already correct,
+ then a test pinning behaviour that should not change.
+
+**What stopped that was pre-registering the diagnostic step on the task rather than the fix.** The item was filed
+ as "make one external effect resolve" with an explicit instruction to instrument the gates first, because a gate
+ that over-rejects is a defect and a fixture would paper over it. That instruction was written before any of these
+ measurements existed, and it is the only reason none of the wasted work happened.
