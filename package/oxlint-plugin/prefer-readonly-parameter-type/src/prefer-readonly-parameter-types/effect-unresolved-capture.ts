@@ -79,6 +79,8 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import type { EffectSlot, } from './effect-slot-identity.ts';
+
 import {
   addOpaqueEffect,
   callableDeclaration,
@@ -136,25 +138,65 @@ export function recordUnresolvedCaptureOpacity({
   readonly provenance: string;
 },): void {
   actuals.forEach(function inspectActual(actual,): void {
-    exposingCallables({
+    exposedCaptureOrigins({
       project,
+      bindingOriginBySymbolId,
       actual,
     },)
-      .forEach(function recordCapture(packaged,): void {
-        transitiveCallableOrigins({
-          project,
-          bindingOriginBySymbolId,
-          packaged,
-        },)
-          .forEach(function markCaptured(origin,): void {
-            addOpaqueEffect({
-              summary,
-              affectedSlot: origin,
-              provenance,
-            },);
-          },);
+      .forEach(function markCaptured(origin,): void {
+        addOpaqueEffect({
+          summary,
+          affectedSlot: origin,
+          provenance,
+        },);
       },);
   },);
+}
+
+/**
+ * Names the caller origins one actual exposes by carrying a callable that can reach them.
+ *
+ * Split out from recording so a channel that must decide **per position** can ask the same question.
+ * The external application channel needs exactly that: an external summary proves which formals are
+ * retained, invoked or opaque, and only those positions should charge what their actual exposes.
+ *
+ * Answering with origins rather than recording them keeps one gate rather than two. A channel that
+ * asked about raw lexical captures instead would withhold on `rows.map((row) => config.row.label,)`,
+ * which is the offer this whole design exists to keep.
+ *
+ * @param project - TypeScript project resolving what the actual holds.
+ *
+ * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ *
+ * @param actual - Argument expression being inspected.
+ *
+ * @returns caller origins invoking a callable this actual holds can reach.
+ *
+ * @example
+ * ```ts
+ * exposedCaptureOrigins({ project, bindingOriginBySymbolId, actual });
+ * ```
+ */
+export function exposedCaptureOrigins({
+  project,
+  bindingOriginBySymbolId,
+  actual,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly actual: Node;
+},): readonly EffectSlot[] {
+  return exposingCallables({
+    project,
+    actual,
+  },)
+    .flatMap(function originsOfCapture(packaged,): readonly EffectSlot[] {
+      return [...transitiveCallableOrigins({
+        project,
+        bindingOriginBySymbolId,
+        packaged,
+      },),];
+    },);
 }
 
 /**
