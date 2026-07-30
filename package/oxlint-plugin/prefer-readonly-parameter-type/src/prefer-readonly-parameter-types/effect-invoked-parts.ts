@@ -32,6 +32,7 @@
 import type { Node, } from 'typescript/unstable/ast';
 import {
   isCallExpression,
+  isDecorator,
   isNewExpression,
   isTaggedTemplateExpression,
   isTemplateExpression,
@@ -86,6 +87,21 @@ export function invokedParts({ node, }: { readonly node: Node; },):
    * row outward, recorded nothing at all and read identically to a control storing a fresh row. A field
    * initializer in the same position is charged already, so the gap is the constructor body rather than
    * the class. */
+  /* A decorator invokes its expression against the decorated declaration, and the bare form writes no
+   * call, so nothing recognised it. Recognition alone is not enough and neither is the ancestry repair
+   * beside it: each was measured as a no-op on its own, because a decorator is gated out by the
+   * declaration it decorates and, once past the gate, still needs to be seen as an invocation. Both
+   * together charge the subject.
+   *
+   * No actuals. A decorator receives the decorated target and a context object, neither of which the
+   * enclosing callable handed over, so treating them as actuals would claim a handoff nobody wrote. The
+   * factory form `@factory(value,)` needs nothing here: its expression is a call the clause above answers
+   * when the walk reaches it. */
+  if (isDecorator(node,))
+    return {
+      callee: node.expression,
+      actuals: [],
+    };
   if (isNewExpression(node,))
     return {
       callee: node.expression,

@@ -4478,3 +4478,93 @@ export function storeFreshFromConstructorBody(
 }
 
 //endregion
+
+//region A decorator runs when the class is defined
+
+/**
+ * Stores the caller's row while a decorator is applied.
+ *
+ * Two things had to change together, and each was measured as a no-op alone. A decorator is lexically
+ * inside the method it decorates and does not run inside it: it runs when the class is defined, whether
+ * or not that method is ever called, so the ancestry gate reached the inactive method and stopped. And
+ * once past the gate, the decorator still had to be seen as an invocation of its own expression.
+ *
+ * @param decoratedGotten - Configuration whose row the decorator stores outward.
+ *
+ * @example
+ * ```ts
+ * storeThroughDecorator({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeThroughDecorator(decoratedGotten: Config,): void {
+  /**
+   * Decorator storing the caller's row as it is applied.
+   *
+   * @param _target - Decorated method.
+   *
+   * @param _context - Decoration context.
+   */
+  const storingDecorator = (_target: unknown, _context: unknown,): void => {
+    taggedHolder.kept = decoratedGotten.row;
+  };
+  /**
+   * Class whose method carries the decorator.
+   */
+  class Decorated {
+    /**
+     * Decorated method, whose own body does nothing.
+     */
+    @storingDecorator
+    read(): void {
+      void 0;
+    }
+  }
+  void Decorated;
+}
+
+/**
+ * Stores a freshly allocated row while a decorator is applied.
+ *
+ * The control. Skipping the decorated declaration in the ancestry gate must not charge a decorator that
+ * stores nothing the caller owns, and must not reopen the gate for anything above it.
+ *
+ * @param neitherDecoratedGotten - Configuration read in place.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeFreshThroughDecorator({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshThroughDecorator(
+  neitherDecoratedGotten: Config,
+): number {
+  /**
+   * Decorator storing a freshly allocated row.
+   *
+   * @param _target - Decorated method.
+   *
+   * @param _context - Decoration context.
+   */
+  const freshDecorator = (_target: unknown, _context: unknown,): void => {
+    taggedHolder.kept = allocateHandedRow();
+  };
+  /**
+   * Class whose method carries the decorator.
+   */
+  class FreshDecorated {
+    /**
+     * Decorated method, whose own body does nothing.
+     */
+    @freshDecorator
+    read(): void {
+      void 0;
+    }
+  }
+  void FreshDecorated;
+  return neitherDecoratedGotten.rows
+    .length;
+}
+
+//endregion

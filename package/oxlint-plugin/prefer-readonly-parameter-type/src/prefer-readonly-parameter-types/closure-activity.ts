@@ -10,6 +10,7 @@ import {
 } from 'typescript/unstable/ast';
 import {
   isBinaryExpression,
+  isDecorator,
   isIdentifier,
   isReturnStatement,
   isVariableDeclaration,
@@ -144,10 +145,26 @@ function insideOnlyActiveClosures({
    * Parent cursor ascending through every nested closure.
    */
   const cursor: { current: Node; } = { current: node.parent, };
+  /* A decorator is lexically inside the declaration it decorates and does not run inside it. It runs
+   * when the class is defined, whether or not the decorated member is ever called, so gating it on that
+   * member's activity is wrong. Measured: a decorator storing the caller's row recorded nothing, because
+   * the ascent reached the undecorated method, found it inactive and stopped.
+   *
+   * So the ascent skips exactly one declaration after passing out of a decorator, and keeps gating on
+   * everything above it, which is what still excludes a decorator written inside an inactive closure. */
+  /**
+   * Whether the ascent has just left a decorator, whose next declaration it decorates rather than runs in.
+   */
+  const leftDecorator: { pending: boolean; } = { pending: isDecorator(node,), };
   while (cursor.current !== boundary) {
-    if (isEffectCallableDeclaration(cursor.current,)
-      && (!activeKeys.has(callableKey(cursor.current,),)))
-      return false;
+    if (isDecorator(cursor.current,))
+      leftDecorator.pending = true;
+    else if (isEffectCallableDeclaration(cursor.current,)) {
+      if (leftDecorator.pending)
+        leftDecorator.pending = false;
+      else if (!activeKeys.has(callableKey(cursor.current,),))
+        return false;
+    }
     if (cursor.current
       .parent
       === cursor.current)

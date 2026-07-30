@@ -688,9 +688,22 @@ children: [
        * its offer and the subject contributing none. */
       /* Seventy-one once a construction counted as an invocation too. Two shapes joined, the control
        * keeping its offer and the subject contributing none. */
+      /* Seventy-two once a decorator counted as an invocation and stopped being gated on the member it
+       * decorates. Two shapes joined, the control keeping its offer and the subject contributing none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(71,);
+      },).length,).toBe(72,);
+      /* The decorator pair. Two changes were needed together and each was a no-op alone, so this pair is
+       * the only thing that distinguishes having both from having either. */
+      expect(messages.filter(function namesDecorated(message,): boolean {
+        return message.includes('"decoratedGotten"',)
+          && message.includes('should be readonly',);
+      },),).toEqual([],);
+      expect(messages.filter(function namesNeitherDecorated(message,): boolean {
+        return message.includes('"neitherDecoratedGotten"',);
+      },),).toEqual([
+        'Parameter "neitherDecoratedGotten" should be readonly: property rows is writable.',
+      ],);
       /* The construction pair, asserted as agreement for the same reason the tag pair is. */
       expect(messages.filter(function namesBodyStored(message,): boolean {
         return message.includes('"bodyStoredGotten"',)
