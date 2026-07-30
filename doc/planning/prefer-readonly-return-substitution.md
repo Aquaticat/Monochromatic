@@ -6602,3 +6602,35 @@ What stayed clean is `new ProducerKeeper({ produce: ... }.produce,)`, a **proper
 So #100 needs a callee with a resolvable shipped implementation, a workspace or package export, and the
  probe written for it measured a different channel entirely. Worth recording because a green-looking probe
  there would have "confirmed" a fix that never ran.
+
+## The external positional mapping is fail-open, and it predates all of this
+
+Review flagged that `applyExternalEffect` indexes an actual-position array with formal parameter indexes and
+ that its own comment admits the two coincide only for a plain positional call. The question was whether
+ `externalEffectResolver` rejects spread and rest, making the precondition moot.
+
+**It does not.** Every rejection path in `external-callable-effect.ts` was read: installed-package identity,
+ authored import identity, version locking, and shipped implementation resolution. None inspects the call's
+ argument shape.
+
+And the asymmetry that made this suspect is confirmed. The owned path builds `formalActualPositions`, whose
+ own comment says it covers `this`, rest and spread, which is #23's work. The external path has no
+ equivalent and maps straight through `call.arguments.map(...)`.
+
+Both failure directions drop facts rather than invent them, which is the unsafe direction for a channel whose
+ job is to withhold:
+
+-    `external(...tuple,)` produces one entry, for the spread element. A proven mutation of external formal
+     one reads index one, finds nothing, and the optional chain records nothing. **A proven mutation is
+     silently dropped.**
+-    A rest formal proven mutated reads index zero and charges the first actual only, missing every later
+     one.
+
+So an offer can stand where the external analyzer proved a mutation. This is pre-existing and has nothing to
+ do with captures.
+
+The ordering consequence matters more than the finding. **#111 lands before #100**, because #100 adds a
+ capture array indexed the same way, and stacking a second fact on a broken index would inherit the same
+ fail-open twice over. Filed unmeasured and honestly so: it needs an installed package whose shipped
+ implementation provably mutates a formal, invoked with a spread, and the reading is confident rather than
+ verified.
