@@ -657,7 +657,7 @@ children: [
        * count cannot tell which offer moved. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(42,);
+      },).length,).toBe(45,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -764,6 +764,30 @@ children: [
           || message.includes('"thrownOut"',)
           || message.includes('"defaultReached"',)
           || message.includes('"throughThis"',);
+      },).length,).toBe(0,);
+      /* The default-callback group, and the three offers that carry the count from forty-two to
+       * forty-five. A callback relation defers to the caller, because the caller supplies the
+       * callback and knows what it does, which is what task #75 settled. A default is supplied by
+       * the callee, so there is nobody to defer to and deferring lost the write. `defaultTarget` and
+       * `patternTarget` are the subjects, and the first is falsified.
+       *
+       * Three arrivals rather than two, and the third is worth naming because it is not a control at
+       * all: `readRow` is the reading default's own arrow parameter, offered on its own merits
+       * because that arrow only reads what it receives. It is here because the rule reports every
+       * callable, nested ones included.
+       *
+       * `suppliedTarget` is the control that keeps #75 settled: the caller supplies the callback,
+       * there is somebody to defer to, and the offer stands. `defaultRead` is the precision control:
+       * a default that only reads what it receives grants the caller nothing. */
+      expect(messages.filter(function namesDefaultCallbackOffers(message,): boolean {
+        return message.includes('"suppliedTarget"',)
+          || message.includes('"defaultRead"',)
+          || message.includes('"readRow"',);
+      },).length,).toBe(3,);
+      expect(messages.filter(function namesDefaultCallbackSubjects(message,): boolean {
+        return (message.includes('"defaultTarget"',)
+          || message.includes('"patternTarget"',))
+          && message.includes('should be readonly',);
       },).length,).toBe(0,);
       /* The unresolved-boundary group, and the two offers that carry the count from forty to
        * forty-two. Captures lived on owned call edges only, so a capturing closure handed to a call

@@ -51,6 +51,7 @@ import {
   verifiedReaderCall,
 } from './effect-default-library-reader-authority.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
+import { possibleValueNodes, } from './effect-possible-values.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
@@ -111,6 +112,17 @@ export function inspectEffectCall({
   readonly body?: Node;
 },): void {
   /**
+   * Caller parameter roots corresponding to call arguments.
+   */
+  const allArgumentIndexes = call.arguments
+    .map(function argumentIndex(argument,): readonly EffectSlot[] {
+      return parameterIndexes({
+        project,
+        bindingOriginBySymbolId,
+        node: argument,
+      },);
+    },);
+  /**
    * Parameters the direct callee identifier can hold, when it is a callback.
    */
   const callbackParameterOrigins = isIdentifier(call.expression,)
@@ -154,6 +166,35 @@ export function inspectEffectCall({
                 sourceSlot,
               },);
           },);
+        },);
+      },);
+    /* And the case the relation has nobody to defer to. A relation says the caller supplied this
+     * callback and the caller knows what it does, which is why deferring is right and why task #75
+     * closed the question. A parameter default is supplied by the callee, so deferring loses
+     * whatever the default does. Measured: `directWriter(directTarget.row,)` where `directWriter`
+     * defaults to a closure writing through its own parameter recorded `mutated=[1]` alone and left
+     * `directTarget` offered, and applying the offer type-checks because a `ReadonlyDeep<Row>` is
+     * accepted where `Row` is expected. Falsified with a driver that omits the argument.
+     *
+     * An edge is built in addition to the relation rather than instead of it, because a caller that
+     * does supply a callback still needs the relation, and because the default's effects can only
+     * add to what this call already claims. Claiming the default's write when the caller supplied
+     * something else withholds an offer that might have stood, which is the safe direction. */
+    possibleValueNodes({
+      project,
+      node: call.expression,
+    },)
+      .forEach(function edgeToDefault(value,): void {
+        if (!isEffectCallableDeclaration(value,))
+          return;
+        addOwnedCallEdge({
+          project,
+          call,
+          callee: value,
+          allArgumentIndexes,
+          summary,
+          foreignInbound,
+          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
       },);
     return;
@@ -268,17 +309,6 @@ export function inspectEffectCall({
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },)
     : signatureCallee;
-  /**
-   * Caller parameter roots corresponding to call arguments.
-   */
-  const allArgumentIndexes = call.arguments
-    .map(function argumentIndex(argument,): readonly EffectSlot[] {
-      return parameterIndexes({
-        project,
-        bindingOriginBySymbolId,
-        node: argument,
-      },);
-    },);
   /* An argument that is a call result carries caller state the origin walk cannot see, because
    * a callee's summary does not exist while its callers are walked. So `sink.push(firstRow(
    * config,),)` handed the caller's row to a container and attributed nothing, and

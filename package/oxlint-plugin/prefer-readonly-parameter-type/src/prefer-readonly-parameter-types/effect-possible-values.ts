@@ -40,6 +40,7 @@ import {
 import {
   isAssertionExpression,
   isBinaryExpression,
+  isBindingElement,
   isConditionalExpression,
   isIdentifier,
   isNonNullExpression,
@@ -186,15 +187,15 @@ function followedValues({
 /**
  * Follows one identifier to the initializer it was bound to, when it has one.
  *
- * Only a declaration with an initializer answers, and a parameter's default is one: it is what
- * the binding holds whenever the argument is omitted, which is the same relation a local
- * declaration's initializer states. An import, a binding element and a binding filled by
- * assignment alone hand back nothing here, which is correct for this walk: what they can be is
- * not written at their declaration, and guessing would claim a value the source never gave.
+ * Only a declaration with an initializer answers. A parameter's default is one, and so is a
+ * binding element's: each is what the binding holds whenever nothing was supplied for it, which is
+ * the same relation a local declaration's initializer states. An import and a binding filled by
+ * assignment alone hand back nothing here, which is correct for this walk: what they can be is not
+ * written at their declaration, and guessing would claim a value the source never gave.
  *
- * A parameter default is additive rather than substitutive, like everything else this walk
- * reports. The identifier answers alongside the default, so a caller-supplied argument is never
- * replaced by the default the caller did not use.
+ * A default is additive rather than substitutive, like everything else this walk reports. The
+ * identifier answers alongside the default, so a supplied value is never replaced by the default
+ * that was not used.
  *
  * @param project - TypeScript project resolving the identifier.
  *
@@ -244,6 +245,12 @@ function aliasedInitializer({
    * nothing, and gating an initializer's callables through activation would have lost a write the
    * callable genuinely performs. */
   if (isVariableDeclaration(declaration,))
+    return declaration.initializer === undefined ? [] : [declaration.initializer,];
+  /* A binding element's default states the same relation one step further in. `{ writer = ... } = {}`
+   * declares the default on the element rather than on the parameter, and excluding it left a call
+   * to that binding resolving to the declared type and reaching nothing, so a default closure
+   * writing through what it receives had that write attributed to nobody. */
+  if (isBindingElement(declaration,))
     return declaration.initializer === undefined ? [] : [declaration.initializer,];
   if (!isParameterDeclaration(declaration,))
     return [];

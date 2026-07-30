@@ -2886,3 +2886,100 @@ export function handVoidCaptureOutward(countedVoid: Config,): void {
 export function handRowToDiscardingCallee(timedRow: Config,): void {
   setTimeout((): Row => timedRow.row, 0,);
 }
+
+/**
+ * Hands its own row to a callback whose default writes through what it receives.
+ *
+ * The subject. A callback relation defers to the caller, because the caller supplies the callback
+ * and knows what it does, which is what task #75 settled. A default is supplied by the callee, so
+ * deferring loses whatever the default does. Falsified: the annotation applied, type-checked clean
+ * because a `ReadonlyDeep<Row>` is accepted where `Row` is expected and the write is on the declared
+ * `Row`, and a driver that omitted the argument saw the caller's row change.
+ *
+ * @param defaultTarget - Configuration whose row the default writes.
+ *
+ * @param defaultWriter - Default closure writing through its own parameter.
+ *
+ * @example
+ * ```ts
+ * writeThroughDefaultCallback({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughDefaultCallback(
+  defaultTarget: Config,
+  defaultWriter: (row: Row) => void = (row: Row): void => {
+    row.label = 'written';
+  },
+): void {
+  defaultWriter(defaultTarget.row,);
+}
+
+/**
+ * Hands its own row to a callback whose default only reads what it receives.
+ *
+ * The precision control. Building an edge to the default must not withhold on a default that grants
+ * the caller nothing.
+ *
+ * @param defaultRead - Configuration only read.
+ *
+ * @param defaultReader - Default closure reading its own parameter.
+ *
+ * @returns label the default read.
+ *
+ * @example
+ * ```ts
+ * readThroughDefaultCallback({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function readThroughDefaultCallback(
+  defaultRead: Config,
+  defaultReader: (readRow: Row) => string = (readRow: Row): string => readRow.label,
+): string {
+  return defaultReader(defaultRead.row,);
+}
+
+/**
+ * Hands its own row to a callback the caller supplies, with no default.
+ *
+ * The second control, and the one that keeps #75 settled. There is a caller to defer to here, so
+ * the offer stands and the relation carries the question outward.
+ *
+ * @param suppliedTarget - Configuration handed to whatever the caller supplied.
+ *
+ * @param suppliedWriter - Callback the caller supplies.
+ *
+ * @example
+ * ```ts
+ * handToSuppliedCallback({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function handToSuppliedCallback(
+  suppliedTarget: Config,
+  suppliedWriter: (row: Row) => void,
+): void {
+  suppliedWriter(suppliedTarget.row,);
+}
+
+/**
+ * Hands its own row to a callback defaulted inside a destructuring pattern.
+ *
+ * The same defect one step further in, where the default is declared on the binding element rather
+ * than on the parameter.
+ *
+ * @param patternTarget - Configuration whose row the default writes.
+ *
+ * @param options - Options whose writer defaults to a writing closure.
+ *
+ * @example
+ * ```ts
+ * writeThroughPatternCallback({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function writeThroughPatternCallback(
+  patternTarget: Config,
+  { patternWriter = (row: Row): void => {
+    row.label = 'written';
+  }, }: { patternWriter?: (row: Row) => void; } = {},
+): void {
+  patternWriter(patternTarget.row,);
+}
