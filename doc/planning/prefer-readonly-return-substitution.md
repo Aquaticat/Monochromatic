@@ -8045,5 +8045,19 @@ That entry says no per-file warning naming panic-affected files was locatable. *
  failure.** The warning reads `skipping <file>:<range>, which the effect index omitted`, and both captures
  carry two of them, naming `package/webapp-productivity/rss/src/index.ts`.
 
-Whether those skips are caused by the five panics is **unestablished**: the counts do not correspond and
- nothing in the capture ties one to the other. Both numbers now belong beside the digests regardless.
+That left open whether the panics cause them, and reading one line further settles it.
+ `effect-demand-index.ts` logs the cause beside each omission, and all three name the panic:
+
+```text
+package/webapp-productivity/rss/src/index.ts                     2 callables
+node_modules/.../@optique/core@1.2.0/.../dist/facade.js          1 callable
+```
+
+So five panics correspond to three omitted callables, not to five files, and the link is established rather
+ than assumed.
+
+**The third line only exists because the external channel now runs.** The upstream panic strikes inside a
+ dependency's shipped implementation as well as in analysed source. Sound: an omitted external callable
+ answers `NO_EFFECT_SUMMARY`, the resolver reports unavailable, and the call falls to the unresolved
+ boundary, which withholds. But a capture must now be read for omissions under `node_modules` too, which no
+ earlier capture needed.

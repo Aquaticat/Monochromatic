@@ -90,9 +90,24 @@ which the effect index omitted         2, both naming package/webapp-productivit
 ```
 
 A first version of this section said no per-file warning was locatable. That was a search failure, not an
- absence: the warning reads `skipping <file>:<range>, which the effect index omitted`. Whether those
- skips are caused by the panics is **unestablished**, since the counts do not correspond and nothing ties
- one to the other in the capture.
+ absence: the warning reads `skipping <file>:<range>, which the effect index omitted`, and
+ `effect-demand-index.ts` logs the **cause** beside it as `omitting <file> from the effect index: <error>`.
+
+Reading that cause settles what a second version left open. All three omissions name the panic:
+
+```text
+package/webapp-productivity/rss/src/index.ts                      2 callables
+node_modules/.../@optique/core@1.2.0/.../dist/facade.js           1 callable
+```
+
+So the panic is the cause, established rather than assumed, and five panics correspond to three omitted
+ callables rather than to five files.
+
+**The third line is new, and it exists because the external channel now runs.** The panic strikes inside a
+ dependency's shipped implementation, not only in analysed source. That stays sound, since an omitted
+ external callable answers `NO_EFFECT_SUMMARY`, the effect resolver reports unavailable, and the consumer's
+ call falls to the unresolved boundary, which withholds. It does mean the upstream defect has a second
+ surface now, and a capture should be read for omissions under `node_modules` as well as under `package`.
 
 **Opacity is a merged channel, so no assertion on it can name which path wrote it.** The unresolved
  boundary and a resolved external retention both add to `opaqueParameterIndexes`, and nothing in the set
