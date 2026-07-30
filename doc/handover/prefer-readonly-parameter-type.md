@@ -80,8 +80,19 @@ A capture without the first three cannot be told from one taken against a stale 
 The panic count is the newer of the four. The upstream tuple panic in
  `doc/troubleshooting/typescript-go-tuple-type-panic.md` leaves each file it hits without readonly analysis
  for the run, so **every count in a capture that panicked is a lower bound**, and two captures whose panic
- counts differ are not comparable. Measured at `851b0fd3f`: five panics, and no per-file warning naming the
- affected files was locatable, because the panic output interleaves with the report stream.
+ counts differ are not comparable.
+
+Both signals are greppable, and the second one is not phrased the way you would guess:
+
+```text
+panic: interface conversion            5 at both 851b0fd3f and 94af5da15
+which the effect index omitted         2, both naming package/webapp-productivity/rss/src/index.ts
+```
+
+A first version of this section said no per-file warning was locatable. That was a search failure, not an
+ absence: the warning reads `skipping <file>:<range>, which the effect index omitted`. Whether those
+ skips are caused by the panics is **unestablished**, since the counts do not correspond and nothing ties
+ one to the other in the capture.
 
 **Opacity is a merged channel, so no assertion on it can name which path wrote it.** The unresolved
  boundary and a resolved external retention both add to `opaqueParameterIndexes`, and nothing in the set

@@ -8003,3 +8003,47 @@ Third variant, each in a different disguise:
 The common shape is not carelessness about evidence. It is **asserting on a channel that merges the two
  outcomes being distinguished**, which looks like evidence and is not. The cheap defence is to name, before
  writing the assertion, which path writes the fact and whether anything else can write it too.
+
+## The entryless-resolution sweep: a clean null, and the control that says so
+
+Second capture, `94af5da15`, both artifacts rebuilt and the root cache cleared beforehand:
+
+```text
+plugin   8019f93fbb4c92b6d8317fc6da921c5d51c6f28f356161174e158e6282ef0771
+sidecar  d129fec374c4743cd4314116009d6641fdb71b8a1c8129f7dafc12c47abae2df
+```
+
+Every category identical to `851b0fd3f`:
+
+```text
+offers        31      rule total   1992      opacity   1662
+captures       4      provenance     58      panics       5
+```
+
+The provenance set is the same ten packages, name for name. **No offer rose**, which is what the criterion
+ asks of a change that adds resolution, and nothing else moved either.
+
+The two captures are distinct runs rather than one file read twice: they differ in bytes, and the only
+ differing report lines are timestamped warnings. Checking that mattered, because a null result and a
+ mistakenly duplicated capture look identical in a table.
+
+### Why the null is expected here rather than suspicious
+
+The fix makes the manifest gate correct; it does not make the 31 affected packages reachable. Most external
+ calls in this workspace are member calls on non-import receivers, correctly rejected long before
+ implementation resolution. And `ignore`, the package that motivated the fix, exports via
+ `module.exports = factory` while the export name a consumer requested was `Ignore`, which is a type in its
+ declarations, so `exportedCallable` finds no runtime callable for it. The failure moves later rather than
+ disappearing.
+
+So this is a precision fix with zero measured effect on this workspace, pinned by an authored fixture
+ instead. Recorded as such rather than as evidence of anything about real packages.
+
+### A correction to the previous entry
+
+That entry says no per-file warning naming panic-affected files was locatable. **Wrong, and it was a search
+ failure.** The warning reads `skipping <file>:<range>, which the effect index omitted`, and both captures
+ carry two of them, naming `package/webapp-productivity/rss/src/index.ts`.
+
+Whether those skips are caused by the five panics is **unestablished**: the counts do not correspond and
+ nothing in the capture ties one to the other. Both numbers now belong beside the digests regardless.
