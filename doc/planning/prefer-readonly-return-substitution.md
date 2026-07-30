@@ -5835,3 +5835,38 @@ So the symptom that opened #97, a defaulted callee's returned fact never reachin
  was three separate defects wearing one appearance: an empty returned set for concise bodies, a resolver
  that could not name a callable through an identifier, and a lookup that kept one edge per call site.
 None of them lived in the substitution walk, where two reviews and my own first two readings placed it.
+
+## A call result handed to a callback parameter
+
+The same early return, a different channel. #91 was a capture packaged as a closure; this is a call
+ result handed as an ordinary argument.
+
+```text
+handResultToCallbackParameter:      {"mutated":[1],"opaque":[],  "returned":[]}  slot 0 OFFERED
+handFreshResultToCallbackParameter: {"mutated":[1],"opaque":[],  "returned":[]}  control, correctly offered
+handResultToMemberCall:             {"mutated":[], "opaque":[0], "returned":[]}  same result, charged
+```
+
+A relation cannot see through an inner call result, because a callee's summary does not exist while its
+ callers are walked, so the relation records no source slot and the retention every argument carries was
+ never reached. Falsified with a driver whose supplied callee retained the row and wrote through it.
+
+The retention loop moved to `effect-argument-retention.ts` rather than being duplicated, since two paths
+ need it. The deferral #75 settled is untouched, verified on the same control that guarded #91: a
+ parameter-derived row forwarded to a callback keeps its relation and gains no opacity before and after.
+
+### The pattern is now named, and one instance is left
+
+Three defects have shared one shape: a branch classifies a call, answers its own question, and returns
+ before something every call needs.
+
+-    the callback branch, missing the capture gate, closed as #91
+-    the callback branch, missing argument retention, closed here
+-    the external-effect branch, missing any capture channel, open as #100
+
+#100 is confirmed reachable rather than theoretical: `applyExternalEffect` does handle callback
+ relations, and it maps them only through `argumentIndexes`, which is empty for a closure argument for
+ exactly the reason #91 existed.
+
+Worth stating as a rule for the next one: an early return in this function is a claim that everything
+ after it is irrelevant to this kind of call, and that claim has now been wrong three times out of three.
