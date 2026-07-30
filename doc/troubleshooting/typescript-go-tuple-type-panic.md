@@ -34,6 +34,35 @@ It appears in all five workspace sweeps taken while investigating an unrelated s
 question,
  the earliest of which predates every change in that series.
 
+### A second surface: a dependency's shipped implementation
+
+The panic now also strikes inside code this repository does not own.
+Measured at `94af5da15`,
+ reading the cause `effect-demand-index.ts` logs beside each omission:
+
+```text
+omitting package/webapp-productivity/rss/src/index.ts:2646:3443:219 ... Error: panic: interface conversion
+omitting package/webapp-productivity/rss/src/index.ts:3500:4182:263 ... Error: panic: interface conversion
+omitting node_modules/.../@optique/core@1.2.0/.../dist/facade.js:12673:15456:263 ... Error: panic: interface conversion
+```
+
+Five panics,
+ three omitted callables,
+ so the counts do not correspond one to one.
+
+The third is new,
+ and it appeared only once the external channel began loading shipped implementations,
+ which needed the worker-count defect fixed first.
+It stays sound:
+ an omitted external callable answers `NO_EFFECT_SUMMARY`,
+ the effect resolver reports unavailable,
+ and the consumer's call falls to the unresolved boundary,
+ which withholds.
+
+The practical consequence is for reading captures.
+A sweep must be searched for omissions under `node_modules` as well as under `package`,
+ which no capture before this one needed.
+
 ## Root cause
 
 The stack names the failing frames:
