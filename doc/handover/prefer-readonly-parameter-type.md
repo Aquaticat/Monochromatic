@@ -277,46 +277,72 @@ Assert both halves of that fix, since the false fact must go **and** the offer m
 **Every false offer this work found and falsified is closed.** Four escape-channel hunt passes drew
  44 channels; the fourth found nothing, and none of its channels had been fixed directly, so the
  fixes generalise past the shapes that motivated them. That is encouraging and still weak evidence:
- four passes are four samples of a space nobody has enumerated.
+ four passes are four samples of a space nobody has enumerated. Two of the three false offers found
+ since that fourth pass came from a stronger reviewer reading the source rather than from a hunt
+ pass, which says something about where the remaining ones are: in the relations between channels,
+ not in the syntax any one channel scans.
 
-Closed and swept: #51, #66, #67, #68, #69.
-The three-channel fix for constructions, yields and awaited returns is landed, tested and
- mutation-checked, with its sweep running at time of writing; constructions are common here, so
- this is the first change in this work where a large offer fall would be plausible rather than
- surprising.
+Closed and swept: #51, #66, #67, #68, #69, #72, #74.
 Every sweep but #69's came back at zero delta; #69's moved by one true finding,
  a closure capturing a promise `resolve` handed to `handle.once`.
 
-Open, and none of them is a false offer:
+Closed, falsified and mutation-checked, and **not yet swept**: #77, #65, #63, #78 and the
+ write-through half of #78. Task #80 holds that sweep. #63 raises offers by construction, which is
+ the first change here that must justify offer growth rather than only offer loss.
 
-- #71, re-measuring task #46's per-finding claim against the current baseline, running
-- #74, discharging a construction whose constructor copies rather than retains
-- #77, the inline scan puts a nested callable's return into the **enclosing** callable's returned
-  set, so a function returning `void` claims a returned origin. A wrong fact rather than a lost
-  offer, in the same family as what #70 removed, and not a false offer today because nothing
-  discharges on returned sets. A fixture pins it. It needs the same missing capability as #63 and
-  #65, so those three should move together.
+### The three things a callee can do with a callable a caller handed it
 
-Declined with the reason recorded, because building each the obvious way is worse than leaving
- it:
+This is the shape of the last two defects, and it is worth stating on its own because the same
+ relation went wrong twice in the same afternoon. A callee can:
 
-- #54, restoring an offer for a store into another parameter. The callee cannot decide it. The
-  edge from one parameter to another escapes or not depending on where the first came from, which
-  only the caller knows, so the naive fix admits a false offer. It needs a
-  parameter-to-parameter reachability relation propagated at the edge, and it is precision only.
-- #63, separating an initializer's own expression from a callable packaged inside it. The
-  over-attribution is load-bearing. Gating the callable requires its invocation site to activate
-  it, and `callback()` on a parameter typed `() => void` resolves to the type's signature rather
-  than to the arrow written as the default, so the fix would lose a write the callable genuinely
-  performs.
-- #65, activating a closure filled by assignment. The same missing capability as #63: what a
-  binding whose declared type is a function actually holds. A change for it measured as dead code
-  and was reverted rather than landed.
-- #64, the read-only-capture precision question. A `throw` is modelled nowhere, so no body
-  summary is complete enough to grant an offer on the strength of it.
+-    **keep it**, which `propagateCapturedCapability` answered from the callee's `opaque` set, and
+     which #69 closed
+-    **hand back what invoking it produced**, which nothing answered, so `storeInvokedResult` stored
+     a row aliasing the caller's own and was offered
+-    **write through what invoking it produced**, which nothing answered either, so
+     `handInlineToWriter` recorded no effect at all while the callee's `mutated=[0]` said exactly
+     what it does
 
-Everything else in the queue is closed. Four of those closures needed no code at all, and
- measuring them said so.
+All three now read the same per-formal captures, and the choice of channel per case is deliberate:
+ keeping speaks as opacity with the callee's own provenance, handing back speaks as a returned
+ origin so the accepted return policy still applies, and writing speaks as a mutation because that
+ is what happens. The precision control for all three is `readThroughCallable`, whose formal is
+ neither opaque nor returned nor written because it keeps only a primitive, and whose caller
+ `handCaptureToReader` keeps its offer.
+
+### Open, and one of them is a live false offer
+
+-    **#79**, a capture handed to a callee with no summary at all. Captures live only on owned
+     edges, so `Promise.resolve().then((): Row => inlineThen.row,)` records nothing and the
+     configuration is offered while the awaited row aliases the caller's own. This one is real, and
+     it is a design decision rather than a clear bug: closing it the direct way withholds on every
+     `rows.map(...)` against every unresolvable callee, which the capture module documents as the
+     reason it was scoped to owned edges. Decide against a sweep.
+-    **#82**, four activation forms that cannot reach a parameter default: a destructuring default,
+     an assignment alias, `callback.call(...)`, and a property of a literal holding it. Each
+     measured as under-attribution today and each self-limiting, because the write sits inside the
+     default and reaches the parameter directly, so applying the offer stops type-checking.
+     Falsify one before fixing.
+-    **#81**, an owned call written only in a parameter default is invisible to the ownership scan.
+     The comment claiming that cannot happen is corrected; the consequence is unmeasured.
+-    **#80**, the sweep owed for the four landed fixes.
+
+### Declined with the reason recorded
+
+-    **#54**, restoring an offer for a store into another parameter. The callee cannot decide it.
+     The edge from one parameter to another escapes or not depending on where the first came from,
+     which only the caller knows, so the naive fix admits a false offer. It needs a
+     parameter-to-parameter reachability relation propagated at the edge, and it is precision only.
+-    **#64**, the read-only-capture precision question. A `throw` is modelled nowhere, so no body
+     summary is complete enough to grant an offer on the strength of it.
+
+#63 and #65 were previously declined here and are now closed. Both declinations rested on one
+ claim, that a call to a parameter whose declared type is a function cannot be resolved to the
+ arrow written as its default. That claim was true of overload resolution and false of the
+ question: `possibleValueNodes` answers it by following the parameter's declaration to its
+ initializer, and no signature resolution is involved. The lesson is narrow and worth keeping: a
+ declination that names one mechanism as impossible is a claim about that mechanism, not about the
+ goal.
 
 ## Primary records
 

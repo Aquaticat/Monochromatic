@@ -71,22 +71,19 @@ export function propagateCapturedCapability({
   readonly edge: CallEdge;
 },): boolean {
   /**
-   * Whether any caller opacity or provenance fact was added.
+   * Whether any caller opacity, mutation or provenance fact was added.
    */
   const growth: { any: boolean; } = { any: false, };
   calleeSummary.opaque
     .forEach(function propagateSlot(calleeSlot,): void {
       /**
-       * Formal owning this callee slot, since a capture fills a whole formal.
+       * Origins the callable filling this slot's formal captured.
        */
-      const owner = calleeSummary.slots
-        .parameterOfSlot[calleeSlot];
-      if (owner === undefined)
-        return;
-      /**
-       * Origins the callable filling that formal captured.
-       */
-      const captured = edge.capturedOriginsByFormal[owner] ?? NO_CAPTURED_ORIGINS;
+      const captured = capturesOfCalleeSlot({
+        calleeSummary,
+        edge,
+        calleeSlot,
+      },);
       if (captured.length === 0)
         return;
       /**
@@ -109,7 +106,83 @@ export function propagateCapturedCapability({
           growth.any = true;
       },);
     },);
+  /* And the third thing a callee can do with a callable, beside keeping it and handing back what
+   * it produced: write through what it produced. That reaches the caller's value exactly as the
+   * other two do, and it was answered by nothing. Measured:
+   *
+   * ```ts
+   * function writeThroughSupplied(written: () => Row,): void {
+   *   written().label = 'written';
+   * }
+   *
+   * function handInlineToWriter(inlineWritten: Config,): void {
+   *   writeThroughSupplied((): Row => inlineWritten.row,);
+   * }
+   * ```
+   *
+   * `writeThroughSupplied` records `mutated=[0]` for its formal, so the callee had already said
+   * what it does, and `handInlineToWriter` recorded nothing at all and was offered. Falsified: the
+   * closure only reads, so the applied annotation type-checks, the callee's write is on the
+   * declared `Row`, and the caller's row changes.
+   *
+   * Spoken as a mutation rather than as opacity, because that is what it is. A reader is told the
+   * parameter is written rather than told an implementation could not be inspected, and #55
+   * settled that direction for stores by the same argument. */
+  calleeSummary.mutated
+    .forEach(function propagateWrittenSlot(calleeSlot,): void {
+      capturesOfCalleeSlot({
+        calleeSummary,
+        edge,
+        calleeSlot,
+      },)
+        .forEach(function markWritten(origin,): void {
+          if (addEffectSlot({
+            target: summary.mutated,
+            value: origin,
+          },))
+            growth.any = true;
+        },);
+    },);
   return growth.any;
+}
+
+/**
+ * Names the caller origins captured by the callable filling one callee slot's formal.
+ *
+ * A capture fills a whole formal rather than a property of one, so every slot a formal owns
+ * reports the same captures. Reading it per slot is what lets the callee's own per-slot facts
+ * decide which captures matter.
+ *
+ * @param calleeSummary - Callee summary naming which formal owns each slot.
+ *
+ * @param edge - Owned call edge carrying captures per formal.
+ *
+ * @param calleeSlot - Slot the callee recorded a fact against.
+ *
+ * @returns captures reaching that slot's formal.
+ *
+ * @example
+ * ```ts
+ * capturesOfCalleeSlot({ calleeSummary, edge, calleeSlot });
+ * ```
+ */
+function capturesOfCalleeSlot({
+  calleeSummary,
+  edge,
+  calleeSlot,
+}: {
+  readonly calleeSummary: MutableEffectSummary;
+  readonly edge: CallEdge;
+  readonly calleeSlot: EffectSlot;
+},): readonly EffectSlot[] {
+  /**
+   * Formal owning this callee slot, since a capture fills a whole formal.
+   */
+  const owner = calleeSummary.slots
+    .parameterOfSlot[calleeSlot];
+  if (owner === undefined)
+    return NO_CAPTURED_ORIGINS;
+  return edge.capturedOriginsByFormal[owner] ?? NO_CAPTURED_ORIGINS;
 }
 
 /**

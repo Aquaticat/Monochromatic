@@ -33,6 +33,7 @@ import {
   isSatisfiesExpression,
 } from 'typescript/unstable/ast/is';
 
+import { capturedOriginsByCalleeSlot, } from './effect-captured-result-origins.ts';
 import {
   addEffectSlot,
   type CallEdge,
@@ -298,6 +299,9 @@ export function recordResultRetentionSites({
  *
  * @param calleeReturned - Callee slots its result can carry.
  *
+ * @param capturedByCalleeSlot - Captures of the formal owning each callee slot, which a result
+ * carries for the same reason an ordinary origin does.
+ *
  * @param provenance - Retention provenance naming where the value went.
  *
  * @mutates summary - Adds each retained origin as an opaque slot with its provenance.
@@ -306,18 +310,26 @@ export function recordResultRetentionSites({
  *
  * @example
  * ```ts
- * substituteRetainedOrigins({ summary, edge, calleeReturned, provenance });
+ * substituteRetainedOrigins({
+ *   summary,
+ *   edge,
+ *   calleeReturned,
+ *   capturedByCalleeSlot,
+ *   provenance,
+ * });
  * ```
  */
 function substituteRetainedOrigins({
   summary,
   edge,
   calleeReturned,
+  capturedByCalleeSlot,
   provenance,
 }: {
   readonly summary: MutableEffectSummary;
   readonly edge: CallEdge;
   readonly calleeReturned: ReadonlySet<EffectSlot>;
+  readonly capturedByCalleeSlot: readonly (readonly EffectSlot[])[];
   readonly provenance: string;
 },): boolean {
   /**
@@ -326,11 +338,14 @@ function substituteRetainedOrigins({
   const growth: { any: boolean; } = { any: false, };
   for (const calleeSlot of calleeReturned) {
     /**
-     * Caller origins the callee reaches through this slot.
+     * Caller origins the callee reaches through this slot, by receiving them and by invoking
+     * what it received.
      */
-    const origins = edge.originsByCalleeSlot[calleeSlot];
-    if (origins === undefined)
-      continue;
+    const origins = resultCarriedOrigins({
+      edge,
+      capturedByCalleeSlot,
+      calleeSlot,
+    },);
     for (const origin of origins) {
       if (addEffectSlot({
         target: summary.opaque,
@@ -376,23 +391,33 @@ function substituteRetainedOrigins({
  *
  * @param calleeReturned - Callee slots its result can carry.
  *
+ * @param capturedByCalleeSlot - Captures of the formal owning each callee slot, which a result
+ * carries for the same reason an ordinary origin does.
+ *
  * @mutates target - Adds each caller origin behind a returned callee slot.
  *
  * @returns whether target gained an origin.
  *
  * @example
  * ```ts
- * substituteReturnedOrigins({ target: summary.mutated, edge, calleeReturned });
+ * substituteReturnedOrigins({
+ *   target: summary.mutated,
+ *   edge,
+ *   calleeReturned,
+ *   capturedByCalleeSlot,
+ * });
  * ```
  */
 function substituteReturnedOrigins({
   target,
   edge,
   calleeReturned,
+  capturedByCalleeSlot,
 }: {
   readonly target: Set<EffectSlot>;
   readonly edge: CallEdge;
   readonly calleeReturned: ReadonlySet<EffectSlot>;
+  readonly capturedByCalleeSlot: readonly (readonly EffectSlot[])[];
 },): boolean {
   /**
    * Whether substitution added an origin the caller did not already carry.
@@ -400,16 +425,14 @@ function substituteReturnedOrigins({
   const growth: { any: boolean; } = { any: false, };
   for (const calleeSlot of calleeReturned) {
     /**
-     * Caller origins the callee reaches through this slot.
-     *
-     * Read from the edge rather than from the call's arguments, because
-     * `formalActualPositions` already resolved explicit `this`, rest formals and spread
-     * actuals into this mapping, and indexing arguments by parameter position would
-     * disagree with it on every one of those.
+     * Caller origins the callee reaches through this slot, by receiving them and by invoking
+     * what it received.
      */
-    const origins = edge.originsByCalleeSlot[calleeSlot];
-    if (origins === undefined)
-      continue;
+    const origins = resultCarriedOrigins({
+      edge,
+      capturedByCalleeSlot,
+      calleeSlot,
+    },);
     for (const origin of origins) {
       if (addEffectSlot({
         target,
@@ -419,6 +442,44 @@ function substituteReturnedOrigins({
     }
   }
   return growth.any;
+}
+
+/**
+ * Names every caller origin one returned callee slot can carry.
+ *
+ * Two contributions, unioned rather than chosen between. The ordinary origins are read from the
+ * edge rather than from the call's arguments, because `formalActualPositions` already resolved
+ * explicit `this`, rest formals and spread actuals into that mapping, and indexing arguments by
+ * parameter position would disagree with it on every one of those. The captures are what invoking
+ * a callable the caller packaged into that formal can reach, which the callee's result carries
+ * whether the callee handed the callable back or handed back what calling it produced.
+ *
+ * @param edge - Owned call edge carrying formal-to-actual origins.
+ *
+ * @param capturedByCalleeSlot - Captures of the formal owning each callee slot.
+ *
+ * @param calleeSlot - Slot the callee named in its returned set.
+ *
+ * @returns caller origins that slot's result can carry.
+ *
+ * @example
+ * ```ts
+ * resultCarriedOrigins({ edge, capturedByCalleeSlot, calleeSlot });
+ * ```
+ */
+function resultCarriedOrigins({
+  edge,
+  capturedByCalleeSlot,
+  calleeSlot,
+}: {
+  readonly edge: CallEdge;
+  readonly capturedByCalleeSlot: readonly (readonly EffectSlot[])[];
+  readonly calleeSlot: EffectSlot;
+},): readonly EffectSlot[] {
+  return [
+    ...edge.originsByCalleeSlot[calleeSlot] ?? [],
+    ...capturedByCalleeSlot[calleeSlot] ?? [],
+  ];
 }
 
 /**
@@ -487,6 +548,14 @@ export function propagateResultApplications({
     const calleeSummary = summaries.get(edge.calleeKey,);
     if (calleeSummary === undefined)
       continue;
+    /**
+     * Captures re-filed under the callee slots their formals own, so the substitution walk can
+     * read them with the same index it reads ordinary origins with.
+     */
+    const capturedByCalleeSlot = capturedOriginsByCalleeSlot({
+      calleeSummary,
+      edge,
+    },);
     if (application.kind === 'retained') {
       /* No guard on the provenance, because the type carries the invariant now. A
        * retention with nothing to say would arrive as an unexplained opaque slot and be
@@ -499,6 +568,7 @@ export function propagateResultApplications({
         summary,
         edge,
         calleeReturned: calleeSummary.returned,
+        capturedByCalleeSlot,
         provenance: application.provenance,
       },))
         growth.any = true;
@@ -508,6 +578,7 @@ export function propagateResultApplications({
       target: application.kind === 'mutated' ? summary.mutated : summary.returned,
       edge,
       calleeReturned: calleeSummary.returned,
+      capturedByCalleeSlot,
     },))
       growth.any = true;
   }

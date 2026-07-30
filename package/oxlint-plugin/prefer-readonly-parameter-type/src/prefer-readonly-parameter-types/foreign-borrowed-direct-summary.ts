@@ -195,8 +195,18 @@ export function foreignBorrowedDirectSummary({
     project,
     body,
     boundary: declaration,
-    /* This scan looks for owned calls only, and a parameter default cannot contain one that the
-     * body does not, so it passes none rather than duplicating the body scan's universe. */
+    /* This scan looks for owned calls only, and it passes no parameter initializers, so an owned
+     * call written in a default is not seen here:
+     *
+     * ```ts
+     * function candidate(value: Value, ignored = ownedHelper(value),): void {}
+     * ```
+     *
+     * An earlier note here claimed a parameter default cannot contain an owned call the body does
+     * not, which is simply false. Left as a stated gap rather than closed blind: what a missing
+     * owned inbound edge costs this graph is a question about ownership inference rather than
+     * about effects, and the scan's cost was the subject of its own measurement, so widening its
+     * universe is a change to make against a sweep. Task #81 holds it. */
     parameterInitializerNodes: [],
     bindingOriginBySymbolId: summary.bindingOriginBySymbolId,
   },)

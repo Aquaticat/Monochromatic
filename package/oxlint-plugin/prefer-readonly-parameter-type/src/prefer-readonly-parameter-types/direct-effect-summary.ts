@@ -216,23 +216,22 @@ export function directEffectSummary({
   /**
    * Body nodes selected after aliases expose caller-reachable closure storage.
    *
-   * Parameter initializers join the selected set unconditionally rather than through the
-   * closure selection, because the initializer expression runs on entry every time the
-   * argument is omitted.
+   * Parameter initializers join the node universe the closure selection gates rather than the
+   * selected set directly, and the boundary the ancestry walk ascends to is the declaration
+   * rather than the body, because an initializer node's parents reach the parameter and never
+   * the body.
    *
-   * That is true of the expression and not of everything inside it, which the earlier
-   * wording here got wrong by saying initializers are not nested callables. One can be:
+   * An initializer expression runs on entry every time the argument is omitted, which is true of
+   * the expression and not of everything inside it. One initializer can package a callable:
    *
    * ```ts
    * function f(config: Config, callback = (): void => { config.row.label = 'x'; },): void {}
    * ```
    *
-   * `collectAstNodes` returns the closure's body with the rest, and the scan takes every
-   * node it is given, so that write is attributed to `config` although nothing invokes the
-   * closure. Measured: `mutated=[0]`.
-   *
-   * Over-attribution, so it withholds rather than offering, and it stays until something
-   * distinguishes an initializer's own expression from a callable packaged inside one.
+   * Adding those nodes to the selected set outright attributed that write to `config` although
+   * nothing invokes the closure. Measured `mutated=[0]` then, `mutated=[]` now, with the invoked
+   * form keeping the write it genuinely performs because a call to a parameter resolves through
+   * its default.
    */
   const bodyNodes = activeCallableBodyNodes({
     project,

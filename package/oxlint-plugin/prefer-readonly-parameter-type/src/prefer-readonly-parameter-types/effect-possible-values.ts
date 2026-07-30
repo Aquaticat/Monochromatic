@@ -186,9 +186,15 @@ function followedValues({
 /**
  * Follows one identifier to the initializer it was bound to, when it has one.
  *
- * Only a declaration with an initializer answers. A parameter, an import and a binding filled
- * by assignment alone hand back nothing here, which is correct for this walk: what they can be
- * is not written at their declaration, and guessing would claim a value the source never gave.
+ * Only a declaration with an initializer answers, and a parameter's default is one: it is what
+ * the binding holds whenever the argument is omitted, which is the same relation a local
+ * declaration's initializer states. An import, a binding element and a binding filled by
+ * assignment alone hand back nothing here, which is correct for this walk: what they can be is
+ * not written at their declaration, and guessing would claim a value the source never gave.
+ *
+ * A parameter default is additive rather than substitutive, like everything else this walk
+ * reports. The identifier answers alongside the default, so a caller-supplied argument is never
+ * replaced by the default the caller did not use.
  *
  * @param project - TypeScript project resolving the identifier.
  *

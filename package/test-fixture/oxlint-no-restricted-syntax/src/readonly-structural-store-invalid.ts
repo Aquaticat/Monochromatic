@@ -2677,3 +2677,103 @@ export function returnDefaultClosure(
 ): () => Row {
   return returnedCallback;
 }
+
+/**
+ * Invokes whatever callable it is handed and hands the result back.
+ *
+ * The callee the invoked-result channel needs. `readThroughCallable` beside it invokes and keeps
+ * only a primitive, so its formal is neither opaque nor returned and its callers keep their
+ * offers; this one hands the row on, so its formal is returned and its callers must not.
+ *
+ * @param supplied - Callable invoked here.
+ *
+ * @returns row that callable produced.
+ *
+ * @example
+ * ```ts
+ * invokeSuppliedRow((): Row => ({ label: '', }),);
+ * ```
+ */
+export function invokeSuppliedRow(supplied: () => Row,): Row {
+  return supplied();
+}
+
+/**
+ * Hands a capturing closure to a callee that invokes it and returns the result.
+ *
+ * Keeps its offer, and that is the accepted policy working rather than a hole. A return of caller
+ * state is permitted on the condition that callers substitute through a recorded returned origin,
+ * which is the same standing `returnRowDirectly` has. What was missing is the record: the capture
+ * sat in the edge's per-formal captures, which the substitution walk never read, so this recorded
+ * an empty returned set and every caller of it substituted nothing.
+ *
+ * @param invokedThrough - Configuration the invoked closure reads.
+ *
+ * @returns row the callee produced, which the caller already holds.
+ *
+ * @example
+ * ```ts
+ * handInvokedResultBack({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handInvokedResultBack(invokedThrough: Config,): Row {
+  return invokeSuppliedRow((): Row => invokedThrough.row,);
+}
+
+/**
+ * Stores what the invoking callee handed back.
+ *
+ * The subject. Falsified while the returned set was empty: the annotation applied, type-checked
+ * clean beside a control whose direct write was rejected, and the driver wrote through the row the
+ * holder kept. A store is not a permitted return, so the offer was false rather than policy.
+ *
+ * @param storedInvoked - Configuration whose row reaches the holder.
+ *
+ * @example
+ * ```ts
+ * storeInvokedResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeInvokedResult(storedInvoked: Config,): void {
+  held = handInvokedResultBack(storedInvoked,);
+}
+
+/**
+ * Invokes what it is handed and writes through the result.
+ *
+ * The third thing a callee can do with a callable, beside keeping it and handing back what it
+ * produced. `readThroughCallable` beside it invokes and keeps only a primitive, which is the
+ * control: its formal is written by nothing, so its callers keep their offers.
+ *
+ * @param written - Callable whose result is written through.
+ *
+ * @example
+ * ```ts
+ * writeThroughSupplied((): Row => ({ label: '', }),);
+ * ```
+ */
+export function writeThroughSupplied(written: () => Row,): void {
+  written()
+    .label = 'written';
+}
+
+/**
+ * Hands a reading closure to a callee that writes through the invoked result.
+ *
+ * Falsified before the capture reached the mutation channel: nothing was recorded at all and the
+ * offer stood. The closure only reads, so the applied annotation type-checks; the callee's write is
+ * on the declared `Row`, so that type-checks too; and the driver saw the caller's row change.
+ *
+ * Withheld as a mutation rather than as opacity, because a write is what happens. A reader is told
+ * the parameter is written instead of being told an implementation could not be inspected.
+ *
+ * @param writtenThrough - Configuration the callee writes through.
+ *
+ * @example
+ * ```ts
+ * handWrittenResultOut({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handWrittenResultOut(writtenThrough: Config,): void {
+  writeThroughSupplied((): Row => writtenThrough.row,);
+}

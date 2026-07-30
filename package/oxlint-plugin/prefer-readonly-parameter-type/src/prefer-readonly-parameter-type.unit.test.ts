@@ -657,7 +657,7 @@ children: [
        * count cannot tell which offer moved. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(39,);
+      },).length,).toBe(40,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -765,6 +765,29 @@ children: [
           || message.includes('"defaultReached"',)
           || message.includes('"throughThis"',);
       },).length,).toBe(0,);
+      /* The invoked-result group. `invokedThrough` is the arrival and it keeps its offer, which is
+       * the accepted return policy working: a callee that invokes a handed closure and returns the
+       * result hands back caller state, and returning caller state is permitted on the condition
+       * that callers substitute through a recorded returned origin. The record is what was
+       * missing, so `storedInvoked` beside it is the one that proves the fix: it stores that
+       * result, a store is not a permitted return, and it withholds only because the capture now
+       * reaches the returned set. */
+      expect(messages.filter(function namesInvokedThrough(message,): boolean {
+        return message.includes('"invokedThrough"',);
+      },),).toEqual([
+        'Parameter "invokedThrough" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesStoredInvoked(message,): boolean {
+        return message.includes('"storedInvoked"',);
+      },).length,).toBe(0,);
+      /* The third thing a callee can do with a handed callable: write through what invoking it
+       * produced. Withheld, and asserted by name because it moves no count. It arrived beside a
+       * callee whose formal is a function type, which is offered nothing, and its own control is
+       * `inspected` above, whose callee invokes and keeps only a primitive and which therefore
+       * keeps its offer. */
+      expect(messages.filter(function namesWrittenThrough(message,): boolean {
+        return message.includes('"writtenThrough"',);
+      },).length,).toBe(0,);
       /* The packaged-default group, asserted by name because the count alone cannot say which
        * offer moved. One arrival and five that withhold, and the five matter more: each is a way
        * the default leaves the callable, and the activation gate stops attributing the write
@@ -773,8 +796,15 @@ children: [
        *
        * `handedDefault` is the one that was not. Nothing named the callable an argument holds
        * when it arrives as a parameter default, so the capture channel saw an unresolvable
-       * identifier and said nothing, which offered a configuration the retained closure writes
-       * through. */
+       * identifier and said nothing, which offered a configuration whose row the retained
+       * closure hands out.
+       *
+       * `unreachedDefault` is self-limiting rather than a compilable suggestion, in the same
+       * sense `invokeAssignedLocalClosureWriting` is: its default closure writes through the
+       * parameter, so applying the offer stops the file type-checking and no falsification can
+       * ride on it. The measurement it carries is about attribution rather than about a
+       * suggestion a reader could take, and the three escape shapes beside it are the reading
+       * form precisely so that a falsification can. */
       expect(messages.filter(function namesUnreachedDefault(message,): boolean {
         return message.includes('"unreachedDefault"',);
       },),).toEqual([
@@ -787,8 +817,11 @@ children: [
           || message.includes('"handedDefault"',)
           || message.includes('"returnedDefault"',);
       },).length,).toBe(0,);
-      /* The last known false offer's control, carrying the count from thirty-eight to
-       * thirty-nine. A holder built from nothing the caller owns keeps the offer. */
+      /* The method-receiver channel's control. A holder built from nothing the caller owns keeps
+       * the offer, which is what separates asking the receiver as well as the callee from
+       * reporting every method call on a local holder. Stated as what it controls for rather than
+       * as a transition, because which count it moved is no longer reconstructible and an
+       * arithmetic claim nothing backs is worse than none. */
       expect(messages.filter(function namesFreshHolder(message,): boolean {
         return message.includes('"freshHolder"',);
       },),).toEqual([
