@@ -7479,3 +7479,52 @@ Every number was right at every step. The interpretation was wrong until the las
  as "make one external effect resolve" with an explicit instruction to instrument the gates first, because a gate
  that over-rejects is a defect and a fixture would paper over it. That instruction was written before any of these
  measurements existed, and it is the only reason none of the wasted work happened.
+
+## A binding filled by assignment: fix built, reverted, blocker renamed
+
+The shape, measured twice:
+
+```text
+storeAssignedSelector      opq=[1]     nothing recorded
+storeInitializedSelector   opq=[1,0]   charged
+storeFreshSelector         opq=[1]     control, correctly clean
+```
+
+Identical bodies except one fills its binding by assignment after a leaf-returning initializer and the other by
+ initializer.
+
+**The fix works on the shape.** Following assignments within the declaring scope made the subject read
+ `opq=[1,0]` while both controls stayed clean.
+
+And it corrected the blocker this task had carried. The recorded reason was that the fix needs the enclosing node
+ universe `closure-activity.ts` has and the value walk does not. **That was wrong.** The enclosing body is
+ obtainable by ascending from the declaration, so no universe needs threading; `assignedValues` there takes
+ `allNodes` because it already has it, not because the question requires it. The whole addition was two functions
+ in a new sibling module, forced by `max-lines` at 305.
+
+### Why it was reverted, and the real blocker
+
+```text
+SemanticBridgeError: Owned effect edge lacks callee summary:
+  package/module/toml-edit/src/document-materialize.ts:4707:6006:263
+```
+
+Widening the value walk widens the **owned-edge graph**, and the index build requires a newly reachable callee to
+ have a summary by the time `assertReachedCallSummaries` runs. It surfaced in `workspace-source-effect.unit.test.ts`,
+ not in the fixture corpus, which is worth noting on its own: the corpus would have let this through.
+
+So the blocker is not the node universe and never was. It is that **the value walk feeds the call graph**, and
+ widening what a value can be widens what must already be summarised. The next step is to read
+ `assertReachedCallSummaries` and `includeActiveSource` and decide whether a newly reachable callee can be
+ admitted, or whether assignment following must be confined to where captures are collected and kept out of edge
+ construction.
+
+### The general point, which is the third time this shape has appeared
+
+Two walks that look independent are coupled through a third thing. Captures against ordinary origins were coupled
+ through `bindingOriginBySymbolId`. Reach against value was coupled through nothing and had to be told apart. And
+ the value walk turns out coupled to the **call graph**, so a widening that is locally sound and locally correct
+ breaks an invariant two modules away.
+
+The defence is the one that caught it: a test outside the fixture corpus, exercising real workspace source. The
+ corpus is where shapes are pinned; it is not where invariants are.
