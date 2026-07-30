@@ -7059,3 +7059,23 @@ The gate turned out to be the right abstraction and an incomplete explanation. R
 So "an unseen invocation is an unscanned body" is true and one-directional. **A seen invocation is not
  necessarily a scanned body**, because recognition, activation, ancestry and the body scan are four steps and
  the gate is only the first.
+
+### And the decorator hole is unreachable in this workspace
+
+Counted before investing further, since a shape nothing here writes is worth less than the queue's measured
+ items. Every `@` at the start of an indented line across `package/**/src/**/*.ts` is a **CSS at-rule inside a
+ template literal**: `@apply` fifty times, then `@mixin`, `@media`, `@keyframes`. **Zero TypeScript
+ decorators.**
+
+So the hole is real and cannot be reached by any code in this workspace. Two consequences, and they point
+ opposite ways:
+
+Its priority here is low, below every item with a measured workspace shape.
+
+Its priority for the **published** rule is not, because a consumer using decorators reaches it and the rule
+ would offer `readonly` for a parameter a decorator stores outward. That is the same asymmetry the external
+ channel has: unreachable here, reachable by consumers, and this rule ships.
+
+Recorded as the reason #114 stays open rather than being closed as theoretical. A defect that only consumers
+ can reach is still a false offer, and the goal in force is no false offers rather than no false offers in
+ this repository.
