@@ -328,17 +328,37 @@ The gate is narrow and its narrowness rests on a premise now measured in full: a
  receives that value instead of the enclosing callable. So the gate asks only that, and
  `rows.map((row) => config.row.label,)` keeps its offer.
 
+### Where a capture reaches an implementation, which is three positions rather than one
+
+The inspection took a call's arguments alone. A capturing closure can also arrive as the
+ **receiver**, which is what `.bind`, `.call`, `.apply` and any retaining method look like, or as the
+ **callee**, which is what an unresolved invocation of a dynamically selected closure looks like. All
+ three are inspected now, and the receiver form was falsified.
+
+### And a declared type can lie about what a completion is
+
+The gate that keeps the capture channel narrow asks whether a closure's completion can carry mutable
+ state, and trusted the completion's static type. Two measured shapes abuse that trust: a local
+ annotated `() => void` holding a row-returning callable, and a row asserted to a string. A completion
+ is now judged by what it is, with assertions stripped and a call followed to its callable, and
+ following stops at an external callee because an external declaration's return type is what this rule
+ trusts everywhere else.
+
+A property read is not a call, so the reach walk missed a getter over caller state entirely. It now
+ collects every callable an authored literal or class expression declares whenever a body reads a
+ property off one.
+
 ### Open
 
--    **#82**, four activation forms that cannot reach a parameter default: a destructuring default,
-     an assignment alias, `callback.call(...)`, and a property of a literal holding it. Each
-     measured as under-attribution today and each self-limiting, because the write sits inside the
-     default and reaches the parameter directly, so applying the offer stops type-checking.
-     Falsify one before fixing.
+-    **#82**, two activation forms that still cannot reach a parameter default: a binding filled by
+     assignment, whose fix needs the enclosing node universe that `closure-activity.ts` has and the
+     value walk does not, and two more forms that are withheld today by other channels rather than by
+     activation. Falsify the assignment-alias form before fixing.
 -    **#81**, an owned call written only in a parameter default is invisible to the ownership scan.
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
--    The precision cost of #79 across the workspace, whose sweep is running at time of writing, with
-     the loss shape predicted in the measurement log before the capture is read.
+-    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix: the sweep
+     with the gate ran faster than the one before it, so nothing measured shows a problem.
+-    The sweep for the four capture-channel fixes, running at time of writing.
 
 ### Declined with the reason recorded
 
