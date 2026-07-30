@@ -7282,3 +7282,27 @@ A defect rather than a coverage chore, and one gating a whole channel. Next step
  functions and find what they require that an ordinary `import { safeParse } from 'valibot'` call does not
  satisfy. Both the authored-import path and the declaration-owner fallback are failing, so the cause is likely
  shared rather than a gap in one of them.
+
+### One hypothesis about that gate, tested invalidly, and the trap is one this document already names
+
+`importBinding` resolves the call-site symbol with `checker.getSymbolAtLocation(node,)`. This codebase's own
+ convention elsewhere, in `constructedClassMembers` and in `calleeNamesCallableDeclaration`, is
+ `isIdentifier(x) ? getResolvedSymbol(x) : getSymbolAtLocation(x)`, because an identifier in expression position
+ needs the resolved-symbol accessor. So the hypothesis was that the gate fails at its first line.
+
+Changed it, rebuilt both artifacts, linted a package, found no version-provenance findings, and reverted.
+
+**That test was invalid**, by the exact trap recorded earlier in this document. Looking for version provenance
+ cannot distinguish "resolution still fails" from "resolution now succeeds and the callee happens to be clean",
+ because a resolved external summary with empty effect sets records nothing. The hypothesis is **untested**
+ rather than refuted, and the revert was right for a different reason than the one I acted on: the change was
+ unmeasured, not shown wrong.
+
+The correct measurement is stated on the task: re-apply the change **with the four rejection paths still
+ instrumented** and compare the `call-identity` count against 161. Nothing about findings answers this.
+
+Worth recording as a failure of my own discipline rather than as a neutral step. This document contains the
+ sentence "an absence in a capture is evidence about what the rule said, never about what the rule did", written
+ two sections earlier after reaching the same conclusion from the opposite direction, and I then looked at an
+ absence in a capture. Writing a rule down is not the same as having it available at the moment it applies, and
+ the cheap defence is mechanical: **when a gate is under test, instrument the gate.**
