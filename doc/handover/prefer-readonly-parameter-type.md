@@ -310,14 +310,26 @@ All three now read the same per-formal captures, and the choice of channel per c
  neither opaque nor returned nor written because it keeps only a primitive, and whose caller
  `handCaptureToReader` keeps its offer.
 
-### Open, and one of them is a live false offer
+### The fourth thing, which is not a callee at all
 
--    **#79**, a capture handed to a callee with no summary at all. Captures live only on owned
-     edges, so `Promise.resolve().then((): Row => inlineThen.row,)` records nothing and the
-     configuration is offered while the awaited row aliases the caller's own. This one is real, and
-     it is a design decision rather than a clear bug: closing it the direct way withholds on every
-     `rows.map(...)` against every unresolvable callee, which the capture module documents as the
-     reason it was scoped to owned edges. Decide against a sweep.
+**#79** closes the same relation at the other kind of boundary. Captures lived on owned call edges
+ only, so a call with no owned edge recorded none, and the reach of that is much wider than library
+ functions: a possibly-overridden method is treated as unresolved on purpose, so **every instance
+ method that keeps a callback** was losing the capture. Measured three ways, the same retainer
+ written as an instance method recording nothing while the static and plain-function forms record
+ `opaque=[0]`. Falsified twice.
+
+The gate is narrow and its narrowness rests on a premise now measured in full: a closure handed as
+ an argument is activated, and an activated closure's body is scanned inline as part of the
+ enclosing callable, so every channel the enclosing callable has applies to the closure too. A
+ store, an unresolved handoff, a construction, a throw, and a push into a container the callee
+ itself supplied all record opacity for a closure that completes with nothing. The single channel
+ that cannot apply is what invoking the closure hands back, because the uninspectable callee
+ receives that value instead of the enclosing callable. So the gate asks only that, and
+ `rows.map((row) => config.row.label,)` keeps its offer.
+
+### Open
+
 -    **#82**, four activation forms that cannot reach a parameter default: a destructuring default,
      an assignment alias, `callback.call(...)`, and a property of a literal holding it. Each
      measured as under-attribution today and each self-limiting, because the write sits inside the
@@ -325,7 +337,8 @@ All three now read the same per-formal captures, and the choice of channel per c
      Falsify one before fixing.
 -    **#81**, an owned call written only in a parameter default is invisible to the ownership scan.
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
--    **#80**, the sweep owed for the four landed fixes.
+-    The precision cost of #79 across the workspace, whose sweep is running at time of writing, with
+     the loss shape predicted in the measurement log before the capture is read.
 
 ### Declined with the reason recorded
 
