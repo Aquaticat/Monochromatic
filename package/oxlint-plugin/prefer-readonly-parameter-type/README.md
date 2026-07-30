@@ -159,6 +159,37 @@ The rule tracks invocation separately from referent mutation,
 so an implementation-derived callback call does not automatically claim mutation of the function object or every captured value.
 Unknown and external callbacks remain fail closed.
 
+## Retained closures
+
+Handing a closure to a callee this rule cannot inspect does not by itself withhold an offer.
+What the callee may do with that closure is bounded by what invoking it hands back,
+so a closure whose every completion is a leaf exposes nothing however the callee keeps it.
+That is why `rows.map((row) => config.row.label,)` keeps its offer.
+
+Deciding what a completion hands back asks the callable that actually runs,
+never the declared callback type of the formal it was passed as.
+
+Two rules follow from that,
+both of which can withhold an offer you might expect to stand.
+
+A declared `void` result is trusted only when it describes a body.
+TypeScript permits assigning a value-returning function where a `void`-returning one is expected,
+and permits no other such substitution,
+so `void` on a callable *type* constrains nothing about what the callable returns.
+A call through a parameter, a mutable local or a member signature is therefore treated as able to hand
+back state,
+while a call to a function declaration keeps its `void` at face value.
+One consequence is worth stating plainly:
+a closure completing with `console.log(...)` withholds,
+because that name resolves to a member of an interface rather than to a function declaration.
+
+A parameter default does not stand for every value the parameter can hold.
+Where the rule can name the callables an expression might be,
+it uses them as evidence and joins their answer with the declared result type rather than replacing it.
+So writing `producer: () => Row | string = (): string => 'leaf'` does not narrow the analysis to the
+default,
+and both the default's own body and the declared union decide together.
+
 ## Self-hosting boundary
 
 The strict rule does not lint its own package under its effect policy.
