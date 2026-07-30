@@ -398,9 +398,17 @@ Two consequences for anyone working here:
 -    A fix to that channel cannot be pinned by the fixture corpus, and #100's capture wiring could not be
      pinned by exporting the unit either, because proving a capture is charged needs real
      `bindingOriginBySymbolId` origins the analyzer does not expose. It is reverted with its design recorded.
--    **Diagnose which of the four resolver requirements fails before adding a fixture dependency.** If a gate
-     over-rejects, this is a defect and a fixture would paper over it. Instrumenting the rejection paths
-     answers that and is as cheap as the success-path line was.
+-    **Diagnosed.** One gate rejects nearly everything. Cold-run counts from a `valibot` consumer, with all
+     four rejection paths instrumented: **call-identity 161, implementation 3, installed-package 0,
+     version-lock 0.** So the resolver clears installed-package identity and version locking without a single
+     rejection and is stopped at `packageCallIdentity` and its declaration-owner fallback for 161 of 164 calls.
+
+     That is why no finding carries package-version provenance. It is a **defect in one gate**, not a coverage
+     gap, and a fixture dependency would have produced one more call that also fails there. #113 is now that
+     diagnosis rather than a fixture chore.
+
+     Reproduction: **cold-run only.** The persistent cache makes a second lint of the same package emit
+     nothing, because summaries are reused and the resolver never re-runs.
 
 One method note that generalises beyond this channel. **An absence in a capture is evidence about what the
  rule said, never about what the rule did.** A silent channel and an absent channel produce identical output.
