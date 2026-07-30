@@ -6296,3 +6296,54 @@ Predicted, and stated so the capture can contradict it:
 
 Runtime recorded beside the deltas as a matter of course now. The join adds one call per completion on a
  path that already resolved candidates, so no cost class change is expected.
+
+### Withdrawing sweep six's premise, before the capture was read
+
+The pre-registration above rests on a claim that is wrong, and it is being withdrawn here rather than
+ quietly dropped after the numbers arrive.
+
+The claim was that the workspace demonstrably contains the candidate-list fix's target shape, because
+ sweep five's deltas named `exists = generatedFileExists` and `watchDirectoryImpl = watchDirectory`.
+
+Those deltas are the **ordinary origin** path, not the capture path. `generatedFileUrl` was charged
+ because it flowed into `generatedFileExists` as an argument through a defaulted callee edge, and that
+ callee calls `fileURLToPath`. A direct call, not a closure.
+
+The candidate-list fix only bites when a defaulted callable is invoked **inside a closure handed to an
+ uninspectable callee**. Neither delta shows that combination occurs here. A defaulted callable formal
+ existing in the workspace is not evidence that one is invoked inside a retained closure.
+
+So the prediction stands as a prediction and its stated reason does not. Two consequences for reading the
+ capture:
+
+If offers hold, the already-withheld-majority explanation must not be reached for again. The first
+ question is whether the shape occurs at all, which is a syntax count rather than a finding count.
+
+And the more likely mover is the **void fix's precision cost**, not the candidate-list fix's soundness
+ gain. A retained closure completing in a void method call on an interface-typed value is the shape, and
+ `.then(() => logger.info(x,),)` is exactly it. This repository mandates extensive logging, so that shape
+ is common here in a way the other is not.
+
+The remedy this document pre-registered for that cost also misses. Trusting a slot declared in an ambient
+ file covers `console`, and covers neither an interface declared in analysed source nor anything else a
+ logger reaches through. A repository-owned logger whose method is a `MethodDeclaration` already resolves
+ and already stays trusted, so it was never the problem. If losses are logging-shaped the remedy needs
+ deriving from what the losses actually name.
+
+### The attribution invariant, which makes the sampling mechanical
+
+For these two fixes a lost offer cannot be silent, and that is a checkable property rather than a hope.
+ Both withhold through the capture channel, which records with `addOpaqueEffect` and carries provenance
+ naming the retaining call. So the parameter that loses its offer reappears as an argument-opacity finding
+ naming that same parameter.
+
+The invariant: **every lost offer has a matching added finding naming the same parameter.** The added
+ finding's callee text then says which fix did it, and reading the completion at that site separates them.
+ A void call through a slot is the void fix. A call through a defaulted or otherwise slot-held callable
+ with a non-void result is the candidate-list fix.
+
+An offer that vanishes with no added finding naming it is not noise. It means something withheld through
+ a channel that does not speak, which is not what either fix does, and it needs chasing rather than
+ tallying.
+
+This replaces per-loss manual reasoning with a rule that can fail, which is the point.
