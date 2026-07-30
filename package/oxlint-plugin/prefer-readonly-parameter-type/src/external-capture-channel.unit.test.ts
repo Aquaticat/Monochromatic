@@ -72,6 +72,10 @@ const PACKAGE_VERSION = '1.0.0';
  * and therefore what makes the external gate open at all. `stampRow` writes its formal, so a consumer
  * handing it caller state is charged a proven mutation rather than opacity, and that difference is the
  * fixture's own proof that the external path ran.
+ *
+ * `runCallback` invokes rather than keeps, which reaches a different branch of the formal selection:
+ * retention arrives as an opaque formal and invocation as an invoked one. Without it, deleting
+ * invocation from that selection would leave this suite green while a measured false offer returned.
  */
 const IMPLEMENTATION_SOURCE = `const heldCallbacks = [];
 const heldRows = [];
@@ -90,6 +94,10 @@ export function retainRow(row) {
   heldRows.push(row);
   return heldRows.length;
 }
+
+export function runCallback(callback) {
+  return callback();
+}
 `;
 
 /**
@@ -101,12 +109,13 @@ export function retainRow(row) {
 const DECLARATION_SOURCE = `export declare function retainCallback(callback: () => void, row: { label: string; }): number;
 export declare function stampRow(row: { label: string; }): void;
 export declare function retainRow(row: { label: string; }): number;
+export declare function runCallback(callback: () => void): void;
 `;
 
 /**
  * Consumer source, one callable per claim.
  */
-const CONSUMER_SOURCE = `import { retainCallback, retainRow, stampRow, } from '${PACKAGE_NAME}';
+const CONSUMER_SOURCE = `import { retainCallback, retainRow, runCallback, stampRow, } from '${PACKAGE_NAME}';
 
 export type Row = { label: string; };
 
@@ -155,6 +164,12 @@ export function handCaptureWriterToExternalRetainer(config: Config,): number {
     },
     { label: 'own', },
   );
+}
+
+export function handRowProducerToExternalRunner(config: Config,): void {
+  runCallback(function produceForRunner(): Row {
+    return config.row;
+  },);
 }
 `;
 
@@ -431,6 +446,8 @@ await describe({
         const freshCapture = consumerOpaque('handFreshProducerToExternalRetainer',);
         /** Capture inside a closure that writes it rather than handing it back. */
         const writtenCapture = consumerWritten('handCaptureWriterToExternalRetainer',);
+        /** Capture handed to an export that invokes rather than keeps. */
+        const invokedCapture = consumerOpaque('handRowProducerToExternalRunner',);
         closeSemanticBridge();
         /* The gates opened. A proven mutation arrives through the external summary, so this parameter is
          * written rather than merely unknown, and no unresolved boundary was recorded beside it. Both
@@ -459,6 +476,13 @@ await describe({
          * whatever the callee is, so it never reaches the capture channel and cannot expose its
          * absence. */
         expect(writtenCapture,).toEqual([0,],);
+        /* The second branch of the formal selection, and it needs its own case rather than inheriting
+         * the subject's. Retention reaches an opaque formal and invocation reaches an invoked one, so
+         * deleting invocation from `exposingFormals` leaves every other line here passing while this
+         * false offer returns. Measured as a false offer in its own right: this reported
+         * `Parameter "config" should be readonly` under `oxlint --threads=1` before the channel
+         * existed. */
+        expect(invokedCapture,).toEqual([0,],);
       },
     },),
   ],

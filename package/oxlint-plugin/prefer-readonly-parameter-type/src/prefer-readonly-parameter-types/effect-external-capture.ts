@@ -26,9 +26,9 @@
  *
  * ## Which facts expose a capture, and which do not
  *
- * Invocation and opacity do. Invoking a handed callable hands its result to the implementation, and an
- * opaque formal is one whose handling could not be read at all, retention included, since a store into a
- * module binding is what opacity records.
+ * Invocation and opacity do, and they are separate facts rather than one: an implementation that calls a
+ * handed callable records that formal as invoked, while one that keeps it records opacity, since a store
+ * into a module binding is what opacity records. Each has its own case in the test for that reason.
  *
  * A proven mutation does not. Writing through a formal reaches what that formal already refers to rather
  * than anything invoking a callable in that position would hand back, and such a formal is charged
@@ -138,9 +138,22 @@ export function recordExternalCaptureOpacity({
 /**
  * Names the external formals whose handling can expose what a callable in that position hands back.
  *
- * A callback relation contributes its source formal, because that is the position the implementation
- * feeds to a callback it invokes, and the same reasoning that charges its ordinary origins applies to
- * what a callable sitting there would expose.
+ * Both sets are needed and each is pinned by its own case, because retention and invocation arrive as
+ * different facts. A store into a module binding is recorded as an opaque formal, and a formal the
+ * implementation calls is recorded as an invoked one. Measured by deleting each in turn: dropping
+ * invocation fails only the case whose export invokes, dropping opacity only the case whose export
+ * keeps.
+ *
+ * `callbackRelations` is deliberately not consulted, which is a correction rather than an omission. A
+ * relation names the formal the implementation feeds **into** a callback, never the formal **holding**
+ * one, so asking what a callable in that position exposes asks about the wrong argument: on a real
+ * shape the source actual is the value being passed along, which holds no callable, and the mutant
+ * removing this branch survived the whole suite.
+ *
+ * What that branch looked like it was for is covered already. An implementation that calls a handed
+ * callback records that formal as invoked, which the invoked case pins directly, and whatever the
+ * relation exposes about the caller's own values is charged by `applyExternalEffect` through their
+ * ordinary origins.
  *
  * @param externalEffect - Proven external implementation effect.
  *
@@ -157,10 +170,6 @@ function exposingFormals(externalEffect: ExternalCallableEffect,): readonly numb
       .invokedParameterIndexes,
     ...externalEffect.summary
       .opaqueParameterIndexes,
-    ...[...externalEffect.summary
-      .callbackRelations,].map(function relationSource(relation,): number {
-      return relation.sourceParameterIndex;
-    },),
   ];
 }
 
