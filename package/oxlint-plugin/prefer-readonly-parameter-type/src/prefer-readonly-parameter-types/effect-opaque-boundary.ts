@@ -19,6 +19,7 @@ import {
 } from './effect-member-call-receiver.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
+import { recordUnresolvedCaptureOpacity, } from './effect-unresolved-capture.ts';
 import {
   type MutableEffectSummary,
   NO_SLOT_ORIGIN,
@@ -132,5 +133,16 @@ export function recordOpaqueBoundary({
         provenance: `${opaqueProvenance} [${originLocation}]`,
       },);
     },);
+  },);
+  /* The origin walk above answers for what an argument holds, and a callable holds nothing it can
+   * read: what reaches a caller parameter is the body. So a capturing closure handed to a call with
+   * no owned edge was recorded by nothing at all, which offered the captured parameter while an
+   * uninspectable callee kept the closure. */
+  recordUnresolvedCaptureOpacity({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    actuals: call.arguments,
+    provenance: `${opaqueProvenance} [${originLocation}]`,
   },);
 }

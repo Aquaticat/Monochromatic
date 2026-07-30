@@ -2777,3 +2777,112 @@ export function writeThroughSupplied(written: () => Row,): void {
 export function handWrittenResultOut(writtenThrough: Config,): void {
   writeThroughSupplied((): Row => writtenThrough.row,);
 }
+
+/**
+ * Registry whose method stores past every caller.
+ *
+ * Written as an instance method on purpose. A possibly-overridden method is treated as unresolved,
+ * so this is the ordinary shape of a callee with no owned edge, not a library edge case.
+ */
+export class CaptureRegistry {
+  /**
+   * Stores the handed callable where no caller that supplied it can reach it.
+   *
+   * @param callback - Callable stored beyond every caller.
+   *
+   * @example
+   * ```ts
+   * new CaptureRegistry().register((): Row => ({ label: '', }),);
+   * ```
+   */
+  register(callback: () => Row,): void {
+    callbackHolder.produce = callback;
+  }
+}
+
+/**
+ * Hands a row-returning closure to an instance method that keeps it.
+ *
+ * Falsified before the unresolved boundary asked about captures: the annotation applied,
+ * type-checked clean beside a control whose direct write was rejected, and the driver invoked the
+ * stored closure and wrote through the row it handed back. Only the receiver was withheld, because
+ * a method call makes its receiver opaque and nothing spoke for what the closure captured.
+ *
+ * @param registeredCapture - Configuration whose row the stored closure hands out.
+ *
+ * @param registry - Registry whose method stores the closure.
+ *
+ * @example
+ * ```ts
+ * handCaptureToRegistry({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handCaptureToRegistry(
+  registeredCapture: Config,
+  registry: CaptureRegistry,
+): void {
+  registry.register((): Row => registeredCapture.row,);
+}
+
+/**
+ * Hands a primitive-returning closure to an uninspectable member call.
+ *
+ * The precision this gate exists to keep. Nothing an uninspectable callee can do with a closure that
+ * hands back only a string reaches the configuration, so the offer stands. Losing this shape is what
+ * scoping captures to owned edges was protecting, and it is protected by asking what the closure
+ * hands back instead.
+ *
+ * @param mappedPrimitive - Configuration only read.
+ *
+ * @returns labels read in place.
+ *
+ * @example
+ * ```ts
+ * mapPrimitiveThroughCapture({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function mapPrimitiveThroughCapture(mappedPrimitive: Config,): string[] {
+  return mappedPrimitive.rows
+    .map(function label(): string {
+      return mappedPrimitive.row
+        .label;
+    },);
+}
+
+/**
+ * Hands a closure that completes with nothing to an uninspectable callee.
+ *
+ * The second control. A closure handing nothing back exposes nothing however it is kept, and its
+ * own writes are charged separately, so the offer stands.
+ *
+ * @param countedVoid - Configuration only read.
+ *
+ * @example
+ * ```ts
+ * handVoidCaptureOutward({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handVoidCaptureOutward(countedVoid: Config,): void {
+  queueMicrotask(function count(): void {
+    void countedVoid.rows
+      .length;
+  },);
+}
+
+/**
+ * Hands a row-returning closure to a callee known to discard what it invokes.
+ *
+ * The accepted precision loss, pinned so it stays visible. `setTimeout` throws its callback's result
+ * away, so nothing escapes here, and no local property of the call expression establishes that.
+ * Recovering it needs a per-callee effect contract naming the discard.
+ *
+ * @param timedRow - Configuration whose row nothing actually receives.
+ *
+ * @example
+ * ```ts
+ * handRowToDiscardingCallee({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handRowToDiscardingCallee(timedRow: Config,): void {
+  setTimeout((): Row => timedRow.row, 0,);
+}

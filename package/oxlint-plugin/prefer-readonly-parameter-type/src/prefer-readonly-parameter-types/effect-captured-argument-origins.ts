@@ -122,11 +122,15 @@ export function argumentCapturedOrigins({
  * defaults to a closure over the caller's configuration, offered that configuration while the
  * closure `retain` kept wrote through it. Falsified.
  *
- * Confined to this channel on purpose. A capture only ever adds opacity, so widening here can
- * only withhold more. The invoked-callback identity beside it stays with the narrow resolver,
- * because naming a default as the callable a callee invokes would claim the default's effects for
- * a call where the caller supplied something else, and that claim can be wrong in the offering
- * direction.
+ * Kept out of the callback identity beside it, which stays with the narrow resolver: naming a
+ * default as the callable a callee invokes would claim the default's effects for a call where the
+ * caller supplied something else, and that claim can be wrong in the offering direction. Whereas
+ * every consumer of a capture asks what the callee stated about its own formal first, so widening
+ * what fills a formal can only ever add an effect the callee already declared.
+ *
+ * Exported because the unresolved boundary needs the same answer. An earlier note here said a
+ * capture only ever adds opacity, which stopped being true once captures began feeding the mutation
+ * and returned-origin channels as well.
  *
  * @param project - TypeScript project resolving values an expression can hold.
  *
@@ -139,7 +143,7 @@ export function argumentCapturedOrigins({
  * packagedActualCallables({ project, actual });
  * ```
  */
-function packagedActualCallables({
+export function packagedActualCallables({
   project,
   actual,
 }: {

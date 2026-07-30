@@ -657,7 +657,7 @@ children: [
        * count cannot tell which offer moved. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(40,);
+      },).length,).toBe(42,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -765,6 +765,39 @@ children: [
           || message.includes('"defaultReached"',)
           || message.includes('"throughThis"',);
       },).length,).toBe(0,);
+      /* The unresolved-boundary group, and the two offers that carry the count from forty to
+       * forty-two. Captures lived on owned call edges only, so a capturing closure handed to a call
+       * with no owned edge was recorded by nothing, and a possibly-overridden method is treated as
+       * unresolved on purpose, which made every instance method that keeps a callback an instance of
+       * it. `registeredCapture` is falsified.
+       *
+       * The two arrivals are the precision the gate exists to keep, and they matter more than the
+       * subject. Scoping captures to owned edges was protecting exactly them, and asking what the
+       * closure hands back protects them without the scoping: a closure completing only in a string,
+       * and one completing in nothing at all, expose nothing whatever an uninspectable callee does
+       * with them, because writes the closure performs are charged separately.
+       *
+       * `timedRow` is the accepted loss, pinned so it stays visible rather than forgotten.
+       * `setTimeout` discards what it invokes, so nothing escapes there, and no local property of
+       * the call expression can establish that. */
+      expect(messages.filter(function namesUnresolvedCaptureOffers(message,): boolean {
+        return message.includes('"mappedPrimitive"',)
+          || message.includes('"countedVoid"',);
+      },).length,).toBe(2,);
+      /* Both withheld, and both speaking, which is right for this channel rather than a leak. Their
+       * cause is a call, so there is a boundary the reader can inspect, and that is exactly the
+       * distinction the store channel is silent for: a reader can do nothing about a store and
+       * something about an uninspectable call. */
+      expect(messages.filter(function offersRegisteredCapture(message,): boolean {
+        return (message.includes('"registeredCapture"',)
+          || message.includes('"timedRow"',))
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesRegisteredCapture(message,): boolean {
+        return (message.includes('"registeredCapture"',)
+          || message.includes('"timedRow"',))
+          && message.includes('used by these calls',);
+      },).length,).toBe(2,);
       /* The invoked-result group. `invokedThrough` is the arrival and it keeps its offer, which is
        * the accepted return policy working: a callee that invokes a handed closure and returns the
        * result hands back caller state, and returning caller state is permitted on the condition
@@ -870,17 +903,22 @@ children: [
         return message.includes('"forwarded"',)
           && message.includes('queueMicrotask',);
       },),).toBe(true,);
-      /* What still speaks, and in the words that fit it. Both are member calls on the
-       * parameter, so both keep the method-specific message rather than the generic one.
+      /* What still speaks, and in the words that fit it. Every one is a member call on the
+       * parameter, so each keeps the method-specific message rather than the generic one.
        * `storeMemberIntoModuleBinding` is the mixed shape that decides this: it both calls
        * `config.rows.at` and stores the result, and before the split its store joined the
-       * boundary list, which is an `every` over that list, and cost it this message. */
+       * boundary list, which is an `every` over that list, and cost it this message.
+       *
+       * Three since the registry arrived. Two name `.rows.at` and the third names `.register`,
+       * which is the receiver of the method the capture channel now answers for, so the list is
+       * asserted per boundary rather than by one shared substring. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(2,);
+      expect(opacityMessages.length,).toBe(3,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
-        return message.includes('.rows.at',);
+        return message.includes('.rows.at',)
+          || message.includes('.register',);
       },),).toBe(true,);
       /* The subject that introduces the boundary list, held to the same rule as the list.
        * `reportMixedBindingCauses` stores one destructured binding and passes the other to
