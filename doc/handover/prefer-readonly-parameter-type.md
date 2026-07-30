@@ -412,9 +412,23 @@ Two consequences for anyone working here:
      `node:child_process spawn` and `ignore Ignore` on its way to failing because a builtin has no shipped
      implementation, which is correct.
 
-     **So the channel is dark because a member call gets no package identity, and member calls are about 95
-     percent of external calls.** `packageCallIdentity`'s property-access handling and the
-     `packageDeclarationCallIdentity` fallback are the fix target. A refuted hypothesis is recorded on #113 so
+     **Then reading the code flipped the conclusion.** `packageCallIdentity` *does* handle a property-access
+     callee: it requires the receiver to be an identifier, resolves it through `importBinding`, and answers for
+     a namespace import and an import specifier. So `import * as v from 'valibot'; v.safeParse(...)` is covered
+     by design.
+
+     The 156 rejections are member calls whose receiver is **not an import**: a global (`console.log`), a
+     parameter (`signal.addEventListener`, `rows.map`), or not an identifier at all (`this.#kept.push`). **Every
+     one is correctly rejected**, because the channel resolves *package export* calls and a method on an
+     arbitrary value is not one, whatever its type came from.
+
+     So the channel is narrower than "external calls": it is "calls to package exports with a shipped
+     implementation", and this workspace makes very few. Saying it "has never run on real input" treated a fact
+     about the workspace as a bug. One confirming measurement remains, printing the receiver's symbol kind for
+     the 156; then this closes as a documentation correction rather than a code fix.
+
+     **Consequence for #100 and #111:** their end-to-end coverage needs a fixture calling a **package export**
+     whose shipped implementation mutates a formal, not merely any external call. A refuted hypothesis is recorded on #113 so
      it is not retried: `getSymbolAtLocation` versus `getResolvedSymbol` in `importBinding` changed the counts
      by nothing.
 
@@ -439,6 +453,12 @@ Four times in this effort a hole predicted by reading one module turned out clos
 Against that, every defect that was real was found by **measuring a shape**: the void slot, the candidate
  list, the four handoffs, the two value-walk paths, the tag invocation. Probe before filing is already the
  rule here; this is the strongest evidence for it so far.
+
+**And the mirror of that rule, learned on #113.** Measuring produces true numbers and unreliable
+ interpretations. Three instrumented runs correctly localised the external blocker to one gate and one syntax
+ kind, and the conclusion drawn from those numbers, that it was a defect, was wrong until the code producing
+ them was read. Neither reading nor measuring is sufficient. The order that worked: **measure to localise, then
+ read to interpret.**
 
 Two corollaries worth carrying:
 
