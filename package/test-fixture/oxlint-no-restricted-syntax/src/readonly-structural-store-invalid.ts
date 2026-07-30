@@ -2602,8 +2602,14 @@ export function defaultExpressionWrites(
 /**
  * Stores its callable default past the callable without invoking it.
  *
- * The first escape control. Nothing here runs the packaged body, so the activation gate keeps its
- * write unattributed, and the store must withhold on what the closure can reach instead.
+ * The first escape control. Nothing here runs the packaged body, so the activation gate attributes
+ * nothing, and the store must withhold on what the closure can reach instead.
+ *
+ * Reading rather than writing, which is the form that falsifies. A default closure that writes
+ * through the parameter stops type-checking as soon as the offer is applied, so it can only be
+ * self-limiting; handing the row out lets the receiver write it, and `readonly` property modifiers
+ * are ignored in assignability, so the annotated version compiles and the caller's row still
+ * changes.
  *
  * @param storedDefault - Configuration reachable through the stored closure.
  *
@@ -2616,11 +2622,7 @@ export function defaultExpressionWrites(
  */
 export function storeDefaultClosure(
   storedDefault: Config,
-  storedCallback: () => Row = (): Row => {
-    storedDefault.row
-      .label = 'written';
-    return storedDefault.row;
-  },
+  storedCallback: () => Row = (): Row => storedDefault.row,
 ): void {
   callbackHolder.produce = storedCallback;
 }
@@ -2630,7 +2632,11 @@ export function storeDefaultClosure(
  *
  * The second escape control, and the one the activation gate exposed. The resolver naming the
  * callable an argument holds stops at a parameter, so the capture channel saw nothing and offered
- * the configuration while the kept closure wrote through it.
+ * the configuration while the closure the callee kept handed its row out.
+ *
+ * Falsified in that offered state: the annotation applied, type-checked clean beside a control
+ * whose direct write was rejected, and the driver invoked the retained closure and wrote through
+ * the row it handed back.
  *
  * @param handedDefault - Configuration reachable through the handed closure.
  *
@@ -2643,11 +2649,7 @@ export function storeDefaultClosure(
  */
 export function handDefaultClosureToRetainer(
   handedDefault: Config,
-  handedCallback: () => Row = (): Row => {
-    handedDefault.row
-      .label = 'written';
-    return handedDefault.row;
-  },
+  handedCallback: () => Row = (): Row => handedDefault.row,
 ): void {
   retainCallable(handedCallback,);
 }
@@ -2671,11 +2673,7 @@ export function handDefaultClosureToRetainer(
  */
 export function returnDefaultClosure(
   returnedDefault: Config,
-  returnedCallback: () => Row = (): Row => {
-    returnedDefault.row
-      .label = 'written';
-    return returnedDefault.row;
-  },
+  returnedCallback: () => Row = (): Row => returnedDefault.row,
 ): () => Row {
   return returnedCallback;
 }
