@@ -44,3 +44,9 @@ run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node -- node src/typescri
 description = "Exercise built package from external consumer on current host"
 run = "node src/external-consumer.unit.test.ts"
 run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node pnpm -- node src/external-consumer.unit.test.ts'
+
+# Runs oxlint at its own worker default, which is the quantity the guarded failure depends on.
+[tasks."test:external-channel-workers"]
+description = "Exercise external implementation loading under oxlint worker reservations on current host"
+run = "node src/external-channel-workers.unit.test.ts"
+run_windows = '"%LOCALAPPDATA%\mise\bin\mise.exe" exec node -- node src/external-channel-workers.unit.test.ts'

@@ -1,10 +1,11 @@
 /**
  * Whether the external channel survives oxlint's default worker count.
  *
- * The only test here that runs oxlint to reach the external channel, and it exists because no other
- * shape can fail when this breaks. `external-capture-channel.unit.test.ts` drives the effect summaries
- * from plain `node`, where the second native child spawns without trouble, so every external assertion in
- * it passes whether or not the channel works under the linter that actually ships.
+ * The only test here that runs oxlint to reach the external channel, and it exists because no other shape
+ * can fail when this breaks. Measured rather than argued: deleting the eager initializer from `index.ts`
+ * kills this test and leaves `external-capture-channel.unit.test.ts` passing. That test drives the effect
+ * summaries from plain `node`, where the second native child spawns without trouble, so every external
+ * assertion in it holds whether or not the channel works under the linter that actually ships.
  *
  * ## What broke, and why it was invisible
  *
