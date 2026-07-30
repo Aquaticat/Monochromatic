@@ -6793,3 +6793,35 @@ The general lesson, which is the same one this document has recorded twice alrea
  absence in a capture is evidence about what the rule said, never about what the rule did.** A silent channel
  and an absent channel produce identical output, which is precisely the instrument limit already recorded for
  store-caused withholding, arriving here from the opposite direction.
+
+### Settled by instrumentation: the resolver succeeds nowhere here
+
+The previous section left the question open and named the two ways to settle it. Instrumentation was the
+ cheap one, so it was done: a temporary line on the resolver's success path, printing the provenance and the
+ three effect sets it proved, then reverted.
+
+```text
+package/config/rolldown            no resolution
+package/dev-script/file-enforcer   no resolution
+package/module/pipe                no resolution
+package/webapp-productivity/wc     no resolution
+package/pi-plugin/spawn            no resolution
+package/dev-script/watch-restart   no resolution   (an @optique/core consumer)
+package/pi-shared/model-selection  no resolution   (a valibot consumer)
+```
+
+Seven packages chosen for third-party usage rather than at random, including consumers of the two most-used
+ runtime dependencies in this workspace after `type-fest`, which is types-only and so cannot resolve by
+ construction. **Zero successful resolutions.**
+
+So the stronger claim holds after all, and now it is measured rather than inferred from an absence: the
+ external resolver succeeds nowhere in this workspace, which means the branch it guards, the four position
+ kinds, the version-locking gate and the callback-relation mapping have never run on real input here.
+
+The narrower claim recorded in the previous section stands as the reasoning that got here, and both are kept
+ deliberately. An absence in a capture could not distinguish a clean external callee from an absent one; only
+ instrumentation could, and the difference decided how large the untested surface is. It is the larger one.
+
+That makes #113 a coverage prerequisite rather than a convenience. A dependency satisfying all four resolver
+ requirements, whose shipped implementation provably mutates or retains a formal, is the first test this
+ channel would ever have.
