@@ -159,6 +159,47 @@ The rule tracks invocation separately from referent mutation,
 so an implementation-derived callback call does not automatically claim mutation of the function object or every captured value.
 Unknown and external callbacks remain fail closed.
 
+## What counts as an external call
+
+Shipped-implementation inference resolves a **call to a package export**, and only that. Two spellings
+reach it:
+
+```ts
+import { readFile, } from 'node:fs/promises';
+readFile(path,);
+
+import * as valibot from 'valibot';
+valibot.safeParse(schema, input,);
+```
+
+A method call on an ordinary value does **not** reach it,
+however the value's type was declared:
+
+```ts
+// The receiver is a global, a parameter, or any other value.
+// None of these is a package export, so none resolves an external effect.
+console.log(label,);
+signal.addEventListener('abort', onAbort,);
+rows.map(readRow,);
+```
+
+That is a deliberate boundary rather than a gap.
+Inference works from exact package export identity,
+because a value's type coming from a package does not make a call on that value a call to that package.
+A method on a value is treated as unresolved instead,
+which withholds,
+and the retained-closure rules cover what it hands over.
+
+Measured, so the practical consequence is stated rather than implied:
+across two packages in this repository,
+of the calls reaching this decision
+104 had a receiver that was a global or a local,
+52 had a receiver that was not a plain identifier,
+and the ones that did resolve an export identity were `node:` builtins,
+which then correctly fail because a builtin ships no implementation to inspect.
+So in ordinary code this path resolves rarely,
+and a parameter is withheld by the unresolved boundary rather than by a proven external effect.
+
 ## Retained closures
 
 Handing a closure to a callee this rule cannot inspect does not by itself withhold an offer.
