@@ -180,7 +180,12 @@ Reusing one prefix for a different escape produced facts like
 
 ## Mutation checking is the only instrument that finds an untested rule
 
-Four mutants have survived a green suite in this work, and they did not mean the same thing.
+Five mutants have survived a green suite in this work, and they did not mean the same thing.
+
+Check first whether the mutant implements the defect it claims to. One here restored an early
+ return only when origins had already been found, which never happens for the shape under test, so
+ it behaved exactly like the fixed code and proved nothing. That reading is the cheapest to rule out
+ and the easiest to mistake for the others.
 
 - The retention-only gate survived every fixture and control.
   The design was right and nothing measured it.
@@ -269,6 +274,11 @@ Assert both halves of that fix, since the false fact must go **and** the offer m
 
 ## Where the work stands
 
+**Every false offer this work found and falsified is closed.** Four escape-channel hunt passes drew
+ 44 channels; the fourth found nothing, and none of its channels had been fixed directly, so the
+ fixes generalise past the shapes that motivated them. That is encouraging and still weak evidence:
+ four passes are four samples of a space nobody has enumerated.
+
 Closed and swept: #51, #66, #67, #68, #69.
 The three-channel fix for constructions, yields and awaited returns is landed, tested and
  mutation-checked, with its sweep running at time of writing; constructions are common here, so
@@ -281,18 +291,11 @@ Open, and none of them is a false offer:
 
 - #71, re-measuring task #46's per-finding claim against the current baseline, running
 - #74, discharging a construction whose constructor copies rather than retains
-- #76, a method on a local literal whose result is stored outward. The local-function and
-  arrow-property forms are fixed; the method form should already work through the same path, so
-  whatever separates it is small and specific, and the task says where to instrument first.
-- #73, further hunt passes. Three passes have drawn 42 channels and found 8 real defects, and
-  **each pass has found something**, so passes remain productive rather than converging. Two
-  candidates were correct behaviour and both are recorded, because those are the ones that would
-  have led to a wrong fix.
-
-Also recorded and not yet fixed: the inline scan puts a nested callable's return into the
- **enclosing** callable's returned set, so a function returning `void` claims a returned origin.
-Same family as what #70 removed. Nothing discharges on returned sets today so it is not yet a false
- offer, and a fixture pins it so a fix has something to flip.
+- #77, the inline scan puts a nested callable's return into the **enclosing** callable's returned
+  set, so a function returning `void` claims a returned origin. A wrong fact rather than a lost
+  offer, in the same family as what #70 removed, and not a false offer today because nothing
+  discharges on returned sets. A fixture pins it. It needs the same missing capability as #63 and
+  #65, so those three should move together.
 
 Declined with the reason recorded, because building each the obvious way is worse than leaving
  it:
