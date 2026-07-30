@@ -359,20 +359,31 @@ function completionCanCarryState({
     project,
     expression: root.expression,
   },);
-  /* No owned callee answered, so the declared type is all that is left, and one declared type is a
-   * claim about a slot rather than about a body. `unresolvedResultCanCarryState` states which and why. */
-  if (callees.length === 0)
-    return unresolvedResultCanCarryState({
-      project,
-      root,
-    },);
+  /* Both answers are joined, never one instead of the other, because a candidate list is evidence
+   * about what the callee can be and never a proof of what it cannot be. `heldCallables` follows a
+   * default, a conditional, an initializer and an import, and none of those closes the set: a caller
+   * can pass a formal something other than its default, and a binding can be filled after the
+   * initializer this walk read.
+   *
+   * Measured, on two forwarders differing in exactly one token sequence. Written without a default,
+   * the list is empty, the declared type decides, and the caller's configuration is charged. Written
+   * with `= (): string => 'leaf'`, the list holds that one leaf-returning callable, `some` answers
+   * false, and the caller's configuration is offered. So writing a default removed a withholding that
+   * the same code without one has.
+   *
+   * The declared type is asked through `unresolvedResultCanCarryState`, which is what keeps a slot's
+   * `void` from certifying anything and keeps a declaration's `void` trusted. */
   return callees.some(function calleeCarriesState(callee,): boolean {
     return callableResultCanCarryState({
       project,
       packaged: callee,
       visited,
     },);
-  },);
+  },)
+    || unresolvedResultCanCarryState({
+      project,
+      root,
+    },);
 }
 
 /**

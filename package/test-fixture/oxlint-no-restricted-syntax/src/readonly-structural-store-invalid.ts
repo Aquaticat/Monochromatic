@@ -4010,3 +4010,93 @@ export function reportVoidLabel(reportedLabel: string,): void {
 }
 
 //endregion
+
+//region A candidate list is evidence, not a closed set
+
+/**
+ * Keeps a closure completing with a call through a formal carrying a leaf-returning default.
+ *
+ * The default is one value the formal can hold and not the only one, since a caller can pass another.
+ * Written without the default, the same body charges its caller; written with it, the default answered
+ * for every possible value and the charge disappeared.
+ *
+ * @param defaultedRegistry - Registry keeping the closure past this call.
+ *
+ * @param defaultedProducer - Producer defaulting to one handing back a leaf.
+ *
+ * @example
+ * ```ts
+ * forwardDefaultedRowProducer(new CaptureRegistry(),);
+ * ```
+ */
+export function forwardDefaultedRowProducer(
+  defaultedRegistry: CaptureRegistry,
+  defaultedProducer: () => Row | string = (): string => 'leaf',
+): void {
+  defaultedRegistry.keep((): Row | string => defaultedProducer(),);
+}
+
+/**
+ * Hands a row-producing closure to a formal whose default hands back a leaf.
+ *
+ * The subject. Its configuration was offered while the registry handed the row out.
+ *
+ * @param defaultedGotten - Configuration whose row the produced closure hands out.
+ *
+ * @param defaultedRegistry - Registry keeping whatever the forwarder keeps.
+ *
+ * @example
+ * ```ts
+ * handRowThroughDefaultedProducer({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handRowThroughDefaultedProducer(
+  defaultedGotten: Config,
+  defaultedRegistry: CaptureRegistry,
+): void {
+  forwardDefaultedRowProducer(defaultedRegistry, (): Row => defaultedGotten.row,);
+}
+
+/**
+ * Hands a closure handing back a label to the same formal.
+ *
+ * The precision control, and the one that exercises the gate rather than bypassing it. A configuration
+ * origin does reach the handed closure, the candidate really does hand back a leaf, and the declared
+ * result really is a leaf, so joining the two answers must still offer here.
+ *
+ * @param labelledGotten - Configuration whose label the produced closure hands back.
+ *
+ * @param defaultedRegistry - Registry keeping whatever the forwarder keeps.
+ *
+ * @example
+ * ```ts
+ * handLabelThroughDefaultedProducer({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handLabelThroughDefaultedProducer(
+  labelledGotten: Config,
+  defaultedRegistry: CaptureRegistry,
+): void {
+  forwardLabelProducer(defaultedRegistry, (): string => labelledGotten.row.label,);
+}
+
+/**
+ * Keeps a closure completing with a call through a formal whose every value hands back a leaf.
+ *
+ * @param labelRegistry - Registry keeping the closure past this call.
+ *
+ * @param labelProducer - Producer defaulting to one handing back a leaf.
+ *
+ * @example
+ * ```ts
+ * forwardLabelProducer(new CaptureRegistry(),);
+ * ```
+ */
+export function forwardLabelProducer(
+  labelRegistry: CaptureRegistry,
+  labelProducer: () => string = (): string => 'leaf',
+): void {
+  labelRegistry.keep((): string => labelProducer(),);
+}
+
+//endregion

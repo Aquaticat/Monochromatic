@@ -677,9 +677,25 @@ children: [
        * exactly one keeps an offer, the control whose callee is a readable declaration. The subject
        * contributes none, the forwarder's own producer is a callable and so was never offered, and the
        * reporter's own parameter is a string. */
+      /* Sixty-five once a candidate list stopped standing for a closed set. Four shapes joined and
+       * exactly one keeps an offer, the control whose candidate and whose declared result are both
+       * leaves. The subject contributes none, and the two forwarders' own producers are callables. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(64,);
+      },).length,).toBe(65,);
+      /* The candidate-list subject is charged and its control is not. Asserted as agreement for the same
+       * reason the void pair is: joining the two answers unconditionally would charge both if the
+       * declared result decided alone, and trusting the candidate list would offer to both. */
+      expect(messages.filter(function namesDefaultedGotten(message,): boolean {
+        return message.includes('"defaultedGotten"',);
+      },).filter(function isOffer(message,): boolean {
+        return message.includes('should be readonly',);
+      },),).toEqual([],);
+      expect(messages.filter(function namesLabelledGotten(message,): boolean {
+        return message.includes('"labelledGotten"',);
+      },),).toEqual([
+        'Parameter "labelledGotten" should be readonly: property rows is writable.',
+      ],);
       /* The void-slot subject is charged and its control is not, which is the whole scope of that fix.
        * Asserted as agreement between the two rather than as a count, because a fallback that
        * distrusted every void result would withhold from both and a fallback that trusted every slot
@@ -1194,11 +1210,16 @@ children: [
        *
        * Eighteen since the void-slot group arrived, which added three: the two forwarders calling
        * `.keep` on their own registry, and the subject that hands its registry to one of them and
-       * receives the propagated report. */
+       * receives the propagated report.
+       *
+       * Twenty-one since the candidate-list group arrived, which added three the same way: its two
+       * forwarders call `.keep` on their own registry, and its subject and control each hand a registry
+       * to one of them, with one of those four sharing a registry parameter rather than adding a
+       * report. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(18,);
+      expect(opacityMessages.length,).toBe(21,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)
