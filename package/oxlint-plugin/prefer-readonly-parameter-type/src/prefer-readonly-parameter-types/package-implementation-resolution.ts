@@ -4,7 +4,7 @@
  * @module
  */
 
-import { existsSync, } from 'node:fs';
+import { statSync, } from 'node:fs';
 import {
   extname,
   join,
@@ -222,9 +222,17 @@ function manifestRuntimeTarget({
       .module
     : identity.manifest
       .main;
+  /* A package declaring no entry at all still resolves, by the legacy rule that falls back to an index
+   * file in the package root, and Node applies that rule whenever `exports` and `main` are both absent.
+   * Answering the root here rather than declining lets `implementationPath` try its existing index
+   * candidates, which is the only place that fallback is spelled out.
+   *
+   * Measured before writing this: `ignore@7.0.6` declares `types` and nothing else while shipping
+   * `index.js`, and it was the one non-builtin package that ever reached implementation resolution and
+   * failed. 31 installed packages in this workspace share that shape. */
   return (typeof legacyEntry) === 'string'
     ? legacyEntry
-    : PACKAGE_IMPLEMENTATION_UNAVAILABLE;
+    : '.';
 }
 
 /**
@@ -268,14 +276,47 @@ function implementationPath({
     },),
   ];
   for (const candidate of candidates) {
-    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor confirms shipped implementation before analysis. */
     if ((extname(candidate,) !== '')
       && IMPLEMENTATION_SUFFIX_SET.has(extname(candidate,))
-      && existsSync(candidate,))
+      && candidateIsFile(candidate,))
       return candidate;
-    /* oxlint-enable no-restricted-syntax/no-sync */
   }
   return PACKAGE_IMPLEMENTATION_UNAVAILABLE;
+}
+
+/**
+ * Tests whether one candidate path is a readable file rather than a directory.
+ *
+ * Existence alone is not enough, and the reason is a directory whose own name ends in a supported suffix.
+ * A package named `foo.js` would have its root accepted as an implementation, because the root is the
+ * first candidate and `extname` reads `.js` from the directory name. It then fails later, since no source
+ * file loads for a directory, so the cost is a blocked resolution rather than a wrong answer. Asking for a
+ * file states the requirement where it belongs instead.
+ *
+ * Measured on this workspace: of the packages that declare no runtime entry, exactly one has a dotted
+ * name, `lodash.truncate`, and `.truncate` is not a supported suffix, so nothing here reaches it today.
+ *
+ * @param candidate - Path a manifest target or index fallback produced.
+ *
+ * @returns whether it names an existing file.
+ *
+ * @example
+ * ```ts
+ * candidateIsFile('/repo/node_modules/pkg/index.js');
+ * ```
+ */
+function candidateIsFile(candidate: string,): boolean {
+  /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor confirms shipped implementation before analysis. */
+  /**
+   * Metadata for the candidate, absent when nothing exists at that path.
+   */
+  const metadata = statSync(
+    candidate,
+    { throwIfNoEntry: false, },
+  );
+  /* oxlint-enable no-restricted-syntax/no-sync */
+  return (metadata !== undefined)
+    && metadata.isFile();
 }
 
 /**

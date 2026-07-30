@@ -122,9 +122,39 @@ export declare function stampAndIgnoreCallback(callback: () => void, row: { labe
 `;
 
 /**
+ * Second authored dependency, declaring no runtime entry and named so its root has a code suffix.
+ *
+ * Both properties are deliberate and each pins one half of the resolution it exercises. Declaring no
+ * `exports`, `main` or `module` is the shape `ignore@7.0.6` ships, which Node resolves by falling back to
+ * an index file. Ending the name in `.js` means the package root itself carries a supported suffix, so a
+ * resolver that accepts any existing path would hand back the directory.
+ */
+const INDEX_FALLBACK_NAME = 'entryless-probe.js';
+
+/**
+ * Shipped implementation of the package that declares no entry.
+ *
+ * Writes its formal rather than keeping a callback, because a kept callback cannot discriminate. Opacity
+ * from a resolved external retention and opacity from the unresolved boundary are the same set, so a
+ * capture reads the same whether resolution worked or not. A proven mutation is written by the external
+ * path alone.
+ */
+const INDEX_FALLBACK_IMPLEMENTATION = `export function stampEntry(row) {
+  row.label = 'entryless';
+}
+`;
+
+/**
+ * Declarations of the package that declares no entry, reached through its `types` field.
+ */
+const INDEX_FALLBACK_DECLARATION = `export declare function stampEntry(row: { label: string; }): void;
+`;
+
+/**
  * Consumer source, one callable per claim.
  */
 const CONSUMER_SOURCE = `import { retainCallback, retainRow, runCallback, stampAndIgnoreCallback, stampRow, } from '${PACKAGE_NAME}';
+import { stampEntry, } from '${INDEX_FALLBACK_NAME}';
 
 export type Row = { label: string; };
 
@@ -191,6 +221,10 @@ export function stampThroughIgnoringExport(config: Config,): number {
     },
     config.row,
   );
+}
+
+export function stampThroughEntrylessPackage(config: Config,): void {
+  stampEntry(config.row,);
 }
 
 export function handRowProducerToExternalRunner(config: Config,): void {
@@ -271,6 +305,50 @@ function externalCaptureFixture(): ExternalCaptureFixture {
     ),
     DECLARATION_SOURCE,
   );
+  /**
+   * Root of the dependency that declares no runtime entry, mirroring `ignore@7.0.6`.
+   */
+  const fallbackRoot = join(
+    root,
+    'node_modules',
+    INDEX_FALLBACK_NAME,
+  );
+  mkdirSync(
+    fallbackRoot,
+    { recursive: true, },
+  );
+  /* No `exports`, no `main`, no `module`, and no `type`, which is exactly what `ignore@7.0.6` ships. Node
+   * resolves such a package by the legacy rule that falls back to an index file, and `types` is what the
+   * consumer's checker reads for declarations. */
+  writeFileSync(
+    join(
+      fallbackRoot,
+      'package.json',
+    ),
+    `${JSON.stringify(
+      {
+        name: INDEX_FALLBACK_NAME,
+        version: PACKAGE_VERSION,
+        types: './index.d.ts',
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  writeFileSync(
+    join(
+      fallbackRoot,
+      'index.js',
+    ),
+    INDEX_FALLBACK_IMPLEMENTATION,
+  );
+  writeFileSync(
+    join(
+      fallbackRoot,
+      'index.d.ts',
+    ),
+    INDEX_FALLBACK_DECLARATION,
+  );
   /* Key shape copied from this repository's `pnpm-lock.yaml`. `lockfileLinePackageKey` scans for keys at
    * two-space indentation without regard to section, so the surrounding structure is present for
    * readers rather than for the parser. */
@@ -286,9 +364,14 @@ packages:
   ${PACKAGE_NAME}@${PACKAGE_VERSION}:
     resolution: {integrity: sha512-${'A'.repeat(86,)}==}
 
+  ${INDEX_FALLBACK_NAME}@${PACKAGE_VERSION}:
+    resolution: {integrity: sha512-${'B'.repeat(86,)}==}
+
 snapshots:
 
   ${PACKAGE_NAME}@${PACKAGE_VERSION}: {}
+
+  ${INDEX_FALLBACK_NAME}@${PACKAGE_VERSION}: {}
 `,
   );
   writeFileSync(
@@ -479,6 +562,10 @@ await describe({
         const ignoredCapture = consumerOpaque('handRowProducerToIgnoredPosition',);
         /** Proven mutation by that same export, of the formal it does use. */
         const ignoringExportStamped = consumerWritten('stampThroughIgnoringExport',);
+        /** Proven mutation by a package whose manifest declares no runtime entry at all. */
+        const entrylessStamped = consumerWritten('stampThroughEntrylessPackage',);
+        /** Opacity from that same call, absent only when the implementation really was inspected. */
+        const entrylessOpaque = consumerOpaque('stampThroughEntrylessPackage',);
         closeSemanticBridge();
         /* The gates opened. A proven mutation arrives through the external summary, so this parameter is
          * written rather than merely unknown, and no unresolved boundary was recorded beside it. Both
@@ -524,6 +611,23 @@ await describe({
          * same export resolved and applied. */
         expect(ignoredCapture,).toEqual([],);
         expect(ignoringExportStamped,).toEqual([0,],);
+        /* The package that declares no `exports`, `main` or `module`, which is the shape `ignore@7.0.6`
+         * ships and the one non-builtin package that ever reached implementation resolution and failed.
+         * `manifestRuntimeTarget` declined before the directory-index fallback could run, so nothing about
+         * this package was ever inspected.
+         *
+         * A proven mutation is what says the fallback worked, and a capture would not have said it. The
+         * first shape written here handed this package a closure and asserted the capture was charged; that
+         * assertion passed with the fix reverted, because the unresolved boundary charges captures too and
+         * both paths write the same set. Two mutants survived it. This pair cannot be satisfied that way:
+         * an unresolved call records opacity and no mutation, and a resolved one records the mutation its
+         * shipped implementation performs.
+         *
+         * The package name ends in `.js` on purpose, so its root directory carries a supported suffix. A
+         * resolver accepting any existing path returns that directory, nothing loads from it, and this pair
+         * fails. Both halves of the resolution are pinned by these two lines. */
+        expect(entrylessStamped,).toEqual([0,],);
+        expect(entrylessOpaque,).toEqual([],);
       },
     },),
   ],
