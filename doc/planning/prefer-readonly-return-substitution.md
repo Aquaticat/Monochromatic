@@ -7560,3 +7560,36 @@ Three times now, two walks that looked independent were coupled through a third 
 And two placements of one three-line question produced: one invariant break, one no-op, and one correct site
  identified only by elimination. The question was never the hard part. **Where a question is asked decides what it
  can break and what it can fix**, and neither is visible from the question itself.
+
+### Placement three works, and the three placements together are the finding
+
+```text
+keepAssignedSelector     opq=[1,0]   charged
+keepUnassignedSelector   opq=[1]     control clean
+```
+
+Offers 75 to 76 by exactly the control, receiver opacity 26 to 28, mutant killed at 76 to 77, and the whole suite
+ green including the test that caught placement one's regression.
+
+The reach walk is safe for the same reason placement two was safe and placement one was not: **it records opacity
+ and builds no edges.** Widening a query that only withholds cannot break a completeness invariant. Widening one
+ that feeds the call graph can.
+
+So one three-line question, asked in three places, produced:
+
+-    an invariant break two modules away, caught only outside the fixture corpus
+-    a no-op, because the gate it landed in answers a different question
+-    a fix
+
+**Where a question is asked decides what it can break and what it can fix, and neither is visible from the
+ question itself.** That is the whole content of this item, and it cost three attempts to state.
+
+The three coupling instances this effort has now produced, worth keeping together:
+
+-    captures and ordinary origins, coupled through `bindingOriginBySymbolId`
+-    the reach walk and the value walk, coupled through nothing, each needing its own answer for one syntax
+-    the value walk and the call graph, so a locally sound widening broke an invariant elsewhere
+
+And one corollary about tests: the fixture corpus pins **shapes**, and the workspace-source test pins
+ **invariants**. Placement one passed every fixture. Anything that widens a walk needs the second kind of test to
+ have any meaning.
