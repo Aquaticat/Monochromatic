@@ -490,6 +490,35 @@ And one qualification to the do-not-land-a-no-op rule, learned by tripping over 
  questions, so a fix to one leaves the other silent. The tell is the same each time: the same syntax appears
  in both.
 
+### Where soundness stands, stated precisely
+
+**Every false offer this effort measured is closed.** The last one was #82, a callee binding filled by assignment,
+ landed with a fixture pair and a mutant that dies at an exact delta.
+
+What that claim does and does not cover, since the distinction is the whole value of stating it:
+
+-    It covers every shape that was **probed and charged nothing while a control behaved differently**. Those are
+     the measured false offers, and each is now falsified, fixed, pinned and mutation-checked.
+-    It does **not** claim the shape space is exhausted. Four escape-channel hunt passes and one structural audit
+     sampled it; nobody has enumerated it. The audit's own limit stands: it says which channels lack a capture
+     channel, never which of those a real escape reaches.
+-    It does **not** cover the published rule's consumers beyond this workspace. The decorator fix and the
+     external channel's boundary are both cases where this repository cannot reach a shape a consumer can.
+
+Three items remain and **none is a measured false offer**:
+
+-    **#54**, precision only. Its own note estimates the workspace gain as nil, its proposed fix was rejected as
+     unsound, and the sound design is specified. Unblocked now that #82 landed, and still the lowest priority here.
+-    **#81**, an unmeasured cost rather than a defect. An owned call written only in a parameter default is
+     invisible to the ownership scan; the comment claiming that cannot happen is already corrected. A first attempt
+     to bound it by counting occurrences did not produce a usable number, so the method needs choosing before the
+     measurement is repeated.
+-    **#101**, documentation debt. One part landed; the bulk is a 3289-line mechanical diff needing review, with a
+     resumable procedure recorded on the task.
+
+So the honest summary is that the soundness queue is empty and the precision, cost and documentation queue is not.
+ Anyone resuming should start by asking what shape has not been probed, rather than by working these three.
+
 ### Open
 
 -    **#82**, two activation forms that still cannot reach a parameter default: a binding filled by
