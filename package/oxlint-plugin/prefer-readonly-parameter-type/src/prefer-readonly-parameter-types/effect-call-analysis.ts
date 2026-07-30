@@ -50,7 +50,9 @@ import {
   READER_RESULT_FRESH,
   verifiedReaderCall,
 } from './effect-default-library-reader-authority.ts';
+import { effectCallName, } from './effect-call-name.ts';
 import { recordOpaqueBoundary, } from './effect-opaque-boundary.ts';
+import { recordUnresolvedCaptureOpacity, } from './effect-unresolved-capture.ts';
 import { possibleValueNodes, } from './effect-possible-values.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
@@ -197,6 +199,30 @@ export function inspectEffectCall({
           ...(analysisRoot === undefined) ? {} : { analysisRoot, },
         },);
       },);
+    /* And the captures the relation above cannot carry. A relation names which caller-owned value
+     * reached which callback argument position, and the caller can reconstruct that because the
+     * caller chose the value. A closure written here is not the caller's choice, and what it captures
+     * is visible only inside this callable, so `parameterIndexes` answered empty and the relation held
+     * nothing at all.
+     *
+     * Measured: `invoke((): Row => handedThrough.row,)` recorded no opacity and was indistinguishable
+     * from a control handing over a closure that allocates, while the same closure handed to
+     * `registry.keep` recorded `opaque=[0]`. Two paths, one relation, disagreeing. Falsified with a
+     * driver whose supplied callee kept the producer, invoked it, and wrote through the row.
+     *
+     * So the deferral #75 settled is incomplete rather than wrong, and this restores the missing half
+     * without touching the half that works. The capture gate alone rather than the whole boundary,
+     * because the boundary would also mark ordinary direct arguments opaque and that is exactly what
+     * the relation exists to defer. */
+    recordUnresolvedCaptureOpacity({
+      project,
+      bindingOriginBySymbolId,
+      summary,
+      actuals: call.arguments,
+      provenance: `${effectCallName(call.expression,)} [${effectOriginLocation({
+        node: call,
+      },)}]`,
+    },);
     return;
   }
 

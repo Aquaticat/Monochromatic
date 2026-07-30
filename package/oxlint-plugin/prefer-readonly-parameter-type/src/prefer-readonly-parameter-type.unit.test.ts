@@ -661,9 +661,12 @@ children: [
       /* Fifty-five once a concise arrow body earned its returned fact. Five shapes joined and four of
        * them keep an offer: the two helpers, whose own parameters are read or handed back rather than
        * stored, and the two controls. The subject contributes none, which is the whole point of it. */
+      /* Fifty-seven once a capture handed to a callback parameter was charged. Four shapes joined and
+       * the two controls keep their offers, so the net arrival is two and both subjects contribute
+       * none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(55,);
+      },).length,).toBe(57,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -832,6 +835,36 @@ children: [
         return message.includes('"conciseCountedStored"',);
       },),).toEqual([
         'Parameter "conciseCountedStored" should be readonly: property rows is writable.',
+      ],);
+      /* The callback-parameter capture group. A relation names which caller-owned value reached which
+       * callback argument position, and the caller can reconstruct that because the caller chose the
+       * value. A closure written inside the callee is not the caller's choice, so the relation held
+       * nothing while the same closure handed to an unresolvable member recorded opacity: two paths,
+       * one relation, disagreeing.
+       *
+       * `handedToCallback` and `siblingHandedToCallback` are the subjects, the second reaching its
+       * capture only through a sibling. `freshHandedToCallback` controls that a closure over nothing
+       * the caller owns keeps its offer.
+       *
+       * `forwardedToCallback` is the control that decides whether the gate belongs on this branch at
+       * all: the deferral #75 settled rests on a parameter-derived non-callable keeping its relation
+       * and gaining no opacity. If it ever loses its offer, every callback-forwarding shape in the
+       * workspace has silently become a withholding one, so it is asserted exactly rather than by
+       * count. */
+      expect(messages.filter(function namesHandedToCallback(message,): boolean {
+        return (message.includes('"handedToCallback"',)
+          || message.includes('"siblingHandedToCallback"',))
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesFreshHandedToCallback(message,): boolean {
+        return message.includes('"freshHandedToCallback"',);
+      },),).toEqual([
+        'Parameter "freshHandedToCallback" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesForwardedToCallback(message,): boolean {
+        return message.includes('"forwardedToCallback"',);
+      },),).toEqual([
+        'Parameter "forwardedToCallback" should be readonly: property rows is writable.',
       ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,

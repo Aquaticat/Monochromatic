@@ -3386,3 +3386,116 @@ export function countConciseRowResult(conciseCountedStored: Config,): number {
     .label
     .length;
 }
+
+/**
+ * Callee a caller supplies to receive a row producer.
+ */
+type RowProducerCallee = (producer: () => Row,) => void;
+
+/**
+ * Callee a caller supplies to receive a row.
+ */
+type RowCallee = (row: Row,) => void;
+
+/**
+ * Hands a capturing closure to a callback parameter.
+ *
+ * The subject. A relation names which caller-owned value reached which callback argument position,
+ * and the caller can reconstruct that because the caller chose the value. A closure written here is
+ * not the caller's choice, and what it captures is visible only inside this callable, so the relation
+ * held nothing at all while the same closure handed to an unresolvable member recorded opacity.
+ *
+ * Falsified while offered: the annotation applied, type-checked clean beside a control whose direct
+ * write was rejected, and the driver's supplied callee kept the producer, invoked it, and wrote
+ * through the row it handed back.
+ *
+ * @param handedToCallback - Configuration the handed closure reads.
+ *
+ * @param callbackKeeper - Callee supplied by the caller.
+ *
+ * @example
+ * ```ts
+ * handCaptureToCallbackParameter({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function handCaptureToCallbackParameter(
+  handedToCallback: Config,
+  callbackKeeper: RowProducerCallee,
+): void {
+  callbackKeeper((): Row => handedToCallback.row,);
+}
+
+/**
+ * Hands a closure reaching its capture only through a sibling to a callback parameter.
+ *
+ * The second subject, and the reach walk's shape arriving through the new path. The handed closure
+ * names no configuration at all.
+ *
+ * @param siblingHandedToCallback - Configuration the sibling reads.
+ *
+ * @param callbackKeeper - Callee supplied by the caller.
+ *
+ * @example
+ * ```ts
+ * handSiblingCaptureToCallbackParameter({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function handSiblingCaptureToCallbackParameter(
+  siblingHandedToCallback: Config,
+  callbackKeeper: RowProducerCallee,
+): void {
+  /**
+   * Sibling closure reading the configuration.
+   */
+  const readSiblingRow = (): Row => siblingHandedToCallback.row;
+  callbackKeeper((): Row => readSiblingRow(),);
+}
+
+/**
+ * Hands a closure that allocates to a callback parameter.
+ *
+ * The first control. Nothing the caller owns is inside the handed closure.
+ *
+ * @param freshHandedToCallback - Configuration the closure never names.
+ *
+ * @param callbackKeeper - Callee supplied by the caller.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handFreshToCallbackParameter({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function handFreshToCallbackParameter(
+  freshHandedToCallback: Config,
+  callbackKeeper: RowProducerCallee,
+): number {
+  callbackKeeper((): Row => ({ label: 'fresh', }),);
+  return freshHandedToCallback.rows
+    .length;
+}
+
+/**
+ * Forwards a parameter-derived row to a callback parameter.
+ *
+ * The control that decides whether the capture gate belongs on this branch at all. The deferral #75
+ * settled rests on this shape keeping its relation and gaining no opacity: the caller chose the
+ * value, sees which of its own values it passed, and can answer for it. If this ever loses its offer,
+ * every callback-forwarding shape in the workspace has silently become a withholding one.
+ *
+ * @param forwardedToCallback - Configuration whose row is forwarded.
+ *
+ * @param rowCallee - Callee receiving a row rather than a callable.
+ *
+ * @example
+ * ```ts
+ * forwardRowToCallbackParameter({ rows: [], row: { label: '', }, }, (): void => {},);
+ * ```
+ */
+export function forwardRowToCallbackParameter(
+  forwardedToCallback: Config,
+  rowCallee: RowCallee,
+): void {
+  rowCallee(forwardedToCallback.row,);
+}
