@@ -80,6 +80,9 @@ A capture without those cannot be told from one taken against a stale sidecar.
 Registered criterion, in its reusable form:
 
 - offers must not rise, which is the only soundness statement
+- **read which way a mutation moves the offer count, not merely that it moved.** A withholding fix kills its
+  mutant by raising the count; a precision recovery kills by lowering it. Both are correct kills in opposite
+  directions, so "the number changed" is satisfied by either and confirms neither
 - no category other than argument opacity may move
 - offers falling is expected, and each fall is sampled to its cause
 - argument opacity rising is expected, and is **not** required to accompany an offer loss
