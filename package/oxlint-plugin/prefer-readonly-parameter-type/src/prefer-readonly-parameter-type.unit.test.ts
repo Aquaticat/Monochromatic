@@ -658,9 +658,12 @@ children: [
       /* Fifty-one once a defaulted producer's invoked result could be stored. Three shapes joined and
        * two of them keep their offers, so the net arrival is two rather than three. Asserted by name
        * in the defaulted-producer group below, for the reason that group records. */
+      /* Fifty-five once a concise arrow body earned its returned fact. Five shapes joined and four of
+       * them keep an offer: the two helpers, whose own parameters are read or handed back rather than
+       * stored, and the two controls. The subject contributes none, which is the whole point of it. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(51,);
+      },).length,).toBe(55,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -806,6 +809,29 @@ children: [
         return message.includes('"countedByProducer"',);
       },),).toEqual([
         'Parameter "countedByProducer" should be readonly: property rows is writable.',
+      ],);
+      /* The concise-body group. General rather than default-specific: the direct scan recorded a
+       * returned effect under `isReturnStatement` alone, and a concise arrow body is the callable's
+       * own body expression with no return statement anywhere, so such a callable recorded an empty
+       * returned set and every caller storing its result was offered. Measured at top level with no
+       * default in sight, which is what established the body form as the cause.
+       *
+       * `concisePassedStored` is the subject. `conciseFreshStored` controls that a concise body
+       * handing back something freshly allocated claims no origin, and `conciseCountedStored`
+       * controls that the charge belongs to the store rather than to the call. */
+      expect(messages.filter(function namesConcisePassedStored(message,): boolean {
+        return message.includes('"concisePassedStored"',)
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesConciseFreshStored(message,): boolean {
+        return message.includes('"conciseFreshStored"',);
+      },),).toEqual([
+        'Parameter "conciseFreshStored" should be readonly: property rows is writable.',
+      ],);
+      expect(messages.filter(function namesConciseCountedStored(message,): boolean {
+        return message.includes('"conciseCountedStored"',);
+      },),).toEqual([
+        'Parameter "conciseCountedStored" should be readonly: property rows is writable.',
       ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,

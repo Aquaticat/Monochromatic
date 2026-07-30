@@ -14,6 +14,7 @@ import {
 import {
   isAssignmentOperator,
   isBinaryExpression,
+  isBlock,
   isCallExpression,
   isDeleteExpression,
   isForOfStatement,
@@ -371,6 +372,26 @@ export function directEffectSummary({
       },);
     }
   },);
+  /* And the result a concise arrow hands back, which no statement in the walk above can carry. The
+   * returned branch there tests `isReturnStatement`, and a concise body is the callable's own body
+   * expression with no return statement anywhere, so `(row: Row,): Row => row` recorded an empty
+   * returned set. Measured at top level rather than only through a default, which is what showed the
+   * body form to be the cause: storing what a concise identity handed back offered its caller's
+   * configuration while the same identity with a block body withheld. Falsified.
+   *
+   * The nested case needs no gate here, unlike the statement branch. `body` is this callable's own
+   * body, so a nested concise arrow inside it is never what this reads, and the return a nested
+   * callable performs stays the nested callable's own exactly as #77 established. */
+  if (!isBlock(body,)) {
+    recordReturnEffects({
+      project,
+      checker,
+      bindingOriginBySymbolId,
+      resultSitesBySymbolId,
+      summary,
+      returned: body,
+    },);
+  }
   summary.directMutated
     .forEach(function seed(index,): void {
     summary.mutated

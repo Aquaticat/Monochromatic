@@ -3291,3 +3291,98 @@ export function countDefaultProducerResult(
     .label
     .length;
 }
+
+/**
+ * Hands back its formal from a concise body.
+ *
+ * The helper whose returned fact the walk failed to record. A concise body is the callable's own
+ * body expression with no return statement anywhere, and the direct scan recorded returned effects
+ * under `isReturnStatement` alone.
+ *
+ * @param concisePassed - Row handed straight back.
+ *
+ * @returns same row.
+ *
+ * @example
+ * ```ts
+ * passConciseRow({ label: '', });
+ * ```
+ */
+export const passConciseRow = (concisePassed: Row,): Row => concisePassed;
+
+/**
+ * Hands back a freshly allocated row from a concise body.
+ *
+ * @param conciseIgnored - Row never handed back.
+ *
+ * @returns row nobody else holds.
+ *
+ * @example
+ * ```ts
+ * allocateConciseRow({ label: '', });
+ * ```
+ */
+export const allocateConciseRow = (conciseIgnored: Row,): Row => ({
+  label: conciseIgnored.label === '' ? 'empty' : 'fresh',
+});
+
+/**
+ * Stores what a concise identity handed back.
+ *
+ * The subject, and general rather than default-specific: no parameter default is involved, and the
+ * same identity written with a block body always withheld. Falsified while offered: the annotation
+ * applied, type-checked clean beside a control whose direct write was rejected, and the driver wrote
+ * through the row the holder kept.
+ *
+ * @param concisePassedStored - Configuration whose row reaches the holder.
+ *
+ * @example
+ * ```ts
+ * storeConciseRowResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeConciseRowResult(concisePassedStored: Config,): void {
+  held = passConciseRow(concisePassedStored.row,);
+}
+
+/**
+ * Stores what a concise allocator handed back.
+ *
+ * The first control. Recording a concise body's returned fact must not claim an origin for a body
+ * that hands back something freshly allocated.
+ *
+ * @param conciseFreshStored - Configuration whose row is only read.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeConciseFreshResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeConciseFreshResult(conciseFreshStored: Config,): number {
+  held = allocateConciseRow(conciseFreshStored.row,);
+  return conciseFreshStored.rows
+    .length;
+}
+
+/**
+ * Reads a primitive off what a concise identity handed back.
+ *
+ * The second control, saying the charge belongs to the store rather than to the call. The returned
+ * fact does reach the result here, and a primitive read off it lets nothing out.
+ *
+ * @param conciseCountedStored - Configuration whose row is handed back and then measured.
+ *
+ * @returns label length read off the returned row.
+ *
+ * @example
+ * ```ts
+ * countConciseRowResult({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function countConciseRowResult(conciseCountedStored: Config,): number {
+  return passConciseRow(conciseCountedStored.row,)
+    .label
+    .length;
+}
