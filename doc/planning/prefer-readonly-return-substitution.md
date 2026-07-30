@@ -7639,3 +7639,43 @@ Instrument the code that makes the decision; do not count shapes that might reac
 
 The pattern is that a count measures the population and a decision measures the behaviour, and every question worth
  asking here has been about behaviour.
+
+## The line-break debt is family-wide, so conforming this file alone is declined
+
+This document carries about 1975 `semantic-line-breaks` flags, and the open question was whether that makes it an
+ outlier. Measured across `doc/planning/`, which holds 46 files:
+
+```text
+prefer-readonly-return-substitution.md   1975
+rust-linter-oxlint-parity.md              369
+forbidden-strings-rule-port-review.md     358
+dry-pi-plugins-claude-code-plugins.md     188
+prefer-readonly-parameter-slots.md        187
+singular-dir-name-invariant.md            122
+nested-wayland-session.md                 107
+oxlint-test-import-eventual-artifact.md    99
+```
+
+**Not an outlier. The largest instance of a debt the whole family shares**, and this file has the most lines by a
+ wide margin, so per line it is unremarkable.
+
+That settles it. Conforming this file alone produces a 3289-insertion diff that must be read rather than trusted,
+ risks silent prose damage to the only durable record of this effort against two prior incidents in exactly that
+ fixer, leaves 45 siblings non-conforming, and therefore buys no consistency, which was the only benefit on offer.
+
+So the real question is not about this document. Either the prose-break rule should be applied to `doc/planning/` in
+ one reviewed pass, or the family's style is the de facto convention and the rule is misconfigured for that
+ directory. Both are decisions about the linter's scope, and deciding them here would be scope expansion.
+
+The fixer's one **unfixable** report was worth acting on and is landed: two sibling headings both read "Where the
+ queue stands", and the second described a past state, so it now says so. That is a reader fix as much as a lint
+ fix.
+
+### The general point about mechanical debt
+
+A flag count is a property of a file's size and its family's conventions before it is a property of the file. Asking
+ "is this file unusual" cost one command and turned a day of reviewing a mechanical diff into a decision someone
+ else should make with better context.
+
+The same question is worth asking of any large lint count: **compare against siblings before conforming.** A number
+ that looks like debt in isolation can be the convention.
