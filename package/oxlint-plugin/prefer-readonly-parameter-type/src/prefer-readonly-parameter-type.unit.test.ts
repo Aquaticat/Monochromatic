@@ -671,9 +671,11 @@ children: [
        * keeps its offer and the subject contributes none. */
       /* Sixty-two once a call result handed to a callback parameter was charged. Two shapes joined, the
        * control keeps its offer and the subject contributes none. */
+      /* Sixty-three once the accessor walk recognised the other ways source spells a property read.
+       * Four shapes joined, three subjects contributing none and one control keeping its offer. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(62,);
+      },).length,).toBe(63,);
       /* Withheld and silent, asserted on every diagnostic rather than on offers alone. A
        * caller that says nothing and a caller that reports argument opacity naming the
        * retaining callee both lose their offer and both read `[0]` from the summary, so
@@ -948,6 +950,25 @@ children: [
       },),).toEqual([
         'Parameter "freshResultHanded" should be readonly: property rows is writable.',
       ],);
+      /* The accessor-forms group. Only plain property access was recognised, and three other spellings
+       * run a getter just as surely: element access, a destructuring pattern, and a getter declared by a
+       * class declaration reached through a construction. The last needed two hops, since a class
+       * declaration was excluded beside a class expression and the receiver resolves to `new Holder()`
+       * rather than to the class.
+       *
+       * `neitherClassGotten` controls the construction hop: following a construction to its class must
+       * not report a class whose getter hands back nothing the caller owns. */
+      expect(messages.filter(function namesAccessorSubjects(message,): boolean {
+        return (message.includes('"elementGotten"',)
+          || message.includes('"patternGotten"',)
+          || message.includes('"classGotten"',))
+          && message.includes('should be readonly',);
+      },).length,).toBe(0,);
+      expect(messages.filter(function namesNeitherClassGotten(message,): boolean {
+        return message.includes('"neitherClassGotten"',);
+      },),).toEqual([
+        'Parameter "neitherClassGotten" should be readonly: property rows is writable.',
+      ],);
       /* The laundered-completion group, and the three offers that carry the count from forty-five to
        * forty-eight. The gate asks whether a packaged closure's completion can carry mutable state,
        * and a declared type can lie about that in two ways. `erasedThrough` holds a local annotated
@@ -1145,8 +1166,9 @@ children: [
        * `config.rows.at` and stores the result, and before the split its store joined the
        * boundary list, which is an `every` over that list, and cost it this message.
        *
-       * Eleven since the conditional-callee group arrived, which added two more `.register`
-       * receivers. Two name `.rows.at` and the rest name `.register` or `.keep`, each the receiver of
+       * Fifteen since the accessor-forms group arrived, which added four more `.register` receivers on
+       * top of the conditional-callee group's two. Two name `.rows.at` and the rest name `.register`
+       * or `.keep`, each the receiver of
        * a method the capture channel answers for, so the list is asserted per boundary rather than by
        * one shared substring. Every registry parameter reports this way and none of them is a
        * subject: what the shapes are about is the closure handed to the method, and the receiver
@@ -1154,7 +1176,7 @@ children: [
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
         return message.includes('used as the object for these method calls',);
       },);
-      expect(opacityMessages.length,).toBe(11,);
+      expect(opacityMessages.length,).toBe(15,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
         return message.includes('.rows.at',)
           || message.includes('.register',)

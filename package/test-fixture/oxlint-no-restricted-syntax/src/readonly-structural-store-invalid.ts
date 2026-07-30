@@ -3766,3 +3766,161 @@ export function handFreshResultToCallbackParameter(
   return freshResultHanded.rows
     .length;
 }
+
+/**
+ * Hands over a closure reading a getter through element access.
+ *
+ * The first of three forms that run a getter without writing a plain property access. Only plain
+ * access was recognised, so each of these offered the configuration its getter hands out while the
+ * plain form charged it.
+ *
+ * @param elementGotten - Configuration the getter hands out.
+ *
+ * @param elementRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handElementAccessOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handElementAccessOut(
+  elementGotten: Config,
+  elementRegistry: CaptureRegistry,
+): void {
+  /**
+   * Holder whose getter hands out the caller's row.
+   */
+  const elementHolder = {
+    /**
+     * Hands back the caller's row.
+     *
+     * @returns caller's row.
+     */
+    get row(): Row {
+      return elementGotten.row;
+    },
+  };
+  elementRegistry.register((): Row => elementHolder['row'],);
+}
+
+/**
+ * Hands over a closure reading a getter through a destructuring pattern.
+ *
+ * The second form. A pattern runs a getter for every name it binds.
+ *
+ * @param patternGotten - Configuration the getter hands out.
+ *
+ * @param patternRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handDestructuredAccessOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handDestructuredAccessOut(
+  patternGotten: Config,
+  patternRegistry: CaptureRegistry,
+): void {
+  /**
+   * Holder whose getter hands out the caller's row.
+   */
+  const patternHolder = {
+    /**
+     * Hands back the caller's row.
+     *
+     * @returns caller's row.
+     */
+    get row(): Row {
+      return patternGotten.row;
+    },
+  };
+  patternRegistry.register((): Row => {
+    /**
+     * Row pulled out by pattern, which runs the getter.
+     */
+    const { row, } = patternHolder;
+    return row;
+  },);
+}
+
+/**
+ * Hands over a closure reading a getter declared by a class declaration.
+ *
+ * The third form, and two hops rather than one: a class declaration was excluded beside a class
+ * expression, and the receiver resolves to a construction rather than to the class.
+ *
+ * @param classGotten - Configuration the getter hands out.
+ *
+ * @param classRegistry - Registry keeping the closure.
+ *
+ * @example
+ * ```ts
+ * handClassDeclarationAccessOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handClassDeclarationAccessOut(
+  classGotten: Config,
+  classRegistry: CaptureRegistry,
+): void {
+  /**
+   * Holder class declared inside this callable.
+   */
+  class ClassHolder {
+    /**
+     * Hands back the caller's row.
+     *
+     * @returns caller's row.
+     */
+    get row(): Row {
+      return classGotten.row;
+    }
+  }
+  /**
+   * Instance whose getter is read.
+   */
+  const classHolder = new ClassHolder();
+  classRegistry.register((): Row => classHolder.row,);
+}
+
+/**
+ * Hands over a closure reading a getter on a class that allocates.
+ *
+ * The control for the class form. Following a construction to its class must not report a class whose
+ * getter hands back nothing the caller owns.
+ *
+ * @param neitherClassGotten - Configuration no getter hands out.
+ *
+ * @param classRegistry - Registry keeping the closure.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * handFreshClassAccessOut({ rows: [], row: { label: '', }, }, new CaptureRegistry(),);
+ * ```
+ */
+export function handFreshClassAccessOut(
+  neitherClassGotten: Config,
+  classRegistry: CaptureRegistry,
+): number {
+  /**
+   * Holder class whose getter allocates.
+   */
+  class FreshClassHolder {
+    /**
+     * Hands back a freshly allocated row.
+     *
+     * @returns row nobody else holds.
+     */
+    get row(): Row {
+      return { label: 'fresh', };
+    }
+  }
+  /**
+   * Instance whose getter is read.
+   */
+  const freshClassHolder = new FreshClassHolder();
+  classRegistry.register((): Row => freshClassHolder.row,);
+  return neitherClassGotten.rows
+    .length;
+}
