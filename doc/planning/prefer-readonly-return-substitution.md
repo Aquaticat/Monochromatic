@@ -7234,3 +7234,51 @@ That delta is worth pausing on. Every other fix in this effort kills its mutant 
 The same asymmetry appears in the fixture pair. Every other pair in that file wants its subject withheld and
  its control offered; this pair wants the reverse. A fix that looked through the **question** rather than
  through the wrapper would offer to both, which is exactly what the pair is there to catch.
+
+## Why no external effect resolves: one gate rejects nearly everything
+
+The prerequisite item was filed as "make one external effect resolve", with a pre-registered first step:
+ instrument which of the four resolver requirements rejects, **before** adding a fixture dependency, because a
+ gate that over-rejects is a defect and a fixture would paper over it.
+
+That step ran, and it changed what the item is.
+
+All four rejection paths instrumented, both artifacts rebuilt, `package/pi-shared/model-selection` linted, a
+ `valibot` consumer. Cold-run counts, instrumentation then reverted:
+
+```text
+EXT-REJECT call-identity     161
+EXT-REJECT implementation      3
+EXT-REJECT installed-package    0
+EXT-REJECT version-lock         0
+```
+
+The resolver reaches installed-package identity and version locking **without a single rejection**, and is then
+ stopped at `packageCallIdentity` and its `packageDeclarationCallIdentity` fallback for 161 of 164 calls.
+
+So the reason zero findings carry package-version provenance, and the reason the whole external channel has
+ never run on real input, is one gate. Not a missing dependency, not the corpus, not the four-requirement
+ conjunction being hard to satisfy.
+
+### What the pre-registered step bought
+
+Adding a fixture dependency would have produced one more call that also fails at call identity. It would have
+ taught nothing and looked like coverage: the fixture would sit there, the channel would still never run, and
+ the item would have been closed.
+
+This is the clearest return so far on pre-registering a diagnostic step rather than a fix. The step was written
+ into the task because five earlier holes had turned out already closed, so the habit was to establish the
+ mechanism before building. Here the mechanism turned out to be somewhere else entirely.
+
+### The reproduction note, which cost a cycle
+
+The persistent cache makes this a **cold-run-only** measurement. A second lint of the same package emitted
+ nothing at all, because summaries were reused and the resolver never re-ran. First reading looked like the
+ instrumentation had failed. Bust the cache or pick a package not yet linted in the session.
+
+### What it becomes
+
+A defect rather than a coverage chore, and one gating a whole channel. Next step is to read the two identity
+ functions and find what they require that an ordinary `import { safeParse } from 'valibot'` call does not
+ satisfy. Both the authored-import path and the declaration-owner fallback are failing, so the cause is likely
+ shared rather than a gap in one of them.
