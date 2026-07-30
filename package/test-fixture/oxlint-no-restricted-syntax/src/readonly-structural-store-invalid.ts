@@ -4100,3 +4100,168 @@ export function forwardLabelProducer(
 }
 
 //endregion
+
+//region Handoffs that map origins and never saw a capture
+
+/**
+ * Keeper retaining whatever producer it was constructed with.
+ */
+class ProducerKeeper {
+  /**
+   * Producer kept past construction.
+   */
+  readonly #keptProducer: () => Row;
+
+  /**
+   * Keeps the producer it was constructed with.
+   *
+   * @param keptProducer - Producer retained past construction.
+   */
+  constructor(keptProducer: () => Row,) {
+    this.#keptProducer = keptProducer;
+  }
+
+  /**
+   * Hands back what invoking the kept producer produced.
+   *
+   * @returns whatever the kept producer hands back.
+   */
+  produce(): Row {
+    return this.#keptProducer();
+  }
+}
+
+/**
+ * Allocates a row nobody else holds.
+ *
+ * @returns freshly allocated row.
+ *
+ * @example
+ * ```ts
+ * allocateHandedRow();
+ * ```
+ */
+export function allocateHandedRow(): Row {
+  return { label: 'fresh', };
+}
+
+/**
+ * Hands a capturing closure to a construction.
+ *
+ * A construction maps ordinary origins and a closure has none, so this recorded nothing at all and read
+ * identically to its control. The `honest-readonly` discharge beside it cannot answer for this: it proves
+ * no write reaches through the handed value, and says nothing about a value obtained by invoking a
+ * callable that value carries.
+ *
+ * @param constructedGotten - Configuration whose row the handed closure hands out.
+ *
+ * @returns keeper retaining the closure.
+ *
+ * @example
+ * ```ts
+ * handClosureToConstruction({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handClosureToConstruction(
+  constructedGotten: Config,
+): ProducerKeeper {
+  return new ProducerKeeper((): Row => constructedGotten.row,);
+}
+
+/**
+ * Hands an allocating closure to a construction.
+ *
+ * The control for the construction form.
+ *
+ * @param neitherConstructedGotten - Configuration read in place.
+ *
+ * @returns keeper retaining a closure that allocates.
+ *
+ * @example
+ * ```ts
+ * handFreshClosureToConstruction({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function handFreshClosureToConstruction(
+  neitherConstructedGotten: Config,
+): ProducerKeeper {
+  void neitherConstructedGotten.rows
+    .length;
+  return new ProducerKeeper(allocateHandedRow,);
+}
+
+/**
+ * Yields a capturing closure to whoever drives this iterator.
+ *
+ * @param yieldedGotten - Configuration whose row the yielded closure hands out.
+ *
+ * @yields closure handing back the caller's row.
+ *
+ * @example
+ * ```ts
+ * [...yieldClosureOut({ rows: [], row: { label: '', }, },),];
+ * ```
+ */
+export function* yieldClosureOut(yieldedGotten: Config,): Generator<() => Row> {
+  yield (): Row => yieldedGotten.row;
+}
+
+/**
+ * Yields an allocating closure.
+ *
+ * The control for the yield form.
+ *
+ * @param neitherYieldedGotten - Configuration read in place.
+ *
+ * @yields closure handing back a freshly allocated row.
+ *
+ * @example
+ * ```ts
+ * [...yieldFreshClosureOut({ rows: [], row: { label: '', }, },),];
+ * ```
+ */
+export function* yieldFreshClosureOut(
+  neitherYieldedGotten: Config,
+): Generator<() => Row> {
+  void neitherYieldedGotten.rows
+    .length;
+  yield allocateHandedRow;
+}
+
+/**
+ * Throws a capturing closure to whoever catches it.
+ *
+ * @param thrownGotten - Configuration whose row the thrown closure hands out.
+ *
+ * @throws closure handing back the caller's row.
+ *
+ * @example
+ * ```ts
+ * throwClosureOut({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function throwClosureOut(thrownGotten: Config,): void {
+  throw (): Row => thrownGotten.row;
+}
+
+/**
+ * Throws an allocating closure.
+ *
+ * The control for the throw form.
+ *
+ * @param neitherThrownGotten - Configuration read in place.
+ *
+ * @throws closure handing back a freshly allocated row.
+ *
+ * @example
+ * ```ts
+ * throwFreshClosureOut({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function throwFreshClosureOut(neitherThrownGotten: Config,): void {
+  void neitherThrownGotten.rows
+    .length;
+  throw allocateHandedRow;
+}
+
+//endregion

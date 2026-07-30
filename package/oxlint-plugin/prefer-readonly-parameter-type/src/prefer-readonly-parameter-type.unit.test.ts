@@ -680,9 +680,34 @@ children: [
       /* Sixty-five once a candidate list stopped standing for a closed set. Four shapes joined and
        * exactly one keeps an offer, the control whose candidate and whose declared result are both
        * leaves. The subject contributes none, and the two forwarders' own producers are callables. */
+      /* Sixty-eight once the outward handoffs asked about captures. Six shapes joined, three subjects
+       * contributing none and three controls keeping their offers, one pair per handoff syntax. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(65,);
+      },).length,).toBe(68,);
+      /* One pair per handoff syntax, asserted as agreement across all six at once. The three subjects
+       * must draw no offer and the three controls must each draw exactly one, and only the pairing tells
+       * a working channel from one that charges every handed value. */
+      expect([
+        'constructedGotten',
+        'yieldedGotten',
+        'thrownGotten',
+      ].flatMap(function subjectOffers(name,): readonly string[] {
+        return messages.filter(function namesSubject(message,): boolean {
+          return message.includes(`"${name}"`,)
+            && message.includes('should be readonly',);
+        },);
+      },),).toEqual([],);
+      expect([
+        'neitherConstructedGotten',
+        'neitherYieldedGotten',
+        'neitherThrownGotten',
+      ].map(function controlOffers(name,): number {
+        return messages.filter(function namesControl(message,): boolean {
+          return message.includes(`"${name}"`,)
+            && message.includes('should be readonly',);
+        },).length;
+      },),).toEqual([1, 1, 1,],);
       /* The candidate-list subject is charged and its control is not. Asserted as agreement for the same
        * reason the void pair is: joining the two answers unconditionally would charge both if the
        * declared result decided alone, and trusting the candidate list would offer to both. */

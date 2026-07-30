@@ -1,5 +1,5 @@
 /**
- * Two syntax sites that hand caller state outward and were answered by nothing.
+ * Four syntax sites that hand caller state outward and were answered by nothing.
  *
  * Found by walking escape channels rather than by working a queue, and both falsified: the
  * annotation applied, type-checked clean beside a control whose direct write was rejected, and
@@ -18,8 +18,31 @@
  * at all, and `YieldExpression` only where a result's escape is classified, never where a
  * return's origins are recorded.
  *
- * Both take opacity through the handoff vocabulary, so both withhold silently. There is no call
- * for a reader to inspect in either case, exactly as with a store.
+ * Each takes opacity through the handoff vocabulary, so each withholds silently. There is no call
+ * for a reader to inspect in any of them, exactly as with a store.
+ *
+ * A tagged template and a throw joined the same way and for the same reason, so this module now
+ * answers four sites rather than the two it was written for.
+ *
+ * ## Why each site asks about captures as well as origins
+ *
+ * Every recorder here maps ordinary parameter origins, and a closure that captures a parameter has
+ * none: captures are kept beside ordinary origins on purpose, so nothing that reads only origins can
+ * see one. Measured, all four sites recorded nothing at all for a handed closure, subject and control
+ * alike:
+ *
+ * ```ts
+ * new HandoffKeeper((): Row => config.row,)
+ * yield (): Row => config.row;
+ * throw { produce: (): Row => config.row, };
+ * ```
+ *
+ * The activation premise does not cover these, and the distinction is exact. Activation covers effects
+ * a closure body **performs**, which is why a direct write and a `throw config.row` inside an
+ * activated closure are both charged. Returning `config.row` is neither a mutation nor an outward
+ * handoff from the enclosing callable, and the consumer's later use of that returned value has no call
+ * edge to carry it. `registry.register((): Row => registered.row,)` is the same semantic shape, was
+ * activated, and still needed the capture channel.
  *
  * @module
  */
@@ -39,6 +62,7 @@ import {
   parameterIndexes,
 } from './effect-call-resolution.ts';
 import { effectOriginLocation, } from './effect-origin-location.ts';
+import { recordUnresolvedCaptureOpacity, } from './effect-unresolved-capture.ts';
 import { handoffProvenance, } from './effect-retention-provenance.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import type {
@@ -95,6 +119,17 @@ export function recordConstructionHandoff({
   const provenance = handoffProvenance({
     handoff: `a construction of ${targetText}`,
     location: effectOriginLocation({ node, },),
+  },);
+  /* Before the per-argument classification, never inside it. The `honest-readonly` return below
+   * proves that no write reaches **through** a handed value, which says nothing about a value obtained
+   * by **invoking** a callable that value carries. A deeply readonly closure still hands back whatever
+   * its body hands back. */
+  recordHandoffCaptures({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    handed: node.arguments,
+    provenance,
   },);
   node.arguments
     .forEach(function recordArgument(argument,): void {
@@ -200,6 +235,61 @@ export function recordYieldHandoff({
         provenance,
       },);
     },);
+  recordHandoffCaptures({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    handed: [node.expression,],
+    provenance,
+  },);
+}
+
+/**
+ * Records opacity for every capture a handed value carries.
+ *
+ * Shared by all four sites because they differ only in syntax: each hands a value to a consumer that
+ * outlives the handoff, and a closure among those values exposes whatever invoking it hands back.
+ *
+ * Asked through the same result-sensitive gate the unresolved boundary uses, never on raw lexical
+ * captures, so a closure completing with a leaf still exposes nothing and still keeps its offer.
+ *
+ * @param project - TypeScript project resolving callables and binding symbols.
+ *
+ * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ *
+ * @param summary - Summary receiving opacity.
+ *
+ * @param handed - Values handed outward at this site.
+ *
+ * @param provenance - Cause naming the handoff, shared with its ordinary origins.
+ *
+ * @mutates summary - Adds an opaque slot per exposed capture.
+ *
+ * @example
+ * ```ts
+ * recordHandoffCaptures({ project, bindingOriginBySymbolId, summary, handed, provenance });
+ * ```
+ */
+function recordHandoffCaptures({
+  project,
+  bindingOriginBySymbolId,
+  summary,
+  handed,
+  provenance,
+}: {
+  readonly project: Project;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly summary: MutableEffectSummary;
+  readonly handed: readonly Node[];
+  readonly provenance: string;
+},): void {
+  recordUnresolvedCaptureOpacity({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    actuals: handed,
+    provenance,
+  },);
 }
 
 /**
@@ -269,6 +359,13 @@ export function recordTaggedTemplateHandoff({
             provenance,
           },);
         },);
+      recordHandoffCaptures({
+        project,
+        bindingOriginBySymbolId,
+        summary,
+        handed: [span.expression,],
+        provenance,
+      },);
     },);
 }
 
@@ -335,6 +432,13 @@ export function recordThrowHandoff({
         provenance,
       },);
     },);
+  recordHandoffCaptures({
+    project,
+    bindingOriginBySymbolId,
+    summary,
+    handed: [node.expression,],
+    provenance,
+  },);
 }
 
 /**
