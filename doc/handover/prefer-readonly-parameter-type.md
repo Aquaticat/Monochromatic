@@ -517,8 +517,22 @@ What that claim does and does not cover, since the distinction is the whole valu
      the same line-break debt, so this file is the largest instance rather than an outlier, and conforming it alone
      buys no consistency while risking prose damage to the primary record.
 
-So what is left is not a queue of defects. It is #115, a linter-scope decision for whoever owns markdown style, and
- the standing question below.
+**One defect stays open, and closing it would be dishonest.** #100, the external channel's missing capture channel.
+ It is a real false offer for a consumer whose code calls a package export whose shipped implementation retains a
+ callback, its design is complete, and it was written once and reverted because **neither** verification route exists
+ here: no call in this workspace reaches `applyExternalEffect` at all, and exporting the unit does not help because
+ proving a capture is charged needs binding origins the analyzer does not expose.
+
+Its prerequisite is sharper than it was: not "make one external effect resolve", but find or add a dependency whose
+ **shipped implementation the resolver can load**. #113 measured that even `ignore`, a real npm package, gets an
+ identity and then fails at implementation resolution.
+
+The contrast with #114 is the rule at work rather than an inconsistency. The decorator gap was landed because a
+ fixture file can contain a decorator; this one cannot be reached by any fixture without a new dependency. Landing a
+ path no test reaches, documented as a fix, is worse than leaving the finding recorded.
+
+So what is left is one recorded gap that cannot be verified here, #115 as a linter-scope decision for whoever owns
+ markdown style, and the standing question below.
 
 So the honest summary is that the soundness queue is empty and the precision, cost and documentation queue is not.
  Anyone resuming should start by asking what shape has not been probed, rather than by working these three.
