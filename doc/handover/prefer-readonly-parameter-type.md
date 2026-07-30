@@ -129,6 +129,13 @@ The shapes are common here; the zeros describe the offer population.
 - construction: opacity, since `NewExpression` was handled nowhere at all
 - yield: opacity, since a yielded value reaches no returned set
 - async return: **not** a withholding, a tracking repair, by making `await` transparent
+- tagged template: opacity, since a tag is a call and a `TaggedTemplateExpression` is not one
+- throw: opacity, since a handler outlives the throw and no returned record exists to track it
+- callable inside a returned literal: descend the literal, reusing the result-site aggregate walk
+- store of what a nested callable hands back: a nested callable has no summary to defer against
+- destructuring default: scan binding-element defaults, where the declaration scan never looked
+- call result as an argument, and through a pattern, logical assignment or parameter default
+- conditional write target, and an element or property of an authored literal
 
 ## Design decisions taken, and why
 
@@ -274,8 +281,18 @@ Open, and none of them is a false offer:
 
 - #71, re-measuring task #46's per-finding claim against the current baseline, running
 - #74, discharging a construction whose constructor copies rather than retains
-- #76, a method on a local literal whose result is stored outward, from hunt pass two
-- #73, further hunt passes; pass one found three defects, pass two found three
+- #76, a method on a local literal whose result is stored outward. The local-function and
+  arrow-property forms are fixed; the method form should already work through the same path, so
+  whatever separates it is small and specific, and the task says where to instrument first.
+- #73, further hunt passes. Three passes have drawn 42 channels and found 8 real defects, and
+  **each pass has found something**, so passes remain productive rather than converging. Two
+  candidates were correct behaviour and both are recorded, because those are the ones that would
+  have led to a wrong fix.
+
+Also recorded and not yet fixed: the inline scan puts a nested callable's return into the
+ **enclosing** callable's returned set, so a function returning `void` claims a returned origin.
+Same family as what #70 removed. Nothing discharges on returned sets today so it is not yet a false
+ offer, and a fixture pins it so a fix has something to flip.
 
 Declined with the reason recorded, because building each the obvious way is worse than leaving
  it:
