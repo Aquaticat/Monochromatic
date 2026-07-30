@@ -4410,3 +4410,71 @@ export function storeFreshThroughBareTag(neitherTagStoredGotten: Config,): numbe
 }
 
 //endregion
+
+//region A construction is an invocation too
+
+/**
+ * Stores the caller's row from a constructor body, constructed with no arguments.
+ *
+ * The construction handoff answers for arguments, and this hands over none. What went unrecorded is the
+ * constructor body: the activation walk saw only `CallExpression`, so the constructor was never
+ * activated and its store was attributed to nobody. A field initializer in the same position is charged
+ * already, which is what narrows this to the body.
+ *
+ * @param bodyStoredGotten - Configuration whose row the constructor stores outward.
+ *
+ * @example
+ * ```ts
+ * storeFromConstructorBody({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFromConstructorBody(bodyStoredGotten: Config,): void {
+  /**
+   * Storer whose constructor stores the caller's row.
+   */
+  class BodyStorer {
+    /**
+     * Stores the caller's row where no caller can reach it.
+     */
+    constructor() {
+      taggedHolder.kept = bodyStoredGotten.row;
+    }
+  }
+  void new BodyStorer();
+}
+
+/**
+ * Stores a freshly allocated row from a constructor body.
+ *
+ * The control. Seeing a construction as an invocation must not charge a constructor that stores nothing
+ * the caller owns.
+ *
+ * @param neitherBodyStoredGotten - Configuration read in place.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeFreshFromConstructorBody({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshFromConstructorBody(
+  neitherBodyStoredGotten: Config,
+): number {
+  /**
+   * Storer whose constructor stores a freshly allocated row.
+   */
+  class FreshBodyStorer {
+    /**
+     * Stores a row nobody else holds.
+     */
+    constructor() {
+      taggedHolder.kept = allocateHandedRow();
+    }
+  }
+  void new FreshBodyStorer();
+  return neitherBodyStoredGotten.rows
+    .length;
+}
+
+//endregion

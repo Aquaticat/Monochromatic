@@ -686,9 +686,21 @@ children: [
        * shapes joined and exactly one keeps an offer, the control whose held closure allocates. */
       /* Seventy once a tagged template counted as an invocation. Two shapes joined, the control keeping
        * its offer and the subject contributing none. */
+      /* Seventy-one once a construction counted as an invocation too. Two shapes joined, the control
+       * keeping its offer and the subject contributing none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(70,);
+      },).length,).toBe(71,);
+      /* The construction pair, asserted as agreement for the same reason the tag pair is. */
+      expect(messages.filter(function namesBodyStored(message,): boolean {
+        return message.includes('"bodyStoredGotten"',)
+          && message.includes('should be readonly',);
+      },),).toEqual([],);
+      expect(messages.filter(function namesNeitherBodyStored(message,): boolean {
+        return message.includes('"neitherBodyStoredGotten"',);
+      },),).toEqual([
+        'Parameter "neitherBodyStoredGotten" should be readonly: property rows is writable.',
+      ],);
       /* The tag pair, asserted as agreement. Seeing a tag as an invocation must charge the one storing
        * caller state and spare the one storing a fresh row, and only the pair separates that from a
        * walk that charges every tag or none. */

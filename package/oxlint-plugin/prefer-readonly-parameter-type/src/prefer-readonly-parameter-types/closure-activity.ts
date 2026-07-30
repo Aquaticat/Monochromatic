@@ -10,9 +10,6 @@ import {
 } from 'typescript/unstable/ast';
 import {
   isBinaryExpression,
-  isCallExpression,
-  isTaggedTemplateExpression,
-  isTemplateExpression,
   isIdentifier,
   isReturnStatement,
   isVariableDeclaration,
@@ -22,6 +19,10 @@ import type { Project, } from 'typescript/unstable/sync';
 import {
   expressionHasParameterOrigin,
 } from './effect-binding-origins.ts';
+import {
+  INVOKES_NOTHING,
+  invokedParts,
+} from './effect-invoked-parts.ts';
 import { possibleValueNodes, } from './effect-possible-values.ts';
 import {
   callableKey,
@@ -477,62 +478,4 @@ function assignedValues({
       .getResolvedSymbol(node.left,);
     return assigned?.id === symbol.id ? [node.right,] : [];
   },);
-}
-
-/**
- * Sentinel for a node that invokes nothing.
- */
-const INVOKES_NOTHING: unique symbol = Symbol('node invokes nothing',);
-
-/**
- * Names what one node invokes and what it hands over, whichever syntax spells the invocation.
- *
- * A tagged template is a call and this walk saw only `CallExpression`, so the tag was never activated
- * and its body never scanned. Measured, with the same closure written both ways:
- *
- * ```ts
- * const storingTag = (_strings: TemplateStringsArray,): void => { holder.kept = gotten.row; };
- * storingTag``;
- * ```
- *
- * recorded nothing for `gotten`, while an identical closure invoked as `storingCall()` recorded
- * `opaque=[0]`. So the defect is not about what a tag receives; it is that an unseen invocation leaves
- * the closure unactivated, and an unactivated body's store is attributed to nobody.
- *
- * Interpolated values answer as actuals, because a tag receives them exactly as a call receives
- * arguments. The strings array is not among them: it is built at the call site rather than handed in.
- *
- * @param node - Node that may invoke something.
- *
- * @returns callee and actuals, or the sentinel when nothing is invoked.
- *
- * @example
- * ```ts
- * invokedParts({ node });
- * ```
- */
-function invokedParts({ node, }: { readonly node: Node; },):
-  | {
-    readonly callee: Node;
-    readonly actuals: readonly Node[];
-  }
-  | typeof INVOKES_NOTHING
-{
-  if (isCallExpression(node,))
-    return {
-      callee: node.expression,
-      actuals: node.arguments,
-    };
-  if (!isTaggedTemplateExpression(node,))
-    return INVOKES_NOTHING;
-  return {
-    callee: node.tag,
-    actuals: isTemplateExpression(node.template,)
-      ? node.template
-        .templateSpans
-        .map(function spanValue(span,): Node {
-          return span.expression;
-        },)
-      : [],
-  };
 }
