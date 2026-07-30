@@ -684,9 +684,23 @@ children: [
        * contributing none and three controls keeping their offers, one pair per handoff syntax. */
       /* Sixty-nine once the value walk followed a destructuring source and a property read. Three
        * shapes joined and exactly one keeps an offer, the control whose held closure allocates. */
+      /* Seventy once a tagged template counted as an invocation. Two shapes joined, the control keeping
+       * its offer and the subject contributing none. */
       expect(messages.filter(function isOffer(message,): boolean {
         return message.includes('should be readonly',);
-      },).length,).toBe(69,);
+      },).length,).toBe(70,);
+      /* The tag pair, asserted as agreement. Seeing a tag as an invocation must charge the one storing
+       * caller state and spare the one storing a fresh row, and only the pair separates that from a
+       * walk that charges every tag or none. */
+      expect(messages.filter(function namesTagStored(message,): boolean {
+        return message.includes('"tagStoredGotten"',)
+          && message.includes('should be readonly',);
+      },),).toEqual([],);
+      expect(messages.filter(function namesNeitherTagStored(message,): boolean {
+        return message.includes('"neitherTagStoredGotten"',);
+      },),).toEqual([
+        'Parameter "neitherTagStoredGotten" should be readonly: property rows is writable.',
+      ],);
       /* Both held-callable subjects charged and the shared control offered. Asserted as agreement,
        * because following a receiver too eagerly would charge all three and following nothing charges
        * none, and only the pairing separates those. */

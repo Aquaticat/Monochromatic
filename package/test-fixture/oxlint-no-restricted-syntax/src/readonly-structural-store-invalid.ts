@@ -4350,3 +4350,63 @@ export function handFreshHeldClosure(
 }
 
 //endregion
+
+//region A tagged template is an invocation
+
+/**
+ * Holder kept beyond every tag call.
+ */
+const taggedHolder: { kept: Row | undefined; } = { kept: undefined, };
+
+/**
+ * Stores the caller's row from inside a tag invoked with no interpolation.
+ *
+ * The activation walk saw only `CallExpression`, so the tag was never activated and its body never
+ * scanned. Nothing about what a tag receives is at issue: the store inside an unactivated closure was
+ * attributed to nobody. Measured against the identical closure invoked as an ordinary call, which
+ * recorded the store correctly.
+ *
+ * @param tagStoredGotten - Configuration whose row the tag stores outward.
+ *
+ * @example
+ * ```ts
+ * storeThroughBareTag({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeThroughBareTag(tagStoredGotten: Config,): void {
+  /**
+   * Tag storing the caller's row where no caller can reach it.
+   */
+  const storingTag = (_strings: TemplateStringsArray,): void => {
+    taggedHolder.kept = tagStoredGotten.row;
+  };
+  storingTag``;
+}
+
+/**
+ * Stores a freshly allocated row from inside a tag invoked with no interpolation.
+ *
+ * The control. Seeing a tag as an invocation must not charge a tag that stores nothing the caller owns.
+ *
+ * @param neitherTagStoredGotten - Configuration read in place.
+ *
+ * @returns count read in place.
+ *
+ * @example
+ * ```ts
+ * storeFreshThroughBareTag({ rows: [], row: { label: '', }, },);
+ * ```
+ */
+export function storeFreshThroughBareTag(neitherTagStoredGotten: Config,): number {
+  /**
+   * Tag storing a freshly allocated row.
+   */
+  const freshTag = (_strings: TemplateStringsArray,): void => {
+    taggedHolder.kept = allocateHandedRow();
+  };
+  freshTag``;
+  return neitherTagStoredGotten.rows
+    .length;
+}
+
+//endregion
