@@ -7129,3 +7129,40 @@ Zero TypeScript decorators in this workspace: every `@` beginning an indented li
  at-rule inside a template literal. So this is a fix for consumers of the published rule and for nothing here,
  which is exactly why it was landed rather than closed as theoretical. The goal in force is no false offers,
  not no false offers in this repository.
+
+## The overridable base, closed by the void-slot fix and by covariance
+
+Filed from review reading the completion walk: a base implementation handing nothing back cannot prove the
+ runtime override hands nothing back, since a subclass need not exist in this project. Correct about the code.
+
+```text
+forwardOverridableProducer   opq=[1,0]   the overridable formal is charged
+forwardRowProducer           opq=[1,0]   charged, as expected
+```
+
+Charged, so no offer. And the reason is a fix landed for a different item.
+
+A method reached through a value does not resolve to an owned callable, so the candidate list is empty and the
+ declared-type fallback decides. That fallback is **#90's void-slot rule**: `void` is trusted only when the
+ callee names callable declarations only, and a method reached through a value is a **slot**. So the base's
+ `void` is distrusted and the capture is charged.
+
+**The void case was the only hole there was.** Override return types are covariant, so `override produce(): Row`
+ is an error where the base declares `string`. The one return type permitting an override to hand back anything
+ is `void`, by the same specific assignability rule #90 was built on and verified against the compiler. For
+ every other base return type the base genuinely bounds the override, so the base answering for it is correct
+ rather than a hole.
+
+### Sixth instance, and the first where my own fix was the coverage
+
+Five previous holes predicted by reading turned out closed by another channel. This is the sixth, and it
+ differs: the covering fix was landed in this same effort, for a different item, and neither the filing nor the
+ fix noticed the overlap.
+
+That is worth stating as a positive rather than as another near-miss. The void-slot rule was scoped by asking
+ what a declared type is a claim **about**, a body or a slot, rather than by enumerating the shapes that could
+ abuse it. A rule scoped by the right question covers shapes nobody listed, which is why it closed an item
+ filed independently and why the overridable-method concept the filing named was not needed here at all.
+
+The negative reading of the same fact: the queue held an item that had been fixed, and only measuring it said
+ so. Nothing in the code or the queue could have.
