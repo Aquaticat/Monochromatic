@@ -358,35 +358,46 @@ A property read is not a call, so the reach walk missed a getter over caller sta
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
 -    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix: the sweep
      with the gate ran faster than the one before it, so nothing measured shows a problem.
--    **#89**, whether two call edges may share one call-site key. Raised by the advisor and not yet
-     settled: a conditional default pushes two edges carrying one key, and
-     `propagateResultApplications` keys a `Map` by it, which keeps the last pair. Both source
-     orderings answer identically, because that shape is answered by the reach walk rather than by
-     the edge, so the probe that would settle it needs the edge path and the edge path is broken by
-     #97.
--    **#97**, a defaulted callee's returned fact never reaching a store of its result. Measured over
-     one store: a directly named callee and a local alias both charge, and a parameter carrying that
-     callee as its default does not, with one edge rather than two.
--    **#90** through **#96**, from sol's third review. The one to do first is #91, a capture handed
-     to a callback parameter, because the direct callback branch returns before the unresolved-capture
-     gate and so before anything records that capture.
+-    **#89**, whether two call edges may share one call-site key. Sol settled the fix shape: the
+     consumer should take a multimap and union every candidate edge, never merge different callees
+     into one edge, since their slot layouts, summaries, captures, and formal-to-actual mappings
+     differ. Not demonstrable yet, and #93 makes more forms reachable.
+-    **#90**, a `void` completion certifying a capture as inert. Located by reading, not measured.
+     `void` describes an ignored return value rather than a runtime guarantee.
+-    **#92**, candidates treated as exhaustive. Confirmed at the source: a nonempty `heldCallables`
+     replaces the static classification instead of joining it.
+-    **#93**, one shared callable-value resolver. This is the root of several defects rather than a
+     two-walk mismatch: `packagedActualCallables` keeps only nodes already written as callable
+     declarations, so a named function reached through a default, a conditional, or an alias is lost
+     in four places, and `calledCallables` separately uses only `callableDeclaration`.
+-    **#94** and **#95**, accessor reach past plain property access, and tagged templates as
+     invocations.
+-    **#96**, correcting the claim that a nested callable has no summary of its own. Falsified twice
+     now, and both reviewers reasoned from it, so the comment is actively misleading.
+-    **#97**, reduced to a verification task. Its two causes turned out to be #98 and #93.
+-    **#99**, call-result retention at a callback call, and **#100**, a capture channel for external
+     effect application. Both are the same pattern as #91: a branch that answers its own question and
+     returns before the capture gate. #100 is confirmed reachable, because `applyExternalEffect` does
+     handle callback relations and maps them only through ordinary argument origins.
+-    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix.
+-    The sweep for #88, #98 and #91, running at time of writing, with its prediction pre-registered in
+     the planning doc.
 
-### Declined with the reason recorded
+### What landed since the capture-channel sweep
 
--    **#54**, restoring an offer for a store into another parameter. The callee cannot decide it.
-     The edge from one parameter to another escapes or not depending on where the first came from,
-     which only the caller knows, so the naive fix admits a false offer. It needs a
-     parameter-to-parameter reachability relation propagated at the edge, and it is precision only.
--    **#64**, the read-only-capture precision question. A `throw` is modelled nowhere, so no body
-     summary is complete enough to grant an offer on the strength of it.
+-    **#88**, a store that takes a defaulted producer's invoked result. The reach walk resolved a
+     callee with `callableDeclaration`, which stops at a parameter.
+-    **#98**, the returned fact a concise arrow body carries. The direct scan recorded returned effects
+     under `isReturnStatement` alone, so any callable with a concise body recorded an empty returned
+     set and every caller storing its result was offered. General rather than default-specific, and
+     the largest-reaching fix in this stretch.
+-    **#91**, a capture handed to a callback parameter. The callback relation carries what the caller
+     chose, and a closure the callee wrote is not that, so the deferral #75 settled was incomplete
+     rather than wrong.
 
-#63 and #65 were previously declined here and are now closed. Both declinations rested on one
- claim, that a call to a parameter whose declared type is a function cannot be resolved to the
- arrow written as its default. That claim was true of overload resolution and false of the
- question: `possibleValueNodes` answers it by following the parameter's declaration to its
- initializer, and no signature resolution is involved. The lesson is narrow and worth keeping: a
- declination that names one mechanism as impossible is a claim about that mechanism, not about the
- goal.
+Each was falsified at the five-clause bar, each gained fixture groups with controls because neither
+ #98 nor #91 moved a single fixture offer until fixtures were written for them, and each mutant died
+ with an exact delta.
 
 ## What the capture-channel sweep settled
 
