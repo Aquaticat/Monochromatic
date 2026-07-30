@@ -7342,3 +7342,51 @@ And the **three** `implementation` rejections are the more informative number. T
 
 That is the same move that worked on the value walk and on the type-reference shortcut: find the case that
  already succeeds and ask what it has.
+
+### The diagnosis completes: a member call gets no package identity
+
+The count said member calls were the likely shape. Printing the callee's syntax kind at the rejection says it
+ outright, across two packages:
+
+```text
+kind=212 PropertyAccessExpression   156   and   133
+kind=79  Identifier                   4   and    17
+kind=107 SuperKeyword                 1
+```
+
+And the later gate proves identity **does** work for an imported identifier, because it names real identities on
+ its way to failing for a legitimate reason:
+
+```text
+EXT-IMPL-FAIL ignore Ignore
+EXT-IMPL-FAIL node:path join
+EXT-IMPL-FAIL node:fs/promises readFile
+EXT-IMPL-FAIL node:child_process spawn
+```
+
+A `node:` builtin has no shipped implementation to resolve, so failing there is correct behaviour rather than a
+ defect. Those four lines are the shape that works.
+
+**So the whole external channel is dark because a member call gets no package identity, and member calls are
+ about ninety-five percent of external calls.** `console.log(...)`, `signal.addEventListener(...)`,
+ `v.safeParse(...)` after a namespace import: none of them can reach the channel.
+
+That is a far more specific and more tractable statement than "no external effect resolves", which is where this
+ started three measurements ago.
+
+### How the narrowing went, since the method is the transferable part
+
+Three cold runs, each one question:
+
+1.   Which of the four gates rejects? One of them, overwhelmingly.
+2.   Does the obvious cause of that gate failing explain it? No, and measuring it properly is what said so.
+3.   What do the rejected calls have in common, and what do the survivors have? A syntax kind, and an import
+     form.
+
+Each step cost one instrumented build and answered exactly one thing. The step that cost the most was the one
+ that skipped instrumentation and read findings instead, which answered nothing.
+
+The third question is the one worth generalising. **Ask what the cases that already succeed have in common.**
+ Four surviving identities named their module and export directly, which located the working path faster than
+ reading either identity function would have. The same move worked on the value walk and on the type-reference
+ shortcut.
