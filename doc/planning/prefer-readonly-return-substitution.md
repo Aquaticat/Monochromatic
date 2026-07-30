@@ -6966,3 +6966,48 @@ So the discipline gains a clause. **When a predicate looks unsound in isolation,
  probing and before fixing.** If every caller asks a narrower question than the predicate answers, the
  predicate is sound where it is used and the finding is about its name. That is cheaper than a probe and it
  generalises, where a probe only ever covers the shape written.
+
+## A construction is an invocation too, and the second syntax paid for the first fix's shape
+
+Filed as a characterisation task, on the grounds that this work had twice built a fix for a shape another
+ channel already covered. Characterising it found a defect instead.
+
+```text
+storeFromConstructorBody       opq=[]    subject, nothing recorded
+storeFreshFromConstructorBody  opq=[]    control, also nothing
+storeFromFieldInitializer      opq=[0]   charged already
+```
+
+Subject and control identical is a channel that does not run. And the third line is what made the diagnosis
+ exact rather than a guess: a **field initializer** in the same position is charged, so the gap is the
+ **constructor body**, not the class and not the construction handoff. That handoff answers for arguments and
+ this shape hands over none.
+
+The cause is the one the tagged template had. The activation walk matched `CallExpression`, so the constructor
+ was never activated and the store inside it was attributed to nobody.
+
+### The fix was one clause, which is the return on how the previous one was written
+
+The tagged-template fix could have been a second `if` in the activation branch. Instead it named what a node
+ invokes, and every step downstream, overload resolution, assigned values, declared values, actual activation,
+ read that. So this defect cost one clause and no edits anywhere else.
+
+Two syntaxes needing the same repair is the point at which a shared question earns its own module, so
+ `invokedParts` moved to `effect-invoked-parts.ts` with both measurements recorded beside it. The move was
+ also forced by `max-lines` at 301, and splitting is what that limit asks for rather than raising it, so one
+ change satisfied both requirements.
+
+Offers moved 70 to 71 by exactly the control, falsified with a driver, and the mutant removing the clause
+ restored exactly the subject's offer.
+
+### What this says about the remaining shape space
+
+Three invoking syntaxes existed and one was recognised. That is not a story about tags or constructors; it is
+ that **an unseen invocation is an unscanned body**, and the recognition point is a single gate. Any syntax
+ that invokes and is not in `invokedParts` has the same defect waiting, and the list is now short and
+ enumerable rather than a matter of inspecting call sites: a call, a tagged template, a construction, and
+ whatever the language adds.
+
+Decorators are the obvious candidate not yet measured, since a decorator invokes its expression against the
+ decorated declaration. Filed rather than assumed, because four of the last five holes predicted by reading
+ turned out already closed, and this one deserves a probe before a clause.
