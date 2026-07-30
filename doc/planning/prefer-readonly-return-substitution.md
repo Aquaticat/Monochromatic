@@ -5154,3 +5154,94 @@ The direction is worth stating plainly: a parameter that was silently withheld n
  names a boundary a reader can inspect. That is the intended behaviour of the capture channel, and
  it is also the shape of that channel's known failure mode, a store's cause arriving dressed as a
  call. Here it is not that, because the cause really is a call.
+
+## The unresolved boundary, and the premise a gate this narrow rests on
+
+### The reach was the surprise
+
+Captures were recorded on owned call edges only. The scoping was deliberate and documented, on the
+ grounds that folding captures into ordinary origins would withhold on
+ `rows.map((row) => config.row.label,)` against every unresolvable callee. It was right about the
+ cost and wrong about the risk.
+
+What made it urgent is not library calls. A possibly-overridden method is treated as unresolved on
+ purpose, because an override can write what the base only reads, so **every instance method that
+ keeps a callback** was losing the capture. Measured as a three-way comparison rather than argued:
+
+```text
+retainer written as an instance method    nothing recorded for the captured parameter
+retainer written as a static             opaque=[0]
+retainer written as a plain function     opaque=[0]
+```
+
+Falsified through the instance-method form, with a registry storing into a module holder no caller
+ can reach, and separately through a promise continuation whose awaited result a caller stores.
+
+### What the gate asks, and the premise underneath it
+
+It asks one question: can invoking the packaged callable hand back something writable. Nothing else.
+
+That is only enough if everything **else** a closure can do with the origin is already charged
+ somewhere. The claim was first written down after measuring one channel, writes, which is a third of
+ what it needed. Measured in full afterwards, each a void-completing closure handed to `setTimeout`
+ or to an emitter method, so the new gate deliberately declines to fire on any of them:
+
+```text
+holder.row = storedVoid.row                       opaque=[0]
+JSON.stringify(handedVoid.row,)                   opaque=[0]
+new RowKeeper(builtVoid.row,)                     opaque=[0]
+throw thrownVoid.row                              opaque=[0]
+sink.push(filledVoid.row,) into a callee container opaque=[0]
+```
+
+The last is the interesting one, because its escape flows through neither the closure's completion
+ nor a write: the container belongs to the uninspectable callee. It is charged all the same.
+
+And the reason all five are charged is worth stating, because it is what makes the gate's narrowness
+ legitimate rather than lucky. A closure handed as an argument is activated, and an activated
+ closure's body is scanned **inline as part of the enclosing callable**, so every channel the
+ enclosing callable has applies to the closure's body too. The single channel that cannot apply is
+ what invoking the closure hands back, because that value is received by the uninspectable callee
+ rather than by the enclosing callable. The gate covers exactly the gap and nothing else.
+
+### The prediction, written before the capture is read
+
+Recorded first so the sweep can refute it rather than be read after the fact.
+
+The gate conjoins two facts that are not the same fact: the closure reaches the origin, and the
+ closure's completion can carry mutable state. It does not check that the completion **carries** the
+ origin. So the dominant offer loss should be closures that name a parameter and hand back a freshly
+ built aggregate that does not contain it:
+
+```ts
+mapped.rows
+  .map(function labelled(row,): Labelled {
+    return { label: `${config.prefix}${row.label}`, };
+  },);
+```
+
+`config` is named, the completion is an object, and nothing of `config` is inside it. Withheld
+ anyway. The precise alternative computes which origins a completion exposes, which needs returned
+ callables, getters, aggregates, async results and every value branch, and the conservative
+ conjunction is what lands here instead.
+
+The delta should also arrive largely as add-and-remove **pairs** rather than pure additions, because
+ the new opacity shares its provenance string with the call's ordinary argument origins, so an
+ existing boundary list grows and the message text changes. Under the comparison keying that reads as
+ one removed plus one added per affected parameter, and it is not churn.
+
+### The accepted loss, and its wider reach than one fixture shape
+
+`setTimeout` discards what it invokes, so withholding there is a precision loss rather than a
+ soundness need, and `handRowToDiscardingCallee` pins it. The loss is wider than that shape: a
+ concise arrow's body **is** its completion, so any `() => someCall()` argument whose callee returns
+ an object now withholds too. Recovering either needs a per-callee effect contract naming the
+ discard, since no local property of the call expression establishes what an uninspectable
+ implementation does with a value.
+
+### Mutants
+
+```text
+capture pass removed        44 offers, expected 42   both falsified subjects return
+result-shape test removed   41 offers, expected 42   one precision control lost, plus a summary test
+```
