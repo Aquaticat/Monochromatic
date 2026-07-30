@@ -4927,3 +4927,185 @@ Offers unchanged, nothing moved, digests on both sides, and the built artifact v
  digest the sweep ran with.
 
 With this, every false offer this work found and falsified is closed.
+
+## Closing #63, and the false offer its closure uncovered
+
+### The declination was a claim about one mechanism
+
+#63 had been declined here twice, and both declinations rested on the same sentence: gating a
+ callable packaged in a parameter default requires its invocation site to activate it, and
+ `callback()` where `callback` is a parameter typed `() => void` resolves to the type's signature
+ rather than to the arrow written as the default.
+
+That sentence is true. It is also not about the question. Overload resolution is one way to learn
+ what a call reaches, and `possibleValueNodes` is another: it follows an identifier to its
+ declaration and reports the initializer, and a parameter's default is an initializer. No signature
+ resolution is involved.
+
+Worth keeping as a general reading of declinations. A declination that names a mechanism as
+ impossible has ruled out that mechanism, not the goal, and the wording here made the narrower claim
+ look like the wider one for long enough to be recorded as settled twice.
+
+### What the fix is
+
+Parameter initializer nodes join the node universe the closure selection gates, instead of being
+ added to the selected set outright. One consequence has to come with it: the ancestry walk ascends
+ to the **declaration** rather than to the body, because an initializer node's parents reach its
+ parameter and never the body, so a walk bounded by the body would climb past the callable being
+ summarised and treat it as an inactive closure. That is exactly what the first attempt did, and it
+ filtered out both controls.
+
+Three shapes, all measured:
+
+```text
+closureDefaultNeverInvoked     mut=[]      the subject, offered
+closureDefaultInvoked          mut=[0,1]   the control for reaching
+initializerExpressionWrites    mut=[0]     the control for the initializer itself
+```
+
+### The offer it raises is self-limiting, and that is worth saying
+
+This is the first change in this work that **adds** an offer rather than removing one, so the
+ direction of risk is reversed and the arrival deserves a closer look than a removal would.
+
+`unreachedDefault` is offered because nothing invokes and nothing keeps the closure that writes. It
+ is also not a suggestion anyone can take: the write sits inside the default and reaches the
+ parameter directly, so applying `ReadonlyDeep<Config>` stops the file type-checking. It belongs
+ with `invokeAssignedLocalClosureWriting`, which this file already records as self-limiting rather
+ than false. What the shape measures is attribution, not advice.
+
+The escape shapes beside it are therefore written as readers rather than writers, because a reading
+ closure is the form a falsification can use: `readonly` property modifiers are ignored in
+ assignability, so handing the row out compiles and lets the receiver do the writing.
+
+### The escape the over-attribution had been covering
+
+Removing an over-attribution removes whatever it was accidentally covering, and here it was covering
+ a real false offer:
+
+```ts
+function handDefaultClosureToRetainer(
+  handedDefault: Config,
+  handedCallback: () => Row = (): Row => handedDefault.row,
+): void {
+  retainCallable(handedCallback,);
+}
+```
+
+`callableDeclaration` follows a local variable's initializer and stops at a parameter, so the
+ capture channel named no callable and recorded nothing. Measured `opaque=[1]` with slot zero
+ offered. Falsified: annotation applied, clean type-check beside a control whose direct write is
+ rejected by `@ts-expect-error`, driver invoked the retained closure and wrote through the row it
+ handed back.
+
+The fix asks the possible-value walk as well as the resolver, and **only** in the capture channel. A
+ capture adds opacity and can therefore only withhold more, while the callback identity beside it
+ names the callable a callee invokes, and naming a default there would claim the default's effects
+ for a call where the caller supplied something else. That is a claim that can be wrong in the
+ offering direction, which is the direction that matters.
+
+### Both mutants died, one per half
+
+```text
+capture widening removed      40 offers, expected 39   the false offer returns
+initializer gate removed      38 offers, expected 39   the over-attribution returns
+```
+
+Each isolates one half, which is what makes the pair worth running rather than one mutant over the
+ whole change.
+
+## The three things a callee can do with a callable a caller handed it
+
+Two reviewers reading the same source found the same next defect independently, and following it
+ produced the most useful framing this work has reached. A callee handed a callable can:
+
+-    **keep it**. Answered from the callee's `opaque` set since #69.
+-    **hand back what invoking it produced**. Answered by nothing.
+-    **write through what invoking it produced**. Answered by nothing.
+
+Stating it that way makes the omission obvious in a way that reading either code path did not. The
+ capture channel was not missing a syntactic form; it was answering one third of a relation.
+
+### Handing back, and why the caller keeping its offer is correct
+
+```ts
+function invokeSupplied(supplied: () => Row,): Row {
+  return supplied();
+}
+
+function handInvokedResultBack(invokedThrough: Config,): Row {
+  return invokeSuppliedRow((): Row => invokedThrough.row,);
+}
+```
+
+The first falsification attempt for this was **invalid**, in the same way the callback-parameter one
+ earlier in this document was invalid. Applying the annotation to `invokedThrough`, type-checking
+ clean and writing through the returned row does change the caller's row, and that is not a
+ falsification: a return of caller state is permitted by the accepted decision on the condition that
+ callers substitute through a recorded returned origin, and `returnRowDirectly` has exactly the same
+ standing and keeps its offer.
+
+The condition is what had failed. `invokeSupplied` records `returned=[0]`, so the edge already said
+ its result carries what the formal carries, and the substitution walk read only
+ `originsByCalleeSlot` and never the per-formal captures. So the valid subject is a caller of the
+ caller:
+
+```text
+storeInvokedResult   before: nothing recorded, offered
+storeDirectResult    before: opaque=[0], withheld
+storeInvokedResult   after:  opaque=[0], withheld
+```
+
+A store is not a permitted return, so that pair is decisive where the return itself was not.
+
+Two readings of a returned callable formal both lead here, which is why one relation answers for
+ both. `returned=[0]` can mean the result is the callable, and then the caller holds something that
+ captures the origin; or it can mean the result is what invoking the callable produced, and then the
+ caller holds the origin. Either way the caller's result carries it.
+
+### Writing through, which speaks as a mutation
+
+```ts
+function writeThroughSupplied(written: () => Row,): void {
+  written()
+    .label = 'written';
+}
+
+function handWrittenResultOut(writtenThrough: Config,): void {
+  writeThroughSupplied((): Row => writtenThrough.row,);
+}
+```
+
+`writeThroughSupplied` records `mutated=[0]`, so the callee had already said what it does.
+ `handWrittenResultOut` recorded **nothing at all** and was offered. Falsified with no ambiguity
+ about policy: the closure only reads, so the annotation applies cleanly, the callee's write is on
+ the declared `Row`, and the driver saw the caller's row change.
+
+Reported as a mutation rather than as opacity. A reader is told the parameter is written instead of
+ being told an implementation could not be inspected, which is the same direction #55 settled for
+ stores.
+
+### The precision control that makes all three safe to land
+
+`readThroughCallable` invokes its formal and keeps only a primitive off the result, so its formal is
+ neither opaque nor returned nor written, and its caller `handCaptureToReader` keeps its offer. Every
+ one of these three channels is gated on a fact the callee stated about its own formal, so a callee
+ that states none propagates none. The offer count over the whole invalid fixture moved by exactly
+ one across both fixes, and that one is the permitted return.
+
+### Mutants
+
+```text
+returned-capture contribution removed    41 offers, expected 40
+write-through pass removed               41 offers, expected 40
+```
+
+## What the reviewers found that the hunt passes had not
+
+Four hunt passes drew 44 channels by writing shapes. The three defects found after the fourth pass
+ came from reading the source instead, and they share a property the hunt could not have surfaced:
+ none of them is a missing syntactic form. Each is a relation answered for one of its cases.
+
+That suggests where the remaining ones are. Not in the syntax any single channel scans, but between
+ channels: in a set one propagation reads and another does not, in a gate that names one of three
+ possibilities, in an index two modules disagree about.
