@@ -7011,3 +7011,51 @@ Three invoking syntaxes existed and one was recognised. That is not a story abou
 Decorators are the obvious candidate not yet measured, since a decorator invokes its expression against the
  decorated declaration. Filed rather than assumed, because four of the last five holes predicted by reading
  turned out already closed, and this one deserves a probe before a clause.
+
+## The three remaining invoking syntaxes, measured
+
+Named by the construction fix and filed as a probe rather than a clause, because four of the five holes
+ predicted by reading had turned out already closed. Two of three are closed here too, and the third is open
+ in a way one clause does not fix.
+
+```text
+storeThroughSuper           opq=[0]   charged        control clean
+storeThroughOptionalCall    opq=[0]   charged
+storeThroughDecorator       opq=[]    subject        control identical
+```
+
+A `super()` call reaches the base constructor correctly once the construction clause activates the derived
+ one, so #112 closed it without naming it. An optional call is a `CallExpression`, so the original clause
+ always answered it.
+
+### The decorator is open, and the obvious fix is a no-op
+
+A bare `@storingDecorator` on a method, where the decorator stores the caller's row as it is applied, records
+ nothing, and its control records nothing either.
+
+A clause was added, `isDecorator(node,)` answering with the decorator's expression as callee and no actuals,
+ and it changed **neither** reading. So it was reverted. Landing a path no shape reaches, documented as a fix,
+ is already recorded here as worse than leaving the defect recorded, and this is the third time that rule has
+ been applied rather than quoted.
+
+What the no-op narrows. `collectAstNodes` walks with `forEachChild`, which does visit decorators, so the node
+ reaches the gate. **The blocker is downstream of recognition**, which leaves three candidates, each with a
+ different fix:
+
+-    the ancestry gate from #70, since a decorator sits inside a class inside the callable and that nesting may
+     fall outside what the gate counts as active
+-    `nestedKeys` membership, which should hold and is unverified
+-    the body scan of activated callables, since marking a callable active is not the same as reading it
+
+The order to settle it is fixed: whether the key lands in `nestedKeys`, then whether the gate marks it active,
+ then whether the scan reaches it.
+
+### The general point this run makes about the invocation gate
+
+The gate turned out to be the right abstraction and an incomplete explanation. Recognising a syntax is
+ necessary and not sufficient: `super()` needed no clause because recognising its enclosing construction was
+ enough, and the decorator has its clause available and still records nothing.
+
+So "an unseen invocation is an unscanned body" is true and one-directional. **A seen invocation is not
+ necessarily a scanned body**, because recognition, activation, ancestry and the body scan are four steps and
+ the gate is only the first.
