@@ -326,6 +326,30 @@ function activationSites({
         if (nestedKeys.has(key,))
           activeKeys.add(key,);
       }
+      /* Overload resolution answers with the declared type's signature, so a binding declared
+       * without an initializer and filled afterwards activates nothing: `local()` resolves to the
+       * function type rather than to the arrow assigned into `local`, and the write inside that
+       * arrow was filtered out. Measured before this: the declaration form recorded `mutated=[0]`
+       * and the assignment form recorded nothing at all.
+       *
+       * Every assignment to the binding counts, whichever one a given call actually reaches. That
+       * over-activates when a binding holds different closures at different points, which
+       * attributes more and therefore withholds more, and reaching-definition filtering is what
+       * would narrow it. Activating too much is the safe direction here; activating too little
+       * loses a write. */
+      assignedValues({
+        allNodes,
+        project,
+        target: node.expression,
+      },)
+        .forEach(function activateAssigned(assigned,): void {
+          activateEscapedCallables({
+            project,
+            node: assigned,
+            nestedKeys,
+            activeKeys,
+          },);
+        },);
       node.arguments
         .forEach(function callbackArgument(argument,): void {
         activateEscapedCallables({
@@ -345,5 +369,57 @@ function activationSites({
       nestedKeys,
       activeKeys,
     },);
+  },);
+}
+
+/**
+ * Names every value assigned to one binding anywhere in the scanned body.
+ *
+ * @param allNodes - Every node of the body.
+ *
+ * @param project - TypeScript project resolving binding symbols.
+ *
+ * @param target - Expression naming the binding whose assignments are wanted.
+ *
+ * @returns right operands of assignments to that binding.
+ *
+ * @example
+ * ```ts
+ * assignedValues({ allNodes, project, target });
+ * ```
+ */
+function assignedValues({
+  allNodes,
+  project,
+  target,
+}: {
+  readonly allNodes: readonly Node[];
+  readonly project: Project;
+  readonly target: Node;
+},): readonly Node[] {
+  if (!isIdentifier(target,))
+    return [];
+  /**
+   * Symbol the called binding resolves to.
+   */
+  const symbol = project.checker
+    .getResolvedSymbol(target,);
+  if (symbol === undefined)
+    return [];
+  return allNodes.flatMap(function assignedTo(node,): readonly Node[] {
+    if (!isBinaryExpression(node,))
+      return [];
+    if (node.operatorToken
+      .kind
+      !== SyntaxKind.EqualsToken)
+      return [];
+    if (!isIdentifier(node.left,))
+      return [];
+    /**
+     * Symbol the assignment target resolves to.
+     */
+    const assigned = project.checker
+      .getResolvedSymbol(node.left,);
+    return assigned?.id === symbol.id ? [node.right,] : [];
   },);
 }

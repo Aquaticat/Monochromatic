@@ -757,10 +757,20 @@ await describe({
          * instead. Store provenance appearing on either would mean the target policy had
          * stopped telling an owned binding from an outside one. */
         expect(structuralOpaque('invokeLocalClosureWriting',),).toEqual([],);
-        /* The same closure filled by assignment rather than by an initializer, which records
-         * no effect at all where the declaration form records `mutated=[0]`. Self-limiting,
-         * so no offer rides on it, and tracked as task #65. */
-        expect(structuralOpaque('invokeAssignedLocalClosureWriting',),).toEqual([],);
+        /* The same closure filled by assignment rather than by an initializer. It recorded no
+         * effect at all while the declaration form recorded `mutated=[0]`, because overload
+         * resolution answers with the declared type's signature rather than with the arrow
+         * assigned into the binding, so nothing activated it and the write was filtered out.
+         *
+         * Activation now also resolves assignments to the called binding. Flow-insensitive, so a
+         * binding holding different closures at different points activates all of them, which
+         * attributes more and therefore withholds more. */
+        expect(structuralMutated('invokeAssignedLocalClosureWriting',),).toEqual([0,],);
+        expect(structuralMutated('invokeLocalClosureWriting',),).toEqual([0,],);
+        /* And the control that must not move with it: a closure assigned to a property outside the
+         * callable is stored, not invoked here, so it stays a retention rather than becoming an
+         * activation. */
+        expect(structuralOpaque('storeCapturingClosure',),).toEqual([0,],);
         /* A closure written straight into a call reaches caller state through its body, and
          * the argument walk reads values rather than bodies, so this attributed nothing while
          * the same capture inside an object literal attributed correctly. Falsified with every
