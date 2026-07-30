@@ -870,6 +870,19 @@ await describe({
          * over-approximates in the direction that withholds. A precise answer needs nested
          * callables to carry summaries, which is larger than the falsification requires. */
         expect(structuralOpaque('storeLocalFunctionResult',),).toEqual([0,],);
+        /* And it no longer claims a returned origin it never returns. A nested callable's body is
+         * scanned inline, so its return reached the same branch as the enclosing callable's own
+         * returns, and this callable returns nothing at all. A returned origin is a positive
+         * capability claim, so claiming one where there is no result is the same kind of wrong fact
+         * the activation gate removed.
+         *
+         * Asserted beside the opacity on purpose: the origins the nested body supplies must
+         * survive, and they come from the capture walk at the call site rather than from the
+         * return branch. */
+        expect(structuralReturned('storeLocalFunctionResult',),).toEqual([],);
+        /* The controls that must keep their returned origins, since a callable's own return is
+         * what the accepted decision permits and tracks. */
+        expect(structuralReturned('returnRowDirectly',),).toEqual([0,],);
         /* The member-call form, where the resolver answers about a value and a property is not
          * one, so the receiver's authored literal is what answers. */
         expect(structuralOpaque('storeArrowPropertyResult',),).toEqual([0,],);

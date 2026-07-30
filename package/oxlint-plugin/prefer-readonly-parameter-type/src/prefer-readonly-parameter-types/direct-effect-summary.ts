@@ -32,7 +32,10 @@ import {
 } from './effect-assignment-store.ts';
 import { discoverBodyBindings, } from './effect-body-bindings.ts';
 import { recordOutwardHandoffs, } from './effect-outward-handoff.ts';
-import { recordReturnEffects, } from './effect-return-effects.ts';
+import {
+  recordReturnEffects,
+  returnBelongsToCallable,
+} from './effect-return-effects.ts';
 import { recordReturnedCallableCapture, } from './effect-returned-callable.ts';
 import { inspectDirectWrite, } from './effect-direct-write.ts';
 import { recordBodylessEffects, } from './direct-bodyless-summary.ts';
@@ -288,7 +291,25 @@ export function directEffectSummary({
       },);
       return;
     }
-    if (isReturnStatement(node,) && (node.expression !== undefined)) {
+    if (isReturnStatement(node,)
+      && (node.expression !== undefined)
+      /* A nested callable's return belongs to the nested callable. Its body is scanned inline, so
+       * every return inside an active nested callable reached this branch and was recorded as this
+       * callable's own, and `storeLocalFunctionResult` claimed a returned origin while returning
+       * nothing at all.
+       *
+       * A returned origin is a positive capability claim, saying a caller can reach that parameter
+       * through this result, so claiming one where there is no result is the same kind of wrong
+       * fact the activation gate removed. Nothing discharges on a returned set today, which is why
+       * it cost no offer, and it would have become unsound the moment something did.
+       *
+       * The origins those nested bodies do supply are unaffected: a write inside one still
+       * attributes, and what a nested callable hands back is answered by the capture walk at the
+       * call site rather than by this branch. */
+      && returnBelongsToCallable({
+        node,
+        body,
+      },)) {
       recordReturnEffects({
         project,
         checker,

@@ -27,6 +27,7 @@ import { recordResultApplicationSites, } from './effect-result-substitution.ts';
 import { recordReturnedCallableCapture, } from './effect-returned-callable.ts';
 import {
   addEffectSlots,
+  isEffectCallableDeclaration,
   type MutableEffectSummary,
   type SlotOrigins,
 } from './effect-summary-model.ts';
@@ -129,4 +130,46 @@ export function recordReturnEffects({
       kind: 'returned',
     },);
   }
+}
+/**
+ * Tests whether one return statement belongs to the callable being summarised.
+ *
+ * A nested callable's body is scanned inline, so every return inside an active nested callable
+ * reaches the same branch as the enclosing callable's own returns. Without this, a callable
+ * returning nothing claimed a returned origin from a nested body, which is a positive capability
+ * claim about a result that does not exist.
+ *
+ * @param node - Return statement found in the selected body nodes.
+ *
+ * @param body - Body of the callable being summarised.
+ *
+ * @returns whether no nested callable sits between the return and that body.
+ *
+ * @example
+ * ```ts
+ * returnBelongsToCallable({ node, body });
+ * ```
+ */
+export function returnBelongsToCallable({
+  node,
+  body,
+}: {
+  readonly node: Node;
+  readonly body: Node;
+},): boolean {
+  /**
+   * Cursor ascending from the return toward the body.
+   */
+  const cursor: { current: Node; } = { current: node, };
+  while (cursor.current !== body) {
+    if (isEffectCallableDeclaration(cursor.current,))
+      return false;
+    if (cursor.current
+      .parent
+      === cursor.current)
+      return true;
+    cursor.current = cursor.current
+      .parent;
+  }
+  return true;
 }
