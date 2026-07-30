@@ -7390,3 +7390,50 @@ The third question is the one worth generalising. **Ask what the cases that alre
  Four surviving identities named their module and export directly, which located the working path faster than
  reading either identity function would have. The same move worked on the value walk and on the type-reference
  shortcut.
+
+### Reading the member path flips the conclusion: probably not a defect
+
+Three measurements said a member call gets no package identity, and the natural next move was to call that a
+ defect and fix it. Reading the code first says otherwise.
+
+`packageCallIdentity` **does** handle a property-access callee. It requires the receiver to be an identifier,
+ resolves it through `importBinding`, and answers for a namespace import and for an import specifier. So
+ `import * as v from 'valibot'; v.safeParse(...)` is covered by design.
+
+Which means the 156 rejections are member calls whose receiver is **not an import**:
+
+-    `console.log(...)`, whose receiver is a global
+-    `signal.addEventListener(...)` and `rows.map(...)`, whose receiver is a parameter
+-    `this.#kept.push(...)`, whose receiver is not an identifier at all
+
+**Every one is correctly rejected.** The channel resolves *package export* calls. A method on an arbitrary value
+ is not one, and the value's type coming from a package does not make it one. The module's own words are "exact
+ package export identity", and that is what it implements.
+
+So the honest statement is that the channel is narrower than "external calls". It is "calls to package exports
+ with a shipped implementation", and this workspace makes very few of those. The `node:` builtins that do reach
+ identity fail at implementation resolution, correctly, because a builtin has none.
+
+### The correction this forces to my own earlier claim
+
+Two sections above, this document says the external channel "has never run on real input" and treats that as a
+ gap with a fixture-shaped fix. That needs qualifying. It has never run because **this workspace almost never
+ calls a package export directly**, which is a fact about the workspace rather than a bug in the channel.
+
+The pattern is now familiar and this is its seventh instance: a measurement was right, the number was right, and
+ the conclusion drawn from it was wrong until the code that produces the number was read. Instrumenting told me
+ *which* gate and *which* syntax; only reading told me whether rejecting them is correct.
+
+So the discipline gains its mirror image. Earlier this document recorded that reading produces true statements
+ about code and unreliable statements about behaviour. The converse is equally true: **measuring produces true
+ numbers and unreliable interpretations.** Neither is sufficient, and the order that worked here was measure to
+ localise, then read to interpret.
+
+### What is left, stated precisely
+
+One confirming measurement: instrument the property-access branch to print the receiver's resolved symbol kind
+ for the 156, and confirm none is an import binding. Any that is, is a real defect; none, and this closes as a
+ documentation correction.
+
+And a sharper requirement for the two items waiting on this. Their end-to-end coverage needs a fixture calling a
+ **package export** whose shipped implementation mutates a formal, not merely any external call.
