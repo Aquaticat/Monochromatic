@@ -6923,3 +6923,46 @@ Four times in this effort a hole predicted by reading one module turned out clos
 Against that, the defects that were real were found by **measuring a shape**, not by reading a gate. The
  discipline that follows is already written here as probe before filing, and this is the strongest evidence
  for it so far: reading produces true statements about code and unreliable statements about behaviour.
+
+## The type-reference shortcut, closed by bounding its callers rather than by probing
+
+Flagged by review reading the function: `resultExposesMutableState` classifies a type reference by its type
+ arguments alone, so `Box<string>` carrying a `readonly row: Row` answers that it exposes nothing while a
+ write reaches through `box.row.label`. Correct about the function.
+
+Three steps, in the order the task pre-registered, and the third is what settled it.
+
+**The callers.** Both are collection-member sites, one behind `memberChannelIsVerifiedNarrow` and one in the
+ readonly-view discharge. The only question the function is ever asked is what a verified collection member's
+ result exposes.
+
+**The probe.** `reduce` handing back a caller-owned `Box<string>` accumulator, chosen because an accumulator
+ is not the receiver and so cannot be separated by the identity check the view site already uses:
+
+```text
+writeThroughBoxedAccumulator   opq=[0]   charged
+writeThroughFreshAccumulator   opq=[0]   charged
+```
+
+No offer, so no unsoundness. The control is charged too, which is imprecision in the safe direction.
+
+**The bound, which is the actual answer.** `FRESH_CONTAINER_MEMBER_NAMES` is `slice`, `concat`, `filter`,
+ `toReversed`, `toSpliced`, `with`, `flat`, plus `ReadonlyMap`'s `get`, `keys`, `values` and `entries`. Every
+ one returns a container instantiated with the **receiver's own element type**, and `reduce` is not among
+ them. So a user generic whose own members carry state cannot be one of these results. Where the element type
+ itself is such a generic, that generic *is* the type argument and `typeCanCarryMutableState` answers true.
+
+The shortcut is therefore sound within the bound its callers impose, and what misleads is the **name**: it
+ reads as a general predicate and is only ever asked a narrow question. Left as a note rather than renamed,
+ since a rename touches two call sites for no behavioural gain and the bound is now written down.
+
+### What this adds to the reading-versus-measuring tally
+
+Fifth instance, and the first where the probe alone was not enough. The probe said "charged", which could
+ have been a coincidence of this shape rather than a property of the design. Enumerating the callers and
+ bounding what they can ask is what turned a passing probe into a reason.
+
+So the discipline gains a clause. **When a predicate looks unsound in isolation, enumerate its callers before
+ probing and before fixing.** If every caller asks a narrower question than the predicate answers, the
+ predicate is sound where it is used and the finding is about its name. That is cheaper than a probe and it
+ generalises, where a probe only ever covers the shape written.
