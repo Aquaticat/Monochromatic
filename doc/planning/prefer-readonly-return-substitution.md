@@ -6671,3 +6671,40 @@ One process failure is worth recording with it, because it cost the implementati
  states this precisely and I skipped it: `git checkout --` restores to HEAD, so an uncommitted fix is what it
  removes. **Commit before mutating, without exception.** The lesson is cheap to state and was not cheap to
  relearn.
+
+### The external mapping, landed on the second attempt with the test that decides it
+
+The first attempt was reverted because its mutant survived the whole suite. The difficulty was never the
+ fix; it was that nothing in the fixture corpus reaches this path through a diagnostic, and nothing can
+ without adding a fixture dependency that is an installed package whose shipped implementation provably
+ mutates a formal.
+
+So the mapping is exported and exercised on its own, which the package already has a pattern for. The design
+ that makes it a real test rather than a restatement: one distinct origin slot per argument position, so a
+ mapping that reads the wrong position gives a visibly wrong answer instead of a coincidentally right one.
+
+```text
+mutant: formal mapping removed, actual-position indexing restored
+
+plain positional      PASS   correctly, since this case must be unchanged
+spread in the tail    FAIL   [[10],[20],[30]] where [[10],[20],[20]] is right
+whole-list spread     FAIL   [[10],[20],[30]] where [[10],[10],[10]] is right
+rest formal           FAIL   [[10],[20],[30]] where [[10],[20,30]] is right
+unreadable formals    FAIL   [[10],[20],[30]] where [] is right
+```
+
+Four of five, and the one survivor is the case whose behaviour the fix deliberately does not change. That is
+ the kill pattern a correct mutation check produces: indistinguishable exactly where the two implementations
+ agree by design.
+
+Three corrections came from the package's own lint and type check rather than from the test passing, and the
+ third improved the test rather than merely satisfying a rule. Synchronous test bodies where the harness
+ types a returned promise. A helper typed by what the node walk returns rather than by what the mapping
+ requires, so a node was being handed where a call expression is wanted. And `try...finally` per case, which
+ this repository bans; removing it collapsed five sessions into one at module scope, since all five read the
+ same overlay, matching the existing workspace-source test instead of inventing a second pattern.
+
+The general point, since this is the second time an unpinnable path has come up. **When a fix's mutant
+ survives, the question is not whether the fix is right but whether anything reaches it.** If the corpus
+ structurally cannot, exporting the unit under test is not a workaround; it is the only honest way to hold it
+ to the same standard as everything else here.
