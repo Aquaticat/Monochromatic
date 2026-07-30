@@ -6131,3 +6131,142 @@ The honest consequence for the criterion. The clause "offers falling is expected
  sampled to its cause" has now gone untested three sweeps running. It should be rewritten to say what is
  actually true: an offer falling would be surprising, worth sampling hard when it happens, and its
  absence is not evidence that a fix withheld nothing.
+
+## The shared completion fallback, measured before anything was designed
+
+Both suspected defects reproduce, one of my two probe shapes measured a different defect than I
+ attributed it to, and one of sol's four extra findings does not reproduce at all. All four of those
+ outcomes came from the same probe run, which is the argument for running it before writing the fix.
+
+### The void completion reproduces, and its basis is verified against the compiler
+
+```text
+forwardVoidProducer     mut=[0] opq=[1]
+candidateVoidProducer   mut=[]  opq=[1]
+forwardVoidReport       mut=[]  opq=[1]
+```
+
+`candidateVoidProducer` hands `(): Row => config.row` to a formal annotated `() => void`, and records
+ nothing at all about `config`, so `config` is offered. The forwarder keeps the closure in a registry.
+
+The basis is not return-type bivariance, which is what an earlier note in this document called it.
+ Ordinary return types are covariant. What applies is TypeScript's specific rule permitting a
+ value-returning function where a `void`-returning one is expected. Verified rather than recalled, with
+ a file whose control carries `@ts-expect-error`:
+
+```ts
+export const acceptedAsVoid: () => void = produceRow;
+// @ts-expect-error a row-returning callable is not assignable where a string-returning one is wanted
+export const acceptedAsString: () => string = produceRow;
+```
+
+It compiles clean, which says both halves at once: the void assignment is permitted, and the
+ `@ts-expect-error` was consumed rather than unused, so the string assignment is an error. Had the
+ directive been unused, TS2578 would have said so.
+
+So a `void` return annotation on a callable *type* constrains nothing about what the callable returns,
+ while a `string` one does. That asymmetry is the whole basis, and it is now measured.
+
+`forwardVoidReport` is the control and it is clean, which matters because its completion is
+ `reportLabel(config.row.label,)` and `reportLabel` returns `void`. Distrusting `void` naively would
+ withhold here.
+
+### The exhaustiveness defect reproduces, and the cleanest statement of it is a diff of two forwarders
+
+Two forwarders differing in exactly one token sequence:
+
+```ts
+export function forwardBareProducer(registry: FormRegistry, producer: () => Row | string,): void {
+  registry.keep((): Row | string => producer(),);
+}
+
+export function forwardDefaultedProducer(
+  registry: FormRegistry,
+  producer: () => Row | string = (): string => 'leaf',
+): void {
+  registry.keep((): Row | string => producer(),);
+}
+```
+
+```text
+forwardBareProducer         mut=[1] opq=[0,1]
+candidateBareProducer       mut=[]  opq=[1,0]
+
+forwardDefaultedProducer    mut=[1] opq=[0]
+candidateDefaultedProducer  mut=[]  opq=[1]
+```
+
+**Writing a default removes a withholding that the same code without the default has.** With no default
+ the candidate list is empty, the static classification decides, `Row | string` carries state, formal one
+ is opaque and the caller's `config` is charged. With the default the list holds one callable, that
+ callable hands back a string literal, `some` answers false, formal one is not opaque and the caller's
+ `config` is offered.
+
+No void is involved and no assignment is involved, so this isolates the exhaustiveness assumption by
+ elimination rather than by argument. The control `candidateFreshProducer`, handing `allocateRow` to the
+ same formal, is clean as it should be.
+
+### One of my two probe shapes measured a different defect than I filed it under
+
+I filed a binding filled by assignment as the exhaustiveness shape. Discriminators say otherwise:
+
+```text
+storeDirectClosure          opq=[1,0]   charged
+storeInitializedSelector    opq=[1,0]   charged
+storeAssignedSelector       opq=[1]     clean
+storeFreshSelector          opq=[1]     clean, correctly
+```
+
+`storeInitializedSelector` charges, so the walk does follow a call to a local callable and judge what it
+ hands back. `storeAssignedSelector` differs from it only in filling the binding by assignment rather
+ than by initializer, and it goes clean. So the gap there is the **value walk not following an
+ assignment**, which is #82's subject, and the completion gate is not what decides it. A fix to the
+ completion gate would have appeared to do nothing on that shape, and I would have had a passing fix and
+ a live defect.
+
+### Sol's throw finding does not reproduce, and why is worth keeping
+
+```text
+storeThrowingClosure    opq=[1,0]   charged
+```
+
+`completionExpressions` really does collect returns and yields and not throws, so the reading was right
+ about the code. The shape is charged anyway, because an activated closure's body is scanned inline as
+ part of the enclosing callable, and `recordThrowHandoff` fires there. A second channel already covers
+ it.
+
+This is the third time a reviewer reading these files has been right about the code and wrong about the
+ consequence, always in the same direction: the activation premise makes the enclosing callable's
+ channels apply inside an activated closure, and it is not visible from the file the gate lives in. Worth
+ stating in the module rather than rediscovering.
+
+### The design that follows, with its deferral named
+
+Sol's completeness-aware join, ranked above an unconditional disjunct because only it distinguishes
+ evidence from a guess:
+
+```text
+if any known candidate carries state        -> true
+if the candidate list is exhaustive         -> false
+otherwise                                   -> fallback classification
+```
+
+That unifies the two defects rather than stacking them: the empty list and the non-exhaustive list both
+ route to one fallback, and the fallback is where `void` stops being trusted. It also answers the
+ combined shape neither fix alone handles, a formal defaulting to `(): void => {}`, which has a known
+ leaf candidate, an unknown supplied alternative and a statically void result.
+
+The fallback's scope, decided rather than left open. `void` is distrusted when the callee resolves only
+ to a **value slot** of callable type, a parameter, a mutable local, a property. It stays trusted when
+ the callee resolves to a callable declaration, which keeps `String(...)`, `console.log(...)` and
+ `reportLabel(...)` offered and is what the `forwardVoidReport` control demands.
+
+Two things are deliberately not in scope, both filed rather than dismissed:
+
+-    A method **signature** returning `void` is a value slot wearing a declaration's clothes, since a
+     structural implementation may legally return a value. Trusting it is unsound and distrusting it costs
+     `console.log`, which is declared as a member of the `Console` interface. Filed.
+-    A non-void primitive return on a non-exhaustive slot can conceal state through
+     `as unknown as () => string`. Reachable only with a deliberate double cast, where the void case is
+     reachable in well-typed assertion-free source, which is the difference that justifies treating them
+     differently for now. Filed.
