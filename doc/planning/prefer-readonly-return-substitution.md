@@ -7723,3 +7723,125 @@ Every one looked like a defect when read and was not when measured. The reverse 
 
 **The disposition that costs least is the one stated with its evidence.** A declined item with a number beside it does
  not get reopened by the next reader; an item declined on judgement does.
+
+## The external channel, tested by writing the dependency it needed
+
+The blocker recorded against the capture-channel item was "find or add a dependency whose shipped implementation
+ the resolver can load". The user asked whether we could simply write one. We can, and it closed the item the same
+ session.
+
+### Why a workspace package cannot be that dependency
+
+`packageVersionIsLocked` requires the literal `name@version` as a two-space-indented key in the nearest
+ `pnpm-lock.yaml`. Every install form that keeps the implementation local fails it:
+
+```text
+workspace:*        importer records `link:package/...`, never a name@version key
+file: tarball      keyed `name@file:/absolute/path.tgz`
+local directory    same, a local locator rather than a registry one
+```
+
+What makes an authored dependency work anyway is **where the gate looks**. It walks ancestors of
+ `consumerProject.configFileName`, not the repository root, so a disposable consumer directory outside the repo owns
+ its own lockfile, its own configured project and its own `node_modules`. Nothing about the repo's lockfile is
+ involved.
+
+The remaining gates then pass without special handling. The generated external project already sets `allowJs`,
+ `checkJs` and NodeNext, so a shipped `.js` opens; `lockfileLinePackageKey` is a section-unaware text scan, so a
+ minimal authored lockfile satisfies it.
+
+The honest boundary, stated on the test rather than left implied: a copied key shape does not prove pnpm would emit
+ that key for a package installed this way. It would not. The gate under test reads a lockfile rather than an
+ installer, which is what makes a copied shape the right input and also what limits the claim.
+
+### The false offer, and the discriminator that made it mean something
+
+An export pushing its callback into a module-level array, and a consumer handing it `(): Row => config.row`:
+
+```text
+before   Parameter "config" should be readonly: property row is writable.
+after    capture-retainer-probe@1.0.0 . retainCallback handed callable capture
+```
+
+The second half of the fixture is what makes the first half evidence. A sibling callable passing the row directly
+ reports opacity **carrying package provenance**, which only the external path writes. Had any gate rejected the
+ authored dependency, that same callable would have reported ordinary unresolved-boundary opacity, and the two
+ outcomes are indistinguishable in a count while being obvious in a message.
+
+Generalising, since this keeps recurring: **prove the code under test ran by which channel carried the fact, not by
+ a log line and not by a total.**
+
+### One shape does not falsify, and it is worth keeping
+
+A closure that **writes** its capture is charged whatever the callee is, by the ordinary direct-write attribution.
+ Only a closure that reads and hands its capture back reaches this hole. That is the void-slot asymmetry again:
+ `(): Row => config.row` is accepted where `() => void` is wanted, so the formal conceals the row entirely.
+
+A first attempt at the falsification used the writing form, measured `mutated=[0]`, and looked like the hole was
+ already closed. The reading form is what exposed it.
+
+### Charged per formal, which the code had already pre-registered
+
+`exposedCaptureOrigins` was split out from its recorder earlier in this effort, and its documentation already said
+ what the external channel should do with it: decide per position, because an external summary proves which formals
+ are retained, invoked or opaque. Two reviewers disagreed about the fix shape and that sentence settled it, primary
+ source over recall.
+
+The precision it preserves, measured on an export that stamps its second formal and ignores its first:
+
+```text
+handRowProducerToIgnoredPosition   every set empty       capture keeps its offer
+stampThroughIgnoringExport         referentMutated=[0]   same export resolved and applied
+```
+
+Two facts are consulted and each is pinned by its own case, because they arrive differently: keeping a handed
+ callable records opacity, calling it records invocation. A third branch reading `callbackRelations` was **removed**,
+ not kept: no mutant could kill it, and reading it asked about the wrong argument, since a relation names the formal
+ fed **into** a callback and never the formal holding one.
+
+### The defect the measurement found on the way, and the claim it did not support
+
+Under oxlint's default worker count the whole channel failed with `spawn ENOMEM`, because a native TypeScript child
+ was created per generated project, mid-lint. `externalCallableEffect` catches it and answers with the same sentinel
+ it uses for an unresolvable package, so an entire channel disappeared without one failing assertion.
+
+```text
+threads=1    4 reports, 4 with provenance
+threads=8    4 reports, 4 with provenance
+threads=16   5 reports, 0 with provenance
+```
+
+It works at eight workers, where the reservations also exist, so **"spawned after the reservations" is not the
+ criterion**; aggregate reserved size at spawn time is. The plugin's own TSDoc states the ordering version, and a
+ first draft of this record repeated it.
+
+Fixed by starting one shared child beside `initializeSemanticBridge`. Cost measured rather than assumed: 1.6 ms to
+ 4.7 ms to create, 7.2 MiB resident idle.
+
+**And a claim this document should not make.** A first version said every sweep in this record therefore ran with
+ the channel dead, and that the narrowness conclusion rested on code that never executed. Neither holds.
+ `OXLINT_THREADS` reaches oxlint only when set, it is set on the root `lint` task's env rather than on
+ `lint:oxlint`, and one worker does not hit this failure. Whether a given sweep had the channel alive depends on how
+ that sweep was invoked.
+
+The narrowness conclusion stands on its own instrumented evidence, unaffected: about ninety-five percent of external
+ calls are member calls on receivers that are not imports, and those are correctly rejected long before
+ implementation resolution runs.
+
+### The loose end that thread left, now diagnosed
+
+Of the four calls that ever reached package identity, three were `node:` builtins failing correctly. The fourth was
+ `ignore`, a real package, and why it failed was never established. Its manifest says why:
+
+```text
+ignore@7.0.6   main: undefined   module: undefined   exports: undefined   types: index.d.ts
+```
+
+`manifestRuntimeTarget` needs one of `exports`, `module` or `main`, and with none of them returns unavailable before
+ `implementationPath`'s own index fallback can run. Node resolves the package by the legacy rule that falls back to
+ `index.js`, and that file is present.
+
+Scope, since one example decides nothing: **31 installed packages declare no runtime entry and ship a real index
+ file**, `strip-ansi`, `string-width`, `path-key`, `resolve-from` and `parse-json` among them. All are unresolvable
+ today. Filed, with the direction noted that adding resolution converts unresolved opacity into proven effects and so
+ must be read for which way offers move.
