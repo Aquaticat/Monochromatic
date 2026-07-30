@@ -404,6 +404,32 @@ One method note that generalises beyond this channel. **An absence in a capture 
  That is the same instrument limit already recorded for store-caused withholding, reached from the opposite
  direction, and instrumentation is the only thing that separates them.
 
+### Reading finds true statements about code and unreliable ones about behaviour
+
+Four times in this effort a hole predicted by reading one module turned out closed by another. Each was a
+ correct reading of the module in front of the reader and a wrong conclusion about the system:
+
+-    a throw as a closure's completion, covered by the enclosing throw channel firing on the activated body
+-    the external capture channel, whose obvious probe reaches the unresolved boundary instead
+-    "descend through aggregates", which named two shapes where only one was open
+-    a closure interpolated into a retaining tag, already charged
+
+Against that, every defect that was real was found by **measuring a shape**: the void slot, the candidate
+ list, the four handoffs, the two value-walk paths, the tag invocation. Probe before filing is already the
+ rule here; this is the strongest evidence for it so far.
+
+Two corollaries worth carrying:
+
+**An unseen invocation is an unscanned body.** Every channel that depends on a closure's body being read
+ depends first on the invocation being seen, and the activation gate in `closure-activity.ts` is the single
+ place that decides it. `invokedParts` there is now the shared predicate for what a node invokes; reuse it
+ rather than adding a second.
+
+**Two relations that look like duplicates often are not.** Captures against ordinary origins, reach against
+ the value walk, and the accessor reach walk against the value walk all share syntax and answer different
+ questions, so a fix to one leaves the other silent. The tell is the same each time: the same syntax appears
+ in both.
+
 ### Open
 
 -    **#82**, two activation forms that still cannot reach a parameter default: a binding filled by
