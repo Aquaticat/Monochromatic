@@ -5511,3 +5511,84 @@ It is #84 answering where a fallback used to. The mapped callback `readCandidate
 That the loss is precision-only is settled independently of the reading: the offer total did not move,
  and a compare that reports no added and no removed offer anywhere cannot be hiding one that traded
  places.
+
+## A default that is invoked and whose result is stored
+
+Two relations were each answered alone and their cross was not. A store of an invoked result withholds
+ when the callable was handed in, which is #78. A defaulted callable is selected when it is stored or
+ handed onward, which is #83. Neither covered a default that is invoked and whose result is then
+ stored.
+
+Measured before the fix, in the fixture project:
+
+```text
+storeDefaultProducerResult:     {"mutated":[1],"opaque":[1],   "returned":[]}
+storeAllocatingProducerResult:  {"mutated":[1],"opaque":[1],   "returned":[]}
+countDefaultProducerResult:     {"mutated":[1],"opaque":[],    "returned":[]}
+storeDefaultClosure:            {"mutated":[], "opaque":[1,0], "returned":[]}
+storeInvokedResult:             {"mutated":[], "opaque":[0],   "returned":[]}
+```
+
+The subject was indistinguishable from both of its controls, while the two established siblings both
+ charged slot zero. The store site was seen, which is what charging the producer parameter proves, and
+ the default closure was selected. What reached nothing was the capture the default hands back.
+
+Falsified at the five-clause bar. The rule offered `producedDefault`, the annotation was applied, `tsc`
+ exited zero, the control carrying `@ts-expect-error` over a direct write drew no TS2578, and the
+ driver printed `before: original` then `after: written`. The escape comes from what the annotated
+ callable does: the caller hands it a configuration and no callable at all, since the producer is
+ written inside the annotated callable's own parameter list.
+
+### The cause was one resolver stopping where another does not
+
+`calledCallableOrigins` resolved a callee with `callableDeclaration`, which follows a local's
+ initializer and stops at a parameter. So invoking a parameter that carries a callable default reached
+ nothing. It now also asks the value walk for every callable the callee expression can hold, alongside
+ the resolver rather than instead of it, on the grounds the capture channel already uses: an origin a
+ result can carry only ever withholds.
+
+`packagedActualCallables` moved to `effect-possible-values.ts`, beside the walk it is one filter over.
+ The reach walk cannot import it from `effect-captured-argument-origins.ts`, because that module
+ imports the reach walk.
+
+After the fix the subject charges slot zero and both controls are untouched:
+
+```text
+storeDefaultProducerResult:    {"mutated":[1],"opaque":[1,0],"returned":[]}
+storeAllocatingProducerResult: {"mutated":[1],"opaque":[1],  "returned":[]}
+countDefaultProducerResult:    {"mutated":[1],"opaque":[],   "returned":[]}
+```
+
+Offers moved 52 to 51 in the unit suite. The mutant that deletes the candidate fold restores 52, so
+ the fold is what removes that offer and nothing else does.
+
+### What the two-edge question turned out to be masked by
+
+The advisor raised that `addOwnedCallEdge` now pushes one edge per callable the value walk finds, so a
+ conditional default produces two edges carrying one `callSiteKey`, and `propagateResultApplications`
+ builds a `Map` from entries, which keeps the last pair. That is #89.
+
+A conditional-default probe cannot settle it, because both source orderings answer identically and
+ both answer through the reach walk rather than through the edge. Branches written inline are nested
+ callables, and the reach walk folds in every candidate's reach without consulting any edge.
+
+Trying to reach the edge path instead uncovered a separate defect, recorded as #97. Over one store,
+ `keyHeld.row = pass(cfg.row,)`, with `handRowBack` recording `returned=[0]`:
+
+```text
+storeDirectPassResult:    {"opaque":[0]}  callee named directly, charged
+storeAliasPassResult:     {"opaque":[0]}  callee held by a local alias, charged
+storeSinglePassDefault:   {"opaque":[1]}  callee a parameter defaulting to it, slot zero offered
+storeInlinePassDefault:   {"opaque":[1]}  default written inline, slot zero offered
+```
+
+So the substitution walk answers for a direct and an aliased callee and fails for a defaulted one,
+ with one edge rather than two, which is why #89 stays unsettled rather than answered.
+
+The two defaulted forms fail for what look like two different reasons, and the inline-versus-named
+ reading that would have explained one of them is refuted by the pair above. For the named form, the
+ value walk hands back an identifier and `packagedActualCallables` keeps only values that are
+ themselves callable declarations, so no edge is built at all. For the inline form an edge is built,
+ and `propagateResultApplications` then needs `summaries.get(edge.calleeKey)`, which a callable written
+ inside the one being summarised does not have. Both readings are inferred from source and neither is
+ measured yet.

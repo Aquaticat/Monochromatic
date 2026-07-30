@@ -358,7 +358,18 @@ A property read is not a call, so the reach walk missed a getter over caller sta
      The comment claiming that cannot happen is corrected; the consequence is unmeasured.
 -    **#87**, memoisation for the completion and reach walks. Insurance rather than a fix: the sweep
      with the gate ran faster than the one before it, so nothing measured shows a problem.
--    The sweep for the four capture-channel fixes, running at time of writing.
+-    **#89**, whether two call edges may share one call-site key. Raised by the advisor and not yet
+     settled: a conditional default pushes two edges carrying one key, and
+     `propagateResultApplications` keys a `Map` by it, which keeps the last pair. Both source
+     orderings answer identically, because that shape is answered by the reach walk rather than by
+     the edge, so the probe that would settle it needs the edge path and the edge path is broken by
+     #97.
+-    **#97**, a defaulted callee's returned fact never reaching a store of its result. Measured over
+     one store: a directly named callee and a local alias both charge, and a parameter carrying that
+     callee as its default does not, with one edge rather than two.
+-    **#90** through **#96**, from sol's third review. The one to do first is #91, a capture handed
+     to a callback parameter, because the direct callback branch returns before the unresolved-capture
+     gate and so before anything records that capture.
 
 ### Declined with the reason recorded
 
@@ -376,6 +387,16 @@ A property read is not a call, so the reach walk missed a getter over caller sta
  initializer, and no signature resolution is involved. The lesson is narrow and worth keeping: a
  declination that names one mechanism as impossible is a claim about that mechanism, not about the
  goal.
+
+## What the capture-channel sweep settled
+
+Offers held at 31 and only argument-opacity moved, six added and one removed. The six additions are
+ one true shape across three locales times two layers. The removal is a derivation replacing a
+ conservative fallback, and it is precision-only on the independent ground that no offer was added or
+ removed anywhere. Recorded in full in the planning doc.
+
+Both artifact digests were recorded before the run and re-verified after it, and the two doc-only
+ commits that landed while it ran left both unchanged.
 
 ## Primary records
 
