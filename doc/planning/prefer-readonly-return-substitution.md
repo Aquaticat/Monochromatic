@@ -4834,3 +4834,38 @@ removed 0:
 ```
 
 Offers unchanged, nothing moved, with digests on both sides.
+
+## Hunt pass four found nothing, and what that is worth
+
+Twelve channels, one offer drawn, and it was the intended control.
+
+Every leaking shape was already withheld:
+ a `super` argument reaching a base constructor that keeps the row,
+ a sort comparator capturing it,
+ a `Proxy` whose handler hands it back,
+ a `WeakRef` holding it,
+ a write through a computed key,
+ a `delete` of a parameter property,
+ a `yield*` delegating the caller's rows,
+ and a `for await` draining them into a collection.
+
+None of those channels was fixed directly. They are covered by fixes made for other shapes:
+ the construction channel answers for `super`, `Proxy` and `WeakRef`,
+ the capture walk answers for the comparator,
+ the yield handoff answers for delegation,
+ and the iteration store answers for the awaited drain.
+
+That is the most encouraging thing in this document, and it is still weak evidence.
+It says the fixes generalise past the shapes that motivated them, which is what a fix built around
+ a mechanism rather than a syntax should do.
+It does not say the shape space is closed.
+Four passes is four samples of a space nobody has enumerated, and the previous three each found
+ something, so the prior on a fifth finding nothing is not high.
+
+What the record can support is the list of channels, which is on task seventy-three.
+Forty-four channels drawn across four passes, eight real defects, two candidates that turned out
+ to be correct behaviour.
+
+The conclusion worth writing down is the one about method rather than about coverage:
+ hunting channels on purpose found eight defects that a queue built from incident reports had not,
+ and it found them in four sittings.
