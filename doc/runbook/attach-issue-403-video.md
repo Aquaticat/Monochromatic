@@ -4,7 +4,10 @@
 
 This procedure adds the sanitized Android music-player recording to
 [issue 403](https://github.com/Aquaticat/Monochromatic/issues/403)
-without exposing the notification shade or original creation-time metadata.
+without exposing the Android status bar,
+library paths or titles,
+the notification shade,
+or original creation-time metadata.
 
 Automated bridges tried before this handoff:
 
@@ -31,7 +34,7 @@ On the originating workstation it is stored at:
 Verify that the selected file has this SHA-256 digest:
 
 ```text
-d38f4666bb045b2be050fb3f8f18334f033f16a1792b1f88dc60a07b5447be2a
+960979dd73aac535af676038c6de416697d35ad0e0d1368ac6dfc346a462b857
 ```
 
 ## Steps
@@ -59,6 +62,10 @@ TODO | DONE
   `Android music player control row stays fixed while the library scrolls`.
 - The attachment filename is exactly `ui-controls-scroll-sanitized.mp4`.
 - Playing the attachment shows the control-row scrolling problem.
+- The Android status bar is covered by a solid black mask for the complete recording.
+- The tabs and file-list region are pixelated so paths,
+  folder names,
+  and music titles are unreadable.
 - The recording ends on the music-player screen before the Android notification shade appears.
 
 ## Restore
