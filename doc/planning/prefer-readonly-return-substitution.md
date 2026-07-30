@@ -6634,3 +6634,40 @@ The ordering consequence matters more than the finding. **#111 lands before #100
  fail-open twice over. Filed unmeasured and honestly so: it needs an installed package whose shipped
  implementation provably mutates a formal, invoked with a spread, and the reading is confident rather than
  verified.
+
+### The external mapping fix was built, proved unpinnable, and reverted
+
+The fix was written: move the mapping inside `applyExternalEffect` so no caller can hand it the wrong index
+ space, build a formal-indexed array from `formalActualPositions` when the resolved declaration has readable
+ formals, and fall back to the union of every argument's origins both when no formal list can be read and
+ when the summary names a formal past the end of that list. Over-approximating is the safe direction, since
+ charging an unaffected argument costs an offer while failing to charge an affected one keeps a false offer.
+
+It type-checked, linted clean, and left the whole suite green. Then the mutation check answered the question
+ that matters:
+
+```text
+mutant: formal mapping removed, actual-position indexing restored
+result: entire suite green
+```
+
+**The mutant survived.** So no shape in the fixture corpus reaches this path through a diagnostic, and the
+ reason is structural rather than an oversight: reaching it needs an installed package with a locked version
+ whose shipped implementation provably mutates a formal, invoked with a spread. The corpus contains no such
+ call and cannot contain one without a new fixture dependency.
+
+So the fix was reverted. This document already records the standard: landing a path no test reaches,
+ documented as a fix, is worse than leaving the defect recorded. Having just demonstrated it is unreached,
+ landing it anyway would be the same error with the evidence in hand.
+
+What it needs is a test that fails without it, and there are two routes. A fixture package whose shipped
+ implementation mutates a formal, which is the honest end-to-end version. Or exporting the mapping helper and
+ testing it directly against overlay nodes, which is permitted for exactly this and is cheap, because
+ `formalActualPositions` does not care whether the callee is external, so an owned declaration plus a spread
+ call exercises the real logic.
+
+One process failure is worth recording with it, because it cost the implementation. The revert after the
+ mutation check deleted the fix rather than the mutant, since the fix had never been committed. The handover
+ states this precisely and I skipped it: `git checkout --` restores to HEAD, so an uncommitted fix is what it
+ removes. **Commit before mutating, without exception.** The lesson is cheap to state and was not cheap to
+ relearn.
