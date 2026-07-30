@@ -61,6 +61,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import { accessedCallables, } from './effect-accessor-reach.ts';
 import { callableDeclaration, } from './effect-call-resolution.ts';
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { assignedValuesInScope, } from './effect-assigned-values.ts';
 import { packagedActualCallables, } from './effect-possible-values.ts';
 import { reachableValueSources, } from './effect-result-reach.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
@@ -224,10 +225,26 @@ function calledCallables({
       return isCallExpression(node,);
     },)
     .flatMap(function resolveCallee(call,): readonly Node[] {
-      return packagedActualCallables({
-        project,
-        actual: call.expression,
-      },)
+      /* A callee binding filled by assignment names a callable too, and only its initializer was followed.
+       * Asked here rather than in the value walk, which feeds owned call edges and broke a completeness
+       * invariant when widened, and rather than in the completion gate, where it was a no-op because that
+       * gate answers what a completion carries and not which origins are reachable. */
+      return [
+        ...packagedActualCallables({
+          project,
+          actual: call.expression,
+        },),
+        ...assignedValuesInScope({
+          project,
+          node: call.expression,
+        },)
+          .flatMap(function assignedCallables(assigned,): readonly Node[] {
+            return packagedActualCallables({
+              project,
+              actual: assigned,
+            },);
+          },),
+      ]
         .filter(function sameFileCallee(callee,): boolean {
           /**
            * File the resolved callee is written in.
