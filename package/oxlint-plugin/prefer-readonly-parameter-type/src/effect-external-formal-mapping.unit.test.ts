@@ -20,6 +20,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { CallExpression, } from 'typescript/unstable/ast';
 import {
   isCallExpression,
   isFunctionDeclaration,
@@ -43,8 +44,8 @@ const OVERLAY_PATH = fileURLToPath(new URL(
 /**
  * Source declaring one plain callee and one rest callee, called four ways.
  *
- * Each call is named by the local it initializes, so a test can find it by that name rather than by
- * counting call expressions.
+ * Each call initializes a distinctly named local, so a case can find its call by that name rather than
+ * by counting call expressions.
  */
 const SOURCE = `
 export function plainCallee(first: string, second: string, third: string,): string {
@@ -67,8 +68,8 @@ export function driver(alpha: string, beta: string, gamma: string,): readonly st
 /**
  * Origins standing in for what each argument position carries, one distinct slot per position.
  *
- * Slot values are arbitrary and distinct, so a mapping that reads the wrong position produces a
- * visibly wrong answer rather than a coincidentally right one.
+ * Distinct values on purpose, so a mapping that reads the wrong position produces a visibly wrong
+ * answer rather than a coincidentally right one.
  */
 const ARGUMENT_ORIGINS = [
   [asEffectSlot(10,),],
@@ -76,109 +77,54 @@ const ARGUMENT_ORIGINS = [
   [asEffectSlot(30,),],
 ];
 
-await describe({
-  name: 'external formal-to-actual mapping',
-  concurrency: 1,
-  children: [
-    it({
-      name: 'maps a plain positional call one formal to one actual',
-      fn: () => {
-        const { mapping, } = mapCall({
-          calleeName: 'plainCallee',
-          callName: 'positional',
-        },);
-        /* The case that predates the mapping and must be unchanged by it, since every offer standing
-         * today rests on this shape answering exactly as it did. */
-        expect(mapping,).toEqual([
-          [asEffectSlot(10,),],
-          [asEffectSlot(20,),],
-          [asEffectSlot(30,),],
-        ],);
-      },
-    },),
-    it({
-      name: 'gives every formal at or past a spread every actual from the spread onward',
-      fn: () => {
-        const { mapping, } = mapCall({
-          calleeName: 'plainCallee',
-          callName: 'spreadTail',
-        },);
-        /* One syntactic argument supplies an unknown number of formals, so positional correspondence
-         * is gone from the spread onward. Formals two and three may each receive the spread, and the
-         * actual-position indexing answered nothing for formal three because the call writes two
-         * arguments. That silence is what dropped a proven mutation. */
-        expect(mapping,).toEqual([
-          [asEffectSlot(10,),],
-          [asEffectSlot(20,),],
-          [asEffectSlot(20,),],
-        ],);
-      },
-    },),
-    it({
-      name: 'gives every formal the spread when the whole argument list is one spread',
-      fn: () => {
-        const { mapping, } = mapCall({
-          calleeName: 'plainCallee',
-          callName: 'spreadWhole',
-        },);
-        expect(mapping,).toEqual([
-          [asEffectSlot(10,),],
-          [asEffectSlot(10,),],
-          [asEffectSlot(10,),],
-        ],);
-      },
-    },),
-    it({
-      name: 'gives a rest formal every actual from its own position onward',
-      fn: () => {
-        const { mapping, } = mapCall({
-          calleeName: 'restCallee',
-          callName: 'restReceiving',
-        },);
-        /* The second failure direction. Indexing by formal position charged the rest formal the second
-         * actual alone and missed the third. */
-        expect(mapping,).toEqual([
-          [asEffectSlot(10,),],
-          [asEffectSlot(20,), asEffectSlot(30,),],
-        ],);
-      },
-    },),
-    it({
-      name: 'answers empty for a declaration whose formals cannot be read',
-      fn: () => {
-        const session = openSemanticFile({
-          fileName: OVERLAY_PATH,
-          sourceText: SOURCE,
-          hasBOM: false,
-        },);
-        try {
-          /* A declaration with no formal list orders nothing, so the mapping declines rather than
-           * guessing, and the applier charges every argument's origins instead. */
-          expect(formalArgumentIndexes({
-            declaration: session.sourceFile,
-            call: callNamed({
-              session,
-              callName: 'positional',
-            },),
-            allArgumentIndexes: ARGUMENT_ORIGINS,
-          },),).toEqual([],);
-        }
-        finally {
-          closeSemanticBridge();
-        }
-      },
-    },),
-  ],
+/**
+ * Semantic session over the overlay, shared by every case.
+ */
+const session = openSemanticFile({
+  fileName: OVERLAY_PATH,
+  sourceText: SOURCE,
+  hasBOM: false,
 },);
+
+/**
+ * Names the call expression initializing one named local.
+ *
+ * @param callName - Local the call initializes.
+ *
+ * @returns call expression that local is initialized with.
+ *
+ * @throws when the name does not resolve to a call.
+ *
+ * @example
+ * ```ts
+ * callNamed('positional');
+ * ```
+ */
+function callNamed(callName: string,): CallExpression {
+  /**
+   * Offset of the callee name written just after the local's assignment.
+   */
+  const at = SOURCE.indexOf('Callee(', SOURCE.indexOf(`const ${callName} =`,),);
+  /**
+   * Call expression the node at that offset belongs to.
+   */
+  const call = session.nodeAtOffset(at,)
+    .parent;
+  if (!isCallExpression(call,))
+    throw new Error(`${callName} did not resolve to a call expression`,);
+  return call;
+}
 
 /**
  * Maps one named call against one named callee's formals.
  *
  * @param calleeName - Declaration whose formals order the arguments.
  *
- * @param callName - Local the call initializes, used to find that call.
+ * @param callName - Local the call initializes.
  *
- * @returns mapping from formal position to caller origins.
+ * @returns caller origins by formal position.
+ *
+ * @throws when the callee name does not resolve to a function declaration.
  *
  * @example
  * ```ts
@@ -191,78 +137,98 @@ function mapCall({
 }: {
   readonly calleeName: string;
   readonly callName: string;
-},): { readonly mapping: readonly (readonly number[])[]; } {
+},): readonly (readonly number[])[] {
   /**
-   * Semantic session over the overlay.
+   * Declaration owning the requested callee name.
    */
-  const session = openSemanticFile({
-    fileName: OVERLAY_PATH,
-    sourceText: SOURCE,
-    hasBOM: false,
+  const declaration = session.nodeAtOffset(
+    SOURCE.indexOf(`function ${calleeName}`,) + 'function '.length,
+  )
+    .parent;
+  if (!isFunctionDeclaration(declaration,))
+    throw new Error(`${calleeName} did not resolve to a function declaration`,);
+  return formalArgumentIndexes({
+    declaration,
+    call: callNamed(callName,),
+    allArgumentIndexes: ARGUMENT_ORIGINS,
   },);
-  try {
-    /**
-     * Name node of the requested callee declaration.
-     */
-    const calleeName_ = session.nodeAtOffset(
-      SOURCE.indexOf(`function ${calleeName}`,) + 'function '.length,
-    );
-    /**
-     * Declaration owning that name.
-     */
-    const declaration = calleeName_.parent;
-    if (!isFunctionDeclaration(declaration,))
-      throw new Error(`${calleeName} did not resolve to a function declaration`,);
-    return {
-      mapping: formalArgumentIndexes({
-        declaration,
-        call: callNamed({
-          session,
-          callName,
-        },),
-        allArgumentIndexes: ARGUMENT_ORIGINS,
-      },),
-    };
-  }
-  finally {
-    closeSemanticBridge();
-  }
 }
 
-/**
- * Finds the call expression initializing one named local.
- *
- * @param session - Open semantic session over the overlay.
- *
- * @param callName - Local the call initializes.
- *
- * @returns call expression that local is initialized with.
- *
- * @example
- * ```ts
- * callNamed({ session, callName: 'positional' });
- * ```
- */
-function callNamed({
-  session,
-  callName,
-}: {
-  readonly session: ReturnType<typeof openSemanticFile>;
-  readonly callName: string;
-},): ReturnType<typeof session.nodeAtOffset> {
-  /**
-   * Offset of the callee name written just after the local's assignment.
-   */
-  const at = SOURCE.indexOf('Callee(', SOURCE.indexOf(`const ${callName} =`,),);
-  /**
-   * Node at that callee name.
-   */
-  const calleeReference = session.nodeAtOffset(at,);
-  /**
-   * Call expression that reference is the callee of.
-   */
-  const call = calleeReference.parent;
-  if (!isCallExpression(call,))
-    throw new Error(`${callName} did not resolve to a call expression`,);
-  return call;
-}
+await describe({
+  name: 'external formal-to-actual mapping',
+  concurrency: 1,
+  children: [
+    it({
+      name: 'maps a plain positional call one formal to one actual',
+      fn: async () => {
+        /* The case that predates the mapping and must be unchanged by it, since every offer standing
+         * today rests on this shape answering exactly as it did. */
+        expect(mapCall({
+          calleeName: 'plainCallee',
+          callName: 'positional',
+        },),).toEqual([
+          [asEffectSlot(10,),],
+          [asEffectSlot(20,),],
+          [asEffectSlot(30,),],
+        ],);
+      },
+    },),
+    it({
+      name: 'gives every formal at or past a spread every actual from the spread onward',
+      fn: async () => {
+        /* One syntactic argument supplies an unknown number of formals, so positional correspondence
+         * is gone from the spread onward. Formals two and three may each receive the spread, and the
+         * actual-position indexing answered nothing at all for formal three because the call writes
+         * only two arguments. That silence is what dropped a proven mutation. */
+        expect(mapCall({
+          calleeName: 'plainCallee',
+          callName: 'spreadTail',
+        },),).toEqual([
+          [asEffectSlot(10,),],
+          [asEffectSlot(20,),],
+          [asEffectSlot(20,),],
+        ],);
+      },
+    },),
+    it({
+      name: 'gives every formal the spread when the whole argument list is one spread',
+      fn: async () => {
+        expect(mapCall({
+          calleeName: 'plainCallee',
+          callName: 'spreadWhole',
+        },),).toEqual([
+          [asEffectSlot(10,),],
+          [asEffectSlot(10,),],
+          [asEffectSlot(10,),],
+        ],);
+      },
+    },),
+    it({
+      name: 'gives a rest formal every actual from its own position onward',
+      fn: async () => {
+        /* The second failure direction. Indexing by formal position charged the rest formal the
+         * second actual alone and missed the third. */
+        expect(mapCall({
+          calleeName: 'restCallee',
+          callName: 'restReceiving',
+        },),).toEqual([
+          [asEffectSlot(10,),],
+          [asEffectSlot(20,), asEffectSlot(30,),],
+        ],);
+      },
+    },),
+    it({
+      name: 'answers empty for a declaration whose formals cannot be read',
+      fn: async () => {
+        /* A declaration with no formal list orders nothing, so the mapping declines rather than
+         * guessing, and the applier charges every argument's origins instead. */
+        expect(formalArgumentIndexes({
+          declaration: session.sourceFile,
+          call: callNamed('positional',),
+          allArgumentIndexes: ARGUMENT_ORIGINS,
+        },),).toEqual([],);
+      },
+    },),
+  ],
+},);
+closeSemanticBridge();
