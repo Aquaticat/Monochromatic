@@ -5245,3 +5245,58 @@ The delta should also arrive largely as add-and-remove **pairs** rather than pur
 capture pass removed        44 offers, expected 42   both falsified subjects return
 result-shape test removed   41 offers, expected 42   one precision control lost, plus a summary test
 ```
+
+## A default callback is nobody's to defer to
+
+Found while looking for a falsifiable variant of the four activation forms that cannot reach a
+ parameter default. The search found something better and elsewhere: the **control** was a false
+ offer too.
+
+```ts
+function writeThroughDirectDefault(
+  directTarget: Config,
+  directWriter: (row: Row) => void = (row: Row): void => {
+    row.label = 'written';
+  },
+): void {
+  directWriter(directTarget.row,);
+}
+```
+
+Records `mutated=[1]` and leaves `directTarget` offered. Falsified: applying `ReadonlyDeep<Config>`
+ type-checks, because a `ReadonlyDeep<Row>` is accepted where `Row` is expected and the write is on
+ the declared `Row`, and a driver that omits the argument reads `row: written` afterwards. Clause
+ five holds, since the caller supplied no callback and the write comes from the annotated callable's
+ own default.
+
+This is the exact edge of what #75 settled. #75 established that the callback relation **correctly**
+ defers to the caller, on the ground that the caller supplies the callback and knows what it does. A
+ default is supplied by the callee. There is nobody to defer to, so deferring loses the write.
+
+Measured across all five forms, and only two of the four the activation task named are actually
+ exposed:
+
+```text
+writeThroughDirectDefault    mutated=[1]     direct call, the subject
+writeThroughPatternDefault   mutated=[1]     destructuring default
+writeThroughAliasedDefault   mutated=[1]     assignment alias
+writeThroughBoxedDefault     opaque=[0]      withheld by another channel
+writeThroughAdaptedDefault   opaque=[1,0]    withheld by the member-call boundary
+```
+
+So the defect is the relation and not the activation, and the activation task shrinks to the two
+ forms that are still self-limiting.
+
+### The shape a fix has to take, and the trap in it
+
+The obvious fix is to let `callableDeclaration` follow a parameter to its default, so the invocation
+ builds an ordinary owned edge to the default. That is the thing this work deliberately declined to
+ do when closing #63, for a reason that still holds at a **callee's** edge: naming a default as the
+ callable a callee invokes claims the default's effects for a call where the caller supplied
+ something else.
+
+At the enclosing callable's own invocation the reason does not hold, because the effects can only be
+ added. Claiming the default's write when the caller supplied a different callback withholds an offer
+ that might have stood, and withholding is always safe. The trap is elsewhere: the invocation
+ currently produces an invoked-capability fact, and replacing that with an owned edge could remove
+ it. The union is what to build, not the substitution.
