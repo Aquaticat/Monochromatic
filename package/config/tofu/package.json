@@ -7,6 +7,9 @@
   "exports": {
     "./ts/*": "./src/*"
   },
+  "dependencies": {
+    "@monochromatic-dev/module-wg-allowedips": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "catalog:"
   }

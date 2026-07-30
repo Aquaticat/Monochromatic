@@ -21,19 +21,21 @@ Manages firewall rules on Hetzner Cloud,
 
 ## Components
 
-### `asn-networks.ts`
+### `@monochromatic-dev/module-wg-allowedips`
 
-Shared IPinfo Lite adapter that resolves a case-insensitive `AS<number>` input to every database network or
-single address.
-It owns per-ASN cache freshness,
+Shared IPinfo Lite adapter under `package/module/wg-allowedips` resolves case-insensitive `AS<number>` input to every
+database network or single address.
+It owns cache freshness,
 streaming database filtering,
 network validation,
-atomic cache replacement,
-and stale-cache fallback for OpenTofu and `wg-allowedips`.
+atomic replacement,
+and stale-cache fallback.
+OpenTofu passes `src/` as an explicit cache directory,
+so existing local snapshots remain usable without runtime package-path discovery.
 
 ### `fetch_ips.ts`
 
-OpenTofu external-data wrapper around `asn-networks.ts`.
+OpenTofu external-data wrapper around the shared static module import.
 Features:
 
 - Streaming JSON parsing with minimal memory usage
@@ -259,7 +261,7 @@ The following are gitignored and must be created manually:
 - `.env.local`:
    ipinfo token for fetch_ips.
   ts
-- `cache_*.json`:
+- `src/cache_AS*.txt`:
    ASN lookup caches
 - `terraform.tfstate*`:
    Terraform state

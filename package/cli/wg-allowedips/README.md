@@ -81,13 +81,16 @@ Each entry contributes every network and single address assigned to that ASN by 
 The same expansion works in allowed and disallowed inputs.
 An ASN contributing no networks writes one warning to stderr for that entry and contributes nothing.
 
-ASN data reuses the IPinfo integration under `package/config/tofu`.
-Fresh `src/cache_AS<number>.txt` snapshots avoid network access.
+ASN resolution comes from `@monochromatic-dev/module-wg-allowedips` through a static source import.
+Fresh `cache_AS<number>.txt` snapshots avoid network access.
 Snapshot entries are validated before use,
 and refreshes replace snapshots atomically.
-An absent or older snapshot is refreshed from IPinfo using `IPINFO_TOKEN` from the process environment or
-`package/config/tofu/.env.local`.
+The cache directory is `$WG_ALLOWEDIPS_CACHE_DIRECTORY`,
+then `$XDG_CACHE_HOME/wg-allowedips/asn`,
+then `~/.cache/wg-allowedips/asn`.
+An absent or expired snapshot refreshes from IPinfo using `IPINFO_TOKEN`.
 A failed refresh uses a valid stale snapshot when available and fails when no valid snapshot exists.
+No runtime workspace-package lookup is required.
 
 IP address data is powered by [IPinfo][ipinfo] and used under CC-BY-SA-4.0.
 
@@ -123,6 +126,17 @@ invalid CIDRs,
 invalid family bounds,
 and resolver failures other than `ENOTFOUND` propagate as command failures.
 The command does not add an exit-code taxonomy.
+
+## Shared library
+
+Address-set parsing,
+lookup seams,
+ASN cache access,
+and generation live under `package/module/wg-allowedips`.
+This package owns only command-line parsing,
+file reads,
+and stdout output.
+Both `wg-allowedips` and `wg-quicker` import the shared TypeScript source statically.
 
 ## Development
 

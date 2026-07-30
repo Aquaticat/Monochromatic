@@ -1,6 +1,6 @@
 import { json, } from 'node:stream/consumers';
 
-import { lookupAsnNetworks, } from './asn-networks.ts';
+import { lookupAsnNetworks, } from '@monochromatic-dev/module-wg-allowedips/ts/asn-networks.ts';
 
 /**
  * OpenTofu `data.external` query carrying ASN text.

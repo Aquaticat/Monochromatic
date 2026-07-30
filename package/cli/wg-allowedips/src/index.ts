@@ -15,9 +15,9 @@ import { readFile, } from 'node:fs/promises';
 import { parseArgs, } from 'node:util';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { generateAllowedIps, } from '@monochromatic-dev/module-wg-allowedips/ts';
 
 import { CliUsageError, } from './errors.ts';
-import { generateAllowedIps, } from './generate.ts';
 
 /**
  * Required input paths parsed from command-line arguments.

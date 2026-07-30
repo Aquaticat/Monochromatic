@@ -1,17 +1,13 @@
 import {
-  type NodeFlavorConfigs,
-  perEntryNodeConfig,
+  nodeConfig,
+  type NodeFlavorConfig,
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Self-contained production, public-library, and internal test-seam bundles.
+ * Self-contained production CLI bundle.
  */
-const config: NodeFlavorConfigs = perEntryNodeConfig({
-  entries: [
-    './src/index.ts',
-    './src/generate.ts',
-    './src/generate-with-lookup.ts',
-  ],
+const config: NodeFlavorConfig = nodeConfig({
+  input: ['./src/index.ts',],
 },);
 
 export default config;

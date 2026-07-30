@@ -4,18 +4,9 @@
   "description": "CLI that computes a minimized WireGuard AllowedIPs value from allowed and disallowed address sets.",
   "type": "module",
   "private": true,
-  "main": "src/generate.ts",
-  "module": "dist/final/node/generate.mjs",
+  "main": "src/index.ts",
   "bin": {
     "wg-allowedips": "dist/final/node/index.mjs"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/final/node/generate.d.mts",
-      "default": "./dist/final/node/generate.mjs"
-    },
-    "./ts": "./src/generate.ts",
-    "./ts/*": "./src/*"
   },
   "files": [
     "dist/final",
@@ -29,9 +20,8 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@monochromatic-dev/config-tofu": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "cidr-tools": "catalog:"
+    "@monochromatic-dev/module-wg-allowedips": "workspace:*"
   },
   "version": "0.0.1",
   "repository": {

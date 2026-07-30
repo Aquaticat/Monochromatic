@@ -1,6 +1,6 @@
 import { readFile, } from 'node:fs/promises';
 
-import { generateAllowedIps, } from '@monochromatic-dev/cli-wg-allowedips/ts';
+import { generateAllowedIps, } from '@monochromatic-dev/module-wg-allowedips/ts';
 
 import type { WireguardConfig, } from './config.ts';
 
@@ -8,7 +8,7 @@ import type { WireguardConfig, } from './config.ts';
  * Expands `AllowedIPsFromFiles` into a real `AllowedIPs` peer line.
  *
  * Reads the allowed and disallowed files, computes the minimized prefix set via
- * `wg-allowedips` (constant-time CIDR math, never bash), and appends the result
+ * shared AllowedIPs module (constant-time CIDR math, never bash), and appends the result
  * as an `AllowedIPs` line inside the forwarded peer block.
  *
  * @param config - Parsed config carrying the file paths.

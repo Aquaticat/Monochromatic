@@ -29,8 +29,8 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@monochromatic-dev/cli-wg-allowedips": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-wg-allowedips": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "string-dedent": "catalog:"
   },

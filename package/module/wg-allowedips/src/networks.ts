@@ -416,16 +416,19 @@ export async function textNetworks(
     },);
   fl.debug(`converting ${String(entries.length,)} active input entry or entries`,);
   /**
-   * Per-entry network groups resolved concurrently.
+   * Pending per-entry resolutions collected without sending caller-owned resolver capabilities through `Array.map`.
    */
-  const groups = await Promise.all(entries.map(async function resolveEntry(
-    entry: string,
-  ): Promise<readonly string[]> {
-    return await entryNetworks({
+  const pendingGroups: Promise<readonly string[]>[] = [];
+  for (const entry of entries) {
+    pendingGroups.push(entryNetworks({
       entry,
       lookupAddresses,
       lookupAsnNetworks,
-    },);
-  },),);
+    },),);
+  }
+  /**
+   * Per-entry network groups resolved concurrently.
+   */
+  const groups = await Promise.all(pendingGroups,);
   return groups.flat();
 }
