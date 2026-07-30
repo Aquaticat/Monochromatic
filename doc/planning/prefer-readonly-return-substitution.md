@@ -6270,3 +6270,29 @@ Two things are deliberately not in scope, both filed rather than dismissed:
      `as unknown as () => string`. Reachable only with a deliberate double cast, where the void case is
      reachable in well-typed assertion-free source, which is the difference that justifies treating them
      differently for now. Filed.
+
+## Sweep six, pre-registered
+
+Two fixes land in it, and unlike every sweep before this one the workspace is known to contain the shape
+they target. Sweep five's own deltas named `exists = generatedFileExists` and
+`watchDirectoryImpl = watchDirectory`, both defaulted callable formals, which is exactly what the
+candidate-list join now refuses to treat as a closed set.
+
+So the sampling rule that has gone untested three sweeps running should finally fire.
+
+Predicted, and stated so the capture can contradict it:
+
+-    **Offers fall.** This is the first sweep where that is the expectation rather than a hedge.
+-    Every loss is explained by one of two named causes: a formal whose default no longer answers for
+     every value it can hold, or a completion whose `void` came from a slot rather than from a
+     declaration.
+-    The second cause has a known precision cost measured before the sweep: a closure completing with
+     `console.log` now withholds, because that name resolves to a member signature on a variable's type.
+     If lost offers are dominated by logging closures rather than by retained producers, that is the
+     signal to recover precision by trusting an ambient declaration file's slot, and it is a decision to
+     surface rather than a line in a log.
+-    Argument opacity rises.
+-    Nothing else moves.
+
+Runtime recorded beside the deltas as a matter of course now. The join adds one call per completion on a
+ path that already resolved candidates, so no cost class change is expected.
