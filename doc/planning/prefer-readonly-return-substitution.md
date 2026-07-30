@@ -5870,3 +5870,48 @@ Three defects have shared one shape: a branch classifies a call, answers its own
 
 Worth stating as a rule for the next one: an early return in this function is a claim that everything
  after it is irrelevant to this kind of call, and that claim has now been wrong three times out of three.
+
+## Every way source spells a property read
+
+The accessor walk recognised plain property access only, and three other spellings run a getter just as
+ surely. Measured, each offering the configuration its getter hands out while the plain form charged it:
+
+```text
+handPlainAccessOut:            {"opaque":[1,0]}  recognised, charged
+handElementAccessOut:          {"opaque":[1]}    slot 0 OFFERED
+handDestructuredAccessOut:     {"opaque":[1]}    slot 0 OFFERED
+handClassDeclarationAccessOut: {"opaque":[1]}    slot 0 OFFERED
+```
+
+The class form needed two hops rather than one, which the first attempt got wrong: widening the
+ recognised aggregates to include a class declaration left it offered, because the receiver resolves to
+ `new Holder()` and a construction is not an aggregate. Following the construction to the class it names
+ closed it.
+
+A spread joins on the same grounds, since it reads every property the source declares and so runs every
+ getter on it. Which property was read stays untracked, exactly as the aggregate descent declines to
+ track keys, so a computed key needs no separate handling.
+
+Mutant removing element access and the construction hop restored exactly those two offers, 63 to 65,
+ leaving the destructuring hop's subject charged.
+
+## Where the queue stands
+
+Landed in this stretch, each falsified at the five-clause bar, each pinned by a fixture group with
+ controls, each with a mutant that died at an exact delta: #88, #98, #91, #93, #89, #99, #94, plus the
+ #96 documentation correction. Fixture offers moved 49 to 63 across them, every arrival a control or a
+ helper's own parameter and never a subject.
+
+Open, with what is known about each:
+
+-    **#90** and **#92** share the `completionCanCarryState` fallback. Both located by reading, neither
+     measured. A fix to either changes what the other sees, so measure both before changing either.
+-    **#95**, tagged templates as invocations. Located by reading.
+-    **#100**, a capture channel for external effect application. Confirmed reachable rather than
+     theoretical, and the last instance of the early-return pattern.
+-    **#81**, **#82**, **#87**, precision or cost rather than soundness.
+-    **#54**, declined with the reason recorded.
+
+The instrument note from the null sweep applies to everything above: each of these fixes withholds
+ silently, so a sweep can only fail them and never confirm them, and the fixture group plus the mutation
+ check carry the whole weight.
