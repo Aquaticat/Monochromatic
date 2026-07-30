@@ -505,16 +505,20 @@ What that claim does and does not cover, since the distinction is the whole valu
 -    It does **not** cover the published rule's consumers beyond this workspace. The decorator fix and the
      external channel's boundary are both cases where this repository cannot reach a shape a consumer can.
 
-Three items remain and **none is a measured false offer**:
+**The queue is now empty.** The three items that remained are all dispositioned, each on a measurement:
 
--    **#54**, precision only. Its own note estimates the workspace gain as nil, its proposed fix was rejected as
-     unsound, and the sound design is specified. Unblocked now that #82 landed, and still the lowest priority here.
--    **#81**, an unmeasured cost rather than a defect. An owned call written only in a parameter default is
-     invisible to the ownership scan; the comment claiming that cannot happen is already corrected. A first attempt
-     to bound it by counting occurrences did not produce a usable number, so the method needs choosing before the
-     measurement is repeated.
--    **#101**, documentation debt. One part landed; the bulk is a 3289-line mechanical diff needing review, with a
-     resumable procedure recorded on the task.
+-    **#54**, precision only, **declined**. Instrumenting the store channel found the shape it would fix occurs
+     **zero** times across three packages, so the offers it restores are two in a synthetic fixture. Its sound design
+     is a new propagated summary fact, which is a large change for a shape measured at zero.
+-    **#81**, an unmeasured cost, **established as zero here**. Instrumenting the ownership scan found **no** parameter
+     carrying an initializer reaches its exclusion, in four packages including one whose parameters do carry defaults
+     naming an owned function. The gap sits behind a graph entry condition ordinary callables never meet.
+-    **#101**, documentation debt, **declined for this file** and split into #115. All 46 `doc/planning/` files carry
+     the same line-break debt, so this file is the largest instance rather than an outlier, and conforming it alone
+     buys no consistency while risking prose damage to the primary record.
+
+So what is left is not a queue of defects. It is #115, a linter-scope decision for whoever owns markdown style, and
+ the standing question below.
 
 So the honest summary is that the soundness queue is empty and the precision, cost and documentation queue is not.
  Anyone resuming should start by asking what shape has not been probed, rather than by working these three.
