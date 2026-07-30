@@ -5974,3 +5974,61 @@ Predicted: this run lands near those rather than doubling, because the widened w
 Runtime is recorded beside the finding deltas from here on, not as an aside. A correctness sweep that
  also answers a cost question is the cheapest measurement available, and treating runtime as incidental
  is how #87 stayed a hunch for as long as it did.
+
+## The audit that should have replaced six separate discoveries
+
+Six defects in this work have been the same defect. #69, #79, #86, #91, #100 and #95 were each found
+ separately, filed separately, and reasoned about separately, and every one of them is this:
+
+**A channel maps ordinary parameter origins and has no capture channel.**
+
+Captures are kept beside ordinary origins and never folded into them, which is a decision recorded in
+ the handover with its reasons and which remains right. An ordinary origin says the callee received the
+ caller's value. A capture says only that invoking a callable can reach the parameter. Folding them
+ would reach the unresolved boundary and withhold on ordinary `map` and `filter` code.
+
+The systematic consequence went unstated until now: every channel written against ordinary origins has
+ a capture hole until someone adds one, and nothing in the code says which channels have.
+
+So the audit is one grep against another. Every site calling `parameterIndexes`, which is the
+ ordinary-origin mapper, against every site with a capture channel.
+
+Channels that map ordinary origins **and have** a capture channel:
+
+-    the owned call edge, through `capturedOriginsByFormal` (#69)
+-    the foreign-borrowed edge, through the same field
+-    the unresolved boundary, through `recordUnresolvedCaptureOpacity` (#79, #86)
+-    the callback call branch, through the same (#91)
+-    the assignment and iteration stores, through `transitiveCallableOrigins` (#51)
+-    the returned callable, through the same
+
+Channels that map ordinary origins **and do not**:
+
+-    external effect application (#100)
+-    the construction handoff (#102)
+-    the yield handoff (#103)
+-    the tagged-template handoff (#95)
+-    the throw handoff (#103)
+
+The split is not scattered. Four of the five are every function in `effect-outward-handoff.ts`, and that
+ module is the one module among these that does not import from `effect-callable-capture-closure.ts` at
+ all. The fifth, external application, is its own module and does not import it either. So the boundary
+ of the hole is exactly a module import boundary, and it was visible without reading a single function
+ body.
+
+Two things follow, and the second is the one worth keeping.
+
+The queue gains three items that no hunt pass produced, #102 and #103, filed with their shapes rather
+ than as suspicions.
+
+And the method gains a check that would have produced all six at once. When a design deliberately keeps
+ two kinds of fact apart, enumerate every consumer of the first kind and ask which consume the second.
+ The answer is a grep, it is available the moment the second kind exists, and it does not depend on
+ imagining the shapes that reach each site. Four escape-channel hunt passes drew 44 channels and found
+ none of these five, because a hunt pass samples shapes while this samples the code.
+
+The honest limit on it: the audit says which channels lack the capture channel, not which of those
+ channels a real escape can reach. #100's shape is confirmed reachable, #95's is argued, and #102's and
+ #103's are unmeasured. Each still needs its own falsification at the five-clause bar before anything is
+ built, and a shape that turns out unreachable is worth recording as unreachable rather than quietly
+ fixing.
