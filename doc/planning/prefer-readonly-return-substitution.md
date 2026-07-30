@@ -5742,3 +5742,59 @@ A sweep is evidence about offers and about the message channels. It is not evide
  that withholds silently. When a fix's whole effect is silent withholding, a sweep can only fail it, by
  raising an offer, and can never confirm it, so the fixture group and the mutation check carry the whole
  weight and must be written before the fix is called done.
+
+## One shared resolver, and the order-dependent answer it exposed
+
+`packagedActualCallables` kept only values already written as callable declarations. `possibleValueNodes`
+ follows a parameter to the identifier its default names and stops there, and an identifier is not a
+ callable declaration, so a default naming an ordinary function resolved to no callable at all while one
+ written inline resolved fine.
+
+The measurement that located this held the store constant and varied only how the callee was reached:
+
+```text
+storeDirectPassResult:   {"opaque":[0]}  named directly, charged
+storeAliasPassResult:    {"opaque":[0]}  held by a local alias, charged
+storeSinglePassDefault:  {"opaque":[1]}  reached as a default, slot 0 OFFERED
+```
+
+`handRowBack` is block-bodied and its own `returned=[0]` is correct, so this is resolution rather than
+ substitution. Two reviews had placed it in substitution, one of them reasoning from the nested-summary
+ claim that #96 has now corrected.
+
+Every candidate value is now resolved through `callableDeclaration` rather than tested, keyed by source
+ span so one declaration reached by several values answers once. The callback branch's edge builder asks
+ the shared resolver instead of filtering the walk itself, which is where the named default was actually
+ being dropped: changing the resolver alone left `storeSinglePassDefault` offered, because that branch
+ carried its own copy of the filter.
+
+### It made #89 demonstrable, in the sharpest possible form
+
+The two-edge collision had resisted two attempts to reach it. With named defaults resolving, a
+ conditional default finally produces two edges at one call site whose facts differ, and the answer
+ flipped with source order:
+
+```text
+storePassFirstDefault:   {"opaque":[2,0]}  returning branch written first, charged
+storeAllocFirstDefault:  {"opaque":[2]}    allocating branch written first, slot 0 OFFERED
+```
+
+Same two callables, same store, opposite answers. `propagateResultApplications` built its lookup with
+ `new Map(entries)`, which keeps the last pair, so whichever branch the value walk emitted last decided
+ the answer for both. The effect and capability passes iterate the call list directly and saw every
+ edge, which is why three earlier effect probes looked clean and why the collision was invisible until a
+ result use depended on it.
+
+The consumer now unions every edge at a call site. Not merged into one edge: different callees have
+ different slot layouts, summaries, captures and formal-to-actual mappings, so a merged edge would state
+ a relation neither callee has. After the fix both halves agree at `opaque=[2,0]`.
+
+The pair is now a fixture asserted for agreement rather than for a count, since neither half offers
+ anything, so a regression shows up as the two halves disagreeing rather than as a number moving.
+
+### What the three fixes cost in fixture offers
+
+51 to 55 to 57 to 60 across the concise body, the callback capture, the named default and the order pair,
+ every arrival a control or a helper's own parameter and never a subject. Four mutants, four exact
+ deltas: 57 to 58, 57 to 59, 60 to 61 for the resolver, and 60 to 61 for the edge union, that last one
+ restoring exactly one half of the order pair.
