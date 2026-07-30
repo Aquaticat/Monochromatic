@@ -1,7 +1,13 @@
 /**
- * Caller opacity for a callable handed to a callee that could not account for it.
+ * Caller effects for a callable handed to a callee, decided by what the callee does with it.
  *
- * The admission gate is the callee's own uncertainty about the formal, not the reason for it.
+ * Two of the three things a callee can do live here: keep it, which the caller takes as opacity,
+ * and write through what invoking it produced, which the caller takes as a mutation. The third,
+ * handing back what invoking it produced, is a returned origin and belongs with the substitution
+ * walk in `effect-captured-result-origins.ts`.
+ *
+ * The admission gate for keeping is the callee's own uncertainty about the formal, not the reason
+ * for it.
  * Gating on retention provenance was considered and rejected as unsound: absent retention
  * provenance means call-caused or unknown rather than proven non-retaining, so a callee
  * forwarding its callback to something this analysis cannot resolve would pass the gate while
