@@ -8,15 +8,24 @@ import type {
   AssistantMessage,
   SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { AdvisorCompletionError, } from './advisor-completion-error.ts';
+import {
+  advisorDeadlineEndError as deadlineEndError,
+  type AdvisorDeadline,
+  createAdvisorDeadline,
+  remainingAdvisorDeadlineMs as remainingDeadlineMs,
+  throwIfAdvisorDeadlineEnded as throwIfDeadlineEnded,
+} from './advisor-deadline.ts';
 
 //region Constants
 
-/** Maximum provider attempts allowed for one Advisor operation. */
+/**
+ * Maximum provider attempts allowed for one Advisor operation.
+ */
 const MAX_ADVISOR_ATTEMPTS = 2;
 
 //endregion Constants
@@ -24,66 +33,38 @@ const MAX_ADVISOR_ATTEMPTS = 2;
 //region Types
 
 /**
- * Deadline shared by every provider attempt in one Advisor operation.
- */
-type AdvisorDeadline = {
-  /** Absolute operation deadline in Unix milliseconds. */
-  readonly deadlineAtMs: number;
-  /** Configured total operation timeout. */
-  readonly timeoutMs: number;
-  /** Caller cancellation signal, when supplied by Pi. */
-  readonly callerSignal?: ForeignHostCapability<AbortSignal>;
-  /** Timeout signal owned by Advisor. */
-  readonly timeoutSignal: AbortSignal;
-  /** Combined caller and timeout signal handed to providers. */
-  readonly combinedSignal: AbortSignal;
-};
-
-/**
  * Inputs for one bounded Advisor completion sequence.
  */
 export type CompleteAdvisorAttemptsOptions = {
-  /** Canonical selected model slug used in diagnostics. */
+  /**
+   * Canonical selected model slug used in diagnostics.
+   */
   readonly modelSlug: string;
-  /** Configured total operation timeout. */
+  /**
+   * Configured total operation timeout.
+   */
   readonly timeoutMs: number;
-  /** Operation start time, including context preparation. */
+  /**
+   * Operation start time, including context preparation.
+   */
   readonly operationStartedAtMs?: number;
-  /** Caller cancellation signal from Pi. */
+  /**
+   * Caller cancellation signal from Pi.
+   */
   readonly signal?: ForeignHostCapability<AbortSignal>;
-  /** Provider options shared by every attempt. */
+  /**
+   * Provider options shared by every attempt.
+   */
   readonly providerOptions: Readonly<Omit<SimpleStreamOptions, 'signal' | 'timeoutMs'>>;
-  /** Provider invocation boundary supplied by Advisor client. */
-  readonly complete: (options: {
+  /**
+   * Provider invocation boundary supplied by Advisor client.
+   */
+  readonly complete: ForeignHostCapability<(options: {
     readonly providerOptions: ForeignHostCapability<SimpleStreamOptions>;
-  }) => Promise<AssistantMessage>;
+  }) => Promise<AssistantMessage>>;
 };
 
 //endregion Types
-
-//region Errors
-
-/**
- * Advisor completion failure carrying a user-visible provider diagnostic.
- *
- * @example
- * ```typescript
- * throw new AdvisorCompletionError('advisor: provider call failed');
- * ```
- */
-export class AdvisorCompletionError extends Error {
-  /**
-   * Build an Advisor completion failure.
-   *
-   * @param message - actionable failure diagnostic
-   */
-  public constructor(message: string,) {
-    super(message,);
-    this.name = AdvisorCompletionError.name;
-  }
-}
-
-//endregion Errors
 
 //region Public API
 
@@ -94,6 +75,8 @@ export class AdvisorCompletionError extends Error {
  *
  * @returns successful Advisor response containing user-visible text
  *
+ * @mutates options - provider callback consumes supplied host capabilities and `AbortSignal.any` stores dependent-signal relations
+ *
  * @throws {@link AdvisorCompletionError} when provider fails, aborts, times out, requests a tool, or returns no text twice
  *
  * @example
@@ -102,9 +85,11 @@ export class AdvisorCompletionError extends Error {
  * ```
  */
 export async function completeAdvisorAttempts(
-  options: ForeignBorrowed<CompleteAdvisorAttemptsOptions>,
+  options: ForeignHostCapability<CompleteAdvisorAttemptsOptions>,
 ): Promise<AssistantMessage> {
-  /** Shared operation deadline for every attempt. */
+  /**
+   * Shared operation deadline for every attempt.
+   */
   const deadline = createAdvisorDeadline({
     timeoutMs: options.timeoutMs,
     ...(options.operationStartedAtMs === undefined
@@ -112,44 +97,30 @@ export async function completeAdvisorAttempts(
       : { operationStartedAtMs: options.operationStartedAtMs, }),
     ...(options.signal === undefined ? {} : { callerSignal: options.signal, }),
   },);
-
-  for (let attempt = 1; attempt <= MAX_ADVISOR_ATTEMPTS; attempt += 1) {
-    throwIfDeadlineEnded({
-      deadline,
-      modelSlug: options.modelSlug,
-      attempt,
-    },);
-    /** Provider options with shared signal and remaining deadline. */
-    const attemptOptions: SimpleStreamOptions = {
-      ...options.providerOptions,
-      signal: deadline.combinedSignal,
-      timeoutMs: remainingDeadlineMs(deadline,),
-    };
-    /** Terminal response from current provider attempt. */
-    let response: AssistantMessage;
-    try {
-      response = await options.complete({
-        providerOptions: attemptOptions,
-      },);
-    }
-    catch (error) {
-      throw completionErrorFromCaught({
-        error,
-        deadline,
-        modelSlug: options.modelSlug,
-        attempt,
-      },);
-    }
-
-    throwForFailedResponse({
-      response,
-      deadline,
-      modelSlug: options.modelSlug,
-      attempt,
-    },);
-    if (responseHasText(response,))
-      return response;
-  }
+  /**
+   * First terminal provider response.
+   */
+  const firstResponse = await completeAdvisorAttempt({
+    complete: options.complete,
+    sharedProviderOptions: options.providerOptions,
+    deadline,
+    modelSlug: options.modelSlug,
+    attempt: 1,
+  },);
+  if (responseHasText(firstResponse,))
+    return firstResponse;
+  /**
+   * Second terminal provider response after one successful no-text response.
+   */
+  const secondResponse = await completeAdvisorAttempt({
+    complete: options.complete,
+    sharedProviderOptions: options.providerOptions,
+    deadline,
+    modelSlug: options.modelSlug,
+    attempt: MAX_ADVISOR_ATTEMPTS,
+  },);
+  if (responseHasText(secondResponse,))
+    return secondResponse;
 
   throwIfDeadlineEnded({
     deadline,
@@ -163,104 +134,86 @@ export async function completeAdvisorAttempts(
 
 //endregion Public API
 
-//region Deadline helpers
+//region Attempt execution
 
 /**
- * Create one deadline shared by all provider attempts.
+ * Execute and classify one provider attempt under shared deadline.
  *
- * @param timeoutMs - configured total timeout
+ * @param complete - provider invocation capability
  *
- * @param operationStartedAtMs - operation start time before context preparation
- *
- * @param callerSignal - caller cancellation signal
- *
- * @returns shared deadline state
- */
-function createAdvisorDeadline(
-  {
-    timeoutMs,
-    operationStartedAtMs = Date.now(),
-    callerSignal,
-  }: ForeignBorrowed<Readonly<{
-    timeoutMs: number;
-    operationStartedAtMs?: number;
-    callerSignal?: ForeignHostCapability<AbortSignal>;
-  }>>,
-): AdvisorDeadline {
-  /** Absolute deadline inherited by every attempt. */
-  const deadlineAtMs = operationStartedAtMs + timeoutMs;
-  /** Initial timeout delay, clamped for AbortSignal.timeout. */
-  const initialRemainingMs = Math.max(
-    1,
-    Math.ceil(deadlineAtMs - Date.now(),),
-  );
-  /** Advisor-owned signal identifying deadline expiry. */
-  const timeoutSignal = AbortSignal.timeout(initialRemainingMs,);
-  return {
-    deadlineAtMs,
-    timeoutMs,
-    ...(callerSignal === undefined ? {} : { callerSignal, }),
-    timeoutSignal,
-    combinedSignal: callerSignal === undefined
-      ? timeoutSignal
-      : AbortSignal.any([
-        callerSignal,
-        timeoutSignal,
-      ],),
-  };
-}
-
-/**
- * Return positive provider timeout remaining under shared deadline.
- *
- * @param deadline - shared Advisor deadline
- *
- * @returns remaining timeout rounded up to one millisecond minimum
- */
-function remainingDeadlineMs(
-  deadline: ForeignBorrowed<AdvisorDeadline>,
-): number {
-  return Math.max(
-    1,
-    Math.ceil(deadline.deadlineAtMs - Date.now(),),
-  );
-}
-
-/**
- * Throw when caller cancellation or Advisor deadline already ended the operation.
+ * @param sharedProviderOptions - options shared by every attempt
  *
  * @param deadline - shared operation deadline
  *
- * @param modelSlug - selected model diagnostic identity
+ * @param modelSlug - selected model identity
  *
- * @param attempt - current provider attempt
+ * @param attempt - current attempt number
  *
- * @throws {@link AdvisorCompletionError} when operation ended
+ * @returns successful terminal response, which may contain no text
+ *
+ * @mutates complete - provider callback can consume or retain supplied host capabilities
+ *
+ * @mutates deadline - provider callback can consume or retain combined signal capability
+ *
+ * @throws {@link AdvisorCompletionError} when provider attempt fails
  */
-function throwIfDeadlineEnded(
+async function completeAdvisorAttempt(
   {
+    complete,
+    sharedProviderOptions,
     deadline,
     modelSlug,
     attempt,
   }: ForeignBorrowed<Readonly<{
+    complete: CompleteAdvisorAttemptsOptions['complete'];
+    sharedProviderOptions: CompleteAdvisorAttemptsOptions['providerOptions'];
     deadline: AdvisorDeadline;
     modelSlug: string;
     attempt: number;
   }>>,
-): void {
-  if (deadline.callerSignal?.aborted === true) {
-    throw new AdvisorCompletionError(
-      `advisor: call cancelled for ${modelSlug} on attempt ${String(attempt,)}`,
-    );
-  }
-  if (deadline.timeoutSignal.aborted || (Date.now() >= deadline.deadlineAtMs)) {
-    throw new AdvisorCompletionError(
-      `advisor: call timed out after ${String(deadline.timeoutMs,)}ms for ${modelSlug} on attempt ${String(attempt,)}`,
-    );
-  }
+): Promise<AssistantMessage> {
+  throwIfDeadlineEnded({
+    deadline,
+    modelSlug,
+    attempt,
+  },);
+  /**
+   * Provider options with shared signal and remaining deadline.
+   */
+  const attemptOptions: SimpleStreamOptions = {
+    ...sharedProviderOptions,
+    signal: deadline.combinedSignal,
+    timeoutMs: remainingDeadlineMs(deadline,),
+  };
+  /**
+   * Terminal provider response from abort-aware boundary.
+   */
+  const response = await (async function invokeProvider(): Promise<AssistantMessage> {
+    try {
+      return await complete({
+        providerOptions: attemptOptions,
+      },);
+    }
+    catch (error) {
+      throw completionErrorFromCaught({
+        error,
+        deadline,
+        modelSlug,
+        attempt,
+      },);
+    }
+  })();
+
+  throwForFailedResponse({
+    response,
+    deadline,
+    modelSlug,
+    attempt,
+  },);
+  return response;
 }
 
-//endregion Deadline helpers
+//endregion Attempt execution
 
 //region Response classification
 
@@ -296,7 +249,11 @@ function throwForFailedResponse(
     );
   }
   if (response.stopReason === 'aborted') {
-    throwIfDeadlineEnded({ deadline, modelSlug, attempt, },);
+    throwIfDeadlineEnded({
+      deadline,
+      modelSlug,
+      attempt,
+    },);
     throw new AdvisorCompletionError(
       `advisor: provider aborted ${modelSlug} on attempt ${String(attempt,)}: ${responseFailureText(response,)}`,
     );
@@ -334,16 +291,29 @@ function completionErrorFromCaught(
     attempt: number;
   }>>,
 ): AdvisorCompletionError {
-  try {
-    throwIfDeadlineEnded({ deadline, modelSlug, attempt, },);
-  }
-  catch (deadlineError) {
-    if (deadlineError instanceof AdvisorCompletionError)
-      return deadlineError;
-    throw deadlineError;
-  }
+  /**
+   * Deadline failure taking precedence over provider boundary text.
+   */
+  const deadlineError = deadlineEndError({
+    deadline,
+    modelSlug,
+    attempt,
+  },);
+  if ((typeof deadlineError) !== 'symbol')
+    return deadlineError;
+  /**
+   * Primitive provider failure text safe to retain.
+   */
+  const errorText = ((typeof error) === 'object')
+    && (error !== null)
+    && ('message' in error)
+    && ((typeof error.message) === 'string')
+    ? error.message
+    : (typeof error) === 'string'
+      ? error
+      : 'unknown provider failure';
   return new AdvisorCompletionError(
-    `advisor: provider call failed for ${modelSlug} on attempt ${String(attempt,)}: ${caughtValueText(error,)}`,
+    `advisor: provider call failed for ${modelSlug} on attempt ${String(attempt,)}: ${errorText}`,
   );
 }
 
@@ -357,13 +327,15 @@ function completionErrorFromCaught(
 function responseFailureText(
   response: ForeignBorrowed<AssistantMessage>,
 ): string {
-  /** Trimmed provider error, when present. */
+  /**
+   * Trimmed provider error, when present.
+   */
   const errorMessage = response.errorMessage
     ?.trim();
-  /** Serialized redacted provider diagnostics, when present. */
-  const diagnostics = response.diagnostics === undefined
-    ? ''
-    : JSON.stringify(response.diagnostics,);
+  /**
+   * Redacted provider diagnostic summary retaining primitive fields only.
+   */
+  const diagnostics = responseDiagnosticsText(response,);
   if ((errorMessage !== undefined) && (errorMessage !== ''))
     return diagnostics === ''
       ? errorMessage
@@ -371,6 +343,36 @@ function responseFailureText(
   return diagnostics === ''
     ? `stopReason=${response.stopReason}`
     : `diagnostics=${diagnostics}`;
+}
+
+/**
+ * Format provider diagnostics without handing borrowed object identity to unresolved code.
+ *
+ * @param response - failed provider response
+ *
+ * @returns compact primitive diagnostic summary
+ */
+function responseDiagnosticsText(
+  response: ForeignBorrowed<AssistantMessage>,
+): string {
+  if (response.diagnostics === undefined)
+    return '';
+  return response
+    .diagnostics
+    .map(function formatDiagnostic(
+      diagnostic: ForeignBorrowed<NonNullable<AssistantMessage['diagnostics']>[number]>,
+    ) {
+      /**
+       * Error message retained from current diagnostic.
+       */
+      const errorMessage = diagnostic
+        .error
+        ?.message;
+      return errorMessage === undefined
+        ? `${diagnostic.type}@${String(diagnostic.timestamp,)}`
+        : `${diagnostic.type}@${String(diagnostic.timestamp,)}:${errorMessage}`;
+    },)
+    .join(', ',);
 }
 
 /**
@@ -383,11 +385,13 @@ function responseFailureText(
 function responseHasText(
   response: ForeignBorrowed<AssistantMessage>,
 ): boolean {
-  return response.content.some(function hasTextContent(
-    block: ForeignBorrowed<AssistantMessage['content'][number]>,
-  ): boolean {
-    return (block.type === 'text') && (block.text !== '');
-  },);
+  return response
+    .content
+    .some(function hasTextContent(
+      block: ForeignBorrowed<AssistantMessage['content'][number]>,
+    ): boolean {
+      return (block.type === 'text') && (block.text !== '');
+    },);
 }
 
 //endregion Response classification

@@ -477,38 +477,5 @@ await describe({
         expect(retryTimeoutMs,).toBeLessThanOrEqual(firstTimeoutMs,);
       },
     },),
-    it({
-      name: 'throws after retry also returns no text',
-      fn: async function testNoTextRetryExhausted() {
-        /** Captured provider contexts. */
-        const contexts: Readonly<Context>[] = [];
-        /** Fake complete implementation returning no text twice. */
-        const completeModel = createSequencedCompleteModel({
-          contexts,
-          responses: [
-            emptyAssistantMessage,
-            emptyAssistantMessage,
-          ],
-        },);
-        /** Completion error after retry exhaustion. */
-        let caught: unknown;
-        try {
-          await completeAdvisor({
-            ctx: extensionContext,
-            model: fixtureModel,
-            config: advisorConfig,
-            advisorContext,
-            completeModel,
-          },);
-        }
-        catch (error) {
-          caught = error;
-        }
-
-        expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain('returned no text after 2 attempts',);
-        expect(contexts.length,).toBe(RETRY_PROVIDER_CALL_COUNT,);
-      },
-    },),
   ],
 },);

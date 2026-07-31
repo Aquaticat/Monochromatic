@@ -302,9 +302,15 @@ export async function completeAdvisor(
     ...(providerHeaders
       === undefined ? {} : { headers: providerHeaders, }),
   };
+  /**
+   * Canonical selected model slug used in attempt diagnostics.
+   */
+  const modelSlug = `${options.model
+    .provider}/${options.model
+      .id}`;
 
   return await completeAdvisorAttempts({
-    modelSlug: `${options.model.provider}/${options.model.id}`,
+    modelSlug,
     timeoutMs: options.config
       .timeoutMs,
     ...(options.operationStartedAtMs === undefined
@@ -312,16 +318,26 @@ export async function completeAdvisor(
       : { operationStartedAtMs: options.operationStartedAtMs, }),
     ...(options.signal === undefined ? {} : { signal: options.signal, }),
     providerOptions,
-    complete: async function completeAttempt(
-      {
-        providerOptions: attemptOptions,
-      },
+    complete:
+    /**
+     * Invoke selected provider with current attempt options.
+     *
+     * @param attempt - deadline-bound provider attempt
+     *
+     * @returns terminal provider response
+     *
+     * @mutates attempt - registered provider can consume or retain supplied host capabilities
+     */
+      async function completeAttempt(
+      attempt: ForeignHostCapability<{
+        readonly providerOptions: ForeignHostCapability<SimpleStreamOptions>;
+      }>,
     ): Promise<AssistantMessage> {
       return await completeModel({
         ctx: options.ctx,
         model: mutableModel,
         context: providerContext,
-        providerOptions: attemptOptions,
+        providerOptions: attempt.providerOptions,
       },);
     },
   },);

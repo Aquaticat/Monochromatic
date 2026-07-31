@@ -186,7 +186,10 @@ async function captureError(
   catch (error) {
     if (Error.isError(error,))
       return error;
-    throw new Error(`expected Error, received ${String(error,)}`,);
+    throw new Error(
+      `expected Error, received ${String(error,)}`,
+      { cause: error, },
+    );
   }
   throw new Error('expected completion to fail',);
 }
@@ -233,14 +236,18 @@ await describe({
       fn: async function testProviderErrorNoRetry() {
         /** Count of provider attempts. */
         const attempts: number[] = [];
-        /** Provider seam returning terminal error. */
-        const completeModel: CompleteAdvisorModel = async function completeModel() {
+        /**
+         * Provider seam returning terminal error.
+         *
+         * @returns terminal provider error
+         */
+        async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
           return assistantResponse({
             stopReason: 'error',
             errorMessage: 'fixture provider failure',
           },);
-        };
+        }
 
         const error = await captureError(async function completeErrorResponse() {
           await completeFixture({ completeModel, });
@@ -259,15 +266,19 @@ await describe({
         const controller = new AbortController();
         /** Count of provider attempts. */
         const attempts: number[] = [];
-        /** Provider seam aborting caller during request. */
-        const completeModel: CompleteAdvisorModel = async function completeModel() {
+        /**
+         * Provider seam aborting caller during request.
+         *
+         * @returns terminal aborted response
+         */
+        async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
           controller.abort();
           return assistantResponse({
             stopReason: 'aborted',
             errorMessage: 'request aborted',
           },);
-        };
+        }
 
         const error = await captureError(async function completeCancelledResponse() {
           await completeFixture({
@@ -286,15 +297,19 @@ await describe({
       fn: async function testDeadlineExpiry() {
         /** Count of provider attempts. */
         const attempts: number[] = [];
-        /** Provider seam waiting beyond configured deadline. */
-        const completeModel: CompleteAdvisorModel = async function completeModel() {
+        /**
+         * Provider seam waiting beyond configured deadline.
+         *
+         * @returns terminal aborted response after deadline
+         */
+        async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
           await delay(DEADLINE_EXPIRY_WAIT_MS,);
           return assistantResponse({
             stopReason: 'aborted',
             errorMessage: 'request aborted',
           },);
-        };
+        }
 
         const error = await captureError(async function completeTimedOutResponse() {
           await completeFixture({
@@ -313,14 +328,18 @@ await describe({
       fn: async function testProviderAbort() {
         /** Count of provider attempts. */
         const attempts: number[] = [];
-        /** Provider seam returning independent abort. */
-        const completeModel: CompleteAdvisorModel = async function completeModel() {
+        /**
+         * Provider seam returning independent abort.
+         *
+         * @returns terminal provider abort
+         */
+        async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
           return assistantResponse({
             stopReason: 'aborted',
             errorMessage: 'upstream cancelled request',
           },);
-        };
+        }
 
         const error = await captureError(async function completeAbortedResponse() {
           await completeFixture({ completeModel, });
@@ -341,19 +360,27 @@ await describe({
           assistantResponse({ stopReason: 'stop', }),
           assistantResponse({ stopReason: 'stop', text: 'advisor answer', }),
         ];
-        /** Provider seam returning queued responses. */
-        const completeModel: CompleteAdvisorModel = async function completeModel(
-          { providerOptions, },
-        ) {
+        /**
+         * Provider seam returning queued responses.
+         *
+         * @param providerOptions - current provider attempt options
+         *
+         * @returns response at current attempt index
+         */
+        async function completeModel(
+          { providerOptions, }: Parameters<CompleteAdvisorModel>[0],
+        ): Promise<AssistantMessage> {
           if (providerOptions === undefined)
             throw new Error('provider options missing',);
           capturedOptions.push(providerOptions,);
-          /** Response at current attempt index. */
+          /**
+           * Response at current attempt index.
+           */
           const response = responses.at(capturedOptions.length - 1,);
           if (response === undefined)
             throw new Error('provider called too many times',);
           return response;
-        };
+        }
 
         const response = await completeFixture({ completeModel, });
 
@@ -380,11 +407,15 @@ await describe({
       fn: async function testEmptyResponseExhaustion() {
         /** Count of provider attempts. */
         const attempts: number[] = [];
-        /** Provider seam returning successful empty response. */
-        const completeModel: CompleteAdvisorModel = async function completeModel() {
+        /**
+         * Provider seam returning successful empty response.
+         *
+         * @returns terminal empty response
+         */
+        async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
           return assistantResponse({ stopReason: 'stop', });
-        };
+        }
 
         const error = await captureError(async function completeEmptyResponses() {
           await completeFixture({ completeModel, });
@@ -399,11 +430,15 @@ await describe({
       fn: async function testUnexpectedToolUse() {
         /** Count of provider attempts. */
         const attempts: number[] = [];
-        /** Provider seam returning tool-use terminal state. */
-        const completeModel: CompleteAdvisorModel = async function completeModel() {
+        /**
+         * Provider seam returning tool-use terminal state.
+         *
+         * @returns terminal tool-use response
+         */
+        async function completeModel(): Promise<AssistantMessage> {
           attempts.push(1,);
           return assistantResponse({ stopReason: 'toolUse', });
-        };
+        }
 
         const error = await captureError(async function completeToolUseResponse() {
           await completeFixture({ completeModel, });
@@ -419,13 +454,17 @@ await describe({
       return it({
         name: `returns text for ${stopReason} terminal response`,
         fn: async function testSuccessfulTextResponse() {
-          /** Provider seam returning text. */
-          const completeModel: CompleteAdvisorModel = async function completeModel() {
+          /**
+           * Provider seam returning text.
+           *
+           * @returns successful terminal response
+           */
+          async function completeModel(): Promise<AssistantMessage> {
             return assistantResponse({
               stopReason,
               text: 'advisor answer',
             },);
-          };
+          }
 
           const response = await completeFixture({ completeModel, });
 
