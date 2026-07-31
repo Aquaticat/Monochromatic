@@ -31,8 +31,6 @@ import type {
  *
  * @returns explicit Advisor model selection
  *
- * @mutates modelRegistry - global lookup can inspect model-registry host state
- *
  * @throws when requested slug is empty, ambiguous, out of scope, unknown, or no longer in supplied scope
  *
  * @example
@@ -50,7 +48,7 @@ export function resolveAdvisorRequestedModel(
     readonly requestedSlug: string;
     readonly modelRegistry: ForeignHostCapability<ModelRegistryLookup<AdvisorReadonlyModel>>;
   }>,
-): ModelSelection<AdvisorReadonlyModel> {
+): ModelSelection {
   /**
    * Locally-owned identity-only entries safe for shared matching internals.
    */
