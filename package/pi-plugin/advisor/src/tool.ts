@@ -11,7 +11,10 @@ import type {
   ToolRenderResultOptions,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   buildAdvisorSystemPrompt,
   completeAdvisor,
@@ -91,9 +94,9 @@ export function createAdvisorTool(
         readonly question?: string;
       },
       // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- pi ToolDefinition.execute dictates positional `signal: AbortSignal | undefined` before required `onUpdate`/`ctx`, so optionality cannot move to a trailing `?:`.
-      signal: ForeignBorrowed<AbortSignal> | undefined,
+      signal: ForeignHostCapability<AbortSignal> | undefined,
       _onUpdate: unknown,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ): Promise<AdvisorToolResult> {
       if (!toolOptions.getSessionEnabled()) {
         throw new Error(

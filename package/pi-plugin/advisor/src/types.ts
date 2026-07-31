@@ -14,7 +14,10 @@ import type {
   ToolDefinition,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   Static,
   TSchema,
@@ -296,7 +299,7 @@ export type AdvisorRunOptions = ForeignBorrowed<{
   /**
    * Pi extension context.
    */
-  readonly ctx: ExtensionContext;
+  readonly ctx: ForeignHostCapability<ExtensionContext>;
   /**
    * Runtime config.
    */
@@ -316,7 +319,7 @@ export type AdvisorRunOptions = ForeignBorrowed<{
   /**
    * Abort signal from tool or command execution.
    */
-  readonly signal?: AbortSignal;
+  readonly signal?: ForeignHostCapability<AbortSignal>;
 }>;
 
 /**

@@ -27,7 +27,10 @@ import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import type {
@@ -45,15 +48,15 @@ type CompleteAdvisorModelOptions = {
   /**
    * Selected Advisor model.
    */
-  readonly model: Readonly<Model<Api>>;
+  readonly model: ForeignHostCapability<Model<Api>>;
   /**
-   * Provider context.
+   * Provider context consumed by provider runtime.
    */
-  readonly context: Readonly<Context>;
+  readonly context: ForeignHostCapability<Context>;
   /**
-   * Provider stream options with resolved auth.
+   * Provider stream options consumed by provider runtime.
    */
-  readonly providerOptions?: Readonly<SimpleStreamOptions>;
+  readonly providerOptions?: ForeignHostCapability<SimpleStreamOptions>;
 };
 
 /**
@@ -174,11 +177,11 @@ export type CompleteAdvisorOptions = ForeignBorrowed<{
   /**
    * Pi extension context, used for auth lookup.
    */
-  readonly ctx: ExtensionContext;
+  readonly ctx: ForeignHostCapability<ExtensionContext>;
   /**
-   * Selected Advisor model.
+   * Selected Advisor model handed to provider runtime.
    */
-  readonly model: AdvisorReadonlyModel;
+  readonly model: ForeignHostCapability<AdvisorReadonlyModel>;
   /**
    * Runtime Advisor config.
    */
@@ -194,7 +197,7 @@ export type CompleteAdvisorOptions = ForeignBorrowed<{
   /**
    * Abort signal from tool or command mode.
    */
-  readonly signal?: AbortSignal;
+  readonly signal?: ForeignHostCapability<AbortSignal>;
   /**
    * Override model completion implementation for focused tests.
    */
@@ -228,7 +231,7 @@ export async function completeAdvisor(
   /**
    * Mutable view of the advisor model for external pi-ai API calls.
    */
-  const mutableModel = options.model as Model<Api>;
+  const mutableModel = options.model as ForeignHostCapability<Model<Api>>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /**
    * Request auth resolved through pi's model registry.
@@ -439,7 +442,7 @@ function combinedSignal(
     signal,
     timeoutMs,
   }: ForeignBorrowed<Readonly<{
-    signal?: AbortSignal;
+    signal?: ForeignHostCapability<AbortSignal>;
     timeoutMs: number;
   }>>,
 ): AbortSignal {

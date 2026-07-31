@@ -4,11 +4,16 @@
  * @module
  */
 
+import type {
+  Api,
+  Provider,
+} from '@earendil-works/pi-ai';
 import {
   createEventBus,
   type ExecResult,
   type ExtensionAPI,
   type ExtensionFactory,
+  type ProviderConfig,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 
@@ -174,6 +179,22 @@ function fakePiApi(): {
    */
   const tools: RegisteredTool[] = [];
   /**
+   * Fake provider registrar accepting both current Pi overloads.
+   */
+  const registerProvider: ExtensionAPI['registerProvider'] = function registerProvider(
+    providerOrName: Provider<Api> | string,
+    _config?: ProviderConfig,
+  ): void {
+    /**
+     * Provider identity normalized from complete-provider or legacy arguments.
+     */
+    const providerName = typeof providerOrName
+      === 'string'
+      ? providerOrName
+      : providerOrName.id;
+    registrations.push(`provider:${providerName}`,);
+  };
+  /**
    * Fake extension API that records registration calls into the closure.
    */
   const api: ExtensionAPI = {
@@ -259,9 +280,7 @@ function fakePiApi(): {
     setThinkingLevel(level: string,) {
       void level;
     },
-    registerProvider(name: string,) {
-      registrations.push(`provider:${name}`,);
-    },
+    registerProvider,
     unregisterProvider(name: string,) {
       registrations.push(`unprovider:${name}`,);
     },
