@@ -10,7 +10,8 @@ so untouched spans stay byte-for-byte identical.
 
 It runs under Node and executes its own TypeScript source directly,
 so there is no build-before-lint step.
-Sätteri ships a prebuilt native binary (per platform, with a WASI fallback),
+Sätteri ships a prebuilt native binary (per platform,
+ with a WASI fallback),
 so the linter now carries that one native dependency.
 Sätteri reports node offsets as code points;
 they are corrected to UTF-16 code units before the offset-based fixer runs,
@@ -146,14 +147,26 @@ each rule's behaviour is defined and frozen by its own unit tests.
    table cells,
    definitions,
    and MDX nodes,
-  and guards `.` in abbreviations,
-   decimals,
-   versions,
-   and ellipses,
-  plus `,` and `:` between digits.
+  and breaks only where a written word ends,
+   so the character after the break-point character has to be a space,
+   a tab,
+   a newline,
+   or the end of the prose.
+  That is what keeps a decimal,
+   a version,
+   a time,
+   a dotted filename and a qualified name whole:
+   each writes a digit or a letter straight after the punctuation.
+  Abbreviations and the last dot of an ellipsis get their own guards,
+   since a space does follow those.
+  A run of closing quotes or brackets moves the break past itself rather than suppressing it,
+   because the sentence has not finished being written until they are.
   The fix is add-only:
    it inserts a break after the punctuation and never removes a byte,
   which is why a continuation line may keep the author's original space.
+  It reads and writes the document's own line ending,
+   and never leaves two spaces at a line's end,
+   which CommonMark would render as a `<br>`.
 
 ## Deferred work
 

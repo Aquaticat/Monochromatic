@@ -1,8 +1,29 @@
-# `semantic-line-breaks --fix` destroys a bold span whose text ends in a break-point character
+# `semantic-line-breaks --fix` destroyed a bold span whose text ended in a break-point character
 
-Found while editing `doc/planning/prefer-readonly-foreign-proof-cost.md` under task #34.
-Not fixed here:
-the defect is in this package and the task that found it was about a different one.
+Found while editing `doc/planning/prefer-readonly-foreign-proof-cost.md` under task #34,
+and fixed under task #37.
+Kept because the measurement is the reason the rule is shaped the way it is,
+and a later reader who removes `tailThroughDelimiters` will otherwise not know what it was for.
+
+## Landed
+
+`tailThroughDelimiters` in `src/rule/semantic-line-breaks.ts` walks outward from a text node
+through any inline span that ends where the text ends,
+and the insertion offset is measured from that outermost node rather than from the text.
+A break at the end of `**Term.**` therefore lands past the closing delimiter rather than in front of it.
+Nesting is walked to the outermost span,
+so `**_Term._**` resolves to the strong span.
+
+`src/rule/semantic-line-breaks.unit.test.ts` pins the shape for each of `.`,
+`,`,
+`;`,
+`:`,
+`?` and `!`,
+in both `strong` and `emphasis`,
+and separately pins that a multi-sentence bold run still gets its internal breaks.
+
+Everything below is the original report,
+kept as the record of what was measured.
 
 ## Symptom
 
@@ -78,7 +99,11 @@ which makes this worth fixing before any bulk cleanup rather than after.
 
 ## Done when
 
-`--fix` leaves a bold span whose text ends in `.`, `,`, `;`, `:`, `?` or `!` rendering as bold,
+`--fix` leaves a bold span whose text ends in `.`,
+`,`,
+`;`,
+`:`,
+`?` or `!` rendering as bold,
 with a unit test in `src/rule/semantic-line-breaks.unit.test.ts` covering each of those characters
 in both `strong` and `emphasis`,
 and the multi-sentence bold run still gets its internal breaks.

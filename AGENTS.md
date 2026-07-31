@@ -1361,9 +1361,9 @@ WRP:
  Backtick file names,
  identifiers,
  commands,
- code tokens in Markdown prose;
- `semantic-line-breaks` autofix splits bare dotted tokens mid-token.
-Backlog:
+ code tokens in Markdown prose:
+ a code span is one token no prose rule touches.
+Older splits:
  `doc/todo/backtick-split-filenames.md`.
 
 ### Doc placement
