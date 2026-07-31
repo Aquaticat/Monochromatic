@@ -116,11 +116,20 @@ Example:
 }
 ```
 
+`timeoutMs` bounds one complete Advisor operation,
+ including local preparation and at most one retry after a successful response with no text.
+Provider `error`,
+ provider `aborted`,
+ caller cancellation,
+ and deadline expiry do not receive an identical retry.
+
 `maxContextChars` is optional.
 When omitted,
  Advisor derives the serialized-context budget from the selected model's context budget.
 When present,
  it caps the model-derived budget.
+Advisor starts from Pi's compaction-aware context entries,
+ so messages summarized by the latest compaction are not resent.
 
 Project config overrides global scalar values.
 Model selection is not configurable here.

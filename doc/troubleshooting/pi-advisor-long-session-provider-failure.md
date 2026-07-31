@@ -532,6 +532,41 @@ Regression coverage must include compaction sentinels,
  top-level nested usage,
  and a host-level Pi invocation that renders a failed Advisor call without `undefined` or `NaN`.
 
+## Resolution
+
+The P0 correction landed on 2026-07-31:
+
+- commits `b30861f52`,
+   `51a1108ab`,
+   and `82361a8ad` classify terminal provider states before retrying and share one absolute operation deadline;
+- commit `2f2dc89ba` uses Pi's compaction-aware context entries;
+- commits `640a24d41`,
+   `b090c6256`,
+   `f258ab73e`,
+   and `8d25c5535` render missing or malformed error details as raw error text.
+
+Package verification passed the complete Advisor unit suite,
+ TypeScript lint,
+ Oxlint with zero warnings,
+ and built-extension registration verification.
+A disposable real Pi host loaded the built extension and a faux provider.
+The reviewer returned `stopReason: "error"` with `fixture provider failure`.
+Pi recorded one failed Advisor tool result containing:
+
+```text
+advisor: provider call failed for advisor-p0-fixture/reviewer on attempt 1: fixture provider failure
+```
+
+The host then continued to the main model's final response.
+The queued faux response sequence proves no identical reviewer retry consumed a second response.
+
+Follow-up findings remain tracked in issues `#407` to `#411`:
+ prior-review context defaults,
+ nested usage accounting,
+ model selection,
+ input budgeting,
+ and progress updates.
+
 ## Upstream filing decision
 
 No `.out-of-scope/` entry matches this incident.
