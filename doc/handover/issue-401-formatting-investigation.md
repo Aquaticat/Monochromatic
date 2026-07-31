@@ -111,9 +111,9 @@ Primary repository artifacts:
 At the measured revision,
 dprint 0.55.2 with `markup_fmt` 0.23.1 and Malva 0.14.1 reflowed prose at `printWidth: 90`.
 Formatting two representative prose pages produced 200 insertions and 153 deletions.
-The shared dprint and Stylelint fixed point expanded the seven-nonblank-line example to 20 lines.
-That violates the approximate line-count budget.
-Its particular formatting is not otherwise a contract violation.
+The shared dprint and Stylelint fixed point expanded the seven-nonblank-line example to twenty lines.
+The clarified five-to-twenty-line budget accepts that result.
+Line count is no longer a reason to reject it.
 
 `<!-- dprint-ignore-file -->` protects an entire HTML file.
 `<!-- dprint-ignore -->` immediately before `<style>` does not protect the embedded stylesheet.
@@ -124,6 +124,8 @@ Excluding `package/learning/rust/**/*.html` in root `dprint.json` removes exactl
 other inherited excludes and ten other HTML files.
 Explicit checks of excluded paths fail with dprint exit 14 unless the caller passes `--allow-no-files`.
 A disposable-worktree probe of all five paths with that flag exited 0.
+The owner subsequently disqualified every exclusion because formatter exemptions undermine trust in the active
+formatter.
 
 ### Pinned source trace
 
@@ -151,9 +153,10 @@ Upstream issue `dprint/dprint#772` requested that behavior and records its relea
 
 Broader tracker searches found related `markup_fmt` layout requests,
 including issues 16 and 242,
-but no defect promising arbitrary authored line-break preservation by path.
-The conflict is local policy,
-so no upstream issue is currently justified.
+but no existing preserve-wrapping request.
+`markup_fmt` 0.27.3 is the current release and still exposes no text or prose wrapping mode.
+A preserve-wrapping option is now a verified feature direction rather than a defect report.
+No upstream issue has been filed.
 
 ### Current-tool configuration reopened by the clarified contract
 
@@ -171,10 +174,16 @@ Markup width probes counted newly introduced line-break contexts inside HTML tex
 - width 500 produced 3;
 - width 600 produced none.
 
-Width 600 avoids new grammatical splits by joining paragraphs.
-Its costs are 1,441 insertions and 1,684 deletions across the five files,
-plus 225 lines longer than 120 characters and 61 longer than 200 in `aquascope-decoder.html`.
+Width 600 avoided new contexts in the current corpus by joining paragraphs.
+At current commit `f08ae1bc9`,
+it produced 1,491 insertions and 1,689 deletions across the five files.
 The longest generated line measured 593 characters.
+Width 1000 produced byte-identical output.
+Adversarial fixtures at both widths still split `original` from `variable`,
+`allocator` from `deallocates`,
+and `you` from `reach`.
+A high width is therefore current-corpus mitigation,
+not durable grammatical wrapping.
 `whitespaceSensitivity: 'strict'` produced 357,
 100,
 and 49 new contexts at widths 90,
@@ -187,16 +196,54 @@ all new break contexts occurred in the two prose-heavy pages:
 `lessons/0001-whats-different-about-this-book.html` and
 `reference/aquascope-decoder.html`.
 The other three pages produced none.
-A selective two-file dprint exclusion plus width 160 and the scoped Malva override is therefore a live branch.
-It retains more formatter coverage than excluding all five.
+A selective two-file dprint exclusion plus width 160 and the scoped Malva override was technically feasible.
+The owner disqualified it with every other formatter exclusion.
 
 The valid node-ignore directive is `<!-- markup-fmt-ignore -->`,
 not `<!-- dprint-ignore -->`.
 The pinned schema uses `markup-fmt-ignore` for one node and `dprint-ignore-file` for a whole file.
 Node-ignore probes before `<body>` and `<main>` preserved the prose,
 but the raw subtree kept its old indentation while its parent was reformatted.
-The mechanism works;
-the resulting indentation makes exclusion or file ignore cleaner here.
+The mechanism works,
+but it stops formatter ownership of the ignored subtree and is not an acceptable replacement for a formatter
+solution.
+
+### Prose-preserving `markup_fmt` prototype
+
+A disposable patch added an opt-in `preserveTextWrapping` mode to `markup_fmt` 0.23.1 and its dprint adapter.
+The default remained the existing width-based behavior.
+The new branch:
+
+- normalizes indentation and repeated intra-line ASCII whitespace;
+- keeps each authored nonempty text line as a hard formatter boundary;
+- continues formatting document structure,
+  attributes,
+  quotes,
+  and delegated embedded CSS.
+
+The modified library test suite passed with the option defaulted off.
+The dprint Wasm release build succeeded.
+An end-to-end dprint run over all five pages produced:
+
+- no exclusions or node/file ignores;
+- original and formatted intra-text break counts of 0,
+  16,
+  0,
+  0,
+  and 259 by file;
+- zero introduced intra-text break contexts;
+- sixteen nonblank CSS lines in each style;
+- a maximum line length of 189;
+- 2,305 insertions and 1,676 deletions for the initial structural normalization;
+- no changes on a second dprint run.
+
+A focused long-line fixture kept `I ate a chicken`,
+`original variable`,
+`allocator deallocates`,
+and `you reach` intact at width 90 because those units were authored on one line.
+The prototype is not production code or an upstream submission.
+It establishes that a small opt-in extension of the in-use formatter can retain full HTML ownership while leaving
+grammatical wrapping to authors.
 
 ### Stylelint surface
 
@@ -394,12 +441,19 @@ The seven-line Malva result remains valid,
 and the previously described twenty-line fixed point is also within budget.
 Line count no longer distinguishes those outputs.
 
+For HTML ownership,
+the leading direction is an opt-in prose-preserving mode in `markup_fmt`.
+It ranks above high-width configuration because it passed both the current corpus and adversarial grammar fixture
+without surrendering structural formatting.
+High-width configuration remains a current-corpus bridge,
+not the durable recommendation.
+
 Stylelint retention is no longer the default.
 Do not run an external technology-selection comparison.
 The current direction is a repository-owned CSS tool whose formatting and linting responsibilities must be made
 explicit against Malva and all eighty-two active Stylelint rules.
-No revised recommendation is ready until non-exclusion dprint solutions and the repository-owned design are
-validated.
+No combined recommendation is ready until that owned design is validated and joined with the prose-preserving
+markup direction.
 No source or configuration implementation has been made.
 
 ## GitHub updates already posted
@@ -420,6 +474,8 @@ No source or configuration implementation has been made.
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139615382>
 - Direction correction toward repository-owned CSS tooling:
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139620214>
+- Prose-preserving `markup_fmt` prototype:
+  <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139733575>
 
 The original issue comment is:
 <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5124915718>
@@ -480,9 +536,11 @@ Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not 
 
 ## Exact next action
 
-1. Post an issue correction withdrawing formatter exclusions and recording the five-to-twenty-line CSS budget.
-2. Evaluate dprint configurations that retain all five HTML pages under formatter ownership.
-3. Design and validate repository-owned CSS tooling without evaluating external replacement candidates.
-4. Correct and re-rank the planning and troubleshooting documents.
+1. Design and validate repository-owned CSS tooling without evaluating external replacement candidates.
+2. Record explicit keep,
+   replace,
+   or drop outcomes for Malva responsibilities and every active Stylelint rule.
+3. Correct and re-rank the planning and troubleshooting documents.
+4. Join the CSS design with the verified prose-preserving markup direction.
 5. Post the new evidence and recommendation to issue 401.
 6. Leave implementation unstarted until the owner accepts or delegates the revised recommendation.
