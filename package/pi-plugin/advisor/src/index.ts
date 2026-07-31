@@ -318,6 +318,7 @@ export {
  *
  * @internal
  */
+export { renderAdvisorResult, } from './rendering.ts';
 export { firstAdvisoryLine, } from './rendering-summary.ts';
 
 /**

@@ -117,7 +117,7 @@ export function renderAdvisorResult(
     expanded,
     theme,
   }: {
-    readonly result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>;
+    readonly result: ReadonlyDeep<AgentToolResult<unknown>>;
     readonly expanded: boolean;
     readonly theme: ForeignHostCapability<Theme>;
   },
@@ -131,6 +131,16 @@ export function renderAdvisorResult(
     ? result.content[0]
       .text
     : '(advisor returned no text)';
+  if (!isAdvisorDetails(result.details,)) {
+    return new Text(
+      theme.fg(
+        'error',
+        text,
+      ),
+      0,
+      0,
+    );
+  }
   return new Text(
     renderAdvisorSummary({
       text,
