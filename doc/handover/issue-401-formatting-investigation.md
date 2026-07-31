@@ -41,7 +41,8 @@ or commit those files.
 - Treat replacing dprint as only one family of solutions.
 - Treat replacing Stylelint as an intended direction because its dependency footprint is already considered
   excessive.
-  Evaluate replacements through the repository technology-selection workflow.
+- Do not evaluate another existing CSS formatter or linter as the replacement.
+  The current direction is repository-owned CSS tooling.
 - Be comprehensive vertically,
   from immediate symptom mitigation through durable architecture.
 - Be comprehensive horizontally,
@@ -394,9 +395,11 @@ and the previously described twenty-line fixed point is also within budget.
 Line count no longer distinguishes those outputs.
 
 Stylelint retention is no longer the default.
-Replacement evaluation must measure dependency reduction and retained policy coverage through the repository
-technology-selection workflow.
-No revised recommendation is ready until non-exclusion dprint solutions and Stylelint replacements are validated.
+Do not run an external technology-selection comparison.
+The current direction is a repository-owned CSS tool whose formatting and linting responsibilities must be made
+explicit against Malva and all eighty-two active Stylelint rules.
+No revised recommendation is ready until non-exclusion dprint solutions and the repository-owned design are
+validated.
 No source or configuration implementation has been made.
 
 ## GitHub updates already posted
@@ -415,6 +418,8 @@ No source or configuration implementation has been made.
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139562950>
 - Correction withdrawing formatter exclusions and reopening Stylelint replacement:
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139615382>
+- Direction correction toward repository-owned CSS tooling:
+  <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139620214>
 
 The original issue comment is:
 <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5124915718>
@@ -477,7 +482,7 @@ Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not 
 
 1. Post an issue correction withdrawing formatter exclusions and recording the five-to-twenty-line CSS budget.
 2. Evaluate dprint configurations that retain all five HTML pages under formatter ownership.
-3. Run the complete technology-selection workflow for Stylelint replacement candidates.
+3. Design and validate repository-owned CSS tooling without evaluating external replacement candidates.
 4. Correct and re-rank the planning and troubleshooting documents.
 5. Post the new evidence and recommendation to issue 401.
 6. Leave implementation unstarted until the owner accepts or delegates the revised recommendation.
