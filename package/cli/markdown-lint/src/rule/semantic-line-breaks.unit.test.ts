@@ -106,6 +106,45 @@ await describe({
       },
     },),
     it({
+      name: 'keeps a bare dotted token whole',
+      fn: async function dottedToken() {
+        // Every one of these was measured splitting mid-token across
+        // `doc/planning/` before the word-separator guard: the extension, the
+        // domain, the qualified member and the pre-release segment each start
+        // straight after the dot.
+        expect(count('rule AGENTS.md ITR applies here.\n',),).toBe(0,);
+        expect(count('published on crates.io last week.\n',),).toBe(0,);
+        expect(count('running under Node.js here.\n',),).toBe(0,);
+        expect(count('the type is checker.TupleType here.\n',),).toBe(0,);
+        expect(count('pinned at 9.0.0-rc.3 for now.\n',),).toBe(0,);
+      },
+    },),
+    it({
+      name: 'leaves a closing quote or bracket attached to its sentence',
+      fn: async function closingDelimiter() {
+        // The sentence has not ended at the period, so a break there strands the
+        // delimiter at the head of the next line.
+        expect(count('called "same concept." Two hosts differ here.\n',),).toBe(0,);
+        expect(count('asked "which rule?" and then moved on here.\n',),).toBe(0,);
+        expect(count('- (the user chose rules only.) Execution follows here.\n',),).toBe(0,);
+        // A break-point character outside the delimiter is untouched by the
+        // guard, so the quoted question keeps its break rather than losing it.
+        // The continuation line opens on the space that already stood there,
+        // which is how every mid-slice break in this repository's prose reads.
+        expect(fix('asked "which rule?", and then moved on here.\n',).source
+          .includes('rule?",\n and then',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'still breaks when a word ends at the break-point character',
+      fn: async function separatorBreaks() {
+        // The guard is about what follows, not about the character itself: the
+        // same period breaks once a space stands after it.
+        expect(count('rule AGENTS. md ITR applies here.\n',),).toBe(1,);
+        expect(count('a tab-separated one,\there.\n',),).toBe(1,);
+      },
+    },),
+    it({
       name: 'skips a comma in a heading',
       fn: async function headingSkip() {
         expect(count('# Title, here\n\nplain prose here.\n',),).toBe(0,);

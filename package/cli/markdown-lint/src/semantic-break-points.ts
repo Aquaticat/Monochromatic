@@ -11,13 +11,19 @@ const BREAK_POINTS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Break-point characters skipped when they sit between two digits (decimals,
- * thousands separators, version segments, times, ratios).
+ * Characters that end a written word, so a line break may stand where one of
+ * them stands. A break-point character followed by anything else is glued to
+ * what comes next and is therefore inside a token (`crates.io`, `Node.js`,
+ * `9.0.0-rc.3`, `checker.TupleType`) or immediately before a closing delimiter
+ * (`concept."`, `catches.)`), neither of which is a prose boundary. The empty
+ * string stands for the prose running out, which ends a word too.
  */
-const DIGIT_GUARDED: ReadonlySet<string> = new Set([
-  ',',
-  '.',
-  ':',
+const WORD_SEPARATORS: ReadonlySet<string> = new Set([
+  ' ',
+  '\t',
+  '\n',
+  '\r',
+  '',
 ],);
 
 /**
@@ -47,17 +53,6 @@ const ABBREVIATIONS: readonly string[] = [
   'u.k.',
   'ph.d.',
 ];
-
-/**
- * Whether a character is an ASCII digit.
- *
- * @param ch - single character
- *
- * @returns whether the character is `0` through `9`
- */
-function isDigit(ch: string,): boolean {
-  return (ch >= '0') && (ch <= '9');
-}
 
 /**
  * Whether a character is an ASCII lowercase letter, used as the word-boundary
@@ -283,6 +278,51 @@ function followStatus({
 }
 
 /**
+ * Parameters for {@link followingCharacter}.
+ */
+type FollowingCharacterParams = {
+  /**
+   * Text being scanned.
+   */
+  readonly slice: string;
+  /**
+   * Index of the break-point character.
+   */
+  readonly index: number;
+  /**
+   * Source immediately after the text node, holding the next character when the
+   * break-point character ends the slice.
+   */
+  readonly trailing: string;
+};
+
+/**
+ * Character written immediately after a break-point character, reaching into
+ * the source just past the node when the break-point character is the slice's
+ * last one. Unlike {@link followStatus} this skips nothing: whether a break may
+ * stand here is a question about the very next character, and a scan that
+ * skipped spaces would answer a different question and report the character
+ * after them.
+ *
+ * @param slice - text being scanned
+ *
+ * @param index - index of the break-point character
+ *
+ * @param trailing - source immediately after the node, for boundary lookahead
+ *
+ * @returns next written character, empty when the prose runs out
+ */
+function followingCharacter({
+  slice,
+  index,
+  trailing,
+}: FollowingCharacterParams,): string {
+  return (index + 1) < slice.length
+    ? slice[index + 1] ?? ''
+    : trailing[0] ?? '';
+}
+
+/**
  * Parameters for {@link breakOffsets}.
  */
 export type BreakOffsetsParams = {
@@ -306,8 +346,16 @@ export type BreakOffsetsParams = {
 /**
  * Offsets within the slice at which to insert a line break: one just past each
  * break-point character that is not already followed by a break, is not the
- * paragraph's final punctuation, and is not guarded as a decimal, number,
- * version, time, ellipsis, or abbreviation.
+ * paragraph's final punctuation, ends a written word, and is not the last dot
+ * of an ellipsis or part of an abbreviation.
+ *
+ * Ending a written word is what keeps a decimal, a thousands separator, a
+ * version segment, a time, a dotted filename and a qualified name whole, so
+ * each needs no guard of its own: every one of them writes a digit or a letter
+ * straight after the break-point character. It also declines the break before a
+ * closing quote or bracket, where the sentence has not ended yet and the break
+ * belongs after the delimiter rather than in front of it. Declining a break is
+ * always safe; inserting one inside a token is not.
  *
  * @param slice - source text of one prose text node
  *
@@ -358,19 +406,23 @@ export function breakOffsets({
       continue;
     }
     /**
+     * Character written immediately after the break point, from the source just
+     * past the node when the break point ends the slice.
+     */
+    const following = followingCharacter({
+      slice,
+      index,
+      trailing,
+    },);
+    if (!WORD_SEPARATORS.has(following,)) {
+      continue;
+    }
+    /**
      * Character before the break point.
      */
     const prev = slice[index - 1] ?? '';
-    /**
-     * Character after the break point.
-     */
-    const next = slice[index + 1] ?? '';
-    if (DIGIT_GUARDED.has(ch,) && isDigit(prev,)
-      && isDigit(next,)) {
-      continue;
-    }
     if (ch === '.') {
-      if ((prev === '.') || (next === '.')) {
+      if (prev === '.') {
         continue;
       }
       if (withinAbbreviation({
