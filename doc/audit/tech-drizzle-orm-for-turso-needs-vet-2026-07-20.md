@@ -85,7 +85,8 @@ All evidence accessed 2026-07-20.
 
 - Clone:
    `gh repo clone drizzle-team/drizzle-orm ~/temp/agent/drizzle-orm-20260720 -- --depth 1`;
-   HEAD `9d64532` (2026-07-10, `main`).
+   HEAD `9d64532` (2026-07-10,
+   `main`).
 - No first-party driver for the embedded Turso engine:
    `rg --ignore-case 'tursodatabase'` over the clone matches only two changelog files,
    and both matches are `github.com/tursodatabase/libsql` documentation URLs,
@@ -131,7 +132,8 @@ Execution manifest:
    outside the repo).
 - Install:
    `npm install --ignore-scripts --no-audit --no-fund drizzle-orm @tursodatabase/database`;
-   resolved `drizzle-orm@0.45.2` (pure JS, no runtime deps) and
+   resolved `drizzle-orm@0.45.2` (pure JS,
+   no runtime deps) and
    `@tursodatabase/database@0.7.0` (napi prebuilts via optional dependencies;
    same artifact family the repo already runs;
    the repo's own `node_modules` also holds 0.7.0).
@@ -158,7 +160,8 @@ Route A,
    and `transaction()`.
    Probe printed `PROBE OK`.
 - Fail:
-   process teardown aborted (SIGABRT, exit 134) with the engine panic
+   process teardown aborted (SIGABRT,
+   exit 134) with the engine panic
    `FTS Drop: transaction already committed, cannot flush | pending_docs_count=1`
    (`core/index_method/fts.rs:2628`).
 - Bisection (probe scripts `control.mjs`,
@@ -202,7 +205,8 @@ Route B,
    The `USING fts` DDL itself stays raw SQL:
    Drizzle's schema DSL cannot express it,
    but the active packages already hand-roll migrations
-   (`package/webapp-productivity/done`, `src/lib/db-migrations.ts`),
+   (`package/webapp-productivity/done`,
+    `src/lib/db-migrations.ts`),
    so no drizzle-kit dependency is required or proposed.
 
 ### Route ranking

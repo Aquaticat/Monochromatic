@@ -106,32 +106,45 @@ still being verified are replayed to that sink when it becomes available.
    buffers records through the same shared policy and flush triggers as the
   sessionStorage sink and stores each newline-joined JSONL batch as one
   string value per transaction in the `monochromatic.log` database
-  (`batch` store, auto-incremented keys, so concurrent tabs serialize
+  (`batch` store,
+   auto-incremented keys,
+   so concurrent tabs serialize
   without any key scheme);
-   records are readable the moment their transaction settles, DevTools
-  Application tab included, and survive tab close and browser restart;
+   records are readable the moment their transaction settles,
+   DevTools
+  Application tab included,
+   and survive tab close and browser restart;
    retention trims oldest-first past 2048 stored batches;
    `logger.flush()` settles every issued batch transaction
 - **OPFS** (exported but not a default):
    browser only;
    buffers records and appends them to the Origin Private File System as
-  newline-joined JSONL batches, one queued stream write per batch, under
+  newline-joined JSONL batches,
+   one queued stream write per batch,
+   under
   the same flush triggers as the sessionStorage sink;
    keeps a `FileSystemWritableFileStream` open for the session,
    and `logger.flush()` settles every issued batch write;
    staged stream content only becomes the file on a close a crash never
-  performs, which is why the IndexedDB sink holds the default
+  performs,
+   which is why the IndexedDB sink holds the default
   persistent-browser slot instead (see `DECISIONS.md`)
 - **sessionStorage**:
-   available wherever `globalThis.sessionStorage` exists (browsers, Node, Deno);
+   available wherever `globalThis.sessionStorage` exists (browsers,
+   Node,
+   Deno);
    buffers records and stores them as newline-joined JSONL batches under
   `monochromatic.log.{n}` keys with an auto-incrementing counter;
    one uniform write path on every runtime flushes a batch when it reaches
-  32 KiB, when a record's severity is `warn` or worse, after 250 ms of quiet,
-  on `pagehide`/document-hidden where those events exist, and on
+  32 KiB,
+   when a record's severity is `warn` or worse,
+   after 250 ms of quiet,
+  on `pagehide`/document-hidden where those events exist,
+   and on
   `logger.flush()`;
    caps its own footprint at half the runtime's default sessionStorage quota
-  (a measured per-runtime heuristic: 5 MiB on Node and the browser engines,
+  (a measured per-runtime heuristic:
+   5 MiB on Node and the browser engines,
   10 MiB on Deno),
    evicting its oldest batches first and reclaiming further space reactively
   if the real store still overflows
@@ -292,7 +305,8 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
   js file sink (JSONL via `appendFile`)
 - `src/sink/indexed-db.ts`:
    `createIndexedDbSink()`,
-   default persistent-browser sink (one transaction per batch, retention trim)
+   default persistent-browser sink (one transaction per batch,
+   retention trim)
 - `src/sink/indexed-db-util.ts`:
    promise bridges for the event-based IndexedDB API
 - `src/sink/opfs.ts`:
@@ -300,21 +314,30 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    opt-in browser OPFS sink with persistent writable stream (batched writes)
 - `src/sink/record-buffer.ts`:
    buffering stage shared by the OPFS and sessionStorage sinks
-   (byte cap, severity flush, quiet-period deadline, page lifecycle)
+   (byte cap,
+   severity flush,
+   quiet-period deadline,
+   page lifecycle)
 - `src/sink/session-storage.ts`:
    `createSessionStorageSink()`,
-   cross-runtime web storage sink (buffering, flush triggers)
+   cross-runtime web storage sink (buffering,
+   flush triggers)
 - `src/sink/session-storage-store.ts`:
-   persistence engine behind it (key allocation, footprint accounting,
+   persistence engine behind it (key allocation,
+   footprint accounting,
    quota eviction)
 - `src/sink/local-storage.ts`:
    `createLocalStorageSink()`,
-   cross-runtime persistent web storage sink (same buffering, run-scoped keys)
+   cross-runtime persistent web storage sink (same buffering,
+   run-scoped keys)
 - `src/sink/local-storage-store.ts`:
-   persistence engine behind it (run identity, prior-run adoption,
+   persistence engine behind it (run identity,
+   prior-run adoption,
    cross-run oldest-first eviction)
 - `src/sink/local-storage-key.ts`:
-   run-scoped key building, strict parsing, and eviction ordering
+   run-scoped key building,
+   strict parsing,
+   and eviction ordering
 - `src/sink/local-storage-quota.ts` and `src/sink/session-storage-quota.ts`:
    fill-probed per-runtime quota tables
 - `src/sink/web-storage-runtime.ts` and `src/sink/web-storage-quota-error.ts`:

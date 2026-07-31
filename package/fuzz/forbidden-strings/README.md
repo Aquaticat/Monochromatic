@@ -5,7 +5,9 @@ Coverage-guided fuzzing for the scanner's own surfaces after the engine swap
  the literal-to-verbose-dialect escaper,
  the strict two-form rule loader,
  and the columnless `PATH:LINE rule=N` scan output.
- Engine-level fuzzing (the `RegexSet` compile, serialize, and `line_matches`
+ Engine-level fuzzing (the `RegexSet` compile,
+ serialize,
+ and `line_matches`
 paths) lives in the engine's own sidecar at
 `package/rust-module/forbidden-regex.fuzz` and is not duplicated here.
  CI integration is **deferred**;
@@ -37,7 +39,8 @@ paths) lives in the engine's own sidecar at
 
 Each target encodes one invariant.
  Failures are libFuzzer crashes with a redacted reproducer message
-(input length plus SHA-256, never raw bytes).
+(input length plus SHA-256,
+ never raw bytes).
 
 The three targets share a single tuned dictionary at
 `dictionary/forbidden-strings.dict` (one dictionary,
@@ -56,8 +59,13 @@ The three targets share a single tuned dictionary at
    and must never match empty input (the comment-swallow / empty-matchable
   regression guard).
    A fixed adversarial battery runs once per process so the always-verbose
-  boundary cases (spaces, leading `#`, quotes, backslashes, metacharacters,
-  escape-sequence lookalikes, newlines) are always exercised.
+  boundary cases (spaces,
+   leading `#`,
+   quotes,
+   backslashes,
+   metacharacters,
+  escape-sequence lookalikes,
+   newlines) are always exercised.
 - **`fuzz_scan_format`** -- columnless output contract.
    Loads a generated two-form ruleset and scans a generated multi-line buffer,
    asserting every finding is exactly `PATH:LINE rule=N` (or the fail-closed

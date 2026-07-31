@@ -42,5 +42,7 @@ Auto-push (the `APG` rule) lands the commit on the default branch,
 Reference what changed from the commit message so a reader landing on the closed issue can find it.
 
 Close manually with `gh issue close <N> --comment "..."` only when no fix commit carries the closing keyword:
- a wontfix, duplicate, or already-fixed issue,
+ a wontfix,
+ duplicate,
+ or already-fixed issue,
  or work that landed on a non-default branch GitHub will not scan.

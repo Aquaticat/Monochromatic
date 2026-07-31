@@ -1512,7 +1512,8 @@ reference.
 
 ### `@homebridge/dbus-native` (replaces `dbus-next` in kwin-key-helper)
 
-`dbus-next@0.10.2` (last published 2022-04-28, effectively unmaintained) was the
+`dbus-next@0.10.2` (last published 2022-04-28,
+ effectively unmaintained) was the
 sole source of a burst of Dependabot advisories reached only through
 `package/kwin/key-helper`.
  It was first mitigated with two `pnpm.overrides` (commit 516980e19) and then
@@ -1543,38 +1544,56 @@ kwin-key-helper
 
 `request@2.88.2` was the last release that package will ever ship,
  so its SSRF advisory has no patched version;
- the only remediation is removing `request` from the tree, which the migration
+ the only remediation is removing `request` from the tree,
+ which the migration
 does by construction.
 
 #### Why `@homebridge/dbus-native` is clean
 
 `@homebridge/dbus-native@0.7.7` is actively maintained (published 2026-07-08)
-and its tree carries no `request`, `node-gyp`, `usocket`, or `tar`.
- Its transitive deps are `event-stream@4.0.1` (post-incident line, no advisory),
-`minimist@1.2.8` (past the prototype-pollution fix), and `xml2js@0.6.2` (already
+and its tree carries no `request`,
+ `node-gyp`,
+ `usocket`,
+ or `tar`.
+ Its transitive deps are `event-stream@4.0.1` (post-incident line,
+ no advisory),
+`minimist@1.2.8` (past the prototype-pollution fix),
+ and `xml2js@0.6.2` (already
 past GHSA-776f-qx25-q3cc).
  The swap reported `+8 -9` at install.
 
 The server-only `sax` situation persists and the `sax-stub` alias stays:
-`@homebridge/dbus-native/lib/bus.js` statically requires `./introspect`, which
-loads `xml2js`, whose parser does `require('sax')` at module load.
+`@homebridge/dbus-native/lib/bus.js` statically requires `./introspect`,
+ which
+loads `xml2js`,
+ whose parser does `require('sax')` at module load.
  That path is client-only (parsing a remote object's introspection XML);
  key-helper is a D-Bus service and answers Introspect from `lib/stdifaces.js`
-without `xml2js`, so `sax.parser()` is never reached at runtime.
- The shipped `index.d.ts` types only the client path, so the server surface used
-here (`sessionBus`, `MessageBus.exportInterface`, `MessageBus.requestName`) is
+without `xml2js`,
+ so `sax.parser()` is never reached at runtime.
+ The shipped `index.d.ts` types only the client path,
+ so the server surface used
+here (`sessionBus`,
+ `MessageBus.exportInterface`,
+ `MessageBus.requestName`) is
 declared locally in `package/kwin/key-helper/src/dbus-native.d.ts`.
 
 #### Verification
 
 `grep -c dbus-next pnpm-lock.yaml` is zero and `pnpm why request node-gyp usocket
 tar -r` finds none under `@homebridge/dbus-native`.
- `mise run //package/kwin/key-helper:lint:types`, `:lint:oxlint`,
-`:build:js:node`, and `:test:unit` all pass.
- The rebuilt SEA binary was run against the live KDE session bus: it registered
-`org.monochromatic.KeyHelper`, `gdbus introspect` listed all five methods with
-correct signatures, and `gdbus call ... SetActiveWindow "verifytestclass"`
-returned an empty success reply, confirming method dispatch through
+ `mise run //package/kwin/key-helper:lint:types`,
+ `:lint:oxlint`,
+`:build:js:node`,
+ and `:test:unit` all pass.
+ The rebuilt SEA binary was run against the live KDE session bus:
+ it registered
+`org.monochromatic.KeyHelper`,
+ `gdbus introspect` listed all five methods with
+correct signatures,
+ and `gdbus call ... SetActiveWindow "verifytestclass"`
+returned an empty success reply,
+ confirming method dispatch through
 `@homebridge/dbus-native`.
 
 ## Why we do not file the policy entries upstream

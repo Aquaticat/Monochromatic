@@ -1,16 +1,24 @@
 # @monochromatic-dev/module-jsonc-edit.fuzz
 
-Fuzz and coverage-gate sidecar for `@monochromatic-dev/module-jsonc-edit`, kept out of the
+Fuzz and coverage-gate sidecar for `@monochromatic-dev/module-jsonc-edit`,
+ kept out of the
 runtime package so its `src/` stays pure production code (and a whole-package mutation run
 stays scoped to real runtime files).
 
 It holds:
 
-- Fast-check property tests (`*.property.unit.test.ts`): round-trip idempotency, and the STB
-  comment-safety guard proving an arbitrary comment body always emits parseable, fixpoint JSONC.
-- `fuzz-budget.ts`: the per-property run count, overridable with `JSONC_EDIT_FUZZ_RUNS`.
-- The deterministic V8 coverage-reachability gate (`coverage-driver.ts`, `coverage-report.ts`,
-  `coverage-baseline.json`): counts covered functions per runtime source file and fails on any
+- Fast-check property tests (`*.property.unit.test.ts`):
+   round-trip idempotency,
+   and the STB
+  comment-safety guard proving an arbitrary comment body always emits parseable,
+   fixpoint JSONC.
+- `fuzz-budget.ts`:
+   the per-property run count,
+   overridable with `JSONC_EDIT_FUZZ_RUNS`.
+- The deterministic V8 coverage-reachability gate (`coverage-driver.ts`,
+   `coverage-report.ts`,
+  `coverage-baseline.json`):
+   counts covered functions per runtime source file and fails on any
   per-file regression.
 
 ## Run
@@ -29,5 +37,7 @@ mise run //package/module/jsonc-edit.fuzz:fuzz:coverage
 mise run //package/module/jsonc-edit.fuzz:fuzz:coverage --write
 ```
 
-The gate measures the runtime package's `src/` reachability, not this sidecar: its
+The gate measures the runtime package's `src/` reachability,
+ not this sidecar:
+ its
 `SOURCE_MARKER` targets `package/module/jsonc-edit/src`.

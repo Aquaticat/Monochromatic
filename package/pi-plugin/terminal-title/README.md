@@ -38,28 +38,41 @@ There is no separate display-character cap.
 
 ## Event title examples
 
-- `tool_execution_start`: `π Reading src/index.ts`
-- `tool_execution_end`: `π Read src/index.ts`
-- `session_start`: `π Started session: startup`
-- `session_shutdown`: `π Ended session`
-- `agent_end`: `π Stopped agent`
-- `before_agent_start`: `π Received prompt: Refactor the auth module`
+- `tool_execution_start`:
+   `π Reading src/index.ts`
+- `tool_execution_end`:
+   `π Read src/index.ts`
+- `session_start`:
+   `π Started session: startup`
+- `session_shutdown`:
+   `π Ended session`
+- `agent_end`:
+   `π Stopped agent`
+- `before_agent_start`:
+   `π Received prompt: Refactor the auth module`
 
 ## Tool title examples
 
-- `bash`: `π Running npm test` while running,
+- `bash`:
+   `π Running npm test` while running,
   `π Ran npm test` after completion.
-- `read`: `π Reading src/index.ts` while running,
+- `read`:
+   `π Reading src/index.ts` while running,
   `π Read src/index.ts` after completion.
-- `edit`: `π Editing src/config.ts` while running,
+- `edit`:
+   `π Editing src/config.ts` while running,
   `π Edited src/config.ts` after completion.
-- `write`: `π Writing dist/output.ts` while running,
+- `write`:
+   `π Writing dist/output.ts` while running,
   `π Wrote dist/output.ts` after completion.
-- `grep`: `π Searching for TODO` while running,
+- `grep`:
+   `π Searching for TODO` while running,
   `π Searched for TODO` after completion.
-- `find`: `π Finding *.ts` while running,
+- `find`:
+   `π Finding *.ts` while running,
   `π Found *.ts` after completion.
-- `ls`: `π Listing src` while running,
+- `ls`:
+   `π Listing src` while running,
   `π Listed src` after completion.
 
 Custom and MCP tools that are not in the registry display generically:

@@ -15,10 +15,14 @@ hide the host PID namespace.
 
 Hosts provide the shallow adapter details:
 
-- `byPidDir`, resolved from host-specific paths or environment
-- `parseMapping`, owned by the host because mapping payloads differ
-- `startPid`, usually `process.ppid`
-- optional `io`, used by tests to fake procfs and mapping files
+- `byPidDir`,
+   resolved from host-specific paths or environment
+- `parseMapping`,
+   owned by the host because mapping payloads differ
+- `startPid`,
+   usually `process.ppid`
+- optional `io`,
+   used by tests to fake procfs and mapping files
 
 The package owns the process-tree walk,
 procfs parent-PID parsing,

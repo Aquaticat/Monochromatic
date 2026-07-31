@@ -383,7 +383,8 @@ Updated:
       CLOSED wontfix 2026-07-17 by user directive
      ("Close #381 based on #380"),
       with the #380-numbers rationale in the close comment.
-- POST-CUTOVER FOLLOW-UPS (2026-07-17, after the migration chain closed):
+- POST-CUTOVER FOLLOW-UPS (2026-07-17,
+   after the migration chain closed):
   - #391 got a brainstorm comment (user asked for ideas):
     migration evidence (no escalations fired across the dispatches),
     the recurring background-wait stall as a stronger persistence
@@ -397,15 +398,19 @@ Updated:
     Not a real leak;
     a base64 substring collision.
     This finding is exactly what the word-boundary directive below fixes:
-    once live, the three-byte literal gates to whole-token matches and
+    once live,
+     the three-byte literal gates to whole-token matches and
     stops firing inside the base64 blob.
   - USER DIRECTIVE 2026-07-17:
     "Bare literals under eight bytes should always require word
     boundaries around them."
-    IMPLEMENTED (`296c5169c`, pushed, code-complete):
+    IMPLEMENTED (`296c5169c`,
+     pushed,
+     code-complete):
     `literal_pattern` in `src/rule/frx/escape.rs` wraps a sub-8-byte bare
     literal with `\b` at each end whose adjacent byte is an ASCII word
-    byte (per-end conditional, so CJK and punctuation ends stay plain,
+    byte (per-end conditional,
+     so CJK and punctuation ends stay plain,
     since a `\b` beside a non-word byte asserts an ASCII edge CJK text
     never provides).
     Applied in `format.rs` at the literal call site;
@@ -414,21 +419,28 @@ Updated:
     Tests updated (four cases encoded old substring semantics);
     example terms neutralized to `ABC`/`Ab Cd` so the test source does
     not self-match the deny-list.
-    ACTIVATION DEFERRED: the local release binary and CI both still run
+    ACTIVATION DEFERRED:
+     the local release binary and CI both still run
     0.2.0 (old escaping);
     making this live in CI needs a release
     (CI downloads the version-matched release binary),
     bundled with the rule-identity decision below and the block-form
     format (#396) so one release covers all pending scanner changes.
-  - ADOPTED 2026-07-20, tail-format sectioned rule files (#396):
+  - ADOPTED 2026-07-20,
+     tail-format sectioned rule files (#396):
     after a full choosing-technology vet
     (`doc/audit/tech-forbidden-strings-rule-file-format-vet-2026-07-20.md`,
-    finalists block form, tail-format, NestedText, TOML;
+    finalists block form,
+     tail-format,
+     NestedText,
+     TOML;
     maintainer chose parser auditability as the governing axis),
     the maintainer adopted the tail-format sectioned file:
     `==> name <==` headers (strict kebab name grammar) delimit rule
     sections whose bodies the always-verbose engine reads raw;
-    every rule, bare literal included, is its own named section
+    every rule,
+     bare literal included,
+     is its own named section
     (the `.literals` list form was rejected by maintainer correction);
     near-header lines fail closed;
     format autodetection keeps legacy files working through the
@@ -439,113 +451,196 @@ Updated:
     facts.
     Section names give the rule-identity decision its carrier
     (baseline sections get betterleaks ids at conversion).
-    CRITICAL sequencing unchanged: binary and release first, gate/CI
-    move second, data-file conversion third.
-    IMPLEMENTATION LANDED (`36e299efc`, pushed, #396 auto-closed):
+    CRITICAL sequencing unchanged:
+     binary and release first,
+     gate/CI
+    move second,
+     data-file conversion third.
+    IMPLEMENTATION LANDED (`36e299efc`,
+     pushed,
+     #396 auto-closed):
     `sections.rs` parser + 4 redacted line-numbered LoadError variants +
     autodetection in `format.rs` (legacy byte-identical) + build.rs
-    embed wiring; 112/112 tests, all lints green, boundary-verified
-    with the release binary (tail findings fire, near-header fails
-    closed redacted, legacy unchanged).
-    NEAR-HEADER HARDENING LANDED (`d15e60397`, done in-session, no
-    subagent, per maintainer instruction): code now matches spec ruling
-    `65dd44404`; any line whose trimmed form starts with `==>` that is
+    embed wiring;
+     112/112 tests,
+     all lints green,
+     boundary-verified
+    with the release binary (tail findings fire,
+     near-header fails
+    closed redacted,
+     legacy unchanged).
+    NEAR-HEADER HARDENING LANDED (`d15e60397`,
+     done in-session,
+     no
+    subagent,
+     per maintainer instruction):
+     code now matches spec ruling
+    `65dd44404`;
+     any line whose trimmed form starts with `==>` that is
     not exactly a strict header is a redacted line-numbered
-    `NearHeader` error (out-of-alphabet middles, indented headers,
-    missing-space arrows alike; `#`-comment arrow mentions unaffected;
-    `[=]` in a bare literal stays literal, new test). The grammar was
+    `NearHeader` error (out-of-alphabet middles,
+     indented headers,
+    missing-space arrows alike;
+     `#`-comment arrow mentions unaffected;
+    `[=]` in a bare literal stays literal,
+     new test).
+     The grammar was
     also simplified on maintainer prompt (a `?`-chained `strict_name`
-    helper, extracted `close_section`, functional detection and
-    duplicate-name tracking). 116/116 tests, all three lints green,
-    boundary re-verified: `==> /etc/passwd <==` in a rules file fails
-    closed printing only its line number, and a good tail file still
+    helper,
+     extracted `close_section`,
+     functional detection and
+    duplicate-name tracking).
+     116/116 tests,
+     all three lints green,
+    boundary re-verified:
+     `==> /etc/passwd <==` in a rules file fails
+    closed printing only its line number,
+     and a good tail file still
     yields findings.
   - RULE-IDENTITY DECIDED and NAME MIGRATION UNDERWAY (2026-07-20,
-    maintainer: "migrating the rules so every rule can have a sanitized
-    name that forbidden-string rule match outputs can refer to. But for
-    *.local.* rules: Hide even the fact they're about China
-    specifically." plus "Re-write the porter or recover it from git and
+    maintainer:
+     "migrating the rules so every rule can have a sanitized
+    name that forbidden-string rule match outputs can refer to.
+     But for
+    *.local.*
+     rules:
+     Hide even the fact they're about China
+    specifically."
+     plus "Re-write the porter or recover it from git and
     still auto generate the rule and make the generate rules task refer
-    to it."). Landed this session, all pushed:
-    `d95a3a72a` porter chain (TS porter emits `==> id <==` headers, two
-    named demo sections, `.cache` stage-one intermediate; dialectport +
+    to it.").
+     Landed this session,
+     all pushed:
+    `d95a3a72a` porter chain (TS porter emits `==> id <==` headers,
+     two
+    named demo sections,
+     `.cache` stage-one intermediate;
+     dialectport +
     caseexpand recovered from `5a5b9e3b7^` as the standing stage two;
-    generate:rules runs both; MONGODB_CORE concat!-split against rule
+    generate:rules runs both;
+     MONGODB_CORE concat!-split against rule
     518 self-match);
     `20db3b030` gate parser relays alphabet-validated rule tokens
-    (names verbatim, numeric ids kept, `rule=0` no longer rejected;
+    (names verbatim,
+     numeric ids kept,
+     `rule=0` no longer rejected;
     stale walker-exclusion test realigned with the #389 pruned skip
-    list, red since `2d3d1d8b0`);
-    `2e89b498f` docs/templates (identity decision recorded; seed and
-    cache templates describe tail + opaque naming; scan:all repaired);
+    list,
+     red since `2d3d1d8b0`);
+    `2e89b498f` docs/templates (identity decision recorded;
+     seed and
+    cache templates describe tail + opaque naming;
+     scan:all repaired);
     `c8de3b8f1` scanner name support (compile_rules with name table,
-    BUILTIN_NAMES build-time sidecar, cross-set collision fail-closed,
-    named findings `rule=<name>` with numeric fallback; fuzz scan-format
-    contract widened; dialectport split into src/dialectport/ modules
-    for max-lines); 122/122 tests, clippy -D warnings green, fuzzing
-    check green, rust-linter green on scanner and bench;
-    `79abdfe59` baseline converted to tail sections via the chain, all
+    BUILTIN_NAMES build-time sidecar,
+     cross-set collision fail-closed,
+    named findings `rule=<name>` with numeric fallback;
+     fuzz scan-format
+    contract widened;
+     dialectport split into src/dialectport/ modules
+    for max-lines);
+     122/122 tests,
+     clippy -D warnings green,
+     fuzzing
+    check green,
+     rust-linter green on scanner and bench;
+    `79abdfe59` baseline converted to tail sections via the chain,
+     all
     259 rule bodies verified byte-identical (compare script kept the
     #387 differential validity).
-  - NAME MIGRATION COMPLETE (2026-07-20, same session):
-    `2ff0ee2c5` bumped 0.3.0 (three locks regenerated; the fuzz lock
-    also shed a stale orphaned subtree, zmij and serde leftovers);
-    cargo-publish run 29781894639 succeeded, release
+  - NAME MIGRATION COMPLETE (2026-07-20,
+     same session):
+    `2ff0ee2c5` bumped 0.3.0 (three locks regenerated;
+     the fuzz lock
+    also shed a stale orphaned subtree,
+     zmij and serde leftovers);
+    cargo-publish run 29781894639 succeeded,
+     release
     `forbidden-strings-v0.3.0` live with 7 attested assets and the
     crates.io publish;
     git-policy dists rebuilt and `git cli-git trust --yes` refreshed
-    BEFORE any appendix converted (parser accepts both token forms, so
+    BEFORE any appendix converted (parser accepts both token forms,
+     so
     the refresh was format-independent);
     gate canary relayed "Forbidden string matched at line 1 (rule
-    age-secret-key)" through `git cli-git check`, non-vacuous;
+    age-secret-key)" through `git cli-git check`,
+     non-vacuous;
     `6382098ce` converted `forbidden-strings.append.txt` (sections
-    ncd-reserved-shortcodes, ncd-reserved-shortcode-families);
+    ncd-reserved-shortcodes,
+     ncd-reserved-shortcode-families);
     the gitignored local appendix converted to 36 opaque `local-NNN`
-    sections (numbering append-only; names deliberately reveal nothing
-    about a rule's subject, per maintainer instruction);
+    sections (numbering append-only;
+     names deliberately reveal nothing
+    about a rule's subject,
+     per maintainer instruction);
     `.cache/forbidden-strings.rules.txt` regenerated (38 sections);
     `FORBIDDEN_STRINGS_LIST` refreshed from the converted local file
     via straight pipe (gh secret list stamps 2026-07-20T22:10:50Z);
     composed-ruleset scan verified all three sources render names
-    (`rule=local-007`, `rule=ncd-reserved-shortcodes`,
-    `rule=age-secret-key`), and the word-boundary gate is live
-    (`xxCCPxx` glued does not fire; the standalone token fires as
+    (`rule=local-007`,
+     `rule=ncd-reserved-shortcodes`,
+    `rule=age-secret-key`),
+     and the word-boundary gate is live
+    (`xxCCPxx` glued does not fire;
+     the standalone token fires as
     `rule=local-005` and the gate relays it).
     CI run 29783022880 on `6382098ce` downloaded and
     attestation-verified 0.3.0 and is red with EXACTLY the six known
-    accepted over-matches, now named (`rule=curl-auth-user` twice,
-    `rule=mongodb-connection-string` four times, in the two planning
-    docs, one troubleshooting doc, one package README); the
+    accepted over-matches,
+     now named (`rule=curl-auth-user` twice,
+    `rule=mongodb-connection-string` four times,
+     in the two planning
+    docs,
+     one troubleshooting doc,
+     one package README);
+     the
     `index.html` base64 collision finding is GONE (boundary fix
     confirmed in CI).
   - DOC EXAMPLES RESHAPED (maintainer directive "Reshape the doc
-    examples", closing #389's open decision 1 via its ranked option B):
+    examples",
+     closing #389's open decision 1 via its ranked option B):
     `b3808ad16` drops the two mongodb examples to a two-byte password
     below the rule's three-byte minimum (annotated so the illustration
-    stays honest), hoists the podman example's uid:gid into a variable,
+    stays honest),
+     hoists the podman example's uid:gid into a variable,
     and quotes the android-exempt-unused task path whose `-unused:run`
     tail matched the curl credential rule (that rule has no leading
-    word boundary; any `...-u<word>:<word>` doc line can match it).
+    word boundary;
+     any `...-u<word>:<word>` doc line can match it).
     The commit also went through the gate cleanly on
-    `doc/planning/forbidden-strings-rule-port-review.md`, ending that
-    file's commit block. Side correction: the MONGODB_CORE concat!
-    split was reverted; probing showed the pattern text cannot
-    self-match (the rule wants `://` right after the scheme, the text
+    `doc/planning/forbidden-strings-rule-port-review.md`,
+     ending that
+    file's commit block.
+     Side correction:
+     the MONGODB_CORE concat!
+    split was reverted;
+     probing showed the pattern text cannot
+    self-match (the rule wants `://` right after the scheme,
+     the text
     interposes `(?:\+srv)?`).
-    CI run 29784124951 on `b3808ad16` concluded SUCCESS: the only
+    CI run 29784124951 on `b3808ad16` concluded SUCCESS:
+     the only
     green push-event run among the last 40 (workflow red since
-    2026-07-12), and the local full-tree scan exits 0.
-    Unratified proposal from an earlier session: AGENTS.md rule `RFY`
-    ("'X must change' ratifies the problem, not your design; present
+    2026-07-12),
+     and the local full-tree scan exits 0.
+    Unratified proposal from an earlier session:
+     AGENTS.md rule `RFY`
+    ("'X must change' ratifies the problem,
+     not your design;
+     present
     options per OPT and get the concrete design ratified before
     implementing or dispatching") awaits maintainer wording approval.
-  - OPEN DECISION, rule-identity UX (user asked "how does one know which
+  - OPEN DECISION,
+     rule-identity UX (user asked "how does one know which
     rule is the trigger?"):
     the finding `PATH:LINE rule=N` is opaque and the index DRIFTS
-    (same builtin rule is `rule=20` alone, `rule=58` with the ~38 local
-    rules loaded, because local rules take `0..k` and builtin is offset
+    (same builtin rule is `rule=20` alone,
+     `rule=58` with the ~38 local
+    rules loaded,
+     because local rules take `0..k` and builtin is offset
     above).
-    KEY CONSTRAINT found: the binary embeds only the compiled baseline
+    KEY CONSTRAINT found:
+     the binary embeds only the compiled baseline
     automaton and the port stripped all betterleaks descriptions,
     so a baseline match cannot be mapped to a name/text at runtime;
     `explain`/names/hashes for the baseline all need a build-time
@@ -558,7 +653,8 @@ Updated:
     keep `local:N` a bare per-file index (zero disclosure),
     `explain` thin over both.
     User floated a rule HASH;
-    assessed: stable across baseline versions but a membership oracle for
+    assessed:
+     stable across baseline versions but a membership oracle for
     low-entropy sensitive local rules (needs keyed/HMAC),
     and names dominate it for the public baseline.
     Forks awaiting user:
@@ -567,9 +663,14 @@ Updated:
     local index vs keyed hash.
     FULL design analysis preserved durably at
     `doc/planning/forbidden-strings-rule-identity-ux.md`
-    (problem, redaction scope, the runtime-identity constraint,
-    the hash membership-oracle assessment, four options, recommendation);
-    read it to resume this decision, this handover only summarizes it.
+    (problem,
+     redaction scope,
+     the runtime-identity constraint,
+    the hash membership-oracle assessment,
+     four options,
+     recommendation);
+    read it to resume this decision,
+     this handover only summarizes it.
 - #390 DONE and CLOSED (sonnet hygiene pass):
   #158,
    #240,

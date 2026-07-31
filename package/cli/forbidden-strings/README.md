@@ -356,7 +356,8 @@ The engine is always in multiline and verbose mode,
 ones those two modes already imply:
 
 - `m` (multiline) and `x` (verbose) are accepted as no-ops and dropped.
-- **Any other flag letter is a hard, fail-closed load error.
+- **Any other flag letter is a hard,
+   fail-closed load error.
   ** Silently dropping an `i` or
   an `s` would change match semantics (case folding,
    dot-matches-newline),

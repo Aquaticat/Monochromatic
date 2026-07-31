@@ -12,7 +12,9 @@ and `doc/philosophy/tool-choices.md` for the bundler decision.
   declarations via `rolldown-plugin-dts` with the `oxc` generator,
   output `dist/final/neutral/[name].mjs`.
 - `./.node.ts`:
-  Node library, CLI, and plugin builds,
+  Node library,
+   CLI,
+   and plugin builds,
   same declaration setup,
   output `dist/final/node/[name].mjs`.
   `perEntryNodeConfig` builds each input as its own self-contained bundle

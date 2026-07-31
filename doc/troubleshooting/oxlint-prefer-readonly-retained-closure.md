@@ -185,7 +185,10 @@ and it is the same one that makes the `void` case above unsound to trust.
 
 ## Related
 
-- `package/oxlint-plugin/prefer-readonly-parameter-type/README.md`, the rule's contract
-- `doc/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md`, for ownership-marker questions
-- `doc/decision/prefer-readonly-result-provenance.md`, for why returning caller state is permitted
+- `package/oxlint-plugin/prefer-readonly-parameter-type/README.md`,
+   the rule's contract
+- `doc/troubleshooting/oxlint-prefer-readonly-foreign-provenance.md`,
+   for ownership-marker questions
+- `doc/decision/prefer-readonly-result-provenance.md`,
+   for why returning caller state is permitted
   while storing it is not

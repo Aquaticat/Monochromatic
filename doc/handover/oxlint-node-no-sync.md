@@ -28,9 +28,15 @@ so do not change the current `parseSync` callsites in `package/git-policy/cli/sr
   dynamic `await import()`,
   `.apply()`/`.call()`,
   and local `require`/`process` shadows.
-- Added project rule `no-restricted-syntax/no-sync`, fixtures, config wiring, and readonly allowlist updates across
+- Added project rule `no-restricted-syntax/no-sync`,
+   fixtures,
+   config wiring,
+   and readonly allowlist updates across
   follow-up commits through `6ad8bbac0`.
-- Added namespace, `.apply()`, `.call()`, and shadowed-global fixture coverage in `a363eff67` while keeping Set-based
+- Added namespace,
+   `.apply()`,
+   `.call()`,
+   and shadowed-global fixture coverage in `a363eff67` while keeping Set-based
   alias tracking.
 
 ## Prototype state

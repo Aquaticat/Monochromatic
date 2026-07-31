@@ -166,7 +166,9 @@ tsdown was replaced by raw rolldown through
 `@monochromatic-dev/config-rolldown` on 2026-07-15
 (`doc/planning/tsdown-removal.md`).
 The decision's shape carries over unchanged
-(per-plugin config wrappers, `perEntryNodeConfig`, committed `bundle/node/`),
+(per-plugin config wrappers,
+ `perEntryNodeConfig`,
+ committed `bundle/node/`),
 so tsdown mentions in the alternatives below are historical.
 
 ### Decision

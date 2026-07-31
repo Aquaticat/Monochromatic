@@ -1,12 +1,19 @@
 # @monochromatic-dev/module-jsonc-edit.conformance
 
-Curated JSONC conformance corpus for `@monochromatic-dev/module-jsonc-edit`, kept as a sidecar
+Curated JSONC conformance corpus for `@monochromatic-dev/module-jsonc-edit`,
+ kept as a sidecar
 so the runtime package's `src/` stays pure production code (and a whole-package mutation run
 stays scoped to real runtime files).
 
-The corpus targets VS Code JSONC semantics: JSON plus `//` and block comments and trailing
-commas, but not JSON5 (no single quotes, unquoted keys, or hex). Valid cases parse to an
-expected value; invalid or JSON5-only cases throw.
+The corpus targets VS Code JSONC semantics:
+ JSON plus `//` and block comments and trailing
+commas,
+ but not JSON5 (no single quotes,
+ unquoted keys,
+ or hex).
+ Valid cases parse to an
+expected value;
+ invalid or JSON5-only cases throw.
 
 ## Run
 
@@ -14,4 +21,5 @@ expected value; invalid or JSON5-only cases throw.
 mise run //package/module/jsonc-edit.conformance:test:conformance
 ```
 
-The corpus file is also a `*.unit.test.ts`, so `test:unit` runs it as well.
+The corpus file is also a `*.unit.test.ts`,
+ so `test:unit` runs it as well.

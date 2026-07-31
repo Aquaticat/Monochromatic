@@ -28,15 +28,21 @@ The linter is four packages,
  not one:
 
 - `package/rust-module/rust-linter-core`:
-   the `Rule` trait, the lint context, the configuration layer, the diagnostic
-   and fix model, and the directive engine.
+   the `Rule` trait,
+   the lint context,
+   the configuration layer,
+   the diagnostic
+   and fix model,
+   and the directive engine.
    A rule package depends on this and nothing else.
 - `package/rust-module/rust-linter-pattern`:
    structural pattern matching over Rust syntax trees.
 - `package/rust-linter-plugin/builtin`:
-   the rules that ship, plus the driver for declarative pattern rules.
+   the rules that ship,
+   plus the driver for declarative pattern rules.
 - `package/linter/rust`:
-   this package, the CLI and the language server.
+   this package,
+   the CLI and the language server.
 
 The split exists so a rule can be written without depending on the binary that
 runs it.
@@ -47,14 +53,20 @@ That is not a claim about intent:
 ## Rules
 
 - `max-lines`:
-   a per-file code-line budget, default 300, blanks and comment-only lines
-   excluded, computed with the real Rust lexer.
+   a per-file code-line budget,
+   default 300,
+   blanks and comment-only lines
+   excluded,
+   computed with the real Rust lexer.
    A `//` or `/* */` inside a string literal is never mistaken for a comment,
    and a multi-line string counts every line it spans.
    The counts agree exactly with `tokei`.
-   Category `pedantic`, which is where oxlint files its own `eslint/max-lines`.
+   Category `pedantic`,
+   which is where oxlint files its own `eslint/max-lines`.
 - `require-rustdoc`:
-   a rustdoc comment on every documentable item, public and private, including
+   a rustdoc comment on every documentable item,
+   public and private,
+   including
    methods inside a trait impl.
    `///`,
    `//!`,
@@ -68,7 +80,8 @@ That is not a claim about intent:
 
 Both declare themselves **non-suppressible**.
 A directive aimed at either is refused and reported,
- which is what keeps `AGENTS.md` MXL, MXR and RDC literally true.
+ which is what keeps `AGENTS.md` MXL,
+ MXR and RDC literally true.
 
 ## Configuration
 
@@ -96,7 +109,8 @@ In brief:
 
 ### Scoping
 
-Three levels, from widest to narrowest:
+Three levels,
+ from widest to narrowest:
 
 ```toml
 # Which files are linted at all.
@@ -168,9 +182,11 @@ They are glob `overrides` now,
 
 A justification after `--` is **mandatory**:
  a directive without one does not suppress and is itself reported.
-`AGENTS.md` LN5 already requires one, so this makes the requirement enforceable
+`AGENTS.md` LN5 already requires one,
+ so this makes the requirement enforceable
 rather than advisory.
-It is a superset of oxlint's behaviour, not parity with it.
+It is a superset of oxlint's behaviour,
+ not parity with it.
 
 Directives are comments rather than attributes because they have to be:
  `#[allow(monochromatic::max_lines)]` fails on stable with
@@ -184,7 +200,8 @@ Directives are comments rather than attributes because they have to be:
 ## Output
 
 JSONL:
- one JSON object per line, one line per finding.
+ one JSON object per line,
+ one line per finding.
 Each record carries oxlint's diagnostic field set
  (`message`,
  `code`,

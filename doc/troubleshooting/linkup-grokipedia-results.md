@@ -4,7 +4,8 @@
 
 Pi sessions that call `linkup_web_search` for unrelated KDE or Qt error text can receive result lists dominated by
 Grokipedia pages and pages about Grokipedia.
-The session transcript from 2026-07-04 showed no query containing `grok` or `gork`, but four unrelated KDE searches
+The session transcript from 2026-07-04 showed no query containing `grok` or `gork`,
+ but four unrelated KDE searches
 returned visible `Grokipedia - Wikipedia` results.
 
 The failing query shapes were exact or near-exact technical snippets:
@@ -18,15 +19,20 @@ site:bugs.kde.org "kcm_keyboard/main.qml:57:63" OR "configureLayoutsAction"
 
 The transcript details showed raw upstream Linkup results containing blocked Grokipedia-family hosts,
 then Pi's local filter removed those hosts.
-For example, one raw result list began with `https://grokipedia.com/`,
-`https://en.wikipedia.org/wiki/Grokipedia`, and `https://grokipedia.com/page/grokipedia`.
+For example,
+ one raw result list began with `https://grokipedia.com/`,
+`https://en.wikipedia.org/wiki/Grokipedia`,
+ and `https://grokipedia.com/page/grokipedia`.
 The model-visible list still contained `https://en.wikipedia.org/wiki/Grokipedia` because the Pi blocklist is a host
-blocklist, not a topic filter.
+blocklist,
+ not a topic filter.
 
 ## Root cause
 
 The local wrapper is not rewriting the query into Grokipedia.
-It forwards the model's query as Linkup `q`, fixes the search mode to `standard`, and sends the configured blocklist as
+It forwards the model's query as Linkup `q`,
+ fixes the search mode to `standard`,
+ and sends the configured blocklist as
 `excludeDomains`.
 
 `package/pi-plugin/linkup/src/client.ts:122` to `package/pi-plugin/linkup/src/client.ts:129`:
@@ -108,7 +114,8 @@ return {
 };
 ```
 
-The upstream reason is Linkup retrieval and ranking, not model intent.
+The upstream reason is Linkup retrieval and ranking,
+ not model intent.
 Linkup's own documentation describes `standard` as agentic search that interprets the query,
 while `fast` is keyword-only and passes the query string to the index as-is.
 That explains why sparse technical error snippets can fan out into adjacent or high-SEO results instead of behaving like
@@ -123,8 +130,12 @@ Another commenter reported the same behavior on Kagi.
 
 Version and surfaces checked:
 
-- `@monochromatic-dev/pi-linkup` package version: `0.0.1`, from `package/pi-plugin/linkup/package.json`.
-- Linkup API surface: `POST https://api.linkup.so/v1/search`, checked on 2026-07-04.
+- `@monochromatic-dev/pi-linkup` package version:
+   `0.0.1`,
+   from `package/pi-plugin/linkup/package.json`.
+- Linkup API surface:
+   `POST https://api.linkup.so/v1/search`,
+   checked on 2026-07-04.
 - Pi transcript:
 
 ```text
@@ -192,7 +203,8 @@ Tradeoff: Google-style operators are query text, not a documented Linkup filteri
 Prefer `excludeDomains` or local filtering when the caller controls the API body.
 ```
 
-Fast-depth comparison, checked with direct Linkup API calls on 2026-07-04:
+Fast-depth comparison,
+ checked with direct Linkup API calls on 2026-07-04:
 
 ```text
 Query id: kcm-line
@@ -230,10 +242,13 @@ standard: 10 results, 0 Grokipedia-related, 6 selected Bazzite or code-host resu
 Result:
 
 - `fast` is not a reliable fix for the Grokipedia problem.
-- `fast` is sometimes worse, sometimes equal, and sometimes better on the same failure family.
+- `fast` is sometimes worse,
+   sometimes equal,
+   and sometimes better on the same failure family.
 - A fixed `standard` to `fast` swap would trade one ranking failure mode for another.
 
-Exa comparison, checked with the same query set on 2026-07-04:
+Exa comparison,
+ checked with the same query set on 2026-07-04:
 
 ```text
 Configuration: Exa `/search` with type `auto` and `fast`, `numResults: 10`,
@@ -277,7 +292,8 @@ Exa result:
 - Exa had zero Grokipedia-related results across the sampled query set.
 - Exa respected the valid host blocklist in the sampled result URLs.
 - Exa rejects the existing bare `gov` blocklist entry with `Domain must include a top-level domain: gov`.
-  A migration must either remove that entry, represent it with a separate local suffix filter,
+  A migration must either remove that entry,
+   represent it with a separate local suffix filter,
   or keep local post-filtering for top-level-domain policies.
 
 Public duplicate or known-issue search:
@@ -287,7 +303,9 @@ gh repo list LinkupPlatform --limit 50 --json name,isPrivate,hasIssuesEnabled,ur
 ```
 
 The LinkupPlatform organization has public repositories with issues enabled.
-Searches for `Linkup irrelevant results`, `Linkup search relevance`, and `Grokipedia` across open and closed
+Searches for `Linkup irrelevant results`,
+ `Linkup search relevance`,
+ and `Grokipedia` across open and closed
 LinkupPlatform issues returned no matching public issue.
 Linkup Discord and support channels were not checked.
 
@@ -305,7 +323,10 @@ Tradeoff:
 
 ### Use `includeDomains` for source-specific debugging
 
-For bug searches, constrain the search to sources like `bugs.kde.org`, `invent.kde.org`, `discuss.kde.org`,
+For bug searches,
+ constrain the search to sources like `bugs.kde.org`,
+ `invent.kde.org`,
+ `discuss.kde.org`,
 or `bugreports.qt.io`.
 
 Tradeoff:
@@ -315,7 +336,8 @@ Tradeoff:
 
 ### Add a URL or content filter only if the requirement is topic blocking
 
-If future Pi behavior must hide every result about Grokipedia, not just Grokipedia-hosted pages,
+If future Pi behavior must hide every result about Grokipedia,
+ not just Grokipedia-hosted pages,
 the current host blocklist is the wrong abstraction.
 A consumer-side URL or title/content deny filter would be needed.
 
@@ -333,7 +355,8 @@ The Grokipedia entries came from Linkup result payloads.
 
 ### Treating the host blocklist as a topic blocklist
 
-Blocking `grokipedia.com` does not block `en.wikipedia.org/wiki/Grokipedia`, NBC News reporting about Grokipedia,
+Blocking `grokipedia.com` does not block `en.wikipedia.org/wiki/Grokipedia`,
+ NBC News reporting about Grokipedia,
 or other third-party pages whose hosts are not blocked.
 
 ### Relying on broad unscoped technical snippets
@@ -365,12 +388,16 @@ or the config schema needs to distinguish API-forwardable host filters from loca
 
 Out-of-scope check:
 
-- `grep` over `.out-of-scope/**` for `linkup`, `grokipedia`, `search api`, and `web search` found no matching exemption.
+- `grep` over `.out-of-scope/**` for `linkup`,
+   `grokipedia`,
+   `search api`,
+   and `web search` found no matching exemption.
 
 Duplicate search:
 
 - Public GitHub issue searches in LinkupPlatform repositories for `Linkup irrelevant results`,
-  `Linkup search relevance`, and `Grokipedia` returned no matching open or closed issue.
+  `Linkup search relevance`,
+   and `Grokipedia` returned no matching open or closed issue.
 
 Constraint check:
 
@@ -387,7 +414,11 @@ Constraint check:
   and documents `includeDomains` and `excludeDomains` source control.
 - Would the repo welcome our contribution?
   No patch path was found for the hosted search backend.
-  Public repositories exist for SDKs, MCP, CLI, skills, and benchmarks,
+  Public repositories exist for SDKs,
+   MCP,
+   CLI,
+   skills,
+   and benchmarks,
   but not the proprietary search ranking service.
 - Will they likely fix it?
   Unknown.
@@ -406,7 +437,8 @@ Decision:
   A support ticket or Discord report would be the appropriate upstream channel
   if we want to report the reproducible queries.
 
-Draft support report, do not file as-is:
+Draft support report,
+ do not file as-is:
 
 ~~~md
 Title: `/v1/search` returns Grokipedia clusters for unrelated KDE technical error queries

@@ -317,22 +317,30 @@ hyperfine --warmup 1 --runs 5 --parameter-list gen off,oxc,tsgo \
 
 Process wall-time means over five runs:
 
-- `module/or-throw` (31 source files, zero runtime deps, neutral flavor):
+- `module/or-throw` (31 source files,
+   zero runtime deps,
+   neutral flavor):
   `off` 170.1 ms ± 4.7,
   `oxc` 195.1 ms ± 8.8,
   `tsgo` 275.5 ms ± 6.2.
   Declaration increment over the `off` control:
   25.0 ms for `oxc`,
   105.4 ms for `tsgo` (roughly four times `oxc`).
-- `module/toml-edit` (75 source files, four inlined workspace deps, neutral flavor):
+- `module/toml-edit` (75 source files,
+   four inlined workspace deps,
+   neutral flavor):
   `off` 150.9 ms ± 5.6,
   `oxc` 196.5 ms ± 6.5 (increment 45.6 ms).
-  `tsgo`: build failure,
+  `tsgo`:
+   build failure,
   no timing possible.
-- `config/oxlint` (five entries, four inlined workspace plugin packages, node flavor):
+- `config/oxlint` (five entries,
+   four inlined workspace plugin packages,
+   node flavor):
   `off` 164.5 ms ± 4.7,
   `oxc` 269.2 ms ± 7.5 (increment 104.7 ms).
-  `tsgo`: build failure,
+  `tsgo`:
+   build failure,
   no timing possible.
 
 The `tsgo` failure on both cross-package cells was:

@@ -7,7 +7,8 @@
 The call is observational,
 but a full `Readonly<TextEncoder>` projection remains dishonest because it also retains mutating `encodeInto`.
 `new TextDecoder(...).decode(bytes)` also initially remained unresolved even though it does not change `bytes`.
-Unlike encoder `encode`, decoder `decode` operates on decoder state,
+Unlike encoder `encode`,
+ decoder `decode` operates on decoder state,
 so its exact effect belongs on the receiver rather than the input buffer.
 
 ## Root cause
@@ -107,14 +108,20 @@ The TOML lint no longer reports `TextDecoder.decode(bytes)`.
 
 ### Upstream filing decision
 
-1. **Is it really upstream's fault?** No. TypeScript declarations do not encode effects,
+1. **Is it really upstream's fault?**
+    No. TypeScript declarations do not encode effects,
    and WHATWG decoder state transitions are intended behavior.
-2. **Can upstream fix it?** No specification defect was identified.
-3. **Are they supporting this use case?** WHATWG specifies runtime decoding,
+2. **Can upstream fix it?**
+    No specification defect was identified.
+3. **Are they supporting this use case?**
+    WHATWG specifies runtime decoding,
    not static caller-effect metadata.
-4. **Would the repo welcome our contribution?** Not applicable because no upstream defect exists.
-5. **Will they likely fix it?** Not applicable.
-6. **Have we prototyped a minimal fix compatible with their architecture?** The consumer-side exact-owner catalogue
+4. **Would the repo welcome our contribution?**
+    Not applicable because no upstream defect exists.
+5. **Will they likely fix it?**
+    Not applicable.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    The consumer-side exact-owner catalogue
    entry and tests are the verified fix.
 
 Nothing should be filed upstream.

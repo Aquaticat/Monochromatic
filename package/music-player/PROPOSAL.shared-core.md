@@ -148,7 +148,8 @@ the repository runs slopo,
 an embedding-based duplicate-code detector configured in `../../slopo.conf.yaml`,
 across the whole monorepo.
 It groups near-identical code into clusters and reports this player's duplication on every run,
-which turns the drift from a one-time observation into a standing, measured signal.
+which turns the drift from a one-time observation into a standing,
+ measured signal.
 
 The clusters for these two apps are kept visible on purpose.
 Every other by-design near-duplicate in the repo is dismissed in `../../slopo.ignore.txt`,

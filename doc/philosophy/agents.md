@@ -706,9 +706,23 @@ The helper-shape allowlist suppresses the report when a function ends in `return
 
 #### Variables and values: why VA6 stops at object-literal property values
 
-`no-magic-numbers` ships with `detectObjects: false` (`package/config/oxlint/src/rule/style.ts`), so a numeric literal used directly as an object-literal property value is never flagged by the tool. Before this exemption, VA6's plain wording ("magic literals as named const") read as a blanket requirement, with nothing marking object-literal values as already covered by the tool's own default.
+`no-magic-numbers` ships with `detectObjects: false` (`package/config/oxlint/src/rule/style.ts`),
+ so a numeric literal used directly as an object-literal property value is never flagged by the tool.
+ Before this exemption,
+ VA6's plain wording ("magic literals as named const") read as a blanket requirement,
+ with nothing marking object-literal values as already covered by the tool's own default.
 
-Failure that produced this rule: a redesign of `package/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`, `L_NEAR_BLACK`, `L_MID`, `L_NEAR_WHITE`, `L_WHITE`), each referenced exactly once, on the assumption the linter required it. `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`), so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony. VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
+Failure that produced this rule:
+ a redesign of `package/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`,
+ `L_NEAR_BLACK`,
+ `L_MID`,
+ `L_NEAR_WHITE`,
+ `L_WHITE`),
+ each referenced exactly once,
+ on the assumption the linter required it.
+ `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`),
+ so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony.
+ VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
 
 #### Security: why source escapes are not portable across a syntax boundary
 
@@ -745,16 +759,38 @@ third-party scripts.
 
 #### Verify at the user boundary: why the resource-gated check runs first (URF)
 
-A verification that depends on a resource the user just made available (a connected device, a running service, a live login, temporary access, physical hardware) is time-limited in a way ordinary work is not: the resource can vanish (unplugged, timed out, revoked) while you do something else, and then the check is no longer possible.
+A verification that depends on a resource the user just made available (a connected device,
+ a running service,
+ a live login,
+ temporary access,
+ physical hardware) is time-limited in a way ordinary work is not:
+ the resource can vanish (unplugged,
+ timed out,
+ revoked) while you do something else,
+ and then the check is no longer possible.
 So it runs before unrelated work and before other parts of the same task.
 
-The trap is the "these are all part of the same task" rationalization: a scope expansion ("do all of X too") or a long multi-item task list feels like a license to keep working through the list and leave the resource-gated check for the end.
+The trap is the "these are all part of the same task" rationalization:
+ a scope expansion ("do all of X too") or a long multi-item task list feels like a license to keep working through the list and leave the resource-gated check for the end.
 It is not.
-The resource's availability window, not the task-list order, decides what runs next; finish the resource-gated verification end to end before starting the next unit, even when that next unit is nominally in scope.
-And "done" means the resource was actually exercised, not that the code that would use it was written.
+The resource's availability window,
+ not the task-list order,
+ decides what runs next;
+ finish the resource-gated verification end to end before starting the next unit,
+ even when that next unit is nominally in scope.
+And "done" means the resource was actually exercised,
+ not that the code that would use it was written.
 
-Failure that produced this rule: given "my Android device is connected" plus a scope expansion to instrument every Rust crate with tracing, the on-device logcat verification was deferred behind the desktop, linter, terminal, forbidden-strings, and forbidden-regex crates and left for the final verification pass.
-By then the user, assuming the check was already done, had disconnected the phone.
+Failure that produced this rule:
+ given "my Android device is connected" plus a scope expansion to instrument every Rust crate with tracing,
+ the on-device logcat verification was deferred behind the desktop,
+ linter,
+ terminal,
+ forbidden-strings,
+ and forbidden-regex crates and left for the final verification pass.
+By then the user,
+ assuming the check was already done,
+ had disconnected the phone.
 
 #### Documentation standards: why WR5 bans positional references
 
@@ -780,8 +816,25 @@ The rule reaches TSDoc and code comments,
 
 #### Before claiming inability: why one failed probe is not proof of absence (RPB)
 
-Connect-gated and authorize-gated resources report empty until they are reconnected, authorized, or the server is restarted: an empty `adb devices`, a refused connection, or a 404 is consistent with both "absent" and "present but not yet established."
-When the user has stated the resource is there, the probe disagreeing with them is weak evidence, not a verdict.
-Re-probe, and ask the user to reconnect, re-authorize, or restart it, before concluding it is unreachable or moving on.
+Connect-gated and authorize-gated resources report empty until they are reconnected,
+ authorized,
+ or the server is restarted:
+ an empty `adb devices`,
+ a refused connection,
+ or a 404 is consistent with both "absent" and "present but not yet established."
+When the user has stated the resource is there,
+ the probe disagreeing with them is weak evidence,
+ not a verdict.
+Re-probe,
+ and ask the user to reconnect,
+ re-authorize,
+ or restart it,
+ before concluding it is unreachable or moving on.
 
-Failure that produced this rule: an empty `adb devices`, run once, was read as "the sandbox can't reach your device," when the device was merely unplugged or unauthorized at that moment; a single reconnect by the user made it appear immediately, and the on-device verification then succeeded.
+Failure that produced this rule:
+ an empty `adb devices`,
+ run once,
+ was read as "the sandbox can't reach your device,"
+ when the device was merely unplugged or unauthorized at that moment;
+ a single reconnect by the user made it appear immediately,
+ and the on-device verification then succeeded.

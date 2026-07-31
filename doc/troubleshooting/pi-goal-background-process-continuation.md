@@ -162,9 +162,12 @@ whether to continue.
 
 Versions and source identities:
 
-- Repository baseline: `39ffdb81a27e6e45352ba11a9a219ef4ee1c0609`.
-- Installed Pi coding agent: `0.80.10`.
-- Installed `@aliou/pi-processes`: `0.9.4`.
+- Repository baseline:
+   `39ffdb81a27e6e45352ba11a9a219ef4ee1c0609`.
+- Installed Pi coding agent:
+   `0.80.10`.
+- Installed `@aliou/pi-processes`:
+   `0.9.4`.
 - Audited `@aliou/pi-processes` source commit:
   `eb523640a02aa90e2c1f665aba62efa53ed88be1`.
 
@@ -279,24 +282,30 @@ GitHub issue and pull request searches across open and closed `aliou/pi-processe
 
 The filing constraints do not pass:
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    Pi-processes already supplies start snapshots,
    list snapshots,
    live status names,
    and terminal lifecycle messages.
    The repository-owned goal extension ignored those surfaces.
-2. **Can upstream fix it?** Upstream could add another event-bus API,
+2. **Can upstream fix it?**
+    Upstream could add another event-bus API,
    but that would not change the goal's continuation policy by itself.
    The complete fix belongs at the goal consumer boundary.
-3. **Are they supporting this use case?** Partly.
+3. **Are they supporting this use case?**
+    Partly.
    `README.md` and `CONTRIBUTING.md` support agent-managed background processes and configurable alerts,
    but they do not promise coordination with arbitrary third-party stop hooks.
-4. **Would the repository welcome our contribution?** No blocking policy was found.
+4. **Would the repository welcome our contribution?**
+    No blocking policy was found.
    `CONTRIBUTING.md` documents normal lint and type-check workflows and contains no AI-assistance ban.
    This does not overcome the failed fault and ownership constraints.
-5. **Will they likely fix it?** Not applicable as a goal-package bug.
+5. **Will they likely fix it?**
+    Not applicable as a goal-package bug.
    Tracker searches found no maintainer position on this separate consumer policy.
-6. **Have we prototyped a minimal fix compatible with their architecture?** A minimal consumer fix is
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    A minimal consumer fix is
    implemented and tested in this repository.
    No upstream patch is appropriate because changing pi-processes is unnecessary.
 

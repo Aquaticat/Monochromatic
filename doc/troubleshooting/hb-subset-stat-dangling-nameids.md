@@ -3,18 +3,25 @@
 Subsetting a variable font with `hb-subset-wasm` default options copies
 the `STAT` table through unchanged while pruning most name records.
 `STAT`'s axis records and axis-value entries then point at name IDs
-that no longer exist in the subset's `name` table. Firefox's
+that no longer exist in the subset's `name` table.
+ Firefox's
 downloadable-font sanitizer (OTS) flags the first dangling reference,
-discards the whole `STAT` table, and logs console errors on every load
-of a page using the font. The font still renders; the failure is
+discards the whole `STAT` table,
+ and logs console errors on every load
+of a page using the font.
+ The font still renders;
+ the failure is
 console noise plus a subset that is no longer a conformant variable
 font.
 
 ## Symptom
 
-Loading a page whose `@font-face` uses the subsetted font logs, in
-Firefox (151.0 under playwright 1.61.1, and user-observed in desktop
-Firefox), two error-level console messages:
+Loading a page whose `@font-face` uses the subsetted font logs,
+ in
+Firefox (151.0 under playwright 1.61.1,
+ and user-observed in desktop
+Firefox),
+ two error-level console messages:
 
 ```txt
 downloadable font: STAT: Invalid nameID: 298
@@ -27,54 +34,82 @@ downloadable font: Table discarded
 
 The reported ID (`298` for Inter 4.001) is whichever `STAT`-referenced
 name ID the sanitizer hits first among those the subsetter dropped.
-Chromium loads the same font without logging anything. Text renders
-correctly in both engines, including the variable weight axis.
+Chromium loads the same font without logging anything.
+ Text renders
+correctly in both engines,
+ including the variable weight axis.
 
-Trigger: any `hb-subset-wasm` `subset()` call on a font with a `STAT`
+Trigger:
+ any `hb-subset-wasm` `subset()` call on a font with a `STAT`
 table whose axis or axis-value name IDs fall outside the set the
-subsetter retains, which for Inter is all of `STAT`'s IDs above 275.
+subsetter retains,
+ which for Inter is all of `STAT`'s IDs above 275.
 
 ## Root cause
 
-Three components interact. The defect is owned by hb-subset-wasm's
-build configuration, with a latent inconsistency in HarfBuzz that
-makes such a configuration possible; OTS behaves correctly. Source
-pins: `kyosuke/hb-subset-wasm@82fe83faa429fd4c1b9af1b3d99829d67fde50ba`
-(the npm 0.4.0 `gitHead`), `harfbuzz/harfbuzz@3ef8709829a5884517ad91a97b32b9435b2f20d1`
-(tag `10.4.0`, the version the wrapper bundles as its `deps/harfbuzz`
-submodule, per its `.gitmodules` and `README.md:177-179`) plus
-harfbuzz HEAD `4509695c7873a8ff9320613bb8cdd65426436970`, and
+Three components interact.
+ The defect is owned by hb-subset-wasm's
+build configuration,
+ with a latent inconsistency in HarfBuzz that
+makes such a configuration possible;
+ OTS behaves correctly.
+ Source
+pins:
+ `kyosuke/hb-subset-wasm@82fe83faa429fd4c1b9af1b3d99829d67fde50ba`
+(the npm 0.4.0 `gitHead`),
+ `harfbuzz/harfbuzz@3ef8709829a5884517ad91a97b32b9435b2f20d1`
+(tag `10.4.0`,
+ the version the wrapper bundles as its `deps/harfbuzz`
+submodule,
+ per its `.gitmodules` and `README.md:177-179`) plus
+harfbuzz HEAD `4509695c7873a8ff9320613bb8cdd65426436970`,
+ and
 `khaledhosny/ots@2c594bcace426510c317a9bb9fb9acdfb71ea00a`.
 
 An earlier reading in this repo was wrong and is recorded here so it
-does not get re-derived: the wc README briefly claimed "the
+does not get re-derived:
+ the wc README briefly claimed "the
 `hb-subset-wasm` step leaves a STAT entry pointing at a dropped name
 record" as though hb-subset inherently drops STAT-referenced names.
-It does not. Stock HarfBuzz has collected STAT's name IDs during
+It does not.
+ Stock HarfBuzz has collected STAT's name IDs during
 subsetting since 7.2.0 (that older default-build bug was
-[harfbuzz#4162], fixed by [harfbuzz PR #4168] the next day), and a
+[harfbuzz#4162][],
+ fixed by [harfbuzz PR #4168][] the next day),
+ and a
 control run with a HarfBuzz wasm build that lacks the wrapper's flag
 (harfbuzzjs via subset-font 2.5.0) keeps every STAT-referenced name on
-the same input. The wrapper's build flag is the cause.
+the same input.
+ The wrapper's build flag is the cause.
 
 ### hb-subset-wasm compiles HarfBuzz with `HB_NO_STYLE`
 
-`scripts/build-wasm.sh:85` at 82fe83f, inside the CFLAGS array:
+`scripts/build-wasm.sh:85` at 82fe83f,
+ inside the CFLAGS array:
 
 ```bash
   -DHB_NO_STYLE
 ```
 
-(`HB_NO_VAR` is notably absent, so `fvar` name collection stays
-enabled, which is why IDs 256 through 275 survive.) The wrapper never
-touches name IDs otherwise: `wasm/wrapper.c` configures only flags,
-unicode/glyph sets, passthrough/drop table tags, axis pinning, and
-layout features; a repo-wide search for
+(`HB_NO_VAR` is notably absent,
+ so `fvar` name collection stays
+enabled,
+ which is why IDs 256 through 275 survive.)
+ The wrapper never
+touches name IDs otherwise:
+ `wasm/wrapper.c` configures only flags,
+unicode/glyph sets,
+ passthrough/drop table tags,
+ axis pinning,
+ and
+layout features;
+ a repo-wide search for
 `name_id|nameid|NAME_ID|HB_SUBSET_SETS_NAME` has zero matches.
 
 ### HarfBuzz under `HB_NO_STYLE`: closure compiled out, STAT still emitted
 
-With `HB_NO_STYLE`, the STAT table accelerator does not exist;
+With `HB_NO_STYLE`,
+ the STAT table accelerator does not exist;
 harfbuzz@3ef8709 `src/hb-ot-face-table-list.hh:68-70`:
 
 ```cpp
@@ -100,7 +135,8 @@ _nameid_closure (hb_subset_plan_t* plan,
 #endif
 ```
 
-The default retained set is tiny; `src/hb-subset-input.cc:43-44`:
+The default retained set is tiny;
+ `src/hb-subset-input.cc:43-44`:
 
 ```cpp
   hb_set_add_range (sets.name_ids, 0, 6);
@@ -117,8 +153,10 @@ and the name subsetter filters records by that plan set;
 ```
 
 But the STAT dispatch in the subsetter is **not** guarded by
-`HB_NO_STYLE`, and passes the table through verbatim when no axes are
-being pinned; `src/hb-subset.cc:539-541`:
+`HB_NO_STYLE`,
+ and passes the table through verbatim when no axes are
+being pinned;
+ `src/hb-subset.cc:539-541`:
 
 ```cpp
   case HB_OT_TAG_STAT:
@@ -127,15 +165,24 @@ being pinned; `src/hb-subset.cc:539-541`:
 ```
 
 (the local harness confirms the 220-byte STAT is byte-identical
-before and after subsetting). Net effect in an `HB_NO_STYLE` build:
-`name` keeps 0-6 plus `fvar`'s references, STAT keeps all of its own,
-and every STAT-only reference dangles. The same unguarded dispatch
+before and after subsetting).
+ Net effect in an `HB_NO_STYLE` build:
+`name` keeps 0-6 plus `fvar`'s references,
+ STAT keeps all of its own,
+and every STAT-only reference dangles.
+ The same unguarded dispatch
 exists at harfbuzz HEAD (`src/hb-subset.cc:282-284` at 4509695c7,
-`_hb_subset_table_passthrough`), so this is configuration-dependent,
-not version-dependent; harfbuzz's own `HB_LEAN` profile also defines
-`HB_NO_STYLE` (`src/hb-config.hh:57,85`). When STAT's `collect_name_ids`
-is compiled in, it collects the design-axis name IDs, the surviving
-axis-value name IDs, and `elidedFallbackNameID`
+`_hb_subset_table_passthrough`),
+ so this is configuration-dependent,
+not version-dependent;
+ harfbuzz's own `HB_LEAN` profile also defines
+`HB_NO_STYLE` (`src/hb-config.hh:57,85`).
+ When STAT's `collect_name_ids`
+is compiled in,
+ it collects the design-axis name IDs,
+ the surviving
+axis-value name IDs,
+ and `elidedFallbackNameID`
 (`src/hb-ot-stat-table.hh:518-540`).
 
 ### OTS (vendored in Firefox) correctly flags and discards the table
@@ -155,17 +202,26 @@ bool OpenTypeSTAT::ValidateNameId(uint16_t nameid) {
 ```
 
 `IsValidNameId` is a membership test against the parsed name table
-(`src/name.cc:366`, `return this->name_ids.count(nameID);`).
+(`src/name.cc:366`,
+ `return this->name_ids.count(nameID);`).
 `Table::Drop` (`src/ots.cc:1141-1152`) sets `m_shouldSerialize =
-false`, logs the formatted message (the `STAT: ` prefix comes from
-`Table::Message`, `src/ots.cc:1117-1121`) plus the literal
-`"Table discarded"`, and serialization then skips the table
-(`src/ots.cc:871-874` via `Font::GetTable`, `src/ots.cc:1073-1077`)
-while the font as a whole passes. Firefox vendors OTS
-(`gfx/ots/moz.yaml` pins `origin.revision: 57df657…`; `stat.cc` and
-`name.cc` are identical between that revision and 2c594bc); the
+false`,
+ logs the formatted message (the `STAT: ` prefix comes from
+`Table::Message`,
+ `src/ots.cc:1117-1121`) plus the literal
+`"Table discarded"`,
+ and serialization then skips the table
+(`src/ots.cc:871-874` via `Font::GetTable`,
+ `src/ots.cc:1073-1077`)
+while the font as a whole passes.
+ Firefox vendors OTS
+(`gfx/ots/moz.yaml` pins `origin.revision: 57df657…`;
+ `stat.cc` and
+`name.cc` are identical between that revision and 2c594bc);
+ the
 `downloadable font: ` prefix is added by Gecko's user-font error
-reporting, not OTS.
+reporting,
+ not OTS.
 
 [harfbuzz#4162]: https://github.com/harfbuzz/harfbuzz/issues/4162
 [harfbuzz PR #4168]: https://github.com/harfbuzz/harfbuzz/pull/4168
@@ -174,12 +230,14 @@ reporting, not OTS.
 
 Versions under test:
 
-- `hb-subset-wasm` 0.4.0 (npm), from the pnpm catalog
+- `hb-subset-wasm` 0.4.0 (npm),
+   from the pnpm catalog
 - Inter variable woff2 `Version 4.001;git-9221beed3`,
   sha256 `693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3`
   (`package/webapp-productivity/wc/fonts-source/inter.woff2`)
 - Firefox 151.0 / Chromium 149.0.7827.55 (playwright 1.61.1's bundled
-  browsers, run in the `monochromatic-playwright` podman image)
+  browsers,
+   run in the `monochromatic-playwright` podman image)
 
 ### Harness: dump retained vs referenced name IDs
 
@@ -292,26 +350,42 @@ SUBSET (hb-subset-wasm defaults):
 
 Two catalogs fall out of the output:
 
-- **Resolves cleanly**: every `fvar`-reachable name ID survives the
-  subset (256 through 275: axis names and named-instance subfamily
-  names), plus the standard IDs 0 through 6. `STAT` references that
-  happen to coincide with `fvar`'s (257, 258, 260 … 274) also resolve.
-- **Dangles**: every name ID only `STAT` references: 298 and 301
-  (axis records), 299, 300, and 302 (axis-value records). Firefox
+- **Resolves cleanly**:
+   every `fvar`-reachable name ID survives the
+  subset (256 through 275:
+   axis names and named-instance subfamily
+  names),
+   plus the standard IDs 0 through 6.
+   `STAT` references that
+  happen to coincide with `fvar`'s (257,
+   258,
+   260 … 274) also resolve.
+- **Dangles**:
+   every name ID only `STAT` references:
+   298 and 301
+  (axis records),
+   299,
+   300,
+   and 302 (axis-value records).
+   Firefox
   reports the first one its sanitizer visits (298).
 
 ### Harness: browser-level check
 
 `package/webapp-productivity/wc/src/page.browser.test.ts` collects
-every error-level console message and asserts the list is empty; run
+every error-level console message and asserts the list is empty;
+ run
 `mise run test:browser:firefox -- webapp-productivity/wc` from the
-repo root. With the defect present it fails with both messages quoted
-under Symptom; with either workaround below it passes.
+repo root.
+ With the defect present it fails with both messages quoted
+under Symptom;
+ with either workaround below it passes.
 
 ## Verified workarounds
 
 Byte figures below come from subsetting the pinned Inter with an
-identical charset and re-encoding to woff2, varying only the option
+identical charset and re-encoding to woff2,
+ varying only the option
 under test.
 
 ### Drop STAT during subsetting (shipped)
@@ -320,15 +394,25 @@ under test.
 await subset(sfnt, { text, layoutFeatures: '*', dropTables: ['STAT'] });
 ```
 
-Output woff2: 41,136 bytes vs 41,172 for the defaults. No sanitizer
-messages; `fvar`/`gvar`/`avar` still carry the variable axes, so CSS
-`font-weight: 100 900` keeps working. This is what
+Output woff2:
+ 41,136 bytes vs 41,172 for the defaults.
+ No sanitizer
+messages;
+ `fvar`/`gvar`/`avar` still carry the variable axes,
+ so CSS
+`font-weight: 100 900` keeps working.
+ This is what
 `package/webapp-productivity/wc/src/subset-fonts.ts` ships.
 
-Tradeoffs: the subset is no longer a spec-conformant variable font
-(the OpenType spec expects variable fonts to carry `STAT`), and any
-consumer that reads `STAT` for style mapping (font managers, desktop
-style pickers, `fc-query`) loses axis-value names. Browsers render
+Tradeoffs:
+ the subset is no longer a spec-conformant variable font
+(the OpenType spec expects variable fonts to carry `STAT`),
+ and any
+consumer that reads `STAT` for style mapping (font managers,
+ desktop
+style pickers,
+ `fc-query`) loses axis-value names.
+ Browsers render
 identically with and without it.
 
 ### Pass the name table through unsubsetted
@@ -337,71 +421,147 @@ identically with and without it.
 await subset(sfnt, { text, layoutFeatures: '*', passthroughTables: ['name'] });
 ```
 
-Output woff2: 41,980 bytes (+808 over the defaults). `STAT` survives
+Output woff2:
+ 41,980 bytes (+808 over the defaults).
+ `STAT` survives
 and every reference resolves (verified with the harness above:
-`dangling STAT refs: []`), so the subset stays a conformant variable
+`dangling STAT refs: []`),
+ so the subset stays a conformant variable
 font.
 
-Tradeoffs: ships every upstream name record (copyright, license URL,
+Tradeoffs:
+ ships every upstream name record (copyright,
+ license URL,
 all named-instance strings) in a web-delivery artifact where nothing
-reads them; the byte cost grows with the font's name-table size.
+reads them;
+ the byte cost grows with the font's name-table size.
 
 ## What does not work
 
-- **Doing nothing**: the font renders fine, but every Firefox page
-  load logs two console errors, which poisons any "no console errors"
+- **Doing nothing**:
+   the font renders fine,
+   but every Firefox page
+  load logs two console errors,
+   which poisons any "no console errors"
   verification gate and hides real failures in the noise.
-- **Retaining the needed IDs through the wrapper**: `hb-subset-wasm`
-  0.4.0 exposes no name-ID control. Its `SubsetOptions` are `text`,
-  `unicodes`, `glyphIds`, `retainGids`, `noHinting`, `variationAxes`,
-  `passthroughTables`, `dropTables`, and `layoutFeatures`
-  (`node_modules/hb-subset-wasm/dist/types.d.ts`); HarfBuzz's own
-  name-ID set (`hb_subset_input_set(…, HB_SUBSET_SETS_NAME_ID)`, the
+- **Retaining the needed IDs through the wrapper**:
+   `hb-subset-wasm`
+  0.4.0 exposes no name-ID control.
+   Its `SubsetOptions` are `text`,
+  `unicodes`,
+   `glyphIds`,
+   `retainGids`,
+   `noHinting`,
+   `variationAxes`,
+  `passthroughTables`,
+   `dropTables`,
+   and `layoutFeatures`
+  (`node_modules/hb-subset-wasm/dist/types.d.ts`);
+   HarfBuzz's own
+  name-ID set (`hb_subset_input_set(…, HB_SUBSET_SETS_NAME_ID)`,
+   the
   CLI's `--name-IDs=*`) is not reachable through it.
-- **`passthroughTables: ['STAT']`**: passing `STAT` through changes
-  nothing; the table already survives byte-identically by default. The
-  dangling side is the pruned `name` table, not `STAT` itself.
+- **`passthroughTables: ['STAT']`**:
+   passing `STAT` through changes
+  nothing;
+   the table already survives byte-identically by default.
+   The
+  dangling side is the pruned `name` table,
+   not `STAT` itself.
 
 ## Upstream filing decision
 
-`.out-of-scope/` was checked (2026-07-02): no exemption covers
-hb-subset-wasm, HarfBuzz, or OTS, so the full audit applies. OTS needs
-no filing at all: its sanitizer is doing exactly its job. Two
-candidates remain, audited separately below. Duplicate search, both
-trackers, open and closed: the kyosuke/hb-subset-wasm tracker has zero
-issues and zero PRs ever; on the HarfBuzz tracker, all issues matching
-"STAT" were enumerated plus targeted queries ("STAT nameID", "nameid
-closure", "OTS STAT", "Invalid nameID", "HB_NO_STYLE"). [harfbuzz#4162]
-is the same symptom for pre-7.2.0 **default** builds (closed, fixed by
-[harfbuzz PR #4168]); no issue exists about `HB_NO_STYLE` builds
-emitting STAT with dangling references, so a new issue is not a
-duplicate; the drafts below reference #4162 as prior art. Related but
-distinct: harfbuzz PR #5623 (merged, first in 12.2.0) stops
-*collecting* STAT name IDs when STAT is dropped, the inverse concern.
+`.out-of-scope/` was checked (2026-07-02):
+ no exemption covers
+hb-subset-wasm,
+ HarfBuzz,
+ or OTS,
+ so the full audit applies.
+ OTS needs
+no filing at all:
+ its sanitizer is doing exactly its job.
+ Two
+candidates remain,
+ audited separately below.
+ Duplicate search,
+ both
+trackers,
+ open and closed:
+ the kyosuke/hb-subset-wasm tracker has zero
+issues and zero PRs ever;
+ on the HarfBuzz tracker,
+ all issues matching
+"STAT" were enumerated plus targeted queries ("STAT nameID",
+ "nameid
+closure",
+ "OTS STAT",
+ "Invalid nameID",
+ "HB_NO_STYLE").
+ [harfbuzz#4162][]
+is the same symptom for pre-7.2.0 **default** builds (closed,
+ fixed by
+[harfbuzz PR #4168][]);
+ no issue exists about `HB_NO_STYLE` builds
+emitting STAT with dangling references,
+ so a new issue is not a
+duplicate;
+ the drafts below reference #4162 as prior art.
+ Related but
+distinct:
+ harfbuzz PR #5623 (merged,
+ first in 12.2.0) stops
+*collecting* STAT name IDs when STAT is dropped,
+ the inverse concern.
 
 ### Candidate 1: hb-subset-wasm (primary owner)
 
-1. **Really upstream's fault?** Yes. The wrapper's own build script
-   adds `-DHB_NO_STYLE` (`scripts/build-wasm.sh:85`), which silently
+1. **Really upstream's fault?**
+    Yes.
+    The wrapper's own build script
+   adds `-DHB_NO_STYLE` (`scripts/build-wasm.sh:85`),
+    which silently
    turns correct HarfBuzz 10.4.0 behavior into invalid output for any
-   STAT-bearing font. Not wording, not architecture: a flag choice.
-2. **Can upstream fix it?** Yes: delete one line and republish.
+   STAT-bearing font.
+    Not wording,
+    not architecture:
+    a flag choice.
+2. **Can upstream fix it?**
+    Yes:
+    delete one line and republish.
    Verified by the prototype below.
-3. **Are they supporting this use case?** Yes: the package's stated
-   purpose is font subsetting, its README documents variable-axes
-   support, and the build deliberately leaves `HB_NO_VAR` off so
+3. **Are they supporting this use case?**
+    Yes:
+    the package's stated
+   purpose is font subsetting,
+    its README documents variable-axes
+   support,
+    and the build deliberately leaves `HB_NO_VAR` off so
    variable fonts work.
-4. **Would the repo welcome our contribution?** No `CONTRIBUTING.md`,
-   no issue templates, no policy on AI-assisted contributions was
-   found (files and tracker checked 2026-07-02); the repo itself
-   commits a `CLAUDE.md` and is visibly AI-assisted. No ban found;
+4. **Would the repo welcome our contribution?**
+    No `CONTRIBUTING.md`,
+   no issue templates,
+    no policy on AI-assisted contributions was
+   found (files and tracker checked 2026-07-02);
+    the repo itself
+   commits a `CLAUDE.md` and is visibly AI-assisted.
+    No ban found;
    absence of policy is not a fail.
-5. **Will they likely fix it?** Unknown: single maintainer, zero
-   issues ever filed, last push 2026-04-21. No signal either way, and
+5. **Will they likely fix it?**
+    Unknown:
+    single maintainer,
+    zero
+   issues ever filed,
+    last push 2026-04-21.
+    No signal either way,
+    and
    absence of signal is not a fail.
-6. **Prototyped a minimal fix?** Yes. In a disposable clone of
-   `kyosuke/hb-subset-wasm@82fe83f` (origin and HEAD verified, with
-   the `deps/harfbuzz` submodule at 3ef8709/10.4.0), the fix is:
+6. **Prototyped a minimal fix?**
+    Yes.
+    In a disposable clone of
+   `kyosuke/hb-subset-wasm@82fe83f` (origin and HEAD verified,
+    with
+   the `deps/harfbuzz` submodule at 3ef8709/10.4.0),
+    the fix is:
 
    ```diff
    --- a/scripts/build-wasm.sh
@@ -418,7 +578,10 @@ distinct: harfbuzz PR #5623 (merged, first in 12.2.0) stops
 
    Built with `bash scripts/build-wasm.sh` inside a bounded
    `emscripten/emsdk:latest` podman container (no host credentials,
-   only the clone mounted). Verification: the harness above, run
+   only the clone mounted).
+    Verification:
+    the harness above,
+    run
    against the rebuilt `dist/hb-subset.wasm` on the pinned Inter,
    prints
 
@@ -427,11 +590,14 @@ distinct: harfbuzz PR #5623 (merged, first in 12.2.0) stops
    ```
 
    i.e. exactly the five previously dangling IDs are now retained.
-   Size cost, same toolchain, same everything but the flag:
+   Size cost,
+    same toolchain,
+    same everything but the flag:
    590,665 bytes with `HB_NO_STYLE` vs 591,933 bytes without,
    +1,268 bytes (+0.21%).
 
-All six constraints hold; the draft below is fileable as-is.
+All six constraints hold;
+ the draft below is fileable as-is.
 
 ~~~md
 Title: Default build emits STAT tables whose nameIDs dangle after name subsetting (Firefox/OTS discards STAT)
@@ -481,30 +647,56 @@ run end-to-end as described above).
 
 ### Candidate 2: HarfBuzz (latent config inconsistency)
 
-1. **Really upstream's fault?** Yes, narrowly: `HB_NO_STYLE` is an
+1. **Really upstream's fault?**
+    Yes,
+    narrowly:
+    `HB_NO_STYLE` is an
    official config knob (their `HB_LEAN` profile sets it,
-   `src/hb-config.hh:57,85`), and under it hb-subset silently emits
-   output that fails sanitizers. A config that cannot maintain a
+   `src/hb-config.hh:57,85`),
+    and under it hb-subset silently emits
+   output that fails sanitizers.
+    A config that cannot maintain a
    table's integrity should not emit that table by default.
-2. **Can upstream fix it?** Yes; the guard below is small and verified.
-3. **Are they supporting this use case?** Yes: subsetting is a core
-   product, and the `HB_NO_*` config system is documented and
+2. **Can upstream fix it?**
+    Yes;
+    the guard below is small and verified.
+3. **Are they supporting this use case?**
+    Yes:
+    subsetting is a core
+   product,
+    and the `HB_NO_*` config system is documented and
    maintained.
-4. **Would the repo welcome our contribution?** Yes, with disclosure:
+4. **Would the repo welcome our contribution?**
+    Yes,
+    with disclosure:
    `CODE_OF_AI_CONDUCT.md` (present at HEAD) accepts AI-assisted
-   contributions, requires contributors to remain fully responsible,
-   requires an `Assisted-by:` trailer on commits, and bans fabricated
-   reproductions (ours is real and recorded here). README invites
+   contributions,
+    requires contributors to remain fully responsible,
+   requires an `Assisted-by:` trailer on commits,
+    and bans fabricated
+   reproductions (ours is real and recorded here).
+    README invites
    issues and pull requests.
-5. **Will they likely fix it?** Plausible: the sibling default-build
-   bug (#4162) was fixed within a day, and the project actively
-   maintains config-gated correctness. No won't-fix signal found.
-6. **Prototyped a minimal fix?** Yes. In a disposable clone of
-   `harfbuzz/harfbuzz@4509695c7` (origin and HEAD verified), the
+5. **Will they likely fix it?**
+    Plausible:
+    the sibling default-build
+   bug (#4162) was fixed within a day,
+    and the project actively
+   maintains config-gated correctness.
+    No won't-fix signal found.
+6. **Prototyped a minimal fix?**
+    Yes.
+    In a disposable clone of
+   `harfbuzz/harfbuzz@4509695c7` (origin and HEAD verified),
+    the
    `hb-subset` CLI was built with `-Dcpp_args=-DHB_NO_STYLE` (meson,
-   Fedora 42 container; `hb-info` fails to link under this define
-   because it uses the style API directly, so only the `util/hb-subset`
-   target was built). Pre-patch, on the pinned Inter:
+   Fedora 42 container;
+    `hb-info` fails to link under this define
+   because it uses the style API directly,
+    so only the `util/hb-subset`
+   target was built).
+    Pre-patch,
+    on the pinned Inter:
 
    ```txt
    PREPATCH (HB_NO_STYLE, HEAD 4509695c7): STAT kept; dangling STAT refs: [298 299 300 301 302]
@@ -536,7 +728,8 @@ run end-to-end as described above).
     #ifndef HB_NO_VAR
    ```
 
-   Post-patch, same command
+   Post-patch,
+    same command
    (`hb-subset --text="Hello wc 0123456789" --layout-features="*"`):
 
    ```txt
@@ -544,11 +737,14 @@ run end-to-end as described above).
    STAT present: false
    ```
 
-   The `#ifndef` branch is the untouched original, so default builds
-   are unaffected; explicit `no_subset_tables` passthrough still wins
+   The `#ifndef` branch is the untouched original,
+    so default builds
+   are unaffected;
+    explicit `no_subset_tables` passthrough still wins
    (it is checked before the switch).
 
-All six constraints hold; the draft below is fileable as-is.
+All six constraints hold;
+ the draft below is fileable as-is.
 
 ~~~md
 Title: [subset] HB_NO_STYLE builds emit STAT with dangling nameIDs (OTS rejects the table)
@@ -614,7 +810,11 @@ reproduction and pre/post-patch verification were run end-to-end as
 described.
 ~~~
 
-Neither draft has been filed; filing is the user's call. If filed, the
+Neither draft has been filed;
+ filing is the user's call.
+ If filed,
+ the
 HarfBuzz one must keep its AI-assistance disclosure to comply with
-their `CODE_OF_AI_CONDUCT.md`, and a PR would carry an `Assisted-by:`
+their `CODE_OF_AI_CONDUCT.md`,
+ and a PR would carry an `Assisted-by:`
 trailer per the same policy.

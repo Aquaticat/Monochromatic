@@ -11,11 +11,14 @@ Anyone writing their own rule package depends on exactly the same thing.
 ## What is here
 
 - `max-lines`:
-   a per-file code-line budget, blanks and comments excluded,
+   a per-file code-line budget,
+   blanks and comments excluded,
    mirroring oxlint's `eslint/max-lines`.
-   Filed under `pedantic`, which is the category oxlint files its own under.
+   Filed under `pedantic`,
+   which is the category oxlint files its own under.
 - `require-rustdoc`:
-   rustdoc on every documentable item, public and private,
+   rustdoc on every documentable item,
+   public and private,
    mirroring the `require-tsdoc` rule used for TypeScript.
 - `pattern_rule`:
    the driver that turns each `[[pattern]]` table in `rust-linter.toml` into a
@@ -23,7 +26,8 @@ Anyone writing their own rule package depends on exactly the same thing.
 
 Both `max-lines` and `require-rustdoc` declare themselves **non-suppressible**.
 A `rust-linter-disable` directive aimed at either is refused and reported,
- which is what keeps `AGENTS.md` MXL, MXR and RDC literally true.
+ which is what keeps `AGENTS.md` MXL,
+ MXR and RDC literally true.
 Pattern rules are suppressible,
  because they are written by whoever configured them.
 

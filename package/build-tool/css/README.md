@@ -14,15 +14,18 @@ No single CSS tool handles all three requirements at once:
     no standard plugin provides the mixin semantics this monorepo needs
 3.  **Browser-compatible**:
     the mixin pipeline runs in both Node.js and browser environments
-    (no native binary dependencies, no process globals)
+    (no native binary dependencies,
+     no process globals)
 
 Parsing sits on `@monochromatic-dev/module-css-edit`,
 the workspace's byte-preserving CSS CST over the `@csstools/css-tokenizer`
 spec tokenizer.
-Untouched CSS survives byte-exactly, comments and author formatting included.
+Untouched CSS survives byte-exactly,
+ comments and author formatting included.
 
 See [doc/troubleshooting/css-tooling.md](../../../doc/troubleshooting/css-tooling.md)
-for the full tooling chronicle, including the 2026-07 parser survey that led
+for the full tooling chronicle,
+ including the 2026-07 parser survey that led
 here from postcss.
 
 ## Usage
@@ -63,9 +66,12 @@ const expanded = expandCssMixins({
 ```
 
 `expandCssMixins` collects definitions from `mixinCss` and from `css` itself
-(inline definitions win on name collision), expands nested references,
-replaces every `@apply`, and strips the definitions from the output.
-No filesystem access, no process globals.
+(inline definitions win on name collision),
+ expands nested references,
+replaces every `@apply`,
+ and strips the definitions from the output.
+No filesystem access,
+ no process globals.
 
 ## CSS syntax
 
@@ -92,8 +98,10 @@ A definition without a name or without structural body content is an error.
 ```
 
 `@apply` rules are replaced with the referenced mixin's body.
-Bodies may contain declarations, nested rules
-(with or without `&`), and further `@apply` references.
+Bodies may contain declarations,
+ nested rules
+(with or without `&`),
+ and further `@apply` references.
 
 ### Nested mixins
 
@@ -114,7 +122,8 @@ naming the exact reference chain
 ### Cross-package imports
 
 Imports resolve through package.json `exports` mappings,
-`node_modules` lookup, and direct file paths:
+`node_modules` lookup,
+ and direct file paths:
 
 ```css
 /* Via exports field */
@@ -127,14 +136,18 @@ Imports resolve through package.json `exports` mappings,
 Specifiers are read from parsed tokens,
 so trailing conditions such as `layer(base)` or media queries
 never corrupt the target.
-Each file inlines once; circular imports resolve to nothing on revisit.
+Each file inlines once;
+ circular imports resolve to nothing on revisit.
 
 ## Build pipeline
 
 1.  **Resolve and bundle**:
     `@import` at-rules are resolved
-    (relative paths, package.json `exports`, bare `node_modules` specifiers)
-    and replaced by the parsed contents of their files, recursively
+    (relative paths,
+     package.json `exports`,
+     bare `node_modules` specifiers)
+    and replaced by the parsed contents of their files,
+     recursively
 2.  **Collect mixins**:
     `@mixin` definitions move into a registry and leave the tree
 3.  **Expand mixin bodies**:
@@ -148,17 +161,31 @@ Each file inlines once; circular imports resolve to nothing on revisit.
 
 ## Module structure
 
-- `index.ts`: public surface (`buildCss`, `expandCssMixins`, error classes)
-- `build.ts`: file pipeline orchestration
-- `expand.ts`: in-memory mixin pipeline
-- `import.ts`: `@import` inlining with monorepo-aware resolution
-- `mixin.ts`: mixin collection and expansion engine (internal)
-- `errors.ts`: `UnknownCssMixinError`, `CircularCssMixinError`
-- `package-resolver.ts`: `node_modules` and `exports` resolution
-- `specifier.ts`: specifier classification helpers
-- `fs.ts`: adaptive file reader (in-memory registry with `node:fs` fallback)
-- `fs-registry.ts`: in-memory `Map` for browser-side file storage
-- `cli.ts`: `build-css` binary entry point
+- `index.ts`:
+   public surface (`buildCss`,
+   `expandCssMixins`,
+   error classes)
+- `build.ts`:
+   file pipeline orchestration
+- `expand.ts`:
+   in-memory mixin pipeline
+- `import.ts`:
+   `@import` inlining with monorepo-aware resolution
+- `mixin.ts`:
+   mixin collection and expansion engine (internal)
+- `errors.ts`:
+   `UnknownCssMixinError`,
+   `CircularCssMixinError`
+- `package-resolver.ts`:
+   `node_modules` and `exports` resolution
+- `specifier.ts`:
+   specifier classification helpers
+- `fs.ts`:
+   adaptive file reader (in-memory registry with `node:fs` fallback)
+- `fs-registry.ts`:
+   in-memory `Map` for browser-side file storage
+- `cli.ts`:
+   `build-css` binary entry point
 
 ## Testing
 
@@ -178,6 +205,9 @@ packages:
   (no `exports` field)
 
 Both strategies run identical assertions:
-import resolution, mixin removal, `@apply` expansion,
-nested mixin inlining, and output file writing.
+import resolution,
+ mixin removal,
+ `@apply` expansion,
+nested mixin inlining,
+ and output file writing.
 Error paths and import dedup run on disposable temp directories.

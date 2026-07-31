@@ -100,7 +100,10 @@ Reference updates required:
 
 - `.claude-plugin/plugin.json` hook commands
   (`${CLAUDE_PLUGIN_ROOT}/dist/final/node/...`).
-- `package.json` `bin`, `module`, `exports`, and `files` entries.
+- `package.json` `bin`,
+   `module`,
+   `exports`,
+   and `files` entries.
 - The session-start-housekeeping plugin,
   which cleans stale dist artifacts.
 - Any mise tasks referencing the old path,
@@ -111,7 +114,8 @@ Rejected alternatives:
 - Keep the negation:
   workable (the existing comment documents it),
   but keeps the only spot in the repo where `dist/` content is load-bearing and committed.
-- Copy step (build into `dist/`, copy the final bundle into a tracked directory):
+- Copy step (build into `dist/`,
+   copy the final bundle into a tracked directory):
   pays the same reference-update cost while duplicating every bundle,
   with drift risk between built and committed copies.
 
@@ -134,13 +138,16 @@ Three coupled changes:
   and silently adding baseline rules to existing users' scans would be a behavioral break
   on a published 0.1.9 CLI.
   The published resolution order
-  (`--rules`, then `FORBIDDEN_STRINGS_RULES`, then `./forbidden-strings.local.txt`)
+  (`--rules`,
+   then `FORBIDDEN_STRINGS_RULES`,
+   then `./forbidden-strings.local.txt`)
   is untouched.
 - **The repo stops materializing rules at the root.**
   file-enforcer concatenates only `forbidden-strings.append.txt`
   and `forbidden-strings.append.local.txt`
   into a file under an already-ignored scratch directory
-  (proposal: `.cache/`),
+  (proposal:
+   `.cache/`),
   and the generated root `mise.toml` `[env]` points `FORBIDDEN_STRINGS_RULES` at it.
   Root `forbidden-strings.local.example.txt` and root `forbidden-strings.local.txt` both disappear,
   deleting the `!/forbidden-strings.local.example.txt` negation
@@ -159,7 +166,9 @@ Implementation cautions:
 Rejected alternatives:
 
 - Rename the example file out of the `*.local.*` convention
-  (`baseline`, `example`, and `local-example` variants were considered):
+  (`baseline`,
+   `example`,
+   and `local-example` variants were considered):
   fixes the negation but keeps materialized rules at the repo root.
 - Multi-source CLI (repeated `--rules` or a pathsep-joined env var):
   removes the intermediate file entirely,
@@ -186,7 +195,9 @@ Two newer negations arrived independently
 KWin's KPackage layout mandates both paths,
  so these cannot be renamed away.
 Observation for any future pass:
- blanket basename ignores (`*.js`, `metadata.json`, `meta.json`)
+ blanket basename ignores (`*.js`,
+ `metadata.json`,
+ `meta.json`)
  are the repo's remaining negation generators;
  eliminating these two at the source would mean scoping those blanket patterns instead,
  which is undecided and deliberately not designed here.

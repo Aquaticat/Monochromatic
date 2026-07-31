@@ -1,10 +1,12 @@
 # Secrets management
 
 Local developer secrets (API keys and tokens consumed by tasks and packages)
-live in a gitignored, age-encrypted `.env.local.json` at the repo root,
+live in a gitignored,
+ age-encrypted `.env.local.json` at the repo root,
 decrypted transparently by mise through its `[env]` `_.file` directive.
 CI secrets are separate and stay in the platform's own encrypted store
-(GitHub Actions secrets); this document is about the local developer set.
+(GitHub Actions secrets);
+ this document is about the local developer set.
 
 ## Approach: mise-native encryption, not a dedicated secrets tool
 
@@ -15,13 +17,17 @@ Every consumer that reads `process.env.SOME_KEY` is untouched by the migration.
 
 ### Why not fnox
 
-fnox is the obvious candidate (same author as mise, age-based, purpose-built),
+fnox is the obvious candidate (same author as mise,
+ age-based,
+ purpose-built),
 but its own documentation disavows the mise integration:
 the `mise-env-fnox` plugin is called "an incomplete experiment" that they
 "do not recommend".
 The maintained path is wrapping every command in `fnox exec -- <cmd>`.
 That trades away the transparent env injection the codebase already depends on,
-for a feature set (remote providers, profiles, TUI) this repo does not need.
+for a feature set (remote providers,
+ profiles,
+ TUI) this repo does not need.
 
 The lesson generalizes:
 choose the tool that fits the architecture already in place,
@@ -47,16 +53,20 @@ but it is close to worthless for a solo developer on a public repo:
 
 - sops leaves object keys in plaintext,
    so committing publishes the secret-name inventory
-  (which providers you use, what your internal projects are called).
+  (which providers you use,
+   what your internal projects are called).
 - The cross-machine sync argument is moot when good hygiene means generating
    distinct provider keys per machine anyway.
 
-So the store is gitignored, not committed.
-Encryption alone achieves the actual goal, keeping plaintext off disk,
+So the store is gitignored,
+ not committed.
+Encryption alone achieves the actual goal,
+ keeping plaintext off disk,
 without publishing anything.
 The loader is encrypted-only:
 no plaintext `.env` slot survives in `_.file`,
-so a secret can never regress into an unencrypted, backed-up file.
+so a secret can never regress into an unencrypted,
+ backed-up file.
 
 ## The decryption identity must live outside the backup scope
 
@@ -64,14 +74,19 @@ Encrypting a file only protects it in backups if the identity that decrypts it
 is not captured by the same backup.
 The age identity lives at `~/.config/mise/age.txt`,
 outside every backup snapshot root,
-and private-key filename patterns (`id_ed25519`, `*.pem`, `age.txt`, and peers)
+and private-key filename patterns (`id_ed25519`,
+ `*.pem`,
+ `age.txt`,
+ and peers)
 are added to the backup tool's global ignore rules as defense in depth.
-Ciphertext and key are separated by where they live, not by hope.
+Ciphertext and key are separated by where they live,
+ not by hope.
 
 ## Test tool behavior; do not assume it
 
 Every load-bearing claim here was established by running the real tools against
-throwaway fixtures, because the surface behavior is full of traps and the docs
+throwaway fixtures,
+ because the surface behavior is full of traps and the docs
 even contradict themselves (fnox's README says "encrypted by default"
 while its quick-start says "plain text defaults").
 
@@ -79,7 +94,8 @@ while its quick-start says "plain text defaults").
    sops will happily encrypt to an `ssh-ed25519` recipient,
    but neither mise's built-in `rops` nor the external sops CLI can then
   decrypt with the SSH private key.
-   Use a dedicated age key from `age-keygen`, not an SSH key.
+   Use a dedicated age key from `age-keygen`,
+   not an SSH key.
 - SSH keys work only in mise's inline direct-age mode,
    and even there the environment-variable identity path
   (`MISE_AGE_SSH_IDENTITY_FILES`) panics;
@@ -94,10 +110,14 @@ while its quick-start says "plain text defaults").
    and mise selects the parser from the `.json` extension,
    so the encrypted file loads with no extra configuration.
 - The identity at mise's default path `~/.config/mise/age.txt` needs zero env
-   plumbing for runtime decryption; `rops` finds it automatically.
-   The sops CLI, used only to edit, needs `SOPS_AGE_KEY_FILE` set,
+   plumbing for runtime decryption;
+   `rops` finds it automatically.
+   The sops CLI,
+   used only to edit,
+   needs `SOPS_AGE_KEY_FILE` set,
    which the `secrets:edit` mise task provides.
-- `experimental` was already enabled, so sops mode needed no settings change.
+- `experimental` was already enabled,
+   so sops mode needed no settings change.
 
 ## Recovery is regeneration, not backup
 

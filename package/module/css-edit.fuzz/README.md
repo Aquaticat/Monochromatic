@@ -3,20 +3,28 @@
 Property-based fuzz campaign for
 [`@monochromatic-dev/module-css-edit`](../css-edit/README.md).
 
-Non-runtime sidecar, mirroring `jsonc-edit.fuzz`:
+Non-runtime sidecar,
+ mirroring `jsonc-edit.fuzz`:
 the runtime package's `src` stays pure production code
-while the fuzz generators, properties, and campaign task live here.
+while the fuzz generators,
+ properties,
+ and campaign task live here.
 
 ## Properties
 
 - **Byte round-trip**:
   every generated structurally-valid document
-  (declarations, custom properties, `&` and relaxed nesting,
-  statement and block at-rules, adversarial strings, varied trivia)
+  (declarations,
+   custom properties,
+   `&` and relaxed nesting,
+  statement and block at-rules,
+   adversarial strings,
+   varied trivia)
   parses and stringifies byte-identically.
 - **Totality**:
   an arbitrary string either parses (and then must round-trip byte-exactly)
-  or throws `CssParseError`; no other failure mode exists.
+  or throws `CssParseError`;
+   no other failure mode exists.
 - **Structural sharing**:
   a keep-everything transform returns the identical root reference.
 - **postcss differential oracle**:
@@ -47,7 +55,8 @@ so no build step is needed.
 `NODE_V8_COVERAGE` and gates the covered-function count per runtime source
 file against the frozen `coverage-baseline.json`
 (mirroring `jsonc-edit.fuzz`'s gate).
-It measures the runtime package's `src/` reachability, not this sidecar:
+It measures the runtime package's `src/` reachability,
+ not this sidecar:
 its `SOURCE_MARKER` targets `package/module/css-edit/src`.
 The frozen baseline reaches every function in every runtime file,
 so any change that makes a function unreachable from the public API fails

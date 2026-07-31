@@ -1,15 +1,21 @@
 # Handover: IntelliJ IDEA Device Manager lost Android virtual devices
 
-Last updated: 2026-07-01.
+Last updated:
+ 2026-07-01.
 
-Purpose: continue investigating why IntelliJ IDEA's Android Device Manager stopped showing existing
+Purpose:
+ continue investigating why IntelliJ IDEA's Android Device Manager stopped showing existing
 Android Virtual Devices in the Monochromatic checkout.
-Update this file after every new probe, workaround, or rejected hypothesis.
+Update this file after every new probe,
+ workaround,
+ or rejected hypothesis.
 
 Suggested skills for the next session:
 
-- `diagnose`, because this is an active external-tool failure.
-- `troubleshooting-doc`, because the final diagnosed tool behavior needs a durable
+- `diagnose`,
+   because this is an active external-tool failure.
+- `troubleshooting-doc`,
+   because the final diagnosed tool behavior needs a durable
   `doc/troubleshooting/<topic>.md` entry.
 - `runbook` only if a future step genuinely needs the user to click through IDEA after CLI bridges fail.
 
@@ -24,10 +30,13 @@ Editing `.idea/deviceManager.xml` did not help and was not part of the final fix
 AGP incompatibility is a verified Android sync failure,
 because `package/music-player/android-app` uses AGP 9.2.1 and the current IDEA Android plugin reports latest
 supported AGP 9.0.0.
-That likely explains missing Android model, Android facets, or run-target behavior tied to this project.
+That likely explains missing Android model,
+ Android facets,
+ or run-target behavior tied to this project.
 It is no longer proven as the sole explanation for an empty Device Manager inventory:
 source inspection shows Device Manager's local emulator provider should read AVDs through the SDK-backed
-`AvdManagerConnection`, and a scratch probe using IDEA's own Android plugin jars can list the real AVD as valid.
+`AvdManagerConnection`,
+ and a scratch probe using IDEA's own Android plugin jars can list the real AVD as valid.
 The stale custom Android plugin is now unlikely to be loaded.
 `lsof` on the live IDEA process shows Android plugin jars mapped from the current Linux plugin under
 `/var/home/user/.local/share/JetBrains/IntelliJIdea2026.2/android`,
@@ -35,7 +44,8 @@ and no mapped files under `/var/home/user/.config/JetBrains/IntelliJIdea2026.2/p
 A stronger root-cause candidate is now the stale global IntelliJ Android SDK entry:
 `jdk.table.xml` pointed IDEA at Android API 36 under `/var/home/user/Android/Sdk/platforms/android-36`,
 but this SDK currently has only Android 37.0 and Android CANARY platforms installed.
-For IntelliJ IDEA, `AndroidSdksImpl.tryToChooseAndroidSdk()` does not use the saved Android Studio SDK path first;
+For IntelliJ IDEA,
+ `AndroidSdksImpl.tryToChooseAndroidSdk()` does not use the saved Android Studio SDK path first;
 it falls back to Android SDK entries from `ProjectJdkTable`.
 If the only Android SDK entry points at a missing platform,
 `AvdManagerConnection.getDefaultAvdManagerConnection()` can end up with no SDK handler even though
@@ -151,7 +161,8 @@ but the user chose to update IntelliJ's SDK entry instead.
 The entry now points at installed Android 37.0 paths.
 
 IDEA logs show the emulator previously launched from IDEA on 2026-06-14,
-2026-06-25, and 2026-06-28.
+2026-06-25,
+ and 2026-06-28.
 Those launches used:
 
 ```sh
@@ -213,7 +224,8 @@ No imported Android Gradle module was found in the checked project files.
 
 This is not unique.
 Search results and support threads repeatedly point at Android project recognition,
-SDK setup, or platform update state as gates for Device Manager visibility.
+SDK setup,
+ or platform update state as gates for Device Manager visibility.
 
 Relevant public leads:
 
@@ -226,12 +238,14 @@ Relevant public leads:
 - [IDEA-308876][idea-308876] is titled around IntelliJ Android Device Manager being disabled.
 - JetBrains support for IDEA-308876 says to install or update Android SDK Platform when Device Manager is disabled.
 - Android emulator docs say IDEA's `-qt-hide-window -grpc-use-token -idle-grpc-timeout 300` flags are for the
-  emulator window inside Android Studio or IntelliJ, not a standalone CLI viewer.
+  emulator window inside Android Studio or IntelliJ,
+   not a standalone CLI viewer.
 
 ## Attempts and outcomes
 
 Reset `.idea/deviceManager.xml` to the repository baseline.
-Result: no visible improvement.
+Result:
+ no visible improvement.
 
 Opened the Android package root as a separate IDEA project after user approval:
 
@@ -242,12 +256,15 @@ Opened the Android package root as a separate IDEA project after user approval:
 
 `idea.log` then showed a new `Project(name=android-app, ...)`,
 project root `/var/home/user/Monochromatic/package/music-player/android-app`,
-ADB status retrieval from the Android plugin, and Gradle project sync updates for that path.
+ADB status retrieval from the Android plugin,
+ and Gradle project sync updates for that path.
 User checked Device Manager in the new `android-app` IDEA window before the SDK table fix.
-Result then: it still did not show the AVD.
+Result then:
+ it still did not show the AVD.
 This weakened the hypothesis that root monorepo project recognition alone was the cause.
 
-Immediately after that check, `idea.log` showed a stronger cause:
+Immediately after that check,
+ `idea.log` showed a stronger cause:
 
 ```text
 The project is using an incompatible version (AGP 9.2.1) of the Android Gradle plugin.
@@ -269,7 +286,8 @@ but Android model import fails because its bundled Android plugin only supports 
 With no successful Android Gradle model,
 project features that depend on the Android model should be expected to fail.
 
-However, source and SDK probes now weaken AGP mismatch as the sole Device Manager inventory cause.
+However,
+ source and SDK probes now weaken AGP mismatch as the sole Device Manager inventory cause.
 `DeviceManager2ToolWindowFactory` constructs `DeviceManagerPanel` unconditionally.
 `DeviceManagerPanel` gets `DeviceProvisionerService` from the project.
 `DeviceProvisionerService` creates provisioners from extension point
@@ -281,7 +299,8 @@ AvdManagerConnection.getDefaultAvdManagerConnection().getAvds(true)
 ```
 
 `AvdManagerConnection` chooses an SDK via `AndroidSdks.getInstance().tryToChooseSdkHandler()`.
-For IntelliJ IDEA, `AndroidSdksImpl` falls back to existing Android SDK entries in `jdk.table.xml`.
+For IntelliJ IDEA,
+ `AndroidSdksImpl` falls back to existing Android SDK entries in `jdk.table.xml`.
 This install has an Android SDK entry rooted at `/var/home/user/Android/Sdk`.
 
 A scratch Java probe compiled against IDEA's Android plugin jars and Toolbox app jars used:
@@ -318,10 +337,13 @@ The probe bypassed IntelliJ's `AndroidSdksImpl` selection path by providing the 
 The stale `jdk.table.xml` Android API 36 entry can still break the actual IDE path that chooses an SDK handler.
 The next investigation should therefore distinguish two surfaces:
 
-- the Device Manager tool window inventory, which source suggests should list the AVD independently of Gradle sync;
-- Android run target selection or Android project features, which the AGP 9.2.1 compatibility failure can break.
+- the Device Manager tool window inventory,
+   which source suggests should list the AVD independently of Gradle sync;
+- Android run target selection or Android project features,
+   which the AGP 9.2.1 compatibility failure can break.
 
-GUI automation was probed with `wmctrl` and `xdotool`, but no IDEA window was visible through X11
+GUI automation was probed with `wmctrl` and `xdotool`,
+ but no IDEA window was visible through X11
 on this Wayland session.
 
 Do not update the Android plugin during this investigation.
@@ -385,21 +407,29 @@ Do not expect `.idea/deviceManager.xml` to restore devices by adding entries.
 The plugin stores only Device Manager table UI state there.
 
 Do not use the mise Android SDK to validate AVD visibility.
-It is older, lacks the relevant Pixel 9 device profile, and lacks `emulator`.
+It is older,
+ lacks the relevant Pixel 9 device profile,
+ and lacks `emulator`.
 Use `/var/home/user/Android/Sdk` for AVD commands.
 
 Do not run destructive AVD cleanup on the real AVD as a test.
-If data wipe or recreation is needed, use a disposable AVD or ask first.
+If data wipe or recreation is needed,
+ use a disposable AVD or ask first.
 
 ## Next investigation steps
 
 1.  Check current IDEA logs immediately after opening Device Manager.
-    Look for `DeviceManager2`, `AvdManagerConnection`, `DeviceProvisioner`,
-    `Android.DeviceManager`, `AndroidFacet`, and Android SDK warnings.
+    Look for `DeviceManager2`,
+     `AvdManagerConnection`,
+     `DeviceProvisioner`,
+    `Android.DeviceManager`,
+     `AndroidFacet`,
+     and Android SDK warnings.
 
 2.  Confirm whether IDEA currently sees any Android facet or imported Android Gradle project.
     Search workspace model caches and `.idea` files for Android module entities,
-    Android Gradle paths, or facet entries.
+    Android Gradle paths,
+     or facet entries.
 
 3.  Clarify the user-visible surface.
     If the empty list is the Device Manager tool window,

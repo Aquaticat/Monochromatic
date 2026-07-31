@@ -69,9 +69,12 @@ The default is seven days.
 
 Source checked:
 
-- pnpm repository: `https://github.com/pnpm/pnpm.git`
-- clone path: `/tmp/agent/pnpm-20260629`
-- commit: `a6f04d4ae50a133358371fb77d018d55837e6b19`
+- pnpm repository:
+   `https://github.com/pnpm/pnpm.git`
+- clone path:
+   `/tmp/agent/pnpm-20260629`
+- commit:
+   `a6f04d4ae50a133358371fb77d018d55837e6b19`
 
 `pnpm11/installing/deps-installer/src/install/extendInstallOptions.ts:368-376`
 defines the default:
@@ -88,9 +91,12 @@ defines the default:
 
 `pnpm11/installing/deps-installer/src/install/index.ts:484-487` decides whether to prune the
 virtual store.
-With a positive `modulesCacheMaxAge`, pnpm compares the previous prune timestamp to the configured
+With a positive `modulesCacheMaxAge`,
+ pnpm compares the previous prune timestamp to the configured
 age.
-With `modulesCacheMaxAge: 0`, the `opts.modulesCacheMaxAge > 0` guard is false, so
+With `modulesCacheMaxAge: 0`,
+ the `opts.modulesCacheMaxAge > 0` guard is false,
+ so
 `pruneVirtualStore` becomes `true` on every install:
 
 ```ts
@@ -187,7 +193,9 @@ undefined
 
 ### Benchmark harness
 
-Benchmarks ran under `~/temp`, not `/tmp`, because `/tmp` is RAM-backed on this machine.
+Benchmarks ran under `~/temp`,
+ not `/tmp`,
+ because `/tmp` is RAM-backed on this machine.
 Every benchmark worktree had scripts disabled in config and at command invocation:
 
 ```yaml
@@ -343,16 +351,21 @@ not Bun.
 
 Relevant upstream threads already exist:
 
-- `pnpm/pnpm#3115`, closed:
+- `pnpm/pnpm#3115`,
+   closed:
   original feature request to stop pruning the modules directory on every install.
-- `pnpm/pnpm#3124`, merged:
+- `pnpm/pnpm#3124`,
+   merged:
   implementation of the modules cache prune-frequency option.
-- `pnpm/pnpm#11011`, open:
+- `pnpm/pnpm#11011`,
+   open:
   large TypeScript monorepo reports stale `node_modules/.pnpm` paths causing type-check problems;
   maintainer suggests `modulesCacheMaxAge: 0`.
-- `pnpm/pnpm#2694`, open:
+- `pnpm/pnpm#2694`,
+   open:
   broader global-store automatic pruning discussion.
-- `pnpm/pnpm#10132`, open:
+- `pnpm/pnpm#10132`,
+   open:
   pruning and global virtual store inconsistency report.
 
 Searches run:

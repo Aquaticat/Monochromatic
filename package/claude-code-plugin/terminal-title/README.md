@@ -10,49 +10,77 @@ past-tense wording after `PostToolUse`.
 
 Examples:
 
-- `Bash`: `✳ Running git status` while running,
+- `Bash`:
+   `✳ Running git status` while running,
   `✳ Ran git status` after completion.
-- `Read`: `✳ Reading src/index.ts` while running,
+- `Read`:
+   `✳ Reading src/index.ts` while running,
   `✳ Read src/index.ts` after completion.
-- `Edit`: `✳ Editing src/config.ts` while running,
+- `Edit`:
+   `✳ Editing src/config.ts` while running,
   `✳ Edited src/config.ts` after completion.
-- `Write`: `✳ Writing dist/output.ts` while running,
+- `Write`:
+   `✳ Writing dist/output.ts` while running,
   `✳ Wrote dist/output.ts` after completion.
-- `Grep`: `✳ Searching for TODO` while running,
+- `Grep`:
+   `✳ Searching for TODO` while running,
   `✳ Searched for TODO` after completion.
-- `Glob`: `✳ Finding *.ts` while running,
+- `Glob`:
+   `✳ Finding *.ts` while running,
   `✳ Found *.ts` after completion.
-- `Agent`: `✳ Running agent find endpoints` while running,
+- `Agent`:
+   `✳ Running agent find endpoints` while running,
   `✳ Finished agent find endpoints` after completion.
-- `WebSearch`: `✳ Searching web for react hooks` while running,
+- `WebSearch`:
+   `✳ Searching web for react hooks` while running,
   `✳ Searched web for react hooks` after completion.
-- `WebFetch`: `✳ Fetching example.com` while running,
+- `WebFetch`:
+   `✳ Fetching example.com` while running,
   `✳ Fetched example.com` after completion.
-- `AskUserQuestion`: `✳ Asking: Which library?` while running,
+- `AskUserQuestion`:
+   `✳ Asking: Which library?` while running,
   `✳ Asked: Which library?` after completion.
-- `TaskList`: `✳ Listing tasks` while running,
+- `TaskList`:
+   `✳ Listing tasks` while running,
   `✳ Listed tasks` after completion.
-- Unknown and MCP tools: `✳ Running mcp__weather` while running,
+- Unknown and MCP tools:
+   `✳ Running mcp__weather` while running,
   `✳ Ran mcp__weather` after completion.
 
 ## Session and lifecycle examples
 
-- `PermissionRequest`: `✳ Requesting permission: Bash`
-- `PostToolUseFailure`: `✳ Failed tool: Bash`
-- `SessionStart`: `✳ Started session: startup`
-- `SessionEnd`: `✳ Ended session`
-- `InstructionsLoaded`: `✳ Loaded instructions: CLAUDE.md`
-- `UserPromptSubmit`: `✳ Received prompt: Fix the auth bug`
-- `Stop`: `✳ Stopped agent`
-- `SubagentStart`: `✳ Starting subagent: Explore`
-- `SubagentStop`: `✳ Finished subagent: Explore`
-- `TeammateIdle`: `✳ Marked idle: reviewer`
-- `TaskCompleted`: `✳ Completed task: Fix login bug`
-- `Notification`: `✳ Notified: Permission granted`
-- `ConfigChange`: `✳ Updated config: project_settings`
-- `WorktreeCreate`: `✳ Created worktree: bold-oak-a3f2`
-- `WorktreeRemove`: `✳ Removed worktree`
-- `PreCompact`: `✳ Compacting: auto`
+- `PermissionRequest`:
+   `✳ Requesting permission: Bash`
+- `PostToolUseFailure`:
+   `✳ Failed tool: Bash`
+- `SessionStart`:
+   `✳ Started session: startup`
+- `SessionEnd`:
+   `✳ Ended session`
+- `InstructionsLoaded`:
+   `✳ Loaded instructions: CLAUDE.md`
+- `UserPromptSubmit`:
+   `✳ Received prompt: Fix the auth bug`
+- `Stop`:
+   `✳ Stopped agent`
+- `SubagentStart`:
+   `✳ Starting subagent: Explore`
+- `SubagentStop`:
+   `✳ Finished subagent: Explore`
+- `TeammateIdle`:
+   `✳ Marked idle: reviewer`
+- `TaskCompleted`:
+   `✳ Completed task: Fix login bug`
+- `Notification`:
+   `✳ Notified: Permission granted`
+- `ConfigChange`:
+   `✳ Updated config: project_settings`
+- `WorktreeCreate`:
+   `✳ Created worktree: bold-oak-a3f2`
+- `WorktreeRemove`:
+   `✳ Removed worktree`
+- `PreCompact`:
+   `✳ Compacting: auto`
 
 ## Terminal compatibility
 

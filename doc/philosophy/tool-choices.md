@@ -315,14 +315,18 @@ Raw rolldown drives every build flavor through the repo-owned
 Decision record and pilot evidence:
 `doc/planning/tsdown-removal.md`.
 
-Driver: layer reduction.
+Driver:
+ layer reduction.
 tsdown's value to this repo compressed into small owned glue
-(externals from package.json, `.mjs` filename templates,
-a shebang chmod plugin, task-level clean),
+(externals from package.json,
+ `.mjs` filename templates,
+a shebang chmod plugin,
+ task-level clean),
 while its unused subsystems,
 hidden timers,
 and lifecycle management caused unaccountable delays.
-The first revisit trigger below fired (rolldown 1.0.0 stable, 2026-05-07).
+The first revisit trigger below fired (rolldown 1.0.0 stable,
+ 2026-05-07).
 tsdown meanwhile moved into the rolldown org as the official library layer;
 we removed it anyway because official upstream ownership does not shrink
 the unused machinery it carries here.

@@ -1,268 +1,548 @@
 # Permit one verified authority: which user-code channel each collection member opens
 
-Status: accepted, implemented and measured.
+Status:
+ accepted,
+ implemented and measured.
 
-Decided: 2026-07-27, by the repository owner, after the measurement in
+Decided:
+ 2026-07-27,
+ by the repository owner,
+ after the measurement in
 `doc/decision/prefer-readonly-mutable-collection-members.md`.
 
-Amends: `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`, which forbids handwritten
+Amends:
+ `doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md`,
+ which forbids handwritten
 effect catalogs.
 
 ## What this reopens, and what stays closed
 
-The audit removed handwritten package, ECMAScript, DOM and Node effect catalogs. That stays removed. This
-decision permits exactly one authority: a table naming, per default-library collection member, which user-code
+The audit removed handwritten package,
+ ECMAScript,
+ DOM and Node effect catalogs.
+ That stays removed.
+ This
+decision permits exactly one authority:
+ a table naming,
+ per default-library collection member,
+ which user-code
 channel that member opens.
 
-It discharges the reachable-user-code claim about the receiver only. The receiver-structure claim keeps deriving
-from the paired read-only view as decided in `doc/decision/prefer-readonly-mutable-collection-members.md`, so a
-mutator stays a mutator: `Set.add` is verified narrow and restructuring at once, and reports a mutation with no
+It discharges the reachable-user-code claim about the receiver only.
+ The receiver-structure claim keeps deriving
+from the paired read-only view as decided in `doc/decision/prefer-readonly-mutable-collection-members.md`,
+ so a
+mutator stays a mutator:
+ `Set.add` is verified narrow and restructuring at once,
+ and reports a mutation with no
 opacity.
 
-It discharges nothing about a member's arguments. `values.with(0, replacement)` reaches no user code and still
-places `replacement` inside the array it returns, so argument-side analysis runs regardless. An implementation
+It discharges nothing about a member's arguments.
+ `values.with(0, replacement)` reaches no user code and still
+places `replacement` inside the array it returns,
+ so argument-side analysis runs regardless.
+ An implementation
 that returned early on a discharged receiver dropped that report and was reverted rather than shipped.
 
 ## Why an authority is unavoidable here
 
-Which channel a member opens is a fact about ECMA-262, not about its declaration. `Map.prototype.get` touches no
-property of its receiver while `Array.prototype.slice` consults species, and the two declarations are
-indistinguishable in every respect the analyzer can read. Measured directly: `toReversed`, `with` and `toSpliced`
-build new arrays without species while `slice`, `concat`, `flat`, `map` and `filter` use it, so even the return
+Which channel a member opens is a fact about ECMA-262,
+ not about its declaration.
+ `Map.prototype.get` touches no
+property of its receiver while `Array.prototype.slice` consults species,
+ and the two declarations are
+indistinguishable in every respect the analyzer can read.
+ Measured directly:
+ `toReversed`,
+ `with` and `toSpliced`
+build new arrays without species while `slice`,
+ `concat`,
+ `flat`,
+ `map` and `filter` use it,
+ so even the return
 type does not separate them.
 
 An earlier proposal in `doc/decision/prefer-readonly-mutable-collection-members.md` was to give the residue its
-own diagnostic class instead. That was withdrawn: classifying a finding as residue requires knowing every member
-it reached is narrow, which is the same member list, and the catalog-free approximation keys on whether a member
-takes an observer, which was measured to cover 222 findings of which the majority are the rule reporting
+own diagnostic class instead.
+ That was withdrawn:
+ classifying a finding as residue requires knowing every member
+it reached is narrow,
+ which is the same member list,
+ and the catalog-free approximation keys on whether a member
+takes an observer,
+ which was measured to cover 222 findings of which the majority are the rule reporting
 correctly.
 
 ## The claim was wrong once, and the correction is the point
 
-The first revision of this table claimed every listed member ran no user code at all. That was false for every
-`Array` entry, and reading the table back would never have shown it. Probing an accessor-bearing receiver did.
+The first revision of this table claimed every listed member ran no user code at all.
+ That was false for every
+`Array` entry,
+ and reading the table back would never have shown it.
+ Probing an accessor-bearing receiver did.
 
-Measured, by installing an own accessor at index 0 and calling each member on it: `at`, `includes`, `indexOf`,
-`lastIndexOf`, `toReversed`, `toSpliced`, `pop` and `copyWithin` all invoke the indexed getter. Worse, that
-getter can restructure the receiver during a member the structural claim calls structure-preserving: a getter
+Measured,
+ by installing an own accessor at index 0 and calling each member on it:
+ `at`,
+ `includes`,
+ `indexOf`,
+`lastIndexOf`,
+ `toReversed`,
+ `toSpliced`,
+ `pop` and `copyWithin` all invoke the indexed getter.
+ Worse,
+ that
+getter can restructure the receiver during a member the structural claim calls structure-preserving:
+ a getter
 that pushes turns `values.includes(marker)` into a call taking a one-element array to two.
 
 So the table now names two channels instead of asserting one flat property.
 
 `MEMBER_CHANNEL_INTERNAL_SLOT` covers members that read and write internal slots and touch no property of the
-receiver, which is every `Map` and `Set` entry. These reach no user code, and the claim is exactly that.
+receiver,
+ which is every `Map` and `Set` entry.
+ These reach no user code,
+ and the claim is exactly that.
 
-The probe establishes less than that sentence, and the gap is stated rather than glossed. It installs an own
-`size` accessor and finds it untouched, so these members provably do not read `size`; it does not enumerate every
-property. The receiver is a real `Map` or `Set` rather than a general trap, and a `Proxy` cannot substitute,
-because these members reject a receiver lacking the internal slot. So the broad claim rests on the specification
-while the probe guards the one channel it watches against drift. That is weaker than the `Array` half, where the
+The probe establishes less than that sentence,
+ and the gap is stated rather than glossed.
+ It installs an own
+`size` accessor and finds it untouched,
+ so these members provably do not read `size`;
+ it does not enumerate every
+property.
+ The receiver is a real `Map` or `Set` rather than a general trap,
+ and a `Proxy` cannot substitute,
+because these members reject a receiver lacking the internal slot.
+ So the broad claim rests on the specification
+while the probe guards the one channel it watches against drift.
+ That is weaker than the `Array` half,
+ where the
 channel being claimed is exactly the one the probe observes.
 
 `MEMBER_CHANNEL_RECEIVER_INDEX` covers members whose only user-code channel is own-index access on their own
-receiver, which is every `Array` entry. This does not claim they run nothing. It claims their channel is no
-wider than the one `values[0]` opens, and the same accessor fires for a plain indexed read.
+receiver,
+ which is every `Array` entry.
+ This does not claim they run nothing.
+ It claims their channel is no
+wider than the one `values[0]` opens,
+ and the same accessor fires for a plain indexed read.
 
-Own-index access is wider than the `Get` and `Set` an earlier revision of this document named, and that
-understatement made the channel look narrower than the members in it. Probed against a `Proxy`-wrapped array,
-which typed code can pass as `T[]`: `indexOf`, `lastIndexOf`, `unshift`, `copyWithin`, `reverse` and `shift`
-reach `has`, while `pop` and `shift` reach `deleteProperty`. Nothing reached `ownKeys` or `getPrototypeOf`.
+Own-index access is wider than the `Get` and `Set` an earlier revision of this document named,
+ and that
+understatement made the channel look narrower than the members in it.
+ Probed against a `Proxy`-wrapped array,
+which typed code can pass as `T[]`:
+ `indexOf`,
+ `lastIndexOf`,
+ `unshift`,
+ `copyWithin`,
+ `reverse` and `shift`
+reach `has`,
+ while `pop` and `shift` reach `deleteProperty`.
+ Nothing reached `ownKeys` or `getPrototypeOf`.
 
-Every one of those is still inside the channel, because the baseline is measured against this rule's own
-behaviour rather than guessed from an implementation: `0 in values` keeps its read-only offer, and
-`delete values[0]` reports a plain mutation with nothing unresolved, both measured. So the set of operations the
-rule already accepts on a parameter is `get`, `has`, `set`, `getOwnPropertyDescriptor`, `defineProperty` and
-`deleteProperty`, and `effect-member-channel-traps.unit.test.ts` derives that executably and fails any member
-reaching outside it. Mutation-tested: dropping `deleteProperty` from the baseline fails naming `Array.pop` and
+Every one of those is still inside the channel,
+ because the baseline is measured against this rule's own
+behaviour rather than guessed from an implementation:
+ `0 in values` keeps its read-only offer,
+ and
+`delete values[0]` reports a plain mutation with nothing unresolved,
+ both measured.
+ So the set of operations the
+rule already accepts on a parameter is `get`,
+ `has`,
+ `set`,
+ `getOwnPropertyDescriptor`,
+ `defineProperty` and
+`deleteProperty`,
+ and `effect-member-channel-traps.unit.test.ts` derives that executably and fails any member
+reaching outside it.
+ Mutation-tested:
+ dropping `deleteProperty` from the baseline fails naming `Array.pop` and
 `Array.shift`.
 
-The claim survived the falsification test; its description did not. That is worth recording, because the
+The claim survived the falsification test;
+ its description did not.
+ That is worth recording,
+ because the
 description was the thing being relied on.
 
 Admitting the second channel is therefore consistent with a decision this rule already made everywhere else,
-rather than a new exposure. Confirmed at the user boundary: a function whose body is `values[0].label = 'x'` is
-offered no read-only projection, while one whose body only reads `values[0]` is, so the rule already treats an
+rather than a new exposure.
+ Confirmed at the user boundary:
+ a function whose body is `values[0].label = 'x'` is
+offered no read-only projection,
+ while one whose body only reads `values[0]` is,
+ so the rule already treats an
 indexed read as a pure read even though an accessor could make it neither.
 
-The assumption is worth stating plainly, because it is load-bearing and unsound in the exotic case: this rule's
-model assumes caller-owned collections hold ordinary data properties. Naming that channel makes the assumption
+The assumption is worth stating plainly,
+ because it is load-bearing and unsound in the exotic case:
+ this rule's
+model assumes caller-owned collections hold ordinary data properties.
+ Naming that channel makes the assumption
 explicit at the one place a reader would otherwise have to infer it.
 
 ## What makes this different from what the audit removed
 
-Enforcement, not intent. The catalogs the audit removed were unverified assertions: a maintainer wrote that a
+Enforcement,
+ not intent.
+ The catalogs the audit removed were unverified assertions:
+ a maintainer wrote that a
 member was safe and nothing checked it.
 
-Every entry is enforced by `effect-member-channel-authority.unit.test.ts`, which probes a real engine per member
+Every entry is enforced by `effect-member-channel-authority.unit.test.ts`,
+ which probes a real engine per member
 against four tripwires and fails when a member reaches a channel wider than the one it claims:
 
--   species, covering `ArraySpeciesCreate` reading `constructor[@@species]` and calling it;
--   element coercion, covering `toString` and `valueOf`;
--   own-index access, the one hook the own-index channel admits;
--   a `size` accessor, covering property reads an internal-slot member must not perform.
+-   species,
+     covering `ArraySpeciesCreate` reading `constructor[@@species]` and calling it;
+-   element coercion,
+     covering `toString` and `valueOf`;
+-   own-index access,
+     the one hook the own-index channel admits;
+-   a `size` accessor,
+     covering property reads an internal-slot member must not perform.
 
-The same recording object is passed as the argument wherever a member takes a key or a value, so element
-coercion doubles as argument coercion. Coercion of an index argument is deliberately not covered: `at`, `with`,
-`toSpliced` and `copyWithin` declare `number` at that position, so no caller-owned object carrying a
+The same recording object is passed as the argument wherever a member takes a key or a value,
+ so element
+coercion doubles as argument coercion.
+ Coercion of an index argument is deliberately not covered:
+ `at`,
+ `with`,
+`toSpliced` and `copyWithin` declare `number` at that position,
+ so no caller-owned object carrying a
 `Symbol.toPrimitive` can arrive there in typed code.
 
-The probe also asserts its own tripwires fire, using members the table deliberately excludes: `slice` must reach
-species, and `join` and a bare `toSorted()` must reach element coercion. Without those controls a probe that
-silently stopped instrumenting would report a clean run for every member, and the table would look verified while
+The probe also asserts its own tripwires fire,
+ using members the table deliberately excludes:
+ `slice` must reach
+species,
+ and `join` and a bare `toSorted()` must reach element coercion.
+ Without those controls a probe that
+silently stopped instrumenting would report a clean run for every member,
+ and the table would look verified while
 proving nothing.
 
-The receiver holds two elements with both indices instrumented, and that detail is load-bearing rather than
-incidental. With one element, two probes were vacuous: `with(0, element)` replaces the only index and so never
-reads one, and a bare `toSorted()` never compares a pair, which is why its control assertion could not be
-written at first. Measured on two elements, `with` reaches `index-get`, `toSorted` reaches element coercion,
-`fill` reaches `index-set` twice, and `copyWithin` reaches both. `push` still reaches nothing, because it writes
-past the instrumented indices, so its own-index claim remains an upper bound rather than an observation, which
+The receiver holds two elements with both indices instrumented,
+ and that detail is load-bearing rather than
+incidental.
+ With one element,
+ two probes were vacuous:
+ `with(0, element)` replaces the only index and so never
+reads one,
+ and a bare `toSorted()` never compares a pair,
+ which is why its control assertion could not be
+written at first.
+ Measured on two elements,
+ `with` reaches `index-get`,
+ `toSorted` reaches element coercion,
+`fill` reaches `index-set` twice,
+ and `copyWithin` reaches both.
+ `push` still reaches nothing,
+ because it writes
+past the instrumented indices,
+ so its own-index claim remains an upper bound rather than an observation,
+ which
 is the safe direction.
 
-A throw is recorded as its own hook that no channel admits, so an unexpected one fails the assertion and names
-the member. An earlier version recorded a rejected indexed write as `index-set`, which the own-index channel
-admits, meaning any `TypeError` at all would have read as ordinary evidence. Nothing reaches that path now:
-every instrumented index carries a recording setter, so writes are accepted.
+A throw is recorded as its own hook that no channel admits,
+ so an unexpected one fails the assertion and names
+the member.
+ An earlier version recorded a rejected indexed write as `index-set`,
+ which the own-index channel
+admits,
+ meaning any `TypeError` at all would have read as ordinary evidence.
+ Nothing reaches that path now:
+every instrumented index carries a recording setter,
+ so writes are accepted.
 
-Each tripwire is also asserted to fire, which two of the four were not at first. `species` and element coercion
-had controls from the start; `index-set` and `property-read` had none, so an instrumentation that quietly stopped
+Each tripwire is also asserted to fire,
+ which two of the four were not at first.
+ `species` and element coercion
+had controls from the start;
+ `index-set` and `property-read` had none,
+ so an instrumentation that quietly stopped
 working would have made every write claim and every internal-slot claim vacuous while the suite stayed green.
-`fill` supplies the first, being a listed member whose channel is therefore observed rather than merely permitted,
+`fill` supplies the first,
+ being a listed member whose channel is therefore observed rather than merely permitted,
 and a direct `size` read supplies the second.
 
-Arguments distinguish two roles for the same reason. A lookup or removal is passed a value the receiver already
-holds, or it exercises only the miss path; an insertion is passed one the receiver does not hold, or it exercises
-only the overwrite path. `add` on an existing member and `set` on an existing key both skipped insertion entirely
-before this, which is the work most likely to reach somewhere unexpected.
+Arguments distinguish two roles for the same reason.
+ A lookup or removal is passed a value the receiver already
+holds,
+ or it exercises only the miss path;
+ an insertion is passed one the receiver does not hold,
+ or it exercises
+only the overwrite path.
+ `add` on an existing member and `set` on an existing key both skipped insertion entirely
+before this,
+ which is the work most likely to reach somewhere unexpected.
 
-Iterator members were excluded for a separate reason, and are no longer. `keys`, `values` and `entries` reach
-nothing when they are called, and the read happens later when the iterator advances. Measured:
-`Array.prototype.values` fires no hook until `next()`, which fires the indexed getter. Nothing in the model
-separated creating an iterator from consuming one, so an inert-creation claim would have been read as an
-inert-consumption claim, and both stayed unproven.
+Iterator members were excluded for a separate reason,
+ and are no longer.
+ `keys`,
+ `values` and `entries` reach
+nothing when they are called,
+ and the read happens later when the iterator advances.
+ Measured:
+`Array.prototype.values` fires no hook until `next()`,
+ which fires the indexed getter.
+ Nothing in the model
+separated creating an iterator from consuming one,
+ so an inert-creation claim would have been read as an
+inert-consumption claim,
+ and both stayed unproven.
 
-What resolved it was asking what could consume a creation-only fact, and finding nothing. `receiverClaimAnswerable`
-consults this authority while inspecting the creating call, and for-of and spread advance an iterator through no
-`CallExpression` at all, so there is no second call at which a separate consumption fact could be asked for. The
-entries therefore claim the union of both operations, which each probe measures as two steps: the producer, then a
+What resolved it was asking what could consume a creation-only fact,
+ and finding nothing.
+ `receiverClaimAnswerable`
+consults this authority while inspecting the creating call,
+ and for-of and spread advance an iterator through no
+`CallExpression` at all,
+ so there is no second call at which a separate consumption fact could be asked for.
+ The
+entries therefore claim the union of both operations,
+ which each probe measures as two steps:
+ the producer,
+ then a
 full drain including the terminal step that reports `done`.
 
-The union is expressible only because both operations land inside a channel already admitted here. Measured per
-member rather than assumed: draining an array iterator through the accessor probe reaches `index-get` for `values`
-and `entries`, and nothing at all for `keys`, which yields indices and fetches no element. What `keys` does read is
-`length`, which no accessor can watch because `length` on a real array is a non-configurable own data property.
-The `Proxy` probe drives the same drain and sees that read as `get`, which is inside the indexed-access baseline.
+The union is expressible only because both operations land inside a channel already admitted here.
+ Measured per
+member rather than assumed:
+ draining an array iterator through the accessor probe reaches `index-get` for `values`
+and `entries`,
+ and nothing at all for `keys`,
+ which yields indices and fetches no element.
+ What `keys` does read is
+`length`,
+ which no accessor can watch because `length` on a real array is a non-configurable own data property.
+The `Proxy` probe drives the same drain and sees that read as `get`,
+ which is inside the indexed-access baseline.
 Draining a `Map` or `Set` iterator touches the `size` accessor in neither phase.
 
-The union gives up two things worth naming. It answers "this call and any later built-in advancement of its
-result" rather than "this call", so it cannot describe partial consumption. And a full drain proves the built-in
-`next` path, not every future use of the returned object: source that replaces the iterator's own `next` runs
-something no probe here measured. Both sit behind the assumption the own-index channel already rests on, that
+The union gives up two things worth naming.
+ It answers "this call and any later built-in advancement of its
+result" rather than "this call",
+ so it cannot describe partial consumption.
+ And a full drain proves the built-in
+`next` path,
+ not every future use of the returned object:
+ source that replaces the iterator's own `next` runs
+something no probe here measured.
+ Both sit behind the assumption the own-index channel already rests on,
+ that
 caller-owned collections hold ordinary data properties.
 
 ## How the guard changed
 
-The `catalog-free effect architecture` guard is narrowed rather than deleted, so its subject becomes "no
+The `catalog-free effect architecture` guard is narrowed rather than deleted,
+ so its subject becomes "no
 authority module outside the permitted registry" rather than "no authority module".
 
-Two changes give that teeth. The module-name match widened from `effect-authority` to `authority`, because the
-permitted module was passing the old match by accident of naming rather than by permission. And the registry
-pins the table's total entry count, checked against what the production module actually exports, so adding a
-member fails the build at the point where this document and the probe requirement become unavoidable. Verified
-both ways: an unregistered `effect-scratch-authority.ts` fails the guard by name, and adding `slice` to the table
+Two changes give that teeth.
+ The module-name match widened from `effect-authority` to `authority`,
+ because the
+permitted module was passing the old match by accident of naming rather than by permission.
+ And the registry
+pins the table's total entry count,
+ checked against what the production module actually exports,
+ so adding a
+member fails the build at the point where this document and the probe requirement become unavoidable.
+ Verified
+both ways:
+ an unregistered `effect-scratch-authority.ts` fails the guard by name,
+ and adding `slice` to the table
 fails the pin at 34 against 33 and the probe with `Array.slice reached species`.
 
-The pin is a literal in the guard, and the first version got this wrong in a way worth recording, because it
-looked correct. It imported `VERIFIED_MEMBER_CHANNEL_COUNT` for the pinned value, which pinned that constant
-against itself: a commit editing the table and the constant together passed the guard untouched, while the guard's
-own comment claimed an author had to change a number there. Verified after the fix by editing both and watching
+The pin is a literal in the guard,
+ and the first version got this wrong in a way worth recording,
+ because it
+looked correct.
+ It imported `VERIFIED_MEMBER_CHANNEL_COUNT` for the pinned value,
+ which pinned that constant
+against itself:
+ a commit editing the table and the constant together passed the guard untouched,
+ while the guard's
+own comment claimed an author had to change a number there.
+ Verified after the fix by editing both and watching
 the guard fail at 34 against 33.
 
-What the guard cannot do is verify that the enforcement is any good; checking that a test file exists beside an
-authority would be a rubber stamp, satisfiable by an empty file. It converts a silent addition into a deliberate
-one, and that is the whole claim.
+What the guard cannot do is verify that the enforcement is any good;
+ checking that a test file exists beside an
+authority would be a rubber stamp,
+ satisfiable by an empty file.
+ It converts a silent addition into a deliberate
+one,
+ and that is the whole claim.
 
 ## Both discharge conditions, and why neither is sufficient
 
 A receiver claim is answered only when the member's channel is verified and the call's result exposes no
 caller-owned state.
 
-The channel condition is necessary because a stateless result proves nothing on its own. `join` returns a
-`string` and calls every element's `toString`; `values.some(foreignPredicate)` returns a `boolean` and runs the
+The channel condition is necessary because a stateless result proves nothing on its own.
+ `join` returns a
+`string` and calls every element's `toString`;
+ `values.some(foreignPredicate)` returns a `boolean` and runs the
 predicate.
 
 The result condition is necessary because a verified channel proves nothing about what comes back.
-`values.at(0)` reaches no user code and hands back the receiver's own element, and nothing tracks a call result
-as an alias of the receiver's parameter, so `values.at(0).label = 'x'` would go unreported. Members returning the
-receiver itself, `Map.set` and `Array.sort`, are covered by their own structural claim instead: each is a
-mutator, so the receiver is already recorded as mutated and nothing reachable through the result is new.
+`values.at(0)` reaches no user code and hands back the receiver's own element,
+ and nothing tracks a call result
+as an alias of the receiver's parameter,
+ so `values.at(0).label = 'x'` would go unreported.
+ Members returning the
+receiver itself,
+ `Map.set` and `Array.sort`,
+ are covered by their own structural claim instead:
+ each is a
+mutator,
+ so the receiver is already recorded as mutated and nothing reachable through the result is new.
 
-Both conditions were mutation-tested rather than argued. Dropping the channel check discharges `join`; dropping
-the result check discharges `at` and `with`; returning early instead of clearing receiver opacity alone drops the
-report that `push` retains its argument. Each mutation fails a named assertion.
+Both conditions were mutation-tested rather than argued.
+ Dropping the channel check discharges `join`;
+ dropping
+the result check discharges `at` and `with`;
+ returning early instead of clearing receiver opacity alone drops the
+report that `push` retains its argument.
+ Each mutation fails a named assertion.
 
 ## The limit being accepted deliberately
 
-A probe is evidence, not proof. Absence of a hook under the probe's inputs does not establish absence for all
-inputs, and the probe exercises one engine rather than the specification.
+A probe is evidence,
+ not proof.
+ Absence of a hook under the probe's inputs does not establish absence for all
+inputs,
+ and the probe exercises one engine rather than the specification.
 
-Two further limits are worth recording, because neither is addressed here. Static declaration resolution does not
-prove runtime dispatch: a subclass overriding `get`, a replaced prototype or a `Proxy` makes `values.get(key)`
-user code while the declaration still resolves to `ReadonlyMap.get`. And the authority is keyed by TypeScript
-interface name, where `Array.at` and `ReadonlyArray.at` are the same runtime intrinsic, so the keying carries a
+Two further limits are worth recording,
+ because neither is addressed here.
+ Static declaration resolution does not
+prove runtime dispatch:
+ a subclass overriding `get`,
+ a replaced prototype or a `Proxy` makes `values.get(key)`
+user code while the declaration still resolves to `ReadonlyMap.get`.
+ And the authority is keyed by TypeScript
+interface name,
+ where `Array.at` and `ReadonlyArray.at` are the same runtime intrinsic,
+ so the keying carries a
 redundancy that a future revision should collapse onto intrinsic identity.
 
-So this sits between a derivation and an assertion: stronger than the hand-authored tables the audit removed,
-because drift fails the build, and weaker than the signature-derived claims elsewhere in this rule, because
-nothing here is proved. That middle ground is the cost of resolving the residue at all, and it is accepted
+So this sits between a derivation and an assertion:
+ stronger than the hand-authored tables the audit removed,
+because drift fails the build,
+ and weaker than the signature-derived claims elsewhere in this rule,
+ because
+nothing here is proved.
+ That middle ground is the cost of resolving the residue at all,
+ and it is accepted
 knowingly rather than by omission.
 
 ## Consequences, measured
 
-- `readonly-catalog-free-invalid.ts` moves from 19 diagnostics to 16, and its contracts-cannot-discharge count
+- `readonly-catalog-free-invalid.ts` moves from 19 diagnostics to 16,
+   and its contracts-cannot-discharge count
   from 12 to 9.
-- `crossFileSemanticEffect`, `mutableArrayStructureEffect` and `mutableSetStructureEffect` each move from
-  mutated-plus-opaque to mutated alone. That is the intended gain: `names.clear()` is a certain mutation of a
-  caller-owned `Set`, and the rule now says so instead of saying it cannot tell.
-- `readonly-foreign-provenance-invalid.ts` still reports all five findings, including that `replacement` escapes
-  through `values.with(0, replacement)`, which is the assertion that caught the reverted wiring.
-- Workspace: 1,405 findings for this rule, against the 1,450 recorded in
+- `crossFileSemanticEffect`,
+   `mutableArrayStructureEffect` and `mutableSetStructureEffect` each move from
+  mutated-plus-opaque to mutated alone.
+   That is the intended gain:
+   `names.clear()` is a certain mutation of a
+  caller-owned `Set`,
+   and the rule now says so instead of saying it cannot tell.
+- `readonly-foreign-provenance-invalid.ts` still reports all five findings,
+   including that `replacement` escapes
+  through `values.with(0, replacement)`,
+   which is the assertion that caught the reverted wiring.
+- Workspace:
+   1,405 findings for this rule,
+   against the 1,450 recorded in
   `doc/decision/prefer-readonly-mutable-collection-members.md`.
 
-  That difference is not this decision's effect and must not be read as one. Two changes landed between the two
-  measurements and they pull in opposite directions: closing the member-result escape adds findings, because it
-  stops discharging `find`, `at` and `Map.get` over state-carrying element types, and the receiver-only discharge
-  removes them. The net is 45 fewer. Splitting it needs a workspace run at the intermediate commit,
-  `d6d3ee083`, which was not performed, so no per-change workspace number is claimed here.
+  That difference is not this decision's effect and must not be read as one.
+   Two changes landed between the two
+  measurements and they pull in opposite directions:
+   closing the member-result escape adds findings,
+   because it
+  stops discharging `find`,
+   `at` and `Map.get` over state-carrying element types,
+   and the receiver-only discharge
+  removes them.
+   The net is 45 fewer.
+   Splitting it needs a workspace run at the intermediate commit,
+  `d6d3ee083`,
+   which was not performed,
+   so no per-change workspace number is claimed here.
 
-  The exact, attributable numbers for this decision are the fixture and summary counts above, each diffed against
+  The exact,
+   attributable numbers for this decision are the fixture and summary counts above,
+   each diffed against
   a build differing only in the change under test.
 
-  Remeasured after the accumulator-escape fix: still 1,405, unchanged. That fix closed a false negative rather
-  than adding findings, because the pattern it catches, an observer member whose result type is identical to a
-  state-carrying element type, occurs nowhere in this workspace. Its evidence is the fixture, not the count. The
-  remeasurement is a real re-run rather than a cached repeat: `analyzerDigest` hashes the built bundle's bytes
-  into the summary-cache key, so every rebuild invalidates the persistent cache.
+  Remeasured after the accumulator-escape fix:
+   still 1,405,
+   unchanged.
+   That fix closed a false negative rather
+  than adding findings,
+   because the pattern it catches,
+   an observer member whose result type is identical to a
+  state-carrying element type,
+   occurs nowhere in this workspace.
+   Its evidence is the fixture,
+   not the count.
+   The
+  remeasurement is a real re-run rather than a cached repeat:
+   `analyzerDigest` hashes the built bundle's bytes
+  into the summary-cache key,
+   so every rebuild invalidates the persistent cache.
 
 ## Scope, and what the residue becomes
 
-The measured residue was 112 findings across 38 packages, 7.7 percent of this rule's output, whose every reached
-member ran nothing. Both discharge conditions narrow what this decision actually resolves, and the narrowing is
+The measured residue was 112 findings across 38 packages,
+ 7.7 percent of this rule's output,
+ whose every reached
+member ran nothing.
+ Both discharge conditions narrow what this decision actually resolves,
+ and the narrowing is
 deliberate.
 
-Discharged: members whose result is a boolean, a number or `void`, which covers `has` at 27 findings, `includes`
-at 13 and `push` at 8, plus `get` and `at` over collections whose value type is primitive.
+Discharged:
+ members whose result is a boolean,
+ a number or `void`,
+ which covers `has` at 27 findings,
+ `includes`
+at 13 and `push` at 8,
+ plus `get` and `at` over collections whose value type is primitive.
 
-Not discharged: `entries` at 12, because iterator members were excluded when this was measured; `set` at 8 and
-every member returning the receiver, because the result exposes it; and `get` and `at` over object-valued
-collections, because the result is the receiver's own element.
+Not discharged:
+ `entries` at 12,
+ because iterator members were excluded when this was measured;
+ `set` at 8 and
+every member returning the receiver,
+ because the result exposes it;
+ and `get` and `at` over object-valued
+collections,
+ because the result is the receiver's own element.
 
-Admitting the iterator members later moved only part of that. An entry alone does not discharge `entries`, whose
-result type argument is a tuple object and therefore exposes state whatever the tuple holds. What it does
-discharge is an iterator yielding primitives, `Array.keys` over any array and `Map.keys` over a primitive-keyed
-map among them, where the channel is the only outstanding claim.
+Admitting the iterator members later moved only part of that.
+ An entry alone does not discharge `entries`,
+ whose
+result type argument is a tuple object and therefore exposes state whatever the tuple holds.
+ What it does
+discharge is an iterator yielding primitives,
+ `Array.keys` over any array and `Map.keys` over a primitive-keyed
+map among them,
+ where the channel is the only outstanding claim.
 
-Closing the rest needs result provenance rather than a wider authority: a summary fact recording that a call's
-result is reachable from the receiver's parameter, propagated through the fixed point so that mutating what came
-back is attributed to the parameter it came from. That is a modelling change, not a table entry, and it is not
+Closing the rest needs result provenance rather than a wider authority:
+ a summary fact recording that a call's
+result is reachable from the receiver's parameter,
+ propagated through the fixed point so that mutating what came
+back is attributed to the parameter it came from.
+ That is a modelling change,
+ not a table entry,
+ and it is not
 attempted here.

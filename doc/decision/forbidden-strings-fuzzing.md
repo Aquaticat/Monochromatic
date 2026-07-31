@@ -29,7 +29,8 @@ slow".
 need is coverage-guided fuzzing that walks structural branches in the
 extractor and engine dispatcher.
 
-Update (#386, engine swap):
+Update (#386,
+ engine swap):
  the extractor,
  Aho-Corasick gates,
  and hybrid dispatcher above were deleted in the #385 teardown;
@@ -43,7 +44,9 @@ Update (#386, engine swap):
  engine dispatch) and the regex-syntax-walker target were removed with the
 code they fuzzed,
  as was the test-literal seeder.
- Engine-level fuzzing (the `RegexSet` compile, serialize, and `line_matches`
+ Engine-level fuzzing (the `RegexSet` compile,
+ serialize,
+ and `line_matches`
 paths) moved to the engine's own sidecar at
 `package/rust-module/forbidden-regex.fuzz` and is not duplicated here.
 

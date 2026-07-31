@@ -67,14 +67,16 @@
 Active packages (the only non-paused Turso consumers):
 
 - `package/webapp-productivity/done`:
-   `@tursodatabase/database` via catalog (`pnpm-workspace.yaml:47`, `>=0.6.1`);
+   `@tursodatabase/database` via catalog (`pnpm-workspace.yaml:47`,
+   `>=0.6.1`);
    uses the native FTS index method with `experimental: ['index_method']`;
    the FTS remediation and its constraints are recorded in
    `doc/troubleshooting/turso-fts5-native-fts.md`.
 - `package/webapp-productivity/done-postcss`:
    same dependency and FTS usage.
 
-Paused packages (`package-paused/`, excluded from the hard constraints but inventoried):
+Paused packages (`package-paused/`,
+ excluded from the hard constraints but inventoried):
 
 - `package-paused/webapp-forge/server`:
    `@libsql/client`,
@@ -271,8 +273,10 @@ so "migrate to Prisma Next for Turso needs" has no implementable form today.
 Ranking of what remains:
 
 1. Keep the incumbent `@tursodatabase/database` direct-SQL layer (only surviving candidate).
-2. Prisma ORM 7.x (exited: cannot drive the incumbent engine or its FTS surface).
-3. Prisma Next (exited: no SQLite-family support at all).
+2. Prisma ORM 7.x (exited:
+    cannot drive the incumbent engine or its FTS surface).
+3. Prisma Next (exited:
+    no SQLite-family support at all).
 
 Prisma 7.x ranks above Prisma Next because 7.x at least has an Early Access path
 to libSQL-flavored Turso,

@@ -14,9 +14,12 @@ Change the current Pi Linkup package into an Exa-first search and fetch extensio
 
 Use these when the matching work starts:
 
-- `testing-practices`, when changing or reviewing package tests.
-- `troubleshooting-doc`, when documenting provider quirks or externally verified behavior.
-- `grill-me`, if another design branch needs user decisions.
+- `testing-practices`,
+   when changing or reviewing package tests.
+- `troubleshooting-doc`,
+   when documenting provider quirks or externally verified behavior.
+- `grill-me`,
+   if another design branch needs user decisions.
 
 ## User decisions already made
 
@@ -27,7 +30,8 @@ Use these when the matching work starts:
 - Config should use a new canonical config file only.
 - Migrate the existing old config file instead of keeping `pi-linkup.json` as a fallback path.
 - `web_search` should use Exa `fast` by default.
-- `web_fetch` should be Linkup-first, despite `web_search` being Exa-first.
+- `web_fetch` should be Linkup-first,
+   despite `web_search` being Exa-first.
 
 ## Repository state at latest update
 
@@ -36,16 +40,21 @@ Use these when the matching work starts:
 - Public tool implementation now registers `web_search` and `web_fetch` only.
 - Global config loader now uses `pi-search-fetch.json` and migrates legacy `pi-linkup.json`.
 - Provider implementation is in place:
-  Exa-first `web_search`, Linkup-first `web_fetch`, and fallback metadata in tool details.
+  Exa-first `web_search`,
+   Linkup-first `web_fetch`,
+   and fallback metadata in tool details.
 - Active Pi settings now point to `/var/home/user/Monochromatic/package/pi-plugin/search-fetch`.
 - Active Pi config migrated to `~/.pi/agent/extensions/pi-search-fetch.json`.
 - Legacy active Pi config `~/.pi/agent/extensions/pi-linkup.json` was removed after migration.
-- Existing unrelated worktree change: `mise.lock`. Do not touch unless the task requires it.
+- Existing unrelated worktree change:
+   `mise.lock`.
+   Do not touch unless the task requires it.
 
 Relevant prior artifacts:
 
 - `doc/troubleshooting/linkup-grokipedia-results.md` records the Linkup pollution diagnosis,
-  the Linkup `fast` comparison, and the initial Exa comparison.
+  the Linkup `fast` comparison,
+   and the initial Exa comparison.
 - Commits already made for the troubleshooting doc:
   - `f0d91077b`
   - `f66b8863a`
@@ -54,8 +63,20 @@ Relevant prior artifacts:
 ## Exa search mode benchmark so far
 
 A broader Exa `/search` `auto` versus `fast` benchmark was run across 18 documentation and debugging queries.
-The query set included KDE failure cases, Bazzite docs, Node, TypeScript, Rust, MDN, Playwright, Vite,
-pnpm, mise, TypeBox, GitHub CLI, systemd, and Kirigami.
+The query set included KDE failure cases,
+ Bazzite docs,
+ Node,
+ TypeScript,
+ Rust,
+ MDN,
+ Playwright,
+ Vite,
+pnpm,
+ mise,
+ TypeBox,
+ GitHub CLI,
+ systemd,
+ and Kirigami.
 
 Measured fields:
 
@@ -67,10 +88,20 @@ Measured fields:
 
 Aggregate result after correcting expected hosts for `mise.en.dev` and GitHub-hosted Vite docs:
 
-- `auto`: rank score 72, expected-source hits 104, misses 0, Grokipedia hits 0,
-  cache-warmed sampled latency 1815 ms, wins 1 case.
-- `fast`: rank score 72, expected-source hits 109, misses 0, Grokipedia hits 0,
-  cache-warmed sampled latency 1665 ms, wins 2 cases.
+- `auto`:
+   rank score 72,
+   expected-source hits 104,
+   misses 0,
+   Grokipedia hits 0,
+  cache-warmed sampled latency 1815 ms,
+   wins 1 case.
+- `fast`:
+   rank score 72,
+   expected-source hits 109,
+   misses 0,
+   Grokipedia hits 0,
+  cache-warmed sampled latency 1665 ms,
+   wins 2 cases.
 
 Interpretation:
 
@@ -78,36 +109,58 @@ Interpretation:
 - `fast` had more expected-source hits in the corrected sample.
 - Both modes had no misses and no Grokipedia pollution.
 - `auto` remains Exa's documented recommended mode for most applications.
-- The benchmark is still a proxy, not a formal IR benchmark.
-- Decision: use Exa `fast` as the default `web_search` mode.
+- The benchmark is still a proxy,
+   not a formal IR benchmark.
+- Decision:
+   use Exa `fast` as the default `web_search` mode.
   The corrected benchmark showed no measured quality penalty for `fast`.
 
 Notable benchmark cases:
 
 - `mise.en.dev` is live mise documentation and should count as an expected source.
 - GitHub-hosted Vite docs are source documentation and should not be treated as a miss by default.
-- `playwright-locators`: `fast` had more expected-host hits than `auto`.
-- `typebox-object`: `fast` had more expected-host hits than `auto`.
+- `playwright-locators`:
+   `fast` had more expected-host hits than `auto`.
+- `typebox-object`:
+   `fast` had more expected-host hits than `auto`.
 
 ## Implementation notes
 
 Package rename work:
 
-- Done: move `package/pi-plugin/linkup/` to `package/pi-plugin/search-fetch/`.
-- Done: rename package metadata to `@monochromatic-dev/pi-plugin-search-fetch`.
-- Done: update `USER_AGENT_VALUE`, logger tags, temp-file prefixes, tests, and exported docs.
-- Done: update generated root tooling references through file-enforcer instead of hand-editing `mise.toml`.
-- Done: update workspace lockfile importer path only.
+- Done:
+   move `package/pi-plugin/linkup/` to `package/pi-plugin/search-fetch/`.
+- Done:
+   rename package metadata to `@monochromatic-dev/pi-plugin-search-fetch`.
+- Done:
+   update `USER_AGENT_VALUE`,
+   logger tags,
+   temp-file prefixes,
+   tests,
+   and exported docs.
+- Done:
+   update generated root tooling references through file-enforcer instead of hand-editing `mise.toml`.
+- Done:
+   update workspace lockfile importer path only.
 
 Config work:
 
-- Done: canonical config path is `~/.pi/agent/extensions/pi-search-fetch.json`.
-- Done: legacy `pi-linkup.json` migrates once into the new file.
-- Done: runtime does not keep using the old config path after migration.
-- Done: config keys are `exaApiKey`, `linkupApiKey`, and `blocklist`.
-- Done: `EXA_API_KEY` wins over config `exaApiKey`.
-- Done: `LINKUP_API_KEY` wins over config `linkupApiKey`.
-- Done: legacy `apiKey` migrates to `linkupApiKey`.
+- Done:
+   canonical config path is `~/.pi/agent/extensions/pi-search-fetch.json`.
+- Done:
+   legacy `pi-linkup.json` migrates once into the new file.
+- Done:
+   runtime does not keep using the old config path after migration.
+- Done:
+   config keys are `exaApiKey`,
+   `linkupApiKey`,
+   and `blocklist`.
+- Done:
+   `EXA_API_KEY` wins over config `exaApiKey`.
+- Done:
+   `LINKUP_API_KEY` wins over config `linkupApiKey`.
+- Done:
+   legacy `apiKey` migrates to `linkupApiKey`.
 - Do not write any API key into this handover or other docs.
 
 Blocklist caveat:
@@ -121,8 +174,10 @@ Blocklist caveat:
 Search behavior:
 
 - `web_search` should try Exa first when Exa credentials are configured.
-- On missing Exa credentials or any Exa failure, log the fallback reason and try Linkup.
-- If both providers are unavailable, throw a clear error naming both missing or failed providers.
+- On missing Exa credentials or any Exa failure,
+   log the fallback reason and try Linkup.
+- If both providers are unavailable,
+   throw a clear error naming both missing or failed providers.
 - Preserve existing supported parameters where practical:
   - `query`
   - `fromDate`
@@ -135,10 +190,13 @@ Fetch behavior decision:
 
 - `web_fetch` should be Linkup-first.
 - Exa `/contents` supports URL content extraction with `urls` and `text: true`.
-- Linkup `/fetch` currently uses `renderJs=true`, `extractImages=false`, and `includeRawHtml=false`.
+- Linkup `/fetch` currently uses `renderJs=true`,
+   `extractImages=false`,
+   and `includeRawHtml=false`.
 - Exa docs do not expose an equivalent `renderJs=true` knob in the fetched docs.
 - The user chose Linkup-first fetch to preserve current rendering semantics.
-- If Linkup fetch is unavailable and Exa credentials exist, fallback to Exa `/contents` is still plausible,
+- If Linkup fetch is unavailable and Exa credentials exist,
+   fallback to Exa `/contents` is still plausible,
   but confirm or test before implementing that fallback branch.
 
 Output behavior:
@@ -172,7 +230,9 @@ Add coverage for these branches:
 
 ## Verification commands
 
-After implementation, run package-scoped tasks through mise, not raw tools.
+After implementation,
+ run package-scoped tasks through mise,
+ not raw tools.
 Use the renamed package path once the directory moves:
 
 ```sh

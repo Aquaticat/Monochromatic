@@ -25,7 +25,8 @@ There is no grammar to learn beyond Rust,
 ### Why not `$X`
 
 ast-grep and semgrep spell metavariables `$X`.
-That does not work here, and the decision was measured rather than assumed.
+That does not work here,
+ and the decision was measured rather than assumed.
 Against `ra_ap_syntax` 0.0.335,
  `$X.unwrap()` produces one error through the expression entry point and six
  through the file one,
@@ -40,22 +41,29 @@ Rust has no single "parse anything" entry point,
 Measured against `ra_ap_syntax` 0.0.335:
 
 - `META_X.unwrap()` through `SourceFile::parse` gives five errors and an `ERROR`
-  root, but through `ast::Expr::parse` gives zero errors and a
+  root,
+   but through `ast::Expr::parse` gives zero errors and a
   `METHOD_CALL_EXPR`.
 - `#[test] fn META_F() {}` is the exact reverse.
-- `let META_A = 1;` fails **both**, because a statement is neither an item nor an
-  expression. It only parses inside a function body.
+- `let META_A = 1;` fails **both**,
+   because a statement is neither an item nor an
+  expression.
+   It only parses inside a function body.
 
 So `fragment::parse` tries each entry point in order and keeps the first that
 reports no errors:
- item, then expression, then statement wrapped in a synthetic function body.
+ item,
+ then expression,
+ then statement wrapped in a synthetic function body.
 The wrapper is stripped before matching,
  so a pattern never matches against a function nobody wrote.
 The author does not have to declare which kind they wrote.
 
 ## Matching
 
-Matching is structural, over the syntax tree, not textual.
+Matching is structural,
+ over the syntax tree,
+ not textual.
 That is what makes these hold:
 
 - `META_X.unwrap()` matches `thing.unwrap()` and `map.get(&k).unwrap()` alike.

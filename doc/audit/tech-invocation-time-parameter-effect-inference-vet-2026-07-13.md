@@ -349,7 +349,8 @@ Web IDL provides API surface and JavaScript binding rules,
 not complete API-specific effects.
 The 2026-07-03 living standard says API-specific details are specified in prose:
 
-> specifications describe their interfaces using Web IDL, and then use prose to specify API-specific details.
+> specifications describe their interfaces using Web IDL,
+>  and then use prose to specify API-specific details.
 
 Web IDL can identify callbacks,
 dictionaries,

@@ -20,13 +20,22 @@ Do not introduce a CLI-to-CLI dependency.
 
 ## Task state at restart
 
-- Completed task `#1`: assess the handover.
-- Completed task `#2`: extract the shared AllowedIPs module.
-- Completed task `#3`: correct `AllowedIPsFromFiles` semantics.
-- Completed task `#4`: harden bypass routing.
-- In-progress task `#5`: harden the Rust BPF loader lifecycle.
-- Pending task `#6`: cover Ghostty and Helium cgroups, blocked by task `#5`.
-- Pending task `#7`: complete all verification, blocked by tasks `#4` and `#6`.
+- Completed task `#1`:
+   assess the handover.
+- Completed task `#2`:
+   extract the shared AllowedIPs module.
+- Completed task `#3`:
+   correct `AllowedIPsFromFiles` semantics.
+- Completed task `#4`:
+   harden bypass routing.
+- In-progress task `#5`:
+   harden the Rust BPF loader lifecycle.
+- Pending task `#6`:
+   cover Ghostty and Helium cgroups,
+   blocked by task `#5`.
+- Pending task `#7`:
+   complete all verification,
+   blocked by tasks `#4` and `#6`.
 
 Resume task `#5` first.
 
@@ -55,7 +64,9 @@ Do not alter or include unrelated issue 401 files in `wg-quicker` commits.
 `package/module/wg-allowedips/` now owns:
 
 - generation from allowed and disallowed text;
-- parser, network, and lookup types;
+- parser,
+   network,
+   and lookup types;
 - DNS and ASN lookup orchestration;
 - explicit IPinfo ASN cache ownership.
 
@@ -70,7 +81,9 @@ Built CLI and config bundles were exercised outside the workspace.
 Expansion preserves the directive's insertion point.
 The parser rejects duplicate directives and conflicts with literal `AllowedIPs` in the same peer.
 Multiple peers are supported.
-`down` calls config loading without file, DNS, or ASN expansion.
+`down` calls config loading without file,
+ DNS,
+ or ASN expansion.
 
 ### Bypass routing
 
@@ -81,7 +94,10 @@ Multiple peers are supported.
 - per-interface and global `flock` operation locks;
 - fail-closed unreachable defaults for a missing address family;
 - detached route watcher in the caller's network namespace;
-- watcher PID, owner, start-time, and full-command validation;
+- watcher PID,
+   owner,
+   start-time,
+   and full-command validation;
 - process-group shutdown with disappearance confirmation;
 - monitor-child restart and synchronization before event-loss exposure;
 - state schema version `2` with exact kernel-rendered route fingerprints;
@@ -97,26 +113,45 @@ The exact iproute2 missing-family translation is documented in
 `doc/troubleshooting/iproute2-family-fib-table-absence.md`.
 Only exit `2` with the selected family's exact `FIB table does not exist` diagnostic and `Dump terminated` means absence.
 
-Disposable netns integration coverage includes table and preference collisions, literal `/0`, two `/1` prefixes, IPv4 and
-IPv6 marked routing, missing defaults, single-family fail-closed behavior, watcher resynchronization and restart, lock
-contention, wrong-owner retention, unowned-default rejection, unrelated-route preservation, changed-config teardown, and
+Disposable netns integration coverage includes table and preference collisions,
+ literal `/0`,
+ two `/1` prefixes,
+ IPv4 and
+IPv6 marked routing,
+ missing defaults,
+ single-family fail-closed behavior,
+ watcher resynchronization and restart,
+ lock
+contention,
+ wrong-owner retention,
+ unowned-default rejection,
+ unrelated-route preservation,
+ changed-config teardown,
+ and
 built CLI `up` and `down`.
 
-Task `#4` passed `buildAndTest`, `lint:types`, `lint:oxlint`, Markdown lint, and `test:integration:bypass` before its final
+Task `#4` passed `buildAndTest`,
+ `lint:types`,
+ `lint:oxlint`,
+ Markdown lint,
+ and `test:integration:bypass` before its final
 commits.
 An independent review found no concrete task `#4` blocker.
 The real tunnel was not brought up.
 
 ## In-progress Rust loader work
 
-Package: `package/cli/wg-quicker-exempt/`.
+Package:
+ `package/cli/wg-quicker-exempt/`.
 
 The crate continues to use only `libc` and the stable raw `bpf(2)` UAPI.
-No new dependency was adopted, so no technology-selection report is pending.
+No new dependency was adopted,
+ so no technology-selection report is pending.
 
 ### Uncommitted files
 
-At this checkpoint, `git status --short` reports only:
+At this checkpoint,
+ `git status --short` reports only:
 
 ```text
  M package/cli/wg-quicker-exempt/mise.toml
@@ -134,7 +169,9 @@ These Rust changes are not complete and have not been committed.
 
 - a little-endian compile-time guard for instruction bitfield encoding;
 - compile-time ABI size and offset assertions;
-- `OwnedFd` ownership for map, program, and link descriptors;
+- `OwnedFd` ownership for map,
+   program,
+   and link descriptors;
 - corrected `BPF_ST_MEM32` opcode `0x62`;
 - named four-byte `SO_MARK` option length;
 - null map lookup jumping directly to allow;
@@ -144,7 +181,8 @@ These Rust changes are not complete and have not been committed.
 - test-only instruction snapshots.
 
 The installed Linux UAPI header confirms `BPF_FUNC_setsockopt` is helper `49`.
-An advisor incorrectly suggested helper `35`; do not change the verified value `49`.
+An advisor incorrectly suggested helper `35`;
+ do not change the verified value `49`.
 
 `src/pin.rs` currently includes:
 
@@ -171,7 +209,10 @@ wg-quicker-exempt attach <mark> <cgroup-dir>...
 wg-quicker-exempt detach <cgroup-dir>...
 ```
 
-`src/bpf_tests.rs` has instruction tests for the 32-bit key store, null jump, helper call, and helper-result verdict.
+`src/bpf_tests.rs` has instruction tests for the 32-bit key store,
+ null jump,
+ helper call,
+ and helper-result verdict.
 `mise.toml` has a new `test:unit` task and includes it in `buildAndTest`.
 
 ### Verification already run on this uncommitted Rust state
@@ -193,7 +234,9 @@ The latest stale-staging and cleanup edits also require rerunning all checks.
 
 Before committing task `#5`:
 
-1. Run `test:unit`, `buildAndTest`, and every package lint task.
+1. Run `test:unit`,
+    `buildAndTest`,
+    and every package lint task.
 2. Review `src/pin.rs` transaction behavior for all cleanup-error branches.
 3. Ensure failed attach rollback reports cleanup failure rather than hiding it.
 4. Add tests for collision-free canonical pin mapping and exact detach behavior.
@@ -207,9 +250,15 @@ Before committing task `#5`:
    - repeated attach with a changed mark;
    - partial four-hook rollback;
    - failed replacement preserving the prior working attachment.
-6. Verify replacement using observable socket marks and, if practical through raw UAPI, changed BPF link identity.
-7. Update `package/cli/wg-quicker-exempt/README.md` with detach, mirrored pin paths, bpffs validation, atomic replacement,
-   fail-closed helper behavior, and little-endian support.
+6. Verify replacement using observable socket marks and,
+    if practical through raw UAPI,
+    changed BPF link identity.
+7. Update `package/cli/wg-quicker-exempt/README.md` with detach,
+    mirrored pin paths,
+    bpffs validation,
+    atomic replacement,
+   fail-closed helper behavior,
+    and little-endian support.
 8. Run an independent review.
 9. Commit only the package files for task `#5` after all checks pass.
 
@@ -238,18 +287,30 @@ Required behavior:
 - detach and clean persisted links safely on tunnel down.
 
 Helium is an AppImage observed under `flatpak-session-helper.service` with multiple processes.
-Choose a cgroup boundary that contains browser, renderer, zygote, crashpad, and restarted descendants.
+Choose a cgroup boundary that contains browser,
+ renderer,
+ zygote,
+ crashpad,
+ and restarted descendants.
 Verify that containment rather than assuming it.
 
 ## Task `#7`: final verification
 
 After tasks `#5` and `#6`:
 
-- rerun all affected package builds, tests, TypeScript lint, Rust checks, and Markdown lint;
+- rerun all affected package builds,
+   tests,
+   TypeScript lint,
+   Rust checks,
+   and Markdown lint;
 - rerun disposable netns routing integration;
 - exercise both built CLIs at their consumer boundaries;
 - exercise all four BPF protocol hooks and application lifecycle integration;
-- confirm teardown leaves no owned rules, routes, watcher, state, or pins;
+- confirm teardown leaves no owned rules,
+   routes,
+   watcher,
+   state,
+   or pins;
 - confirm unrelated policy routes and pins remain untouched;
 - inspect `git status` and commit each completed logical unit;
 - update this handover to completion state.

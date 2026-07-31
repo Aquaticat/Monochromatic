@@ -10,7 +10,8 @@ writes fire-and-forget.
 Discovered under Node:
 a CPU profile of an oxlint semantic-plugin rebuild attributed 522 ms of
 13.7 s to the session-storage sink
-(383 ms self time in `write`, 137 ms in `evictOldest`),
+(383 ms self time in `write`,
+ 137 ms in `evictOldest`),
 because oxlint runs JS-plugin visitors synchronously on the main JS
 thread and the plugin logs extensively.
 Self time in a sampling profiler means the main thread was executing
@@ -46,10 +47,13 @@ interface Storage {
 
 The `setItem(key, value)` method steps are a synchronous algorithm,
 including the quota failure:
-"If value cannot be stored, then throw a `QuotaExceededError`.
+"If value cannot be stored,
+ then throw a `QuotaExceededError`.
 Set this's map[key] to value.
 ...
-Broadcast this with key, oldValue, and value."
+Broadcast this with key,
+ oldValue,
+ and value."
 There is no promise-returning variant,
 and `[Exposed=Window]` means workers never see `sessionStorage` or
 `localStorage`,
@@ -89,7 +93,9 @@ never offload
 ```
 
 By the time `trackedWrite` could be ignored,
-the serialization, the `setItem`, the footprint accounting,
+the serialization,
+ the `setItem`,
+ the footprint accounting,
 and any `evictOldest` scans have already executed on the caller's
 stack.
 
@@ -97,7 +103,8 @@ stack.
 
 Versions under test:
 
-- HeadlessChrome/149.0.0.0 via `agent-browser`, Linux x86_64.
+- HeadlessChrome/149.0.0.0 via `agent-browser`,
+   Linux x86_64.
 - `@monochromatic-dev/module-logger` at workspace commit `583f1c25b`.
 
 Harness:
@@ -212,23 +219,39 @@ http.server`) to measure the OPFS comparison.
 ```
 
 Measured per-record main-thread cost
-(medians of two runs, `file://` and `http://127.0.0.1`, which agreed
+(medians of two runs,
+ `file://` and `http://127.0.0.1`,
+ which agreed
 within run-to-run noise):
 
-- `sessionStorage`, 130-char record:
+- `sessionStorage`,
+   130-char record:
   4.9 µs per `setItem`;
   10.2 µs at eviction steady state
-  (`getItem` + `removeItem` + `setItem` per record, the sink's shape
+  (`getItem` + `removeItem` + `setItem` per record,
+   the sink's shape
   once its half-quota cap is reached);
   0.34 µs per record when 100 records share one `setItem`.
-- `sessionStorage`, 1030-char record:
-  5.7 µs; 10.5 µs evicting; 1.6 µs batched.
-- `localStorage`, 130-char record:
-  4.9 µs; 9.7 µs evicting; 0.26 µs batched.
-- `localStorage`, 1030-char record:
-  5.1 µs; 10.2 µs evicting; 1.3 µs batched.
-- `JSON.stringify` of the 130-char record alone: 0.18 µs,
-  so the storage call, not serialization, dominates the sink.
+- `sessionStorage`,
+   1030-char record:
+  5.7 µs;
+   10.5 µs evicting;
+   1.6 µs batched.
+- `localStorage`,
+   130-char record:
+  4.9 µs;
+   9.7 µs evicting;
+   0.26 µs batched.
+- `localStorage`,
+   1030-char record:
+  5.1 µs;
+   10.2 µs evicting;
+   1.3 µs batched.
+- `JSON.stringify` of the 130-char record alone:
+   0.18 µs,
+  so the storage call,
+   not serialization,
+   dominates the sink.
 - OPFS `FileSystemWritableFileStream.write` issued without awaiting:
   15.9 µs per record of main-thread enqueue cost;
   382 µs per record wall time for 2000 writes issued then all awaited.
@@ -236,31 +259,83 @@ within run-to-run noise):
 ### Batch-size sweep
 
 Rerunning the harness's batched loop with batch sizes swept across
-1, 5, 10, 25, 50, 100, 250, 500, and 1000 records per key
-(same engine, `http://127.0.0.1` origin;
+1,
+ 5,
+ 10,
+ 25,
+ 50,
+ 100,
+ 250,
+ 500,
+ and 1000 records per key
+(same engine,
+ `http://127.0.0.1` origin;
 the sweep is the embedded harness with `batchSize` iterated instead of
 fixed) shows the batch size is not magic;
 the curve is per-call overhead amortized as `overhead / batchSize`
 plus a per-char cost that grows with batch bytes:
 
-- `sessionStorage`, 130-char records, µs per record:
-  4.84 at 1; 1.37 at 5; 0.74 at 10; 0.47 at 25; 0.44 at 50;
-  0.35 at 100; 0.26 at 250; 0.26 at 500; 0.40 at 1000.
-- `sessionStorage`, 1030-char records, µs per record:
-  5.87 at 1; 4.87 at 5; 2.40 at 10; 2.00 at 25; 1.67 at 50;
-  1.73 at 100; 3.87 at 250; 7.87 at 500; 8.93 at 1000,
-  a genuine U-shape: at 500 records the flush writes a ~515 KB value
+- `sessionStorage`,
+   130-char records,
+   µs per record:
+  4.84 at 1;
+   1.37 at 5;
+   0.74 at 10;
+   0.47 at 25;
+   0.44 at 50;
+  0.35 at 100;
+   0.26 at 250;
+   0.26 at 500;
+   0.40 at 1000.
+- `sessionStorage`,
+   1030-char records,
+   µs per record:
+  5.87 at 1;
+   4.87 at 5;
+   2.40 at 10;
+   2.00 at 25;
+   1.67 at 50;
+  1.73 at 100;
+   3.87 at 250;
+   7.87 at 500;
+   8.93 at 1000,
+  a genuine U-shape:
+   at 500 records the flush writes a ~515 KB value
   and per-record cost exceeds unbatched `setItem`.
-- `localStorage`, 130-char records, µs per record:
-  5.56 at 1; 1.11 at 5; 0.62 at 10; 0.37 at 25; 0.27 at 50;
-  0.24 at 100; 0.32 at 250; 0.22 at 500; 0.19 at 1000.
-- `localStorage`, 1030-char records, µs per record:
-  7.67 at 1; 2.13 at 5; 1.87 at 10; 1.60 at 25; 1.33 at 50;
-  1.27 at 100; 1.33 at 250; 1.53 at 500; 3.33 at 1000.
-- OPFS, 130-char records, main-thread enqueue µs per record:
-  14.3 at 1; 1.45 at 10; 0.35 at 100; 0.20 at 1000;
+- `localStorage`,
+   130-char records,
+   µs per record:
+  5.56 at 1;
+   1.11 at 5;
+   0.62 at 10;
+   0.37 at 25;
+   0.27 at 50;
+  0.24 at 100;
+   0.32 at 250;
+   0.22 at 500;
+   0.19 at 1000.
+- `localStorage`,
+   1030-char records,
+   µs per record:
+  7.67 at 1;
+   2.13 at 5;
+   1.87 at 10;
+   1.60 at 25;
+   1.33 at 50;
+  1.27 at 100;
+   1.33 at 250;
+   1.53 at 500;
+   3.33 at 1000.
+- OPFS,
+   130-char records,
+   main-thread enqueue µs per record:
+  14.3 at 1;
+   1.45 at 10;
+   0.35 at 100;
+   0.20 at 1000;
   awaited-settle µs per record drops 368 to 0.65 across the same
-  sweep (fewer IPC round trips), with no U-turn up to the ~130 KB
+  sweep (fewer IPC round trips),
+   with no U-turn up to the ~130 KB
   write.
 
 The knee sits at roughly 10 to 25 records:
@@ -268,8 +343,11 @@ most of the win is banked there,
 and the region from 25 to a few hundred records is flat for small
 records.
 The U-turn for 1030-char records puts the minimum near 50 to 100
-records, about 50 KB to 100 KB per flush,
-so batch bytes, not batch count, is the variable to cap.
+records,
+ about 50 KB to 100 KB per flush,
+so batch bytes,
+ not batch count,
+ is the variable to cap.
 Flush-call latency scales the same way:
 50 large records flush in about 84 µs,
 while 500 flush in about 3.9 ms,
@@ -280,7 +358,8 @@ Two conclusions the numbers force:
 - The synchronous sink is cheap per record (about 5 µs) but linear in
   record count on the main thread;
   the Node incident was volume (thousands of records inside one
-  synchronous rebuild), not a slow single write.
+  synchronous rebuild),
+   not a slow single write.
 - The "async" OPFS sink costs about 3x more main-thread time per
   record (15.9 µs enqueue) than the synchronous `setItem` it is
   supposed to improve on;
@@ -292,7 +371,8 @@ Two conclusions the numbers force:
 ### Reject election under Node (shipped in `583f1c25b`, reverted in `c040389f8`)
 
 Commit `583f1c25b` made `verify` reject Node-branded runtimes despite a
-working backend, on the judgment that the process-local store served no
+working backend,
+ on the judgment that the process-local store served no
 diagnostic purpose there.
 That judgment was reversed by decision:
 the sink stays elected wherever `sessionStorage` round-trips a probe,
@@ -306,40 +386,53 @@ the current `verify` is probe-only
 ### One uniform buffered write path (shipped in `c040389f8`)
 
 The sink buffers serialized records and persists them as
-newline-joined JSONL batches, one batch per counter-incremented key,
-identically on every runtime; no per-runtime mode exists
+newline-joined JSONL batches,
+ one batch per counter-incremented key,
+identically on every runtime;
+ no per-runtime mode exists
 (`package/module/logger/src/sink/session-storage.ts`,
 persistence engine split to
 `package/module/logger/src/sink/session-storage-store.ts`).
 A batch flushes:
 
 - synchronously from inside `write` at a 32 KiB joined-length cap
-  (`FLUSH_BUFFER_CAP_CHARS`), the flat bottom of the measured
-  batch-size curve on both Chromium 149 and Node 26, clear of the
+  (`FLUSH_BUFFER_CAP_CHARS`),
+   the flat bottom of the measured
+  batch-size curve on both Chromium 149 and Node 26,
+   clear of the
   measured U-turn where ~100 KiB+ flushes cost more per record than
   not batching;
 - synchronously from inside `write` on `warn`-or-worse severity,
   so every record up to and including a failure is persisted before
   control returns;
-- by a 250 ms quiet-period deadline timer, `unref`ed where the handle
+- by a 250 ms quiet-period deadline timer,
+   `unref`ed where the handle
   supports it so a pending flush never holds a process open;
-- on `pagehide` and on the document becoming hidden, where those
+- on `pagehide` and on the document becoming hidden,
+   where those
   events exist (no-ops elsewhere);
-- via the sink `flush` hook, which logger-level `flush()` drains.
+- via the sink `flush` hook,
+   which logger-level `flush()` drains.
 
-When appending a record would breach the cap, the existing entries
-flush first, so an oversized record's quota give-up can only drop that
-record, never its batch-mates.
+When appending a record would breach the cap,
+ the existing entries
+flush first,
+ so an oversized record's quota give-up can only drop that
+record,
+ never its batch-mates.
 
-Measured outcome at the consumer boundary (built `dist`, Node 26.5):
+Measured outcome at the consumer boundary (built `dist`,
+ Node 26.5):
 a 10,000-record `debug` storm through a logger with only this sink
-costs 2.78 µs per record, of which about 2 µs is logger dispatch
+costs 2.78 µs per record,
+ of which about 2 µs is logger dispatch
 overhead (a suppressed-console-only logger measures 2.05 µs),
 versus ~14.7 µs per unbatched `setItem` before;
 a `warn` record lands itself and the buffered records ahead of it as
 one JSONL batch;
 and a process holding buffered records and an armed deadline timer
-exits promptly (~0.5 s total script time, no timer hold-open).
+exits promptly (~0.5 s total script time,
+ no timer hold-open).
 
 Tradeoffs:
 
@@ -347,32 +440,42 @@ Tradeoffs:
   hard (the process dies without `pagehide` firing).
   Crash forensics is a core reason a session-storage sink exists,
   so the flush interval bounds the loss window and must stay small;
-  `pagehide`/`visibilitychange` cover navigation, reload, and close.
+  `pagehide`/`visibilitychange` cover navigation,
+   reload,
+   and close.
   The crash-durability subsection below sizes this loss honestly:
   per-record `setItem` never guaranteed hard-crash durability either.
 - Eviction granularity coarsens to whole batches,
   so the half-quota cap overshoots by up to one batch.
 - Readers must split stored values on the record delimiter;
   the delimiter must be one JSON strings cannot contain unescaped
-  (newline works, since `JSON.stringify` escapes it inside strings).
+  (newline works,
+   since `JSON.stringify` escapes it inside strings).
 
 ### OPFS sink batched through the same shared buffer (shipped in `13d993c14`)
 
 The buffering stage is extracted to
-`package/module/logger/src/sink/record-buffer.ts` (same triggers, same
+`package/module/logger/src/sink/record-buffer.ts` (same triggers,
+ same
 constants) and both sinks compose it;
-the OPFS sink issues one queued stream write per joined batch, tracks
-in-flight batch writes, and its `flush` hook resolves only once every
+the OPFS sink issues one queued stream write per joined batch,
+ tracks
+in-flight batch writes,
+ and its `flush` hook resolves only once every
 issued batch has settled.
-Measured at the consumer boundary (built `dist`, HeadlessChrome 149):
+Measured at the consumer boundary (built `dist`,
+ HeadlessChrome 149):
 a 10,000-record `debug` storm costs 0.84 µs of main-thread enqueue per
-record versus 15.9 µs unbatched, 1.76 µs per record with all batch
+record versus 15.9 µs unbatched,
+ 1.76 µs per record with all batch
 writes awaited,
 and an `info` plus `warn` pair through the browser session-storage
-sink lands as one two-line JSONL batch, confirming the shared buffer
+sink lands as one two-line JSONL batch,
+ confirming the shared buffer
 end to end.
 
-Durability caveat, pre-existing and unchanged by batching:
+Durability caveat,
+ pre-existing and unchanged by batching:
 `FileSystemWritableFileStream` stages writes and the OPFS file's
 readable content updates only when the writable closes (the sink's own
 `verify` works around exactly this for its probe),
@@ -381,8 +484,11 @@ so OPFS log content is not observable mid-session under either the
 per-record or the batched design.
 
 A localStorage sink was absent from the package until 2026-07-22:
-the original sink set (commit `7fe3a2044`) shipped console, file,
-OPFS, sessionStorage, and noop with no recorded reason for the gap,
+the original sink set (commit `7fe3a2044`) shipped console,
+ file,
+OPFS,
+ sessionStorage,
+ and noop with no recorded reason for the gap,
 an omission rather than a decision.
 `package/module/logger/src/sink/local-storage.ts` now composes
 `record-buffer.ts` exactly the way this document prescribed,
@@ -404,7 +510,8 @@ exactly the crash scenarios a persistent sink exists for.
 Headless Chromium 149 measurements that drove the shape
 (130-char-equivalent records):
 18.6 µs per record for one transaction per record
-(worse than unbatched `setItem`, a trap for naive ports);
+(worse than unbatched `setItem`,
+ a trap for naive ports);
 8.0 µs for one transaction per batch with one `add` per record;
 0.76 µs for one `add` per batch storing an array of record objects;
 0.15 µs for one `add` per batch storing the exact newline-joined JSONL
@@ -422,26 +529,35 @@ including the relaxed-durability choice and retention cap:
 ### Crash durability under batching
 
 "Batching loses the records a crash was supposed to explain" holds
-only for one crash class, and the unbatched design is weaker against
+only for one crash class,
+ and the unbatched design is weaker against
 that class than it appears.
 
 Crash classes and what each loses:
 
 - Uncaught exception or unhandled rejection (the common "app crashed"
-  for a web app): the tab keeps running and handlers still execute.
+  for a web app):
+   the tab keeps running and handlers still execute.
   A sink that flushes immediately on `warn`/`error`/`fatal` records,
   plus `window.onerror`/`unhandledrejection` listeners that flush,
   loses nothing:
   the flush drains the buffered `debug` records preceding the error.
   Severity-triggered flushes cost per-record `setItem` prices only for
-  rare records, so amortization is unaffected.
-- Navigation, reload, tab close, backgrounded-tab kill:
+  rare records,
+   so amortization is unaffected.
+- Navigation,
+   reload,
+   tab close,
+   backgrounded-tab kill:
   `pagehide` and `visibilitychange` to `hidden` fire;
   flushing there loses nothing.
-- Hang or runaway allocation from our own bug, ended by the user
+- Hang or runaway allocation from our own bug,
+   ended by the user
   killing the unresponsive tab or the OS OOM-killing the renderer:
-  nothing throws, so no severity flush ever fires,
-  and once the main thread wedges, timer- and idle-based deadline
+  nothing throws,
+   so no severity flush ever fires,
+  and once the main thread wedges,
+   timer- and idle-based deadline
   flushes can never run again either.
   The batched buffer dies inside the wedged process's JS heap.
   Per-record writes were already handed to Chromium at emit time,
@@ -451,8 +567,10 @@ Crash classes and what each loses:
   minus at most an in-flight tail.
   This is the class where batching genuinely forfeits forensics that
   per-record keeps,
-  and because our code causes it, it is not rare.
-- Hard renderer/browser/OS crash from below us: JS never runs again;
+  and because our code causes it,
+   it is not rare.
+- Hard renderer/browser/OS crash from below us:
+   JS never runs again;
   the buffer since the last deadline flush is lost.
   Bounded by the flush deadline and byte cap.
 
@@ -480,7 +598,8 @@ the browser process asynchronously:
 so a renderer crash can drop records whose `Put` had not crossed the
 process boundary,
 regardless of how synchronously JS called `setItem`.
-One layer further down, the browser process batches `localStorage`
+One layer further down,
+ the browser process batches `localStorage`
 disk commits itself
 (`components/services/storage/dom_storage/local_storage_impl.cc:56`):
 
@@ -503,12 +622,14 @@ assume our code fails far more often than Chromium,
 and Chromium far more often than the OS;
 never design as though our recovery code is more robust than the
 layers below it.
-Under it, per-record wins the hang-and-leak class outright:
+Under it,
+ per-record wins the hang-and-leak class outright:
 it is the only design that needs none of our code to run after the
 record is emitted,
 whereas every buffered design bets that our flush scheduling survives
 whatever bug is currently destroying the app.
-The uniformity-and-availability decision, made later and final:
+The uniformity-and-availability decision,
+ made later and final:
 the sink stays elected wherever the backend round-trips,
 and every runtime uses one identical write path;
 no per-runtime modes.
@@ -529,51 +650,67 @@ The residual exposure versus per-record writes is exactly:
 at most one batch,
 lost only when the process dies with no further JS and no lifecycle
 event.
-Chromium and OS crashes, where the window also bites,
+Chromium and OS crashes,
+ where the window also bites,
 are the rarest class and already lossy at layers below us
-(async mojo `Put`, 5 s disk-commit batching).
+(async mojo `Put`,
+ 5 s disk-commit batching).
 
 ## What does not work
 
 - Offloading web storage to a worker:
-  impossible by spec, `Storage` is `[Exposed=Window]`;
+  impossible by spec,
+   `Storage` is `[Exposed=Window]`;
   workers get IndexedDB and OPFS instead,
   and a worker cannot touch the tab's `sessionStorage` at all,
   so posting records to a worker just moves the write back via
   `postMessage`.
-- Making the sink "more async" (returning promises, `queueMicrotask`,
+- Making the sink "more async" (returning promises,
+   `queueMicrotask`,
   awaiting before `setItem`):
   the storage call still runs on the main thread in the same turn or a
   later one;
-  scheduling shuffles when, never where.
+  scheduling shuffles when,
+   never where.
   The current `write` returns an already-settled promise,
   so callers were never waiting on it to begin with.
 - Replacing the session-storage sink with the OPFS sink to save main
   thread:
   measured OPFS enqueue is about 15.9 µs per record versus 4.9 µs for
   `setItem`,
-  so per-record it spends more main-thread time, not less.
+  so per-record it spends more main-thread time,
+   not less.
 - Rejecting election under Node instead of batching (the `583f1c25b`
-  approach, since reverted):
+  approach,
+   since reverted):
   it judged the process-local store worthless and so priced uniform
   cross-runtime behavior at zero;
   the standing decision values availability plus one identical write
-  path everywhere, and the buffered path makes that affordable,
+  path everywhere,
+   and the buffered path makes that affordable,
   so runtime-brand rejection solved the cost by discarding the
   capability instead of fixing the cost.
 - Per-record `requestIdleCallback` scheduling:
   pays scheduling overhead per record without amortizing the storage
-  call, and reorders records;
-  deferral only helps combined with batching, where it is the flush
+  call,
+   and reorders records;
+  deferral only helps combined with batching,
+   where it is the flush
   trigger.
 
 ## Upstream filing decision
 
 `.out-of-scope/` was checked
-(`bun-install`, `cargo-workspace`, `claude-code-upstream-bugs`,
-`codex-harness`, `jsr`, `lightningcss`,
-`low-impact-typescript-formatting`, `module-es-monolith`,
-`pi-gpt55-long-context`, `terminal-title-fork-parity-tests`,
+(`bun-install`,
+ `cargo-workspace`,
+ `claude-code-upstream-bugs`,
+`codex-harness`,
+ `jsr`,
+ `lightningcss`,
+`low-impact-typescript-formatting`,
+ `module-es-monolith`,
+`pi-gpt55-long-context`,
+ `terminal-title-fork-parity-tests`,
 `typescript-project-references`);
 no exemption covers web storage or the WHATWG HTML spec.
 
@@ -582,12 +719,14 @@ the engines implementing it):
 
 1. **Is it really upstream's fault?**
    No.
-   Synchronous, Window-only web storage is the specified design,
+   Synchronous,
+    Window-only web storage is the specified design,
    and the spec explicitly declines coordination machinery
    ("authors are encouraged to assume that there is no locking
    mechanism").
    The platform's answer to "I need async storage" is IndexedDB and
-   OPFS, which exist and which we already use.
+   OPFS,
+    which exist and which we already use.
 2. **Can upstream fix it?**
    No.
    `setItem` is an `undefined`-returning setter;
@@ -595,16 +734,21 @@ the engines implementing it):
    caller on the web.
    This is the architectural-impossibility case the constraint names.
 3. **Are they supporting this use case?**
-   Synchronous small-value storage, yes;
-   high-frequency hot-path writes, no,
+   Synchronous small-value storage,
+    yes;
+   high-frequency hot-path writes,
+    no,
    and the async storage APIs are the documented alternative.
 4. **Would the repo welcome our contribution?**
-   Not evaluated further; constraints 1 and 2 already fail.
+   Not evaluated further;
+    constraints 1 and 2 already fail.
 5. **Will they likely fix it?**
-   Not evaluated further; constraints 1 and 2 already fail.
+   Not evaluated further;
+    constraints 1 and 2 already fail.
 6. **Have we prototyped a minimal fix compatible with their
    architecture?**
-   Not applicable; there is nothing upstream to fix.
+   Not applicable;
+    there is nothing upstream to fix.
    The consumer-side batching workaround in this doc is the fix at our
    boundary.
 
@@ -616,19 +760,26 @@ No draft issue is kept.
 
 ## Key takeaway
 
-Fire-and-forget hides latency, not CPU:
+Fire-and-forget hides latency,
+ not CPU:
 any sink work before the first genuine await runs on the caller's
 thread,
-and for web storage that is all of it, about 5 µs per record in
+and for web storage that is all of it,
+ about 5 µs per record in
 Chromium 149 and about 15 µs on Node 26.
 The shipped answer (`c040389f8`) is election by probe alone plus one
 uniform buffered write path on every runtime:
 one `setItem` per byte-capped batch
-(32 KiB lands in the flat bottom of the curve, 3x to 60x cheaper per
-record; a fixed record count is the wrong knob, since ~100 KiB+
+(32 KiB lands in the flat bottom of the curve,
+ 3x to 60x cheaper per
+record;
+ a fixed record count is the wrong knob,
+ since ~100 KiB+
 flushes cost more per record than not batching),
 flushed synchronously in-write at the cap and on `warn`-or-worse,
-by unref'd 250 ms deadline, on `pagehide`/hidden, and on `flush()`.
+by unref'd 250 ms deadline,
+ on `pagehide`/hidden,
+ and on `flush()`.
 The in-write cap flush is what keeps the humility principle satisfied:
 a wedged main thread can never hold more than one batch of tail.
 The measured surprise held and drove the follow-up:

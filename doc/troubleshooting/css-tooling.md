@@ -310,44 +310,66 @@ joining the `jsonc-edit`/`toml-edit` format-editing family.
 
 ### Why: the 2026-07 pure-JS parser survey
 
-Motivation: dissatisfaction with postcss
+Motivation:
+ dissatisfaction with postcss
 (unguarded `process.env` reach-in forcing a browser shim,
 stringly-typed at-rule params,
 mutable OO AST,
 dated dependency posture).
 Every candidate was probed empirically on the same corpus
 (`@mixin` bodies mixing declarations with relaxed and `&` nesting,
-`@apply`, comments, braces and semicolons inside strings and `url()`,
-escaped selectors, custom-property block values):
+`@apply`,
+ comments,
+ braces and semicolons inside strings and `url()`,
+escaped selectors,
+ custom-property block values):
 
-- `css-tree` 3.2.1 (the original migration target): rejected.
+- `css-tree` 3.2.1 (the original migration target):
+   rejected.
    Relaxed nesting without `&` becomes Raw plus a parse error
    (present in real repo CSS at the time in
    done-postcss `mixins.css`),
    unknown at-rule blocks parse in rule-list mode
-   (fixable only via a `fork()` parser config, verified working),
-   comments are dropped, generate() is minified-only,
+   (fixable only via a `fork()` parser config,
+   verified working),
+   comments are dropped,
+   generate() is minified-only,
    and `@types/css-tree` lags a major version.
-- `@adobe/css-tools` 4.5.0: runner-up.
+- `@adobe/css-tools` 4.5.0:
+   runner-up.
    Passed the corpus including relaxed nesting and comments;
-   zero deps, TS-native types.
-   Rejected: custom-property block values (`--raw: { x };`) throw,
+   zero deps,
+   TS-native types.
+   Rejected:
+   custom-property block values (`--raw: { x };`) throw,
    regex-era scanner (two patched 2023 ReDoS CVEs),
    string preludes keep the stringly-params pain.
-- `@projectwallace/css-parser` 0.18.1: no code generation at all;
+- `@projectwallace/css-parser` 0.18.1:
+   no code generation at all;
    analyzer only.
-- `@stacksjs/ts-css` 0.1.1: silently deleted a nested rule and ejected
-   `@apply` to top level; week-old 0.x, Bun-first.
-- `@csstools/css-parser-algorithms` 4.0.0: component-value level only;
+- `@stacksjs/ts-css` 0.1.1:
+   silently deleted a nested rule and ejected
+   `@apply` to top level;
+   week-old 0.x,
+   Bun-first.
+- `@csstools/css-parser-algorithms` 4.0.0:
+   component-value level only;
    the modern spec-faithful pure-JS effort is deliberately headless.
-- `@csstools/css-tokenizer` 4.0.0: byte-perfect lossless round-trip on the
-   full corpus, zero parse errors, comments preserved as tokens.
-   Chosen as the foundation; css-edit supplies the CSS Syntax section 5
+- `@csstools/css-tokenizer` 4.0.0:
+   byte-perfect lossless round-trip on the
+   full corpus,
+   zero parse errors,
+   comments preserved as tokens.
+   Chosen as the foundation;
+   css-edit supplies the CSS Syntax section 5
    structure layer over it.
 
 Conclusion recorded for posterity:
 as of mid-2026 no established pure-JS CSS parser is simultaneously
-lossless, nesting-correct, maintained, and able to emit CSS;
+lossless,
+ nesting-correct,
+ maintained,
+ and able to emit CSS;
 the spec-exact tokenizer exists but full-stylesheet parsing was ceded to
 postcss by the ecosystem.
 
@@ -356,14 +378,17 @@ postcss by the ecosystem.
 - Public API redesigned to a deep-module surface:
   `buildCss({ input, output })` and `expandCssMixins({ css, mixinCss? })`
   plus `UnknownCssMixinError`/`CircularCssMixinError`.
-- Mixin engine: memoized definition-chain recursion with an explicit trail
+- Mixin engine:
+   memoized definition-chain recursion with an explicit trail
   (exact cycle reporting) replaced the ten-pass fixed-point loop with full
-  serialization comparison; immutable css-edit nodes splice by reference,
+  serialization comparison;
+   immutable css-edit nodes splice by reference,
   no cloning.
 - `@import` specifiers now come from parsed tokens,
   fixing the old string-slicing corruption on
   `@import url('x.css') layer(base);`.
-- `process-shim.ts` deleted; css-edit references no process globals.
+- `process-shim.ts` deleted;
+   css-edit references no process globals.
 - Browser consumers import
   `@monochromatic-dev/build-tool-css/ts/expand` directly;
   the package index re-exports the node-only file pipeline whose
@@ -376,22 +401,30 @@ postcss by the ecosystem.
 - Raw parse+stringify on a 94 KB synthetic sheet:
   postcss 1.13x faster than css-edit;
   css-tree 9.5x slower than postcss.
-  Decomposition: the spec tokenizer alone costs more than postcss's whole
+  Decomposition:
+   the spec tokenizer alone costs more than postcss's whole
   parse (2.86 ms vs 2.59 ms on 66 KB);
   the css-edit structure layer adds about 1 ms and stringify 0.8 ms.
   Spec-exact tokenization with eagerly parsed token data is the price of
   the byte-fidelity and correctness guarantees.
 - Mixin pipeline (the workload that matters):
   `expandCssMixins` 1.72x faster than a faithful replica of the retired
-  postcss clone-and-fixed-point pipeline, with about 40 percent less
+  postcss clone-and-fixed-point pipeline,
+   with about 40 percent less
   allocation (`css-edit.bench` `bench:pipeline`).
 
 ### Verification and guardrails
 
-- Sidecars: `css-edit.fuzz`
-  (byte round-trip, totality, structural sharing, postcss differential
-  oracle; clean at 5000 runs),
-  `css-edit.bench`, `css-edit.conformance`
+- Sidecars:
+   `css-edit.fuzz`
+  (byte round-trip,
+   totality,
+   structural sharing,
+   postcss differential
+  oracle;
+   clean at 5000 runs),
+  `css-edit.bench`,
+   `css-edit.conformance`
   (curated css-parsing-tests-style corpus with fast-check context
   amplification).
 - Repo idiom for `.conformance` sidecars is undefined across the family;

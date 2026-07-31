@@ -45,7 +45,9 @@
 - `359640a17`:
   page-weight lint diagnostics,
   including logged catch paths.
-- `61b724390`, `1c459b445`, and `8502d31c4`:
+- `61b724390`,
+   `1c459b445`,
+   and `8502d31c4`:
   handover refreshes.
 - `f36c3efd3`:
   split figma-kiwi into focused modules,
@@ -161,10 +163,14 @@ Visible diagnostic themes in the human run:
   and `zstdCompressSync`.
 - New `no-low-information-symbol-description` warnings.
   Symbol descriptions must be self-explanatory phrases,
-  not short tags such as `discard`, `no-timer`, or `task-not-found`.
+  not short tags such as `discard`,
+   `no-timer`,
+   or `task-not-found`.
 - `unicorn/prefer-export-from` warnings for import-then-re-export patterns.
 - `package/webapp-productivity/done` and `done-postcss` have both oxlint and type failures.
-  The visible type errors come from calling `.get`, `.all`, or `.run` on `db.prepare(...)`
+  The visible type errors come from calling `.get`,
+   `.all`,
+   or `.run` on `db.prepare(...)`
   where `prepare` is now typed as returning `Promise<Statement>`.
   Await the prepared statement before calling statement methods.
 - `package/webapp-productivity/rss` has unbound catches,
@@ -181,7 +187,9 @@ Visible diagnostic themes in the human run:
    Start with the plugin and Pi package failures already visible in `proc_14`,
    then work through the webapp-productivity packages from the human rerun.
 3. For database calls where `prepare` returns a Promise,
-   introduce named prepared statement constants before `.get`, `.all`, or `.run`.
+   introduce named prepared statement constants before `.get`,
+    `.all`,
+    or `.run`.
    That should address both `TS2339` and downstream unsafe-call diagnostics.
 4. For catch blocks that intentionally tolerate a failure,
    narrow `error: unknown` and rethrow unexpected values.

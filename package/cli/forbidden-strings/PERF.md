@@ -16,20 +16,26 @@ Cutover re-measure for the `forbidden-regex` engine,
  issue #387.
  On AMD Ryzen 7 8700F (16 threads),
 hyperfine 1.20.0,
- embedded ported baseline only (`--builtin-rules`, no user rules file):
+ embedded ported baseline only (`--builtin-rules`,
+ no user rules file):
 
 - This repo cold start (one small file):
    **13.7 ms ± 0.4 ms**
 - This repo full `--all`:
    **131.9 ms ± 11.6 ms**
-   (6407 tracked files, 74.7 MiB, at `HEAD` `c8eb46466`)
+   (6407 tracked files,
+   74.7 MiB,
+   at `HEAD` `c8eb46466`)
 
 These supersede the pre-0.2.0 resharp / `regex`-crate headline figures
- (cold start 9.4 ms, `--all` 56.6 ms, measured 2026-05-16 on a smaller corpus),
+ (cold start 9.4 ms,
+ `--all` 56.6 ms,
+ measured 2026-05-16 on a smaller corpus),
  which are preserved in the dated history below.
 The Linux kernel `--all` was not part of this cutover re-measure;
  its pre-0.2.0 figure of 1.989 s stands in the history.
-Full methodology, the apples-to-apples engine A/B on the current corpus,
+Full methodology,
+ the apples-to-apples engine A/B on the current corpus,
  and the budget comparison are in the `2026-07-17` block under "Last benched".
 README defers to this file for the 0.2.0 numbers and quotes none directly.
 
@@ -148,13 +154,16 @@ history is the file's reason for existing.
 
 ## Last benched
 
-**2026-07-17 (`forbidden-regex` engine cutover, 0.2.0)**,
+**2026-07-17 (`forbidden-regex` engine cutover,
+ 0.2.0)**,
  hyperfine 1.20.0,
  AMD Ryzen 7 8700F (16 threads),
  quiet machine.
- Issue #387, the engine-swap cutover re-measure.
+ Issue #387,
+ the engine-swap cutover re-measure.
  Both binaries measured against the same working tree at `HEAD` `c8eb46466`
- (6407 tracked files, 74.7 MiB tracked content):
+ (6407 tracked files,
+ 74.7 MiB tracked content):
 
 - New binary:
  the live release `0.2.0` at
@@ -166,7 +175,9 @@ history is the file's reason for existing.
  loading `data/builtin-rules.txt` via `--rules`.
 
 Cold start scanned one small clean file
- (`package/cli/forbidden-strings/tsconfig.json`, 100 bytes, no findings);
+ (`package/cli/forbidden-strings/tsconfig.json`,
+ 100 bytes,
+ no findings);
  `--all` scanned the whole tree with `--ignore-failure`
  (findings on both sides make the exit non-zero).
 Each measurement is 30 runs after 3 warm-up runs.
@@ -188,11 +199,13 @@ Reading:
  even though wall time is close.
 - Full `--all` is about 0.78x on the new engine
  (131.9 ms versus 168.8 ms on the identical corpus),
- so the engine is faster on the full scan, not slower.
+ so the engine is faster on the full scan,
+   not slower.
 - The rise from the pre-0.2.0 headline `--all` of 56.6 ms is corpus growth,
  not the engine:
  tracked files grew from 3471 to 6407 and content from 57 MiB to 74.7 MiB
- since that measurement, and the old engine on this larger corpus is 168.8 ms.
+ since that measurement,
+   and the old engine on this larger corpus is 168.8 ms.
  The `~5000 tracked files` re-bench trigger in "When to re-bench" is now met,
  which is itself why the absolute number moved.
 
@@ -201,13 +214,15 @@ Budget comparison:
 - Pre-commit budget.
  The README states a sub-100 ms pre-commit budget for the native-binary startup;
  the "When to re-bench" trigger sets a 30 ms startup ceiling.
- New cold start 13.7 ms is within both, with margin.
+ New cold start 13.7 ms is within both,
+   with margin.
 - Pre-push and full-scan budget.
  The README states no separate numeric pre-push figure;
  the operative ceilings are the "When to re-bench" 180 ms `--all` trigger
  and the cli-git manual-push ceiling of strictly less than 2000 ms
  (see "Cli-git repository-scale manual push").
- New full `--all` 131.9 ms is within both, with wide margin.
+ New full `--all` 131.9 ms is within both,
+   with wide margin.
 - No budget is exceeded;
  there is no blocking finding.
 

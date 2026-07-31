@@ -1,51 +1,83 @@
 # GTK4 on Windows cannot drag files out to Explorer (drag-source Shell IDList not implemented)
 
-Dragging a file FROM a gtk4-rs app TO Windows Explorer (or any non-GTK app) does not work: the
-drag starts but the drop is rejected, the cursor bounces back, and no file is transferred. The
+Dragging a file FROM a gtk4-rs app TO Windows Explorer (or any non-GTK app) does not work:
+ the
+drag starts but the drop is rejected,
+ the cursor bounces back,
+ and no file is transferred.
+ The
 fix is a small native Win32 OLE drag source in Rust.
 
 ## Symptom
 
 - A `GtkDragSource` whose `prepare` returns a `GdkFileList` (or any file content) starts a drag,
   but dropping onto Explorer does nothing and the drag icon snaps back.
-- The source side is fine: the app's `prepare` handler runs and hands out the file (verified via
-  an `outbound drag prepared` log line). The problem is entirely on the receiving end: Explorer
+- The source side is fine:
+   the app's `prepare` handler runs and hands out the file (verified via
+  an `outbound drag prepared` log line).
+   The problem is entirely on the receiving end:
+   Explorer
   sees no file format it accepts.
 
 ## Root cause
 
-This is a documented, unimplemented feature in GDK's Win32 backend, not an app bug. From
-`gdk/win32/gdkdrag-win32.c` (GTK main, read 2026-07):
+This is a documented,
+ unimplemented feature in GDK's Win32 backend,
+ not an app bug.
+ From
+`gdk/win32/gdkdrag-win32.c` (GTK main,
+ read 2026-07):
 
-> If GTK application accepts text/uri-list, GDK will claim to accept "Shell IDList Array", and
-> will do the conversion when such data is provided. Currently the conversion from text/uri-list
-> to "Shell IDList Array" is not implemented, so it's not possible to drag & drop files from GTK
+> If GTK application accepts text/uri-list,
+>  GDK will claim to accept "Shell IDList Array",
+>  and
+> will do the conversion when such data is provided.
+>  Currently the conversion from text/uri-list
+> to "Shell IDList Array" is not implemented,
+>  so it's not possible to drag & drop files from GTK
 > applications to non-GTK applications the same way one can drag files from Windows Explorer.
 
-For file content, GDK's Win32 drag source only advertises "Shell IDList Array"
-(`CFSTR_SHELLIDLIST`), and the conversion that would fill it in is a stub; it never offers
-`CF_HDROP` either. So there is no app-side content-provider workaround: whatever file content the
-`GtkDragSource` provides, GDK will not expose it to a foreign OLE drop target in a format Explorer
+For file content,
+ GDK's Win32 drag source only advertises "Shell IDList Array"
+(`CFSTR_SHELLIDLIST`),
+ and the conversion that would fill it in is a stub;
+ it never offers
+`CF_HDROP` either.
+ So there is no app-side content-provider workaround:
+ whatever file content the
+`GtkDragSource` provides,
+ GDK will not expose it to a foreign OLE drop target in a format Explorer
 understands.
 
-The inbound direction is fine (Explorer -> GTK works, verified), because that path
+The inbound direction is fine (Explorer -> GTK works,
+ verified),
+ because that path
 (`WM_DROPFILES` / `CFSTR_SHELLIDLIST` -> `text/uri-list`) is implemented in
-`gdk/win32/gdkdrop-win32.c` and `gdkclipdrop-win32.c`. The gap is outbound only, and only to
+`gdk/win32/gdkdrop-win32.c` and `gdkclipdrop-win32.c`.
+ The gap is outbound only,
+ and only to
 non-GTK targets (GTK-to-GTK drags exchange native formats and work).
 
 ## Fix: native Win32 OLE drag source in Rust
 
 Bypass GTK's drag source on Windows and drive the native OLE drag directly (pure Rust via the
-`windows` crate, no C):
+`windows` crate,
+ no C):
 
-- Implement a minimal `IDataObject` that serves `CF_HDROP`: an `HGLOBAL` holding a `DROPFILES`
+- Implement a minimal `IDataObject` that serves `CF_HDROP`:
+   an `HGLOBAL` holding a `DROPFILES`
   header followed by the dragged paths as a double-null-terminated wide (UTF-16) string.
-- Implement a minimal `IDropSource` (`QueryContinueDrag`, `GiveFeedback`).
+- Implement a minimal `IDropSource` (`QueryContinueDrag`,
+   `GiveFeedback`).
 - Call `DoDragDrop(data_object, drop_source, DROPEFFECT_COPY)` on the GTK main thread (an OLE STA;
-  `DoDragDrop` runs its own modal loop and pumps messages, so the desktop stays responsive).
-- Trigger it from the widget's drag gesture (a `GtkGestureDrag` `drag-begin`), guarded to Windows.
+  `DoDragDrop` runs its own modal loop and pumps messages,
+   so the desktop stays responsive).
+- Trigger it from the widget's drag gesture (a `GtkGestureDrag` `drag-begin`),
+   guarded to Windows.
 
-On Linux (Wayland) and macOS keep GTK's native `GtkDragSource`, which works there; only Windows
+On Linux (Wayland) and macOS keep GTK's native `GtkDragSource`,
+ which works there;
+ only Windows
 outbound needs this shim.
 
 ### Reference implementation (verified)
@@ -112,7 +144,8 @@ fn run_drag(paths: &[&Path]) -> windows::core::Result<()> {
 }
 ```
 
-Trigger from a `GtkGestureDrag` on the draggable widget (Windows only); keep `GtkDragSource`
+Trigger from a `GtkGestureDrag` on the draggable widget (Windows only);
+ keep `GtkDragSource`
 elsewhere:
 
 ```rust
@@ -128,17 +161,29 @@ elsewhere:
 
 Gotchas found while writing it:
 
-- `SHDoDragDrop` blocks (its own modal loop, pumping messages) until drop or cancel, and must run
-  on the GTK main thread, which is already an OLE STA because GDK calls `OleInitialize` at startup.
-- `IShellItemArray::BindToHandler` has two generic parameters, so a turbofix fails; annotate the
+- `SHDoDragDrop` blocks (its own modal loop,
+   pumping messages) until drop or cancel,
+   and must run
+  on the GTK main thread,
+   which is already an OLE STA because GDK calls `OleInitialize` at startup.
+- `IShellItemArray::BindToHandler` has two generic parameters,
+   so a turbofix fails;
+   annotate the
   binding instead (`let data: IDataObject = ...`).
 - `ILFree` takes `Option<*const ITEMIDLIST>`.
 - Passing `None` for `SHDoDragDrop`'s `pdsrc` uses the shell's default `IDropSource`.
 
 ## Status
 
-Verified on `x13-win` (GTK 4.22.4 via gvsbuild). The spike's `GtkDragSource` starts the drag
-(`outbound drag prepared`) but Explorer rejects it, confirming the GTK gap. The native OLE shim
-resolves it: dragging the handle to an Explorer folder copies the file, and the source logs
-`native OLE drag finished effect=1` (`DROPEFFECT_COPY`). Fold this into the real app on Windows
-when building the real GTK UI; on Linux/macOS keep `GtkDragSource`.
+Verified on `x13-win` (GTK 4.22.4 via gvsbuild).
+ The spike's `GtkDragSource` starts the drag
+(`outbound drag prepared`) but Explorer rejects it,
+ confirming the GTK gap.
+ The native OLE shim
+resolves it:
+ dragging the handle to an Explorer folder copies the file,
+ and the source logs
+`native OLE drag finished effect=1` (`DROPEFFECT_COPY`).
+ Fold this into the real app on Windows
+when building the real GTK UI;
+ on Linux/macOS keep `GtkDragSource`.

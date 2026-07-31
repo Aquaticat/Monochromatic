@@ -42,7 +42,8 @@ and shallow frozen copies retaining nested caller identity.
 Collection members are split rather than rejected wholesale.
 Membership of a default-library `Readonly*` interface is upstream's own statement that the member leaves the
 receiver's structure intact.
-A mutable collection is read the same way, by pairing it with `Readonly` plus its own name:
+A mutable collection is read the same way,
+ by pairing it with `Readonly` plus its own name:
 TypeScript builds each view by removing exactly the mutators,
 so a member the paired view also declares preserves the receiver's structure,
 and a member the view omits restructures it and reports a mutation rather than an unknown effect.
@@ -161,7 +162,9 @@ Unknown and external callbacks remain fail closed.
 
 ## What counts as an external call
 
-Shipped-implementation inference resolves a **call to a package export**, and only that. Two spellings
+Shipped-implementation inference resolves a **call to a package export**,
+ and only that.
+ Two spellings
 reach it:
 
 ```ts
@@ -190,7 +193,8 @@ A method on a value is treated as unresolved instead,
 which withholds,
 and the retained-closure rules cover what it hands over.
 
-Measured, so the practical consequence is stated rather than implied:
+Measured,
+ so the practical consequence is stated rather than implied:
 across two packages in this repository,
 of the calls reaching this decision
 104 had a receiver that was a global or a local,
@@ -202,7 +206,8 @@ and a parameter is withheld by the unresolved boundary rather than by a proven e
 
 ### A closure handed to an export whose implementation keeps or calls it
 
-When the shipped implementation **is** inspected, what it proves is read per parameter position.
+When the shipped implementation **is** inspected,
+ what it proves is read per parameter position.
 A closure argument is judged by what that position does with it:
 
 ```ts
@@ -228,7 +233,8 @@ so a position it reports no fact about is a position that implementation demonst
 Two details worth knowing when reading a report:
 
 -   A closure that **writes** its capture is withheld anyway,
-     by the ordinary direct-write attribution, whatever the callee is.
+     by the ordinary direct-write attribution,
+     whatever the callee is.
      Only a closure that reads and hands its capture back depends on this rule.
 -   The declared callback type does not decide it.
      TypeScript accepts a value-returning function where `() => void` is expected,
@@ -252,7 +258,8 @@ A declared `void` result is trusted only when it describes a body.
 TypeScript permits assigning a value-returning function where a `void`-returning one is expected,
 and permits no other such substitution,
 so `void` on a callable *type* constrains nothing about what the callable returns.
-A call through a parameter, a mutable local or a member signature is therefore treated as able to hand
+A call through a parameter,
+ a mutable local or a member signature is therefore treated as able to hand
 back state,
 while a call to a function declaration keeps its `void` at face value.
 One consequence is worth stating plainly:

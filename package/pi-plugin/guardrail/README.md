@@ -33,8 +33,10 @@ Use package mise tasks instead:
 mise run //package/<path>:test:unit
 ```
 
-When no such task exists, add one to the target package's `mise.toml` first.
-For ad-hoc single-file runs, use `node <file>` directly.
+When no such task exists,
+ add one to the target package's `mise.toml` first.
+For ad-hoc single-file runs,
+ use `node <file>` directly.
 
 ### `pnpm-lock.yaml` edit and write blocking
 
@@ -46,7 +48,8 @@ The guardrail ships this protected-path rule:
 }
 ```
 
-Because matching follows `.gitignore` semantics, `pnpm-lock.yaml` matches that
+Because matching follows `.gitignore` semantics,
+ `pnpm-lock.yaml` matches that
 basename anywhere under pi's current working directory.
 
 ## Global config
@@ -77,7 +80,8 @@ Advanced form can also disable the `bun test` guard:
 }
 ```
 
-Rules are appended after built-in defaults. Use `.gitignore` negation to unguard
+Rules are appended after built-in defaults.
+ Use `.gitignore` negation to unguard
 a built-in rule:
 
 ```json

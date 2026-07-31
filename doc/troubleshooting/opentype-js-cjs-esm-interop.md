@@ -21,7 +21,8 @@ import * as opentype from 'opentype.js';
 // opentype.Path, opentype.Glyph, opentype.Font are all undefined
 ```
 
-Switching to a real named import produces a harder failure, a `SyntaxError` at
+Switching to a real named import produces a harder failure,
+ a `SyntaxError` at
 module-load time rather than a runtime `TypeError`:
 
 ```text
@@ -37,9 +38,13 @@ const { Path } = pkg;
 `import { Path } from 'opentype.js';`).
 
 Switching to a default import (`import opentype from 'opentype.js';`) fixes the
-runtime problem, but then trips a different, unrelated tool: oxlint's
+runtime problem,
+ but then trips a different,
+ unrelated tool:
+ oxlint's
 `import/no-named-as-default-member` warns on every `opentype.Path`,
-`opentype.Glyph`, `opentype.Font` access:
+`opentype.Glyph`,
+ `opentype.Font` access:
 
 ```text
 ! import(no-named-as-default-member): "opentype" also has a named export "Path"
@@ -58,13 +63,21 @@ runtime problem, but then trips a different, unrelated tool: oxlint's
 "module": "./dist/opentype.mjs"
 ```
 
-(`opentypejs/opentype.js` at tag `2.0.0`, commit
-`e2eaedebfa6187c1b435a87e6b7b02e6f1ba1b48`, `package.json:23-25`.)
+(`opentypejs/opentype.js` at tag `2.0.0`,
+ commit
+`e2eaedebfa6187c1b435a87e6b7b02e6f1ba1b48`,
+ `package.json:23-25`.)
 
-There is no `"exports"` field. `"module"` is a bundler-only convention (Rollup,
-webpack, esbuild honor it); Node's native resolver does not read it at all. So
-every `import ... from 'opentype.js'` in plain Node resolves to `main`, the
-CommonJS/UMD bundle at `dist/opentype.js`, even though a correct ES module
+There is no `"exports"` field.
+ `"module"` is a bundler-only convention (Rollup,
+webpack,
+ esbuild honor it);
+ Node's native resolver does not read it at all.
+ So
+every `import ... from 'opentype.js'` in plain Node resolves to `main`,
+ the
+CommonJS/UMD bundle at `dist/opentype.js`,
+ even though a correct ES module
 build already exists at `dist/opentype.mjs` and is never reached.
 
 `dist/opentype.mjs` (built from `src/opentype.mjs` via the `b:esm` script,
@@ -84,14 +97,19 @@ export {
 };
 ```
 
-If Node ever loaded this file, `import { Path } from 'opentype.js'` would work
-with no interop involved. It never does, because nothing in `package.json`
+If Node ever loaded this file,
+ `import { Path } from 'opentype.js'` would work
+with no interop involved.
+ It never does,
+ because nothing in `package.json`
 routes the `import` condition there.
 
 ### The CJS bundle's UMD footer defeats `cjs-module-lexer`
 
-`dist/opentype.js` (built by the `b:umd` script, `package.json:33`) is an IIFE
-that assigns the real export object to a local `opentype` variable, then a UMD
+`dist/opentype.js` (built by the `b:umd` script,
+ `package.json:33`) is an IIFE
+that assigns the real export object to a local `opentype` variable,
+ then a UMD
 footer copies it into `module.exports` through a spread expression:
 
 ```js
@@ -104,17 +122,29 @@ var opentype = (() => { /* ...__toCommonJS(opentype_exports)... */ })();
 }(typeof self !== 'undefined' ? self : this, () => ({...opentype, 'default': opentype})));
 ```
 
-At runtime `module.exports` genuinely has `Path`, `Glyph`, `Font`, etc. as own
-properties (the spread evaluates the getters `__toCommonJS` defined). But
-Node's CJS-to-ESM interop does not evaluate the module to find this out; it
+At runtime `module.exports` genuinely has `Path`,
+ `Glyph`,
+ `Font`,
+ etc. as own
+properties (the spread evaluates the getters `__toCommonJS` defined).
+ But
+Node's CJS-to-ESM interop does not evaluate the module to find this out;
+ it
 uses `cjs-module-lexer` to *statically* scan the source text for assignment
-patterns it recognizes (`exports.x = ...`, `module.exports = { a, b, c }`
-object literals, etc.). `module.exports = factory()` is an opaque function
-call whose return value is a spread expression, not a form the lexer
-recognizes, so it detects zero named exports.
+patterns it recognizes (`exports.x = ...`,
+ `module.exports = { a, b, c }`
+object literals,
+ etc.).
+ `module.exports = factory()` is an opaque function
+call whose return value is a spread expression,
+ not a form the lexer
+recognizes,
+ so it detects zero named exports.
 
-Reproduced directly (`/tmp/claude-*/scratchpad/opentype-repro`, Node
-`v26.4.0`), a minimal file reproducing only the getter-object-plus-UMD-footer
+Reproduced directly (`/tmp/claude-*/scratchpad/opentype-repro`,
+ Node
+`v26.4.0`),
+ a minimal file reproducing only the getter-object-plus-UMD-footer
 shape:
 
 ```js
@@ -147,11 +177,15 @@ ns.default.Path: [class Path]
 ```
 
 The synthetic namespace only carries `default` and the always-present
-`'module.exports'` fallback key. `Path` is missing, matching the original
+`'module.exports'` fallback key.
+ `Path` is missing,
+ matching the original
 `TypeError` exactly.
 
-A default import bypasses the lexer entirely: Node always binds a default
-import to the literal runtime value of `module.exports`, no static export
+A default import bypasses the lexer entirely:
+ Node always binds a default
+import to the literal runtime value of `module.exports`,
+ no static export
 list needed.
 
 ```js
@@ -169,29 +203,44 @@ def.Path: [class Path]
 
 This is the mechanism the suggested fix in Monochromatic issue #267 relies on,
 and it is why a real *named* import (`import { Path } from 'opentype.js'`)
-fails harder (a load-time `SyntaxError`, shown in Symptom) than a namespace
-import: named-import bindings are also resolved from the lexer's static list,
+fails harder (a load-time `SyntaxError`,
+ shown in Symptom) than a namespace
+import:
+ named-import bindings are also resolved from the lexer's static list,
 which is empty here.
 
 ### The default-import workaround collides with oxlint's `no-named-as-default-member`
 
-Once the fix switches to `import opentype from 'opentype.js';`, oxlint's
+Once the fix switches to `import opentype from 'opentype.js';`,
+ oxlint's
 `import/no-named-as-default-member` (`crates/oxc_linter/src/rules/import/no_named_as_default_member.rs:77-104`
 in `oxc-project/oxc`) flags every `opentype.Path`/`opentype.Glyph`/`opentype.Font`
-access. The rule resolves the imported module's *declared* named exports
+access.
+ The rule resolves the imported module's *declared* named exports
 (`module_record.get_loaded_module(specifier)` -> `exported_bindings`) and
 warns whenever a default-imported binding's property access matches one of
-those names, on the theory that the author meant to write
+those names,
+ on the theory that the author meant to write
 `import { Path } from '...'` instead.
 
-In this repo, `package/typeface/aquaticat/src/env.d.ts` is the ambient module
-declaration that supplies opentype.js's types (the package ships none). It
-necessarily declares `Path`, `Glyph`, `Font` as named exports too, because two
-sibling files (`build-font-paths.ts`, `build-font-paths-stroked.ts`) use
+In this repo,
+ `package/typeface/aquaticat/src/env.d.ts` is the ambient module
+declaration that supplies opentype.js's types (the package ships none).
+ It
+necessarily declares `Path`,
+ `Glyph`,
+ `Font` as named exports too,
+ because two
+sibling files (`build-font-paths.ts`,
+ `build-font-paths-stroked.ts`) use
 `import type * as opentype from 'opentype.js';` and reference `opentype.Path`
-as a type. oxlint sees those declared named exports and, correctly per its own
-logic, flags the default-import member access as the exact footgun the rule
-exists to catch. It has no way to know the declared named exports are
+as a type.
+ oxlint sees those declared named exports and,
+ correctly per its own
+logic,
+ flags the default-import member access as the exact footgun the rule
+exists to catch.
+ It has no way to know the declared named exports are
 runtime-dead under Node's CJS interop.
 
 The oxlint configuration schema confirms this rule takes no options:
@@ -203,23 +252,33 @@ $ python3 -c "..." # search node_modules/oxlint/configuration_schema.json
 }
 ```
 
-(`node_modules/oxlint/configuration_schema.json`, `oxlint@1.72.0`.) There is
-no allow-list or per-import escape hatch, only whole-rule severity.
+(`node_modules/oxlint/configuration_schema.json`,
+ `oxlint@1.72.0`.)
+ There is
+no allow-list or per-import escape hatch,
+ only whole-rule severity.
 
 ## Verification
 
-Versions under test: `opentype.js@2.0.0` (installed via pnpm catalog
-`'opentype.js': '>=2.0.0'`), Node.js `v26.4.0`, oxlint `1.72.0`.
+Versions under test:
+ `opentype.js@2.0.0` (installed via pnpm catalog
+`'opentype.js': '>=2.0.0'`),
+ Node.js `v26.4.0`,
+ oxlint `1.72.0`.
 
 Patterns and their outcome against the installed `opentype.js@2.0.0`:
 
 - `import * as opentype from 'opentype.js'; opentype.Path` -> `opentype.Path`
-  is `undefined`; `new opentype.Path()` throws `TypeError: opentype.Path is
+  is `undefined`;
+   `new opentype.Path()` throws `TypeError: opentype.Path is
   not a constructor` (the original bug).
 - `import { Path } from 'opentype.js';` -> `SyntaxError: Named export 'Path'
-  not found` at module load (harder failure, shown in Symptom).
-- `import opentype from 'opentype.js'; opentype.Path` -> works; `opentype` is
-  bound to the real `module.exports` object, which does have `Path`.
+  not found` at module load (harder failure,
+   shown in Symptom).
+- `import opentype from 'opentype.js'; opentype.Path` -> works;
+   `opentype` is
+  bound to the real `module.exports` object,
+   which does have `Path`.
 
 ## Verified workarounds
 
@@ -260,16 +319,23 @@ declare module 'opentype.js' {
 }
 ```
 
-Tradeoff: this makes the ambient declaration describe two shapes for the same
-module (real named exports for type-only consumers, a default object for
-value consumers), which is exactly what trips the oxlint rule below. It is
-accurate to the module's actual runtime behavior, just not to what a
+Tradeoff:
+ this makes the ambient declaration describe two shapes for the same
+module (real named exports for type-only consumers,
+ a default object for
+value consumers),
+ which is exactly what trips the oxlint rule below.
+ It is
+accurate to the module's actual runtime behavior,
+ just not to what a
 "clean" ESM package would look like.
 
 ### Scoped oxlint suppression for the resulting `no-named-as-default-member` warnings
 
-No allow-list exists for this rule (see Root cause), so each flagged line in
-`build-font.ts` needs a scoped disable comment naming the reason, per this
+No allow-list exists for this rule (see Root cause),
+ so each flagged line in
+`build-font.ts` needs a scoped disable comment naming the reason,
+ per this
 repo's lint-suppression convention (`AGENTS.md` `LN3`/`LN5`):
 
 ```ts
@@ -277,44 +343,68 @@ repo's lint-suppression convention (`AGENTS.md` `LN3`/`LN5`):
 const path = new opentype.Path();
 ```
 
-Tradeoff: this is a per-call-site annotation tax (six sites in
-`build-font.ts`), and it locally silences a rule that is genuinely useful
-elsewhere in the codebase, so it must stay scoped to these exact lines rather
+Tradeoff:
+ this is a per-call-site annotation tax (six sites in
+`build-font.ts`),
+ and it locally silences a rule that is genuinely useful
+elsewhere in the codebase,
+ so it must stay scoped to these exact lines rather
 than disabling the rule package-wide.
 
 ## What does not work
 
-- **Namespace import** (`import * as opentype`): the original bug; `.Path`
+- **Namespace import** (`import * as opentype`):
+   the original bug;
+   `.Path`
   etc. are `undefined` at runtime (Verification).
-- **Real named import** (`import { Path } from 'opentype.js'`): fails harder,
-  a load-time `SyntaxError`, because named bindings go through the same empty
+- **Real named import** (`import { Path } from 'opentype.js'`):
+   fails harder,
+  a load-time `SyntaxError`,
+   because named bindings go through the same empty
   lexer-detected export list as the namespace import (Verification).
 - **Declaring only a default export in `env.d.ts` and dropping the named
-  exports entirely**: breaks the two sibling files
-  (`build-font-paths.ts`, `build-font-paths-stroked.ts`) that use
+  exports entirely**:
+   breaks the two sibling files
+  (`build-font-paths.ts`,
+   `build-font-paths-stroked.ts`) that use
   `import type * as opentype from 'opentype.js';` for `opentype.Path` as a
-  type; they would need to switch to `import type { Path }` too, which is a
-  larger, unrelated diff than this issue's scope.
-- **Disabling `import/no-named-as-default-member` package-wide**: the rule is
-  a genuine footgun-catcher elsewhere; only this module's ambient declaration
+  type;
+   they would need to switch to `import type { Path }` too,
+   which is a
+  larger,
+   unrelated diff than this issue's scope.
+- **Disabling `import/no-named-as-default-member` package-wide**:
+   the rule is
+  a genuine footgun-catcher elsewhere;
+   only this module's ambient declaration
   creates the false positive.
 
 ## Upstream filing artifact
 
 ### Upstream filing decision
 
-1. **Is it really upstream's fault?** Yes. `opentype.js` already builds a
-   correct, working ESM file (`dist/opentype.mjs`, confirmed by the direct
+1. **Is it really upstream's fault?**
+    Yes.
+    `opentype.js` already builds a
+   correct,
+    working ESM file (`dist/opentype.mjs`,
+    confirmed by the direct
    prototype below) but never routes Node's native `import` resolution to it,
    because `package.json` has no `"exports"` field and relies on the
    bundler-only `"module"` convention instead.
-2. **Can upstream fix it?** Yes. The prototype below is a two-file,
-   sub-20-line change: add an `"exports"` map and add a matching `export
+2. **Can upstream fix it?**
+    Yes.
+    The prototype below is a two-file,
+   sub-20-line change:
+    add an `"exports"` map and add a matching `export
    default` to the ESM source so the previously-documented default-import
    usage keeps working too.
-3. **Are they supporting this use case?** Yes. The README documents all
+3. **Are they supporting this use case?**
+    Yes.
+    The README documents all
    three import styles as supported npm usage
-   (`README.md:56-60`, checked at commit
+   (`README.md:56-60`,
+    checked at commit
    `e2eaedebfa6187c1b435a87e6b7b02e6f1ba1b48`):
 
    ```js
@@ -324,26 +414,46 @@ than disabling the rule package-wide.
    ```
 
    Only the first of these three documented forms is reliable in plain Node
-   today; the prototype fixes all three (see Verification of the prototype).
-4. **Would the repo welcome our contribution?** No ban found. Checked
-   `.github/ISSUE_TEMPLATE.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and the
-   README's `## Contribute` section (`README.md:65-77`): standard fork/PR
-   workflow, no AI-disclosure restriction, no statement against external
+   today;
+    the prototype fixes all three (see Verification of the prototype).
+4. **Would the repo welcome our contribution?**
+    No ban found.
+    Checked
+   `.github/ISSUE_TEMPLATE.md`,
+    `.github/PULL_REQUEST_TEMPLATE.md`,
+    and the
+   README's `## Contribute` section (`README.md:65-77`):
+    standard fork/PR
+   workflow,
+    no AI-disclosure restriction,
+    no statement against external
    contributions.
-5. **Will they likely fix it?** Soft yes. Upstream issue
+5. **Will they likely fix it?**
+    Soft yes.
+    Upstream issue
    [opentypejs/opentype.js#836](https://github.com/opentypejs/opentype.js/issues/836)
    is open (filed 2026-05-04) and covers the same root defect from a
    different angle (a Rollup consumer's `"default" is not exported by
-   ".../opentype.mjs"` build error). Maintainers (`ILOVEPIE`, `Jolg42`) and a
+   ".../opentype.mjs"` build error).
+    Maintainers (`ILOVEPIE`,
+    `Jolg42`) and a
    reporter (`z3dev`) are actively discussing packaging/build-format tradeoffs
-   there as of 2026-05-19, with no consensus yet and no stated won't-fix.
+   there as of 2026-05-19,
+    with no consensus yet and no stated won't-fix.
 6. **Have we prototyped a minimal fix compatible with their architecture?**
-   Yes, see below.
+   Yes,
+    see below.
 
-Decision: **do not open a new issue**; #836 already covers this defect class
-and a second report would be a duplicate. Post an additive comment there
-instead (drafted below), since #836's own thread has no root-cause trace, no
-`package.json`/`src` diff, and no confirmation that the fix also resolves the
+Decision:
+ **do not open a new issue**;
+ #836 already covers this defect class
+and a second report would be a duplicate.
+ Post an additive comment there
+instead (drafted below),
+ since #836's own thread has no root-cause trace,
+ no
+`package.json`/`src` diff,
+ and no confirmation that the fix also resolves the
 plain-Node named/namespace-import failure this doc investigates (only the
 Rollup default-import failure is discussed there).
 
@@ -351,11 +461,15 @@ Rollup default-import failure is discussed there).
 
 Cloned `https://github.com/opentypejs/opentype.js.git` at tag `2.0.0`
 (commit `e2eaedebfa6187c1b435a87e6b7b02e6f1ba1b48`) into a disposable
-`/tmp/agent/` clone (origin and commit confirmed before editing). `npm
+`/tmp/agent/` clone (origin and commit confirmed before editing).
+ `npm
 install` was withheld by this environment's own guardrails (running a
-third-party package's lifecycle scripts), so the fix was verified without
-bundling: `dist/` was symlinked to `src/` and `src/opentype.mjs`'s relative
-imports resolved directly, which is sufficient to prove the `exports` map and
+third-party package's lifecycle scripts),
+ so the fix was verified without
+bundling:
+ `dist/` was symlinked to `src/` and `src/opentype.mjs`'s relative
+imports resolved directly,
+ which is sufficient to prove the `exports` map and
 export-statement shape without exercising esbuild's (separately well-tested)
 bundling step.
 
@@ -414,15 +528,21 @@ named Path: [Function: Path] { fromSVG: [Function (anonymous)] }
 new Path() via named import works: Path
 ```
 
-All three README-documented import styles work post-patch, including the
+All three README-documented import styles work post-patch,
+ including the
 exact namespace-import pattern this repo originally used before hitting the
 bug in issue #267.
 
-Tradeoff worth flagging in the comment: adding an `"exports"` field is not
-purely additive. Once present, Node (and exports-aware bundlers) stop
-resolving any subpath not explicitly listed, so a consumer currently doing
+Tradeoff worth flagging in the comment:
+ adding an `"exports"` field is not
+purely additive.
+ Once present,
+ Node (and exports-aware bundlers) stop
+resolving any subpath not explicitly listed,
+ so a consumer currently doing
 `require('opentype.js/dist/opentype.min.js')` or similar deep imports would
-break unless those subpaths are added to the map too. This prototype only
+break unless those subpaths are added to the map too.
+ This prototype only
 adds the `"."` and `"./package.json"` entries.
 
 ### Draft comment on opentypejs/opentype.js#836 (fileable as-is)

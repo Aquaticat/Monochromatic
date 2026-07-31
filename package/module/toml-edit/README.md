@@ -160,7 +160,8 @@ clean (unmutated) in the current document tree.
    the edited value is now synthetic and has no parse-time AST node.
    An unedited sibling path still returns its clean node.
 - `tomlGetRaw({ edit, path })` likewise throws for the edited path (no clean
-   source bytes back it), and returns the original slice for unedited paths.
+   source bytes back it),
+   and returns the original slice for unedited paths.
 
 For paths created by `tomlSet` that did not exist at parse time,
  neither function can return a node or bytes;

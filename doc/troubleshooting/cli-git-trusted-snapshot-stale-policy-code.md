@@ -8,7 +8,8 @@ even after `mise run //package/git-policy/cli:build` rebuilds
 The expected bytes are visibly present in both the source file and the rebuilt dist bundle,
 yet the commit gate keeps the old behavior.
 
-Concrete incident (2026-07-17, #376 landing):
+Concrete incident (2026-07-17,
+ #376 landing):
 `SCANNER_SELF_MATCH_PATHS` gained `package/cli/forbidden-strings/data/builtin-rules.ported.txt`,
 the dist was rebuilt and the change committed and pushed,
 but `git commit` and `git cli-git check -- <path>` still flagged the file

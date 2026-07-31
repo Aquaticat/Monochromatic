@@ -59,7 +59,8 @@ Examples that resolve to `xhigh`:
 - `gpt-5.5` (GPT-shaped)
 - `openai/gpt-5.4` (GPT-shaped)
 - `GPT-5.5` (GPT-shaped)
-- `synthetic/hf:zai-org/GLM-5.2` (non-GPT, declares `xhigh: "max"`)
+- `synthetic/hf:zai-org/GLM-5.2` (non-GPT,
+   declares `xhigh: "max"`)
 
 Examples that resolve to `high`:
 

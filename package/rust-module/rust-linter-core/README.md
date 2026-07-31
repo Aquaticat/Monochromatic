@@ -158,21 +158,30 @@ For each file and each rule,
     matching oxlint
 2.  an explicit `[categories]` entry
 3.  an explicit `[rules]` entry
-4.  every matching `[[overrides]]` entry, in declaration order
-5.  the winning layer's own `include` and `exclude`, which can only turn a rule
-    off, never on
-6.  `-A`, `-W` and `-D` from the command line, which beat every file layer
+4.  every matching `[[overrides]]` entry,
+     in declaration order
+5.  the winning layer's own `include` and `exclude`,
+     which can only turn a rule
+    off,
+     never on
+6.  `-A`,
+     `-W` and `-D` from the command line,
+     which beat every file layer
 
 ### Three ways to scope, and when to use which
 
 - `include-patterns` and `ignore-patterns` decide which files are linted **at
-  all**. A file excluded here is never read.
-- A rule's own `include` and `exclude` scope **that rule**, leaving every other
+  all**.
+   A file excluded here is never read.
+- A rule's own `include` and `exclude` scope **that rule**,
+   leaving every other
   rule applying wherever it otherwise would.
-- `[[overrides]]` reconfigure **a set of rules** for a set of paths, and are the
+- `[[overrides]]` reconfigure **a set of rules** for a set of paths,
+   and are the
   right tool when several rules change together.
 
-A rule's scope belongs to the setting that won, not to the rule name globally,
+A rule's scope belongs to the setting that won,
+ not to the rule name globally,
  so an `[[overrides]]` entry restating a rule with a different `include`
  replaces the outer scope rather than intersecting with it.
 
