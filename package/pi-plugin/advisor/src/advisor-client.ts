@@ -210,10 +210,13 @@ export async function completeAdvisor(
   /**
    * Supported levels strictly below `max`, including any provider default levels.
    */
-  const allowedReasoningLevels = firstDisallowedReasoningLevelIndex
-    === -1
+  const allowedReasoningLevels = (firstDisallowedReasoningLevelIndex
+    === -1)
     ? supportedReasoningLevels
-    : supportedReasoningLevels.slice(0, firstDisallowedReasoningLevelIndex,);
+    : supportedReasoningLevels.slice(
+      0,
+      firstDisallowedReasoningLevelIndex,
+    );
   /**
    * Highest allowed reasoning level advertised by selected model.
    */
