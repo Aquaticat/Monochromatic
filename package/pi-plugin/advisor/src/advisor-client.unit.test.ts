@@ -4,6 +4,10 @@
  * @module
  */
 
+import {
+  fauxAssistantMessage,
+  fauxProvider,
+} from '@earendil-works/pi-ai';
 import type {
   Api,
   AssistantMessage,
@@ -294,6 +298,62 @@ function createSequencedCompleteModel(
 await describe({
   name: completeAdvisor.name,
   children: [
+    it({
+      name: 'dispatches highest reasoning through registered custom provider',
+      fn: async function testRegisteredCustomProvider() {
+        /** Custom provider whose API is not part of pi built-ins. */
+        const customProvider = fauxProvider({
+          api: 'advisor-custom-api',
+          provider: 'advisor-custom-provider',
+          models: [{
+            id: 'custom-reviewer',
+            reasoning: true,
+          },],
+        },);
+        /** Highest reasoning captured by registered provider implementation. */
+        let capturedReasoning: ThinkingLevel | undefined;
+        customProvider.setResponses([
+          /*
+           * Capture provider options before returning fixture response.
+           */
+          function customProviderResponse(context, streamOptions,) {
+            void context;
+            /** Simple provider options received through registered provider seam. */
+            const simpleOptions: SimpleStreamOptions = streamOptions
+              ?? {};
+            capturedReasoning = simpleOptions.reasoning;
+            return fauxAssistantMessage('registered provider response',);
+          },
+        ],);
+        /** Custom provider model selected for Advisor. */
+        const customModel = customProvider.getModel();
+        /** Extension context exposing registered custom provider. */
+        const customExtensionContext = {
+          modelRegistry: {
+            async getApiKeyAndHeaders() {
+              return {
+                ok: true,
+                apiKey: 'test-key',
+              };
+            },
+            getProvider(providerId: string,) {
+              expect(providerId,).toBe('advisor-custom-provider',);
+              return customProvider.provider;
+            },
+          },
+        } as unknown as ExtensionContext;
+
+        await completeAdvisor({
+          ctx: customExtensionContext,
+          model: customModel,
+          config: advisorConfig,
+          advisorContext,
+        },);
+
+        expect(customProvider.state.callCount,).toBe(1,);
+        expect(capturedReasoning,).toBe('high',);
+      },
+    },),
     ...REASONING_CASES.map(function mapReasoningCase(reasoningCase,) {
       return it({
         name: reasoningCase.name,

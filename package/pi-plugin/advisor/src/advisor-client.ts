@@ -11,18 +11,8 @@ import {
   type Context,
   type Message,
   type Model,
-  type ProviderStreams,
   type SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
-import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
-import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
-import { bedrockConverseStreamApi, } from '@earendil-works/pi-ai/api/bedrock-converse-stream.lazy';
-import { googleGenerativeAIApi, } from '@earendil-works/pi-ai/api/google-generative-ai.lazy';
-import { googleVertexApi, } from '@earendil-works/pi-ai/api/google-vertex.lazy';
-import { mistralConversationsApi, } from '@earendil-works/pi-ai/api/mistral-conversations.lazy';
-import { openAICodexResponsesApi, } from '@earendil-works/pi-ai/api/openai-codex-responses.lazy';
-import { openAICompletionsApi, } from '@earendil-works/pi-ai/api/openai-completions.lazy';
-import { openAIResponsesApi, } from '@earendil-works/pi-ai/api/openai-responses.lazy';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
@@ -45,6 +35,10 @@ import type {
  */
 type CompleteAdvisorModelOptions = {
   /**
+   * Pi extension context that owns provider registrations.
+   */
+  readonly ctx: ForeignHostCapability<ExtensionContext>;
+  /**
    * Selected Advisor model.
    */
   readonly model: ForeignHostCapability<Model<Api>>;
@@ -59,57 +53,9 @@ type CompleteAdvisorModelOptions = {
 };
 
 /**
- * Non-compat pi-ai API streams supported by Advisor.
+ * Complete through selected model provider's registered simple-stream implementation.
  *
- * Direct API dispatch preserves registry-selected custom model records because
- * Advisor already resolves API keys and headers before calling the model.
- *
- * @example
- * ```typescript
- * const streams = ADVISOR_API_STREAMS.get('openai-completions');
- * ```
- */
-const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
-  [
-    'anthropic-messages',
-    anthropicMessagesApi(),
-  ],
-  [
-    'azure-openai-responses',
-    azureOpenAIResponsesApi(),
-  ],
-  [
-    'bedrock-converse-stream',
-    bedrockConverseStreamApi(),
-  ],
-  [
-    'google-generative-ai',
-    googleGenerativeAIApi(),
-  ],
-  [
-    'google-vertex',
-    googleVertexApi(),
-  ],
-  [
-    'mistral-conversations',
-    mistralConversationsApi(),
-  ],
-  [
-    'openai-codex-responses',
-    openAICodexResponsesApi(),
-  ],
-  [
-    'openai-completions',
-    openAICompletionsApi(),
-  ],
-  [
-    'openai-responses',
-    openAIResponsesApi(),
-  ],
-],);
-
-/**
- * Complete through pi-ai's direct non-compat simple API implementation for the model API.
+ * @param ctx - pi extension context that owns provider registrations
  *
  * @param model - selected Advisor model
  *
@@ -117,46 +63,51 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
  *
  * @param providerOptions - provider stream options with resolved auth
  *
- * @returns final assistant message from matching pi-ai API implementation
+ * @returns final assistant message from registered provider implementation
  *
- * @mutates model - provider `streams.stream` implementations can inspect or retain selected model data
+ * @mutates ctx - provider lookup can inspect model-registry host state
  *
- * @mutates context - provider `streams.stream` implementations consume message context and reachable content
+ * @mutates model - provider stream implementations can inspect or retain selected model data
  *
- * @mutates providerOptions - provider `streams.stream` implementations observe abort and auth capabilities
+ * @mutates context - provider stream implementations consume message context and reachable content
  *
- * @throws when model API has no direct implementation registered for Advisor
+ * @mutates providerOptions - provider stream implementations observe abort and auth capabilities
+ *
+ * @throws when selected model provider is not registered
  *
  * @example
  * ```typescript
- * const message = await defaultCompleteAdvisorModel({ model, context, providerOptions });
+ * const message = await defaultCompleteAdvisorModel({ ctx, model, context, providerOptions });
  * ```
  */
 async function defaultCompleteAdvisorModel(
   {
+    ctx,
     model,
     context,
     providerOptions,
   }: ForeignBorrowed<CompleteAdvisorModelOptions>,
 ): Promise<AssistantMessage> {
   /**
-   * Direct API stream implementation matching the selected Advisor model.
+   * Registered provider implementation for selected Advisor model.
    */
-  const streams = ADVISOR_API_STREAMS.get(model.api,);
-  if (streams === undefined) {
+  const provider = ctx
+    .modelRegistry
+    .getProvider(model.provider,);
+  if (provider === undefined) {
     throw new Error(
-      `No pi-ai API implementation available for advisor model api "${model.api}" (${model.provider}/${model.id})`,
+      `No provider registered for advisor model "${model.provider}/${model.id}"`,
     );
   }
   if (providerOptions !== undefined)
-    return await streams
+    return await provider
       .streamSimple(
         model,
         context,
         providerOptions,
       )
       .result();
-  return await streams
+  return await provider
     .streamSimple(
       model,
       context,
@@ -334,6 +285,7 @@ export async function completeAdvisor(
      * Initial provider response from selected Advisor model.
      */
     const firstResponse = await completeModel({
+      ctx: options.ctx,
       model: mutableModel,
       context: providerContext,
       providerOptions: createProviderOptions(),
@@ -354,6 +306,7 @@ export async function completeAdvisor(
       return firstResponse;
 
     return await completeModel({
+      ctx: options.ctx,
       model: mutableModel,
       context: providerContext,
       providerOptions: createProviderOptions(),
