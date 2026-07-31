@@ -1,6 +1,7 @@
 # Narrowing which callables need a complete foreign-ownership proof
 
-Working notes for task #34, fourth attempt.
+Working notes for task #34,
+ fourth attempt.
 Written before implementing,
 and the reading below changes what the attempt should even be measured against.
 
@@ -14,7 +15,9 @@ In `inboundArgumentIsForeign` that fails the first test,
 then fails `callerIndexes.length > 0`,
 so the inbound reports not-foreign and the narrowing pass deletes the candidate.
 
-So an unresolved caller, a non-call reference, a top-level call and a caller outside owned source all
+So an unresolved caller,
+ a non-call reference,
+ a top-level call and a caller outside owned source all
 subtract.
 None can add.
 
@@ -34,7 +37,8 @@ Any use of it here has to branch on `resolved` first.
 
 A second limit:
 an unloaded file's edges are module references only.
-Semantic call edges enter through `includeDirectDependencies`, which runs inside `loadSource`.
+Semantic call edges enter through `includeDirectDependencies`,
+ which runs inside `loadSource`.
 Whether module reachability is a superset of semantic call reachability is not established,
 and the skip is only sound if it is.
 
@@ -94,9 +98,11 @@ and no new offer may appear on a parameter anything writes.
 
 ## The attempt is refuted, and was not implemented
 
-Three counterexamples, none of which a workspace-equivalence sweep would necessarily have contained.
+Three counterexamples,
+ none of which a workspace-equivalence sweep would necessarily have contained.
 That is the point:
-the design fails deterministically, and measuring it could have passed.
+the design fails deterministically,
+ and measuring it could have passed.
 
 ### A marker need not be named in the file that applies it
 
@@ -141,12 +147,14 @@ The reframing does.
 Markerless recursive components producing foreign candidates is confirmed independently,
 and it means the shipped whole-scope gate already changes answers rather than being the equivalence
 its comment claims.
-That is a precision defect worth its own task, not part of this one.
+That is a precision defect worth its own task,
+ not part of this one.
 
 The most promising untried direction is no longer about marker locality at all:
 compute the foreign proof only when it can change a report.
 Foreign ownership suppresses a read-only offer,
-so a parameter already recorded as mutated, or already classified as something other than mutable,
+so a parameter already recorded as mutated,
+ or already classified as something other than mutable,
 has a verdict the foreign answer cannot move.
 `createDemandDrivenEffectIndex.get` runs a closure for every callable asked about and hands the
 result to `effectPublicSummary` whether or not any consumer reads it.
@@ -174,8 +182,10 @@ function helper(value: Held,): void {
 
 `helper`'s parameter is genuinely foreign,
 and it has two inbounds:
-one from `entry`, grounded in a marker,
-and one from itself, grounded in nothing yet.
+one from `entry`,
+ grounded in a marker,
+and one from itself,
+ grounded in nothing yet.
 A least fixed point requires every inbound to be foreign at each step,
 so the self-edge is never satisfied at the point the parameter would first enter,
 and the parameter is lost.
@@ -187,16 +197,22 @@ The fix keeps the existing greatest fixed point and adds a grounding pass over i
 -    Seeds.
      A candidate is seeded when the parameter is `directForeignBorrowed`,
      or when every inbound sets `directForeignByFormal` for it.
-     Both are semantic facts, not text.
+     Both are semantic facts,
+      not text.
 
 -    Support edges.
-     For a surviving candidate, each inbound contributes an edge from the caller's contributing
+     For a surviving candidate,
+      each inbound contributes an edge from the caller's contributing
      candidates to it.
 
 -    Grounding.
-     Keep a candidate only when it is seeded, or reachable in the support graph from a seeded one.
+     Keep a candidate only when it is seeded,
+      or reachable in the support graph from a seeded one.
 
-`recurse` from the counterexample has one inbound, itself, no seed, and no path to one,
+`recurse` from the counterexample has one inbound,
+ itself,
+ no seed,
+ and no path to one,
 so it drops.
 `helper` reaches `entry`'s marked parameter through the inbound `entry` provides,
 so it stays,
@@ -242,8 +258,10 @@ four if grounding ever over-removes.
 Swept at one thread against the fresh baseline taken at the commit before it.
 
 -   1937 findings and 32 offers on both sides.
--   All 7201 finding locations identical, compared as sorted sets rather than as counts.
--   884.8s against 897.8s, which is 1.5 percent and inside the variation between runs.
+-   All 7201 finding locations identical,
+     compared as sorted sets rather than as counts.
+-   884.8s against 897.8s,
+     which is 1.5 percent and inside the variation between runs.
 
 So the shape does not occur in this workspace.
 The defect is real and has a reproduction;
@@ -265,10 +283,14 @@ Task #34 was blocked on this on the grounds that fixing it would move the baseli
 had to be measured against.
 It does not move the baseline.
 The block is therefore lifted by measurement rather than by argument,
-and the current numbers stand: 1937 findings, 32 offers, at one thread from the repository root.
+and the current numbers stand:
+ 1937 findings,
+ 32 offers,
+ at one thread from the repository root.
 
 Sol also recommends shadow mode for any future gate:
-run every closure, assert the gate would have admitted every non-empty result,
+run every closure,
+ assert the gate would have admitted every non-empty result,
 and record the prospective skip ratio before trusting it.
 That is the right shape for a change whose failure mode is silent.
 
@@ -299,7 +321,8 @@ and a `mutated` parameter whose type is already `mutable` has no offer left to s
 The fourth item is an equivalence rather than an approximation because
 `reportRedundantForeignBorrowed` returns at its own first test unless the parameter's declared type
 carries the marker;
-testing that before asking is the report function's own control flow, hoisted.
+testing that before asking is the report function's own control flow,
+ hoisted.
 
 ### The one thing that has to be true, and why it is
 
@@ -326,7 +349,8 @@ That is false about this implementation and is corrected in the same commit.
 
 The reshaping keeps only each root's own entry,
 so the hazard stops being a fact that needs remembering and becomes one the type cannot express.
-Sol's reason for insisting on that, which is the durable half of attempt 2's refutation:
+Sol's reason for insisting on that,
+ which is the durable half of attempt 2's refutation:
 `getSignatureUsage` enumerates references rather than call edges,
 a lexical caller is inserted into `summaries` and queued before `isCallExpression` and edge
 validation run,
@@ -340,13 +364,15 @@ whatever the reachability sets say.
 
 -    The sweep reports exactly 1937 findings and 32 offers,
      and all 7201 finding locations are identical as sorted sets.
--    The named failure mode is not the branch gating, which is equivalent by construction.
+-    The named failure mode is not the branch gating,
+      which is equivalent by construction.
      It is the analysis budget.
      `createEffectAnalysisBudget` defaults to 120000 ms per project index and every closure records a
      phase against it,
      so proving less spends less,
      and external implementation inference can now complete where it previously exhausted the budget
-     and returned unavailable, which would remove consumer opacity reports.
+     and returned unavailable,
+      which would remove consumer opacity reports.
      The baseline sweep contains zero occurrences of `analysis-incomplete` or `budget exhausted`,
      so this is predicted not to fire here.
      It stays a real semantic change and is stated rather than hidden.
@@ -354,7 +380,8 @@ whatever the reachability sets say.
      a proof demanded mid-verification can throw after earlier parameters already reported,
      where today every active-file proof runs during `includeActiveSource` before any report.
      The verifier therefore computes every parameter fact first,
-     demands the proof once for the whole callable, and only then reports.
+     demands the proof once for the whole callable,
+      and only then reports.
 
 ### The bar this attempt is measured against
 
@@ -373,11 +400,20 @@ and that outcome gets recorded rather than argued away.
 
 ### Measured
 
-Three sweeps, one thread, from the repository root, same tree.
+Three sweeps,
+ one thread,
+ from the repository root,
+ same tree.
 
--    Baseline, the proof eager for every callable asked about: 884.8s.
--    Deferred, this change: 511.1s.
--    Floor, the proof disabled outright and answering empty without a closure: 537.9s.
+-    Baseline,
+      the proof eager for every callable asked about:
+      884.8s.
+-    Deferred,
+      this change:
+      511.1s.
+-    Floor,
+      the proof disabled outright and answering empty without a closure:
+      537.9s.
 
 The deferred run is not slower than the floor.
 It is 26.8s faster,
@@ -385,7 +421,8 @@ which no amount of doing strictly more work explains.
 
 That invites a claim these numbers cannot support,
 and the first version of this section made it:
-that the residual sits "under the variation between runs, bounded at about 5 percent".
+that the residual sits "under the variation between runs,
+ bounded at about 5 percent".
 There is one observation per variant,
 so no variation was measured,
 and wall time is not monotonic in one component's work anyway.
@@ -397,23 +434,32 @@ so whole-sweep timing does not resolve the deferred build's residual.
 ### So the residual was measured directly instead
 
 A throwaway build timed every `completeForeignBorrowedGraph` call and logged each duration.
-One sweep, one thread, whole workspace:
+One sweep,
+ one thread,
+ whole workspace:
 
--    67 closures ran, across 128 packages.
--    9 more were skipped by the marker pre-scan, costing 0.04ms in total.
--    5301.7ms in closures altogether, a median of 13.8ms and a longest of 1084.0ms.
+-    67 closures ran,
+      across 128 packages.
+-    9 more were skipped by the marker pre-scan,
+      costing 0.04ms in total.
+-    5301.7ms in closures altogether,
+      a median of 13.8ms and a longest of 1084.0ms.
 
-Five point three seconds, which is 1.04 percent of a 511s sweep.
-That is the residual, without inferring anything from a wall-time difference between builds.
+Five point three seconds,
+ which is 1.04 percent of a 511s sweep.
+That is the residual,
+ without inferring anything from a wall-time difference between builds.
 
 The eager build ran one closure per callable the rule asked about,
 which is what the 373.7s difference is made of.
 Sixty-seven is what "only when a verdict reads it" reduces that to,
 and seven of those sixty-seven are the offers the mechanism exists to withhold.
 
-The instrumented sweep itself took 561s, above both clean runs,
+The instrumented sweep itself took 561s,
+ above both clean runs,
 which is the logging plus the same run-to-run noise that made the wall-time reading unsafe.
-It is reported here rather than omitted, because it is the evidence that the noise is real.
+It is reported here rather than omitted,
+ because it is the evidence that the noise is real.
 
 The prediction held exactly.
 Deferred against baseline:
@@ -423,7 +469,8 @@ Deferred against baseline:
 37 dishonest-readonly reports,
 6 stale contracts on both sides;
 3902 warnings and 3299 errors across every rule on both sides;
-and 7201 diagnostics identical as message-plus-location pairs, compared with multiplicity.
+and 7201 diagnostics identical as message-plus-location pairs,
+ compared with multiplicity.
 
 Pairs rather than locations,
 because a sorted location set proves nothing about what was said at each location,
@@ -444,8 +491,11 @@ because none of them had a build with the proof switched off.
 Disabling it adds exactly seven offers and nothing else:
 
 -    `package/desktop-app/electron-infra/src/wayland-state.ts:166:3`
--    `package/module/toml-edit/src/emit-value.ts:66:24`, `:333:3`, `:423:3`
--    `package/module/toml-edit/src/toml-get-node.ts:110:3`, `:141:3`
+-    `package/module/toml-edit/src/emit-value.ts:66:24`, 
+     `:333:3`, 
+     `:423:3`
+-    `package/module/toml-edit/src/toml-get-node.ts:110:3`, 
+     `:141:3`
 -    `package/pi-plugin/goal/src/pi-runtime-verifier-provider.ts:244:22`
 
 Every one is an offer withheld because a marker proves the caller owns the parameter,
@@ -466,7 +516,8 @@ The floor run measures something beyond wall time,
 and it narrows what the equivalence is worth.
 Disabling the proof outright leaves `dishonestReadonly` at 37 and `redundantForeignBorrowed` at 0,
 exactly as both other runs report them.
-Only offers move, and only by seven.
+Only offers move,
+ and only by seven.
 
 So across 128 packages the foreign answer is true-and-read in one verdict:
 the offer suppression.
@@ -481,9 +532,11 @@ so it is written out here instead of being re-derived from a sweep that cannot s
 `factsNeedForeignProof` returns false for a parameter that is `opaque` without
 `acceptedHostOpacity`,
 which is exactly the set that reports and returns before any verdict reads the answer.
-For the rest, each clause stands for one reading verdict:
+For the rest,
+ each clause stands for one reading verdict:
 
--    `kind === 'dishonest-readonly'`, unconditional,
+-    `kind === 'dishonest-readonly'`,
+      unconditional,
      covers the dishonest arm of the `mutated` verdict and the whole of the `(!mutated)` one.
      It is unconditional because both of those fire on that classification regardless of `mutated`.
 -    `mutated && (kind === 'honest-readonly')` covers the honest arm of the `mutated` verdict.
@@ -506,16 +559,22 @@ Both pass.
 
 ### Why deferral reaches the floor rather than approaching it
 
-Worth stating, because "no measurable cost" invites the suspicion that the proof stopped running.
+Worth stating,
+ because "no measurable cost" invites the suspicion that the proof stopped running.
 It did not:
-the deferred build still withholds all seven offers, which requires proving all seven.
+the deferred build still withholds all seven offers,
+ which requires proving all seven.
 The reason the rest costs nothing is the diagnostic mix.
-Of 1937 findings, 1862 are opacity reports, and an opaque parameter reports and returns before the
+Of 1937 findings,
+ 1862 are opacity reports,
+ and an opaque parameter reports and returns before the
 foreign answer is read.
 Most of the remainder are parameters this repository already types `readonly`,
 which is `honest-readonly` and matches no branch the answer can move.
 The closure was running once per callable regardless,
-including for `includeActiveSource`, which asks for every callable in the active file purely to seed
+including for `includeActiveSource`,
+ which asks for every callable in the active file purely to seed
 the graph and reads no summary at all,
-and for `verifyOverloadConsistency`, which reads the summary but never its foreign field.
+and for `verifyOverloadConsistency`,
+ which reads the summary but never its foreign field.
 Those two were paying the largest cost the rule has for answers nothing consumed.

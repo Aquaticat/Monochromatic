@@ -50,14 +50,17 @@ those were considered and ranked below layer reduction.
   so catalog removal cannot break their installs.
   Paused packages migrate at resume time.
 - `@monochromatic-dev/config-tsdown` is deleted outright:
-  it is not on npm (checked 2026-07-15, 404),
+  it is not on npm (checked 2026-07-15,
+   404),
   so the deprecation howto's outside-consumer preconditions do not apply.
 - No forbidden-strings guard against tsdown reintroduction:
-  catalog absence plus the superseding decision doc make reintroduction a loud, deliberate act.
+  catalog absence plus the superseding decision doc make reintroduction a loud,
+   deliberate act.
 - Rolldown version:
   the pilot runs on catalog-resolved 1.1.5.
   The move to 1.2.0 lands separately once it clears the `minimumReleaseAge` supply-chain gate
-  (published 2026-07-15T11:08Z, gate is roughly one day);
+  (published 2026-07-15T11:08Z,
+   gate is roughly one day);
   execution does not wait for it.
 
 ## Behavior inventory config-rolldown must replicate
@@ -67,7 +70,9 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
 - Workspace-dep inlining:
   bundle `@monochromatic-dev/**` always;
   node flavor also inlines `find-up` and `nano-spawn`;
-  pi runtime peers (`@earendil-works/pi-coding-agent`, `typebox`, `@earendil-works/pi-ai`)
+  pi runtime peers (`@earendil-works/pi-coding-agent`, 
+  `typebox`, 
+  `@earendil-works/pi-ai`)
   stay external.
   Raw rolldown idiom:
   externals as a regex array built from `package.json`
@@ -85,7 +90,9 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
   (array configs replace tsdown's `perEntryNodeConfig`;
   no hash-named shared chunks).
 - Out dirs:
-  `dist/final/node`, `dist/final/neutral`, `dist/client` as today.
+  `dist/final/node`, 
+  `dist/final/neutral`, 
+  `dist/client` as today.
 - Clean:
   `output.cleanDir` is not watch-safe and per-config;
   shared-outdir per-entry builds get a mise pre-clean step
@@ -110,22 +117,42 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
    create `package/config/rolldown`,
    migrate six representative packages,
    verify each at the user boundary (VUB):
-   - `oxlint-plugin/tsdoc`: node flavor, published, dist types consumed by `oxlint.config.ts`.
-   - `claude-code-plugin/correction-reminder`: committed `bundle/node` output, exercised through Claude Code.
-   - `git-policies/cli`: bin with shebang, run a real command.
-   - `module/toml-edit`: neutral flavor, inlined workspace deps, tests green.
-   - `webapp-productivity/wc`: client flavor, page loaded via `agent-browser`.
-   - `desktop-app/file-manager-electron`: preload CJS, exercised through the app.
+   - `oxlint-plugin/tsdoc`:
+      node flavor,
+      published,
+      dist types consumed by `oxlint.config.ts`.
+   - `claude-code-plugin/correction-reminder`:
+      committed `bundle/node` output,
+      exercised through Claude Code.
+   - `git-policies/cli`:
+      bin with shebang,
+      run a real command.
+   - `module/toml-edit`:
+      neutral flavor,
+      inlined workspace deps,
+      tests green.
+   - `webapp-productivity/wc`:
+      client flavor,
+      page loaded via `agent-browser`.
+   - `desktop-app/file-manager-electron`:
+      preload CJS,
+      exercised through the app.
 2. Sweep per flavor on `main` after pilot passes,
    each flavor one atomic commit including its mise task swap:
-   node (70 configs), browser (25), client (7),
-   outliers (`tools`, `main`, `preload`; five configs).
+   node (70 configs),
+    browser (25),
+    client (7),
+   outliers (`tools`, 
+   `main`, 
+   `preload`;
+    five configs).
 3. Final commits:
    remove `tsdown` from the pnpm catalog,
    delete `package/config/tsdown`,
    update docs.
 4. Docs updates:
-   supersede "Bundler: tsdown > raw rolldown" in `doc/philosophy/tool-choices.md`
+   supersede "Bundler:
+    tsdown > raw rolldown" in `doc/philosophy/tool-choices.md`
    (rolldown 1.0-stable revisit trigger fired 2026-05-07;
    note tsdown moved into the rolldown org as the official library layer,
    and that this repo removes it anyway for layer reduction
@@ -139,40 +166,62 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
 All six representative cells pass on raw rolldown 1.1.5 with
 `rolldown-plugin-dts` 0.27.9 (`generator: 'oxc'`):
 
-- `module/toml-edit` (neutral): built, dist smoke-verified (parse plus
-  byte-exact roundtrip), unit tests green.
-- `oxlint-plugin/tsdoc` (node): plugin dist shape valid (22 rules),
-  unit tests green, repo oxlint chain clean end to end.
+- `module/toml-edit` (neutral):
+   built,
+   dist smoke-verified (parse plus
+  byte-exact roundtrip),
+   unit tests green.
+- `oxlint-plugin/tsdoc` (node):
+   plugin dist shape valid (22 rules),
+  unit tests green,
+   repo oxlint chain clean end to end.
 - `claude-code-plugin/correction-reminder` (committed bundle):
   output byte- and mode-identical to the tsdown artifact,
   hook exercised directly with valid JSON response.
-- `git-policies/cli` (bin): unminified single chunk, shebang and exec
-  bit preserved, real commands exercised from the built bin.
-- `webapp-productivity/wc` (client): page assembled and driven via
-  `agent-browser`, zero console errors, live stats computed.
-- `desktop-app/file-manager-electron` (preload CJS): built through the
-  swapped mise task; the wayland boundary test passes on the merged
+- `git-policies/cli` (bin):
+   unminified single chunk,
+   shebang and exec
+  bit preserved,
+   real commands exercised from the built bin.
+- `webapp-productivity/wc` (client):
+   page assembled and driven via
+  `agent-browser`,
+   zero console errors,
+   live stats computed.
+- `desktop-app/file-manager-electron` (preload CJS):
+   built through the
+  swapped mise task;
+   the wayland boundary test passes on the merged
   tree (four consecutive exit-0 runs with the rolldown-built
-  `preload.cjs` staged). The sweep-time failures were load-induced:
+  `preload.cjs` staged).
+   The sweep-time failures were load-induced:
   the harness's ten-second observed-state deadline missed while the
   repo-wide build fanout and cargo release builds saturated the
-  machine, on the tsdown-built main checkout and the branch alike.
+  machine,
+   on the tsdown-built main checkout and the branch alike.
   The earlier "blocked by agent-session display access" reading was
-  wrong: the session has real Wayland access, and the
+  wrong:
+   the session has real Wayland access,
+   and the
   `Fatal Wayland communication error: Broken pipe` lines appear in
-  passing runs too; they are electron teardown noise after the
-  compositor's `quit`, not a failure signal.
+  passing runs too;
+   they are electron teardown noise after the
+  compositor's `quit`,
+   not a failure signal.
 
 Pilot findings folded into the design:
 
 - Raw rolldown does not set the executable bit on shebang outputs;
   `config-rolldown` ships a `writeBundle` chmod plugin.
-- `--configLoader native` is required: the default bundle loader's temp
+- `--configLoader native` is required:
+   the default bundle loader's temp
   file resolves bare imports from the package dir,
   which strict pnpm isolation rejects;
   the native loader mirrors tsdown's per-file resolution chain.
 - `config-rolldown` quality gates pass:
-  zero oxlint findings, types clean, ported browserslist tests green.
+  zero oxlint findings,
+   types clean,
+   ported browserslist tests green.
   Unit tests for the new `package-externals` and `shebang-executable`
   helpers are still owed before the package counts as complete (PKG).
 
@@ -189,15 +238,20 @@ Pilot findings folded into the design:
 
 ## Rejected alternatives
 
-- Split emit/bundle architecture (tsgo per-file emit for libraries, rolldown for bundles):
+- Split emit/bundle architecture (tsgo per-file emit for libraries,
+   rolldown for bundles):
   adds a second build mechanism and forces a packaging redesign;
   not fewer layers than rolldown alone.
   The bench later confirmed tsgo also cannot emit across inlined workspace sources.
 - No-build for private libraries (exports pointing at src):
   breaks non-TS consumers
-  (oxlint plugin host, bare-name imports, runtime text imports),
+  (oxlint plugin host,
+   bare-name imports,
+   runtime text imports),
   and Node refuses type stripping under `node_modules` for npm consumers.
-- A different third-party wrapper (unbuild, tsup, vite lib mode):
+- A different third-party wrapper (unbuild,
+   tsup,
+   vite lib mode):
   swaps a layer instead of removing one.
 - Owning declaration bundling via `oxc-transform` directly:
   reimplements the hard part of `rolldown-plugin-dts`;

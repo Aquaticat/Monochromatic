@@ -8,8 +8,9 @@ so a prediction that survives contact is evidence and one that does not is a cor
 ## What the task inherited
 
 `keys`,
-`values` and `entries` sit in `DEFERRED_MEMBER_NAMES` in
-`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-member-channel-authority.ts`.
+`values` and `entries` sit in the set now called `ITERATOR_MEMBER_NAMES` in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-member-channel-authority.ts`,
+which at the time of these notes was named for a deferral rather than for the members it holds.
 The stated reason:
 creating an iterator reaches nothing,
 advancing it reads the receiver,
@@ -85,7 +86,14 @@ which measures creation and drainage as distinct steps,
 and collapses only in the recorded entry.
 
 Eighteen entries:
-`keys`, `values`, `entries` on `Array`, `ReadonlyArray`, `Map`, `ReadonlyMap`, `Set`, `ReadonlySet`.
+`keys`, 
+`values`, 
+`entries` on `Array`, 
+`ReadonlyArray`, 
+`Map`, 
+`ReadonlyMap`, 
+`Set`, 
+`ReadonlySet`.
 All six interfaces declare all three,
 confirmed in the lib.
 
@@ -158,11 +166,13 @@ and confirmed in the sweep output,
 which names no `readonly-member-channel-invalid.ts` or `readonly-overload-invalid.ts` location at all.
 So the whole of the difference between 1932 and 1941 is procedural,
 which is a cleaner statement than the one it replaces:
-the two numbers were never comparable, and nothing of mine is mixed into the gap.
+the two numbers were never comparable,
+ and nothing of mine is mixed into the gap.
 What the sweep does answer:
 offers stand at 32,
 the same count as before the change,
-and none of the fifteen files containing those offers holds a `keys`, `values` or `entries` call at
+and none of the fifteen files containing those offers holds a `keys`, 
+`values` or `entries` call at
 all.
 Since the discharge fires only at an iterator call site,
 no offer in this repository could have come from it.
@@ -308,7 +318,9 @@ and this is the part worth carrying forward:
      not a change scoped to iterators.
      `ReadonlyMap.get` is channel-verified with a direct receiver-value relation,
      so admitting for-of would let `for (const value of groups.get('selected',)!)` discharge while
-     iteration runs arbitrary user code through `[Symbol.iterator]`, `next`, and `return` on abrupt
+     iteration runs arbitrary user code through `[Symbol.iterator]`, 
+     `next`,
+      and `return` on abrupt
      completion.
      Nothing in alias discovery or `parameterIndexes` accounts for those.
 

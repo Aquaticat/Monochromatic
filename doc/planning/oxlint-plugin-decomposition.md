@@ -25,7 +25,8 @@ A namespace migration therefore changes executable inline suppressions,
 directive-governance targets,
 fixture expectations,
 configuration,
-and documentation, not only package imports.
+and documentation,
+ not only package imports.
 
 ## Ownership constraint
 
@@ -46,8 +47,12 @@ Internal catalogs may still organize each published plugin's implementation.
 ### `no-restricted-syntax`
 
 Keep the established namespace for rules whose primary condition is a bounded AST shape and a diagnostic.
-Examples include `no-switch`, `no-for-in`, `no-enum`, `catch-binding`,
-`no-rest-params`, and `no-variable-function-expression`.
+Examples include `no-switch`, 
+`no-for-in`, 
+`no-enum`, 
+`catch-binding`,
+`no-rest-params`,
+ and `no-variable-function-expression`.
 
 The package may retain local implementations behind this canonical interface.
 It does not require an external dependency.
@@ -60,21 +65,29 @@ Use an existing Oxlint or ESLint namespace directly when an upstream rule has eq
 Do not move a local rule merely because its name resembles an upstream rule.
 
 `restrictionRules` records material differences for `unicorn/no-array-callback-reference`,
-`unicorn/no-immediate-mutation`, and `node/no-sync`.
-Those local rules accept explicit arity wrappers, allow efficient clone-and-mutate cases,
+`unicorn/no-immediate-mutation`,
+ and `node/no-sync`.
+Those local rules accept explicit arity wrappers,
+ allow efficient clone-and-mutate cases,
 or distinguish Node APIs from unrelated `Sync`-named APIs.
 They remain local until an upstream option or contribution provides the same behavior.
 
-`prefer-error-is-error`, `no-hasownproperty`, and `no-trim-left-right` require the same behavior check.
+`prefer-error-is-error`, 
+`no-hasownproperty`,
+ and `no-trim-left-right` require the same behavior check.
 
 ### `aquaticat`
 
 Use `aquaticat` only for irreducibly local policy and verified upstream adaptations.
-It is an ownership namespace, not a taxonomy.
+It is an ownership namespace,
+ not a taxonomy.
 
-Likely local rules include `no-function-root-let`, `no-nullish-union`,
-`no-optional-escape`, `no-low-information-symbol-description`,
-`no-regex`, and `prefer-describe-function-ref-name`.
+Likely local rules include `no-function-root-let`, 
+`no-nullish-union`,
+`no-optional-escape`, 
+`no-low-information-symbol-description`,
+`no-regex`,
+ and `prefer-describe-function-ref-name`.
 The final catalog must document each rule's local rationale or upstream behavior delta.
 
 ### Directive governance
@@ -89,22 +102,33 @@ The target catalog remains local because it governs both project and upstream ru
 ## Package seams
 
 The local configuration and fixture suite currently consume one deployment unit.
-A package split adds plugin namespaces, sidecar entries, versioning, and dependency edges.
+A package split adds plugin namespaces,
+ sidecar entries,
+ versioning,
+ and dependency edges.
 The target decomposition justifies only two published plugins:
 `no-restricted-syntax` and the small `aquaticat` residue.
 
 The TypeScript semantic support under
 `src/rule/prefer-readonly-parameter-types/` remains an internal subsystem initially.
-Extract it only when its dependencies, performance characteristics,
-compatibility requirements, or consumers diverge from the `aquaticat` residue.
+Extract it only when its dependencies,
+ performance characteristics,
+compatibility requirements,
+ or consumers diverge from the `aquaticat` residue.
 
 ## Required evidence before a namespace migration
 
-- Classify every current namespace occurrence as active source, paused source, fixture, configuration,
-  documentation, or directive-governance target.
+- Classify every current namespace occurrence as active source,
+   paused source,
+   fixture,
+   configuration,
+  documentation,
+   or directive-governance target.
 - Decide whether the two unconfigured directive rules should remain published but disabled.
-- Test a candidate migration in a disposable fixture, including inline suppression,
-  unused-disable reporting, and diagnostics.
+- Test a candidate migration in a disposable fixture,
+   including inline suppression,
+  unused-disable reporting,
+   and diagnostics.
 - Test any candidate upstream replacement against the local rule's current fixtures and project exceptions.
 - Do not assume dual namespace registration is safe.
   It may duplicate diagnostics or change directive matching.
@@ -112,7 +136,8 @@ compatibility requirements, or consumers diverge from the `aquaticat` residue.
 
 ## Recommendation
 
-If a split is adopted, retain `no-restricted-syntax` for selector-equivalent restrictions,
+If a split is adopted,
+ retain `no-restricted-syntax` for selector-equivalent restrictions,
 use upstream namespaces only after equivalence verification,
 and place only the irreducibly local residue under `aquaticat`.
 Collapse directive governance to one configurable local rule instead of creating another package.

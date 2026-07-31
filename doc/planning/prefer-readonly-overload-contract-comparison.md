@@ -121,7 +121,9 @@ the contract would be describing the shape the comparison demands rather than th
 ## Settled by measurement
 
 The four findings reproduce on the current tree,
-at `pipe.ts:147`, `piped.ts:156`, `pipe-async.ts:147` and `piped-async.ts:156`,
+at `pipe.ts:147`, 
+`piped.ts:156`, 
+`pipe-async.ts:147` and `piped-async.ts:156`,
 found in the same whole-repo sweep that closed task #15.
 
 The mechanism is `invoked`,
@@ -133,7 +135,9 @@ It writes nothing.
 It was reported.
 `invokedStepPlain` has the identical body with no overloads,
 and was silent.
-Same effect, same summary, different comparison.
+Same effect,
+ same summary,
+ different comparison.
 That places the disagreement in the check.
 
 ## What landed

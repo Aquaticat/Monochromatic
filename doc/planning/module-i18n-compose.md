@@ -43,7 +43,10 @@ Phases 1 through 5 plus Phase 7 (cleanup and docs) landed under `package/module/
  `src/i18n/index.ts`,
  the generated `typesafe-i18n` files plus the `build:i18n` generator task and devDependency are removed,
  the cache pipeline glob covers `src/i18n`,
- and the package's build, unit tests, type-check, and lint all pass.
+ and the package's build,
+ unit tests,
+ type-check,
+ and lint all pass.
 
 What shipped (file layout,
  not the plan's flat `locales/{ca,en,zh}.ts`):

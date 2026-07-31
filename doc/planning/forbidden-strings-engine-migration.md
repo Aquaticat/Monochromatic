@@ -23,8 +23,10 @@ onto the in-house engine at `package/rust-module/forbidden-regex`.
   duplicating what `scan.rs` builds today with aho-corasick shards.
 - `package/rust-module/forbidden-regex.bench` measures the engine ahead of the
   `regex` crate on the scanner's common case
-  (mostly-non-matching, code-like lines).
-- Open resharp issues (#158 upstream tracking, #240 pre-validator pinning)
+  (mostly-non-matching,
+   code-like lines).
+- Open resharp issues (#158 upstream tracking,
+   #240 pre-validator pinning)
   stop being liabilities when the dependency is gone.
 
 ## Settled decisions (user-confirmed)
@@ -64,7 +66,9 @@ Bare line = literal;
 The bench's `load_rules` already consumes exactly this format,
  which settled the question.
 The loader escapes literal lines into the always-verbose dialect
-(spaces, `#`, and metacharacters).
+(spaces, 
+`#`,
+ and metacharacters).
 Flags slot:
  `m` and `x` are accepted no-ops
  (multiline and verbose are always on in the engine);
@@ -78,7 +82,8 @@ Findings become `PATH:LINE rule=N`.
 The engine reports per-line rule indices,
  not spans;
  the user confirmed losing column precision is expected.
-One finding per (line, rule) pair.
+One finding per (line,
+ rule) pair.
 Streams stay as today.
 `package/git-policy/cli/src/optional/forbidden-strings/scanner-output.ts`
 and `errors.ts` update in lockstep
@@ -100,7 +105,8 @@ Rejected:
 ### Publishing: forbidden-regex goes to crates.io
 
 Publish `forbidden-regex` 0.1.0
- (name verified unclaimed on the crates.io sparse index, 2026-07-16),
+ (name verified unclaimed on the crates.io sparse index,
+ 2026-07-16),
 extend `.github/workflows/cargo-publish.yml` to cover it,
 and give `forbidden-strings` a path-plus-version dependency.
 Publish ordering:
@@ -112,14 +118,18 @@ Rejected:
 Publish-readiness audit (measured 2026-07-16):
 
 - Tests pass:
-  221 run, 221 passed, 1 skipped
+  221 run,
+   221 passed,
+   1 skipped
   (`mise run //package/rust-module/forbidden-regex:test`).
-- `lint:rust` (max-lines, require-rustdoc) passes.
+- `lint:rust` (max-lines,
+   require-rustdoc) passes.
 - Clippy fails:
   367 errors,
   every one the crate's own `implicit_return = "deny"` gate
   (missing `return` statement);
-  a mechanical sweep is a publish prerequisite (PKG, LN8).
+  a mechanical sweep is a publish prerequisite (PKG,
+   LN8).
 - `cargo package --list` bundles README,
   `Cargo.lock`,
   and both `LICENSES/*.txt` files correctly.
@@ -171,7 +181,9 @@ This is an engine API work item that lands before the scanner rewrite.
   `catch_unwind` boundary.
 - Teardown:
   the resharp pre-validators
-  (`src/rule/compile.rs`, `src/rule/nesting.rs`, shape checks)
+  (`src/rule/compile.rs`, 
+  `src/rule/nesting.rs`,
+   shape checks)
   and engine-routing (`requires_resharp`) are deleted;
   the engine rejects bad shapes via `Result` at compile time.
 - Redaction:
@@ -212,7 +224,8 @@ This is an engine API work item that lands before the scanner rewrite.
 
 ## Open implementation questions (measure during implementation)
 
-- RESOLVED (2026-07-16, measured during the port):
+- RESOLVED (2026-07-16,
+   measured during the port):
   startup compilation is not viable
   (worst faithful rule took 123 seconds to compile;
   49 rules exceed one second even after the leading-strip fix),
@@ -233,19 +246,26 @@ This is an engine API work item that lands before the scanner rewrite.
   18 lines;
   2 regex rules,
   both flagged `/m` only.
-- `forbidden-strings.append.local.txt` (gitignored, feature counts only):
+- `forbidden-strings.append.local.txt` (gitignored,
+   feature counts only):
   54 lines;
   2 regex-form rules;
   no unbounded quantifiers;
   no flags.
-- CORRECTION (2026-07-16, found during the port):
-  the original claim here, that case-insensitivity was a non-issue,
+- CORRECTION (2026-07-16,
+   found during the port):
+  the original claim here,
+   that case-insensitivity was a non-issue,
   measured only trailing `/i` flags and missed pervasive inline `(?i)`
-  groups: 172 of 259 builtin regex rules carry them.
-  The user's decision (corrected 2026-07-16, supersedes a brief
+  groups:
+   172 of 259 builtin regex rules carry them.
+  The user's decision (corrected 2026-07-16,
+   supersedes a brief
   blanket-strip reading):
   keyword literals under `(?i)` scope expand to a three-casing
-  alternation (lowercase, Capitalized, UPPERCASE),
+  alternation (lowercase,
+   Capitalized,
+   UPPERCASE),
   classes under `(?i)` widen to both cases,
   mixed-case shapes like `AdOBe_` deliberately unmatched;
   the #387 differential is the empirical check.
@@ -279,34 +299,56 @@ This is an engine API work item that lands before the scanner rewrite.
   unknown flags now hard-error instead of silently degrading to literals;
   bare `//` is rejected by the engine's `EmptyMatchable`;
   the BOM strip folds into the loader rewrite;
-  remaining items (cwd-relative resolution, `--all` plus positionals) are
+  remaining items (cwd-relative resolution, 
+  `--all` plus positionals) are
   unaffected and stay open.
 - `doc/todo/forbidden-strings.1.0.md` item 24 reshapes:
   resharp exposure is replaced by own-engine maturity
-  (fuzz coverage in `forbidden-regex.fuzz`, its own 0.x version discipline).
+  (fuzz coverage in `forbidden-regex.fuzz`,
+   its own 0.x version discipline).
 
 ## Issue breakdown
 
 Published 2026-07-16 as sixteen tracker issues,
 sliced small enough for one bounded subagent context each
 (the engine API and the scanner rewrite are staged into
-independently compilable, independently verifiable sub-slices):
+independently compilable,
+ independently verifiable sub-slices):
 
 - #375 engine clippy sweep plus crate metadata (no blockers)
-- #376 rule-file port, staged unwired (no blockers)
+- #376 rule-file port,
+   staged unwired (no blockers)
 - #377 batch API contract plus reference implementation (after #375)
 - #378 batch API single-sweep fast path (after #377)
 - #379 batch API differential fuzz target (after #377)
 - #380 batch API bench coverage and numbers (after #378)
-- #381 seedless and line-start batch routing, bench-gated (after #380)
-- #382 publish forbidden-regex 0.1.0 plus workflow lane (after #375, #377, #378)
-- #383 scanner rule-compiler module, strict loader, redaction tests (after #377, #376)
-- #384 scanner line-based scan path, columnless output (after #383)
-- #385 scanner teardown, README, version 0.2.0 (after #384)
+- #381 seedless and line-start batch routing,
+   bench-gated (after #380)
+- #382 publish forbidden-regex 0.1.0 plus workflow lane (after #375,
+   #377,
+   #378)
+- #383 scanner rule-compiler module,
+   strict loader,
+   redaction tests (after #377,
+   #376)
+- #384 scanner line-based scan path,
+   columnless output (after #383)
+- #385 scanner teardown,
+   README,
+   version 0.2.0 (after #384)
 - #386 scanner fuzz retargeting (after #385)
-- #387 differential cutover validation plus perf re-measure (after #376, #385, #380)
+- #387 differential cutover validation plus perf re-measure (after #376,
+   #385,
+   #380)
 - #388 git-policy columnless output parser (after #384)
-- #389 cutover, runbook, scanner publish; ready-for-human (after #382, #385, #386, #387, #388)
+- #389 cutover,
+   runbook,
+   scanner publish;
+   ready-for-human (after #382,
+   #385,
+   #386,
+   #387,
+   #388)
 - #390 post-migration hygiene (after #389)
 
 ## Rollout sequence
@@ -318,12 +360,15 @@ independently compilable, independently verifiable sub-slices):
     returning per-line rule indices.
  3. Publish `forbidden-regex` 0.1.0 (workflow extension first).
  4. Port rule files with the bench-sidecar script;
-    review the semantic diff (quantifier bounds, rule 172, `/m` drops).
+    review the semantic diff (quantifier bounds,
+     rule 172, 
+    `/m` drops).
  5. Rewrite loader and scan path against the batch API;
     delete resharp machinery;
     add the sentinel redaction test;
     retarget scanner fuzz targets.
- 6. Differential validation run, old binary against new.
+ 6. Differential validation run,
+     old binary against new.
  7. Re-measure `PERF.md`.
  8. Lockstep update of the git-policy scanner-output parser.
  9. Atomic cutover commit;

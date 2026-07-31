@@ -37,7 +37,8 @@ There is no lookup affordance in the CLI,
 so a blocked developer cannot tell what `rule=N` is
 without opening the rule file and counting non-comment lines.
 
-Worse, `N` is not stable.
+Worse, 
+`N` is not stable.
 Rules load into a single index space:
 the runtime rules (the local and shared appendix files) take indices `0..k`,
 and the embedded builtin baseline is offset above them at `k..`.
@@ -53,7 +54,8 @@ The number is not even writable down across environments.
 ## What is actually sensitive
 
 The redaction invariant only constrains the sensitive local rules:
-codenames, customer or partner identifiers,
+codenames,
+ customer or partner identifiers,
 and politically charged literals in the gitignored appendix.
 The 259 builtin baseline rules are public:
 they are generated into the checked-in
@@ -68,20 +70,27 @@ The binary embeds only the compiled baseline automaton
 (the `to_bytes` blob loaded through `from_bytes`),
 and the port stripped every betterleaks description.
 So given a baseline match at index `i`,
-the running binary has no name, no description,
+the running binary has no name,
+ no description,
 and (unless the engine's serialization retains the source strings,
 which is worth confirming) no pattern text to report.
 That information was discarded at build time.
 
 Local rules are the exception:
-the scanner reads their text at scan time, so it still holds them.
+the scanner reads their text at scan time,
+ so it still holds them.
 
 Consequence:
-any scheme that resolves, names, or hashes a baseline rule
-needs an identity artifact embedded at build time, aligned to the compiled set.
+any scheme that resolves,
+ names,
+ or hashes a baseline rule
+needs an identity artifact embedded at build time,
+ aligned to the compiled set.
 The `build.rs` step already parses `builtin-rules.txt`,
 so emitting an aligned sidecar
-(source patterns, per-rule hashes, or names)
+(source patterns,
+ per-rule hashes,
+ or names)
 next to the `.bin` blob is a small addition.
 Local-rule resolution needs no embed.
 
@@ -95,13 +104,15 @@ That would matter if a suppression or allowlist mechanism keyed by rule id
 is ever added (none exists today).
 
 Two caveats temper it.
-First, a plaintext hash of a low-entropy sensitive local rule is a membership oracle:
+First,
+ a plaintext hash of a low-entropy sensitive local rule is a membership oracle:
 anyone who reads a CI log can hash a guess
 and confirm whether that term is on the deny-list.
 Closing that needs a keyed hash
 (an HMAC under a per-repo secret the developer and CI hold but outsiders do not),
 which adds a key to manage.
-Second, a baseline hash still has to be precomputed and embedded,
+Second,
+ a baseline hash still has to be precomputed and embedded,
 so it does not dodge the identity constraint above.
 
 Because the baseline is public and its names are public,
@@ -137,14 +148,16 @@ plus the new subcommand and the baseline identity embed.
 Keep `rule=N` unchanged;
 add `explain N` reading the same loaded sources.
 Pros:
-no format change, covers both sources.
+no format change,
+ covers both sources.
 Cons:
 the number stays opaque until the command runs,
 and it still drifts across environments.
 
 ### Option C: category names on baseline findings
 
-Baseline findings gain a safe label, `rule=147 (aws-access-key)`.
+Baseline findings gain a safe label, 
+`rule=147 (aws-access-key)`.
 Pros:
 best at-a-glance UX for the common credential catch,
 zero pattern disclosure.
@@ -159,7 +172,8 @@ No code change;
 document that a developer maps `rule=N`
 by counting non-comment lines and subtracting the local-rule offset.
 Pros:
-zero work, redaction stays pristine.
+zero work,
+ redaction stays pristine.
 Cons:
 the gap and the drift both remain.
 
@@ -192,9 +206,12 @@ and an index dominates it for the sensitive local rules.
 
 - Namespaced ids yes or no.
 - For the baseline:
-  names, hashes, or full source in the embedded sidecar.
+  names,
+   hashes,
+   or full source in the embedded sidecar.
 - For local rules:
-  a plain per-file index, or a keyed hash.
+  a plain per-file index,
+   or a keyed hash.
 
 ## Relationship to the word-boundary fix and the 0.2.1 release
 
@@ -203,7 +220,8 @@ the local gate and CI still run 0.2.0.
 Activating it in CI needs a 0.2.1 release,
 because CI downloads the version-matched release binary.
 Whatever rule-identity option lands should be cut in the same 0.2.1 release
-so there is one publish, not two.
+so there is one publish,
+ not two.
 That release will also turn the index.html full-tree finding green,
 since that finding is the same short-literal base64 collision
 the word-boundary gating resolves.

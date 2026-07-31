@@ -354,7 +354,8 @@ and view refreshes deterministic.
 Search ships in v1 and delegates its logic to `fff-core`:
 
 - search panes (fuzzy file search as a `PaneLocation`),
-- recent-files panes (candidate source: fff's frecency data;
+- recent-files panes (candidate source:
+   fff's frecency data;
   confirm during implementation),
 - in-pane type-ahead filtering (fff's matcher over the current snapshot).
 
@@ -478,7 +479,9 @@ PASSED on Linux.
   (function-named package,
   built as the plan's designated home rather than a throwaway crate).
 - Operating systems tested:
-  Linux only (Wayland, winit backend, femtovg renderer);
+  Linux only (Wayland,
+   winit backend,
+   femtovg renderer);
   macOS `m1` and Windows `x13-win` still pending.
 - Steps run:
   a synthetic strip of 1200 columns,
@@ -509,8 +512,11 @@ PASSED on Linux.
   through one shared vertical offset (the tallest column sets the range),
   rather than scrolling only the focused column.
 - Horizontal scroll smoothness:
-  the first cut rebuilt the whole columns model on every scroll event, which
-  stuttered on slow scroll, showed stale frames on fast scroll, and (once the
+  the first cut rebuilt the whole columns model on every scroll event,
+   which
+  stuttered on slow scroll,
+   showed stale frames on fast scroll,
+   and (once the
   rebuild moved to a frame timer) capped a mousewheel gesture at the first column
   because replacing the model mid-scroll fought the Flickable's own viewport-x.
   The fix is a persistent Slint `VecModel` mutated incrementally through
@@ -522,7 +528,8 @@ PASSED on Linux.
   The model is set on the window once and never replaced,
   so the Flickable's scroll is never disturbed.
   Column build churn dropped from thousands of rebuilds per session to about a
-  dozen, and the author confirmed horizontal scrolling is smooth and holds far
+  dozen,
+   and the author confirmed horizontal scrolling is smooth and holds far
   positions.
   The Slint source trace and the rejected approaches are recorded in
   `doc/troubleshooting/slint-flickable-windowed-model-scroll.md`.
@@ -568,22 +575,30 @@ or compare Qt before committing to Slint.
 #### Result: internal drag passes, OS file drag-and-drop unavailable (2026-07-05)
 
 Folded into the same prototype (`package/desktop-app/file-manager/`).
-Full source trace, verification, and the upstream do-not-file decision are in
+Full source trace,
+ verification,
+ and the upstream do-not-file decision are in
 `doc/troubleshooting/slint-drag-and-drop-file-lists.md`.
 
 - Prototype path:
   `package/desktop-app/file-manager/`
-  (`src/drag_drop.rs`, `ui/app.slint` `DragArea`/`DropArea`, `src/drag_drop_tests.rs`).
+  (`src/drag_drop.rs`, 
+  `ui/app.slint` `DragArea`/`DropArea`, 
+  `src/drag_drop_tests.rs`).
 - Operating systems tested:
-  Linux only (winit backend, headless MCP);
-  macOS `m1` and Windows `x13-win` still pending, riding along with the
+  Linux only (winit backend,
+   headless MCP);
+  macOS `m1` and Windows `x13-win` still pending,
+   riding along with the
   virtualization spike's cross-platform pass.
 - Steps run:
   a row is dragged to a different pane through the embedded Slint MCP server's
-  `drag_element`, and the recorded identity plus action are read back on the HUD
+  `drag_element`,
+   and the recorded identity plus action are read back on the HUD
   (`AppWindow::hud-e`) and the log.
 
-Pass criteria, split:
+Pass criteria,
+ split:
 
 - internal drags carry structured app-local data:
   PASSED.
@@ -591,7 +606,8 @@ Pass criteria, split:
   the target pane reads it back on drop.
   A move drag logs
   `source_pane_id=0 source_row=0 target_pane_id=1 action="move"`;
-  a left-click still selects without dropping, so the drag wrap leaves selection
+  a left-click still selects without dropping,
+   so the drag wrap leaves selection
   intact.
 - copy and move actions are distinguishable:
   PASSED.
@@ -603,21 +619,28 @@ Pass criteria, split:
 - outbound drags advertise OS-native file-list payloads:
   FAILED (blocked by Slint).
   Slint 1.17.0 has no native drag path at all;
-  the post-1.17.0 Qt `start_drag` advertises only text and image, never a
+  the post-1.17.0 Qt `start_drag` advertises only text and image,
+   never a
   file-list.
 
 Backend comparison (the spike record):
 the winit-vs-Qt choice does NOT resolve file drag-and-drop.
-Released 1.17.0 core invokes no backend native-drag hook, so drag is in-process
+Released 1.17.0 core invokes no backend native-drag hook,
+ so drag is in-process
 on both backends.
-Even in post-1.17.0 code, the Qt backend's `start_drag` and drop bridge carry
-only text and image (never `setUrls`/`hasUrls`), and the winit backend has no
+Even in post-1.17.0 code,
+ the Qt backend's `start_drag` and drop bridge carry
+only text and image (never `setUrls`/`hasUrls`),
+ and the winit backend has no
 native drag-and-drop at all.
 So switching to Qt buys no file drag-and-drop;
-this is evidence from the audited Slint source, not speculation.
-The Qt backend was not built here (Slint's Qt backend needs `qmake`, which is
+this is evidence from the audited Slint source,
+ not speculation.
+The Qt backend was not built here (Slint's Qt backend needs `qmake`,
+ which is
 absent;
-Qt runtime libs are present but the dev tooling is not), and building it would
+Qt runtime libs are present but the dev tooling is not),
+ and building it would
 not change the conclusion because Qt carries no file-list.
 
 Chosen action:
@@ -625,10 +648,12 @@ continue with Slint;
 no fallback triggered.
 The internal `DragArea`/`DropArea` drag is the seed for the plan's
 "internal pane-to-pane drag first" milestone.
-OS inbound and outbound file drag-and-drop take the plan's failure action, a
+OS inbound and outbound file drag-and-drop take the plan's failure action,
+ a
 hand-written per-OS native adapter (winit `DroppedFile`/`HoveredFile` inbound;
 `QMimeData::setUrls` / `NSPasteboard` / `IDataObject` / XDND `text/uri-list`
-outbound), deferred to the native-integration milestone at the consumer boundary.
+outbound),
+ deferred to the native-integration milestone at the consumer boundary.
 Upstream issue `#1967` already documents both gaps in the maintainers' own words,
 so nothing was filed.
 
@@ -653,39 +678,51 @@ avoid affected Slint widgets or patch Slint before building production file-list
 #### Result: passed on Linux (2026-07-05)
 
 Folded into the same prototype (`package/desktop-app/file-manager/`) on the
-custom `ListView` row delegate, not `StandardTableView`.
+custom `ListView` row delegate,
+ not `StandardTableView`.
 Issue `#12354` reproduces exactly as filed:
-the row's own `TouchArea` grabs the right-press, so the wrapping
+the row's own `TouchArea` grabs the right-press,
+ so the wrapping
 `ContextMenuArea` never opens on a row.
 Source-traced into Slint `1.17.0` and recorded with the workaround in
 `doc/troubleshooting/slint-contextmenuarea-listview-rows.md`.
 
 The verified workaround is to forward the right-press from the row's
-`pointer-event` to `context-menu.show(...)`, translating the click into the
+`pointer-event` to `context-menu.show(...)`,
+ translating the click into the
 area's coordinate space with the same `absolute-position` maths Slint's own
 `listview.slint` uses.
-Rust records the (pane, row) the click targeted so a chosen command carries a
-deterministic identity, mirrored to the HUD and logged.
+Rust records the (pane,
+ row) the click targeted so a chosen command carries a
+deterministic identity,
+ mirrored to the HUD and logged.
 
-Pass criteria, each met and driven headless through the embedded MCP server:
+Pass criteria,
+ each met and driven headless through the embedded MCP server:
 
 - opens for mouse and keyboard paths:
- a right-click on a row opens the menu (screenshot), and both the keyboard menu
+ a right-click on a row opens the menu (screenshot),
+   and both the keyboard menu
  key (`Key.Menu`) and the MCP-drivable menu button open it;
- the built-in only wires `Shift+F10` on Windows, so the prototype adds it in the
+ the built-in only wires `Shift+F10` on Windows,
+   so the prototype adds it in the
  pane `FocusScope` for cross-platform parity,
 - focused and clicked row deterministic:
- the right-clicked row highlights as the target, matching the menu position,
+ the right-clicked row highlights as the target,
+   matching the menu position,
 - commands receive the correct identity:
- activating `Open`/`Rename`/`Delete` logs and shows the exact (pane, row) the
+ activating `Open`/`Rename`/`Delete` logs and shows the exact (pane,
+   row) the
  click targeted (for example right-clicking `dir #20` row 0 logs
  `pane_id=20 row=0`);
  the keyboard path targets the active pane's active row,
 - selection and drag intact:
  a left-click still selects the row (and records it) without opening the menu,
- and the right-button branch is additive, so left-button press/drag is unchanged.
+ and the right-button branch is additive,
+   so left-button press/drag is unchanged.
 
-Long-press is Android-only in Slint's `ContextMenu` item, so it is not a desktop
+Long-press is Android-only in Slint's `ContextMenu` item,
+ so it is not a desktop
 path here.
 The spike does not yet re-run on macOS or Windows;
 that rides along with the virtualization spike's cross-platform pass.

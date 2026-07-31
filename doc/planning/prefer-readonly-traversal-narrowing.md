@@ -1,8 +1,10 @@
 # Narrow traversal effects and resolve workspace source in `prefer-readonly-parameter-types`
 
 Decisions grilled and confirmed on 2026-07-15.
-Scope: `package/oxlint-plugin/prefer-readonly-parameter-type` and every consuming package.
-Rollout: big-bang;
+Scope: 
+`package/oxlint-plugin/prefer-readonly-parameter-type` and every consuming package.
+Rollout:
+ big-bang;
 the effort is not done until the whole repo is green under the new semantics.
 
 ## Problem evidence
@@ -21,7 +23,8 @@ the effort is not done until the whole repo is green under the new semantics.
   carry hand-computed `commit <sha> <file> sha256 <digest>` evidence strings for repo-owned code.
   Nothing validates them:
   the only evidence test asserts non-emptiness
-  (`intrinsic-effect-catalog.unit.test.ts`, "records authoritative evidence for every audited host entry").
+  (`intrinsic-effect-catalog.unit.test.ts`,
+   "records authoritative evidence for every audited host entry").
   They rot silently into false negatives when the audited source changes.
 - Diagnostics do not echo whether a `@mutates` contract was parsed,
   nor why an input is considered affected,
@@ -111,7 +114,10 @@ Rejected alternatives:
 ### External catalog evidence gets machine validation
 
 A plugin test recomputes the named digests from installed `node_modules` content
-for external package entries (lezer, optique, turso, pi)
+for external package entries (lezer,
+ optique,
+ turso,
+ pi)
 and fails on mismatch,
 so a version bump forces a loud re-audit instead of silently invalidating the audit.
 
@@ -120,7 +126,10 @@ so a version bump forces a loud re-audit instead of silently invalidating the au
 Each finding shows:
 
 - the per-affected-input propagation chain with locations
-  (parameter, argument or property step, call, catalog entry or unresolved callee);
+  (parameter,
+   argument or property step,
+   call,
+   catalog entry or unresolved callee);
 - the parsed `@mutates` contract as the rule understood it,
   plus the exact delta against what is required;
 - only the remediations applicable to that cause,
@@ -185,7 +194,8 @@ Definition of done:
   classifier unit tests cover 18 shapes including branded intersections,
   recursive TOML-like unions,
   and readonly tuple references
-  (`checker.isTupleType` resolves references, the Type method does not).
+  (`checker.isTupleType` resolves references,
+   the Type method does not).
 - 2026-07-15 `132bd4fe8`:
   `traversalHookOnly` marker on Object/Reflect enumeration targets;
   `join` and `toSorted` element-coercion guards widened to plain data
@@ -271,9 +281,11 @@ not part of this refactor.
 
 - Zero `prefer-readonly-parameter-type` findings repo-wide,
   verified by the parallel fanout run over every package plus root files
-  (`fanout-lint3` capture; the pre-refactor baseline also had zero).
+  (`fanout-lint3` capture;
+   the pre-refactor baseline also had zero).
 - Native tuple-cast panic found during root lint
-  ("checker.TypeData is *checker.TypeReference, not *checker.TupleType")
+  ("checker.TypeData is *checker.TypeReference,
+   not *checker.TupleType")
   fixed by detecting tuple references through the target's local
   objectFlags instead of the `checker.isTupleType` native request.
 - Boundary-contract semantics

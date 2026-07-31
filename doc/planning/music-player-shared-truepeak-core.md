@@ -268,15 +268,21 @@ The classifier acceptance goal is exact fit on the current corpus:
 
 The corpus is considered large and varied enough for this product's current acceptance target.
 
-Amended 2026-07-01, after the Stage-two evidence (see the fine-bin findings below):
-strict exact fit is disproportionately expensive at the quarter budget, because a handful of
-tracks hide a sub-tenth-second transient that no sparse probe catches, and covering them forces
+Amended 2026-07-01,
+ after the Stage-two evidence (see the fine-bin findings below):
+strict exact fit is disproportionately expensive at the quarter budget,
+ because a handful of
+tracks hide a sub-tenth-second transient that no sparse probe catches,
+ and covering them forces
 about a decibel of extra too-quiet margin on every track.
 The accepted goal is therefore exact fit for about ninety-nine percent of tracks under a fixed
-`0.8 dB` margin, with the realtime clamp catching the rare too-loud transient and background
+`0.8 dB` margin,
+ with the realtime clamp catching the rare too-loud transient and background
 warming full-scanning those tracks to an exact cached gain over time.
-There is no probe-feature or metadata classifier that routes the hard tracks, so the policy is
-classifier-free: a proportional probe plus the fixed margin.
+There is no probe-feature or metadata classifier that routes the hard tracks,
+ so the policy is
+classifier-free:
+ a proportional probe plus the fixed margin.
 
 ### Do not use an opaque model
 
@@ -989,20 +995,32 @@ background warming converging the cache to exact over time.
 Stage-two decisions (2026-07-01):
 
 - The proportional-coverage probe and the margin-versus-clamp tradeoff are wired into the bench
-  as the committed `--proportional` evaluation, which reads the shipped
+  as the committed `--proportional` evaluation,
+   which reads the shipped
   `truepeak_core::default_policy` and reproduces the numbers above on the fine corpus.
-- The shipped margin is `0.8 dB`, decided with the requester: about ninety-nine percent of
-  tracks stay within `-0.8 dB` too-quiet, and about one percent (forty-three tracks, none of
+- The shipped margin is `0.8 dB`,
+   decided with the requester:
+   about ninety-nine percent of
+  tracks stay within `-0.8 dB` too-quiet,
+   and about one percent (forty-three tracks,
+   none of
   them safe-provenance) clamp on cold start until background warming full-scans them to exact.
-- The shipped policy now lives in `truepeak-core`'s `default_policy`: a ninety-second full-scan
-  cutoff for short tracks, one-fifth proportional coverage in tenth-of-a-second windows for long
-  tracks, and the `0.8 dB` margin. The old classifier-era window-count parameters are gone.
+- The shipped policy now lives in `truepeak-core`'s `default_policy`:
+   a ninety-second full-scan
+  cutoff for short tracks,
+   one-fifth proportional coverage in tenth-of-a-second windows for long
+  tracks,
+   and the `0.8 dB` margin.
+   The old classifier-era window-count parameters are gone.
 
 Remaining Stage-two work:
 
-- Verify the chosen coverage and margin against exact decoded windows, not only the bins.
-- Layer the album prior (scan a few members per album, infer the rest) to lower the average
-  error further; the worst case and the clamp count are already handled by the margin above.
+- Verify the chosen coverage and margin against exact decoded windows,
+   not only the bins.
+- Layer the album prior (scan a few members per album,
+   infer the rest) to lower the average
+  error further;
+   the worst case and the clamp count are already handled by the margin above.
 
 ## Bench sidecar
 
@@ -1533,21 +1551,35 @@ because the service API depends on Turso being viable on Android:
 - Stage four (done):
    desktop migration.
    The desktop peak-cache actor owns a shared `DecisionCache` (not a hand-rolled `peaks` table),
-   the sync handle carries `u64` fingerprints and `Decision`s, a `DesktopSource` adapts the
-   decoder to `TruePeakSource`, and `resolve_current`/`resolve_full` drive the foreground and
-   warming paths onto a fresh `decisions.db`. 78 tests, clippy and lint green.
+   the sync handle carries `u64` fingerprints and `Decision`s,
+   a `DesktopSource` adapts the
+   decoder to `TruePeakSource`,
+   and `resolve_current`/`resolve_full` drive the foreground and
+   warming paths onto a fresh `decisions.db`.
+   78 tests,
+   clippy and lint green.
 - Stage five (done):
    Android migration.
-   The windowed policy and the `1.26` factor are gone; a native `TruePeakService` handle
+   The windowed policy and the `1.26` factor are gone;
+   a native `TruePeakService` handle
    (dedicated Tokio thread plus `DecisionCache`) is reached over JNI
-   (`nativeTruePeakServiceCreate`/`Release`, `nativeResolveGain`, `nativeWarmTrack`), the Kotlin
-   JSON peak cache and gain math are deleted, and a `TruePeakGain` singleton owns the one shared
-   handle. The `.so` cross-compiles for both ABIs with Turso linked; on-device on the Pixel 6 the
-   `NativeBridgeTest` (9 tests, including a full service-open + resolve + cache round-trip) and
-   `PeakSweepWorkerTest` (2 tests, the warming sweep) pass.
+   (`nativeTruePeakServiceCreate`/`Release`, 
+  `nativeResolveGain`, 
+  `nativeWarmTrack`),
+   the Kotlin
+   JSON peak cache and gain math are deleted,
+   and a `TruePeakGain` singleton owns the one shared
+   handle.
+   The `.so` cross-compiles for both ABIs with Turso linked;
+   on-device on the Pixel 6 the
+   `NativeBridgeTest` (9 tests,
+   including a full service-open + resolve + cache round-trip) and
+   `PeakSweepWorkerTest` (2 tests,
+   the warming sweep) pass.
 - Stage six (done):
    cleanup.
-   Both apps' old measurement policies and the Kotlin peak cache are deleted; the shared crate
+   Both apps' old measurement policies and the Kotlin peak cache are deleted;
+   the shared crate
    gained `resolve_full_scan` (warming-upgrade primitive) and `DecisionCache::exact_fingerprints`
    (warming skip-snapshot).
 - Stage seven:
