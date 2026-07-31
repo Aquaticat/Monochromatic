@@ -6,10 +6,9 @@ Investigation is active.
 No implementation decision has been accepted.
 GitHub issue [Aquaticat/Monochromatic#401](https://github.com/Aquaticat/Monochromatic/issues/401) is open.
 
-Current repository `HEAD` when this handover was created:
-`ada86560a4cf5eabad35f031f6ded140847bd1e2`.
-The main worktree also contains unrelated `package/cli/wg-quicker/` and
-`doc/troubleshooting/iproute2-family-fib-table-absence.md` changes.
+Current repository `HEAD` before the 2026-07-30 restart checkpoint:
+`82b8e72ba`.
+The main worktree contains unrelated changes under `package/cli/wg-quicker-exempt/`.
 Do not alter,
 stage,
 or commit those files.
@@ -65,6 +64,134 @@ or commit those files.
 This is an investigation and proposal task.
 Do not implement a selected product change until the user accepts or delegates the decision.
 Documentation and disposable probes are authorized.
+
+## 2026-07-30 restart checkpoint
+
+A repository-owned CSS direction has now been validated in disposable probes,
+but it is not production-ready and has not been selected for implementation.
+
+### Combined dprint fixed point
+
+The disposable prose-preserving `markup_fmt` Wasm plugin now delegates embedded CSS to a repository-owned
+stdin/stdout formatter through `dprint-plugin-exec` 0.7.3.
+The adapter had to avoid passing Malva-specific host override keys for synthetic CSS requests;
+otherwise exec rejected the override as invalid configuration.
+The patched adapter build completed successfully.
+
+A dprint check using `dprint.issue401-owned-css-exec.json` passed without output for all five affected HTML files
+and one standalone CSS file.
+Earlier two-pass formatting of the five pages established:
+
+- no new text-node line-break contexts;
+- preservation of the existing text-node breaks;
+- sixteen nonblank CSS lines in every page;
+- no second-pass changes;
+- HTML still fully owned by dprint,
+  with no exclusions or ignore directives.
+
+The exec path is a validated orchestration prototype,
+not the only acceptable production adapter.
+A repository-owned dprint process plugin remains an alternative if exec's process and configuration boundaries
+become limiting.
+
+### Editor formatting probe
+
+An executable JSON-RPC probe launched `dprint lsp` 0.55.2 with exec 0.7.3 and unsaved editor text.
+It returned four edits for standalone CSS and one edit for HTML containing embedded CSS,
+with no stderr.
+Both outputs included the repository-owned CSS formatting.
+This directly disproves treating open
+[`dprint-plugin-exec#34`](https://github.com/dprint/dprint-plugin-exec/issues/34) as a blocker for the tested
+versions and configuration.
+The issue remains relevant historical evidence,
+but editor formatting must be judged by the successful local probe.
+
+Dprint supplies formatting edits only.
+A replacement semantic checker would still need a deliberate live-diagnostics integration,
+or the migration must disclose that Stylelint's VS Code and IntelliJ diagnostics are temporarily reduced to CLI
+checks.
+The repository currently recommends `stylelint.vscode-stylelint` and the IntelliJ Stylelint plugin,
+while dprint is the configured CSS and HTML formatter in both editor families.
+
+### CSS formatter and checker probes
+
+The dprint-discovered tracked corpus contains thirty-six standalone CSS files,
+fifteen HTML files,
+and forty-five actual CSS regions.
+A structural formatter over `package/module/css-edit/` and `@lezer/html` reported:
+
+- zero parse failures;
+- zero second-pass differences;
+- zero non-whitespace token-signature mismatches;
+- sixteen-line output for each learning-Rust stylesheet.
+
+This establishes CST and host-adapter feasibility,
+not production formatting quality.
+The current probe still needs explicit behavior for comments,
+blank lines,
+selector and declaration spacing,
+directives,
+and malformed input before it can be proposed as production code.
+
+A repository-owned policy probe reproduced the current semantic diagnostic totals of sixteen disallowed
+functions,
+sixty-two disallowed properties,
+and sixty-seven disallowed units.
+It also rejects the currently missed `@media (height: 10em)` case and reports twenty preferred `oklch()` channel
+changes on the five learning pages.
+
+A provisional ledger assigns every one of the eighty-two active Stylelint rules exactly once:
+
+- twenty-six formatter responsibilities;
+- nineteen repository-policy responsibilities;
+- nineteen checker responsibilities;
+- eighteen proposed drops;
+- no omissions,
+  unknown names,
+  or duplicate assignments.
+
+The ledger is not yet accepted.
+The proposed drops need rule-by-rule rationale and executable fixtures,
+and existing suppression directives need migration behavior.
+Eighteen `stylelint-disable` or `stylelint-enable` directives were found,
+with three outside `package-paused/`.
+Do not interpret those comments automatically in the owned checker without deciding whether to retain,
+migrate,
+or replace that suppression contract.
+
+### Color semantics
+
+[CSS Color 4 section 4.4](https://www.w3.org/TR/css-color-4/#missing) says a missing component written as `none`
+behaves as zero outside interpolation,
+but may borrow the corresponding component during interpolation.
+Therefore the preferred direct colors `oklch(0.1 none none)` and `oklch(0.9 none none)` render like zero-channel
+forms,
+but `none` must not be described as universally interchangeable with zero.
+
+A Chromium 149 executable probe reported support for the `none` forms and equal rendered RGBA bytes for direct
+`oklch()` comparisons of missing versus zero lightness,
+chroma,
+and hue.
+The browser's canvas-gradient probe did not expose the specification's interpolation distinction;
+the primary specification remains the deciding evidence for that boundary.
+
+### Dependency evidence
+
+The measured Stylelint,
+standard-config,
+and HTML-custom-syntax closure contains one hundred twenty-six package identities,
+2,507 files,
+and 10,721,885 bytes.
+Stylelint alone reaches one hundred fifteen identities,
+2,256 files,
+and 9.247 MiB in the installed tree.
+The existing `css-edit` foundation uses one zero-dependency tokenizer package.
+
+A separate exclusivity estimate found one hundred eleven package identities,
+2,031 files,
+and 7,856,450 bytes unique to the measured Stylelint closure,
+but sixty-two unrelated manifest roots were unavailable.
+Keep this result explicitly caveated until the reachability analysis has complete manifests.
 
 ## Canonical affected sources
 
@@ -502,8 +629,22 @@ Disposable probe sources include:
 - `/var/home/user/temp/agent/issue401-style-region-hashes.ts`
 - `/var/home/user/temp/agent/issue401-media-unit-probe.css`
 
-A disposable worktree was created at:
-`/var/home/user/temp/agent/issue401-worktree.LykdMVxQ`.
+Disposable worktrees are available at:
+
+- `/var/home/user/temp/agent/issue401-worktree.LykdMVxQ`;
+- `/var/home/user/temp/agent/issue401-current-worktree`;
+- `/var/home/user/temp/agent/markup-fmt-preserve-401`.
+
+Important current probe artifacts include:
+
+- `/var/home/user/temp/agent/issue401-current-worktree/dprint.issue401-owned-css-exec.json`;
+- `/var/home/user/temp/agent/issue401-owned-css-formatter-probe.ts`;
+- `/var/home/user/temp/agent/issue401-owned-css-policy-probe.ts`;
+- `/var/home/user/temp/agent/issue401-owned-css-stdin.ts`;
+- `/var/home/user/temp/agent/issue401-dprint-lsp-probe.mjs`;
+- `/var/home/user/temp/agent/issue401-rule-outcomes.json`;
+- `/var/home/user/temp/agent/issue401-stylelint-footprint.json`;
+- `/var/home/user/temp/agent/issue401-stylelint-exclusive-footprint.json`.
 
 ## Documentation checkpoint
 
@@ -536,11 +677,23 @@ Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not 
 
 ## Exact next action
 
-1. Design and validate repository-owned CSS tooling without evaluating external replacement candidates.
-2. Record explicit keep,
-   replace,
-   or drop outcomes for Malva responsibilities and every active Stylelint rule.
-3. Correct and re-rank the planning and troubleshooting documents.
-4. Join the CSS design with the verified prose-preserving markup direction.
-5. Post the new evidence and recommendation to issue 401.
-6. Leave implementation unstarted until the owner accepts or delegates the revised recommendation.
+1. Harden the disposable CSS formatter for comments,
+   blank lines,
+   selector layout,
+   declaration layout,
+   malformed syntax,
+   and localized host edits while retaining idempotence and token fidelity.
+2. Validate every provisional rule-ledger outcome with rationale and fixtures,
+   then decide how the three active and fifteen paused Stylelint suppression sites migrate.
+3. Design the semantic checker's host-file diagnostics and editor boundary;
+   formatting through dprint LSP is already verified.
+4. Re-run dependency exclusivity with all reachable manifests or retain the current conservative caveat.
+5. Correct and re-rank `doc/planning/learning-rust-formatting-boundary.md` and
+   `doc/troubleshooting/dprint.md` around the combined prose-preserving markup and repository-owned CSS direction.
+6. Update this handover,
+   run scoped Markdown lint and `git diff --check`,
+   commit only investigation documents,
+   and post one new evidence-rich issue checkpoint.
+7. Leave production configuration,
+   package source,
+   and page changes unstarted until the owner accepts or delegates the revised recommendation.
