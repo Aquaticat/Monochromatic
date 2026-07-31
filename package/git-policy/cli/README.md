@@ -202,6 +202,7 @@ Exit code `0` means no blocking finding,
 and `2` means configuration,
 usage,
 or engine failure.
+Warning findings can therefore accompany a successful exit `0`.
 Events are buffered until the pass settles,
 and sequence values start at zero for every invocation.
 
@@ -238,9 +239,11 @@ patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
 Interactive and patch selection runs once through native Git against the copied private index;
 include selection stages into that same private index.
-Policies inspect the exact chosen private candidate without applying automatic patches:
-warning findings allow the settled private index to commit,
-while error findings block with direct-fix guidance.
+Policies inspect the exact chosen private candidate without applying automatic patches.
+At warning severity,
+findings allow the settled private index to commit;
+at error severity,
+they block with direct-fix guidance.
 Unmerged indexes block automatic correction.
 
 Direct `git cli-git fix` uses the same eight-pass policy convergence against a disposable private index.
@@ -250,8 +253,10 @@ revalidates worktree bytes before installation,
 uses same-directory atomic replacements with rollback copies,
 and verifies that real index bytes remain exact.
 Successful corrections emit only a `fix-summary` JSONL event.
-Ordinary `git add` reports noncanonical final newlines as warnings and continues;
+At default warning severity,
+ordinary `git add` reports noncanonical final newlines and continues;
 the later patch-capable commit transaction normalizes the exact bytes it commits.
+An explicit error override restores blocking behavior.
 
 A durable no-follow transaction directory retains exact original and prepared index snapshots,
 expected parent and tree identities,

@@ -603,7 +603,9 @@ This schema supersedes the temporary built-in policy inventory from the first po
 Built-in policies run against raw semantic command facts.
 Fixed transforms then produce `transformedArgs`.
 Plugin policies run against the predicted candidate set for the transformed command.
-`canApplyPatches` is true only when a private commit transaction or direct-fix operation owns safe patch application.
+`canApplyPatches` authorizes only engine-owned policy patch application,
+not arbitrary repository mutation.
+It is true only when a private commit transaction or direct-fix operation owns safe patch application.
 Applicable normalizer patches then run through whole-sequence convergence.
 Other pre-forward commands emit findings without proposing unavailable patches.
 Remaining errors block before real Git.
@@ -862,6 +864,7 @@ export type FindingEvent = EventBase & {
 Patch bytes are never emitted.
 `available` means the final stable finding still offers a patch that was not applied in this read-only or unsupported
 mode.
+A policy may instead omit an inapplicable patch and report `none`.
 A corrected finding from a provisional pass is not emitted.
 Consequently successful autofix emits only `fix-summary`,
 not the corrected finding.
@@ -1343,9 +1346,9 @@ and failure rollback.
 
 Interactive and patch selection runs through native Git once against the copied private index;
 include selection stages into that private index.
-Policies receive the exact chosen candidate but cannot apply automatic patches:
-warning findings allow the settled private index to commit,
-while error findings block with direct-fix guidance.
+Policies receive the exact chosen candidate but cannot apply automatic patches.
+Warning findings allow the settled private index to commit;
+error findings block with direct-fix guidance.
 Unmerged indexes block automatic correction.
 The implementation uses a transaction directory outside the worktree with:
 
@@ -1548,9 +1551,11 @@ package/test-fixture/toml-edit/src/**
 ```
 
 Patch-capable commit transactions automatically normalize would-be-committed bytes.
-Read-only commit selection and other pre-forward commands,
+At default warning severity,
+read-only commit selection and other pre-forward commands,
 including `git add`,
 warn and continue without offering an inapplicable patch.
+An explicit error override makes those findings blocking.
 Direct fix affects selected worktree bytes only.
 Every real index entry remains exact during direct fix.
 

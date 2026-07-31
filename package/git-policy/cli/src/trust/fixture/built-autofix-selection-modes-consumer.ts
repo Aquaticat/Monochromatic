@@ -160,6 +160,10 @@ export async function verifyAutofixSelectionModes({
     input: 'u\n1\n\nq\n',
   },);
 
+  /**
+   * Path outside fixture plugin correction scope.
+   */
+  const warningPath = 'newline-selection.txt';
   for (const selectionFlag of [
     '--include',
     '--patch',
@@ -171,7 +175,7 @@ export async function verifyAutofixSelectionModes({
     const selectedValue = `bad ${selectionFlag}`;
     // oxlint-disable-next-line no-await-in-loop -- Each user-facing selection mode needs fresh noncanonical worktree bytes.
     await writeFile(
-      `${repository}/selected.txt`,
+      `${repository}/${warningPath}`,
       selectedValue,
     );
     // oxlint-disable-next-line no-await-in-loop -- Each selection starts from exact staged noncanonical bytes.
@@ -179,7 +183,7 @@ export async function verifyAutofixSelectionModes({
       command: '/usr/bin/git',
       args: [
         'add',
-        'selected.txt',
+        warningPath,
       ],
       cwd: repository,
     },);
@@ -195,7 +199,7 @@ export async function verifyAutofixSelectionModes({
         '--quiet',
         '-m',
         `warn ${selectionFlag}`,
-        'selected.txt',
+        warningPath,
       ],
       cwd: repository,
       env,
@@ -218,7 +222,7 @@ export async function verifyAutofixSelectionModes({
       command: '/usr/bin/git',
       args: [
         'show',
-        'HEAD:selected.txt',
+        `HEAD:${warningPath}`,
       ],
       cwd: repository,
     },);
