@@ -26,16 +26,22 @@ or commit those files.
   `I ate\na chicken.` is unacceptable.
   List-like breaks such as `I ate a chicken,\na pig,\nand a cow.` are acceptable.
   Exact authored prose line preservation is not required.
-- Keep the learning CSS around ten lines and add no presentation rules beyond the approved colors.
-  CSS layout within that approximate line budget is not prescribed.
+- Keep the learning CSS between five and twenty nonblank lines and add no presentation rules beyond the approved
+  colors.
+  CSS layout within that explicit line budget is not prescribed.
 - For affected `oklch()` values,
   prefer lightness as `<number>`,
   chroma as `none` when zero or `<number>` otherwise,
   and hue as `none` when zero or `<number>deg` otherwise.
   Treat repository-wide scope for this syntax as unresolved unless the user broadens it.
 - Consider repository-owned formatting and linting logic.
-- Treat replacing Stylelint or dprint as only one family of solutions,
-  not the investigation's center or assumed destination.
+- Do not exclude the learning HTML from dprint.
+  A formatter exemption would make formatter coverage untrustworthy and undermine the repository formatter over
+  time.
+- Treat replacing dprint as only one family of solutions.
+- Treat replacing Stylelint as an intended direction because its dependency footprint is already considered
+  excessive.
+  Evaluate replacements through the repository technology-selection workflow.
 - Be comprehensive vertically,
   from immediate symptom mitigation through durable architecture.
 - Be comprehensive horizontally,
@@ -71,7 +77,8 @@ The five pages are:
 
 `package/learning/rust/NOTES.md` defines the package-local CSS contract.
 It shows a seven-nonblank-line canonical example and requires CSS near ten lines with no extra presentation rules.
-The user clarified that formatting is unconstrained as long as the result remains around ten lines.
+The user defined the accepted interpretation as five to twenty nonblank lines.
+Formatting within that range is unconstrained.
 The shown `oklch(0.1 0 0)` and `oklch(0.9 0 0)` values do not match the later preferred zero-channel syntax;
 the preferred forms are `oklch(0.1 none none)` and `oklch(0.9 none none)`.
 They also clarified that prose may reflow,
@@ -376,28 +383,20 @@ and a fully sorted ranking with reasons between adjacent entries.
 
 ## Current recommendation status
 
-The comprehensive planning document now ranks the all-five authored-document boundary first for markup ownership.
-The recommended immediate bundle is:
+The previously posted recommendation is withdrawn.
+Neither the all-five nor selective dprint exclusion is acceptable because both weaken trust in the repository's
+active formatter.
+The former first and second options are now disqualified rather than merely re-ranked.
 
-- exclude `package/learning/rust/**/*.html` from dprint;
-- use `--allow-no-files` for scoped dprint calls;
-- update the five achromatic colors to `none` zero channels;
-- add the missing color-scheme meta to four pages;
-- apply the tested Stylelint rules only to this path;
-- retain dprint and Stylelint everywhere else;
-- add no `AGENTS.md` rule;
-- add no custom checker unless strict zero-channel enforcement is wanted.
+The explicit CSS budget is five to twenty nonblank lines.
+The seven-line Malva result remains valid,
+and the previously described twenty-line fixed point is also within budget.
+Line count no longer distinguishes those outputs.
 
-The verified selective alternative excludes only the two prose-heavy pages,
-formats the other three at width 160,
-and uses `singleLineBlockThreshold: 2` for synthetic CSS.
-It produced zero new text-node break contexts,
-90 insertions,
-84 deletions,
-and a byte-stable Stylelint and dprint sequence.
-It ranks second because exact-path classification is less durable for a future-growing teaching workspace.
-
-The recommendation remains a proposal.
+Stylelint retention is no longer the default.
+Replacement evaluation must measure dependency reduction and retained policy coverage through the repository
+technology-selection workflow.
+No revised recommendation is ready until non-exclusion dprint solutions and Stylelint replacements are validated.
 No source or configuration implementation has been made.
 
 ## GitHub updates already posted
@@ -412,8 +411,10 @@ No source or configuration implementation has been made.
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139391488>
 - Reopened current-tool configuration paths:
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139475030>
-- Final synthesis and rankings:
+- Superseded synthesis and rankings:
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139562950>
+- Correction withdrawing formatter exclusions and reopening Stylelint replacement:
+  <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139615382>
 
 The original issue comment is:
 <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5124915718>
@@ -474,10 +475,9 @@ Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not 
 
 ## Exact next action
 
-The investigation and issue synthesis are complete.
-Leave implementation unstarted until the owner accepts the all-five boundary,
-selects the verified selective boundary,
-or delegates the decision.
-If implementation is authorized,
-start from the verification checklist in `doc/planning/learning-rust-formatting-boundary.md` and update this
-handover with the selected option before editing configuration or page source.
+1. Post an issue correction withdrawing formatter exclusions and recording the five-to-twenty-line CSS budget.
+2. Evaluate dprint configurations that retain all five HTML pages under formatter ownership.
+3. Run the complete technology-selection workflow for Stylelint replacement candidates.
+4. Correct and re-rank the planning and troubleshooting documents.
+5. Post the new evidence and recommendation to issue 401.
+6. Leave implementation unstarted until the owner accepts or delegates the revised recommendation.
