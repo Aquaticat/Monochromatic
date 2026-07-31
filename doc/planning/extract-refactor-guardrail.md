@@ -24,9 +24,7 @@ User's framing:
     each commit leaves the tree green.
 3. Delete the old code only once no consumer references it.
 
-Prose rules buried in AGENTS.
-md / CLAUDE.
-md (already ~50k tokens) are not reliable
+Prose rules buried in `AGENTS.md` / `CLAUDE.md` (already ~50k tokens) are not reliable
 enough to prevent this.
  We want a mechanical guardrail.
 
@@ -52,8 +50,7 @@ green,
 
 ### Partially reject: PostToolUse `:lint` hook on Edit/Write
 
-AGENTS.
-md:
+`AGENTS.md`:
 78-79 already says:
 
 > A PostToolUse hook for Edit/Write on `.ts` files will run the package-specific
@@ -168,8 +165,7 @@ User paused to sleep before answering.
 
 - `package/module/es/src/mise.post-edit-typecheck.ts`:
    new script
-  (AGENTS.
-  md requires `mise.<action>.ts` in this dir,
+  (`AGENTS.md` requires `mise.<action>.ts` in this dir,
    no shell).
 - `package/module/es/mise.toml`:
    new `post-edit-typecheck` task.
@@ -185,22 +181,17 @@ User paused to sleep before answering.
 
 ## Gotchas to remember
 
-- AGENTS.
-  md is the source of truth;
-   CLAUDE.
-  md is generated.
-   Edit AGENTS.
-  md and
+- `AGENTS.md` is the source of truth;
+   `CLAUDE.md` is generated.
+   Edit `AGENTS.md` and
   re-run file-enforcer.
-- AGENTS.
-  md:
+- `AGENTS.md`:
   78-79 originally scoped the hook to the edited package only.
    The
   dependents-extension is a design change,
    not just implementation:
    call this
-  out when editing AGENTS.
-  md.
+  out when editing `AGENTS.md`.
 - `pnpm --filter` ellipsis direction is easy to get wrong;
    keep the leading-
   ellipsis form documented in any comments.
@@ -210,8 +201,7 @@ User paused to sleep before answering.
   exit codes) have moved across releases;
    use the `update-config` skill when
   wiring the hook entry rather than copying an older example.
-- AGENTS.
-  md says "never skip hooks (--no-verify)" already,
+- `AGENTS.md` says "never skip hooks (--no-verify)" already,
    so any git-level
   enforcement we add later (tracked `githooks/` via `core.hooksPath`) inherits
   that protection.

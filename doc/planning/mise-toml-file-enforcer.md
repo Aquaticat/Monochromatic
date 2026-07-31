@@ -127,8 +127,7 @@ Largely superseded by D once TOML-edit primitives are available.
 
 Per-package `mise.tasks.ts` exports a typed task object;
  file-enforcer renders
-mise.
-toml from kind + this module.
+`mise.toml` from kind + this module.
  Sidesteps duplicate-key dragon by owning the
 entire task set as data and rendering once.
 
@@ -170,8 +169,7 @@ Splice mode keeps unmutated regions byte-identical,
    re-running over an already-correct file is content-skipped by
   `overwrite`.
 
-Single source of truth on disk is the mise.
-toml the package developer reads.
+Single source of truth on disk is the `mise.toml` the package developer reads.
 No second file.
  No TS module indirection.
 
@@ -197,8 +195,7 @@ Kind detection from filesystem signals is ambiguous in real cases:
   task with `depends = ["build"]`.
    The kind cannot emit `[tasks.test]` here
   because the package owns it.
-- `package/test-fixture/css-imported` and three siblings have empty mise.
-  toml.
+- `package/test-fixture/css-imported` and three siblings have empty `mise.toml`.
   Are they intentionally empty (fixture target for a test) or just unfinished?
   Probe must distinguish.
 
@@ -225,8 +222,7 @@ will not normalize via D's incremental edits.
 
 Resolution:
  a separate one-time pass via `emptyTomlEdit + tomlSet` reparses each
-mise.
-toml and emits canonical output.
+`mise.toml` and emits canonical output.
  After that one pass,
  splice mode keeps the
 canonical form stable for subsequent edits.
@@ -235,8 +231,7 @@ canonical form stable for subsequent edits.
 ### 9. Managed-task tracking on kind shrinkage
 
 If a kind later drops a task,
- the package's mise.
-toml still has it.
+ the package's `mise.toml` still has it.
  The
 generator doesn't know whether a leftover task is "kind-owned but stale" or
 "package-custom and intentional.
@@ -258,8 +253,7 @@ Two reasonable resolutions:
    any managed task absent from the current kind is
   deleted via `tomlDelete`.
    Mechanical but adds a sidecar declaration to each
-  managed mise.
-  toml.
+  managed `mise.toml`.
 
 ### 10. Order stability for new task inserts
 
@@ -335,10 +329,8 @@ Generator must explicitly never touch `*/mise.local.toml`.
   partially supersedes that finding by addressing the missing-task failure mode
   AUDIT.
   dry did not weigh.
-- `AUDIT.consistency.md` -- "mise.
-  toml task naming" section listing the quoting
-  drift and four empty mise.
-  toml files.
+- `AUDIT.consistency.md` -- "`mise.toml` task naming" section listing the quoting
+  drift and four empty `mise.toml` files.
 - `package/dev-script/file-enforcer/README.md` -- API reference;
    the TOML
   section is the load-bearing change.
@@ -349,8 +341,7 @@ Generator must explicitly never touch `*/mise.local.toml`.
   function alongside `generateMiseToml`,
    `generateForbiddenStringsRules`,
   `mirrorSkills`.
-- `mise.no-env.toml` -- the source the root mise.
-  toml is generated from;
+- `mise.no-env.toml` -- the source the root `mise.toml` is generated from;
    lists
   every root `task_templates.*` that per-package kinds would extend.
 

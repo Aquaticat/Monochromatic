@@ -246,8 +246,7 @@ documentation).
 - Spec for the stdin contract between compressor and `spawn-claude`,
   including how the child distinguishes "I am a compaction continuation"
   from "I am a delegated subtask".
-- Operational note added to AGENTS.
-  md once the mechanism exists,
+- Operational note added to `AGENTS.md` once the mechanism exists,
    so future
   sessions know when reaching for it is appropriate and when it is not.
 - Discovery story:

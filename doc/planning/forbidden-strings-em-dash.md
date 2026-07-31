@@ -5,8 +5,7 @@ Date:
 
 Investigation into using `forbidden-strings`
 (the resharp-based deny-list scanner at `package/cli/forbidden-strings/`)
-to enforce the AGENTS.
-md ban on em-dashes (`—`),
+to enforce the `AGENTS.md` ban on em-dashes (`—`),
  en-dashes (`–`),
 and their ASCII substitutes (`-`,
  `--`) when used as em-dashes in prose.
@@ -97,8 +96,7 @@ Run on 2026-05-10 against the full tree (`forbidden-strings --all`):
   117 in `TODO.claude-code-words.md` (genuine em-dash style violations of shape "word -- description"),
   the rest scattered across markdown docs,
    comments,
-   mise.
-  toml task descriptions.
+   `mise.toml` task descriptions.
 
 Top hit files:
 
@@ -431,8 +429,7 @@ repetition rather than the resharp-era shapes quoted verbatim.
    `package/cli/forbidden-strings/`
 - Existing audit data:
    `AUDIT.em-dash.md` (untracked at investigation time)
-- AGENTS.
-  md em-dash rule:
+- `AGENTS.md` em-dash rule:
    under "Documentation standards"
 - Test fixtures used for prototyping during investigation:
   `/tmp/em-dash-fixture.md`,

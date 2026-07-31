@@ -197,8 +197,7 @@ These trapped the first implementation and will trap the next contributor unless
     `locales/en.ts`,
     `locales/zh.ts` as single files.
     Each implementation grew past 400 effective lines once TSDoc was added to every local;
-    oxlint's `eslint/max-lines` is `error` and AGENTS.
-   md forbids disabling it.
+    oxlint's `eslint/max-lines` is `error` and `AGENTS.md` forbids disabling it.
     The remediation is the `locales/<lang>/{index,types,render-np,render-adverbial,render-vp,render-sentence,render-fragment}.ts` split documented above.
     `test-vocab.ts` hit the same limit and split into `test-vocab/{index,types,en,zh,ca}.ts`.
     Plan §12's flat layout is normative for the public API surface but not for source-file organization.
@@ -215,8 +214,7 @@ These trapped the first implementation and will trap the next contributor unless
     and use named extracted helpers when an inner function body would otherwise need 8+ documented locals.
 
 5. **`eslint/no-magic-numbers` rejects `3` even inside a named-const definition.
-   ** AGENTS.
-   md exempts
+   ** `AGENTS.md` exempts
    `-2..2`,
     but English needs the third-person literal for agreement checks.
     Use the composed constant

@@ -150,8 +150,7 @@ Independent diff-review is orthogonal,
 ## The payoff
 
 Once the guard lands,
- the corresponding lint prose in AGENTS.
-md can be deleted:
+ the corresponding lint prose in `AGENTS.md` can be deleted:
 the "Never violate one rule to satisfy another" / "Never loosen lint rules" / "Never disable,
  raise,
 bypass the max-lines limit" rules under the "Linting" and "Simplification" headings.
@@ -170,8 +169,7 @@ which is the real improvement over restating the principle each session.
      wire the PostToolUse `:lint` entry near the existing Bash-matched hooks.
 -   `package/module/es/src/mise.post-edit-typecheck.ts` and its `mise.toml` task:
     the post-edit lint runner (no shell script;
-     `mise.<action>.ts` per AGENTS.
-    md).
+     `mise.<action>.ts` per `AGENTS.md`).
 -   `AGENTS.md`:
      delete the redundant Linting / Simplification prose after the guard lands.
     `CLAUDE.md` regenerates from it via file-enforcer;
