@@ -617,6 +617,14 @@ async function generateMiseToml(): Promise<void> {
 # Optional file - mise silently ignores it when missing.
 # https://mise.jdx.dev/environments/secrets/sops.html
 _.file = [{ path = ".env.local.json", redact = true }]
+
+# Every workspace bin dir, globbed from what is installed on disk rather than
+# read from workspace metadata. So this list changes with install state: a fresh
+# clone, a pruned package, or a pnpm install that adds a dependency all move it.
+# That is expected, and the regenerated list is committed as file-enforcer
+# writes it. Do not revert it as drift and do not hand-edit it; the source is
+# file-enforcer.config.ts. Issue #335 tracks deriving it from workspace metadata
+# instead, which would make it stable across environments.
 _.path = [
 ${
     [

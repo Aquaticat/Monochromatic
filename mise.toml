@@ -1163,6 +1163,14 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 # Optional file - mise silently ignores it when missing.
 # https://mise.jdx.dev/environments/secrets/sops.html
 _.file = [{ path = ".env.local.json", redact = true }]
+
+# Every workspace bin dir, globbed from what is installed on disk rather than
+# read from workspace metadata. So this list changes with install state: a fresh
+# clone, a pruned package, or a pnpm install that adds a dependency all move it.
+# That is expected, and the regenerated list is committed as file-enforcer
+# writes it. Do not revert it as drift and do not hand-edit it; the source is
+# file-enforcer.config.ts. Issue #335 tracks deriving it from workspace metadata
+# instead, which would make it stable across environments.
 _.path = [
   "node_modules/.bin",
   "package/claude-code-plugin/bash-output-filter/node_modules/.bin",
@@ -1173,15 +1181,20 @@ _.path = [
   "package/claude-code-plugin/session-start-housekeeping/node_modules/.bin",
   "package/claude-code-plugin/stop-reminder/node_modules/.bin",
   "package/claude-code-plugin/terminal-title/node_modules/.bin",
+  "package/cli/git-clone-size/node_modules/.bin",
   "package/cli/unused-export/node_modules/.bin",
+  "package/cli/wg-allowedips/node_modules/.bin",
+  "package/config/oxlint/node_modules/.bin",
   "package/config/stylelint/node_modules/.bin",
   "package/desktop-app/electron-counter/node_modules/.bin",
   "package/desktop-app/electron-infra/node_modules/.bin",
   "package/desktop-app/file-manager-electron/node_modules/.bin",
   "package/dev-script/file-enforcer/node_modules/.bin",
+  "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
   "package/mcp/mvm/node_modules/.bin",
   "package/module/css-edit.bench/node_modules/.bin",
+  "package/module/image-diff/node_modules/.bin",
   "package/module/pnpm-workspace-catalog/node_modules/.bin",
   "package/module/token-count/node_modules/.bin",
   "package/pi-plugin/advisor/node_modules/.bin",
@@ -1198,7 +1211,9 @@ _.path = [
   "package/pi-plugin/thinking-default/node_modules/.bin",
   "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
+  "package/shim/proper-lockfile/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
+  "package/stub/throwing/node_modules/.bin",
   "package/typeface/aquaticat/node_modules/.bin",
   "package/webapp-productivity/done-postcss/node_modules/.bin",
   "package/webapp-productivity/wc/node_modules/.bin",
