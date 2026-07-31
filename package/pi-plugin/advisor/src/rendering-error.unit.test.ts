@@ -4,7 +4,10 @@
  * @module
  */
 
-import type { Theme, } from '@earendil-works/pi-coding-agent';
+import type {
+  AgentToolResult,
+  Theme,
+} from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -65,12 +68,16 @@ function renderText(
     readonly content?: string;
   },
 ): string {
+  /**
+   * Runtime text content passed to Advisor renderer.
+   */
+  const resultContent: AgentToolResult<unknown>['content'] = [{
+    type: 'text',
+    text: content,
+  },];
   /** Runtime tool result passed to Advisor renderer. */
   const result = {
-    content: [{
-      type: 'text',
-      text: content,
-    },],
+    content: resultContent,
     ...(details === undefined ? {} : { details, }),
   };
   return renderAdvisorResult({
