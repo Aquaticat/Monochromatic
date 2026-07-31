@@ -11,6 +11,9 @@ const config: NodeFlavorConfigs = perEntryNodeConfig({
     './src/index.ts',
     './src/tunnel.ts',
     './src/config.ts',
+    './src/tunnel-bypass.ts',
+    './src/tunnel-bypass-route.ts',
+    './src/bypass-watch.ts',
   ],
 },);
 

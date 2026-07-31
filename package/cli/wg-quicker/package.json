@@ -29,6 +29,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-wg-allowedips": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",

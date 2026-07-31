@@ -10,10 +10,8 @@ import {
   runAllowingFailure,
 } from './runner.ts';
 import { makeTempDir, } from './tempdir.ts';
-import {
-  removeExemptRule,
-  removeKillSwitch,
-} from './tunnel-firewall.ts';
+import { removeExemptRule, } from './tunnel-bypass.ts';
+import { removeKillSwitch, } from './tunnel-firewall.ts';
 import {
   removePolicyRules,
   setupRoutes,
@@ -462,8 +460,7 @@ async function cleanup({ config, }: { readonly config: WireguardConfig; },): Pro
     return;
   if (config.table !== 'off')
     await removePolicyRules({ interfaceName: iface, },);
-  if (config.exemptMark !== undefined)
-    await removeExemptRule({ mark: config.exemptMark, });
+  await removeExemptRule({ interfaceName: iface, });
   await removeKillSwitch({ interfaceName: iface, },);
   await runAllowingFailure({
     command: 'ip',

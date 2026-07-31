@@ -29,6 +29,38 @@ export class ConfigError extends Error {
 }
 
 /**
+ * Error raised when application bypass state is missing,
+ * corrupt,
+ * or unsafe to mutate.
+ *
+ * @example
+ * ```ts
+ * throw new BypassStateError('Bypass state does not match interface.');
+ * ```
+ */
+export class BypassStateError extends Error {
+  /**
+   * Stable error type name.
+   */
+  override name = 'BypassStateError';
+}
+
+/**
+ * Error raised when no physical path can carry exempt traffic.
+ *
+ * @example
+ * ```ts
+ * throw new BypassRouteError('No physical default route exists.');
+ * ```
+ */
+export class BypassRouteError extends Error {
+  /**
+   * Stable error type name.
+   */
+  override name = 'BypassRouteError';
+}
+
+/**
  * Error raised when an external `ip`, `wg`, or `resolvectl` command exits non-zero.
  *
  * @example

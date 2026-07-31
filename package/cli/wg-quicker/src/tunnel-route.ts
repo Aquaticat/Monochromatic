@@ -3,10 +3,8 @@ import {
   run,
   runAllowingFailure,
 } from './runner.ts';
-import {
-  addExemptRule,
-  addKillSwitch,
-} from './tunnel-firewall.ts';
+import { addExemptRule, } from './tunnel-bypass.ts';
+import { addKillSwitch, } from './tunnel-firewall.ts';
 import { readFwmark, } from './tunnel-fwmark.ts';
 import {
   addRoutes,
@@ -190,7 +188,11 @@ export async function setupRoutes(
       table: Math.trunc(Number(config.table,),),
     },);
     if (config.exemptMark !== undefined)
-      await addExemptRule({ mark: config.exemptMark, });
+      await addExemptRule({
+        interfaceName: iface,
+        mark: config.exemptMark,
+        watchRouteChanges: true,
+      },);
     return;
   }
   if (defaults.length === 0) {
@@ -199,7 +201,11 @@ export async function setupRoutes(
       prefixes: covered,
     },);
     if (config.exemptMark !== undefined)
-      await addExemptRule({ mark: config.exemptMark, });
+      await addExemptRule({
+        interfaceName: iface,
+        mark: config.exemptMark,
+        watchRouteChanges: true,
+      },);
     return;
   }
   /**
@@ -242,7 +248,11 @@ export async function setupRoutes(
    * tunnel rule) is evaluated before the tunnel's `not fwmark` rule.
    */
   if (config.exemptMark !== undefined)
-    await addExemptRule({ mark: config.exemptMark, });
+    await addExemptRule({
+      interfaceName: iface,
+      mark: config.exemptMark,
+      watchRouteChanges: true,
+    },);
   await addKillSwitch({
     config,
     table,
