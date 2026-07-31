@@ -67,8 +67,7 @@ Before reaching it,
 State the bridges you tried in the runbook's prelude
 so the user can tell an unconsidered handoff from a real obstacle.
 
-See AGENTS.
-md "Before claiming inability" and "Handing off manual actions" lead paragraph
+See `AGENTS.md` "Before claiming inability" and "Handing off manual actions" lead paragraph
 for the broader rule:
  a capability claim about the whole toolset,
 not about any single tool.

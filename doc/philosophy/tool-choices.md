@@ -345,8 +345,7 @@ Library bundling is a secondary concern for the rolldown team.
 tsdown fills the gap with:
 
 - **Auto-externalization**:
-   reads `dependencies` + `peerDependencies` from package.
-  json
+   reads `dependencies` + `peerDependencies` from `package.json`
   and marks them external via a rolldown `resolveId` plugin (`dep.ts`,
    193 lines).
   Also scans the final bundle for leaked node_modules imports (`inlineOnly` safety net).
@@ -355,8 +354,7 @@ tsdown fills the gap with:
    handles the CJS special case
   (separate rolldown build pass for `.d.cts` files when format is CJS + DTS enabled).
 - **Output extension matrix**:
-   `.mjs`/`.cjs`/`.js` determined by format x package.
-  json `type` x `fixedExtension` flag.
+   `.mjs`/`.cjs`/`.js` determined by format x `package.json` `type` x `fixedExtension` flag.
 - **Watch-safe clean**:
    in watch mode,
    deletes only previous output chunks instead of nuking the directory.
@@ -424,7 +422,6 @@ tsdown fills the gap with:
 
 - Rolldown 1.0 stable ships (currently rc.
   6 as of 2026-02-26).
-- Rolldown absorbs auto-external from package.
-  json or ships a library preset.
+- Rolldown absorbs auto-external from `package.json` or ships a library preset.
 - `rolldown-plugin-dts` gets absorbed into rolldown core.
 - Any of these would shrink the gap enough to reconsider raw rolldown + mise.

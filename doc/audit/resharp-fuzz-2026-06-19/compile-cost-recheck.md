@@ -39,8 +39,7 @@ Three facts,
   upper limit the engine stops using the expensive left-to-right `bdfa.rs` path);
   ieviev flagged exactly this lever ("adjust the upper limit of which patterns use
   the left-to-right matching path,
-   bdfa.
-  rs is much more expensive state space
+   `bdfa.rs` is much more expensive state space
   wise").
    So the worst case within the `{0,500}` repeat cap sits in the N~20-31
   band at a few seconds,

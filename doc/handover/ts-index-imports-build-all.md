@@ -121,9 +121,7 @@ Its imports are not rewritten to `/ts`,
    Never edit `mise.toml` directly;
    edit
   `mise.no-env.toml` then run `mise run file-enforcer` to regenerate.
-   (CLAUDE.
-  md is likewise generated from AGENTS.
-  md.
+   (`CLAUDE.md` is likewise generated from `AGENTS.md`.
   )
 - Resolution analysis (the measurement script used throughout):
    a Node script that walks `package/**/*.ts`,
@@ -253,8 +251,7 @@ Importing a built package's `/ts` drags its dependency SOURCE into the consumer'
  `navigator.storage`),
  so base-config consumers
 without the DOM lib fail TS2304/TS2339.
- Fix (doc/troubleshooting/typescript.
-md §"All packages must extend
+ Fix (doc/troubleshooting/`typescript.md` §"All packages must extend
 config-typescript/dom"):
  switch the consumer tsconfig to `config-typescript/dom`.
  The 9 base-extenders importing
@@ -302,8 +299,7 @@ on a hand-merged pilot file:
   from the same specifier (validated:
    `inference-canary-viewer/src/data/viewer-types.ts` has both,
    oxlint clean).
-- dprint `importDeclaration.forceMultiLine: "whenMultiple"` (package/config/dprint/index.
-  json):
+- dprint `importDeclaration.forceMultiLine: "whenMultiple"` (package/config/dprint/`index.json`):
    a multi-specifier
   import MUST be multi-line,
    one binding per line.
@@ -409,8 +405,7 @@ references in `package/` to any removed entry;
 and the throwaway tool) + a JSON-parse/keys check on each edited file.
  NOTE:
  `lint:types` is a WEAK B2 gate (a
-package.
-json-only edit may not invalidate a consumer's tsbuildinfo,
+`package.json`-only edit may not invalidate a consumer's tsbuildinfo,
  so green can be stale);
  the sweep + 0-consumer proof
 is the real verification.
@@ -486,8 +481,7 @@ Everything imports `/ts`,
    `[tasks."test:unit"] extends = "test:unit"` (then `buildAndTest = "mise run build; mise run test:unit"`),
     others a
    custom `[tasks.test] run = "bun src/self.unit.test.ts"` (then `buildAndTest = "mise run build; mise run test"`).
-   Read the existing mise.
-   toml and preserve its test task;
+   Read the existing `mise.toml` and preserve its test task;
     only ADD build + buildAndTest.
 3. `package.json`:
     `"module"` -> `dist/final/neutral/index.mjs`;
@@ -701,13 +695,10 @@ Everything imports `/ts`,
    commit `943e0f1a`) — `tsdown.node.config.ts` dual-entry
   (`['./src/index.ts', './src/cli.ts']`) emits `index.mjs` (lib) + `cli.mjs` (bin);
    `.` -> node dist,
-   `bin` -> cli.
-  mjs.
+   `bin` -> `cli.mjs`.
   `similarity` switched to by-name (lib bundle smoke test);
    ADDED `cli.unit.test.ts` spawning `cli.mjs --help` (bin
-  execution — `dts` can't verify cli.
-  mjs since cli.
-  ts has no exports);
+  execution — `dts` can't verify `cli.mjs` since `cli.ts` has no exports);
    network test renamed to
   `client.expensive.unit.test.ts` (excluded from default `test:unit`) — `build(module-image-diff): produce dist (lib + bin, node)`.
 - `cli-rgffplay` (NODE pure-CLI,
@@ -765,9 +756,7 @@ Everything imports `/ts`,
    it parses no args and runs `sudo podman build` immediately at top level,
   and importing it triggers the VM pipeline.
    Verification is build + dts emit.
-   import.
-  ts/sign-and-push.
-  ts stay source-run.
+   `import.ts`/`sign-and-push.ts` stay source-run.
 - `dev-script-task-util` (NODE multi-bin,
    SIX entries,
    HIGHEST RISK,
@@ -809,8 +798,7 @@ Everything imports `/ts`,
 - `pi-shared-model-selection` (NODE single-index normalize,
    commit `2715d0bd`) — collapsed the per-feature tsdown entries
   (core/scope/cost/budget/pi-coding-agent) to a single `src/index.ts`;
-   package.
-  json/export-map were already single-index
+   `package.json`/export-map were already single-index
   correct from B2.
    `pi-coding-agent.unit.test.ts` switched its single own-source import (`estimateAdvisorInputTokens`) to
   by-name as the collapsed-bundle smoke.
@@ -822,8 +810,7 @@ Everything imports `/ts`,
    so it took
   the cli-git shape:
    DROPPED all nine orphaned feature exports (no consumer;
-   `./ts`->index.
-  ts would expose the bin as a
+   `./ts`->`index.ts` would expose the bin as a
   lib),
    bin flips to dist,
    added missing build/buildAndTest tasks.
@@ -833,9 +820,7 @@ Everything imports `/ts`,
   expensive e2e stay on source.
 - `build-tool-css` (NODE lib+bin,
    deferred-B2 finish,
-   commit `3f4dd3f9`) — dual-entry (index.
-  ts + cli.
-  ts) so build-css
+   commit `3f4dd3f9`) — dual-entry (`index.ts` + `cli.ts`) so build-css
   bin emits `cli.mjs`;
    FIXED the broken `.`/main/module/typings pointers (they referenced `.js`/`.d.ts` but the build
   emits `.mjs`/`.d.mts` — a dangling `.` export nothing consumed);
@@ -845,8 +830,7 @@ Everything imports `/ts`,
    ALSO
   fixed a pre-existing race in build.
   unit.
-  test.
-  ts (left `M` at session start):
+  `test.ts` (left `M` at session start):
    integration fixtures shared one output
   path and `cleanup()` rm'd it,
    so module-test's CONCURRENT it-blocks deleted the file mid-read (ENOENT).
@@ -902,8 +886,7 @@ NEUTRAL,
  ALL DONE.
  `claude-code-plugin-hook-type` is DECIDED EXEMPT:
  its `src/` is pure type declarations
-(common.
-ts + event/tool-input types;
+(`common.ts` + event/tool-input types;
  verified zero `export const|function|class|let|var|default` value exports).
  A
 build would emit only a `.d.mts` (or an empty `.mjs`) with no runtime code -- there is no source-to-dist
@@ -953,13 +936,11 @@ PURE-CLI (bin only,
  Recipe (PROVEN on cli-fy,
  commit `f747a476`):
 1. `tsdown.node.config.ts` = `export { default, } from '@monochromatic-dev/config-tsdown/.node.ts';`
-2. mise.
-   toml:
+2. `mise.toml`:
     keep the package's existing `run`/lint tasks;
     ADD build + `build:js` + `build:js:node` + the three
    `watch:*` twins + `test:unit` (if missing) + `buildAndTest` (`mise run build; mise run test:unit`).
-3. package.
-   json:
+3. `package.json`:
     `bin` target `src/<entry>.ts` -> `dist/final/node/<entry>.mjs`;
     add `@monochromatic-dev/config-tsdown`
    devDep.
@@ -1000,8 +981,7 @@ PURE-CLI (bin only,
     For the remaining pure-CLIs:
     `mcp-mvm` + `dev-script-vm-builder` spin VMs -> ONLY `--help`/
    `--version` after confirming help is inert;
-    `cli-terminal-exec` (lib+bin below) must NOT be run at all (AGENTS.
-   md:
+    `cli-terminal-exec` (lib+bin below) must NOT be run at all (`AGENTS.md`:
    probing terminal-exec opens a terminal) -- verify it by build + shebang + parser-read only.
 
 LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY):
@@ -1040,19 +1020,14 @@ run).
    Emits `dist/final/node/index.mjs` (lib) + `dist/final/node/cli.mjs` (bin),
     each with `.d.mts`.
     tsdown chmod +x's
-   cli.
-   mjs (shebang detected,
+   `cli.mjs` (shebang detected,
     logged "Granting execute permission");
-    index.
-   mjs gets NO shebang.
-3. package.
-   json:
+    `index.mjs` gets NO shebang.
+3. `package.json`:
     `.` -> `{ types: index.d.mts, default: index.mjs }`;
-    `module` -> index.
-   mjs;
+    `module` -> `index.mjs`;
     `bin` -> `cli.mjs` (NOT
-   index.
-   mjs);
+   `index.mjs`);
     keep `./ts`+`./ts/*`;
     `files` += `dist/final`;
     ensure `@monochromatic-dev/config-tsdown` devDep.
@@ -1069,8 +1044,7 @@ run).
     never `cli.mjs`;
    and `dts` cannot verify `cli.mjs` because the bin entry has NO exports (its `.d.mts` is an empty `export {}`).
     So
-   cli.
-   mjs is an UNVERIFIED artifact until run.
+   `cli.mjs` is an UNVERIFIED artifact until run.
     ADD a committed `cli.unit.test.ts` that spawns
    `bun dist/final/node/cli.mjs --help`,
     asserting exit 0 + observed help text (model on cli-fy:
@@ -1114,8 +1088,7 @@ DEFERRED B2:
  BOTH DONE (see Done list).
  `cli-vmsync` took the cli-git pure-CLI shape (dropped feature exports,
  NOT
-`./ts`+index.
-ts which would expose the bin);
+`./ts`+`index.ts` which would expose the bin);
  `build-tool-css` consolidated to `./ts/*`,
  fixed `.js`->`.mjs`,
  built the

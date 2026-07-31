@@ -5,46 +5,32 @@ plus root-level documentation files.
 
 ## Missing required files
 
-Per CLAUDE.
-md,
+Per `CLAUDE.md`,
  every package needs `package.json`,
  `mise.toml`,
  and `README.md`.
 
 - `claude-code-plugin/verbose-tool-output`:
-   missing **all three** (package.
-  json,
-   mise.
-  toml,
-   README.
-  md)
+   missing **all three** (`package.json`,
+   `mise.toml`,
+   `README.md`)
 - `claude-code-plugin/statusline`:
-   missing package.
-  json,
-   mise.
-  toml
+   missing `package.json`,
+   `mise.toml`
 - `claude-code-plugin/research-agent`:
-   missing package.
-  json,
-   mise.
-  toml
+   missing `package.json`,
+   `mise.toml`
 - `intellij-plugin/islands-black`:
-   missing package.
-  json,
-   mise.
-  toml
+   missing `package.json`,
+   `mise.toml`
 - `config/tofu`:
-   missing mise.
-  toml
+   missing `mise.toml`
 - `config/cosign`:
-   missing mise.
-  toml
+   missing `mise.toml`
 - `config/dotfiles`:
-   missing mise.
-  toml
+   missing `mise.toml`
 - `test-fixture/oxlint-stylistic`:
-   missing README.
-  md
+   missing `README.md`
 
 ## Package naming
 
@@ -302,9 +288,7 @@ Task names use mixed quoting:
  some use `[tasks."lint:types"]` (double-quoted)
 and others use `[tasks.'lint:types']` (single-quoted) within the same codebase.
 
-4 packages with mise.
-toml define **zero tasks** (empty mise.
-toml):
+4 packages with `mise.toml` define **zero tasks** (empty `mise.toml`):
 test-fixture/css-imported,
  test-fixture/css-imported-no-exports,
 test-fixture/css-importing,

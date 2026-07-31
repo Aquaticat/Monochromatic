@@ -235,8 +235,7 @@ so the engine sees a single uniform input.
   custom patterns require GitHub Secret Protection (paid),
   unavailable on free public repos owned by individuals.
 - **Native git hook + `grep` script**:
-  AGENTS.
-  md prohibits bash scripts;
+  `AGENTS.md` prohibits bash scripts;
    perf is fine for small rule sets but degrades with 1k rules.
 - **`pre-commit/pre-commit-hooks` (Python pre-commit framework)**:
   no built-in or popular community hook for arbitrary forbidden-words enforcement.
@@ -297,10 +296,8 @@ This means CI enforces whatever the secret holds,
 
 - `hk.pkl` -- hk configuration;
    one `pre-commit` step invoking the scanner
-- `package/cli/forbidden-strings/` -- Rust crate (Cargo.
-  toml,
-   src/main.
-  rs);
+- `package/cli/forbidden-strings/` -- Rust crate (`Cargo.toml`,
+   src/`main.rs`);
   binary name `forbidden-strings`,
    depends on the `resharp` crate plus a TOML parser
 - `package/cli/forbidden-strings/mise.toml` -- per-package build task

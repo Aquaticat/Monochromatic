@@ -111,14 +111,11 @@ The page title and header render,
 Tested on `github.com/jdx/mise/discussions/1250` (2026-03-31).
 This may be a GitHub anti-scraping measure or a timing issue with JavaScript hydration.
 
-**CLAUDE.
-md rules alone.
+**`CLAUDE.md` rules alone.
 **
 The hallucination happens inside the subagent,
- which does not read CLAUDE.
-md.
-Rules in CLAUDE.
-md can instruct the main session to verify subagent output,
+ which does not read `CLAUDE.md`.
+Rules in `CLAUDE.md` can instruct the main session to verify subagent output,
 but cannot prevent the subagent from fabricating in the first place.
 
 **Changing the built-in Explore agent's model or prompt.

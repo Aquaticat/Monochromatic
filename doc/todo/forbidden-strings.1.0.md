@@ -471,8 +471,7 @@ or,
     `doc/troubleshooting/resharp.md` are not in the `include` set,
      so every relative link to
     them 404s on the crates.
-    io and docs.
-    rs rendered README,
+    io and `docs.rs` rendered README,
      which is the first page a prospective
     user sees.
      Either bundle those files or rewrite the links to absolute repository URLs in the
@@ -490,12 +489,10 @@ or,
      There are zero `///` doc comments in `src/` (confirmed:
      0
     doc-tests),
-     so the docs.
-    rs page renders effectively empty.
+     so the `docs.rs` page renders effectively empty.
      Either add crate-level and API
     rustdoc,
-     or mark the lib `#[doc(hidden)]` and configure docs.
-    rs to surface the README,
+     or mark the lib `#[doc(hidden)]` and configure `docs.rs` to surface the README,
      so the
     published documentation page is not blank.
 

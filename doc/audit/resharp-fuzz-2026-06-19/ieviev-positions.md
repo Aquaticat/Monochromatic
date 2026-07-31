@@ -80,8 +80,7 @@ find_all:
  This campaign's is_match false positive
 (`bug-is-match-false-positive-inter-optional-end-anchor.md`) is a soundness defect
 in that separate path,
- not a deliberate divergence (the api.
-md contract requires
+ not a deliberate divergence (the `api.md` contract requires
 is_match and find_all to agree).
 
 ## On find_anchored (relevant to this campaign's find_anchored finding)

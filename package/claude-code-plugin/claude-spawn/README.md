@@ -128,8 +128,7 @@ claude plugin install claude-spawn@Monochromatic
     `mise run //package/claude-code-plugin/claude-spawn:build:js:node`
 3. Publish:
     `npm publish`
-4. Reference in marketplace.
-   json:
+4. Reference in `marketplace.json`:
 
    ```json
    {

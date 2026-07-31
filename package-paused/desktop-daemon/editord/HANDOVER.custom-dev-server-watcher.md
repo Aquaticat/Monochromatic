@@ -315,8 +315,7 @@ Reject unless and until the project has a documented need to consume *existing* 
    Rust does not automatically deliver correct signal+async semantics;
    a complex Rust async runtime hides exactly this class of bug.
    A single-threaded TypeScript watcher with one child process and direct `child.kill('SIGTERM')` is easier to audit and harder to construct a reference-cycle bug in.
-- **AGENTS.
-  md default.
+- **`AGENTS.md` default.
   ** The workspace rule is TypeScript for dev scripts;
    forbidden-strings is the documented exception,
    granted because of the pre-commit hot path.

@@ -222,8 +222,7 @@ git push origin dev
 
 #### Fresh Clone Verification
 
-Ensure that fresh clones of the repository work correctly when users follow the setup instructions in README.
-md.
+Ensure that fresh clones of the repository work correctly when users follow the setup instructions in `README.md`.
 
 **Current Setup Instructions Being Tested**:
 

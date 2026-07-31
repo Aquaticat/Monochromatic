@@ -37,8 +37,7 @@ changed).
    not config;
    precedent
   `package/oxlint-plugin/*`).
-- AGENTS.
-  md line 529 ("No tables;
+- `AGENTS.md` line 529 ("No tables;
    use headings or lists instead") stays UNCHANGED on purpose;
    the
   rationale belongs in `doc/philosophy/agents.md` (do not advertise the HTML escape hatch in the
@@ -103,10 +102,8 @@ changed).
    the TypeScript package (src,
    tsconfig,
    tsdown config,
-   package.
-  json,
-   mise.
-  toml,
+   `package.json`,
+   `mise.toml`,
   README) replacing the old `.mjs`;
    pnpm-lock deps.
 - `7eecee77` style:

@@ -4,8 +4,7 @@ Date:
  2026-05-10 (original audit),
  2026-05-14 (post-sweep counts)
 
-AGENTS.
-md rule:
+`AGENTS.md` rule:
 
 > No em-dashes (`—`),
 >  en-dashes (`–`),
@@ -199,8 +198,7 @@ Replace with paired commas,
 - Line 313:
    3.
    `rg -n "—\|–"` over the diff.
-   AGENTS.
-  md ban applies to all human-authored content including comments,
+   `AGENTS.md` ban applies to all human-authored content including comments,
    docstrings,
    and string literals sent to other models.
 
@@ -331,8 +329,7 @@ Replace with paired commas,
 ### package/build-tool/css/src/mixin.ts
 
 - Line 10:
-   // Re-export from the registry so consumers import from mixin.
-  ts only —
+   // Re-export from the registry so consumers import from `mixin.ts` only —
 - Line 100:
    `@apply ${mixinName} is missing its source location — parsed nodes should always have one, so PostCSS may have received a programmatically constructed node instead of a parsed one`
 
@@ -1001,8 +998,7 @@ Replace with "to" for ranges,
 - Line 313:
    3.
    `rg -n "—\|–"` over the diff.
-   AGENTS.
-  md ban applies to all human-authored content including comments,
+   `AGENTS.md` ban applies to all human-authored content including comments,
    docstrings,
    and string literals sent to other models.
 
@@ -1106,8 +1102,7 @@ Replace with proper punctuation or restructure sentence.
    - `package/desktop-daemon/editord/src/client/inlay/group-by-line.ts:groupByLine<T>({items, keyFn})` --
 - Line 1652:
    export * as positional from '.
-  /p p/index.
-  ts';
+  /p p/`index.ts`';
   ` -- 16 files
 
 ### AUDIT.fallow-tools.md
@@ -1670,8 +1665,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 9:
    1.
    **Monorepo-aware `@import` resolution** -- PostCSS only resolves relative paths out of the box,
-   not `node_modules` or package.
-  json `exports`
+   not `node_modules` or `package.json` `exports`
 - Line 10:
    2.
    **Custom `@mixin`/`@apply` processing** -- no standard PostCSS plugin provides the mixin semantics this monorepo needs
@@ -1689,8 +1683,7 @@ Replace with proper punctuation or restructure sentence.
    1.
    **Resolve and bundle** -- a custom PostCSS plugin walks `@import` statements,
    resolves specifiers (relative paths,
-   package.
-  json `exports`,
+   `package.json` `exports`,
    bare `node_modules`),
    and inlines the
 - Line 118:
@@ -1716,8 +1709,7 @@ Replace with proper punctuation or restructure sentence.
 ### package/build-tool/css/src/index.ts
 
 - Line 31:
-   //region Re-exports -- public API surface for consumers importing from build.
-  ts
+   //region Re-exports -- public API surface for consumers importing from `build.ts`
 
 ### package/build-tool/css/src/mixin-registry.ts
 
@@ -2122,8 +2114,7 @@ Replace with proper punctuation or restructure sentence.
 ### package/cli/vmsync/src/types.ts
 
 - Line 17:
-   //region VM configuration -- persisted as vmsync.
-  jsonc
+   //region VM configuration -- persisted as `vmsync.jsonc`
 
 ### package/oxlint-plugin/no-restricted-syntax/src/rule/no-variable-function-expression.ts
 
@@ -2351,8 +2342,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 21:
    //region Keyboard Lock API type augmentation -- not yet in lib.
   dom.
-  d.
-  ts
+  `d.ts`
 
 ### package/desktop-daemon/editord/src/server/lsp/tsconfig-includes.ts
 
@@ -2400,8 +2390,7 @@ Replace with proper punctuation or restructure sentence.
 
 - Line 5:
    //region CLI entry point -- finds and imports file-enforcer.
-  config.
-  ts,
+  `config.ts`,
    optionally watches
 - Line 29:
    // Importing the config executes it -- the config uses top-level await
@@ -2709,8 +2698,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 15:
    //region Configuration -- timeout,
    image tag,
-   and buffer size shared by container-exec.
-  ts
+   and buffer size shared by `container-exec.ts`
 - Line 29:
    //region Runtime detection -- uses `which` to locate executables on PATH
 
@@ -2727,8 +2715,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 16:
    //region Parser definition -- defines all recognized CLI flags and their value parsers
 - Line 39:
-   //region Parsed arguments -- module-level exports consumed by index.
-  ts
+   //region Parsed arguments -- module-level exports consumed by `index.ts`
 
 ### package/dev-script/inference-canary/src/index.ts
 
@@ -2746,19 +2733,16 @@ Replace with proper punctuation or restructure sentence.
 - Line 77:
    //region Failure artifact detection -- whole-model failures like 429 or auth errors
 - Line 104:
-   // Missing or malformed meta.
-  json -- skip
+   // Missing or malformed `meta.json` -- skip
 - Line 111:
    //region Per-probe artifact detection -- individual probe results
 - Line 154:
-   // Missing or malformed meta.
-  json -- skip
+   // Missing or malformed `meta.json` -- skip
 
 ### package/dev-script/inference-canary/src/linter-artifacts.ts
 
 - Line 31:
-   //region Artifact writing -- writes generated source and meta.
-  json sidecar for oxlint/tsgo to consume
+   //region Artifact writing -- writes generated source and `meta.json` sidecar for oxlint/tsgo to consume
 
 ### package/dev-script/inference-canary/src/linter-oxlint.ts
 
@@ -2829,8 +2813,7 @@ Replace with proper punctuation or restructure sentence.
    server-time,
    and artifacts
 - Line 31:
-   //region Message and timing types -- chat message shape and streaming timing breakdown used by runner-stream.
-  ts
+   //region Message and timing types -- chat message shape and streaming timing breakdown used by `runner-stream.ts`
 - Line 96:
    //region Probe and report result types -- ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
 
@@ -3362,8 +3345,7 @@ Replace with proper punctuation or restructure sentence.
 ### package/module/es/src/path/find-monorepo-root.ts
 
 - Line 65:
-   'using OPFS for monorepo root discovery -- mise.
-  toml must exist in OPFS to be found',
+   'using OPFS for monorepo root discovery -- `mise.toml` must exist in OPFS to be found',
 - Line 83:
    l.
   warn('no filesystem available for monorepo root discovery -- search will fail',
@@ -3893,8 +3875,7 @@ Replace with proper punctuation or restructure sentence.
    //region All rules -- single Promise.
   all to minimize CFS yield points
 - Line 160:
-   // Concat rules -- combine readme.
-  md from groups of 4 packages
+   // Concat rules -- combine `readme.md` from groups of 4 packages
 - Line 163:
    // Glob mirror rules -- mirror lib and type files across packages
 - Line 168:
@@ -4671,8 +4652,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 47:
    //region Semantic color tokens -- Aliases that flip between light and dark modes.
 - Line 87:
-   //region Dark mode -- re-exported from styles-tokens-dark.
-  ts
+   //region Dark mode -- re-exported from `styles-tokens-dark.ts`
 
 ### package/webapp-productivity/done-h-css-test/src/lib/ai/client.ts
 

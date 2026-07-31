@@ -54,11 +54,8 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
        `Record<K, never>`,
        `Pick<T, never>`,
        optionality-adding mapped types (commit e2741a08).
-- AGENTS.
-  md rule forbidding preemptive cli-git bypass (commit 17f79a17).
-   CLAUDE.
-  md is gitignored and regenerated from AGENTS.
-  md via `mise run sync:files`.
+- `AGENTS.md` rule forbidding preemptive cli-git bypass (commit 17f79a17).
+   `CLAUDE.md` is gitignored and regenerated from `AGENTS.md` via `mise run sync:files`.
 - Research doc `doc/research/optionality-enforcement.md` (commit 039ec6db).
 - GitHub issue #213 filed for future improvement of the two rules (the syntax-only rules miss runtime/binding-resolution escapes;
    those are tractable with more effort,
@@ -230,8 +227,7 @@ Leaf packages still to fix:
    `mcp/mvm` (2w)
 - `oxlint-plugin/stylistic` (12e),
    `oxlint-plugin/no-restricted-syntax` (5w,
-   pre-existing require-unicode-regexp in prefer-describe-function-ref-name.
-  ts)
+   pre-existing require-unicode-regexp in `prefer-describe-function-ref-name.ts`)
 - `dev-script/file-enforcer` (10e),
    `dev-script/task-util` (11w 6e),
    `dev-script/catalog-tighten` (4w 6e),
@@ -433,8 +429,7 @@ After all leaves:
    `doc/research/optionality-enforcement.md`.
 - Future rule work:
    GitHub issue #213.
-- The development guidelines in AGENTS.
-  md govern everything (commit eagerly per logical unit,
+- The development guidelines in `AGENTS.md` govern everything (commit eagerly per logical unit,
    scoped commits,
    no rule loosening,
    log extensively,

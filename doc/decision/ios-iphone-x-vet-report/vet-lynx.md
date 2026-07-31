@@ -42,8 +42,7 @@ run,
    no JIT) because the app process lacks the dynamic-codesigning entitlement.
    Either path is jitless on a device.
 - Minimum iOS deployment:
-   iOS 10 (README.
-  md:
+   iOS 10 (`README.md`:
    "Lynx apps may target iOS 10 and Android 5.0 (API 21) or newer";
    PrimJS.
   podspec sets ios.
@@ -76,8 +75,7 @@ Verdict:
  no-jit-needed
 
 PrimJS is a QuickJS-derived bytecode VM;
- its high-performance 'template interpreter' is generated at BUILD time into assembly (doc/template_interpreter.
-md:
+ its high-performance 'template interpreter' is generated at BUILD time into assembly (doc/`template_interpreter.md`:
  handler generator 'writes it into the embedded.
 S assembly file,
  which is then mixed with other parts of QuickJs').
@@ -101,8 +99,7 @@ text.
  passes wall 2.
 
 Source:
- /tmp/agent/primjs-audit-20260612/docs/template_interpreter.
-md;
+ /tmp/agent/primjs-audit-20260612/docs/`template_interpreter.md`;
  /tmp/agent/primjs-audit-20260612/src/interpreter/primjs/ios/embedded.
 S:
 1-4;
@@ -312,10 +309,8 @@ podspec;
 
 - PrimJS is a QuickJS-based bytecode engine with a build-time-generated assembly template interpreter,
    not a JIT:
-   /tmp/agent/primjs-audit-20260612/README.
-  md:
-  11-16 and doc/template_interpreter.
-  md (handler -> embedded.
+   /tmp/agent/primjs-audit-20260612/`README.md`:
+  11-16 and doc/`template_interpreter.md` (handler -> embedded.
   S,
    mixed with QuickJs)
 - iOS template interpreter is precompiled AArch64 machine code assembled into the static lib at build time:
@@ -380,8 +375,7 @@ podspec;
    grep:
    no AVAudio/decode element in platform/darwin
 - Min iOS deployment iOS 10 (PrimJS pod allows 9.0):
-   /tmp/agent/lynx-audit-20260612/README.
-  md:
+   /tmp/agent/lynx-audit-20260612/`README.md`:
   45;
    /tmp/agent/primjs-audit-20260612/PrimJS.
   podspec ios.
@@ -440,8 +434,7 @@ Minor citation imprecisions found (cosmetic;
    word opcodes) confirmed.
 3) 'generated at BUILD time':
     embedded.
-   S is a checked-in artifact (template_interpreter.
-   md:
+   S is a checked-in artifact (`template_interpreter.md`:
    61 confirms a handler generator 'writes it into the embedded.
    S assembly file'),
     i.e. dev-time generated and build-time ASSEMBLED.
@@ -470,8 +463,7 @@ Minor citation imprecisions found (cosmetic;
     so routing is immaterial to 'no-jit-needed'.
 
 Confirmed exactly as cited:
- template_interpreter.
-md:
+ `template_interpreter.md`:
 61 ('writes it into the embedded.
 S assembly file,
  which is then mixed with other parts of QuickJs') and dispatch_table (lines 49,73,82);
@@ -498,8 +490,7 @@ h:
  The JSC interpreter-only/LLInt-no-JIT statement is an accurate external iOS-platform fact (third-party non-WebView app process lacks dynamic-codesigning entitlement),
  correctly not cited to a repo source.
 - Sources checked:
-   /tmp/agent/primjs-audit-20260612/docs/template_interpreter.
-  md (lines 49,61,73,82 -- handler generator writes embedded.
+   /tmp/agent/primjs-audit-20260612/docs/`template_interpreter.md` (lines 49,61,73,82 -- handler generator writes embedded.
   S;
    dispatch_table;
    confirmed);
@@ -528,8 +519,7 @@ h:
   cc:
   238 (other GC mprotect sites);
    primjs repo-wide grep PROT_EXEC|MAP_JIT|pthread_jit_write -> ZERO matches (decisive jitless evidence);
-   /tmp/agent/primjs-audit-20260612/docs/wasm.
-  md (no JIT/executable-memory reference);
+   /tmp/agent/primjs-audit-20260612/docs/`wasm.md` (no JIT/executable-memory reference);
    /tmp/agent/lynx-audit-20260612/core/Lynx.
   gni:
   62-64 (iOS default jsengine_type=jsc -- confirmed);

@@ -237,8 +237,7 @@ Research findings (March 2026):
   Open issue bootc-dev/bootc#1240 documents the failure.
 - **btrfs-on-LUKS2**:
    osbuild has `org.osbuild.luks2.format` stages internally,
-  but the blueprint config.
-  toml schema does not expose LUKS as a partition type.
+  but the blueprint `config.toml` schema does not expose LUKS as a partition type.
   bootc's `--block-setup tpm2-luks` has a semaphore deadlock bug (bootc-dev/bootc#2089).
 - **QEMU LUKS-encrypted qcow2**:
    works (supported since QEMU 2.10,
@@ -401,5 +400,4 @@ No image rebuild needed:
    nvim deprecated by editord
 - [x] ~~Cosign key setup~~:
    key pair at `package/config/cosign/`,
-   signing step in build-and-import.
-  ts
+   signing step in `build-and-import.ts`

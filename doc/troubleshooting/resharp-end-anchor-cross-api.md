@@ -98,8 +98,7 @@ Arch-identical (AVX2,
 outputs;
  no external oracle needed.
 
-Both violate api.
-md's asserted contract:
+Both violate `api.md`'s asserted contract:
  `is_match` is true exactly when
 `find_all` is non-empty,
  and `find_anchored=Some(m)` means `m` is the longest
@@ -324,8 +323,7 @@ artifact is an additive comment,
    ** Yes.
     For bugs 1+2,
     two APIs contradict `find_all` and the
-   api.
-   md contract.
+   `api.md` contract.
     For bug 3,
     `find_all` contradicts itself (both operands match
    `(0,1)`,
@@ -353,8 +351,7 @@ artifact is an additive comment,
    maintainer is converging on (issue #22).
 4. **Would the repo welcome it?
    ** Yes.
-    No CONTRIBUTING.
-   md,
+    No `CONTRIBUTING.md`,
     issue/PR template,
     or
    AI-assistance ban exists (the absent `.github/` policy was checked for the

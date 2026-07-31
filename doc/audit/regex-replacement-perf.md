@@ -292,8 +292,7 @@ spec),
    `Array.reduce`,
    or a
   `for...of` building an array then `.join('')`.
-   AGENTS.
-  md documents
+   `AGENTS.md` documents
   these under the `no-function-root-let` rule.
 - Do not reintroduce regex.
    Do not disable any lint rule.

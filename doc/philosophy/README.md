@@ -11,8 +11,7 @@ The philosophy is organized into focused documents:
    interoperability,
    and detachable solutions
 - **[AGENTS.md philosophy](agents.md)**:
-   What belongs in AGENTS.
-  md,
+   What belongs in `AGENTS.md`,
    non-obvious actionable guidance neither agent nor human can infer from context
 - **[Documentation organization](documentation.md)**:
    Why doc families nest under doc/<family>/,

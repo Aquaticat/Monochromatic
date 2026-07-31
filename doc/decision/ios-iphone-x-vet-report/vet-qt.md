@@ -386,8 +386,7 @@ xcodeproj.
    it has no occurrence of "static",
    "shared object",
    or "sandbox";
-   its sections are Deployment/Info.
-  plist/Application Assets/Publishing,
+   its sections are Deployment/`Info.plist`/Application Assets/Publishing,
    etc.).
    The exact quoted text is REAL and verbatim-correct Qt documentation,
    but it lives on a DIFFERENT page:

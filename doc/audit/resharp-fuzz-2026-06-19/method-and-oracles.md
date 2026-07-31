@@ -38,8 +38,7 @@ decided by,
     established by
    the independent denotational oracle or the Lean oracle:
     real soundness bug.
-4. Cross-API inconsistency on an accepted-superset pattern where api.
-   md already
+4. Cross-API inconsistency on an accepted-superset pattern where `api.md` already
    says the invariant is "stated intent,
     known to be violated":
     catalogued as a
@@ -52,8 +51,7 @@ permissive by design":
  `doc/features.md`,
  `doc/api.md` in the
 upstream repo.
- features.
-md is explicit that the conservative fragment (no
+ `features.md` is explicit that the conservative fragment (no
 lookaround-in-union,
  no anchors-under-complement) is verified,
  while the

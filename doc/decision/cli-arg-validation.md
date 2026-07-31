@@ -142,8 +142,7 @@ risks regressions in the parser-combinator types
  replacing the
 parser source changes inferred types across the discriminated union).
 Specific gate:
- violates AGENTS.
-md "Don't add features beyond what the
+ violates `AGENTS.md` "Don't add features beyond what the
 task requires";
  the wrapper is overhead the parser does not need.
 

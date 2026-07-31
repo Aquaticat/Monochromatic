@@ -404,8 +404,7 @@ Cleanup:
    Rust-native,
    small footprint,
    already in the stack
-  (`cargo:https://github.com/slint-ui/slint` pinned in mise.
-  toml),
+  (`cargo:https://github.com/slint-ui/slint` pinned in `mise.toml`),
    good for desktop/embedded.
   Rejection vs Compose MP for shared mobile+desktop UI:
    Slint's Android/iOS support is comparatively

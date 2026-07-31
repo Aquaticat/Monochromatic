@@ -1151,8 +1151,7 @@ LaunchAgent (`~/Library/LaunchAgents/dev.monochromatic.iosvet.profilerenew.plist
  Symlinked to MacData:
 `capgate/` (Capacitor),
  `flgate/` (Flutter),
- `slint-gate/` (Slint clone + the `[patch]`'d Cargo.
-toml),
+ `slint-gate/` (Slint clone + the `[patch]`'d `Cargo.toml`),
 `mauigate/` (.
 NET/Microsoft.
 iOS substrate + the `rust/` FFI staticlib),

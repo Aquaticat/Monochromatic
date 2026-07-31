@@ -233,10 +233,8 @@ specifier.
 A separate `@monochromatic-dev/module-kv-store-fs` depending on the core's `StorageBackend` type.
 Eliminated by constraints 1 and 3:
  a different specifier,
- plus a second package.
-json,
- mise.
-toml,
+ plus a second `package.json`,
+ `mise.toml`,
 README,
  version,
  and build to keep in sync against the core type.
@@ -917,8 +915,7 @@ binding trick that silently sidesteps the check.
      separators,
      long keys,
      empty key) per the boundary-encoding rule in
-    AGENTS.
-    md.
+    `AGENTS.md`.
      The node backends hash with `node:crypto` `createHash` (synchronous);
      the async browser
     backend can hash with Web Crypto.

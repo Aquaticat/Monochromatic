@@ -137,8 +137,7 @@ Migration steps:
 
 - Replacing the logger entirely with raw `console.log`:
   violates the workspace's "use tagged loggers" rule
-  (AGENTS.
-  md "Logging") and loses tag-based filtering.
+  (`AGENTS.md` "Logging") and loses tag-based filtering.
    The
   performance fix lives at the call-level (level choice),
   not the logger-level.

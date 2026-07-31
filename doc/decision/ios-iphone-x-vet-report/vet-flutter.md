@@ -121,8 +121,7 @@ ffi is a mapped core library in the Flutter iOS embedder.
  supported path to call kopia-as-linked-static-lib from app code (wall 1 satisfied).
 
 Source:
- /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/_embedder.
-yaml:
+ /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/`_embedder.yaml`:
 10 (dart:
 ffi mapped);
  package/flutter_tools/templates/plugin_ffi/ (ffiPlugin scaffold:
@@ -130,8 +129,7 @@ ffi mapped);
 tmpl/projectName.
 podspec.
 tmpl source_files static-linked into app,
- README.
-md.
+ `README.md`.
 tmpl ffigen + helper-isolate guidance);
  docs.
 flutter.
@@ -177,8 +175,7 @@ io is a mapped core library in the Flutter iOS embedder,
  so it is available on device with the AOT runtime.
 
 Source:
- /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/_embedder.
-yaml:
+ /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/`_embedder.yaml`:
 12 (dart:
 io mapped to third_party/dart/sdk/lib/io/io.
 dart);
@@ -203,8 +200,7 @@ dio on top of it) provides a streaming HTTPS client with chunked request/respons
 io is mapped in the Flutter iOS embedder.
 
 Source:
- /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/_embedder.
-yaml:
+ /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/`_embedder.yaml`:
 12 (dart:
 io mapped);
  pub.
@@ -252,8 +248,7 @@ ffi exactly as kopia is.
  no JIT).
 
 Source:
- RustAudio/cpal src/host/coreaudio/ios/mod.
-rs (RemoteIO AudioUnit + AVAudioSession output backend);
+ RustAudio/cpal src/host/coreaudio/ios/`mod.rs` (RemoteIO AudioUnit + AVAudioSession output backend);
  symphonia is pure Rust
 
 ## Gate probe and toolchain
@@ -352,16 +347,14 @@ xcframework;
 - dart:
   ffi and dart:
   io are first-class mapped libraries in the Flutter iOS embedder:
-   /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/_embedder.
-  yaml:
+   /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/`_embedder.yaml`:
   10,12
 - FFI plugin scaffold statically links native source into the iOS app via podspec source_files and binds via ffigen,
    with a helper-isolate pattern for long-running native calls:
    /tmp/agent/flutter-audit-20260612/packages/flutter_tools/templates/plugin_ffi/ios.
   tmpl/projectName.
   podspec.
-  tmpl and README.
-  md.
+  tmpl and `README.md`.
   tmpl
 - Statically linked symbols are resolved with DynamicLibrary.
   executable()/process();
@@ -376,8 +369,7 @@ xcframework;
    <https://pub.dev/packages/background_downloader> ;
    <https://pub.dev/packages/background_transfer>
 - cpal has an iOS CoreAudio output backend using a RemoteIO AudioUnit + AVAudioSession (not AVAudioEngine):
-   <https://github.com/RustAudio/cpal> src/host/coreaudio/ios/mod.
-  rs
+   <https://github.com/RustAudio/cpal> src/host/coreaudio/ios/`mod.rs`
 
 ## Adversarial cite-check
 
@@ -401,8 +393,7 @@ xcframework;
    line 150 loads kernel snapshot only when !
   IsRunningPrecompiledCode(),
    i.e. debug -- confirmed verbatim);
-   /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/_embedder.
-  yaml (line 10:
+   /tmp/agent/flutter-audit-20260612/engine/src/flutter/sky/packages/sky_engine/lib/`_embedder.yaml` (line 10:
    dart:
   ffi mapped to third_party/dart/sdk/lib/ffi/ffi.
   dart -- confirmed);
@@ -412,8 +403,7 @@ xcframework;
   tmpl:
    s.
   source_files='Classes/**/*' with comment confirming native sources linked into app builds;
-   README.
-  md.
+   `README.md`.
   tmpl:
    ffigen binding generation + helper-isolate guidance for long-running calls -- confirmed);
    <https://docs.flutter.dev/platform-integration/ios/c-interop> (static link resolves via DynamicLibrary.

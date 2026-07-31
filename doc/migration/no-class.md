@@ -225,8 +225,7 @@ For each file:
     `mise run //package/<path>:test:unit`.
 1. Run the package's lint:
     `mise run //package/<path>:lint`.
-1. Commit (one logical unit per AGENTS.
-   md).
+1. Commit (one logical unit per `AGENTS.md`).
 
 ## Escape hatch
 

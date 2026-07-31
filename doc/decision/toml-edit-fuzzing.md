@@ -113,8 +113,7 @@ README.
 - `parseTomlEdit` accepted a bare carriage return (a lone `CR` not part of
   `CRLF`),
    which TOML forbids everywhere,
-   including inside multiline strings.
-  toml-eslint-parser inherits the laxity.
+   including inside multiline `strings.toml`-eslint-parser inherits the laxity.
    Fixed in a pre-parse scan that rejects
   any `CR` not followed by `LF`;
    the toml-test `invalid/control/*-cr` cases and a

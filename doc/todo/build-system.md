@@ -132,8 +132,7 @@ Add JSON with Comments support for package configuration.
 - [ ] Standardize module resolution across packages
 - [ ] Fix circular dependency issues
 - [ ] Ensure proper TypeScript module declarations
-- [ ] Validate package.
-      json exports fields match actual exports
+- [ ] Validate `package.json` exports fields match actual exports
 
 **Cross-Reference**:
  See [Packages Todo](packages.md#cross-package-improvements) for package standards.
@@ -202,8 +201,7 @@ Previously needed for fs-extra/universalify dependency issue (no longer using fs
  Development reliability
 
 - [ ] Add comprehensive TypeScript configuration validation
-- [ ] Implement package.
-      json consistency checking across packages
+- [ ] Implement `package.json` consistency checking across packages
 - [ ] Create build artifact validation and integrity checks
 - [ ] Add development environment consistency validation
 - [ ] Implement automated dependency conflict detection

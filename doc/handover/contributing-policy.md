@@ -277,8 +277,7 @@ Each item is an attack the comic or its comment thread named,
 - Tiny-fix carve-out,
    defined exactly.
 - Security:
-   vulnerabilities go through SECURITY.
-  md's private advisory,
+   vulnerabilities go through `SECURITY.md`'s private advisory,
    never a public issue.
 - Size:
    one approved slice per PR,

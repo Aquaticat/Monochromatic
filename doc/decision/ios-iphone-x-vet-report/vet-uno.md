@@ -109,8 +109,7 @@ targets:
 props:
 15-16 (net9.0-ios18.0 / net10.0-ios26.0 TFM = Microsoft.
 iOS workload);
- dotnet/runtime doc/design/mono/web/aot.
-md ('iphone prohibit JITted code ... full AOT')
+ dotnet/runtime doc/design/mono/web/`aot.md` ('iphone prohibit JITted code ... full AOT')
 
 ## Wall 1: link and call a Go/Rust static library
 
@@ -148,8 +147,7 @@ AppleUIKit/UI/Xaml/Controls/TextBox/NativeTextSelection.
 cs:
 16 (objc_msgSend P/Invoke);
  Microsoft.
-iOS native-references doc + dotnet/docs pinvoke.
-md
+iOS native-references doc + dotnet/docs `pinvoke.md`
 
 ## Wall 3: background execution
 
@@ -204,8 +202,7 @@ NET Core Kestrel hosted in-process on 127.0.0.1) runs as ordinary AOT-compiled m
  exact in-process socket binding to be confirmed on device.
 
 Source:
- dotnet/docs pinvoke.
-md + .
+ dotnet/docs `pinvoke.md` + .
 NET BCL System.
 Net.
 Sockets (BCL,
@@ -369,8 +366,7 @@ xcframework.
 - iOS forbids JIT,
    so Mono full AOT is mandatory;
    this is the runtime model:
-   dotnet/runtime doc/design/mono/web/aot.
-  md:
+   dotnet/runtime doc/design/mono/web/`aot.md`:
    'Some platforms like the iphone prohibit JITted code,
    using technical and/or legal means' (full AOT / aot-only)
 - Wall 1:
@@ -384,8 +380,7 @@ xcframework.
   448-475 ([DllImport("__Internal")])
 - P/Invoke (DllImport/LibraryImport) calls native C functions including statically linked libs from managed .
   NET:
-   dotnet/docs standard/native-interop/pinvoke.
-  md
+   dotnet/docs standard/native-interop/`pinvoke.md`
 - UI is Uno's own SkiaSharp-on-Metal render head (distinct from MAUI native UIKit):
    src/Uno.
   UI.
@@ -457,8 +452,7 @@ xcframework.
    not that release uses full AOT;
    "release/device uses full AOT" is a sound inference from that gate plus the Microsoft.
   iOS workload default plus Apple's JIT ban,
-   and it is independently confirmed by Uno's own docs at /tmp/agent/uno-audit-20260612/doc/articles/api-differences.
-  md:
+   and it is independently confirmed by Uno's own docs at /tmp/agent/uno-audit-20260612/doc/articles/`api-differences.md`:
   31 ("iOS is AOT-only ... .
   NET code must be Ahead-Of-Time (AOT) compiled to run on iOS,
    as a fundamental platform limitation").
@@ -515,14 +509,12 @@ xcframework.
    MTKView;
    GRContext.
   CreateMetal) -- supports iosRuntimeModel Skia/Metal head;
-   /tmp/agent/dotnet-runtime-audit-20260612/docs/design/mono/web/aot.
-  md:
+   /tmp/agent/dotnet-runtime-audit-20260612/docs/design/mono/web/`aot.md`:
   108 ('Some platforms like the iphone prohibit JITted code,
    using technical and/or legal means... full-aot or aot-only mode... at runtime,
    no code needs to be generated') -- verbatim match,
    supports wall-2;
-   /tmp/agent/uno-audit-20260612/doc/articles/api-differences.
-  md:
+   /tmp/agent/uno-audit-20260612/doc/articles/`api-differences.md`:
   31 ('iOS is AOT-only',
    fundamental platform limitation) -- independent in-repo corroboration of wall-2;
    /tmp/agent/uno-audit-20260612/src/Directory.

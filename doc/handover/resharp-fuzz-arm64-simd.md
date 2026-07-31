@@ -594,8 +594,7 @@ order.
   confirms nothing beyond the documented 13.
   (3) ARM CONFIRMATION of the secondary tier (parallels the bug-04/05 ARM run).
   armprobe on the M1:
-   bug-11 `((?!a)|b)&(~((c)))`/"abca" -> PANIC@ ldfa.
-  rs:
+   bug-11 `((?!a)|b)&(~((c)))`/"abca" -> PANIC@ `ldfa.rs`:
   906
   (same site as x86);
    bug-12 `((?!b)|ba)&(aa)?`/"ab" -> find_all=[(2,2)] (Lean
@@ -618,9 +617,7 @@ order.
    both committed:
   (1) Tier-split propagation to the supporting docs (2457bdba).
    verification-
-  2026-06-04.
-  md and code-quality.
-  md predated the dotnet tier split and
+  `2026-06-04.md` and `code-quality.md` predated the dotnet tier split and
   contradicted the narrowed README headline (they listed bug-07/08/10 as flatly
   "live" with no out-of-subset caveat,
    handing ieviev the rebuttal "those fire on
@@ -662,8 +659,7 @@ order.
   crash site -- diff_regex 1184 crashes ALL bug-04 (algebra:
   2724),
    match_invariants
-  3 ALL bug-05 (lib.
-  rs:
+  3 ALL bug-05 (`lib.rs`:
   1824),
    compile 0.
    THREE crash sites total across the whole
@@ -671,8 +667,7 @@ order.
    bug-04,
    bug-05 (both in-subset,
    dotnet-confirmed rust-specific),
-  bug-11 (ldfa.
-  rs,
+  bug-11 (`ldfa.rs`,
    out-of-subset,
    Lean-found).
    The bug-11 corpus seeding did not
@@ -723,17 +718,14 @@ order.
    Decisive guard check:
    rust HAS the
   same machinery (`ensure_supported_rec`/`Compatibility::LookaroundUnion`,
-  lib.
-  rs:
+  `lib.rs`:
   762/772) but DELIBERATELY accepts a SUPERSET ("to unlock some patterns
   outside RE# fragment",
-   lib.
-  rs:
+   `lib.rs`:
   803) -- so the Tier-2 defect is rust failing on
   patterns its OWN guard blessed,
    not just diverging from a stricter peer.
-  TWO TIERS (dotnet-adjudication.
-  md):
+  TWO TIERS (`dotnet-adjudication.md`):
    * LOAD-BEARING (in-subset / self-evident):
       bug-04 & bug-05 CRASHES (dotnet
      matches the patterns cleanly -> `[(0,3)]` / `[(0,2),(2,2)]`,
@@ -841,14 +833,12 @@ order.
    ARM PARITY CLOSED:
    rebuilt the pristine engine from source on the M1
   (aarch64) and ran bug-11/12/13 minimals -> byte-IDENTICAL to x86 (bug-11 panic
-  ldfa.
-  rs:
+  `ldfa.rs`:
   906,
    bug-12 `[(2,2)]`,
    bug-13 `[(0,1),...]`).
    Confirms they're in the
-  arch-independent ldfa.
-  rs driver;
+  arch-independent `ldfa.rs` driver;
    arm-bug-01 stays the ONLY arch-specific
   (SIMD) finding.
    README parity note added.
@@ -977,12 +967,10 @@ order.
   subsystem that may share a fix.
    Replaced the earlier INFERRED "under-collects"
   with this evidence.
-   R2513 (`_*(?!_)`) was bug-05 on a new trigger (lib.
-  rs:
+   R2513 (`_*(?!_)`) was bug-05 on a new trigger (`lib.rs`:
   1824),
   not new.
-   Committed bug-12.
-  md + README->12 (415fe6d6) + nullsprobe tool.
+   Committed `bug-12.md` + README->12 (415fe6d6) + nullsprobe tool.
    Lean
   lane now has TWO root causes (bug-11,
    bug-12),
@@ -995,8 +983,7 @@ order.
 - 05:50 -- bug-11 HARDENED + fuzzer harvest.
    CORRECTION:
    `is_match` ALSO panics
-  (ldfa.
-  rs:
+  (`ldfa.rs`:
   906 on `"abca"`,
    :
   833 on `"ca"`) -- it routes through `scan_fwd_all`
@@ -1019,13 +1006,11 @@ order.
    diff_regex 711 crashes ALL bug-04 (algebra:
   2724);
    match_invariants 1
-  crash = bug-05 (lib.
-  rs:
+  crash = bug-05 (`lib.rs`:
   1824);
    compile 0 crashes (52 slow/timeout = bug-06/09
   perf).
-   NO new crash site from random fuzzing -- ldfa.
-  rs/bug-11 was never sampled
+   NO new crash site from random fuzzing -- `ldfa.rs`/bug-11 was never sampled
   (the random corpora don't produce the precise intersection+complement+neg-
   lookahead shape;
    the Lean AST generator does by construction).
@@ -1078,11 +1063,9 @@ order.
   `resharp-v0612`).
    Distinct from bug-04 (algebra:
   2724),
-   bug-05 (lib.
-  rs:
+   bug-05 (`lib.rs`:
   1824),
-  arm-bug-01 (fwd.
-  rs prefilter).
+  arm-bug-01 (`fwd.rs` prefilter).
    Written up (bug-11-...md),
    README updated to 11
   root causes / 3 crash sites,

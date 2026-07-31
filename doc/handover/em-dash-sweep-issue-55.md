@@ -5,8 +5,7 @@
 Issue:
  [#55](https://github.com/Aquaticat/Monochromatic/issues/55).
 Tracks `docs:` sweep of em-dash and en-dash prose violations against the
-AGENTS.
-md punctuation rule.
+`AGENTS.md` punctuation rule.
 
 What's done:
 

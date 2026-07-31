@@ -19,8 +19,7 @@
    and measures the response time.
 - No benchmark for config files with many independent rules running in `Promise.all`.
   The current perf.
-  config.
-  ts has 12 parallel operations;
+  `config.ts` has 12 parallel operations;
    test with 50-100 to stress the event loop.
 
 ## Calibration

@@ -28,8 +28,7 @@ Shared [dprint](https://dprint.dev/) configuration for Monochromatic repositorie
 - **TOML**:
    default settings with optional leading spaces in comments
 - **JSON**:
-   trailing commas in tsconfig.
-  json and editor settings
+   trailing commas in `tsconfig.json` and editor settings
 - **Post-format linting**:
    handled by mise `format` tasks,
    not a dprint Exec plugin

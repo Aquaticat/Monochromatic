@@ -738,8 +738,7 @@ BUG-20 follow;
   compile time.
    `.*(.+)*.+`.
 - BUG-2 `bug-02-...`:
-   `correctness issue found` assert at engine.
-  rs:
+   `correctness issue found` assert at `engine.rs`:
   960 (NO_MATCH
   reaches a Match).
    `\S+b` on `b'_`.
@@ -814,8 +813,7 @@ BUG-20 follow;
   (with a longest-pref control) + rust isolation argument.
 - BUG-15 `bug-15-stream-dfa-construction-panic.md`:
    broad `stream()` DFA crash at
-  engine.
-  rs:
+  `engine.rs`:
   550.
    Full 159k panic hunt (DONE):
    28688 distinct patterns,
@@ -826,15 +824,12 @@ BUG-20 follow;
   (3+-byte input;
    not via is_match/find_all/find_anchored).
    Root cause
-  engine.
-  rs:
+  `engine.rs`:
   1249 (missing ensure_capacity).
    The hunt confirms only two crash sites
-  total (engine.
-  rs:
+  total (`engine.rs`:
   550 = 165515 lines,
-   engine.
-  rs:
+   `engine.rs`:
   960/BUG-2 = 137 lines).
 - BUG-16 `bug-16-lookbehind-of-lookahead-superlinear-match.md`:
    lookbehind of a
@@ -953,12 +948,10 @@ the limits inventory pointer,
    Final:
    two
   crash sites only,
-   engine.
-  rs:
+   `engine.rs`:
   550 (28688 distinct patterns,
    165515 lines) and
-  engine.
-  rs:
+  `engine.rs`:
   960/BUG-2 (137 lines),
    across `Fpan_*.txt`.
    BUG-15 scope updated.
@@ -1112,8 +1105,7 @@ Added in the 17:00 round (all in /tmp/agent/repro):
   Standalone repro crate `/tmp/agent/contam-test` (depends on the pristine engine;
   has a panic-hook + `diff_hardened`-style harness;
    toggle `features=["debug"|"diag"]`
-  in its Cargo.
-  toml for the node trace / `dfa_stats`).
+  in its `Cargo.toml` for the node trace / `dfa_stats`).
 
 ## Spot-checked, no bug in samples (NOT confirmed robust)
 

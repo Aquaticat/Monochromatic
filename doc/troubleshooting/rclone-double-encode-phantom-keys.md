@@ -598,8 +598,7 @@ Constraint walk:
     The list/HEAD inconsistency is a
    metadata-reference inconsistency that Garage documents and ships repairs for
    (`garage repair versions`/`tables`,
-    durability-repairs.
-   md),
+    `durability-repairs.md`),
     i.e. a known operational
    condition rather than an unreported defect.
 2. Can upstream fix it?

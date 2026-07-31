@@ -113,8 +113,7 @@ Source:
  /tmp/agent/nativescript-audit-20260612/NativeScript/runtime/Runtime.
 mm:
 255 ;
- README.
-md:
+ `README.md`:
 101 ;
  build_v8_source.
 sh (v8_enable_lite_mode=true,
@@ -414,8 +413,7 @@ sh for the metadata generator,
   mm:
   255-256
 - Project documents that its V8 runs in --jitless mode:
-   /tmp/agent/nativescript-audit-20260612/README.
-  md:
+   /tmp/agent/nativescript-audit-20260612/`README.md`:
   101
 - V8 built in lite mode with WebAssembly disabled (no Liftoff/TurboFan codegen):
    /tmp/agent/nativescript-audit-20260612/build_v8_source.
@@ -492,8 +490,7 @@ sh for the metadata generator,
   sh has v8_enable_lite_mode=true (line 44) and v8_enable_webassembly=false (line 47) under target_os="ios" (line 34),
    so these are the iOS device build,
    not a Catalyst-only variant.
-   (3) README.
-  md:
+   (3) `README.md`:
   101 quote exact.
    (4) Interop.
   mm:
@@ -562,8 +559,7 @@ c:
   sh:
   34,44,47 (v8_enable_lite_mode/webassembly,
    target_os ios);
-   /tmp/agent/nativescript-audit-20260612/README.
-  md:
+   /tmp/agent/nativescript-audit-20260612/`README.md`:
   101 (--jitless explained doc);
    /tmp/agent/nativescript-audit-20260612/NativeScript/runtime/Interop.
   mm:

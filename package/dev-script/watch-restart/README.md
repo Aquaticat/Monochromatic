@@ -37,8 +37,7 @@ and complementary:
  and the
 watcher's content-hash filter catches byte-identical writes from external
 editors (vim,
- vscode) that bypass save.
-ts entirely.
+ vscode) that bypass `save.ts` entirely.
 
 ## CLI
 

@@ -15,8 +15,7 @@ The package `package/dev-script/watch-restart/` is being built per the approved 
  tasks 1 through 10 done (baseline package).
  Q6 watchexec-parity expansion approved by user 2026-05-12 (see plan file `## Question 6`).
  Q6 progress:
- tasks 11 + 13 + 14 + 15 + 16 + 17 + 18 + 19 + 20 + 22 done (event shape extension + typeFilter + cli parser extension + regexFilter + hiddenFilter + gitignoreFilter + watcher chokidar config + child process control + README + AUDIT.
-md tick).
+ tasks 11 + 13 + 14 + 15 + 16 + 17 + 18 + 19 + 20 + 22 done (event shape extension + typeFilter + cli parser extension + regexFilter + hiddenFilter + gitignoreFilter + watcher chokidar config + child process control + README + `AUDIT.md` tick).
  All Q6 work shipped.
  Baseline interactive verification partially GREEN as of 2026-05-12 (cases 1,
  5,
@@ -51,8 +50,7 @@ Done:
    added `filters/type.ts` (`typeFilter`) and default `['file']` wiring in `start.ts`'s `buildInternalFilter`;
    updated `content-hash.ts` to short-circuit on `entity === 'dir'`;
    updated test fixtures (compose/content-hash/ext/glob `makeEvent` helpers) to populate `entity`;
-   extracted pure path helpers to `src/watcher-paths.ts` to keep watcher.
-  ts under max-lines after the dir-listener additions.
+   extracted pure path helpers to `src/watcher-paths.ts` to keep `watcher.ts` under max-lines after the dir-listener additions.
 - ~~Task 13 (commit `774c9736`)~~:
    extended `StartWatchRestartOptions` with all Q6 fields (`includeRegex`,
    `excludeRegex`,
@@ -126,8 +124,7 @@ Done:
    ENOENT collapses to "no patterns" while other read errors propagate.
    Made `buildInternalFilter` in `start.ts` async;
    the orchestrator awaits once before the watcher starts.
-   Wiring at start.
-  ts:
+   Wiring at `start.ts`:
    `gitignoreRoots = options.gitignore === false ? [] : options.paths` and `gitignoreExtraFiles = options.ignoreFiles ?? []`;
    the filter is only pushed when at least one source has patterns.
    Tests in `src/filter/gitignore.unit.test.ts` use temp-dir fixtures with `.gitignore` files;
@@ -145,8 +142,7 @@ Done:
    Wired into the chokidar factory call in `watcher.ts`:
    `depth` and `usePolling`/`interval` use the conditional-spread pattern (absent keeps chokidar's default);
    `followSymlinks` is always passed explicitly (`=== true`) so the package's safer default (false) holds regardless of chokidar's own default and does not silently flip on a chokidar version bump.
-   start.
-  ts forwards the three fields from `StartWatchRestartOptions` onto the Watcher constructor with the same pattern.
+   `start.ts` forwards the three fields from `StartWatchRestartOptions` onto the Watcher constructor with the same pattern.
    Tests in `watcher.unit.test.ts` under a new "chokidar option pass-through" describe block:
    depth caps subdirectory traversal during the initial walk (depth 1 admits root + one level,
    rejects deeper);
@@ -166,8 +162,7 @@ Done:
    `#stopRunning` uses `#killSignal` for the first signal and `'SIGKILL'` for the always-on escalation.
    `#spawnAndTrack` calls `#writeClear()` before every spawn when `clear` is true (initial + restart,
    matching `watchexec --clear=clear`).
-   start.
-  ts forwards all three options to Child with the conditional-spread pattern.
+   `start.ts` forwards all three options to Child with the conditional-spread pattern.
    Existing tests in `child.unit.test.ts` and `start.unit.test.ts` got `processGroup: false` added explicitly so they exercise the direct-handle kill path (their assertions read `handle.signalsReceived`,
    only populated under that path).
    Four new tests in `child.unit.test.ts` under "Q6 options (killSignal,
@@ -195,14 +190,12 @@ Done:
    terminal clear),
    "Choices" section gains `ignore`-adoption and process-group-default rationales,
    Tests list expanded with the ten new Q6 cases.
-   AUDIT.
-  md ticks `ignore` (kaelzhang/node-ignore) as adopted,
+   `AUDIT.md` ticks `ignore` (kaelzhang/node-ignore) as adopted,
    pointing at `package/dev-script/watch-restart/src/filter/gitignore.ts` and naming the gitignore-semantics points the library handles (negation `!`,
    anchored leading `/`,
    directory-only trailing `/`,
    `**`).
-   The first commit (`25ea295e`) advertised the AUDIT tick in its body but did not actually edit AUDIT.
-  md (an Edit-tool conflict during stash juggling silently failed);
+   The first commit (`25ea295e`) advertised the AUDIT tick in its body but did not actually edit `AUDIT.md` (an Edit-tool conflict during stash juggling silently failed);
    the follow-up `1f1343b2` lands the missing tick.
    Task 21 (verify editord unchanged) is implicit;
    defaults (`--type file`,
@@ -495,11 +488,9 @@ The plan,
  already done in task 11's commit,
  cross-check before declaring task 18 done).
  After task 18 the natural sequence is 19 (child process control),
- then 20 + 22 (README + AUDIT.
-md,
+ then 20 + 22 (README + `AUDIT.md`,
  with the `ignore` tick).
- Each is one logical commit per AGENTS.
-md.
+ Each is one logical commit per `AGENTS.md`.
 
 Do not re-litigate the design questions;
  they are resolved in the plan with the option matrix that produced each call.

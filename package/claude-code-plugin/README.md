@@ -215,8 +215,7 @@ Three layouts were considered for bundling N plugins from one source package:
    and `README.md` from per-plugin metadata modules.
     tsdown owns the entire
    install-root tree.
-    Marketplace.
-   json paths change.
+    `Marketplace.json` paths change.
 
 ### Why not multi-entry (option 2)
 
@@ -263,10 +262,8 @@ tsdown-owned,
 custom Rolldown plugin (~30 to 50 lines) shipping inside the tsdown config,
  a
 new metadata source file per plugin (`source/src/plugin-config/{plugin}.ts`),
-marketplace.
-json path changes,
- and loss of git history for the plugin.
-json and
+`marketplace.json` path changes,
+ and loss of git history for the `plugin.json` and
 README files.
  Functionally a build pipeline maintained inside the cluster.
 

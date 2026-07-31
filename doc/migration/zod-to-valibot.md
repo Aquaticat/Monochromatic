@@ -404,7 +404,6 @@ as top-level:
    `module/image-diff`) had unused zod entries dropped.
    zod removed from catalog.
    PHILOSOPHY.
-  tool-choices.
-  md updated.
+  `tool-choices.md` updated.
    The recount note:
    original 13 missed `auto-mode/src/config-schemas.ts` because it imports zod with double-quoted `"zod/mini"` whereas every other consumer uses single quotes.

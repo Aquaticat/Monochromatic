@@ -134,8 +134,7 @@ clone in "Auto-prototype when constraints 1-5 hold or sorta-hold".
     Asserting "the parser rewrites X" without showing the
    rewrite is not allowed;
     this is the doc-writing specialization of
-   AGENTS.
-   md's broader source-citation rule.
+   `AGENTS.md`'s broader source-citation rule.
     If a previous reading or
    hypothesis was wrong,
     name it explicitly and quote the evidence
@@ -222,8 +221,7 @@ issue that does not satisfy all six is treated as a publicity incident.
    tests,
     or stated value propositions covering the combination.
 4. **Would the repo welcome our contribution?
-   ** Check CONTRIBUTING.
-   md,
+   ** Check `CONTRIBUTING.md`,
    issue templates,
     pull request templates,
     README,

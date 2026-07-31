@@ -143,8 +143,7 @@ threshold for this dependency without renewed user input.
 
 Each subsection names the specific gate the candidate fails,
  per the
-AGENTS.
-md rule "cite the specific incompatibility,
+`AGENTS.md` rule "cite the specific incompatibility,
  not 'doesn't fit'".
 
 ### `plotly.js`

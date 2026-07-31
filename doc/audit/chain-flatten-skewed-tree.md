@@ -52,8 +52,7 @@ timings grow superlinearly (member n=12000 at 1187ms,
 
 ## Root cause: the AST example was the bait
 
-The "Simplification progression" rule in AGENTS.
-md bans recursion over
+The "Simplification progression" rule in `AGENTS.md` bans recursion over
 flat input and `[...acc, x]` accumulator recursion,
  but carves out an
 exception:
@@ -144,8 +143,7 @@ correct qualifier,
  so the rewrite created a fresh
 instance after the audit had already mapped the class.
 
-Both the AGENTS.
-md rule and the prior audit were correct in text.
+Both the `AGENTS.md` rule and the prior audit were correct in text.
  The
 failure was application:
  "AST" pattern-matched to the allowed example,
@@ -197,7 +195,6 @@ that a member/call or left-associative operator chain is a degenerate spine
 whose depth tracks length,
  so it is not the exempt structural-recursion
 case.
- AGENTS.
-md's "Simplification progression" rule already carries the same
+ `AGENTS.md`'s "Simplification progression" rule already carries the same
 sharpening,
  so the class is mapped in all three places.

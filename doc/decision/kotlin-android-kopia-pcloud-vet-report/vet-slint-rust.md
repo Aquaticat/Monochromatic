@@ -56,8 +56,7 @@ There is a dedicated,
    `ndk` 0.8/0.9,
    `raw-window-handle` 0.6.
    FemtoVG is explicitly disabled on Android
-  (api/rs/slint/Cargo.
-  toml comment:
+  (api/rs/slint/`Cargo.toml` comment:
    needs RUST_FONTCONFIG_DLOPEN).
    So Android => Skia => host
   `clang` needed at build time.
@@ -294,8 +293,7 @@ BUILD — three iterations,
     Android 15+/16 flags them).
     Fixed by injecting
    `RUSTFLAGS=-Clink-arg=-Wl,-z,max-page-size=16384` (cargo-apk appends to existing RUSTFLAGS,
-   verified in ndk-build/src/cargo.
-   rs).
+   verified in ndk-build/src/`cargo.rs`).
     `readelf -l` then showed all LOAD aligns = `0x4000`
    (16 KB).
     Rebuild produced a clean,
@@ -554,8 +552,7 @@ Slint's CI for 5 crates via cargo-apk,
 responsiveness.
  BUT its Java helper is loaded only via dynamic code loading
 (`InMemoryDexClassLoader`/file `DexClassLoader`;
- javahelper.
-rs:
+ `javahelper.rs`:
 251-307),
  with no app-classpath
 fallback — which GrapheneOS's default exploit protection blocks.

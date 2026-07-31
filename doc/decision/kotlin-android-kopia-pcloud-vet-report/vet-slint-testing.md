@@ -44,22 +44,18 @@ Entry points (clone:
  `/tmp/agent/slint-vet`,
  `internal/backends/testing/lib.rs`):
 
-- `init_no_event_loop()` lib.
-  rs:
+- `init_no_event_loop()` `lib.rs`:
   36 — platform,
    no event loop,
    mock time.
-- `init_integration_test_with_mock_time()` lib.
-  rs:
+- `init_integration_test_with_mock_time()` `lib.rs`:
   51 — event loop + deterministic
   mock clock (the runComposeUiTest-style controllable clock).
    One `#[test]` per process.
-- `init_integration_test_with_system_time()` lib.
-  rs:
+- `init_integration_test_with_system_time()` `lib.rs`:
   64 — event loop,
    real clock.
-- `mock_elapsed_time(Duration)` lib.
-  rs:
+- `mock_elapsed_time(Duration)` `lib.rs`:
   73 — advance the mock clock;
    drives animations
   and timers deterministically.
@@ -72,14 +68,11 @@ Query / introspection API,
  always exported,
  available to external consumers):
 
-- `ElementHandle::find_by_accessible_label(&root, label)` search_api.
-  rs:
+- `ElementHandle::find_by_accessible_label(&root, label)` `search_api.rs`:
   404
-- `ElementHandle::find_by_element_id(&root, "Comp::id")` search_api.
-  rs:
+- `ElementHandle::find_by_element_id(&root, "Comp::id")` `search_api.rs`:
   434
-- `ElementHandle::find_by_element_type_name(&root, ty)` search_api.
-  rs:
+- `ElementHandle::find_by_element_type_name(&root, ty)` `search_api.rs`:
   444
 - `ElementQuery` builder:
    `match_id`,
@@ -88,8 +81,7 @@ Query / introspection API,
   `match_accessible_role`,
    `match_predicate`,
    `find_first`,
-   `find_all` search_api.
-  rs:
+   `find_all` `search_api.rs`:
   227-321
 - Accessibility property reads:
    `accessible_label`,
@@ -101,26 +93,21 @@ Query / introspection API,
   `accessible_item_index/count`,
    `accessible_value_min/max/step`,
    plus ~20 more
-  search_api.
-  rs:
+  `search_api.rs`:
   585-847
 - Geometry:
    `size`,
    `absolute_position`,
-   `computed_opacity` search_api.
-  rs:
+   `computed_opacity` `search_api.rs`:
   847-893
 
 Action / input simulation on `ElementHandle` (also always exported):
 
-- `invoke_accessible_default_action()` search_api.
-  rs:
+- `invoke_accessible_default_action()` `search_api.rs`:
   606 (the "click via a11y" path)
-- `invoke_accessible_increment_action` / `decrement` / `expand` search_api.
-  rs:
+- `invoke_accessible_increment_action` / `decrement` / `expand` `search_api.rs`:
   893-915
-- `set_accessible_value(v)` search_api.
-  rs:
+- `set_accessible_value(v)` `search_api.rs`:
   637 (set value-bearing widgets,
    e.g. text/slider)
 - Pointer events:
@@ -129,8 +116,7 @@ Action / input simulation on `ElementHandle` (also always exported):
    `double_click`,
    `drag`,
   `mock_drag`,
-   `scroll` search_api.
-  rs:
+   `scroll` `search_api.rs`:
   954-1068.
    These dispatch real `WindowEvent`
   pointer events at the element center,
@@ -160,8 +146,7 @@ is reproducible without a real rasterizer.
     not visual.
 
 2. No keyboard/key-event method on `ElementHandle` at all (grep:
-    none in search_api.
-   rs).
+    none in `search_api.rs`).
    The only keyboard helpers are window-adapter free functions
    `send_keyboard_key_text` / `send_keyboard_char` / `send_keyboard_string_sequence`
    (`testing_backend.rs:80-130`),

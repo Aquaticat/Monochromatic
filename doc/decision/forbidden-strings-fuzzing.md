@@ -139,8 +139,7 @@ include CI wiring.
    doing that in the same PR as the
   scaffold mixes two unrelated concerns.
 - The fuzz smoke target uses a bounded container wrapper (Resource-
-  exhaustion isolation rule in AGENTS.
-  md);
+  exhaustion isolation rule in `AGENTS.md`);
    the wrapper needs an
   image we have not yet pinned for CI.
 

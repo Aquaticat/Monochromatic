@@ -36,11 +36,9 @@ run,
    /tmp/agent/dotnet-runtime-audit-20260612/src/tasks/AppleAppBuilder/Templates/runtime.
   m:
   344-359;
-   /tmp/agent/dotnet-macios-audit-20260612/docs/website/mtouch-errors.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/website/`mtouch-errors.md`:
   966;
-   doc/nativeaot.
-  md:
+   doc/`nativeaot.md`:
   76-78.
 - Minimum iOS deployment:
    .
@@ -74,8 +72,7 @@ m sets mono_jit_set_aot_mode(MONO_AOT_MODE_FULL) for device Release (lines 348-3
  MAUI Debug default).
  The mtouch error doc states plainly:
  'the JIT remains the only option available on the simulator,
- while AOT and interpreter are for devices only' (mtouch-errors.
-md:
+ while AOT and interpreter are for devices only' (`mtouch-errors.md`:
 966).
  So app code runs as native AOT machine code (Release) or via the statically-linked Mono interpreter (Debug);
  no W^X/executable-memory entitlement is needed.
@@ -89,11 +86,9 @@ Source:
  /tmp/agent/dotnet-runtime-audit-20260612/src/tasks/AppleAppBuilder/Templates/runtime.
 m:
 344-359 (mono_jit_set_aot_mode FULL / INTERP_ONLY / INTERP);
- /tmp/agent/dotnet-macios-audit-20260612/docs/website/mtouch-errors.
-md:
+ /tmp/agent/dotnet-macios-audit-20260612/docs/website/`mtouch-errors.md`:
 963-966;
- doc/building-apps/build-properties.
-md:
+ doc/building-apps/`build-properties.md`:
 965-998 (MtouchInterpreter,
  MAUI Debug=UseInterpreter)
 
@@ -106,12 +101,10 @@ Mechanism:
  P/Invoke to a statically-linked Rust staticlib (.
 a) or Go gomobile c-archive (.
 a).
- The archive is linked into the native iOS executable via @(NativeReference) or <LinkerArgument Include=".../libCustom.a"/> (build-items.
-md:
+ The archive is linked into the native iOS executable via @(NativeReference) or <LinkerArgument Include=".../libCustom.a"/> (`build-items.md`:
 215-220,
  252-255).
- The extern "C" symbols are then called from C# with [DllImport("__Internal")] -- '__Internal' is the documented library name for symbols statically linked into the app (binding_types_reference_guide.
-md:
+ The extern "C" symbols are then called from C# with [DllImport("__Internal")] -- '__Internal' is the documented library name for symbols statically linked into the app (`binding_types_reference_guide.md`:
 1392).
  Under device full-AOT this resolves through the runtime's pinvoke_override:
  pinvoke_override_enabled is set true on the device path (runtime.
@@ -126,18 +119,15 @@ cs:
 cs:
 955),
  proving the path is the standard one.
- For Apple-SDK wrappers there is also the higher-level @(XcodeProject)->XCFramework binding flow (native-library-interop.
-md),
+ For Apple-SDK wrappers there is also the higher-level @(XcodeProject)->XCFramework binding flow (`native-library-interop.md`),
  but a plain Rust/Go .
 a needs only NativeReference + DllImport.
 
 Source:
- /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/build-items.
-md:
+ /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/`build-items.md`:
 215-220 and 252-255 (NativeReference / LinkerArgument libCustom.
 a);
- doc/website/binding_types_reference_guide.
-md:
+ doc/website/`binding_types_reference_guide.md`:
 1392 (__Internal for static libs);
  /tmp/agent/dotnet-runtime-audit-20260612/src/tasks/AppleAppBuilder/Templates/runtime.
 m:
@@ -344,28 +334,23 @@ NET SDK 9+ with the iOS workload:
   344-359
 - JIT is the only option in the simulator;
    AOT and interpreter are for devices only:
-   /tmp/agent/dotnet-macios-audit-20260612/docs/website/mtouch-errors.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/website/`mtouch-errors.md`:
   963-966
 - MtouchInterpreter/UseInterpreter enable the Mono interpreter on device;
    MAUI sets UseInterpreter=true for Debug by default:
-   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/build-properties.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/`build-properties.md`:
   965-998
 - NativeAOT on iOS is experimental and MAUI projects don't typically work with it (MAUI not trimmer-safe);
    there is no interpreter under NativeAOT:
-   /tmp/agent/dotnet-macios-audit-20260612/docs/nativeaot.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/`nativeaot.md`:
   63-78
 - A custom static library .
   a is linked into the native iOS executable via NativeReference / LinkerArgument:
-   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/build-items.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/`build-items.md`:
   215-220,
    252-255
 - '__Internal' is the library name used to P/Invoke symbols statically linked into the app:
-   /tmp/agent/dotnet-macios-audit-20260612/docs/website/binding_types_reference_guide.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/website/`binding_types_reference_guide.md`:
   1388-1392
 - [DllImport("__Internal")] is the standard P/Invoke path,
    used pervasively by the macios runtime itself:
@@ -414,8 +399,7 @@ NET SDK 9+ with the iOS workload:
   cs:
   1104-1110
 - Apple-SDK native wrappers can additionally be built via @(XcodeProject)->XCFramework->NativeReference (slim binding):
-   /tmp/agent/dotnet-macios-audit-20260612/docs/native-library-interop.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/`native-library-interop.md`:
   1-31
 
 ## Adversarial cite-check
@@ -435,23 +419,19 @@ NET SDK 9+ with the iOS workload:
    lines 236-243 handle_pinvoke_override;
    line 258 mono_ios_runtime_init;
    line 351 register_aot_modules -- all support the audit's claims);
-   /tmp/agent/dotnet-macios-audit-20260612/docs/website/mtouch-errors.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/website/`mtouch-errors.md`:
   966 (verbatim:
    'the JIT remains the only option available on the simulator,
    while AOT and interpreter are for devices only');
-   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/build-properties.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/`build-properties.md`:
   965-998 (MtouchInterpreter;
    line 998 NOTE:
    'MAUI changes the default by setting UseInterpreter=true for the Debug configuration');
-   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/build-items.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/building-apps/`build-items.md`:
   215-221 (LinkerArgument libCustom.
   a static-library example) and :
   252-255 (NativeReference definition);
-   /tmp/agent/dotnet-macios-audit-20260612/docs/website/binding_types_reference_guide.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/website/`binding_types_reference_guide.md`:
   1388-1392 ('If you're linking a static library,
    use __Internal as the libraryName parameter' -- note context is the [Field] attribute libraryName,
    not [DllImport],
@@ -462,17 +442,14 @@ NET SDK 9+ with the iOS workload:
    /tmp/agent/dotnet-macios-audit-20260612/src/ObjCRuntime/Class.
   cs:
   955 ([DllImport("__Internal")] confirmed);
-   /tmp/agent/dotnet-macios-audit-20260612/docs/native-library-interop.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/`native-library-interop.md`:
   1-31 (XcodeProject -> XCFramework -> NativeReference binding flow confirmed);
-   /tmp/agent/dotnet-macios-audit-20260612/docs/nativeaot.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/`nativeaot.md`:
   76-78 (verbatim:
    'NativeAOT requires trimming,
    and MAUI isn't trimmer-safe,
    and thus ... MAUI projects don't typically work with NativeAOT');
-   /tmp/agent/dotnet-macios-audit-20260612/docs/managed-static-registrar.
-  md:
+   /tmp/agent/dotnet-macios-audit-20260612/docs/`managed-static-registrar.md`:
   201-211 (Interpreter/JIT section -- about UnmanagedCallersOnly lookup tables;
    neither supports nor contradicts the entitlement claim);
    <https://learn.microsoft.com/en-us/dotnet/maui/macios/interpreter> (authoritative:

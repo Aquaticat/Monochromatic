@@ -64,8 +64,7 @@ run,
    and Cordova core ships zero background-transfer machinery so background URLSession/BGProcessingTask is plugin-authored.
    The only material difference from Capacitor is project management:
    Cordova generates and owns the Xcode project,
-   Podfile and Info.
-  plist via prepare.
+   Podfile and `Info.plist` via prepare.
   js/Podfile.
   js,
    whereas Capacitor hands you the native project to own.
@@ -151,22 +150,18 @@ Cordova-ios core ships NO background-transfer machinery.
  grep across CordovaLib/,
  templates/,
  lib/ for BGTaskScheduler|BGProcessingTask|UIBackgroundModes|beginBackgroundTask|backgroundSessionConfiguration|backgroundFetch returned zero matches (exit 1),
- and the project template Info.
-plist (templates/project/App/App-Info.
-plist) declares no UIBackgroundModes.
+ and the project template `Info.plist` (templates/project/App/`App-Info.plist`) declares no UIBackgroundModes.
  Background work is therefore per-plugin native code,
  identical to a plain native iOS app:
  a plugin would create a background URLSessionConfiguration for pCloud uploads and schedule BGProcessingTask for idle/charging windows,
- adding UIBackgroundModes / BGTaskSchedulerPermittedIdentifiers via the plugin's config-file edits to the generated Info.
-plist.
+ adding UIBackgroundModes / BGTaskSchedulerPermittedIdentifiers via the plugin's config-file edits to the generated `Info.plist`.
  The multi-hour kopia snapshot must be restructured around background URLSession + BGProcessingTask just as on any iOS framework;
  Cordova neither helps nor hinders this beyond giving the plugin a normal native surface to write it.
 
 Source:
  empty grep (BGTaskScheduler|BGProcessingTask|UIBackgroundModes|beginBackgroundTask|backgroundSessionConfiguration over /tmp/agent/cordova-audit/CordovaLib /tmp/agent/cordova-audit/templates /tmp/agent/cordova-audit/lib,
  exit 1);
- /tmp/agent/cordova-audit/templates/project/App/App-Info.
-plist (no UIBackgroundModes);
+ /tmp/agent/cordova-audit/templates/project/App/`App-Info.plist` (no UIBackgroundModes);
  plugin native mechanism per lib/plugman/pluginHandlers.
 js
 
@@ -298,8 +293,7 @@ xcframework (or Go + gomobile for a Go c-archive).
 - HTTPS streaming client + background URLSession vet:
    native background URLSessionConfiguration plugin,
    resumable uploads to pCloud,
-   BGProcessingTask scheduling and Info.
-  plist UIBackgroundModes/BGTaskSchedulerPermittedIdentifiers injection via plugin config-file edits
+   BGProcessingTask scheduling and `Info.plist` UIBackgroundModes/BGTaskSchedulerPermittedIdentifiers injection via plugin config-file edits
 - Audio plugin vet:
    AVAudioSession category/activation,
    UIBackgroundModes audio for background playback,
@@ -361,8 +355,7 @@ xcframework (or Go + gomobile for a Go c-archive).
    grep BGTaskScheduler|BGProcessingTask|UIBackgroundModes|beginBackgroundTask|backgroundSessionConfiguration over /tmp/agent/cordova-audit/{CordovaLib,
   templates,
   lib} -> exit 1;
-   /tmp/agent/cordova-audit/templates/project/App/App-Info.
-  plist
+   /tmp/agent/cordova-audit/templates/project/App/`App-Info.plist`
 - In-app asset serving is a WKURLSchemeHandler interceptor (app:
   //localhost),
    not a TCP listener:

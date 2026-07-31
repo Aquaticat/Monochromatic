@@ -26,8 +26,7 @@ run,
    Onsen UI ships NO runtime and NO native code of its own;
    it is purely a DOM-manipulation library.
    Source:
-   the entire repo is pure JS/CSS built to UMD+ESM via rollup (onsenui/package.
-  json main=js/onsenui.
+   the entire repo is pure JS/CSS built to UMD+ESM via rollup (onsenui/`package.json` main=js/onsenui.
   js,
    module=esm/index.
   js);
@@ -55,8 +54,7 @@ run,
    Onsen UI is a pure-JavaScript Web-Components DOM UI library with no runtime,
    no native code,
    and no FFI of its own (repo-wide grep for native/FFI/audio tokens is empty;
-   package.
-  json builds only UMD/ESM JS;
+   `package.json` builds only UMD/ESM JS;
    platform.
   js only touches window/document and detects window.
   cordova).
@@ -92,8 +90,7 @@ Source:
  onsenui/esm/ons/platform.
 js (DOM-only APIs,
  window.
-cordova detection at line 83) + onsenui/package.
-json (rollup UMD/ESM,
+cordova detection at line 83) + onsenui/`package.json` (rollup UMD/ESM,
  no native artifact).
  iOS JIT-entitlement-restricted-to-WKWebView-WebContent:
  Apple docs <https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.cs.allow-jit> (on iOS the JIT entitlement is functional only for WebKit's out-of-process content renderer;
@@ -221,8 +218,7 @@ Minimal app:
  a Capacitor (or Cordova) iOS shell whose WKWebView loads a single page importing onsenui (js/onsenui.
 min.
 js + css/onsenui.
-min.
-css) with a couple of components,
+`min.css`) with a couple of components,
  e.g. ons-navigator with two ons-page screens,
  an ons-button,
  and an ons-list.
@@ -274,9 +270,7 @@ js + npm to fetch the onsenui package;
 - Onsen UI is pure JavaScript on top of Web Components,
    framework-agnostic,
    no native code:
-   /tmp/agent/onsen-audit-20260612/onsenui/README.
-  md ("core library is written in pure Javascript on top of Web Components") + onsenui/package.
-  json (main=js/onsenui.
+   /tmp/agent/onsen-audit-20260612/onsenui/`README.md` ("core library is written in pure Javascript on top of Web Components") + onsenui/`package.json` (main=js/onsenui.
   js,
    module=esm/index.
   js,
@@ -343,8 +337,7 @@ js + npm to fetch the onsenui package;
   security.
   cs.
   single-jit) carried by the WebContent process.
-   Verified in primary source WebKit/Source/JavaScriptCore/entitlements.
-  plist (<https://github.com/WebKit/WebKit/blob/main/Source/JavaScriptCore/entitlements.plist>),
+   Verified in primary source WebKit/Source/JavaScriptCore/`entitlements.plist` (<https://github.com/WebKit/WebKit/blob/main/Source/JavaScriptCore/entitlements.plist>),
    which lists dynamic-codesigning=true and verified-jit=true and where com.
   apple.
   security.
@@ -396,8 +389,7 @@ js + npm to fetch the onsenui package;
   width:
    all exactly as cited,
    DOM-only);
-   /tmp/agent/onsen-audit-20260612/onsenui/package.
-  json (verified main=js/onsenui.
+   /tmp/agent/onsen-audit-20260612/onsenui/`package.json` (verified main=js/onsenui.
   js,
    module=esm/index.
   js,

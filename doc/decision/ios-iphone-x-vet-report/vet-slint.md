@@ -57,11 +57,9 @@ See `device-gate-results.md` for the full evidence.
    dSYM'd,
    and codesigned,
    then wrapped by an Xcode/XcodeGen project that only signs and packages it.
-   The shipped binary has an ordinary Rust `fn main()` (tools/viewer/main.
-  rs:
+   The shipped binary has an ordinary Rust `fn main()` (tools/viewer/`main.rs`:
   153) that runs the Slint event loop (`component.run()` -> winit iOS event loop,
-   event_loop.
-  rs:
+   `event_loop.rs`:
   700 `run_app`).
    There is no managed runtime,
    no bytecode VM,
@@ -73,12 +71,10 @@ See `device-gate-results.md` for the full evidence.
    The iOS backend drives UIKit directly through native objc2 bindings (objc2-ui-kit:
    UIApplication/UIView/UIScreen,
    objc2-quartz-core:
-   CADisplayLink) (internal/backends/winit/Cargo.
-  toml:
+   CADisplayLink) (internal/backends/winit/`Cargo.toml`:
   130-135).
 - Minimum iOS deployment:
-   12.0 (deploymentTarget in the documented XcodeGen project.
-  yml,
+   12.0 (deploymentTarget in the documented XcodeGen `project.yml`,
    doc/astro/.../platforms/mobile/ios.
   mdx:
   53;
@@ -99,13 +95,11 @@ See `device-gate-results.md` for the full evidence.
    all three iOS walls collapse to ordinary Rust-on-iOS work:
    no JIT/interpreter exists to trip wall 2,
    kopia links as a standard static-archive FFI dependency (wall 1),
-   and cpal's existing CoreAudio iOS backend (src/host/coreaudio/ios/mod.
-  rs) means audio is REUSED,
+   and cpal's existing CoreAudio iOS backend (src/host/coreaudio/ios/`mod.rs`) means audio is REUSED,
    not rewritten on AVAudioEngine.
    Since music-player is already Slint,
    this is the lowest-friction iOS port of any candidate;
-   the one concrete change is that Skia/Metal replaces femtovg automatically on iOS (internal/backends/winit/build.
-  rs:
+   the one concrete change is that Skia/Metal replaces femtovg automatically on iOS (internal/backends/winit/`build.rs`:
   10,13).
 
 ## Wall 2: JIT / executable memory
@@ -123,8 +117,7 @@ bash:
  No interpreter or JIT runs in-process:
  there is no managed runtime to AOT-mitigate.
  The .
-slint UI is compiled to Rust at host build time by slint-build (music-player Cargo.
-toml:
+slint UI is compiled to Rust at host build time by slint-build (music-player `Cargo.toml`:
 143 slint-build git pin),
  so there is no runtime codegen path.
  This sails past the W^X/DENY_EXECMEM wall that disqualifies scripted runtimes.
@@ -132,12 +125,10 @@ toml:
 Source:
  /tmp/agent/slint-audit-20260612/scripts/build_for_ios_with_cargo.
 bash:
-57 and /tmp/agent/slint-audit-20260612/tools/viewer/main.
-rs:
+57 and /tmp/agent/slint-audit-20260612/tools/viewer/`main.rs`:
 153 (fn main -> component.
 run());
- UI AOT via slint-build (package/music-player/desktop-app/Cargo.
-toml:
+ UI AOT via slint-build (package/music-player/desktop-app/`Cargo.toml`:
 143)
 
 ## Wall 1: link and call a Go/Rust static library
@@ -153,8 +144,7 @@ Mechanism:
  a Go gomobile c-archive (.
 a/.
 xcframework) or a Rust staticlib is linked the ordinary way:
- build.
-rs emits `cargo:rustc-link-search` + `cargo:rustc-link-lib=static=kopia`,
+ `build.rs` emits `cargo:rustc-link-search` + `cargo:rustc-link-lib=static=kopia`,
  app code declares `extern "C"` signatures and calls them directly.
  kopia as a LINKED static lib (wall 1) is satisfied by linking its gomobile c-archive into the Rust binary.
  The kopia-Go-runtime-on-iOS specifics (gomobile c-archive init,
@@ -173,8 +163,7 @@ bash:
 Slint provides NO background-execution abstraction;
  the foreground UI event loop is all it owns.
  Background transfer is app-level work done from Rust.
- The winit iOS backend already links objc2-foundation with NSRunLoop/NSOperation/NSNotification features (internal/backends/winit/Cargo.
-toml:
+ The winit iOS backend already links objc2-foundation with NSRunLoop/NSOperation/NSNotification features (internal/backends/winit/`Cargo.toml`:
 132),
  so the app can reach NSURLSession background configurations and BGTaskScheduler either directly via objc2/objc2-foundation bindings from Rust or through a thin Swift/ObjC shim added to the XcodeGen project.
  The iOS wall stands unchanged:
@@ -183,8 +172,7 @@ toml:
  That restructuring is identical work regardless of UI framework and is not eased or worsened by Slint.
 
 Source:
- /tmp/agent/slint-audit-20260612/internal/backends/winit/Cargo.
-toml:
+ /tmp/agent/slint-audit-20260612/internal/backends/winit/`Cargo.toml`:
 132 (objc2-foundation with NSRunLoop/NSOperation linked;
  background APIs reachable via objc2,
  but no Slint-provided background mechanism)
@@ -242,18 +230,15 @@ Output:
  Low-latency output via cpal's dedicated CoreAudio iOS backend.
  cpal lists aarch64-apple-ios as a supported target and gates a CoreAudio host on cfg(any(target_os="ios",
  target_os="tvos")),
- with the iOS-specific submodule at src/host/coreaudio/ios/mod.
-rs (it drives AudioUnit/AVAudioSession internally).
+ with the iOS-specific submodule at src/host/coreaudio/ios/`mod.rs` (it drives AudioUnit/AVAudioSession internally).
  The OS audio engine sample-rate-converts to the hardware clock,
  matching the existing desktop CoreAudio path.
 
 Rust core reuse:
  REUSED via FFI-free single-binary,
  NOT rewritten on AVAudioEngine.
- The existing music-player Rust core (symphonia + cpal in src/output_cpal.
-rs) already targets CoreAudio on Apple via cpal's macOS host;
- on iOS cpal selects its iOS CoreAudio host automatically under the same cfg(not(target_os="linux")) dependency table the package already uses (music-player Cargo.
-toml:
+ The existing music-player Rust core (symphonia + cpal in src/`output_cpal.rs`) already targets CoreAudio on Apple via cpal's macOS host;
+ on iOS cpal selects its iOS CoreAudio host automatically under the same cfg(not(target_os="linux")) dependency table the package already uses (music-player `Cargo.toml`:
 111 cpal=0.18).
  The core compiles into the Slint iOS binary directly:
  no separate FFI bridge,
@@ -265,23 +250,17 @@ toml:
  verify on device.
 
 Source:
- /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/mod.
-rs and Cargo.
-toml:
+ /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/`mod.rs` and `Cargo.toml`:
 160 (cfg(any(target_os="ios",
-target_os="tvos")) coreaudio deps) and Cargo.
-toml:
+target_os="tvos")) coreaudio deps) and `Cargo.toml`:
 234 (aarch64-apple-ios listed target);
  reuse path:
- /var/home/user/Monochromatic/package/music-player/desktop-app/src/output_cpal.
-rs + Cargo.
-toml:
+ /var/home/user/Monochromatic/package/music-player/desktop-app/src/`output_cpal.rs` + `Cargo.toml`:
 111
 
 ## Gate probe and toolchain
 
-Slint already ships a real device build path (doc/ios.
-md documents a CI `build_ios` job producing a signed-locally .
+Slint already ships a real device build path (doc/`ios.md` documents a CI `build_ios` job producing a signed-locally .
 xcarchive/.
 ipa for dev.
 slint.
@@ -294,8 +273,7 @@ mdx walks the XcodeGen + cargo aarch64-apple-ios flow),
  start from slint-rust-template,
  build for the device with `cargo build --target aarch64-apple-ios` wrapped by the documented build_for_ios_with_cargo.
 bash + XcodeGen project,
- then (a) link one trivial `extern \"C\"` function from a Go gomobile c-archive (or a Rust staticlib) via build.
-rs `rustc-link-lib=static`,
+ then (a) link one trivial `extern \"C\"` function from a Go gomobile c-archive (or a Rust staticlib) via `build.rs` `rustc-link-lib=static`,
  call it from Rust,
  and render the returned value in the Slint UI,
  and (b) play a cpal CoreAudio sine wave.
@@ -331,8 +309,7 @@ Toolchain:
    drive NSURLSession background config + BGTaskScheduler from Rust via objc2 (or a Swift shim) and confirm uploads continue when suspended;
    restructure the multi-hour snapshot around it
 - Rust FFI binding vet:
-   build.
-  rs static linking of Go c-archive and Rust staticlib,
+   `build.rs` static linking of Go c-archive and Rust staticlib,
    extern "C" ABI,
    plus AVAudioSession setup shim for cpal
 - cpal iOS CoreAudio device vet:
@@ -358,14 +335,12 @@ Toolchain:
   bash:
   57,63,79
 - Shipped iOS binary is a Rust fn main running the Slint event loop:
-   /tmp/agent/slint-audit-20260612/tools/viewer/main.
-  rs:
+   /tmp/agent/slint-audit-20260612/tools/viewer/`main.rs`:
   153 (fn main),
    :
   278 (component.
   run());
-   internal/backends/winit/event_loop.
-  rs:
+   internal/backends/winit/`event_loop.rs`:
   700 (run_app)
 - winit backend has a full iOS module wired via objc2/UIKit (UIView,
    UIScreen,
@@ -373,14 +348,11 @@ Toolchain:
    keyboard,
    color scheme,
    touch):
-   /tmp/agent/slint-audit-20260612/internal/backends/winit/lib.
-  rs:
+   /tmp/agent/slint-audit-20260612/internal/backends/winit/`lib.rs`:
   35-36 (mod ios),
-   internal/backends/winit/ios/keyboard_animator.
-  rs:
+   internal/backends/winit/ios/`keyboard_animator.rs`:
   10-17,
-   internal/backends/winit/Cargo.
-  toml:
+   internal/backends/winit/`Cargo.toml`:
   130-135
 - Documented,
    CI-tested iOS build producing a signed .
@@ -388,49 +360,40 @@ Toolchain:
   ipa for TestFlight (dev.
   slint.
   slint-viewer):
-   /tmp/agent/slint-audit-20260612/docs/ios.
-  md:
+   /tmp/agent/slint-audit-20260612/docs/`ios.md`:
   1-76 and doc/astro/src/content/docs/guide/platforms/mobile/ios.
   mdx:
   14-39
 - Skia/Metal is force-enabled on iOS;
    OpenGL (femtovg) path is unavailable on iOS:
-   /tmp/agent/slint-audit-20260612/internal/backends/winit/build.
-  rs:
+   /tmp/agent/slint-audit-20260612/internal/backends/winit/`build.rs`:
   9 (ios_and_friends),
    :
   10 (enable_skia_renderer includes ios_and_friends),
    :
   13 (supports_opengl false on ios_and_friends);
-   internal/backends/winit/Cargo.
-  toml:
+   internal/backends/winit/`Cargo.toml`:
   126-128 (i-slint-renderer-skia pulled for apple-non-macos)
 - cpal has a dedicated CoreAudio iOS backend;
    aarch64-apple-ios is a supported target:
-   /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/mod.
-  rs;
-   Cargo.
-  toml:
+   /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/`mod.rs`;
+   `Cargo.toml`:
   160 (cfg(any(target_os=ios,
    tvos)) coreaudio deps);
-   Cargo.
-  toml:
+   `Cargo.toml`:
   234 (aarch64-apple-ios)
 - music-player already targets CoreAudio via cpal 0.18 on non-Linux and pins Slint winit;
    femtovg+software renderers (femtovg unused on iOS):
-   /var/home/user/Monochromatic/package/music-player/desktop-app/Cargo.
-  toml:
+   /var/home/user/Monochromatic/package/music-player/desktop-app/`Cargo.toml`:
   75 (slint git pin,
    renderer-femtovg+software),
    :
   111 (cpal=0.18 under cfg(not linux)),
-   src/output_cpal.
-  rs:
+   src/`output_cpal.rs`:
   1 (CoreAudio/WASAPI)
 - Background URLSession/BGTask reachable from Rust via objc2-foundation (NSRunLoop/NSOperation linked);
    no Slint-provided background mechanism:
-   /tmp/agent/slint-audit-20260612/internal/backends/winit/Cargo.
-  toml:
+   /tmp/agent/slint-audit-20260612/internal/backends/winit/`Cargo.toml`:
   132 (objc2-foundation features NSRunLoop,
    NSOperation,
    NSNotification)
@@ -453,56 +416,43 @@ Toolchain:
     but the "-> component.
    run()" part is wrong for the iOS code path of that very binary.
     On iOS,
-    viewer main forces `--remote` (main.
-   rs:
+    viewer main forces `--remote` (`main.rs`:
    170-171),
-    returns early via `remote::run(...)` (main.
-   rs:
+    returns early via `remote::run(...)` (`main.rs`:
    194),
-    which calls `slint_interpreter::run_event_loop()` (remote.
-   rs:
+    which calls `slint_interpreter::run_event_loop()` (`remote.rs`:
    56) and dynamically COMPILES .
-   slint at runtime via `slint_interpreter::Compiler` (remote.
-   rs:
+   slint at runtime via `slint_interpreter::Compiler` (`remote.rs`:
    217,238).
-    The `component.run()` line is main.
-   rs:
+    The `component.run()` line is `main.rs`:
    278 and is NEVER reached on iOS.
     So the audit cited the one shipped Slint iOS binary whose iOS path is interpreter-mode,
     not AOT.
-    The correct evidence for the AOT `.run()` pattern is the music-player's own `src/main.rs:2004 app.run()` (with `slint::include_modules!()` at src/main.
-   rs:
+    The correct evidence for the AOT `.run()` pattern is the music-player's own `src/main.rs:2004 app.run()` (with `slint::include_modules!()` at src/`main.rs`:
    19).
     Corrected fact/source:
-    AOT model is proven by music-player build.
-   rs:
-   5 `slint_build::compile("ui/app.slint")` + main.
-   rs:
-   19 `include_modules!()` + main.
-   rs:
-   2004 `app.run()` + zero interpreter deps in its Cargo.
-   toml;
+    AOT model is proven by music-player `build.rs`:
+   5 `slint_build::compile("ui/app.slint")` + `main.rs`:
+   19 `include_modules!()` + `main.rs`:
+   2004 `app.run()` + zero interpreter deps in its `Cargo.toml`;
     the viewer is the wrong citation for it.
 
 2. EVIDENCE/SHIPS GAP:
     The cited `scripts/build_for_ios_with_cargo.bash` is the slint-VIEWER's iOS build script,
-    invoked as `slint-viewer --features remote` (tools/viewer/ios-project.
-   yml:
+    invoked as `slint-viewer --features remote` (tools/viewer/`ios-project.yml`:
    57),
     not the music-player's.
     Line 57 (`cargo build --target $CARGO_TARGET --bin "$1"`) and the `aarch64-apple-ios` target (line 46) accurately demonstrate the native-cargo-binary model that BOTH walls rest on,
     so the wall-1 premise (native --bin into which any static archive links via Rust FFI) is supported.
     But what that script actually builds is the interpreter-mode viewer;
     the music-player has no iOS build script in-repo yet.
-    The verdict still holds because (a) music-player is AOT (verified independently) and (b) even the interpreter has NO JIT/cranelift/wasmtime/PROT_EXEC/mprotect (internal/interpreter is a tree-walking eval.
-   rs),
+    The verdict still holds because (a) music-player is AOT (verified independently) and (b) even the interpreter has NO JIT/cranelift/wasmtime/PROT_EXEC/mprotect (internal/interpreter is a tree-walking `eval.rs`),
     so no Slint code path trips W^X/DENY_EXECMEM regardless.
 
 3. MINOR OVERSTATEMENT:
     iosRuntimeModel lists "objc2-ui-kit:
     UIApplication/UIView/UIScreen".
-    At internal/backends/winit/Cargo.
-   toml:
+    At internal/backends/winit/`Cargo.toml`:
    133,
     the objc2-ui-kit feature list includes UIScreen,
     UIWindow,
@@ -518,42 +468,32 @@ Toolchain:
    /tmp/agent/slint-audit-20260612/scripts/build_for_ios_with_cargo.
   bash (line 57 cargo build --bin confirmed;
    line 46 aarch64-apple-ios target);
-   /tmp/agent/slint-audit-20260612/tools/viewer/main.
-  rs (line 153 fn main confirmed;
+   /tmp/agent/slint-audit-20260612/tools/viewer/`main.rs` (line 153 fn main confirmed;
    component.
   run() at 278 NOT reached on iOS;
    iOS forces --remote at 170-171,
    returns at 194);
-   /tmp/agent/slint-audit-20260612/tools/viewer/remote.
-  rs (iOS path:
+   /tmp/agent/slint-audit-20260612/tools/viewer/`remote.rs` (iOS path:
    slint_interpreter:
   :
   run_event_loop() at 56,
    runtime Compiler at 217/238);
-   /tmp/agent/slint-audit-20260612/tools/viewer/ios-project.
-  yml (line 57 invokes build script with slint-viewer --features remote);
-   /tmp/agent/slint-audit-20260612/tools/viewer/Cargo.
-  toml (slint-interpreter dependency at line 80);
-   /tmp/agent/slint-audit-20260612/internal/backends/winit/Cargo.
-  toml (lines 130-135 iOS objc2/objc2-ui-kit/objc2-quartz-core;
+   /tmp/agent/slint-audit-20260612/tools/viewer/`ios-project.yml` (line 57 invokes build script with slint-viewer --features remote);
+   /tmp/agent/slint-audit-20260612/tools/viewer/`Cargo.toml` (slint-interpreter dependency at line 80);
+   /tmp/agent/slint-audit-20260612/internal/backends/winit/`Cargo.toml` (lines 130-135 iOS objc2/objc2-ui-kit/objc2-quartz-core;
    UIApplication absent from feature list);
-   /tmp/agent/slint-audit-20260612/internal/backends/winit/event_loop.
-  rs (line 700 .
+   /tmp/agent/slint-audit-20260612/internal/backends/winit/`event_loop.rs` (line 700 .
   run_app,
    ios_and_friends-gated at 698);
    /tmp/agent/slint-audit-20260612/internal/interpreter/ (no JIT/cranelift/PROT_EXEC;
-   tree-walking eval.
-  rs);
-   /var/home/user/Monochromatic/package/music-player/desktop-app/Cargo.
-  toml (line 143 slint-build git pin confirmed;
+   tree-walking `eval.rs`);
+   /var/home/user/Monochromatic/package/music-player/desktop-app/`Cargo.toml` (line 143 slint-build git pin confirmed;
    line 75 slint git pin;
    no interpreter/jit deps);
-   /var/home/user/Monochromatic/package/music-player/desktop-app/build.
-  rs (line 5 slint_build:
+   /var/home/user/Monochromatic/package/music-player/desktop-app/`build.rs` (line 5 slint_build:
   :
   compile);
-   /var/home/user/Monochromatic/package/music-player/desktop-app/src/main.
-  rs (line 19 include_modules!
+   /var/home/user/Monochromatic/package/music-player/desktop-app/src/`main.rs` (line 19 include_modules!
   ;
    line 1181 fn main;
    line 2004 app.

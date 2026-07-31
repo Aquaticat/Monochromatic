@@ -211,18 +211,15 @@ Rust core reuse:
  The Slint master-rev pin with winit/femtovg/software renderers is irrelevant on this stack since rendering becomes WKWebView/Vue.
 
 Source:
- /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/mod.
-rs:
+ /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/`mod.rs`:
 1 ('CoreAudio implementation for iOS using AVAudioSession and RemoteIO Audio Units';
  objc2_avf_audio:
 :
 AVAudioSession;
  kAudioOutputUnitProperty_EnableIO);
- /tmp/agent/cpal-audit-20260612/src/host/coreaudio/mod.
-rs:
+ /tmp/agent/cpal-audit-20260612/src/host/coreaudio/`mod.rs`:
 12-26 (#[cfg(not(target_os = "macos"))] mod ios);
- /tmp/agent/cpal-audit-20260612/Cargo.
-toml:
+ /tmp/agent/cpal-audit-20260612/`Cargo.toml`:
 3 (version = 0.18.1)
 
 ## Gate probe and toolchain
@@ -290,8 +287,7 @@ xcframework.
   xcworkspace) and app-vite/lib/modes/capacitor/capacitor-installation.
   js (cap add ios)
 - Quasar is a Vue 3 component/UI framework:
-   /tmp/agent/quasar-audit-20260612/ui/package.
-  json:
+   /tmp/agent/quasar-audit-20260612/ui/`package.json`:
   14,92 (vue ^3.5.38)
 - iOS web layer is WKWebView:
    capacitorjs.
@@ -316,14 +312,11 @@ xcframework.
   com/docs/plugins/ios
 - cpal 0.18 has an iOS CoreAudio output backend using RemoteIO AudioUnit + AVAudioSession,
    cfg-gated for non-macOS Apple targets:
-   /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/mod.
-  rs:
+   /tmp/agent/cpal-audit-20260612/src/host/coreaudio/ios/`mod.rs`:
   1;
-   src/host/coreaudio/mod.
-  rs:
+   src/host/coreaudio/`mod.rs`:
   12-26;
-   Cargo.
-  toml:
+   `Cargo.toml`:
   3 (0.18.1)
 - Cordova mode injects an unconditional TLS server-trust acceptance into CDVWKWebViewEngine.
   m (security smell for the pCloud HTTPS path):

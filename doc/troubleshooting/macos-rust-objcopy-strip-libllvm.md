@@ -116,8 +116,7 @@ the signed `.app`) is small and stripped.
    not silently.
 - Setting `strip = false` in `[profile.release]` would also remove the warning,
    but
-  the Cargo.
-  toml comment marks the symbol strip as wanted for size,
+  the `Cargo.toml` comment marks the symbol strip as wanted for size,
    and the artifact
   is already stripped here anyway,
    so this is not worth the size regression on

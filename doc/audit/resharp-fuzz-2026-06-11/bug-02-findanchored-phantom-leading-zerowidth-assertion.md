@@ -133,6 +133,5 @@ match-enumeration core as `find_all`,
  rather than
 gating it on `has_lb && !rev_trivial && !always_nullable`.
  This is the same
-"each driver re-derives the assertion logic" structural issue as code-quality.
-md
+"each driver re-derives the assertion logic" structural issue as `code-quality.md`
 describes.

@@ -95,8 +95,7 @@ external driver.
   120).
   That server (`maestro-android/src/androidTest/.../dev/mobile/maestro/`) depends on
   `androidx.test.uiautomator:uiautomator:2.3.0` and espresso-core 3.6.1 (libs.
-  versions.
-  toml:
+  `versions.toml`:
   13),
   so Maestro's "own driver" is a UiAutomator+Espresso instrumentation server it ships and controls.
   Element matching is host-side over the serialized hierarchy:
@@ -210,12 +209,9 @@ All three are clean open-source;
    Backlog is large but actively worked.
    81 Kotlin test files plus
   a dedicated `maestro-android/src/androidTest` instrumentation suite;
-   CI has test.
-  yaml,
-   test-e2e.
-  yaml,
-  check-drivers.
-  yaml.
+   CI has `test.yaml`,
+   `test-e2e.yaml`,
+  `check-drivers.yaml`.
    No fuzzing or mutation testing.
 
 - Appium (appium/appium):
@@ -237,9 +233,7 @@ All three are clean open-source;
   mykola-mokhnach and KazuCocoa respond same-day (issue #1008 answered the day it was filed).
   Tests:
    7 unit specs + 25 functional/e2e mocha specs;
-   CI unit-test.
-  yml + functional-test.
-  yml.
+   CI `unit-test.yml` + `functional-test.yml`.
   No fuzzing or mutation testing.
 
 Both ecosystems are healthy and responsive;

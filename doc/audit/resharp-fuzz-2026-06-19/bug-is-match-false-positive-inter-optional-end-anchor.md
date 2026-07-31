@@ -32,8 +32,7 @@ byte class and the end-line anchor).
   "ab"   : is_match=true  find_all=[(0,1),(1,2)] ok
 ```
 
-`is_match` and `find_all` must agree (api.
-md:
+`is_match` and `find_all` must agree (`api.md`:
  "is_match is true exactly when
 find_all is non-empty";
  this is one of the three invariants the `match_invariants`

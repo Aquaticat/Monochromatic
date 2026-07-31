@@ -2,8 +2,7 @@
 
 ## Purpose
 
-AGENTS.
-md is for non-obvious,
+`AGENTS.md` is for non-obvious,
  actionable guidance that neither an AI agent nor a human developer can infer from context or general knowledge alone.
 It supplements,
  not replaces,
@@ -11,8 +10,7 @@ It supplements,
 
 ## Writing style
 
-AGENTS.
-md is written caveman style:
+`AGENTS.md` is written caveman style:
  telegraphic,
  shortest expression for every rule.
 It loads on every session,
@@ -34,8 +32,7 @@ Use the shortest accurate synonym (conf,
  dir).
 Fragments beat sentences.
 
-This style binds AGENTS.
-md alone.
+This style binds `AGENTS.md` alone.
 This philosophy doc and every other doc under `doc/` stay normal prose:
  reference loaded rarely,
  where clarity outranks token thrift.
@@ -55,12 +52,10 @@ Caveman compresses prose,
 
 ### Prose hook trigger inventories
 
-Do not list the phrases caught by prose-quality hooks in AGENTS.
-md.
+Do not list the phrases caught by prose-quality hooks in `AGENTS.md`.
 Naming exact triggers teaches agents a vocabulary game:
  avoid the literal string while keeping the same unsupported claim.
-Keep AGENTS.
-md focused on the underlying discipline:
+Keep `AGENTS.md` focused on the underlying discipline:
  measure facts,
  cite sources,
  and state unresolved uncertainty after investigation.
@@ -111,10 +106,8 @@ When no section fits,
 
 ### Runtime environment checks
 
-Do not put detection logic or compatibility warnings in AGENTS.
-md when a hook can enforce the same constraint automatically and silently.
-AGENTS.
-md text is passive;
+Do not put detection logic or compatibility warnings in `AGENTS.md` when a hook can enforce the same constraint automatically and silently.
+`AGENTS.md` text is passive;
  an agent reads it once and may not apply it consistently.
 A hook fires on every session start and injects a warning directly into context only when the condition is actually violated.
 
@@ -128,8 +121,7 @@ This was removed because:
 1. AI agents already assume bash-compatible syntax by default and do not need to be told to.
 2. The detection instructions were only useful if something was already wrong;
     a condition better caught by automation.
-3. A `SessionStart` hook covers the failure case with no AGENTS.
-   md noise for the common case.
+3. A `SessionStart` hook covers the failure case with no `AGENTS.md` noise for the common case.
 
 ### Hook setup
 
@@ -210,14 +202,12 @@ The positive rule carries the action;
 
 ### Code examples for rules that are self-explanatory
 
-Code examples belong in AGENTS.
-md only when the rule itself is ambiguous without one.
+Code examples belong in `AGENTS.md` only when the rule itself is ambiguous without one.
 When a rule is clear from its text (e.g. "prefer `const` over `let`"),
  the example adds tokens without adding understanding.
 
 Examples that illustrate **what to flag during review** belong in the code-review skill,
- not in AGENTS.
-md.
+ not in `AGENTS.md`.
 This way the examples load only when a review is happening,
  not on every session.
 
@@ -238,10 +228,7 @@ Example:
 
 ### Inline pointers to this philosophy doc
 
-Do not add per-rule "(see doc/philosophy/agents.
-md)" / "(rationale in doc/philosophy/agents.
-md)" pointers to AGENTS.
-md.
+Do not add per-rule "(see doc/philosophy/`agents.md`)" / "(rationale in doc/philosophy/`agents.md`)" pointers to `AGENTS.md`.
 Normal operation needs the rule,
  its cue,
  and the tokens to act,
@@ -250,12 +237,9 @@ Normal operation needs the rule,
  which it must not.
 Rationale,
  mechanism,
- and examples relocated here stay discoverable through the single global note at the top of AGENTS.
-md plus the section-name correspondence (each subsection under "Relocated rule rationale" is named for the AGENTS.
-md section it came from).
+ and examples relocated here stay discoverable through the single global note at the top of `AGENTS.md` plus the section-name correspondence (each subsection under "Relocated rule rationale" is named for the `AGENTS.md` section it came from).
 If a rule is genuinely crippled without relocated detail,
- move the detail back into AGENTS.
-md rather than pointing here.
+ move the detail back into `AGENTS.md` rather than pointing here.
 A specific reference (exact section heading) is acceptable only when unavoidable;
  a vague "see PHILOSOPHY" never is.
 
@@ -271,23 +255,19 @@ The runner choice lives in the mise tasks;
 An agent editing a Rust file sees the existing `mod tests;` stub at the bottom and the sibling `*_tests.rs` beside it,
  and follows the pattern by example,
  the same way it infers any local convention from the code in front of it.
-Restating that in AGENTS.
-md spends tokens every session to describe what the code already shows in context,
+Restating that in `AGENTS.md` spends tokens every session to describe what the code already shows in context,
  and it invites the rule to drift from the implementation it documents.
-Keep AGENTS.
-md to rules that change what an agent decides at a fork it would otherwise get wrong;
+Keep `AGENTS.md` to rules that change what an agent decides at a fork it would otherwise get wrong;
  leave runner choice and test-file mechanics to the tasks and the code.
 This is the test-tooling instance of the general rule above ("Code examples for rules that are self-explanatory" and "Detailed sub-rules for generic workflows"):
  a convention an agent will copy from its surroundings does not need a written rule.
 
 ## Relocated rule rationale
 
-The explanatory "why/how" for each rule below was moved here so AGENTS.
-md keeps only the terse enforceable rule,
+The explanatory "why/how" for each rule below was moved here so `AGENTS.md` keeps only the terse enforceable rule,
  cue,
  and tokens.
- Headings match the AGENTS.
-md section they came from.
+ Headings match the `AGENTS.md` section they came from.
 
 ### Rule details
 
@@ -304,8 +284,7 @@ intent into a slogan,
  documentation,
  or design
 work.
- AGENTS.
-md should name concrete forks agents face,
+ `AGENTS.md` should name concrete forks agents face,
  not broad slogans that can override other rules in practice.
 
 #### Essential commands: why `bun test` is banned for this harness
@@ -455,8 +434,7 @@ The harness system prompt's rule sources include the Git Safety Protocol,
  and a quick recall feels like enough;
  it is not.
  Failure shape:
- writing "AGENTS.
-md says never amend" when "never amend" lives in the harness Git Safety Protocol;
+ writing "`AGENTS.md` says never amend" when "never amend" lives in the harness Git Safety Protocol;
  the user asks "which line?
 " and the grep returns nothing.
 
@@ -464,18 +442,15 @@ md says never amend" when "never amend" lives in the harness Git Safety Protocol
 
 Never substitute "I'll keep it in mind" or any promise to a future self:
  sessions have no memory;
- rules persist only in AGENTS.
-md,
+ rules persist only in `AGENTS.md`,
  a skill,
  or a hook.
  The mechanism is monotonic by default (every unmet expectation adds rules),
  leading to unbounded growth.
  Counteract:
- AGENTS.
-md should grow only when no existing rule covers the failure mode.
+ `AGENTS.md` should grow only when no existing rule covers the failure mode.
 
-The rejected `/grill-with-docs` follow-through rule is an AGENTS.
-md growth example:
+The rejected `/grill-with-docs` follow-through rule is an `AGENTS.md` growth example:
  it is too narrow for every session,
  and the cost of not adding it is at most one follow-up prompt from the user.
  Record that rejection rationale here rather than loading a bespoke rule into every agent context.
@@ -546,8 +521,7 @@ The source-clone investigation rule,
 lives in the `choosing-technology` skill.
  They fire only during external-tool diagnosis or technology selection,
 not every session,
- so AGENTS.
-md retains only immediate API and CLI lookup rules.
+ so `AGENTS.md` retains only immediate API and CLI lookup rules.
 
 #### Third-party libraries: the `.out-of-scope/` upstream-tracking exemptions
 
@@ -562,8 +536,7 @@ check;
 - Claude Code (`.out-of-scope/claude-code-upstream-bugs.md`):
    upstream very unresponsive,
    so tracking issues produce clutter without changing the outcome;
-   encode the workaround as a rule in AGENTS.
-  md instead.
+   encode the workaround as a rule in `AGENTS.md` instead.
 - JSR (`.out-of-scope/jsr.md`):
    the workspace consumes no JSR-hosted packages (`doc/philosophy/tool-choices.md` covers tool selection),
    so install-path bugs there do not affect it.
@@ -604,8 +577,7 @@ GUI clicks:
  or skipped via API tokens.
  Hardware activation:
  almost always a CLI.
- AGENTS.
-md keeps the one-line token index (the tools to reach for);
+ `AGENTS.md` keeps the one-line token index (the tools to reach for);
  this is how each one substitutes for the manual action.
 
 #### Verify on a throwaway: why a guard test needs a throwaway
@@ -624,8 +596,7 @@ Categorical dismissals that feel like recall but are one search away:
  These overlap the hedge-phrase list;
  the checklist item keeps the rule (measure assumed facts,
  cite inline) while the examples live here and in the hedge section.
- AGENTS.
-md and tsconfig count as confs where X may be wired up.
+ `AGENTS.md` and tsconfig count as confs where X may be wired up.
 
 #### runbook skill: the encoded sections and rules
 
@@ -636,8 +607,7 @@ The `runbook` skill encodes the required sections (Setup,
  the bold-every-UI-element rule,
  the expected-outcome-per-step rule,
  and the exact-strings-not-paraphrases rule.
- AGENTS.
-md keeps the "invoke it for any manual-action document" rule and the canonical example path.
+ `AGENTS.md` keeps the "invoke it for any manual-action document" rule and the canonical example path.
 
 #### Match action scope to the request verb: the security-alerts example
 
@@ -653,8 +623,7 @@ A test file covering sync matchers but skipping async matchers is the same as no
 
 #### Enforcement mechanisms: why hook existence is not in AGENTS.md
 
-AGENTS.
-md deliberately does not expose the existence of Claude Code hooks,
+`AGENTS.md` deliberately does not expose the existence of Claude Code hooks,
  not merely their names:
  the stop hook (`ccsr`) enforcing hedge-phrase and trailing-question rules,
  the PreToolUse guardrail (`ccgr`),
@@ -662,8 +631,7 @@ md deliberately does not expose the existence of Claude Code hooks,
  Flagging the machinery at all lets agents game the surface pattern (swapping one hedge for a novel one that passes but carries the same epistemic gap) and reframes an internalized rule as an external gate to dodge.
  The rule the agent must own stays (the hedge-phrase list);
  the fact that a hook backstops it is omitted.
- The trailing-question rule is dropped from AGENTS.
-md entirely rather than reworded:
+ The trailing-question rule is dropped from `AGENTS.md` entirely rather than reworded:
  "ask via the question tool,
  never end on a bare question" restates standard harness behavior the `AskUserQuestion` tool and its description already carry,
  so it fails the Purpose test for non-obvious project knowledge.
@@ -673,8 +641,7 @@ md entirely rather than reworded:
  and it carries no gaming risk.
  Hook identities and implementation details otherwise live only in this doc.
  This follows the same principle as the "Runtime environment checks" rule in "What does not belong":
- passive text in AGENTS.
-md is weaker than an active hook.
+ passive text in `AGENTS.md` is weaker than an active hook.
 
 #### Before claiming inability: the document-pointer worked example
 

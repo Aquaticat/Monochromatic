@@ -56,8 +56,7 @@ shrink tree.
  On failure proptest repeatedly calls `simplify()` to walk toward a
 minimal failing input,
  then `complicate()` to backtrack when a simplification step
-overshoots past the failure boundary (doc comment at traits.
-rs:
+overshoots past the failure boundary (doc comment at `traits.rs`:
 578-43 spells out the
 simplify-then-complicate contract).
  Failures are persisted as regression seeds
@@ -122,8 +121,7 @@ mutant.
 
 Rust-awareness:
  it deliberately avoids deleting `_ =>` catch-all arms and guarded arms
-(visit.
-rs:
+(`visit.rs`:
 660-672) because those would not compile,
  reducing unviable-mutant noise.
 Known limitation (confirmed in run below):
@@ -389,8 +387,7 @@ incumbent (pinned 0.13.1,
  For
 fuzzing pure library functions that take structured byte input (exactly the S3 parser
 case) libFuzzer is the right fit;
- switching to afl.
-rs or honggfuzz would add operational
+ switching to `afl.rs` or honggfuzz would add operational
 overhead (extra binaries,
  separate instrumentation/corpus flows) with no coverage
 benefit.

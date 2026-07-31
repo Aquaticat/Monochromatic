@@ -7,8 +7,7 @@ This document explains the choices behind where the families live,
  how they are named,
 and when a doc is removed,
  at the points where the decision could have gone another way.
-The terse rules live in AGENTS.
-md under "Doc placement";
+The terse rules live in `AGENTS.md` under "Doc placement";
  this holds the reasoning.
 
 ## Families live under doc/, not at the root
@@ -144,8 +143,7 @@ A repo-relative path travels with the tree and is checkable offline.
 
 ## The rule is the enforcement
 
-The AGENTS.
-md "Doc placement" rule is the safeguard against the root re-cluttering;
+The `AGENTS.md` "Doc placement" rule is the safeguard against the root re-cluttering;
 no hook enforces it.
 
 A `file-enforcer` check that fails when a family doc reappears at the root was considered.

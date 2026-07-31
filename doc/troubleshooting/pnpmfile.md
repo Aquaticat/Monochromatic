@@ -140,8 +140,7 @@ Loadability matrix (verified against HEAD):
 ## Maintainer rationale
 
 Issue [pnpm/pnpm#2728](https://github.com/pnpm/pnpm/issues/2728),
-"Support typescript version of pnpmfile (pnpmfile.
-ts)",
+"Support typescript version of pnpmfile (`pnpmfile.ts`)",
  open
 since 2020-07-29.
  Zoltan Kochan (lead maintainer) replied

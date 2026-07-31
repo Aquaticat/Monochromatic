@@ -314,13 +314,11 @@ plan §10.1.
  Split into a dedicated `FUZZING.md` only if README exceeds
 120 lines after the additions.
 
-PERF.
-md:
+`PERF.md`:
  only add findings if fuzzing surfaces a compile-time or
 scan-time cliff during smoke runs.
  If smoke is clean,
- no PERF.
-md edit
+ no `PERF.md` edit
 needed.
 
 ### Step F — Final verification (phase 11)
@@ -339,8 +337,7 @@ Run in order:
 8. `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
    must return no match.
    Cargo lockfiles are not gitignored.
-9. Sentinel commands from AGENTS.
-   md "Git cleanup and worktree safety
+9. Sentinel commands from `AGENTS.md` "Git cleanup and worktree safety
    reviews" to confirm no fuzz output escapes the ignore set.
 10. **Soundness-by-revert (load-bearing!
     )**:
@@ -412,8 +409,7 @@ cd9b2dbf fix: pre-validate stacked quantifiers
    `timeout-0815a95346bfa16ae0c6454162d9af0b8c05779c`.
 
 **Bug E -- new finding documented in TROUBLESHOOTING.
-resharp.
-md:
+`resharp.md`:
 **
 
 The intersection+quantified-group hang traces (via gdb attach to a
@@ -475,8 +471,7 @@ prototypes and stay deferred.
 3. **File Bug E upstream** at github.
    com/ieviev/resharp using
    minimal-patch prototype documented in TROUBLESHOOTING.
-   resharp.
-   md.
+   `resharp.md`.
    Verify the patch against the resharp test suite in
    `/tmp/resharp-src/` before filing.
 
@@ -790,8 +785,7 @@ a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
    Added
   `nested_lookahead_in_quantified_group` (6ff333f1).
 - Third artifact `crash-c3c364eb3a03114a52015721c02cba0bf20eb496`
-  (engine.
-  rs:
+  (`engine.rs`:
   1020,
    NOT Bug F) had a single lookaround in alternation;
   widened the existing `lookaround_in_alternation_with_sibling`
@@ -950,15 +944,13 @@ quant + trailing literal" case.
   smoke task
   loops over `cargo fuzz list` output in node,
    running each target in sequence.
-- **Resource-exhaustion isolation rule** (AGENTS.
-  md):
+- **Resource-exhaustion isolation rule** (`AGENTS.md`):
    all fuzz commands
   must run inside the bounded container wrapper.
    Document it;
    don't
   remove the wrapper for convenience.
-- **Bash piping is unreliable** per AGENTS.
-  md "Visible terminal
+- **Bash piping is unreliable** per `AGENTS.md` "Visible terminal
   spawning".
    Don't pipe in mise task bodies;
    use intermediate files.
@@ -1206,8 +1198,7 @@ on bytes a9 vs 89 → SOUNDNESS VIOLATION.
    - contains_under_ci("café",
       content="cafÉ",
       ci=true) = false
-   - SOUNDNESS VIOLATION at fuzz_target.
-     rs:
+   - SOUNDNESS VIOLATION at `fuzz_target.rs`:
      377
 5. Same crash artifact replayed against MAIN's fuzz binary
    (e49d8694 fix in place):
@@ -1297,8 +1288,7 @@ integration tests = all green.
     Defer if not blocking other work.
 4. **Optional**:
     Commit the pre-existing uncommitted README +
-   fuzz/Cargo.
-   toml + fuzz/dictionaries/forbidden-strings.
+   fuzz/`Cargo.toml` + fuzz/dictionaries/forbidden-strings.
    dict
    changes (the dictionary fix is a real bug fix;
     the others are

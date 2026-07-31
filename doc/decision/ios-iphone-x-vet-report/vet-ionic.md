@@ -28,11 +28,9 @@ run,
    On an iOS device the entire Ionic UI is an out-of-process WKWebView;
    app JS executes in WebKit's JavaScriptCore engine,
    which legitimately JITs because the WebContent process holds the dynamic-codesigning entitlement.
-   Ionic detects iOS purely by user-agent string (core/src/utils/platform.
-  ts:
+   Ionic detects iOS purely by user-agent string (core/src/utils/`platform.ts`:
   66 isIOS = testUserAgent(/iPhone|iPod/i) || isIpad) and reaches native capability only through window.
-  Capacitor (core/src/utils/native/capacitor.
-  ts getCapacitor).
+  Capacitor (core/src/utils/native/`capacitor.ts` getCapacitor).
    Crucially the JIT lives in the sandboxed WKWebView,
    not the app process,
    so unlike NativeScript (which embedded a JS engine IN the app process and hit DENY_EXECMEM) Ionic does not need an app-process JIT at all.
@@ -94,10 +92,8 @@ apple.
 developer.
 cs.
 allow-jit' gate);
- /tmp/agent/ionic-audit-20260612/core/src/utils/platform.
-ts:
-66 and core/src/utils/native/capacitor.
-ts confirm Ionic carries no app-process runtime
+ /tmp/agent/ionic-audit-20260612/core/src/utils/`platform.ts`:
+66 and core/src/utils/native/`capacitor.ts` confirm Ionic carries no app-process runtime
 
 ## Wall 1: link and call a Go/Rust static library
 
@@ -107,8 +103,7 @@ Feasible:
 Mechanism:
  Not in Ionic itself (Ionic has zero native code;
  only window.
-Capacitor touchpoint at core/src/utils/native/capacitor.
-ts).
+Capacitor touchpoint at core/src/utils/native/`capacitor.ts`).
  Linking kopia (Go gomobile c-archive .
 xcframework or Rust staticlib) is a Capacitor-shell job:
  you author a Capacitor iOS plugin (Swift/ObjC class extending CAPPlugin + CAPBridgedPlugin) that links the static lib and calls its C ABI;
@@ -130,8 +125,7 @@ Source:
  call.
 resolve();
  plugin runs in app process while JS runs in WKWebView);
- /tmp/agent/ionic-audit-20260612/core/src/utils/native/capacitor.
-ts (Ionic's only native bridge is window.
+ /tmp/agent/ionic-audit-20260612/core/src/utils/native/`capacitor.ts` (Ionic's only native bridge is window.
 Capacitor)
 
 ## Wall 3: background execution
@@ -167,8 +161,7 @@ framework / GCDWebServer,
  JS configures it over the bridge.
 
 Source:
- /tmp/agent/ionic-audit-20260612/core/src/utils/native/capacitor.
-ts (only native reach is window.
+ /tmp/agent/ionic-audit-20260612/core/src/utils/native/`capacitor.ts` (only native reach is window.
 Capacitor);
  <https://capacitorjs.com/docs/plugins/ios> (Swift plugin runs native code in the app process)
 
@@ -224,8 +217,7 @@ Rust core reuse:
 
 Source:
  /tmp/agent/ionic-audit-20260612/core/src (no audio playback engine;
- tap-click/index.
-ts is haptics);
+ tap-click/`index.ts` is haptics);
  <https://capacitorjs.com/docs/plugins/ios> (native Swift plugin links C/Rust static lib,
  runs in app process);
  cpal CoreAudio (coreaudio-rs) iOS backend
@@ -283,16 +275,14 @@ xcframework linked by the Capacitor plugin.
 - Ionic is web components with zero native iOS source;
    the only native bridge is window.
   Capacitor:
-   /tmp/agent/ionic-audit-20260612/core/src/utils/native/capacitor.
-  ts (getCapacitor returns window.
+   /tmp/agent/ionic-audit-20260612/core/src/utils/native/`capacitor.ts` (getCapacitor returns window.
   Capacitor);
    find for .
   swift/.
   m/Podfile/.
   podspec returns 0
 - Ionic detects iOS purely by user-agent and treats hybrid native as Cordova or Capacitor:
-   /tmp/agent/ionic-audit-20260612/core/src/utils/platform.
-  ts:
+   /tmp/agent/ionic-audit-20260612/core/src/utils/`platform.ts`:
   66 (isIOS via testUserAgent),
    :
   96-:
@@ -314,15 +304,12 @@ xcframework linked by the Capacitor plugin.
    <https://capacitorjs.com/docs/plugins/ios>
 - Ionic has no audio playback engine;
    only a tap-click/haptics module references audio-like APIs:
-   /tmp/agent/ionic-audit-20260612/core/src grep AudioContext/HTMLAudioElement -> only tap-click/index.
-  ts (haptics)
+   /tmp/agent/ionic-audit-20260612/core/src grep AudioContext/HTMLAudioElement -> only tap-click/`index.ts` (haptics)
 - @ionic/core version and Stencil-based architecture:
-   /tmp/agent/ionic-audit-20260612/core/package.
-  json (name @ionic/core,
+   /tmp/agent/ionic-audit-20260612/core/`package.json` (name @ionic/core,
    version 8.8.10,
    dep @stencil/core 4.43.5);
-   README.
-  md:
+   `README.md`:
   15 'Ionic is based on Web Components'
 
 ## Adversarial cite-check
@@ -361,14 +348,12 @@ xcframework linked by the Capacitor plugin.
    the code only proves JIT requires one of those entitlements in the running process,
    which is consistent with and supports the framing.
 - Sources checked:
-   /tmp/agent/ionic-audit-20260612/core/src/utils/platform.
-  ts:
+   /tmp/agent/ionic-audit-20260612/core/src/utils/`platform.ts`:
   66 (verified:
    isIOS = testUserAgent(/iPhone|iPod/i) || isIpad,
    UA-string iOS detection,
    exact match);
-   /tmp/agent/ionic-audit-20260612/core/src/utils/native/capacitor.
-  ts (verified:
+   /tmp/agent/ionic-audit-20260612/core/src/utils/native/`capacitor.ts` (verified:
    getCapacitor reads window.
   Capacitor,
    Ionic's only native touchpoint,

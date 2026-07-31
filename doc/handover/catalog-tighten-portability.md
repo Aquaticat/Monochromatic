@@ -88,11 +88,9 @@ next sessions pick up the manager-specific issues.
    stale-orphan,
    and eight missing-X robustness
   cases (missing lockfile / store / some-node_modules / pnpm / default-pnp .
-  pnp.
-  cjs still tighten;
+  `pnp.cjs` still tighten;
   missing virtual store and symlink-off .
-  pnp.
-  cjs -> MISS;
+  `pnp.cjs` -> MISS;
    missing all node_modules / missing
   workspace yaml -> clean error).
 - Filed as issues:

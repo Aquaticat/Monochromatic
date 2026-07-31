@@ -162,8 +162,7 @@ broadly.
 
 - `[hidden] { display: none !important }`:
    project conventions ban
-  `!important` (see AGENTS.
-  md "CSS" section).
+  `!important` (see `AGENTS.md` "CSS" section).
    Importance correctly
   overrides specificity,
    but the maintenance debt of allowing one

@@ -26,8 +26,7 @@ peerOptional @earendil-works/pi-coding-agent@">=0.74.0 <1" from @aliou/pi-utils-
 ## Root cause
 
 npm 11 enforces peer dependency compatibility during tree construction.
- The npm 11 package.
-json docs at
+ The npm 11 `package.json` docs at
 <https://docs.npmjs.com/cli/v11/configuring-npm/package-json#peerdependencies> say peer dependencies are installed
 by default as of npm 7,
  and that conflicting plugin requirements can make resolution fail:

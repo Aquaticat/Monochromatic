@@ -197,8 +197,7 @@ Tradeoff:
  code becomes Bun-specific and cannot run unchanged on
 Node.
 js.
- AGENTS.
-md prefers cross-runtime patterns;
+ `AGENTS.md` prefers cross-runtime patterns;
  accept the
 exception here because `fs.glob` is broken in Bun for this case.
 

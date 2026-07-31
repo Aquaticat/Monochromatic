@@ -76,8 +76,7 @@ It depends on the builder,
     `getJsonProperty` (JSON.
     parse + dot-prop).
 -   The root `file-enforcer.config.ts` is dominated by string concatenation.
-     CLAUDE.
-    md is
+     `CLAUDE.md` is
     `${await cat(['./AGENTS.md'])}` embedded in a template;
      `cat(['./mise.no-env.toml'])` reads TOML
     as text and never parses it.

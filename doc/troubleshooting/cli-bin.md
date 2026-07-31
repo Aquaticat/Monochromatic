@@ -252,6 +252,5 @@ Walking the five constraints anyway:
 Decision:
  no upstream report.
  The fix lives at our boundary (the
-shebang on each CLI entry file) and is captured by the AGENTS.
-md
+shebang on each CLI entry file) and is captured by the `AGENTS.md`
 workspace convention for adding new packages.

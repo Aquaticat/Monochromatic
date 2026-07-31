@@ -17,8 +17,7 @@ Benchmarks settling the open questions on [ieviev/resharp#21][i21]:
 - ieviev (comment 4685383860):
    "perhaps i just need to adjust the upper limit of which patterns use
   the left-to-right matching path,
-   bdfa.
-  rs is much more expensive state space wise ... how long of a
+   `bdfa.rs` is much more expensive state space wise ... how long of a
   compile time should be acceptable with default config?
   "
 - ieviev (comment 4685434957):

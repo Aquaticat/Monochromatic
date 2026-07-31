@@ -12,8 +12,7 @@ Structured code review that checks changes for correctness,
  and maintainability.
 Produces actionable findings categorized by severity.
 
-All underlying rules referenced below are defined in AGENTS.
-md.
+All underlying rules referenced below are defined in `AGENTS.md`.
 
 ## Process
 

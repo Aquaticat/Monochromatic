@@ -336,8 +336,7 @@ end) and saw a single natural-end advance from track `...852` to `...855` (scope
 in `poll()` is correct),
  and `handle_load` sets the play gate before opening the stream.
  Verified that ndk 0.9's
-`AudioStream::Drop` calls `AAudioStream_close` (audio.
-rs:
+`AudioStream::Drop` calls `AAudioStream_close` (`audio.rs`:
 1413),
  so `reconfigure_output` dropping the stream is a clean
 stop,
@@ -1785,8 +1784,7 @@ is explicit:
    not the desktop's xorshift64 (sequence not portable).
 - Not yet ported (small,
    port when needed):
-   `frames_to_secs` and `file_name_of` (playback.
-  rs utilities).
+   `frames_to_secs` and `file_name_of` (`playback.rs` utilities).
 
 GrapheneOS testing notes proven this session:
  `adb push` into `/sdcard/Android/data/<appId>/files/` works for

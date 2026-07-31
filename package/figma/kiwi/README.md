@@ -96,5 +96,4 @@ encoding rules:
 - **Array**:
    `count(varuint)` followed by count values
 
-See RESEARCH.
-md for the full reverse engineering notes.
+See `RESEARCH.md` for the full reverse engineering notes.

@@ -21,12 +21,10 @@ Cargo targets,
 
 **Data quality note:
 ** evidence is primary source unless marked otherwise.
-I used the published docs.
-rs crate source,
+I used the published `docs.rs` crate source,
  the upstream `v0.6.1` Git tag,
 and Cargo or Rust documentation for manifest semantics.
-The docs.
-rs manifest says it is Cargo-normalized and points to `Cargo.toml.orig` for the original manifest:
+The `docs.rs` manifest says it is Cargo-normalized and points to `Cargo.toml.orig` for the original manifest:
 <https://docs.rs/crate/turso/0.6.1/source/Cargo.toml>
 The original `turso` member manifest is shorter and inherits workspace values:
 <https://docs.rs/crate/turso/0.6.1/source/Cargo.toml.orig>

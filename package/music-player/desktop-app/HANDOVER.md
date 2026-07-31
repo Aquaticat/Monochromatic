@@ -332,8 +332,7 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError>; // probe, clon
 pub fn decode_all(path: &Path) -> Result<(AudioSpec, Vec<f32>), PlayerError>; // test helper: drain to end
 ```
 
-- `SymphoniaSource` (in decode.
-  rs):
+- `SymphoniaSource` (in `decode.rs`):
    holds `Box<dyn FormatReader>`,
    `Box<dyn Decoder>`,
    `track_id`,
@@ -343,8 +342,7 @@ pub fn decode_all(path: &Path) -> Result<(AudioSpec, Vec<f32>), PlayerError>; //
    returns one decoded packet's
   interleaved samples per call.
    `seek` -> `format.seek(...)` + `decoder.reset()`.
-- `OpusSource` (in opus.
-  rs):
+- `OpusSource` (in `opus.rs`):
    holds `Box<dyn FormatReader>`,
    `opus::Decoder`,
    `track_id`,

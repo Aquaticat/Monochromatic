@@ -233,8 +233,7 @@ note it and move on.
 
 This is not an accident,
  it is policy:
- AGENTS.
-md rules GCE and GCU tell agents to commit at the earliest
+ `AGENTS.md` rules GCE and GCU tell agents to commit at the earliest
 coherent checkpoint and never accumulate independent units.
  So this stays.
  But name the cost honestly:

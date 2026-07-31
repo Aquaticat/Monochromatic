@@ -230,8 +230,7 @@ The tool description tells the model:
 
 ### Logging absent
 
-CLAUDE.
-md:
+`CLAUDE.md`:
  "Log extensively by default ... Always use tagged loggers from `@monochromatic-dev/module-logger`.
  Never use raw `console.log`/`console.error`.
 "
@@ -300,9 +299,7 @@ Files split by line count,
    `content-signals.ts`,
    `tool-helpers.ts`,
    `command-refs.ts`.
-   `command-refs.ts` is "extracted from command-parser.
-  ts" but `tool-helpers.ts` is "extracted from signals.
-  ts".
+   `command-refs.ts` is "extracted from `command-parser.ts`" but `tool-helpers.ts` is "extracted from `signals.ts`".
    Same package,
    two different parents,
    different naming conventions (`-signals`,
@@ -340,8 +337,7 @@ for (const t of tokens) {
 `const EIGHT = 8` declared inside the loop body,
  hardcoded value re-named to itself.
  Should be module-scope and named for what it represents (e.g. `DATE_TOKEN_DIGIT_COUNT`).
- Declaring `const EIGHT = 8` is the AGENTS.
-md "magic literals as named const" rule applied without understanding why the rule exists.
+ Declaring `const EIGHT = 8` is the `AGENTS.md` "magic literals as named const" rule applied without understanding why the rule exists.
 
 ### `command-parser.ts:124`
 
@@ -428,8 +424,7 @@ Created during GLM's edit window,
     ask whether the surrounding type was already correct in the underlying API.
     Most of the time the cast disappears once the parameter is typed properly.
 3. `rg -n "—|–"` over the diff.
-    AGENTS.
-   md ban applies to all human-authored content including comments,
+    `AGENTS.md` ban applies to all human-authored content including comments,
     docstrings,
     and string literals sent to other models.
 4. `rg -n "stay within the line limit|same shape|untyped"` for fabricated rationales.

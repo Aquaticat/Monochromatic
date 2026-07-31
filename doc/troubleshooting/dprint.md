@@ -31,8 +31,7 @@ real native dprint binary located inside the package.
  Each invocation
 pays the full Node startup cost (interpreter init,
  module resolution,
-package.
-json discovery) before the native binary even starts.
+`package.json` discovery) before the native binary even starts.
  In a
 pnpm-isolated workspace the resolution walk traverses additional
 symlink layers,

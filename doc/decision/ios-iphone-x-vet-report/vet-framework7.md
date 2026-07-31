@@ -22,8 +22,7 @@ run,
    WKWebView-JIT (out-of-process).
    Framework7 ships zero native code and no JS engine of its own:
    it is a JS/HTML/CSS library ("Full Featured Mobile HTML Framework For Building iOS & Android Apps",
-   /tmp/agent/framework7-audit-20260612/README.
-  md line 11).
+   /tmp/agent/framework7-audit-20260612/`README.md` line 11).
    On an iOS device its app code (the F7 core + Vue/React/Svelte bindings + your UI JS) runs as JavaScript inside the host shell's WKWebView,
    executed by WebKit's out-of-process JavaScriptCore.
    F7's only platform contact is feature-detection of the shell:
@@ -44,8 +43,7 @@ run,
    no native deployment target).
    The floor is set by the Capacitor substrate;
    current Capacitor major versions require iOS 14+ (verify against the exact Capacitor version chosen).
-   Framework7's own CSS/browserslist target is "IOS >= 18" (package.
-  json line 63) for styling,
+   Framework7's own CSS/browserslist target is "IOS >= 18" (`package.json` line 63) for styling,
    but that is a CSS-prefixing target,
    not a runtime deployment floor.
 - Gate expectation:
@@ -77,8 +75,7 @@ PASS,
 swift/.
 m files anywhere;
  native-file search under /tmp/agent/framework7-audit-20260612 returns none;
- deps are pure-JS dom7/swiper/ssr-window per package.
-json).
+ deps are pure-JS dom7/swiper/ssr-window per `package.json`).
  The app's JavaScript executes in the host WKWebView,
  the one iOS process that holds the dynamic-codesigning (JIT) entitlement.
  This is the exact inverse of the in-process-V8/NativeScript DENY_EXECMEM failure:
@@ -230,8 +227,7 @@ podspec / Package.
 swift to link the Rust staticlib/xcframework);
  capacitorjs.
 com/docs/ios/custom-code (CAPPlugin bridge from native Rust-backed Swift to the F7 WebView UI);
- F7 owns only JS UI per /tmp/agent/framework7-audit-20260612/README.
-md and src/core/shared/get-device.
+ F7 owns only JS UI per /tmp/agent/framework7-audit-20260612/`README.md` and src/core/shared/get-device.
 js
 
 ## Gate probe and toolchain
@@ -288,10 +284,8 @@ js + npm for Capacitor CLI (@capacitor/core,
 
 - Framework7 is a JS/HTML/CSS UI library for building iOS/Android apps;
    ships no native code:
-   /tmp/agent/framework7-audit-20260612/README.
-  md line 11 ('Full Featured Mobile HTML Framework For Building iOS & Android Apps');
-   package.
-  json dependencies are pure-JS (dom7,
+   /tmp/agent/framework7-audit-20260612/`README.md` line 11 ('Full Featured Mobile HTML Framework For Building iOS & Android Apps');
+   `package.json` dependencies are pure-JS (dom7,
    swiper,
    ssr-window,
    path-to-regexp,
@@ -360,8 +354,7 @@ js + npm for Capacitor CLI (@capacitor/core,
    one precision nuance worth flagging (does NOT flip either verdict).
 
 VERIFIED REPO CLAIMS (all exact):
-- README.
-  md line 11 contains verbatim "Full Featured Mobile HTML Framework For Building iOS & Android Apps" (cited correctly for iosRuntimeModel).
+- `README.md` line 11 contains verbatim "Full Featured Mobile HTML Framework For Building iOS & Android Apps" (cited correctly for iosRuntimeModel).
 - src/core/shared/get-device.
   js lines 25-27 are exactly:
    line 25 `cordova: !!window.cordova,`,
@@ -386,8 +379,7 @@ VERIFIED REPO CLAIMS (all exact):
   dylib/.
   so binaries).
    src/ is JS-only (core + react/vue/svelte bindings + material-color-utilities).
-- package.
-  json deps are pure-JS:
+- `package.json` deps are pure-JS:
    dom7,
    swiper,
    ssr-window (all three audit-named ones present and correct),
@@ -436,8 +428,7 @@ com/docs/ios.
  so the citation gap is cosmetic and the verdict stands.
  Team is safe to skip the in-process-engine toolchain for Framework7.
 - Sources checked:
-   /tmp/agent/framework7-audit-20260612/README.
-  md (line 11);
+   /tmp/agent/framework7-audit-20260612/`README.md` (line 11);
    /tmp/agent/framework7-audit-20260612/src/core/shared/get-device.
   js (lines 25-27);
    /tmp/agent/framework7-audit-20260612/src/core/components/statusbar/statusbar.
@@ -445,8 +436,7 @@ com/docs/ios.
   Capacitor.
   Plugins.
   StatusBar delegation);
-   /tmp/agent/framework7-audit-20260612/package.
-  json (dependencies);
+   /tmp/agent/framework7-audit-20260612/`package.json` (dependencies);
    native-file find under /tmp/agent/framework7-audit-20260612 (zero .
   swift/.
   m/.

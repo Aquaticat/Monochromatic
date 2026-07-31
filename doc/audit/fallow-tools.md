@@ -102,8 +102,7 @@ Across the four invocation modes:
    CRAP >= 30.0),
    MI 85.9,
    241 entry points
-  detected (145 from package.
-  json,
+  detected (145 from `package.json`,
    96 from plugins).
 - **`fallow init` default config**:
    identical to bare.
@@ -121,8 +120,7 @@ Across the four invocation modes:
    376 above threshold,
    MI 91.4,
   564 entry points (279 dynamically loaded,
-   145 package.
-  json,
+   145 `package.json`,
    96 plugin,
   44 manual entry).
 - **file-enforcer-generated config (prototype)**:
@@ -134,8 +132,7 @@ Across the four invocation modes:
   377 above threshold,
    MI 91.8,
    569 entry points (264 dynamically loaded,
-  123 package.
-  json,
+  123 `package.json`,
    96 plugin,
    86 manual entry).
 
@@ -344,9 +341,7 @@ existing `file-enforcer.config.ts` with two functions:
   merges the results into a static base config,
    writes `.fallowrc.json`
 
-`generateFallowConfig()` runs alongside the existing CLAUDE.
-md / mise.
-toml
+`generateFallowConfig()` runs alongside the existing `CLAUDE.md` / `mise.toml`
 generators when `bun file-enforcer.config.ts` or `mise run sync:files` is
 invoked.
  Adding new packages or new `tsdown.*.config.ts` files automatically

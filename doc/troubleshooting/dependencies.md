@@ -1034,8 +1034,7 @@ Neither path uses the string-parser overload (`ms('2 days')`) or the
    type declaration,
   tests,
    README,
-   mise.
-  toml) plus this audit-trail entry,
+   `mise.toml`) plus this audit-trail entry,
    set against no
   current trigger.
   The upstream package is not deprecated,

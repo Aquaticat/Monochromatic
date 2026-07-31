@@ -34,29 +34,22 @@ Two memoize layers with distinct salt strategies:
 
 ### Core modules
 
-- **opmls.
-  ts**:
+- **`opmls.ts`**:
    reads and validates OPML source URLs from environment
-- **outline.
-  ts**:
+- **`outline.ts`**:
    fetches OPML files and extracts feed outlines
-- **feed.
-  ts**:
+- **`feed.ts`**:
    fetches and parses RSS/Atom feeds
-- **item.
-  ts**:
+- **`item.ts`**:
    extracts,
    normalizes,
    and sorts feed items
-- **html.
-  ts**:
+- **`html.ts`**:
    renders items to HTML,
    filtering out ignored entries
-- **interval.
-  ts**:
+- **`interval.ts`**:
    configurable time-bucket for fetch cache invalidation
-- **index.
-  ts**:
+- **`index.ts`**:
    memoized pipeline orchestration and HTTP server
 
 ## Configuration

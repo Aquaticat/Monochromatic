@@ -314,8 +314,7 @@ This file tracks improvements needed across different packages in the monorepo,
 ### Documentation Standards
 
 - [ ] Ensure all packages have comprehensive README files
-- [ ] Add consistent package.
-      json metadata across all packages
+- [ ] Add consistent `package.json` metadata across all packages
 - [ ] Create package development guidelines
 - [ ] Add automated package documentation generation
 

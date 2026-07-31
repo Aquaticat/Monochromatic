@@ -1370,8 +1370,7 @@ which `messages-demo` does not have.
 `DEFAULT_DATABASE_PATH = './data/forge.db'` and recomputes the same
 `--db argument -> DB_PATH env -> default` priority chain that already lives in
 `package/webapp-forge/server/src/data/db.ts`.
- The auth.
-ts docblock acknowledges this:
+ The `auth.ts` docblock acknowledges this:
 
 > Mirrors `data/db.ts` so both libraries point at the same file.
 > Mirrors `data/db.ts`'s priority chain so both libraries point at the same path.

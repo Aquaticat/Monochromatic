@@ -549,8 +549,7 @@ that compose under the live foreground.
 ### 48 px threshold: justification and tunability
 
 The 48 px figure matches the project's minimum touch-target standard
-in the CSS rules (AGENTS.
-md).
+in the CSS rules (`AGENTS.md`).
 The interactability anchor is real:
 a node smaller than 48 px on screen is not directly clickable in our UX,
 so live-rendering it spends compute on something the user cannot single-target anyway.
@@ -686,8 +685,7 @@ Rejected:
    Rust workspace,
   active alpha as of 2026-05-09 with daily commits;
   verified by reading [Graphite's README](https://github.com/GraphiteEditor/Graphite)
-  and Cargo.
-  toml in `/tmp/graphite-repo`).
+  and `Cargo.toml` in `/tmp/graphite-repo`).
   Graphite is the closest existing analogue:
   Rust,
    GPU-accelerated,
@@ -796,8 +794,7 @@ Rejected:
   Pre-builds for a feature not in scope.
   CRDT data structures cost memory and CPU per operation;
   paying that cost while not using collab violates the
-  "apply YAGNI to architecture" rule in AGENTS.
-  md.
+  "apply YAGNI to architecture" rule in `AGENTS.md`.
   Re-evaluate when collab enters scope.
 
 ## D8. Engine scope: render plus pan/zoom plus select-to-inspect
@@ -1006,8 +1003,7 @@ Mitigation strategy:
 
 - Pin all three (Bevy,
    Vello,
-   bevy_vello) to known-working versions in Cargo.
-  toml.
+   bevy_vello) to known-working versions in `Cargo.toml`.
 - Upgrade on the project's schedule,
    not upstream's.
 - If bevy_vello lags an upgrade we want,

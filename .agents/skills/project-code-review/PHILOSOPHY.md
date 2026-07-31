@@ -2,14 +2,12 @@
 
 ## Why the skill duplicates AGENTS.md rules
 
-The code-review skill restates rules from AGENTS.
-md verbatim,
+The code-review skill restates rules from `AGENTS.md` verbatim,
  enriched with severity annotations and bad/good code examples.
 This is intentional,
  not accidental duplication.
 
-AGENTS.
-md rules are loaded into every session as background context.
+`AGENTS.md` rules are loaded into every session as background context.
 Background context fades as conversation length grows -- the agent remembers that rules exist
 but loses precision on exactly what each rule requires.
 When reviewing code,
@@ -23,8 +21,7 @@ directly adjacent to the review instructions,
 The token cost of this duplication is paid only during reviews,
  not during every session.
 
-The alternative -- referencing AGENTS.
-md sections by name ("apply the rules from the TypeScript Standards section") --
+The alternative -- referencing `AGENTS.md` sections by name ("apply the rules from the TypeScript Standards section") --
 assumes the agent will cross-reference accurately across documents under context pressure.
 In practice it produces vague findings like "check your types" instead of
 "line 42:
@@ -80,8 +77,7 @@ A finding like "there are some type safety concerns in the auth module"
 requires the reader to locate the code,
  identify the specific issue,
  and decide what to do.
-A finding like "src/auth.
-ts:
+A finding like "src/`auth.ts`:
 42 -- missing explicit return type on `parseConfig`,
  add `: Config`"
 is immediately actionable.

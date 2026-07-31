@@ -468,8 +468,7 @@ iOS UIKit app (`~/ios-vet/mauigate`,
  `net10.0-ios`,
  `dotnet new ios`,
  bundle id forced
-to `dev.monochromatic.iosvet.hellodevice` via `ApplicationId` plus Info.
-plist),
+to `dev.monochromatic.iosvet.hellodevice` via `ApplicationId` plus `Info.plist`),
  built and signed over
 SSH with the vet keychain reusing profile `b08f51d5...`,
  in both execution models,
@@ -1415,8 +1414,7 @@ apply to current upstream,
  and both create `QGuiApplication`/`QQmlApplicationEngine` in C++.
  The
 Rust-`main` path that would satisfy the rule has zero iOS evidence and likely cannot emit a deployable
-bundle (Info.
-plist,
+bundle (`Info.plist`,
  signing,
  `UIApplicationMain` bootstrap) without Qt's CMake/Xcode integration.
  So Qt

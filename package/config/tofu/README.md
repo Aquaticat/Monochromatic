@@ -259,8 +259,7 @@ The following are gitignored and must be created manually:
 - `*.auto.tfvars`:
    API tokens and home ISP ASN
 - `.env.local`:
-   ipinfo token for fetch_ips.
-  ts
+   ipinfo token for `fetch_ips.ts`
 - `src/cache_AS*.txt`:
    ASN lookup caches
 - `terraform.tfstate*`:

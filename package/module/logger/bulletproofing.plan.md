@@ -778,8 +778,7 @@ Each concrete sink gets properties over its own logic,
    discards,
    exposes no flush.
 
-Security-boundary properties (the SYB and STB rules in AGENTS.
-md make these
+Security-boundary properties (the SYB and STB rules in `AGENTS.md` make these
 mandatory,
  not optional):
 

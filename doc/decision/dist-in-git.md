@@ -168,8 +168,7 @@ The cost the carve-out is paying is also bounded:
 ### Source-only plugins with SessionStart-installs-dependencies
 
 Ship `src/` only.
-Each plugin's plugin.
-json declares a SessionStart hook that runs `npm install` into `${CLAUDE_PLUGIN_DATA}`
+Each plugin's `plugin.json` declares a SessionStart hook that runs `npm install` into `${CLAUDE_PLUGIN_DATA}`
 when `package.json` changes,
  mirroring the canonical pattern in the Claude Code plugin docs.
 Runtime hooks then invoke `node` against either the installed package or the source through `tsx`.

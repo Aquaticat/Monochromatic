@@ -161,8 +161,7 @@ decision doc,
    smoke-run at 500ms per
   property is green.
 - Decision doc `doc/decision/file-enforcer-fuzzing.md` written (no
-  AGENTS.
-  md pointer,
+  `AGENTS.md` pointer,
    per user).
 
 Verification done:

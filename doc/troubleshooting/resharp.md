@@ -718,8 +718,7 @@ restriction:
 4. **Would the repo welcome our contribution?
    ** Yes.
     The repo carries no
-   CONTRIBUTING.
-   md,
+   `CONTRIBUTING.md`,
     issue template,
     pull-request template,
     or

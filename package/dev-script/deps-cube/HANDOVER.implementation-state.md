@@ -15,8 +15,7 @@ gl approved at 72.7% TS as an explicit user-confirmed exception),
  and the verification checklist.
 
 Tool premise:
- scatter-plot every catalog entry in the pnpm-workspace.
-yaml in 3D feature space (6 dims = 3 spatial + color + shape + size),
+ scatter-plot every catalog entry in the `pnpm-workspace.yaml` in 3D feature space (6 dims = 3 spatial + color + shape + size),
  with deck.
 gl WebGL rendering and a custom HTML control panel for dim swapping,
  3-state boolean filtering,
@@ -50,8 +49,7 @@ gl WebGL rendering and a custom HTML control panel for dim swapping,
  not a wireframe box with threshold planes.
  Implemented:
 
-- New deps `@deck.gl/mesh-layers` + `@luma.gl/engine` (catalog + package.
-  json + pnpm install).
+- New deps `@deck.gl/mesh-layers` + `@luma.gl/engine` (catalog + `package.json` + pnpm install).
 - New `src/deck-geometries.ts`:
    `sphereGeometry`,
    `octahedronGeometry` (flat-shaded with 24 duplicated vertices),
@@ -598,14 +596,18 @@ Done:
      document terminates cleanly with `</html>`.
   - `src/cli.ts`:
      `#!/usr/bin/env node` entry;
-     top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` → `await renderHtml({ probes })` → `mkdir(distDir, { recursive: true })` → `writeFile(absPath, html, 'utf8')` → `console.log(\`Saved to ${absPath}\`)`.`currentRunOutputFilename()`returns`deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.
-    html`: ISO 8601 UTC down to seconds, with`:
-    `rewritten as`-`for filesystem safety; each invocation gets a distinct artifact and re-runs do not overwrite. Output is anchored to`<package>/dist/`via`PACKAGE_ROOT`(from`.
-    /find-package-root.
-    ts`, walking up to this package's own`package.
-    json`), not`process.
-    cwd()`: the audit is per-monorepo, not per-cwd, and the find-up keeps the path stable in both source mode and built mode (`dist/final/node/cli.
-    mjs`). Each top-level`const` carries its own TSDoc (required at module root).
+     top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` → `await renderHtml({ probes })` → `mkdir(distDir, { recursive: true })` → `writeFile(absPath, html, 'utf8')` → ``console.log(`Saved to ${absPath}`)``.
+     `currentRunOutputFilename()` returns `deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html`:
+     ISO 8601 UTC down to seconds,
+     with `:` rewritten as `-` for filesystem safety;
+     each invocation gets a distinct artifact and re-runs do not overwrite.
+     Output is anchored to `<package>/dist/` via `PACKAGE_ROOT` (from `./find-package-root.ts`,
+     walking up to this package's own `package.json`),
+     not `process.cwd()`:
+     the audit is per-monorepo,
+     not per-cwd,
+     and the find-up keeps the path stable in both source mode and built mode (`dist/final/node/cli.mjs`).
+     Each top-level `const` carries its own TSDoc (required at module root).
   - `src/index.ts`:
      re-exports the library surface (`readCatalog`,
      `decodeAlias`,
@@ -694,8 +696,7 @@ Done (continued):
    and creates temp directories under `os.tmpdir()` with an `await using` disposable for cleanup.
    The mise task wiring uses the root template (`[tasks.'test:unit'] extends = "test:unit"`),
    which runs `node <file>` per `*.unit.test.ts` in parallel via the root `task_templates."test:unit"`.
-   The CLAUDE.
-  md rule "Never invoke raw tools (`bun test`,
+   The `CLAUDE.md` rule "Never invoke raw tools (`bun test`,
    `oxlint`,
    etc.) directly;
    use the corresponding mise task" caught this;
@@ -811,8 +812,7 @@ Done (continued):
    add `@math.gl/types` to `@loaders.gl/schema-utils`'s `package.json` dependencies (track via `visgl/loaders.gl` repo when revisiting).
 
   Sinon stubbing of global namespace methods (`globalThis.fetch` and bundler seams) requires `oxlint-disable typescript-eslint/no-unsafe-call` and `no-unsafe-member-access` because sinon's overload set doesn't unify with the fetch global and bundler seam types.
-   The disables are wrapped tightly around the `sinon.stub(...).resolves/rejects(...)` lines per the AGENTS.
-  md disable-comment rule.
+   The disables are wrapped tightly around the `sinon.stub(...).resolves/rejects(...)` lines per the `AGENTS.md` disable-comment rule.
 
 Partial:
 
@@ -907,15 +907,7 @@ package/dev-script/deps-cube/
     └── state.unit.test.ts        ← defaultState ranges + encode/decode round-trip + hash helpers
 ```
 
-The split (probe.
-ts / probe-fields.
-ts / probe-transitive.
-ts and deck-config.
-ts / deck-accessors.
-ts / deck-layers.
-ts / deck-scatter.
-ts / deck-labels.
-ts) is enforced by the `eslint/max-lines: 300` rule.
+The split (`probe.ts` / `probe-fields.ts` / `probe-transitive.ts` and `deck-config.ts` / `deck-accessors.ts` / `deck-layers.ts` / `deck-scatter.ts` / `deck-labels.ts`) is enforced by the `eslint/max-lines: 300` rule.
  Keep new files under that;
  the rule is configured with `skipBlankLines: true, skipComments: true`,
  so raw line counts can exceed 300 as long as code-only lines stay under (verified `render-controls.ts` at 402 raw lines passes cleanly).
@@ -983,11 +975,8 @@ The first two pass cleanly now.
    `decodeState` uses try-catch (allowed).
 - **exactOptionalPropertyTypes**:
    all optional fields are `field?: T | undefined`.
-- **JSON.
-  parse / response.
-  json() / `Object.fromEntries` casts**:
-   surrounded by `// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- <reason>` per AGENTS.
-  md.
+- **`JSON.parse` / `response.json()` / `Object.fromEntries` casts**:
+   surrounded by `// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- <reason>` per `AGENTS.md`.
    The disable must be on the line directly before the cast;
    if `Object.fromEntries(...) as T` spans multiple lines,
    extract to a `const record` first.
@@ -1029,8 +1018,7 @@ The first two pass cleanly now.
    Sibling-package precedent:
    `inference-canary-viewer/src/svg.d.ts` does the same for `.svg`.
 - **CSS border rule**:
-   AGENTS.
-  md bans `border` / `padding` / `margin` shorthands (multi-axis + multi-sub-property).
+   `AGENTS.md` bans `border` / `padding` / `margin` shorthands (multi-axis + multi-sub-property).
    Single-axis (`padding-block`,
    `padding-inline`,
    `margin-inline-end`) and single-concept (`border-radius`,

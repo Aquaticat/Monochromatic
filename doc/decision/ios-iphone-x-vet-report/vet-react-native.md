@@ -25,8 +25,7 @@ run,
    JS is compiled to Hermes Bytecode (.
   hbc) at build time by hermesc on the Mac,
    shipped in the bundle,
-   and the on-device Hermes VM deserializes and interprets that bytecode (Hermes Design.
-  md:
+   and the on-device Hermes VM deserializes and interprets that bytecode (Hermes `Design.md`:
    "At runtime,
    the VM will deserialize the bytecode from the file and interpret it").
    Hermes ships as a vendored prebuilt binary framework (hermes-engine.
@@ -67,8 +66,7 @@ run,
    hermes-engine.
   podspec vendored hermesvm.
   framework + hermesc build-time .
-  hbc + Hermes Design.
-  md),
+  hbc + Hermes `Design.md`),
    and its TurboModule/JSI bridge is a pure C++ jsi:
   :
   HostObject layer (TurboModule.
@@ -94,8 +92,7 @@ React Native does not need JIT or executable memory on iOS.
 hbc at build time (hermes.
 dev docs:
  'compile JavaScript to Hermes Bytecode during build time'),
- and the device VM deserializes-and-interprets it (Hermes Design.
-md).
+ and the device VM deserializes-and-interprets it (Hermes `Design.md`).
  This is the iOS twin of Flutter Dart-AOT and is exactly why RN defaults to Hermes (reactnative.
 dev/docs/hermes:
  'Hermes is used by default by React Native').
@@ -106,10 +103,8 @@ dev/docs/hermes:
  Wall-2 PASS.
 
 Source:
- Hermes Design.
-md (github.
-com/facebook/hermes doc/Design.
-md,
+ Hermes `Design.md` (github.
+com/facebook/hermes doc/`Design.md`,
  'deserialize the bytecode ... and interpret it');
  hermes-engine.
 podspec vendored hermesvm.
@@ -386,8 +381,7 @@ xcframework).
    hermesc bytecode build lines 50-80,127-165)
 - Hermes is a bytecode interpreter over ahead-of-time compiled bytecode (no JIT):
    github.
-  com/facebook/hermes doc/Design.
-  md ('At runtime,
+  com/facebook/hermes doc/`Design.md` ('At runtime,
    the VM will deserialize the bytecode from the file and interpret it');
    reactnative.
   dev/docs/hermes ('Hermes is used by default';
@@ -456,20 +450,16 @@ xcframework).
     The quote is accurate;
     only the doc name is loose.
 
-2) SCOPE OF Design.
-   md (not a contradiction):
-    The audit's iosRuntimeModel implies Hermes Design.
-   md covers the full build-then-interpret pipeline.
-    Design.
-   md confirms verbatim "At runtime,
+2) SCOPE OF `Design.md` (not a contradiction):
+    The audit's iosRuntimeModel implies Hermes `Design.md` covers the full build-then-interpret pipeline.
+    `Design.md` confirms verbatim "At runtime,
     the VM will deserialize the bytecode from the file and interpret it" but does NOT itself name hermesc or describe build-time compilation;
     that half ("hermesc compiles JS to .
    hbc at build time") is supported by reactnative.
    dev/docs/hermes and the hermes-engine.
    podspec (HERMES_CLI_PATH -> hermesc,
     lines 74/134),
-    not by Design.
-   md.
+    not by `Design.md`.
     Both halves are sourced correctly elsewhere,
     so the composite claim stands.
 

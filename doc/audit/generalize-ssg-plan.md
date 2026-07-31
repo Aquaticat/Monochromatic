@@ -155,8 +155,7 @@ These are verified against the source,
 15. There is no invocation model.
     The build entry is `node src/build.ts` (`mise.toml`),
      and `package.json` has no `bin`.
-    Phase 3 says site-aquaticat gets "mise.
-    toml with build/dev tasks that invoke the SSG" but never specifies
+    Phase 3 says site-aquaticat gets "`mise.toml` with build/dev tasks that invoke the SSG" but never specifies
     how a consumer triggers a build whose entry lives in `node_modules`,
      nor how the `extends` task templates
     (`build:js:client`,
@@ -164,8 +163,7 @@ These are verified against the source,
      defined in the root `mise.toml:172,391`) resolve for a package outside this monorepo.
 
 16. The rename surface is understated.
-    Phase 4 says "update pnpm-workspace.
-    yaml if the path is listed explicitly.
+    Phase 4 says "update `pnpm-workspace.yaml` if the path is listed explicitly.
     "
     There is a live functional reference at `mise.toml:619`
     (`package/ssg/aquati.cat/node_modules/.bin` in a PATH list),

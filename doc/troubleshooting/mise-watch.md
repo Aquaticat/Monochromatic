@@ -825,8 +825,7 @@ Earlier alternatives considered:
 
 - Sending a second or third SIGINT:
    the action handler's
-  `quit_again.fetch_add` escalation (config.
-  rs:
+  `quit_again.fetch_add` escalation (`config.rs`:
   298-322) is gated on the
   action worker receiving a fresh event,
    but the worker is already past

@@ -137,8 +137,7 @@ indefinitely never terminate.
  This is
 the first resharp bug with a viable upstream patch (see
 TROUBLESHOOTING.
-resharp.
-md Bug E for the full writeup).
+`resharp.md` Bug E for the full writeup).
 
 **Resume work next session:
 **
@@ -191,8 +190,7 @@ a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
 - Added `nested_lookahead_in_quantified_group` pre-validator catching
   the nested-quant + outer-min≥2 shape (e.g. `(?:(?:(?!X)){1,5}){2,4}`).
 - Documented in TROUBLESHOOTING.
-  resharp.
-  md Bug F (see next-session
+  `resharp.md` Bug F (see next-session
   todo to add).
 - **Status:
   ** validator is too narrow;
@@ -200,8 +198,7 @@ a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
   (quantified lookahead followed by short trailing literal) is not
   yet caught.
    See "KNOWN GAP" in HANDOVER.
-  forbidden-strings-fuzzing.
-  md.
+  `forbidden-strings-fuzzing.md`.
 
 **Bug B widened (`lookaround_in_alternation_with_sibling`):
 **
@@ -209,8 +206,7 @@ a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
 Dropped the `total_lookarounds >= 2` requirement.
  Bisected from
 `crash-c3c364eb3a03114a52015721c02cba0bf20eb496` which has only
-ONE lookaround inside the alternation but trips engine.
-rs:
+ONE lookaround inside the alternation but trips `engine.rs`:
 1020 at
 find_all time.
  The compile succeeds;
@@ -238,8 +234,7 @@ via direct probe" and "fuzz never discovers it via random mutation".
     re-fuzz.
     Expect SOUNDNESS PANIC.
 3. Add Bug F section to TROUBLESHOOTING.
-   resharp.
-   md.
+   `resharp.md`.
 4. File Bug E upstream at github.
    com/ieviev/resharp (still pending).
 
@@ -601,8 +596,7 @@ production builds.
      Returns an
     actionable error message ending in the standard
     `TROUBLESHOOT_REF` ("See TROUBLESHOOTING.
-    resharp.
-    md ...").
+    `resharp.md` ...").
   - `intersection_with_word_end_alternation(src: &str) -> Option<String>`:
     fires when intersection `&`,
      `\w` shorthand,
@@ -749,8 +743,7 @@ and document any NEW panic shapes.
 
 **Step 3:
  TROUBLESHOOTING.
-resharp.
-md.
+`resharp.md`.
 **
 
 Write against **resharp 6.0** shapes,

@@ -560,8 +560,7 @@ Related issue boundaries:
 - Do not use the file-enforcer wrapper properties as proof that toml-edit itself
   is covered.
    They remain wrapper coverage only.
-- Do not create an AGENTS.
-  md pointer or global agent rule unless the user asks.
+- Do not create an `AGENTS.md` pointer or global agent rule unless the user asks.
 
 ## Constraints
 

@@ -44,8 +44,7 @@ code-level and launch-level layers are already verified (see "Already verified")
 - An earlier launch over SSH ran the event loop for ~8s with no panic and no
   stderr,
    so `Output::new` opened the default output device (the engine prints
-  `music-player: audio init failed: ...` from engine.
-  rs:
+  `music-player: audio init failed: ...` from `engine.rs`:
   300 on failure,
    and stderr
   was empty).

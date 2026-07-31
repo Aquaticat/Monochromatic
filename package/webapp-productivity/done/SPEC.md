@@ -397,8 +397,7 @@ The server is the authority for start/stop events;
 
 ## PWA requirements
 
-- Installable (manifest.
-  json with icons)
+- Installable (`manifest.json` with icons)
 - Service worker caches static assets (JS,
    CSS,
    icons) for faster repeat loads;

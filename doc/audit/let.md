@@ -6,8 +6,7 @@ excluding `dist`,
  and generated files.
 The audit underpins the design decision of whether to add a custom oxlint rule banning `let`,
 banning it only at function-body root scope,
- or leaving the prose policy in AGENTS.
-md
+ or leaving the prose policy in `AGENTS.md`
 ("`const` over `let`;
  comment any deviation from immutability") as-is.
 
@@ -267,8 +266,7 @@ Only three sites use an `oxlint-disable` for `prefer-const` or `no-let`:
 3. `module/es/src/types/.../customParsers.dispatch.ts:29`:
    Same module-init pattern.
 
-The AGENTS.
-md rule "comment any deviation from immutability" is universally unmet across the other 782 declarations.
+The `AGENTS.md` rule "comment any deviation from immutability" is universally unmet across the other 782 declarations.
 
 ### `using` declarations
 
