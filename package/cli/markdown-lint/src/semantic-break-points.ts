@@ -501,6 +501,13 @@ export type BreakOffsetsParams = {
  * straight after the break-point character. Declining a break is always safe;
  * inserting one inside a token is not.
  *
+ * Known and accepted false negative: an abbreviation that ends a sentence never
+ * breaks, so `We stopped using it, etc. Next sentence starts here.` gets no
+ * break after `etc.`. English does not distinguish it from `Rust vs. Go` by any
+ * rule this scanner could apply, since both write a capital letter after the
+ * dot, so every heuristic that recovers the first misfires on the second.
+ * Missing a break is the safe half of that trade.
+ *
  * @param slice - source text of one prose text node
  *
  * @param trailing - source past the node, for boundary lookahead
