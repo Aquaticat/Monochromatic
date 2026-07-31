@@ -164,7 +164,10 @@ async function callJudgeAndRecordOutcome(
       auth: judge.auth,
       ...request,
     },);
-    callHistory.record({ modelSlug: identity, outcome: 'other', },);
+    callHistory.record({
+      modelSlug: identity,
+      outcome: 'other',
+    },);
     return verdict;
   }
   catch (error) {

@@ -17,15 +17,13 @@ import {
 import type { ScriptedStructuredReviewTransport, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 import {
-  toolChoiceForApi,
-  VERDICT_TOOL,
-} from './judge-tool.ts';
-import {
   callJudge,
   EmptyJudgeResponseError,
   extractJsonVerdict,
   parseVerdict,
-} from './judge.ts';
+  toolChoiceForApi,
+  VERDICT_TOOL,
+} from '../dist/final/node/index.mjs';
 
 /** Fixture context window. */
 const CONTEXT_WINDOW = 128_000;

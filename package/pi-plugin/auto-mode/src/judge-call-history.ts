@@ -61,33 +61,21 @@ type JudgeCallHistory = {
 const l = tagged({ tag: 'auto-mode-judge-call-history', },);
 
 /**
- * Test whether complete recent outcome window requires blocklisting.
+ * Test whether consecutive no-content count requires blocklisting.
  *
- * @param outcomes - recent logical judge call outcomes
+ * @param noContentCallCount - bounded consecutive no-content call count
  *
- * @returns whether window reached threshold and every call produced no content
+ * @returns whether count reached temporary blocklist threshold
  *
  * @example
  * ```ts
- * isNoContentWindow(['noContent', 'noContent', 'noContent']);
+ * isBlocklistedCallCount(3);
  * ```
  */
-function isNoContentWindow(
-  outcomes: readonly JudgeCallOutcome[],
+function isBlocklistedCallCount(
+  noContentCallCount: number,
 ): boolean {
-  return (outcomes.length === NO_CONTENT_CALL_THRESHOLD)
-    && outcomes.every(
-      /**
-       * Match one no-content call outcome.
-       *
-       * @param outcome - completed logical call outcome
-       *
-       * @returns whether call produced no content
-       */
-      function outcomeIsNoContent(outcome,) {
-        return outcome === 'noContent';
-      },
-    );
+  return noContentCallCount >= NO_CONTENT_CALL_THRESHOLD;
 }
 
 /**
@@ -103,12 +91,12 @@ function isNoContentWindow(
  */
 function createJudgeCallHistory(): JudgeCallHistory {
   /**
-   * Bounded recent outcome windows keyed by canonical model slug.
+   * Bounded consecutive no-content counts keyed by canonical model slug.
    */
-  const outcomesByModel = new Map<string, readonly JudgeCallOutcome[]>();
+  const noContentCallCounts = new Map<string, number>();
 
   /**
-   * Derive current model exclusions from recent outcome windows.
+   * Derive current model exclusions from recent call counts.
    *
    * @returns canonical blocklisted model slugs
    *
@@ -119,11 +107,11 @@ function createJudgeCallHistory(): JudgeCallHistory {
    */
   function blocklistedModelSlugs(): readonly string[] {
     /**
-     * Canonical slugs whose recent windows are wholly empty.
+     * Canonical slugs whose recent calls are wholly empty.
      */
     const blocklisted: string[] = [];
-    for (const [modelSlug, outcomes,] of outcomesByModel.entries()) {
-      if (isNoContentWindow(outcomes,))
+    for (const [modelSlug, noContentCallCount,] of noContentCallCounts.entries()) {
+      if (isBlocklistedCallCount(noContentCallCount,))
         blocklisted.push(modelSlug,);
     }
     return blocklisted;
@@ -132,27 +120,23 @@ function createJudgeCallHistory(): JudgeCallHistory {
   /**
    * Remove all model outcomes at a session boundary.
    *
-   * @returns nothing
-   *
    * @example
    * ```ts
    * history.clear();
    * ```
    */
   function clear(): void {
-    if (outcomesByModel.size > 0)
+    if (noContentCallCounts.size > 0)
       l.debug('clearing session-local judge call history',);
-    outcomesByModel.clear();
+    noContentCallCounts.clear();
   }
 
   /**
-   * Append one outcome and retain only bounded recent history.
+   * Append one outcome and retain bounded consecutive no-content count.
    *
    * @param modelSlug - canonical provider and model identity
    *
    * @param outcome - completed logical judge call classification
-   *
-   * @returns nothing
    *
    * @example
    * ```ts
@@ -169,32 +153,37 @@ function createJudgeCallHistory(): JudgeCallHistory {
     },
   ): void {
     /**
-     * Previous bounded window for selected model.
+     * Previous consecutive no-content call count for selected model.
      */
-    const previous = outcomesByModel.get(modelSlug,) ?? [];
+    const previousCount = noContentCallCounts.get(modelSlug,) ?? 0;
     /**
      * Whether model was excluded before current outcome.
      */
-    const wasBlocklisted = isNoContentWindow(previous,);
+    const wasBlocklisted = isBlocklistedCallCount(previousCount,);
     /**
-     * New bounded window ending at current logical call.
+     * Bounded consecutive no-content count ending at current logical call.
      */
-    const recent = [
-      ...previous,
-      outcome,
-    ].slice(-NO_CONTENT_CALL_THRESHOLD,);
-    outcomesByModel.set(modelSlug, recent,);
+    const recentCount = outcome === 'noContent'
+      ? Math.min(
+        previousCount + 1,
+        NO_CONTENT_CALL_THRESHOLD,
+      )
+      : 0;
+    noContentCallCounts.set(
+      modelSlug,
+      recentCount,
+    );
     /**
-     * Whether current recent window now excludes model.
+     * Whether current recent call count now excludes model.
      */
-    const isBlocklisted = isNoContentWindow(recent,);
+    const isBlocklisted = isBlocklistedCallCount(recentCount,);
     l.debug(`recorded ${outcome} outcome for ${modelSlug}`,);
-    if (!wasBlocklisted && isBlocklisted) {
+    if ((!wasBlocklisted) && isBlocklisted) {
       l.warn(
         `temporarily blocklisting ${modelSlug} after ${NO_CONTENT_CALL_THRESHOLD} no-content judge calls`,
       );
     }
-    if (wasBlocklisted && !isBlocklisted)
+    if (wasBlocklisted && (!isBlocklisted))
       l.info(`removing temporary judge blocklist for ${modelSlug}`,);
   }
 

@@ -17,10 +17,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ScriptedStructuredReviewTransport, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
-import { findBudgetModel, } from './budget-model.ts';
-import { createJudgeCallHistory, } from './judge-call-history.ts';
-import { callJudgeWithFallback, } from './judge-fallback.ts';
-import type { BudgetModel, } from './types.ts';
+import {
+  type BudgetModel,
+  callJudgeWithFallback,
+  createJudgeCallHistory,
+  findBudgetModel,
+} from '../dist/final/node/index.mjs';
 
 /** Fixture context window. */
 const CONTEXT_WINDOW = 128_000;
@@ -399,6 +401,7 @@ await describe({
         /** Fallback scope invocation count. */
         const scopeCalls = { value: 0, };
 
+        /* oxlint-disable no-await-in-loop -- Sequential completed calls must update shared recency history before next call starts. */
         for (let callIndex = 0;
           callIndex < NO_CONTENT_CALL_COUNT;
           callIndex += 1) {
@@ -418,6 +421,7 @@ await describe({
           },);
           expect(result.verdict,).toBe('approve',);
         }
+        /* oxlint-enable no-await-in-loop */
 
         expect(callHistory.blocklistedModelSlugs(),).toEqual([
           'test-provider/first',

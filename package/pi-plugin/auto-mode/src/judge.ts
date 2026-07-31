@@ -49,28 +49,20 @@ const l = tagged({
  *
  * @example
  * ```ts
- * throw new EmptyJudgeResponseError({ cause: new EmptyStructuredReviewTextError() });
+ * throw new EmptyJudgeResponseError();
  * ```
  */
 class EmptyJudgeResponseError extends Error {
   /**
    * Create typed all-empty judge response failure.
    *
-   * @param cause - final empty direct-JSON response after bounded retry
-   *
    * @example
    * ```ts
-   * new EmptyJudgeResponseError({ cause: new EmptyStructuredReviewTextError() });
+   * new EmptyJudgeResponseError();
    * ```
    */
-  constructor(
-    {
-      cause,
-    }: {
-      readonly cause: EmptyStructuredReviewTextError;
-    },
-  ) {
-    super('Judge model produced no content across complete call', { cause, },);
+  constructor() {
+    super('Judge model produced no content across complete call',);
     this.name = 'EmptyJudgeResponseError';
   }
 }
@@ -209,7 +201,7 @@ async function callJudge(
   catch (error) {
     if ((initial.textContent === '')
       && (error instanceof EmptyStructuredReviewTextError)) {
-      throw new EmptyJudgeResponseError({ cause: error, },);
+      throw new EmptyJudgeResponseError();
     }
     throw error;
   }
