@@ -5,27 +5,50 @@ proposal,
 not an accepted decision.
 
 This document investigates
-[issue 401](https://github.com/Aquaticat/Monochromatic/issues/401).
-It records current-tool behavior,
-package constraints,
-repository-owned alternatives,
-and a ranked resolution.
+[Aquaticat/Monochromatic issue 401](https://github.com/Aquaticat/Monochromatic/issues/401).
+It supersedes the earlier exclusion-first recommendation.
+No production source or configuration change is authorized yet.
+
+## Decision requested
+
+Adopt a phased combined direction:
+
+1. Keep all 5 learning HTML pages owned by dprint.
+2. Add an opt-in prose-preserving mode to the `markup_fmt` plugin used by dprint.
+3. Replace Malva at the CSS host seam with repository-owned CSS formatting.
+4. Add a package-local checker for the exact learning CSS contract.
+5. Keep Stylelint during a shadow migration of its remaining responsibilities and editor diagnostics.
+6. Remove Stylelint only after the responsibility,
+   fixture,
+   suppression,
+   CLI,
+   and editor gates pass.
+
+This direction meets the owner's formatter-trust requirement and the intended Stylelint retirement without
+pretending the current probes already reproduce all Stylelint behavior.
 
 ## Owner constraints
 
-The package-local requirements are narrower than the issue originally assumed.
+- Do not exclude or ignore the learning HTML in dprint.
+- Keep the CSS between 5 and 20 nonblank lines.
+- Add no presentation rules beyond the approved foreground and background colors.
+- Keep each page build-free and usable through `file:///`.
+- Repeat the CSS inline in every page.
+- Prose may reflow,
+  but no formatter may split a tight grammatical unit.
+- Use these direct `oklch()` forms in the affected CSS:
+  - lightness as `<number>`;
+  - zero chroma as `none`,
+    otherwise `<number>`;
+  - zero hue as `none`,
+    otherwise `<number>deg`.
+- Keep the CSS policy package-local.
+  Do not add an `AGENTS.md` rule.
+- Build repository-owned CSS tooling rather than selecting another external formatter or linter.
+- Treat replacing dprint as one option family,
+  not the assumed destination.
 
-- CSS should remain around ten lines.
-- CSS layout within that approximate budget is not prescribed.
-- The CSS may contain no presentation rules beyond the approved foreground and background colors.
-- The pages remain complete,
-  build-free HTML that works through `file:///`.
-- Every page repeats its CSS inline.
-  `package/learning/rust/README.md` and `NOTES.md` explicitly reject an extracted stylesheet.
-- Exact authored prose wrapping is not required.
-- A line break inside a tight grammatical unit is unacceptable.
-
-An unacceptable break is:
+An unacceptable prose break is:
 
 ```text
 I ate
@@ -40,26 +63,6 @@ a pig,
 and a cow.
 ```
 
-For affected `oklch()` values,
-the preferred channel syntax is:
-
-- lightness as `<number>`;
-- chroma as `none` when zero,
-  or `<number>` otherwise;
-- hue as `none` when zero,
-  or a numeric `deg` angle otherwise.
-
-The desired achromatic values are therefore:
-
-```css
-oklch(0.1 none none)
-oklch(0.9 none none)
-```
-
-This is package-local policy.
-It does not need an `AGENTS.md` rule.
-Whether the `oklch()` syntax preference should become repository-wide remains undecided.
-
 ## Affected files and current contract gaps
 
 The affected pages are:
@@ -70,740 +73,808 @@ The affected pages are:
 - `package/learning/rust/reference/reading-loop.html`
 - `package/learning/rust/reference/aquascope-decoder.html`
 
-The stylesheet shown in `package/learning/rust/NOTES.md` contains seven nonblank CSS lines.
-All five pages contained byte-identical style content when measured at `HEAD` `68eb96063`.
-Byte equality is a current-corpus fact,
-not a formatting requirement.
+All 5 pages contained byte-identical style content at measured commit `68eb96063`.
+Their current 7-nonblank-line styles satisfy the line budget,
+but use `0` instead of the preferred `none` zero channels.
 
-`NOTES.md` also requires this element on every page:
+`package/learning/rust/NOTES.md` requires:
 
 ```html
 <meta name="color-scheme" content="light dark">
 ```
 
-Only `reference/aquascope-decoder.html` currently contains it.
-The other four affected pages violate that separate package contract.
-Any golden-source or package-assertion option must correct this before treating the current corpus as valid.
+Only `reference/aquascope-decoder.html` currently contains that element.
+The other 4 pages have an independent package-content defect.
 
-`package/learning/rust/README.md` says the workspace has no build tasks.
-A new package generator or checker therefore carries a real local-infrastructure cost.
+## Verified incumbent behavior
 
-## Current formatter and linter baseline
+### Dprint and embedded CSS
 
-### dprint and markup formatting
+The measured toolchain is:
 
-At `printWidth: 90`,
-dprint 0.55.2 with `markup_fmt` 0.23.1 and Malva 0.14.1 introduces prose breaks that split grammatical units.
-Examples include splitting `required` from `concepts` and `original` from `variable`.
+- dprint 0.55.2;
+- `markup_fmt` 0.23.1;
+- Malva 0.14.1.
 
-Formatting two prose-heavy pages in the first disposable probe produced:
+Pinned `markup_fmt` source always calls `format_style` for nonempty `<style>` content in
+`markup_fmt/src/printer.rs:701-737` at
+[commit `2d902a5a1`](https://github.com/g-plane/markup_fmt/commit/2d902a5a1af8d7f07e06f189ae1e3132ea344e74).
+Its dprint adapter sends that content back to the host under a synthetic `index.html#.css` path in
+`dprint_plugin/src/lib.rs:54-90`.
 
-- 200 insertions;
-- 153 deletions.
+Dprint therefore already exposes the correct seam:
+markup owns HTML structure,
+while a CSS plugin owns style content.
+The issue is the behavior of the adapters at that seam,
+not an inability to separate the languages.
 
-The old shared dprint and Stylelint fixed point expanded the seven-line stylesheet to 20 lines.
-The particular layout was not independently wrong,
-but 20 lines missed the package's approximate ten-line budget.
+At width 90,
+the incumbent markup formatter introduced breaks inside grammatical units.
+Width probes produced these newly introduced text-node break contexts:
 
-A repository-wide dprint inventory at `HEAD` `68eb96063` contained 775 paths:
+- width 160:
+  94;
+- width 240:
+  30;
+- width 320:
+  11;
+- width 500:
+  3;
+- width 600 on the current corpus:
+  0.
 
-- 376 JSON;
-- 293 TOML;
-- 17 YAML;
-- 36 CSS;
-- 15 HTML;
-- 31 XML;
-- 7 SVG.
+Width 600 and 1000 produced the same current-corpus output,
+with lines up to 593 characters.
+Adversarial fixtures still split `original variable`,
+`allocator deallocates`,
+and `you reach`.
+High width is therefore a bridge,
+not grammatical ownership.
 
-Of those,
-724 were JSON,
+### Dprint scope
+
+The measured dprint inventory contained 775 paths,
+including 724 JSON,
 TOML,
 YAML,
 XML,
 or SVG paths unrelated to issue 401.
-The issue does not justify replacing dprint across those domains.
+Replacing dprint across the repository is not justified by these 5 HTML files.
 
-### Stylelint
+### Stylelint scope
 
-At the measured revision,
+The measured Stylelint stack is:
+
+- Stylelint 17.14.1;
+- `stylelint-config-standard` 40.0.0;
+- `postcss-html` 1.8.1.
+
 Stylelint discovered 51 CSS or HTML paths.
-Root ignores removed 32.
-The active surface was 19 files containing 14 actual CSS regions.
+Root ignores removed 32 paths.
+The active surface was 19 files containing 14 CSS regions.
 
-The merged recommended,
-standard,
-and local configuration enabled 82 rules:
+The merged configuration enabled 82 rules:
 
 - 34 advertised fixes;
 - 48 did not.
 
-The repository-wide run reported 185 diagnostics from eight rule names.
-The learning pages contributed 40 diagnostics.
-
-The 185-diagnostic baseline was:
+The repository-wide run reported 185 diagnostics from 8 rule names:
 
 - `at-rule-empty-line-before`:
-   10;
+  10;
 - `declaration-block-single-line-max-declarations`:
-   5;
+  5;
 - `declaration-empty-line-before`:
-   5;
+  5;
 - `function-disallowed-list`:
-   16;
+  16;
 - `hue-degree-notation`:
-   10;
+  10;
 - `lightness-notation`:
-   10;
+  10;
 - `property-disallowed-list`:
-   62;
+  62;
 - `unit-disallowed-list`:
-   67.
+  67.
 
-All current diagnostics from the first six rule names were not evidence that only those rules matter.
-A whole-Stylelint replacement still needs an explicit outcome for every enabled rule.
+Current diagnostics do not define the retirement surface.
+All 82 enabled rules need an explicit outcome.
 
-No workflow under `.github/workflows/` invokes the root dprint or Stylelint tasks.
-The conflict currently causes local lint noise and destructive local formatting,
-not a CI failure.
+### Stylelint configuration defect
 
-## Pinned source findings
+`package/config/stylelint/index.mjs` intends to require `rem` in every media-feature dimension.
+Its key `'/[\w-]+/'` is a JavaScript string,
+so Stylelint receives `/[w-]+/`.
 
-### Embedded CSS is always delegated
+An executable probe accepted `@media (height: 10em)` while rejecting `@media (width: 10em)`.
+The latter only matches accidentally because `width` contains `w`.
+The repository-owned checker correctly rejects both and accepts `height: 10rem`.
 
-The pinned `markup_fmt` printer calls `format_style` for every non-empty `<style>` element in
-`markup_fmt/src/printer.rs:701-737` at
-[commit `2d902a5a1`](https://github.com/g-plane/markup_fmt/commit/2d902a5a1af8d7f07e06f189ae1e3132ea344e74).
+### Dependency footprint
 
-The dprint adapter creates a synthetic path such as `index.html#.css` and sends it to the host formatter in
-`dprint_plugin/src/lib.rs:54-90` at the same commit.
+The Stylelint,
+standard-config,
+and HTML-syntax closure contains:
 
-A markup plugin option cannot disable that delegation by path.
-It can,
-however,
-change both markup and Malva settings by path through dprint's plugin override mechanism.
+- 126 package identities;
+- 2,507 files;
+- 10,721,885 bytes in the installed tree.
 
-### dprint supports scoped plugin overrides
+A lockfile traversal starts from all 148 pnpm importers except the Stylelint configuration importer and
+Stylelint-only root dependencies.
+It reaches 604 snapshots with no unresolved non-workspace roots.
+Peer-context variants count as shared,
+which makes the result conservative.
 
-dprint 0.55.2 documents plugin `overrides` in `website/src/config.md:284-339` at
-[commit `89ff90b3c`](https://github.com/dprint/dprint/commit/89ff90b3cc6f9fa211c82fb5865491c8865ea79a).
+Of the 126 Stylelint-closure identities:
 
-Each override names files already routed to the plugin and replaces only the listed plugin settings.
-Later matching overrides win.
-Overrides do not change discovery or plugin associations.
+- 16 are reachable elsewhere;
+- 110 are exclusive;
+- the exclusive installed footprint is 2,024 files and 7,845,733 bytes.
 
-### Excluded explicit paths have a supported success mode
+The existing `package/module/css-edit/` foundation uses one zero-dependency tokenizer package,
+`@csstools/css-tokenizer`.
 
-dprint tests `--allow-no-files` for both `fmt` and `check` in
-`crates/dprint/src/commands/formatting.rs:1413-1444` at the same pinned commit.
+## Verified combined prototype
 
-A disposable worktree excluded the five pages and then ran their explicit paths with that flag.
-The command exited 0.
-The earlier exit-14 caveat is therefore not a blocker.
+### Prose-preserving markup
 
-### The correct node-ignore directive is tool-specific
+A disposable `markup_fmt` patch added opt-in `preserveTextWrapping` behavior.
+It:
 
-The pinned `markup_fmt` schema defines:
+- keeps authored nonempty text lines as formatter boundaries;
+- normalizes repeated intra-line ASCII whitespace;
+- continues formatting document structure,
+  attributes,
+  quotes,
+  and embedded languages;
+- leaves the default behavior unchanged when disabled.
 
-- `ignoreCommentDirective`:
-  `markup-fmt-ignore`;
-- `ignoreFileCommentDirective`:
-  `dprint-ignore-file`.
+The default-off upstream library tests passed.
+A local dprint Wasm build succeeded.
 
-`<!-- dprint-ignore -->` before a style element was the wrong node directive.
-`<!-- markup-fmt-ignore -->` does skip the next node.
+Across all 5 pages,
+the combined run produced:
 
-Probes before `<body>` and `<main>` preserved the subtree.
-The raw subtree retained its old indentation while its parent was reformatted,
-which produced inconsistent nesting indentation.
-The mechanism works,
-but root exclusion or file ignore is cleaner for these pages.
+- no dprint exclusion or ignore directive;
+- no introduced text-node break context;
+- original and formatted break counts of 0,
+  16,
+  0,
+  0,
+  and 259;
+- 16 nonblank CSS lines per page;
+- no change on a second run.
 
-## Configuration probes reopened by the clarified contract
+The grammar fixture kept `I ate a chicken`,
+`original variable`,
+`allocator deallocates`,
+and `you reach` intact at width 90 when each phrase was authored on one line.
 
-### A scoped Malva threshold meets the line budget
+This is a feature direction,
+not an established upstream defect.
+No upstream issue has been filed.
 
-This dprint override matched the synthetic embedded-CSS path:
+### Repository-owned CSS formatter
 
-```json
-{
-  "malva": {
-    "overrides": {
-      "files": "package/learning/rust/**/*.html#.css",
-      "singleLineBlockThreshold": 2
-    }
-  }
-}
+The second disposable formatter uses `package/module/css-edit/` for strict CSS structure and preserves surrounding
+HTML through region offsets.
+Its external interface should remain deep:
+
+```ts
+formatCssSource({ source, profile }): string;
+checkCssSource({ source, path, profile }): readonly CssDiagnostic[];
 ```
 
-All five embedded styles formatted to seven nonblank CSS lines.
-The output retained:
+Callers do not need to know the CST,
+tokenizer,
+HTML extraction,
+normalization passes,
+or rule data.
 
-```css
---dark: oklch(0.1 none none);
---light: oklch(0.9 none none);
-```
+The dprint-discovered tracked corpus contained:
 
-A second dprint run was byte-identical.
-The old 20-line result is not an unavoidable dprint result.
+- 36 standalone CSS files;
+- 15 HTML files;
+- 45 actual CSS regions.
 
-### Markup width trades grammatical breaks for long lines
+Across all 45 regions,
+the formatter reported:
 
-A probe compared new line-break contexts inside HTML text nodes after formatting all five pages.
-The metric screens for changes;
-it does not understand grammar by itself.
-Every context still needs human classification.
+- no parse failure;
+- no second-pass difference;
+- no semantic-token mismatch,
+  ignoring optional trailing semicolons;
+- no comment-token change;
+- no host prefix or suffix change.
 
-Measured results were:
+Fixtures exercised:
 
-- width 160:
-   94 new contexts;
-- width 240:
-   30;
-- width 320:
-   11;
-- width 500:
-   3;
-- width 600:
-   0.
+- compact nested learning CSS;
+- block and directive comments;
+- blank-line groups;
+- strings containing CSS punctuation;
+- selector lists and combinators;
+- nested selectors;
+- block and statement at-rules;
+- declaration spacing;
+- malformed strings,
+  comments,
+  braces,
+  and rules.
 
-Width 600 avoids new grammatical splits by joining paragraphs.
-It also produced:
+The formatter establishes structural feasibility.
+It does not yet implement all 27 formatting responsibilities in the retirement ledger.
 
-- 1,441 insertions;
-- 1,684 deletions;
-- 225 lines over 120 characters in `aquascope-decoder.html`;
-- 61 lines over 200 characters in that file;
-- a 593-character maximum line.
+### Dprint formatting adapter
 
-Zero new break contexts is therefore not a clean source-readability win.
-It exchanges bad breaks for long lines and broad churn.
+A disposable `dprint-plugin-exec` 0.7.3 adapter reads CSS from stdin and writes formatted CSS to stdout.
+The markup adapter must not pass Malva-only override keys to exec.
+After removing those invalid keys,
+dprint formatted standalone and embedded CSS and reached a second-pass fixed point.
 
-`whitespaceSensitivity: 'strict'` did not preserve authored wrapping.
-It produced:
+A JSON-RPC probe launched `dprint lsp` 0.55.2 with unsaved editor buffers.
+It returned formatting edits for both standalone CSS and HTML with embedded CSS,
+with no stderr.
+Open
+[`dprint-plugin-exec#34`](https://github.com/dprint/dprint-plugin-exec/issues/34)
+does not reproduce with the tested versions and configuration.
 
-- 357 new contexts at width 90;
-- 100 at width 160;
-- 49 at width 200.
+A 5-run benchmark used `--incremental=false` on the 5 pages:
 
-### A selective formatter boundary is possible
+- prose-preserving markup alone:
+  344.2 ms mean;
+- markup plus exec CSS delegation:
+  451.2 ms mean;
+- measured mean difference:
+  107.0 ms per invocation.
 
-At width 160,
-every new break context occurred in only these two prose-heavy pages:
+Exec is a valid transition adapter.
+A dedicated persistent dprint process adapter ranks above it for the final implementation because it can avoid a
+child-command boundary per request and own cache invalidation directly.
 
-- `lessons/0001-whats-different-about-this-book.html`
-- `reference/aquascope-decoder.html`
+### Failure behavior
 
-The other three pages produced no new intra-text break contexts.
+Malformed standalone CSS and malformed embedded CSS both made dprint fail with the tokenizer diagnostic.
+SHA-256 hashes before and after the failed run were identical for both files.
+The production adapter should convert parser exceptions into concise file and range diagnostics while preserving
+this no-write behavior.
 
-A verified selective configuration:
+### Repository-owned policy checker
 
-- excluded those two files;
-- formatted the other three at markup width 160;
-- used `singleLineBlockThreshold: 2` for synthetic embedded CSS;
-- applied the preferred `oklch()` values to all five pages.
+The policy probe reproduced the incumbent semantic diagnostic totals:
 
-The result had:
+- disallowed functions:
+  16;
+- disallowed properties:
+  62;
+- disallowed units:
+  67.
 
-- zero new intra-text break contexts;
-- 90 insertions;
-- 84 deletions;
-- seven nonblank CSS lines in every page;
-- byte-identical Stylelint fix and second dprint runs.
+It also reported:
 
-This retains more formatter coverage than an all-five boundary.
-It also creates an exact-path exception list and leaves future teaching pages needing classification.
+- the missed `height: 10em` media case;
+- 20 preferred `oklch()` channel changes on the current learning pages;
+- exact source offsets for every diagnostic.
 
-## Stylelint policy probes
+An adversarial HTML fixture contained false `<style>` text in a comment and an attribute.
+`@lezer/html` found only the real `StyleText` region.
+The checker mapped `width`,
+`10px`,
+and `rgb(` to exact host-file slices and line and column positions.
+All diagnostics across the 14 active regions had valid nonempty ranges.
 
-### The current media-unit configuration has a live defect
+### Package-local learning contract
 
-`package/config/stylelint/index.mjs` intends to require `rem` for every media-feature name.
-It uses the plain string `'/[\w-]+/'` as a regex-shaped map key.
-JavaScript passes `/[w-]+/` to Stylelint because the plain string consumes the backslash.
+A package profile compares the CSS token structure and values against the one approved stylesheet and separately
+checks the 5-to-20 nonblank-line budget.
 
-A runtime probe accepted `height: 10em` and rejected `width: 10em`.
-`width` happens to contain `w`;
-`height` does not.
-This is a downstream configuration defect,
-not a Stylelint defect.
+The approved owned-formatter output has 16 nonblank lines.
+Fixtures established independent checks:
 
-The finding shows that keeping Stylelint does not automatically preserve intended policy coverage.
-It also argues against regex-shaped strings for structural CSS relations.
+- compact but semantically approved CSS fails only the line budget;
+- an added `font-size` declaration passes the line budget but fails approved structure;
+- a changed dark color passes the line budget but fails approved values;
+- a 24-line semantic equivalent fails only the line budget.
 
-### A scoped profile reaches a fixed point
+After applying the preferred `none` channels in the disposable worktree,
+all 5 pages passed both checks with one style region and 16 nonblank lines.
+The current committed 7-line CSS passes the budget but fails the preferred-value check.
 
-A path-scoped equivalent of these settings passed the preferred seven-line CSS in all five pages:
+### Color semantics and browser baseline
 
-```js
-{
-  'at-rule-empty-line-before': 'never',
-  'declaration-block-single-line-max-declarations': 2,
-  'declaration-empty-line-before': 'never',
-  'lightness-notation': 'number',
-  'unit-allowed-list': ['deg'],
-  'unit-disallowed-list': null,
-}
-```
+[CSS Color 4 section 4.4](https://www.w3.org/TR/css-color-4/#missing)
+says `none` behaves as zero outside interpolation.
+During interpolation,
+a missing component may borrow the corresponding component from the other color.
+The preferred direct color forms must not be described as universally interchangeable with zero.
 
-The existing `hue-degree-notation: 'angle'` rule remained active.
+A Chromium 149 canvas probe rendered direct missing and zero lightness,
+chroma,
+and hue comparisons to equal RGBA bytes.
+[Mozilla bug 1813481](https://bugzilla.mozilla.org/show_bug.cgi?id=1813481)
+records missing color components as fixed in Firefox 113,
+which predates the repository's Firefox ESR 140 baseline.
 
-The profile:
+### Editor diagnostics
 
-- rejected percentage lightness;
-- rejected `turn` and pixel units;
-- rejected a bare nonzero hue;
-- accepted a nonzero degree hue;
-- left all five desired pages unchanged in fix mode;
-- remained unchanged after the next dprint run.
+Dprint provides formatting edits,
+not semantic diagnostics.
+The repository currently recommends:
 
-The full sequence was tested after applying the preferred `oklch()` values.
+- `stylelint.vscode-stylelint` in `monochromatic.code-workspace`;
+- the IntelliJ Stylelint plugin in `.idea/externalDependencies.xml`.
 
-### Generic Stylelint rules cannot express the full channel policy
+The repository also contains relevant owned precedents:
 
-`oklch(0.1 0 none)` passes the tested profile.
-No enabled generic rule requires zero chroma to be written as `none`.
+- a full-buffer stdio diagnostics server in `package/linter/rust/src/lsp.rs`;
+- JetBrains LSP4IJ settings support under `package/dev-script/file-enforcer/src/jetbrains/`.
 
-A bare zero hue is diagnosed,
-but Stylelint suggests `0deg` rather than the preferred `none`.
+The CSS checker should publish diagnostics from unsaved CSS and HTML buffers through a standard LSP adapter while
+the CLI and editor share the same pure checking interface.
+Stylelint remains necessary during shadow migration unless equivalent VS Code and IntelliJ clients land.
 
-Strict machine enforcement therefore requires one of:
+## Complete Stylelint responsibility ledger
 
-- a narrow repository-owned Stylelint rule;
-- a package-local semantic assertion;
-- a broader source-policy checker;
-- or deliberate human review.
+The ledger assigns every active rule exactly once.
+It has no missing,
+unknown,
+or duplicate names.
+All 82 pinned upstream rule directories contain tests.
+45 implementations import CSS reference data or a dedicated grammar or selector parser.
+Those data obligations remain real even when the owned checker interface is narrow.
 
-The issue can still be resolved without adding that enforcement.
-The user stated a preference,
-not a requirement that every preference gain a linter immediately.
+### Formatter responsibilities
 
-### Global Stylelint changes have wider effects
+These 27 rules select canonical,
+idempotent source representation.
+The formatter should leave no diagnostic behind after it runs.
 
-Applying the package's compact values globally was not viable.
-Setting the three layout rules to `never` increased repository diagnostics from 185 to 909.
-`declaration-empty-line-before` alone produced 735 diagnostics.
+- `alpha-value-notation`
+- `at-rule-empty-line-before`
+- `color-function-alias-notation`
+- `color-function-notation`
+- `color-hex-length`
+- `comment-empty-line-before`
+- `custom-property-empty-line-before`
+- `declaration-block-single-line-max-declarations`
+- `declaration-empty-line-before`
+- `font-family-name-quotes`
+- `font-weight-notation`
+- `function-calc-no-unspaced-operator`
+- `function-name-case`
+- `function-url-quotes`
+- `hue-degree-notation`
+- `import-notation`
+- `keyframe-selector-notation`
+- `lightness-notation`
+- `media-feature-range-notation`
+- `no-irregular-whitespace`
+- `rule-empty-line-before`
+- `selector-attribute-quotes`
+- `selector-not-notation`
+- `selector-pseudo-element-colon-notation`
+- `selector-type-case`
+- `shorthand-property-no-redundant-values`
+- `value-keyword-case`
 
-Disabling the three layout rules globally and switching lightness to numbers reduced diagnostics to 162.
-That removes useful future layout enforcement everywhere.
-It also introduces seven numeric-lightness migrations outside the learning pages.
-A scoped profile is the narrower response.
+The structural probe covers layout,
+comments,
+selectors,
+declarations,
+and whitespace.
+Notation-specific normalization still needs repository fixtures before Stylelint retirement.
 
-## Repository-owned tooling evidence
+### Repository-policy responsibilities
 
-### Existing CSS and HTML parsers are sufficient for narrow checks
+These 16 rules express repository choices rather than CSS validity.
+They belong in typed profiles and should report unsafe semantic changes rather than rewrite them.
 
-`package/module/css-edit/` is an immutable,
-byte-preserving CSS CST over `@csstools/css-tokenizer`.
-It follows the repository's `jsonc-edit` and `toml-edit` precedents.
+- `at-rule-disallowed-list`
+- `at-rule-no-vendor-prefix`
+- `color-named`
+- `container-name-pattern`
+- `function-disallowed-list`
+- `keyframe-declaration-no-important`
+- `layer-name-pattern`
+- `media-feature-name-disallowed-list`
+- `media-feature-name-no-vendor-prefix`
+- `media-feature-name-unit-allowed-list`
+- `number-max-precision`
+- `property-disallowed-list`
+- `property-no-vendor-prefix`
+- `selector-no-vendor-prefix`
+- `unit-disallowed-list`
+- `value-no-vendor-prefix`
 
-At `HEAD` `68eb96063`:
+The probe currently exercises function,
+property,
+unit,
+media-unit,
+lightness,
+and hue policy behavior.
+`number-max-precision` moved out of the formatter category because rounding can change values.
 
-- the nested learning stylesheet parsed;
-- declarations and media blocks remained distinct nodes;
-- tokens retained source offsets;
-- serialization was byte-identical;
-- all 14 active CSS regions parsed and round-tripped byte-identically.
+### Correctness-checker responsibilities
 
-The existing `@lezer/html` dependency exposed embedded CSS as exact `StyleText` ranges.
-It ignored false style text inside an HTML comment and quoted attribute.
-It reported no parse-error nodes in the five current pages.
-Adversarial probes produced errors for a mismatched inline closing tag,
-an unterminated attribute,
-and an unterminated comment.
+These 38 rules report malformed,
+duplicate,
+unknown,
+deprecated,
+or contradictory CSS without rewriting author intent.
 
-These parsers can support a narrow package assertion or source-preserving fixer.
-They do not justify a full replacement by themselves.
+- `annotation-no-unknown`
+- `at-rule-descriptor-no-unknown`
+- `at-rule-descriptor-value-no-unknown`
+- `at-rule-no-deprecated`
+- `at-rule-no-unknown`
+- `at-rule-prelude-no-invalid`
+- `block-no-empty`
+- `block-no-redundant-nested-style-rules`
+- `comment-no-empty`
+- `custom-property-no-missing-var-function`
+- `declaration-block-no-duplicate-custom-properties`
+- `declaration-block-no-duplicate-properties`
+- `declaration-block-no-shorthand-property-overrides`
+- `declaration-property-value-keyword-no-deprecated`
+- `font-family-no-duplicate-names`
+- `font-family-no-missing-generic-family-keyword`
+- `keyframe-block-no-duplicate-selectors`
+- `media-feature-name-no-unknown`
+- `media-feature-name-value-no-unknown`
+- `media-query-no-invalid`
+- `media-type-no-deprecated`
+- `named-grid-areas-no-invalid`
+- `nesting-selector-no-missing-scoping-root`
+- `no-duplicate-at-import-rules`
+- `no-duplicate-selectors`
+- `no-empty-source`
+- `no-invalid-double-slash-comments`
+- `no-invalid-position-at-import-rule`
+- `no-invalid-position-declaration`
+- `property-no-deprecated`
+- `property-no-unknown`
+- `selector-anb-no-unmatchable`
+- `selector-pseudo-class-no-unknown`
+- `selector-pseudo-element-no-unknown`
+- `selector-type-no-unknown`
+- `string-no-newline`
+- `syntax-string-no-invalid`
+- `unit-no-unknown`
 
-### Measured audit surfaces
+Unknown and deprecated vocabulary rules need an explicit maintained reference source.
+Parser strictness alone does not replace them.
 
-`module-css-edit` contains 10 production TypeScript files and 1,728 source lines.
-Installed Stylelint production `lib/` contains 357 modules and 34,348 source lines.
-Stylelint 17.14.1 declares 35 direct runtime dependencies.
+### Deliberate drop
 
-These measurements describe audit surface.
-They do not prove semantic parity,
-maintenance cost,
-or a reason to replace Stylelint.
+- `no-descending-specificity`
 
-## Horizontal option analysis
+Do not reproduce this selector-order heuristic.
+The active tree already suppresses it for context-dependent selectors,
+and the paused tree contains further suppressions.
+Its false-positive and maintenance surface does not justify repository ownership.
+This is a deliberate policy change,
+not accidental missing parity.
 
-### Markup ownership options
+## Suppression migration
 
-#### All-five authored-document boundary
+The repository contains 18 actual `stylelint-disable` directives:
 
-Exclude `package/learning/rust/**/*.html` from dprint.
-Use `--allow-no-files` when a scoped invocation may contain only excluded paths.
-Continue linting embedded CSS through Stylelint.
+- 3 in the active tree;
+- 15 under `package-paused/`;
+- no matching `stylelint-enable` directives.
+
+Do not create a parallel `css-check-disable` comment language.
+Use typed exemption data with:
+
+- file path;
+- owned rule identifier;
+- file or stable subject scope;
+- mandatory rationale;
+- unused-exemption reporting.
+
+The 3 active migrations are:
+
+- `doc/secret-management-caveman.html`:
+  file-scoped function,
+  property,
+  and unit policy exemptions;
+- `package/dev-script/deps-cube/src/styles.css`:
+  the same 3 file-scoped policy exemptions;
+  discard its specificity exemption because that rule is dropped;
+- `package/webapp-productivity/done-postcss/src/client/styles.css`:
+  a subject-scoped duplicate-selector exemption for the intentionally repeated `:root` grouping.
+
+Paused packages stay outside discovery as they do today.
+When one resumes,
+remove each stale Stylelint directive and adjudicate the diagnostics.
+Do not carry `copypaste` or `Cannot fix` forward as accepted rationale.
+
+## Migration phases
+
+### Phase 1: learning package seam
+
+After owner acceptance:
+
+1. Land opt-in prose-preserving markup behavior with its default disabled.
+2. Route CSS host requests to the repository-owned formatter.
+3. Add the package-local exact stylesheet and line-budget checks.
+4. Change the affected colors and `NOTES.md` to preferred `none` channels.
+5. Add the missing color-scheme meta element to the other 4 pages.
+6. Add a transitional Stylelint override that converges with the owned output.
+7. Keep Stylelint's remaining semantic checks and editor plugins active.
+
+A disposable transition config already reached a fixed point:
+Stylelint check passed,
+Stylelint fix made no change,
+and the next owned dprint check passed.
+
+### Phase 2: repository shadow parity
+
+Implement and fixture the remaining formatter,
+policy,
+and checker responsibilities.
+Run owned diagnostics beside Stylelint and compare:
+
+- file discovery;
+- diagnostic identity;
+- host ranges;
+- configuration overrides;
+- malformed input;
+- unused exemptions;
+- check and fix idempotence.
+
+Every mismatch needs either an owned fix or a documented deliberate drop.
+Current diagnostics alone are not a parity oracle.
+
+### Phase 3: editor and dependency cutover
+
+Before removing Stylelint:
+
+1. Publish owned diagnostics for unsaved CSS and HTML buffers.
+2. Wire the server into the supported VS Code and IntelliJ workflows.
+3. Remove or replace all active Stylelint directives.
+4. Remove Stylelint formatting from the root format task.
+5. Remove Stylelint linting,
+   configuration,
+   dependencies,
+   and editor recommendations.
+6. Re-measure discovery and installed dependency footprint.
+
+## Coverage by decision layer
+
+### Symptom layer
+
+The immediate symptoms are prose reflow,
+CSS layout conflict,
+40 learning-page diagnostics,
+and missing meta elements.
+High width and scoped incumbent configuration can reduce symptoms,
+but do not own grammar or retire Stylelint.
+
+### File layer
+
+The formatter owns each HTML file and embedded style region without ignore directives.
+The package checker independently validates style-region count,
+approved tokens,
+and the line budget.
+
+### Package layer
+
+A learning profile owns the exact stylesheet contract and color notation.
+It remains separate from repository-wide CSS policy and adds no `AGENTS.md` rule.
+
+### Repository layer
+
+Dprint keeps discovery and formatting ownership.
+Typed profiles and exemptions replace regex-shaped string configuration and tool-specific disable comments.
+Shadow comparison prevents silent rule loss.
+
+### Architecture layer
+
+Pure formatter and checker interfaces sit behind CSS,
+HTML,
+dprint,
+CLI,
+and LSP adapters.
+The dprint process adapter and diagnostic language server are separate because formatting and live diagnostics
+have different host protocols.
+
+## Option analysis and ranking
+
+### Phased owned CSS with prose-preserving markup
 
 Pros:
-uses one package boundary;
-preserves all current and future teaching prose;
-avoids formatter churn and long lines;
-keeps dprint on 760 other measured paths;
-needs no in-file directive;
-fits the workspace's build-free authored-source model.
+
+- preserves dprint ownership of every affected HTML file;
+- passes current and adversarial prose fixtures;
+- uses the existing embedded-language seam;
+- gives the learning package exact policy now;
+- retains Stylelint coverage while owned parity grows;
+- provides a controlled path to dependency removal.
 
 Cons:
-removes dprint markup formatting from three current pages that can be formatted safely at width 160;
-does not validate full HTML structure by itself;
-leaves source layout to authors.
 
-#### Selective two-file boundary
+- carries 2 lint systems during shadow migration;
+- needs a dprint adapter and diagnostics clients;
+- does not remove the Stylelint footprint in phase 1.
 
-Exclude only the two measured prose-heavy pages.
-Use markup width 160 and the scoped Malva threshold for the other three.
+### Incumbent CSS bridge with prose-preserving markup
+
+Keep Malva and Stylelint temporarily,
+using the verified scoped values that meet the line budget.
 
 Pros:
-retains dprint markup formatting on three pages;
-produced no new intra-text break contexts;
-kept every style at seven nonblank lines;
-reached a verified dprint and Stylelint fixed point.
+
+- preserves trusted HTML formatting;
+- retains incumbent semantic and editor coverage;
+- has a verified 7-line or 20-line CSS fixed point.
 
 Cons:
-encodes current-corpus knowledge as two exact paths;
-future lessons need manual classification;
-adds both markup and synthetic-CSS override configuration;
-produces more initial churn than the package boundary.
 
-#### Width-600 formatting for all five
+- leaves the measured Stylelint dependency closure;
+- generic Stylelint rules cannot require `none` for zero channels;
+- retains the regex-string configuration hazard;
+- does not satisfy the intended owned-CSS destination.
 
-Format all pages with markup width 600 and the scoped Malva threshold.
+### Immediate full owned replacement
+
+Remove Malva and Stylelint in one cutover.
 
 Pros:
-keeps dprint coverage on every page;
-introduces no new text-node break context;
-reaches the CSS line budget.
+
+- reaches the desired ownership and dependency result immediately;
+- has one formatter and one checker interface.
 
 Cons:
-produces lines up to 593 characters;
-produces broad one-time churn;
-joins most prose wrapping;
-uses an extreme width to avoid a semantic problem the formatter cannot model.
 
-#### File-ignore directives
+- 75 ledger responsibilities still lack repository-owned implementation fixtures;
+- 45 rules expose reference-data or grammar-parser ownership;
+- equivalent editor diagnostics are not wired;
+- removing the incumbents now would discard verified coverage.
 
-Place `<!-- dprint-ignore-file -->` in every affected file.
+### Owned CSS with high-width markup
 
 Pros:
-works with the pinned plugin;
-is visible beside the source;
-needs no root exclusion.
+
+- uses the validated CSS direction;
+- avoids changing `markup_fmt` source.
 
 Cons:
-repeats one directive in every page;
-future pages can omit it;
-expresses one package policy as local tool syntax;
-still gives up all markup formatting.
 
-#### Node-ignore directives
+- width 600 produces lines up to 593 characters;
+- adversarial prose still splits grammatical units;
+- it passes only the current corpus.
 
-Use `<!-- markup-fmt-ignore -->` before selected subtrees.
+### Generated learning HTML or synchronized style regions
 
 Pros:
-keeps formatting outside the ignored node;
-uses the directive the plugin actually supports.
+
+- can keep one authoritative stylesheet;
+- can preserve reader-time `file:///` use;
+- confines generation to the learning package.
 
 Cons:
-produced inconsistent parent and raw-subtree indentation;
-requires repeated placement;
-large content nodes make the remaining formatter value small.
 
-#### Source-preserving region formatter
+- creates authored and generated source layers;
+- conflicts with the package's repeated-inline authoring contract;
+- adds author-time generation to a workspace documented as build-free;
+- does not itself provide repository-wide CSS lint retirement.
 
-Exclude the pages from general markup formatting.
-Use `@lezer/html` to extract style ranges,
-then delegate only those ranges to a CSS formatter or repository-owned fixer.
+### Full dprint replacement
 
 Pros:
-never touches prose;
-can keep Malva or use `css-edit` fixes;
-can map diagnostics to host HTML positions.
+
+- could own prose and embedded CSS under one repository interface.
 
 Cons:
-adds orchestration and editor integration;
-solves a seven-line CSS region already handled by Stylelint and authors;
-needs fixed-point and failure-path tests.
 
-#### Repository-owned dprint plugin
-
-Write a dprint-compatible plugin for these pages or their synthetic CSS paths.
-
-Pros:
-retains dprint discovery and editor integration;
-can preserve text while owning only package semantics.
-
-Cons:
-adds plugin packaging and maintenance;
-requires a policy for prose breaking that a CSS-only plugin cannot solve;
-is more machinery than current evidence demands.
-
-#### Full repository-owned HTML formatter
-
-Pros:
-complete local control.
-
-Cons:
-requires a grammatical line-breaking policy;
-duplicates general formatter responsibilities;
-has no evidence-backed advantage over leaving authored prose unformatted.
-
-### Markup ranking
-
-All-five boundary > selective two-file boundary > width-600 formatting > file-ignore directives
-> source-preserving region formatter > node-ignore directives > repository-owned dprint plugin
-> full repository-owned HTML formatter.
-
-- The all-five boundary ranks above selective exclusion because one durable package rule is simpler than exact-path
-  classification,
-  and formatting three short pages adds less value than future-proof prose safety.
-- Selective exclusion ranks above width 600 because it retains measured-safe coverage without 593-character lines.
-- Width 600 ranks above file directives because one root policy avoids repeated comments while retaining all formatter
-  coverage.
-- File directives rank above a region formatter because they solve the boundary without new code.
-- A region formatter ranks above node directives because it preserves indentation and expresses the actual CSS seam.
-- Node directives rank above a custom dprint plugin because they already exist and work despite poor indentation.
-- A narrow dprint plugin ranks above a full HTML formatter because it reuses discovery and limits ownership.
-
-## Vertical CSS policy options
-
-### Scoped Stylelint profile with authored preferred values
-
-Keep Stylelint.
-Apply the tested profile only to `package/learning/rust/**/*.html`.
-Update current colors to `none` zero channels.
-Accept human review for the zero-chroma condition Stylelint cannot express.
-
-Pros:
-uses current editor and CLI integration;
-retains all other Stylelint rules;
-reaches a tested fixed point;
-adds configuration but no new runtime code.
-
-Cons:
-does not enforce zero chroma as `none`;
-keeps the existing media-feature regex-string defect until separately fixed;
-a bare zero hue receives the wrong suggested fix.
-
-### Scoped Stylelint plus one narrow channel rule
-
-Add a repository-owned rule that parses `oklch()` channels structurally.
-Keep Stylelint for every other rule.
-
-Pros:
-closes the measured semantic gap;
-keeps one diagnostic system and editor integration;
-avoids porting 82 rules.
-
-Cons:
-introduces a custom Stylelint plugin and value parser dependency or tokenizer logic;
-needs tests for absolute,
-relative,
-alpha,
-calculated,
-and malformed color syntax;
-may be excessive for two current color declarations.
-
-### Package-local source assertion
-
-Check HTML parse errors,
-style-region count,
-approved declarations,
-line budget,
-required meta,
-and `oklch()` channels without rewriting source.
-
-Pros:
-can encode the whole package contract;
-uses already verified parsers;
-keeps policy independent of formatter defaults.
-
-Cons:
-requires defining a numeric meaning for “around ten”;
-introduces check infrastructure into a workspace documented as having no build tasks;
-duplicates some Stylelint syntax coverage;
-needs an execution path before it protects anything.
-
-### Generated or synchronized style regions
-
-Keep one authoritative style source and patch only the five inline regions.
-Commit standalone HTML output.
-
-Pros:
-prevents drift across byte-identical regions;
-preserves prose;
-keeps reader-time use build-free.
-
-Cons:
-adds author-time generation;
-conflicts with the workspace's current no-build-task model;
-turns flexible formatting into generated output unless the generator preserves local layout;
-needs safe region ownership and failure recovery.
-
-### `light-dark()` source simplification
-
-Replace nested media rules with `light-dark()` colors and ensure every page declares a used color scheme.
-
-Firefox shipped the function in version 120 according to
-[Mozilla bug 1856999](https://bugzilla.mozilla.org/show_bug.cgi?id=1856999).
-Chromium's intent records desktop and Android milestone 123 in
-[the Blink shipping thread](https://groups.google.com/a/chromium.org/g/blink-dev/c/IsXAWrFLUHE).
-WebKit landed its implementation in
-[commit `9240183`](https://github.com/WebKit/WebKit/commit/9240183bbeb26b30cfaa51cd0f5739eb1429731f).
-
-Pros:
-can remove media-query duplication;
-fits the line budget;
-has shipping implementations in the major engines.
-
-Cons:
-reverses the repository's explicit `function-disallowed-list` ban on `light-dark`;
-changes source semantics rather than only resolving tool ownership;
-still does not solve markup prose reflow;
-uses a CSS Color Level 5 feature whose current W3C document is a Working Draft.
-
-### Global Stylelint policy change
-
-Pros:
-can separate semantic lint from layout across the repository;
-removing global layout rules reduced measured diagnostics.
-
-Cons:
-changes policy for every stylesheet;
-`never` values produced 909 diagnostics;
-disabling rules loses future enforcement outside this package;
-issue 401 supplies no repository-wide need.
-
-### Full Stylelint replacement
-
-Build a semantic checker over `css-edit` and `@lezer/html`.
-
-Pros:
-can express typed policy directly;
-can preserve host source and exact offsets;
-removes regex-string configuration hazards.
-
-Cons:
-requires decisions for 82 current rules;
-adds discovery,
-diagnostics,
-editor integration,
-and maintenance;
-the current corpus proves parsing feasibility,
-not parity.
-
-### CSS policy ranking
-
-Scoped Stylelint profile > scoped profile plus one narrow rule > package-local assertion
-> generated style regions > `light-dark()` simplification > global Stylelint change
-> full Stylelint replacement.
-
-- The scoped profile ranks above a custom rule because it resolves the current conflict with no new runtime code;
-  the remaining `none` condition can remain a reviewed preference.
-- One narrow rule ranks above a package assertion when strict channel enforcement is wanted because it reuses the
-  existing diagnostic and editor path.
-- A package assertion ranks above generation because checking source is less invasive than owning source production.
-- Generation ranks above `light-dark()` because it preserves the accepted media-query semantics.
-- `light-dark()` ranks above a global lint change because its impact is confined to this package.
-- A global lint change ranks above replacing Stylelint because it retains the incumbent's semantic rule surface.
-
-## Other rejected or deferred families
-
-### External stylesheet
-
-A relative stylesheet can be tested under `file:///`,
-but the package contract explicitly says to repeat the CSS inline and not extract a stylesheet.
-This is not a live option unless the owner revises that contract.
-
-### Post-format contract restorer
-
-A CSS restorer could compact style regions after dprint.
-It cannot reconstruct acceptable prose breaks after markup formatting has discarded them unless it owns another
-canonical prose source.
-It therefore does not resolve the whole issue by itself.
-
-### Separate authored and generated HTML
-
-Keeping authored teaching source and committed generated reader output preserves reader-time `file:///` use.
-It also creates two source layers and a generation workflow in a workspace documented as build-free.
-No current measurement justifies that complexity.
-
-### Upstream feature work
-
-`markup_fmt` could add a text-wrap-preservation mode or a style-formatter disable option.
-No upstream defect is established,
-and an upstream feature would not decide this repository's package policy or Stylelint rules.
-It is lower priority than available local mechanisms.
+- issue 401 supplies evidence for only 5 HTML files;
+- 724 measured unrelated data or XML-family paths would need replacement coverage;
+- duplicates working formatter ownership outside the affected seam.
 
 ### Status quo
 
-Leaving the issue open avoids migration work.
-It retains destructive local formatting,
-40 learning-page Stylelint diagnostics,
-the current `oklch()` mismatch,
-and four missing color-scheme meta elements.
-It is a temporary pause,
-not a resolution.
+Pros:
 
-## Recommended resolution
+- requires no migration.
 
-Use the all-five authored-document boundary and the scoped Stylelint profile.
-Do not replace dprint or Stylelint for issue 401.
-Do not add package policy to `AGENTS.md`.
+Cons:
 
-The implementation sequence,
-if the owner accepts it,
-is:
+- retains destructive prose formatting;
+- retains 40 learning-page Stylelint diagnostics;
+- leaves preferred channel syntax unenforced;
+- leaves 4 required meta elements absent.
 
-1. Change the two achromatic values in all five pages and `NOTES.md` to `none` zero channels.
-2. Add the missing color-scheme meta element to the other four pages.
-3. Exclude `package/learning/rust/**/*.html` in root `dprint.json`.
-4. Ensure explicit scoped dprint checks pass `--allow-no-files`.
-5. Add the tested path-scoped Stylelint rules in root `stylelint.config.mjs`.
-6. Keep dprint for every unrelated format and Stylelint rule.
-7. Add no custom checker yet.
-8. Revisit one narrow `oklch()` rule only if machine enforcement of the channel preference is wanted.
+### Sorted ranking
 
-This ranks above the selective boundary because the package is an authored,
-future-growing teaching workspace.
-The one package glob is easier to maintain than deciding whether each future lesson is prose-heavy enough for
-`markup_fmt`.
+Ranking:
+phased owned CSS with prose-preserving markup
+> incumbent CSS bridge with prose-preserving markup
+> immediate full owned replacement
+> owned CSS with high-width markup
+> generated learning HTML
+> full dprint replacement
+> status quo.
 
-## Verification required after implementation
+- The phased direction ranks above the incumbent bridge because it preserves incumbent coverage while making
+  measurable progress toward the accepted owned-CSS destination.
+- The bridge ranks above immediate replacement because 75 owned responsibility fixtures and editor clients are
+  still pending.
+- Immediate replacement ranks above high width once its gates pass because it owns grammatical prose rather than
+  relying on corpus-specific width.
+- High width ranks above generation because it retains one authored HTML source layer.
+- Generation ranks above full dprint replacement because its scope is confined to the learning package.
+- Full dprint replacement ranks above status quo because it could solve the conflict,
+  while status quo cannot.
 
-Run on a disposable fixture before applying to real files,
-then verify the committed boundary:
+Dprint exclusions,
+file ignores,
+and node ignores are disqualified rather than ranked.
+They surrender formatter ownership and violate the owner's trust requirement.
 
-- dprint check of the five paths with `--allow-no-files` exits 0;
-- dprint still discovers every other intended HTML and data path;
-- Stylelint check of all five pages exits 0;
-- Stylelint fix leaves all five byte-identical;
-- a second dprint and Stylelint sequence remains byte-identical;
-- every style region stays around ten nonblank lines;
-- percentage lightness,
-  `turn` hue,
-  pixel hue,
-  a third same-line declaration,
-  and unwanted blank-line layouts are rejected;
-- all five pages contain the color-scheme meta;
-- light and dark browser modes compute the approved foreground and background colors;
-- every relative link still works through `file:///`.
+## Verification gates after acceptance
 
-A strict package assertion additionally needs an owner-selected numeric line range.
-Do not invent that range from the phrase `around ten`.
+### Formatter
+
+- Run default-off `markup_fmt` upstream tests.
+- Test preserved authored lines,
+  repeated spaces,
+  entities,
+  inline elements,
+  preformatted elements,
+  malformed markup,
+  and every supported markup language.
+- Run all 5 learning pages twice through dprint.
+- Confirm no introduced grammatical break context.
+- Confirm 5-to-20 nonblank CSS lines.
+- Confirm comments,
+  strings,
+  nested rules,
+  selectors,
+  declarations,
+  and at-rules reach a second-pass fixed point.
+- Confirm malformed standalone and embedded CSS never writes partial output.
+- Verify formatting through the actual editor integration.
+
+### Checker
+
+- Test every exported branch and every enabled responsibility.
+- Verify CSS and HTML host offsets with non-ASCII text before the style region.
+- Verify parser failures become diagnostics at valid ranges.
+- Verify check mode never writes.
+- Verify typed exemptions are scoped,
+  justified,
+  and reported when unused.
+- Compare shadow results against Stylelint until each mismatch is resolved or documented.
+
+### Learning package
+
+- Confirm exactly one real style region per page.
+- Confirm approved selectors,
+  declarations,
+  values,
+  and media conditions.
+- Confirm the 5-to-20 nonblank-line budget independently.
+- Confirm all pages contain the color-scheme meta element.
+- Load the pages through `file:///` in light and dark modes.
+- Confirm computed foreground and background colors.
+- Confirm every relative link still works.
+
+### Dependency and editor cutover
+
+- Verify owned formatting in dprint CLI and LSP.
+- Verify owned diagnostics in unsaved CSS and HTML buffers.
+- Verify VS Code and IntelliJ launch the repository-owned checker.
+- Remove Stylelint only after the owned ledger gate passes.
+- Re-run lockfile reachability and installed-file measurements after removal.
 
 ## Open decisions
 
-The evidence leaves these owner choices:
+The owner still needs to accept or delegate:
 
-- accept the recommended all-five package boundary,
-  or retain more dprint coverage with the verified selective two-file boundary;
-- leave zero-channel notation as reviewed source preference,
-  or add one narrow machine rule;
-- keep the affected `oklch()` preference package-scoped,
-  or evaluate it separately as repository-wide CSS policy.
+- the phased combined direction;
+- a local plugin patch versus an upstream `preserveTextWrapping` proposal;
+- whether editor diagnostic parity is required in phase 1 or only before Stylelint removal.
 
-These are preference and scope decisions.
-The formatter behavior,
-configuration capabilities,
-corpus effects,
-and parser feasibility are measured.
+No production implementation should begin until that decision is explicit.

@@ -361,23 +361,26 @@ Decision:
 
 ### Symptom
 
-The learning Rust workspace contains five standalone HTML pages with repeated inline CSS.
-`package/learning/rust/NOTES.md` requires the CSS to remain around ten lines and to contain no presentation
-beyond the approved foreground and background colors.
-CSS layout itself is not prescribed.
+The learning Rust workspace contains 5 standalone HTML pages with repeated inline CSS.
+`package/learning/rust/NOTES.md` requires plain `file:///` pages,
+repeated inline styles,
+and no presentation beyond approved foreground and background colors.
+The owner clarified these formatting requirements:
 
-The current stylesheet has seven nonblank CSS lines.
-The preferred achromatic values are now:
+- every HTML file remains owned by dprint;
+- CSS contains 5 to 20 nonblank lines;
+- prose may reflow but may not split a tight grammatical unit;
+- direct affected colors use numeric lightness,
+  `none` for zero chroma,
+  and `none` for zero hue;
+- nonzero hue uses `deg`.
+
+The desired colors are:
 
 ```css
 oklch(0.1 none none)
 oklch(0.9 none none)
 ```
-
-Exact prose wrapping is also not prescribed.
-A formatter may join or wrap prose,
-but it must not split a tight grammatical unit such as a verb from its object.
-List-like wrapping is acceptable.
 
 The affected paths are:
 
@@ -389,101 +392,46 @@ package/learning/rust/reference/reading-loop.html
 package/learning/rust/reference/aquascope-decoder.html
 ```
 
-The current checks are:
-
-```bash
-mise run //:lint:dprint -- \
-  package/learning/rust/lessons/index.html \
-  package/learning/rust/lessons/0001-whats-different-about-this-book.html \
-  package/learning/rust/reference/index.html \
-  package/learning/rust/reference/reading-loop.html \
-  package/learning/rust/reference/aquascope-decoder.html
-
-mise run //:lint:stylelint -- 'package/learning/rust/**/*.html'
-```
-
-Before scoped configuration,
-dprint reports all five files as different.
-Stylelint reports 40 errors across the pages.
+The incumbent configuration reports all 5 files as differently formatted and produces 40 Stylelint diagnostics
+on them.
 
 ### Source-level root cause
 
-`markup_fmt` 0.23.1 sends every non-empty `<style>` element to `format_style` in
+`markup_fmt` 0.23.1 sends every nonempty `<style>` element to `format_style` in
 `markup_fmt/src/printer.rs:701-737` at
-[commit `2d902a5a1`](https://github.com/g-plane/markup_fmt/commit/2d902a5a1af8d7f07e06f189ae1e3132ea344e74):
-
-```rust
-} else if tag_name.eq_ignore_ascii_case("style") {
-    let formatted = ctx.format_style(
-        text_node.raw,
-        // ...
-    );
-```
+[commit `2d902a5a1`](https://github.com/g-plane/markup_fmt/commit/2d902a5a1af8d7f07e06f189ae1e3132ea344e74).
 
 Its dprint adapter synthesizes an embedded path such as `index.html#.css` in
-`dprint_plugin/src/lib.rs:54-90` at the same commit:
+`dprint_plugin/src/lib.rs:54-90` at the same commit.
+Dprint then routes the CSS request to a registered CSS plugin.
 
-```rust
-file_name.push("#.");
-file_name.push(hints.ext);
-format_with_host(SyncHostFormatRequest {
-    file_path: &request.file_path.with_file_name(file_name),
-    file_bytes: code.as_bytes(),
-    // ...
-})
-```
-
-A markup option cannot disable this delegation by path.
-The synthetic path can still receive a scoped Malva configuration through dprint plugin overrides.
+That delegation is useful.
+It is the seam where a repository-owned formatter can replace Malva without replacing markup formatting or
+dprint's unrelated format coverage.
 
 The prose conflict is separate.
-At the root `printWidth: 90`,
-`markup_fmt` introduces line breaks based on width rather than grammatical structure.
+At root width 90,
+`markup_fmt` wraps text by available width rather than grammatical structure.
 
-### dprint override behavior
+### Width and ignore probes
 
-dprint 0.55.2 documents plugin `overrides` in `website/src/config.md:284-339` at
-[commit `89ff90b3c`](https://github.com/dprint/dprint/commit/89ff90b3cc6f9fa211c82fb5865491c8865ea79a).
-Overrides change plugin settings for already routed files.
-They do not alter discovery or associations.
+New text-node break contexts measured by width were:
 
-This verified override matches embedded learning CSS:
+- width 160:
+  94;
+- width 240:
+  30;
+- width 320:
+  11;
+- width 500:
+  3;
+- width 600 on the current corpus:
+  0.
 
-```json
-{
-  "malva": {
-    "overrides": {
-      "files": "package/learning/rust/**/*.html#.css",
-      "singleLineBlockThreshold": 2
-    }
-  }
-}
-```
-
-It formatted every embedded stylesheet to seven nonblank CSS lines.
-A second dprint run was byte-identical.
-The previously measured 20-line dprint and Stylelint fixed point is not unavoidable.
-
-### Markup-width probes
-
-A disposable probe counted new line-break contexts inside HTML text nodes.
-The count is a change detector,
-not a grammar classifier.
-
-- width 160 produced 94 new contexts;
-- width 240 produced 30;
-- width 320 produced 11;
-- width 500 produced 3;
-- width 600 produced none.
-
-Width 600 avoided new break contexts by joining paragraphs.
-It also produced:
-
-- 1,441 insertions;
-- 1,684 deletions;
-- 225 lines longer than 120 characters in `aquascope-decoder.html`;
-- 61 lines longer than 200 characters;
-- a maximum line length of 593.
+Width 600 produced lines up to 593 characters.
+Adversarial fixtures still split `original variable`,
+`allocator deallocates`,
+and `you reach` at width 600 and 1000.
 
 `whitespaceSensitivity: 'strict'` was not a preservation mode.
 It produced 357,
@@ -492,101 +440,158 @@ and 49 new contexts at widths 90,
 160,
 and 200.
 
-At width 160,
-all new contexts occurred in only these pages:
+The configured directives are:
 
-- `lessons/0001-whats-different-about-this-book.html`
-- `reference/aquascope-decoder.html`
+- node:
+  `<!-- markup-fmt-ignore -->`;
+- file:
+  `<!-- dprint-ignore-file -->`.
 
-A selective configuration excluded those two files and formatted the other three at width 160.
-With the scoped Malva override,
-it produced no new text-node break contexts and kept all five styles at seven nonblank lines.
-Stylelint fix and a second dprint run were byte-identical.
+Node ignores preserved prose but also preserved inconsistent subtree indentation.
+File ignores and root exclusions work technically,
+but the owner disqualified every formatter exemption because it makes future formatter coverage untrustworthy.
 
-### Ignore-directive behavior
+### Prose-preserving formatter probe
 
-The pinned schema defines different node and file directives:
+A disposable `markup_fmt` patch added opt-in `preserveTextWrapping` behavior.
+It keeps each authored nonempty text line as a formatter boundary,
+normalizes repeated intra-line ASCII whitespace,
+and continues formatting structure,
+attributes,
+quotes,
+and embedded languages.
+The default remains the incumbent width-based behavior.
 
-- `ignoreCommentDirective`:
-  `markup-fmt-ignore`;
-- `ignoreFileCommentDirective`:
-  `dprint-ignore-file`.
+The default-off library tests passed and a local dprint Wasm build succeeded.
+Across all 5 pages the combined run produced:
 
-`<!-- dprint-ignore -->` before `<style>` was not a valid node-ignore probe.
-`<!-- markup-fmt-ignore -->` does skip the next node.
+- no exclusion or ignore directive;
+- no introduced text-node break context;
+- original and formatted break counts of 0,
+  16,
+  0,
+  0,
+  and 259;
+- 16 nonblank CSS lines per page;
+- no second-pass change.
 
-A node ignore before `<body>` or `<main>` preserved prose,
-but the raw subtree kept its old indentation while its parent was reformatted.
-The resulting nesting indentation was inconsistent.
+A grammar fixture kept `I ate a chicken`,
+`original variable`,
+`allocator deallocates`,
+and `you reach` intact at width 90 when each phrase was authored on one line.
 
-`<!-- dprint-ignore-file -->` works as the first line before the doctype.
-A prior Chromium probe preserved standards mode,
-the HTML doctype,
-and a clean console.
-A root exclusion is still easier to maintain than repeating a file directive.
+This establishes a feature direction,
+not an upstream defect.
 
-A Malva `/* formatter-ignore */` comment at the start of `<style>` also protects the CSS because the shared Malva
-config names that directive.
-It does not solve prose wrapping.
+### Repository-owned CSS host probe
 
-### Exclusion behavior
+A strict structural formatter over `package/module/css-edit/` was connected to the markup host seam through
+`dprint-plugin-exec` 0.7.3.
+The markup adapter had to stop passing Malva-specific override keys to exec CSS requests;
+exec correctly rejected unknown configuration.
 
-A root `dprint.json` exclusion for `package/learning/rust/**/*.html` removes exactly the five affected pages while
-preserving inherited exclusions and other HTML coverage.
+The hardened formatter probe covers:
 
-Explicit checks of only excluded paths exit 14 unless the caller passes `--allow-no-files`.
-dprint 0.55.2 tests that flag for both `fmt` and `check` in
-`crates/dprint/src/commands/formatting.rs:1413-1444` at the pinned dprint commit:
+- compact and expanded blocks;
+- comments and directive comments;
+- blank-line groups;
+- strings containing CSS punctuation;
+- selector lists and combinators;
+- nested rules;
+- declarations;
+- statement and block at-rules;
+- malformed CSS.
 
-```rust
-assert!(run_test_cli(vec![sub_command, "--allow-no-files", "**/*.txt"], &environment).is_ok());
-```
+The dprint-discovered corpus contained 36 standalone CSS files and 9 embedded regions,
+for 45 regions total.
+The probe reported no parse failure,
+second-pass difference,
+semantic-token mismatch,
+comment change,
+or surrounding-host change.
 
-The five-path disposable-worktree check exited 0 with the flag.
+A dprint JSON-RPC probe formatted unsaved standalone CSS and unsaved HTML with embedded CSS through `dprint lsp`.
+It returned edits for both and emitted no stderr.
+Open
+[`dprint-plugin-exec#34`](https://github.com/dprint/dprint-plugin-exec/issues/34)
+does not reproduce under dprint 0.55.2,
+exec 0.7.3,
+and the tested associations.
 
-### Stylelint interaction
+A 5-run `--incremental=false` benchmark on the 5 pages measured:
 
-A scoped profile passed the preferred seven-line CSS in all five pages:
+- prose-preserving markup alone:
+  344.2 ms mean;
+- markup plus exec CSS delegation:
+  451.2 ms mean;
+- mean difference:
+  107.0 ms per invocation.
 
-```js
-{
-  'at-rule-empty-line-before': 'never',
-  'declaration-block-single-line-max-declarations': 2,
-  'declaration-empty-line-before': 'never',
-  'lightness-notation': 'number',
-  'unit-allowed-list': ['deg'],
-  'unit-disallowed-list': null,
-}
-```
+Exec is suitable for transition validation.
+A dedicated persistent dprint process adapter is the preferred final host adapter because it can avoid a child
+command per request and own cache invalidation directly.
 
-The existing `hue-degree-notation: 'angle'` rule remained active.
-The profile rejected percentage lightness,
-`turn`,
-pixel units,
-and bare nonzero hue.
-It left all five preferred pages unchanged in fix mode.
+### Failure behavior
 
-Generic Stylelint rules do not enforce the full channel preference.
-`oklch(0.1 0 none)` passes.
-A bare zero hue is diagnosed toward `0deg` rather than the preferred `none`.
-Strict enforcement requires a narrow custom rule,
-a package assertion,
-or human review.
-It is not necessary to add a new checker merely to resolve the formatter boundary.
+Malformed standalone and embedded CSS made dprint fail with the strict tokenizer diagnostic.
+SHA-256 hashes before and after were identical for both files.
+No partial format was written.
 
-### Separate Stylelint configuration defect
+The production adapter should turn parser exceptions into concise path and range diagnostics,
+while retaining this fail-closed behavior.
 
-The workspace intends `media-feature-name-unit-allowed-list` to require `rem` for every media feature.
-`package/config/stylelint/index.mjs` uses the plain string `'/[\w-]+/'` as its regex-shaped key.
-JavaScript passes `/[w-]+/` to Stylelint because the plain string consumes the backslash.
+### Stylelint transition and owned checks
 
-A Stylelint 17.14.1 probe accepted `height: 10em` and rejected `width: 10em`.
-`width` happens to contain `w`;
-`height` does not.
-This is a downstream configuration defect,
-not a Stylelint defect.
+The active Stylelint surface contains 82 rules,
+not only the 8 currently producing diagnostics.
+The revised responsibility ledger assigns:
 
-### Independent package-content defect
+- 27 to the formatter;
+- 16 to repository policy;
+- 38 to correctness checks;
+- 1 deliberate drop,
+  `no-descending-specificity`.
+
+All 82 pinned rule directories contain tests.
+45 implementations import CSS reference data or dedicated grammar or selector parsers.
+Removing Stylelint before those responsibilities have owned fixtures would discard coverage.
+
+The owned policy probe reproduced the incumbent semantic counts:
+
+- 16 disallowed functions;
+- 62 disallowed properties;
+- 67 disallowed units.
+
+It also rejected the missed `height: 10em` case and reported 20 preferred channel changes on the current learning
+pages.
+An HTML fixture proved that diagnostic offsets map to the host file and false `<style>` text in a comment or
+attribute is ignored.
+
+A package profile independently checks:
+
+- exactly one real style region;
+- the approved stylesheet structure and values;
+- the 5-to-20 nonblank-line budget.
+
+After preferred channels were applied in the disposable worktree,
+all 5 pages passed the package profile with 16 nonblank lines.
+A transitional Stylelint override also passed,
+Stylelint fix made no change,
+and the next owned dprint check passed.
+
+### Color semantics
+
+[CSS Color 4 section 4.4](https://www.w3.org/TR/css-color-4/#missing)
+says `none` behaves as zero outside interpolation,
+but may borrow the other color's corresponding component during interpolation.
+Do not describe `none` and zero as universally interchangeable.
+
+A Chromium 149 probe rendered direct missing and zero component comparisons to equal RGBA bytes.
+[Mozilla bug 1813481](https://bugzilla.mozilla.org/show_bug.cgi?id=1813481)
+records `none` color components as fixed in Firefox 113,
+which predates the repository's Firefox ESR 140 baseline.
+
+### Separate package-content defect
 
 `package/learning/rust/NOTES.md` requires this element in every page:
 
@@ -595,36 +600,42 @@ not a Stylelint defect.
 ```
 
 Only `reference/aquascope-decoder.html` currently contains it.
-The other four pages need correction regardless of the formatting decision.
+The other 4 pages need correction regardless of the formatting decision.
 
 ### What does not work
 
-- Treating the seven-line example as an exact formatting contract overstates the owner's requirement.
-- Raising width to 600 avoids bad breaks by creating long source lines and broad churn.
-- `whitespaceSensitivity: 'strict'` does not retain arbitrary prose wrapping.
+- Dprint exclusions,
+  file ignores,
+  and node ignores violate the owner's formatter-trust requirement.
+- Width 600 avoids current-corpus breaks by producing long lines and still fails adversarial grammar.
+- `whitespaceSensitivity: 'strict'` does not preserve prose wrapping.
+- A Malva ignore protects CSS but does not solve prose.
 - Removing Stylelint layout rules does not stop Malva from formatting embedded CSS.
-- `<!-- dprint-ignore -->` is not the configured markup node directive.
-- Ignoring `<body>` or `<main>` produces inconsistent indentation around the raw subtree.
-- A post-format CSS restorer cannot reconstruct acceptable prose after markup formatting has discarded it.
-- Replacing all of dprint takes responsibility for unrelated formats without improving the five-page result.
-- Extracting a shared stylesheet violates the explicit package contract unless the owner revises it.
+- The incumbent generic color rules cannot require `none` for zero channels.
+- Replacing dprint across unrelated formats expands far beyond the measured issue.
+- Removing Stylelint now would lose unimplemented correctness and editor diagnostics.
+- Extracting a shared stylesheet violates the package contract.
 
-### Resolution
+### Recommended resolution
 
-The recommended local resolution is:
+Do not exempt any affected page from dprint.
+After owner acceptance:
 
-- exclude all `package/learning/rust/**/*.html` files from dprint;
-- pass `--allow-no-files` at scoped dprint call sites;
-- update the five colors to preferred `none` zero channels;
-- add the missing color-scheme meta to four pages;
-- apply the tested Stylelint rules only to this path;
-- keep dprint and Stylelint for all unrelated responsibilities;
-- add no `AGENTS.md` rule;
-- add no custom checker unless strict machine enforcement of the zero-channel preference is wanted.
+1. Land opt-in prose-preserving markup behavior with the default disabled.
+2. Route CSS host requests to the repository-owned formatter.
+3. Add the package-local exact stylesheet and line-budget checks.
+4. Change the affected colors and `NOTES.md` to preferred `none` channels.
+5. Add the missing color-scheme meta element to the other 4 pages.
+6. Use a transitional Stylelint override that converges with the owned output.
+7. Run the remaining Stylelint responsibilities in shadow while owned fixtures and editor clients land.
+8. Remove Stylelint only after responsibility,
+   suppression,
+   CLI,
+   and editor parity gates pass.
 
-A verified alternative excludes only the two prose-heavy pages and retains dprint on the other three through width
-160 and synthetic-CSS overrides.
-The complete comparison and rankings are in
+The full option analysis,
+82-rule ledger,
+and ranking are in
 `doc/planning/learning-rust-formatting-boundary.md`.
 
 ### Scoped-formatting constraint
@@ -641,56 +652,48 @@ then copy only reviewed files.
 
 A completed implementation must verify:
 
-- scoped dprint check exits 0 with `--allow-no-files`;
-- all unrelated intended dprint paths remain discovered;
-- scoped Stylelint check exits 0;
-- Stylelint fix leaves the pages unchanged;
-- every style remains around ten nonblank lines;
-- all five pages contain the color-scheme meta;
+- all 5 pages remain in dprint discovery;
+- dprint CLI and LSP both invoke owned CSS formatting;
+- no grammatical break context is introduced;
+- a second formatting pass changes nothing;
+- malformed embedded CSS leaves its host file unchanged;
+- each style has 5 to 20 nonblank lines;
+- package policy rejects changed colors and extra presentation;
+- CSS diagnostics map to exact host ranges;
+- Stylelint and owned shadow results are reconciled before removal;
+- all 5 pages contain the color-scheme meta element;
 - light and dark browser modes compute the approved colors;
 - pages and relative links still work through `file:///`;
-- no unrelated file is changed by a global formatter.
+- no unrelated file changes through a global formatter.
 
 ### Upstream filing decision
 
-`.out-of-scope/` contains no matching dprint,
-`markup_fmt`,
-Malva,
-or Stylelint entry.
-
-Tracker searches covered `whitespace`,
-`line break`,
-`style`,
-and exact symptom phrases across open and closed `g-plane/markup_fmt` issues and pull requests.
-Issues [g-plane/markup_fmt#16](https://github.com/g-plane/markup_fmt/issues/16) and
-[g-plane/markup_fmt#242](https://github.com/g-plane/markup_fmt/issues/242) discuss preferred layouts,
-not a promise to preserve arbitrary author wrapping by path.
-
-[dprint/dprint#772](https://github.com/dprint/dprint/issues/772) requested a no-files success mode.
-dprint 0.43.0 added `--allow-no-files`.
-There is nothing to add to that closed issue.
+Tracker searches found related `markup_fmt` layout requests,
+including issues
+[g-plane/markup_fmt#16](https://github.com/g-plane/markup_fmt/issues/16)
+and
+[g-plane/markup_fmt#242](https://github.com/g-plane/markup_fmt/issues/242),
+but no existing preserve-authored-text-lines request.
 
 1. **Is it really upstream's fault?**
-   No.
-   The tools perform their configured formatting and linting.
-   The conflict is repository policy.
+   No established defect exists.
+   The formatter performs width-based wrapping as designed.
 2. **Can upstream fix it?**
-   Not as a bug.
-   More preservation options could help,
-   but upstream cannot choose this package's prose and CSS policy.
+   Upstream could accept an opt-in preservation feature,
+   but cannot choose this package's policy.
 3. **Are they supporting this use case?**
-   They support canonical formatting and explicit ignore controls.
-   They do not promise grammatical prose wrapping.
+   They support canonical formatting and ignore controls,
+   not grammatical prose wrapping.
 4. **Would the repository welcome our contribution?**
-   Not evaluated because no upstream defect or necessary patch remains.
+   Unknown until a proposal is discussed.
 5. **Will they likely fix it?**
-   Not applicable without an upstream defect.
+   Unknown;
+   no issue has been filed.
 6. **Have we prototyped a compatible minimal fix?**
-   The verified consumer-side fixes are dprint exclusion,
-   `--allow-no-files`,
-   plugin overrides,
-   and scoped Stylelint policy.
+   Yes.
+   The default-off patch passed the library tests and dprint integration probe.
 
 Decision:
-file nothing upstream.
-There is no upstream draft to retain.
+do not file a defect.
+If the owner accepts the direction,
+prepare an upstream feature proposal or maintain the local adapter deliberately.
