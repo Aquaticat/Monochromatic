@@ -113,18 +113,21 @@ async function watcherIsRunning(
 }
 
 /**
- * Sends signal while tolerating process disappearance.
+ * Signals detached watcher process group while tolerating disappearance.
  *
- * @param pid - Positive process identifier.
+ * Watcher PID is validated before conversion to group target.
+ * Route-monitor and transient `ip` children inherit this process group.
+ *
+ * @param pid - Positive watcher group-leader PID.
  *
  * @param signal - Signal name.
  *
  * @example
  * ```ts
- * signalProcess({ pid: 123, signal: 'SIGTERM' });
+ * signalWatcherProcessGroup({ pid: 123, signal: 'SIGTERM' });
  * ```
  */
-function signalProcess(
+function signalWatcherProcessGroup(
   {
     pid,
     signal,
@@ -134,10 +137,10 @@ function signalProcess(
   },
 ): void {
   if ((!Number.isSafeInteger(pid,)) || (pid <= 0))
-    throw new BypassRouteError(`Refusing to signal invalid PID ${String(pid,)}.`,);
+    throw new BypassRouteError(`Refusing to signal invalid watcher group PID ${String(pid,)}.`,);
   try {
     process.kill(
-      pid,
+      -pid,
       signal,
     );
   }
@@ -149,7 +152,38 @@ function signalProcess(
 }
 
 /**
- * Waits bounded interval for exact watcher to disappear.
+ * Reports whether detached watcher process group still has members.
+ *
+ * @param pid - Positive process-group leader identity.
+ *
+ * @returns Whether kernel still resolves process group.
+ *
+ * @example
+ * ```ts
+ * watcherProcessGroupExists({ pid: 123 });
+ * ```
+ */
+function watcherProcessGroupExists(
+  { pid, }: { readonly pid: number; },
+): boolean {
+  if ((!Number.isSafeInteger(pid,)) || (pid <= 0))
+    throw new BypassRouteError(`Invalid watcher process-group identifier: ${String(pid,)}`,);
+  try {
+    process.kill(
+      -pid,
+      0,
+    );
+    return true;
+  }
+  catch (error) {
+    if (isErrnoException(error,) && (error.code === 'ESRCH'))
+      return false;
+    throw error;
+  }
+}
+
+/**
+ * Waits bounded interval for exact watcher group to disappear.
  *
  * @param identity - Watcher identity being stopped.
  *
@@ -177,10 +211,10 @@ async function waitForWatcherStop(
   const cursor = { attempt: 0, };
   while (cursor.attempt < PROCESS_WAIT_ATTEMPTS) {
     // oxlint-disable-next-line eslint/no-await-in-loop -- Exact process identity must be rechecked after each bounded delay.
-    if (!(await watcherIsRunning({
+    if ((!(await watcherIsRunning({
       identity,
       statePath,
-    })))
+    },))) && (!watcherProcessGroupExists({ pid: identity.pid, })))
       return true;
     // oxlint-disable-next-line eslint/no-await-in-loop -- Bounded shutdown wait avoids busy spin.
     await wait(PROCESS_WAIT_DELAY_MS,);
@@ -288,7 +322,7 @@ export async function stopBypassWatcher(
     );
     return;
   }
-  signalProcess({
+  signalWatcherProcessGroup({
     pid: identity.pid,
     signal: 'SIGTERM',
   },);
@@ -306,7 +340,7 @@ export async function stopBypassWatcher(
       );
       return;
     }
-    signalProcess({
+    signalWatcherProcessGroup({
       pid: identity.pid,
       signal: 'SIGKILL',
     },);
@@ -403,7 +437,9 @@ export async function startBypassWatcher(
    * Timed-out child process checked before signaling.
    */
   const live = await readLinuxProcessIdentity({ pid, },);
-  if ((live !== PROCESS_ABSENT) && processCommandMatches({
+  if (live === PROCESS_ABSENT)
+    throw new BypassRouteError('Bypass route watcher disappeared before readiness.',);
+  if (!processCommandMatches({
     identity: live,
     expected: [
       process.execPath,
@@ -411,10 +447,37 @@ export async function startBypassWatcher(
       statePath,
     ],
   },)) {
-    signalProcess({
-      pid,
-      signal: 'SIGKILL',
-    },);
+    throw new BypassRouteError(`Timed-out watcher PID ${String(pid,)} no longer identifies expected command.`,);
+  }
+  /**
+   * Exact timed-out watcher identity used for group shutdown confirmation.
+   */
+  const identity: WatcherProcessIdentity = {
+    ownerId: state.ownerId,
+    pid,
+    startTime: live.startTime,
+  };
+  signalWatcherProcessGroup({
+    pid,
+    signal: 'SIGKILL',
+  },);
+  if (!(await waitForWatcherStop({
+    identity,
+    statePath,
+  }))) {
+    await writeFile(
+      watcherIdentityPath({ statePath, },),
+      JSON.stringify({
+        ownerId: identity.ownerId,
+        pid: identity.pid,
+        startTime: identity.startTime,
+      },),
+      {
+        flag: 'wx',
+        mode: 0o600,
+      },
+    );
+    throw new BypassRouteError(`Timed-out bypass watcher group ${String(pid,)} survived SIGKILL; ownership retained.`,);
   }
   throw new BypassRouteError('Bypass route watcher did not register process identity.',);
 }

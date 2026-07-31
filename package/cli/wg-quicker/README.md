@@ -82,6 +82,7 @@ A state-owner token,
 PID,
 process start time,
 and complete command-line check prevent signaling a reused or unrelated PID during teardown.
+Shutdown signals the validated detached process group so monitor and in-flight route-command children terminate before ownership release.
 
 On `down`,
  persisted state identifies the exact watcher,
