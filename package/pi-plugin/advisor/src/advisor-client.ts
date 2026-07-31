@@ -208,10 +208,14 @@ export async function completeAdvisor(
   const firstDisallowedReasoningLevelIndex = supportedReasoningLevels
     .indexOf('max',);
   /**
+   * Whether selected model advertises no timeout-prone level.
+   */
+  const allSupportedReasoningLevelsAreAllowed = firstDisallowedReasoningLevelIndex
+    === -1;
+  /**
    * Supported levels strictly below `max`, including any provider default levels.
    */
-  const allowedReasoningLevels = (firstDisallowedReasoningLevelIndex
-    === -1)
+  const allowedReasoningLevels = allSupportedReasoningLevelsAreAllowed
     ? supportedReasoningLevels
     : supportedReasoningLevels.slice(
       0,
