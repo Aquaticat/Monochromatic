@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { firstAdvisoryLine, } from './rendering-summary.ts';
+import { firstAdvisoryLine, } from '../dist/final/node/index.mjs';
 
 await describe({
   name: firstAdvisoryLine.name,

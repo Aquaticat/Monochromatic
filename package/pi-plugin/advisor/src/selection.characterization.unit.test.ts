@@ -15,12 +15,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { selectAdvisorModel, } from './advisor-selection.ts';
-import { selectAdvisorRunContext, } from './tool-context-selection.ts';
-import type {
-  AdvisorConfig,
-  EffectiveModelScope,
-} from './types.ts';
+import {
+  type AdvisorConfig,
+  type EffectiveModelScope,
+  selectAdvisorModel,
+  selectAdvisorRunContext,
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 

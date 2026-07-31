@@ -260,11 +260,64 @@ export {
 } from './advisor-client.ts';
 
 /**
- * Internal config fixtures exported for built-artifact verification.
+ * Internal request formatter exported for built-artifact verification.
  *
  * @internal
  */
-export { DEFAULT_CONFIG, } from './config.ts';
+export { buildAdvisorUserMessageText, } from './advisor-request.ts';
+
+/**
+ * Internal config helpers exported for built-artifact verification.
+ *
+ * @internal
+ */
+export {
+  DEFAULT_CONFIG,
+  loadMergedConfig,
+} from './config.ts';
+
+/**
+ * Internal extension constants exported for built-artifact verification.
+ *
+ * @internal
+ */
+export {
+  ADVISOR_MESSAGE_TYPE,
+  ADVISOR_TOOL_NAME,
+} from './constants.ts';
+
+/**
+ * Internal context helpers exported for built-artifact verification.
+ *
+ * @internal
+ */
+export {
+  buildAdvisorContext,
+  maxContextCharsForAdvisorModel,
+  truncateContext,
+} from './context.ts';
+
+/**
+ * Internal rendering helper exported for built-artifact verification.
+ *
+ * @internal
+ */
+export { firstAdvisoryLine, } from './rendering-summary.ts';
+
+/**
+ * Internal selection helpers exported for built-artifact verification.
+ *
+ * @internal
+ */
+export { selectAdvisorModel, } from './advisor-selection.ts';
+export { selectAdvisorRunContext, } from './tool-context-selection.ts';
+
+/**
+ * Internal tool argument adapter exported for built-artifact verification.
+ *
+ * @internal
+ */
+export { prepareAdvisorArguments, } from './tool-params.ts';
 
 /**
  * Internal Advisor data types exported for built-artifact verification.
@@ -274,4 +327,5 @@ export { DEFAULT_CONFIG, } from './config.ts';
 export type {
   AdvisorConfig,
   AdvisorContext,
+  EffectiveModelScope,
 } from './types.ts';

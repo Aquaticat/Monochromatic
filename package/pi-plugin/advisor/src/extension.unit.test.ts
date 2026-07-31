@@ -16,16 +16,14 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { DEFAULT_CONFIG, } from './config.ts';
-import {
+import advisor, {
+  type AdvisorConfig,
   ADVISOR_MESSAGE_TYPE,
   ADVISOR_TOOL_NAME,
-} from './constants.ts';
-import advisor, {
   buildAdvisorStatus,
   buildMainModelGuidance,
-} from './index.ts';
-import type { AdvisorConfig, } from './types.ts';
+  DEFAULT_CONFIG,
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 

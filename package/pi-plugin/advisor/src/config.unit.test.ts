@@ -16,7 +16,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import { loadMergedConfig, } from './config.ts';
+import { loadMergedConfig, } from '../dist/final/node/index.mjs';
 
 //region Constants
 

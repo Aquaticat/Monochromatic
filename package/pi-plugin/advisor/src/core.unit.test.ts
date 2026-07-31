@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { prepareAdvisorArguments, } from './tool-params.ts';
+import { prepareAdvisorArguments, } from '../dist/final/node/index.mjs';
 
 await describe({
   name: prepareAdvisorArguments.name,

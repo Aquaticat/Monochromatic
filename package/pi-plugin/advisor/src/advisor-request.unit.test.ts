@@ -9,7 +9,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { buildAdvisorUserMessageText, } from './advisor-request.ts';
+import { buildAdvisorUserMessageText, } from '../dist/final/node/index.mjs';
 
 await describe({
   name: buildAdvisorUserMessageText.name,
