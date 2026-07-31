@@ -307,36 +307,31 @@ function findScopedSlugMatches<TModel extends ModelIdentity,>(
   },
 ): ScopedModel<TModel>[] {
   if (requestedSlug.includes('/',)) {
-    /**
-     * Canonical scoped matches in source order.
-     */
-    const canonicalMatches: ScopedModel<TModel>[] = [];
-    for (const entry of scope.entries) {
-      if (entry.canonicalSlug
-        === requestedSlug)
-        canonicalMatches[canonicalMatches.length] = entry;
-    }
-    return canonicalMatches;
+    return scope.entries
+      .filter(function matchCanonical(entry,) {
+        return entry.canonicalSlug
+          === requestedSlug;
+      },);
   }
 
   /**
    * Bare id matches inside scope.
    */
-  const idMatches: ScopedModel<TModel>[] = [];
+  const idMatches = scope.entries
+    .filter(function matchId(entry,) {
+      return entry.model
+        .id
+        === requestedSlug;
+    },);
   /**
    * Model display-name matches inside scope.
    */
-  const nameMatches: ScopedModel<TModel>[] = [];
-  for (const entry of scope.entries) {
-    if (entry.model
-      .id
-      === requestedSlug)
-      idMatches[idMatches.length] = entry;
-    if (entry.model
-      .name
-      === requestedSlug)
-      nameMatches[nameMatches.length] = entry;
-  }
+  const nameMatches = scope.entries
+    .filter(function matchName(entry,) {
+      return entry.model
+        .name
+        === requestedSlug;
+    },);
   /**
    * Unique matches across both bare forms.
    */
