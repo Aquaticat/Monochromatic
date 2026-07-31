@@ -9,7 +9,8 @@ import type {
   AssistantMessage,
   Context,
   Model,
-  ProviderStreamOptions,
+  SimpleStreamOptions,
+  ThinkingLevel,
   Usage,
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -47,6 +48,89 @@ const FOCUS_QUESTION = 'Which assumption is weakest?';
 
 /** Provider call count expected after one no-text retry. */
 const RETRY_PROVIDER_CALL_COUNT = 2;
+
+/**
+ * Build Advisor model fixture with selected reasoning capabilities.
+ *
+ * @param overrides - fixture identity and reasoning overrides
+ *
+ * @returns complete Advisor model fixture
+ */
+function createFixtureModel(
+  overrides: Readonly<Pick<
+    Model<Api>,
+    'id' | 'reasoning'
+  > & Partial<Pick<
+    Model<Api>,
+    'thinkingLevelMap'
+  >>>,
+): Model<Api> {
+  return {
+    id: overrides.id,
+    name: 'Reviewer',
+    api: 'faux',
+    provider: 'faux-provider',
+    baseUrl: 'https://example.invalid',
+    reasoning: overrides.reasoning,
+    ...(overrides.thinkingLevelMap
+      === undefined ? {} : { thinkingLevelMap: overrides.thinkingLevelMap, }),
+    input: ['text',],
+    cost: {
+      input: 1,
+      output: 1,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
+    contextWindow: CONTEXT_WINDOW,
+    maxTokens: MAX_TOKENS,
+  };
+}
+
+/** Fixture reasoning cases and highest expected simple-API effort. */
+const REASONING_CASES: readonly {
+  readonly name: string;
+  readonly model: Model<Api>;
+  readonly expectedReasoning?: ThinkingLevel;
+}[] = [
+  {
+    name: 'omits reasoning for non-reasoning model',
+    model: createFixtureModel({
+      id: 'plain-reviewer',
+      reasoning: false,
+    },),
+  },
+  {
+    name: 'selects high for standard reasoning model',
+    model: createFixtureModel({
+      id: 'standard-reviewer',
+      reasoning: true,
+    },),
+    expectedReasoning: 'high',
+  },
+  {
+    name: 'selects xhigh when model supports xhigh but not max',
+    model: createFixtureModel({
+      id: 'xhigh-reviewer',
+      reasoning: true,
+      thinkingLevelMap: {
+        xhigh: 'xhigh',
+      },
+    },),
+    expectedReasoning: 'xhigh',
+  },
+  {
+    name: 'selects max when model supports max',
+    model: createFixtureModel({
+      id: 'max-reviewer',
+      reasoning: true,
+      thinkingLevelMap: {
+        xhigh: 'xhigh',
+        max: 'max',
+      },
+    },),
+    expectedReasoning: 'max',
+  },
+];
 
 //endregion Constants
 
@@ -93,23 +177,10 @@ const advisorContext: AdvisorContext = {
 };
 
 /** Fixture Advisor model. */
-const fixtureModel: Model<Api> = {
+const fixtureModel: Model<Api> = createFixtureModel({
   id: 'reviewer',
-  name: 'Reviewer',
-  api: 'faux',
-  provider: 'faux-provider',
-  baseUrl: 'https://example.invalid',
   reasoning: false,
-  input: ['text',],
-  cost: {
-    input: 1,
-    output: 1,
-    cacheRead: 0,
-    cacheWrite: 0,
-  },
-  contextWindow: CONTEXT_WINDOW,
-  maxTokens: MAX_TOKENS,
-};
+},);
 
 /** Fixture assistant message returned by fake provider. */
 const assistantMessage: AssistantMessage = {
@@ -191,7 +262,7 @@ function createSequencedCompleteModel(
   }: {
     readonly contexts: Readonly<Context>[];
     readonly responses: readonly AssistantMessage[];
-    readonly options?: Readonly<ProviderStreamOptions>[];
+    readonly options?: Readonly<SimpleStreamOptions>[];
   },
 ): CompleteAdvisorModel {
   /**
@@ -227,6 +298,38 @@ function createSequencedCompleteModel(
 await describe({
   name: completeAdvisor.name,
   children: [
+    ...REASONING_CASES.map(function mapReasoningCase(reasoningCase,) {
+      return it({
+        name: reasoningCase.name,
+        fn: async function testHighestSupportedReasoning() {
+          /** Captured provider contexts. */
+          const contexts: Readonly<Context>[] = [];
+          /** Captured simple provider options. */
+          const options: Readonly<SimpleStreamOptions>[] = [];
+          /** Fake complete implementation capturing provider options. */
+          const completeModel = createSequencedCompleteModel({
+            contexts,
+            responses: [assistantMessage,],
+            options,
+          },);
+
+          await completeAdvisor({
+            ctx: extensionContext,
+            model: reasoningCase.model,
+            config: advisorConfig,
+            advisorContext,
+            completeModel,
+          },);
+
+          const [capturedOptions,] = options;
+          if (capturedOptions === undefined)
+            throw new Error('provider options were not captured',);
+          expect(capturedOptions.reasoning,).toBe(
+            reasoningCase.expectedReasoning,
+          );
+        },
+      },);
+    },),
     it({
       name: 'passes focused question into provider user message',
       fn: async function testFocusedQuestionProviderMessage() {
@@ -268,7 +371,7 @@ await describe({
         /** Captured provider contexts. */
         const contexts: Readonly<Context>[] = [];
         /** Captured provider options. */
-        const options: Readonly<ProviderStreamOptions>[] = [];
+        const options: Readonly<SimpleStreamOptions>[] = [];
         /** Fake complete implementation returning no text then text. */
         const completeModel = createSequencedCompleteModel({
           contexts,

@@ -10,10 +10,11 @@ import type {
   Context,
   Message,
   Model,
-  ProviderStreamOptions,
   ProviderStreams,
+  SimpleStreamOptions,
   TextContent,
 } from '@earendil-works/pi-ai';
+import { getSupportedThinkingLevels, } from '@earendil-works/pi-ai';
 import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
 import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
 import { bedrockConverseStreamApi, } from '@earendil-works/pi-ai/api/bedrock-converse-stream.lazy';
@@ -52,7 +53,7 @@ type CompleteAdvisorModelOptions = {
   /**
    * Provider stream options with resolved auth.
    */
-  readonly providerOptions?: Readonly<ProviderStreamOptions>;
+  readonly providerOptions?: Readonly<SimpleStreamOptions>;
 };
 
 /**
@@ -106,7 +107,7 @@ const ADVISOR_API_STREAMS: ReadonlyMap<string, ProviderStreams> = new Map([
 ],);
 
 /**
- * Complete through pi-ai's direct non-compat API implementation for the model API.
+ * Complete through pi-ai's direct non-compat simple API implementation for the model API.
  *
  * @param model - selected Advisor model
  *
@@ -147,14 +148,14 @@ async function defaultCompleteAdvisorModel(
   }
   if (providerOptions !== undefined)
     return await streams
-      .stream(
+      .streamSimple(
         model,
         context,
         providerOptions,
       )
       .result();
   return await streams
-    .stream(
+    .streamSimple(
       model,
       context,
     )
@@ -245,6 +246,23 @@ export async function completeAdvisor(
   }
 
   /**
+   * Model-supported reasoning levels ordered from least to most reasoning.
+   */
+  const supportedReasoningLevels = getSupportedThinkingLevels(mutableModel,);
+  /**
+   * Highest reasoning level advertised by selected model.
+   */
+  const highestSupportedReasoningLevel = supportedReasoningLevels
+    .at(-1,);
+  /**
+   * Highest reasoning effort supplied to simple provider API, or no effort for non-reasoning model.
+   */
+  const advisorReasoningLevel = highestSupportedReasoningLevel
+    === 'off'
+    ? undefined
+    : highestSupportedReasoningLevel;
+
+  /**
    * Secondary user message containing serialized evidence.
    */
   const userMessage: Message = {
@@ -274,7 +292,7 @@ export async function completeAdvisor(
    *
    * @returns provider options with fresh timeout signal
    */
-  function createProviderOptions(): ProviderStreamOptions {
+  function createProviderOptions(): SimpleStreamOptions {
     return {
       signal: combinedSignal({
         ...(options.signal
@@ -286,6 +304,8 @@ export async function completeAdvisor(
         .timeoutMs,
       maxTokens: options.config
         .maxAdvisorOutputTokens,
+      ...(advisorReasoningLevel
+        === undefined ? {} : { reasoning: advisorReasoningLevel, }),
       ...(providerApiKey
         === undefined ? {} : { apiKey: providerApiKey, }),
       ...(providerHeaders

@@ -157,6 +157,15 @@ Ties break by higher output cost,
  larger context window,
  then canonical slug lexical order.
 
+## Reasoning effort
+
+Every Advisor call uses the highest reasoning level advertised by the selected model.
+Models without extended levels use `high`.
+Models that advertise `xhigh` or `max` use the highest advertised level,
+and non-reasoning models receive no reasoning option.
+Advisor passes the selected level through pi-ai's unified simple API,
+which maps it to each provider's request format.
+
 ## Privacy and cost
 
 Advisor sends the serialized conversation to the selected advisor model.
