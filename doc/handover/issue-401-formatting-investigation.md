@@ -2,7 +2,7 @@
 
 ## Status
 
-Investigation is active.
+Investigation and ranking are complete.
 No implementation decision has been accepted.
 GitHub issue [Aquaticat/Monochromatic#401](https://github.com/Aquaticat/Monochromatic/issues/401) is open.
 
@@ -657,6 +657,10 @@ No production source or configuration implementation has been made.
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139620214>
 - Prose-preserving `markup_fmt` prototype:
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139733575>
+- Combined owned-CSS evidence,
+  complete responsibility ledger,
+  and revised ranking:
+  <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5140530223>
 
 The original issue comment is:
 <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5124915718>
@@ -728,25 +732,30 @@ workarounds,
 and upstream filing decision.
 
 Follow-up commit `56e1ae851` records the first checkpoint update to this handover.
-Both commits reached the upstream branch.
-The three paths passed the scoped Markdown lint task and `git diff --check` before commit.
-Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not staged.
+Commit `001e49482` records the hardened formatter,
+checker,
+ledger,
+dependency,
+and editor evidence.
+Commit `77b93df4b` rewrites the planning and dprint troubleshooting documents around the phased combined resolution.
+The 3 issue documents passed scoped Markdown lint and `git diff --check`.
+Unrelated `package/cli/wg-quicker-exempt/` changes remain in the worktree and were not staged.
 
 ## Exact next action
 
-1. Rewrite and re-rank `doc/planning/learning-rust-formatting-boundary.md` around the phased combined resolution.
-2. Update `doc/troubleshooting/dprint.md` with the prose-preserving adapter,
-   owned CSS host delegation,
-   LSP,
-   failure,
-   and performance findings.
-3. Include the complete 82-rule outcome ledger,
-   suppression migration,
-   editor gate,
-   and dependency lower bound in durable documentation.
-4. Run scoped Markdown lint and `git diff --check`,
-   commit only the three issue 401 documents,
-   and post one evidence-rich issue checkpoint.
-5. Leave production configuration,
-   package source,
-   and page changes unstarted until the owner accepts or delegates the revised recommendation.
+Wait for the owner to accept,
+reject,
+or modify the phased combined direction.
+If accepted or delegated,
+create production implementation tasks for:
+
+1. opt-in prose-preserving markup;
+2. owned CSS formatting and the dprint process adapter;
+3. the learning package contract checker;
+4. shadow Stylelint responsibility migration;
+5. CSS and HTML live-diagnostic clients;
+6. final Stylelint dependency removal.
+
+Leave production configuration,
+package source,
+and page changes unstarted until that decision.
