@@ -11,6 +11,7 @@ import {
   type Context,
   type Message,
   type Model,
+  type ModelThinkingLevel,
   type SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -27,6 +28,27 @@ import type {
   AdvisorContext,
   AdvisorReadonlyModel,
 } from './types.ts';
+
+//region Constants
+
+/**
+ * Reasoning levels Advisor may request, all strictly lower than `max`.
+ *
+ * @example
+ * ```typescript
+ * ADVISOR_REASONING_LEVELS_BELOW_MAX.has('xhigh'); // true
+ * ```
+ */
+const ADVISOR_REASONING_LEVELS_BELOW_MAX: ReadonlySet<ModelThinkingLevel> = new Set([
+  'off',
+  'minimal',
+  'low',
+  'medium',
+  'high',
+  'xhigh',
+],);
+
+//endregion Constants
 
 //region Types
 
@@ -203,24 +225,15 @@ export async function completeAdvisor(
    */
   const supportedReasoningLevels = getSupportedThinkingLevels(mutableModel,);
   /**
-   * Index where timeout-prone reasoning levels begin.
-   */
-  const firstDisallowedReasoningLevelIndex = supportedReasoningLevels
-    .indexOf('max',);
-  /**
-   * Whether selected model advertises no timeout-prone level.
-   */
-  const allSupportedReasoningLevelsAreAllowed = firstDisallowedReasoningLevelIndex
-    === (-1);
-  /**
    * Supported levels strictly below `max`, including any provider default levels.
    */
-  const allowedReasoningLevels = allSupportedReasoningLevelsAreAllowed
-    ? supportedReasoningLevels
-    : supportedReasoningLevels.slice(
-      0,
-      firstDisallowedReasoningLevelIndex,
-    );
+  const allowedReasoningLevels = supportedReasoningLevels.filter(
+    function isAllowedAdvisorReasoningLevel(
+      level: ModelThinkingLevel,
+    ): boolean {
+      return ADVISOR_REASONING_LEVELS_BELOW_MAX.has(level,);
+    },
+  );
   /**
    * Highest allowed reasoning level advertised by selected model.
    */
