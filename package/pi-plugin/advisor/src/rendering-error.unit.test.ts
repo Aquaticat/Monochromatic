@@ -112,9 +112,13 @@ await describe({
       return it({
         name: `renders raw error for ${fixture.name}`,
         fn: async function testMalformedDetailsFallback() {
-          const text = renderText({
-            ...('details' in fixture ? { details: fixture.details, } : {}),
-          },);
+          /**
+           * Runtime details option, absent for missing-details fixture.
+           */
+          const renderOptions = 'details' in fixture
+            ? { details: fixture.details, }
+            : {};
+          const text = renderText(renderOptions,);
 
           expect(text,).toContain(ERROR_TEXT,);
           expect(text,).not.toContain('undefined',);
