@@ -467,11 +467,12 @@ await describe({
         if ((firstOptions === undefined) || (retryOptions === undefined))
           throw new Error('provider options were not captured',);
         expect(firstOptions,).not.toBe(retryOptions,);
-        expect(firstOptions.signal,).not.toBe(retryOptions.signal,);
+        expect(firstOptions.signal,).toBe(retryOptions.signal,);
+        expect(retryOptions.timeoutMs,).toBeLessThanOrEqual(firstOptions.timeoutMs,);
       },
     },),
     it({
-      name: 'returns no text after retry also returns no text',
+      name: 'throws after retry also returns no text',
       fn: async function testNoTextRetryExhausted() {
         /** Captured provider contexts. */
         const contexts: Readonly<Context>[] = [];
@@ -483,16 +484,23 @@ await describe({
             emptyAssistantMessage,
           ],
         },);
+        /** Completion error after retry exhaustion. */
+        let caught: unknown;
+        try {
+          await completeAdvisor({
+            ctx: extensionContext,
+            model: fixtureModel,
+            config: advisorConfig,
+            advisorContext,
+            completeModel,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
 
-        const result = await completeAdvisor({
-          ctx: extensionContext,
-          model: fixtureModel,
-          config: advisorConfig,
-          advisorContext,
-          completeModel,
-        },);
-
-        expect(result,).toEqual(emptyAssistantMessage,);
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('returned no text after 2 attempts',);
         expect(contexts.length,).toBe(RETRY_PROVIDER_CALL_COUNT,);
       },
     },),

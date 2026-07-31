@@ -144,11 +144,6 @@ export function createAdvisorTool(
         ...(signal === undefined ? {} : { signal, }),
       },);
 
-      if (result.details
-        .stopReason
-        === 'aborted')
-        throw new Error('advisor: advisor call was aborted',);
-
       return {
         content: [{
           type: 'text',
@@ -311,6 +306,7 @@ export async function runAdvisor(
       .model,
     config: options.config,
     advisorContext,
+    operationStartedAtMs: startedAt,
     ...(options.question
       === undefined ? {} : { question: options.question, }),
     ...(options.signal

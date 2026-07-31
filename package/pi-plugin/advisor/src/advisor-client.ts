@@ -16,11 +16,11 @@ import {
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { completeAdvisorAttempts, } from './advisor-completion.ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import type {
@@ -171,6 +171,10 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
    */
   readonly signal?: ForeignHostCapability<AbortSignal>;
   /**
+   * Advisor operation start time before context preparation.
+   */
+  readonly operationStartedAtMs?: number;
+  /**
    * Override model completion implementation for focused tests.
    */
   readonly completeModel?: CompleteAdvisorModel;
@@ -273,32 +277,6 @@ export async function completeAdvisor(
   const providerHeaders = auth.headers;
 
   /**
-   * Build provider options for one provider attempt.
-   *
-   * @returns provider options with fresh timeout signal
-   */
-  function createProviderOptions(): SimpleStreamOptions {
-    return {
-      signal: combinedSignal({
-        ...(options.signal
-          === undefined ? {} : { signal: options.signal, }),
-        timeoutMs: options.config
-          .timeoutMs,
-      },),
-      timeoutMs: options.config
-        .timeoutMs,
-      maxTokens: options.config
-        .maxAdvisorOutputTokens,
-      ...(advisorReasoningLevel
-        === undefined ? {} : { reasoning: advisorReasoningLevel, }),
-      ...(providerApiKey
-        === undefined ? {} : { apiKey: providerApiKey, }),
-      ...(providerHeaders
-        === undefined ? {} : { headers: providerHeaders, }),
-    };
-  }
-
-  /**
    * Completion implementation for provider call.
    */
   const completeModel = options.completeModel
@@ -311,47 +289,42 @@ export async function completeAdvisor(
     systemPrompt: buildAdvisorSystemPrompt(options.config,),
     messages: [userMessage,],
   };
+  /**
+   * Provider options independent of attempt deadline state.
+   */
+  const providerOptions: Omit<SimpleStreamOptions, 'signal' | 'timeoutMs'> = {
+    maxTokens: options.config
+      .maxAdvisorOutputTokens,
+    ...(advisorReasoningLevel
+      === undefined ? {} : { reasoning: advisorReasoningLevel, }),
+    ...(providerApiKey
+      === undefined ? {} : { apiKey: providerApiKey, }),
+    ...(providerHeaders
+      === undefined ? {} : { headers: providerHeaders, }),
+  };
 
-  try {
-    /**
-     * Initial provider response from selected Advisor model.
-     */
-    const firstResponse = await completeModel({
-      ctx: options.ctx,
-      model: mutableModel,
-      context: providerContext,
-      providerOptions: createProviderOptions(),
-    },);
-    /**
-     * Whether the initial response contains user-visible text.
-     */
-    const responseHasText = firstResponse
-      .content
-      .some(function hasTextContent(
-        block: ReadonlyDeep<(typeof firstResponse.content)[number]>,
-      ) {
-        return (block.type
-          === 'text')
-          && (block.text !== '');
+  return await completeAdvisorAttempts({
+    modelSlug: `${options.model.provider}/${options.model.id}`,
+    timeoutMs: options.config
+      .timeoutMs,
+    ...(options.operationStartedAtMs === undefined
+      ? {}
+      : { operationStartedAtMs: options.operationStartedAtMs, }),
+    ...(options.signal === undefined ? {} : { signal: options.signal, }),
+    providerOptions,
+    complete: async function completeAttempt(
+      {
+        providerOptions: attemptOptions,
+      },
+    ): Promise<AssistantMessage> {
+      return await completeModel({
+        ctx: options.ctx,
+        model: mutableModel,
+        context: providerContext,
+        providerOptions: attemptOptions,
       },);
-    if (responseHasText)
-      return firstResponse;
-
-    return await completeModel({
-      ctx: options.ctx,
-      model: mutableModel,
-      context: providerContext,
-      providerOptions: createProviderOptions(),
-    },);
-  }
-  catch (error) {
-    throw new Error(
-      `advisor: provider call failed for ${options.model
-        .provider}/${options.model
-          .id}: ${caughtMessage(error,)}`,
-      { cause: error, },
-    );
-  }
+    },
+  },);
 }
 
 /**
@@ -405,39 +378,3 @@ export function buildAdvisorSystemPrompt(
 }
 
 //endregion Public API
-
-//region Internal helpers
-
-/**
- * Combine caller signal with timeout signal when available.
- *
- * @param signal - caller abort signal
- *
- * @param timeoutMs - timeout in milliseconds
- *
- * @returns combined abort signal
- *
- * @mutates signal - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain supplied caller signal
- */
-function combinedSignal(
-  {
-    signal,
-    timeoutMs,
-  }: ForeignBorrowed<Readonly<{
-    signal?: ForeignHostCapability<AbortSignal>;
-    timeoutMs: number;
-  }>>,
-): AbortSignal {
-  /**
-   * Timeout signal for this Advisor call.
-   */
-  const timeoutSignal = AbortSignal.timeout(timeoutMs,);
-  return signal === undefined
-    ? timeoutSignal
-    : AbortSignal.any([
-      signal,
-      timeoutSignal,
-    ],);
-}
-
-//endregion Internal helpers
