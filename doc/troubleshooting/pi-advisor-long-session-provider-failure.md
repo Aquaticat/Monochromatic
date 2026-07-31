@@ -33,6 +33,15 @@ The persisted session gives the following exact call sequence:
 
 The final abort is separate from the two Advisor tool timeouts.
 
+A second live reproduction occurred while diagnosing this incident.
+Session `019fb733-a7f7-7fda-baba-e3ecfb77c287` explicitly selected
+`openai-codex/gpt-5.6-luna` with `215130` serialized context characters and
+`53791` estimated input tokens.
+It ran from `2026-07-31T08:24:46.097Z` to `2026-07-31T08:28:34.991Z`,
+then stored the same `advisor: advisor call was aborted` error with empty details and no top-level usage.
+The smaller uncompacted input proves that context inflation is not required to trigger a provider failure.
+The retry and error-handling defects amplify any provider failure.
+
 ## Root cause
 
 Source findings for upstream Pi refer to tag `v0.82.1`,
@@ -101,6 +110,8 @@ The incident measurement at Task 8 was:
 
 Advisor therefore resent messages that Pi had already summarized.
 It serialized `1148938` more characters than the compaction-aware boundary.
+This explains the oversized Task 8 request,
+ but the later Luna reproduction shows it is not the sole precondition for a provider failure.
 
 The default also retains prior Advisor results.
 `package/pi-plugin/advisor/src/config.ts:37-42` sets:
@@ -325,6 +336,10 @@ This couples default model choice to context inflation rather than observed reli
    `6705507` bytes,
    `2296` JSONL lines,
    two compaction entries.
+- Diagnosis-session reproduction:
+   `215130` serialized characters,
+   `53791` estimated input tokens,
+   no compaction entries before the failed call.
 
 ### Session evidence harness
 
@@ -383,7 +398,8 @@ for (const [label, branch] of [["getBranch", manager.getBranch(leaf)], ["buildCo
 ### Patterns that fail as a doubled timeout
 
 - `stopReason: "aborted"` plus no text is retried with a fresh 120-second signal.
-- Two timed-out attempts produce an approximately 240-second tool failure.
+- Two timed-out attempts can produce an approximately 240-second tool failure.
+- A later explicit Luna call failed after `228894` ms with only `53791` estimated input tokens.
 - Shortening the focus question does not remove the resent pre-compaction history.
 
 ### Token-estimate check
