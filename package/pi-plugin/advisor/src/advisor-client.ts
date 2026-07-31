@@ -211,7 +211,7 @@ export async function completeAdvisor(
    * Whether selected model advertises no timeout-prone level.
    */
   const allSupportedReasoningLevelsAreAllowed = firstDisallowedReasoningLevelIndex
-    === -1;
+    === (-1);
   /**
    * Supported levels strictly below `max`, including any provider default levels.
    */
