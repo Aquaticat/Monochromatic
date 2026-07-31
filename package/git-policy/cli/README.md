@@ -239,8 +239,8 @@ and failed commit hooks leave real index and worktree bytes unchanged by cli-git
 Interactive and patch selection runs once through native Git against the copied private index;
 include selection stages into that same private index.
 Policies inspect the exact chosen private candidate without applying automatic patches:
-canonical candidates commit the settled private index,
-while a required correction blocks with direct-fix guidance.
+warning findings allow the settled private index to commit,
+while error findings block with direct-fix guidance.
 Unmerged indexes block automatic correction.
 
 Direct `git cli-git fix` uses the same eight-pass policy convergence against a disposable private index.

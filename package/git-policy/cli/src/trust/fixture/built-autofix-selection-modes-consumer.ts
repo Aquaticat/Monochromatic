@@ -3,10 +3,7 @@
  *
  * @module
  */
-import {
-  readFile,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import {
   assertIncludes,
   execute,
@@ -163,62 +160,72 @@ export async function verifyAutofixSelectionModes({
     input: 'u\n1\n\nq\n',
   },);
 
-  await writeFile(
-    `${repository}/selected.txt`,
-    'bad',
-  );
-  await execute({
-    command: '/usr/bin/git',
-    args: [
-      'add',
-      'selected.txt',
-    ],
-    cwd: repository,
-  },);
-  /**
-   * Exact staged real index before read-only correction blocks.
-   */
-  const readOnlyIndex = Buffer.from(await readFile(`${repository}/.git/index`,))
-    .toString('base64',);
   for (const selectionFlag of [
     '--include',
     '--patch',
     '--interactive',
   ]) {
     /**
-     * Read-only selection result requiring direct correction.
+     * Distinct noncanonical bytes for current read-only selection mode.
+     */
+    const selectedValue = `bad ${selectionFlag}`;
+    // oxlint-disable-next-line no-await-in-loop -- Each user-facing selection mode needs fresh noncanonical worktree bytes.
+    await writeFile(
+      `${repository}/selected.txt`,
+      selectedValue,
+    );
+    // oxlint-disable-next-line no-await-in-loop -- Each selection starts from exact staged noncanonical bytes.
+    await execute({
+      command: '/usr/bin/git',
+      args: [
+        'add',
+        'selected.txt',
+      ],
+      cwd: repository,
+    },);
+    /**
+     * Warning-only read-only selection result.
      */
     // oxlint-disable-next-line no-await-in-loop -- Each user-facing selection mode must be exercised independently.
-    const blocked = await execute({
+    const warned = await execute({
       command: 'git',
       args: [
         'commit',
         selectionFlag,
         '--quiet',
         '-m',
-        `blocked ${selectionFlag}`,
+        `warn ${selectionFlag}`,
         'selected.txt',
       ],
-      expectedExit: 1,
       cwd: repository,
       env,
     },);
     assertIncludes({
-      text: blocked.stderr,
-      expected: '"policyId":"final-newline"',
-      context: `${selectionFlag} core final-newline guidance`,
+      text: warned.stderr,
+      expected: '"policyId":"final-newline","severity":"warn"',
+      context: `${selectionFlag} core final-newline warning`,
     },);
     assertIncludes({
-      text: blocked.stderr,
-      expected: '"fix":"available"',
-      context: `${selectionFlag} direct-fix guidance`,
+      text: warned.stderr,
+      expected: '"fix":"none"',
+      context: `${selectionFlag} unavailable automatic correction`,
+    },);
+    /**
+     * Exact noncanonical bytes committed after warning-only selection.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- Every mode must prove warning-only commit bytes independently.
+    const committed = await execute({
+      command: '/usr/bin/git',
+      args: [
+        'show',
+        'HEAD:selected.txt',
+      ],
+      cwd: repository,
     },);
     assertFixtureEqual({
-      // oxlint-disable-next-line no-await-in-loop -- Exact index preservation is asserted after each independent mode.
-      actual: Buffer.from(await readFile(`${repository}/.git/index`,))
-        .toString('base64',),
-      expected: readOnlyIndex,
-      context: `${selectionFlag} real index`,
+      actual: committed.stdout,
+      expected: selectedValue,
+      context: `${selectionFlag} warning-only committed bytes`,
     },);
   }
 }

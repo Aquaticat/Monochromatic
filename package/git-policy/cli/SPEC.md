@@ -1344,8 +1344,8 @@ and failure rollback.
 Interactive and patch selection runs through native Git once against the copied private index;
 include selection stages into that private index.
 Policies receive the exact chosen candidate but cannot apply automatic patches:
-canonical content commits the settled private index,
-while a proposed patch blocks with direct-fix guidance.
+warning findings allow the settled private index to commit,
+while error findings block with direct-fix guidance.
 Unmerged indexes block automatic correction.
 The implementation uses a transaction directory outside the worktree with:
 
@@ -1548,7 +1548,9 @@ package/test-fixture/toml-edit/src/**
 ```
 
 Patch-capable commit transactions automatically normalize would-be-committed bytes.
-Other pre-forward commands, including `git add`, warn and continue without offering an inapplicable patch.
+Read-only commit selection and other pre-forward commands,
+including `git add`,
+warn and continue without offering an inapplicable patch.
 Direct fix affects selected worktree bytes only.
 Every real index entry remains exact during direct fix.
 
