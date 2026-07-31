@@ -412,6 +412,8 @@ No source or configuration implementation has been made.
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139391488>
 - Reopened current-tool configuration paths:
   <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139475030>
+- Final synthesis and rankings:
+  <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5139562950>
 
 The original issue comment is:
 <https://github.com/Aquaticat/Monochromatic/issues/401#issuecomment-5124915718>
@@ -465,15 +467,17 @@ content-meta defect,
 workarounds,
 and upstream filing decision.
 
-The commit is present at the upstream branch tip.
+Follow-up commit `56e1ae851` records the first checkpoint update to this handover.
+Both commits reached the upstream branch.
 The three paths passed the scoped Markdown lint task and `git diff --check` before commit.
 Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not staged.
 
 ## Exact next action
 
-1. Commit this handover checkpoint update.
-2. Post a final synthesis comment to issue 401 with the corrected ranking,
-   commit,
-   and document paths.
-3. Mark the suggestion-development task complete only after the issue comment and document verification pass.
-4. Leave implementation unstarted until the owner accepts or delegates the proposed resolution.
+The investigation and issue synthesis are complete.
+Leave implementation unstarted until the owner accepts the all-five boundary,
+selects the verified selective boundary,
+or delegates the decision.
+If implementation is authorized,
+start from the verification checklist in `doc/planning/learning-rust-formatting-boundary.md` and update this
+handover with the selected option before editing configuration or page source.
