@@ -1,17 +1,21 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { CommandError, } from './errors.ts';
+import { runIpDelete, } from './ip-delete.ts';
 import {
   run,
   runAllowingFailure,
 } from './runner.ts';
 import { splitWords, } from './text.ts';
+import { isAbsentTableDiagnostic, } from './tunnel-table-diagnostic.ts';
 import {
   BYPASS_PROTOS,
   BYPASS_ROUTE_PROTOCOL,
   type BypassProto,
   type BypassState,
 } from './tunnel-bypass-types.ts';
+
+export { isAbsentTableDiagnostic, } from './tunnel-table-diagnostic.ts';
 
 /**
  * Route tokens associated with address family.
@@ -87,10 +91,12 @@ function removeTokenPair(
  *
  * @example
  * ```ts
- * normalizedRoute({ line: 'default via 192.0.2.1 proto dhcp' });
+ * normalizePhysicalDefaultRoute({ line: 'default via 192.0.2.1 proto dhcp' });
  * ```
+ *
+ * @internal
  */
-function normalizedRoute(
+export function normalizePhysicalDefaultRoute(
   { line, }: { readonly line: string; },
 ): readonly string[] {
   /**
@@ -167,7 +173,7 @@ export async function readPhysicalDefaults(): Promise<readonly FamilyRoute[]> {
       /**
        * Normalized default route tokens.
        */
-      const tokens = normalizedRoute({ line, },);
+      const tokens = normalizePhysicalDefaultRoute({ line, },);
       if (tokens[0] === 'default')
         routes.push({
           proto,
@@ -306,8 +312,11 @@ async function readOwnedRoutes(
         command: 'ip',
         args,
       },);
-      if ((result.exitCode !== 0) && (!result.stderr
-        .includes('FIB table does not exist',))) {
+      if ((result.exitCode !== 0) && (!isAbsentTableDiagnostic({
+        proto,
+        exitCode: result.exitCode,
+        stderr: result.stderr,
+      },))) {
         throw new CommandError({
           command: 'ip',
           args,
@@ -368,7 +377,7 @@ function routeKey(
     readonly text: string;
   },
 ): string {
-  return `${proto}:${normalizedRoute({ line: text, })
+  return `${proto}:${normalizePhysicalDefaultRoute({ line: text, })
     .join(' ',)}`;
 }
 
@@ -452,9 +461,8 @@ export async function synchronizeBypassRoutes(
       text: tokens.join(' ',),
     },),))
       continue;
-    // oxlint-disable-next-line eslint/no-await-in-loop -- Exact stale route deletions are independent but sequential errors are tolerated and logged by runner.
-    await runAllowingFailure({
-      command: 'ip',
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Exact stale route deletions are sequenced after replacement.
+    await runIpDelete({
       args: [
         route.proto,
         'route',
@@ -491,8 +499,7 @@ export async function removeOwnedBypassRoutes(
    */
   const removals: Promise<unknown>[] = [];
   for (const route of routes) {
-    removals.push(runAllowingFailure({
-      command: 'ip',
+    removals.push(runIpDelete({
       args: [
         route.proto,
         'route',

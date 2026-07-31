@@ -54,12 +54,49 @@ Only `up` generates peer prefixes.
 The companion attaches cgroup-BPF programs to selected application cgroups.
 The tunnel lifecycle does not move Ghostty into another systemd slice.
 
+On `up`,
+ application bypass routing:
+
+- claims a free route table after checking IPv4 and IPv6 routes and rules;
+- chooses a free positive rule preference that runs before every existing positive-priority rule;
+- holds per-interface and global allocation `flock` locks under `/run/wg-quicker`
+  until routes and rules make ownership visible;
+- copies each physical main-table default into the claimed table;
+- installs an unreachable default for a family with no physical default,
+  preventing marked traffic from falling through to tunnel policy;
+- tags owned rules and routes with route protocol `201`,
+  reserved exclusively for `wg-quicker` on managed hosts;
+- persists interface name,
+  mark,
+  table,
+  preference,
+  and ownership token in a root-owned state file;
+- starts a detached route watcher in the caller's privilege and network namespace.
+
+The watcher resynchronizes owned defaults after DHCP,
+IPv6 router-advertisement,
+and roaming changes.
+It starts route monitoring before synchronization so changes are queued across that boundary,
+and restarts an unexpectedly exited monitor child.
+A state-owner token,
+PID,
+process start time,
+and complete command-line check prevent signaling a reused or unrelated PID during teardown.
+
+On `down`,
+ persisted state identifies the exact watcher,
+rules,
+and routes to remove.
+Teardown does not flush whole tables and does not depend on current config values,
+so unrelated routes and configuration edits made after `up` are preserved.
+
 ## Development
 
 Run package checks through mise:
 
 ```console
 mise run //package/cli/wg-quicker:buildAndTest
+mise run //package/cli/wg-quicker:test:integration:bypass
 mise run //package/cli/wg-quicker:lint:oxlint
 mise run //package/cli/wg-quicker:lint:types
 ```

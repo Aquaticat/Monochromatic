@@ -6,11 +6,15 @@
  * @module
  */
 
-import { spawn as spawnChild, } from 'node:child_process';
+import {
+  spawn as spawnChild,
+  type ChildProcess,
+} from 'node:child_process';
 import { once, } from 'node:events';
 import { createInterface, } from 'node:readline';
 import { text, } from 'node:stream/consumers';
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { BypassRouteError, } from './errors.ts';
@@ -20,9 +24,27 @@ import { synchronizeBypassRoutes, } from './tunnel-bypass-route.ts';
 import type { BypassState, } from './tunnel-bypass-types.ts';
 
 /**
+ * Delay before replacing an unexpectedly exited route monitor.
+ */
+const MONITOR_RESTART_DELAY_MS = 100;
+
+/**
+ * Sentinel representing no active route-monitor child.
+ */
+const MONITOR_ABSENT: unique symbol = Symbol('route monitor is absent',);
+
+/**
  * Module logger for watcher lifecycle.
  */
 const l = tagged({ tag: 'bypass-watch', },);
+
+/**
+ * Mutable watcher lifecycle shared by signal handler and monitor session.
+ */
+type WatchLifecycle = {
+  monitor: ChildProcess | typeof MONITOR_ABSENT;
+  requested: boolean;
+};
 
 /**
  * Reports whether route-monitor line can reflect main-table default change.
@@ -72,7 +94,112 @@ function isPhysicalDefaultEvent(
 }
 
 /**
- * Watches route events and synchronizes physical defaults until terminated.
+ * Runs one route-monitor child until stop or unexpected exit.
+ *
+ * Monitor starts before synchronization,
+ * so events occurring during initial copy remain queued for line processing.
+ *
+ * @param state - Persisted ownership state.
+ *
+ * @param lifecycle - Shared stop request and active child.
+ *
+ * @example
+ * ```ts
+ * await runMonitorSession({ state, lifecycle });
+ * ```
+ */
+async function runMonitorSession(
+  {
+    state,
+    lifecycle,
+  }: {
+    readonly state: BypassState;
+    readonly lifecycle: WatchLifecycle;
+  },
+): Promise<void> {
+  /**
+   * Route netlink monitor covering both address families.
+   */
+  const monitor = spawnChild(
+    'ip',
+    [
+      'monitor',
+      'route',
+    ],
+    {
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
+  );
+  lifecycle.monitor = monitor;
+  /**
+   * Spawn failures retained for explicit diagnostic.
+   */
+  const spawnFailureMessages: string[] = [];
+  monitor.once(
+    'error',
+    function captureMonitorError(error: Readonly<Error>,): void {
+      spawnFailureMessages[0] = error.message;
+    },
+  );
+  /**
+   * Close event promise registered before synchronization and line iteration.
+   */
+  const closed = once(
+    monitor,
+    'close',
+  );
+  /**
+   * Captured monitor diagnostics consumed concurrently.
+   */
+  const stderr = text(monitor.stderr,);
+  /**
+   * Line iterator over queued netlink events.
+   */
+  const lines = createInterface({ input: monitor.stdout, },);
+  try {
+    await synchronizeBypassRoutes({ state, },);
+    for await (const line of lines) {
+      if (!isPhysicalDefaultEvent({
+        line,
+        state,
+      })) {
+        continue;
+      }
+      l.debug(`physical default changed: ${line}`,);
+      await synchronizeBypassRoutes({ state, },);
+    }
+    await closed;
+  }
+  catch (error) {
+    monitor.kill('SIGTERM',);
+    await closed;
+    l.error(`route monitor session failed: ${String(error,)}`,);
+    throw error;
+  }
+  lifecycle.monitor = MONITOR_ABSENT;
+  /**
+   * Captured monitor diagnostics after child close.
+   */
+  const diagnostic = await stderr;
+  /**
+   * First spawn failure when monitor could not start.
+   */
+  const [spawnFailureMessage,] = spawnFailureMessages;
+  if (spawnFailureMessage !== undefined)
+    throw new BypassRouteError(`Route monitor spawn failed: ${spawnFailureMessage}`,);
+  if (!lifecycle.requested) {
+    throw new BypassRouteError(
+      `Route monitor exited unexpectedly with ${String(monitor.exitCode,)}: ${diagnostic}`,
+    );
+  }
+}
+
+/**
+ * Watches route events and replaces failed monitor children until terminated.
  *
  * @param state - Persisted ownership state.
  *
@@ -100,47 +227,22 @@ export async function watchBypassRoutes(
     l,
   },);
   /**
-   * Mutable service-stop state shared by signal and exit handling.
+   * Mutable stop request and active monitor reference.
    */
-  const stopState = { requested: false, };
-  await synchronizeBypassRoutes({ state, },);
+  const lifecycle: WatchLifecycle = {
+    monitor: MONITOR_ABSENT,
+    requested: false,
+  };
   /**
-   * Route netlink monitor covering both address families.
-   */
-  const monitor = spawnChild(
-    'ip',
-    [
-      'monitor',
-      'route',
-    ],
-    {
-      stdio: [
-        'ignore',
-        'pipe',
-        'pipe',
-      ],
-    },
-  );
-  /**
-   * Terminates monitor child on service signal without aborting close-event promise.
+   * Requests watcher shutdown and terminates active monitor.
    */
   function stopMonitoring(): void {
     fl.debug('received termination signal',);
-    stopState.requested = true;
-    monitor.kill('SIGTERM',);
+    lifecycle.requested = true;
+    if ((typeof lifecycle.monitor) !== 'symbol')
+      lifecycle.monitor
+        .kill('SIGTERM',);
   }
-  /**
-   * Logs child-process spawn failures.
-   *
-   * @param error - Child-process failure.
-   */
-  function onMonitorError(error: Readonly<Error>,): void {
-    fl.error(`route monitor failed: ${error.message}`,);
-  }
-  monitor.on(
-    'error',
-    onMonitorError,
-  );
   process.once(
     'SIGTERM',
     stopMonitoring,
@@ -150,61 +252,33 @@ export async function watchBypassRoutes(
     stopMonitoring,
   );
   /**
-   * Close event promise registered before line iteration.
-   */
-  const closed = once(
-    monitor,
-    'close',
-  );
-  /**
-   * Captured monitor diagnostics consumed concurrently.
-   */
-  const stderr = text(monitor.stderr,);
-  /**
-   * Line iterator over netlink event rendering.
-   */
-  const lines = createInterface({ input: monitor.stdout, },);
-  /**
    * Process identity registration removed on clean or failed exit.
    */
-  await using registration = await registerBypassWatcher({ statePath, },);
-  try {
-    for await (const line of lines) {
-      if (!isPhysicalDefaultEvent({
-        line,
+  await using registration = await registerBypassWatcher({
+    statePath,
+    ownerId: state.ownerId,
+  },);
+  while (!lifecycle.requested) {
+    try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- Each monitor session must finish before supervised replacement.
+      await runMonitorSession({
         state,
-      }))
-        continue;
-      fl.debug(`physical default changed: ${line}`,);
-      await synchronizeBypassRoutes({ state, },);
+        lifecycle,
+      },);
     }
-  }
-  catch (error) {
-    if (!stopState.requested) {
-      fl.error(`route event loop failed: ${String(error,)}`,);
-      throw error;
+    catch (error) {
+      fl.error(`route monitor will restart after failure: ${String(error,)}`,);
     }
-    fl.debug(`route event loop aborted: ${String(error,)}`,);
-  }
-  await closed;
-  /**
-   * Numeric close code after monitor ends.
-   */
-  const { exitCode, } = monitor;
-  /**
-   * Captured monitor diagnostics.
-   */
-  const diagnostic = await stderr;
-  if ((!stopState.requested) && (exitCode !== 0)) {
-    throw new BypassRouteError(
-      `Route monitor exited ${String(exitCode,)}: ${diagnostic}`,
-    );
+    if (!lifecycle.requested) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- Bounded restart delay prevents failure spin.
+      await wait(MONITOR_RESTART_DELAY_MS,);
+    }
   }
   fl.debug('route watcher stopped',);
 }
 
 /**
- * State path supplied by systemd transient service.
+ * State path supplied by detached watcher launcher.
  */
 const [statePath,] = process.argv
   .slice(2,);
@@ -212,7 +286,7 @@ if (statePath === undefined)
   throw new BypassRouteError('Usage: bypass-watch <state-path>',);
 
 /**
- * Validated persisted state watched by this service.
+ * Validated persisted state watched by detached process.
  */
 const state = await readBypassStatePath({ path: statePath, },);
 await watchBypassRoutes({

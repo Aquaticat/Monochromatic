@@ -9,7 +9,10 @@ import { mkdtemp, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import type { BypassFixture, } from './tunnel-bypass-command-fixture.ts';
+import {
+  runBypassOperationAllowingFailure,
+  type BypassFixture,
+} from './tunnel-bypass-command-fixture.ts';
 import {
   cleanupBypassFixture,
   setupHostLinks,
@@ -98,6 +101,10 @@ export async function createBypassFixture(): Promise<BypassFixture> {
     stateDirectory,
     statePath,
     async [Symbol.asyncDispose](): Promise<void> {
+      await runBypassOperationAllowingFailure({
+        fixture,
+        source: "await removeExemptRule({ interfaceName: 'wgtest' });",
+      },);
       await cleanupBypassFixture({ fixture, },);
     },
   };

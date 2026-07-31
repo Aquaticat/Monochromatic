@@ -21,6 +21,7 @@ export type FixtureCommandResult = {
  * Persisted state fields consumed by integration checks.
  */
 export type FixtureBypassState = {
+  readonly preference: number;
   readonly table: number;
 };
 
@@ -152,6 +153,43 @@ export async function runSudoAllowingFailure(
 }
 
 /**
+ * Writes root-owned fixture file without shell interpolation.
+ *
+ * @param path - Destination path.
+ *
+ * @param contents - UTF-8 fixture contents.
+ *
+ * @example
+ * ```ts
+ * await writeRootFixtureFile({ path: '/tmp/state', contents: '{}' });
+ * ```
+ */
+export async function writeRootFixtureFile(
+  {
+    path,
+    contents,
+  }: {
+    readonly path: string;
+    readonly contents: string;
+  },
+): Promise<void> {
+  await runSudo({
+    args: [
+      process.execPath,
+      '--input-type=module',
+      '--eval',
+      "const { writeFile } = await import('node:fs/promises'); await writeFile(process.argv[1], Buffer.from(process.argv[2], 'base64'));",
+      path,
+      Buffer.from(
+        contents,
+        'utf8',
+      )
+        .toString('base64',),
+    ],
+  },);
+}
+
+/**
  * Runs `ip` command inside fixture namespace.
  *
  * @param fixture - Namespace fixture.
@@ -220,7 +258,7 @@ export async function runBypassOperation(
       process.execPath,
       '--input-type=module',
       '--eval',
-      `const { addExemptRule, removeExemptRule } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
+      `const { addExemptRule, claimBypassAllocationOperation, claimBypassInterfaceOperation, removeExemptRule } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
     ],
   },);
 }
@@ -259,7 +297,7 @@ export async function runBypassOperationAllowingFailure(
       process.execPath,
       '--input-type=module',
       '--eval',
-      `const { addExemptRule, removeExemptRule } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
+      `const { addExemptRule, claimBypassAllocationOperation, claimBypassInterfaceOperation, removeExemptRule } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
     ],
   },);
 }
@@ -290,9 +328,14 @@ export async function readFixtureState(
   },),);
   if (((typeof value) !== 'object')
     || (value === null)
+    || (!('preference' in value))
     || (!('table' in value))
+    || ((typeof value.preference) !== 'number')
     || ((typeof value.table) !== 'number')) {
-    throw new Error('Fixture bypass state lacks numeric table.',);
+    throw new Error('Fixture bypass state lacks numeric table or preference.',);
   }
-  return { table: value.table, };
+  return {
+    preference: value.preference,
+    table: value.table,
+  };
 }

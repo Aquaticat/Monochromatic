@@ -1,10 +1,8 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { BypassRouteError, } from './errors.ts';
-import {
-  run,
-  runAllowingFailure,
-} from './runner.ts';
+import { runIpDelete, } from './ip-delete.ts';
+import { run, } from './runner.ts';
 import {
   BYPASS_STATE_ABSENT,
   claimBypassState,
@@ -12,6 +10,10 @@ import {
   readBypassState,
   releaseBypassState,
 } from './tunnel-bypass-state.ts';
+import {
+  claimBypassAllocationOperation as claimBypassAllocationOperationInternal,
+  claimBypassInterfaceOperation as claimBypassInterfaceOperationInternal,
+} from './tunnel-bypass-operation-lock.ts';
 import {
   readPhysicalDefaults,
   removeOwnedBypassRoutes,
@@ -26,6 +28,12 @@ import {
   startBypassWatcher,
   stopBypassWatcher,
 } from './tunnel-bypass-watch-service.ts';
+
+export {
+  claimBypassAllocationOperation,
+  claimBypassInterfaceOperation,
+} from './tunnel-bypass-operation-lock.ts';
+export { readBypassStatePath, } from './tunnel-bypass-state.ts';
 
 /**
  * Module logger for bypass ownership lifecycle.
@@ -98,8 +106,7 @@ async function removeBypassRules(
     preference,
   } = state;
   await Promise.all(BYPASS_PROTOS.map(function removeRule(proto,): Promise<unknown> {
-    return runAllowingFailure({
-      command: 'ip',
+    return runIpDelete({
       args: [
         proto,
         'rule',
@@ -134,9 +141,38 @@ async function removeBypassRules(
 async function cleanupBypassState(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
-  await stopBypassWatcher({ state, },);
-  await removeBypassRules({ state, },);
-  await removeOwnedBypassRoutes({ state, },);
+  /**
+   * Watcher stop attempted before route removal to avoid resynchronization race.
+   */
+  const watcherResults = await Promise.allSettled([
+    stopBypassWatcher({ state, },),
+  ],);
+  /**
+   * Network cleanup attempted even when sidecar validation blocks watcher signaling.
+   */
+  const networkResults = await Promise.allSettled([
+    removeBypassRules({ state, },),
+    removeOwnedBypassRoutes({ state, },),
+  ],);
+  /**
+   * All rejected cleanup operations whose ownership must remain persisted.
+   */
+  const failures = [
+    ...watcherResults,
+    ...networkResults,
+  ].flatMap(function rejectionReason(
+    result: Readonly<PromiseSettledResult<void>>,
+  ): readonly unknown[] {
+    if (result.status === 'fulfilled')
+      return [];
+    return [result.reason as unknown,];
+  },);
+  if (failures.length > 0) {
+    throw new AggregateError(
+      failures,
+      `Application-bypass cleanup failed for ${state.interfaceName}; ownership state retained.`,
+    );
+  }
   await releaseBypassState({ state, },);
 }
 
@@ -154,8 +190,8 @@ async function cleanupBypassState(
  *
  * @param mark - Socket mark identifying exempt traffic.
  *
- * @param watchRouteChanges - Whether to start systemd watcher.
- * Disposable netns tests may run watcher directly in namespace.
+ * @param watchRouteChanges - Whether to start detached watcher
+ * in caller's privilege and network namespace.
  *
  * @example
  * ```ts
@@ -181,15 +217,14 @@ export async function addExemptRule(
     l,
   },);
   /**
-   * Existing state from interrupted prior lifecycle.
+   * Kernel lock serializing same-interface up,
+   * down,
+   * stale cleanup,
+   * and persistence.
    */
-  const existing = await readBypassState({ interfaceName, },);
-  if (existing !== BYPASS_STATE_ABSENT) {
-    fl.warn(`cleaning stale bypass state for ${interfaceName}`,);
-    await cleanupBypassState({ state: existing, },);
-  }
+  await using interfaceOperation = await claimBypassInterfaceOperationInternal({ interfaceName, },);
   /**
-   * Physical defaults required before claiming resources.
+   * Physical defaults confirmed before replacing any working prior lifecycle.
    */
   const physical = await readPhysicalDefaults();
   if (physical.length === 0) {
@@ -198,14 +233,26 @@ export async function addExemptRule(
     );
   }
   /**
-   * Collision-safe resources persisted before route mutation.
+   * Existing state from interrupted prior lifecycle.
+   */
+  const existing = await readBypassState({ interfaceName, },);
+  if (existing !== BYPASS_STATE_ABSENT) {
+    fl.warn(`cleaning stale bypass state for ${interfaceName}`,);
+    await cleanupBypassState({ state: existing, },);
+  }
+  /**
+   * Global kernel lock spans resource scan through kernel-visible installation.
+   */
+  await using allocationOperation = await claimBypassAllocationOperationInternal();
+  /**
+   * Collision-safe resources covered by rollback before persistence.
    */
   const state = await claimBypassState({
     interfaceName,
     mark,
   },);
-  await persistBypassState({ state, },);
   try {
+    await persistBypassState({ state, },);
     /**
      * Physical defaults observed during initial synchronization.
      */
@@ -247,6 +294,10 @@ export async function addExemptRule(
 export async function removeExemptRule(
   { interfaceName, }: { readonly interfaceName: string; },
 ): Promise<void> {
+  /**
+   * Kernel lock preventing concurrent replacement or duplicate teardown.
+   */
+  await using interfaceOperation = await claimBypassInterfaceOperationInternal({ interfaceName, },);
   /**
    * Persisted state when bypass setup completed or partially completed.
    */

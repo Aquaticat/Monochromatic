@@ -3,11 +3,10 @@ import {
   run,
   runAllowingFailure,
 } from './runner.ts';
-
-/**
- * Address-family flag accepted by `ip`.
- */
-type Proto = '-4' | '-6';
+import {
+  isAbsentTableDiagnostic,
+  type TableProto,
+} from './tunnel-table-diagnostic.ts';
 
 /**
  * First table tried for WireGuard default policy,
@@ -26,14 +25,9 @@ const BASE_BYPASS_TABLE = 52_000;
 const BASE_BYPASS_PREFERENCE = 50;
 
 /**
- * Largest bypass preference accepted before tunnel's automatic rules.
- */
-const MAX_BYPASS_PREFERENCE = 32_000;
-
-/**
  * Address families probed for route and rule ownership.
  */
-const PROTOS: readonly Proto[] = [
+const PROTOS: readonly TableProto[] = [
   '-4',
   '-6',
 ];
@@ -61,7 +55,7 @@ async function probeTable(
     proto,
     table,
   }: {
-    readonly proto: Proto;
+    readonly proto: TableProto;
     readonly table: number;
   },
 ): Promise<readonly string[]> {
@@ -82,8 +76,15 @@ async function probeTable(
     command: 'ip',
     args: routeArgs,
   },);
-  if ((routes.exitCode !== 0) && (!routes.stderr
-    .includes('FIB table does not exist',))) {
+  /**
+   * Whether result is exact absent-family-table response from `ip`.
+   */
+  const familyTableAbsent = isAbsentTableDiagnostic({
+    proto,
+    exitCode: routes.exitCode,
+    stderr: routes.stderr,
+  },);
+  if ((routes.exitCode !== 0) && (!familyTableAbsent)) {
     throw new CommandError({
       command: 'ip',
       args: routeArgs,
@@ -129,7 +130,7 @@ export async function tableIsFree(
    * Route and rule outputs for both families.
    */
   const probes = await Promise.all(PROTOS.map(function familyProbe(
-    proto: Proto,
+    proto: TableProto,
   ): Promise<readonly string[]> {
     return probeTable({
       proto,
@@ -240,27 +241,21 @@ function rulePreference(
 }
 
 /**
- * Finds preference unused by either address family.
+ * Reads preferences currently occupied in either address family.
  *
- * @param minimum - Optional retry floor after cooperative lock collision.
- *
- * @returns Free preference evaluated before automatic tunnel rules.
- *
- * @throws When no safe preference remains.
+ * @returns Fresh set of positive rule preferences.
  *
  * @example
  * ```ts
- * await findFreeBypassPreference({ minimum: 50 });
+ * await readUsedPreferences();
  * ```
  */
-export async function findFreeBypassPreference(
-  { minimum, }: { readonly minimum: number; },
-): Promise<number> {
+async function readUsedPreferences(): Promise<ReadonlySet<number>> {
   /**
    * Complete rule listings for both families.
    */
   const listings = await Promise.all(PROTOS.map(function readRules(
-    proto: Proto,
+    proto: TableProto,
   ): Promise<{ readonly stdout: string; }> {
     return run({
       command: 'ip',
@@ -285,18 +280,90 @@ export async function findFreeBypassPreference(
         used.add(preference,);
     }
   }
+  return used;
+}
+
+/**
+ * Reports whether preference has no rule in either address family.
+ *
+ * @param preference - Candidate preference.
+ *
+ * @returns Whether candidate remains unused at probe time.
+ *
+ * @example
+ * ```ts
+ * await preferenceIsFree({ preference: 50 });
+ * ```
+ */
+export async function preferenceIsFree(
+  { preference, }: { readonly preference: number; },
+): Promise<boolean> {
+  return !(await readUsedPreferences()).has(preference,);
+}
+
+/**
+ * Finds preference unused by either address family.
+ *
+ * @param maximum - Highest preferred priority number before existing catch-all rules.
+ *
+ * @returns Free positive preference ordered before occupied candidate.
+ *
+ * @throws When no safe preference remains.
+ *
+ * @example
+ * ```ts
+ * await findFreeBypassPreference({ maximum: 50 });
+ * ```
+ */
+export async function findFreeBypassPreference(
+  { maximum, }: { readonly maximum: number; },
+): Promise<number> {
+  /**
+   * Preferences occupied at allocation probe.
+   */
+  const used = await readUsedPreferences();
   /**
    * Mutable scan cursor over safe preference range.
    */
+  /**
+   * Earliest existing positive rule priority that bypass must precede.
+   */
+  const earliestUsed = [...used,].reduce(
+    function lowerPreference(
+    current,
+    candidate,
+  ): number {
+    return Math.min(
+      current,
+      candidate,
+    );
+  },
+    Number.MAX_SAFE_INTEGER,
+  );
+  /**
+   * Highest candidate guaranteed to run before every existing positive rule.
+   */
+  const existingRuleBound = earliestUsed === Number.MAX_SAFE_INTEGER
+    ? BASE_BYPASS_PREFERENCE
+    : earliestUsed - 1;
+  /**
+   * Mutable descending cursor toward highest-priority free slot.
+   */
   const cursor = {
-    preference: Math.max(
-      BASE_BYPASS_PREFERENCE,
-      minimum,
-    ),
+    preference: maximum > 0
+      ? Math.min(
+        BASE_BYPASS_PREFERENCE,
+        maximum,
+        existingRuleBound,
+      )
+      : Math.min(
+        BASE_BYPASS_PREFERENCE,
+        existingRuleBound,
+      ),
   };
-  while (used.has(cursor.preference,))
-    cursor.preference += 1;
-  if (cursor.preference >= MAX_BYPASS_PREFERENCE)
-    throw new Error('No free application-bypass rule preference remains.',);
+  while ((cursor.preference > 0) && used.has(cursor.preference,))
+    cursor.preference -= 1;
+  if (cursor.preference <= 0)
+    throw new Error('No free application-bypass rule preference remains before occupied priorities.',);
   return cursor.preference;
 }

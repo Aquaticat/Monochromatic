@@ -10,6 +10,7 @@ import {
   runSudo,
   runSudoAllowingFailure,
   type BypassFixture,
+  writeRootFixtureFile,
 } from './tunnel-bypass-command-fixture.ts';
 import { createBypassFixture, } from './tunnel-bypass.integration-fixture.ts';
 
@@ -108,6 +109,59 @@ async function watcherPid(
 }
 
 /**
+ * Polls active `ip monitor` child under watcher.
+ *
+ * @param watcherProcessId - Detached watcher PID.
+ *
+ * @param previousProcessId - Prior monitor PID excluded after restart.
+ *
+ * @returns Positive current monitor PID.
+ *
+ * @example
+ * ```ts
+ * await watcherMonitorPid({ watcherProcessId: 123, previousProcessId: 0 });
+ * ```
+ */
+async function watcherMonitorPid(
+  {
+    watcherProcessId,
+    previousProcessId,
+  }: {
+    readonly watcherProcessId: number;
+    readonly previousProcessId: number;
+  },
+): Promise<number> {
+  /**
+   * Bounded child-discovery cursor.
+   */
+  const cursor = { attempt: 0, };
+  while (cursor.attempt < WATCH_PROBE_ATTEMPTS) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Each probe observes supervised child replacement after delay.
+    const result = await runSudoAllowingFailure({
+      args: [
+        'pgrep',
+        '--parent',
+        String(watcherProcessId,),
+        '--exact',
+        'ip',
+      ],
+    },);
+    if (result.exitCode === 0) {
+      /**
+       * First matching monitor child.
+       */
+      const pid = Number(result.stdout.trim(),);
+      if (Number.isSafeInteger(pid,) && (pid > 0) && (pid !== previousProcessId))
+        return pid;
+    }
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Bounded child-restart wait avoids busy spin.
+    await wait(WATCH_PROBE_DELAY_MS,);
+    cursor.attempt += 1;
+  }
+  throw new Error('Detached watcher did not expose supervised route-monitor child.',);
+}
+
+/**
  * Waits until watcher table follows secondary physical interface.
  *
  * @param fixture - Disposable namespace.
@@ -161,6 +215,10 @@ await using fixture = await createBypassFixture();
 
 //region Dynamic ownership and full-tunnel shapes
 
+await runBypassOperation({
+  fixture,
+  source: "await using firstInterfaceLock = await claimBypassInterfaceOperation({ interfaceName: 'wgtest' }); const secondInterfaceLock = await Promise.allSettled([claimBypassInterfaceOperation({ interfaceName: 'wgtest' })]); if (secondInterfaceLock[0]?.status !== 'rejected') throw new Error('Concurrent interface lock unexpectedly succeeded.'); await using firstAllocationLock = await claimBypassAllocationOperation(); const secondAllocationLock = await Promise.allSettled([claimBypassAllocationOperation()]); if (secondAllocationLock[0]?.status !== 'rejected') throw new Error('Concurrent allocation lock unexpectedly succeeded.');",
+},);
 await runNamespaceIp({
   fixture,
   args: [
@@ -173,15 +231,18 @@ await runNamespaceIp({
     '52000',
   ],
 },);
+await runNamespaceIp({ fixture, args: ['-4', 'rule', 'add', 'pref', '50', 'from', '203.0.113.0/24', 'table', 'main',], },);
+await runNamespaceIp({ fixture, args: ['-6', 'rule', 'add', 'pref', '51', 'from', '2001:db8:ffff::/64', 'table', 'main',], },);
 await addBypass({
   fixture,
   watchRouteChanges: false,
 },);
 /**
- * State proving occupied table 52000 was skipped.
+ * State proving occupied table and both-family preferences were skipped.
  */
 const firstState = await readFixtureState({ fixture, },);
 assert.equal(firstState.table, 52_001,);
+assert.equal(firstState.preference, 49,);
 await runNamespaceIp({ fixture, args: ['route', 'add', '0.0.0.0/1', 'dev', 'wgtest',], },);
 await runNamespaceIp({ fixture, args: ['route', 'add', '128.0.0.0/1', 'dev', 'wgtest',], },);
 await runNamespaceIp({ fixture, args: ['-6', 'route', 'add', '::/1', 'dev', 'wgtest',], },);
@@ -212,6 +273,8 @@ await removeBypass({ fixture, },);
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', '52000',], },)).includes('blackhole 203.0.113.0/24',));
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', String(firstState.table,),], },)).includes('blackhole 198.18.0.0/15',));
 assert.equal((await runNamespaceIp({ fixture, args: ['-4', 'rule', 'show',], },)).includes(`fwmark 0x22b8 lookup ${String(firstState.table,)}`,), false,);
+assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'rule', 'show',], },)).includes('50:',));
+assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'rule', 'show',], },)).includes('51:',));
 
 //endregion Exact teardown ownership
 
@@ -230,6 +293,29 @@ assert.equal(watcherState.table, 52_002,);
  * Detached watcher PID expected to disappear during teardown.
  */
 const detachedPid = await watcherPid({ fixture, },);
+/**
+ * Initial route-monitor child intentionally killed to verify watcher supervision.
+ */
+const firstMonitorPid = await watcherMonitorPid({
+  watcherProcessId: detachedPid,
+  previousProcessId: 0,
+},);
+await runSudo({
+  args: [
+    'kill',
+    '--signal',
+    'KILL',
+    String(firstMonitorPid,),
+  ],
+},);
+/**
+ * Replacement monitor child started by persistent watcher.
+ */
+const replacementMonitorPid = await watcherMonitorPid({
+  watcherProcessId: detachedPid,
+  previousProcessId: firstMonitorPid,
+},);
+assert.notEqual(replacementMonitorPid, firstMonitorPid,);
 await runNamespaceIp({ fixture, args: ['route', 'replace', 'default', 'via', '198.51.101.1', 'dev', fixture.peerSecondary, 'metric', '50',], },);
 await runNamespaceIp({ fixture, args: ['route', 'delete', 'default', 'via', '198.51.100.1', 'dev', fixture.peerPrimary, 'metric', '100',], },);
 await runNamespaceIp({ fixture, args: ['-6', 'route', 'replace', 'default', 'via', '2001:db8:2::1', 'dev', fixture.peerSecondary, 'metric', '50',], },);
@@ -240,6 +326,42 @@ await waitForSecondaryRoute({
 },);
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'get', '8.8.8.8', 'mark', String(EXEMPT_MARK,),], },)).includes(`dev ${fixture.peerSecondary}`,));
 assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'route', 'get', '2001:4860:4860::8888', 'mark', String(EXEMPT_MARK,),], },)).includes(`dev ${fixture.peerSecondary}`,));
+/**
+ * Original watcher sidecar restored after wrong-owner cleanup probe.
+ */
+const originalWatcherSidecar = await runSudo({
+  args: [
+    'cat',
+    `${fixture.statePath}.watcher.json`,
+  ],
+},);
+/**
+ * Parsed sidecar used to change only owner identity.
+ */
+const watcherSidecarValue: unknown = JSON.parse(originalWatcherSidecar,);
+if (((typeof watcherSidecarValue) !== 'object') || (watcherSidecarValue === null))
+  throw new Error('Watcher sidecar is not object.',);
+await writeRootFixtureFile({
+  path: `${fixture.statePath}.watcher.json`,
+  contents: JSON.stringify({
+    ...watcherSidecarValue,
+    ownerId: 'wrong-owner',
+  },),
+},);
+/**
+ * Cleanup failure caused by mismatched sidecar owner.
+ */
+const wrongOwnerCleanup = await runBypassOperationAllowingFailure({
+  fixture,
+  source: "await removeExemptRule({ interfaceName: 'wgtest' });",
+},);
+assert.notEqual(wrongOwnerCleanup.exitCode, 0,);
+assert.equal((await runSudoAllowingFailure({ args: ['test', '-e', fixture.statePath,], },)).exitCode, 0,);
+assert.equal((await runSudoAllowingFailure({ args: ['test', '-e', `/proc/${String(detachedPid,)}`,], },)).exitCode, 0,);
+await writeRootFixtureFile({
+  path: `${fixture.statePath}.watcher.json`,
+  contents: originalWatcherSidecar,
+},);
 await removeBypass({ fixture, },);
 assert.notEqual((await runSudoAllowingFailure({ args: ['test', '-e', `/proc/${String(detachedPid,)}`,], },)).exitCode, 0,);
 
