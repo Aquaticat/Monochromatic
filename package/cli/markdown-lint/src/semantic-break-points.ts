@@ -36,6 +36,12 @@ const WORD_SEPARATORS: ReadonlySet<string> = new Set([
  * Emphasis delimiters are deliberately absent. A break at a text node's end is
  * already moved past those by the rule, which knows from the tree which span is
  * closing and cannot mistake a literal asterisk for one.
+ *
+ * The set is Western prose only. CJK closers (`」`, `』`, `】`, `〕`, `》`, `）`
+ * and their kin) would belong here on the same reasoning, and adding them can
+ * only turn a missing break into a placed one, never a placed one into a wrong
+ * one. Measured across every tracked Markdown and MDX file: no break-point
+ * character is followed by one, so they are recorded rather than added.
  */
 const CLOSING_DELIMITERS: ReadonlySet<string> = new Set([
   '"',
