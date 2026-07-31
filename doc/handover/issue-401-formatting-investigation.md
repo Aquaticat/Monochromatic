@@ -6,12 +6,15 @@ Investigation is active.
 No implementation decision has been accepted.
 GitHub issue [Aquaticat/Monochromatic#401](https://github.com/Aquaticat/Monochromatic/issues/401) is open.
 
-Current repository `HEAD` before the 2026-07-30 restart checkpoint:
-`82b8e72ba`.
-The main worktree contains unrelated changes under `package/cli/wg-quicker-exempt/`.
+The 2026-07-30 restart checkpoint is commit `81218de1e`.
+Immediately after that commit,
+`git status --short` showed concurrent unrelated modifications across `.agents/`,
+`doc/`,
+and several package directories,
+plus the earlier `package/cli/wg-quicker-exempt/` work.
 Do not alter,
 stage,
-or commit those files.
+or commit any unrelated dirty path.
 
 ## User requirements
 
