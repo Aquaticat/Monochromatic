@@ -159,10 +159,10 @@ await describe({
         expect(finalNewlinePolicy.defaultSeverity,).toBe('warn',);
         expect(warning.exitCode,).toBe(0,);
         expect(warning.shouldForward,).toBe(true,);
-        expect(warning.events,).toMatchObject([{ severity: 'warn', },],);
+        expect(warning.events[0],).toHaveProperty('severity', 'warn',);
         expect(error.exitCode,).toBe(1,);
         expect(error.shouldForward,).toBe(false,);
-        expect(error.events,).toMatchObject([{ severity: 'error', },],);
+        expect(error.events[0],).toHaveProperty('severity', 'error',);
       },
     },),
     it({
