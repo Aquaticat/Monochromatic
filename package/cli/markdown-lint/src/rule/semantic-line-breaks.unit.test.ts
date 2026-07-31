@@ -9,6 +9,11 @@ import { runRules, } from '../lint.ts';
 import { semanticLineBreaks, } from './semantic-line-breaks.ts';
 
 /**
+ * One diagnostic as `runRules` reports it.
+ */
+type ReportedDiagnostic = ReturnType<typeof runRules>[number];
+
+/**
  * Count semantic-line-breaks diagnostics for a source.
  *
  * @param source - Markdown source
@@ -21,6 +26,23 @@ function count(source: string,): number {
     source,
     mdx: false,
   },).length;
+}
+
+/**
+ * Report semantic-line-breaks diagnostics as `line:column` strings.
+ *
+ * @param source - Markdown source
+ *
+ * @returns reported positions, in the order found
+ */
+function positions(source: string,): readonly string[] {
+  return runRules({
+    rules: [semanticLineBreaks,],
+    source,
+    mdx: false,
+  },).map(function positionOf(diagnostic: ReportedDiagnostic,): string {
+    return `${diagnostic.line}:${diagnostic.column}`;
+  },);
 }
 
 /**
@@ -269,6 +291,22 @@ await describe({
         const fixed = fix('Sentence.  `code` follows here.\n',);
         expect(fixed.source.includes('  \n',),).toBe(false,);
         expect(fixed.source,).toBe('Sentence.\n  `code` follows here.\n',);
+      },
+    },),
+    it({
+      name: 'points at the break itself, not at the paragraph it sits in',
+      fn: async function anchoredAtTheBreak() {
+        // The offence is on the paragraph's fourth line. Anchoring at the text
+        // node reported the paragraph's first line with a column past that
+        // line's end, which is a position that moves whenever nearby text is
+        // edited and reads exactly like feedback about the edit.
+        // Column 6 is where the break goes, one past the comma, which is what
+        // the message says rather than where the break-point character sits.
+        expect(positions('one\ntwo\nthree\nfour, five\n',),).toEqual(['4:6',],);
+        // Through a closing delimiter the anchor follows the insertion, so it
+        // lands after the `**` rather than in front of it.
+        expect(positions('- **Term.** Explanation continues here.\n',),)
+          .toEqual(['1:12',],);
       },
     },),
     it({

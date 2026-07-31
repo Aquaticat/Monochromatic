@@ -1,7 +1,10 @@
 import type { ReadonlyDeep, } from 'type-fest';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { Nodes, } from 'mdast';
-import type { Position, } from 'unist';
+import type {
+  Point,
+  Position,
+} from 'unist';
 
 import type {
   Diagnostic,
@@ -102,9 +105,35 @@ export function sliceOf({
 }
 
 /**
+ * What a diagnostic points at: a whole node, whose start point sets line and
+ * column, or one explicit point. A rule whose violation is a single character
+ * inside a long node needs the second, because a node anchor reports where the
+ * node begins and sends the reader to a line that can be far from the offence.
+ */
+export type DiagnoseAnchor = {
+  /**
+   * Node the diagnostic points at; its start point sets line and column.
+   */
+  readonly node: Nodes;
+  /**
+   * Absent on this branch.
+   */
+  readonly point?: never;
+} | {
+  /**
+   * Absent on this branch.
+   */
+  readonly node?: never;
+  /**
+   * Point the diagnostic sits at, already resolved to line and column.
+   */
+  readonly point: Point;
+};
+
+/**
  * Parameters for {@link diagnose}.
  */
-export type DiagnoseParams = {
+export type DiagnoseParams = DiagnoseAnchor & {
   /**
    * Rule reporting the violation.
    */
@@ -114,17 +143,14 @@ export type DiagnoseParams = {
    */
   readonly message: string;
   /**
-   * Node the diagnostic points at; its start point sets line and column.
-   */
-  readonly node: Nodes;
-  /**
    * Optional localized fix.
    */
   readonly fix?: Fix;
 };
 
 /**
- * Build a {@link Diagnostic} anchored at a node's start point.
+ * Build a {@link Diagnostic} anchored at a node's start point or at an explicit
+ * point.
  *
  * @param ruleId - rule reporting the violation
  *
@@ -132,9 +158,11 @@ export type DiagnoseParams = {
  *
  * @param node - node whose start point sets line and column
  *
+ * @param point - point that sets line and column, instead of a node
+ *
  * @param fix - optional localized fix
  *
- * @returns diagnostic anchored at the node
+ * @returns diagnostic anchored at the node or point
  *
  * @example
  * ```ts
@@ -145,19 +173,21 @@ export function diagnose({
   ruleId,
   message,
   node,
+  point,
   fix,
 }: ReadonlyDeep<DiagnoseParams>,): Diagnostic {
   /**
-   * Resolved node position, for the start point.
+   * Start point of whichever anchor was given.
    */
-  const position = positionOf(node,);
+  const start = node === undefined
+    ? point
+    : positionOf(node,)
+      .start;
   return {
     ruleId,
     message,
-    line: position.start
-      .line,
-    column: position.start
-      .column,
+    line: start.line,
+    column: start.column,
     ...fix === undefined ? {} : { fix, },
   };
 }

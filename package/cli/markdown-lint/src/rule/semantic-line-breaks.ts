@@ -12,6 +12,10 @@ import {
   sliceOf,
 } from '../node-source.ts';
 import { breakOffsets, } from '../semantic-break-points.ts';
+import {
+  lineStartOffsets,
+  pointAt,
+} from '../source-position.ts';
 import type {
   Diagnostic,
   Rule,
@@ -307,6 +311,11 @@ function checkSemanticLineBreaks({
   const lineEnding = source.includes('\r\n',)
     ? '\r\n'
     : '\n';
+  /**
+   * Line starts for this document, built once so anchoring every break at its
+   * own offset costs one scan rather than one per diagnostic.
+   */
+  const lineStarts = lineStartOffsets(source,);
   for (const {
     node,
     ancestors,
@@ -423,8 +432,12 @@ function checkSemanticLineBreaks({
         : pastDelimiters;
       diagnostics.push(diagnose({
         ruleId: ID,
-        message: 'Missing line break after a prose break-point character.',
-        node,
+        message: 'A line break belongs here, after a prose break-point character.',
+        point: pointAt({
+          source,
+          lineStarts,
+          offset: at,
+        },),
         fix: {
           start: at,
           end: at,
