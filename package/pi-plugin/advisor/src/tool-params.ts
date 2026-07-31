@@ -99,8 +99,6 @@ function normalizeQuestionArgument(
  *
  * @returns normalized Advisor params
  *
- * @mutates args - `Object.keys` and property reads can invoke caller-defined proxy traps
- *
  * @throws when non-empty args are malformed
  *
  * @example

@@ -133,14 +133,12 @@ export function scopeAvoidingCurrentMainModel(
   /**
    * Scoped entries that differ from active primary model.
    */
-  const alternativeEntries = scope
-    .entries
-    .filter(function keepNonCurrentModel(
-      entry: ReadonlyDeep<(typeof scope.entries)[number]>,
-    ) {
-      return entry.canonicalSlug
-        !== currentMainModelSlug;
-    },);
+  const alternativeEntries: EffectiveModelScope['entries'][number][] = [];
+  for (const entry of scope.entries) {
+    if (entry.canonicalSlug
+      !== currentMainModelSlug)
+      alternativeEntries.push(entry,);
+  }
 
   /**
    * Count of non-current default candidates.

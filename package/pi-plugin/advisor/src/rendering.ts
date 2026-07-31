@@ -13,7 +13,7 @@ import {
   Text,
 } from '@earendil-works/pi-tui';
 import type { ReadonlyDeep, } from 'type-fest';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   fallbackDetails,
   isAdvisorDetails,
@@ -35,6 +35,8 @@ import type {
  *
  * @returns TUI component
  *
+ * @mutates theme - theme methods can update Pi host styling caches
+ *
  * @example
  * ```typescript
  * renderAdvisorCall({ args: {}, theme });
@@ -46,7 +48,7 @@ export function renderAdvisorCall(
     theme,
   }: {
     readonly args: AdvisorToolParams;
-    readonly theme: ForeignBorrowed<Theme>;
+    readonly theme: ForeignHostCapability<Theme>;
   },
 ): Component {
   /**
@@ -102,6 +104,8 @@ export function renderAdvisorCall(
  *
  * @returns TUI component
  *
+ * @mutates theme - theme methods can update Pi host styling caches
+ *
  * @example
  * ```typescript
  * renderAdvisorResult({ result, expanded: false, theme });
@@ -115,7 +119,7 @@ export function renderAdvisorResult(
   }: {
     readonly result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>;
     readonly expanded: boolean;
-    readonly theme: ForeignBorrowed<Theme>;
+    readonly theme: ForeignHostCapability<Theme>;
   },
 ): Component {
   /**
@@ -150,6 +154,8 @@ export function renderAdvisorResult(
  *
  * @returns TUI component
  *
+ * @mutates theme - theme methods can update Pi host styling caches
+ *
  * @example
  * ```typescript
  * renderAdvisorMessage({ message, expanded: true, theme });
@@ -166,7 +172,7 @@ export function renderAdvisorMessage(
       readonly details?: unknown;
     };
     readonly expanded: boolean;
-    readonly theme: ForeignBorrowed<Theme>;
+    readonly theme: ForeignHostCapability<Theme>;
   },
 ): Component {
   /**

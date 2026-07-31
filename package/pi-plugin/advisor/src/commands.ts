@@ -10,7 +10,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
@@ -80,7 +80,7 @@ export type RegisterAdvisorCommandsOptions = {
   /**
    * Pi extension API.
    */
-  readonly pi: ExtensionAPI;
+  readonly pi: ForeignHostCapability<ExtensionAPI>;
   /**
    * Runtime config accessor.
    */
@@ -108,7 +108,7 @@ export type RegisterAdvisorCommandsOptions = {
  * ```
  */
 export function registerAdvisorCommands(
-  options: ForeignBorrowed<RegisterAdvisorCommandsOptions>,
+  options: ForeignHostCapability<RegisterAdvisorCommandsOptions>,
 ): void {
   options.pi
     .registerCommand(
@@ -116,9 +116,14 @@ export function registerAdvisorCommands(
     {
       description:
         'Run Advisor, inspect scoped models, or toggle Advisor for this session',
+      /**
+       * Execute Advisor slash command through Pi host context.
+       *
+       * @mutates ctx - command handling can update Pi notifications and session state
+       */
       async handler(
         args,
-        ctx,
+        ctx: ForeignHostCapability<ExtensionCommandContext>,
       ) {
         await handleAdvisorCommand({
           args,
@@ -150,10 +155,10 @@ export function syncAdvisorActiveTool(
   {
     pi,
     enabled,
-  }: ForeignBorrowed<Readonly<{
-    pi: ExtensionAPI;
-    enabled: boolean;
-  }>>,
+  }: {
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
+    readonly enabled: boolean;
+  },
 ): void {
   /**
    * Current active tool names.
@@ -162,7 +167,14 @@ export function syncAdvisorActiveTool(
   /**
    * Whether Advisor is active.
    */
-  const alreadyActive = activeTools.includes(ADVISOR_TOOL_NAME,);
+  let alreadyActive = false;
+  for (const toolName of activeTools) {
+    if (toolName
+      === ADVISOR_TOOL_NAME) {
+      alreadyActive = true;
+      break;
+    }
+  }
   if (enabled && (!alreadyActive)) {
     pi.setActiveTools([
       ...activeTools,
@@ -171,9 +183,15 @@ export function syncAdvisorActiveTool(
     return;
   }
   if ((!enabled) && alreadyActive) {
-    pi.setActiveTools(activeTools.filter(function keepTool(toolName,) {
-      return toolName !== ADVISOR_TOOL_NAME;
-    },),);
+    /**
+     * Active tools excluding Advisor.
+     */
+    const retainedTools: string[] = [];
+    for (const toolName of activeTools) {
+      if (toolName !== ADVISOR_TOOL_NAME)
+        retainedTools.push(toolName,);
+    }
+    pi.setActiveTools(retainedTools,);
   }
 }
 
@@ -200,11 +218,11 @@ export async function buildAdvisorStatus(
     ctx,
     config,
     enabled,
-  }: ForeignBorrowed<Readonly<{
-    ctx: ExtensionCommandContext;
-    config: AdvisorConfig;
-    enabled: boolean;
-  }>>,
+  }: {
+    readonly ctx: ForeignHostCapability<ExtensionCommandContext>;
+    readonly config: AdvisorConfig;
+    readonly enabled: boolean;
+  },
 ): Promise<string> {
   /**
    * Effective model scope for status.
@@ -313,11 +331,11 @@ type HandleAdvisorCommandOptions = {
   /**
    * Command context.
    */
-  readonly ctx: ExtensionCommandContext;
+  readonly ctx: ForeignHostCapability<ExtensionCommandContext>;
   /**
    * Pi extension API.
    */
-  readonly pi: ExtensionAPI;
+  readonly pi: ForeignHostCapability<ExtensionAPI>;
   /**
    * Runtime config accessor.
    */
@@ -336,7 +354,7 @@ type HandleAdvisorCommandOptions = {
  * @mutates options - changes session toggle and invokes Pi active-tool and notification capabilities
  */
 async function handleAdvisorCommand(
-  options: ForeignBorrowed<HandleAdvisorCommandOptions>,
+  options: ForeignHostCapability<HandleAdvisorCommandOptions>,
 ): Promise<void> {
   /**
    * Trimmed command args.
@@ -417,12 +435,12 @@ async function runImmediateAdvisor(
     pi,
     config,
     requestedSlug,
-  }: ForeignBorrowed<Readonly<{
-    ctx: ExtensionCommandContext;
-    pi: ExtensionAPI;
-    config: AdvisorConfig;
-    requestedSlug?: string;
-  }>>,
+  }: {
+    readonly ctx: ForeignHostCapability<ExtensionCommandContext>;
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
+    readonly config: AdvisorConfig;
+    readonly requestedSlug?: string;
+  },
 ): Promise<void> {
   await ctx.waitForIdle();
   try {

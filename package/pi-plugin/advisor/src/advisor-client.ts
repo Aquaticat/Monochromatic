@@ -224,7 +224,7 @@ export type CompleteAdvisorOptions = ForeignHostCapability<{
  * ```
  */
 export async function completeAdvisor(
-  options: CompleteAdvisorOptions,
+  options: ForeignHostCapability<CompleteAdvisorOptions>,
 ): Promise<AssistantMessage> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
   /**

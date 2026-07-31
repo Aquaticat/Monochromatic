@@ -16,7 +16,10 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import {
@@ -68,7 +71,7 @@ const l = tagged({
  * ```
  */
 export default async function advisor(
-  pi: ForeignBorrowed<ExtensionAPI>,
+  pi: ForeignHostCapability<ExtensionAPI>,
 ): Promise<void> {
   /**
    * Logger tagged with the extension factory name.
@@ -107,13 +110,18 @@ export default async function advisor(
 
   pi.registerMessageRenderer(
     ADVISOR_MESSAGE_TYPE,
+    /**
+     * Render manual Advisor message through Pi theme capability.
+     *
+     * @mutates theme - theme methods can update Pi host styling caches
+     */
     function renderMessage(
       message: ReadonlyDeep<{
         content: unknown;
         details?: unknown;
       }>,
       options: Readonly<MessageRenderOptions>,
-      theme: ForeignBorrowed<Theme>,
+      theme: ForeignHostCapability<Theme>,
     ) {
       return renderAdvisorMessage({
         message,
@@ -148,7 +156,7 @@ export default async function advisor(
      */
     async function handleBeforeAgentStart(
       event: ForeignBorrowed<BeforeAgentStartEvent>,
-      ctx: ForeignBorrowed<ExtensionContext>,
+      ctx: ForeignHostCapability<ExtensionContext>,
     ) {
       if (!state.getEnabled())
         return undefined;
@@ -192,7 +200,7 @@ async function buildMainModelGuidance(
     ctx,
     config,
   }: {
-    readonly ctx: ForeignBorrowed<ExtensionContext>;
+    readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly config: Awaited<ReturnType<typeof loadMergedConfig>>;
   },
 ): Promise<string> {

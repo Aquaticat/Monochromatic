@@ -189,10 +189,9 @@ export function selectAdvisorRunContext(
   /**
    * Context candidates using each scoped model's effective context budget.
    */
-  const candidates = defaultScope
-    .entries
-    .map(function mapScopedModel(scopedModel,) {
-    return {
+  const candidates: AdvisorContextCandidate[] = [];
+  for (const scopedModel of defaultScope.entries) {
+    candidates.push({
       scopedModel,
       advisorContext: buildContextForScopedModel({
         branch: options.branch,
@@ -204,21 +203,20 @@ export function selectAdvisorRunContext(
         ...(options.toolCallId
           === undefined ? {} : { toolCallId: options.toolCallId, }),
       },),
-    } satisfies AdvisorContextCandidate;
-  },);
+    },);
+  }
   /**
    * Input token estimates keyed by canonical scoped model slug.
    */
-  const estimatedInputTokensBySlug = new Map(
-    candidates.map(function mapCandidate(candidate: ReadonlyDeep<AdvisorContextCandidate>,) {
-      return [
-        candidate.scopedModel
-          .canonicalSlug,
-        candidate.advisorContext
-          .estimatedInputTokens,
-      ] as const;
-    },),
-  );
+  const estimatedInputTokensBySlug = new Map<string, number>();
+  for (const candidate of candidates) {
+    estimatedInputTokensBySlug.set(
+      candidate.scopedModel
+        .canonicalSlug,
+      candidate.advisorContext
+        .estimatedInputTokens,
+    );
+  }
   /**
    * Default Advisor model selection using each candidate's own estimate.
    */
@@ -231,15 +229,17 @@ export function selectAdvisorRunContext(
   /**
    * Context candidate matching selected default model.
    */
-  const selectedCandidate = candidates.find(function matchesSelection(
-    candidate: ReadonlyDeep<AdvisorContextCandidate>,
-  ) {
-    return candidate.scopedModel
+  let selectedCandidate: AdvisorContextCandidate | undefined;
+  for (const candidate of candidates) {
+    if (candidate.scopedModel
       .canonicalSlug
       === defaultSelection
       .selected
-      .canonicalSlug;
-  },);
+      .canonicalSlug) {
+      selectedCandidate = candidate;
+      break;
+    }
+  }
   if (selectedCandidate === undefined) {
     throw new Error(
       `advisor: selected model ${defaultSelection.selected

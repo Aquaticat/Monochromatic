@@ -5,7 +5,7 @@
  */
 
 import type { Theme, } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
 
@@ -39,6 +39,8 @@ const MARKDOWN_HEADING_SEPARATOR = ' ';
  *
  * @returns rendered text
  *
+ * @mutates theme - theme methods can update Pi host styling caches
+ *
  * @example
  * ```typescript
  * renderAdvisorSummary({ text, details, expanded: false, theme });
@@ -54,7 +56,7 @@ export function renderAdvisorSummary(
     readonly text: string;
     readonly details: AdvisorDetails;
     readonly expanded: boolean;
-    readonly theme: ForeignBorrowed<Theme>;
+    readonly theme: ForeignHostCapability<Theme>;
   },
 ): string {
   /**
@@ -237,6 +239,8 @@ function firstNonHeadingMarkerIndex(
  * @param theme - current pi theme
  *
  * @returns styled header text
+ *
+ * @mutates theme - theme methods can update Pi host styling caches
  */
 function formatHeader(
   {
@@ -244,7 +248,7 @@ function formatHeader(
     theme,
   }: {
     readonly details: AdvisorDetails;
-    readonly theme: ForeignBorrowed<Theme>;
+    readonly theme: ForeignHostCapability<Theme>;
   },
 ): string {
   /**

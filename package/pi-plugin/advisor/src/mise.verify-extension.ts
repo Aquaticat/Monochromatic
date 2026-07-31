@@ -10,7 +10,6 @@ import {
   type ExecResult,
   type ExtensionAPI,
   type ExtensionFactory,
-  type ProviderConfig,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 
@@ -55,14 +54,9 @@ type RegisteredTool = {
    */
   readonly name: string;
   /**
-   * Tool parameter schema.
+   * Whether tool schema exposes focused-question parameter.
    */
-  readonly parameters?: {
-    /**
-     * Object-schema properties.
-     */
-    readonly properties?: Record<string, unknown>;
-  };
+  readonly questionParameterPresent: boolean;
 };
 
 //endregion Types
@@ -139,22 +133,19 @@ function assertAdvisorQuestionParameter(
   tools: readonly ReadonlyDeep<RegisteredTool>[],
 ): void {
   /**
-   * Registered Advisor tool definition.
+   * Registered Advisor tool definition discovered by linear scan.
    */
-  const advisorTool = [...tools,]
-    .find(function isAdvisorTool(tool,) {
-      return tool.name === 'advisor';
-    },);
+  let advisorTool: ReadonlyDeep<RegisteredTool> | undefined;
+  for (const tool of tools) {
+    if (tool.name
+      === 'advisor') {
+      advisorTool = tool;
+      break;
+    }
+  }
   if (advisorTool === undefined)
     throw new Error('registered Advisor tool was not captured',);
-  /**
-   * Registered question parameter schema.
-   */
-  const questionParameter = advisorTool
-    .parameters
-    ?.properties
-    ?.question;
-  if (questionParameter === undefined)
+  if (!advisorTool.questionParameterPresent)
     throw new Error('registered Advisor tool is missing question parameter',);
 }
 
@@ -181,11 +172,9 @@ function fakePiApi(): {
    *
    * @param providerOrName - complete provider or legacy provider identity
    *
-   * @param _config - optional legacy provider config
    */
   function registerProvider(
     providerOrName: Provider | string,
-    _config?: ProviderConfig,
   ): void {
     /**
      * Provider identity normalized from complete-provider or legacy arguments.
@@ -203,9 +192,19 @@ function fakePiApi(): {
     on(event: string,) {
       registrations.push(`event:${event}`,);
     },
-    registerTool(tool: ReadonlyDeep<RegisteredTool>,) {
+    registerTool(tool: ReadonlyDeep<{
+      readonly name: string;
+      readonly parameters?: {
+        readonly properties?: Record<string, unknown>;
+      };
+    }>,) {
       registrations.push(`tool:${tool.name}`,);
-      tools.push(tool,);
+      tools.push({
+        name: tool.name,
+        questionParameterPresent: tool.parameters
+          ?.properties
+          ?.question !== undefined,
+      },);
     },
     registerCommand(name: string,) {
       registrations.push(`command:${name}`,);

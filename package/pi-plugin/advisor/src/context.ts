@@ -14,7 +14,6 @@ import {
   serializeConversation,
   type SessionEntry,
 } from '@earendil-works/pi-coding-agent';
-import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   ADVISOR_MESSAGE_TYPE,
@@ -120,24 +119,23 @@ export function buildAdvisorContext(
   /**
    * Agent messages included in the secondary Advisor request.
    */
-  const messages = options
-    .branch
-    .map(function mapEntry(entry: ForeignBorrowed<SessionEntry>,) {
-      return entryToMessage({
-        entry,
-        includePriorAdvisorResults: options.config
-          .includePriorAdvisorResults,
-        ...(options.toolCallId
-          === undefined
-          ? {}
-          : { currentToolCallId: options.toolCallId, }),
-      },);
-    },)
-    .filter(function isIncludedMessage(
-      message: ReadonlyDeep<AdvisorAgentMessage> | typeof MESSAGE_EXCLUDED,
-    ): message is ForeignBorrowed<AdvisorAgentMessage> {
-      return message !== MESSAGE_EXCLUDED;
+  const messages: ForeignBorrowed<AdvisorAgentMessage>[] = [];
+  for (const entry of options.branch) {
+    /**
+     * Advisor-visible message converted from current session entry.
+     */
+    const message = entryToMessage({
+      entry,
+      includePriorAdvisorResults: options.config
+        .includePriorAdvisorResults,
+      ...(options.toolCallId
+        === undefined
+        ? {}
+        : { currentToolCallId: options.toolCallId, }),
     },);
+    if (message !== MESSAGE_EXCLUDED)
+      messages.push(message,);
+  }
 
   /**
    * Serialized conversation produced by pi's compaction utility.
@@ -430,19 +428,20 @@ function filterMessage(
   /**
    * Assistant content with current Advisor placeholder tool call omitted.
    */
-  const content = message.content
-    .filter(function keepContentBlock(
-      block: ReadonlyDeep<(typeof message.content)[number]>,
-    ) {
-    return !(
-      (block.type
-        === 'toolCall')
+  const content: (typeof message.content)[number][] = [];
+  for (const block of message.content) {
+    /**
+     * Whether current block is active Advisor placeholder omitted from context.
+     */
+    const isCurrentAdvisorCall = (block.type
+      === 'toolCall')
       && (block.name
         === ADVISOR_TOOL_NAME)
-        && (block.id
-          === currentToolCallId)
-    );
-  },);
+      && (block.id
+        === currentToolCallId);
+    if (!isCurrentAdvisorCall)
+      content.push(block,);
+  }
   if (content.length
     === 0)
     return MESSAGE_EXCLUDED;

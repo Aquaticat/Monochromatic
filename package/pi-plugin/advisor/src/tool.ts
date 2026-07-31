@@ -11,10 +11,7 @@ import type {
   ToolRenderResultOptions,
 } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import type {
-  ForeignBorrowed,
-  ForeignHostCapability,
-} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   buildAdvisorSystemPrompt,
   completeAdvisor,
@@ -87,6 +84,7 @@ export function createAdvisorTool(
     parameters: AdvisorToolParametersSchema,
     executionMode: 'sequential',
     prepareArguments: prepareAdvisorArguments,
+    execute:
     /**
      * Run Advisor tool against active Pi host context.
      *
@@ -94,7 +92,7 @@ export function createAdvisorTool(
      *
      * @mutates ctx - scope and auth resolution can invoke Pi host capabilities
      */
-    execute: async function executeAdvisorTool(
+      async function executeAdvisorTool(
       toolCallId: string,
       params: {
         readonly model?: string;
@@ -149,33 +147,47 @@ export function createAdvisorTool(
         details: result.details,
       };
     },
-    // oxlint-disable-next-line unicorn/consistent-function-scoping -- ToolDefinition.renderCall expects positional args; require-destructured-params forbids extracting this to a module-level declaration.
-    renderCall: function renderCall(
-      args: {
-        readonly model?: string;
-        readonly question?: string;
+    /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderCall expects positional args; require-destructured-params forbids extracting this to a module-level declaration. */
+    renderCall:
+    /**
+     * Render Advisor tool call through Pi theme capability.
+     *
+     * @mutates theme - theme methods can update Pi host styling caches
+     */
+      function renderCall(
+        args: {
+          readonly model?: string;
+          readonly question?: string;
+        },
+        theme: ForeignHostCapability<Theme>,
+        _context: unknown,
+      ) {
+        return renderAdvisorCall({
+          args,
+          theme,
+        },);
       },
-      theme: ForeignBorrowed<Theme>,
-      _context: unknown,
-    ) {
-      return renderAdvisorCall({
-        args,
-        theme,
-      },);
-    },
-    // oxlint-disable-next-line unicorn/consistent-function-scoping -- ToolDefinition.renderResult expects positional args; require-destructured-params forbids extracting this to a module-level declaration.
-    renderResult: function renderResult(
-      result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>,
-      renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
-      theme: ForeignBorrowed<Theme>,
-      _context: unknown,
-    ) {
-      return renderAdvisorResult({
-        result,
-        expanded: renderOptions.expanded,
-        theme,
-      },);
-    },
+    /* oxlint-enable unicorn/consistent-function-scoping */
+    /* oxlint-disable unicorn/consistent-function-scoping -- ToolDefinition.renderResult expects positional args; require-destructured-params forbids extracting this to a module-level declaration. */
+    renderResult:
+    /**
+     * Render Advisor tool result through Pi theme capability.
+     *
+     * @mutates theme - theme methods can update Pi host styling caches
+     */
+      function renderResult(
+        result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>,
+        renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
+        theme: ForeignHostCapability<Theme>,
+        _context: unknown,
+      ) {
+        return renderAdvisorResult({
+          result,
+          expanded: renderOptions.expanded,
+          theme,
+        },);
+      },
+    /* oxlint-enable unicorn/consistent-function-scoping */
   };
 }
 
@@ -194,7 +206,7 @@ export function createAdvisorTool(
  * ```
  */
 export async function runAdvisor(
-  options: AdvisorRunOptions,
+  options: ForeignHostCapability<AdvisorRunOptions>,
 ): Promise<AdvisorRunResult> {
   /**
    * Start time for duration metadata.

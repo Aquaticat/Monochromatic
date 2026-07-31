@@ -4,10 +4,7 @@
  * @module
  */
 
-import type {
-  TextContent,
-  UserMessage,
-} from '@earendil-works/pi-ai';
+import type { UserMessage, } from '@earendil-works/pi-ai';
 import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -36,31 +33,30 @@ export const NO_USER_PROMPT: unique symbol = Symbol('advisor/no-user-prompt',);
 export function latestUserPromptExcerpt(
   branch: readonly ForeignBorrowed<SessionEntry>[],
 ): string | typeof NO_USER_PROMPT {
-  /**
-   * Latest user message entry, if present.
-   */
-  const latestUserEntry = branch
-    .toReversed()
-    .find(function findUserEntry(entry,) {
-      return isUserMessageEntry(entry,);
-    },);
-  if (latestUserEntry === undefined)
-    return NO_USER_PROMPT;
+  for (let index = branch.length - 1; index >= 0; index -= 1) {
+    /**
+     * Branch entry at current reverse cursor.
+     */
+    const entry = branch[index];
+    if ((entry === undefined) || (!isUserMessageEntry(entry,)))
+      continue;
 
-  /**
-   * Plain text extracted from user message content.
-   */
-  const text = userMessageText(latestUserEntry.message
-    .content,);
-  return text.length
-    <= LATEST_USER_EXCERPT_CHARS
-    ? text
-    : `${
-      text.slice(
-        0,
-        LATEST_USER_EXCERPT_CHARS,
-      )
-    }…`;
+    /**
+     * Plain text extracted from latest user message content.
+     */
+    const text = userMessageText(entry.message
+      .content,);
+    return text.length
+      <= LATEST_USER_EXCERPT_CHARS
+      ? text
+      : `${
+        text.slice(
+          0,
+          LATEST_USER_EXCERPT_CHARS,
+        )
+      }…`;
+  }
+  return NO_USER_PROMPT;
 }
 
 //endregion Public API
@@ -79,17 +75,16 @@ function userMessageText(
 ): string {
   if ((typeof content) === 'string')
     return content;
-  return content
-    .filter(function keepTextBlock(
-      block: ReadonlyDeep<(typeof content)[number]>,
-    ): block is ReadonlyDeep<TextContent> {
-      return block.type
-        === 'text';
-    },)
-    .map(function mapTextBlock(block: ReadonlyDeep<TextContent>,) {
-      return block.text;
-    },)
-    .join('\n',);
+  /**
+   * Text block values collected in source order.
+   */
+  const textParts: string[] = [];
+  for (const block of content) {
+    if (block.type
+      === 'text')
+      textParts.push(block.text,);
+  }
+  return textParts.join('\n',);
 }
 
 /**

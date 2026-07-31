@@ -5,7 +5,7 @@
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_MESSAGE_TYPE, } from './constants.ts';
 import type { AdvisorRunResult, } from './types.ts';
 
@@ -29,10 +29,10 @@ export function sendAdvisorMessage(
   {
     pi,
     result,
-  }: ForeignBorrowed<Readonly<{
-    pi: ExtensionAPI;
-    result: AdvisorRunResult;
-  }>>,
+  }: {
+    readonly pi: ForeignHostCapability<ExtensionAPI>;
+    readonly result: AdvisorRunResult;
+  },
 ): void {
   pi.sendMessage({
     customType: ADVISOR_MESSAGE_TYPE,

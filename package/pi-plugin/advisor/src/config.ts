@@ -177,41 +177,40 @@ function mergeConfigFiles(
     configs: readonly (AdvisorConfigFile | typeof NO_CONFIG_FILE)[];
   }>>,
 ): Omit<AdvisorConfig, 'source'> {
-  return configs.reduce(
-    function mergeConfig(
-      accumulator: Omit<AdvisorConfig, 'source'>,
-      config: AdvisorConfigFile | typeof NO_CONFIG_FILE,
-    ) {
-      if (config === NO_CONFIG_FILE)
-        return accumulator;
-      /**
-       * Merged context cap, omitted when neither scope configures one.
-       */
-      const maxContextChars = config.maxContextChars
-        ?? accumulator
-        .maxContextChars;
-      return {
-        enabled: config.enabled
-          ?? accumulator
-          .enabled,
-        timeoutMs: config.timeoutMs
-          ?? accumulator
-          .timeoutMs,
-        maxAdvisorOutputTokens: config.maxAdvisorOutputTokens
-          ?? accumulator
-          .maxAdvisorOutputTokens,
-        includePriorAdvisorResults: config.includePriorAdvisorResults
-          ?? accumulator
-          .includePriorAdvisorResults,
-        ...(maxContextChars === undefined ? {} : { maxContextChars, }),
-        ...(config.systemPrompt
-          === undefined
-          ? {}
-          : { systemPrompt: config.systemPrompt, }),
-      };
-    },
-    defaults,
-  );
+  /**
+   * Current merged config, replaced for each present override file.
+   */
+  let merged = defaults;
+  for (const config of configs) {
+    if (config === NO_CONFIG_FILE)
+      continue;
+    /**
+     * Merged context cap, omitted when neither scope configures one.
+     */
+    const maxContextChars = config.maxContextChars
+      ?? merged
+      .maxContextChars;
+    merged = {
+      enabled: config.enabled
+        ?? merged
+        .enabled,
+      timeoutMs: config.timeoutMs
+        ?? merged
+        .timeoutMs,
+      maxAdvisorOutputTokens: config.maxAdvisorOutputTokens
+        ?? merged
+        .maxAdvisorOutputTokens,
+      includePriorAdvisorResults: config.includePriorAdvisorResults
+        ?? merged
+        .includePriorAdvisorResults,
+      ...(maxContextChars === undefined ? {} : { maxContextChars, }),
+      ...(config.systemPrompt
+        === undefined
+        ? {}
+        : { systemPrompt: config.systemPrompt, }),
+    };
+  }
+  return merged;
 }
 
 /**
@@ -241,11 +240,18 @@ async function loadConfigFile(
   },);
   if (raw === undefined)
     return NO_CONFIG_FILE;
-  return parseConfigFile({
+  /**
+   * Validation result from valibot for locally parsed JSON value.
+   */
+  const result = v.safeParse(
+    AdvisorConfigFileSchema,
     raw,
-    path,
-    label,
-  },);
+  );
+  if (result.success)
+    return result.output;
+  throw new Error(
+    `advisor: invalid ${label} config at ${path}: ${JSON.stringify(result.issues,)}`,
+  );
 }
 
 /**
@@ -289,44 +295,6 @@ async function readJsonFile(
 }
 
 /**
- * Validate parsed config data.
- *
- * @param raw - parsed JSON data
- *
- * @param path - config file path
- *
- * @param label - config scope label
- *
- * @returns validated config file
- *
- * @mutates raw - `valibot@1.4.2 . safeParse` can invoke getters or proxy traps while traversing parsed configuration
- */
-function parseConfigFile(
-  {
-    raw,
-    path,
-    label,
-  }: {
-    readonly raw: unknown;
-    readonly path: string;
-    readonly label: string;
-  },
-): AdvisorConfigFile {
-  /**
-   * Validation result from valibot.
-   */
-  const result = v.safeParse(
-    AdvisorConfigFileSchema,
-    raw,
-  );
-  if (result.success)
-    return result.output;
-  throw new Error(
-    `advisor: invalid ${label} config at ${path}: ${JSON.stringify(result.issues,)}`,
-  );
-}
-
-/**
  * Detect Node ENOENT missing-file errors without unsafe assertion.
  *
  * @param error - caught error value
@@ -336,7 +304,7 @@ function parseConfigFile(
 function isFileMissingError(
   error: unknown,
 ): boolean {
-  if ((!(Error.isError(error,))) || (!('code' in error)))
+  if ((!(error instanceof Error)) || (!('code' in error)))
     return false;
   return error.code === 'ENOENT';
 }
