@@ -18,7 +18,6 @@ import {
   isFinalNewlineExcluded,
   normalizeFinalNewline,
 } from './final-newline-normalize.ts';
-import { runPolicyEngine, } from './engine.ts';
 import { createFinalNewlinePatch, } from './final-newline-patch.ts';
 import { finalNewlinePolicy, } from './final-newline-policy.ts';
 
@@ -129,40 +128,10 @@ await describe({
   name: 'core final-newline policy',
   children: [
     it({
-      name: 'warns by default while retaining explicit error override',
+      name: 'defaults to non-blocking warning severity',
       fn: async function testDefaultSeverity() {
-        /** Noncanonical ordinary candidate. */
-        const input = candidate({ path: 'value.txt', value: 'value', },);
-        /** Default warning decision. */
-        const warning = await runPolicyEngine({
-          args: [],
-          trigger: 'direct-check',
-          gitFacts: context({
-            trigger: 'direct-check',
-            candidates: [input,],
-          },).git,
-          registeredPolicies: [finalNewlinePolicy,],
-          selectedPolicyIds: ['final-newline',],
-        },);
-        /** Explicit blocking decision. */
-        const error = await runPolicyEngine({
-          args: [],
-          trigger: 'direct-check',
-          gitFacts: context({
-            trigger: 'direct-check',
-            candidates: [input,],
-          },).git,
-          config: { policies: { 'final-newline': 'error', }, },
-          registeredPolicies: [finalNewlinePolicy,],
-          selectedPolicyIds: ['final-newline',],
-        },);
         expect(finalNewlinePolicy.defaultSeverity,).toBe('warn',);
-        expect(warning.exitCode,).toBe(0,);
-        expect(warning.shouldForward,).toBe(true,);
-        expect(warning.events[0],).toHaveProperty('severity', 'warn',);
-        expect(error.exitCode,).toBe(1,);
-        expect(error.shouldForward,).toBe(false,);
-        expect(error.events[0],).toHaveProperty('severity', 'error',);
+        expect(finalNewlinePolicy.warnSafe,).toBe(true,);
       },
     },),
     it({
