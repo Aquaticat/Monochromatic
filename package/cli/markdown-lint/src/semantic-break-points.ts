@@ -27,6 +27,35 @@ const WORD_SEPARATORS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Characters that close something the sentence opened, so the sentence has not
+ * finished being written until they are. A break belongs after the run of them
+ * rather than in front of it: `He called it "done." Then` breaks after the
+ * quote, and breaking before it would leave the quote heading the next line
+ * with nothing to close.
+ *
+ * Emphasis delimiters are deliberately absent. A break at a text node's end is
+ * already moved past those by the rule, which knows from the tree which span is
+ * closing and cannot mistake a literal asterisk for one.
+ */
+const CLOSING_DELIMITERS: ReadonlySet<string> = new Set([
+  '"',
+  '\'',
+  ')',
+  ']',
+  '}',
+  '”',
+  '’',
+  '»',
+  '›',
+],);
+
+/**
+ * Answer from {@link breakOffsetAfter} when nothing at or past the break-point
+ * character ends a written word, so no break belongs there.
+ */
+const NO_BREAK_OFFSET = -1;
+
+/**
  * Lowercased abbreviations whose internal or trailing `.` must not trigger a
  * break. A pragmatic default set; the plan leaves the exact list to be tuned
  * against the corpus.
@@ -374,6 +403,71 @@ function followingCharacter({
 }
 
 /**
+ * Parameters for {@link breakOffsetAfter}.
+ */
+type BreakOffsetAfterParams = {
+  /**
+   * Text being scanned.
+   */
+  readonly slice: string;
+  /**
+   * Index of the break-point character.
+   */
+  readonly index: number;
+  /**
+   * Source past the text node, for boundary lookahead.
+   */
+  readonly trailing: TrailingSource;
+};
+
+/**
+ * Offset within the slice at which a break after this break-point character
+ * belongs, or {@link NO_BREAK_OFFSET} when none does.
+ *
+ * The offset walks past any closing delimiters written straight after the
+ * break-point character, because the sentence is not finished until they are.
+ * What has to end a word is then the character past that run, not the one
+ * touching the break-point character: `catches.)` breaks after the paren, while
+ * `crates.io` and `rule?",` break nowhere here, the second because its comma is
+ * its own break point and gets its own offset.
+ *
+ * @param slice - text being scanned
+ *
+ * @param index - index of the break-point character
+ *
+ * @param trailing - source past the node, for boundary lookahead
+ *
+ * @returns insertion offset within the slice, or {@link NO_BREAK_OFFSET}
+ */
+function breakOffsetAfter({
+  slice,
+  index,
+  trailing,
+}: BreakOffsetAfterParams,): number {
+  /**
+   * Cursor advanced past each closing delimiter. A record so every mutable
+   * value stays a number.
+   */
+  const cursor = { at: index + 1, };
+  while ((cursor.at < slice.length)
+    && CLOSING_DELIMITERS.has(slice[cursor.at] ?? '',)) {
+    cursor.at += 1;
+  }
+  /**
+   * Character past the delimiter run, from the source beyond the node when the
+   * run reached the slice's end.
+   */
+  const following = followingCharacter({
+    slice,
+    index: cursor.at - 1,
+    trailing,
+  },);
+  return WORD_SEPARATORS.has(following,)
+    ? cursor.at
+    : NO_BREAK_OFFSET;
+}
+
+/**
  * Parameters for {@link breakOffsets}.
  */
 export type BreakOffsetsParams = {
@@ -395,18 +489,17 @@ export type BreakOffsetsParams = {
 };
 
 /**
- * Offsets within the slice at which to insert a line break: one just past each
- * break-point character that is not already followed by a break, is not the
- * paragraph's final punctuation, ends a written word, and is not the last dot
- * of an ellipsis or part of an abbreviation.
+ * Offsets within the slice at which to insert a line break: one for each
+ * break-point character that ends a written word, is not already followed by a
+ * break, is not the paragraph's final punctuation, and is not the last dot of
+ * an ellipsis or part of an abbreviation. The offset sits past any closing
+ * delimiters, so it is not always one past the break-point character.
  *
  * Ending a written word is what keeps a decimal, a thousands separator, a
  * version segment, a time, a dotted filename and a qualified name whole, so
  * each needs no guard of its own: every one of them writes a digit or a letter
- * straight after the break-point character. It also declines the break before a
- * closing quote or bracket, where the sentence has not ended yet and the break
- * belongs after the delimiter rather than in front of it. Declining a break is
- * always safe; inserting one inside a token is not.
+ * straight after the break-point character. Declining a break is always safe;
+ * inserting one inside a token is not.
  *
  * @param slice - source text of one prose text node
  *
@@ -444,29 +537,32 @@ export function breakOffsets({
       continue;
     }
     /**
-     * What follows the break-point character.
+     * Where a break after this break-point character would go, past any
+     * closing delimiters, or {@link NO_BREAK_OFFSET} when none belongs there.
+     */
+    const breakAt = breakOffsetAfter({
+      slice,
+      index,
+      trailing,
+    },);
+    if (breakAt === NO_BREAK_OFFSET) {
+      continue;
+    }
+    /**
+     * What follows the place the break would go. Measured from there rather
+     * than from the break-point character, so a document already broken after
+     * a closing quote reads as broken rather than as missing a break in front
+     * of the quote.
      */
     const status = followStatus({
       slice,
-      afterIndex: index + 1,
+      afterIndex: breakAt,
       trailing,
     },);
     if (status === 'broken') {
       continue;
     }
     if ((status === 'tail') && isParagraphTail) {
-      continue;
-    }
-    /**
-     * Character written immediately after the break point, from the source just
-     * past the node when the break point ends the slice.
-     */
-    const following = followingCharacter({
-      slice,
-      index,
-      trailing,
-    },);
-    if (!WORD_SEPARATORS.has(following,)) {
       continue;
     }
     /**
@@ -484,7 +580,7 @@ export function breakOffsets({
         continue;
       }
     }
-    offsets.push(index + 1,);
+    offsets.push(breakAt,);
   }
   return offsets;
 }

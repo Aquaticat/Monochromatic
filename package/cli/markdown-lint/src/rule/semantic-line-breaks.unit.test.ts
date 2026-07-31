@@ -142,19 +142,23 @@ await describe({
       },
     },),
     it({
-      name: 'leaves a closing quote or bracket attached to its sentence',
+      name: 'breaks after a closing quote or bracket, never in front of one',
       fn: async function closingDelimiter() {
         // The sentence has not ended at the period, so a break there strands the
-        // delimiter at the head of the next line.
-        expect(count('called "same concept." Two hosts differ here.\n',),).toBe(0,);
-        expect(count('asked "which rule?" and then moved on here.\n',),).toBe(0,);
-        expect(count('- (the user chose rules only.) Execution follows here.\n',),).toBe(0,);
-        // A break-point character outside the delimiter is untouched by the
-        // guard, so the quoted question keeps its break rather than losing it.
-        // The continuation line opens on the space that already stood there,
-        // which is how every mid-slice break in this repository's prose reads.
+        // delimiter at the head of the next line with nothing to close.
+        expect(fix('called "same concept." Two hosts differ here.\n',).source,)
+          .toBe('called "same concept."\n Two hosts differ here.\n',);
+        expect(fix('- (the user chose rules only.) Execution follows here.\n',).source
+          .includes('only.)\n',),).toBe(true,);
+        // Already written that way is correct, so reporting it would be a false
+        // positive: the status is read from past the delimiter too.
+        expect(count('called "same concept."\nTwo hosts differ here.\n',),).toBe(0,);
+        // The run ends where the sentence does, so a comma outside the quote is
+        // its own break point and gets its own break.
         expect(fix('asked "which rule?", and then moved on here.\n',).source
           .includes('rule?",\n and then',),).toBe(true,);
+        // Nothing ends a word past the run, so nothing breaks.
+        expect(count('a call to fn(arg.value) reads it here.\n',),).toBe(0,);
       },
     },),
     it({
