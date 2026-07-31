@@ -112,13 +112,12 @@ export function createAdvisorTool(
       }
 
       /**
-       * Requested model slug copied from host-owned tool parameters.
+       * Primitive Advisor inputs copied from host-owned tool parameters.
        */
-      const requestedSlug = params.model;
-      /**
-       * Focus question copied from host-owned tool parameters.
-       */
-      const question = params.question;
+      const {
+        model: requestedSlug,
+        question,
+      } = params;
       /**
        * Runtime config snapshot for this call.
        */

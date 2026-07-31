@@ -7,12 +7,12 @@
 import {
   getSupportedThinkingLevels,
   type Api,
-  AssistantMessage,
-  Context,
-  Message,
-  Model,
-  ProviderStreams,
-  SimpleStreamOptions,
+  type AssistantMessage,
+  type Context,
+  type Message,
+  type Model,
+  type ProviderStreams,
+  type SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
 import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
 import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
