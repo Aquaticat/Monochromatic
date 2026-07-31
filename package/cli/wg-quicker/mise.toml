@@ -38,3 +38,7 @@ extends = "test:unit"
 [tasks.buildAndTest]
 description = "Build wg-quicker, then run unit tests"
 run = ["mise run build", "mise run test:unit"]
+
+[tasks."test:integration:bypass"]
+description = "Build wg-quicker and verify bypass routing in disposable root network namespace"
+run = ["mise run build", "node src/tunnel-bypass.integration.test.ts"]
