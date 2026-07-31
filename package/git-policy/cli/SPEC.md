@@ -142,6 +142,7 @@ export type LazyPolicyGitFacts = {
 
 export type PolicyContext = {
   readonly candidateVersion: number;
+  readonly canApplyPatches: boolean;
   readonly trigger: PolicyTrigger;
   readonly command: PolicyCommandFacts;
   readonly git: LazyPolicyGitFacts;
@@ -602,7 +603,9 @@ This schema supersedes the temporary built-in policy inventory from the first po
 Built-in policies run against raw semantic command facts.
 Fixed transforms then produce `transformedArgs`.
 Plugin policies run against the predicted candidate set for the transformed command.
-Applicable normalizer patches run through whole-sequence convergence.
+`canApplyPatches` is true only when a private commit transaction or direct-fix operation owns safe patch application.
+Applicable normalizer patches then run through whole-sequence convergence.
+Other pre-forward commands emit findings without proposing unavailable patches.
 Remaining errors block before real Git.
 
 ### Linked-worktree ignored-state synchronization
@@ -1466,7 +1469,8 @@ Their fixed order is `require-root`,
 `branch-worktree-only`,
 `add-explicit`,
 then `final-newline`.
-All default to `error`;
+`final-newline` defaults to `warn`;
+the other built-ins default to `error`.
 `branch-worktree-only` and `final-newline` are warn-safe.
 Unsafe warn configuration emits a `configuration-warning` JSONL event but still forwards when only warning findings
 remain.
@@ -1526,7 +1530,8 @@ Preserve the independent SLSA-attested CI invocation.
 
 ### Final newline
 
-`final-newline` is a core policy enabled at error severity by default.
+`final-newline` is a core policy enabled at warning severity by default.
+An explicit error override restores blocking enforcement.
 Selected non-empty text ends with exactly one LF.
 Remove every terminal LF before adding one.
 Empty and binary-looking bytes stay unchanged.
@@ -1542,7 +1547,8 @@ package/test-fixture/toml-edit/src/**
 **/bundle/node/**
 ```
 
-Commit patches affect only would-be-committed bytes.
+Patch-capable commit transactions automatically normalize would-be-committed bytes.
+Other pre-forward commands, including `git add`, warn and continue without offering an inapplicable patch.
 Direct fix affects selected worktree bytes only.
 Every real index entry remains exact during direct fix.
 

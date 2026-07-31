@@ -64,6 +64,8 @@ const ENGINE_CONFIG_SCHEMA = v.looseObject({
  *
  * @param gitFacts - lifecycle-specific lazy Git facts
  *
+ * @param canApplyPatches - whether lifecycle owns safe patch application
+ *
  * @param repositoryRoot - canonical repository root override
  *
  * @returns initial candidate-state context
@@ -75,6 +77,7 @@ function createPolicyContext({
   trigger,
   gitFacts,
   candidateVersion,
+  canApplyPatches,
   repositoryRoot,
 }: Readonly<{
   rawArgs: readonly string[];
@@ -83,6 +86,7 @@ function createPolicyContext({
   trigger: PolicyTrigger;
   gitFacts: LazyPolicyGitFacts;
   candidateVersion: number;
+  canApplyPatches: boolean;
   repositoryRoot?: string;
 }>,): PolicyContext {
   /**
@@ -98,6 +102,7 @@ function createPolicyContext({
   const subcommand = transformedArgs[subcommandIndex] ?? ABSENT_GIT_VALUE;
   return {
     candidateVersion,
+    canApplyPatches,
     trigger,
     command: {
       rawArgs,
@@ -125,6 +130,8 @@ function createPolicyContext({
  *
  * @param repositoryRoot - canonical repository root override
  *
+ * @param canApplyPatches - whether lifecycle owns safe patch application
+ *
  * @param config - persistent built-in settings
  *
  * @param selectedPolicyIds - direct-check filter
@@ -149,6 +156,7 @@ export async function runPolicyEngine({
   gitFacts = EMPTY_LAZY_GIT_FACTS,
   candidateVersion = 0,
   repositoryRoot,
+  canApplyPatches = false,
   config = {},
   selectedPolicyIds,
   registeredPolicies = BUILT_IN_POLICIES,
@@ -260,6 +268,7 @@ export async function runPolicyEngine({
       trigger,
       gitFacts,
       candidateVersion,
+      canApplyPatches,
       ...(repositoryRoot === undefined ? {} : { repositoryRoot, }),
     },),
     trigger,
@@ -333,6 +342,7 @@ export async function runPolicyEngine({
       trigger,
       gitFacts,
       candidateVersion,
+      canApplyPatches,
       ...(repositoryRoot === undefined ? {} : { repositoryRoot, }),
     },),
     trigger,

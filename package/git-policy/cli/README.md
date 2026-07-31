@@ -177,7 +177,8 @@ transformers:
 `branch-worktree-only`,
 `add-explicit`,
 and `final-newline`.
-All default to `error`.
+`final-newline` defaults to `warn`;
+the other core policies default to `error`.
 Validated policy settings support `off`,
 `warn`,
 and `error`.
@@ -249,6 +250,8 @@ revalidates worktree bytes before installation,
 uses same-directory atomic replacements with rollback copies,
 and verifies that real index bytes remain exact.
 Successful corrections emit only a `fix-summary` JSONL event.
+Ordinary `git add` reports noncanonical final newlines as warnings and continues;
+the later patch-capable commit transaction normalizes the exact bytes it commits.
 
 A durable no-follow transaction directory retains exact original and prepared index snapshots,
 expected parent and tree identities,

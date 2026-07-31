@@ -81,6 +81,10 @@ export type RunPolicyEngineOptions = Readonly<{
    */
   candidateVersion?: number;
   /**
+   * Whether current lifecycle owns safe patch application.
+   */
+  canApplyPatches?: boolean;
+  /**
    * Canonical repository root when already resolved.
    */
   repositoryRoot?: string;

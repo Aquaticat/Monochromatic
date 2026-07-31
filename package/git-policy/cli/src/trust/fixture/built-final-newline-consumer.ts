@@ -152,14 +152,13 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
       '--',
       'check.txt',
     ],
-    expectedExit: 1,
     cwd: repository,
     env,
   },);
   assertIncludes({
     text: checked.stdout,
-    expected: '"policyId":"final-newline"',
-    context: 'packed final-newline direct check',
+    expected: '"policyId":"final-newline","severity":"warn"',
+    context: 'packed final-newline direct check warning',
   },);
   assertFixtureEqual({
     actual: await readBase64(`${repository}/check.txt`,),
@@ -214,13 +213,22 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     `${repository}/commit.txt`,
     'commit missing',
   );
-  await execute({
-    command: '/usr/bin/git',
+  /**
+   * Non-blocking add warning before commit-owned correction.
+   */
+  const added = await execute({
+    command: 'git',
     args: [
       'add',
       'commit.txt',
     ],
     cwd: repository,
+    env,
+  },);
+  assertIncludes({
+    text: added.stderr,
+    expected: '"policyId":"final-newline","severity":"warn"',
+    context: 'packed final-newline add warning',
   },);
   /**
    * Packed commit correction summary routed to wrapper stderr.
@@ -266,18 +274,6 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     context: 'packed commit worktree bytes',
   },);
 
-  /**
-   * Remote main before intentionally noncanonical local commit.
-   */
-  const remoteBefore = (await execute({
-    command: '/usr/bin/git',
-    args: [
-      '--git-dir',
-      remote,
-      'rev-parse',
-      'refs/heads/main',
-    ],
-  },)).stdout;
   await writeFile(
     `${repository}/push.txt`,
     'push missing',
@@ -309,17 +305,16 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
       'origin',
       'main:main',
     ],
-    expectedExit: 1,
     cwd: repository,
     env,
   },);
   assertIncludes({
     text: pushed.stderr,
-    expected: '"policyId":"final-newline"',
-    context: 'packed final-newline manual push',
+    expected: '"policyId":"final-newline","severity":"warn"',
+    context: 'packed final-newline manual-push warning',
   },);
   /**
-   * Remote main after rejected noncanonical push.
+   * Remote main after warning-only noncanonical push.
    */
   const remoteAfter = (await execute({
     command: '/usr/bin/git',
@@ -330,13 +325,24 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
       'refs/heads/main',
     ],
   },)).stdout;
+  /**
+   * Exact local commit forwarded after warning-only policy evaluation.
+   */
+  const localAfter = (await execute({
+    command: '/usr/bin/git',
+    args: [
+      'rev-parse',
+      'HEAD',
+    ],
+    cwd: repository,
+  },)).stdout;
   assertFixtureEqual({
     actual: remoteAfter,
-    expected: remoteBefore,
-    context: 'manual-push remote ref',
+    expected: localAfter,
+    context: 'warning-only manual-push remote ref',
   },);
   /**
-   * Exact noncanonical local committed blob after read-only push.
+   * Exact noncanonical local committed blob after warning-only push.
    */
   const pushedBlob = await execute({
     command: '/usr/bin/git',

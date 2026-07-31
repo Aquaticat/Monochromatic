@@ -211,6 +211,7 @@ export async function runCommitTransaction({
     trigger: 'pre-forward',
     gitFacts: initialFacts,
     candidateVersion: 0,
+    canApplyPatches: true,
     repositoryRoot: layout.effectiveCwd,
   },);
   if (readOnlySelection && (pass.patches
@@ -320,6 +321,7 @@ export async function runCommitTransaction({
       trigger: 'pre-forward',
       gitFacts: currentFacts,
       candidateVersion: changedPasses,
+      canApplyPatches: true,
       repositoryRoot: layout.effectiveCwd,
     },);
   }

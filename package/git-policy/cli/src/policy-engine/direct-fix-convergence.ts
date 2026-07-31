@@ -133,6 +133,7 @@ export async function convergeDirectFix({
     trigger: 'direct-fix',
     gitFacts: scope.gitFacts,
     candidateVersion: 0,
+    canApplyPatches: true,
     repositoryRoot: scope.repositoryRoot,
   },);
   /**
@@ -237,6 +238,7 @@ export async function convergeDirectFix({
       trigger: 'direct-fix',
       gitFacts: currentFacts,
       candidateVersion: changedPasses,
+      canApplyPatches: true,
       repositoryRoot: scope.repositoryRoot,
     },);
   }

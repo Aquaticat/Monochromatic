@@ -18,6 +18,7 @@ import {
   isFinalNewlineExcluded,
   normalizeFinalNewline,
 } from './final-newline-normalize.ts';
+import { runPolicyEngine, } from './engine.ts';
 import { createFinalNewlinePatch, } from './final-newline-patch.ts';
 import { finalNewlinePolicy, } from './final-newline-policy.ts';
 
@@ -89,17 +90,22 @@ function candidate({
  *
  * @param candidates - exact candidate fixtures
  *
+ * @param canApplyPatches - whether lifecycle owns safe patch application
+ *
  * @returns policy context
  */
 function context({
   trigger,
   candidates,
+  canApplyPatches = false,
 }: Readonly<{
   trigger: PolicyTrigger;
   candidates: readonly CandidateFile[];
+  canApplyPatches?: boolean;
 }>,): PolicyContext {
   return {
     candidateVersion: 0,
+    canApplyPatches,
     trigger,
     command: {
       rawArgs: [],
@@ -122,6 +128,43 @@ function context({
 await describe({
   name: 'core final-newline policy',
   children: [
+    it({
+      name: 'warns by default while retaining explicit error override',
+      fn: async function testDefaultSeverity() {
+        /** Noncanonical ordinary candidate. */
+        const input = candidate({ path: 'value.txt', value: 'value', },);
+        /** Default warning decision. */
+        const warning = await runPolicyEngine({
+          args: [],
+          trigger: 'direct-check',
+          gitFacts: context({
+            trigger: 'direct-check',
+            candidates: [input,],
+          },).git,
+          registeredPolicies: [finalNewlinePolicy,],
+          selectedPolicyIds: ['final-newline',],
+        },);
+        /** Explicit blocking decision. */
+        const error = await runPolicyEngine({
+          args: [],
+          trigger: 'direct-check',
+          gitFacts: context({
+            trigger: 'direct-check',
+            candidates: [input,],
+          },).git,
+          config: { policies: { 'final-newline': 'error', }, },
+          registeredPolicies: [finalNewlinePolicy,],
+          selectedPolicyIds: ['final-newline',],
+        },);
+        expect(finalNewlinePolicy.defaultSeverity,).toBe('warn',);
+        expect(warning.exitCode,).toBe(0,);
+        expect(warning.shouldForward,).toBe(true,);
+        expect(warning.events,).toMatchObject([{ severity: 'warn', },],);
+        expect(error.exitCode,).toBe(1,);
+        expect(error.shouldForward,).toBe(false,);
+        expect(error.events,).toMatchObject([{ severity: 'error', },],);
+      },
+    },),
     it({
       name: 'normalizes only terminal LF bytes',
       fn: async function testNormalization() {
@@ -204,7 +247,7 @@ await describe({
       },
     },),
     it({
-      name: 'attaches patches only at fixable lifecycle points',
+      name: 'attaches patches only when lifecycle can apply corrections',
       fn: async function testLifecyclePatches() {
         /** Noncanonical ordinary candidate. */
         const input = candidate({ path: 'value.txt', value: 'value', },);
@@ -213,13 +256,35 @@ await describe({
           context: context({ trigger: 'direct-check', candidates: [input,], },),
           options: undefined,
         },);
-        /** Fixable pre-forward findings. */
-        const fixed = await finalNewlinePolicy.check({
+        /** Non-fixable pre-forward findings. */
+        const forwarded = await finalNewlinePolicy.check({
           context: context({ trigger: 'pre-forward', candidates: [input,], },),
+          options: undefined,
+        },);
+        /** Transaction-owned pre-forward findings. */
+        const committed = await finalNewlinePolicy.check({
+          context: context({
+            trigger: 'pre-forward',
+            candidates: [input,],
+            canApplyPatches: true,
+          },),
+          options: undefined,
+        },);
+        /** Direct-fix findings. */
+        const fixed = await finalNewlinePolicy.check({
+          context: context({
+            trigger: 'direct-fix',
+            candidates: [input,],
+            canApplyPatches: true,
+          },),
           options: undefined,
         },);
         expect(checked,).toHaveLength(1,);
         expect(checked[0]?.patch,).toBeUndefined();
+        expect(forwarded,).toHaveLength(1,);
+        expect(forwarded[0]?.patch,).toBeUndefined();
+        expect(committed,).toHaveLength(1,);
+        expect(committed[0]?.patch?.targetId,).toBe(input.targetId,);
         expect(fixed,).toHaveLength(1,);
         expect(fixed[0]?.patch?.targetId,).toBe(input.targetId,);
       },

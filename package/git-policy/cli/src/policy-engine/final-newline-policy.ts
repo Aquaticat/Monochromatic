@@ -19,21 +19,21 @@ import type { RuntimePolicyDefinition, } from './types.ts';
  *
  * @param candidate - exact lifecycle candidate
  *
- * @param fixable - whether current lifecycle accepts policy patches
+ * @param canApplyPatches - whether current lifecycle accepts policy patches
  *
  * @returns absent or one final-newline finding
  *
  * @example
  * ```ts
- * await checkFinalNewlineCandidate({ candidate, fixable: false });
+ * await checkFinalNewlineCandidate({ candidate, canApplyPatches: false });
  * ```
  */
 async function checkFinalNewlineCandidate({
   candidate,
-  fixable,
+  canApplyPatches,
 }: Readonly<{
   candidate: CandidateFile;
-  fixable: boolean;
+  canApplyPatches: boolean;
 }>,): Promise<readonly PolicyFinding[]> {
   if ((candidate.change === 'deleted')
     || ((candidate.mode !== 'regular') && (candidate.mode !== 'executable'))
@@ -57,7 +57,7 @@ async function checkFinalNewlineCandidate({
     message: 'Non-empty text file must end with exactly one LF byte.',
     path: candidate.path,
   };
-  if (!fixable)
+  if (!canApplyPatches)
     return [finding,];
   if ((typeof candidate.revision) === 'symbol')
     throw new TypeError(`Final-newline patch target is mutable: ${candidate.path}`,);
@@ -85,7 +85,7 @@ async function checkFinalNewlineCandidate({
  */
 export const finalNewlinePolicy: RuntimePolicyDefinition = {
   name: 'final-newline',
-  defaultSeverity: 'error',
+  defaultSeverity: 'warn',
   warnSafe: true,
   triggers: [
     'pre-forward',
@@ -95,10 +95,6 @@ export const finalNewlinePolicy: RuntimePolicyDefinition = {
     'direct-fix',
   ],
   async check({ context, }): Promise<readonly PolicyFinding[]> {
-    /**
-     * Whether engine may apply corrections at this lifecycle point.
-     */
-    const fixable = (context.trigger === 'pre-forward') || (context.trigger === 'direct-fix');
     /**
      * Exact lifecycle-selected candidates; every lifecycle now supplies only
      * the operation's own delta, so no post-commit narrowing happens here.
@@ -113,7 +109,7 @@ export const finalNewlinePolicy: RuntimePolicyDefinition = {
     for (const candidate of candidates)
       findings.push(...await checkFinalNewlineCandidate({
         candidate,
-        fixable,
+        canApplyPatches: context.canApplyPatches,
       }),);
     /* oxlint-enable no-await-in-loop */
     return findings;
