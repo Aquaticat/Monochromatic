@@ -33,6 +33,7 @@ import {
 } from './bypass.ts';
 import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
 import { evaluate, } from './evaluate.ts';
+import { createJudgeCallHistory, } from './judge-call-history.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { registerGuardCommand, } from './guard-command.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
@@ -141,6 +142,10 @@ function initializeAutoMode(
     l,
   },);
   innerL.debug('auto-mode active; registering handlers',);
+  /**
+   * Session-local logical judge outcome history and derived temporary blocklist.
+   */
+  const judgeCallHistory = createJudgeCallHistory();
 
   //region /guard command
 
@@ -245,6 +250,7 @@ function initializeAutoMode(
       _event: unknown,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
+      judgeCallHistory.clear();
       bypassEnabled = findLatestBypassEnabled({ ctx, },);
       updateBypassStatus({
         ctx,
@@ -483,6 +489,7 @@ function initializeAutoMode(
         actionInput,
         approvalFingerprint,
         batchContext,
+        judgeCallHistory,
       },);
       /**
        * Block-or-allow decision and optional flow verdict produced by judge.
@@ -544,6 +551,11 @@ export default function autoMode(
 }
 
 export { initializeAutoMode, };
+export {
+  createJudgeCallHistory,
+  type JudgeCallHistory,
+  type JudgeCallOutcome,
+} from './judge-call-history.ts';
 export { buildApprovalFingerprint, } from './tool-helpers.ts';
 export {
   buildContext,

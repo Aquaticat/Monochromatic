@@ -22,6 +22,7 @@ import {
 } from './judge-tool.ts';
 import {
   callJudge,
+  EmptyJudgeResponseError,
   extractJsonVerdict,
   parseVerdict,
 } from './judge.ts';
@@ -166,6 +167,28 @@ function scriptedTransport(
     responses,
     requests: [],
   };
+}
+
+/**
+ * Capture async error without promise matcher indirection.
+ *
+ * @param action - async action expected to fail
+ *
+ * @returns thrown value
+ *
+ * @example
+ * ```ts
+ * await captureError(async () => { throw new Error('failure'); });
+ * ```
+ */
+async function captureError(action: () => Promise<unknown>,): Promise<unknown> {
+  try {
+    await action();
+  }
+  catch (error) {
+    return error;
+  }
+  throw new Error('expected action to throw',);
 }
 
 await describe({
@@ -370,6 +393,65 @@ await describe({
         expect(retry.options.toolChoiceType,).toBeUndefined();
         expect(retry.context.systemPrompt,).toContain('Retry mode:',);
         expect(retry.context.systemPrompt,).not.toContain('Do not respond with text; use the tool.',);
+      },
+    },),
+    it({
+      name: 'classifies complete logical call only when all three responses are empty',
+      fn: async () => {
+        /** Initial forced-tool response and both direct-JSON retries without content. */
+        const transport = scriptedTransport([
+          textStream('',),
+          textStream('',),
+          textStream('',),
+        ],);
+        /** Typed complete-call no-content failure. */
+        const error = await captureError(async function callEmptyJudge() {
+          return callJudge({
+            model: MODEL,
+            auth: { apiKey: 'test-key', },
+            action: 'bash: echo hi',
+            actionInput: '{"command":"echo hi"}',
+            cwd: '/project',
+            recentContext: '',
+            trustDirectives: [],
+            timeoutMs: JUDGE_TIMEOUT_MS,
+            systemPrompt: 'Use render_verdict.',
+            batchContext: [],
+            testTransport: transport,
+          },);
+        },);
+        expect(error,).toBeInstanceOf(EmptyJudgeResponseError,);
+        expect(transport.requests,).toHaveLength(3,);
+      },
+    },),
+    it({
+      name: 'does not classify retries as wholly empty when initial response had content',
+      fn: async () => {
+        /** Nonempty omitted-tool response followed by two empty direct-JSON retries. */
+        const transport = scriptedTransport([
+          textStream('tool omitted',),
+          textStream('',),
+          textStream('',),
+        ],);
+        /** Underlying retry failure after some content was produced. */
+        const error = await captureError(async function callPartiallyEmptyJudge() {
+          return callJudge({
+            model: MODEL,
+            auth: { apiKey: 'test-key', },
+            action: 'bash: echo hi',
+            actionInput: '{"command":"echo hi"}',
+            cwd: '/project',
+            recentContext: '',
+            trustDirectives: [],
+            timeoutMs: JUDGE_TIMEOUT_MS,
+            systemPrompt: 'Use render_verdict.',
+            batchContext: [],
+            testTransport: transport,
+          },);
+        },);
+        expect(error,).toBeInstanceOf(Error,);
+        expect(error,).not.toBeInstanceOf(EmptyJudgeResponseError,);
+        expect(transport.requests,).toHaveLength(3,);
       },
     },),
   ],

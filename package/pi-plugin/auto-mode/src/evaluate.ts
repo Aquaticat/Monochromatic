@@ -26,6 +26,10 @@ import {
   getReusableApproval,
   getTrustDirectives,
 } from './context.ts';
+import {
+  createJudgeCallHistory,
+  type JudgeCallHistory,
+} from './judge-call-history.ts';
 import { callJudgeWithFallback, } from './judge-fallback.ts';
 import { formatModelBlockReason, } from './model-feedback.ts';
 import {
@@ -109,6 +113,8 @@ function decisionForDenyVerdict(
  *
  * @mutates batchContext - judge context construction can read caller-owned entry hooks
  *
+ * @mutates judgeCallHistory - records model outcomes and supplies temporary selection exclusions
+ *
  * @example
  * ```typescript
  * const result = await evaluate({
@@ -131,6 +137,7 @@ async function evaluate(
     actionInput,
     approvalFingerprint,
     batchContext,
+    judgeCallHistory = createJudgeCallHistory(),
   }: {
     readonly pi: ForeignHostCapability<ExtensionAPI>;
     readonly ctx: ForeignHostCapability<ExtensionContext>;
@@ -139,6 +146,7 @@ async function evaluate(
     readonly actionInput: string;
     readonly approvalFingerprint: string;
     readonly batchContext: readonly BatchEntry[];
+    readonly judgeCallHistory?: JudgeCallHistory;
   },
 ): Promise<EvaluateResult> {
   /**
@@ -201,7 +209,10 @@ async function evaluate(
       try {
         return {
           ok: true,
-          judge: await resolveJudgeModel({ ctx, },),
+          judge: await resolveJudgeModel({
+            ctx,
+            excludedModelSlugs: judgeCallHistory.blocklistedModelSlugs(),
+          },),
         };
       }
       catch (err) {
@@ -251,6 +262,7 @@ async function evaluate(
     const verdict = await callJudgeWithFallback({
       firstJudge: judge,
       ctx,
+      callHistory: judgeCallHistory,
       request: {
         action,
         actionInput,

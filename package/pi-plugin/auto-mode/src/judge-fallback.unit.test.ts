@@ -17,6 +17,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import type { ScriptedStructuredReviewTransport, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
+import { findBudgetModel, } from './budget-model.ts';
+import { createJudgeCallHistory, } from './judge-call-history.ts';
 import { callJudgeWithFallback, } from './judge-fallback.ts';
 import type { BudgetModel, } from './types.ts';
 
@@ -28,6 +30,9 @@ const MAX_TOKENS = 4_096;
 
 /** Timeout budget for judge attempts. */
 const JUDGE_TIMEOUT_MS = 60_000;
+
+/** Logical no-content calls required before temporary blocklisting. */
+const NO_CONTENT_CALL_COUNT = 3;
 
 /**
  * Build selected judge fixture with complete Pi model shape.
@@ -169,6 +174,27 @@ function verdictStream(
         guidance: '',
       },
     },
+    partial: {} as never,
+  },],);
+}
+
+/**
+ * Build finalized text stream.
+ *
+ * @param content - finalized provider text
+ *
+ * @returns one-event reviewer stream
+ *
+ * @example
+ * ```ts
+ * textStream('');
+ * ```
+ */
+function textStream(content: string,): AsyncIterable<AssistantMessageEvent> {
+  return events([{
+    type: 'text_end',
+    contentIndex: 0,
+    content,
     partial: {} as never,
   },],);
 }
@@ -359,6 +385,52 @@ await describe({
         expect((error as Error).message,).toContain('test-provider/first',);
         expect((error as Error).message,).toContain('test-provider/fallback',);
         expect(transport.requests,).toHaveLength(2,);
+      },
+    },),
+    it({
+      name: 'blocklists model after three wholly empty logical calls and selects next judge',
+      fn: async () => {
+        /** Highest-ranked judge whose complete responses remain empty. */
+        const firstJudge = judgeFixture({ id: 'first', inputCost: 1, },);
+        /** Healthy fallback and later primary selection. */
+        const fallback = judgeFixture({ id: 'fallback', inputCost: 2, },);
+        /** Session-local call history shared across logical evaluations. */
+        const callHistory = createJudgeCallHistory();
+        /** Fallback scope invocation count. */
+        const scopeCalls = { value: 0, };
+
+        for (let callIndex = 0;
+          callIndex < NO_CONTENT_CALL_COUNT;
+          callIndex += 1) {
+          /** Three empty responses from first judge followed by healthy fallback. */
+          const transport = scriptedTransport([
+            textStream('',),
+            textStream('',),
+            textStream('',),
+            verdictStream('approve',),
+          ],);
+          /** Healthy fallback verdict after empty primary call. */
+          const result = await callJudgeWithFallback({
+            firstJudge,
+            ctx: contextFixture({ models: [fallback.model,], scopeCalls, },),
+            request: judgeRequest(transport,),
+            callHistory,
+          },);
+          expect(result.verdict,).toBe('approve',);
+        }
+
+        expect(callHistory.blocklistedModelSlugs(),).toEqual([
+          'test-provider/first',
+        ],);
+        /** Next automatic selection with temporary blocklist applied. */
+        const selected = await findBudgetModel({
+          ctx: contextFixture({
+            models: [firstJudge.model, fallback.model,],
+            scopeCalls,
+          },),
+          excludedModelSlugs: callHistory.blocklistedModelSlugs(),
+        },);
+        expect(selected.model.id,).toBe('fallback',);
       },
     },),
   ],

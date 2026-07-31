@@ -11,6 +11,7 @@ import type {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
+  EmptyStructuredReviewTextError,
   runStructuredJsonRetries,
   runStructuredToolRequest,
   type ScriptedStructuredReviewTransport,
@@ -44,6 +45,37 @@ const l = tagged({
 },);
 
 /**
+ * Error proving every response in one complete logical judge call was empty.
+ *
+ * @example
+ * ```ts
+ * throw new EmptyJudgeResponseError({ cause: new EmptyStructuredReviewTextError() });
+ * ```
+ */
+class EmptyJudgeResponseError extends Error {
+  /**
+   * Create typed all-empty judge response failure.
+   *
+   * @param cause - final empty direct-JSON response after bounded retry
+   *
+   * @example
+   * ```ts
+   * new EmptyJudgeResponseError({ cause: new EmptyStructuredReviewTextError() });
+   * ```
+   */
+  constructor(
+    {
+      cause,
+    }: {
+      readonly cause: EmptyStructuredReviewTextError;
+    },
+  ) {
+    super('Judge model produced no content across complete call', { cause, },);
+    this.name = 'EmptyJudgeResponseError';
+  }
+}
+
+/**
  * Call selected judge through shared forced-tool and direct-JSON transport.
  *
  * @param model - selected judge model
@@ -69,6 +101,8 @@ const l = tagged({
  * @param testTransport - optional data-only deterministic provider seam
  *
  * @returns auto-mode verdict
+ *
+ * @throws {@link EmptyJudgeResponseError} when initial request and both direct-JSON retries emit no content
  *
  * @mutates model - shared provider transport may inspect or retain model data
  *
@@ -158,21 +192,33 @@ async function callJudge(
       firstAttemptTextContent: initial.textContent,
     },),
   };
-  /**
-   * Unknown retry value retained only until strict verdict parsing.
-   */
-  const value = await runStructuredJsonRetries({
-    model,
-    auth,
-    prompt: retryPrompt,
-    signal,
-    expectedToolName: VERDICT_TOOL.name,
-    ...(testTransport === undefined ? {} : { testTransport, }),
-  },);
-  return parseVerdict(value,);
+  try {
+    /**
+     * Unknown retry value retained only until strict verdict parsing.
+     */
+    const value = await runStructuredJsonRetries({
+      model,
+      auth,
+      prompt: retryPrompt,
+      signal,
+      expectedToolName: VERDICT_TOOL.name,
+      ...(testTransport === undefined ? {} : { testTransport, }),
+    },);
+    return parseVerdict(value,);
+  }
+  catch (error) {
+    if ((initial.textContent === '')
+      && (error instanceof EmptyStructuredReviewTextError)) {
+      throw new EmptyJudgeResponseError({ cause: error, },);
+    }
+    throw error;
+  }
 }
 
-export { callJudge, };
+export {
+  callJudge,
+  EmptyJudgeResponseError,
+};
 export {
   extractJsonVerdict,
   parseVerdict,

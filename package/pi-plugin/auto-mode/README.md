@@ -151,6 +151,16 @@ automatic selection supplies the fallback contenders.
  If no fallback model can be selected or all complete attempts fail,
 auto-mode asks the user as before.
 
+No-content model health is tracked per canonical provider/model identity for the
+current Pi session.
+One logical judge call includes the forced-tool request and its bounded direct-JSON retries.
+A call counts as wholly empty only when all of those responses contain no tool call or text.
+When a model's three most recent logical calls are all wholly empty,
+automatic primary and fallback selection temporarily excludes that model.
+Any other recorded outcome breaks the consecutive empty window.
+The session-start boundary clears this in-memory history,
+so the blocklist never changes model configuration or persists into another session.
+
 The shared parser first tries `JSON.parse(text)` for whole-text output,
 then falls back to a balanced-brace scan that respects string-literal escapes.
 A `"reason"` field containing `{` or `}` therefore does not skew object boundaries.

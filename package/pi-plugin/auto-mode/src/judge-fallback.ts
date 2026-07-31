@@ -19,7 +19,14 @@ import {
 import { findBudgetModel, } from './budget-model.ts';
 import { NoBudgetModelError, } from './budget-model-error.ts';
 import { budgetModelSlug, } from './budget-model-identity.ts';
-import { callJudge, } from './judge.ts';
+import {
+  createJudgeCallHistory,
+  type JudgeCallHistory,
+} from './judge-call-history.ts';
+import {
+  callJudge,
+  EmptyJudgeResponseError,
+} from './judge.ts';
 import type {
   BatchEntry,
   BudgetModel,
@@ -112,6 +119,66 @@ type JudgeAttemptSuccess = {
 };
 
 /**
+ * Call one judge and record whether complete logical response was wholly empty.
+ *
+ * @param judge - authenticated judge selected for current attempt
+ *
+ * @param request - complete shared review request data
+ *
+ * @param callHistory - session-local per-model outcome history
+ *
+ * @returns strict auto-mode verdict
+ *
+ * @mutates judge - concrete provider transport consumes model and auth data
+ *
+ * @mutates request - provider transport consumes optional test script data
+ *
+ * @mutates callHistory - appends completed logical call outcome for selected model
+ *
+ * @example
+ * ```ts
+ * await callJudgeAndRecordOutcome({ judge, request, callHistory });
+ * ```
+ */
+async function callJudgeAndRecordOutcome(
+  {
+    judge,
+    request,
+    callHistory,
+  }: {
+    readonly judge: ForeignBorrowed<BudgetModel>;
+    readonly request: ForeignBorrowed<JudgeReviewRequest>;
+    readonly callHistory: JudgeCallHistory;
+  },
+): Promise<Verdict> {
+  /**
+   * Canonical model identity indexing session-local health history.
+   */
+  const identity = budgetModelSlug(judge.model,);
+  try {
+    /**
+     * Strict verdict proving current logical call produced usable content.
+     */
+    const verdict = await callJudge({
+      model: judge.model,
+      auth: judge.auth,
+      ...request,
+    },);
+    callHistory.record({ modelSlug: identity, outcome: 'other', },);
+    return verdict;
+  }
+  catch (error) {
+    callHistory.record({
+      modelSlug: identity,
+      outcome: error instanceof EmptyJudgeResponseError
+        ? 'noContent'
+        : 'other',
+    },);
+    throw error;
+  }
+}
+
+/**
  * Run one concrete fallback attempt and record candidate-labeled failure.
  *
  * @param judge - authenticated fallback judge
@@ -119,6 +186,8 @@ type JudgeAttemptSuccess = {
  * @param request - shared review request data
  *
  * @param diagnostics - local complete failure audit
+ *
+ * @param callHistory - session-local per-model outcome history
  *
  * @returns successful labeled verdict
  *
@@ -128,9 +197,11 @@ type JudgeAttemptSuccess = {
  *
  * @mutates diagnostics - records normalized attempt failure
  *
+ * @mutates callHistory - appends completed logical call outcome for fallback model
+ *
  * @example
  * ```ts
- * await runFallbackAttempt({ judge, request, diagnostics });
+ * await runFallbackAttempt({ judge, request, diagnostics, callHistory });
  * ```
  */
 async function runFallbackAttempt(
@@ -138,10 +209,12 @@ async function runFallbackAttempt(
     judge,
     request,
     diagnostics,
+    callHistory,
   }: {
     readonly judge: ForeignBorrowed<BudgetModel>;
     readonly request: ForeignBorrowed<JudgeReviewRequest>;
     readonly diagnostics: string[];
+    readonly callHistory: JudgeCallHistory;
   },
 ): Promise<JudgeAttemptSuccess> {
   /**
@@ -152,10 +225,10 @@ async function runFallbackAttempt(
   try {
     return {
       identity,
-      verdict: await callJudge({
-        model: judge.model,
-        auth: judge.auth,
-        ...request,
+      verdict: await callJudgeAndRecordOutcome({
+        judge,
+        request,
+        callHistory,
       },),
     };
   }
@@ -182,6 +255,8 @@ async function runFallbackAttempt(
  *
  * @param request - complete callback-free judge request data
  *
+ * @param callHistory - session-local per-model outcome history and temporary blocklist
+ *
  * @returns first valid auto-mode verdict
  *
  * @mutates firstJudge - concrete provider transport consumes model and auth data
@@ -190,11 +265,13 @@ async function runFallbackAttempt(
  *
  * @mutates request - provider transport consumes optional test script data
  *
+ * @mutates callHistory - every completed candidate call appends one model outcome
+ *
  * @throws {@link ReviewUnavailableError} when every available attempt fails
  *
  * @example
  * ```ts
- * const verdict = await callJudgeWithFallback({ firstJudge, ctx, request });
+ * const verdict = await callJudgeWithFallback({ firstJudge, ctx, request, callHistory });
  * ```
  */
 async function callJudgeWithFallback(
@@ -202,10 +279,12 @@ async function callJudgeWithFallback(
     firstJudge,
     ctx,
     request,
+    callHistory = createJudgeCallHistory(),
   }: {
     readonly firstJudge: ForeignBorrowed<BudgetModel>;
     readonly ctx: ForeignHostCapability<ExtensionContext>;
     readonly request: ForeignBorrowed<JudgeReviewRequest>;
+    readonly callHistory?: JudgeCallHistory;
   },
 ): Promise<Verdict> {
   /**
@@ -221,10 +300,10 @@ async function callJudgeWithFallback(
    */
   const diagnostics: string[] = [];
   try {
-    return await callJudge({
-      model: firstJudge.model,
-      auth: firstJudge.auth,
-      ...request,
+    return await callJudgeAndRecordOutcome({
+      judge: firstJudge,
+      request,
+      callHistory,
     },);
   }
   catch (error) {
@@ -247,7 +326,10 @@ async function callJudgeWithFallback(
         available: true,
         judge: await findBudgetModel({
           ctx,
-          excludedModelSlugs: [firstIdentity,],
+          excludedModelSlugs: [
+            firstIdentity,
+            ...callHistory.blocklistedModelSlugs(),
+          ],
         },),
       };
     }
@@ -297,7 +379,10 @@ async function callJudgeWithFallback(
     try {
       return await findBudgetModel({
         ctx,
-        excludedModelSlugs: secondExclusions,
+        excludedModelSlugs: [
+          ...secondExclusions,
+          ...callHistory.blocklistedModelSlugs(),
+        ],
       },);
     }
     catch (error) {
@@ -323,6 +408,7 @@ async function callJudgeWithFallback(
       judge: firstFallback,
       request,
       diagnostics,
+      callHistory,
     },),
   ];
   if ((typeof secondFallback) !== 'symbol') {
@@ -331,6 +417,7 @@ async function callJudgeWithFallback(
       judge: secondFallback,
       request,
       diagnostics,
+      callHistory,
     },),);
   }
   try {
