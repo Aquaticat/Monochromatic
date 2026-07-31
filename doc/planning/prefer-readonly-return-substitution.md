@@ -7720,8 +7720,9 @@ Order:
 
 The tagged template misses the **tag itself**,
  not only its interpolations.
-`tag\`\`` has no template spans,
- so the recorder adds nothing at all, and `config.mutatingTag\`\`` can affect its receiver with no
+``` tag`` ``` has no template spans,
+ so the recorder adds nothing at all,
+ and ``` config.mutatingTag`` ``` can affect its receiver with no
  interpolation either.
  Adding capture handling to interpolations alone does not close it,
  which changes #95

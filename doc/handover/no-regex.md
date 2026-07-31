@@ -256,11 +256,15 @@ above;
    `'\x1B'` then trips
   `eslint-plugin-unicorn(no-hex-escape)` so the `String.fromCodePoint`
   form with a named code-point constant is the cleanest.
-- **`String.raw\`...\``** template literals **cannot end with a single
-  backslash**: the closing backtick is consumed as an escape target,
-  producing "Invalid Unicode escape sequence" at parse time. For path
-  separators like`\\i18n\\`, the plain`'\\i18n\\'`form is the only
-  option; add a scoped`eslint-plugin-unicorn/prefer-string-raw`
+- **`` String.raw`...` ``** template literals **cannot end with a single
+  backslash**:
+   the closing backtick is consumed as an escape target,
+  producing "Invalid Unicode escape sequence" at parse time.
+   For path
+  separators like `\\i18n\\`,
+   the plain `'\\i18n\\'` form is the only
+  option;
+   add a scoped `eslint-plugin-unicorn/prefer-string-raw`
   disable with the reason.
 - **`chai`'s `.to.throw(string)` does substring matching** (verified in
   `package/module/test/src/expect.unit.test.ts:99-105`).

@@ -1793,9 +1793,9 @@ The same closure-counter pattern,
 - `package/webapp-content/messages-demo/src/lib/db/sweep.unit.test.ts`
 - `package/webapp-content/messages-demo/src/lib/db/messages.unit.test.ts`
 
-Each file has a top-level `let counter = 0;` and a `function uniqueId(tag) { counter
-+= 1; return \`prefix-${tag}-${counter}\`;
- }`. The prefix differs per file (`t-`,`q2e-`,`q2r-`,`dpx-`,`t-`,`t-`);
+Each file has a top-level `let counter = 0;` and a
+``function uniqueId(tag) { counter += 1; return `prefix-${tag}-${counter}`; }``.
+The prefix differs per file (`t-`,`q2e-`,`q2r-`,`dpx-`,`t-`,`t-`);
  everything else is byte-identical.
  A genuine DRY
 violation in test code that the function-level scan caught the count of (above) but

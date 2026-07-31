@@ -125,8 +125,7 @@ Leave alone (not the target;
 - `module/hyperscript/src/html/index.ts` `camelToKebab`:
    recursive
   `walk`,
-   `acc: \` ${acc}-${c.
-  toLowerCase()}\``.
+   `` acc: `${acc}-${c.toLowerCase()}` ``.
    O(n^2) time,
    O(n) stack.
 - `dev-script/watch-restart/src/filters/hidden.ts`
