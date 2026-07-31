@@ -5,8 +5,12 @@ import type { Point, } from 'unist';
  * entry always 0. Built once per file so a rule reporting thousands of
  * positions does not rescan the source for each one.
  *
- * A line starts just past each `\n`. A `\r\n` therefore contributes one entry,
- * since its `\r` belongs to the line it ends rather than the one after it.
+ * A line starts just past each `\n`, and just past a `\r` that no `\n`
+ * follows. A `\r\n` therefore contributes one entry, since its `\r` belongs to
+ * the line it ends rather than the one after it, while a lone `\r` ends a line
+ * on its own. Counting `\n` alone would disagree with the scanners that treat
+ * `\r` as a line ending, and every position after the first bare `\r` in a
+ * document would name the wrong line.
  *
  * @param source - source under lint
  *
@@ -23,7 +27,15 @@ export function lineStartOffsets(source: string,): readonly number[] {
    */
   const starts: number[] = [0,];
   for (let index = 0; index < source.length; index += 1) {
-    if (source[index] === '\n') {
+    /**
+     * Character under the forward cursor.
+     */
+    const ch = source[index] ?? '';
+    if (ch === '\n') {
+      starts.push(index + 1,);
+      continue;
+    }
+    if ((ch === '\r') && (source[index + 1] !== '\n')) {
       starts.push(index + 1,);
     }
   }

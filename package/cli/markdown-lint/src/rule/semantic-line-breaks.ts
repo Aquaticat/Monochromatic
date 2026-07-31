@@ -5,6 +5,7 @@ import type {
   Parents,
 } from 'mdast';
 
+import { startsBlockConstruct, } from '../block-starters.ts';
 import {
   diagnose,
   offsetsOf,
@@ -251,8 +252,10 @@ function checkSemanticLineBreaks({
     ? '\r\n'
     : '\n';
   /**
-   * Line starts for this document, built once so anchoring every break at its
-   * own offset costs one scan rather than one per diagnostic.
+   * Line starts for this document, built once so finding which line a break
+   * falls on is a search rather than a scan of everything before it. The column
+   * still counts code points from that line's start, which is a scan of one
+   * line, not of the document.
    */
   const lineStarts = lineStartOffsets(source,);
   for (const {
@@ -357,6 +360,12 @@ function checkSemanticLineBreaks({
       const at = offset === slice.length
         ? tailEnd
         : startOffset + offset;
+      if (startsBlockConstruct({
+        source,
+        at,
+      },)) {
+        continue;
+      }
       diagnostics.push(diagnose({
         ruleId: ID,
         message: 'A line break belongs here, after a prose break-point character.',

@@ -317,6 +317,42 @@ await describe({
       },
     },),
     it({
+      name: 'never lets a break turn following prose into block syntax',
+      fn: async function blockStarters() {
+        // An add-only source edit is not an add-only rendering: prose that was
+        // mid-line becomes line-initial, and CommonMark reads line-initial text
+        // as block syntax. Measured before the guard: nine of these rewrote the
+        // document, turning a paragraph into a heading, a list, a blockquote,
+        // a code fence, an HTML block or a nested list.
+        // Each source carries one mid-clause break point, the one in front of
+        // the marker, so a count of zero is the guard and nothing else.
+        expect(count('Intro sentence. # not a heading here.\n',),).toBe(0,);
+        expect(count('Intro sentence. ###### deep heading here.\n',),).toBe(0,);
+        expect(count('Intro sentence. - not a list here.\n',),).toBe(0,);
+        expect(count('Intro sentence. + plus bullet here.\n',),).toBe(0,);
+        expect(count('Intro sentence. * star bullet here.\n',),).toBe(0,);
+        expect(count('Intro sentence. > not a quote here.\n',),).toBe(0,);
+        expect(count('Intro sentence. 1) first item here.\n',),).toBe(0,);
+        expect(count('Intro sentence. ```js and more here.\n',),).toBe(0,);
+        expect(count('Intro sentence. ~~~ and more here.\n',),).toBe(0,);
+        expect(count('Intro sentence. <div> and more here.\n',),).toBe(0,);
+        expect(count('- Item one. - not nested here.\n',),).toBe(0,);
+        // A line of nothing but dashes under a paragraph is a setext underline,
+        // so breaking in front of it makes the paragraph a heading.
+        expect(count('Second para. ---\n',),).toBe(0,);
+      },
+    },),
+    it({
+      name: 'still breaks in front of text that only looks like a marker',
+      fn: async function notBlockStarters() {
+        // The guard is about what opens a block, not about the character: a
+        // hash with no space after it is a word, and prose is prose.
+        expect(count('Intro sentence. #nothashheading here.\n',),).toBe(1,);
+        expect(fix('Intro sentence. ordinary prose, here.\n',).source,)
+          .toBe('Intro sentence.\n ordinary prose,\n here.\n',);
+      },
+    },),
+    it({
       name: 'the add-only fix is clean and idempotent in one pass',
       fn: async function idempotent() {
         /**
