@@ -24,6 +24,24 @@ import type {
   AdvisorToolParams,
 } from './types.ts';
 
+//region Types
+
+/**
+ * Runtime Advisor result shape accepted from successful or thrown tool execution.
+ */
+type AdvisorRenderableResult = {
+  /**
+   * Tool content returned or synthesized by Pi.
+   */
+  readonly content: AgentToolResult<unknown>['content'];
+  /**
+   * Structured success details, absent or malformed after thrown errors.
+   */
+  readonly details?: unknown;
+};
+
+//endregion Types
+
 //region Public renderers
 
 /**
@@ -117,7 +135,7 @@ export function renderAdvisorResult(
     expanded,
     theme,
   }: {
-    readonly result: ReadonlyDeep<AgentToolResult<unknown>>;
+    readonly result: ReadonlyDeep<AdvisorRenderableResult>;
     readonly expanded: boolean;
     readonly theme: ForeignHostCapability<Theme>;
   },

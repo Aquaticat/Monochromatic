@@ -351,5 +351,6 @@ export { runAdvisor, } from './tool.ts';
 export type {
   AdvisorConfig,
   AdvisorContext,
+  AdvisorDetails,
   EffectiveModelScope,
 } from './types.ts';
