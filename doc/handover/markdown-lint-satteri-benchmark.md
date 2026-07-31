@@ -288,11 +288,19 @@ nodeEnd + 256))`.
  left the current parser's
 results unchanged (still 5070),
  and cost no measurable time.
- This improvement is
-worth landing on `main` independently of the migration;
- note that
-`semantic-line-breaks.unit.test.ts` and any direct `breakOffsets` callers must
-be updated for the new `trailing` parameter.
+
+**Landed on `main` on 2026-07-31,
+ and the 256-character bound is gone.
+** The bound was a way to avoid copying the paragraph,
+ and inter-node whitespace has no length limit,
+ so a break already written past a longer run of spaces read as absent and `--fix` inserted a second one,
+ which is a blank line and splits the paragraph.
+`trailing` is now a range over the source (`source`,
+ `tailEnd`,
+ `paragraphEnd`) rather than a copy of it,
+ and the scan stops at the first character that is not a space or a tab,
+ so it costs the whitespace run rather than the paragraph and needs no bound at all.
+Not copying is what removes the bound.
 
 ## Recommendation
 
@@ -314,7 +322,9 @@ Adopt variant 2,
   binary that the current pure-TypeScript-under-Node linter avoided;
    note it in
   the package README.
-- Land the `semantic-line-breaks` trailing-lookahead fix and update its tests.
+- ~~Land the `semantic-line-breaks` trailing-lookahead fix and update its tests.~~
+   Landed 2026-07-31,
+   as a source range rather than a bounded slice.
 - Re-run the rule unit tests against Sätteri's tree;
    record the one accepted
   list-marker divergence.
