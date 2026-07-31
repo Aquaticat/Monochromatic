@@ -4,10 +4,7 @@
  * @module
  */
 
-import type {
-  Api,
-  Provider,
-} from '@earendil-works/pi-ai';
+import type { Provider, } from '@earendil-works/pi-ai';
 import {
   createEventBus,
   type ExecResult,
@@ -144,9 +141,10 @@ function assertAdvisorQuestionParameter(
   /**
    * Registered Advisor tool definition.
    */
-  const advisorTool = tools.find(function isAdvisorTool(tool,) {
-    return tool.name === 'advisor';
-  },);
+  const advisorTool = [...tools,]
+    .find(function isAdvisorTool(tool,) {
+      return tool.name === 'advisor';
+    },);
   if (advisorTool === undefined)
     throw new Error('registered Advisor tool was not captured',);
   /**
@@ -180,20 +178,24 @@ function fakePiApi(): {
   const tools: RegisteredTool[] = [];
   /**
    * Fake provider registrar accepting both current Pi overloads.
+   *
+   * @param providerOrName - complete provider or legacy provider identity
+   *
+   * @param _config - optional legacy provider config
    */
-  const registerProvider: ExtensionAPI['registerProvider'] = function registerProvider(
-    providerOrName: Provider<Api> | string,
+  function registerProvider(
+    providerOrName: Provider | string,
     _config?: ProviderConfig,
   ): void {
     /**
      * Provider identity normalized from complete-provider or legacy arguments.
      */
-    const providerName = typeof providerOrName
+    const providerName = (typeof providerOrName)
       === 'string'
       ? providerOrName
       : providerOrName.id;
     registrations.push(`provider:${providerName}`,);
-  };
+  }
   /**
    * Fake extension API that records registration calls into the closure.
    */

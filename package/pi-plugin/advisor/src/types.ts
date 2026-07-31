@@ -295,7 +295,7 @@ export type AdvisorRunResult = {
 /**
  * Arguments for executing Advisor.
  */
-export type AdvisorRunOptions = ForeignBorrowed<{
+export type AdvisorRunOptions = ForeignHostCapability<{
   /**
    * Pi extension context.
    */

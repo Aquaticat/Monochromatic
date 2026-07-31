@@ -4,17 +4,16 @@
  * @module
  */
 
-import type {
-  Api,
+import {
+  getSupportedThinkingLevels,
+  type Api,
   AssistantMessage,
   Context,
   Message,
   Model,
   ProviderStreams,
   SimpleStreamOptions,
-  TextContent,
 } from '@earendil-works/pi-ai';
-import { getSupportedThinkingLevels, } from '@earendil-works/pi-ai';
 import { anthropicMessagesApi, } from '@earendil-works/pi-ai/api/anthropic-messages.lazy';
 import { azureOpenAIResponsesApi, } from '@earendil-works/pi-ai/api/azure-openai-responses.lazy';
 import { bedrockConverseStreamApi, } from '@earendil-works/pi-ai/api/bedrock-converse-stream.lazy';
@@ -173,7 +172,7 @@ export type CompleteAdvisorModel = typeof defaultCompleteAdvisorModel;
 /**
  * Options for invoking the selected Advisor model.
  */
-export type CompleteAdvisorOptions = ForeignBorrowed<{
+export type CompleteAdvisorOptions = ForeignHostCapability<{
   /**
    * Pi extension context, used for auth lookup.
    */
@@ -385,18 +384,16 @@ export async function completeAdvisor(
 export function extractAdvisorText(
   message: ReadonlyDeep<AssistantMessage>,
 ): string {
-  return message
-    .content
-    .filter(function keepText(
-      block: ReadonlyDeep<(typeof message.content)[number]>,
-    ): block is ReadonlyDeep<TextContent> {
-      return block.type
-        === 'text';
-    },)
-    .map(function mapText(block: ReadonlyDeep<TextContent>,) {
-      return block.text;
-    },)
-    .join('\n',);
+  /**
+   * Text blocks collected from Advisor response.
+   */
+  const textParts: string[] = [];
+  for (const block of message.content) {
+    if (block.type
+      === 'text')
+      textParts.push(block.text,);
+  }
+  return textParts.join('\n',);
 }
 
 /**

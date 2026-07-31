@@ -57,13 +57,11 @@ const RETRY_PROVIDER_CALL_COUNT = 2;
  * @returns complete Advisor model fixture
  */
 function createFixtureModel(
-  overrides: Readonly<Pick<
-    Model<Api>,
-    'id' | 'reasoning'
-  > & Partial<Pick<
-    Model<Api>,
-    'thinkingLevelMap'
-  >>>,
+  overrides: Readonly<{
+    id: string;
+    reasoning: boolean;
+    thinkingLevelMap?: Model<Api>['thinkingLevelMap'];
+  }>,
 ): Model<Api> {
   return {
     id: overrides.id,

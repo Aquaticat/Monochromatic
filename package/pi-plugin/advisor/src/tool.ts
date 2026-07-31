@@ -87,6 +87,13 @@ export function createAdvisorTool(
     parameters: AdvisorToolParametersSchema,
     executionMode: 'sequential',
     prepareArguments: prepareAdvisorArguments,
+    /**
+     * Run Advisor tool against active Pi host context.
+     *
+     * @mutates signal - provider cancellation composition can retain supplied host signal
+     *
+     * @mutates ctx - scope and auth resolution can invoke Pi host capabilities
+     */
     execute: async function executeAdvisorTool(
       toolCallId: string,
       params: {
@@ -105,6 +112,14 @@ export function createAdvisorTool(
       }
 
       /**
+       * Requested model slug copied from host-owned tool parameters.
+       */
+      const requestedSlug = params.model;
+      /**
+       * Focus question copied from host-owned tool parameters.
+       */
+      const question = params.question;
+      /**
        * Runtime config snapshot for this call.
        */
       const config = toolOptions.getConfig();
@@ -114,10 +129,10 @@ export function createAdvisorTool(
       const result = await runAdvisor({
         ctx,
         config,
-        ...(params.model
-          === undefined ? {} : { requestedSlug: params.model, }),
-        ...(params.question
-          === undefined ? {} : { question: params.question, }),
+        ...(requestedSlug
+          === undefined ? {} : { requestedSlug, }),
+        ...(question
+          === undefined ? {} : { question, }),
         toolCallId,
         ...(signal === undefined ? {} : { signal, }),
       },);
