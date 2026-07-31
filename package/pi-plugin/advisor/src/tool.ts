@@ -268,7 +268,7 @@ export async function runAdvisor(
   const selectionContext = selectAdvisorRunContext({
     branch: ctx
       .sessionManager
-      .getBranch(),
+      .buildContextEntries(),
     config: options.config,
     advisorSystemPrompt,
     scope,

@@ -336,6 +336,13 @@ export { selectAdvisorRunContext, } from './tool-context-selection.ts';
 export { prepareAdvisorArguments, } from './tool-params.ts';
 
 /**
+ * Internal Advisor execution exported for built-artifact verification.
+ *
+ * @internal
+ */
+export { runAdvisor, } from './tool.ts';
+
+/**
  * Internal Advisor data types exported for built-artifact verification.
  *
  * @internal
