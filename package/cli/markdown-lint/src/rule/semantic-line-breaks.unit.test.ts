@@ -240,6 +240,38 @@ await describe({
       },
     },),
     it({
+      name: 'reads a CRLF line ending as a break and writes one back',
+      fn: async function crlf() {
+        // A `\r` read as ordinary content makes an already broken sentence look
+        // unbroken, and the inserted newline then lands in front of the existing
+        // one, which is a blank line and splits the paragraph in two.
+        expect(count('First sentence.\r\nSecond sentence here.\r\n',),).toBe(0,);
+        expect(fix('First. Second sentence here.\r\n',).source,)
+          .toBe('First.\r\n Second sentence here.\r\n',);
+      },
+    },),
+    it({
+      name: 'sees an existing break however far the whitespace runs',
+      fn: async function unboundedGap() {
+        // The gap between a break point and the newline after it has no length
+        // limit, and a lookahead that stopped short reported a break that was
+        // already there, so fixing it wrote a blank line into the paragraph.
+        expect(count(`First.${' '.repeat(300,)}\nSecond sentence here.\n`,),).toBe(0,);
+      },
+    },),
+    it({
+      name: 'never turns trailing spaces into a hard break',
+      fn: async function hardBreak() {
+        /**
+         * Two spaces before an inline node, which the delimiter remap would
+         * otherwise step over and leave at the end of the inserted line.
+         */
+        const fixed = fix('Sentence.  `code` follows here.\n',);
+        expect(fixed.source.includes('  \n',),).toBe(false,);
+        expect(fixed.source,).toBe('Sentence.\n  `code` follows here.\n',);
+      },
+    },),
+    it({
       name: 'the add-only fix is clean and idempotent in one pass',
       fn: async function idempotent() {
         /**

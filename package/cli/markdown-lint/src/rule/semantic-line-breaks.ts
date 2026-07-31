@@ -25,15 +25,6 @@ import { walk, } from '../walk.ts';
 const ID = 'semantic-line-breaks';
 
 /**
- * Characters of source past a text node examined for a break that the parser
- * placed just outside the node. Only inter-node whitespace and one following
- * character are ever needed, so a small bound keeps the per-node lookahead O(1)
- * rather than slicing to the paragraph's end (quadratic on emphasis-dense
- * paragraphs).
- */
-const TRAILING_LOOKAHEAD = 256;
-
-/**
  * Ancestor node types whose `text` descendants are not prose to break: headings
  * (single-line), tables, links and images (and their references), reference
  * definitions, raw HTML, and footnotes. A text node under any of these is left
@@ -178,12 +169,46 @@ function contentEndOf(slice: string,): number {
      */
     const blank = (ch === ' ')
       || (ch === '\t')
-      || (ch === '\n');
+      || (ch === '\n')
+      || (ch === '\r');
     if (!blank) {
       return index + 1;
     }
   }
   return 0;
+}
+
+/**
+ * Parameters for {@link endsInHardBreakSpaces}.
+ */
+type EndsInHardBreakSpacesParams = {
+  /**
+   * Original source.
+   */
+  readonly source: string;
+  /**
+   * Offset the line break would be inserted at.
+   */
+  readonly insertAt: number;
+};
+
+/**
+ * Whether a line break inserted at this offset would leave two spaces at the
+ * end of the line. CommonMark reads those as a hard break and renders a `<br>`
+ * that the document never asked for, which makes the fix add-only in the source
+ * and not in the rendering.
+ *
+ * @param source - original source
+ *
+ * @param insertAt - offset the line break would be inserted at
+ *
+ * @returns whether the insertion would produce a hard break
+ */
+function endsInHardBreakSpaces({
+  source,
+  insertAt,
+}: EndsInHardBreakSpacesParams,): boolean {
+  return (source[insertAt - 1] === ' ') && (source[insertAt - 2] === ' ');
 }
 
 /**
@@ -275,6 +300,13 @@ function checkSemanticLineBreaks({
    * Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
+  /**
+   * Line ending this document is written with, so an inserted break matches the
+   * ones already there rather than mixing conventions inside one file.
+   */
+  const lineEnding = source.includes('\r\n',)
+    ? '\r\n'
+    : '\n';
   for (const {
     node,
     ancestors,
@@ -336,20 +368,19 @@ function checkSemanticLineBreaks({
      */
     const { end: paragraphEnd, } = offsetsOf(paragraph,);
     /**
-     * Source between the tail node's end and the paragraph's end. A break-point
-     * at the node boundary then sees a newline the parser placed just past the
-     * node rather than inside it, keeping the rule independent of where a parser
-     * ends a text node. Measured from the tail node rather than the text node, so
-     * a document already broken after a bold span reads as broken rather than as
-     * missing a break before the closing delimiter.
+     * Where to read the source between the tail node's end and the paragraph's
+     * end. A break-point at the node boundary then sees a newline the parser
+     * placed just past the node rather than inside it, keeping the rule
+     * independent of where a parser ends a text node. Measured from the tail
+     * node rather than the text node, so a document already broken after a bold
+     * span reads as broken rather than as missing a break before the closing
+     * delimiter.
      */
-    const trailing = source.slice(
+    const trailing = {
+      source,
       tailEnd,
-      Math.min(
-        paragraphEnd,
-        tailEnd + TRAILING_LOOKAHEAD,
-      ),
-    );
+      paragraphEnd,
+    };
     /**
      * Offset just past the slice's last non-whitespace character, so an insertion
      * offset equal to it belongs after any closing delimiter rather than before.
@@ -368,15 +399,28 @@ function checkSemanticLineBreaks({
       isParagraphTail,
     },)) {
       /**
-       * Absolute source offset for the insertion.
-       *
-       * A break-point ending the text goes after the closing delimiters rather
-       * than between the text and them, which is where it belongs anyway and is
+       * Where the insertion lands once a break-point ending the text is moved
+       * past the closing delimiters, which is where it belongs anyway and is
        * what keeps the span closing.
        */
-      const at = offset === sliceContentEnd
+      const pastDelimiters = offset === sliceContentEnd
         ? tailEnd
         : startOffset + offset;
+      /**
+       * Absolute source offset for the insertion.
+       *
+       * Moving past the delimiters also moves past any spaces the text node
+       * ended with, and two of those at a line's end are a hard break, so the
+       * insertion stays in front of them instead. A closing emphasis delimiter
+       * is never what gets skipped that way: whitespace in front of one stops it
+       * closing its span at all, so it cannot be there.
+       */
+      const at = endsInHardBreakSpaces({
+        source,
+        insertAt: pastDelimiters,
+      },)
+        ? startOffset + offset
+        : pastDelimiters;
       diagnostics.push(diagnose({
         ruleId: ID,
         message: 'Missing line break after a prose break-point character.',
@@ -384,7 +428,7 @@ function checkSemanticLineBreaks({
         fix: {
           start: at,
           end: at,
-          insertText: `\n${prefix}`,
+          insertText: `${lineEnding}${prefix}`,
         },
       },),);
     }
