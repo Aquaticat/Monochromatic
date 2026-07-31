@@ -8,7 +8,10 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import * as v from 'valibot';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   type AdvisorConfigFile,
   AdvisorConfigFileSchema,
@@ -300,11 +303,13 @@ async function readJsonFile(
  * @param error - caught error value
  *
  * @returns whether error reports a missing config file
+ *
+ * @mutates error - `Error.isError` can inspect runtime-owned error capability
  */
 function isFileMissingError(
-  error: unknown,
+  error: ForeignHostCapability<unknown>,
 ): boolean {
-  if ((!(error instanceof Error)) || (!('code' in error)))
+  if ((!(Error.isError(error,))) || (!('code' in error)))
     return false;
   return error.code === 'ENOENT';
 }

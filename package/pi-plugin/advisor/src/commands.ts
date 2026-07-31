@@ -93,6 +93,36 @@ export type RegisterAdvisorCommandsOptions = {
 
 //endregion Types
 
+//region Tool-list helpers
+
+/**
+ * Check whether active tool names contain target tool.
+ *
+ * @param toolNames - active tool names
+ *
+ * @param targetName - target tool name
+ *
+ * @returns whether target tool is active
+ */
+function containsToolName(
+  {
+    toolNames,
+    targetName,
+  }: {
+    readonly toolNames: readonly string[];
+    readonly targetName: string;
+  },
+): boolean {
+  for (const toolName of toolNames) {
+    if (toolName
+      === targetName)
+      return true;
+  }
+  return false;
+}
+
+//endregion Tool-list helpers
+
 //region Public API
 
 /**
@@ -167,14 +197,10 @@ export function syncAdvisorActiveTool(
   /**
    * Whether Advisor is active.
    */
-  let alreadyActive = false;
-  for (const toolName of activeTools) {
-    if (toolName
-      === ADVISOR_TOOL_NAME) {
-      alreadyActive = true;
-      break;
-    }
-  }
+  const alreadyActive = containsToolName({
+    toolNames: activeTools,
+    targetName: ADVISOR_TOOL_NAME,
+  },);
   if (enabled && (!alreadyActive)) {
     pi.setActiveTools([
       ...activeTools,

@@ -88,7 +88,17 @@ export function createAdvisorTool(
     /**
      * Run Advisor tool against active Pi host context.
      *
-     * @mutates signal - provider cancellation composition can retain supplied host signal
+     * @param toolCallId - identity used to exclude in-flight placeholder context
+     *
+     * @param params - selected model and focus question
+     *
+     * @param signal - cancellation capability for provider request
+     *
+     * @param _onUpdate - unused progress callback required by Pi host
+     *
+     * @param ctx - host context required for scope and auth resolution
+     *
+     * @returns Advisor review result for primary model
      *
      * @mutates ctx - scope and auth resolution can invoke Pi host capabilities
      */
@@ -152,6 +162,14 @@ export function createAdvisorTool(
     /**
      * Render Advisor tool call through Pi theme capability.
      *
+     * @param args - model and question displayed before execution
+     *
+     * @param theme - Pi theme used to style call row
+     *
+     * @param _context - unused render context required by Pi host
+     *
+     * @returns styled call-row component
+     *
      * @mutates theme - theme methods can update Pi host styling caches
      */
       function renderCall(
@@ -172,6 +190,16 @@ export function createAdvisorTool(
     renderResult:
     /**
      * Render Advisor tool result through Pi theme capability.
+     *
+     * @param result - completed Advisor tool result
+     *
+     * @param renderOptions - expansion state from Pi host
+     *
+     * @param theme - Pi theme used to style result row
+     *
+     * @param _context - unused render context required by Pi host
+     *
+     * @returns styled result-row component
      *
      * @mutates theme - theme methods can update Pi host styling caches
      */

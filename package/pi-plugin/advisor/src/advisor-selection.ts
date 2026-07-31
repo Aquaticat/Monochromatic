@@ -137,7 +137,7 @@ export function scopeAvoidingCurrentMainModel(
   for (const entry of scope.entries) {
     if (entry.canonicalSlug
       !== currentMainModelSlug)
-      alternativeEntries.push(entry,);
+      alternativeEntries[alternativeEntries.length] = entry;
   }
 
   /**

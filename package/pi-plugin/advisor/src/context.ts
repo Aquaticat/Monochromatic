@@ -134,7 +134,7 @@ export function buildAdvisorContext(
         : { currentToolCallId: options.toolCallId, }),
     },);
     if (message !== MESSAGE_EXCLUDED)
-      messages.push(message,);
+      messages[messages.length] = message;
   }
 
   /**
@@ -440,7 +440,7 @@ function filterMessage(
       && (block.id
         === currentToolCallId);
     if (!isCurrentAdvisorCall)
-      content.push(block,);
+      content[content.length] = block;
   }
   if (content.length
     === 0)

@@ -134,6 +134,41 @@ type AdvisorContextCandidate = {
 
 //endregion Types
 
+//region Candidate lookup
+
+/**
+ * Return context candidate for selected canonical model slug.
+ *
+ * @param candidates - model-budgeted context candidates
+ *
+ * @param selectedSlug - selected canonical model slug
+ *
+ * @returns matching context candidate
+ *
+ * @throws when selected candidate disappeared
+ */
+function selectedContextCandidate(
+  {
+    candidates,
+    selectedSlug,
+  }: {
+    readonly candidates: readonly AdvisorContextCandidate[];
+    readonly selectedSlug: string;
+  },
+): AdvisorContextCandidate {
+  for (const candidate of candidates) {
+    if (candidate.scopedModel
+      .canonicalSlug
+      === selectedSlug)
+      return candidate;
+  }
+  throw new Error(
+    `advisor: selected model ${selectedSlug} context disappeared`,
+  );
+}
+
+//endregion Candidate lookup
+
 //region Public API
 
 /**
@@ -229,23 +264,11 @@ export function selectAdvisorRunContext(
   /**
    * Context candidate matching selected default model.
    */
-  let selectedCandidate: AdvisorContextCandidate | undefined;
-  for (const candidate of candidates) {
-    if (candidate.scopedModel
-      .canonicalSlug
-      === defaultSelection
-      .selected
-      .canonicalSlug) {
-      selectedCandidate = candidate;
-      break;
-    }
-  }
-  if (selectedCandidate === undefined) {
-    throw new Error(
-      `advisor: selected model ${defaultSelection.selected
-        .canonicalSlug} context disappeared`,
-    );
-  }
+  const selectedCandidate = selectedContextCandidate({
+    candidates,
+    selectedSlug: defaultSelection.selected
+      .canonicalSlug,
+  },);
   return {
     selection: {
       selected: defaultSelection.selected,

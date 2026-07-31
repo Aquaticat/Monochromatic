@@ -123,11 +123,31 @@ function isAdvisorExtensionModule(
 }
 
 /**
+ * Return registered Advisor tool from captured registrations.
+ *
+ * @param tools - registered tools
+ *
+ * @returns registered Advisor tool
+ *
+ * @throws when Advisor tool was not captured
+ */
+function advisorToolOrThrow(
+  tools: readonly ReadonlyDeep<RegisteredTool>[],
+): ReadonlyDeep<RegisteredTool> {
+  for (const tool of tools) {
+    if (tool.name
+      === 'advisor')
+      return tool;
+  }
+  throw new Error('registered Advisor tool was not captured',);
+}
+
+/**
  * Assert built Advisor tool exposes focused-question parameter.
  *
  * @param tools - registered tools
  *
- * @throws when Advisor tool or question parameter is missing
+ * @throws when Advisor question parameter is missing
  */
 function assertAdvisorQuestionParameter(
   tools: readonly ReadonlyDeep<RegisteredTool>[],
@@ -135,16 +155,7 @@ function assertAdvisorQuestionParameter(
   /**
    * Registered Advisor tool definition discovered by linear scan.
    */
-  let advisorTool: ReadonlyDeep<RegisteredTool> | undefined;
-  for (const tool of tools) {
-    if (tool.name
-      === 'advisor') {
-      advisorTool = tool;
-      break;
-    }
-  }
-  if (advisorTool === undefined)
-    throw new Error('registered Advisor tool was not captured',);
+  const advisorTool = advisorToolOrThrow(tools,);
   if (!advisorTool.questionParameterPresent)
     throw new Error('registered Advisor tool is missing question parameter',);
 }
@@ -199,11 +210,16 @@ function fakePiApi(): {
       };
     }>,) {
       registrations.push(`tool:${tool.name}`,);
+      /**
+       * Whether captured schema exposes focused-question parameter.
+       */
+      const questionParameterPresent = tool
+        .parameters
+        ?.properties
+        ?.question !== undefined;
       tools.push({
         name: tool.name,
-        questionParameterPresent: tool.parameters
-          ?.properties
-          ?.question !== undefined,
+        questionParameterPresent,
       },);
     },
     registerCommand(name: string,) {

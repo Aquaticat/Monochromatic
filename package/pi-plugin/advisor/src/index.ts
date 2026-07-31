@@ -113,6 +113,14 @@ export default async function advisor(
     /**
      * Render manual Advisor message through Pi theme capability.
      *
+     * @param message - custom Advisor message payload
+     *
+     * @param options - Pi transcript expansion state
+     *
+     * @param theme - Pi theme used to style message
+     *
+     * @returns styled Advisor message component
+     *
      * @mutates theme - theme methods can update Pi host styling caches
      */
     function renderMessage(
