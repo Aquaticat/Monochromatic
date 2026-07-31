@@ -159,10 +159,12 @@ Ties break by higher output cost,
 
 ## Reasoning effort
 
-Every Advisor call uses the highest reasoning level advertised by the selected model.
+Every Advisor call uses the highest reasoning level below `max` advertised by the selected model.
 Models without extended levels use `high`.
-Models that advertise `xhigh` or `max` use the highest advertised level,
-and non-reasoning models receive no reasoning option.
+Models that advertise `xhigh` use it,
+while models that advertise `max` without `xhigh` remain at `high`.
+Advisor never requests `max` or a later level because `max` calls frequently time out.
+Non-reasoning models receive no reasoning option.
 Advisor passes the selected level through pi-ai's unified simple API,
 which maps it to each provider's request format.
 

@@ -203,17 +203,29 @@ export async function completeAdvisor(
    */
   const supportedReasoningLevels = getSupportedThinkingLevels(mutableModel,);
   /**
-   * Highest reasoning level advertised by selected model.
+   * Index where timeout-prone reasoning levels begin.
    */
-  const highestSupportedReasoningLevel = supportedReasoningLevels
+  const firstDisallowedReasoningLevelIndex = supportedReasoningLevels
+    .indexOf('max',);
+  /**
+   * Supported levels strictly below `max`, including any provider default levels.
+   */
+  const allowedReasoningLevels = firstDisallowedReasoningLevelIndex
+    === -1
+    ? supportedReasoningLevels
+    : supportedReasoningLevels.slice(0, firstDisallowedReasoningLevelIndex,);
+  /**
+   * Highest allowed reasoning level advertised by selected model.
+   */
+  const highestAllowedReasoningLevel = allowedReasoningLevels
     .at(-1,);
   /**
-   * Highest reasoning effort supplied to simple provider API, or no effort for non-reasoning model.
+   * Highest allowed reasoning effort supplied to simple provider API, or no effort for non-reasoning model.
    */
-  const advisorReasoningLevel = highestSupportedReasoningLevel
+  const advisorReasoningLevel = highestAllowedReasoningLevel
     === 'off'
     ? undefined
-    : highestSupportedReasoningLevel;
+    : highestAllowedReasoningLevel;
 
   /**
    * Secondary user message containing serialized evidence.

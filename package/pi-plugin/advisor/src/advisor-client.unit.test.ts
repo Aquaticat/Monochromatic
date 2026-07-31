@@ -117,7 +117,7 @@ const REASONING_CASES: readonly {
     expectedReasoning: 'xhigh',
   },
   {
-    name: 'selects max when model supports max',
+    name: 'caps max-capable model at xhigh',
     model: createFixtureModel({
       id: 'max-reviewer',
       reasoning: true,
@@ -126,7 +126,19 @@ const REASONING_CASES: readonly {
         max: 'max',
       },
     },),
-    expectedReasoning: 'max',
+    expectedReasoning: 'xhigh',
+  },
+  {
+    name: 'uses high when max is supported without xhigh',
+    model: createFixtureModel({
+      id: 'max-only-reviewer',
+      reasoning: true,
+      thinkingLevelMap: {
+        xhigh: null,
+        max: 'max',
+      },
+    },),
+    expectedReasoning: 'high',
   },
 ];
 
