@@ -441,15 +441,15 @@ Disposable probe sources include:
 A disposable worktree was created at:
 `/var/home/user/temp/agent/issue401-worktree.LykdMVxQ`.
 
-## Current uncommitted investigation edits
+## Documentation checkpoint
 
-Investigation-owned changes:
+Commit `8d2bc2f2a9f4d85d22ed007c25d4bcf6d7c6efd3` records:
 
-- `doc/planning/learning-rust-formatting-boundary.md`
-- `doc/troubleshooting/dprint.md`
-- `doc/handover/issue-401-formatting-investigation.md`
+- `doc/planning/learning-rust-formatting-boundary.md`;
+- `doc/troubleshooting/dprint.md`;
+- this handover.
 
-The planning document now contains the corrected package contract,
+The planning document contains the corrected package contract,
 formatter and linter measurements,
 current-tool configuration probes,
 repository-owned feasibility,
@@ -457,7 +457,7 @@ horizontal and vertical option families,
 fully sorted rankings,
 and the proposed resolution.
 
-The troubleshooting document now records the corrected directive names,
+The troubleshooting document records the corrected directive names,
 dprint override behavior,
 width and strict-whitespace probes,
 Stylelint fixed point and semantic gap,
@@ -465,14 +465,15 @@ content-meta defect,
 workarounds,
 and upstream filing decision.
 
-All three documents pass the scoped Markdown lint task and `git diff --check`.
-They are ready for a documentation checkpoint commit after one final diff inspection.
+The commit is present at the upstream branch tip.
+The three paths passed the scoped Markdown lint task and `git diff --check` before commit.
+Unrelated `package/cli/wg-quicker/` changes remain in the worktree and were not staged.
 
 ## Exact next action
 
-1. Inspect only the three investigation-document diffs.
-2. Stage them with explicit pathspecs and commit the documentation checkpoint.
-3. Record the commit in this handover.
-4. Post a final synthesis comment to issue 401 with the corrected ranking and document paths.
-5. Mark the suggestion-development task complete only after the issue comment and document verification pass.
-6. Leave implementation unstarted until the owner accepts or delegates the proposed resolution.
+1. Commit this handover checkpoint update.
+2. Post a final synthesis comment to issue 401 with the corrected ranking,
+   commit,
+   and document paths.
+3. Mark the suggestion-development task complete only after the issue comment and document verification pass.
+4. Leave implementation unstarted until the owner accepts or delegates the proposed resolution.
