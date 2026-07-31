@@ -17,7 +17,7 @@ import {
 import {
   readPhysicalDefaults,
   removeOwnedBypassRoutes,
-  synchronizeBypassRoutes,
+  synchronizeBypassRoutes as synchronizeBypassRoutesInternal,
 } from './tunnel-bypass-route.ts';
 import {
   BYPASS_PROTOS,
@@ -33,6 +33,7 @@ export {
   claimBypassAllocationOperation,
   claimBypassInterfaceOperation,
 } from './tunnel-bypass-operation-lock.ts';
+export { synchronizeBypassRoutes, } from './tunnel-bypass-route.ts';
 export { readBypassStatePath, } from './tunnel-bypass-state.ts';
 
 /**
@@ -256,7 +257,7 @@ export async function addExemptRule(
     /**
      * Physical defaults observed during initial synchronization.
      */
-    const synchronized = await synchronizeBypassRoutes({ state, },);
+    const synchronized = await synchronizeBypassRoutesInternal({ state, },);
     if (synchronized === 0) {
       throw new BypassRouteError(
         `Physical defaults disappeared while configuring ${interfaceName}.`,
@@ -271,7 +272,15 @@ export async function addExemptRule(
   }
   catch (error) {
     fl.error(`failed to install bypass state for ${interfaceName}: ${String(error,)}`,);
-    await cleanupBypassState({ state, },);
+    /**
+     * Latest transition fingerprints ensure rollback removes every installed route form.
+     */
+    const persisted = await readBypassState({ interfaceName, },);
+    await cleanupBypassState({
+      state: persisted === BYPASS_STATE_ABSENT
+        ? state
+        : persisted,
+    },);
     throw error;
   }
 }

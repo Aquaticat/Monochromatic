@@ -64,13 +64,13 @@ On `up`,
 - copies each physical main-table default into the claimed table;
 - installs an unreachable default for a family with no physical default,
   preventing marked traffic from falling through to tunnel policy;
-- tags owned rules and routes with route protocol `201`,
-  reserved exclusively for `wg-quicker` on managed hosts;
+- tags owned rules and routes with route protocol `201`;
 - persists interface name,
   mark,
   table,
   preference,
-  and ownership token in a root-owned state file;
+  ownership token,
+  and exact kernel-rendered route fingerprints in a root-owned state file;
 - starts a detached route watcher in the caller's privilege and network namespace.
 
 The watcher resynchronizes owned defaults after DHCP,
@@ -88,8 +88,11 @@ On `down`,
  persisted state identifies the exact watcher,
 rules,
 and routes to remove.
-Teardown does not flush whole tables and does not depend on current config values,
+Teardown deletes only persisted route fingerprints,
+not every route carrying protocol `201`.
+It does not flush whole tables and does not depend on current config values,
 so unrelated routes and configuration edits made after `up` are preserved.
+Synchronization refuses a table containing an unrecorded default before mutation.
 
 ## Development
 

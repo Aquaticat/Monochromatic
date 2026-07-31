@@ -1,5 +1,8 @@
 import { BypassStateError, } from './errors.ts';
-import type { BypassState, } from './tunnel-bypass-types.ts';
+import type {
+  BypassOwnedRoute,
+  BypassState,
+} from './tunnel-bypass-types.ts';
 
 /**
  * Largest unsigned integer accepted by Linux mark,
@@ -91,6 +94,74 @@ function isOwnerId(value: unknown,): value is string {
 }
 
 /**
+ * Narrows unknown arrays without exposing mutable element type.
+ *
+ * @param value - Candidate JSON array.
+ *
+ * @returns Whether value is array with unknown elements.
+ *
+ * @example
+ * ```ts
+ * isUnknownArray([]); // true
+ * ```
+ */
+function isUnknownArray(value: unknown,): value is readonly unknown[] {
+  return Array.isArray(value,);
+}
+
+/**
+ * Parses persisted route fingerprints.
+ *
+ * @param value - Candidate route array.
+ *
+ * @param path - State path named in diagnostics.
+ *
+ * @returns Validated immutable route identities.
+ *
+ * @throws {@link BypassStateError} when route shape is invalid.
+ *
+ * @example
+ * ```ts
+ * parseOwnedRoutes({ value: [], path: '/tmp/state' });
+ * ```
+ */
+function parseOwnedRoutes(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): readonly BypassOwnedRoute[] {
+  if (!isUnknownArray(value,))
+    throw new BypassStateError(`Invalid application-bypass route state: ${path}`,);
+  /**
+   * Validated route copies accumulated from JSON array.
+   */
+  const routes: BypassOwnedRoute[] = [];
+  for (const route of value) {
+    if ((!isRecord(route,))
+      || ((route.proto !== '-4') && (route.proto !== '-6'))
+      || (!isUnknownArray(route.tokens,))
+      || (route.tokens
+        .length
+        === 0)
+      || (!route.tokens
+        .every(function stringToken(token,): token is string {
+        return (typeof token) === 'string';
+      },))) {
+      throw new BypassStateError(`Invalid application-bypass route state: ${path}`,);
+    }
+    routes.push({
+      proto: route.proto,
+      tokens: [...route.tokens,],
+    },);
+  }
+  return routes;
+}
+
+/**
  * Parses JSON with application-state diagnostic identity.
  *
  * @param text - JSON state text.
@@ -138,7 +209,7 @@ function parseStateJson(
  *
  * @example
  * ```ts
- * parseBypassState({ text: '{"version":1}', path: '/tmp/state' });
+ * parseBypassState({ text: '{"version":2}', path: '/tmp/state' });
  * ```
  *
  * @internal
@@ -160,7 +231,7 @@ export function parseBypassState(
     path,
   },);
   if ((!isRecord(value,))
-    || (value.version !== 1)
+    || (value.version !== 2)
     || (!isInterfaceName(value.interfaceName,))
     || (!isUint32(value.mark,))
     || (value.mark === 0)
@@ -168,15 +239,20 @@ export function parseBypassState(
     || (value.table === 0)
     || (!isUint32(value.preference,))
     || (value.preference === 0)
-    || (!isOwnerId(value.ownerId,))) {
+    || (!isOwnerId(value.ownerId,))
+    || (!('routes' in value))) {
     throw new BypassStateError(`Invalid application-bypass state: ${path}`,);
   }
   return {
-    version: 1,
+    version: 2,
     interfaceName: value.interfaceName,
     mark: value.mark,
     table: value.table,
     preference: value.preference,
     ownerId: value.ownerId,
+    routes: parseOwnedRoutes({
+      value: value.routes,
+      path,
+    },),
   };
 }

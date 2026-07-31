@@ -189,12 +189,13 @@ export async function claimBypassState(
     findFreeBypassPreference({ maximum: 0, },),
   ],);
   return {
-    version: 1,
+    version: 2,
     interfaceName,
     mark,
     table,
     preference,
     ownerId: randomUUID(),
+    routes: [],
   };
 }
 
@@ -220,6 +221,19 @@ export async function persistBypassState(
    * Unique same-directory temporary path.
    */
   const temporaryPath = `${path}.${randomUUID()}.tmp`;
+  /**
+   * Fresh route JSON values detached from caller-owned route containers.
+   */
+  const serializedRoutes: {
+    readonly proto: string;
+    readonly tokens: readonly string[];
+  }[] = [];
+  for (const route of state.routes) {
+    serializedRoutes.push({
+      proto: route.proto,
+      tokens: [...route.tokens,],
+    },);
+  }
   try {
     await writeFile(
       temporaryPath,
@@ -230,6 +244,7 @@ export async function persistBypassState(
         table: state.table,
         preference: state.preference,
         ownerId: state.ownerId,
+        routes: serializedRoutes,
       },),
       {
         flag: 'wx',

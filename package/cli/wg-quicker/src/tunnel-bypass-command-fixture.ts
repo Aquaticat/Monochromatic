@@ -40,6 +40,14 @@ export type BypassFixture = {
 };
 
 /**
+ * Built CLI bundle exercised by end-user lifecycle checks.
+ */
+const CLI_BUNDLE_PATH = new URL(
+  '../dist/final/node/index.mjs',
+  import.meta.url,
+).pathname;
+
+/**
  * Built bypass bundle exercised by namespace child.
  */
 const BYPASS_BUNDLE_URL = new URL(
@@ -225,6 +233,49 @@ export async function runNamespaceIp(
 }
 
 /**
+ * Runs built CLI command inside fixture namespace.
+ *
+ * @param fixture - Namespace fixture.
+ *
+ * @param operation - `up` or `down` command.
+ *
+ * @param configPath - Explicit config path.
+ *
+ * @returns Captured stdout.
+ *
+ * @example
+ * ```ts
+ * await runWgQuickerCli({ fixture, operation: 'up', configPath: '/tmp/wgtest.conf' });
+ * ```
+ */
+export async function runWgQuickerCli(
+  {
+    fixture,
+    operation,
+    configPath,
+  }: {
+    readonly fixture: BypassFixture;
+    readonly operation: 'down' | 'up';
+    readonly configPath: string;
+  },
+): Promise<string> {
+  return await runSudo({
+    args: [
+      'ip',
+      'netns',
+      'exec',
+      fixture.namespace,
+      'env',
+      `WG_QUICKER_RUNTIME_DIRECTORY=${fixture.stateDirectory}`,
+      process.execPath,
+      CLI_BUNDLE_PATH,
+      operation,
+      configPath,
+    ],
+  },);
+}
+
+/**
  * Runs built bypass operation inside fixture namespace.
  *
  * @param fixture - Namespace fixture.
@@ -258,7 +309,7 @@ export async function runBypassOperation(
       process.execPath,
       '--input-type=module',
       '--eval',
-      `const { addExemptRule, claimBypassAllocationOperation, claimBypassInterfaceOperation, removeExemptRule } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
+      `const { addExemptRule, claimBypassAllocationOperation, claimBypassInterfaceOperation, readBypassStatePath, removeExemptRule, synchronizeBypassRoutes } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
     ],
   },);
 }
@@ -297,7 +348,7 @@ export async function runBypassOperationAllowingFailure(
       process.execPath,
       '--input-type=module',
       '--eval',
-      `const { addExemptRule, claimBypassAllocationOperation, claimBypassInterfaceOperation, removeExemptRule } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
+      `const { addExemptRule, claimBypassAllocationOperation, claimBypassInterfaceOperation, readBypassStatePath, removeExemptRule, synchronizeBypassRoutes } = await import('${BYPASS_BUNDLE_URL}'); ${source}`,
     ],
   },);
 }

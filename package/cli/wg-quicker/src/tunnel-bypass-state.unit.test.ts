@@ -18,12 +18,24 @@ import { readBypassStatePath, } from '../dist/final/node/tunnel-bypass.mjs';
  * Valid persisted state shared by shape mutations.
  */
 const VALID_STATE = {
-  version: 1,
+  version: 2,
   interfaceName: 'wgtest',
   mark: 8_888,
   table: 52_000,
   preference: 50,
   ownerId: 'owner',
+  routes: [{
+    proto: '-4',
+    tokens: [
+      'default',
+      'dev',
+      'eth0',
+      'table',
+      '52000',
+      'proto',
+      '201',
+    ],
+  },],
 } as const;
 
 /**
@@ -44,7 +56,7 @@ const INVALID_STATE_CASES: readonly InvalidStateCase[] = [
   },
   {
     name: 'rejects unsupported version',
-    value: { ...VALID_STATE, version: 2, },
+    value: { ...VALID_STATE, version: 1, },
   },
   {
     name: 'rejects empty interface name',
@@ -93,6 +105,29 @@ const INVALID_STATE_CASES: readonly InvalidStateCase[] = [
   {
     name: 'rejects empty owner identity',
     value: { ...VALID_STATE, ownerId: '', },
+  },
+  {
+    name: 'rejects absent route fingerprints',
+    value: {
+      version: VALID_STATE.version,
+      interfaceName: VALID_STATE.interfaceName,
+      mark: VALID_STATE.mark,
+      table: VALID_STATE.table,
+      preference: VALID_STATE.preference,
+      ownerId: VALID_STATE.ownerId,
+    },
+  },
+  {
+    name: 'rejects invalid route family',
+    value: { ...VALID_STATE, routes: [{ proto: '-5', tokens: ['default',], },], },
+  },
+  {
+    name: 'rejects empty route tokens',
+    value: { ...VALID_STATE, routes: [{ proto: '-4', tokens: [], },], },
+  },
+  {
+    name: 'rejects non-string route token',
+    value: { ...VALID_STATE, routes: [{ proto: '-6', tokens: ['default', 1,], },], },
   },
 ];
 

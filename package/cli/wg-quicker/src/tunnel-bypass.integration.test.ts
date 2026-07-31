@@ -9,6 +9,7 @@ import {
   runNamespaceIp,
   runSudo,
   runSudoAllowingFailure,
+  runWgQuickerCli,
   type BypassFixture,
   writeRootFixtureFile,
 } from './tunnel-bypass-command-fixture.ts';
@@ -269,9 +270,11 @@ assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'route', 'get', '2001:48
 //region Exact teardown ownership
 
 await runNamespaceIp({ fixture, args: ['-4', 'route', 'add', 'blackhole', '198.18.0.0/15', 'table', String(firstState.table,), 'proto', 'boot',], },);
+await runNamespaceIp({ fixture, args: ['-4', 'route', 'add', 'blackhole', '192.0.2.0/24', 'table', String(firstState.table,), 'proto', '201',], },);
 await removeBypass({ fixture, },);
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', '52000',], },)).includes('blackhole 203.0.113.0/24',));
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', String(firstState.table,),], },)).includes('blackhole 198.18.0.0/15',));
+assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', String(firstState.table,),], },)).includes('blackhole 192.0.2.0/24',));
 assert.equal((await runNamespaceIp({ fixture, args: ['-4', 'rule', 'show',], },)).includes(`fwmark 0x22b8 lookup ${String(firstState.table,)}`,), false,);
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'rule', 'show',], },)).includes('50:',));
 assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'rule', 'show',], },)).includes('51:',));
@@ -326,6 +329,16 @@ await waitForSecondaryRoute({
 },);
 assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'get', '8.8.8.8', 'mark', String(EXEMPT_MARK,),], },)).includes(`dev ${fixture.peerSecondary}`,));
 assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'route', 'get', '2001:4860:4860::8888', 'mark', String(EXEMPT_MARK,),], },)).includes(`dev ${fixture.peerSecondary}`,));
+await runNamespaceIp({ fixture, args: ['-4', 'route', 'add', 'default', 'via', '198.51.101.1', 'dev', fixture.peerSecondary, 'metric', '900', 'table', String(watcherState.table,), 'proto', 'boot',], },);
+/**
+ * Synchronization collision rejection for externally added default.
+ */
+const externalDefaultCollision = await runBypassOperationAllowingFailure({
+  fixture,
+  source: `await synchronizeBypassRoutes({ state: await readBypassStatePath({ path: ${JSON.stringify(fixture.statePath,)} }) });`,
+},);
+assert.notEqual(externalDefaultCollision.exitCode, 0,);
+assert.ok(externalDefaultCollision.stderr.includes('unowned default route',));
 /**
  * Original watcher sidecar restored after wrong-owner cleanup probe.
  */
@@ -364,6 +377,7 @@ await writeRootFixtureFile({
 },);
 await removeBypass({ fixture, },);
 assert.notEqual((await runSudoAllowingFailure({ args: ['test', '-e', `/proc/${String(detachedPid,)}`,], },)).exitCode, 0,);
+assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', String(watcherState.table,),], },)).includes('metric 900',));
 
 //endregion Detached route-change watcher
 
@@ -394,5 +408,67 @@ assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'route', 'show', 'table'
 await removeBypass({ fixture, },);
 
 //endregion Missing physical defaults and single-family fail-closed route
+
+//region Built CLI up and changed-config down lifecycle
+
+await runNamespaceIp({ fixture, args: ['link', 'delete', 'wgtest',], },);
+/**
+ * Valid private key generated inside disposable namespace.
+ */
+const privateKey = (await runSudo({
+  args: [
+    'ip',
+    'netns',
+    'exec',
+    fixture.namespace,
+    'wg',
+    'genkey',
+  ],
+},)).trim();
+/**
+ * Explicit config path consumed by built CLI.
+ */
+const configPath = `${fixture.stateDirectory}/wgtest.conf`;
+await writeRootFixtureFile({
+  path: configPath,
+  contents: [
+    '[Interface]',
+    `PrivateKey = ${privateKey}`,
+    'Address = 10.200.0.1/32',
+    `ExemptMark = ${String(EXEMPT_MARK,)}`,
+  ].join('\n',),
+},);
+await runWgQuickerCli({
+  fixture,
+  operation: 'up',
+  configPath,
+},);
+assert.ok((await runNamespaceIp({ fixture, args: ['link', 'show', 'dev', 'wgtest',], },)).includes('wgtest',));
+/**
+ * CLI-created bypass state and watcher identity.
+ */
+const cliState = await readFixtureState({ fixture, },);
+const cliWatcherPid = await watcherPid({ fixture, },);
+await runNamespaceIp({ fixture, args: ['-4', 'route', 'add', 'blackhole', '198.19.0.0/16', 'table', String(cliState.table,), 'proto', '201',], },);
+await writeRootFixtureFile({
+  path: configPath,
+  contents: [
+    '[Interface]',
+    `PrivateKey = ${privateKey}`,
+    'Address = 10.200.0.1/32',
+    'ExemptMark = 9999',
+  ].join('\n',),
+},);
+await runWgQuickerCli({
+  fixture,
+  operation: 'down',
+  configPath,
+},);
+assert.notEqual((await runSudoAllowingFailure({ args: ['ip', 'netns', 'exec', fixture.namespace, 'ip', 'link', 'show', 'dev', 'wgtest',], },)).exitCode, 0,);
+assert.notEqual((await runSudoAllowingFailure({ args: ['test', '-e', fixture.statePath,], },)).exitCode, 0,);
+assert.notEqual((await runSudoAllowingFailure({ args: ['test', '-e', `/proc/${String(cliWatcherPid,)}`,], },)).exitCode, 0,);
+assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table', String(cliState.table,),], },)).includes('blackhole 198.19.0.0/16',));
+
+//endregion Built CLI up and changed-config down lifecycle
 
 console.log('wg-quicker bypass integration passed',);

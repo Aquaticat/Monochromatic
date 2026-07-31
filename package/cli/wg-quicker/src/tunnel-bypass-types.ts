@@ -4,13 +4,28 @@
 export type BypassProto = '-4' | '-6';
 
 /**
+ * Canonical route identity persisted after kernel rendering.
+ */
+export type BypassOwnedRoute = {
+  /**
+   * Address family used by route command.
+   */
+  readonly proto: BypassProto;
+
+  /**
+   * Exact displayed route tokens including ownership table and protocol.
+   */
+  readonly tokens: readonly string[];
+};
+
+/**
  * Persisted application-bypass ownership state.
  */
 export type BypassState = {
   /**
    * State schema version.
    */
-  readonly version: 1;
+  readonly version: 2;
 
   /**
    * Interface whose exempt mark owns state.
@@ -33,9 +48,14 @@ export type BypassState = {
   readonly preference: number;
 
   /**
-   * Random owner token stored in cooperative locks.
+   * Random owner token binding state and watcher sidecar.
    */
   readonly ownerId: string;
+
+  /**
+   * Exact route fingerprints owned by lifecycle or in-progress synchronization.
+   */
+  readonly routes: readonly BypassOwnedRoute[];
 };
 
 /**
