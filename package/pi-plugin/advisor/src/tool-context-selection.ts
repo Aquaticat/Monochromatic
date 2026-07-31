@@ -14,10 +14,8 @@ import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
 } from './context.ts';
-import {
-  resolveRequestedModel,
-  selectDefaultModelFromContextEstimates,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
 import {
   type CurrentMainModelIdentity,
   scopeAvoidingCurrentMainModel,
@@ -197,11 +195,10 @@ export function selectAdvisorRunContext(
     /**
      * Explicit Advisor model selection.
      */
-    const selection = resolveRequestedModel({
+    const selection = resolveAdvisorRequestedModel({
       scope: options.scope,
       requestedSlug: options.requestedSlug,
       modelRegistry: options.modelRegistry,
-      errorPrefix: 'advisor',
     },);
     return {
       selection,
