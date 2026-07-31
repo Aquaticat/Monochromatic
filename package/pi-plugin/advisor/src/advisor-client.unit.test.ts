@@ -20,14 +20,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  type AdvisorConfig,
+  type AdvisorContext,
   completeAdvisor,
   type CompleteAdvisorModel,
-} from './advisor-client.ts';
-import { DEFAULT_CONFIG, } from './config.ts';
-import type {
-  AdvisorConfig,
-  AdvisorContext,
-} from './types.ts';
+  DEFAULT_CONFIG,
+} from '../dist/final/node/index.mjs';
 
 //region Constants
 

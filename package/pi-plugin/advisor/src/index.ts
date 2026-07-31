@@ -248,3 +248,30 @@ async function buildMainModelGuidance(
 
 export { buildAdvisorStatus, } from './commands.ts';
 export { buildMainModelGuidance, };
+
+/**
+ * Internal provider-call behavior exported for built-artifact verification.
+ *
+ * @internal
+ */
+export {
+  completeAdvisor,
+  type CompleteAdvisorModel,
+} from './advisor-client.ts';
+
+/**
+ * Internal config fixtures exported for built-artifact verification.
+ *
+ * @internal
+ */
+export { DEFAULT_CONFIG, } from './config.ts';
+
+/**
+ * Internal Advisor data types exported for built-artifact verification.
+ *
+ * @internal
+ */
+export type {
+  AdvisorConfig,
+  AdvisorContext,
+} from './types.ts';
