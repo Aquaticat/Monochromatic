@@ -491,10 +491,10 @@ because none of them had a build with the proof switched off.
 Disabling it adds exactly seven offers and nothing else:
 
 -    `package/desktop-app/electron-infra/src/wayland-state.ts:166:3`
--    `package/module/toml-edit/src/emit-value.ts:66:24`, 
-     `:333:3`, 
+-    `package/module/toml-edit/src/emit-value.ts:66:24`,
+     `:333:3`,
      `:423:3`
--    `package/module/toml-edit/src/toml-get-node.ts:110:3`, 
+-    `package/module/toml-edit/src/toml-get-node.ts:110:3`,
      `:141:3`
 -    `package/pi-plugin/goal/src/pi-runtime-verifier-provider.ts:244:22`
 

@@ -17,7 +17,7 @@ Slopo cluster 385 (hash `482b1cf964fb`,
 The cluster is a true positive,
  and it sits on top of a package-wide pattern.
 
-`package/module/toml-edit/src/path-prefix.ts` exports `isPrefix`, 
+`package/module/toml-edit/src/path-prefix.ts` exports `isPrefix`,
 `isStrictPrefix` and `segmentsEqual`
 as the shared home for segment predicates.
 `resolve-block.ts` imports from it.
@@ -27,7 +27,7 @@ Three other modules re-implement the same predicates locally instead:
 - `toml-insert-comment-after.ts` carries local `segmentsEqual` and `strictPrefix` copies (clusters 262 and 323).
 - `toml-insert-comment-before.ts` carries the same local `strictPrefix` copy (cluster 262).
 
-Beyond the predicates, 
+Beyond the predicates,
 `locateBlock` and `matchTables` run an identical table-scan algorithm:
 exact-header filter yielding standard-table or array-of-tables,
 then strict-prefix standard header,
@@ -68,12 +68,12 @@ so node count is not the lever that retires a cluster.
 
 `matchTableSection` returns either a table-section hit or a `{ kind: 'descend', blocks, path }` instruction
 that each caller replays against its own entry point.
-`matchTables` disappears; 
+`matchTables` disappears;
 `locateBlock` keeps only its exact-key-value step.
 
 - Type check:
    no errors in any source file.
-- Tests: 
+- Tests:
   `//package/module/toml-edit:test:unit` passes in full,
    all test groups green.
 - Lint:
@@ -95,7 +95,7 @@ collapsing each caller's tail to a single return statement.
 - Tests:
    passes in full,
    exit status zero.
-- `locateBlock` drops to 63 body nodes; 
+- `locateBlock` drops to 63 body nodes;
   `locateValueNode` to 71.
 - Same clustering outcome and same repo-wide similarity ratio as variant A.
 
@@ -132,14 +132,14 @@ All figures reported here are after that fix.
 
 Neither variant silences slopo for these files.
 A three-member cluster survives at score 0.94,
-covering `locateBlock`, 
+covering `locateBlock`,
 `locateValueNode` and `descendValue`:
 variant A hash `534c966e3b99`,
  variant B hash `43ca8a078e7e`.
 
 What remains is the sentinel-guard plus early-return plus tail-recursion shell
-mandated by the repo conventions (`ST9` named parameters, 
-`TQ3` early return, 
+mandated by the repo conventions (`ST9` named parameters,
+`TQ3` early return,
 `PP8`,
  the `NOT_LOCATED` sentinel),
 with each body resolving a different thing.
@@ -161,7 +161,7 @@ Land variant A,
 
 Variant B measures marginally better:
 score 0.94-0.94 against 0.94-0.95,
-and smaller bodies (`locateBlock` 63 against 85 nodes, 
+and smaller bodies (`locateBlock` 63 against 85 nodes,
 `locateValueNode` 71 against 93).
 Both produce a three-member residual and the same repo-wide similarity ratio,
 so that margin is within noise and the choice falls to readability.

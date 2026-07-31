@@ -311,7 +311,7 @@ and every one matched the prediction written before it was built:
    shorthand keys,
    quoted keys,
    a callee
-   binding the key under another name, 
+   binding the key under another name,
   `1e0` against a callee reading `1`,
    a row packaged one
    literal deeper,
@@ -366,20 +366,20 @@ and each is verified rather than assumed:
    Measured:
    no member assignment and no mutating array or
    map method call anywhere in its 476 lines.
-- The opacity that used to reach them is real and still reported. 
+- The opacity that used to reach them is real and still reported.
   `assembleArrayParts` calls
    `parts.join`,
    an unresolved receiver call,
    and measures `opaque=[0]` after the change exactly
    as before it.
-- What moved is where that opacity lands. 
+- What moved is where that opacity lands.
   `emitArray` calls
    `assembleArrayParts({ parts, options, depth, },)`,
    and the callee's opaque `parts` slot now
    receives only the origins filling the key `parts`,
-   which is a local. 
+   which is a local.
   `emitArray` measures
-   `opaque=[]` where the broadcast had credited its `node`, 
+   `opaque=[]` where the broadcast had credited its `node`,
   `options` and `depth` alike.
 
 So the effect was localized,
@@ -475,7 +475,7 @@ while a boundary named one of its properties.
    The key is held in a map owned by
    the parameter rather than concatenated into one string,
    so no delimiter needs escaping.
-- **Rest property** `{ a, ...rest }`. 
+- **Rest property** `{ a, ...rest }`.
   `rest` takes the whole-parameter slot.
    It names a
    complement set rather than a property,
@@ -488,7 +488,7 @@ while a boundary named one of its properties.
 - **Default inside a pattern** `{ a = fallback }`.
    The binding takes property `a`'s slot,
    and
-   the initializer's own origins are unioned into it. 
+   the initializer's own origins are unioned into it.
   `BindingElement.initializer` is walked
    neither for origins nor for effects today,
    which is a gap this has to close rather than
@@ -528,8 +528,8 @@ while a boundary named one of its properties.
    Measured with
    `createScanner`,
    this AST's numeric token values are already the runtime property keys:
-   `1e0` and `1.0` both read `1`, 
-  `0x10` reads `16`, 
+   `1e0` and `1.0` both read `1`,
+  `0x10` reads `16`,
   `1_000` reads `1000`.
    String and template
    literals expose their cooked text,
@@ -554,7 +554,7 @@ while a boundary named one of its properties.
 - **Any accessor in the literal**.
    No narrowing for that actual at all.
    Two shapes defeat
-   anything weaker. 
+   anything weaker.
   `{ hidden: owned, get named() { return this.hidden; } }` reaches `owned`
    through `this`,
    which no scan of the accessor body finds,
@@ -587,7 +587,7 @@ while a boundary named one of its properties.
    either,
    since `callee(...values)` fills formals from the elements rather than from the
    spread expression itself.
-   No fixture asserts this one. 
+   No fixture asserts this one.
   `parameterIndexes` walks neither an assignment nor a call,
    so
    that actual carries no origins whether the rule unwraps it or not,
@@ -601,11 +601,11 @@ while a boundary named one of its properties.
    every property slot of the formal receives the actual's
    origins,
    which is what happens today.
-- **Overloads**. 
+- **Overloads**.
   `overload-consistency.ts` compares two different declarations with two
    different slot tables,
    so both sides project to parameters before comparing.
-- **Propagation bound**. 
+- **Propagation bound**.
   `effect-fixed-point-propagation.ts` counts
    `parameterCount * EFFECT_DIMENSION_COUNT`.
    It becomes slot-count-based,
@@ -666,7 +666,7 @@ Commits,
 `6a0122661` and `263b0d099` recorded the nondeterminism and revised the predictions;
 `0f787856f` and `7776ba61a` built and measured stage two;
 `5bfedf489` fixed the prototype unsoundness in it;
-`13b60c154`, 
+`13b60c154`,
 `63c7d8c6d` and `a238f02ea` recorded the measurements;
 `d33ba1870` built stage three;
 `03c18be6b` pre-registered its invariant;

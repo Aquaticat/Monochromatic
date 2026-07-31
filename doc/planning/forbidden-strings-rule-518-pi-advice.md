@@ -145,7 +145,7 @@ Test explicitly for:
 - percent-encoded Unix-socket paths,
    if relevant;
 - host interpolation and string concatenation;
-- punctuation after the URI such as `)`, 
+- punctuation after the URI such as `)`,
   `]`,
    or `,`;
 - mixed-case schemes,

@@ -60,7 +60,7 @@ below.
 ## Collision mitigation (mandatory, from the vet)
 
 A regex body that must genuinely match line-leading tail-style text
-reshapes the first byte with a character class: 
+reshapes the first byte with a character class:
 `[=]=> ` in place of
 `==> `,
  compiling to the same match.
@@ -68,7 +68,7 @@ reshapes the first byte with a character class:
 `==>` at all;
  express such a rule in regex form instead.
  Inside a bare
-literal, 
+literal,
 `[=]` remains the literal three characters (the escaper
 escapes brackets;
  there is no de-reshaping in literal context;

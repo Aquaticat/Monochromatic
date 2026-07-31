@@ -47,7 +47,7 @@ An import target is eventual when either condition holds.
     Substring matching on `dist/final` is not sufficient:
     it would accept `src/dist/final/fake.ts` as an artifact.
 -   The path lies inside a directory that the owning package declares as a shipping entry,
-    via `exports` (excluding the `./ts` and `./ts/*` keys), 
+    via `exports` (excluding the `./ts` and `./ts/*` keys),
     `main`,
      or `bin`,
     with any target under `src/` discarded,
@@ -61,7 +61,7 @@ including `dist/temp/**`,
 Discarding `src/` targets is required because 30 packages currently declare entries pointing into source.
 Without that clause the rule would bless exactly the imports it exists to ban.
 The repo position is that `/ts` is the sanctioned source channel per ST3,
-so a package's `main`, 
+so a package's `main`,
 `bin`,
  or default `exports` entry should never point at `src/`.
 
@@ -156,9 +156,9 @@ adding a build task re-arms the rule automatically.
 
 This covers 35 test files across 14 packages,
 mostly satellites whose purpose is exercising another package
-(`css-edit.bench`, 
-`css-edit.fuzz`, 
-`jsonc-edit.conformance`, 
+(`css-edit.bench`,
+`css-edit.fuzz`,
+`jsonc-edit.conformance`,
 `test-fixture/*`),
 plus `config/rolldown`,
  which ships source through `/ts` by design,
@@ -171,7 +171,7 @@ the former keys on whether the package ships anything at all.
 
 ### Forms not checked
 
-Dynamic `import()`, 
+Dynamic `import()`,
 `require()`,
  and `export ... from` are out of scope by decision.
 Consequence to accept knowingly:
@@ -272,8 +272,8 @@ with no `exports` `types` condition required.
 Measured across every package having a build task:
  80 emit both code and declarations,
  5 emit code only.
-Those 5 are `kwin/key-helper`, 
-`ssg/aquati.cat`, 
+Those 5 are `kwin/key-helper`,
+`ssg/aquati.cat`,
 `webapp-productivity/done`,
 `webapp-productivity/done-postcss`,
  and `webapp-productivity/wc`.
@@ -382,7 +382,7 @@ and `.js` specifiers corresponding to `.ts` sources.
     Under last-wins,
      listing most-specific first means the least specific entry wins.
     Worth a separate audit of whether any existing override pair is affected.
--   30 packages declare `exports`, 
+-   30 packages declare `exports`,
     `main`,
      or `bin` entries pointing into `src/`.
     By the stated principle that no package should ship `src/*`,
@@ -417,9 +417,9 @@ measured across every test file,
 ## Shapes that satisfy the effect rule
 
 `prefer-readonly-parameter-type/prefer-readonly-parameter-types` rejects any parameter reaching a call whose implementation it cannot inspect,
-which covers `Object.keys`, 
-`Object.entries`, 
-`Array.prototype.filter`, 
+which covers `Object.keys`,
+`Object.entries`,
+`Array.prototype.filter`,
 `Map.prototype.set`,
  and every Oxlint host method.
 These shapes in this package exist for that reason and should not be flattened back:
@@ -458,7 +458,7 @@ Measured breakdown:
  which is exactly the shape `ForeignHostCapability` cleared here;
 the remaining 12 do not,
  so the `loc` change is no help there.
-Those 12 reach bodyless callables, 
+Those 12 reach bodyless callables,
 `functionNodes.set`,
  and `fixer` methods,
  each needing its own remedy.

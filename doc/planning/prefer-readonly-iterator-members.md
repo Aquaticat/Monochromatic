@@ -86,13 +86,13 @@ which measures creation and drainage as distinct steps,
 and collapses only in the recorded entry.
 
 Eighteen entries:
-`keys`, 
-`values`, 
-`entries` on `Array`, 
-`ReadonlyArray`, 
-`Map`, 
-`ReadonlyMap`, 
-`Set`, 
+`keys`,
+`values`,
+`entries` on `Array`,
+`ReadonlyArray`,
+`Map`,
+`ReadonlyMap`,
+`Set`,
 `ReadonlySet`.
 All six interfaces declare all three,
 confirmed in the lib.
@@ -171,7 +171,7 @@ the two numbers were never comparable,
 What the sweep does answer:
 offers stand at 32,
 the same count as before the change,
-and none of the fifteen files containing those offers holds a `keys`, 
+and none of the fifteen files containing those offers holds a `keys`,
 `values` or `entries` call at
 all.
 Since the discharge fires only at an iterator call site,
@@ -318,7 +318,7 @@ and this is the part worth carrying forward:
      not a change scoped to iterators.
      `ReadonlyMap.get` is channel-verified with a direct receiver-value relation,
      so admitting for-of would let `for (const value of groups.get('selected',)!)` discharge while
-     iteration runs arbitrary user code through `[Symbol.iterator]`, 
+     iteration runs arbitrary user code through `[Symbol.iterator]`,
      `next`,
       and `return` on abrupt
      completion.

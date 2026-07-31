@@ -25,22 +25,22 @@ Comment density is high:
 What exists today:
 
 - CLI:
-   positional paths plus `--max <N>`, 
-  `--help`, 
+   positional paths plus `--max <N>`,
+  `--help`,
   `--version` (clap).
 - Two rules,
    hardcoded on,
    hardcoded at error severity:
-  `max-lines`, 
+  `max-lines`,
   `require-rustdoc`.
 - `all_rules()` in `src/rule.rs` returns a fixed `Vec<Box<dyn Rule>>`.
   The README calls the linter "pluggable";
   there is no plugin mechanism of any kind.
 - Exemptions are hardcoded Rust predicates in `src/config.rs`
-  (`max_lines_exempt`, 
+  (`max_lines_exempt`,
   `missing_rustdoc_exempt`),
   duplicated once per rule.
-- Discovery: 
+- Discovery:
   `ignore::WalkBuilder::new(..).build()`,
    sequential,
    gitignore-aware.
@@ -70,78 +70,78 @@ invoked per package through the `lint:rust` fanout in the root `mise.toml`.
 
 Installed version:
  1.75.0 (`oxlint --version`).
-Sources: 
-`oxlint --help`, 
+Sources:
+`oxlint --help`,
 `node_modules/oxlint/configuration_schema.json`,
 and a real `--format json` run.
 
 Config file top-level keys (`configuration_schema.json`):
-`$schema`, 
-`categories`, 
-`env`, 
-`extends`, 
-`globals`, 
+`$schema`,
+`categories`,
+`env`,
+`extends`,
+`globals`,
 `ignorePatterns`,
-`jsPlugins`, 
-`options`, 
-`overrides`, 
-`plugins`, 
-`rules`, 
+`jsPlugins`,
+`options`,
+`overrides`,
+`plugins`,
+`rules`,
 `settings`.
 
-`options` holds `denyWarnings`, 
-`maxWarnings`, 
+`options` holds `denyWarnings`,
+`maxWarnings`,
 `reportUnusedDisableDirectives`.
-`overrides` entries take `files`, 
-`excludeFiles`, 
-`rules`, 
-`env`, 
-`globals`, 
+`overrides` entries take `files`,
+`excludeFiles`,
+`rules`,
+`env`,
+`globals`,
 `plugins`.
-`categories` are `correctness`, 
-`suspicious`, 
-`pedantic`, 
-`perf`, 
+`categories` are `correctness`,
+`suspicious`,
+`pedantic`,
+`perf`,
 `style`,
-`restriction`, 
+`restriction`,
 `nursery`,
  each set to an `AllowWarnDeny` value.
 Rule entries are either a bare severity or `[severity, options]`.
 
 CLI surface beyond config:
 `-A/-W/-D` accumulation over rules and categories,
-`--fix`, 
-`--fix-suggestions`, 
+`--fix`,
+`--fix-suggestions`,
 `--fix-dangerously`,
-`--ignore-path`, 
-`--ignore-pattern`, 
+`--ignore-path`,
+`--ignore-pattern`,
 `--no-ignore`,
-`--quiet`, 
-`--deny-warnings`, 
+`--quiet`,
+`--deny-warnings`,
 `--max-warnings`,
-`--format` with `checkstyle`, 
-`default`, 
-`agent`, 
-`github`, 
-`gitlab`, 
+`--format` with `checkstyle`,
+`default`,
+`agent`,
+`github`,
+`gitlab`,
 `json`,
-`junit`, 
-`sarif`, 
-`stylish`, 
+`junit`,
+`sarif`,
+`stylish`,
 `unix`,
-`--debug=files,timings`, 
-`--silent`, 
+`--debug=files,timings`,
+`--silent`,
 `--no-error-on-unmatched-pattern`,
-`--threads`, 
-`--print-config`, 
-`--rules`, 
-`--init`, 
+`--threads`,
+`--print-config`,
+`--rules`,
+`--init`,
 `--lsp`,
-`--disable-nested-config`, 
-`--type-aware`, 
+`--disable-nested-config`,
+`--type-aware`,
 `--type-check`,
 `--report-unused-disable-directives[-severity]`,
-`--config`, 
+`--config`,
 `--tsconfig`.
 
 JSON diagnostic shape,
@@ -158,31 +158,31 @@ JSON diagnostic shape,
 
 Which oxlint features this repo actually leans on
 (`package/config/oxlint/src/config-base.ts` and `overrides.ts`):
-`categories`, 
-`env`, 
-`ignorePatterns`, 
-`options`, 
-`plugins`, 
-`rules`, 
+`categories`,
+`env`,
+`ignorePatterns`,
+`options`,
+`plugins`,
+`rules`,
 `settings`,
 and a large glob-driven `overrides` list.
 Those overrides are exactly the mechanism the Rust linter hardcodes:
-`eslint/max-lines` is turned off for `**/fixture.*`, 
+`eslint/max-lines` is turned off for `**/fixture.*`,
 `**/*.config.*`,
-`**/canary-lint/**`, 
+`**/canary-lint/**`,
 `**/*.{test,bench}.ts`.
 
 Four custom oxlint plugins are authored in-repo under `package/oxlint-plugin/`
-(`no-restricted-syntax`, 
-`prefer-readonly-parameter-type`, 
-`stylistic`, 
+(`no-restricted-syntax`,
+`prefer-readonly-parameter-type`,
+`stylistic`,
 `tsdoc`),
 so third-party rule authoring is load-bearing for TypeScript.
 
 Existing consumer tooling that a shared diagnostic schema would unlock for free:
 `package/dev-script/task-util/src/oxlint-wrapper.ts` (281 lines),
-`oxlint-augment.ts` (683), 
-`oxlint-guidance.ts` (140), 
+`oxlint-augment.ts` (683),
+`oxlint-guidance.ts` (140),
 `oxlint-fix-loop.ts`.
 
 ## Adopted without asking
@@ -198,17 +198,17 @@ default rather than by decision (QGR):
    plus `-A/-W/-D` left-to-right
   accumulation over rules and categories.
 - `overrides` by glob with `files`/`excludeFiles`/`rules`,
-  `ignorePatterns`, 
+  `ignorePatterns`,
   `extends`,
    nested config discovery,
-  `--config`, 
+  `--config`,
   `--disable-nested-config`.
-- `--ignore-path`, 
-  `--ignore-pattern`, 
+- `--ignore-path`,
+  `--ignore-pattern`,
   `--no-ignore`.
-- `--quiet`, 
-  `--deny-warnings`, 
-  `--max-warnings`, 
+- `--quiet`,
+  `--deny-warnings`,
+  `--max-warnings`,
   `--silent`,
   `--no-error-on-unmatched-pattern`.
 - `--format` for every format oxlint ships,
@@ -217,9 +217,9 @@ default rather than by decision (QGR):
 - `--threads` and parallel walking
   (`WalkBuilder::build_parallel()`,
    already a dependency).
-- `--print-config`, 
-  `--rules`, 
-  `--init`, 
+- `--print-config`,
+  `--rules`,
+  `--init`,
   `--debug=files,timings`.
 - Summary line and exit-code semantics.
 - A rich default renderer with source snippet and span labels.
@@ -246,7 +246,7 @@ Consequence:
  the `Rule` trait must carry fix edits from the start,
 rule registration needs a runtime seam rather than `all_rules()`,
 and diagnostics must be servable incrementally over LSP.
-No dependency on `ra_ap_hir`, 
+No dependency on `ra_ap_hir`,
 `ra_ap_ide`,
  or a rustc driver;
 `ra_ap_syntax` stays the only parser.
@@ -286,7 +286,7 @@ Settled alongside it,
 
 - Directives are comments,
    not attributes.
-  Verified: 
+  Verified:
   `#[allow(monochromatic::max_lines)]` fails on stable with
   `error[E0710]: unknown tool name`,
    and the suggested fix
@@ -305,30 +305,30 @@ Settled alongside it,
 binary cannot execute TypeScript;
 oxlint itself gates TS configs behind "requires running via Node.js".
 oxlint gets away with TypeScript configs only because oxlint itself runs inside
-Node: 
+Node:
 `node_modules/oxlint/bin/oxlint` is a Node shim,
  and the checked-in
 `oxlint.config.ts` is read natively by that Node process.
 A standalone Rust binary has no such host.
 
 In-repo precedent checked (WC2):
-`file-enforcer.config.ts` already owns generated `CLAUDE.md`, 
+`file-enforcer.config.ts` already owns generated `CLAUDE.md`,
 `AGENTS.md`
-mirrors, 
+mirrors,
 `mise.toml`,
  and `package/linter/rust/Cargo.toml`,
 so a generated root config is an established pattern.
 Root config formats already in use:
-`*.config.ts` (`oxlint`, 
-`cli-git`, 
-`file-enforcer`, 
+`*.config.ts` (`oxlint`,
+`cli-git`,
+`file-enforcer`,
 `playwright`),
-`*.toml` (`clippy`, 
-`bunfig`, 
+`*.toml` (`clippy`,
+`bunfig`,
 `mise`),
-and `*.json` (`dprint`, 
-`node.config`, 
-`socket`, 
+and `*.json` (`dprint`,
+`node.config`,
+`socket`,
 `tsconfig`).
 
 Status:
@@ -375,11 +375,11 @@ Consequences:
    no generated artifact.
 - oxlint's published `configuration_schema.json` is not reusable as-is;
   the TOML tree has to express the same concepts
-  (`rules`, 
-  `categories`, 
-  `overrides`, 
-  `extends`, 
-  `ignorePatterns`, 
+  (`rules`,
+  `categories`,
+  `overrides`,
+  `extends`,
+  `ignorePatterns`,
   `options`)
   in TOML's array-of-tables shape.
 - Pattern rules benefit:
@@ -570,14 +570,14 @@ deliberate",
 
 New crate names must be checked against `forbidden-strings.append.local.txt`
 before use (NCD),
- and each new package needs its own `Cargo.toml`, 
+ and each new package needs its own `Cargo.toml`,
 `mise.toml`,
 `README.md` and `LICENSES/` tree (AP1 to AP3,
  PKG).
 
 ### D7. Comment convention at this scale
 
-Measured: 
+Measured:
 `package/linter/rust/src` is 625 code lines carrying 2501 comment
 lines,
  a ratio of 4.00,
@@ -641,13 +641,13 @@ Shared understanding reached 2026-07-25.
 - Work item 1,
    core crate extraction,
    commit `6d399e303`.
-  `package/rust-module/rust-linter-core` holds `Rule`, 
-  `LintContext`, 
+  `package/rust-module/rust-linter-core` holds `Rule`,
+  `LintContext`,
   `Config`,
   and the diagnostic,
    span and fix model.
-  `crate::config`, 
-  `crate::context`, 
+  `crate::config`,
+  `crate::context`,
   `crate::diagnostic` and `crate::rule` stay
   valid paths in the CLI crate through re-export,
    so no rule or test was
@@ -676,11 +676,11 @@ Shared understanding reached 2026-07-25.
 - Work item 2,
    TOML config layer,
    commit `faf502e14`.
-  `rust-linter.toml` with `rules`, 
-  `categories`, 
-  `options`, 
+  `rust-linter.toml` with `rules`,
+  `categories`,
+  `options`,
   `ignore-patterns`,
-  glob `overrides` carrying `files` and `exclude-files`, 
+  glob `overrides` carrying `files` and `exclude-files`,
   `extends` chains with
   cycle detection,
    and nested discovery.
@@ -710,7 +710,7 @@ Shared understanding reached 2026-07-25.
 
 `README.md` claims `require-rustdoc` has no fixtures carve-out.
 It is wrong.
-The predicate it replaced exempted `fixture/`, 
+The predicate it replaced exempted `fixture/`,
 `test-fixture/` and `invalid/`
 for BOTH rules,
  and the integration test
@@ -730,7 +730,7 @@ Settled after the questions above,
  because each has one defensible answer:
 
 - The hardcoded exemption predicates in `src/config.rs`
-  (`max_lines_exempt`, 
+  (`max_lines_exempt`,
   `missing_rustdoc_exempt`) are deleted and reexpressed as
   glob `overrides` in the TOML config,
   which is what oxlint does for the same rules in
@@ -762,10 +762,10 @@ Settled after the questions above,
 Not decisions,
  but design work that lands with the code:
 
-- The exact TOML tree expressing `rules`, 
-  `categories`, 
+- The exact TOML tree expressing `rules`,
+  `categories`,
   `overrides`,
-  `extends`, 
+  `extends`,
   `ignorePatterns` and `options`.
 - Metavariable semantics:
    binding,
@@ -780,9 +780,9 @@ so they are named here rather than left to be discovered:
 
 - `extends` semantics.
   `oxlint.config.ts:7` documents that oxlint's `extends` merges rules ONLY:
-  `categories`, 
-  `env`, 
-  `ignorePatterns`, 
+  `categories`,
+  `env`,
+  `ignorePatterns`,
   `overrides` and `plugins` are not
   inherited,
    which is exactly why the root config spreads `base` instead of
@@ -810,7 +810,7 @@ Named so the final claim is checkable rather than asserted:
   the layer does not type it,
    because it cannot know what any plugin's settings
   mean.
-- Per-plugin CLI toggles (`--import-plugin`, 
+- Per-plugin CLI toggles (`--import-plugin`,
   `--disable-unicorn-plugin` and
   friends) have no counterpart.
   The `plugins` config key does the same job from configuration:
@@ -819,15 +819,15 @@ Named so the final claim is checkable rather than asserted:
   set,
    so `plugins = []` turns every rule off.
 - **Output formats.**
-   oxlint ships ten (`default`, 
-  `agent`, 
-  `json`, 
+   oxlint ships ten (`default`,
+  `agent`,
+  `json`,
   `github`,
-  `gitlab`, 
-  `unix`, 
-  `checkstyle`, 
-  `junit`, 
-  `sarif`, 
+  `gitlab`,
+  `unix`,
+  `checkstyle`,
+  `junit`,
+  `sarif`,
   `stylish`).
   This linter emits JSONL only,
    and has no `--format` flag at all.
@@ -836,11 +836,11 @@ Named so the final claim is checkable rather than asserted:
   all ten had been written and verified against oxlint's real output when the
   scope was cut back to JSONL.
   The per-record field set is still oxlint's diagnostic object
-  (`message`, 
-  `code`, 
-  `severity`, 
-  `causes`, 
-  `filename`, 
+  (`message`,
+  `code`,
+  `severity`,
+  `causes`,
+  `filename`,
   `labels[].span`,
   `related`,
    optional `url` and `help`),
@@ -871,22 +871,22 @@ rather than one umbrella task:
     model with spans and labels.
      Verified by the two existing rules passing
     unchanged against the new trait.
-2.  TOML config layer: 
-    `rules`, 
-    `categories`, 
-    `options`, 
+2.  TOML config layer:
+    `rules`,
+    `categories`,
+    `options`,
     `ignorePatterns`,
-    glob `overrides`, 
+    glob `overrides`,
     `extends`,
      nested discovery.
      Verified by the hardcoded
     exemptions in `src/config.rs` being deleted and reexpressed as overrides
     with identical behaviour on the existing fixtures.
-3.  Severity and CLI accumulation: 
+3.  Severity and CLI accumulation:
     `-A`/`-W`/`-D` over rules and categories,
-    `--quiet`, 
-    `--deny-warnings`, 
-    `--max-warnings`, 
+    `--quiet`,
+    `--deny-warnings`,
+    `--max-warnings`,
     `--silent`.
     Verified by exit-code tests per combination.
 4.  Output:
@@ -901,7 +901,7 @@ rather than one umbrella task:
      parsing,
      justification enforcement,
      per-rule
-    suppressibility, 
+    suppressibility,
     `--report-unused-disable-directives` and its severity
     variant.
      Verified by a fixture where a directive targets a
@@ -921,32 +921,32 @@ rather than one umbrella task:
      Verified against the probe cases recorded above.
 8.  Plugin registry:
      rule crates as packages,
-     namespaced ids, 
+     namespaced ids,
     `plugins` config
     key.
      Verified by moving one built-in rule out into its own package.
-9.  Parallel runner and discovery flags: 
-    `--threads`, 
+9.  Parallel runner and discovery flags:
+    `--threads`,
     `build_parallel()`,
-    `--ignore-path`, 
-    `--ignore-pattern`, 
+    `--ignore-path`,
+    `--ignore-pattern`,
     `--no-ignore`,
-    `--no-error-on-unmatched-pattern`, 
+    `--no-error-on-unmatched-pattern`,
     `--debug=files,timings`.
     Verified by timing a full 310-file run against the sequential baseline.
-10. Language server: 
+10. Language server:
     `--lsp`,
      incremental document sync,
      code actions from the
     fix model.
      Verified in an editor,
      not by piped test input (VB3).
-11. Introspection: 
-    `--print-config`, 
-    `--rules`, 
+11. Introspection:
+    `--print-config`,
+    `--rules`,
     `--init`.
     Verified by round-tripping `--init` output back through the config loader.
-12. Documentation: 
+12. Documentation:
     `README.md` rewritten,
      including the stale module list at
     `README.md:211` which still names `src/rule/max_lines.rs` although the file

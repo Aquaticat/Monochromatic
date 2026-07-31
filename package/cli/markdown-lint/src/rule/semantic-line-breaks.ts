@@ -155,67 +155,6 @@ function tailThroughDelimiters({
 }
 
 /**
- * Offset just past a slice's last non-whitespace character, so an insertion
- * offset equal to it is one whose break-point character ends the text.
- *
- * @param slice - text node's source slice
- *
- * @returns offset just past the last non-whitespace character, or 0 when blank
- */
-function contentEndOf(slice: string,): number {
-  for (let index = slice.length - 1; index >= 0; index -= 1) {
-    /**
-     * Character under the reverse cursor.
-     */
-    const ch = slice[index] ?? '';
-    /**
-     * Whether this character is layout rather than content.
-     */
-    const blank = (ch === ' ')
-      || (ch === '\t')
-      || (ch === '\n')
-      || (ch === '\r');
-    if (!blank) {
-      return index + 1;
-    }
-  }
-  return 0;
-}
-
-/**
- * Parameters for {@link endsInHardBreakSpaces}.
- */
-type EndsInHardBreakSpacesParams = {
-  /**
-   * Original source.
-   */
-  readonly source: string;
-  /**
-   * Offset the line break would be inserted at.
-   */
-  readonly insertAt: number;
-};
-
-/**
- * Whether a line break inserted at this offset would leave two spaces at the
- * end of the line. CommonMark reads those as a hard break and renders a `<br>`
- * that the document never asked for, which makes the fix add-only in the source
- * and not in the rendering.
- *
- * @param source - original source
- *
- * @param insertAt - offset the line break would be inserted at
- *
- * @returns whether the insertion would produce a hard break
- */
-function endsInHardBreakSpaces({
-  source,
-  insertAt,
-}: EndsInHardBreakSpacesParams,): boolean {
-  return (source[insertAt - 1] === ' ') && (source[insertAt - 2] === ' ');
-}
-
-/**
  * Parameters for {@link continuationPrefix}.
  */
 type ContinuationPrefixParams = {
@@ -391,11 +330,6 @@ function checkSemanticLineBreaks({
       paragraphEnd,
     };
     /**
-     * Offset just past the slice's last non-whitespace character, so an insertion
-     * offset equal to it belongs after any closing delimiter rather than before.
-     */
-    const sliceContentEnd = contentEndOf(slice,);
-    /**
      * Continuation prefix for this paragraph's block.
      */
     const prefix = continuationPrefix({
@@ -408,28 +342,21 @@ function checkSemanticLineBreaks({
       isParagraphTail,
     },)) {
       /**
-       * Where the insertion lands once a break-point ending the text is moved
-       * past the closing delimiters, which is where it belongs anyway and is
-       * what keeps the span closing.
-       */
-      const pastDelimiters = offset === sliceContentEnd
-        ? tailEnd
-        : startOffset + offset;
-      /**
        * Absolute source offset for the insertion.
        *
-       * Moving past the delimiters also moves past any spaces the text node
-       * ended with, and two of those at a line's end are a hard break, so the
-       * insertion stays in front of them instead. A closing emphasis delimiter
-       * is never what gets skipped that way: whitespace in front of one stops it
-       * closing its span at all, so it cannot be there.
+       * A break at the very end of the text goes after the closing delimiters
+       * rather than between the text and them, which is where it belongs anyway
+       * and is what keeps the span closing. The condition is the slice's own
+       * end, not its last non-whitespace character: a closing emphasis
+       * delimiter can never have whitespace in front of it, since that stops it
+       * closing its span at all, so nothing is lost by the stricter test. What
+       * is gained is that a break never steps over a space the author wrote and
+       * leaves it at the line's end, where a second one would be a hard break
+       * and where one alone reads as trailing rubbish.
        */
-      const at = endsInHardBreakSpaces({
-        source,
-        insertAt: pastDelimiters,
-      },)
-        ? startOffset + offset
-        : pastDelimiters;
+      const at = offset === slice.length
+        ? tailEnd
+        : startOffset + offset;
       diagnostics.push(diagnose({
         ruleId: ID,
         message: 'A line break belongs here, after a prose break-point character.',

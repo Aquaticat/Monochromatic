@@ -65,7 +65,7 @@ The engine swap introduces no fail-open regression.
 ## Rule-file pinning and precedence
 
 Both runs pin the rules-file precedence so the gitignored local files
- (`forbidden-strings.local.txt`, 
+ (`forbidden-strings.local.txt`,
 `forbidden-strings.append.local.txt`)
  are entirely absent,
  and neither their bytes nor their derived cache
@@ -225,7 +225,7 @@ Full `--all` walk (corpus,
    compiled index 154).
  Two map to `reshape-172-curl` (source-line rule 172,
    compiled index 42;
- rule 172 also carries the quantifier-bound, 
+ rule 172 also carries the quantifier-bound,
   `\z`-to-`$`,
    and CR/LF-class-drop
  categories,
@@ -254,7 +254,7 @@ Rich rule-exercising set:
 No delta in any corpus falls outside a reviewed category.
 The quantifier-bound (15 rules),
  leading-repeat-strip (117 rules),
- three-casing inline-`(?i)` expansion (172 rules), 
+ three-casing inline-`(?i)` expansion (172 rules),
 `\z`-to-`$` (4 rules),
  CR/LF-class-drop (2 rules),
  and `m`-flag-drop categories produced no observed
@@ -271,22 +271,22 @@ Each gained finding,
  and category:
 
 - `doc/planning/forbidden-strings-rule-port-review.md:172`,
- rule 518, 
+ rule 518,
   `reshape-518-mongodb`.
 - `doc/planning/forbidden-strings-rule-port-review.md:173`,
- rule 518, 
+ rule 518,
   `reshape-518-mongodb`.
 - `doc/planning/forbidden-strings-rule-518-pi-advice.md:23`,
- rule 518, 
+ rule 518,
   `reshape-518-mongodb`.
 - `doc/planning/forbidden-strings-rule-518-pi-advice.md:24`,
- rule 518, 
+ rule 518,
   `reshape-518-mongodb`.
 - `package/cli/android-exempt-unused/README.md:54`,
- rule 172, 
+ rule 172,
   `reshape-172-curl`.
 - `doc/troubleshooting/mise-rust-components.md:538`,
- rule 172, 
+ rule 172,
   `reshape-172-curl`.
 
 The rule-518 gains are the interpolated-host and concatenated-host connection-string

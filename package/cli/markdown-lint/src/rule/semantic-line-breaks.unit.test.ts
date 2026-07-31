@@ -286,15 +286,18 @@ await describe({
       },
     },),
     it({
-      name: 'never turns trailing spaces into a hard break',
-      fn: async function hardBreak() {
-        /**
-         * Two spaces before an inline node, which the delimiter remap would
-         * otherwise step over and leave at the end of the inserted line.
-         */
-        const fixed = fix('Sentence.  `code` follows here.\n',);
-        expect(fixed.source.includes('  \n',),).toBe(false,);
-        expect(fixed.source,).toBe('Sentence.\n  `code` follows here.\n',);
+      name: 'never steps over a space the author wrote',
+      fn: async function noTrailingSpace() {
+        // The break goes in front of the space, so the space opens the
+        // continuation line the way it does for every mid-line break. Stepping
+        // over it left it at the line's end, where one reads as trailing
+        // rubbish and two are a CommonMark hard break.
+        expect(fix('Sentence. `code` follows here.\n',).source,)
+          .toBe('Sentence.\n `code` follows here.\n',);
+        expect(fix('Sentence.  `code` follows here.\n',).source,)
+          .toBe('Sentence.\n  `code` follows here.\n',);
+        expect(fix('Sentence.  `code` follows here.\n',).source
+          .includes('  \n',),).toBe(false,);
       },
     },),
     it({

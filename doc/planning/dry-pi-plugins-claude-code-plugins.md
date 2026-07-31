@@ -67,7 +67,7 @@ shared packages,
   consumed by `package/pi-plugin/terminal-title` and
   `package/claude-code-plugin/source`.
   Both sides are reduced to a host adapter table mapping tool names
-  (`bash`/`Bash`, 
+  (`bash`/`Bash`,
   `read`/`Read`) to shared `ToolTitleEntry` builders.
   DRY complete.
 - `agent-harness-shared/current-time-context`
@@ -83,8 +83,8 @@ shared packages,
   `package/pi-plugin/auto-mode`,
    and
   `package/claude-code-plugin/source` (guardrail).
-  Owns `analyzeShellCommand`, 
-  `extractParamRefs`, 
+  Owns `analyzeShellCommand`,
+  `extractParamRefs`,
   `looksLikePath`.
   Shell-command parsing DRY complete.
 
@@ -98,9 +98,9 @@ tool-name or input-field vocabulary.
 ## Per-family assessment
 
 The complete set of concepts that appear under both clusters:
-`guardrail`, 
-`spawn` versus `claude-spawn`, 
-`statusline`, 
+`guardrail`,
+`spawn` versus `claude-spawn`,
+`statusline`,
 `terminal-title`,
  and
 `current-time-context` (pi) versus `prompt-time` (claude).
@@ -154,12 +154,12 @@ genuinely host-specific and stay put.
 Not yet shared.
 This is the biggest opportunity.
 `session-finder.ts` is structurally near-identical on both sides:
-`SESSION_NOT_FOUND` sentinel, 
-`readParentPid`, 
+`SESSION_NOT_FOUND` sentinel,
+`readParentPid`,
 `readPidMapping`,
-`walkProcessTreeFrom`, 
-`readByPidDir`, 
-`findByMostRecent`, 
+`walkProcessTreeFrom`,
+`readByPidDir`,
+`findByMostRecent`,
 `findCallingSession`,
 the same procfs-walk,
  PID-mapping,
@@ -184,8 +184,8 @@ Conceptual overlap only;
  the shared kernel is narrow.
 The two sides parse different input shapes:
 pi reads HTTP response headers from the `after_provider_response` event into a
-generic `RateLimitSnapshot` with `usedPercent`, 
-`windowSeconds`, 
+generic `RateLimitSnapshot` with `usedPercent`,
+`windowSeconds`,
 `paceScale`,
 `sampledAtMs` (`package/pi-plugin/statusline/src/rate-limit-parse-helpers.ts`);
 claude reads JSON `rate_limits.five_hour` and `rate_limits.seven_day` tiers and
@@ -272,7 +272,7 @@ export a `BUN_TEST_BAN_REASON` constant from
 `invokesBunTest`.
 Both guardrails import the predicate and the reason as a pair.
 Each host still wraps the reason in its own protocol-specific deny shape
-(`{ block, reason }` for pi; 
+(`{ block, reason }` for pi;
 `PreToolUseOutput.hookSpecificOutput.permissionDecision`
 for claude);
  only the reason string is shared.
@@ -302,7 +302,7 @@ Path name:
 Package name:
 `@monochromatic-dev/agent-harness-shared-session-discovery`.
 
-The mechanism (procfs parent walk, 
+The mechanism (procfs parent walk,
 `.by-pid/` directory scan,
  newest-mtime
 fallback,
@@ -461,7 +461,7 @@ projection-only.
 Before sharing code,
  make `package/claude-code-plugin/statusline` a real
 workspace package named `@monochromatic-dev/claude-code-plugin-statusline` with
-`package.json`, 
+`package.json`,
 `mise.toml`,
  unit tests,
  and the existing README explanation that
@@ -494,7 +494,7 @@ while sharing policy and text assembly.
 
 Host-specific parts stay put:
 pi's HTTP-header parsers (`anthropic-rate-limit-headers.ts`,
-`codex-rate-limit-headers.ts`, 
+`codex-rate-limit-headers.ts`,
 `synthetic-quota-headers.ts`,
 `rate-limit-headers.ts`) that build snapshots from the `after_provider_response`
 event,
@@ -566,7 +566,7 @@ From repo rules,
 
 - Every verification run against disposable fixtures,
    never real coordination
-  state. 
+  state.
   `session-finder` reads real procfs and real
   `~/.pi/agent/spawn-results/.by-pid/` or `~/.claude/spawn-results/.by-pid/`
   coordination files;
@@ -579,7 +579,7 @@ From repo rules,
   claude side via the byte-equal stdout fixture replay documented in
   `package/claude-code-plugin/README.md`.
    See AGENTS.md VUB and VB2.
-- Each new shared package satisfies all lint rules: 
+- Each new shared package satisfies all lint rules:
   `require-tsdoc`,
    max-lines
   (split,

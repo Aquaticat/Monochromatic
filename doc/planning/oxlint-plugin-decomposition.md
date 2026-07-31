@@ -47,9 +47,9 @@ Internal catalogs may still organize each published plugin's implementation.
 ### `no-restricted-syntax`
 
 Keep the established namespace for rules whose primary condition is a bounded AST shape and a diagnostic.
-Examples include `no-switch`, 
-`no-for-in`, 
-`no-enum`, 
+Examples include `no-switch`,
+`no-for-in`,
+`no-enum`,
 `catch-binding`,
 `no-rest-params`,
  and `no-variable-function-expression`.
@@ -72,7 +72,7 @@ Those local rules accept explicit arity wrappers,
 or distinguish Node APIs from unrelated `Sync`-named APIs.
 They remain local until an upstream option or contribution provides the same behavior.
 
-`prefer-error-is-error`, 
+`prefer-error-is-error`,
 `no-hasownproperty`,
  and `no-trim-left-right` require the same behavior check.
 
@@ -82,9 +82,9 @@ Use `aquaticat` only for irreducibly local policy and verified upstream adaptati
 It is an ownership namespace,
  not a taxonomy.
 
-Likely local rules include `no-function-root-let`, 
+Likely local rules include `no-function-root-let`,
 `no-nullish-union`,
-`no-optional-escape`, 
+`no-optional-escape`,
 `no-low-information-symbol-description`,
 `no-regex`,
  and `prefer-describe-function-ref-name`.

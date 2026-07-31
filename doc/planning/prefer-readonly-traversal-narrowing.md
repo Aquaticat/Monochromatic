@@ -1,7 +1,7 @@
 # Narrow traversal effects and resolve workspace source in `prefer-readonly-parameter-types`
 
 Decisions grilled and confirmed on 2026-07-15.
-Scope: 
+Scope:
 `package/oxlint-plugin/prefer-readonly-parameter-type` and every consuming package.
 Rollout:
  big-bang;

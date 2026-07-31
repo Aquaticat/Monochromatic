@@ -105,40 +105,40 @@ A secret longer than the cap no longer matches,
 
 The 15 affected rules and their unbounded operator:
 
-- 44: 
+- 44:
   `[a-zA-Z0-9+/]{250,}` becomes `{250,512}`.
 - 172:
    reshaped curl rule (next section);
    its kept value alternation bounds several `{3,}`.
-- 255: 
+- 255:
   `[a-z0-9]{100,}` becomes `{100,512}`.
-- 291: 
+- 291:
   `[A-Za-z0-9=_\-,/+]{100,}` becomes `{100,512}`.
 - 299:
    two `\s*` become `\s{0,512}`.
-- 437: 
+- 437:
   `ey[...]{17,}` twice becomes `{17,512}`,
    and `[...]{10,}` becomes `{10,512}`.
-- 440: 
+- 440:
   `[...]{40,}` becomes `{40,512}`.
-- 506: 
+- 506:
   `[a-z0-9]+` becomes `{1,512}`.
 - 544:
    two `\s*` become `\s{0,512}`,
    and `.{8,}` becomes `.{8,512}`.
-- 621: 
+- 621:
   `[\s\S-]{64,}` becomes `{64,512}`.
-- 699: 
-  `[A-Z0-9]+`, 
+- 699:
+  `[A-Z0-9]+`,
   `\d+`,
    and `[a-z0-9]+` become `{1,512}`.
-- 702: 
+- 702:
   `[a-zA-Z0-9-]*` becomes `{0,512}`.
 - 714:
    three `\d+` and one `[a-fA-F\d]+` become `{1,512}`.
-- 720: 
+- 720:
   `[\w\/\\+-]{100,}` becomes `{100,512}`.
-- 828: 
+- 828:
   `[A-Z0-9a-z_-]+` becomes `{1,512}`.
 
 Rule 518 previously appeared here;
@@ -234,7 +234,7 @@ These changes narrow the matched-input set only in the over-specific direction t
 ### Inline case-flag three-casing expansion (172 rules)
 
 The engine has no case-insensitivity:
- inline `(?i)`, 
+ inline `(?i)`,
 `(?i:...)`,
  and `(?-i:...)` are rejected at compile time,
  and there is no flags slot to carry `i`.
@@ -248,11 +248,11 @@ Rather than strip case-insensitivity (which would narrow each rule to the exact 
    and UPPERCASE.
   A single-token keyword capitalizes as a whole (`adobe` yields `adobe|Adobe|ADOBE`);
   a multi-run token capitalizes each alphabetic run
-  (`api_key` yields `api_key|Api_Key|API_KEY`, 
+  (`api_key` yields `api_key|Api_Key|API_KEY`,
   `x-figma-token` yields
   `x-figma-token|X-Figma-Token|X-FIGMA-TOKEN`).
 - A character class under `(?i)` scope widens each letter range or single to both cases
-  (`[a-z]` becomes `[a-zA-Z]`, 
+  (`[a-z]` becomes `[a-zA-Z]`,
   `[a-f0-9]` becomes `[a-fA-F0-9]`,
    and the trailer's `[nr]`
   becomes `[nNrR]` under a whole-pattern `(?i)`).
@@ -709,7 +709,7 @@ Even after the leading-repeat strip,
  606),
  with a few dozen rules exceeding one second.
 These costs come from large bounded repetitions over wide character sets
- (for example `{70,400}`, 
+ (for example `{70,400}`,
 `{109,269}`,
  and the cap-inflated `{n,512}` forms),
  and the three-casing expansion adds only small keyword alternations on top.

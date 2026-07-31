@@ -66,7 +66,7 @@ Bare line = literal;
 The bench's `load_rules` already consumes exactly this format,
  which settled the question.
 The loader escapes literal lines into the always-verbose dialect
-(spaces, 
+(spaces,
 `#`,
  and metacharacters).
 Flags slot:
@@ -181,7 +181,7 @@ This is an engine API work item that lands before the scanner rewrite.
   `catch_unwind` boundary.
 - Teardown:
   the resharp pre-validators
-  (`src/rule/compile.rs`, 
+  (`src/rule/compile.rs`,
   `src/rule/nesting.rs`,
    shape checks)
   and engine-routing (`requires_resharp`) are deleted;
@@ -299,7 +299,7 @@ This is an engine API work item that lands before the scanner rewrite.
   unknown flags now hard-error instead of silently degrading to literals;
   bare `//` is rejected by the engine's `EmptyMatchable`;
   the BOM strip folds into the loader rewrite;
-  remaining items (cwd-relative resolution, 
+  remaining items (cwd-relative resolution,
   `--all` plus positionals) are
   unaffected and stay open.
 - `doc/todo/forbidden-strings.1.0.md` item 24 reshapes:
@@ -361,7 +361,7 @@ independently compilable,
  3. Publish `forbidden-regex` 0.1.0 (workflow extension first).
  4. Port rule files with the bench-sidecar script;
     review the semantic diff (quantifier bounds,
-     rule 172, 
+     rule 172,
     `/m` drops).
  5. Rewrite loader and scan path against the batch API;
     delete resharp machinery;

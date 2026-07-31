@@ -25,10 +25,10 @@ straight to `wg addconf` (which is exactly what wg-quick does with `WG_CONFIG`).
     append every non-Interface line to `WG_CONFIG`.
 2. Refuse if interface exists;
     set trap to `del_if` on failure.
-3. `add_if`: 
+3. `add_if`:
    `ip link add dev IF type wireguard`.
 4. `PreUp` hooks.
-5. `set_config`: 
+5. `set_config`:
    `wg addconf IF < WG_CONFIG` (peers,
     keys,
     endpoints,
@@ -42,11 +42,11 @@ straight to `wg addconf` (which is exactly what wg-quick does with `WG_CONFIG`).
 8. `set_dns`:
     wg-quick uses `resolvconf`;
     we use `resolvectl` (systemd-resolved).
-9. For each allowed-ip prefix (sorted longest-first): 
+9. For each allowed-ip prefix (sorted longest-first):
    `add_route`.
     A `/0` prefix
    triggers `add_default`:
-    pick free table (51820), 
+    pick free table (51820),
    `wg set fwmark`,
     add
    `not fwmark TABLE table TABLE` + `table main suppress_prefixlength 0` ip rules,
@@ -59,20 +59,20 @@ straight to `wg addconf` (which is exactly what wg-quick does with `WG_CONFIG`).
 ## What wg-quick `down` does
 
 `PreDown`,
- optional `save_config`, 
+ optional `save_config`,
 `del_if` (removes DNS,
  firewall,
  the /0 policy
 rules when set,
- then `ip link delete dev IF`), 
-`unset_dns`, 
+ then `ip link delete dev IF`),
+`unset_dns`,
 `remove_firewall`,
 `PostDown`.
 
 ## wg-quicker scope (v1)
 
-- Subcommands: 
-  `up`, 
+- Subcommands:
+  `up`,
   `down`.
    (`save`/`strip` omitted;
    not needed for the bug.)
@@ -110,7 +110,7 @@ from the tunnel.
   marked traffic via the main table,
    bypassing the tunnel.
 - Proven:
-   exempt-cgroup socket got SO_MARK=8888; 
+   exempt-cgroup socket got SO_MARK=8888;
   `ip route get 8.8.8.8 mark 8888` → physical
   link,
    unmarked → tunnel.
@@ -134,7 +134,7 @@ cgroups and cover future per-window scopes dynamically.
   appear,
    plus a reconciliation rescan after installing the watch to close the create race.
   Race window (a brand-new window's first socket before attach) is bounded and documented.
-- Helium: 
+- Helium:
   `systemd-run --user --scope --collect --unit=helium -- /home/user/AppImages/helium.appimage`
   gives one stable cgroup (`helium.scope`) all browser/renderer/zygote processes inherit;
    attach
@@ -145,7 +145,7 @@ cgroups and cover future per-window scopes dynamically.
    cgroup-BPF program attached via BPF_LINK_CREATE (pinned for clean teardown) to
   connect4/6 + udp4/6_sendmsg;
    sets SO_MARK from a one-entry array map.
-- Routing: 
+- Routing:
   `ip rule add fwmark <EXEMPT> table main pref 100` (priority below the tunnel rules)
   routes marked traffic direct.
    SO_MARK at sendmsg is persistent per-socket,
@@ -153,10 +153,10 @@ cgroups and cover future per-window scopes dynamically.
   Pre-existing connections are not retroactively rerouted.
 - Config:
    optional `ExemptMark = <n>` in `[Interface]`.
-   When set, 
+   When set,
   `up` installs the fwmark rule
   before the tunnel rules and invokes the sibling `wg-quicker-exempt` binary to attach the
-  marker to the configured cgroups; 
+  marker to the configured cgroups;
   `down` removes the rule.
    Marker binary is built from
   `package/cli/wg-quicker-exempt` (Rust,

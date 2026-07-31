@@ -4251,7 +4251,7 @@ Task sixty-nine's surviving mutant restored a gate a review had already shown un
  and passed everything.
 The design was right and nothing measured it.
 Resolution:
- a new fixture, 
+ a new fixture,
 `relayCallable`.
 
 Task sixty-eight's surviving mutant deleted the source-file bound,
@@ -4619,7 +4619,7 @@ export function storeClosureReachingWriter(neverReached: Config,): number {
 }
 ```
 
-Measured before the gate: 
+Measured before the gate:
 `mutated=[0]`,
  for a write this callable never reaches.
 And a sibling returning caller state gave `returned=[0]`,
@@ -4723,7 +4723,7 @@ The fixture measurements,
 
 ## The construction discharge, and the net across the whole effort
 
-The classifier answers what the leaf test could not. 
+The classifier answers what the leaf test could not.
 `honest-readonly` means every reachable
  position is readonly,
  so no write travels through the value whatever a constructor keeps with it,
@@ -4966,7 +4966,7 @@ Binding element defaults are now scanned at any depth,
 
 ### The two that were not defects
 
-A setter parameter, 
+A setter parameter,
 `set kept(row) { this.#kept = row; }`,
  keeps its offer.
  That is task
@@ -5042,7 +5042,7 @@ Every leaking shape was already withheld:
 
 None of those channels was fixed directly.
  They are covered by fixes made for other shapes:
- the construction channel answers for `super`, 
+ the construction channel answers for `super`,
 `Proxy` and `WeakRef`,
  the capture walk answers for the comparator,
  the yield handoff answers for delegation,
@@ -5225,7 +5225,7 @@ This is the first change in this work that **adds** an offer rather than removin
 
 The escape shapes beside it are therefore written as readers rather than writers,
  because a reading
- closure is the form a falsification can use: 
+ closure is the form a falsification can use:
 `readonly` property modifiers are ignored in
  assignability,
  so handing the row out compiles and lets the receiver do the writing.
@@ -5324,7 +5324,7 @@ The first falsification attempt for this was **invalid**,
  and `returnRowDirectly` has exactly the same
  standing and keeps its offer.
 
-The condition is what had failed. 
+The condition is what had failed.
 `invokeSupplied` records `returned=[0]`,
  so the edge already said
  its result carries what the formal carries,
@@ -5344,7 +5344,7 @@ A store is not a permitted return,
 
 Two readings of a returned callable formal both lead here,
  which is why one relation answers for
- both. 
+ both.
 `returned=[0]` can mean the result is the callable,
  and then the caller holds something that
  captures the origin;
@@ -5435,7 +5435,7 @@ added   1: argument-opacity=1
 removed 0:
 ```
 
-Run ended before the capture was read, 
+Run ended before the capture was read,
 `real 9m23`,
  and both artifacts re-hashed identical to the
  digests recorded before the run started.
@@ -5466,10 +5466,10 @@ Worth noting what did **not** happen.
  `session` parameter had no diagnostic at all in the baseline and now reports argument opacity
  naming a bodyless callable in `render-dom.ts` and `column.append`.
 
-The claim is true. 
+The claim is true.
 `installKeyboard` builds a record of closures that each pass `session` to
- `moveSelection`, 
-`moveColumnFocus`, 
+ `moveSelection`,
+`moveColumnFocus`,
 `closeActivePane` or `openSelectedEntry`,
  and those callees
  already reported opacity naming exactly those boundaries in the baseline.
@@ -5733,7 +5733,7 @@ added   133: argument-opacity=129 receiver-opacity=4
 removed 102: argument-opacity=81  receiver-opacity=20 offer=1
 ```
 
-Run ended before the capture was read, 
+Run ended before the capture was read,
 `real 8m42`,
  both artifacts re-hashed identical to the
  digests recorded before it started.
@@ -5774,7 +5774,7 @@ The reusable criterion said no category but argument-opacity may move.
  Receiver opacity fell by
  sixteen,
  so either the criterion is wrong or the change is.
- Checked rather than assumed: 
+ Checked rather than assumed:
 **all
  twenty** removed receiver-opacity findings are the same parameter at the same anchor now reporting
  argument opacity instead.
@@ -5789,7 +5789,7 @@ That is a message-form consequence with a known cause.
  now;
  only the words changed.
 
-So the clause to add: 
+So the clause to add:
 **receiver-opacity may lose a finding to argument-opacity for the same
  parameter at the same anchor,
  and a sweep must pair them before reading the movement as a
@@ -5834,7 +5834,7 @@ A closure naming nothing of the parameter attributes nothing,
 A reviewer read the landed gate and named nine candidate holes.
  Measuring them separated the two
  kinds cleanly,
- which is the useful part of the exercise: 
+ which is the useful part of the exercise:
 **three were already covered** and the
  reviewer could not have known,
  because the measurements that cover them were taken after its prompt
@@ -5884,7 +5884,7 @@ Following stops at an external callee,
  and distrusting it here
  would withhold on every closure that hands back a primitive through a library call.
  Both sides have
- a control: 
+ a control:
 `(): number => countOfRows(rows,)` follows to an owned body that says number and keeps its
  offer,
  and `(): string => String(label,)` trusts the declaration and keeps its offer.
@@ -5915,8 +5915,8 @@ Fixed by collecting every callable an authored literal or class expression decla
 The inspection took `call.arguments` alone.
  A capturing closure can also be the **receiver**,
  which is
- what `.bind`, 
-`.call`, 
+ what `.bind`,
+`.call`,
 `.apply` and any retaining method look like,
  or the **callee** itself,
  which is
@@ -6015,7 +6015,7 @@ All six are `fragment.parts.map`,
  and the `index.ts` that hands its own parameter in.
  The finding is true.
  The mapped
- callback calls `renderPart`, 
+ callback calls `renderPart`,
 `renderPart` reads the destructured members of `deps`,
  and those members
  come from `deps`,
@@ -6039,7 +6039,7 @@ It is #84 answering where a fallback used to.
  its body is a separate obligation,
  and it is discharged rather than dropped,
  because the body of an
- activated closure is scanned inline: 
+ activated closure is scanned inline:
 `env` goes to `consumeMatchingChild`,
  which is owned,
  and from
@@ -6088,7 +6088,7 @@ The subject was indistinguishable from both of its controls,
 
 Falsified at the five-clause bar.
  The rule offered `producedDefault`,
- the annotation was applied, 
+ the annotation was applied,
 `tsc`
  exited zero,
  the control carrying `@ts-expect-error` over a direct write drew no TS2578,
@@ -6203,13 +6203,13 @@ storeThroughBlockDefault:    {"opaque":[1,0]}  block-bodied default, charged
 
 So the default machinery was never the problem and the body form was.
  Three earlier probes read as
- default failures, 
+ default failures,
 `storeIdentityPassDefault` and `storeInlinePassDefault` among them,
  were concise
  defaults.
 
 Falsified at the five-clause bar with no default in sight:
- annotation applied, 
+ annotation applied,
 `tsc` exit zero,
  control
  carrying `@ts-expect-error` over a direct write drawing no TS2578,
@@ -6217,7 +6217,7 @@ Falsified at the five-clause bar with no default in sight:
  then `after: written`.
 
 The nested case needs no gate here,
- unlike the statement branch it mirrors. 
+ unlike the statement branch it mirrors.
 `body` is the callable's
  own body,
  so a nested concise arrow inside it is never what this reads,
@@ -6228,7 +6228,7 @@ The nested case needs no gate here,
 
 `effect-callable-capture-closure.ts` states that a callable written inside the one being summarised has
  no summary of its own.
- After this fix, 
+ After this fix,
 `storeIdentityPassDefault` and `storeInlinePassDefault` both
  charge through `propagateResultApplications`,
  which reads `summaries.get(edge.calleeKey)` and skips
@@ -6286,7 +6286,7 @@ The capture gate alone runs here,
  because the boundary would also mark ordinary
  direct arguments opaque and that is exactly what the relation exists to defer.
  The control that
- decides whether this is safe to land is a parameter-derived non-callable, 
+ decides whether this is safe to land is a parameter-derived non-callable,
 `rowCallee(cfg.row,)`,
  and it
  keeps its relation and gains no opacity before and after.
@@ -6432,7 +6432,7 @@ A sweep is evidence about offers and about the message channels.
 
 ## One shared resolver, and the order-dependent answer it exposed
 
-`packagedActualCallables` kept only values already written as callable declarations. 
+`packagedActualCallables` kept only values already written as callable declarations.
 `possibleValueNodes`
  follows a parameter to the identifier its default names and stops there,
  and an identifier is not a
@@ -6482,7 +6482,7 @@ storeAllocFirstDefault:  {"opaque":[2]}    allocating branch written first, slot
 
 Same two callables,
  same store,
- opposite answers. 
+ opposite answers.
 `propagateResultApplications` built its lookup with
  `new Map(entries)`,
  which keeps the last pair,
@@ -6623,7 +6623,7 @@ Three defects have shared one shape:
       missing any capture channel,
       open as #100
 
-#100 is confirmed reachable rather than theoretical: 
+#100 is confirmed reachable rather than theoretical:
 `applyExternalEffect` does handle callback
  relations,
  and it maps them only through `argumentIndexes`,
@@ -6662,7 +6662,7 @@ The class form needed two hops rather than one,
 Both spread kinds join,
  though a first draft of this paragraph gave them one shared reason that only one
  of them has.
- Measured directly rather than reasoned about: 
+ Measured directly rather than reasoned about:
 `{ ...holder }` logged `getter`,
  and
  `[...holder]` logged `iterator` and never touched the getter.
@@ -6727,8 +6727,8 @@ Open,
       Confirmed reachable rather than
      theoretical,
       and the last instance of the early-return pattern.
--    **#81**, 
-     **#82**, 
+-    **#81**,
+     **#82**,
      **#87**,
       precision or cost rather than soundness.
 -    **#54**,
@@ -6746,7 +6746,7 @@ The instrument note from the null sweep applies to everything above:
 Written before the run,
  so the capture can contradict it.
 
-Four of the landed fixes widen walks rather than adding a branch to one. 
+Four of the landed fixes widen walks rather than adding a branch to one.
 `calledCallables` went from one
  resolution per call to a `possibleValueNodes` walk plus a resolve per candidate,
  and `accessedCallables`
@@ -6817,7 +6817,7 @@ Predicted:
  If it doubles,
  #87 becomes a measured problem,
  and the memo
- keys are already named by the walks that grew: 
+ keys are already named by the walks that grew:
 `callableResultCanCarryState`,
  `transitiveCallableOrigins`,
  and now `packagedActualCallables`.
@@ -6978,8 +6978,8 @@ So **#87 closes as declined with a measured reason** rather than staying open as
  to justify.
  Should a later change move this series materially,
  the memo keys are already named:
- `callableResultCanCarryState`, 
-`transitiveCallableOrigins`, 
+ `callableResultCanCarryState`,
+`transitiveCallableOrigins`,
 `packagedActualCallables`.
 
 ### Job one, where the pre-registration was wrong
@@ -7036,9 +7036,9 @@ A **defaulted callable parameter**,
  resolved to the callable its default names,
  followed into another
  file,
- and the caller's value found reaching an unresolved call inside it. 
+ and the caller's value found reaching an unresolved call inside it.
 `generatedFileExists` calls
- `fileURLToPath(fileUrl,)`; 
+ `fileURLToPath(fileUrl,)`;
 `watchDirectory` calls `signal.addEventListener` at `watch-dir.ts:243`.
  Both
  run whenever a caller omits the argument,
@@ -7078,7 +7078,7 @@ This is the null sweep's explanation confirmed a second time,
  with zero,
  which is the stronger form of the same evidence.
  The instrument note stands and gains a
- direction: 
+ direction:
 **a sweep measures what a fix does to the already-withheld majority,
  and says almost nothing
  about the offered minority either way.**
@@ -7182,13 +7182,13 @@ candidateDefaultedProducer  mut=[]  opq=[1]
 **Writing a default removes a withholding that the same code without the default has.**
  With no default
  the candidate list is empty,
- the static classification decides, 
+ the static classification decides,
 `Row | string` carries state,
  formal one
  is opaque and the caller's `config` is charged.
  With the default the list holds one callable,
  that
- callable hands back a string literal, 
+ callable hands back a string literal,
 `some` answers false,
  formal one is not opaque and the caller's
  `config` is offered.
@@ -7215,7 +7215,7 @@ storeFreshSelector          opq=[1]     clean, correctly
 
 `storeInitializedSelector` charges,
  so the walk does follow a call to a local callable and judge what it
- hands back. 
+ hands back.
 `storeAssignedSelector` differs from it only in filling the binding by assignment rather
  than by initializer,
  and it goes clean.
@@ -7277,7 +7277,7 @@ That unifies the two defects rather than stacking them:
  an unknown supplied alternative and a statically void result.
 
 The fallback's scope,
- decided rather than left open. 
+ decided rather than left open.
 `void` is distrusted when the callee resolves only
  to a **value slot** of callable type,
  a parameter,
@@ -7285,7 +7285,7 @@ The fallback's scope,
  a property.
  It stays trusted when
  the callee resolves to a callable declaration,
- which keeps `String(...)`, 
+ which keeps `String(...)`,
 `console.log(...)` and
  `reportLabel(...)` offered and is what the `forwardVoidReport` control demands.
 
@@ -7359,7 +7359,7 @@ The claim was that the workspace demonstrably contains the candidate-list fix's 
  sweep five's deltas named `exists = generatedFileExists` and `watchDirectoryImpl = watchDirectory`.
 
 Those deltas are the **ordinary origin** path,
- not the capture path. 
+ not the capture path.
 `generatedFileUrl` was charged
  because it flowed into `generatedFileExists` as an argument through a defaulted callee edge,
  and that
@@ -7414,7 +7414,7 @@ For these two fixes a lost offer cannot be silent,
  So the parameter that loses its offer reappears as an argument-opacity finding
  naming that same parameter.
 
-The invariant: 
+The invariant:
 **every lost offer has a matching added finding naming the same parameter.**
  The added
  finding's callee text then says which fix did it,
@@ -7509,7 +7509,7 @@ It is the candidate-list join that produced it,
  a mapping closure that returns a
  promise.
 
-The finding is conservative rather than true. 
+The finding is conservative rather than true.
 `Array.prototype.map` does not retain its callback,
  and the
  promises it collects come back to this caller.
@@ -7582,14 +7582,14 @@ export function retainResult(producer: () => Row,): void {
 Neither retains `producer` and both expose what invoking it hands back.
  The summary can say only that
  `producer` was invoked,
- because that result has no ordinary parameter origin. 
+ because that result has no ordinary parameter origin.
 `map` and `filter` differ the
- same way: 
+ same way:
 `filter` consumes results as predicates while `map` keeps them in the array it returns.
 
 So the corrected mapping charges exposed captures at invoked positions too,
  and the load-bearing precision
- case survives for a different reason than the plan assumed. 
+ case survives for a different reason than the plan assumed.
 `rows.map((row) => config.row.label,)` keeps
  its offer not because `map` was skipped but because the **result-sensitive gate** answers that a closure
  completing with a string exposes nothing.
@@ -7719,7 +7719,7 @@ Order:
 ### Four more findings from the same review
 
 The tagged template misses the **tag itself**,
- not only its interpolations. 
+ not only its interpolations.
 `tag\`\`` has no template spans,
  so the recorder adds nothing at all, and `config.mutatingTag\`\`` can affect its receiver with no
  interpolation either.
@@ -7732,14 +7732,14 @@ The construction handoff misses invocation of the **constructor expression** its
  constructable function can close over the configuration and run that closure during `new C()` with no
  arguments at all.
 
-The external positional mapping rests on an unproven precondition. 
+The external positional mapping rests on an unproven precondition.
 `applyExternalEffect` indexes an
  actual-position array with formal parameter indexes,
  and its own comment says that holds only for a plain
  positional call.
  Whether `externalEffectResolver` rejects spread and rest mappings is unverified;
  if it does
- not, 
+ not,
 `external(...tuple,)` is an existing ordinary-origin hole and a new capture array would inherit it.
 
 And `effect-outward-handoff.ts`'s module header still says two syntax sites while the module handles four.
@@ -7861,7 +7861,7 @@ Both failure directions drop facts rather than invent them,
       A proven mutation of external formal
      one reads index one,
       finds nothing,
-      and the optional chain records nothing. 
+      and the optional chain records nothing.
      **A proven mutation is
      silently dropped.**
 -    A rest formal proven mutated reads index zero and charges the first actual only,
@@ -7872,7 +7872,7 @@ So an offer can stand where the external analyzer proved a mutation.
  This is pre-existing and has nothing to
  do with captures.
 
-The ordering consequence matters more than the finding. 
+The ordering consequence matters more than the finding.
 **#111 lands before #100**,
  because #100 adds a
  capture array indexed the same way,
@@ -7946,10 +7946,10 @@ One process failure is worth recording with it,
  mutation check deleted the fix rather than the mutant,
  since the fix had never been committed.
  The handover
- states this precisely and I skipped it: 
+ states this precisely and I skipped it:
 `git checkout --` restores to HEAD,
  so an uncommitted fix is what it
- removes. 
+ removes.
 **Commit before mutating,
  without exception.**
  The lesson is cheap to state and was not cheap to
@@ -8007,7 +8007,7 @@ Three corrections came from the package's own lint and type check rather than fr
  matching the existing workspace-source test instead of inventing a second pattern.
 
 The general point,
- since this is the second time an unpinnable path has come up. 
+ since this is the second time an unpinnable path has come up.
 **When a fix's mutant
  survives,
  the question is not whether the fix is right but whether anything reaches it.**
@@ -8122,8 +8122,8 @@ What was measured:
  that the resolver never **succeeds**.
 
 The two come apart because a resolved external summary whose effect sets are all empty records nothing at
- all. 
-`applyExternalEffect` iterates `referentMutatedParameterIndexes`, 
+ all.
+`applyExternalEffect` iterates `referentMutatedParameterIndexes`,
 `invokedParameterIndexes`,
  `callbackRelations` and `opaqueParameterIndexes`,
  so a package function proven to do none of those produces
@@ -8158,7 +8158,7 @@ What does not change:
  and `exposedCaptureOrigins` stays landed and pinned.
 
 The general lesson,
- which is the same one this document has recorded twice already in other forms. 
+ which is the same one this document has recorded twice already in other forms.
 **An
  absence in a capture is evidence about what the rule said,
  never about what the rule did.**
@@ -8193,7 +8193,7 @@ Seven packages chosen for third-party usage rather than at random,
  including consumers of the two most-used
  runtime dependencies in this workspace after `type-fest`,
  which is types-only and so cannot resolve by
- construction. 
+ construction.
 **Zero successful resolutions.**
 
 So the stronger claim holds after all,
@@ -8251,7 +8251,7 @@ Both subjects now charge,
 Reach asks what a body can **get to**.
  The value walk asks what a given expression **holds**.
  The same
- syntax, 
+ syntax,
 `holder.producer`,
  appears in both questions and needs a separate answer in each.
  Nothing in either
@@ -8327,7 +8327,7 @@ The **activation walk** matched `CallExpression` and nothing else.
  involved.
 
 That is a sharper defect than the one filed,
- and a more general one: 
+ and a more general one:
 **an unseen invocation is an unscanned
  body.**
  Every channel that depends on a closure's body being read depends on the invocation being seen
@@ -8390,7 +8390,7 @@ Against that,
 
 ## The type-reference shortcut, closed by bounding its callers rather than by probing
 
-Flagged by review reading the function: 
+Flagged by review reading the function:
 `resultExposesMutableState` classifies a type reference by its type
  arguments alone,
  so `Box<string>` carrying a `readonly row: Row` answers that it exposes nothing while a
@@ -8425,15 +8425,15 @@ No offer,
 
 **The bound,
  which is the actual answer.**
- `FRESH_CONTAINER_MEMBER_NAMES` is `slice`, 
-`concat`, 
+ `FRESH_CONTAINER_MEMBER_NAMES` is `slice`,
+`concat`,
 `filter`,
- `toReversed`, 
-`toSpliced`, 
-`with`, 
+ `toReversed`,
+`toSpliced`,
+`with`,
 `flat`,
- plus `ReadonlyMap`'s `get`, 
-`keys`, 
+ plus `ReadonlyMap`'s `get`,
+`keys`,
 `values` and `entries`.
  Every
  one returns a container instantiated with the **receiver's own element type**,
@@ -8461,7 +8461,7 @@ Fifth instance,
  Enumerating the callers and
  bounding what they can ask is what turned a passing probe into a reason.
 
-So the discipline gains a clause. 
+So the discipline gains a clause.
 **When a predicate looks unsound in isolation,
  enumerate its callers before
  probing and before fixing.**
@@ -8582,7 +8582,7 @@ A bare `@storingDecorator` on a method,
  nothing,
  and its control records nothing either.
 
-A clause was added, 
+A clause was added,
 `isDecorator(node,)` answering with the decorator's expression as callee and no actuals,
  and it changed **neither** reading.
  So it was reverted.
@@ -8592,11 +8592,11 @@ A clause was added,
  and this is the third time that rule has
  been applied rather than quoted.
 
-What the no-op narrows. 
+What the no-op narrows.
 `collectAstNodes` walks with `forEachChild`,
  which does visit decorators,
  so the node
- reaches the gate. 
+ reaches the gate.
 **The blocker is downstream of recognition**,
  which leaves three candidates,
  each with a
@@ -8619,12 +8619,12 @@ The order to settle it is fixed:
 
 The gate turned out to be the right abstraction and an incomplete explanation.
  Recognising a syntax is
- necessary and not sufficient: 
+ necessary and not sufficient:
 `super()` needed no clause because recognising its enclosing construction was
  enough,
  and the decorator has its clause available and still records nothing.
 
-So "an unseen invocation is an unscanned body" is true and one-directional. 
+So "an unseen invocation is an unscanned body" is true and one-directional.
 **A seen invocation is not
  necessarily a scanned body**,
  because recognition,
@@ -8638,11 +8638,11 @@ Counted before investing further,
  since a shape nothing here writes is worth less than the queue's measured
  items.
  Every `@` at the start of an indented line across `package/**/src/**/*.ts` is a **CSS at-rule inside a
- template literal**: 
+ template literal**:
 `@apply` fifty times,
- then `@mixin`, 
-`@media`, 
-`@keyframes`. 
+ then `@mixin`,
+`@media`,
+`@keyframes`.
 **Zero TypeScript
  decorators.**
 
@@ -8717,7 +8717,7 @@ That no-op clause was reverted on the recorded rule:
 
 So the rule survives with a qualification worth carrying.
  A no-op is evidence that the change alone is
- insufficient, 
+ insufficient,
 **not** that the path is unreachable.
  The distinction is what to do next:
  reverting was right,
@@ -8736,7 +8736,7 @@ Stated two sections ago:
  Recognition,
  activation,
  ancestry and the body scan
- are four steps and the gate is only the first. 
+ are four steps and the gate is only the first.
 `super()` needed no clause at all because recognising its
  enclosing construction sufficed,
  and the decorator needed a clause plus an ancestry repair.
@@ -8773,7 +8773,7 @@ Charged,
 A method reached through a value does not resolve to an owned callable,
  so the candidate list is empty and the
  declared-type fallback decides.
- That fallback is **#90's void-slot rule**: 
+ That fallback is **#90's void-slot rule**:
 `void` is trusted only when the
  callee names callable declarations only,
  and a method reached through a value is a **slot**.
@@ -8854,7 +8854,7 @@ Empty falls through to the existing leaf test,
  promise.
 
 Soundness.
- An ambient promise's own members are `then`, 
+ An ambient promise's own members are `then`,
 `catch` and `finally`,
  none of which reaches caller
  state except through the resolved value,
@@ -8936,7 +8936,7 @@ The same asymmetry appears in the fixture pair.
 
 The prerequisite item was filed as "make one external effect resolve",
  with a pre-registered first step:
- instrument which of the four resolver requirements rejects, 
+ instrument which of the four resolver requirements rejects,
 **before** adding a fixture dependency,
  because a
  gate that over-rejects is a defect and a fixture would paper over it.
@@ -8945,7 +8945,7 @@ That step ran,
  and it changed what the item is.
 
 All four rejection paths instrumented,
- both artifacts rebuilt, 
+ both artifacts rebuilt,
 `package/pi-shared/model-selection` linted,
  a
  `valibot` consumer.
@@ -9055,7 +9055,7 @@ Worth recording as a failure of my own discipline rather than as a neutral step.
  absence in a capture.
  Writing a rule down is not the same as having it available at the moment it applies,
  and
- the cheap defence is mechanical: 
+ the cheap defence is mechanical:
 **when a gate is under test,
  instrument the gate.**
 
@@ -9071,7 +9071,7 @@ EXT-REJECT implementation      3
 EXT-RESOLVED                   0
 ```
 
-Identical to the counts without the change. 
+Identical to the counts without the change.
 **Symbol resolution was never the blocker**,
  so the hypothesis is
  refuted rather than untested,
@@ -9091,9 +9091,9 @@ Worth noting the cost of getting there:
 161 of 164 is not a subtle failure rate.
  It is nearly every external call,
  and most external calls in TypeScript
- are **member** calls: 
-`console.log(...)`, 
-`signal.addEventListener(...)`, 
+ are **member** calls:
+`console.log(...)`,
+`signal.addEventListener(...)`,
 `rows.map(...)`.
  For all of those
  `call.expression` is a `PropertyAccessExpression`,
@@ -9151,7 +9151,7 @@ A `node:` builtin has no shipped implementation to resolve,
 **So the whole external channel is dark because a member call gets no package identity,
  and member calls are
  about ninety-five percent of external calls.**
- `console.log(...)`, 
+ `console.log(...)`,
 `signal.addEventListener(...)`,
  `v.safeParse(...)` after a namespace import:
  none of them can reach the channel.
@@ -9182,7 +9182,7 @@ Each step cost one instrumented build and answered exactly one thing.
  that skipped instrumentation and read findings instead,
  which answered nothing.
 
-The third question is the one worth generalising. 
+The third question is the one worth generalising.
 **Ask what the cases that already succeed have in common.**
  Four surviving identities named their module and export directly,
  which located the working path faster than
@@ -9253,7 +9253,7 @@ The pattern is now familiar and this is its seventh instance:
 So the discipline gains its mirror image.
  Earlier this document recorded that reading produces true statements
  about code and unreliable statements about behaviour.
- The converse is equally true: 
+ The converse is equally true:
 **measuring produces true
  numbers and unreliable interpretations.**
  Neither is sufficient,
@@ -9296,7 +9296,7 @@ And the receivers that are not imports,
 self 15, filters 9, process 8, Promise 7, re 6, child 5, path 3, ig 3
 ```
 
-Globals and locals. 
+Globals and locals.
 **Not one is a package import binding.**
  So every rejection is correct,
  and the channel
@@ -9363,11 +9363,11 @@ Identical bodies except one fills its binding by assignment after a leaf-returni
 
 And it corrected the blocker this task had carried.
  The recorded reason was that the fix needs the enclosing node
- universe `closure-activity.ts` has and the value walk does not. 
+ universe `closure-activity.ts` has and the value walk does not.
 **That was wrong.**
  The enclosing body is
  obtainable by ascending from the declaration,
- so no universe needs threading; 
+ so no universe needs threading;
 `assignedValues` there takes
  `allNodes` because it already has it,
  not because the question requires it.
@@ -9432,7 +9432,7 @@ Lint clean,
  widening a query that records opacity rather than building edges cannot break
  the completeness invariant.
 
-And it changed nothing. 
+And it changed nothing.
 `storeAssignedSelector` still read `opq=[1]`,
  so it was reverted as a no-op.
 
@@ -9477,7 +9477,7 @@ And two placements of one three-line question produced:
  one no-op,
  and one correct site
  identified only by elimination.
- The question was never the hard part. 
+ The question was never the hard part.
 **Where a question is asked decides what it
  can break and what it can fix**,
  and neither is visible from the question itself.
@@ -9495,7 +9495,7 @@ Offers 75 to 76 by exactly the control,
  and the whole suite
  green including the test that caught placement one's regression.
 
-The reach walk is safe for the same reason placement two was safe and placement one was not: 
+The reach walk is safe for the same reason placement two was safe and placement one was not:
 **it records opacity
  and builds no edges.**
  Widening a query that only withholds cannot break a completeness invariant.
@@ -9670,7 +9670,7 @@ A flag count is a property of a file's size and its family's conventions before 
  "is this file unusual" cost one command and turned a day of reviewing a mechanical diff into a decision someone
  else should make with better context.
 
-The same question is worth asking of any large lint count: 
+The same question is worth asking of any large lint count:
 **compare against siblings before conforming.**
  A number
  that looks like debt in isolation can be the convention.
@@ -9680,7 +9680,7 @@ The same question is worth asking of any large lint count:
 The last item in the queue,
  and it closes without code.
 
-Everything it established stands. 
+Everything it established stands.
 `slot.value = value` does cost `value` its offer,
  in both the property and element
  form.
@@ -9784,7 +9784,7 @@ What makes an authored dependency work anyway is **where the gate looks**.
 The remaining gates then pass without special handling.
  The generated external project already sets `allowJs`,
  `checkJs` and NodeNext,
- so a shipped `.js` opens; 
+ so a shipped `.js` opens;
 `lockfileLinePackageKey` is a section-unaware text scan,
  so a
  minimal authored lockfile satisfies it.
@@ -9819,7 +9819,7 @@ The second half of the fixture is what makes the first half evidence.
  outcomes are indistinguishable in a count while being obvious in a message.
 
 Generalising,
- since this keeps recurring: 
+ since this keeps recurring:
 **prove the code under test ran by which channel carried the fact,
  not by
  a log line and not by a total.**
@@ -9877,7 +9877,7 @@ Two facts are consulted and each is pinned by its own case,
 Under oxlint's default worker count the whole channel failed with `spawn ENOMEM`,
  because a native TypeScript child
  was created per generated project,
- mid-lint. 
+ mid-lint.
 `externalCallableEffect` catches it and answers with the same sentinel
  it uses for an unresolvable package,
  so an entire channel disappeared without one failing assertion.
@@ -9936,7 +9936,7 @@ Of the four calls that ever reached package identity,
 ignore@7.0.6   main: undefined   module: undefined   exports: undefined   types: index.d.ts
 ```
 
-`manifestRuntimeTarget` needs one of `exports`, 
+`manifestRuntimeTarget` needs one of `exports`,
 `module` or `main`,
  and with none of them returns unavailable before
  `implementationPath`'s own index fallback can run.
@@ -9945,12 +9945,12 @@ ignore@7.0.6   main: undefined   module: undefined   exports: undefined   types:
  and that file is present.
 
 Scope,
- since one example decides nothing: 
+ since one example decides nothing:
 **31 installed packages declare no runtime entry and ship a real index
- file**, 
-`strip-ansi`, 
-`string-width`, 
-`path-key`, 
+ file**,
+`strip-ansi`,
+`string-width`,
+`path-key`,
 `resolve-from` and `parse-json` among them.
  All are unresolvable
  today.
@@ -10007,7 +10007,7 @@ Ten distinct packages,
  real exports,
  proven summaries applied.
  The sections above say the channel "has
- never run on real input" and that it is "dark". 
+ never run on real input" and that it is "dark".
 **Both statements are refuted.**
  What was true is the
  narrowness:
@@ -10036,7 +10036,7 @@ The sweep cannot attribute anything to that fix,
  A package lint
  at the **default** worker count can,
  and does.
- Cold cache, 
+ Cold cache,
 `package/cli/rgffplay`:
 
 ```text
@@ -10065,7 +10065,7 @@ Same finding either way.
  `package/cli/rgffplay`,
  which I located by grepping for a parameter name from the message itself.
 
- The message names its own subject. 
+ The message names its own subject.
  **Grep for that,
   not for whatever is nearby.**
 
@@ -10104,7 +10104,7 @@ Which means the panic count belongs beside the commit and the two digests in eve
 
 ## The entryless-package resolution, and the assertion that proved nothing
 
-`manifestRuntimeTarget` required `exports`, 
+`manifestRuntimeTarget` required `exports`,
 `module` or `main`.
  A package declaring none of them returned
  the unavailable sentinel immediately,
@@ -10119,11 +10119,11 @@ The one non-builtin package that ever reached implementation resolution and fail
 ignore@7.0.6    main: undefined   module: undefined   exports: undefined   types: index.d.ts
 ```
 
-`index.js` is present. 
-**31 installed packages here share that shape**, 
-`strip-ansi`, 
+`index.js` is present.
+**31 installed packages here share that shape**,
+`strip-ansi`,
 `string-width`,
- `path-key`, 
+ `path-key`,
 `resolve-from` and `parse-json` among them.
 
 Fixed by answering the package root when nothing is declared,
@@ -10195,7 +10195,7 @@ The common shape is not carelessness about evidence.
 
 ## The entryless-resolution sweep: a clean null, and the control that says so
 
-Second capture, 
+Second capture,
 `94af5da15`,
  both artifacts rebuilt and the root cache cleared beforehand:
 
@@ -10212,7 +10212,7 @@ captures       4      provenance     58      panics       5
 ```
 
 The provenance set is the same ten packages,
- name for name. 
+ name for name.
 **No offer rose**,
  which is what the criterion
  asks of a change that adds resolution,
@@ -10251,7 +10251,7 @@ So this is a precision fix with zero measured effect on this workspace,
 
 ### A correction to the previous entry
 
-That entry says no per-file warning naming panic-affected files was locatable. 
+That entry says no per-file warning naming panic-affected files was locatable.
 **Wrong,
  and it was a search
  failure.**

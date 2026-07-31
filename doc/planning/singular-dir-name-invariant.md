@@ -17,8 +17,8 @@ Measured state at decision time:
  28 name/path mismatches.
 Only 6 mismatches were trailing-`s` problems;
 the other 22 had names whose category segment differed from the dir entirely
-(`pi-*` under `pi-plugins/`, 
-`config-oxlint-*` under `oxlint-plugins/`, 
+(`pi-*` under `pi-plugins/`,
+`config-oxlint-*` under `oxlint-plugins/`,
 `cli-git` under `git-policies/`).
 A literal strip would also have created roughly 30 new mismatches
 by breaking currently-matching plural pairs such as `claude-code-plugins-*`.
@@ -36,42 +36,42 @@ The plan is therefore two goals,
 
 - Rule formulation is "repo-chosen dir segments are singular nouns",
   never a literal "no trailing `s`":
-  `harness` is singular yet ends in `s`, 
-  `css`/`rss` are acronyms, 
+  `harness` is singular yet ends in `s`,
+  `css`/`rss` are acronyms,
   `throws` is a verb.
 - Terms of art keep their plural,
    external and repo-coined alike:
-  `dotfiles`, 
-  `import-attributes`, 
+  `dotfiles`,
+  `import-attributes`,
   `no-exports` (the `package.json` `exports` field),
   `forbidden-strings` (tool identity:
    CLI,
-   packages, 
+   packages,
   `forbidden-strings.append.local.txt`),
   `jetbrains` (brand).
-- Skill directory names are skill identities (`testing-practices`, 
+- Skill directory names are skill identities (`testing-practices`,
   `css`) and stay unchanged.
 - Tool-mandated dir names stay unchanged:
-  `.github/workflows`, 
-  `.claude/skills`, 
-  `.agents/skills`, 
-  `.factory/skills`, 
+  `.github/workflows`,
+  `.claude/skills`,
+  `.agents/skills`,
+  `.factory/skills`,
   `.crush/*`,
   Cargo `tests/`,
-   cargo-fuzz `fuzz_targets/`, 
-  `corpus/`, 
+   cargo-fuzz `fuzz_targets/`,
+  `corpus/`,
   `artifacts/`,
-  `LICENSES/` (REUSE), 
+  `LICENSES/` (REUSE),
   `share/applications` (XDG),
    KWin `contents/`,
-  `.idea/`, 
+  `.idea/`,
   `node_modules/`,
    build outputs.
 - Plugin families use a uniform singular `-plugin` suffix:
-  `pi-plugin/`, 
-  `claude-code-plugin/`, 
-  `intellij-plugin/`, 
-  `rolldown-plugin/`, 
+  `pi-plugin/`,
+  `claude-code-plugin/`,
+  `intellij-plugin/`,
+  `rolldown-plugin/`,
   `oxlint-plugin/`.
 - `oxlint-plugins/*` packages are renamed `config-oxlint-*` to `oxlint-plugin-*`;
   `packages/config/oxlint` keeps its name and updates its dependencies and re-exports.
@@ -87,7 +87,7 @@ The plan is therefore two goals,
   all six member packages take `agent-harness-shared-*` names,
   including the two previously named `module-current-time-context` and `module-terminal-title`.
 - Rust crate names are out of scope.
-  Crate names are binary identities (`file-manager`, 
+  Crate names are binary identities (`file-manager`,
   `terminal`),
   none are published,
    and path-derived names would worsen user-facing binaries.
@@ -118,21 +118,21 @@ Counts are from the decision-time measurement;
    6 names `config-oxlint-*` to `oxlint-plugin-*`.
 - `agent-harnesses-shared/*` to `agent-harness-shared/*`:
    6 names.
-- `git-policies/cli`: 
+- `git-policies/cli`:
   `cli-git` to `git-policy-cli`.
-- `module/llm-types` to `module/llm-type`: 
+- `module/llm-types` to `module/llm-type`:
   `module-llm-types` to `module-llm-type`.
 - `test-fixture/data-sequences` to `data-sequence`.
 
 ### Dir moves with no name change
 
-- `figma-parsers/kiwi` to `figma/kiwi`; 
+- `figma-parsers/kiwi` to `figma/kiwi`;
   `figma-parsers/penpot` to `figma/to-penpot`.
 - `rolldown-plugins/` to `rolldown-plugin/`.
 - `intellij-plugins/` to `intellij-plugin/`.
 - `ownership-markers/` to `ownership-marker/`.
-- `git-policies/` to `git-policy/` (`api`, 
-  `repository`, 
+- `git-policies/` to `git-policy/` (`api`,
+  `repository`,
   `forbidden-strings` already named `git-policy-*`).
 
 ### Root and non-package dirs
@@ -141,33 +141,33 @@ Counts are from the decision-time measurement;
    see risks).
 - `packages-deprecated/` to `package-deprecated/`.
 - `docs/` to `doc/`;
-  plural families `agents`, 
-  `decisions`, 
+  plural families `agents`,
+  `decisions`,
   `limitations` singularize;
-  nested plurals (`*-vet-reports`, 
+  nested plurals (`*-vet-reports`,
   `tools`) singularize.
 - 50 `src`-internal plural dirs singularize:
-  `rules`, 
-  `fixtures`, 
-  `handlers`, 
-  `parsers`, 
-  `operators`, 
-  `backends`, 
+  `rules`,
+  `fixtures`,
+  `handlers`,
+  `parsers`,
+  `operators`,
+  `backends`,
   `filters`,
-  `stubs`, 
-  `scripts`, 
-  `errors`, 
-  `types`, 
-  `components`, 
-  `styles`, 
+  `stubs`,
+  `scripts`,
+  `errors`,
+  `types`,
+  `components`,
+  `styles`,
   `sessions`,
-  `screenshots`, 
-  `pages`, 
-  `assets`, 
-  `seeds`, 
+  `screenshots`,
+  `pages`,
+  `assets`,
+  `seeds`,
   `dictionaries`,
    and peers.
-  Line-item vetoes (for example `assets`, 
+  Line-item vetoes (for example `assets`,
   `pages`) are welcome before that batch runs.
 
 ### Explicitly unchanged
@@ -182,7 +182,7 @@ and all Rust crate names.
 
 ## New AGENTS.md rule
 
-One merged rule, 
+One merged rule,
 `SGD` (the user folded the planned `PNP` into it):
 dir segments singular;
 package name equals `@monochromatic-dev/` plus the package path with `/` replaced by `-`;
@@ -193,8 +193,8 @@ This doc is the rule's exemption inventory:
 tool-mandated names,
  acronyms,
  skill identities,
-established terms of art (`dotfiles`, 
-`forbidden-strings`, 
+established terms of art (`dotfiles`,
+`forbidden-strings`,
 `import-attributes`).
 
 ## Batch order
@@ -203,16 +203,16 @@ established terms of art (`dotfiles`,
       regenerate `CLAUDE.md` via file-enforcer.
 2.   `src`-internal singularization,
       one commit per `packages/<category>`.
-3.   Small families: 
-     `figma/`, 
-     `ownership-marker/`, 
-     `rolldown-plugin/`, 
+3.   Small families:
+     `figma/`,
+     `ownership-marker/`,
+     `rolldown-plugin/`,
      `intellij-plugin/`.
 4.   `git-policy/` including the `git-policy-cli` rename and GCW/CLG updates.
 5.   `oxlint-plugin/` including `config/oxlint` consumers and the TSD rule mention.
 6.   `agent-harness-shared/`.
-7.   Leaf renames: 
-     `module/llm-type`, 
+7.   Leaf renames:
+     `module/llm-type`,
      `test-fixture/data-sequence`.
 8.   `pi-plugin/`.
 9.   `claude-code-plugin/`,
@@ -226,11 +226,11 @@ established terms of art (`dotfiles`,
      and every skill file referencing `docs/` paths.
 11.  `packages/` to `package/` and `packages-deprecated/` to `package-deprecated/`:
      `pnpm-workspace.yaml`,
-      every `//packages/` mise address, 
+      every `//packages/` mise address,
      `file-enforcer.config.ts` globs,
-     workflows, 
+     workflows,
      `DEFAULT_ALLOWED_WORKTREE_DIRS` in the git guard,
-     forbidden-strings config, 
+     forbidden-strings config,
      `slopo.conf.yaml`.
 
 ## Per-batch procedure
@@ -238,7 +238,7 @@ established terms of art (`dotfiles`,
 - `git mv`;
    sweep old identifiers and paths with uncapped `rg` and sanity-check the sweep ran.
 - Check new names against `forbidden-strings.append.local.txt` before adopting them.
-- Update `package.json` names, 
+- Update `package.json` names,
   `workspace:*` consumers,
    imports,
    tsconfig references.
@@ -246,21 +246,21 @@ established terms of art (`dotfiles`,
    never hand-edit it.
 - `mise run //package-path:lint:types` and tests for every touched package.
 - Exercise user-facing artifacts at the boundary:
-  hooks through the host harness, 
+  hooks through the host harness,
   `git-policy-cli` via its real bin.
 - Commit with explicit scoped pathspecs in the multi-package message format.
 
 Proposed handling of renamed-away names:
 add forbidden-strings entries for the ten retired category-level identifiers
-(`pi-plugins`, 
-`claude-code-plugins`, 
-`oxlint-plugins`, 
+(`pi-plugins`,
+`claude-code-plugins`,
+`oxlint-plugins`,
 `agent-harnesses-shared`,
-`figma`, 
-`git-policies`, 
-`intellij-plugin`, 
+`figma`,
+`git-policies`,
+`intellij-plugin`,
 `rolldown-plugin`,
-`ownership-marker`, 
+`ownership-marker`,
 `cli-git`)
 rather than one entry per package name.
 
@@ -280,7 +280,7 @@ rather than one entry per package name.
 ## Execution deviations and residue
 
 - The guard CLI's runtime identifiers stay `cli-git`
-  (`cli-git.config.ts` discovery name, 
+  (`cli-git.config.ts` discovery name,
   `.git/cli-git-transaction`,
   JSONL prefixes,
    logger tags,
@@ -309,6 +309,6 @@ rather than one entry per package name.
   Fixed in f35655481:
    the dead generator strip is gone and the test now
   asserts both canonical and generated sources stay contract-free.
-- User-global configs updated: 
+- User-global configs updated:
   `~/.pi/agent/settings.json` plugin paths and
   `~/.claude/settings.json` statusline path point at `package/...`.

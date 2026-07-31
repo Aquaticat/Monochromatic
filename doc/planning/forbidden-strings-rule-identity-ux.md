@@ -37,7 +37,7 @@ There is no lookup affordance in the CLI,
 so a blocked developer cannot tell what `rule=N` is
 without opening the rule file and counting non-comment lines.
 
-Worse, 
+Worse,
 `N` is not stable.
 Rules load into a single index space:
 the runtime rules (the local and shared appendix files) take indices `0..k`,
@@ -156,7 +156,7 @@ and it still drifts across environments.
 
 ### Option C: category names on baseline findings
 
-Baseline findings gain a safe label, 
+Baseline findings gain a safe label,
 `rule=147 (aws-access-key)`.
 Pros:
 best at-a-glance UX for the common credential catch,

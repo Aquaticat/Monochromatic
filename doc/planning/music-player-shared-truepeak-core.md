@@ -1563,8 +1563,8 @@ because the service API depends on Turso being viable on Android:
    The windowed policy and the `1.26` factor are gone;
    a native `TruePeakService` handle
    (dedicated Tokio thread plus `DecisionCache`) is reached over JNI
-   (`nativeTruePeakServiceCreate`/`Release`, 
-  `nativeResolveGain`, 
+   (`nativeTruePeakServiceCreate`/`Release`,
+  `nativeResolveGain`,
   `nativeWarmTrack`),
    the Kotlin
    JSON peak cache and gain math are deleted,

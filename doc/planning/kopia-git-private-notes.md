@@ -20,7 +20,7 @@ The trigger was repository tidiness:
  roughly seven `*.local.md` process notes (merged issue drafts,
  PR reply drafts)
  pile up in the repository root because that is the only place they will not get lost.
-They are gitignored (`*.local.*`, 
+They are gitignored (`*.local.*`,
 `.gitignore` line 11),
  cannot be published,
  and currently have no home other than root clutter.
@@ -164,8 +164,8 @@ An attempt to keep notes scattered in place by snapshotting the repository root
  under both rule orderings tried.
 
 Kopia normalizes and reorders ignore rules
- (both orderings displayed identically as `!*.local.md`, 
-`!*/`, 
+ (both orderings displayed identically as `!*.local.md`,
+`!*/`,
 `*`),
  so gitignore precedence tricks that depend on order do not hold.
 The exclude-everything rule wins and the snapshot is empty.
@@ -243,8 +243,8 @@ Per repository conventions:
    which is not involved.
 - Note pattern precision:
   `*.local.md` cleanly separates markdown notes from config and secrets at the root today
-  (`.env.local.json`, 
-  `mise.local.toml`, 
+  (`.env.local.json`,
+  `mise.local.toml`,
   `forbidden-strings.append.local.txt` are not markdown),
   but a dedicated suffix would be safer against a future non-note `*.local.md`.
 - History granularity:
@@ -313,28 +313,28 @@ Recorded so the decision is not relitigated.
 
 - Resolve the open questions,
    especially the name and the note pattern.
-- Scaffold the package and implement `init`, 
-  `commit`, 
-  `log`, 
+- Scaffold the package and implement `init`,
+  `commit`,
+  `log`,
   `restore`,
    then `diff` and `pin`.
 - Record the final decision as an entry under `doc/decision/`.
 
 ## References
 
-- Kopia: 
+- Kopia:
   [kopia-docs][]
-- git-remote-gcrypt: 
+- git-remote-gcrypt:
   [gcrypt][]
-- git-crypt: 
+- git-crypt:
   [git-crypt][]
-- git-agecrypt: 
+- git-agecrypt:
   [git-agecrypt][]
-- transcrypt: 
+- transcrypt:
   [transcrypt][]
-- gocryptfs reverse mode: 
+- gocryptfs reverse mode:
   [gocryptfs-reverse][]
-- Related planning: 
+- Related planning:
   `doc/planning/kopia-source-watch-package.md`
 
 [kopia-docs]: https://kopia.io/docs/

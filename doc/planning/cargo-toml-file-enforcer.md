@@ -23,7 +23,7 @@ The repo has fifteen `Cargo.toml` files and no Cargo workspace.
 
 Because there is no workspace,
  Cargo's native de-duplication mechanisms
- (`[workspace.package]` field inheritance, 
+ (`[workspace.package]` field inheritance,
 `[workspace.dependencies]`) cannot
  span these islands without collapsing them into one workspace,
  which the
@@ -84,7 +84,7 @@ Comment-preserving property edits.
    `false`,
    present-seeded.
 - `[lints.clippy]`:
-   canonical `disallowed_methods = "deny"`, 
+   canonical `disallowed_methods = "deny"`,
   `implicit_return = "deny"`,
    `needless_return = "allow"`.
    Universal baseline,
@@ -99,20 +99,20 @@ Comment-preserving property edits.
 - Shared dependencies:
    every dependency whose exact requirement is shared by two or more crates and
    has a single fleet-wide form.
-   The one same-name conflict, 
-  `tokio` (non-optional in two crates, 
+   The one same-name conflict,
+  `tokio` (non-optional in two crates,
   `optional`
    in `truepeak-core`),
    is excluded,
    which removes the need for per-dependency
    membership lists.
-   `image`, 
+   `image`,
   `gtk4`,
    and `windows` carry genuinely divergent per-crate
    requirements and are never owned.
    Path dependencies are excluded (their path is location-relative).
 - Published-crate metadata (the four crates carrying `package.repository`):
-   `repository`, 
+   `repository`,
   `readme`,
    and `homepage`.
    `homepage` is derived from the crate's path
@@ -122,23 +122,23 @@ Comment-preserving property edits.
 
 - `package.version`:
    hand-authored.
-   Version is a per-crate release act with real outliers (`0.1.9`, 
+   Version is a per-crate release act with real outliers (`0.1.9`,
   `0.1.1`,
    `0.0.0`) and independent release cadences;
    the shared `0.1.0` is coincidental,
    not intentional lockstep.
-- `package.include`, 
-  `categories`, 
+- `package.include`,
+  `categories`,
   `keywords`:
    `include` carries a bespoke inner comment in `forbidden-strings` and rarely
-   changes; 
+   changes;
   `categories` and `keywords` are genuinely per-crate.
 - `[lib]` and `[[bin]]`:
    names are per-crate.
 
 ### Insertion policy
 
-Universal-baseline blocks (`[lints.clippy]`, 
+Universal-baseline blocks (`[lints.clippy]`,
 `[workspace]`) are inserted where
  missing.
  Everything else is present-seeded:

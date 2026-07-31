@@ -13,7 +13,7 @@ accurate and are cited by the successor documents.
 Context:
 the forbidden-regex engine is deliberately always-verbose.
 Its cursor documents the intent directly
-(`package/rust-module/forbidden-regex/src/parse/cursor.rs`, 
+(`package/rust-module/forbidden-regex/src/parse/cursor.rs`,
 `skip_ignorable`):
 "verbose mode is always on,
  so a rule may span many lines and carry
@@ -27,7 +27,7 @@ and per-alternative comments inside a large alternation were impossible.
 ## Verified engine facts the design rests on
 
 - A newline inside a pattern is ordinary skippable whitespace
-  (`cursor.rs`, 
+  (`cursor.rs`,
   `skip_ignorable`).
 - A comment is a first-column `#` running to end of line,
    nothing else.

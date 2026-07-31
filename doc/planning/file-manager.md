@@ -582,8 +582,8 @@ Full source trace,
 
 - Prototype path:
   `package/desktop-app/file-manager/`
-  (`src/drag_drop.rs`, 
-  `ui/app.slint` `DragArea`/`DropArea`, 
+  (`src/drag_drop.rs`,
+  `ui/app.slint` `DragArea`/`DropArea`,
   `src/drag_drop_tests.rs`).
 - Operating systems tested:
   Linux only (winit backend,

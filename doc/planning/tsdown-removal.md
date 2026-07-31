@@ -70,8 +70,8 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
 - Workspace-dep inlining:
   bundle `@monochromatic-dev/**` always;
   node flavor also inlines `find-up` and `nano-spawn`;
-  pi runtime peers (`@earendil-works/pi-coding-agent`, 
-  `typebox`, 
+  pi runtime peers (`@earendil-works/pi-coding-agent`,
+  `typebox`,
   `@earendil-works/pi-ai`)
   stay external.
   Raw rolldown idiom:
@@ -90,8 +90,8 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
   (array configs replace tsdown's `perEntryNodeConfig`;
   no hash-named shared chunks).
 - Out dirs:
-  `dist/final/node`, 
-  `dist/final/neutral`, 
+  `dist/final/node`,
+  `dist/final/neutral`,
   `dist/client` as today.
 - Clean:
   `output.cleanDir` is not watch-safe and per-config;
@@ -142,8 +142,8 @@ Read from `package/config/tsdown/src/` on 2026-07-15:
    node (70 configs),
     browser (25),
     client (7),
-   outliers (`tools`, 
-   `main`, 
+   outliers (`tools`,
+   `main`,
    `preload`;
     five configs).
 3. Final commits:
