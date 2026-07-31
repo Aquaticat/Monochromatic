@@ -5,17 +5,15 @@
  */
 
 import {
+  type Api,
+  type AssistantMessage,
+  type Context,
   fauxAssistantMessage,
   fauxProvider,
-} from '@earendil-works/pi-ai';
-import type {
-  Api,
-  AssistantMessage,
-  Context,
-  Model,
-  SimpleStreamOptions,
-  ThinkingLevel,
-  Usage,
+  type Model,
+  type SimpleStreamOptions,
+  type ThinkingLevel,
+  type Usage,
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
@@ -311,7 +309,7 @@ await describe({
           },],
         },);
         /** Highest reasoning captured by registered provider implementation. */
-        let capturedReasoning: ThinkingLevel | undefined;
+        const capturedReasoning: ThinkingLevel[] = [];
         customProvider.setResponses([
           /*
            * Capture provider options before returning fixture response.
@@ -321,7 +319,11 @@ await describe({
             /** Simple provider options received through registered provider seam. */
             const simpleOptions: SimpleStreamOptions = streamOptions
               ?? {};
-            capturedReasoning = simpleOptions.reasoning;
+            /** Highest reasoning supplied to custom provider. */
+            const providerReasoning = simpleOptions.reasoning;
+            if (providerReasoning === undefined)
+              throw new Error('registered provider did not receive reasoning',);
+            capturedReasoning[capturedReasoning.length] = providerReasoning;
             return fauxAssistantMessage('registered provider response',);
           },
         ],);
@@ -351,7 +353,7 @@ await describe({
         },);
 
         expect(customProvider.state.callCount,).toBe(1,);
-        expect(capturedReasoning,).toBe('high',);
+        expect(capturedReasoning,).toEqual(['high',],);
       },
     },),
     ...REASONING_CASES.map(function mapReasoningCase(reasoningCase,) {
