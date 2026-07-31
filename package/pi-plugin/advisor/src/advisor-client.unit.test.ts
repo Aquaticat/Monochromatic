@@ -468,7 +468,13 @@ await describe({
           throw new Error('provider options were not captured',);
         expect(firstOptions,).not.toBe(retryOptions,);
         expect(firstOptions.signal,).toBe(retryOptions.signal,);
-        expect(retryOptions.timeoutMs,).toBeLessThanOrEqual(firstOptions.timeoutMs,);
+        /** First attempt timeout under shared deadline. */
+        const firstTimeoutMs = firstOptions.timeoutMs;
+        /** Retry timeout under shared deadline. */
+        const retryTimeoutMs = retryOptions.timeoutMs;
+        if ((firstTimeoutMs === undefined) || (retryTimeoutMs === undefined))
+          throw new Error('provider timeout was not captured',);
+        expect(retryTimeoutMs,).toBeLessThanOrEqual(firstTimeoutMs,);
       },
     },),
     it({

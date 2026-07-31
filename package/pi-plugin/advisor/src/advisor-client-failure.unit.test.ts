@@ -366,7 +366,13 @@ await describe({
         if ((firstOptions === undefined) || (secondOptions === undefined))
           throw new Error('attempt options missing',);
         expect(firstOptions.signal,).toBe(secondOptions.signal,);
-        expect(secondOptions.timeoutMs,).toBeLessThanOrEqual(firstOptions.timeoutMs,);
+        /** First attempt timeout under shared deadline. */
+        const firstTimeoutMs = firstOptions.timeoutMs;
+        /** Second attempt timeout under shared deadline. */
+        const secondTimeoutMs = secondOptions.timeoutMs;
+        if ((firstTimeoutMs === undefined) || (secondTimeoutMs === undefined))
+          throw new Error('attempt timeout missing',);
+        expect(secondTimeoutMs,).toBeLessThanOrEqual(firstTimeoutMs,);
       },
     },),
     it({
