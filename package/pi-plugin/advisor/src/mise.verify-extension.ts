@@ -211,12 +211,16 @@ function fakePiApi(): {
     }>,) {
       registrations.push(`tool:${tool.name}`,);
       /**
-       * Whether captured schema exposes focused-question parameter.
+       * Captured focused-question parameter schema.
        */
-      const questionParameterPresent = tool
+      const questionParameter = tool
         .parameters
         ?.properties
-        ?.question !== undefined;
+        ?.question;
+      /**
+       * Whether captured schema exposes focused-question parameter.
+       */
+      const questionParameterPresent = questionParameter !== undefined;
       tools.push({
         name: tool.name,
         questionParameterPresent,

@@ -146,6 +146,11 @@ type AdvisorContextCandidate = {
  * @returns matching context candidate
  *
  * @throws when selected candidate disappeared
+ *
+ * @example
+ * ```typescript
+ * selectedContextCandidate({ candidates, selectedSlug: 'provider/model' });
+ * ```
  */
 function selectedContextCandidate(
   {

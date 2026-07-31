@@ -11,6 +11,7 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { containsToolName, } from './active-tool.ts';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
@@ -92,36 +93,6 @@ export type RegisterAdvisorCommandsOptions = {
 };
 
 //endregion Types
-
-//region Tool-list helpers
-
-/**
- * Check whether active tool names contain target tool.
- *
- * @param toolNames - active tool names
- *
- * @param targetName - target tool name
- *
- * @returns whether target tool is active
- */
-function containsToolName(
-  {
-    toolNames,
-    targetName,
-  }: {
-    readonly toolNames: readonly string[];
-    readonly targetName: string;
-  },
-): boolean {
-  for (const toolName of toolNames) {
-    if (toolName
-      === targetName)
-      return true;
-  }
-  return false;
-}
-
-//endregion Tool-list helpers
 
 //region Public API
 

@@ -286,7 +286,9 @@ async function readJsonFile(
     return JSON.parse(text,);
   }
   catch (error) {
-    if (isFileMissingError(error,))
+    if (((typeof error) === 'object')
+      && (error !== null)
+      && isFileMissingError(error,))
       return undefined;
     throw new Error(
       `advisor: failed to read ${label} config at ${path}: ${
@@ -307,7 +309,7 @@ async function readJsonFile(
  * @mutates error - `Error.isError` can inspect runtime-owned error capability
  */
 function isFileMissingError(
-  error: ForeignHostCapability<unknown>,
+  error: ForeignHostCapability<object>,
 ): boolean {
   if ((!(Error.isError(error,))) || (!('code' in error)))
     return false;
