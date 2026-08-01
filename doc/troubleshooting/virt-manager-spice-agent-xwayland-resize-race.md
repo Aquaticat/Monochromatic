@@ -41,7 +41,7 @@ spice-vdagent[1800]: could not connect to X-server
 `~/.local/bin/follow-preferred-mode` was alive and correctly applied the
 first mode in `/sys/class/drm/card*-Virtual-1/modes`.
  Its input never changed,
-so changing that helper would only have hidden the upstream break in the
+so changing that helper would only have hidden the earlier break in the
 resize path.
 
 ## Expected resize path
@@ -164,7 +164,9 @@ systemctl --user restart spice-vdagent.service
 ```
 
 `Requires` makes satellite part of the agent's transaction and propagates an
-explicit satellite stop or restart to the agent.
+explicit satellite stop or restart to the agent,
+ as specified by
+[`systemd.unit(5)`][systemd-unit].
  `After` prevents the agent
 from starting until satellite's start job,
  including its `ExecStartPost`,
@@ -381,3 +383,4 @@ Unit structure and ordering came from
 [spice-channel]: https://cgit.freedesktop.org/spice/spice-gtk/tree/src/channel-main.c?h=v0.42#n1540
 [qemu-spice]: https://github.com/qemu/qemu/blob/v11.0.0/ui/spice-display.c#L664-L694
 [qemu-virtio-gpu]: https://github.com/qemu/qemu/blob/v11.0.0/hw/display/virtio-gpu-base.c#L100-L123
+[systemd-unit]: https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#Requires=
