@@ -6,6 +6,8 @@ use crate::bpf::{
     attach_marker_unpinned_failing_after,
     HOOK_NAMES,
 };
+/// Production user app-slice path used by watcher service fixture.
+use crate::application_targets::user_app_slice;
 /// Process start-time reader for wrong-owner state fixture.
 use crate::keeper_process::process_start_time;
 /// Runtime keeper state used to verify fail-closed identity cleanup.
@@ -320,6 +322,82 @@ fn socket_child() -> io::Result<()> {
     assert_eq!(ipv6_mark(libc::SOCK_STREAM)?, expected, "TCP6 mark");
     assert_eq!(ipv4_mark(libc::SOCK_DGRAM)?, expected, "UDP4 mark");
     assert_eq!(ipv6_mark(libc::SOCK_DGRAM)?, expected, "UDP6 mark");
+    return Ok(());
+}
+
+/// Foreground watcher covers existing and future Ghostty scopes, then drops all links on signal.
+#[test]
+#[ignore = "requires root and writable cgroup v2 mount"]
+fn application_watcher_covers_existing_and_future_ghostty() -> io::Result<()> {
+    let app_slice = Path::new("/sys/fs/cgroup").join(format!(
+        "wg-quicker-exempt-watch-{}",
+        std::process::id()
+    ));
+    let service = app_slice.join("app-com.mitchellh.ghostty@fixture.service");
+    let surface = app_slice.join("app-ghostty-surface-transient-123.scope");
+    let unrelated = app_slice.join("app-org.example.Other.scope");
+    std::fs::create_dir(&app_slice)?;
+    std::fs::create_dir(&service)?;
+    std::fs::create_dir(&unrelated)?;
+    let mut watcher = Command::new(cli_binary()?)
+        .args(["__watch-test", "8888"])
+        .arg(&app_slice)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()?;
+    let mut input = watcher.stdin.take().ok_or_else(|| return io::Error::other("watcher stdin absent"))?;
+    let stdout = watcher.stdout.take().ok_or_else(|| return io::Error::other("watcher stdout absent"))?;
+    let mut output = BufReader::new(stdout);
+    let mut readiness = String::new();
+    output.read_line(&mut readiness)?;
+    assert_eq!(readiness.trim_end(), "READY");
+    writeln!(input, "COMMIT")?;
+    input.flush()?;
+    let mut committed = String::new();
+    output.read_line(&mut committed)?;
+    assert_eq!(committed.trim_end(), "COMMITTED");
+    assert_marks_from_child(&service, FIRST_MARK)?;
+    assert_marks_from_child(&unrelated, 0)?;
+    std::fs::create_dir(&surface)?;
+    std::thread::sleep(std::time::Duration::from_millis(500));
+    assert_marks_from_child(&surface, FIRST_MARK)?;
+    // SAFETY: watcher child PID is owned by this test and handles SIGTERM through signalfd.
+    let signal_result = unsafe { libc::kill(watcher.id() as i32, libc::SIGTERM) };
+    if signal_result < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let status = watcher.wait()?;
+    assert!(status.success());
+    assert_marks_from_child(&service, 0)?;
+    std::fs::remove_dir(&surface)?;
+    std::fs::remove_dir(&unrelated)?;
+    std::fs::remove_dir(&service)?;
+    std::fs::remove_dir(&app_slice)?;
+    return Ok(());
+}
+
+/// Public watcher service persists after start CLI exits and stops by validated key.
+#[test]
+#[ignore = "requires root and writable cgroup v2 mount"]
+fn application_watcher_service_starts_and_stops() -> io::Result<()> {
+    let uid = 3_000_000_000_u32 + (std::process::id() % 100_000_000);
+    let app_slice = user_app_slice(uid);
+    let service = app_slice.join("app-com.mitchellh.ghostty@fixture.service");
+    std::fs::create_dir_all(&app_slice)?;
+    std::fs::create_dir(&service)?;
+    let key = format!("wgq-watch-{}", std::process::id());
+    let uid_text = uid.to_string();
+    run_cli(&["watch-start", &key, "8888", &uid_text])?;
+    assert_marks_from_child(&service, FIRST_MARK)?;
+    run_cli(&["watch-stop", &key])?;
+    assert_marks_from_child(&service, 0)?;
+    std::fs::remove_dir(&service)?;
+    std::fs::remove_dir(&app_slice)?;
+    let user_service = app_slice.parent().ok_or_else(|| return io::Error::other("app slice lacks service parent"))?;
+    let user_slice = user_service.parent().ok_or_else(|| return io::Error::other("user service lacks slice parent"))?;
+    std::fs::remove_dir(user_service)?;
+    std::fs::remove_dir(user_slice)?;
     return Ok(());
 }
 

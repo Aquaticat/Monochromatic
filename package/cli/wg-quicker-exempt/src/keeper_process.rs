@@ -62,36 +62,55 @@ fn process_command(pid: i32) -> io::Result<Vec<Vec<u8>>> {
     return Ok(arguments);
 }
 
-/// Confirms PID, start time, executable argument, command, mark, and cgroup.
-pub fn validate_process(process: KeeperProcess, cgroup_dir: &Path) -> io::Result<()> {
-    let observed_start = process_start_time(process.pid)?;
-    if observed_start != process.start_time {
+/// Confirms PID start time and exact byte-level command arguments.
+pub fn validate_command_identity(
+    pid: i32,
+    start_time: u64,
+    expected: &[Vec<u8>],
+    role: &str,
+) -> io::Result<()> {
+    let observed_start = process_start_time(pid)?;
+    if observed_start != start_time {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             format!(
-                "keeper PID {} start time changed: expected {}, observed {}",
-                process.pid, process.start_time, observed_start
+                "{role} PID {pid} start time changed: expected {start_time}, observed {observed_start}"
             ),
         ));
     }
-    let observed_command = process_command(process.pid)?;
-    let expected = expected_command(process, cgroup_dir)?;
+    let observed_command = process_command(pid)?;
     if observed_command != expected {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            format!("keeper PID {} command does not match owned holder", process.pid),
+            format!("{role} PID {pid} command does not match owned process"),
         ));
     }
     return Ok(());
 }
 
-/// Reports whether exact holder remains live and rejects PID reuse or command mismatch.
-pub fn keeper_is_live(process: KeeperProcess, cgroup_dir: &Path) -> io::Result<bool> {
-    match validate_process(process, cgroup_dir) {
+/// Reports whether exact command remains live and rejects PID reuse or command mismatch.
+pub fn command_process_is_live(
+    pid: i32,
+    start_time: u64,
+    expected: &[Vec<u8>],
+    role: &str,
+) -> io::Result<bool> {
+    match validate_command_identity(pid, start_time, expected, role) {
         Ok(()) => return Ok(true),
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
         Err(error) => return Err(error),
     }
+}
+
+/// Reports whether exact holder remains live and rejects PID reuse or command mismatch.
+pub fn keeper_is_live(process: KeeperProcess, cgroup_dir: &Path) -> io::Result<bool> {
+    let expected = expected_command(process, cgroup_dir)?;
+    return command_process_is_live(
+        process.pid,
+        process.start_time,
+        &expected,
+        "keeper",
+    );
 }
 
 /// Reaps holder when current process happens to be its parent.
@@ -114,16 +133,17 @@ fn reap_if_child(pid: i32) -> io::Result<bool> {
 
 /// Waits bounded interval for exact process to disappear or change identity.
 fn wait_for_disappearance(
-    process: KeeperProcess,
+    pid: i32,
+    start_time: u64,
     duration: Duration,
 ) -> io::Result<bool> {
     let deadline = Instant::now() + duration;
     while Instant::now() < deadline {
-        if reap_if_child(process.pid)? {
+        if reap_if_child(pid)? {
             return Ok(true);
         }
-        match process_start_time(process.pid) {
-            Ok(start_time) if start_time == process.start_time => {
+        match process_start_time(pid) {
+            Ok(observed_start) if observed_start == start_time => {
                 std::thread::sleep(STOP_POLL);
             }
             Ok(_) => return Ok(true),
@@ -134,28 +154,44 @@ fn wait_for_disappearance(
     return Ok(false);
 }
 
-/// Sends SIGTERM, escalates exact surviving holder to SIGKILL, and confirms disappearance.
-pub fn stop_process(process: KeeperProcess, cgroup_dir: &Path) -> io::Result<()> {
-    validate_process(process, cgroup_dir)?;
-    // SAFETY: validated positive PID names exact holder process.
-    let terminate_result = unsafe { libc::kill(process.pid, libc::SIGTERM) };
+/// Stops exact command after typed validation and bounded signal escalation.
+pub fn stop_command_process(
+    pid: i32,
+    start_time: u64,
+    expected: &[Vec<u8>],
+    role: &str,
+) -> io::Result<()> {
+    validate_command_identity(pid, start_time, expected, role)?;
+    // SAFETY: validated positive PID names exact owned process.
+    let terminate_result = unsafe { libc::kill(pid, libc::SIGTERM) };
     if terminate_result < 0 {
         return Err(io::Error::last_os_error());
     }
-    if wait_for_disappearance(process, STOP_WAIT)? {
+    if wait_for_disappearance(pid, start_time, STOP_WAIT)? {
         return Ok(());
     }
-    validate_process(process, cgroup_dir)?;
+    validate_command_identity(pid, start_time, expected, role)?;
     // SAFETY: identity was revalidated immediately before forced termination.
-    let kill_result = unsafe { libc::kill(process.pid, libc::SIGKILL) };
+    let kill_result = unsafe { libc::kill(pid, libc::SIGKILL) };
     if kill_result < 0 {
         return Err(io::Error::last_os_error());
     }
-    if wait_for_disappearance(process, KILL_WAIT)? {
+    if wait_for_disappearance(pid, start_time, KILL_WAIT)? {
         return Ok(());
     }
     return Err(io::Error::new(
         io::ErrorKind::TimedOut,
-        format!("keeper PID {} survived SIGTERM and SIGKILL", process.pid),
+        format!("{role} PID {pid} survived SIGTERM and SIGKILL"),
     ));
+}
+
+/// Sends SIGTERM, escalates exact surviving holder to SIGKILL, and confirms disappearance.
+pub fn stop_process(process: KeeperProcess, cgroup_dir: &Path) -> io::Result<()> {
+    let expected = expected_command(process, cgroup_dir)?;
+    return stop_command_process(
+        process.pid,
+        process.start_time,
+        &expected,
+        "keeper",
+    );
 }

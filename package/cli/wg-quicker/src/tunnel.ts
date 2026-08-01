@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { startApplicationExemptions, } from './application-exemption.ts';
 import type { WireguardConfig, } from './config.ts';
 import { CommandError, } from './errors.ts';
 import {
@@ -10,12 +11,9 @@ import {
   runAllowingFailure,
 } from './runner.ts';
 import { makeTempDir, } from './tempdir.ts';
-import { removeExemptRule, } from './tunnel-bypass.ts';
-import { removeKillSwitch, } from './tunnel-firewall.ts';
-import {
-  removePolicyRules,
-  setupRoutes,
-} from './tunnel-route.ts';
+import { cleanup, } from './tunnel-cleanup.ts';
+import { linkExists, } from './tunnel-link.ts';
+import { setupRoutes, } from './tunnel-route.ts';
 import {
   deviceChar,
   digitChar,
@@ -280,34 +278,6 @@ async function setDns({ config, }: { readonly config: WireguardConfig; },): Prom
 }
 
 /**
- * Reports whether the interface link currently exists.
- *
- * @param interfaceName - Interface to probe.
- *
- * @returns True when the link is present.
- *
- * @example
- * ```ts
- * await linkExists({ interfaceName: 'wg0' });
- * ```
- */
-async function linkExists({ interfaceName, }: { readonly interfaceName: string; },): Promise<boolean> {
-  /**
-   * Link-show probe for the interface.
-   */
-  const result = await runAllowingFailure({
-    command: 'ip',
-    args: [
-      'link',
-      'show',
-      'dev',
-      interfaceName,
-    ],
-  },);
-  return result.exitCode === 0;
-}
-
-/**
  * Performs the up sequence and rolls back on failure.
  *
  * @param config - Parsed config.
@@ -332,6 +302,11 @@ async function upInner({ config, }: { readonly config: WireguardConfig; },): Pro
     await addAddressesAndUp({ config, },);
     await setDns({ config, },);
     await setupRoutes({ config, },);
+    if (config.exemptMark !== undefined)
+      await startApplicationExemptions({
+        interfaceName: iface,
+        mark: config.exemptMark,
+      },);
     await executeHooks({
       hooks: config.postUp,
       interfaceName: iface,
@@ -436,51 +411,6 @@ async function teardown(
     hooks: config.postDown,
     interfaceName: iface,
   },);
-}
-
-/**
- * Removes routes, rules, firewall, link, and DNS without running hooks.
- *
- * Shared by the failure rollback of {@link up} and the hook-wrapped down path,
- * matching wg-quick's behavior where the failure trap skips `PreDown`/`PostDown`.
- *
- * @param config - Parsed config.
- *
- * @example
- * ```ts
- * await cleanup({ config });
- * ```
- */
-async function cleanup({ config, }: { readonly config: WireguardConfig; },): Promise<void> {
-  /**
-   * Interface whose state is removed.
-   */
-  const iface = config.interfaceName;
-  if (!(await linkExists({ interfaceName: iface, },)))
-    return;
-  if (config.table !== 'off')
-    await removePolicyRules({ interfaceName: iface, },);
-  await removeExemptRule({ interfaceName: iface, });
-  await removeKillSwitch({ interfaceName: iface, },);
-  await runAllowingFailure({
-    command: 'ip',
-    args: [
-      'link',
-      'delete',
-      'dev',
-      iface,
-    ],
-  },);
-  if (config.dns
-    .length
-    > 0)
-    await runAllowingFailure({
-      command: 'resolvectl',
-      args: [
-        'revert',
-        iface,
-      ],
-    },);
 }
 
 /**

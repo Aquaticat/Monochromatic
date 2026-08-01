@@ -54,6 +54,27 @@ Only `up` generates peer prefixes.
 The companion attaches cgroup-BPF programs to selected application cgroups.
 The tunnel lifecycle does not move Ghostty into another systemd slice.
 
+`wg-quicker-exempt` must be available through privileged caller's `PATH`.
+The watched desktop UID comes from `WG_QUICKER_EXEMPT_UID`,
+ then `SUDO_UID`,
+ then non-root effective UID.
+Direct root execution without an explicit or sudo identity fails instead of watching root's app slice.
+
+The Rust watcher installs inotify on user's existing `app.slice` before its first scan,
+attaches the Ghostty service and every `app-ghostty-surface-transient-*.scope`,
+drains queued events,
+and scans again to close creation race.
+It reacts to future cgroup creation and periodically maps every live Helium executable,
+including renderer,
+zygote,
+and crashpad processes,
+back to its current cgroup.
+Known Helium cgroups remain attached until directory disappears,
+covering process restarts inside same service or scope.
+Watcher state validates PID,
+process start time,
+and complete command before shutdown.
+
 On `up`,
  application bypass routing:
 

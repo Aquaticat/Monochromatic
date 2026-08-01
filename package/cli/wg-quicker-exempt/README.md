@@ -38,6 +38,19 @@ Detach exact persisted links:
 wg-quicker-exempt detach <cgroup-dir>...
 ```
 
+List Ghostty and Helium targets without attaching:
+
+```sh
+wg-quicker-exempt list-targets <uid>
+```
+
+Start or stop detached application watcher owned by tunnel key:
+
+```sh
+wg-quicker-exempt watch-start <key> <mark> <uid>
+wg-quicker-exempt watch-stop <key>
+```
+
 Example:
 
 ```sh
@@ -135,7 +148,9 @@ On an affected kernel,
 
 - Only socket operations occurring after attachment receive the mark.
 - Every new cgroup needs its own attachment.
-   The `wg-quicker` application watcher owns enumeration and future-scope coverage.
+   Detached application watcher owns Ghostty enumeration,
+   future-scope inotify coverage,
+   and Helium process rescans.
 - Detach removes only the four exact expected pin names and uses `rmdir`,
    so unrelated entries prevent directory removal.
 - On affected kernels,

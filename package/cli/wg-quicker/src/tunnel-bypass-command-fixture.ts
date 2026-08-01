@@ -267,6 +267,8 @@ export async function runWgQuickerCli(
       fixture.namespace,
       'env',
       `WG_QUICKER_RUNTIME_DIRECTORY=${fixture.stateDirectory}`,
+      'WG_QUICKER_EXEMPT_COMMAND=/usr/bin/true',
+      'WG_QUICKER_EXEMPT_UID=1000',
       process.execPath,
       CLI_BUNDLE_PATH,
       operation,
