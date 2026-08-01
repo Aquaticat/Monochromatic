@@ -20,6 +20,9 @@ import { loadMergedConfig, } from '../dist/final/node/index.mjs';
 
 //region Constants
 
+/** User-selected default operation timeout. */
+const EXPECTED_DEFAULT_TIMEOUT_MS = 600_000;
+
 /** Global timeout fixture. */
 const GLOBAL_TIMEOUT_MS = 10;
 
@@ -49,6 +52,7 @@ await describe({
           ),
         },);
         expect(config.enabled,).toBe(true,);
+        expect(config.timeoutMs,).toBe(EXPECTED_DEFAULT_TIMEOUT_MS,);
       },
     },),
     it({
