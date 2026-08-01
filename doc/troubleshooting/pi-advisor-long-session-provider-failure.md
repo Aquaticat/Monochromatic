@@ -454,27 +454,27 @@ Tradeoff:
  a terminal no-text error on the explicit model still triggers two attempts,
  and selecting the primary model removes reviewer independence.
 
-### Lower the temporary timeout
+### Set the operation deadline to expected provider latency
 
-A lower configured `timeoutMs` bounds each attempt:
+After the shared-deadline correction,
+ `timeoutMs` bounds the complete Advisor operation rather than each attempt.
+The user selected a ten-minute default for providers whose valid reviews can exceed two minutes:
 
 ```json
 // ~/.pi/agent/extensions/pi-advisor.json
 {
-  "timeoutMs": 60000,
-  "maxContextChars": 350000,
-  "includePriorAdvisorResults": false
+  "timeoutMs": 600000
 }
 ```
 
 Tradeoff:
- the current retry still permits two timeout windows,
- and slower valid reviews can be cancelled.
-This is only a containment measure.
+ a genuinely stuck provider can now hold the tool call for up to ten minutes.
+Terminal provider errors and caller cancellation still fail immediately.
 
 ## What does not work
 
-- Raising `timeoutMs` does not improve failure classification and increases the possible two-attempt wait.
+- Before the shared-deadline correction,
+   raising `timeoutMs` did not improve failure classification and increased the possible two-attempt wait.
 - Retrying the same question manually does not remove pre-compaction entries because `runAdvisor()` always calls `getBranch()`.
 - Switching from default Kimi-K3 to explicit gpt-5.6-sol does not avoid the duplicate no-text retry.
   The incident's explicit call lasted `240011` ms.
@@ -560,6 +560,46 @@ advisor: provider call failed for advisor-p0-fixture/reviewer on attempt 1: fixt
 The host then continued to the main model's final response.
 The queued faux response sequence proves no identical reviewer retry consumed a second response.
 
+### Continued-session provider variability
+
+On 2026-08-01,
+ the same persisted session produced three different provider failures after the P0 correction:
+
+- Spark returned no visible text after two successful terminal responses;
+- Luna reached the shared `120000` ms deadline on its first attempt;
+- Qwen returned HTTP 400 with `Context limit exceeded`.
+
+The current compaction path was active.
+`package/pi-plugin/advisor/src/tool.ts:271` calls:
+
+```typescript
+.buildContextEntries(),
+```
+
+At the Qwen call,
+ the full branch contained `2597` entries while the compaction-aware branch contained `847`.
+Advisor serialized `599445` characters and estimated `150061` input tokens.
+The same request tokenized locally with the official Qwen tokenizer at commit
+[`6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`][qwen-tokenizer]
+used `172314` chat-template input tokens.
+With the configured `16384` output reserve,
+ the total was `188698`,
+ which is `73446` below the model configuration's `262144` positions.
+The character estimate understated this tokenizer by `14.83%`,
+ but the request still fit the documented native window.
+
+The same session also disproves a stable character threshold:
+ Luna previously succeeded with `989163` serialized characters but later timed out with `599004`,
+ and Spark previously succeeded with `404629` but later returned no text with `444292`.
+One variable provider failure therefore does not establish a safe global context cap.
+A proposed `300000`-character default was rejected and removed.
+Model-aware budgeting remains in place while issue `#410` tracks measured reserve improvements without treating one failure as a stable capacity limit.
+
+Commits `7a13ad30c` and `f4d57a2be` raise the tested and documented default operation deadline to `600000` ms.
+The user-level `~/.pi/agent/extensions/pi-advisor.json` now carries the same value.
+This addresses the Luna wait policy only;
+ it does not reinterpret Spark's empty terminal responses or Qwen's transient provider 400 as local timeout failures.
+
 Follow-up findings remain tracked in issues `#407` to `#411`:
  prior-review context defaults,
  nested usage accounting,
@@ -599,3 +639,5 @@ Open and closed issue and pull-request searches in `earendil-works/pi` for
 
 There is nothing additive to file upstream and no issue draft to retain.
 The actionable artifact is the repository-local correction plan in this document.
+
+[qwen-tokenizer]: https://huggingface.co/Qwen/Qwen3.6-27B/tree/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
