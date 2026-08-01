@@ -12,8 +12,13 @@ It:
 - keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
-The real `mx-que-mx1` tunnel was not brought up.
-The human must explicitly authorize any future real-tunnel verification.
+The human brought real `mx-que-mx1` up during follow-up diagnosis and then brought it down after connectivity
+stopped.
+It is currently down.
+Do not bring it up,
+restart it,
+or mutate live routing without explicit authorization.
+IVPN Desktop split tunneling is currently disabled after its supported `ivpn splittun -off` recovery.
 
 ## Completed tasks
 
@@ -33,6 +38,15 @@ The human must explicitly authorize any future real-tunnel verification.
    run final cross-package verification and update this handover.
 - Blocker task `#8`:
    work around Linux bpffs SELinux pin regression.
+- Tasks `#9` through `#14`:
+   diagnose and harden self-elevation,
+   caller-context preservation,
+   exact companion resolution,
+   and scrubbed-sudo verification.
+- Tasks `#15` through `#17`:
+   diagnose system-wide ISP egress,
+   trace interacting IVPN and endpoint routes,
+   and prevent endpoint recursion.
 
 No tracked implementation task remains.
 
@@ -56,6 +70,9 @@ c520bd996 caller context across sudo env reset
 6cabed890 exact Rust companion resolution
 94c907045 effective-UID privilege gate
 622fd9844 caller-context schema regression tests
+6805239fa and a8c2746c6 sudo troubleshooting documentation
+2d94b86fd endpoint-recursion prevention and IVPN conflict preflight
+ff9081828 normalized conflict detection and dual-stack route coverage
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -102,6 +119,27 @@ Multiple peers can use independent source files.
 `down` retains metadata without reading files,
 resolving domains,
 or refreshing ASN caches.
+
+## Automatic tunnel routing
+
+Automatic mode now puts every allowed prefix in one interface-specific policy table,
+not only literal `/0` routes.
+The WireGuard fwmark lets outer endpoint packets skip that table and retain physical main-table routing,
+including when a non-default allowed prefix covers the endpoint.
+Main non-default routes are evaluated first for connected physical and LAN paths.
+
+Separate automatic tunnels use separate policy tables.
+Overlapping allowed prefixes are therefore selected by policy-rule order before routes in different tables can
+compete by prefix length.
+Use explicit route ownership if simultaneous overlapping tunnels need cross-interface longest-prefix behavior.
+Automatic partial tunnels now receive the source-mark validation and nft ingress protection previously reached
+only by literal-default mode.
+
+`up` rejects IVPN Desktop's exact active split-tunnel rule before interface creation.
+The check recognizes mark `0xca6c` with table `17` or `ivpn-exclude-tbl` from both family JSON rule listings.
+It is a one-shot preflight;
+do not re-enable IVPN split tunneling while `wg-quicker` remains active.
+See `doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md`.
 
 ## Bypass routing
 
@@ -321,6 +359,7 @@ mise run //package/cli/wg-quicker:buildAndTest
 mise run //package/cli/wg-quicker:lint:types
 mise run //package/cli/wg-quicker:lint:oxlint
 mise run //package/cli/wg-quicker:test:integration:bypass
+mise run //package/cli/wg-quicker:test:integration:route
 ```
 
 Disposable netns integration covers:
@@ -336,7 +375,11 @@ Disposable netns integration covers:
 - unowned-default rejection;
 - unrelated route preservation;
 - changed-config teardown;
-- built CLI `up` and `down`.
+- built CLI `up` and `down`;
+- exact IPv4 and IPv6 IVPN conflict rejection before interface creation;
+- physical connected-route precedence over broad dual-stack policy prefixes;
+- an IPv4 endpoint covered by non-default `AllowedIPs`;
+- marked physical endpoint routing and bidirectional WireGuard transfer.
 
 ### `wg-quicker-exempt`
 
@@ -394,4 +437,5 @@ or unexpected pin remained after final verification.
   it uses sudo before config access and preserves original identity through `SUDO_UID`.
 - Set `WG_QUICKER_EXEMPT_UID` explicitly for direct root or service execution.
 - Use `wg-quicker-exempt list-targets <uid>` for read-only coverage audit.
-- Ask before bringing up `mx-que-mx1`.
+- Keep IVPN Desktop split tunneling disabled while this tunnel is active.
+- Ask before bringing up `mx-que-mx1` or mutating its live routes.

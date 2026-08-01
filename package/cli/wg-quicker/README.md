@@ -52,6 +52,46 @@ and lifecycle hooks.
 It forwards WireGuard-native interface and peer lines to `wg addconf` through a private temporary file.
 This keeps existing expanded `AllowedIPs` lines usable without Bash's superlinear trimming path.
 
+## Automatic routing
+
+For automatic `Table` behavior,
+`wg-quicker` allocates one policy table and sets the WireGuard interface fwmark whenever at least one allowed
+prefix exists.
+Every allowed prefix goes in that table,
+including non-default prefixes.
+Main-table connected routes run first;
+ordinary matching traffic then enters the policy table,
+while WireGuard's marked outer UDP packets skip it and retain the physical main-table path.
+This prevents a peer endpoint covered by its own `AllowedIPs` from routing recursively into the tunnel.
+Automatic partial routes now use the same source-mark validation and nft ingress protection as automatic default
+routes.
+
+Separate automatic tunnels use separate policy tables.
+When their allowed prefixes overlap,
+policy-rule priority chooses the first table before longest-prefix matching can compare routes across tunnels.
+Use explicit routing ownership when simultaneous overlapping automatic tunnels must preserve cross-interface
+longest-prefix selection.
+
+An explicit numeric `Table` continues to receive routes without automatic policy rules.
+`Table = off` installs no routes.
+
+Before creating an interface,
+`wg-quicker` uses iproute2 JSON rule output to reject IVPN Desktop's exact split-tunnel rule
+(`fwmark 0xca6c`,
+ table `17`).
+This fail-closed preflight applies in every table mode because externally marked application traffic can override
+routing supplied outside automatic mode too.
+IVPN inverse split tunneling marks ordinary non-DNS application traffic for a physical table and otherwise
+silently bypasses custom WireGuard route selection.
+Disable that conflicting feature before `up` and do not re-enable it while the tunnel is active;
+the preflight is not a persistent rule monitor.
+Customized IVPN mark or table constants are outside exact detection.
+See
+[`doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md`](../../../doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md)
+for source trace,
+diagnosis,
+and verified recovery.
+
 ## Generate AllowedIPs from files
 
 A peer may replace literal `AllowedIPs` with `AllowedIPsFromFiles`:
@@ -158,6 +198,7 @@ Run package checks through mise:
 ```console
 mise run //package/cli/wg-quicker:buildAndTest
 mise run //package/cli/wg-quicker:test:integration:bypass
+mise run //package/cli/wg-quicker:test:integration:route
 mise run //package/cli/wg-quicker:lint:oxlint
 mise run //package/cli/wg-quicker:lint:types
 ```
