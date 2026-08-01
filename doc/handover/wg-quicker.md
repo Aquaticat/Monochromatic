@@ -80,6 +80,7 @@ c520bd996 caller context across sudo env reset
 ff9081828 normalized conflict detection and dual-stack route coverage
 a41cb8efb missing-ExemptMark warning and live config note
 743581a55 configured-exemption warning-path coverage
+492b6914e actionable config-specific warning wording
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
