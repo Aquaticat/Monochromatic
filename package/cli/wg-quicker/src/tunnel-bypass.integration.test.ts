@@ -438,11 +438,15 @@ await writeRootFixtureFile({
     `ExemptMark = ${String(EXEMPT_MARK,)}`,
   ].join('\n',),
 },);
-await runWgQuickerCli({
+/**
+ * Captured activation with configured mark and no missing-mark warning.
+ */
+const cliActivation = await runWgQuickerCli({
   fixture,
   operation: 'up',
   configPath,
 },);
+assert.equal(cliActivation.stderr.includes('has no ExemptMark',), false,);
 assert.ok((await runNamespaceIp({ fixture, args: ['link', 'show', 'dev', 'wgtest',], },)).includes('wgtest',));
 /**
  * CLI-created bypass state and watcher identity.

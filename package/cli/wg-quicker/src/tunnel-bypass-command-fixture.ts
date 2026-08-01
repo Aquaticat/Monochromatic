@@ -241,7 +241,7 @@ export async function runNamespaceIp(
  *
  * @param configPath - Explicit config path.
  *
- * @returns Captured stdout.
+ * @returns Successful command result with both output streams.
  *
  * @example
  * ```ts
@@ -258,8 +258,11 @@ export async function runWgQuickerCli(
     readonly operation: 'down' | 'up';
     readonly configPath: string;
   },
-): Promise<string> {
-  return await runSudo({
+): Promise<FixtureCommandResult> {
+  /**
+   * Captured built CLI result checked before return.
+   */
+  const result = await runSudoAllowingFailure({
     args: [
       'ip',
       'netns',
@@ -275,6 +278,15 @@ export async function runWgQuickerCli(
       configPath,
     ],
   },);
+  if (result.exitCode !== 0) {
+    throw new Error([
+      `wg-quicker ${operation} exited ${String(result.exitCode,)}.`,
+      result.stdout,
+      result.stderr,
+    ].filter(Boolean,)
+      .join('\n',),);
+  }
+  return result;
 }
 
 /**
