@@ -125,7 +125,7 @@ Only `up` generates peer prefixes.
 When `up` does not find this key,
 it warns that Ghostty and Helium will use the tunnel and instructs the user to add
 `ExemptMark = 8888` under `[Interface]`,
-then apply it with `wg-quicker down` followed by `wg-quicker up`.
+then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
 tunnel activation continues.
 The companion attaches cgroup-BPF programs to selected application cgroups.

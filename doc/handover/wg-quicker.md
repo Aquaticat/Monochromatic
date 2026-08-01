@@ -263,7 +263,7 @@ Changed config without `ExemptMark` still stops watcher when persisted bypass st
 Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning before network mutation.
 It states that Ghostty and Helium will use the tunnel and instructs the user to add `ExemptMark = 8888` under
 `[Interface]`,
-then apply it with `wg-quicker down` followed by `wg-quicker up`.
+then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
 
 Target UID precedence:
