@@ -93,7 +93,12 @@ async function readAllowedPrefixes(
 
 
 /**
- * Adds one `not fwmark` and one `suppress_prefixlength` rule for a default family.
+ * Adds one `not fwmark` and one `suppress_prefixlength` rule for a routed family.
+ *
+ * The main-table lookup preserves physical connected routes before the policy table,
+ * while WireGuard's own marked transport packets skip that table and reach the
+ * physical default. This also prevents a peer endpoint covered by a non-default
+ * `AllowedIPs` prefix from routing recursively into its own interface.
  *
  * @param proto - Address family receiving the rules.
  *
@@ -101,10 +106,10 @@ async function readAllowedPrefixes(
  *
  * @example
  * ```ts
- * await addDefaultRules({ proto: '-4', table: 51820 });
+ * await addPolicyRules({ proto: '-4', table: 51820 });
  * ```
  */
-async function addDefaultRules(
+async function addPolicyRules(
   {
     proto,
     table,
@@ -144,10 +149,11 @@ async function addDefaultRules(
 /**
  * Installs routes and policy rules for the allowed prefixes.
  *
- * When any `/0` default prefix is present, one policy table is allocated and
- * carried in the interface fwmark, shared by both address families; a `not
- * fwmark` rule per family then routes traffic through it and the nft kill-switch
- * is installed. Non-default prefixes route directly onto the interface in batch.
+ * Automatic routing places every allowed prefix in one policy table carried by
+ * the interface fwmark. A `not fwmark` rule per represented family routes inner
+ * traffic through that table, while WireGuard's marked outer packets skip it.
+ * Keeping every allowed prefix out of the main table prevents endpoint recursion
+ * even when a non-default prefix contains the peer's public endpoint.
  *
  * @param config - Parsed config.
  *
@@ -169,18 +175,6 @@ export async function setupRoutes(
    * Live allowed-ips prefixes, longest first.
    */
   const prefixes = await readAllowedPrefixes({ interfaceName: iface, },);
-  /**
-   * Default (`/0`) prefixes, which drive the policy table and kill-switch.
-   */
-  const defaults = prefixes.filter(function isDefault(prefix,): boolean {
-    return prefixLength({ prefix, },) === 0;
-  },);
-  /**
-   * Non-default prefixes routed directly onto the interface.
-   */
-  const covered = prefixes.filter(function isCovered(prefix,): boolean {
-    return prefixLength({ prefix, },) > 0;
-  },);
   if ((config.table !== undefined) && (config.table !== 'auto')) {
     await addRoutes({
       interfaceName: iface,
@@ -195,11 +189,7 @@ export async function setupRoutes(
       },);
     return;
   }
-  if (defaults.length === 0) {
-    await addRoutes({
-      interfaceName: iface,
-      prefixes: covered,
-    },);
+  if (prefixes.length === 0) {
     if (config.exemptMark !== undefined)
       await addExemptRule({
         interfaceName: iface,
@@ -213,14 +203,14 @@ export async function setupRoutes(
    */
   const table = await ensureFwmark({ interfaceName: iface, },);
   /**
-   * Families that received a default, deduplicated.
+   * Families represented by at least one allowed prefix, deduplicated.
    */
-  const protos = new Set(defaults.map(function toProto(prefix,): Proto {
+  const protos = new Set(prefixes.map(function toProto(prefix,): Proto {
     return protoFlag({ prefix, },);
   },),);
-  /* oxlint-disable eslint/no-await-in-loop -- Default rules install per family in a deterministic order. */
+  /* oxlint-disable eslint/no-await-in-loop -- Policy rules install per family in deterministic order. */
   for (const proto of protos) {
-    await addDefaultRules({
+    await addPolicyRules({
       proto,
       table,
     },);
@@ -236,12 +226,8 @@ export async function setupRoutes(
     },);
   await addRoutes({
     interfaceName: iface,
-    prefixes: defaults,
+    prefixes,
     table,
-  },);
-  await addRoutes({
-    interfaceName: iface,
-    prefixes: covered,
   },);
   /**
    * Exempt rule added last so its fixed priority (below every auto-allocated

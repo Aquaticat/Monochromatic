@@ -112,6 +112,12 @@ export async function routeCommand(
       protoFlag({ prefix, },),
       'route',
       'show',
+      ...(table === undefined
+        ? []
+        : [
+          'table',
+          String(table,),
+        ]),
       'dev',
       interfaceName,
       'match',
@@ -143,7 +149,7 @@ export async function routeCommand(
  *
  * @param prefixes - Prefixes to add.
  *
- * @param table - Optional policy table applied to every prefix (for `/0` defaults).
+ * @param table - Optional policy table applied to every prefix.
  *
  * @example
  * ```ts

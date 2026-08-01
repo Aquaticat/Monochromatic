@@ -76,6 +76,21 @@ export class BypassRouteError extends Error {
 }
 
 /**
+ * Error raised when existing policy routing would override tunnel selection.
+ *
+ * @example
+ * ```ts
+ * throw new PolicyRoutingConflictError('Conflicting packet mark is active.');
+ * ```
+ */
+export class PolicyRoutingConflictError extends Error {
+  /**
+   * Stable error type name rendered by Node.
+   */
+  override name = 'PolicyRoutingConflictError';
+}
+
+/**
  * Error raised when an external `ip`, `wg`, or `resolvectl` command exits non-zero.
  *
  * @example

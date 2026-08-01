@@ -13,6 +13,7 @@ import {
 import { makeTempDir, } from './tempdir.ts';
 import { cleanup, } from './tunnel-cleanup.ts';
 import { linkExists, } from './tunnel-link.ts';
+import { assertNoPolicyRoutingConflict, } from './policy-routing-conflict.ts';
 import { setupRoutes, } from './tunnel-route.ts';
 import {
   deviceChar,
@@ -358,6 +359,7 @@ export async function up({ config, }: { readonly config: WireguardConfig; },): P
       stderr: `\`${iface}' already exists`,
     },);
   }
+  await assertNoPolicyRoutingConflict();
   await upInner({ config, },);
   fl.debug(`${iface} is up`,);
 }
