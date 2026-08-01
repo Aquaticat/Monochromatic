@@ -314,6 +314,8 @@ const activated = await runFixtureCli({
   configPath,
 },);
 assert.equal(activated.exitCode, 0, activated.stderr,);
+assert.ok(activated.stderr.includes(`${configPath} has no ExemptMark; Ghostty and Helium will use the tunnel.`,),);
+assert.ok(activated.stderr.includes('Add `ExemptMark = 8888` under `[Interface]`',),);
 /**
  * Positive interface fwmark naming policy table.
  */
@@ -380,6 +382,7 @@ const deactivated = await runFixtureCli({
   configPath,
 },);
 assert.equal(deactivated.exitCode, 0, deactivated.stderr,);
+assert.equal(deactivated.stderr.includes('has no ExemptMark',), false,);
 assert.notEqual((await runSudoAllowingFailure({ args: ['ip', 'netns', 'exec', fixture.clientNamespace, 'ip', 'link', 'show', 'dev', 'wgtest',], },)).exitCode, 0,);
 
 //endregion Endpoint recursion prevention and transfer

@@ -113,16 +113,22 @@ async function main(): Promise<void> {
     arg: target,
     expandAllowedIps: subcommand === 'up',
   },);
-  if ((subcommand === 'up') && (config.exemptMark !== undefined)) {
-    /**
-     * Exact companion path resolved before first network mutation.
-     */
-    const command = await resolveApplicationExemptionCommand();
-    /**
-     * Process environment updated with exact preflighted path for later watcher calls.
-     */
-    const environment = process.env;
-    environment.WG_QUICKER_EXEMPT_COMMAND = command;
+  if (subcommand === 'up') {
+    if (config.exemptMark === undefined) {
+      l.warn(
+        `${target} has no ExemptMark; Ghostty and Helium will use the tunnel. Add \`ExemptMark = 8888\` under \`[Interface]\`, then apply it with \`wg-quicker down ${target}\` followed by \`wg-quicker up ${target}\`.`,
+      );
+    } else {
+      /**
+       * Exact companion path resolved before first network mutation.
+       */
+      const command = await resolveApplicationExemptionCommand();
+      /**
+       * Process environment updated with exact preflighted path for later watcher calls.
+       */
+      const environment = process.env;
+      environment.WG_QUICKER_EXEMPT_COMMAND = command;
+    }
   }
   await (subcommand === 'up' ? up({ config, },) : down({ config, },));
 }

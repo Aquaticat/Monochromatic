@@ -19,6 +19,11 @@ Do not bring it up,
 restart it,
 or mutate live routing without explicit authorization.
 IVPN Desktop split tunneling is currently disabled after its supported `ivpn splittun -off` recovery.
+`/etc/wireguard/mx-que-mx1.conf` now contains `ExemptMark = 8888` under `[Interface]`.
+The atomic edit preserved root ownership,
+mode `0600`,
+single-link status,
+and the down physical endpoint route.
 
 ## Completed tasks
 
@@ -253,6 +258,12 @@ and filing decision.
 It stops watcher before removing bypass routing.
 Changed config without `ExemptMark` still stops watcher when persisted bypass state proves prior ownership.
 
+Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning before network mutation.
+It states that Ghostty and Helium will use the tunnel and instructs the user to add `ExemptMark = 8888` under
+`[Interface]`,
+then apply it with `wg-quicker down` followed by `wg-quicker up`.
+`down` does not emit this warning.
+
 Target UID precedence:
 
 1. `WG_QUICKER_EXEMPT_UID`;
@@ -379,7 +390,8 @@ Disposable netns integration covers:
 - exact IPv4 and IPv6 IVPN conflict rejection before interface creation;
 - physical connected-route precedence over broad dual-stack policy prefixes;
 - an IPv4 endpoint covered by non-default `AllowedIPs`;
-- marked physical endpoint routing and bidirectional WireGuard transfer.
+- marked physical endpoint routing and bidirectional WireGuard transfer;
+- actionable missing-`ExemptMark` warning on `up` and warning absence on `down`.
 
 ### `wg-quicker-exempt`
 
