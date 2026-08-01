@@ -17,7 +17,7 @@ export type AdvisorConfigFile = {
    */
   readonly enabled?: boolean;
   /**
-   * Provider timeout in milliseconds.
+   * Total Advisor operation deadline in milliseconds.
    */
   readonly timeoutMs?: number;
   /**

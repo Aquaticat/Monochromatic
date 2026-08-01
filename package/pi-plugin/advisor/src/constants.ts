@@ -26,9 +26,9 @@ export const CONFIG_FILE_NAME = 'pi-advisor.json';
 //region Defaults
 
 /**
- * Default provider request timeout in milliseconds.
+ * Default total Advisor operation deadline in milliseconds.
  */
-export const DEFAULT_TIMEOUT_MS = 120_000;
+export const DEFAULT_TIMEOUT_MS = 600_000;
 
 /**
  * Provider and message-framing reserve subtracted from model context windows.
