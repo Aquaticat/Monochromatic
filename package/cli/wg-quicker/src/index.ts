@@ -18,6 +18,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { loadConfig, } from './config.ts';
 import { CliUsageError, } from './errors.ts';
+import { restorePrivilegeContext, } from './privilege-context.ts';
 import { relaunchWithRootIfNeeded, } from './privilege.ts';
 import {
   down,
@@ -89,8 +90,7 @@ async function main(): Promise<void> {
   /**
    * Arguments after runtime and script path.
    */
-  const processArguments = process.argv
-    .slice(2,);
+  const processArguments = await restorePrivilegeContext();
   /**
    * Parsed subcommand and config target.
    */

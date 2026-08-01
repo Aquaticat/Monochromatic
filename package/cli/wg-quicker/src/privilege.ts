@@ -5,6 +5,10 @@ import { resolve, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { PrivilegeError, } from './errors.ts';
+import {
+  createPrivilegeContextFile,
+  PRIVILEGE_CONTEXT_ARGUMENT,
+} from './privilege-context.ts';
 
 /**
  * Module logger for root relaunch lifecycle.
@@ -61,12 +65,18 @@ export async function relaunchWithRootIfNeeded(): Promise<boolean> {
    */
   const scriptPath = resolve(scriptArgument,);
   /**
+   * Private context preserving allowlisted user settings despite sudo env reset.
+   */
+  await using contextFile = await createPrivilegeContextFile();
+  /**
    * Exact command boundary passed after sudo's option terminator.
    */
   const sudoArguments = [
     '--',
     process.execPath,
     scriptPath,
+    PRIVILEGE_CONTEXT_ARGUMENT,
+    contextFile.path,
     ...processArguments,
   ];
   l.debug(`relaunching through sudo: ${process.execPath} ${scriptPath}`,);

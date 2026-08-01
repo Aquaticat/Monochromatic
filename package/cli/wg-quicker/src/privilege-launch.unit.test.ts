@@ -67,7 +67,7 @@ await describe({
         );
         await writeFile(
           sudoPath,
-          `#!/usr/bin/env node\nconst { writeFileSync } = require('node:fs');\nwriteFileSync(process.env.WG_QUICKER_TEST_SUDO_RECORD, JSON.stringify(process.argv.slice(2)));\n`,
+          `#!/usr/bin/env node\nconst { readFileSync, writeFileSync } = require('node:fs');\nconst args = process.argv.slice(2);\nconst context = JSON.parse(readFileSync(args[4], 'utf8'));\nwriteFileSync(process.env.WG_QUICKER_TEST_SUDO_RECORD, JSON.stringify({ args, context }));\n`,
         );
         await chmod(
           sudoPath,
@@ -86,8 +86,15 @@ await describe({
           {
             env: {
               ...process.env,
+              HOME: '/caller/home',
+              IPINFO_TOKEN: 'secret-token',
               PATH: `${directory}:${process.env.PATH ?? ''}`,
+              WG_ALLOWEDIPS_CACHE_DIRECTORY: '/caller/cache/allowedips',
+              WG_QUICKER_EXEMPT_COMMAND: '/caller/bin/wg-quicker-exempt',
+              WG_QUICKER_EXEMPT_UID: '2000',
+              WG_QUICKER_RUNTIME_DIRECTORY: '/caller/run/wg-quicker',
               WG_QUICKER_TEST_SUDO_RECORD: recordPath,
+              XDG_CACHE_HOME: '/caller/cache',
             },
             stdio: 'ignore',
           },
@@ -100,17 +107,39 @@ await describe({
         /**
          * Parsed exact sudo invocation recorded by fake command.
          */
-        const invocation: unknown = JSON.parse(await readFile(
+        const invocation = JSON.parse(await readFile(
           recordPath,
           'utf8',
-        ),);
-        expect(invocation,).toEqual([
+        ),) as {
+          readonly args: readonly string[];
+          readonly context: unknown;
+        };
+        expect([
+          ...invocation.args.slice(0, 4,),
+          '<private-context-path>',
+          ...invocation.args.slice(5,),
+        ],).toEqual([
           '--',
           process.execPath,
           CLI_BUNDLE_PATH,
+          '--wg-quicker-privilege-context',
+          '<private-context-path>',
           'up',
           '/does-not-exist/restricted.conf',
         ],);
+        expect(invocation.context,).toEqual({
+          environment: {
+            HOME: '/caller/home',
+            IPINFO_TOKEN: 'secret-token',
+            WG_ALLOWEDIPS_CACHE_DIRECTORY: '/caller/cache/allowedips',
+            WG_QUICKER_EXEMPT_COMMAND: '/caller/bin/wg-quicker-exempt',
+            WG_QUICKER_EXEMPT_UID: '2000',
+            WG_QUICKER_RUNTIME_DIRECTORY: '/caller/run/wg-quicker',
+            XDG_CACHE_HOME: '/caller/cache',
+          },
+          uid: process.getuid?.(),
+          version: 1,
+        },);
       },
     },),
   ],

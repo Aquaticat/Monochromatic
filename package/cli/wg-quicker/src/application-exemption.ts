@@ -15,12 +15,21 @@ import {
 const l = tagged({ tag: 'application-exemption', },);
 
 /**
- * Companion Rust executable resolved through privileged caller's `PATH`.
+ * Resolves companion after privilege context restoration.
+ *
+ * @returns Explicit exact path or name searched through privileged caller's `PATH`.
+ *
+ * @example
+ * ```ts
+ * exemptionCommand();
+ * ```
  */
-const EXEMPT_COMMAND = process
-  .env
-  .WG_QUICKER_EXEMPT_COMMAND
-  ?? 'wg-quicker-exempt';
+function exemptionCommand(): string {
+  return process
+    .env
+    .WG_QUICKER_EXEMPT_COMMAND
+    ?? 'wg-quicker-exempt';
+}
 
 /**
  * Maximum Linux UID representable by watcher command UAPI.
@@ -241,7 +250,7 @@ export async function startApplicationExemptions(
   },);
   fl.debug(`starting application watcher for ${interfaceName}, uid=${String(uid,)}`,);
   await run({
-    command: EXEMPT_COMMAND,
+    command: exemptionCommand(),
     args: applicationWatchStartArgs({
       interfaceName,
       mark,
@@ -280,7 +289,7 @@ export async function stopApplicationExemptions(
   if ((!configured) && (state === BYPASS_STATE_ABSENT))
     return;
   await run({
-    command: EXEMPT_COMMAND,
+    command: exemptionCommand(),
     args: applicationWatchStopArgs({ interfaceName, },),
   },);
 }
