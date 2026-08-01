@@ -64,7 +64,9 @@ const ALLOWED_ENVIRONMENT_KEYS = new Set([
 function isRecord(value: unknown,): value is Record<string, unknown> {
   if ((typeof value) !== 'object')
     return false;
-  return value !== null;
+  if (value === null)
+    return false;
+  return !Array.isArray(value,);
 }
 
 /**
