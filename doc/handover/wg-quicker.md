@@ -50,6 +50,8 @@ c3bb6735a exact bypass route ownership persistence
 1bb08f1e4 restart checkpoint handover
 4bef73b4e hardened Rust BPF link lifecycle and SELinux fallback
 3b92eb5c8 Ghostty and Helium application watcher integration
+e43e24afa self-elevation before config access
+de20d4b26 privilege-process ownership boundary
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -216,6 +218,8 @@ Target UID precedence:
 3. non-root effective UID.
 
 Direct root execution without explicit or sudo identity fails closed.
+A non-root `wg-quicker` process relaunches exact current Node runtime and CLI bundle through sudo before config access.
+This avoids root-only config `EACCES` and sudo `secure_path` lookup failure while preserving `SUDO_UID`.
 `wg-quicker-exempt` must be available through privileged caller's `PATH`.
 
 Watcher behavior:
@@ -358,9 +362,11 @@ or unexpected pin remained after final verification.
 
 ## Operational notes
 
-- Install both `wg-quicker` and `wg-quicker-exempt` in privileged `PATH`.
+- Keep `wg-quicker-exempt` in privileged `PATH`.
+- Use root-owned installed artifacts when workspace integrity is not trusted.
 - Use `ExemptMark = 8888` or another positive mark in `[Interface]`.
-- Invoke through sudo so `SUDO_UID` identifies desktop user,
-  or set `WG_QUICKER_EXEMPT_UID` explicitly.
+- Invoke `wg-quicker` normally;
+  it uses sudo before config access and preserves original identity through `SUDO_UID`.
+- Set `WG_QUICKER_EXEMPT_UID` explicitly for direct root or service execution.
 - Use `wg-quicker-exempt list-targets <uid>` for read-only coverage audit.
 - Ask before bringing up `mx-que-mx1`.

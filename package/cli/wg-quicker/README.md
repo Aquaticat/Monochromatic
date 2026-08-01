@@ -11,6 +11,17 @@ wg-quicker down wg0
 A bare interface name resolves to `/etc/wireguard/<name>.conf`.
 An explicit `.conf` path is also accepted.
 
+When invoked as non-root,
+`wg-quicker` relaunches exact current Node executable and CLI bundle through `sudo` before reading config.
+Sudo inherits terminal streams for authentication and records original desktop identity in `SUDO_UID`.
+This avoids both root-only config `EACCES` and sudo `secure_path` hiding workspace-local bin.
+It intentionally authorizes current user-owned runtime and bundle for root execution;
+use root-owned installed artifacts when workspace integrity is not trusted.
+
+See
+[`doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md`](../../../doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md)
+for source trace and verification.
+
 ## Config behavior
 
 `wg-quicker` consumes wg-quick interface keys such as `Address`,
