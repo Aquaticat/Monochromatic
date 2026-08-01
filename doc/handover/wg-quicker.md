@@ -52,6 +52,10 @@ c3bb6735a exact bypass route ownership persistence
 3b92eb5c8 Ghostty and Helium application watcher integration
 e43e24afa self-elevation before config access
 de20d4b26 privilege-process ownership boundary
+c520bd996 caller context across sudo env reset
+6cabed890 exact Rust companion resolution
+94c907045 effective-UID privilege gate
+622fd9844 caller-context schema regression tests
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -220,7 +224,26 @@ Target UID precedence:
 Direct root execution without explicit or sudo identity fails closed.
 A non-root `wg-quicker` process relaunches exact current Node runtime and CLI bundle through sudo before config access.
 This avoids root-only config `EACCES` and sudo `secure_path` lookup failure while preserving `SUDO_UID`.
-`wg-quicker-exempt` must be available through privileged caller's `PATH`.
+A private bounded caller-context file carries allowlisted home,
+cache,
+token,
+runtime,
+UID,
+and companion settings through sudo `env_reset`.
+Root child validates file type,
+ownership,
+mode,
+link count,
+size,
+schema,
+and caller identity before applying it.
+
+Before network mutation,
+application exemption command resolves to exact configured path,
+paired repository Rust build,
+privileged installed command,
+or captured caller-path command.
+Missing configured companion fails before interface creation.
 
 Watcher behavior:
 
@@ -362,7 +385,9 @@ or unexpected pin remained after final verification.
 
 ## Operational notes
 
-- Keep `wg-quicker-exempt` in privileged `PATH`.
+- Build `wg-quicker-exempt` release artifact or install it in privileged or caller `PATH`.
+- Use `WG_QUICKER_EXEMPT_COMMAND` for an explicit executable;
+  launcher resolves it before network mutation.
 - Use root-owned installed artifacts when workspace integrity is not trusted.
 - Use `ExemptMark = 8888` or another positive mark in `[Interface]`.
 - Invoke `wg-quicker` normally;

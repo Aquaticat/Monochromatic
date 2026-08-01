@@ -48,17 +48,33 @@ await (subcommand === 'up' ? up({ config, },) : down({ config, },));
 Because `loadConfig()` ran before any privilege transition,
 normal root-only mode on `/etc/wireguard/<interface>.conf` produced `EACCES`.
 
-Current `package/cli/wg-quicker/src/index.ts:105-112` delegates first and reads config only in root child:
+Current `package/cli/wg-quicker/src/index.ts:94-115` restores caller context,
+delegates,
+and reads config only in root child:
 
 ```ts
+const processArguments = await restorePrivilegeContext();
+// ...validate public arguments...
 const delegated = await relaunchWithRootIfNeeded();
 if (delegated)
   return;
-/**
- * Parsed config for requested interface.
- */
 const config = await loadConfig({
 ```
+
+`package/cli/wg-quicker/src/privilege-context.ts:154-186` opens internal context with `O_NOFOLLOW`,
+then checks regular-file type,
+owner against `SUDO_UID`,
+link count,
+mode,
+and bounded size before parsing and applying allowlisted values.
+Context carries caller `HOME`,
+cache locations,
+`IPINFO_TOKEN`,
+runtime directory,
+exemption UID,
+companion command,
+and original path under private name.
+It never assigns original path to privileged `PATH`.
 
 ### sudo intentionally replaces command search path
 
@@ -128,9 +144,19 @@ if (def_secure_path && !user_is_exempt(ctx)) {
 }
 ```
 
+Live environment probe confirmed same policy:
+
+```console
+$ WG_QUICKER_ENV_RESET_PROBE=present sudo -- <exact-node> --eval '<print probe and PATH>'
+absent
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/snapd/snap/bin:/home/linuxbrew/.linuxbrew/bin
+```
+
 This is documented sudo policy behavior,
 not sudo defect.
-Local bug was relying on bare name for workspace executable that requires root.
+Local bugs were relying on bare workspace executable lookup,
+assuming custom environment survived elevation,
+and expanding `~` only after sudo changed caller context.
 
 ## Verification
 
@@ -182,7 +208,13 @@ No command against `mx-que-mx1` was used for verification.
 
 - Built CLI plus fake sudo in first `PATH` entry records exact Node executable,
   exact bundle path,
-  and original `up` arguments before config read.
+  original arguments,
+  and complete allowlisted private context before config read.
+- Real sudo with mode-zero config reaches parser rather than `EACCES`.
+- Real sudo expands `AllowedIPsFromFiles = ~/...` against captured caller home,
+  then fails on intentionally invalid fixture input before network mutation.
+- Missing configured companion fails before interface creation.
+- Built and root direct resolver calls select paired release binary outside sudo `secure_path`.
 - Root CLI execution in disposable netns skips nested elevation and completes integration lifecycle.
 - Exact paths containing slash bypass sudo path iteration by inspected and tested source path.
 
@@ -191,8 +223,22 @@ The regression test is
 It executes built artifact and confirms fake sudo receives:
 
 ```text
--- <exact process.execPath> <exact dist/final/node/index.mjs> up <config>
+-- <exact process.execPath> <exact dist/final/node/index.mjs> \
+  --wg-quicker-privilege-context <private-file> up <config>
 ```
+
+Fake sudo reads private file while parent retains it and confirms every allowlisted value.
+`package/cli/wg-quicker/src/privilege-context-data.unit.test.ts` checks valid schema plus malformed JSON,
+arrays,
+versions,
+UIDs,
+unknown keys,
+non-string values,
+and invalid home.
+`package/cli/wg-quicker/src/application-exemption-command.unit.test.ts` checks explicit path,
+missing path,
+captured caller path,
+and paired repository release.
 
 Verification commands:
 
@@ -210,19 +256,29 @@ All passed after fix.
 ### Use package self-elevation
 
 Current CLI detects non-root effective UID,
-then launches:
+then creates private context and launches:
 
 ```text
-sudo -- <exact Node executable> <exact CLI bundle> <original arguments>
+sudo -- <exact Node executable> <exact CLI bundle> \
+  --wg-quicker-privilege-context <private-file> <original arguments>
 ```
 
 Sudo inherits terminal streams,
 so password prompt works.
 Root child receives `SUDO_UID`,
-which application exemption watcher uses for desktop cgroup selection.
+validates private file against it,
+and restores only allowlisted values.
+Application watcher uses sudo identity for desktop cgroup selection.
+Source-file `~` expansion and ASN cache selection retain caller context.
+Rust companion resolves to exact configured,
+paired workspace,
+privileged-path,
+or captured-caller-path executable before network mutation.
 
 Tradeoff:
-this intentionally executes current user-owned workspace runtime and bundle as root after sudo authentication.
+this intentionally executes current user-owned workspace runtime,
+bundle,
+and selected paired or caller-path companion as root after sudo authentication.
 That matches local-development workflow but is inappropriate when workspace integrity is not trusted.
 
 ### Install root-owned artifact and invoke exact path
@@ -243,6 +299,15 @@ and package currently targets repository-local development rather than published
   not interactive user's workspace path.
 - Copying interactive `PATH` wholesale into root process:
   removes sudo's intended command lookup isolation and permits earlier user-writable entries to shadow system tools.
+- Relying on custom variables to survive default `env_reset`:
+  loses home,
+  cache,
+  token,
+  UID override,
+  runtime override,
+  and companion selection.
+- Resolving `wg-quicker-exempt` only after interface setup:
+  discovers missing companion after network mutation.
 - Re-executing by bare `node` and bare `wg-quicker`:
   both names can disappear or resolve differently under `secure_path`.
 

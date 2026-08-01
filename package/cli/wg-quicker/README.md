@@ -15,7 +15,27 @@ When invoked as non-root,
 `wg-quicker` relaunches exact current Node executable and CLI bundle through `sudo` before reading config.
 Sudo inherits terminal streams for authentication and records original desktop identity in `SUDO_UID`.
 This avoids both root-only config `EACCES` and sudo `secure_path` hiding workspace-local bin.
-It intentionally authorizes current user-owned runtime and bundle for root execution;
+
+Default sudo `env_reset` drops custom settings and replaces `PATH`.
+The launcher carries only allowlisted caller home,
+cache,
+token,
+runtime,
+UID,
+and companion settings through a private mode-`0600` bounded file.
+The root child validates file type,
+ownership,
+mode,
+link count,
+size,
+schema,
+and `SUDO_UID` before applying settings.
+Consequently,
+`AllowedIPsFromFiles = ~/...` still expands against caller home instead of `/root`.
+
+Self-elevation intentionally authorizes current user-owned runtime,
+bundle,
+and selected paired or caller-path companion for root execution;
 use root-owned installed artifacts when workspace integrity is not trusted.
 
 See
@@ -65,7 +85,12 @@ Only `up` generates peer prefixes.
 The companion attaches cgroup-BPF programs to selected application cgroups.
 The tunnel lifecycle does not move Ghostty into another systemd slice.
 
-`wg-quicker-exempt` must be available through privileged caller's `PATH`.
+Before network mutation,
+`wg-quicker` resolves `wg-quicker-exempt` to exact executable path.
+It prefers explicit `WG_QUICKER_EXEMPT_COMMAND`,
+then paired repository release or debug build,
+then installed command in privileged or captured caller `PATH`.
+An unavailable configured companion fails before interface creation.
 The watched desktop UID comes from `WG_QUICKER_EXEMPT_UID`,
  then `SUDO_UID`,
  then non-root effective UID.
