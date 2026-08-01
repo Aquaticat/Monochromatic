@@ -1,120 +1,147 @@
-//! Marks sockets from chosen app cgroups so their traffic bypasses the WireGuard tunnel.
+//! Marks sockets from selected application cgroups so traffic bypasses WireGuard policy routing.
 //!
-//! Attaches a cgroup-BPF program (connect4/6, udp4/6 sendmsg) that sets `SO_MARK`
-//! on sockets created beneath each target cgroup. A policy-routing rule
-//! (`ip rule add fwmark <mark> table main`) then routes that traffic direct.
-//! Each attachment's links are pinned under `/sys/fs/bpf/wg-quicker-exempt/` so
-//! they persist after this process exits; removing a pinned link detaches it.
-//!
-//! Subcommand: `attach <mark> <cgroup-dir>...`
+//! `attach <mark> <cgroup-dir>...` transactionally installs four cgroup socket-address links.
+//! `detach <cgroup-dir>...` removes only exact links persisted for each canonical cgroup path.
+//! Link pins survive loader exit under `/sys/fs/bpf/wg-quicker-exempt/`.
 
-/// Raw `bpf(2)` bindings and the socket-marking program builder.
+/// Raw `bpf(2)` ABI and socket-marking program loader.
 mod bpf;
+/// Stable Linux `bpf(2)` UAPI subset.
+mod bpf_uapi;
+/// Typed BPF syscall errors for compatibility behavior.
+mod bpf_error;
+/// Bpffs validation and transactional pin lifecycle.
+mod pin;
+/// Descriptor-keeper fallback for affected SELinux kernels.
+mod keeper;
+/// Exact Linux process identity validation for descriptor keeper.
+mod keeper_process;
+/// Crash-recoverable descriptor-keeper state.
+mod keeper_state;
+/// Unit tests for raw BPF instruction encoding.
+#[cfg(test)]
+mod bpf_tests;
+/// Privileged lifecycle and protocol tests.
+#[cfg(test)]
+mod pin_tests;
 
-/// Standard I/O error type used for syscall and filesystem failures.
+/// Standard I/O error type used across command boundaries.
 use std::io;
-/// Raw file descriptor type for open cgroup directories.
-use std::os::unix::io::RawFd;
-/// Filesystem path handling for cgroup and pin directories.
+/// Filesystem path view for cgroup arguments.
 use std::path::Path;
 /// Process exit code returned from `main`.
 use std::process::ExitCode;
 
-/// Root of the bpf filesystem where links are pinned.
-const BPF_FS: &str = "/sys/fs/bpf";
-
-/// Pin directory for this tool's links.
-const PIN_ROOT: &str = "/sys/fs/bpf/wg-quicker-exempt";
-
-/// Opens a cgroup directory read-only for use as a `bpf` attach target.
-fn open_cgroup(dir: &Path) -> io::Result<RawFd> {
-    let c_path = std::ffi::CString::new(dir.as_os_str().as_encoded_bytes()).map_err(|_| {
-        return io::Error::new(io::ErrorKind::InvalidInput, "cgroup path contains NUL");
+/// Parses positive nonzero socket mark accepted by policy-routing contract.
+fn parse_mark(value: &str) -> io::Result<u32> {
+    let mark: u32 = value.parse().map_err(|error| {
+        return io::Error::new(io::ErrorKind::InvalidInput, format!("invalid mark {value}: {error}"));
     })?;
-    // SAFETY: open(2) on a NUL-terminated path with O_DIRECTORY|O_RDONLY.
-    let fd = unsafe { libc::open(c_path.as_ptr(), libc::O_DIRECTORY | libc::O_RDONLY) };
-    if fd < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    return Ok(fd);
-}
-
-/// Ensures the bpf filesystem is mounted and the pin directory exists.
-fn ensure_pin_root() -> io::Result<()> {
-    if !Path::new(BPF_FS).exists() {
+    if mark == 0 {
         return Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            format!("bpf filesystem not present at {BPF_FS}"),
+            io::ErrorKind::InvalidInput,
+            "mark must be positive",
         ));
     }
-    return std::fs::create_dir_all(PIN_ROOT);
+    return Ok(mark);
 }
 
-/// Derives a filesystem-safe pin subdirectory name from a cgroup path.
-fn pin_dir_for(cgroup_dir: &str) -> String {
-    let tag = cgroup_dir
-        .trim_start_matches('/')
-        .replace('/', "__");
-    return format!("{PIN_ROOT}/{tag}");
-}
-
-/// Attaches the marker to every listed cgroup directory, pinning links.
+/// Attaches marker transaction to every listed cgroup while global lock is held.
 fn attach_many(mark: u32, dirs: &[String]) -> io::Result<()> {
-    ensure_pin_root()?;
+    let _lock = pin::acquire_lifecycle_lock()?;
     for dir in dirs {
-        let path = Path::new(dir);
-        let fd = open_cgroup(path)?;
-        let pin_dir = pin_dir_for(dir);
-        std::fs::create_dir_all(&pin_dir)?;
-        let result = bpf::attach_marker(fd, mark, &pin_dir);
-        // SAFETY: closing a valid, no-longer-needed cgroup fd.
-        unsafe {
-            libc::close(fd);
+        let cgroup = Path::new(dir);
+        match pin::attach_cgroup(mark, cgroup) {
+            Ok(count) => {
+                keeper::detach_keeper(cgroup)?;
+                println!("attached mark={mark} to {dir} ({count} links pinned)");
+            }
+            Err(error) if bpf_error::is_pin_object_invalid(&error) => {
+                keeper::replace_keeper(mark, cgroup)?;
+                pin::detach_cgroup(cgroup)?;
+                println!(
+                    "attached mark={mark} to {dir} (4 links held by SELinux-regression fallback)"
+                );
+            }
+            Err(error) => {
+                return Err(io::Error::new(error.kind(), format!("attach {dir}: {error}")));
+            }
         }
-        let pinned = result.map_err(|e| {
-            return io::Error::new(e.kind(), format!("attach {dir}: {e}"));
-        })?;
-        println!("attached mark={mark} to {dir} ({} links pinned)", pinned.len());
     }
     return Ok(());
 }
 
-/// Prints usage to stderr.
-fn usage() {
-    eprintln!("usage: wg-quicker-exempt attach <mark> <cgroup-dir>...");
+/// Detaches exact marker links from every listed cgroup while global lock is held.
+fn detach_many(dirs: &[String]) -> io::Result<()> {
+    let _lock = pin::acquire_lifecycle_lock()?;
+    for dir in dirs {
+        let cgroup = Path::new(dir);
+        keeper::detach_keeper(cgroup).map_err(|error| {
+            return io::Error::new(error.kind(), format!("detach fallback {dir}: {error}"));
+        })?;
+        pin::detach_cgroup(cgroup).map_err(|error| {
+            return io::Error::new(error.kind(), format!("detach pins {dir}: {error}"));
+        })?;
+        println!("detached {dir}");
+    }
+    return Ok(());
 }
 
-/// Program entry point.
+/// Prints accepted command forms to stderr.
+fn usage() {
+    eprintln!("usage: wg-quicker-exempt attach <mark> <cgroup-dir>...");
+    eprintln!("       wg-quicker-exempt detach <cgroup-dir>...");
+}
+
+/// Converts command result into conventional process exit code and diagnostic.
+fn finish(result: io::Result<()>) -> ExitCode {
+    match result {
+        Ok(()) => return ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("error: {error}");
+            return ExitCode::FAILURE;
+        }
+    }
+}
+
+/// Program entry point with explicit attach and detach argument contracts.
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let [cmd, mark_s, rest @ ..] = args.as_slice() else {
+    let Some(command) = args.first() else {
         usage();
         return ExitCode::from(2);
     };
-    let mark: u32 = match mark_s.parse() {
-        Ok(m) => m,
-        Err(_) => {
-            eprintln!("invalid mark: {mark_s}");
+    if command == "__hold" {
+        if args.len() != 3 {
             return ExitCode::from(2);
         }
-    };
-    match cmd.as_str() {
-        "attach" => {
-            if rest.is_empty() {
-                usage();
-                return ExitCode::from(2);
-            }
-            return match attach_many(mark, rest) {
-                Ok(()) => ExitCode::SUCCESS,
-                Err(e) => {
-                    eprintln!("error: {e}");
-                    ExitCode::FAILURE
-                }
-            };
-        }
-        _ => {
+        let mark = match parse_mark(&args[1]) {
+            Ok(value) => value,
+            Err(error) => return finish(Err(error)),
+        };
+        return finish(keeper::run_holder(mark, Path::new(&args[2])));
+    }
+    if command == "attach" {
+        if args.len() < 3 {
             usage();
             return ExitCode::from(2);
         }
+        let mark = match parse_mark(&args[1]) {
+            Ok(value) => value,
+            Err(error) => {
+                eprintln!("error: {error}");
+                return ExitCode::from(2);
+            }
+        };
+        return finish(attach_many(mark, &args[2..]));
     }
+    if command == "detach" {
+        if args.len() < 2 {
+            usage();
+            return ExitCode::from(2);
+        }
+        return finish(detach_many(&args[1..]));
+    }
+    usage();
+    return ExitCode::from(2);
 }
