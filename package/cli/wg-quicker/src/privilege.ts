@@ -49,7 +49,7 @@ export async function relaunchWithRootIfNeeded(): Promise<boolean> {
    * Current effective UID,
    * defaulting to root semantics when host API is unavailable.
    */
-  const currentUid = process.getuid?.() ?? 0;
+  const currentUid = process.geteuid?.() ?? 0;
   if (currentUid === 0) {
     l.debug('already running with root privileges',);
     return false;

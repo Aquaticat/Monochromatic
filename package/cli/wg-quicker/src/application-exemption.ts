@@ -205,7 +205,7 @@ export async function startApplicationExemptions(
   /**
    * Current effective UID, defaulting to root semantics when API is unavailable.
    */
-  const currentUid = process.getuid?.() ?? 0;
+  const currentUid = process.geteuid?.() ?? 0;
   /**
    * Explicit service execution target when configured.
    */

@@ -202,7 +202,7 @@ export async function restorePrivilegeContext(): Promise<readonly string[]> {
   const processArguments = process
     .argv
     .slice(2,);
-  if ((process.getuid?.() ?? 0) !== 0)
+  if ((process.geteuid?.() ?? 0) !== 0)
     return processArguments;
   /**
    * Internal marker and path at root-child argument prefix.
