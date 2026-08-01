@@ -10,6 +10,7 @@ const config: NodeFlavorConfigs = perEntryNodeConfig({
   entries: [
     './src/index.ts',
     './src/application-exemption.ts',
+    './src/application-exemption-command.ts',
     './src/tunnel.ts',
     './src/config.ts',
     './src/tunnel-bypass.ts',

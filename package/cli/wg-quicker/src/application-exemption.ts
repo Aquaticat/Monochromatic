@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { resolveApplicationExemptionCommand, } from './application-exemption-command.ts';
 import { BypassRouteError, } from './errors.ts';
 import {
   run,
@@ -13,23 +14,6 @@ import {
  * Module logger for application cgroup watcher lifecycle.
  */
 const l = tagged({ tag: 'application-exemption', },);
-
-/**
- * Resolves companion after privilege context restoration.
- *
- * @returns Explicit exact path or name searched through privileged caller's `PATH`.
- *
- * @example
- * ```ts
- * exemptionCommand();
- * ```
- */
-function exemptionCommand(): string {
-  return process
-    .env
-    .WG_QUICKER_EXEMPT_COMMAND
-    ?? 'wg-quicker-exempt';
-}
 
 /**
  * Maximum Linux UID representable by watcher command UAPI.
@@ -249,8 +233,12 @@ export async function startApplicationExemptions(
     currentUid,
   },);
   fl.debug(`starting application watcher for ${interfaceName}, uid=${String(uid,)}`,);
+  /**
+   * Exact companion path validated before command execution.
+   */
+  const command = await resolveApplicationExemptionCommand();
   await run({
-    command: exemptionCommand(),
+    command,
     args: applicationWatchStartArgs({
       interfaceName,
       mark,
@@ -288,8 +276,12 @@ export async function stopApplicationExemptions(
     : await readBypassState({ interfaceName, },);
   if ((!configured) && (state === BYPASS_STATE_ABSENT))
     return;
+  /**
+   * Exact companion path validated before command execution.
+   */
+  const command = await resolveApplicationExemptionCommand();
   await run({
-    command: exemptionCommand(),
+    command,
     args: applicationWatchStopArgs({ interfaceName, },),
   },);
 }
