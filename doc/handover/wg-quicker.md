@@ -1,47 +1,42 @@
-# `wg-quicker` handover
+# `wg-quicker` completion handover
 
 ## Goal and safety boundary
 
-Finish a production-ready `wg-quick up/down` replacement that:
+The production replacement for `wg-quick up/down` is complete.
+It:
 
-- handles a large `AllowedIPs` value without Bash's superlinear trim behavior;
-- supports peer-local `AllowedIPsFromFiles = <allowed> <disallowed>` generation;
-- exempts all Ghostty sockets across existing and future surface scopes;
-- exempts Helium sockets;
-- uses cgroup-BPF socket marking plus policy routing;
-- keeps the privileged BPF loader in Rust;
+- handles large `AllowedIPs` values without Bash pattern matching;
+- generates peer-local `AllowedIPs` from allowed and disallowed source files;
+- owns collision-safe dual-stack bypass routing;
+- exempts Ghostty and Helium sockets through cgroup-BPF;
+- keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
-Do not bring up the real `mx-que-mx1` tunnel without asking first.
-Root and sudo are authorized only for disposable netns or VM verification.
+The real `mx-que-mx1` tunnel was not brought up.
+The human must explicitly authorize any future real-tunnel verification.
 
-Both TypeScript CLIs must statically import the shared module.
-Do not introduce a CLI-to-CLI dependency.
+## Completed tasks
 
-## Task state at restart
+- Task `#1`:
+   assess inherited handover.
+- Task `#2`:
+   extract shared AllowedIPs module.
+- Task `#3`:
+   correct peer-local `AllowedIPsFromFiles` semantics.
+- Task `#4`:
+   harden bypass routing and route watcher.
+- Task `#5`:
+   harden Rust BPF loader lifecycle.
+- Task `#6`:
+   cover Ghostty and Helium cgroups.
+- Task `#7`:
+   run final cross-package verification and update this handover.
+- Blocker task `#8`:
+   work around Linux bpffs SELinux pin regression.
 
-- Completed task `#1`:
-   assess the handover.
-- Completed task `#2`:
-   extract the shared AllowedIPs module.
-- Completed task `#3`:
-   correct `AllowedIPsFromFiles` semantics.
-- Completed task `#4`:
-   harden bypass routing.
-- In-progress task `#5`:
-   harden the Rust BPF loader lifecycle.
-- Pending task `#6`:
-   cover Ghostty and Helium cgroups,
-   blocked by task `#5`.
-- Pending task `#7`:
-   complete all verification,
-   blocked by tasks `#4` and `#6`.
+No tracked implementation task remains.
 
-Resume task `#5` first.
-
-## Completed commits
-
-The relevant completed logical units are:
+## Relevant commits
 
 ```text
 b8958bde1 initial inherited implementation
@@ -52,281 +47,320 @@ cd72d867d bypass-routing hardening work
 7eda14e17 bypass ownership lifecycle
 6d785d0a2 watcher process-group termination
 c3bb6735a exact bypass route ownership persistence
+1bb08f1e4 restart checkpoint handover
+4bef73b4e hardened Rust BPF link lifecycle and SELinux fallback
+3b92eb5c8 Ghostty and Helium application watcher integration
 ```
 
-Later unrelated documentation commits are also present at `HEAD`.
-Do not alter or include unrelated issue 401 files in `wg-quicker` commits.
+Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
 
-## Completed TypeScript work
+## Shared AllowedIPs ownership
 
-### Shared AllowedIPs ownership
+`package/module/wg-allowedips/` owns:
 
-`package/module/wg-allowedips/` now owns:
+- allowed and disallowed input generation;
+- CIDR parsing,
+   normalization,
+   minimization,
+   and subtraction;
+- DNS and ASN lookup seams and types;
+- IPinfo ASN cache validation and atomic replacement;
+- explicit cache-directory selection.
 
-- generation from allowed and disallowed text;
-- parser,
-   network,
-   and lookup types;
-- DNS and ASN lookup orchestration;
-- explicit IPinfo ASN cache ownership.
-
-Consumers use static workspace imports from
+Both CLIs use static workspace imports from
 `@monochromatic-dev/module-wg-allowedips/ts`.
-Runtime `import.meta.resolve()` and CLI-to-CLI imports were removed.
-Built CLI and config bundles were exercised outside the workspace.
+There is no CLI-to-CLI dependency and no runtime `import.meta.resolve()` source lookup.
+Built bundles work outside workspace package resolution.
 
-### Peer-local file generation
+## Peer-local file generation
 
-`AllowedIPsFromFiles` is scoped to its containing `[Peer]`.
-Expansion preserves the directive's insertion point.
-The parser rejects duplicate directives and conflicts with literal `AllowedIPs` in the same peer.
-Multiple peers are supported.
-`down` calls config loading without file,
- DNS,
- or ASN expansion.
+A peer may contain:
 
-### Bypass routing
+```ini
+[Peer]
+PublicKey = peer-public-key
+AllowedIPsFromFiles = ~/allowed.txt ~/disallowed.txt
+Endpoint = vpn.example:51820
+```
+
+The directive belongs to containing `[Peer]`.
+Expansion preserves directive insertion point.
+Parser rejects:
+
+- directive outside a peer;
+- duplicate source directives in one peer;
+- literal `AllowedIPs` and `AllowedIPsFromFiles` in same peer;
+- malformed source path count.
+
+Multiple peers can use independent source files.
+`down` retains metadata without reading files,
+resolving domains,
+or refreshing ASN caches.
+
+## Bypass routing
 
 `package/cli/wg-quicker` now provides:
 
 - dynamic dual-stack bypass-table allocation;
-- preference selection before all existing positive-priority rules;
+- preference selection before every existing positive-priority rule;
 - per-interface and global `flock` operation locks;
+- exact transition-state persistence;
+- exact kernel-rendered route fingerprints;
 - fail-closed unreachable defaults for a missing address family;
-- detached route watcher in the caller's network namespace;
-- watcher PID,
-   owner,
-   start-time,
-   and full-command validation;
-- process-group shutdown with disappearance confirmation;
-- monitor-child restart and synchronization before event-loss exposure;
-- state schema version `2` with exact kernel-rendered route fingerprints;
-- transition-state persistence;
-- teardown of only persisted exact routes;
+- route monitoring before initial synchronization;
+- monitor-child restart;
+- owner,
+  PID,
+  start-time,
+  and full-command validation;
+- validated process-group shutdown;
 - state retention after cleanup failure;
-- rejection of unrecorded defaults before mutation.
+- teardown of only persisted routes.
 
-Protocol `201` is only a route tag.
-It is not sufficient proof of ownership.
+Route protocol `201` is a tag,
+not ownership proof.
+Teardown never flushes a whole table and preserves unrelated protocol-`201` routes.
 
-The exact iproute2 missing-family translation is documented in
-`doc/troubleshooting/iproute2-family-fib-table-absence.md`.
-Only exit `2` with the selected family's exact `FIB table does not exist` diagnostic and `Dump terminated` means absence.
+Only exit `2` with selected family's exact `FIB table does not exist` diagnostic plus `Dump terminated` means an absent
+iproute2 family table.
+See `doc/troubleshooting/iproute2-family-fib-table-absence.md`.
 
-Disposable netns integration coverage includes table and preference collisions,
- literal `/0`,
- two `/1` prefixes,
- IPv4 and
-IPv6 marked routing,
- missing defaults,
- single-family fail-closed behavior,
- watcher resynchronization and restart,
- lock
-contention,
- wrong-owner retention,
- unowned-default rejection,
- unrelated-route preservation,
- changed-config teardown,
- and
-built CLI `up` and `down`.
-
-Task `#4` passed `buildAndTest`,
- `lint:types`,
- `lint:oxlint`,
- Markdown lint,
- and `test:integration:bypass` before its final
-commits.
-An independent review found no concrete task `#4` blocker.
-The real tunnel was not brought up.
-
-## In-progress Rust loader work
+## Rust BPF loader
 
 Package:
  `package/cli/wg-quicker-exempt/`.
 
-The crate continues to use only `libc` and the stable raw `bpf(2)` UAPI.
-No new dependency was adopted,
- so no technology-selection report is pending.
-
-### Uncommitted files
-
-At this checkpoint,
- `git status --short` reports only:
-
-```text
- M package/cli/wg-quicker-exempt/mise.toml
- M package/cli/wg-quicker-exempt/src/bpf.rs
- M package/cli/wg-quicker-exempt/src/main.rs
-?? package/cli/wg-quicker-exempt/src/bpf_tests.rs
-?? package/cli/wg-quicker-exempt/src/pin.rs
-```
-
-These Rust changes are not complete and have not been committed.
-
-### Implemented during task `#5`, not fully verified
-
-`src/bpf.rs` currently includes:
-
-- a little-endian compile-time guard for instruction bitfield encoding;
-- compile-time ABI size and offset assertions;
-- `OwnedFd` ownership for map,
-   program,
-   and link descriptors;
-- corrected `BPF_ST_MEM32` opcode `0x62`;
-- named four-byte `SO_MARK` option length;
-- null map lookup jumping directly to allow;
-- explicit inspection of `bpf_setsockopt` helper result;
-- fail-closed deny return when marking fails;
-- rollback of earlier pins after a partial four-hook attach failure;
-- test-only instruction snapshots.
-
-The installed Linux UAPI header confirms `BPF_FUNC_setsockopt` is helper `49`.
-An advisor incorrectly suggested helper `35`;
- do not change the verified value `49`.
-
-`src/pin.rs` currently includes:
-
-- `/sys/fs/bpf` `statfs` magic validation using `0xcafe4a11`;
-- mount-boundary validation through differing device identities from `/sys/fs`;
-- exact mirrored canonical cgroup paths under `/sys/fs/bpf/wg-quicker-exempt/`;
-- no collision-prone slash replacement and no hashing dependency;
-- a global `/run/wg-quicker-exempt.lock` `flock` lifecycle lock;
-- same-parent staging directories on bpffs;
-- exact four-pin deletion followed by `rmdir` only;
-- stale staging cleanup while holding the lifecycle lock;
-- first attach through plain rename;
-- reattach through atomic `renameat2(RENAME_EXCHANGE)`;
-- rollback of staged new pins if exchange fails;
-- detach through exact persisted pin removal.
-
-A disposable host probe confirmed that directory `RENAME_EXCHANGE` succeeds on the mounted bpffs when invoked correctly with
-no-target-directory semantics.
-
-`src/main.rs` now parses:
+Public commands:
 
 ```text
 wg-quicker-exempt attach <mark> <cgroup-dir>...
 wg-quicker-exempt detach <cgroup-dir>...
+wg-quicker-exempt list-targets <uid>
+wg-quicker-exempt watch-start <key> <mark> <uid>
+wg-quicker-exempt watch-stop <key>
 ```
 
-`src/bpf_tests.rs` has instruction tests for the 32-bit key store,
- null jump,
- helper call,
- and helper-result verdict.
-`mise.toml` has a new `test:unit` task and includes it in `buildAndTest`.
+The crate depends only on `libc` and uses stable raw `bpf(2)` UAPI.
+No unvetted hashing or BPF library dependency was added.
 
-### Verification already run on this uncommitted Rust state
+### Program correctness
 
-These commands passed after the edits listed here:
+- ABI size and offset assertions cover every used `bpf_attr` arm.
+- Big-endian targets fail at compile time.
+- `BPF_ST_MEM32` is opcode `0x62` and writes at correct stack offset.
+- Null map lookup jumps directly to allow return.
+- `bpf_setsockopt` helper `49` receives four-byte `SO_MARK` value.
+- Helper success allows socket operation.
+- Helper failure denies socket operation.
+- `OwnedFd` closes map,
+  program,
+  and link descriptors through all error paths.
+
+### Pin lifecycle
+
+Canonical cgroup path bytes are encoded injectively as chunked hexadecimal components.
+This avoids slash replacement collisions,
+bpffs-reserved dots,
+and component-length overflow for supported paths.
+
+The loader verifies:
+
+- `/sys/fs/bpf` has bpffs magic `0xcafe4a11`;
+- bpffs is a distinct mount boundary;
+- staging and final directories are on same filesystem.
+
+Four new links are created in staging.
+First attach uses rename.
+Replacement uses `renameat2(RENAME_EXCHANGE)`.
+Failed attachment removes earlier new pins and preserves prior complete set.
+Detach removes only four exact expected names,
+then calls `rmdir` so unrelated entries block removal.
+
+### Linux SELinux pin regression
+
+Kernel `7.1.3-ogc5.1.fc44.x86_64` returns `EINVAL` from `BPF_OBJ_PIN` because SELinux initializes inode security state before
+checking `SBLABEL_MNT` on bpffs.
+The package detects typed `BPF_OBJ_PIN EINVAL` without diagnostic-string matching.
+
+On affected kernels it uses detached descriptor keeper:
+
+- candidate creates all links before readiness;
+- candidate exits on parent-pipe EOF before commit;
+- parent persists transition state before sending `COMMIT`;
+- child writes commit marker before `COMMITTED`;
+- recovery rejects uncommitted candidate and preserves prior holder;
+- recovery adopts committed candidate;
+- detach validates PID,
+  start time,
+  full command,
+  mark,
+  and cgroup;
+- shutdown escalates validated process from `SIGTERM` to `SIGKILL` when required;
+- removed cgroups still map to lexical state key for cleanup.
+
+See `doc/troubleshooting/linux-bpffs-selinux-object-pin-einval.md` for source trace,
+reproduction,
+upstream patch,
+and filing decision.
+
+## Ghostty and Helium coverage
+
+`wg-quicker` starts Rust watcher only after bypass route exists.
+It stops watcher before removing bypass routing.
+Changed config without `ExemptMark` still stops watcher when persisted bypass state proves prior ownership.
+
+Target UID precedence:
+
+1. `WG_QUICKER_EXEMPT_UID`;
+2. `SUDO_UID`;
+3. non-root effective UID.
+
+Direct root execution without explicit or sudo identity fails closed.
+`wg-quicker-exempt` must be available through privileged caller's `PATH`.
+
+Watcher behavior:
+
+- watches existing user `app.slice`;
+- installs inotify before first scan;
+- attaches Ghostty main service;
+- attaches every existing Ghostty surface scope;
+- drains queued creation events and rescans before readiness;
+- attaches future Ghostty surface scopes;
+- identifies Helium Chrome application-ID service immediately;
+- maps live Helium,
+  renderer,
+  zygote,
+  and crashpad executables to current cgroups;
+- periodically rescans processes entering existing cgroups;
+- retains known Helium cgroups through process restarts until cgroup removal;
+- holds links directly for watcher lifetime;
+- drops every link on validated watcher shutdown.
+
+Final read-only host audit found all current targets:
+
+- all `11` Ghostty service and surface cgroups were listed;
+- all `16` live Helium executable processes mapped to listed cgroups;
+- no current target was missing.
+
+No real application cgroup was marked during this audit.
+State-mutating watcher tests used disposable cgroups.
+
+## Verification evidence
+
+### AllowedIPs packages
+
+Passed:
 
 ```text
-mise run //package/cli/wg-quicker-exempt:build:debug
-mise run //package/cli/wg-quicker-exempt:lint
-mise run //package/cli/wg-quicker-exempt:lint:clippy
-mise run //package/cli/wg-quicker-exempt:lint:rust
+mise run //package/module/wg-allowedips:buildAndTest
+mise run //package/module/wg-allowedips:lint:types
+mise run //package/module/wg-allowedips:lint:oxlint
+mise run //package/cli/wg-allowedips:buildAndTest
+mise run //package/cli/wg-allowedips:lint:types
+mise run //package/cli/wg-allowedips:lint:oxlint
 ```
 
-The Clippy pass occurred after fixing explicit lock-file truncate behavior and closure returns.
-The unit tests were added after that pass and have not yet been run.
-The latest stale-staging and cleanup edits also require rerunning all checks.
+Built CLI tests cover minimized output,
+complete subtraction,
+missing options,
+unknown options,
+positional input,
+unreadable files,
+parser failures,
+DNS absence warnings,
+and empty allowed input.
 
-### Required task `#5` follow-up
+### OpenTofu consumer
 
-Before committing task `#5`:
-
-1. Run `test:unit`,
-    `buildAndTest`,
-    and every package lint task.
-2. Review `src/pin.rs` transaction behavior for all cleanup-error branches.
-3. Ensure failed attach rollback reports cleanup failure rather than hiding it.
-4. Add tests for collision-free canonical pin mapping and exact detach behavior.
-5. Add privileged functional tests in a disposable cgroup fixture for:
-   - TCP4 connect;
-   - TCP6 connect;
-   - UDP4 sendmsg;
-   - UDP6 sendmsg;
-   - link persistence after loader exit;
-   - detach;
-   - repeated attach with a changed mark;
-   - partial four-hook rollback;
-   - failed replacement preserving the prior working attachment.
-6. Verify replacement using observable socket marks and,
-    if practical through raw UAPI,
-    changed BPF link identity.
-7. Update `package/cli/wg-quicker-exempt/README.md` with detach,
-    mirrored pin paths,
-    bpffs validation,
-    atomic replacement,
-   fail-closed helper behavior,
-    and little-endian support.
-8. Run an independent review.
-9. Commit only the package files for task `#5` after all checks pass.
-
-Do not use `bpftool` as an assumed runtime dependency.
-It was not installed on the host when checked.
-
-## Task `#6`: Ghostty and Helium coverage
-
-Do not move Ghostty into another slice.
-
-Observed Ghostty cgroups have these forms:
+Passed:
 
 ```text
-app-com.mitchellh.ghostty@<id>.service
-app-ghostty-surface-transient-<pid>.scope
+mise run //package/config/tofu:test
+mise run //package/config/tofu:lint
 ```
 
-Required behavior:
+OpenTofu validation succeeded.
+ASN cache tests covered filtering,
+atomic replacement,
+corrupt cache rejection,
+and malformed records.
 
-- attach to the existing Ghostty service cgroup;
-- enumerate every existing surface scope;
-- watch `app.slice` for newly created or moved-in surface scopes;
-- install the watch before rescanning to close the creation race;
-- attach every future surface scope;
-- cover sockets from commands running inside every surface scope;
-- detach and clean persisted links safely on tunnel down.
+### `wg-quicker`
 
-Helium is an AppImage observed under `flatpak-session-helper.service` with multiple processes.
-Choose a cgroup boundary that contains browser,
- renderer,
- zygote,
- crashpad,
- and restarted descendants.
-Verify that containment rather than assuming it.
+Passed:
 
-## Task `#7`: final verification
+```text
+mise run //package/cli/wg-quicker:buildAndTest
+mise run //package/cli/wg-quicker:lint:types
+mise run //package/cli/wg-quicker:lint:oxlint
+mise run //package/cli/wg-quicker:test:integration:bypass
+```
 
-After tasks `#5` and `#6`:
+Disposable netns integration covers:
 
-- rerun all affected package builds,
-   tests,
-   TypeScript lint,
-   Rust checks,
-   and Markdown lint;
-- rerun disposable netns routing integration;
-- exercise both built CLIs at their consumer boundaries;
-- exercise all four BPF protocol hooks and application lifecycle integration;
-- confirm teardown leaves no owned rules,
-   routes,
-   watcher,
-   state,
-   or pins;
-- confirm unrelated policy routes and pins remain untouched;
-- inspect `git status` and commit each completed logical unit;
-- update this handover to completion state.
+- table and preference collisions;
+- literal `/0` and two-`/1` full-tunnel forms;
+- marked and unmarked IPv4 and IPv6 routing;
+- missing physical defaults;
+- single-family fail-closed defaults;
+- watcher resynchronization and monitor restart;
+- operation-lock contention;
+- wrong-owner state retention;
+- unowned-default rejection;
+- unrelated route preservation;
+- changed-config teardown;
+- built CLI `up` and `down`.
 
-Ask before any command that could bring up `mx-que-mx1`.
+### `wg-quicker-exempt`
 
-## Commands for immediate resume
+Passed:
 
-From repository root:
-
-```sh
-mise run //package/cli/wg-quicker-exempt:test:unit
+```text
 mise run //package/cli/wg-quicker-exempt:buildAndTest
-mise run //package/cli/wg-quicker-exempt:lint:clippy
-mise run //package/cli/wg-quicker-exempt:lint:rust
+mise run //package/cli/wg-quicker-exempt:test:functional
 ```
 
-Use repository `mise` tasks rather than raw Cargo when a suitable task exists.
-Use disposable fixtures for state-mutating verification.
+Privileged disposable-cgroup tests cover:
+
+- TCP4 connect;
+- TCP6 connect;
+- UDP4 sendmsg;
+- UDP6 sendmsg;
+- process-exit persistence;
+- repeated attach with changed mark;
+- exact detach;
+- partial-link rollback;
+- failed candidate replacement preserving prior holder;
+- pre-transition parent death;
+- committed and uncommitted transition recovery;
+- wrong-owner state retention;
+- removed-cgroup cleanup;
+- existing and future Ghostty scope coverage;
+- public watcher start and stop lifecycle.
+
+Unit tests additionally cover target-name precision,
+fake procfs Helium mapping,
+path-key injectivity,
+exact cleanup,
+atomic exchange,
+failed-exchange preservation,
+instruction width,
+and control-flow offsets.
+
+### Documentation and workspace state
+
+Markdown lint passed for affected documentation.
+`git diff --check` passed before each commit.
+No watcher,
+disposable cgroup,
+runtime state,
+or unexpected pin remained after final verification.
+
+## Operational notes
+
+- Install both `wg-quicker` and `wg-quicker-exempt` in privileged `PATH`.
+- Use `ExemptMark = 8888` or another positive mark in `[Interface]`.
+- Invoke through sudo so `SUDO_UID` identifies desktop user,
+  or set `WG_QUICKER_EXEMPT_UID` explicitly.
+- Use `wg-quicker-exempt list-targets <uid>` for read-only coverage audit.
+- Ask before bringing up `mx-que-mx1`.
