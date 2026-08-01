@@ -14,10 +14,13 @@
  * @module
  */
 
+import { fileURLToPath, } from 'node:url';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { loadConfig, } from './config.ts';
 import { CliUsageError, } from './errors.ts';
+import { relaunchWithRootIfNeeded, } from './privilege.ts';
 import {
   down,
   up,
@@ -75,27 +78,48 @@ function parseCliArgs({ argv, }: { readonly argv: readonly string[]; },): CliArg
 }
 
 /**
- * Arguments after runtime and script path.
+ * Validates invocation,
+ * crosses privilege boundary,
+ * then runs requested tunnel operation.
+ *
+ * @example
+ * ```ts
+ * await main();
+ * ```
  */
-const processArguments = process.argv
-  .slice(2,);
+async function main(): Promise<void> {
+  /**
+   * Arguments after runtime and script path.
+   */
+  const processArguments = process.argv
+    .slice(2,);
+  /**
+   * Parsed subcommand and config target.
+   */
+  const {
+    subcommand,
+    target,
+  } = parseCliArgs({ argv: processArguments, },);
+  l.debug(`${subcommand} ${target}`,);
+  /**
+   * Whether non-root process handed entire operation to sudo child.
+   */
+  const delegated = await relaunchWithRootIfNeeded({
+    currentUid: process.getuid?.() ?? 0,
+    executablePath: process.execPath,
+    scriptPath: fileURLToPath(import.meta.url,),
+    processArguments,
+  },);
+  if (delegated)
+    return;
+  /**
+   * Parsed config for requested interface.
+   */
+  const config = await loadConfig({
+    arg: target,
+    expandAllowedIps: subcommand === 'up',
+  },);
+  await (subcommand === 'up' ? up({ config, },) : down({ config, },));
+}
 
-/**
- * Parsed subcommand and config target.
- */
-const {
-  subcommand,
-  target,
-} = parseCliArgs({ argv: processArguments, },);
-
-l.debug(`${subcommand} ${target}`,);
-
-/**
- * Parsed config for the requested interface.
- */
-const config = await loadConfig({
-  arg: target,
-  expandAllowedIps: subcommand === 'up',
-},);
-
-await (subcommand === 'up' ? up({ config, },) : down({ config, },));
+await main();

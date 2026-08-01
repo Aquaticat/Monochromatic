@@ -29,6 +29,21 @@ export class ConfigError extends Error {
 }
 
 /**
+ * Error raised when CLI cannot enter or complete privileged execution.
+ *
+ * @example
+ * ```ts
+ * throw new PrivilegeError('Unable to start sudo.');
+ * ```
+ */
+export class PrivilegeError extends Error {
+  /**
+   * Stable error type name rendered by Node.
+   */
+  override name = 'PrivilegeError';
+}
+
+/**
  * Error raised when application bypass state is missing,
  * corrupt,
  * or unsafe to mutate.
