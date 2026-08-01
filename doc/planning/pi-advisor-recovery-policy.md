@@ -1,8 +1,8 @@
 # Pi Advisor recovery policy
 
 Status:
-proposed,
- not decided.
+options A to D and F accepted for issue tracking;
+ option E rejected.
 
 ## Goal
 
@@ -135,26 +135,21 @@ Cons:
 - Does not by itself make a provider succeed.
 - Attempt history needs a compact renderer.
 
-## Option E: Task-scoped evidence mode
+## Rejected option E: Task-scoped evidence mode
 
-Policy:
+Decision:
+rejected on 2026-08-01 because task-boundary inference is too indeterministic.
+No implementation issue should be opened.
+Advisor retains Pi's model-aware compaction context instead of guessing which evidence belongs to the current task.
 
-- Add an explicit mode that sends the latest compaction summary,
-   current task evidence,
-   relevant diff,
-   and recent messages instead of the complete compacted session.
-- Keep full-session mode as the default until task boundaries are reliable.
-
-Pros:
-
-- Can improve relevance and reduce repeated unrelated history.
-- Reduces latency and input cost when the review is narrowly scoped.
-
-Cons:
-
-- Automatic task-boundary inference can omit a requirement or earlier decision.
-- Building a trustworthy diff and evidence packet requires additional provenance.
-- It does not address provider instability by itself.
+The rejected policy would have sent the latest compaction summary,
+ current task evidence,
+ relevant diff,
+ and recent messages instead of the complete compacted session.
+Its possible relevance and input savings do not outweigh the risk of omitting a requirement,
+ earlier decision,
+ or cross-task dependency.
+A trustworthy evidence packet would require provenance that the current session model does not provide.
 
 ## Option F: Hedged default reviews
 
@@ -178,16 +173,14 @@ Cons:
 ## Ranking
 
 Ranking:
-A > B > C > D > E > F.
+A > B > C > D > F.
 
 A ranks over B because same-model recovery helps explicit and default calls,
  while B helps only default selection.
 B ranks over C because observed provider variability caused manual switching even when requests fit documented windows.
 C ranks over D because correct context negotiation can prevent failures,
  while D primarily exposes them.
-D ranks over E because measured attempt evidence is required before safely changing context policy.
-E ranks over F because task scoping avoids duplicated provider spend,
- while hedging can bill two full reviews.
+D ranks over F because attempt evidence and progress improve every review without the duplicate provider spend of hedging.
 
 ## Recommended implementation order
 
@@ -196,11 +189,11 @@ E ranks over F because task scoping avoids duplicated provider spend,
 3. Add configured default order and session-health fallback.
 4. Add exact-tokenizer adapters and entry-aware context negotiation.
 5. Wire aggregate usage and `onUpdate` rendering to the attempt ledger.
-6. Evaluate task-scoped mode from recorded review quality.
-7. Keep hedging opt-in unless measured tail latency justifies duplicate requests.
+6. Keep hedging opt-in unless measured tail latency justifies duplicate requests.
 
-Existing issues cover usage accounting (`#408`),
+Accepted work is tracked by the attempt ledger and usage issue (`#408`),
  health-aware selection (`#409`),
- context budgeting (`#410`),
- and progress rendering (`#411`).
-Failure-aware same-model recovery needs separate tracking if this proposal is accepted.
+ context negotiation (`#410`),
+ progress rendering (`#411`),
+ failure-aware same-model recovery (`#412`),
+ and opt-in hedging (`#413`).
