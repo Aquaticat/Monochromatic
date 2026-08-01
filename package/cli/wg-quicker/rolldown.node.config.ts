@@ -12,6 +12,7 @@ const config: NodeFlavorConfigs = perEntryNodeConfig({
     './src/application-exemption.ts',
     './src/application-exemption-command.ts',
     './src/privilege-context-data.ts',
+    './src/policy-routing-conflict.ts',
     './src/tunnel.ts',
     './src/config.ts',
     './src/tunnel-bypass.ts',

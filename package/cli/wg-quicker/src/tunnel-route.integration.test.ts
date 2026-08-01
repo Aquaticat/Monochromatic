@@ -201,10 +201,14 @@ async function createRouteFixture(): Promise<RouteFixture> {
     await runInNamespace({ namespace: serverNamespace, command: ['ip', 'link', 'set', 'lo', 'up',], },);
     await runInNamespace({ namespace: clientNamespace, command: ['ip', 'address', 'add', '198.51.100.2/24', 'dev', clientPhysical,], },);
     await runInNamespace({ namespace: serverNamespace, command: ['ip', 'address', 'add', '198.51.100.1/24', 'dev', serverPhysical,], },);
+    await runInNamespace({ namespace: clientNamespace, command: ['ip', '-6', 'address', 'add', '2001:db8:100::2/64', 'dev', clientPhysical,], },);
+    await runInNamespace({ namespace: serverNamespace, command: ['ip', '-6', 'address', 'add', '2001:db8:100::1/64', 'dev', serverPhysical,], },);
     await runInNamespace({ namespace: serverNamespace, command: ['ip', 'address', 'add', '203.0.113.1/32', 'dev', 'lo',], },);
+    await runInNamespace({ namespace: serverNamespace, command: ['ip', '-6', 'address', 'add', '2001:db8:200::1/128', 'dev', 'lo',], },);
     await runInNamespace({ namespace: clientNamespace, command: ['ip', 'link', 'set', clientPhysical, 'up',], },);
     await runInNamespace({ namespace: serverNamespace, command: ['ip', 'link', 'set', serverPhysical, 'up',], },);
     await runInNamespace({ namespace: clientNamespace, command: ['ip', 'route', 'add', 'default', 'via', '198.51.100.1', 'dev', clientPhysical,], },);
+    await runInNamespace({ namespace: clientNamespace, command: ['ip', '-6', 'route', 'add', 'default', 'via', '2001:db8:100::1', 'dev', clientPhysical,], },);
     return fixture;
   }
   catch (error) {
@@ -265,7 +269,7 @@ await writeFile(configPath, [
   '[Peer]',
   `PublicKey = ${serverPublic}`,
   `Endpoint = 203.0.113.1:${String(SERVER_PORT,)}`,
-  'AllowedIPs = 10.200.0.2/32, 192.0.0.0/2',
+  'AllowedIPs = 10.200.0.2/32, 192.0.0.0/2, 2000::/3',
 ].join('\n',), { mode: 0o600, },);
 
 //region Conflicting IVPN policy preflight
@@ -283,6 +287,19 @@ assert.notEqual(conflict.exitCode, 0,);
 assert.ok(conflict.stderr.includes('IVPN Desktop split tunneling is active',));
 assert.notEqual((await runSudoAllowingFailure({ args: ['ip', 'netns', 'exec', fixture.clientNamespace, 'ip', 'link', 'show', 'dev', 'wgtest',], },)).exitCode, 0,);
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-4', 'rule', 'delete', 'fwmark', '0xca6c', 'table', '17',], },);
+await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-6', 'rule', 'add', 'fwmark', '0xca6c', 'table', '17',], },);
+/**
+ * Rejected up result for IPv6 conflict before interface creation.
+ */
+const conflictV6 = await runFixtureCli({
+  fixture,
+  operation: 'up',
+  configPath,
+},);
+assert.notEqual(conflictV6.exitCode, 0,);
+assert.ok(conflictV6.stderr.includes('IVPN Desktop split tunneling is active',));
+assert.notEqual((await runSudoAllowingFailure({ args: ['ip', 'netns', 'exec', fixture.clientNamespace, 'ip', 'link', 'show', 'dev', 'wgtest',], },)).exitCode, 0,);
+await runInNamespace({ namespace: fixture.clientNamespace, command: ['ip', '-6', 'rule', 'delete', 'fwmark', '0xca6c', 'table', '17',], },);
 
 //endregion Conflicting IVPN policy preflight
 
@@ -312,6 +329,15 @@ const endpointRoute = await runInNamespace({
 assert.ok(endpointRoute.includes(`dev ${fixture.clientPhysical}`,),);
 assert.ok(endpointRoute.includes('via 198.51.100.1',),);
 /**
+ * Unmarked physical gateway route proving main suppress rule runs first.
+ */
+const gatewayRoute = await runInNamespace({
+  namespace: fixture.clientNamespace,
+  command: ['ip', '-4', 'route', 'get', '198.51.100.1',],
+},);
+assert.ok(gatewayRoute.includes(`dev ${fixture.clientPhysical}`,),);
+assert.equal(gatewayRoute.includes('dev wgtest',), false,);
+/**
  * Inner peer route selected from WireGuard policy table.
  */
 const innerRoute = await runInNamespace({
@@ -320,6 +346,24 @@ const innerRoute = await runInNamespace({
 },);
 assert.ok(innerRoute.includes('dev wgtest',),);
 assert.ok(innerRoute.includes(`table ${String(table,)}`,),);
+/**
+ * IPv6 connected route preserved before broad WireGuard policy prefix.
+ */
+const gatewayRouteV6 = await runInNamespace({
+  namespace: fixture.clientNamespace,
+  command: ['ip', '-6', 'route', 'get', '2001:db8:100::1',],
+},);
+assert.ok(gatewayRouteV6.includes(`dev ${fixture.clientPhysical}`,),);
+assert.equal(gatewayRouteV6.includes('dev wgtest',), false,);
+/**
+ * IPv6 public route selected from shared WireGuard policy table.
+ */
+const innerRouteV6 = await runInNamespace({
+  namespace: fixture.clientNamespace,
+  command: ['ip', '-6', 'route', 'get', '2001:4860:4860::8888',],
+},);
+assert.ok(innerRouteV6.includes('dev wgtest',),);
+assert.ok(innerRouteV6.includes(`table ${String(table,)}`,),);
 await runInNamespace({ namespace: fixture.clientNamespace, command: ['ping', '-c', '1', '-W', '3', '10.200.0.2',], },);
 /**
  * Client transfer counters after bidirectional ping.

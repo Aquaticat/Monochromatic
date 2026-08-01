@@ -12,7 +12,7 @@ const POLICY_FAMILIES = [
 /**
  * Packet mark installed by IVPN Desktop split tunneling.
  */
-const IVPN_SPLIT_MARK = '0xca6c';
+const IVPN_SPLIT_MARK = 51_820;
 
 /**
  * Numeric IVPN Desktop split-tunnel route table.
@@ -46,12 +46,14 @@ type PolicyRule = {
  *
  * @returns Whether rule selects IVPN table 17 for mark `0xca6c`.
  *
+ * @internal
+ *
  * @example
  * ```ts
  * isIvpnSplitRule({ fwmark: '0xca6c', table: '17' });
  * ```
  */
-function isIvpnSplitRule(value: unknown,): value is PolicyRule {
+export function isIvpnSplitRule(value: unknown,): value is PolicyRule {
   if (((typeof value) !== 'object') || (value === null))
     return false;
   /**
@@ -59,12 +61,20 @@ function isIvpnSplitRule(value: unknown,): value is PolicyRule {
    */
   const rule = value as PolicyRule;
   /**
+   * Numeric packet mark normalized from current iproute2 JSON forms.
+   */
+  const mark = (typeof rule.fwmark) === 'number'
+    ? rule.fwmark
+    : (typeof rule.fwmark) === 'string'
+      ? Number(rule.fwmark,)
+      : Number.NaN;
+  /**
    * Whether table uses numeric, rendered numeric, or configured name form.
    */
   const matchesTable = (rule.table === IVPN_SPLIT_TABLE_ID)
     || (rule.table === String(IVPN_SPLIT_TABLE_ID,))
     || (rule.table === IVPN_SPLIT_TABLE_NAME);
-  return (rule.fwmark === IVPN_SPLIT_MARK)
+  return (mark === IVPN_SPLIT_MARK)
     && matchesTable;
 }
 
