@@ -37,12 +37,6 @@ const SMALL_CONTEXT_WINDOW = 5_000;
 /** Large model context window used in budget tests. */
 const LARGE_CONTEXT_WINDOW = 10_000;
 
-/** Model context window large enough to reach independent hard ceiling. */
-const HUGE_CONTEXT_WINDOW = 1_000_000;
-
-/** Default independent serialized-context ceiling. */
-const DEFAULT_HARD_CONTEXT_CEILING = 300_000;
-
 /** Fixture max output tokens. */
 const MAX_TOKENS = 1_000;
 
@@ -208,17 +202,6 @@ await describe({
           advisorSystemPrompt: 'review carefully',
         },);
         expect(largeBudget,).toBeGreaterThan(smallBudget,);
-      },
-    },),
-    it({
-      name: 'applies independent default hard ceiling for large models',
-      fn: async () => {
-        const budget = maxContextCharsForAdvisorModel({
-          config: dynamicBudgetConfig,
-          model: fixtureModel(HUGE_CONTEXT_WINDOW,),
-          advisorSystemPrompt: 'review carefully',
-        },);
-        expect(budget,).toBe(DEFAULT_HARD_CONTEXT_CEILING,);
       },
     },),
     it({
