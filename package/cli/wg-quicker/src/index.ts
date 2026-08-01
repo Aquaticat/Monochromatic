@@ -14,8 +14,6 @@
  * @module
  */
 
-import { fileURLToPath, } from 'node:url';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { loadConfig, } from './config.ts';
@@ -104,12 +102,7 @@ async function main(): Promise<void> {
   /**
    * Whether non-root process handed entire operation to sudo child.
    */
-  const delegated = await relaunchWithRootIfNeeded({
-    currentUid: process.getuid?.() ?? 0,
-    executablePath: process.execPath,
-    scriptPath: fileURLToPath(import.meta.url,),
-    processArguments,
-  },);
+  const delegated = await relaunchWithRootIfNeeded();
   if (delegated)
     return;
   /**

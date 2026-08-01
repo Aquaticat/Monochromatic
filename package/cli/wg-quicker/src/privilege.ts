@@ -1,5 +1,6 @@
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
+import { resolve, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -16,60 +17,59 @@ const l = tagged({ tag: 'privilege', },);
 const SUDO_COMMAND = 'sudo';
 
 /**
+ * Exit-status sentinel for child terminated by signal.
+ */
+const SIGNAL_EXIT_CODE = -1;
+
+/**
  * Relaunches exact Node runtime and CLI artifact through sudo when current process is non-root.
  *
  * Inherited standard streams let sudo use terminal for authentication.
  * Exact runtime and script paths avoid relying on sudo's restricted command search path.
- *
- * @param currentUid - Effective UID of current CLI process.
- *
- * @param executablePath - Absolute Node executable running current process.
- *
- * @param scriptPath - Absolute CLI module path running current process.
- *
- * @param processArguments - Original arguments after CLI module path.
+ * Process globals are read at this ownership boundary so unresolved host APIs receive no
+ * caller-owned object or capability.
  *
  * @returns Whether operation was delegated to privileged child.
  *
- * @throws {@link PrivilegeError} when sudo cannot start or privileged child fails.
+ * @throws {@link PrivilegeError} when invocation lacks script path,
+ * sudo cannot start,
+ * or privileged child fails.
  *
  * @example
  * ```ts
- * await relaunchWithRootIfNeeded({
- *   currentUid: 1000,
- *   executablePath: '/usr/bin/node',
- *   scriptPath: '/opt/wg-quicker/index.mjs',
- *   processArguments: ['up', 'wg0'],
- * });
+ * await relaunchWithRootIfNeeded();
  * ```
  */
-export async function relaunchWithRootIfNeeded(
-  {
-    currentUid,
-    executablePath,
-    scriptPath,
-    processArguments,
-  }: {
-    readonly currentUid: number;
-    readonly executablePath: string;
-    readonly scriptPath: string;
-    readonly processArguments: readonly string[];
-  },
-): Promise<boolean> {
+export async function relaunchWithRootIfNeeded(): Promise<boolean> {
+  /**
+   * Current effective UID,
+   * defaulting to root semantics when host API is unavailable.
+   */
+  const currentUid = process.getuid?.() ?? 0;
   if (currentUid === 0) {
     l.debug('already running with root privileges',);
     return false;
   }
   /**
+   * CLI module and operation arguments supplied by Node runtime.
+   */
+  const [, scriptArgument, ...processArguments] = process.argv;
+  if (scriptArgument === undefined)
+    throw new PrivilegeError('Node did not provide wg-quicker script path.',);
+  /**
+   * Absolute CLI module path for exact privileged re-execution.
+   */
+  const scriptPath = resolve(scriptArgument,);
+  /**
    * Exact command boundary passed after sudo's option terminator.
    */
   const sudoArguments = [
     '--',
-    executablePath,
+    process.execPath,
     scriptPath,
     ...processArguments,
   ];
-  l.debug(`relaunching through sudo: ${executablePath} ${scriptPath}`,);
+  l.debug(`relaunching through sudo: ${process.execPath} ${scriptPath}`,);
   /**
    * Interactive privilege broker sharing terminal streams with invoking user.
    */
@@ -86,15 +86,22 @@ export async function relaunchWithRootIfNeeded(
   }
   catch (error) {
     l.error(`failed to start sudo: ${String(error,)}`,);
-    throw new PrivilegeError('Unable to start sudo for wg-quicker.', { cause: error, },);
+    throw new PrivilegeError(
+      'Unable to start sudo for wg-quicker.',
+      { cause: error, },
+    );
   }
   /**
    * Exit status available after close event unless child ended by signal.
    */
   const { exitCode, } = child;
   if (exitCode !== 0) {
+    /**
+     * Numeric status with signal termination represented by sentinel.
+     */
+    const renderedExitCode = String(exitCode ?? SIGNAL_EXIT_CODE,);
     throw new PrivilegeError(
-      `Privileged wg-quicker process failed with exit code ${String(exitCode ?? -1,)}.`,
+      `Privileged wg-quicker process failed with exit code ${renderedExitCode}.`,
     );
   }
   return true;
