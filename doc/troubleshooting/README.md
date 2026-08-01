@@ -175,6 +175,15 @@ VSCode-specific troubleshooting (already exists):
 - Remote development setup
 - VSCode extension issues
 
+### [virt-manager SPICE auto resize](virt-manager-spice-agent-xwayland-resize-race.md)
+
+Guest resize failures in a labwc session using xwayland-satellite:
+
+- `spice-vdagent.service` races xwayland-satellite and exits against stale
+  `DISPLAY=:0`
+- A user-unit dependency and explicit `DISPLAY=:12` restore the SPICE channel
+- Cold-reboot and multiple-window-size verification
+
 ## Quick Links
 
 For common issues:
@@ -222,6 +231,9 @@ For common issues:
    or `protobufjs`?
   ** →
   [Pi update allowScripts warnings](pi-update-allow-scripts.md)
+- **virt-manager console does not resize a labwc guest?
+  ** →
+  [Order spice-vdagent after xwayland-satellite](virt-manager-spice-agent-xwayland-resize-race.md)
 
 ## Contributing
 
