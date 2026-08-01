@@ -432,6 +432,11 @@ supplicant,
 kernel,
 and reachability capture.
 
+FLK:
+ One provider capacity failure isn't a stable limit.
+Measure repeated same-input outcomes before lowering global context budgets;
+prefer model-aware budgeting.
+
 RBK:
  User must execute manually:
  invoke `runbook` skill for the document.
