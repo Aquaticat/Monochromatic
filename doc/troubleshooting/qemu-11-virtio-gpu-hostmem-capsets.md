@@ -1,4 +1,4 @@
-# QEMU 11.0.0 virtio-vga-gl without hostmem limits a labwc guest to OpenGL 4.3 and software Vulkan
+# QEMU 11.0.0 virtio-vga-gl without hostmem and Venus leaves labwc at OpenGL 4.3 and software Vulkan
 
 ## Metadata
 
@@ -26,7 +26,7 @@
 - **Disposition:**
   Keep the current configuration for regression-covered labwc migration
   testing.
-  Use the verified `qemu:override` configuration only when OpenGL 4.6,
+  Evaluate the candidate `qemu:override` configuration only when OpenGL 4.6,
   hardware Vulkan,
   or AMD native-context fidelity matters more than retaining the established
   cursor,
@@ -434,9 +434,13 @@ GPU software that requires OpenGL newer than 4.3 or hardware Vulkan does not
 match the physical host.
 Vulkan work runs on the guest CPU.
 
+## Candidate enhancement
+
 ### Enable every available virtual GPU capability through qemu:override
 
-The verified maximum-capability frontend is:
+The maximum-capability device was verified through direct QEMU and SPICE.
+The corresponding libvirt frontend is a generated candidate,
+not an end-to-end verified domain workaround:
 
 ```xml
 <!-- Add xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" to <domain>
@@ -473,6 +477,20 @@ for either capability.
 The combined profile is the only enhanced profile exercised here;
 a reduced profile should omit `drm_native_context` unless native AMD driver
 fidelity is the test target.
+
+The full libvirt-managed domain was not booted with this override.
+A `domxml-to-native` attempt using a copy of the complete domain stopped while
+preparing its unrelated network interface with
+`Unable to create tap device vnet0`.
+Before adoption,
+boot a disposable libvirt-managed clone with a single `ua-video0` alias and a
+current-image overlay,
+then repeat cursor,
+resize,
+scale,
+reboot,
+OpenGL,
+and Vulkan checks.
 
 Tradeoffs:
 
