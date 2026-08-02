@@ -731,82 +731,78 @@ or this capability class.
 
 Duplicate searches found:
 
-- [virt-manager issue 362][virt-manager-venus],
-  which tracks UI and CLI support for Venus and links the libvirt gap.
-- [libvirt issue 638][libvirt-638],
-  which tracks stable XML for `hostmem`,
+- [virt-manager issue 362][virt-manager-venus] tracks UI and CLI support for
+  Venus and links the libvirt gap.
+- [libvirt issue 638][libvirt-638] tracks stable XML for `hostmem`,
   Venus,
   and native-context options.
-
-The full virt-manager thread was read.
-The maintainer explicitly said virt-manager is blocked until libvirt has
-stable XML.
-The issue was reopened after Venus reached upstream QEMU.
+- [QEMU issue 3156][qemu-3156] tracks a sandbox-compatible Venus render-server
+  file descriptor.
+  Its goal cites the same libvirt `spawn=deny` conflict measured here.
 
 The six filing constraints resolve as follows:
 
 1. **Is it really upstream's fault?**
-   No for the incident documented here.
-   QEMU and the installed renderer expose the requested capabilities.
-   The persistent local domain simply does not request them.
-   Missing stable management XML is an upstream feature gap,
-   but it already has dedicated issues.
+   Yes for the missing stable XML and sandbox-safe Venus launch path.
+   The current builds expose the features,
+   but the default libvirt security policy cannot start Venus.
 2. **Can upstream fix it?**
-   Yes for the management gap.
-   libvirt can model the QEMU properties,
-   after which virt-install and virt-manager can expose them.
+   Yes.
+   QEMU can accept a pre-opened render-server descriptor,
+   and libvirt can model both the descriptor and GPU properties.
 3. **Are they supporting this use case?**
    Yes.
-   libvirt models virtio video and blobs,
-   and virt-manager already exposes virtio three-dimensional acceleration.
-   Both trackers retain dedicated feature requests for the remaining knobs.
+   Dedicated open QEMU,
+   libvirt,
+   and virt-manager issues cover each management layer.
 4. **Would the repositories welcome a contribution?**
    Yes.
-   virt-manager's `CONTRIBUTING.md` directs feature patches to GitHub and
-   names CLI XML extensions as introductory work.
-   The checked contribution files and issue templates contain no ban on
-   external or AI-assisted reports.
+   The issue text invites patches,
+   and the checked contribution files do not exclude this feature class.
 5. **Will they likely fix it?**
    Plausible,
    but not promised.
-   The issues are open and blocked on architecture order rather than rejected.
-   No maintainer commitment or refusal appears in the read threads.
+   The issues remain open and include a prior server-descriptor patch design.
 6. **Have we prototyped a minimal upstream fix?**
    No.
-   The work here prototypes a local libvirt override and the runtime feature
-   combination,
-   not stable libvirt schema or virt-manager UI support.
-   Automatic upstream prototyping is not triggered because constraint 1 fails
-   for the local incident itself.
+   This work verifies the failure,
+   driver-wide workaround,
+   and end-user behavior,
+   but it does not implement the server-descriptor or stable-schema changes.
 
-No new issue should be filed.
-The runtime evidence and override are additive to the existing virt-manager
-thread,
-but constraint 6 does not permit posting the comment as-is.
-Retain this draft only for a future human-verified upstream patch effort.
+No new issue or comment was posted.
+QEMU issue 3156 already describes the exact missing sandbox mechanism,
+and no source patch was produced to advance that tracker.
 
 ### Additive comment draft, do not post as-is
 
 ~~~md
-Tested the now-upstream path on a Radeon RX 7600 with QEMU 11.0.0,
-virglrenderer 1.3.0,
-Linux 7.1,
-and Mesa 26.1.
+Tested QEMU 11.0.0 and virglrenderer 1.3.0 on a Radeon RX 7600 through
+libvirt 12.4.0.
 
-A disposable Linux guest using
+A real Linux domain using
 `virtio-vga-gl,hostmem=2G,blob=true,venus=true,drm_native_context=true`
-reported `+host_visible`, four capsets, OpenGL 4.6 on native radeonsi,
-and a Venus Vulkan device backed by RADV.
-The same device also worked through a real SPICE GL client connection.
+failed under libvirt's default
+`-sandbox on,...,spawn=deny,...` policy.
+QEMU logged `failed to initialize venus renderer`,
+the guest timed out reading capset 0,
+and labwc blocked before publishing `WAYLAND_DISPLAY`.
+Venus-only failed the same way.
 
-Until stable libvirt XML exists, `qemu:override` can add `hostmem`, `venus`,
-and `drm_native_context` to a user-aliased video frontend.
-`virsh domxml-to-native` confirmed that this modifies the existing
-`virtio-vga-gl` device rather than adding a second GPU.
+Setting `seccomp_sandbox = 0` for the session QEMU driver changed the generated
+argument to `-sandbox off`.
+The same domain then exposed four capsets,
+OpenGL 4.6 on radeonsi,
+Venus Vulkan,
+and native RADV.
+Finite `vkcube` runs succeeded on both Vulkan paths,
+and SPICE cursor,
+2x scale,
+viewer resize,
+and reboot checks passed.
 
-This is runtime and workaround evidence only.
-It does not include the libvirt schema or virt-manager patch needed to close
-this issue.
+This confirms the runtime gap tracked by QEMU issue 3156.
+It does not implement the sandbox-compatible render-server descriptor.
 ~~~
 
 ## Source and environment record
@@ -820,28 +816,32 @@ read-only clones at these revisions:
   commit `9632e695fef825a0d209ce744592013076152334`.
 
 The QEMU release tag matches the installed `qemu-system-x86_64 --version`.
-The extension clone revision matches the installed build's QEMU 11.0.0,
-virglrenderer 1.3.0,
-Venus,
-AMD native-context,
-and SPICE 0.16.0 manifest entries.
+The extension manifest revision matches the installed runtime's QEMU version,
+device properties,
+and renderer feature set.
 
-Runtime evidence came from the live libvirt XML,
-the running QEMU command,
-QEMU file descriptors,
+Runtime evidence came from the persistent and live libvirt XML,
+the running QEMU command and QMP properties,
+QEMU renderer diagnostics,
 SPICE monitor state,
-host graphics API summaries,
 guest kernel DRM logs,
 `glxinfo -B`,
 `vulkaninfo --summary`,
-and a disposable qcow2 overlay.
-The probe overlay and its QEMU and `spicy` processes were isolated from the
-current VM.
+finite `vkcube` runs,
+a disposable qcow2 overlay,
+and the rebooted real domain.
+The pre-adoption persistent XML is stored at
+`$HOME/labwc-vm-test/domain-before-virtio-gpu-sota.xml`.
+The adopted XML is stored at
+`$HOME/labwc-vm-test/domain-virtio-gpu-sota.xml`.
 
 [qemu-doc]: https://github.com/qemu/qemu/blob/v11.0.0/docs/system/devices/virtio/virtio-gpu.rst#L82-L115
 [libvirt-domain]: https://libvirt.org/formatdomain.html#graphical-framebuffers
 [libvirt-qemu]: https://libvirt.org/drvqemu.html#overriding-properties-of-qemu-devices
+[libvirt-passthrough-security]: https://www.libvirt.org/kbase/qemu-passthrough-security.html
+[libvirt-seccomp-mail]: https://lists.libvirt.org/archives/list/devel@lists.libvirt.org/message/XH36M6E3XG2FN6BZCGHXKZFUV3IHVOZX/
 [mesa-venus]: https://docs.mesa3d.org/drivers/venus.html
 [virt-manager-scaling]: https://github.com/virt-manager/virt-manager/issues/747
 [virt-manager-venus]: https://github.com/virt-manager/virt-manager/issues/362
 [libvirt-638]: https://gitlab.com/libvirt/libvirt/-/work_items/638
+[qemu-3156]: https://gitlab.com/qemu-project/qemu/-/work_items/3156
