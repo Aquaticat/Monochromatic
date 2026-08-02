@@ -284,6 +284,11 @@ with root keys preserved and leaf values encrypted,
 then passed through `exec-file` with `--filename secrets.tfvars.json`.
 - A `.sops.yaml` creation rule matching `\.tfvars(\.json)?$` selected the disposable age recipient for both forms.
 - Default `exec-file` FIFO delivery worked with OpenTofu 1.12.5.
+- Fake `_comment` properties remained valid JSON.
+  SOPS encrypted them by default,
+  while `--unencrypted-regex '^_comment$'` kept both root and nested comment values readable.
+- OpenTofu discarded a nested `_comment` when converting into a fixed-shape `object` variable,
+  but retained it as actual data when the destination variable was `map(string)`.
 
 ### Patterns that fail or mislead
 
@@ -292,7 +297,12 @@ then passed through `exec-file` with `--filename secrets.tfvars.json`.
 - `--input-type dotenv` rejects native HCL objects with
   `Error unmarshalling file: invalid dotenv input line: }`.
 - `--input-type hcl` does not enable HCL parsing.
-  `cmd/sops/formats/formats.go:26-31` maps an unknown type string to `Binary`:
+  An unknown type string maps to `Binary`.
+- A root `_comment` in `*.tfvars.json` is an undeclared variable assignment,
+  not syntax trivia.
+  OpenTofu completed the plan but emitted `Warning: Value for undeclared variable`.
+
+The binary fallback is implemented in `cmd/sops/formats/formats.go:26-31`:
 
 ```go
 func FormatFromString(formatString string) Format {
@@ -337,8 +347,48 @@ individual leaf encryption,
 and native format support in both tools.
 
 Cons:
-JSON does not preserve HCL comments or HCL-specific string forms such as heredocs.
+JSON does not preserve native HCL comments or HCL-specific string forms such as heredocs.
 The encrypted source still must not use an auto-loaded name in the Terraform working directory.
+
+### Add fake JSON comments as data
+
+A valid JSON property can carry prose:
+
+```json
+{
+  "_comment": "Why these deployment values exist",
+  "region": "eu-west-1"
+}
+```
+
+SOPS encrypts `_comment` like any other value by default.
+To keep comment properties readable in the encrypted file,
+use an unencrypted-key rule:
+
+```yaml
+# .sops.yaml
+creation_rules:
+  - path_regex: \.tfvars\.json$
+    age: age1replace-with-project-recipient
+    unencrypted_regex: '^_comment$'
+```
+
+Pros:
+prose stays beside the value and remains visible in encrypted diffs when the regex exemption is used.
+
+Cons:
+JSON and Terraform treat `_comment` as data.
+At the root,
+it produces an undeclared-variable warning unless the module declares a dummy `_comment` input.
+Declaring that input pollutes the module interface.
+Inside nested values,
+type conversion determines whether the property is discarded or reaches providers and outputs.
+A fixed-shape `object` discarded the probe property,
+while `map(string)` retained it.
+
+Use this only when the team accepts those data-model effects.
+A sidecar Markdown file is cleaner for durable rationale,
+while native binary `*.tfvars` is cleaner when real inline comments are required.
 
 ### Use native HCL as SOPS binary data
 
