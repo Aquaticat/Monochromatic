@@ -186,15 +186,16 @@ Guest resize failures in a labwc session using xwayland-satellite:
 
 ### [QEMU virtio-gpu host-memory capsets](qemu-11-virtio-gpu-hostmem-capsets.md)
 
-GPU and display capability audit for the labwc migration VM:
+GPU and display capability adoption for the labwc migration VM:
 
-- Local SPICE GL and blob scanout already use the strongest documented
-  local display path
-- Missing `hostmem`,
+- A `qemu:override` adds a 2 GiB host-memory window,
   Venus,
-  and AMD native context leave OpenGL at 4.3 and Vulkan on llvmpipe
-- A disposable SPICE probe verifies OpenGL 4.6 and hardware Vulkan through
-  the extended `virtio-vga-gl` profile
+  and AMD native context
+- libvirt's default `spawn=deny` seccomp policy blocks the Venus render server
+- A session-driver workaround enables reboot-verified OpenGL 4.6,
+  Venus Vulkan,
+  native RADV,
+  and the existing SPICE resize path
 
 ## Quick Links
 
