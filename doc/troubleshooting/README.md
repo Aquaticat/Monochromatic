@@ -188,9 +188,13 @@ Guest resize failures in a labwc session using xwayland-satellite:
 
 GPU and display capability audit for the labwc migration VM:
 
-- Local SPICE GL and blob scanout already use the strongest documented local display path
-- Missing `hostmem`, Venus, and AMD native context leave OpenGL at 4.3 and Vulkan on llvmpipe
-- A disposable SPICE probe verifies OpenGL 4.6 and hardware Vulkan through `qemu:override`
+- Local SPICE GL and blob scanout already use the strongest documented
+  local display path
+- Missing `hostmem`,
+  Venus,
+  and AMD native context leave OpenGL at 4.3 and Vulkan on llvmpipe
+- A disposable SPICE probe verifies OpenGL 4.6 and hardware Vulkan through
+  `qemu:override`
 
 ## Quick Links
 
