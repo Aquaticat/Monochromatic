@@ -186,6 +186,38 @@ return cmd.Run()
 The `--filename` option is important for `*.tfvars.json` because Terraform chooses JSON parsing from the temporary
 file's suffix.
 It is also useful for keeping a diagnostic filename for HCL `*.tfvars`.
+The filename must be a local relative path.
+On Windows,
+SOPS disables FIFO delivery and uses a regular temporary file.
+`cmd/sops/subcommand/exec/exec.go:66-80` contains:
+
+```go
+if runtime.GOOS == "windows" && opts.Fifo {
+	log.Warn("no fifos on windows, use --no-fifo next time")
+	opts.Fifo = false
+}
+
+// ...
+
+if opts.Filename != "" {
+	if filepath.IsAbs(opts.Filename) || !filepath.IsLocal(opts.Filename) {
+		return fmt.Errorf("The provided filename is not a local path.")
+	}
+}
+```
+
+Passing `--no-fifo` also selects the regular-file branch.
+`cmd/sops/main.go:368-374` contains:
+
+```go
+if err := exec.ExecWithFile(exec.ExecOpts{
+	Command:    command,
+	Plaintext:  output,
+	Background: c.Bool("background"),
+	Fifo:       !c.Bool("no-fifo"),
+	User:       c.String("user"),
+	Filename:   c.String("filename"),
+```
 
 ## Verification
 
@@ -305,7 +337,7 @@ individual leaf encryption,
 and native format support in both tools.
 
 Cons:
-JSON does not preserve HCL comments and cannot express the full HCL expression syntax.
+JSON does not preserve HCL comments or HCL-specific string forms such as heredocs.
 The encrypted source still must not use an auto-loaded name in the Terraform working directory.
 
 ### Use native HCL as SOPS binary data
@@ -329,10 +361,13 @@ sops exec-file \
 ```
 
 Pros:
-retains complete HCL syntax and comments after decryption,
-and the default FIFO keeps plaintext off persistent storage.
+retains complete HCL syntax and comments after decryption.
+On Unix-like platforms,
+the default FIFO keeps plaintext off persistent storage.
 
 Cons:
+On Windows or with `--no-fifo`,
+SOPS writes plaintext to a temporary regular file and removes the temporary directory after the child exits.
 the encrypted diff is opaque because the entire source is one encrypted value.
 SOPS cannot select,
 set,
