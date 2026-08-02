@@ -568,8 +568,10 @@ seccomp_sandbox = 0
 ```
 
 Restart the session `virtqemud` after changing this setting.
-It applies to every VM managed by this Flatpak `qemu:///session` connection,
+It applies to every current and future VM managed by this Flatpak
+`qemu:///session` connection,
 not only `bazzite-labwc-test`.
+The connection currently contains only this domain.
 The Flatpak sandbox remains,
 but it does not replace the QEMU process-level seccomp defense that this
 setting removes.
@@ -586,8 +588,9 @@ Tradeoffs:
   and virglrenderer versions.
 - Disabling QEMU seccomp removes a host-defense layer from every domain in
   this Flatpak session connection.
-- The renderer enumerates duplicate Venus and native Vulkan devices;
-  applications may need explicit device selection.
+- The renderer enumerates duplicate Venus and native Vulkan devices.
+  An unqualified `vkcube` selected the hardware-backed Venus GPU and exited 0,
+  but other applications may need explicit device selection.
 - The existing cursor,
   resize,
   2x-scale,
