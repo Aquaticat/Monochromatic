@@ -184,6 +184,14 @@ Guest resize failures in a labwc session using xwayland-satellite:
 - A user-unit dependency and explicit `DISPLAY=:12` restore the SPICE channel
 - Cold-reboot and multiple-window-size verification
 
+### [QEMU virtio-gpu host-memory capsets](qemu-11-virtio-gpu-hostmem-capsets.md)
+
+GPU and display capability audit for the labwc migration VM:
+
+- Local SPICE GL and blob scanout already use the strongest documented local display path
+- Missing `hostmem`, Venus, and AMD native context leave OpenGL at 4.3 and Vulkan on llvmpipe
+- A disposable SPICE probe verifies OpenGL 4.6 and hardware Vulkan through `qemu:override`
+
 ## Quick Links
 
 For common issues:
@@ -234,6 +242,9 @@ For common issues:
 - **virt-manager console does not resize a labwc guest?
   ** →
   [Order spice-vdagent after xwayland-satellite](virt-manager-spice-agent-xwayland-resize-race.md)
+- **labwc VM uses virgl but has no hardware Vulkan?
+  ** →
+  [Add virtio-gpu host-memory capsets](qemu-11-virtio-gpu-hostmem-capsets.md)
 
 ## Contributing
 

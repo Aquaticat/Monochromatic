@@ -1,0 +1,679 @@
+# QEMU 11.0.0 virtio-vga-gl without hostmem limits a labwc guest to OpenGL 4.3 and software Vulkan
+
+## Metadata
+
+- **Status:**
+  Diagnosed and reproduced.
+  The existing local display path is the strongest documented SPICE path,
+  but the virtual GPU does not expose every API capability available from the
+  installed QEMU and virglrenderer build.
+- **Diagnosed:**
+  2026-08-02.
+- **Affected environment:**
+  virt-manager 5.1.0,
+  libvirt 12.4.0,
+  QEMU 11.0.0,
+  SPICE server 0.16.0,
+  virglrenderer 1.3.0,
+  host and guest Linux 7.1,
+  host and guest Mesa 26.1,
+  and an AMD Radeon RX 7600 host GPU.
+- **Scope:**
+  `bazzite-labwc-test`,
+  the libvirt domain backed by `$HOME/labwc-vm-test/disk.qcow2`.
+- **Disposition:**
+  Keep the current configuration for stable labwc migration testing.
+  Use the verified `qemu:override` configuration only when OpenGL 4.6,
+  hardware Vulkan,
+  or AMD native-context fidelity matters more than stability.
+
+## Symptom
+
+The live and persistent domain both contain the expected accelerated local
+console configuration:
+
+```xml
+<memoryBacking>
+  <source type='memfd'/>
+  <access mode='shared'/>
+</memoryBacking>
+<graphics type='spice'>
+  <listen type='none'/>
+  <image compression='off'/>
+  <gl enable='yes'/>
+</graphics>
+<video>
+  <model type='virtio' heads='1' primary='yes' blob='on'>
+    <acceleration accel3d='yes'/>
+  </model>
+</video>
+```
+
+The running QEMU command confirms that this becomes SPICE GL on the RX 7600
+render node plus a blob-capable `virtio-vga-gl` device:
+
+```text
+-spice ... image-compression=off,gl=on,rendernode=/dev/dri/renderD128
+-device {"driver":"virtio-vga-gl","id":"video0","max_outputs":1,"blob":true,...}
+```
+
+The guest is genuinely hardware accelerated for OpenGL:
+
+```text
+direct rendering: Yes
+OpenGL renderer string: virgl (AMD Radeon RX 7600 ...)
+OpenGL core profile version string: 4.3 (Core Profile) Mesa 26.1.5
+```
+
+It is not using the maximum virtual GPU feature set:
+
+```text
+[drm] features: +virgl +edid +resource_blob -host_visible
+[drm] number of cap sets: 2
+Vulkan deviceName = llvmpipe (LLVM 22.1.8, 256 bits)
+Vulkan driverName = llvmpipe
+```
+
+The visible symptom is therefore a capability ceiling,
+not software rendering of the labwc desktop.
+OpenGL reaches the virgl default of 4.3,
+while Vulkan falls back to the CPU.
+
+The display transport itself works:
+the SPICE display,
+cursor,
+2x guest scale,
+and viewer-driven resize path were already verified.
+The resize-specific service ordering is recorded in
+[`virt-manager-spice-agent-xwayland-resize-race.md`](virt-manager-spice-agent-xwayland-resize-race.md).
+
+## Root cause
+
+### QEMU leaves the additional capability sets off by default
+
+QEMU 11.0.0 declares `venus` and `drm_native_context` as Boolean device
+properties whose defaults are false
+(`hw/display/virtio-gpu-gl.c:165-173`):
+
+```c
+static const Property virtio_gpu_gl_properties[] = {
+    DEFINE_PROP_BIT("stats", VirtIOGPU, parent_obj.conf.flags,
+                    VIRTIO_GPU_FLAG_STATS_ENABLED, false),
+    DEFINE_PROP_BIT("venus", VirtIOGPU, parent_obj.conf.flags,
+                    VIRTIO_GPU_FLAG_VENUS_ENABLED, false),
+    DEFINE_PROP_BIT("drm_native_context", VirtIOGPU, parent_obj.conf.flags,
+                    VIRTIO_GPU_FLAG_DRM_ENABLED, false),
+};
+```
+
+The local domain enables `blob`,
+but it sets neither capability flag and provides no `hostmem` window.
+
+### Venus and DRM native context require both blob and hostmem
+
+QEMU rejects either capability when `blob` or `hostmem` is missing
+(`hw/display/virtio-gpu.c:1522-1545`):
+
+```c
+if (virtio_gpu_venus_enabled(g->parent_obj.conf)) {
+    if (!virtio_gpu_blob_enabled(g->parent_obj.conf) ||
+        !virtio_gpu_hostmem_enabled(g->parent_obj.conf)) {
+        error_setg(errp, "venus requires enabled blob and hostmem options");
+        return;
+    }
+}
+
+if (virtio_gpu_drm_enabled(g->parent_obj.conf)) {
+    if (!virtio_gpu_blob_enabled(g->parent_obj.conf) ||
+        !virtio_gpu_hostmem_enabled(g->parent_obj.conf)) {
+        error_setg(errp, "drm requires enabled blob and hostmem options");
+        return;
+    }
+}
+```
+
+The QEMU 11.0.0 documentation source states that the default virgl path is
+limited to OpenGL 4.3,
+that `hostmem` plus `blob` enables OpenGL 4.6,
+and that Venus and DRM native context need the same host-memory window
+(`docs/system/devices/virtio/virtio-gpu.rst:82-115`):
+
+```rst
+By default OpenGL version on guest is limited to 4.3. In order to enable
+OpenGL 4.6 support, virtio-gpu host blobs feature (``hostmem`` and ``blob``
+fields) should be enabled.
+
+-device virtio-gpu-gl,hostmem=8G,blob=true,venus=true
+-device virtio-gpu-gl,hostmem=8G,blob=on,drm_native_context=on
+```
+
+### QEMU advertises only explicitly enabled capability sets
+
+Renderer initialization adds Venus and DRM flags only when their device
+properties are enabled.
+DRM native context additionally requires an EGL display and virglrenderer
+newer than 1.1.1
+(`hw/display/virtio-gpu-virgl.c:1454-1474`):
+
+```c
+if (virtio_gpu_venus_enabled(g->parent_obj.conf)) {
+    flags |= VIRGL_RENDERER_VENUS | VIRGL_RENDERER_RENDER_SERVER;
+}
+if (virtio_gpu_drm_enabled(g->parent_obj.conf)) {
+    flags |= VIRGL_RENDERER_DRM;
+
+    if (!(flags & VIRGL_RENDERER_ASYNC_FENCE_CB)) {
+        error_report("drm requires egl display and virglrenderer >= 1.2.0");
+        return -EINVAL;
+    }
+}
+```
+
+The advertised capability catalog follows the same conditions
+(`hw/display/virtio-gpu-virgl.c:1559-1577`):
+
+```c
+if (virtio_gpu_venus_enabled(g->parent_obj.conf)) {
+    virgl_renderer_get_cap_set(VIRTIO_GPU_CAPSET_VENUS,
+                               &capset_max_ver,
+                               &capset_max_size);
+    if (capset_max_size) {
+        virtio_gpu_virgl_add_capset(capset_ids, VIRTIO_GPU_CAPSET_VENUS);
+    }
+}
+
+if (virtio_gpu_drm_enabled(g->parent_obj.conf)) {
+    virgl_renderer_get_cap_set(VIRTIO_GPU_CAPSET_DRM,
+                               &capset_max_ver,
+                               &capset_max_size);
+```
+
+This matches the current guest's two capsets and the enhanced probe's four.
+
+### The installed Flatpak stack contains the optional implementations
+
+The installed Flatpak extension resolves to source revision
+`9632e695fef825a0d209ce744592013076152334`.
+Its manifest enables Venus and AMD DRM rendering in virglrenderer 1.3.0
+(`org.virt_manager.virt_manager.Extension.Qemu.yaml:116-129`):
+
+```yaml
+- name: virglrenderer
+  buildsystem: meson
+  config-opts:
+    - -Dvideo=true
+    - -Dvenus=true
+    - -Dtests=false
+    - -Ddrm-renderers=amdgpu-experimental,i915-experimental
+  sources:
+    - type: archive
+      url: https://gitlab.freedesktop.org/virgl/virglrenderer/-/archive/1.3.0/virglrenderer-1.3.0.tar.gz
+```
+
+The `amdgpu-experimental` build option is also the reason not to treat DRM
+native context as the stability default.
+
+### The SPICE display choice is already correct
+
+The current domain uses local SPICE OpenGL with `listen=none`.
+The [libvirt domain documentation][libvirt-domain] says native SPICE OpenGL
+works locally through a Unix socket and has stronger performance than the
+SPICE plus `egl-headless` alternative.
+The same documentation says `blob=on` can reduce or eliminate copies in the
+guest-to-host display path.
+
+Replacing SPICE GL with `egl-headless`,
+QXL,
+or two-dimensional virtio would therefore move the local display path in
+the wrong direction.
+The missing features are on the virtual GPU device,
+not the SPICE transport.
+
+## Verification
+
+### Versions and host capability
+
+The observed versions were:
+
+```text
+virt-manager Flatpak 5.1.0
+libvirt 12.4.0
+QEMU 11.0.0
+SPICE server 0.16.0
+host Mesa 26.1.5
+host GPU AMD Radeon RX 7600, radeonsi and RADV
+host Linux 7.1.3
+```
+
+The host has one PCI display controller,
+the RX 7600 used by the host Wayland session.
+Its sysfs device exposes neither `sriov_totalvfs` nor
+`mdev_supported_types`.
+PCI assignment is therefore not a shareable upgrade on this host.
+
+The installed QEMU device property probe listed all required knobs:
+
+```text
+blob=<bool>                 default: off
+hostmem=<size>              default: 0
+venus=<bool>                default: off
+drm_native_context=<bool>   default: off
+```
+
+The installed device catalog did not contain a rutabaga device.
+It contained `virtio-vga-gl`,
+`virtio-gpu-gl`,
+and vhost-user variants.
+
+### Current configuration catalog
+
+The current domain was inspected with:
+
+```bash
+flatpak run --command=virsh org.virt_manager.virt-manager \
+  --connect qemu:///session dumpxml --inactive bazzite-labwc-test
+
+flatpak run --command=virsh org.virt_manager.virt-manager \
+  --connect qemu:///session qemu-monitor-command \
+  bazzite-labwc-test --hmp 'info spice'
+```
+
+Guest capability checks used:
+
+```bash
+ssh -p 2222 -i "$HOME/labwc-vm-test/id_ed25519" \
+  user@127.0.0.1 \
+  'sudo dmesg | grep -E "features:|number of cap sets|cap set";
+   DISPLAY=:12 glxinfo -B;
+   vulkaninfo --summary'
+```
+
+Paths that work cleanly:
+
+- KVM and host CPU passthrough are active.
+- QEMU has multiple open file descriptors to host `/dev/dri/renderD128`.
+- SPICE reports connected main,
+  display,
+  input,
+  and cursor channels.
+- Guest OpenGL is direct and rendered by virgl on the RX 7600.
+- `resource_blob` and `context_init` are enabled.
+- The guest display is current at 1800x1810 with scale 2.
+- `spice-vdagent.service` and `xwayland-satellite.service` are active.
+
+Paths that remain below the installed stack's capability:
+
+- `host_visible` is disabled.
+- Only virgl capsets 1 and 2 are advertised.
+- OpenGL stops at 4.3.
+- Vulkan exposes only llvmpipe.
+
+### Disposable enhanced probe
+
+The current VM and disk were not modified.
+A qcow2 overlay used the offline
+`disk-clean-labwc-uwsm.qcow2` image as its read-only backing file.
+The probe used 4 GiB guest RAM,
+4 vCPUs,
+a 2 GiB host-memory window,
+and this GPU device:
+
+```text
+-device virtio-vga-gl,hostmem=2G,blob=true,venus=true,drm_native_context=true
+```
+
+The probe was run once with `egl-headless` and once with SPICE GL.
+A real `spicy` client connected to the SPICE Unix socket and opened main,
+display,
+input,
+and cursor channels.
+QEMU emitted no renderer error in either run.
+
+Inside the disposable guest:
+
+```text
+[drm] Host memory window: 0x380000000000 +0x80000000
+[drm] features: +virgl +edid +resource_blob +host_visible
+[drm] features: +context_init
+[drm] number of cap sets: 4
+```
+
+OpenGL selected the AMD native context:
+
+```text
+direct rendering: Yes
+OpenGL vendor string: AMD
+OpenGL renderer string: AMD Radeon RX 7600 (radeonsi, navi33, ACO, ...)
+OpenGL core profile version string: 4.6 (Core Profile) Mesa 26.1.4
+```
+
+Vulkan exposed the RX 7600 through Venus:
+
+```text
+deviceName = Virtio-GPU Venus (AMD Radeon RX 7600 (RADV NAVI33))
+driverName = venus
+driverInfo = Mesa 26.1.4
+```
+
+The enhanced probe therefore verifies capability exposure and a real SPICE
+client connection.
+It does not provide a frame-rate benchmark,
+a long-duration stability result,
+or a regression test for the existing cursor and resize workarounds.
+
+### libvirt override generation
+
+libvirt 12.4.0 does not have stable domain XML attributes for `hostmem`,
+`venus`,
+or `drm_native_context`.
+Its documented [`qemu:override` mechanism][libvirt-qemu] can add frontend
+properties to the device generated by libvirt.
+
+A minimal XML fixture was passed through `virsh domxml-to-native`.
+libvirt generated:
+
+```text
+{"driver":"virtio-vga-gl","id":"ua-video0","max_outputs":1,
+ "blob":true,"hostmem":2147483648,"venus":true,
+ "drm_native_context":true}
+```
+
+This proves the override reaches the intended device without adding a second
+GPU.
+
+## Verified workarounds
+
+### Keep the current stable display profile
+
+No change is needed for labwc,
+panel,
+input,
+cursor,
+resize,
+or general desktop testing.
+The current configuration already uses the documented strongest local SPICE
+display path and hardware-accelerated OpenGL.
+
+Tradeoff:
+GPU software that requires OpenGL newer than 4.3 or hardware Vulkan does not
+match the physical host.
+Vulkan work runs on the guest CPU.
+
+### Enable every available virtual GPU capability through qemu:override
+
+The verified maximum-capability frontend is:
+
+```xml
+<!-- Add xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" to <domain>
+     if another qemu namespace element has not already done so. -->
+<video>
+  <model type="virtio" heads="1" primary="yes" blob="on">
+    <acceleration accel3d="yes"/>
+  </model>
+  <alias name="ua-video0"/>
+</video>
+
+<qemu:override>
+  <qemu:device alias="ua-video0">
+    <qemu:frontend>
+      <qemu:property name="hostmem" type="unsigned" value="2147483648"/>
+      <qemu:property name="venus" type="bool" value="true"/>
+      <qemu:property name="drm_native_context" type="bool" value="true"/>
+    </qemu:frontend>
+  </qemu:device>
+</qemu:override>
+```
+
+Keep the existing memfd shared memory backing and SPICE GL configuration.
+The override affects device creation,
+so the domain must be off before adopting it.
+
+Tradeoffs:
+
+- libvirt explicitly describes `qemu:override` as a development and testing
+  interface with no compatibility guarantee;
+  the domain is tainted while it is present.
+- virglrenderer labels its AMD native-context backend experimental.
+- The virtual GPU ABI becomes more dependent on the host GPU,
+  Mesa,
+  QEMU,
+  and virglrenderer versions.
+- The existing cursor,
+  resize,
+  and 2x-scale behavior must be rechecked after adoption.
+- The 2 GiB host-memory window was verified here,
+  but no workload-specific sizing study was performed.
+
+## What does not work
+
+### Blob without hostmem does not unlock the later API paths
+
+The current domain is the counterexample.
+It has `blob=on`,
+but the guest reports `-host_visible`,
+only two capsets,
+OpenGL 4.3,
+and llvmpipe Vulkan.
+
+### Scale Display does not add GPU capability
+
+Viewer scaling changes the sampled presentation size.
+It cannot add a host-memory window or capability set.
+The virt-manager maintainers also record blur as the material downside of
+scaled presentation in
+[virt-manager issue 747][virt-manager-scaling].
+The current resize-follow path preserves native pixels and should remain the
+presentation choice.
+
+### egl-headless is not a local performance upgrade
+
+libvirt documents SPICE plus `egl-headless` as the remote-capable fallback
+with weaker performance than native local SPICE OpenGL.
+The earlier labwc investigation also observed pathological readback cost when
+software cursors,
+raw image transfer,
+and `egl-headless` were combined.
+
+### QXL and two-dimensional virtio move rendering back toward software
+
+QEMU's source documentation says the two-dimensional backend requires a
+software renderer for 3D.
+QXL does not provide the virgl,
+Venus,
+or DRM native capsets used by the successful probe.
+
+### Rutabaga is unavailable in this installed QEMU build
+
+QEMU 11 documents rutabaga as another accelerated backend,
+but the installed `-device help` catalog contains no
+`virtio-gpu-rutabaga` device or rutabaga library.
+It is not a selectable improvement without changing the Flatpak extension.
+
+### PCI passthrough is not a drop-in improvement on this host
+
+The RX 7600 is the only measured display controller and is actively used by
+the host Wayland session.
+It exposes no SR-IOV or mediated-device interface.
+Assigning it whole would remove the host's renderer and abandon the current
+local SPICE console unless the host gained another display GPU or moved to a
+headless passthrough design.
+
+## Recommendation and ranking
+
+### Current SPICE GL plus virgl profile
+
+**Pros:**
+The display path is hardware accelerated,
+local,
+copy-reduced through blobs,
+and already verified with labwc's cursor,
+scale,
+and resize integration.
+It uses only stable libvirt XML.
+
+**Cons:**
+OpenGL is limited to 4.3 and Vulkan is software-rendered.
+
+### Enhanced hostmem, Venus, and AMD native-context profile
+
+**Pros:**
+The disposable SPICE probe exposed OpenGL 4.6 through native radeonsi and
+hardware Vulkan through Venus on the RX 7600.
+It is the maximum feature set in the installed QEMU device.
+
+**Cons:**
+The AMD native-context backend is packaged as experimental,
+and libvirt needs an unsupported override.
+The established cursor and resize behavior has not received a long-duration
+regression run under this profile.
+
+### Whole-GPU passthrough
+
+**Pros:**
+It removes the virtual API translation layer and can provide physical-GPU
+behavior.
+
+**Cons:**
+The current host has no second display GPU,
+SR-IOV virtual function,
+or mediated device.
+Whole-device assignment conflicts with the local desktop and SPICE workflow.
+
+**Ranking:**
+current SPICE GL profile > enhanced virtual GPU profile > whole-GPU
+passthrough.
+The current profile beats the enhanced profile for this VM's recorded purpose,
+which is stable labwc migration rehearsal rather than GPU benchmarking.
+The enhanced profile beats passthrough because it preserves the working local
+console and has already crossed the guest API boundary in a disposable probe.
+
+For a GPU API or game test,
+the first two positions reverse:
+the enhanced profile exposes capabilities the current profile cannot.
+
+## Upstream filing artifact
+
+### Upstream filing decision
+
+No `.out-of-scope/` entry covers QEMU,
+libvirt,
+virt-manager,
+virglrenderer,
+or this capability class.
+
+Duplicate searches found:
+
+- [virt-manager issue 362][virt-manager-venus],
+  which tracks UI and CLI support for Venus and links the libvirt gap.
+- [libvirt issue 638][libvirt-638],
+  which tracks stable XML for `hostmem`,
+  Venus,
+  and native-context options.
+
+The full virt-manager thread was read.
+The maintainer explicitly said virt-manager is blocked until libvirt has
+stable XML.
+The issue was reopened after Venus reached upstream QEMU.
+
+The six filing constraints resolve as follows:
+
+1. **Is it really upstream's fault?**
+   No for the incident documented here.
+   QEMU and the installed renderer expose the requested capabilities.
+   The persistent local domain simply does not request them.
+   Missing stable management XML is an upstream feature gap,
+   but it already has dedicated issues.
+2. **Can upstream fix it?**
+   Yes for the management gap.
+   libvirt can model the QEMU properties,
+   after which virt-install and virt-manager can expose them.
+3. **Are they supporting this use case?**
+   Yes.
+   libvirt models virtio video and blobs,
+   and virt-manager already exposes virtio three-dimensional acceleration.
+   Both trackers retain dedicated feature requests for the remaining knobs.
+4. **Would the repositories welcome a contribution?**
+   Yes.
+   virt-manager's `CONTRIBUTING.md` directs feature patches to GitHub and
+   names CLI XML extensions as introductory work.
+   The checked contribution files and issue templates contain no ban on
+   external or AI-assisted reports.
+5. **Will they likely fix it?**
+   Plausible,
+   but not promised.
+   The issues are open and blocked on architecture order rather than rejected.
+   No maintainer commitment or refusal appears in the read threads.
+6. **Have we prototyped a minimal upstream fix?**
+   No.
+   The work here prototypes a local libvirt override and the runtime feature
+   combination,
+   not stable libvirt schema or virt-manager UI support.
+   Automatic upstream prototyping is not triggered because constraint 1 fails
+   for the local incident itself.
+
+No new issue should be filed.
+The runtime evidence and override are additive to the existing virt-manager
+thread,
+but constraint 6 does not permit posting the comment as-is.
+Retain this draft only for a future human-verified upstream patch effort.
+
+### Additive comment draft, do not post as-is
+
+~~~md
+Tested the now-upstream path on a Radeon RX 7600 with QEMU 11.0.0,
+virglrenderer 1.3.0,
+Linux 7.1,
+and Mesa 26.1.
+
+A disposable Linux guest using
+`virtio-vga-gl,hostmem=2G,blob=true,venus=true,drm_native_context=true`
+reported `+host_visible`, four capsets, OpenGL 4.6 on native radeonsi,
+and a Venus Vulkan device backed by RADV.
+The same device also worked through a real SPICE GL client connection.
+
+Until stable libvirt XML exists, `qemu:override` can add `hostmem`, `venus`,
+and `drm_native_context` to a user-aliased video frontend.
+`virsh domxml-to-native` confirmed that this modifies the existing
+`virtio-vga-gl` device rather than adding a second GPU.
+
+This is runtime and workaround evidence only.
+It does not include the libvirt schema or virt-manager patch needed to close
+this issue.
+~~~
+
+## Source and environment record
+
+Source was inspected in private,
+read-only clones at these revisions:
+
+- QEMU `v11.0.0`,
+  commit `98b060da3a4f92b2a994ead5b16a87e783baf77c`.
+- The virt-manager QEMU Flatpak extension,
+  commit `9632e695fef825a0d209ce744592013076152334`.
+
+The QEMU release tag matches the installed `qemu-system-x86_64 --version`.
+The extension clone revision matches the installed build's QEMU 11.0.0,
+virglrenderer 1.3.0,
+Venus,
+AMD native-context,
+and SPICE 0.16.0 manifest entries.
+
+Runtime evidence came from the live libvirt XML,
+the running QEMU command,
+QEMU file descriptors,
+SPICE monitor state,
+host graphics API summaries,
+guest kernel DRM logs,
+`glxinfo -B`,
+`vulkaninfo --summary`,
+and a disposable qcow2 overlay.
+The probe overlay and its QEMU and `spicy` processes were isolated from the
+current VM.
+
+[qemu-doc]: https://github.com/qemu/qemu/blob/v11.0.0/docs/system/devices/virtio/virtio-gpu.rst#L82-L115
+[libvirt-domain]: https://libvirt.org/formatdomain.html#graphical-framebuffers
+[libvirt-qemu]: https://libvirt.org/drvqemu.html#overriding-properties-of-qemu-devices
+[mesa-venus]: https://docs.mesa3d.org/drivers/venus.html
+[virt-manager-scaling]: https://github.com/virt-manager/virt-manager/issues/747
+[virt-manager-venus]: https://github.com/virt-manager/virt-manager/issues/362
+[libvirt-638]: https://gitlab.com/libvirt/libvirt/-/work_items/638
