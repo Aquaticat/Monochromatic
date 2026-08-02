@@ -393,6 +393,9 @@ importers:
       '@monochromatic-dev/cli-wg-allowedips':
         specifier: workspace:*
         version: link:package/cli/wg-allowedips
+      '@monochromatic-dev/cli-wg-quicker':
+        specifier: workspace:*
+        version: link:package/cli/wg-quicker
       '@monochromatic-dev/config-dprint':
         specifier: workspace:*
         version: link:package/config/dprint
