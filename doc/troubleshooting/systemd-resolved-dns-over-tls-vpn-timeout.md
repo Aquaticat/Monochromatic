@@ -374,7 +374,8 @@ A per-link `DNSOverTLS=no` setting would stop that link from inheriting strict g
 DNS packets would remain inside the encrypted VPN tunnel, but would use ordinary DNS within that tunnel.
 
 - Pro: narrow change that leaves strict DNS-over-TLS enabled for the global Cloudflare servers.
-- Con: the VPN link creator must persist the setting; a one-time runtime setting can disappear when the link is recreated.
+- Con: the VPN link creator must persist the setting;
+  a one-time runtime setting can disappear when the link is recreated.
 - Con: DNS on the VPN link is no longer separately encrypted with TLS.
 
 ### Replace or remove the incompatible VPN DNS server
