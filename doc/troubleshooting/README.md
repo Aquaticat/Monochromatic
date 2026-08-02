@@ -194,7 +194,7 @@ GPU and display capability audit for the labwc migration VM:
   Venus,
   and AMD native context leave OpenGL at 4.3 and Vulkan on llvmpipe
 - A disposable SPICE probe verifies OpenGL 4.6 and hardware Vulkan through
-  `qemu:override`
+  the extended `virtio-vga-gl` profile
 
 ## Quick Links
 
