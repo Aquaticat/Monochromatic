@@ -65,9 +65,21 @@ udevadm monitor --udev --kernel --subsystem-match=usb --subsystem-match=block
 
 A working insertion produces paired `KERNEL` and `UDEV` `add` events for the `usb` device,
 followed by `add` events for the `block` device and each partition.
-A physically failing insertion usually still emits something,
-such as a repeated `device descriptor read/64, error -71`.
-Total silence during a witnessed replug narrows the cause to the connection itself.
+
+The capture earns its place by timestamping a witnessed plug event.
+Without one,
+kernel log silence stays ambiguous:
+it cannot separate a plug that produced nothing from a plug that never actually happened.
+The silence on this incident was observed before the capture existed,
+and the witnessed replug then succeeded,
+so no failing insertion was ever recorded here.
+What a physically failing insertion emits is therefore not established by this incident.
+
+One nearby line invites a misreading.
+This host's journal holds a single `device descriptor read/64, error -71` on the Genesys hub at 17:18,
+belonging to a JBL speaker that enumerated successfully on the retry.
+A recoverable descriptor-read retry on a device that then works is not evidence of a failing insertion,
+and it predates the reported plug event by hours.
 
 ## Front-panel ports fail more often than rear ports
 
@@ -104,11 +116,10 @@ sdb    28.9G disk iso9660 titanoboa_boot
 └─sdb3  300K part
 ```
 
-- The mounted filesystem is read-only because `iso9660` is read-only.
-  `udisksctl info` reports `ReadOnly: false` for the block device,
-  which describes the medium,
-  not the filesystem.
-  The actual mount carries `ro`.
+- The mount is read-only.
+  `findmnt` reports `ro` on `/dev/sdb1` because `iso9660` mounts read-only.
+  `udisksctl info` separately reports `ReadOnly: false`,
+  which is the kernel write-protect flag for the block device and carries no information about the filesystem.
 - Only 7.5G of a 28.9G stick is addressable.
   Writing an image with `dd` leaves the remainder unallocated.
   Recovering it requires repartitioning,
