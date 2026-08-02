@@ -132,10 +132,11 @@ if (virtio_gpu_drm_enabled(g->parent_obj.conf)) {
 }
 ```
 
-The QEMU 11.0.0 documentation source states that the default virgl path is
-limited to OpenGL 4.3,
+The [QEMU 11.0.0 documentation source][qemu-doc] states that the default
+virgl path is limited to OpenGL 4.3,
 that `hostmem` plus `blob` enables OpenGL 4.6,
-and that Venus and DRM native context need the same host-memory window
+and that [Venus][mesa-venus] and DRM native context need the same
+host-memory window
 (`docs/system/devices/virtio/virtio-gpu.rst:82-115`):
 
 ```rst
