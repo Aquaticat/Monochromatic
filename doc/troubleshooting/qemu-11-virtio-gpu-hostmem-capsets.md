@@ -193,9 +193,10 @@ This matches the current guest's two capsets and the enhanced probe's four.
 
 ### The installed Flatpak stack contains the optional implementations
 
-The installed Flatpak extension resolves to source revision
-`9632e695fef825a0d209ce744592013076152334`.
-Its manifest enables Venus and AMD DRM rendering in virglrenderer 1.3.0
+The Flathub extension manifest at revision
+`9632e695fef825a0d209ce744592013076152334` matches the installed artifact's
+QEMU version and available device properties.
+It enables Venus and AMD DRM rendering in virglrenderer 1.3.0
 (`org.virt_manager.virt_manager.Extension.Qemu.yaml:116-129`):
 
 ```yaml
