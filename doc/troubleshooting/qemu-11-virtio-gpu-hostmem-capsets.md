@@ -839,7 +839,8 @@ The adopted XML is stored at
 [libvirt-domain]: https://libvirt.org/formatdomain.html#graphical-framebuffers
 [libvirt-qemu]: https://libvirt.org/drvqemu.html#overriding-properties-of-qemu-devices
 [libvirt-passthrough-security]: https://www.libvirt.org/kbase/qemu-passthrough-security.html
-[libvirt-seccomp-mail]: https://lists.libvirt.org/archives/list/devel@lists.libvirt.org/message/XH36M6E3XG2FN6BZCGHXKZFUV3IHVOZX/
+[libvirt-seccomp-mail]:
+  https://lists.libvirt.org/archives/list/devel@lists.libvirt.org/message/XH36M6E3XG2FN6BZCGHXKZFUV3IHVOZX/
 [mesa-venus]: https://docs.mesa3d.org/drivers/venus.html
 [virt-manager-scaling]: https://github.com/virt-manager/virt-manager/issues/747
 [virt-manager-venus]: https://github.com/virt-manager/virt-manager/issues/362
