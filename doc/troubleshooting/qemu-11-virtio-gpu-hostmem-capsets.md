@@ -663,34 +663,40 @@ headless passthrough design.
 
 ## Recommendation and ranking
 
-### Current SPICE GL plus virgl profile
+### Enhanced hostmem, Venus, and AMD native-context profile
+
+**Pros:**
+The real domain now exposes OpenGL 4.6 through native radeonsi,
+Venus Vulkan,
+and native RADV on the RX 7600.
+It is the maximum feature set in the installed QEMU device.
+Cursor,
+scale,
+viewer-driven resize,
+reboot,
+and finite Vulkan rendering checks pass.
+
+**Cons:**
+The AMD native-context backend is packaged as experimental.
+libvirt needs an unsupported override,
+and Venus requires disabling QEMU seccomp for every VM in this Flatpak
+session connection.
+Vulkan enumeration contains duplicate devices.
+No comparative performance or long-duration stability run was performed.
+
+### Baseline SPICE GL plus virgl profile
 
 **Pros:**
 The display path is hardware accelerated,
 local,
 configured with blob resources,
-and already verified with labwc's cursor,
-scale,
-and resize integration.
-The audit did not trace the active scanout buffers deeply enough to claim a
-measured copy reduction.
-It uses only stable libvirt XML.
+and uses only stable libvirt XML.
+It retains libvirt's default QEMU seccomp defense.
 
 **Cons:**
 OpenGL is limited to 4.3 and Vulkan is software-rendered.
-
-### Enhanced hostmem, Venus, and AMD native-context profile
-
-**Pros:**
-The disposable SPICE probe exposed OpenGL 4.6 through native radeonsi and
-hardware Vulkan through Venus on the RX 7600.
-It is the maximum feature set in the installed QEMU device.
-
-**Cons:**
-The AMD native-context backend is packaged as experimental,
-and libvirt needs an unsupported override.
-The established cursor and resize behavior has not received a long-duration
-regression run under this profile.
+It does not meet the user's preference to exercise the installed stack's
+current GPU API capabilities.
 
 ### Whole-GPU passthrough
 
@@ -705,19 +711,13 @@ or mediated device.
 Whole-device assignment conflicts with the local desktop and SPICE workflow.
 
 **Ranking:**
-current SPICE GL profile > enhanced virtual GPU profile > whole-GPU
+enhanced virtual GPU profile > baseline SPICE GL profile > whole-GPU
 passthrough.
-The current profile beats the enhanced profile for this VM's recorded purpose,
-which is regression-covered labwc migration rehearsal rather than GPU
-benchmarking.
-This ordering reflects verification coverage,
-not evidence that the enhanced profile is unstable.
-The enhanced profile beats passthrough because it preserves the working local
-console and has already crossed the guest API boundary in a disposable probe.
-
-For a GPU API or game test,
-the first two positions reverse:
-the enhanced profile exposes capabilities the current profile cannot.
+The enhanced profile beats the baseline because the user's explicit priority
+is hands-on access to the current GPU API feature set,
+and the adoption checks pass.
+The baseline beats passthrough because it preserves the host renderer and
+working local SPICE workflow without removing another security boundary.
 
 ## Upstream filing artifact
 
