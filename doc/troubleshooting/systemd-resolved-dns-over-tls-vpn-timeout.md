@@ -12,7 +12,8 @@ a lookup can print this warning before eventually returning an answer:
 `127.0.0.53` is the local `systemd-resolved` full stub.
 It is not GitHub's DNS server.
 `/etc/resolv.conf` is a symlink to
-`/run/systemd/resolve/stub-resolv.conf`, which contains:
+`/run/systemd/resolve/stub-resolv.conf`,
+ which contains:
 
 ```text
 nameserver 127.0.0.53
@@ -21,7 +22,9 @@ search lan
 ```
 
 The observed command did not fail permanently.
-Its first attempt timed out, `nslookup` retried, and the same process returned:
+Its first attempt timed out,
+ `nslookup` retried,
+ and the same process returned:
 
 ```text
 Server:         127.0.0.53
@@ -43,18 +46,23 @@ DNS Servers: 198.245.51.147 1.1.1.1
 DNS Domain: ~.
 ```
 
-After the delayed lookup, `Current DNS Server` was `1.1.1.1`.
+After the delayed lookup,
+ `Current DNS Server` was `1.1.1.1`.
 
 ## Root cause
 
 Strict global DNS-over-TLS is inherited by a VPN link whose primary DNS server does not accept
 DNS-over-TLS connections.
-`systemd-resolved` waits on that server, switches to the second server, and eventually answers.
-BIND's shorter UDP wait for the local stub expires first, so `nslookup` reports one timed-out attempt and retries.
+`systemd-resolved` waits on that server,
+ switches to the second server,
+ and eventually answers.
+BIND's shorter UDP wait for the local stub expires first,
+ so `nslookup` reports one timed-out attempt and retries.
 
 ### Step 1: nslookup sends the query to the local stub
 
-The generated `/etc/resolv.conf` names `127.0.0.53`, so `nslookup` sends an ordinary UDP DNS packet to
+The generated `/etc/resolv.conf` names `127.0.0.53`,
+ so `nslookup` sends an ordinary UDP DNS packet to
 `systemd-resolved` on loopback.
 Both UDP and TCP listeners were present on `127.0.0.53:53`.
 The loopback interface was up.
@@ -71,7 +79,8 @@ BIND 9.18.50 defines its default UDP timeout as five seconds in `bin/dig/dighost
 #define SERVER_TIMEOUT 1
 ```
 
-When the receive operation times out, `bin/dig/dighost.c:4043-4068` emits the exact diagnostic and queues another
+When the receive operation times out,
+ `bin/dig/dighost.c:4043-4068` emits the exact diagnostic and queues another
 UDP request while retries remain:
 
 ```c
@@ -103,7 +112,9 @@ if (eresult != ISC_R_SUCCESS) {
                 }
 ```
 
-This explains both parts of the surface behavior: the warning is printed for the expired attempt, but the process
+This explains both parts of the surface behavior:
+ the warning is printed for the expired attempt,
+ but the process
 continues because retries remain.
 
 ### Step 2: the strict global setting applies to the VPN link
@@ -113,7 +124,8 @@ continues because retries remain.
 The configured Cloudflare Gateway hostname is omitted from this document because it identifies the Gateway location.
 
 The VPN link did not publish its own DNS-over-TLS mode.
-In systemd 259.7, `src/resolve/resolved-link.c:819-825` returns the manager's global mode when the link mode is unset:
+In systemd 259.7,
+ `src/resolve/resolved-link.c:819-825` returns the manager's global mode when the link mode is unset:
 
 ```c
 DnsOverTlsMode link_get_dns_over_tls_mode(Link *l) {
@@ -171,7 +183,8 @@ If the DNS server does not support DNS-over-TLS all DNS requests will fail.</par
 ### Step 3: systemd-resolved tries the VPN DNS server on TCP port 853
 
 The global settings and the VPN link both had the `~.` route-only domain.
-For equally specific routing-domain matches, `man/systemd-resolved.service.xml:207-212` says the resolver sends the
+For equally specific routing-domain matches,
+ `man/systemd-resolved.service.xml:207-212` says the resolver sends the
 query to all associated scopes in parallel:
 
 ```xml
@@ -183,9 +196,12 @@ matching" routing domain. (Note that more than one link might have this same "be
 domain configured, in which case the query is sent to all of them in parallel).</para>
 ```
 
-`resolvectl monitor` identified interface index 43, the VPN link, on the eventual answer.
+`resolvectl monitor` identified interface index 43,
+ the VPN link,
+ on the eventual answer.
 The VPN scope initially selected `198.245.51.147`.
-For a TLS feature level, `src/resolve/resolved-dns-transaction.c:686-692` selects port 853:
+For a TLS feature level,
+ `src/resolve/resolved-dns-transaction.c:686-692` selects port 853:
 
 ```c
 if (t->server->port > 0)
@@ -214,7 +230,8 @@ It is not general reachability loss to that server.
 
 ### Step 4: systemd-resolved switches servers after the failed attempt
 
-The resolver intentionally retains one current server until an error, then rotates.
+The resolver intentionally retains one current server until an error,
+ then rotates.
 `man/systemd-resolved.service.xml:320-331` documents that behavior:
 
 ```xml
@@ -245,13 +262,16 @@ r = dns_transaction_go(t);
 
 The observed transition matched this call chain:
 
-- Before the delayed query, the VPN scope's current server was `198.245.51.147`.
+- Before the delayed query,
+   the VPN scope's current server was `198.245.51.147`.
 - The first uncached positive query through that scope took 5.34 seconds.
-- After the query, the current server was `1.1.1.1`.
+- After the query,
+   the current server was `1.1.1.1`.
 - The next two uncached positive queries through the scope took 0.06 seconds each.
 
 The `nslookup` client gives its loopback UDP request five seconds.
-The first resolver transaction exceeded that boundary, so the client warned.
+The first resolver transaction exceeded that boundary,
+ so the client warned.
 Its retry then received the answer produced after `systemd-resolved` had switched servers.
 
 ## Verification
@@ -281,7 +301,9 @@ commit a8b15d5d21271c63deea160c15b958c23a267022
 
 The warning is state-dependent.
 It appears when `Current DNS Server` on the VPN link is the first entry and strict DNS-over-TLS is active.
-The following commands capture the precondition, trigger, and server transition:
+The following commands capture the precondition,
+ trigger,
+ and server transition:
 
 ```bash
 VPN_LINK=mx-que-mx1
@@ -324,8 +346,10 @@ PY
   then succeeded on retry.
 - The first uncached positive `resolvectl` query through the VPN scope took 5.34 seconds.
 - A TCP connection to `198.245.51.147:853` did not complete within the three-second probe window.
-- An uncached negative query can wait for every parallel scope, and two such probes took 8.81 and 8.84 seconds.
-  This is expected from the documented rule that a positive response may win immediately, while all negative paths must
+- An uncached negative query can wait for every parallel scope,
+   and two such probes took 8.81 and 8.84 seconds.
+  This is expected from the documented rule that a positive response may win immediately,
+   while all negative paths must
   finish before the final negative response is known.
 
 ## Verified workarounds
@@ -351,61 +375,87 @@ nslookup www.github.com 1.1.1.1
 This completed in 0.03 seconds.
 
 Tradeoff:
-it bypasses `systemd-resolved`, split DNS, the configured Cloudflare Gateway policy, and any VPN DNS-leak controls.
-It is suitable as a diagnostic or emergency one-off command, not a system-wide fix.
+it bypasses `systemd-resolved`,
+ split DNS,
+ the configured Cloudflare Gateway policy,
+ and any VPN DNS-leak controls.
+It is suitable as a diagnostic or emergency one-off command,
+ not a system-wide fix.
 
 ### Use the already-selected second server
 
-After one failure, `systemd-resolved` selected `1.1.1.1`, and subsequent VPN-scope lookups completed without the delay.
+After one failure,
+ `systemd-resolved` selected `1.1.1.1`,
+ and subsequent VPN-scope lookups completed without the delay.
 No command is required for this transient state.
 
 Tradeoff:
-the VPN service can republish its DNS list or recreate the link, returning the scope to the incompatible primary.
+the VPN service can republish its DNS list or recreate the link,
+ returning the scope to the incompatible primary.
 The journal showed the VPN DNS list being published more than once during the same boot.
 
 ## Durable remediation choices not applied
 
-These choices change resolver or VPN policy, so the diagnosis did not apply them to the live system.
+These choices change resolver or VPN policy,
+ so the diagnosis did not apply them to the live system.
 They require selecting the intended security boundary first.
 
 ### Set the VPN link's DNS-over-TLS mode explicitly
 
 A per-link `DNSOverTLS=no` setting would stop that link from inheriting strict global mode.
-DNS packets would remain inside the encrypted VPN tunnel, but would use ordinary DNS within that tunnel.
+DNS packets would remain inside the encrypted VPN tunnel,
+ but would use ordinary DNS within that tunnel.
 
-- Pro: narrow change that leaves strict DNS-over-TLS enabled for the global Cloudflare servers.
-- Con: the VPN link creator must persist the setting;
+- Pro:
+   narrow change that leaves strict DNS-over-TLS enabled for the global Cloudflare servers.
+- Con:
+   the VPN link creator must persist the setting;
   a one-time runtime setting can disappear when the link is recreated.
-- Con: DNS on the VPN link is no longer separately encrypted with TLS.
+- Con:
+   DNS on the VPN link is no longer separately encrypted with TLS.
 
 ### Replace or remove the incompatible VPN DNS server
 
-Configure the VPN integration so every listed per-link server supports strict DNS-over-TLS, or omit the
+Configure the VPN integration so every listed per-link server supports strict DNS-over-TLS,
+ or omit the
 `198.245.51.147` entry.
 
-- Pro: preserves strict DNS-over-TLS without fallback.
-- Con: the VPN client may own and republish the list.
-- Con: replacing the provider DNS server can change leak protection, filtering, and private-zone behavior.
+- Pro:
+   preserves strict DNS-over-TLS without fallback.
+- Con:
+   the VPN client may own and republish the list.
+- Con:
+   replacing the provider DNS server can change leak protection,
+   filtering,
+   and private-zone behavior.
 
 ### Make global DNS-over-TLS opportunistic
 
 Change the global policy from `DNSOverTLS=yes` to `DNSOverTLS=opportunistic`.
 The resolver can then downgrade for a per-link server that does not support TLS.
 
-- Pro: automatically accommodates mixed server capabilities.
-- Con: weakens the declared strict-encryption policy and permits unauthenticated downgrade.
-- Con: it does not resolve the competing global and VPN `~.` routing policies.
+- Pro:
+   automatically accommodates mixed server capabilities.
+- Con:
+   weakens the declared strict-encryption policy and permits unauthenticated downgrade.
+- Con:
+   it does not resolve the competing global and VPN `~.` routing policies.
 
 ### Remove the competing VPN DNS route
 
-If the intended policy is truly to send every query to the configured Cloudflare Gateway, configure the VPN not to
+If the intended policy is truly to send every query to the configured Cloudflare Gateway,
+ configure the VPN not to
 publish its own `~.` DNS route and server list.
-The kernel currently routes the Cloudflare DNS addresses through the VPN interface, so this can retain VPN transport,
+The kernel currently routes the Cloudflare DNS addresses through the VPN interface,
+ so this can retain VPN transport,
 but the VPN product's own policy must be checked before changing it.
 
-- Pro: restores one authoritative all-domain DNS policy.
-- Con: can break VPN private zones or provider DNS-leak controls.
-- Con: the VPN client can restore the route during reconnection.
+- Pro:
+   restores one authoritative all-domain DNS policy.
+- Con:
+   can break VPN private zones or provider DNS-leak controls.
+- Con:
+   the VPN client can restore the route during reconnection.
 
 Ranking for the narrow goal of removing the delay while preserving strict global Cloudflare DNS-over-TLS:
 explicit per-link mode > compatible VPN DNS list > removal of the VPN DNS route > opportunistic global mode.
@@ -414,22 +464,27 @@ A compatible list preserves stronger transport but depends more heavily on VPN s
 Route removal changes DNS ownership.
 Opportunistic mode weakens the broadest policy.
 
-If the real goal is instead to force every query through Cloudflare Gateway filtering, route removal ranks first.
+If the real goal is instead to force every query through Cloudflare Gateway filtering,
+ route removal ranks first.
 That different ranking depends on a security preference not established by this diagnosis.
 
 ## What does not work
 
 - Blaming GitHub does not fit the evidence.
-  Direct queries returned GitHub addresses, and the timeout names the local loopback stub.
+  Direct queries returned GitHub addresses,
+   and the timeout names the local loopback stub.
 - Treating the warning as a final command failure is incorrect when the same process later prints an answer.
   BIND's source prints the warning per failed attempt and then retries.
 - Restarting `systemd-resolved` does not correct the capability mismatch.
   It clears learned state and can cause the incompatible first server to be tried again.
 - Editing `/etc/resolv.conf` is not a durable fix on this host.
   It is a managed symlink and does not express per-link routing or DNS-over-TLS policy.
-- BIND issue 4044, "nslookup reports timeout if input lookup is delayed", is not this incident.
+- BIND issue 4044,
+   "nslookup reports timeout if input lookup is delayed",
+   is not this incident.
   That issue concerned delayed interactive standard input.
-  BIND 9.18.50 contains its regression test at `bin/tests/system/nslookup/tests.sh:49-65`, and this incident used a
+  BIND 9.18.50 contains its regression test at `bin/tests/system/nslookup/tests.sh:49-65`,
+   and this incident used a
   noninteractive one-command invocation with a genuinely delayed DNS response.
 - A successful cached `getent` or second `nslookup` does not disprove the first-attempt delay.
   Those calls run after the resolver has cached data or switched to `1.1.1.1`.
@@ -439,33 +494,53 @@ That different ranking depends on a security preference not established by this 
 ### Upstream filing decision
 
 No matching exemption exists in `.out-of-scope/`.
-Searches of open and closed systemd issues and pull requests for combinations of `DNSOverTLS`, `VPN`, `per-link`,
-`global`, and `timeout` found no duplicate.
+Searches of open and closed systemd issues and pull requests for combinations of `DNSOverTLS`,
+ `VPN`,
+ `per-link`,
+`global`,
+ and `timeout` found no duplicate.
 The BIND delayed-input issue 4044 is related only by wording and does not match the signal or input path.
 
 The six filing constraints are:
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    systemd's documented inheritance rule is working as implemented.
    Strict mode explicitly requires selected DNS servers to support DNS-over-TLS.
    The local configuration combines that strict global default with a per-link server that does not accept port 853.
-2. **Can upstream fix it?** The necessary control already exists as a per-link DNS-over-TLS setting.
-   Upstream cannot infer whether the user wants strict global policy, VPN-provider DNS, or downgrade.
-3. **Are they supporting this use case?** Yes, when link owners set the per-link mode or all selected servers support
+2. **Can upstream fix it?**
+    The necessary control already exists as a per-link DNS-over-TLS setting.
+   Upstream cannot infer whether the user wants strict global policy,
+    VPN-provider DNS,
+    or downgrade.
+3. **Are they supporting this use case?**
+    Yes,
+    when link owners set the per-link mode or all selected servers support
    the inherited global mode.
    The manual documents both requirements.
-4. **Would the repo welcome our contribution?** Contributions are welcome, but this report would not qualify.
+4. **Would the repo welcome our contribution?**
+    Contributions are welcome,
+    but this report would not qualify.
    `docs/CONTRIBUTING.md:14-24` limits issues to bugs and feature requests and requires a reproduction.
    `docs/CONTRIBUTING.md:53-67` requires AI assistance disclosure and thorough human review.
-   The issue templates and repository policy were checked; no policy bans a reviewed, disclosed contribution.
-5. **Will they likely fix it?** No upstream behavior change is warranted by the evidence.
-   Automatically downgrading would violate `DNSOverTLS=yes`, while ignoring per-link DNS would violate routing policy.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No.
-   Constraints 1 and 5 fail, so the auto-prototype gate does not trigger.
-   The available fixes are local policy changes, not a systemd patch.
+   The issue templates and repository policy were checked;
+    no policy bans a reviewed,
+    disclosed contribution.
+5. **Will they likely fix it?**
+    No upstream behavior change is warranted by the evidence.
+   Automatically downgrading would violate `DNSOverTLS=yes`,
+    while ignoring per-link DNS would violate routing policy.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    No.
+   Constraints 1 and 5 fail,
+    so the auto-prototype gate does not trigger.
+   The available fixes are local policy changes,
+    not a systemd patch.
 
 ### Filing artifact
 
 Nothing should be filed upstream.
-There is no additive bug report or comment draft because the source, documentation, and live behavior agree.
+There is no additive bug report or comment draft because the source,
+ documentation,
+ and live behavior agree.
 The actionable artifact is this local configuration diagnosis.
