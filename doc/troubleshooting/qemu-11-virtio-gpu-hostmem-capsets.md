@@ -26,6 +26,8 @@
 - **Disposition:**
   Keep the enhanced profile because the user explicitly prefers current GPU
   API capability over the narrower stable baseline.
+  The user explicitly accepted the session-wide loss of QEMU seccomp after
+  reviewing the security tradeoff.
   Preserve the prior persistent XML at
   `$HOME/labwc-vm-test/domain-before-virtio-gpu-sota.xml` for rollback.
 
@@ -586,8 +588,10 @@ Tradeoffs:
   Mesa,
   QEMU,
   and virglrenderer versions.
-- Disabling QEMU seccomp removes a host-defense layer from every domain in
-  this Flatpak session connection.
+- Disabling QEMU seccomp removes a host-defense layer from every current and
+  future domain in this Flatpak session connection.
+  The connection currently contains only this domain,
+  and the user explicitly accepted this tradeoff.
 - The renderer enumerates duplicate Venus and native Vulkan devices.
   An unqualified `vkcube` selected the hardware-backed Venus GPU and exited 0,
   but other applications may need explicit device selection.
