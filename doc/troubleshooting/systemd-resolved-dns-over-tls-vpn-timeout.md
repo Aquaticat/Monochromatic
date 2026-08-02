@@ -36,7 +36,9 @@ Name:   github.com
 Address: 140.82.114.3
 ```
 
-The warning recurs when the VPN link's selected DNS server returns to its first entry.
+Recurrence is expected if resolver state returns to the first VPN DNS server.
+This run observed the switch away from that server,
+ but did not demonstrate a complete cycle back to it.
 The VPN link had these resolver properties before the failing lookup:
 
 ```text
@@ -51,13 +53,18 @@ After the delayed lookup,
 
 ## Root cause
 
-Strict global DNS-over-TLS is inherited by a VPN link whose primary DNS server does not accept
-DNS-over-TLS connections.
-`systemd-resolved` waits on that server,
- switches to the second server,
- and eventually answers.
-BIND's shorter UDP wait for the local stub expires first,
- so `nslookup` reports one timed-out attempt and retries.
+Strict DNS-over-TLS is effective on a VPN link whose first DNS server did not complete a TCP port 853
+connection from this host within the probe window.
+`systemd-resolved` waited on that path,
+ switched to the second server,
+ and eventually answered.
+BIND's shorter UDP wait for the local stub expired first,
+ so `nslookup` reported one timed-out attempt and retried.
+
+The evidence identifies a failed TCP port 853 path,
+ not why that path drops traffic.
+The DNS server might lack DNS-over-TLS support,
+ or a firewall or network segment might filter that port.
 
 ### Step 1: nslookup sends the query to the local stub
 
@@ -117,13 +124,27 @@ This explains both parts of the surface behavior:
  but the process
 continues because retries remain.
 
-### Step 2: the strict global setting applies to the VPN link
+### Step 2: strict DNS-over-TLS is effective on the VPN link
 
 `/etc/systemd/resolved.conf.d/cloudflare-gateway.conf` contains a global
 `DNSOverTLS=yes` setting and a global `~.` route-only domain.
 The configured Cloudflare Gateway hostname is omitted from this document because it identifies the Gateway location.
 
-The VPN link did not publish its own DNS-over-TLS mode.
+The live effective mode was verified directly:
+
+```text
+$ resolvectl dnsovertls mx-que-mx1
+Link 43 (mx-que-mx1): yes
+```
+
+No explicit per-link mode was found in the link's current-boot resolver configuration.
+The current-boot journal recorded bus updates for the link's DNS servers,
+ route domain,
+ and default-route flag,
+ but no DNS-over-TLS setter call.
+This is consistent with global inheritance,
+ though the effective `yes` value alone cannot distinguish inheritance from an explicit identical setting.
+
 In systemd 259.7,
  `src/resolve/resolved-link.c:819-825` returns the manager's global mode when the link mode is unset:
 
@@ -196,7 +217,9 @@ matching" routing domain. (Note that more than one link might have this same "be
 domain configured, in which case the query is sent to all of them in parallel).</para>
 ```
 
-`resolvectl monitor` identified interface index 43,
+The parallel global path is inferred from that documented rule;
+packet-level tracing of its timing was not captured in this run.
+`resolvectl monitor` did identify interface index 43,
  the VPN link,
  on the eventual answer.
 The VPN scope initially selected `198.245.51.147`.
@@ -225,8 +248,9 @@ Plain DNS to the same VPN primary worked:
 ;; SERVER: 198.245.51.147#53(198.245.51.147) (UDP)
 ```
 
-The failure is therefore specific to applying strict DNS-over-TLS to the first VPN DNS server.
-It is not general reachability loss to that server.
+The measured failure is therefore specific to the TCP port 853 path used by strict DNS-over-TLS.
+It is not general reachability loss to that server because UDP port 53 remained reachable.
+The probe does not distinguish absent DNS-over-TLS support from path filtering.
 
 ### Step 4: systemd-resolved switches servers after the failed attempt
 
@@ -276,7 +300,7 @@ Its retry then received the answer produced after `systemd-resolved` had switche
 
 ## Verification
 
-### Versions and source identities
+### Source trace and versions
 
 The live system reported:
 
@@ -287,7 +311,9 @@ systemd-259.7-1.fc44.x86_64
 systemd-resolved-259.7-1.fc44.x86_64
 ```
 
-Source inspection used exact release tags:
+Source inspection used read-only clones in the private agent scratch directory.
+No third-party clone was modified.
+The clones were checked out at these exact release tags:
 
 ```text
 isc-projects/bind9 v9.18.50
@@ -382,18 +408,6 @@ it bypasses `systemd-resolved`,
 It is suitable as a diagnostic or emergency one-off command,
  not a system-wide fix.
 
-### Use the already-selected second server
-
-After one failure,
- `systemd-resolved` selected `1.1.1.1`,
- and subsequent VPN-scope lookups completed without the delay.
-No command is required for this transient state.
-
-Tradeoff:
-the VPN service can republish its DNS list or recreate the link,
- returning the scope to the incompatible primary.
-The journal showed the VPN DNS list being published more than once during the same boot.
-
 ## Durable remediation choices not applied
 
 These choices change resolver or VPN policy,
@@ -414,9 +428,9 @@ DNS packets would remain inside the encrypted VPN tunnel,
 - Con:
    DNS on the VPN link is no longer separately encrypted with TLS.
 
-### Replace or remove the incompatible VPN DNS server
+### Replace or remove the VPN DNS server with the failing port 853 path
 
-Configure the VPN integration so every listed per-link server supports strict DNS-over-TLS,
+Configure the VPN integration so every listed per-link server has a working strict DNS-over-TLS path,
  or omit the
 `198.245.51.147` entry.
 
@@ -432,7 +446,7 @@ Configure the VPN integration so every listed per-link server supports strict DN
 ### Make global DNS-over-TLS opportunistic
 
 Change the global policy from `DNSOverTLS=yes` to `DNSOverTLS=opportunistic`.
-The resolver can then downgrade for a per-link server that does not support TLS.
+The resolver can then downgrade when a per-link server's TLS path fails.
 
 - Pro:
    automatically accommodates mixed server capabilities.
@@ -459,7 +473,7 @@ but the VPN product's own policy must be checked before changing it.
 
 Ranking for the narrow goal of removing the delay while preserving strict global Cloudflare DNS-over-TLS:
 explicit per-link mode > compatible VPN DNS list > removal of the VPN DNS route > opportunistic global mode.
-The first choice changes only the incompatible link.
+The first choice changes only the affected link.
 A compatible list preserves stronger transport but depends more heavily on VPN support.
 Route removal changes DNS ownership.
 Opportunistic mode weakens the broadest policy.
@@ -475,8 +489,9 @@ That different ranking depends on a security preference not established by this 
    and the timeout names the local loopback stub.
 - Treating the warning as a final command failure is incorrect when the same process later prints an answer.
   BIND's source prints the warning per failed attempt and then retries.
-- Restarting `systemd-resolved` does not correct the capability mismatch.
-  It clears learned state and can cause the incompatible first server to be tried again.
+- Restarting `systemd-resolved` was not tested.
+  It would not change the configured strict mode or server list,
+  so it is not a demonstrated repair for this configuration.
 - Editing `/etc/resolv.conf` is not a durable fix on this host.
   It is a managed symlink and does not express per-link routing or DNS-over-TLS policy.
 - BIND issue 4044,
@@ -507,7 +522,7 @@ The six filing constraints are:
     No.
    systemd's documented inheritance rule is working as implemented.
    Strict mode explicitly requires selected DNS servers to support DNS-over-TLS.
-   The local configuration combines that strict global default with a per-link server that does not accept port 853.
+   The local configuration combines that strict global default with a per-link server whose port 853 path timed out.
 2. **Can upstream fix it?**
     The necessary control already exists as a per-link DNS-over-TLS setting.
    Upstream cannot infer whether the user wants strict global policy,
