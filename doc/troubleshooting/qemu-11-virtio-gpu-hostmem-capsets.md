@@ -1,13 +1,13 @@
-# QEMU 11.0.0 virtio-vga-gl without hostmem and Venus leaves labwc at OpenGL 4.3 and software Vulkan
+# QEMU 11.0.0 Venus requires hostmem and a libvirt seccomp workaround
 
 ## Metadata
 
 - **Status:**
-  Diagnosed and reproduced.
-  The existing local display topology is libvirt's preferred SPICE GL path for
-  a local client,
-  but the virtual GPU does not expose every API capability available from the
-  installed QEMU and renderer runtime.
+  Diagnosed,
+  adopted,
+  and reboot-verified.
+  The domain now uses every optional API capability exposed by the installed
+  `virtio-vga-gl` device.
   No comparative frame-time or latency benchmark was run.
 - **Diagnosed:**
   2026-08-02.
@@ -24,14 +24,10 @@
   `bazzite-labwc-test`,
   the libvirt domain backed by `$HOME/labwc-vm-test/disk.qcow2`.
 - **Disposition:**
-  Keep the current configuration for regression-covered labwc migration
-  testing.
-  Evaluate the candidate `qemu:override` configuration only when OpenGL 4.6,
-  hardware Vulkan,
-  or AMD native-context fidelity matters more than retaining the established
-  cursor,
-  scale,
-  and resize baseline.
+  Keep the enhanced profile because the user explicitly prefers current GPU
+  API capability over the narrower stable baseline.
+  Preserve the prior persistent XML at
+  `$HOME/labwc-vm-test/domain-before-virtio-gpu-sota.xml` for rollback.
 
 ## Symptom
 
@@ -221,6 +217,41 @@ It enables Venus and AMD DRM rendering in virglrenderer 1.3.0
 The `amdgpu-experimental` build option is also the reason not to treat DRM
 native context as the stability default.
 
+### libvirt's default seccomp policy blocks the Venus render server
+
+The first real-domain boot advertised three or four capsets,
+but capset 0 timed out and labwc remained blocked in uninterruptible sleep.
+The QEMU log named the host-side failure:
+
+```text
+failed to initialize venus renderer
+qemu-system-x86_64: virgl could not be initialized: -1
+```
+
+The generated QEMU command contained:
+
+```text
+-sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny
+```
+
+Venus-only and Venus plus native-context boots failed identically.
+A direct QEMU probe without that sandbox had already succeeded.
+Setting `seccomp_sandbox = 0`,
+restarting the session `virtqemud`,
+and retaining Venus made the same current
+image start labwc normally.
+The generated command then contained `-sandbox off`.
+This one-variable differential identifies the seccomp policy as the cause.
+
+The [libvirt security documentation][libvirt-passthrough-security] confirms
+that its default QEMU policy denies process spawning,
+that it cannot be changed per domain,
+and that `seccomp_sandbox = 0` is the available global driver setting.
+The original libvirt policy discussion identifies `spawn=deny` as blocking
+`fork` and `execve` [explicitly][libvirt-seccomp-mail].
+QEMU [issue 3156][qemu-3156] already tracks a server-file-descriptor design
+that would let Venus work without disabling the sandbox.
+
 ### The SPICE display choice is already correct
 
 The current domain uses local SPICE OpenGL with `listen=none`.
@@ -405,11 +436,62 @@ libvirt generated:
 
 This proves the override reaches the intended device without adding a second
 GPU.
-The persistent domain currently has no user-authored video alias,
-while the live XML contains libvirt's generated `video0` alias.
-Adoption must add one `ua-video0` alias to the persistent video element,
-or replace an existing video alias if one is added later,
-never append a second alias.
+The persistent domain initially had no user-authored video alias,
+while the live XML contained libvirt's generated `video0` alias.
+Adoption added one `ua-video0` alias to the persistent video element.
+
+### Real-domain adoption
+
+The persistent `bazzite-labwc-test` domain now uses:
+
+```text
+hostmem=2147483648
+blob=true
+venus=true
+drm_native_context=true
+sandbox=off
+```
+
+QMP returned the same four device-property values from the running
+`ua-video0` object.
+The current guest reported `+host_visible`,
+four complete capsets with IDs 1,
+2,
+4,
+and 6,
+and no GPU warning after the seccomp workaround.
+
+OpenGL moved to native AMD rendering:
+
+```text
+OpenGL renderer string: AMD Radeon RX 7600 (radeonsi, navi33, ACO, ...)
+OpenGL core profile version string: 4.6 (Core Profile) Mesa 26.1.5
+```
+
+Vulkan exposed both Venus and native RADV paths.
+Finite Wayland rendering runs succeeded on each selected physical-GPU path:
+
+```text
+Selected GPU 0: Virtio-GPU Venus (AMD Radeon RX 7600 (RADV NAVI33))
+VENUS_EXIT=0
+Selected GPU 2: AMD Radeon RX 7600 (RADV NAVI33)
+RADV_EXIT=0
+```
+
+The SPICE client opened main,
+display,
+cursor,
+input,
+audio,
+and USB redirection channels.
+Opening the console changed the guest from 1280x800 to 1800x1810,
+while scale remained 2.
+That verifies viewer-driven resize and preserves the established scaling path.
+A guest reboot changed the boot ID and reproduced all capsets,
+OpenGL 4.6,
+both Vulkan rendering runs,
+active labwc integration services,
+and the 1800x1810 scaled display.
 
 ## Verified workarounds
 
@@ -434,13 +516,12 @@ GPU software that requires OpenGL newer than 4.3 or hardware Vulkan does not
 match the physical host.
 Vulkan work runs on the guest CPU.
 
-## Candidate enhancement
+## Adopted enhancement
 
 ### Enable every available virtual GPU capability through qemu:override
 
-The maximum-capability device was verified through direct QEMU and SPICE.
-The corresponding libvirt frontend is a generated candidate,
-not an end-to-end verified domain workaround:
+The maximum-capability device is now end-to-end verified in the real
+libvirt-managed domain:
 
 ```xml
 <!-- Add xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" to <domain>
@@ -474,23 +555,24 @@ QEMU documents `hostmem` plus `blob` as sufficient for OpenGL 4.6 and adds
 `venus` for Vulkan.
 `drm_native_context` is a separate AMD-native driver path and is not required
 for either capability.
-The combined profile is the only enhanced profile exercised here;
-a reduced profile should omit `drm_native_context` unless native AMD driver
-fidelity is the test target.
+Venus-only and the combined profile were both exercised during diagnosis.
+The former exposed three capsets;
+the latter exposes four and is the adopted configuration.
+Both require the seccomp workaround in this libvirt stack.
 
-The full libvirt-managed domain was not booted with this override.
-A `domxml-to-native` attempt using a copy of the complete domain stopped while
-preparing its unrelated network interface with
-`Unable to create tap device vnet0`.
-Before adoption,
-boot a disposable libvirt-managed clone with a single `ua-video0` alias and a
-current-image overlay,
-then repeat cursor,
-resize,
-scale,
-reboot,
-OpenGL,
-and Vulkan checks.
+The Flatpak session driver configuration is:
+
+```ini
+# $HOME/.var/app/org.virt_manager.virt-manager/config/libvirt/qemu.conf
+seccomp_sandbox = 0
+```
+
+Restart the session `virtqemud` after changing this setting.
+It applies to every VM managed by this Flatpak `qemu:///session` connection,
+not only `bazzite-labwc-test`.
+The Flatpak sandbox remains,
+but it does not replace the QEMU process-level seccomp defense that this
+setting removes.
 
 Tradeoffs:
 
@@ -502,13 +584,30 @@ Tradeoffs:
   Mesa,
   QEMU,
   and virglrenderer versions.
+- Disabling QEMU seccomp removes a host-defense layer from every domain in
+  this Flatpak session connection.
+- The renderer enumerates duplicate Venus and native Vulkan devices;
+  applications may need explicit device selection.
 - The existing cursor,
   resize,
-  and 2x-scale behavior must be rechecked after adoption.
+  2x-scale,
+  reboot,
+  OpenGL,
+  and Vulkan paths passed the adoption checks.
 - The 2 GiB host-memory window was verified here,
   but no workload-specific sizing study was performed.
 
 ## What does not work
+
+### Venus does not initialize under libvirt's default seccomp policy
+
+With `seccomp_sandbox` at its default,
+libvirt emits `spawn=deny` and virglrenderer cannot start the Venus render
+server.
+The guest still sees the larger capset count,
+but capset 0 times out and labwc blocks before publishing `WAYLAND_DISPLAY`.
+Removing only DRM native context does not fix it.
+Disabling the session QEMU seccomp sandbox does.
 
 ### Blob without hostmem does not unlock the later API paths
 
