@@ -39,9 +39,12 @@ TODO
 2. Type `chrome://flags/#enable-vulkan` and press **Enter**.
    The **Experimental Vulkan** entry appears highlighted.
 3. Open the dropdown beside **Experimental Vulkan**.
-   The dropdown shows **Default**, **Enabled**, and **Disabled**.
+   The dropdown shows **Default**,
+   **Enabled**,
+   and **Disabled**.
 4. Select **Default**.
-   The entry changes from **Enabled** to **Default**, and **Relaunch** appears.
+   The entry changes from **Enabled** to **Default**,
+   and **Relaunch** appears.
 5. Click **Relaunch**.
    Every Helium window closes and reopens with Vulkan omitted from the GPU feature list.
 6. Open a page containing a video.
@@ -79,8 +82,11 @@ Only use these steps when reproducing the problem for diagnosis.
 2. Type `chrome://flags/#enable-vulkan` and press **Enter**.
    The **Experimental Vulkan** entry appears highlighted.
 3. Open the dropdown beside **Experimental Vulkan**.
-   The dropdown shows **Default**, **Enabled**, and **Disabled**.
+   The dropdown shows **Default**,
+   **Enabled**,
+   and **Disabled**.
 4. Select **Enabled**.
-   The entry changes to **Enabled**, and **Relaunch** appears.
+   The entry changes to **Enabled**,
+   and **Relaunch** appears.
 5. Click **Relaunch**.
    Every Helium window closes and reopens with Vulkan enabled again.
