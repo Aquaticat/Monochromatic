@@ -157,6 +157,12 @@ On an affected kernel,
    Detached application watcher owns Ghostty and Steam enumeration,
    future-cgroup inotify coverage,
    and Helium and Pale Moon process rescans.
+- Process discovery attaches entire current cgroup.
+   If Helium or Pale Moon shares that cgroup with another process,
+   every sibling's newly created sockets receive exemption until cgroup disappears or watcher stops.
+- A newly started process-discovered application can create sockets before next periodic rescan,
+   whose interval is 250 milliseconds.
+   Existing applications are attached before watcher readiness.
 - Detach removes only the four exact expected pin names and uses `rmdir`,
    so unrelated entries prevent directory removal.
 - On affected kernels,

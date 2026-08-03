@@ -117,6 +117,27 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         "/home/user/.local/opt/palemoon/palemoon-bin",
         "0::/users/app.slice/app-palemoon-bin-45.scope\n",
     )?;
+    // Case and suffix near misses must not exempt unrelated executable names.
+    create_process(
+        &proc_root,
+        "46",
+        "/home/user/.local/opt/palemoon/PALEMOON",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    // Prefix lookalike verifies Pale Moon matching stays exact rather than family-wide.
+    create_process(
+        &proc_root,
+        "47",
+        "/home/user/.local/opt/palemoon/palemoon2",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
+    // Backup suffix verifies installed binary name cannot carry arbitrary trailing text.
+    create_process(
+        &proc_root,
+        "48",
+        "/home/user/.local/opt/palemoon/palemoon-bin.bak",
+        "0::/users/app.slice/app-org.example.Other.scope\n",
+    )?;
     let targets = scan_application_targets(&ScanRoots {
         app_slice: &app_slice,
         proc_root: &proc_root,

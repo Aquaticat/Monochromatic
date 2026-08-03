@@ -10,7 +10,8 @@ It:
 - owns collision-safe dual-stack bypass routing;
 - exempts Ghostty,
    Steam,
-   and Helium sockets through cgroup-BPF;
+   Helium,
+   and Pale Moon sockets through cgroup-BPF;
 - keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
@@ -54,6 +55,10 @@ and the down physical endpoint route.
    diagnose system-wide ISP egress,
    trace interacting IVPN and endpoint routes,
    and prevent endpoint recursion.
+- Pale Moon follow-up:
+   discover both installed Pale Moon executable names,
+   verify live target enumeration,
+   and update exemption diagnostics and documentation.
 
 No tracked implementation task remains.
 
@@ -83,6 +88,7 @@ ff9081828 normalized conflict detection and dual-stack route coverage
 a41cb8efb missing-ExemptMark warning and live config note
 743581a55 configured-exemption warning-path coverage
 492b6914e actionable config-specific warning wording
+7b3621d47 Pale Moon process discovery and exemption documentation
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -257,7 +263,7 @@ reproduction,
 upstream patch,
 and filing decision.
 
-## Ghostty, Steam, and Helium coverage
+## Ghostty, Steam, Helium, and Pale Moon coverage
 
 `wg-quicker` starts Rust watcher only after bypass route exists.
 It stops watcher before removing bypass routing.
@@ -266,7 +272,8 @@ Changed config without `ExemptMark` still stops watcher when persisted bypass st
 Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning before network mutation.
 It states that Ghostty,
  Steam,
- and Helium will use the tunnel.
+ Helium,
+ and Pale Moon will use the tunnel.
 It instructs the user to add `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
@@ -315,8 +322,9 @@ Watcher behavior:
   renderer,
   zygote,
   and crashpad executables to current cgroups;
+- maps exact `palemoon` and `palemoon-bin` executable names to current cgroups;
 - periodically rescans processes entering existing cgroups;
-- retains known Helium cgroups through process restarts until cgroup removal;
+- retains known process-discovered cgroups through process restarts until cgroup removal;
 - holds links directly for watcher lifetime;
 - drops every link on validated watcher shutdown.
 
@@ -330,6 +338,18 @@ Follow-up read-only audit after the Steam extension found:
 
 - live Steam client and helper processes shared one `app-steam@*.service` cgroup;
 - rebuilt `wg-quicker-exempt list-targets` included that service alongside current Ghostty and Helium targets.
+
+Pale Moon follow-up audit found:
+
+- installed `palemoon` and `palemoon-bin` files share same ELF build ID;
+- live `/proc/<pid>/exe` resolved to installed lowercase `palemoon` path;
+- isolated disposable app-slice scope appeared in rebuilt `wg-quicker-exempt list-targets` output;
+- tunnel and real application cgroup marking remained untouched.
+
+Process discovery attaches entire current cgroup.
+Sibling processes sharing Helium or Pale Moon cgroup also receive exemption until cgroup disappears or watcher stops.
+A newly started process-discovered application can create sockets before next 250-millisecond rescan;
+applications present at watcher startup are attached before readiness.
 
 The active `mx-que-mx1` watcher was then refreshed with the rebuilt companion,
 its persisted mark,
@@ -438,7 +458,8 @@ Privileged disposable-cgroup tests cover:
 - public watcher start and stop lifecycle.
 
 Unit tests additionally cover target-name precision,
-fake procfs Helium mapping,
+fake procfs Helium and Pale Moon mapping,
+Pale Moon case and suffix near misses,
 path-key injectivity,
 exact cleanup,
 atomic exchange,

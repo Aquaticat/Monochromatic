@@ -158,6 +158,10 @@ and crashpad processes,
 and both Pale Moon executable names back to their current cgroups.
 Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
+Process discovery attaches entire current cgroup,
+so sibling processes in a shared cgroup also bypass tunnel until cgroup disappears or watcher stops.
+A newly started Helium or Pale Moon process can create sockets before next 250-millisecond rescan;
+applications already running during watcher startup are attached before readiness.
 Watcher state validates PID,
 process start time,
 and complete command before shutdown.

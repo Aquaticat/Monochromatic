@@ -69,8 +69,8 @@ fn is_process_id(name: &str) -> bool {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function isExemptApplicationExecutable(path: string): boolean {
-///   const name = basename(path).toLowerCase();
-///   return name.startsWith('helium') || name === 'palemoon' || name === 'palemoon-bin';
+///   const name = basename(path);
+///   return name.toLowerCase().startsWith('helium') || name === 'palemoon' || name === 'palemoon-bin';
 /// }
 /// ```
 fn is_exempt_application_executable(path: &Path) -> bool {
@@ -86,18 +86,25 @@ fn is_exempt_application_executable(path: &Path) -> bool {
     let Some(name) = path.file_name() else {
         return false;
     };
-    // What:     `.to_string_lossy()` creates readable text from an OS filename, replacing invalid UTF-8;
-    //           `.to_ascii_lowercase()` allocates lowercase owned text for stable ASCII comparisons.
-    // Why:      Installed executable names are ASCII, and normalization preserves Helium's existing case-insensitive match.
+    // What:     `.to_string_lossy()` creates readable text from an OS filename, replacing invalid UTF-8.
+    // Why:      Installed executable names are ASCII, while malformed names must remain safe to inspect.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const normalizedName = name.toLowerCase();
+    // const nameText = String(name);
     // ```
-    let normalized_name = name.to_string_lossy().to_ascii_lowercase();
-    return normalized_name.starts_with("helium")
-        || normalized_name == "palemoon"
-        || normalized_name == "palemoon-bin";
+    let name_text = name.to_string_lossy();
+    // What:     `.to_ascii_lowercase()` allocates lowercase owned text for Helium's case-insensitive prefix comparison.
+    // Why:      Preserve existing Helium matching without widening Pale Moon beyond exact installed filenames.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const normalizedHeliumName = nameText.toLowerCase();
+    // ```
+    let normalized_helium_name = name_text.to_ascii_lowercase();
+    return normalized_helium_name.starts_with("helium")
+        || name_text == "palemoon"
+        || name_text == "palemoon-bin";
 }
 
 /// Extracts unified cgroup path from one procfs cgroup file.
