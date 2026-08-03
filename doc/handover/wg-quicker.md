@@ -357,8 +357,10 @@ Sibling processes sharing Helium or Pale Moon cgroup also receive exemption unti
 A newly started process-discovered application can create sockets before next 250-millisecond rescan;
 applications present at watcher startup are attached before readiness.
 
-The active `mx-que-mx1` watcher was refreshed after each companion change with its persisted mark and desktop UID.
-Each readiness handshake succeeded without restarting WireGuard interface or changing live routing.
+The active `mx-que-mx1` watcher was refreshed with latest rebuilt companion,
+its persisted mark,
+and its desktop UID.
+Readiness handshake succeeded without restarting WireGuard interface or changing live routing.
 No real application cgroup was marked during read-only audits.
 State-mutating watcher tests used disposable cgroups.
 
