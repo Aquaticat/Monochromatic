@@ -5,7 +5,9 @@ Marks sockets from selected cgroups so policy routing can keep application traff
 ## Why
 
 `wg-quicker` installs a dedicated bypass table and an `ip rule` matching an exemption mark.
-This loader applies that mark to sockets created in Ghostty, Steam, and Helium cgroups without enumerating their destination IPs.
+This loader applies that mark to sockets created in Ghostty,
+ Steam,
+ and Helium cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -38,7 +40,9 @@ Detach exact persisted links:
 wg-quicker-exempt detach <cgroup-dir>...
 ```
 
-List Ghostty, Steam, and Helium targets without attaching:
+List Ghostty,
+ Steam,
+ and Helium targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>

@@ -123,7 +123,9 @@ Only `up` generates peer prefixes.
 `ExemptMark = <positive integer>` enables socket-mark policy routing used by the Rust
 `wg-quicker-exempt` companion.
 When `up` does not find this key,
-it warns that Ghostty, Steam, and Helium will use the tunnel and instructs the user to add
+it warns that Ghostty,
+ Steam,
+ and Helium will use the tunnel and instructs the user to add
 `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;

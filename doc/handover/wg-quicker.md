@@ -8,7 +8,9 @@ It:
 - handles large `AllowedIPs` values without Bash pattern matching;
 - generates peer-local `AllowedIPs` from allowed and disallowed source files;
 - owns collision-safe dual-stack bypass routing;
-- exempts Ghostty, Steam, and Helium sockets through cgroup-BPF;
+- exempts Ghostty,
+   Steam,
+   and Helium sockets through cgroup-BPF;
 - keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
@@ -262,7 +264,9 @@ It stops watcher before removing bypass routing.
 Changed config without `ExemptMark` still stops watcher when persisted bypass state proves prior ownership.
 
 Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning before network mutation.
-It states that Ghostty, Steam, and Helium will use the tunnel.
+It states that Ghostty,
+ Steam,
+ and Helium will use the tunnel.
 It instructs the user to add `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
