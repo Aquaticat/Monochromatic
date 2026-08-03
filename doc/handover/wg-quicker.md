@@ -18,7 +18,8 @@ It:
 The human brought real `mx-que-mx1` up during follow-up diagnosis and then brought it down after connectivity
 stopped.
 It is currently down.
-Do not bring it up,
+Its validated exemption watcher remains active with rebuilt companion and Pale Moon discovery.
+Do not bring tunnel up,
 restart it,
 or mutate live routing without explicit authorization.
 IVPN Desktop split tunneling is currently disabled after its supported `ivpn splittun -off` recovery.
@@ -89,6 +90,7 @@ a41cb8efb missing-ExemptMark warning and live config note
 743581a55 configured-exemption warning-path coverage
 492b6914e actionable config-specific warning wording
 7b3621d47 Pale Moon process discovery and exemption documentation
+5c65b29ce exact Pale Moon matching and cgroup-boundary documentation
 ```
 
 Other commits interleaved at `HEAD` belong to concurrent work and are unrelated.
@@ -344,6 +346,10 @@ Pale Moon follow-up audit found:
 - installed `palemoon` and `palemoon-bin` files share same ELF build ID;
 - live `/proc/<pid>/exe` resolved to installed lowercase `palemoon` path;
 - isolated disposable app-slice scope appeared in rebuilt `wg-quicker-exempt list-targets` output;
+- refreshed live watcher marked TCP4,
+  TCP6,
+  UDP4,
+  and UDP6 sockets created in disposable Pale Moon cgroup with `8888`;
 - tunnel and real application cgroup marking remained untouched.
 
 Process discovery attaches entire current cgroup.
@@ -351,11 +357,9 @@ Sibling processes sharing Helium or Pale Moon cgroup also receive exemption unti
 A newly started process-discovered application can create sockets before next 250-millisecond rescan;
 applications present at watcher startup are attached before readiness.
 
-The active `mx-que-mx1` watcher was then refreshed with the rebuilt companion,
-its persisted mark,
-and its desktop UID.
-The readiness handshake succeeded without restarting the WireGuard interface.
-No real application cgroup was marked during either read-only audit.
+The active `mx-que-mx1` watcher was refreshed after each companion change with its persisted mark and desktop UID.
+Each readiness handshake succeeded without restarting WireGuard interface or changing live routing.
+No real application cgroup was marked during read-only audits.
 State-mutating watcher tests used disposable cgroups.
 
 ## Verification evidence
