@@ -1,4 +1,4 @@
-//! Verifies exact Ghostty names and Helium process-to-cgroup discovery.
+//! Verifies exact Ghostty and Steam names plus Helium process-to-cgroup discovery.
 
 /// Discovery functions and injectable roots.
 use crate::application_targets::{
@@ -53,7 +53,7 @@ fn create_process(
     return std::fs::write(process.join("cgroup"), cgroup);
 }
 
-/// Finds named Ghostty groups, exact Helium service, and all Helium executable groups.
+/// Finds named Ghostty and Steam groups, exact Helium service, and all Helium executable groups.
 #[test]
 fn scan_combines_named_and_process_targets() -> io::Result<()> {
     let scratch = std::env::temp_dir().join(format!(
@@ -67,6 +67,9 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
     std::fs::create_dir(&proc_root)?;
     let ghostty_service = app_slice.join("app-com.mitchellh.ghostty@abc.service");
     let ghostty_surface = app_slice.join("app-ghostty-surface-transient-123.scope");
+    let steam_service = app_slice.join("app-steam@00c5c807b6844b0e96dd7a9f3c576aee.service");
+    let steam_scope = app_slice.join("app-steam@00c5c807b6844b0e96dd7a9f3c576aee.scope");
+    let steam_helper = app_slice.join("app-steam-helper.service");
     let helium_service = app_slice.join(
         "app-chrome\\x2dcadlkienfkclaiaibeoongdcgmdikeeg\\x2dDefault@abc.service",
     );
@@ -75,6 +78,9 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
     for path in [
         &ghostty_service,
         &ghostty_surface,
+        &steam_service,
+        &steam_scope,
+        &steam_helper,
         &helium_service,
         &helium_scope,
         &unrelated,
@@ -101,6 +107,7 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
     let mut expected = vec![
         ghostty_service,
         ghostty_surface,
+        steam_service,
         helium_service,
         helium_scope,
     ];

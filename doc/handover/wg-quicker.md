@@ -8,7 +8,7 @@ It:
 - handles large `AllowedIPs` values without Bash pattern matching;
 - generates peer-local `AllowedIPs` from allowed and disallowed source files;
 - owns collision-safe dual-stack bypass routing;
-- exempts Ghostty and Helium sockets through cgroup-BPF;
+- exempts Ghostty, Steam, and Helium sockets through cgroup-BPF;
 - keeps privileged BPF implementation in Rust;
 - does not move Ghostty into another systemd slice.
 
@@ -255,14 +255,15 @@ reproduction,
 upstream patch,
 and filing decision.
 
-## Ghostty and Helium coverage
+## Ghostty, Steam, and Helium coverage
 
 `wg-quicker` starts Rust watcher only after bypass route exists.
 It stops watcher before removing bypass routing.
 Changed config without `ExemptMark` still stops watcher when persisted bypass state proves prior ownership.
 
 Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning before network mutation.
-It states that Ghostty and Helium will use the tunnel and instructs the user to add `ExemptMark = 8888` under
+It states that Ghostty, Steam, and Helium will use the tunnel and instructs the user to add
+`ExemptMark = 8888` under
 `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
@@ -305,6 +306,7 @@ Watcher behavior:
 - attaches every existing Ghostty surface scope;
 - drains queued creation events and rescans before readiness;
 - attaches future Ghostty surface scopes;
+- identifies Steam's `app-steam@*.service` immediately;
 - identifies Helium Chrome application-ID service immediately;
 - maps live Helium,
   renderer,

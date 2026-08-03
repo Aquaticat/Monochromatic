@@ -123,7 +123,7 @@ Only `up` generates peer prefixes.
 `ExemptMark = <positive integer>` enables socket-mark policy routing used by the Rust
 `wg-quicker-exempt` companion.
 When `up` does not find this key,
-it warns that Ghostty and Helium will use the tunnel and instructs the user to add
+it warns that Ghostty, Steam, and Helium will use the tunnel and instructs the user to add
 `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
@@ -143,7 +143,9 @@ The watched desktop UID comes from `WG_QUICKER_EXEMPT_UID`,
 Direct root execution without an explicit or sudo identity fails instead of watching root's app slice.
 
 The Rust watcher installs inotify on user's existing `app.slice` before its first scan,
-attaches the Ghostty service and every `app-ghostty-surface-transient-*.scope`,
+attaches the Ghostty service,
+every `app-ghostty-surface-transient-*.scope`,
+and Steam's `app-steam@*.service`,
 drains queued events,
 and scans again to close creation race.
 It reacts to future cgroup creation and periodically maps every live Helium executable,

@@ -1,6 +1,6 @@
-//! Watches user application cgroups and retains marker links for Ghostty and Helium targets.
+//! Watches user application cgroups and retains marker links for Ghostty, Steam, and Helium targets.
 
-/// Target discovery across app slice and Helium processes.
+/// Target discovery across named app-slice services and Helium processes.
 use crate::application_targets::{scan_application_targets, ScanRoots};
 /// Unpinned marker links owned by watcher lifetime.
 use crate::bpf::{attach_marker_unpinned, MarkerLinks};
@@ -113,7 +113,7 @@ fn attach_target(path: &Path, mark: u32) -> io::Result<Option<ActiveAttachment>>
     }));
 }
 
-/// Reconciles discovered targets and retains Helium cgroups until directory removal.
+/// Reconciles discovered targets and retains attached cgroups until directory removal.
 fn reconcile(watch: &mut ApplicationWatch<'_>) -> io::Result<()> {
     watch.active.retain(|attachment| return attachment.path.is_dir());
     let targets = scan_application_targets(&watch.roots)?;

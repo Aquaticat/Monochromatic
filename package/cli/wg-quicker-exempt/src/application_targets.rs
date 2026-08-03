@@ -1,4 +1,4 @@
-//! Discovers Ghostty cgroups by systemd names and Helium cgroups by executable ownership.
+//! Discovers Ghostty and Steam cgroups by systemd names and Helium cgroups by executable ownership.
 
 /// Filesystem and process-race failures.
 use std::io;
@@ -9,6 +9,15 @@ use std::path::{Path, PathBuf};
 const GHOSTTY_SERVICE_PREFIX: &str = "app-com.mitchellh.ghostty@";
 /// Ghostty terminal surface scope prefix.
 const GHOSTTY_SURFACE_PREFIX: &str = "app-ghostty-surface-transient-";
+/// What:     `STEAM_SERVICE_PREFIX` is immutable process-lifetime text borrowed from binary storage.
+///           Rust spells that borrowed text type `&str`; sibling `String` would allocate owned text.
+/// Why:      Exact stable prefix identifies Steam's systemd service without allocating or matching unrelated names.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const STEAM_SERVICE_PREFIX = 'app-steam@';
+/// ```
+const STEAM_SERVICE_PREFIX: &str = "app-steam@";
 /// Helium desktop integration service prefix observed from its Chrome application ID.
 const HELIUM_SERVICE_PREFIX: &str =
     "app-chrome\\x2dcadlkienfkclaiaibeoongdcgmdikeeg\\x2dDefault@";
@@ -27,6 +36,20 @@ pub struct ScanRoots<'a> {
 pub fn is_ghostty_cgroup_name(name: &str) -> bool {
     return (name.starts_with(GHOSTTY_SERVICE_PREFIX) && name.ends_with(".service"))
         || (name.starts_with(GHOSTTY_SURFACE_PREFIX) && name.ends_with(".scope"));
+}
+
+/// What:     `is_steam_service_name` borrows candidate text as `&str` and returns primitive `bool`.
+///           Borrowing avoids ownership transfer; sibling `String` would require caller-owned allocation.
+/// Why:      Watcher must select Steam's complete service cgroup while rejecting similarly named scopes and services.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isSteamServiceName(name: string): boolean {
+///   return name.startsWith(STEAM_SERVICE_PREFIX) && name.endsWith('.service');
+/// }
+/// ```
+fn is_steam_service_name(name: &str) -> bool {
+    return name.starts_with(STEAM_SERVICE_PREFIX) && name.ends_with(".service");
 }
 
 /// Reports Helium desktop-integration service name before executable scan catches children.
@@ -64,7 +87,7 @@ fn push_unique(paths: &mut Vec<PathBuf>, path: PathBuf) {
     }
 }
 
-/// Scans direct app slice entries whose names identify Ghostty or Helium service.
+/// Scans direct app slice entries whose names identify Ghostty, Steam, or Helium service.
 fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::Result<()> {
     for entry_result in std::fs::read_dir(roots.app_slice)? {
         let entry = entry_result?;
@@ -75,7 +98,10 @@ fn scan_named_cgroups(roots: &ScanRoots<'_>, targets: &mut Vec<PathBuf>) -> io::
         let Some(name_text) = name.to_str() else {
             continue;
         };
-        if is_ghostty_cgroup_name(name_text) || is_helium_service_name(name_text) {
+        if is_ghostty_cgroup_name(name_text)
+            || is_steam_service_name(name_text)
+            || is_helium_service_name(name_text)
+        {
             push_unique(targets, entry.path());
         }
     }

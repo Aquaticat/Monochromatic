@@ -63,7 +63,7 @@ function isDecimalUid(value: string,): boolean {
 }
 
 /**
- * Resolves user whose `app.slice` contains Ghostty and Helium.
+ * Resolves user whose `app.slice` contains Ghostty, Steam, and Helium.
  *
  * Explicit override wins over sudo identity. A capability-based non-root caller
  * can use its own UID. Direct root execution must specify an override rather
