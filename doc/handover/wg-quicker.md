@@ -331,7 +331,11 @@ Follow-up read-only audit after the Steam extension found:
 - live Steam client and helper processes shared one `app-steam@*.service` cgroup;
 - rebuilt `wg-quicker-exempt list-targets` included that service alongside current Ghostty and Helium targets.
 
-No real application cgroup was marked during either audit.
+The active `mx-que-mx1` watcher was then refreshed with the rebuilt companion,
+its persisted mark,
+and its desktop UID.
+The readiness handshake succeeded without restarting the WireGuard interface.
+No real application cgroup was marked during either read-only audit.
 State-mutating watcher tests used disposable cgroups.
 
 ## Verification evidence
