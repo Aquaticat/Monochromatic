@@ -98,9 +98,7 @@ pnpm install
    and apply through mise so the root encrypted environment is loaded:
 
 ```bash
-cd package/config/tofu
-tofu init
-cd ../../..
+mise run //package/config/tofu:init
 mise run //package/config/tofu:plan
 mise run //package/config/tofu:apply
 ```

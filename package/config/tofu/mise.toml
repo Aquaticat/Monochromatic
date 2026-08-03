@@ -1,3 +1,7 @@
+[tasks.init]
+description = "Initialize the Hetzner OpenTofu working directory"
+run = "tofu init"
+
 [tasks.plan]
 description = "Plan Hetzner firewall changes using secrets loaded from root .env.local.json"
 run = "tofu plan"
