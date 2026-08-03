@@ -1,4 +1,4 @@
-//! Verifies exact Ghostty and Steam names plus Helium process-to-cgroup discovery.
+//! Verifies exact Ghostty and Steam names plus Helium and Pale Moon process-to-cgroup discovery.
 
 /// Discovery functions and injectable roots.
 use crate::application_targets::{
@@ -53,7 +53,7 @@ fn create_process(
     return std::fs::write(process.join("cgroup"), cgroup);
 }
 
-/// Finds named Ghostty and Steam groups, exact Helium service, and all Helium executable groups.
+/// Finds named Ghostty and Steam groups plus Helium and Pale Moon executable groups.
 #[test]
 fn scan_combines_named_and_process_targets() -> io::Result<()> {
     let scratch = std::env::temp_dir().join(format!(
@@ -74,6 +74,8 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         "app-chrome\\x2dcadlkienfkclaiaibeoongdcgmdikeeg\\x2dDefault@abc.service",
     );
     let helium_scope = app_slice.join("app-org.chromium.Chromium-42.scope");
+    let pale_moon_scope = app_slice.join("app-palemoon-44.scope");
+    let pale_moon_bin_scope = app_slice.join("app-palemoon-bin-45.scope");
     let unrelated = app_slice.join("app-org.example.Other.scope");
     for path in [
         &ghostty_service,
@@ -83,6 +85,8 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         &steam_helper,
         &helium_service,
         &helium_scope,
+        &pale_moon_scope,
+        &pale_moon_bin_scope,
         &unrelated,
     ] {
         std::fs::create_dir(path)?;
@@ -99,6 +103,20 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         "/usr/bin/firefox",
         "0::/users/app.slice/app-org.example.Other.scope\n",
     )?;
+    // Both installed Pale Moon executable names must map to their current cgroups.
+    create_process(
+        &proc_root,
+        "44",
+        "/home/user/.local/opt/palemoon/palemoon",
+        "0::/users/app.slice/app-palemoon-44.scope\n",
+    )?;
+    // `palemoon-bin` is byte-identical in current installation but remains valid launch name.
+    create_process(
+        &proc_root,
+        "45",
+        "/home/user/.local/opt/palemoon/palemoon-bin",
+        "0::/users/app.slice/app-palemoon-bin-45.scope\n",
+    )?;
     let targets = scan_application_targets(&ScanRoots {
         app_slice: &app_slice,
         proc_root: &proc_root,
@@ -110,6 +128,8 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
         steam_service,
         helium_service,
         helium_scope,
+        pale_moon_scope,
+        pale_moon_bin_scope,
     ];
     expected.sort();
     assert_eq!(targets, expected);

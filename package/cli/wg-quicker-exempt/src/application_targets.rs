@@ -1,4 +1,4 @@
-//! Discovers Ghostty and Steam cgroups by systemd names and Helium cgroups by executable ownership.
+//! Discovers Ghostty and Steam cgroups by systemd names and Helium and Pale Moon cgroups by executable ownership.
 
 /// Filesystem and process-race failures.
 use std::io;
@@ -62,12 +62,42 @@ fn is_process_id(name: &str) -> bool {
     return !name.is_empty() && name.bytes().all(|byte| return byte.is_ascii_digit());
 }
 
-/// Reports executable filename owned by Helium or its crash handler.
-fn is_helium_executable(path: &Path) -> bool {
+/// What:     `is_exempt_application_executable` borrows executable path as `&Path` and returns primitive `bool`.
+///           Borrowing avoids ownership transfer; sibling `PathBuf` would require caller-owned allocation.
+/// Why:      Process scan must recognize Helium and both Pale Moon executable names without matching unrelated browsers.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isExemptApplicationExecutable(path: string): boolean {
+///   const name = basename(path).toLowerCase();
+///   return name.startsWith('helium') || name === 'palemoon' || name === 'palemoon-bin';
+/// }
+/// ```
+fn is_exempt_application_executable(path: &Path) -> bool {
+    // What:     `let Some(name) = ... else` extracts present filename from Rust's `Option` wrapper.
+    //           `Some` carries filename; sibling `None` means path has no final component.
+    // Why:      Matching requires filename, while root-like paths must safely return false.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const name = basename(path);
+    // if (name === undefined) return false;
+    // ```
     let Some(name) = path.file_name() else {
         return false;
     };
-    return name.to_string_lossy().to_ascii_lowercase().starts_with("helium");
+    // What:     `.to_string_lossy()` creates readable text from an OS filename, replacing invalid UTF-8;
+    //           `.to_ascii_lowercase()` allocates lowercase owned text for stable ASCII comparisons.
+    // Why:      Installed executable names are ASCII, and normalization preserves Helium's existing case-insensitive match.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const normalizedName = name.toLowerCase();
+    // ```
+    let normalized_name = name.to_string_lossy().to_ascii_lowercase();
+    return normalized_name.starts_with("helium")
+        || normalized_name == "palemoon"
+        || normalized_name == "palemoon-bin";
 }
 
 /// Extracts unified cgroup path from one procfs cgroup file.
@@ -136,8 +166,17 @@ fn read_process_executable(path: &Path) -> io::Result<Option<PathBuf>> {
     }
 }
 
-/// Scans Helium processes and maps each into user app-slice cgroup.
-fn scan_helium_processes(
+/// What:     `scan_exempt_application_processes` borrows scan roots and mutable target list,
+///           then returns `io::Result<()>`, Rust's success-or-I/O-error wrapper with no success payload.
+/// Why:      Helium and Pale Moon lack one shared stable systemd name, so live executables identify their current cgroups.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function scanExemptApplicationProcesses(roots: ScanRoots, targets: string[]): void {
+///   // Add live Helium and Pale Moon cgroups or throw an I/O error.
+/// }
+/// ```
+fn scan_exempt_application_processes(
     roots: &ScanRoots<'_>,
     targets: &mut Vec<PathBuf>,
 ) -> io::Result<()> {
@@ -154,7 +193,7 @@ fn scan_helium_processes(
         let Some(executable) = read_process_executable(&process.join("exe"))? else {
             continue;
         };
-        if !is_helium_executable(&executable) {
+        if !is_exempt_application_executable(&executable) {
             continue;
         }
         let Some(cgroup_text) = read_process_file(&process.join("cgroup"))? else {
@@ -175,7 +214,7 @@ fn scan_helium_processes(
 pub fn scan_application_targets(roots: &ScanRoots<'_>) -> io::Result<Vec<PathBuf>> {
     let mut targets = Vec::new();
     scan_named_cgroups(roots, &mut targets)?;
-    scan_helium_processes(roots, &mut targets)?;
+    scan_exempt_application_processes(roots, &mut targets)?;
     targets.sort();
     targets.dedup();
     return Ok(targets);

@@ -7,7 +7,8 @@ Marks sockets from selected cgroups so policy routing can keep application traff
 `wg-quicker` installs a dedicated bypass table and an `ip rule` matching an exemption mark.
 This loader applies that mark to sockets created in Ghostty,
  Steam,
- and Helium cgroups without enumerating their destination IPs.
+ Helium,
+ and Pale Moon cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -42,7 +43,8 @@ wg-quicker-exempt detach <cgroup-dir>...
 
 List Ghostty,
  Steam,
- and Helium targets without attaching:
+ Helium,
+ and Pale Moon targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>
@@ -154,7 +156,7 @@ On an affected kernel,
 - Every new cgroup needs its own attachment.
    Detached application watcher owns Ghostty and Steam enumeration,
    future-cgroup inotify coverage,
-   and Helium process rescans.
+   and Helium and Pale Moon process rescans.
 - Detach removes only the four exact expected pin names and uses `rmdir`,
    so unrelated entries prevent directory removal.
 - On affected kernels,

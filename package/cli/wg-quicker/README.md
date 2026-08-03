@@ -125,7 +125,8 @@ Only `up` generates peer prefixes.
 When `up` does not find this key,
 it warns that Ghostty,
  Steam,
- and Helium will use the tunnel and instructs the user to add
+ Helium,
+ and Pale Moon will use the tunnel and instructs the user to add
 `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
@@ -154,8 +155,8 @@ It reacts to future cgroup creation and periodically maps every live Helium exec
 including renderer,
 zygote,
 and crashpad processes,
-back to its current cgroup.
-Known Helium cgroups remain attached until directory disappears,
+and both Pale Moon executable names back to their current cgroups.
+Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
 Watcher state validates PID,
 process start time,

@@ -1,6 +1,6 @@
-//! Watches user application cgroups and retains marker links for Ghostty, Steam, and Helium targets.
+//! Watches user application cgroups and retains marker links for Ghostty, Steam, Helium, and Pale Moon targets.
 
-/// Target discovery across named app-slice services and Helium processes.
+/// Target discovery across named app-slice services and executable-owned processes.
 use crate::application_targets::{scan_application_targets, ScanRoots};
 /// Unpinned marker links owned by watcher lifetime.
 use crate::bpf::{attach_marker_unpinned, MarkerLinks};
@@ -13,7 +13,7 @@ use std::os::unix::ffi::OsStrExt;
 /// Target paths.
 use std::path::{Path, PathBuf};
 
-/// Periodic process rescan closes Helium moves into already-existing cgroups.
+/// Periodic process rescan closes Helium and Pale Moon moves into already-existing cgroups.
 const RESCAN_INTERVAL_MS: libc::c_int = 250;
 /// Buffer size for draining cgroup directory inotify records.
 const INOTIFY_BUFFER_SIZE: usize = 16_384;
@@ -192,7 +192,7 @@ pub fn prepare_application_watch(
     return Ok(watch);
 }
 
-/// Polls cgroup events plus signals and periodically rescans Helium processes.
+/// Polls cgroup events plus signals and periodically rescans executable-owned processes.
 pub fn run_application_watch(watch: &mut ApplicationWatch<'_>) -> io::Result<()> {
     loop {
         let mut descriptors = [
