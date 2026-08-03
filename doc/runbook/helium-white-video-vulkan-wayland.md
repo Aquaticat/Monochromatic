@@ -2,21 +2,25 @@
 
 ## What this proves
 
-This procedure removes browser-wide Vulkan and Skia Graphite overrides from Helium on Linux Wayland.
-It leaves video decode on its supported default path and enables only Chromium's Vulkan-through-GL WebGPU interop.
+This procedure removes browser-wide Vulkan from Helium on Linux Wayland but keeps **Skia Graphite** selected.
+It leaves video decode on its supported default path and enables Chromium's Vulkan-through-GL WebGPU interop.
 The resulting configuration keeps presentation on `ANGLE_OPENGL` and `GaneshGL` while exposing hardware WebGPU.
 It does not enable **Unsafe WebGPU Support**.
+
+Chromium currently refuses to activate Graphite on Linux even when its UI flag is **Enabled**.
+Keeping that selection is harmless in the tested builds,
+but `chrome://gpu` still reports `Skia Graphite: Disabled` and `GaneshGL`.
 
 The command-line bridge was validated first against disposable Helium profiles:
 
 ```console
 ${HOME}/AppImages/helium.appimage \
   --disable-features=Vulkan \
-  --enable-features=ForceEnableWebGpuInterop
+  --enable-features=SkiaGraphite,ForceEnableWebGpuInterop
 ```
 
 Helium 0.14.9.1 and 0.15.1.1 rendered H.264 video under that arrangement.
-Helium 0.15.1.1 also completed WebGPU compute on an AMD Radeon RX 7600 while hardware-decoded video played.
+Both completed 300 WebGPU compute iterations on an AMD Radeon RX 7600 while hardware-decoded video played.
 The bridge was not applied to the active profile because the durable settings belong to Helium's flags UI.
 
 ## Setup
@@ -81,8 +85,8 @@ TODO
    The dropdown displays **Default**,
     **Enabled**,
     and **Disabled**.
-10. Select **Default**.
-    **Skia Graphite** displays **Default**.
+10. Select **Enabled**.
+    **Skia Graphite** displays **Enabled**.
 11. Press **Ctrl+L**.
     Helium selects the flags address.
 12. Type `chrome://flags/#disable-accelerated-video-decode`.
@@ -118,11 +122,14 @@ TODO
 Confirm all of these outcomes:
 
 - `chrome://flags/#enable-vulkan` shows **Default**.
-- `chrome://flags/#skia-graphite` shows **Default**.
+- `chrome://flags/#skia-graphite` shows **Enabled**.
 - `chrome://flags/#disable-accelerated-video-decode` shows **Default**.
 - `chrome://flags/#force-enable-webgpu-interop` shows **Enabled**.
 - The **Graphics Feature Status** section of `chrome://gpu` contains `WebGPU: Hardware accelerated`.
-- The **Graphics Feature Status** section of `chrome://gpu` contains `Vulkan: Disabled`.
+- On Helium 0.15.1.1,
+   the **Graphics Feature Status** section of `chrome://gpu` contains `Vulkan: Disabled`.
+- On Helium 0.14.9.1,
+   `chrome://gpu` can report `Vulkan: Hardware accelerated` for the interop device even though presentation remains GL.
 - The **Graphics Feature Status** section of `chrome://gpu` contains `Skia Graphite: Disabled`.
 - The **Display type** value in `chrome://gpu` is `ANGLE_OPENGL`.
 - The **Skia Backend Type** value in `chrome://gpu` is `GaneshGL`.
@@ -130,6 +137,9 @@ Confirm all of these outcomes:
 - [WebGPU Report][webgpu-report] identifies the AMD adapter and a Vulkan backend.
 - A video's picture moves while its timeline advances instead of showing a solid white rectangle.
 - `chrome://media-internals` records `kVideoDecoderName` as `VaapiVideoDecoder` for supported H.264 media.
+- Helium's diagnostic output can contain
+   `Enabling Graphite on a not-yet-supported platform is disallowed for safety`.
+   That message confirms that the selected Graphite flag was refused rather than activated.
 
 Run this command while the video plays.
 A passing check prints no matching lines:
