@@ -72,20 +72,19 @@ Main Terraform configuration that:
 
 ## Setup
 
-1. Copy `hetzner.auto.tfvars.example` to `hetzner.auto.tfvars` and fill in your tokens and home ISP ASN:
-
-```hcl
-hcloud_token  = "your_hetzner_api_token"
-ipinfo_token  = "your_ipinfo_token"
-home_isp_asns            = { home = "AS12345" }
-storagebox_hostnames     = ["u123456.your-storagebox.de"]
-firewall_label_selectors = ["role=monochromatic-host"]
-```
-
-2. Create `.env.local` with:
+1. Store `HCLOUD_TOKEN` and `IPINFO_TOKEN` in the monorepo-root,
+   SOPS-encrypted `.env.local.json`:
 
 ```bash
-IPINFO_TOKEN=your_ipinfo_token
+mise run --raw secrets:edit
+```
+
+2. Copy `hetzner.auto.tfvars.json.example` to `hetzner.auto.tfvars.json` and fill in the non-secret,
+   machine-specific inputs:
+
+```bash
+cp package/config/tofu/hetzner.auto.tfvars.json.example \
+  package/config/tofu/hetzner.auto.tfvars.json
 ```
 
 3. Install dependencies:
@@ -94,12 +93,16 @@ IPINFO_TOKEN=your_ipinfo_token
 pnpm install
 ```
 
-4. Initialize and apply:
+4. Initialize,
+   plan,
+   and apply through mise so the root encrypted environment is loaded:
 
 ```bash
+cd package/config/tofu
 tofu init
-tofu plan
-tofu apply
+cd ../../..
+mise run //package/config/tofu:plan
+mise run //package/config/tofu:apply
 ```
 
 ## Firewall rules
@@ -254,12 +257,14 @@ and reset credentials or mount the filesystem.
 
 ## Local-only files
 
-The following are gitignored and must be created manually:
+The following are gitignored:
 
-- `*.auto.tfvars`:
-   API tokens and home ISP ASN
-- `.env.local`:
-   ipinfo token for `fetch_ips.ts`
+- `/.env.local.json`:
+   monorepo-root SOPS-encrypted store for `HCLOUD_TOKEN`,
+   `IPINFO_TOKEN`,
+   and every other local developer secret
+- `*.auto.tfvars.json`:
+   non-secret machine-specific values such as home ISP ASNs and Storage Box hostnames
 - `src/cache_AS*.txt`:
    ASN lookup caches
 - `terraform.tfstate*`:

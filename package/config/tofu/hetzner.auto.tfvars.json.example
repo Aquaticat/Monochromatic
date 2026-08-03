@@ -1,0 +1,13 @@
+{
+  "home_isp_asns": {
+    "home": "AS_YOUR_ISP"
+  },
+  "storagebox_hostnames": [
+    "u123456.your-storagebox.de"
+  ],
+  "storagebox_destination_ips": [],
+  "firewall_server_ids": [],
+  "firewall_label_selectors": [
+    "role=monochromatic-host"
+  ]
+}

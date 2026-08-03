@@ -34,18 +34,10 @@ moved {
   to   = hcloud_firewall.tofu["2"]
 }
 
-variable "hcloud_token" {
-  sensitive = true
-}
-
-variable "ipinfo_token" {
-  sensitive = true
-}
-
 variable "home_isp_asns" {
   type        = map(string)
   default     = {}
-  description = "ASN map for home ISP ranges used in ssh/ping rules. Supply via *.auto.tfvars."
+  description = "ASN map for home ISP ranges used in ssh/ping rules. Supply via *.auto.tfvars.json."
 }
 
 variable "storagebox_hostnames" {
@@ -79,9 +71,7 @@ variable "target_asns" {
   }
 }
 
-provider "hcloud" {
-  token = var.hcloud_token
-}
+provider "hcloud" {}
 
 locals {
   # Merge public ASNs with locally-supplied home ISP ASNs

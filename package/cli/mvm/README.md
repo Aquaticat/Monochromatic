@@ -44,7 +44,8 @@ to follow-up commands (`exec`,
 
 ### hetzner backend
 
-- `HCLOUD_TOKEN` set to a Hetzner Cloud API token (read/write)
+- `HCLOUD_TOKEN` set to a Hetzner Cloud API token (read/write),
+   normally loaded by mise from the monorepo-root SOPS-encrypted `.env.local.json`
 - An OpenSSH client (`ssh`,
    `scp`) version 9.0 or newer on the host running mvm
 - Cross-platform:
@@ -113,25 +114,26 @@ It provisions real,
  billed Hetzner servers,
  so an `HCLOUD_TOKEN` must be set.
 
-```sh
-export HCLOUD_TOKEN=...   # a Hetzner Cloud API token with read/write access
+Store `HCLOUD_TOKEN` through `mise run --raw secrets:edit`.
+Commands launched through the repository's mise tasks inherit the decrypted value.
 
+```sh
 # Create a server (defaults: cheapest non-deprecated type, locations fsn1,nbg1,hel1)
-mvm --backend hetzner create dev-01
+mise run //package/cli/mvm:run -- --backend hetzner create dev-01
 
 # Pick a server type and location series (first available wins)
-mvm --backend hetzner create big \
+mise run //package/cli/mvm:run -- --backend hetzner create big \
   --server-type cpx41 --location ash,hil
 
 # Run a command (over SSH), copy files (over SCP), open a shell, then destroy
-mvm --backend hetzner exec dev-01 -- uname -a
-mvm --backend hetzner push dev-01 ./setup.sh /root/setup.sh
-mvm --backend hetzner shell dev-01
-mvm --backend hetzner destroy dev-01
+mise run //package/cli/mvm:run -- --backend hetzner exec dev-01 -- uname -a
+mise run //package/cli/mvm:run -- --backend hetzner push dev-01 ./setup.sh /root/setup.sh
+mise run //package/cli/mvm:run -- --backend hetzner shell dev-01
+mise run //package/cli/mvm:run -- --backend hetzner destroy dev-01
 
 # List or destroy every mvm-managed server (scoped by the mvm=true label)
-mvm --backend hetzner list
-mvm --backend hetzner destroy --all
+mise run //package/cli/mvm:run -- --backend hetzner list
+mise run //package/cli/mvm:run -- --backend hetzner destroy --all
 ```
 
 Notes:
@@ -182,7 +184,7 @@ A live,
 `test:unit` (the `.expensive.` marker) and only runs when `HCLOUD_TOKEN` is set:
 
 ```sh
-HCLOUD_TOKEN=... node package/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts
+mise run //package/cli/mvm:test:hetzner
 ```
 
 ## Custom templates

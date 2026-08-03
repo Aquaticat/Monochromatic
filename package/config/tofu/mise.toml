@@ -1,3 +1,11 @@
+[tasks.plan]
+description = "Plan Hetzner firewall changes using secrets loaded from root .env.local.json"
+run = "tofu plan"
+
+[tasks.apply]
+description = "Apply Hetzner firewall changes using secrets loaded from root .env.local.json"
+run = "tofu apply"
+
 [tasks.lint]
 run = [{ tasks = ["lint:tofu", "lint:oxlint", "lint:types"] }]
 

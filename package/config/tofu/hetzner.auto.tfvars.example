@@ -1,6 +1,0 @@
-hcloud_token         = ""
-ipinfo_token         = ""
-home_isp_asns       = { home = "AS_YOUR_ISP" }
-storagebox_hostnames       = ["u123456.your-storagebox.de"]
-firewall_label_selectors = ["role=monochromatic-host"]
-# firewall_server_ids    = [12345678]

@@ -12,6 +12,7 @@
 cosign.key
 local.properties
 *.auto.tfvars
+*.auto.tfvars.json
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl

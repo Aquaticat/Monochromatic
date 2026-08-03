@@ -14,6 +14,11 @@ mise decrypts sops-encrypted env files natively (built-in `rops`),
 so a secret stored in `.env.local.json` reaches `process.env` exactly the way
 the old plaintext `.env.local` did.
 Every consumer that reads `process.env.SOME_KEY` is untouched by the migration.
+The Hetzner OpenTofu provider reads `HCLOUD_TOKEN`,
+and the IPinfo helpers read `IPINFO_TOKEN`,
+so those tokens share the root store instead of being duplicated in package-local tfvars or env files.
+Non-secret,
+machine-specific OpenTofu inputs remain in a gitignored `*.auto.tfvars.json` file.
 
 ### Why not fnox
 
