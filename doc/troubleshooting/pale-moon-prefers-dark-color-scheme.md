@@ -176,8 +176,8 @@ so later GUI changes do not remain effective after the next restart.
 - Changing only the browser theme.
   Application appearance and page-visible color preference are separate controls.
 - Assuming Pale Moon mirrors the operating-system scheme by default.
-  The default is explicitly light,
-and the project describes the independent choice as a fingerprinting safeguard in the
+  The default is explicitly light.
+  The project describes the independent choice as a fingerprinting safeguard in the
   [Pale Moon forum explanation][forum-explanation].
 
 ## Upstream filing artifact
