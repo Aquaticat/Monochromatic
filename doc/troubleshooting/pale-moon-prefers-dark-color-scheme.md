@@ -23,7 +23,8 @@ user_pref("browser.display.prefers_color_scheme", 2);
 
 ## Root cause
 
-This is intentional product behavior, not a failure to detect the desktop theme.
+This is intentional product behavior,
+ not a failure to detect the desktop theme.
 Pale Moon defaults the preference to light and gives the user explicit control.
 
 UXP commit `659c690d5b34cc3e46c5ba8a6e00f134d8d20c35`,
@@ -126,13 +127,19 @@ PALEMOON-DARK-PREFERENCE-PASS - Pale Moon
 
 ### Settings that satisfy the request
 
-- Colors dialog: `Use dark colors`.
-- Direct profile value: `browser.display.prefers_color_scheme = 2`.
-- Page result: dark query `true`, light query `false`, confirmed by the live title probe.
+- Colors dialog:
+   `Use dark colors`.
+- Direct profile value:
+   `browser.display.prefers_color_scheme = 2`.
+- Page result:
+   dark query `true`,
+   light query `false`,
+   confirmed by the live title probe.
 
 ### Settings that do not satisfy the request
 
-- An absent preference uses the source-defined default value `1`, which exposes light.
+- An absent preference uses the source-defined default value `1`,
+   which exposes light.
 - `browser.display.prefers_color_scheme = 1` explicitly exposes light.
 - Selecting a dark Pale Moon application theme alone does not set the web-page preference.
   The inspected profile selected the `blackmoon` theme but had no
@@ -184,17 +191,25 @@ Searches of Pale Moon and UXP issues and pull requests for
 and `Use dark colors` found no matching defect.
 The [existing forum thread][forum-explanation] already documents the intended control and exact GUI path.
 
-1. **Is it really upstream's fault?** No.
-   The source, GUI, and runtime result agree.
-2. **Can upstream fix it?** Not applicable because there is no defect.
-3. **Are they supporting this use case?** Yes.
+1. **Is it really upstream's fault?**
+    No.
+   The source,
+    GUI,
+    and runtime result agree.
+2. **Can upstream fix it?**
+    Not applicable because there is no defect.
+3. **Are they supporting this use case?**
+    Yes.
    The Colors dialog exposes the required choice.
-4. **Would the repo welcome our contribution?** Yes in general.
+4. **Would the repo welcome our contribution?**
+    Yes in general.
    `docs/CONTRIBUTING.md` in UXP requests focused issues and associated pull requests,
    and no AI-assistance prohibition was found.
-5. **Will they likely fix it?** No fix is needed.
+5. **Will they likely fix it?**
+    No fix is needed.
    Changing the default would reverse an explicit privacy and user-choice decision.
-6. **Have we prototyped a minimal fix compatible with their architecture?** No.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+    No.
    Constraints 1 and 5 fail,
    so the prototype requirement does not apply.
 
