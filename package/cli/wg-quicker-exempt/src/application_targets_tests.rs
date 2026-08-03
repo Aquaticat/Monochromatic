@@ -67,8 +67,8 @@ fn scan_combines_named_and_process_targets() -> io::Result<()> {
     std::fs::create_dir(&proc_root)?;
     let ghostty_service = app_slice.join("app-com.mitchellh.ghostty@abc.service");
     let ghostty_surface = app_slice.join("app-ghostty-surface-transient-123.scope");
-    let steam_service = app_slice.join("app-steam@00c5c807b6844b0e96dd7a9f3c576aee.service");
-    let steam_scope = app_slice.join("app-steam@00c5c807b6844b0e96dd7a9f3c576aee.scope");
+    let steam_service = app_slice.join("app-steam@abc.service");
+    let steam_scope = app_slice.join("app-steam@abc.scope");
     let steam_helper = app_slice.join("app-steam-helper.service");
     let helium_service = app_slice.join(
         "app-chrome\\x2dcadlkienfkclaiaibeoongdcgmdikeeg\\x2dDefault@abc.service",

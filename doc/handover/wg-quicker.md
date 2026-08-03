@@ -262,9 +262,8 @@ It stops watcher before removing bypass routing.
 Changed config without `ExemptMark` still stops watcher when persisted bypass state proves prior ownership.
 
 Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning before network mutation.
-It states that Ghostty, Steam, and Helium will use the tunnel and instructs the user to add
-`ExemptMark = 8888` under
-`[Interface]`,
+It states that Ghostty, Steam, and Helium will use the tunnel.
+It instructs the user to add `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
 
@@ -317,13 +316,18 @@ Watcher behavior:
 - holds links directly for watcher lifetime;
 - drops every link on validated watcher shutdown.
 
-Final read-only host audit found all current targets:
+Original read-only host audit found all then-current targets:
 
 - all `11` Ghostty service and surface cgroups were listed;
 - all `16` live Helium executable processes mapped to listed cgroups;
-- no current target was missing.
+- no then-current target was missing.
 
-No real application cgroup was marked during this audit.
+Follow-up read-only audit after the Steam extension found:
+
+- live Steam client and helper processes shared one `app-steam@*.service` cgroup;
+- rebuilt `wg-quicker-exempt list-targets` included that service alongside current Ghostty and Helium targets.
+
+No real application cgroup was marked during either audit.
 State-mutating watcher tests used disposable cgroups.
 
 ## Verification evidence
