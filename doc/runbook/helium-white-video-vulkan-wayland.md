@@ -16,9 +16,10 @@ The command-line bridge was validated first against disposable Helium profiles:
 ```console
 ${HOME}/AppImages/helium.appimage \
   --disable-features=Vulkan \
-  --enable-features=SkiaGraphite,ForceEnableWebGpuInterop
+  --enable-features=ForceEnableWebGpuInterop
 ```
 
+Equivalent persisted-flag profiles were then verified with **Skia Graphite** also selected.
 Helium 0.14.9.1 and 0.15.1.1 rendered H.264 video under that arrangement.
 Both completed 300 WebGPU compute iterations on an AMD Radeon RX 7600 while hardware-decoded video played.
 The bridge was not applied to the active profile because the durable settings belong to Helium's flags UI.
@@ -140,6 +141,10 @@ Confirm all of these outcomes:
 - Helium's diagnostic output can contain
    `Enabling Graphite on a not-yet-supported platform is disallowed for safety`.
    That message confirms that the selected Graphite flag was refused rather than activated.
+- After a Helium update,
+   recheck **Skia Graphite** and **Skia Backend Type** in `chrome://gpu`.
+   If they change from `Disabled` and `GaneshGL`,
+   Graphite has become active and video must be retested.
 
 Run this command while the video plays.
 A passing check prints no matching lines:
