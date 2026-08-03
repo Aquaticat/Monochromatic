@@ -1,56 +1,114 @@
-# Resolve white videos in Helium on Wayland
+# Resolve white videos and retain hardware WebGPU in Helium on Wayland
 
 ## What this proves
 
-This procedure removes a persisted experimental Vulkan override from Helium on Linux Wayland.
-It verifies that videos render and that Helium stops emitting the shared-image errors associated with white video surfaces.
+This procedure removes browser-wide Vulkan and Skia Graphite overrides from Helium on Linux Wayland.
+It leaves video decode on its supported default path and enables only Chromium's Vulkan-through-GL WebGPU interop.
+The resulting configuration keeps presentation on `ANGLE_OPENGL` and `GaneshGL` while exposing hardware WebGPU.
+It does not enable **Unsafe WebGPU Support**.
 
-The command-line bridge was validated first against a disposable Helium profile:
+The command-line bridge was validated first against disposable Helium profiles:
 
 ```console
-${HOME}/AppImages/helium.appimage --disable-features=Vulkan
+${HOME}/AppImages/helium.appimage \
+  --disable-features=Vulkan \
+  --enable-features=ForceEnableWebGpuInterop
 ```
 
-That override rendered local and remote H.264 video correctly on Wayland.
-Running the same profile with Vulkan enabled produced a white video surface and both target errors.
-The bridge was not applied to the active profile because the durable setting belongs to Helium's flags UI and the browser must restart.
+Helium 0.14.9.1 and 0.15.1.1 rendered H.264 video under that arrangement.
+Helium 0.15.1.1 also completed WebGPU compute on an AMD Radeon RX 7600 while hardware-decoded video played.
+The bridge was not applied to the active profile because the durable settings belong to Helium's flags UI.
 
 ## Setup
 
 Status:
 TODO
 
-Use this procedure when all of these conditions hold:
+Use this procedure on Linux when Helium runs natively on Wayland.
+Run this command in a terminal and confirm that it prints exactly `wayland`:
 
-- Helium runs on Linux in a Wayland session.
-- Videos play audio or advance their timeline but appear as white rectangles.
-- **Experimental Vulkan** was enabled in `chrome://flags`.
+```console
+printf '%s\n' "${XDG_SESSION_TYPE}"
+```
 
-Save any unsent form content before continuing.
+Helium 0.15.1.1 is the newest version covered by this procedure.
+If Helium is absent,
+download the build for the machine's architecture from the
+[Helium for Linux 0.15.1.1 release][helium-release].
+For the x86-64 AppImage downloaded to `~/Downloads`,
+ make it executable and start it with:
+
+```console
+chmod u+x "${HOME}/Downloads/helium-0.15.1.1-x86_64.AppImage"
+"${HOME}/Downloads/helium-0.15.1.1-x86_64.AppImage"
+```
+
+Save unsent form content before continuing.
 The **Relaunch** action restarts every Helium window.
+
+Record the current values of these entries if the previous configuration must be restorable:
+
+- **Vulkan**
+- **Skia Graphite**
+- **Hardware-accelerated video decode**
+- **Force enable WebGPU interop**
 
 ## Steps
 
 Status:
 TODO
 
-1. Focus Helium's address bar with **Ctrl+L**.
-   The current address becomes selected.
-2. Type `chrome://flags/#enable-vulkan` and press **Enter**.
-   The **Experimental Vulkan** entry appears highlighted.
-3. Open the dropdown beside **Experimental Vulkan**.
-   The dropdown shows **Default**,
-   **Enabled**,
-   and **Disabled**.
-4. Select **Default**.
-   The entry changes from **Enabled** to **Default**,
-   and **Relaunch** appears.
-5. Click **Relaunch**.
-   Every Helium window closes and reopens with Vulkan omitted from the GPU feature list.
-6. Open a page containing a video.
-   The page displays its video player.
-7. Press the player's **Play** button.
-   Moving video frames replace the white rectangle.
+1. Press **Ctrl+L**.
+   Helium selects the current address.
+2. Type `chrome://flags/#enable-vulkan`.
+   The address bar contains `chrome://flags/#enable-vulkan`.
+3. Press **Enter**.
+   The **Vulkan** entry appears highlighted.
+4. Open the dropdown beside **Vulkan**.
+   The dropdown displays **Default**,
+    **Enabled**,
+    and **Disabled**.
+5. Select **Default**.
+   **Vulkan** displays **Default**,
+    and the **Relaunch** button appears.
+6. Press **Ctrl+L**.
+   Helium selects the flags address.
+7. Type `chrome://flags/#skia-graphite`.
+   The address bar contains `chrome://flags/#skia-graphite`.
+8. Press **Enter**.
+   The **Skia Graphite** entry appears highlighted.
+9. Open the dropdown beside **Skia Graphite**.
+   The dropdown displays **Default**,
+    **Enabled**,
+    and **Disabled**.
+10. Select **Default**.
+    **Skia Graphite** displays **Default**.
+11. Press **Ctrl+L**.
+    Helium selects the flags address.
+12. Type `chrome://flags/#disable-accelerated-video-decode`.
+    The address bar contains `chrome://flags/#disable-accelerated-video-decode`.
+13. Press **Enter**.
+    The **Hardware-accelerated video decode** entry appears highlighted.
+14. Open the dropdown beside **Hardware-accelerated video decode**.
+    The dropdown displays **Default**,
+     **Enabled**,
+     and **Disabled**.
+15. Select **Default**.
+    **Hardware-accelerated video decode** displays **Default**.
+16. Press **Ctrl+L**.
+    Helium selects the flags address.
+17. Type `chrome://flags/#force-enable-webgpu-interop`.
+    The address bar contains `chrome://flags/#force-enable-webgpu-interop`.
+18. Press **Enter**.
+    The **Force enable WebGPU interop** entry appears highlighted.
+19. Open the dropdown beside **Force enable WebGPU interop**.
+    The dropdown displays **Default**,
+     **Enabled**,
+     and **Disabled**.
+20. Select **Enabled**.
+    **Force enable WebGPU interop** displays **Enabled**.
+21. Click **Relaunch**.
+    Every Helium window closes and reopens with the changed GPU configuration.
 
 ## What to check
 
@@ -59,14 +117,27 @@ TODO
 
 Confirm all of these outcomes:
 
-- The video picture moves while its timeline advances.
-- The video surface is not a solid white rectangle.
 - `chrome://flags/#enable-vulkan` shows **Default**.
-- This command prints no matching lines while the video plays:
+- `chrome://flags/#skia-graphite` shows **Default**.
+- `chrome://flags/#disable-accelerated-video-decode` shows **Default**.
+- `chrome://flags/#force-enable-webgpu-interop` shows **Enabled**.
+- The **Graphics Feature Status** section of `chrome://gpu` contains `WebGPU: Hardware accelerated`.
+- The **Graphics Feature Status** section of `chrome://gpu` contains `Vulkan: Disabled`.
+- The **Graphics Feature Status** section of `chrome://gpu` contains `Skia Graphite: Disabled`.
+- The **Display type** value in `chrome://gpu` is `ANGLE_OPENGL`.
+- The **Skia Backend Type** value in `chrome://gpu` is `GaneshGL`.
+- [WebGPU Report][webgpu-report] does not display `webgpu is not available on this browser`.
+- [WebGPU Report][webgpu-report] identifies the AMD adapter and a Vulkan backend.
+- A video's picture moves while its timeline advances instead of showing a solid white rectangle.
+- `chrome://media-internals` records `kVideoDecoderName` as `VaapiVideoDecoder` for supported H.264 media.
+
+Run this command while the video plays.
+A passing check prints no matching lines:
 
 ```console
 journalctl --user --since '5 minutes ago' --no-pager \
-  | grep --extended-regexp 'Could not find or create a backing for stream kSkia|Trying to produce a Skia representation from an incompatible backing'
+  | grep --extended-regexp \
+    'Could not find or create a backing for stream kSkia|Trying to produce a Skia representation from an incompatible backing'
 ```
 
 ## Restore
@@ -74,19 +145,27 @@ journalctl --user --since '5 minutes ago' --no-pager \
 Status:
 TODO
 
-Restoring the previous state deliberately recreates the unsupported configuration and can restore the white-video failure.
-Only use these steps when reproducing the problem for diagnosis.
+Restoring the diagnosed profile's previous values deliberately recreates the unsupported configuration and can restore
+white video.
+Only restore it when reproducing the failure.
 
-1. Focus Helium's address bar with **Ctrl+L**.
-   The current address becomes selected.
-2. Type `chrome://flags/#enable-vulkan` and press **Enter**.
-   The **Experimental Vulkan** entry appears highlighted.
-3. Open the dropdown beside **Experimental Vulkan**.
-   The dropdown shows **Default**,
-   **Enabled**,
-   and **Disabled**.
-4. Select **Enabled**.
-   The entry changes to **Enabled**,
-   and **Relaunch** appears.
-5. Click **Relaunch**.
-   Every Helium window closes and reopens with Vulkan enabled again.
+The diagnosed profile started with these values:
+
+- **Vulkan**:
+   **Enabled**
+- **Skia Graphite**:
+   **Enabled**
+- **Hardware-accelerated video decode**:
+   **Disabled**
+- **Force enable WebGPU interop**:
+   **Default**
+
+For each entry,
+open its URL from the **Steps** section,
+select the recorded previous value from its dropdown,
+and confirm that the entry displays that value.
+Click **Relaunch** after the final change.
+Every Helium window closes and reopens with the previous settings.
+
+[helium-release]: https://github.com/imputnet/helium-linux/releases/tag/0.15.1.1
+[webgpu-report]: https://webgpureport.org/
