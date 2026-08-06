@@ -3212,3 +3212,134 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   graded 100 items across two rounds, which is exactly the calibration set.
   Measure agreement against those 100 BEFORE pre-resolving anything, and report
   the agreement rate alongside the next sheet.
+
+## Session 2026-08-05/06: round two graded, roster repaired, branch rebased
+
+- ROUND TWO FAILED at 0.740 / 0.787 / 0.800 (strict / partials excluded /
+  ceiling) against the 0.9 bar: 37 clear Y, 10 clear N, 3 ungradable of 50.
+  Round one was 0.56 / 0.64 / 0.68, so fixes A-F moved precision a long way and
+  halved clear false positives (16 -> 10), and the gate still is not close.
+  Band-balanced 0.788 and pool-weighted 0.794 agree within a point, so the
+  weighting question raised before the draw did not need the user's decision.
+  Full analysis:
+  `node_modules/.monochromatic/translation-repair-runs/gate-verdict-round-two.md`
+  (outside git; quotes UNLICENSED corpus).
+- ROOT CAUSES of the 10 false positives: literalism fighting fluency (3:
+  poetry judged as prose, 总是 forced to "always", a fluency-serving conjunction
+  counted as an addition), anchoring/alignment (3), context insufficiency at
+  judgement (2), a doubted domain fact (1), token degeneration (1).
+- PRECISION CANNOT SEE REPAIR QUALITY, which the grading exposed and the metric
+  hides: 4 of the 37 TRUE positives carry notes saying detection was right and
+  the repair was poor ("is there a better way?"). Those score as successes.
+  Milestone four needs a repair-quality metric separate from detection
+  precision; task 47.
+- FIX H LANDED: the critic prompt carried non-literal translation policy and the
+  adjudication prompt carried NONE of it (3 matches versus 0 for
+  literal/synonym/poetry/fluency/natural). The panel's quoted-evidence check
+  cannot catch that class, because such claims are accurate about the text and
+  wrong about what counts as a defect. Directly targets FPs 26, 37, 42.
+- HOUSE POLICY NOW REACHES THE MODELS (`house-policy.ts`, spliced into the critic
+  and adjudicator prompts). The corpus documents its editorial rules in
+  `CODE_OF_CONDUCT.md` (编写原则) in the one-among-us/data repo, NOT in
+  `CONTRIBUTING.md`, and no stage had ever been told them.
+  The consequential rule: when a death was by suicide the method is deliberately
+  vague, and drug names and dosages are deliberately absent. A page obeying that
+  rule looks like `accuracy/omission` to an uninformed critic, and the editor
+  then RESTORES the detail the rule exists to remove, so acting on the finding
+  makes the shipped translation violate the corpus's reader-protection policy.
+  That is worse than a false positive.
+  Also carried: third person, neutral pronouns preserved rather than resolved to
+  he/she, and a memorial tone rule rejecting both overwrought and clinical
+  writing. `house-policy.ts` PARAPHRASES rather than copies, because the corpus
+  repo is unlicensed; never paste from it.
+  Open interaction: the recall benchmark treats every omission as a defect, so
+  policy-protected omissions and seeded omissions need reconciling.
+- SYNTHETIC ROSTER REPAIRED. `Kimi-K2.7-Code` and `MiniMax-M3` now answer HTTP
+  404 "no longer supported", and 404 is not in the transient retry set, so every
+  stage was about to lose two of seven voices silently with no retry.
+  THE ALIAS TRAP: the models endpoint lists ten ids but only SIX are distinct.
+  `syn:large:text` is GLM-5.2, `syn:large:vision` is Kimi-K3, `syn:small:text`
+  is GLM-4.7-Flash, `syn:small:vision` is Qwen3.6-27B, each stated by the
+  endpoint's own `hugging_face_id`. Restoring a seventh voice with an alias
+  would seat one model twice on a voting panel and count one opinion as two
+  confirmations. Dedupe roster edits on `hugging_face_id`, never on id.
+  Kimi-K3 now EDITS (user: much stronger than anything else offered), and
+  checkers exclude the editor, ending the old GLM-5.2 self-check.
+- QUORUM is now `voices >= ceil(roster / 2)` (user decision). The old "strictly
+  more than half" demanded more than a majority on EVEN rosters: at six it
+  wanted 4, so a stage sitting at exactly 3 burned every retry round. Odd
+  rosters unchanged. `minBallotWeight` stays the absolute 3, so the share of the
+  panel needed for any decision rose from 3-of-7 to 3-of-6; user accepted that
+  explicitly ("50% is okay here").
+- PER-MODEL CONCURRENCY MEASURED, and it does not help: throughput is flat at
+  0.32 to 0.42 req/s across concurrency 1, 2, 4, and 8, while wall time scales
+  nearly linearly (3.1 s at n=1 to 19.0 s at n=8, against 24.8 s if perfectly
+  serial), with zero 429s. The provider QUEUES per model rather than throttling,
+  so `perModelConcurrency: 1` is correct and the available parallelism is across
+  models, which the pipeline already uses.
+- RECALL IS FINALLY MEASURABLE: `repair-benchmark.ts` had no entrypoint, so
+  recall was unmeasurable in practice however complete the library was.
+  `corpus-run/recall-benchmark.ts` plus a mise task plants known omissions into
+  clean translations and grades restoration against its own deletions, giving a
+  denominator of defects that certainly exist rather than defects the pipeline
+  chose to report. Nine entries, three per band, 27 seeds, verified at zero
+  quota through `--plan`.
+- ENSEMBLE WORK STARTED. `candidate-select.ts` is the shared propose-and-select
+  component, needed because free-text candidates cannot be voted on the way
+  claims are: two editors fixing one defect phrase it differently, so there is
+  nothing to match. Judges compare ANONYMIZED candidates. Two invariants live in
+  the component rather than in callers: a model never judges a set containing
+  its own candidate, and a tie or an empty judge roster DECLINES to the caller's
+  fallback, so the conservative outcome is the default whenever the ensemble
+  cannot agree.
+  `editor-ensemble.ts` judges at BOTH granularities (user decision): per
+  envelope so the best fix for one issue can win even when its author botched
+  the rest, and per chunk because coherence across envelopes is only visible
+  whole. Per-envelope winners are assembled into a COMPOSITE that must then WIN
+  at chunk level rather than being adopted by construction, since a composite is
+  text no model wrote or read as a whole.
+  A chunk-level decline falls back to a REPAIRED patch, never to the original:
+  discarding fixes the panel already ruled real would turn a wording
+  disagreement into a recall loss.
+  Not yet wired into `runEditorStage`; `editorModelId` is still a single id in
+  `RepairModels`.
+- BRANCH REBASED onto main (main was 1228 commits ahead; 276 branch commits
+  replayed). Conflict surface was five files. `pnpm-lock.yaml` was never
+  hand-resolved (LFW): upstream taken at each conflict and the lockfile
+  regenerated afterwards by `//:prepare:pnpm:install`.
+  `git-policy/cli/src/index.ts`: main restructured it to a barrel; resolution
+  keeps the barrel PLUS this branch's `resolveGit` export.
+  `forbidden-strings.append.txt`: main's restructured version kept, with this
+  branch's unique `truncated-attempt` rename guard re-appended.
+  `mise.toml` conflicted in the AUTOSTASH, not in a commit, and the stashed copy
+  was STALE generated output that would have deleted PATH entries for packages
+  main added. Taken from the rebased tree; the original is preserved in
+  `stash@{0}` if it is ever wanted.
+  BUILD BREAKAGE the rebase surfaced: main repointed `git-policy-cli/ts` at
+  `authoring.ts`, which does not export `resolveGit`, so the build failed with
+  MISSING_EXPORT. Per user decision the consumer now imports from the package
+  INDEX entry rather than the export being added to `authoring.ts`.
+- `prefer-readonly-parameter-types` IS BEING IGNORED ON THIS BRANCH by user
+  decision, and is filed as
+  https://github.com/Aquaticat/Monochromatic/issues/414.
+  It fires on ordinary array methods (`filter`, `map`, `find`, `flatMap`,
+  `reduce`) called on parameters that are already deeply `readonly`, and its four
+  printed remediations name no action that fits a built-in array method. 107
+  findings in this package; 206 in `git-policy/cli`, which predates this branch
+  and is what shows it is a rule question rather than a per-package cleanup.
+  Do NOT spend branch time conforming to it, and do not suppress it either.
+- GRADING PROCESS CHANGES for the next round (user instruction): pre-resolve the
+  unambiguous Y/N items and hand over only genuinely contested ones.
+  This CANNOT be honestly calibrated against the existing 100 graded items,
+  because the agent has read all of them including the rationale, and round one
+  came from a pre-fix pipeline. Plan: pre-grade round three BLIND, hand over
+  every item with the agent's grade marked, let the user correct, and derive the
+  agreement rate from that round. Only filter on the round after. Revives
+  task 31. Say plainly that the instruction takes effect one round later than it
+  sounds.
+- ATTRIBUTION WARNING for round three, accepted by the user ("Bundle all the
+  improvements that could be made, in"): the roster, the editor, the checker
+  set, the quorum rule, the adjudication policy, and the house policy all
+  changed at once, and the naturalness lane is still to come. A precision delta
+  will not be attributable to any single change. Say so in the verdict rather
+  than implying otherwise.
