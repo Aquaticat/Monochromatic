@@ -132,6 +132,11 @@ export {
   selectPerEnvelope,
 } from './editor-ensemble.ts';
 export {
+  type IneligibleReason,
+  type ParagraphEligibility,
+  selectRefinableParagraphs,
+} from './refine-eligibility.ts';
+export {
   buildChunkCandidates,
   buildEditorCandidates,
   type ChunkCandidateSet,
