@@ -88,11 +88,35 @@ const UNSCORED: GradeVerdict = 'unscored';
  * Verdicts a recorded pre-grade may carry, which are exactly the verdicts a
  * sheet reader produces.
  */
-const KNOWN_VERDICTS: ReadonlySet<string> = new Set([
+const KNOWN_VERDICTS = [
   'real-defect',
   'false-positive',
   'unscored',
-],);
+] as const satisfies readonly GradeVerdict[];
+
+/**
+ * Guards an untrusted verdict string from a recorded pre-grade file.
+ *
+ * A guard rather than a membership test plus an assertion: `Set.has` on a set
+ * of strings proves nothing to the type system, so the assertion it forced was
+ * the only thing tying the runtime check to the type, and nothing would have
+ * caught the two drifting apart.
+ *
+ * @param value - candidate from parsed JSON
+ *
+ * @returns Whether value names one known verdict
+ *
+ * @example
+ * ```ts
+ * isGradeVerdict('real-defect',);
+ * ```
+ */
+function isGradeVerdict(value: unknown,): value is GradeVerdict {
+  if ((typeof value) !== 'string')
+    return false;
+
+  return (KNOWN_VERDICTS as readonly string[]).includes(value,);
+}
 
 /**
  * Parses recorded blind pre-grades.
@@ -140,13 +164,13 @@ export function parsePreGrades(
     } = value;
     if ((typeof index) !== 'number')
       throw new Error(`pre-grade ${String(position,)} has no numeric index.`,);
-    if (((typeof verdict) !== 'string') || (!KNOWN_VERDICTS.has(verdict,)))
+    if (!isGradeVerdict(verdict,))
       throw new Error(
         `pre-grade ${String(index,)} carries an unknown verdict ${String(verdict,)}.`,
       );
     return {
       index,
-      verdict: verdict as GradeVerdict,
+      verdict,
       note: (typeof note) === 'string' ? note : '',
     };
   },);

@@ -174,16 +174,27 @@ function throughArtifact(
   },);
 
   /**
-   * Artifact the corpus pass writes, round-tripped through JSON because that is
-   * what actually sits on disk between the run and the draw.
+   * Artifact text exactly as the corpus pass writes it to disk.
+   *
+   * Serialized and re-read rather than passed as an object on purpose, and NOT
+   * a deep clone the way `structuredClone` would be: JSON drops what
+   * `structuredClone` keeps, and every optional field on a repair record
+   * (`introducedDefects`, `finalSliceText`) is exactly the kind of thing that
+   * survives a clone and vanishes through a file. The disk boundary is the
+   * thing under test.
    */
-  const artifact: unknown = JSON.parse(JSON.stringify({
+  const onDisk = JSON.stringify({
     id: 'Kitten',
     status: 'repaired',
     acceptedCount: 1,
     issues,
     repairedText: accuracyPatchSelected ? PATCHED_TEXT : TARGET_TEXT,
-  },),);
+  },);
+
+  /**
+   * Artifact read back out of that text.
+   */
+  const artifact: unknown = JSON.parse(onDisk,);
 
   /**
    * Accepted issues read back out.

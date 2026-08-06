@@ -131,6 +131,14 @@ async function readOptional(
 }
 
 /**
+ * Decimal places every printed rate carries.
+ *
+ * Three, because the gate bar is quoted to one place (0.9) and a reading has to
+ * be comparable across rounds without a tie at the bar reading as a pass.
+ */
+const RATE_DECIMALS = 3;
+
+/**
  * Renders one rate to three places, naming an empty denominator rather than
  * printing a division by zero.
  *
@@ -157,7 +165,7 @@ function rate(
   if (denominator === 0)
     return 'n/a';
   return (numerator / denominator)
-    .toFixed(3,);
+    .toFixed(RATE_DECIMALS,);
 }
 
 /**

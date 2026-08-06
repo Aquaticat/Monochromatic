@@ -68,9 +68,8 @@ const NUMBER_SEPARATORS = '.,:';
 const BASIC_PLANE_MAX = 0xFF_FF;
 
 /**
- * First and last code points of each run of characters treated as
- * foreign-language content: Han, Hiragana, Katakana, Hangul, the compatibility
- * block, and the supplementary Han extensions above the basic plane.
+ * Unicode blocks whose characters count as foreign-language content, each named
+ * so a reader can check a boundary against the standard without decoding hex.
  *
  * Punctuation blocks are deliberately absent, because corpus prose mixes CJK
  * punctuation into English sentences and a rewrite is allowed to repunctuate.
@@ -80,35 +79,55 @@ const BASIC_PLANE_MAX = 0xFF_FF;
  * it as two units would match neither half against any range here, silently
  * leaving the one character most likely to be a person's name unprotected.
  */
-const FOREIGN_RANGES: readonly (readonly [
-  number,
-  number
-])[] = [
-  [
-    0x30_40,
-    0x30_FF,
-  ],
-  [
-    0x34_00,
-    0x4D_BF,
-  ],
-  [
-    0x4E_00,
-    0x9F_FF,
-  ],
-  [
-    0xAC_00,
-    0xD7_AF,
-  ],
-  [
-    0xF9_00,
-    0xFA_FF,
-  ],
-  [
-    0x2_00_00,
-    0x3_23_AF,
-  ],
-];
+const FOREIGN_BLOCKS = {
+  kana: {
+    first: 0x30_40,
+    last: 0x30_FF,
+  },
+  hanExtensionA: {
+    first: 0x34_00,
+    last: 0x4D_BF,
+  },
+  han: {
+    first: 0x4E_00,
+    last: 0x9F_FF,
+  },
+  hangulSyllables: {
+    first: 0xAC_00,
+    last: 0xD7_AF,
+  },
+  hanCompatibility: {
+    first: 0xF9_00,
+    last: 0xFA_FF,
+  },
+  hanSupplementary: {
+    first: 0x2_00_00,
+    last: 0x3_23_AF,
+  },
+} as const;
+
+/**
+ * Those blocks as a list, for the membership scan.
+ */
+const FOREIGN_RANGES: readonly {
+  readonly first: number;
+  readonly last: number;
+}[] = Object.values(FOREIGN_BLOCKS,);
+
+/**
+ * Digit blocks, named for the same reason the foreign blocks are: a reader
+ * checking whether full-width digits are covered should not have to decode hex.
+ */
+const DIGIT_BLOCKS = {
+  ascii: {
+    first: 0x00_30,
+    last: 0x00_39,
+  },
+  fullwidth: {
+    first: 0xFF_10,
+    last: 0xFF_19,
+  },
+} as const;
 
 /**
  * Whether a code point is a digit in either the ASCII or the full-width form.
@@ -123,8 +142,16 @@ const FOREIGN_RANGES: readonly (readonly [
  * ```
  */
 function isDigit(codePoint: number,): boolean {
-  return ((codePoint >= 0x00_30) && (codePoint <= 0x00_39))
-    || ((codePoint >= 0xFF_10) && (codePoint <= 0xFF_19));
+  return ((codePoint
+    >= DIGIT_BLOCKS.ascii
+    .first) && (codePoint
+      <= DIGIT_BLOCKS.ascii
+      .last))
+    || ((codePoint
+      >= DIGIT_BLOCKS.fullwidth
+      .first) && (codePoint
+        <= DIGIT_BLOCKS.fullwidth
+        .last));
 }
 
 /**
@@ -141,7 +168,7 @@ function isDigit(codePoint: number,): boolean {
  */
 function isForeign(codePoint: number,): boolean {
   return FOREIGN_RANGES.some(function within(range,) {
-    return (codePoint >= range[0]) && (codePoint <= range[1]);
+    return (codePoint >= range.first) && (codePoint <= range.last);
   },);
 }
 
