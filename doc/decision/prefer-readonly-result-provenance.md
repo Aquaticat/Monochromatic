@@ -433,3 +433,159 @@ Iterator members remain separately unproven.
 `summaries.values` is a cause of the `effect-fixed-point-propagation.ts:37` finding,
  so
 that one cannot clear on result provenance alone.
+
+## Adopted for issue #414: the collection result gate moves from type shape to provenance
+
+Accepted on 2026-08-06 by the repository owner,
+ over two alternatives:
+ admitting the `Symbol.species`
+channel into the accepted baseline,
+ and leaving the semantics alone while rewriting the diagnostic.
+
+The gate this replaces is the one installed by `f7c35802a` and recorded in
+`doc/decision/prefer-readonly-effect-model-split.md`:
+ `readonlyViewElementApplications` reads the call's
+instantiated result type and refuses to derive anything when `resultExposesMutableState` says that type
+could carry state.
+ That predicate reads type shape.
+ The claim it is standing in for is about provenance,
+and the two disagree in both directions.
+
+### What the gate does today, measured
+
+Summaries were built through `openSemanticFile` and `buildEffectSummaryIndex` from
+`package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs`,
+ whose source tree last
+changed at `b16ec0048` against a build written the same day.
+ The probe supplied its own source text over
+an existing fixture path,
+ so nothing was written into the tree.
+
+For a parameter typed `readonly Slice[]` whose element type is deeply readonly,
+ the parameter is recorded
+opaque for `filter`,
+ `slice`,
+ `entries`,
+ `find`,
+ and a `map` whose callback returns an object.
+It is recorded clean for `for...of`,
+ array spread,
+ an indexed read,
+ array destructuring,
+ a counter loop,
+`reduce` to a number,
+ `map` to a number,
+ `forEach`,
+ `every`,
+ and `filter` on `readonly string[]`.
+
+### The case that decided it
+
+`slices.map(function toRow(slice) { return { chars: slice.targetChars }; })` is recorded opaque.
+Every object in that result is freshly allocated inside an owned callback and holds one number,
+ so no
+caller-owned identity can reach the species channel through it.
+ The rationale the gate was built on,
+ what
+the result could carry,
+ is satisfied;
+ the type test still refuses,
+ because `Row` is not primitive.
+No rewrite fixes that finding,
+ which is the defect issue #414 reports,
+ arrived at from the diagnostic
+rather than from the gate.
+
+### What the provenance model has to keep
+
+- `find` and `findLast`:
+   the result is the receiver's own element,
+   which is genuine alias provenance.
+  Report on a later mutation or escape,
+   as `found.label = 'x'` already measures,
+   not on the call.
+- `filter`,
+   `slice`,
+   `concat` and `flat`:
+   a fresh container whose elements carry receiver origins.
+- `map`:
+   origins taken from the callback's return,
+   which is what clears the fresh-object case above.
+- `entries`:
+   a fresh tuple carrying an element origin,
+   still subject to the iterator question in
+  "Remaining work".
+- `reduce`:
+   origins from the seed and from the callback's return,
+   which is the accumulator gap
+  `doc/decision/prefer-readonly-effect-model-split.md` left open at `applyCargoPlan`.
+
+Reporting stays where `effect-result-escape.ts` already puts it:
+ a use that mutates an origin or hands it
+across an opaque boundary.
+
+### What this does not decide
+
+Whether a collection-returning member discharges at all depends on a question this decision leaves open,
+tracked separately:
+ whether the rule trusts standard collection dispatch,
+ default `Symbol.species` and the
+standard iterator on a value typed as a read-only view.
+ The current answer is inconsistent.
+ `filter` is
+refused because `ArraySpeciesCreate` reads `constructor[Symbol.species]` and calls it,
+ while `for...of` and
+spread are accepted although they read `slices[Symbol.iterator]` and call it.
+ Both hooks are installable on
+a plain array as own data properties,
+ so neither needs the accessor exotica that
+`doc/decision/prefer-readonly-member-channel-authority.md` assumes away.
+
+Measured,
+ run with `node`:
+
+```js
+// doc/decision/prefer-readonly-result-provenance.md, both channels on a plain array
+const element = { secret: 'caller-owned', };
+
+const iterated = [element,];
+let iteratorSaw = null;
+iterated[Symbol.iterator] = function* hostileIterator() {
+  iteratorSaw = this[0];
+  this.push({ injected: true, },);
+  yield* Array.prototype[Symbol.iterator].call(this,);
+};
+let forOfCount = 0;
+for (const seen of iterated) forOfCount += 1;
+console.log(`for...of saw the element = ${iteratorSaw === element}, iterations = ${forOfCount}`,);
+
+const filtered = [element,];
+let speciesSaw = null;
+filtered.constructor = {
+  [Symbol.species]: function Hostile(length,) {
+    return new Proxy(new Array(length,), {
+      defineProperty(target, key, descriptor,) {
+        if (descriptor && ('value' in descriptor)) speciesSaw = descriptor.value;
+        return Reflect.defineProperty(target, key, descriptor,);
+      },
+    },);
+  },
+};
+filtered.filter(() => true,);
+console.log(`filter saw the element = ${speciesSaw === element}`,);
+```
+
+Both print `true`,
+ and the hostile iterator turns a one-element array into three elements observed by
+spread,
+ which breaks the receiver-structure claim rather than only the reachable-user-code one.
+
+So the increments split by whether they depend on that answer.
+ Callback-return origins for `map` clear the
+fresh-object case whichever way it goes.
+ The container cases,
+ `filter` and `slice`,
+ clear only if the
+species channel is trusted,
+ because provenance says the container holds receiver origins and the gate then
+asks who builds the container.
