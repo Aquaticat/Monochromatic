@@ -3989,3 +3989,45 @@ entry:
 it serializes `ChunkRepairOutcome` after EVERY finished slice,
 so provenance is inspectable long before the first artifact lands.
 Use it that way next time instead of gating a long run behind a probe entry.
+
+### Grading arithmetic is now reproducible from the sheets
+
+`mise run //package/module/translation-repair:score-agreement -- --sheet <abs path>`
+reads a graded sheet and prints the numbers,
+so a verdict no longer depends on counting by hand.
+Pass an ABSOLUTE path:
+mise runs the task with the package directory as cwd,
+so a repo-relative path resolves wrongly.
+
+Validated against both sheets a human has graded.
+Round two reproduces its published verdict EXACTLY:
+
+```text
+PRECISION items=50 scored=47 realDefects=37 strict=0.740 excluded=0.787 lenient=0.800 unscored=10,12,17
+```
+
+That is the strongest available check on the reader,
+since it recovers a measurement nobody told it.
+It also settles what the three published numbers meant,
+which was never written down:
+strict counts a declined item as a false positive (37/50),
+excluded drops declined items from the denominator (37/47),
+and lenient counts them as real defects (40/50).
+
+Round one, scored by the same tool for the first time:
+
+```text
+PRECISION items=50 scored=44 realDefects=28 strict=0.560 excluded=0.636 lenient=0.680 unscored=12,16,21,33,34,48
+```
+
+So the fix rounds moved excluded precision 0.636 -> 0.787,
+and round three's target remains 0.9.
+Both rounds left a similar share undecided
+(six of fifty, then three of fifty),
+which is worth watching:
+the undecided share is itself a signal about how gradable the sheet is.
+
+Output carries counts and sheet POSITIONS only,
+never a quote, a claim, or a grader's rationale,
+so it is safe to paste into a verdict or a message
+even though the sheets hold unlicensed corpus text.
