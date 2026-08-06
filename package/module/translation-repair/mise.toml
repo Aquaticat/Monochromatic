@@ -47,6 +47,10 @@ run = "node src/corpus-run/sentinel-probe.ts"
 description = "Draw the stratified precision sample from settled artifacts into a grading sheet outside the repo (append -- --final for the gate sheet)"
 run = "node src/corpus-run/draw-sample.ts"
 
+[tasks."score-agreement"]
+description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --pre-grades PATH)"
+run = "node src/corpus-run/score-agreement.ts"
+
 [tasks."recall-benchmark"]
 description = "Measure recall: plant known omissions into clean translations, run the repair loop, and grade restoration against the deletions (append -- --plan for a zero-quota setup check)"
 run = "node src/corpus-run/recall-benchmark.ts"
