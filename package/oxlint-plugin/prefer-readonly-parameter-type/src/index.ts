@@ -108,6 +108,8 @@ export {
   MEMBER_CHANNEL_INTERNAL_SLOT,
   MEMBER_CHANNEL_RECEIVER_INDEX,
   MEMBER_CHANNELS_BY_INTERFACE,
+  memberInvokesObserver,
+  OBSERVER_BEARING_MEMBER_NAMES,
   VERIFIED_MEMBER_CHANNEL_COUNT,
 } from './prefer-readonly-parameter-types/effect-member-channel-authority.ts';
 

@@ -230,6 +230,63 @@ export const ITERATOR_MEMBER_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Members that invoke a caller-supplied observer, whatever their ambient channel is.
+ *
+ * The channel above and this set answer different halves of one question, and collapsing
+ * them was the first draft of the trust-baseline work. `filter` reaches own-index access
+ * and default species, both trusted, and it also calls whatever predicate the caller
+ * passed. Admitting it to the table on the strength of the first half alone would
+ * discharge `rows.filter(foreignMutatingPredicate)` on a receiver every element of which
+ * that predicate received.
+ *
+ * So the ambient half may be recorded in the table and the observer half may not be
+ * discharged there at all: it belongs to `recordReadonlyViewApplications`, which resolves
+ * the observer to owned source and derives what its effects do to the receiver, or leaves
+ * the call undischarged when it cannot.
+ *
+ * Keyed by member name alone, deliberately over-approximating. A name listed here can
+ * only withhold a discharge, never grant one, so a name that turns out to take no
+ * observer costs precision and nothing else. `sort` and `toSorted` are listed although
+ * their comparator is optional, because an absent comparator runs the default one, which
+ * coerces elements and is not owned source either way.
+ *
+ * Enforced by `effect-member-channel-authority.unit.test.ts`, which fails when any entry
+ * in the table names a member listed here.
+ */
+export const OBSERVER_BEARING_MEMBER_NAMES: ReadonlySet<string> = new Set([
+  'every',
+  'filter',
+  'find',
+  'findIndex',
+  'findLast',
+  'findLastIndex',
+  'flatMap',
+  'forEach',
+  'map',
+  'reduce',
+  'reduceRight',
+  'some',
+  'sort',
+  'toSorted',
+],);
+
+/**
+ * Tests whether a member invokes a caller-supplied observer.
+ *
+ * @param memberName - Member being called.
+ *
+ * @returns whether the member hands receiver state to a function the caller passed.
+ *
+ * @example
+ * ```ts
+ * memberInvokesObserver({ memberName: 'filter' });
+ * ```
+ */
+export function memberInvokesObserver({ memberName, }: { readonly memberName: string; },): boolean {
+  return OBSERVER_BEARING_MEMBER_NAMES.has(memberName,);
+}
+
+/**
  * Resolves which user-code channel a collection member is verified to open.
  *
  * @param ownerName - Declaring default-library interface name.

@@ -9,6 +9,8 @@ import {
   ITERATOR_MEMBER_NAMES,
   MEMBER_CHANNEL_RECEIVER_INDEX,
   MEMBER_CHANNELS_BY_INTERFACE,
+  memberInvokesObserver,
+  OBSERVER_BEARING_MEMBER_NAMES,
   VERIFIED_MEMBER_CHANNEL_COUNT,
 } from '../dist/final/node/index.mjs';
 
@@ -559,6 +561,42 @@ await describe({
             },).drainage,).toEqual([],);
           }
         }
+      },
+    },),
+    it({
+      name: 'lists no observer-bearing member, whose second obligation this table cannot discharge',
+      fn: async () => {
+        /* The invariant rather than an accident of which members are listed today. A
+         * member's ambient channel and its observer are separate obligations, and only
+         * the first is answerable here: `filter` reaches own-index access and default
+         * species, both trusted under the stated baseline, and it also runs whatever
+         * predicate the caller passed. An entry for it would discharge
+         * `rows.filter(foreignMutatingPredicate)` on the ambient half alone, which is the
+         * first draft of the trust-baseline work and the reason this assertion exists.
+         *
+         * Adding `filter` to the table fails this and nothing else, which is the point:
+         * without it the mistake is caught by no probe, because every tripwire that
+         * member trips is one the baseline now admits. */
+        /**
+         * Every member the authority lists, whichever interface declares it.
+         */
+        const listed = [...MEMBER_CHANNELS_BY_INTERFACE.values(),]
+          .flatMap(function listedMembers(members,): readonly string[] {
+            return [...members.keys(),];
+          },);
+        expect(listed.filter(function bearsObserver(memberName,): boolean {
+          return memberInvokesObserver({ memberName, },);
+        },),).toEqual([],);
+        /* And the classifier answers rather than always refusing, so the assertion above
+         * is not vacuous on an empty predicate. */
+        expect(memberInvokesObserver({ memberName: 'filter', },),).toBe(true,);
+        expect(memberInvokesObserver({ memberName: 'map', },),).toBe(true,);
+        expect(memberInvokesObserver({ memberName: 'at', },),).toBe(false,);
+        expect(memberInvokesObserver({ memberName: 'get', },),).toBe(false,);
+        /* The set is reachable as data too, since the composition step in
+         * `effect-default-library-readonly-view.ts` consults it rather than re-deriving
+         * which members take an observer. */
+        expect(OBSERVER_BEARING_MEMBER_NAMES.has('reduce',),).toBe(true,);
       },
     },),
   ],
