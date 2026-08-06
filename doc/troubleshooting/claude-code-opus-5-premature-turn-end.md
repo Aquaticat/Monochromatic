@@ -445,9 +445,11 @@ and each carries its disposition.
 No option here had an established effect on this failure.
 The model comparison is confounded,
 and the one state-based mechanism actually deployed, the goal feature,
-rescued every stop it caught without lowering the session nudge rate.
+rescued every stop it caught while its session still needed 16 nudges.
 The ranking below weighed expected value against implementation cost,
 not proven results.
+It was written before the goal rate comparison was retracted,
+so where a bullet leans on that comparison the lean is noted rather than silently repaired.
 
 - **Rejected.** Run the goal feature deliberately across several queue-shaped sessions,
   and compare against matched sessions without it.
@@ -456,8 +458,9 @@ not proven results.
   and tested the state-based approach before anything was built.
   The corpus contains one goal-active session,
   which is too few to estimate an effect,
-  and that session is also the most queue-shaped,
-  so its 32% rate is inflated by the denominator problem.
+  and that session is also the most queue-shaped.
+  The 32% figure this bullet originally cited belongs to the retracted comparison
+  and is not evidence for or against the option.
   Getting three or four matched sessions settles whether state-based blocking helps at all.
 - **Rejected.** Route long queue-shaped sessions to `claude-fable-5`,
   run as a deliberate comparison rather than adopted as a fix.
@@ -470,8 +473,10 @@ not proven results.
   Build tracked-task-state blocking into `ccsr`,
   with a high-confidence phrase detector only as fallback when task state is unavailable.
   Ranked below both measurements because it is the largest build here
-  and would reimplement what the goal feature already does,
-  against evidence that the goal feature did not lower the nudge rate.
+  and would reimplement what the goal feature already does.
+  The ranking also cited evidence that the goal feature did not lower the nudge rate;
+  that evidence is retracted,
+  and what remains is only that its one session still needed 16 nudges.
   Its guidance still applies if unconditional blocking proves too blunt
   and a narrower trigger is wanted,
   since narrowing the trigger is exactly what this option describes.
@@ -517,7 +522,9 @@ This document is the local record that policy prescribes instead.
 Whether the behavior is specific to queue-shaped work,
 where a task list makes the next action nameable,
 is untested.
-Every Opus 5 session in this corpus was queue-shaped.
+Session shape was examined only for the sessions of at least 14 turns,
+so the claim that the Opus 5 sessions were queue-shaped
+covers those and not all 8.
 
 Whether the announcement sentence causes the stop
 or merely accompanies it
