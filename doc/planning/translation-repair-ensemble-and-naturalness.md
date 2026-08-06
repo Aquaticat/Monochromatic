@@ -135,6 +135,54 @@ Use the round-two graded items as regression fixtures:
 the poetry, `总是`, and conjunction false positives are hard negatives for detection,
 and the four "is there a better way?" items are repair-quality fixtures.
 
+## Settled before building the lane
+
+The editor ensemble half of this proposal is BUILT
+(commits `7cce752d4`, `1527e4929`, `688b96122`, task 45).
+It judges per envelope AND per chunk by user decision,
+overriding this document's "per chunk first" recommendation.
+These five are settled for the lane itself.
+
+The lane runs INSIDE `repairChunk`, not as a separate pass in `repairTranslation`.
+`changedOutcomes` filters on `outcome.changed` and `anyChanged` derives from it,
+so a lane outside the chunk runner needs both recomputed,
+and the `blocked-non-translation` early return happens before either,
+so it keeps returning the input untouched for free.
+
+The slice cache key gains a lane version constant.
+The key already hashes chunk index and both texts,
+so adding a version makes every pre-lane entry miss,
+which is what stops a cached slice from bypassing the lane.
+
+A failed recheck falls back to `T1` for the WHOLE slice, not per paragraph.
+Checkers report per ISSUE while refinement happens per paragraph,
+and an issue can span paragraphs,
+so per-paragraph attribution is not derivable from what the checker returns.
+Log which issue regressed
+so a later session can judge whether finer attribution is worth building.
+
+The lane runs BEFORE `selectRepairCandidate`, and that comparison measures `T2`.
+This is the trap.
+`selectRepairCandidate` is what makes shipping a repair safe,
+and its measurements come from `editor.patch`:
+`changedCharCount` sums over `patch.applied`,
+and `integrityOk` compares `downgradeCount` on the patched document.
+A refinement-only change has NO applied operation.
+Refining after selection and shipping `T2` under `T1`'s measurements
+would leave that gate silently not covering the shipped bytes,
+which is the same class of defect as `RepairIssueRecord.resolved` going stale
+and considerably less visible.
+
+First cut uses ONE rewriter with independent judges.
+The invariant that matters is that a generator never approves its own work,
+and one rewriter preserves it;
+a second rewriter doubles calls to buy a second opinion
+on text nobody claimed was wrong.
+Cost is the binding constraint here rather than ensemble symmetry:
+two unmeasured multipliers are already stacked,
+per-envelope ballots plus this lane,
+and they must be measured SEPARATELY before round three (task 50).
+
 ## Attribution warning
 
 Round three changes the roster, the editor, the checker set, the quorum rule,
