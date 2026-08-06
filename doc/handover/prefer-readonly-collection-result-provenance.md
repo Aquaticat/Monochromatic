@@ -246,6 +246,34 @@ effect on its own and landed on its own.
    The fixture's pinned message count moves to 12,
    its offer list is unchanged at three.
 
+- `f958b750b` and `e78aef28b`,
+   increment 4.
+   The element step is answered before the access layers are
+  stripped,
+   and only for a container whose relation is verified,
+   so an unproven container still
+  contributes nothing.
+   `containerElementReceiver` follows local hops through declaration initializers,
+   never
+  through a later assignment,
+   which over-attributes rather than under-attributes.
+   All four spellings
+  answer:
+   element access,
+   array pattern,
+   `for...of`,
+   and spread;
+   an object pattern keeps asking the
+  value question,
+   since a container's properties are its own rather than its elements.
+   Measured:
+   all
+  four writes attribute `[0]` and `containerGrowthEffect` stays empty.
+   `expressionElementOrigins` lives in
+  its own module so `effect-binding-origins.ts` stays inside the line limit,
+   and the fixture's pinned
+  message count moves to 15.
+
 Increments 4 and 5 swapped order,
  for the reason that deferred the discriminated answer.
  Enumerated rather
@@ -261,3 +289,27 @@ The order is now the container relation first,
  then the facet that
 consumes it,
  then the discharge that needs both.
+ The first two are landed.
+
+### Next
+
+The discharge,
+ which is the first verdict change:
+ let `receiverClaimAnswerable` accept a container whose
+element origins are attributed and whose result does not escape,
+ so `filter` and `slice` on a readonly
+parameter stop reporting.
+ The seven container reports in the fixture's count of 15 are what should go
+silent,
+ and the mutation attributions pinned in `effect-summaries.unit.test.ts` are what makes that safe:
+if a discharge ever lands while those attributions are empty,
+ the offer it produces is false.
+
+Check before discharging:
+ an escaping container result must still report.
+ `resultEscapesCallable` enumerates
+attributed positions for a direct result,
+ and whether it covers a container handed to a call,
+ stored,
+ or
+returned is the open question the discharge has to answer first.
