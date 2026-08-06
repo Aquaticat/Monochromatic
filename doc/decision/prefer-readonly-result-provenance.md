@@ -498,6 +498,48 @@ them.
  a reading of the state before a
 change is not evidence about the state after it.
 
+### What the 1682 remaining findings are, measured
+
+Taken from the same sweep,
+ so nobody reads the number as a backlog.
+ Classified by the sentence the
+diagnostic leads with:
+
+- 1172 argument-side,
+   "used by these calls".
+- 370 receiver findings on members that are not collections.
+- 83 receiver findings on collection members.
+- 33 read-only offers,
+   which are the rule succeeding rather than failing.
+- 24 everything else.
+
+The argument side is seventy percent of the total and is dominated by causes no provenance work can
+answer.
+ Counting cause mentions rather than findings,
+ since one finding names several:
+ 193 are a bodyless
+callable,
+ an implementation the rule cannot read at all;
+ 129 `JSON.stringify`,
+ 68 `toISOString` and 58
+`Error.isError`,
+ host calls that can reach a getter,
+ a proxy trap or a `toJSON`;
+ and 100 a callback the
+rule cannot name.
+ 147 `push`,
+ 69 `set` and 78 `with` are arguments stored into a caller-owned container,
+which is a correct report about a value that really does leave.
+
+Reaching zero was never the goal and would mean the guarantee had been abandoned.
+ The measurable
+observation is narrower:
+ the largest single cause is an implementation outside the analyzable scope,
+ whose
+remediation is on the calling side rather than in this rule,
+ and it is recorded in the diagnostic's own
+first offer.
+
 ## Adopted for issue #414: the collection result gate moves from type shape to provenance
 
 Accepted on 2026-08-06 by the repository owner,
