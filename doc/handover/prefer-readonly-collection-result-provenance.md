@@ -291,25 +291,73 @@ consumes it,
  then the discharge that needs both.
  The first two are landed.
 
+- `43e65ed7b`,
+   the container discharge,
+   and the first verdict change.
+   `slice` joins the channel authority
+  under `MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES`,
+   and a verified container relation licenses the same
+  discharge a direct one does on the same escape condition.
+   The escape test is asked once,
+   before either
+  relation,
+   because it follows the call's result to whatever holds it and is relation-agnostic.
+
+  Two consumers had to learn the element question first,
+   and measurement found both where an audit had
+  not.
+   An argument that is a fresh container hands the callee everything it holds,
+   and
+  `unresolvedSink(rows.slice())` reported nothing at all until `parameterIndexes` asked;
+   an unresolved call
+  on a container receiver reaches the same values,
+   and `tree.children.slice().filter(observer)` lost its
+  finding entirely until the opaque boundary asked.
+   Both were reports traded for silence,
+   which is the one
+  outcome the discharge may not produce.
+
+  Measured across six escape shapes:
+   a local read discharges,
+   an element write becomes an attribution,
+  and a return,
+   a store,
+   an argument and an escaping element all keep reporting.
+   The species tripwire's
+  control moves from `slice` to `concat`,
+   since a control has to name a member the authority still
+  excludes.
+   `readonly-result-provenance-invalid.ts` moves to 13 messages with the first offer this work
+  produced,
+   `containerGrowthEffect`,
+   which copies its parameter and writes only the copy.
+   The
+  catalog-free fixture stays at 16.
+
 ### Next
 
-The discharge,
- which is the first verdict change:
- let `receiverClaimAnswerable` accept a container whose
-element origins are attributed and whose result does not escape,
- so `filter` and `slice` on a readonly
-parameter stop reporting.
- The seven container reports in the fixture's count of 15 are what should go
-silent,
- and the mutation attributions pinned in `effect-summaries.unit.test.ts` are what makes that safe:
-if a discharge ever lands while those attributions are empty,
- the offer it produces is false.
+`filter` still reports,
+ tracked as its own item:
+ its observer obligation runs through
+`recordReadonlyViewApplications`,
+ which still refuses on `resultExposesMutableState`,
+ so the type-shape
+gate has to go first.
+ That is the increment below,
+ and `filter` follows it rather than preceding it.
 
-Check before discharging:
- an escaping container result must still report.
- `resultEscapesCallable` enumerates
-attributed positions for a direct result,
- and whether it covers a container handed to a call,
- stored,
- or
-returned is the open question the discharge has to answer first.
+Withdraw the type-shape result gate,
+ which is what still refuses `filter` and the fresh-object `map`.
+
+`resultExposesMutableState` gates `readonlyViewElementApplications` and the first half of
+`receiverClaimAnswerable`,
+ and every member it covers now needs either a relation or a recorded exclusion before it goes.
+ `find` and `findLast` have one,
+ `filter` and `slice` have one,
+ and `map` needs the observer-return relation that is still unbuilt.
+
+The escape question is settled and needs no further checking:
+ `resultEscapesCallable` is relation-agnostic,
+ and the two consumers that were not are fixed and measured.
+ What is not settled is which further members earn a relation,
+ recorded beside `FRESH_CONTAINER_MEMBER_NAMES`.
