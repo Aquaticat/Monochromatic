@@ -107,6 +107,15 @@ await describe({
           },
         },),
         it({
+          name: 'overcounts rather than undercounts when no human turn is in range',
+          fn: async () => {
+            // A truncated tail loses the human turn that would close the window, so every
+            // block still in range counts. Reaching the limit sooner allows the stop sooner,
+            // which is the safe direction for a mechanism that is otherwise unbounded.
+            expect(continuationDepth([BLOCK_LINE, ASSISTANT_LINE, BLOCK_LINE, BLOCK_LINE,],),).toBe(3,);
+          },
+        },),
+        it({
           name: 'counts each block once despite its paired attachment carrying the same reason',
           fn: async () => {
             expect(

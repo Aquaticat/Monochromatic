@@ -58,7 +58,14 @@ const DEFAULT_MAX_DEPTH = 25;
  *
  * Depth only ever spans the records since the last human turn, so the whole
  * transcript never needs parsing. Sized to hold far more than one turn's worth
- * of records even when tool results are large.
+ * of records even when tool results are large; a live 3.4 MB session transcript
+ * read identically whole and tailed.
+ *
+ * When a turn does exceed this, the scan reaches the start of the buffer without
+ * meeting a human turn and returns everything it counted, which includes blocks
+ * from earlier turns. That overcounts, so the limit is reached sooner and the
+ * stop is allowed sooner. Failing toward stopping is the safe direction for an
+ * unbounded-by-default mechanism.
  */
 const TAIL_BYTES = 4_000_000;
 
