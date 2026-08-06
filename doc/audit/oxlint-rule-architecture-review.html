@@ -195,14 +195,14 @@
           <div class="mt-5 grid gap-5 lg:grid-cols-2">
             <div>
               <p class="font-semibold text-slate-700">Source that violates the rule</p>
-              <pre class="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>switch (status) {
+              <pre tabindex="0" class="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>switch (status) {
   case 'ready':
     run();
 }</code></pre>
             </div>
             <div>
               <p class="font-semibold text-slate-700">A comment that would normally suppress it</p>
-              <pre class="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>// oxlint-disable-next-line no-restricted-syntax/no-switch -- legacy code
+              <pre tabindex="0" class="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>// oxlint-disable-next-line no-restricted-syntax/no-switch -- legacy code
 switch (status) {
   case 'ready':
     run();
@@ -544,7 +544,7 @@ flowchart TB
           </header>
 
           <div class="p-6 sm:p-9">
-            <section aria-labelledby="a-background">
+            <section aria-label="Candidate A background">
               <h4 id="a-background" class="font-serif text-2xl font-semibold">Background in plain language</h4>
               <p class="mt-3 leading-7 text-slate-700">
                 The no-restricted-syntax plugin registers ordinary bans such as <code>no-switch</code> and a second
@@ -558,7 +558,7 @@ flowchart TB
               </p>
             </section>
 
-            <section aria-labelledby="a-evidence" class="mt-8">
+            <section aria-label="Candidate A evidence" class="mt-8">
               <h4 id="a-evidence" class="font-serif text-2xl font-semibold">Verified evidence</h4>
               <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
@@ -630,7 +630,7 @@ flowchart TB
                 </pre>
               </div>
             </section>
-            <section aria-labelledby="a-workflow" class="mt-8">
+            <section aria-label="Candidate A workflow" class="mt-8">
               <h4 id="a-workflow" class="font-serif text-2xl font-semibold">What changes in daily work</h4>
               <div class="mt-4 grid gap-5 lg:grid-cols-2">
                 <div class="rounded-2xl border border-rose-200 bg-rose-50 p-6">
@@ -656,7 +656,7 @@ flowchart TB
               </div>
             </section>
 
-            <section aria-labelledby="a-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <section aria-label="Candidate A deletion test" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
               <h4 id="a-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
               <p class="mt-3 leading-7 text-indigo-950">
                 <strong>Question:</strong> If the twenty individual files disappear, where does their complexity go?
@@ -669,7 +669,7 @@ flowchart TB
             </section>
 
             <div class="mt-8 grid gap-6 lg:grid-cols-2">
-              <section aria-labelledby="a-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+              <section aria-label="Candidate A benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
                 <h4 id="a-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Benefits</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
                   <li><strong>Locality:</strong> protected-rule identity, message, and configured state live together.</li>
@@ -678,7 +678,7 @@ flowchart TB
                   <li><strong>Test stability:</strong> existing tests can continue using external rule names.</li>
                 </ul>
               </section>
-              <section aria-labelledby="a-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+              <section aria-label="Candidate A costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
                 <h4 id="a-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and constraints</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-amber-950">
                   <li>The twenty external rule names must remain independently configurable.</li>
@@ -689,7 +689,7 @@ flowchart TB
               </section>
             </div>
 
-            <section aria-labelledby="a-open" class="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6">
+            <section aria-label="Candidate A open decision" class="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6">
               <h4 id="a-open" class="font-serif text-2xl font-semibold text-amber-950">Open decision before implementation</h4>
               <p class="mt-3 leading-7 text-amber-950">
                 <code>no-disable-max-lines</code> and <code>no-disable-no-misused-promises</code> are registered by the
@@ -727,7 +727,7 @@ flowchart TB
           </header>
 
           <div class="p-6 sm:p-9">
-            <section aria-labelledby="b-background">
+            <section aria-label="Candidate B background">
               <h4 id="b-background" class="font-serif text-2xl font-semibold">Background in plain language</h4>
               <p class="mt-3 leading-7 text-slate-700">
                 Each custom plugin has one identity, such as <code>test-import</code>. The config package currently
@@ -741,7 +741,7 @@ flowchart TB
               </p>
             </section>
 
-            <section aria-labelledby="b-constraint" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <section aria-label="Candidate B adapter constraint" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
               <h4 id="b-constraint" class="font-serif text-2xl font-semibold text-indigo-950">Why two adapters must remain</h4>
               <p class="mt-3 leading-7 text-indigo-950">
                 The installed Oxlint version is 1.75.0. Its configuration schema accepts a JavaScript plugin entry as
@@ -756,7 +756,7 @@ flowchart TB
               </p>
             </section>
 
-            <section aria-labelledby="b-evidence" class="mt-8">
+            <section aria-label="Candidate B evidence" class="mt-8">
               <h4 id="b-evidence" class="font-serif text-2xl font-semibold">Concrete evidence from the last plugin addition</h4>
               <p class="mt-3 leading-7 text-slate-700">
                 Commit <code>675ee22e3</code> added the test-import plugin to shared config. One plugin identity required
@@ -814,7 +814,7 @@ flowchart TB
               </div>
             </section>
 
-            <section aria-labelledby="b-scope" class="mt-8">
+            <section aria-label="Candidate B scope" class="mt-8">
               <h4 id="b-scope" class="font-serif text-2xl font-semibold">Exact scope</h4>
               <div class="mt-4 grid gap-5 lg:grid-cols-2">
                 <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
@@ -838,7 +838,7 @@ flowchart TB
               </div>
             </section>
 
-            <section aria-labelledby="b-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <section aria-label="Candidate B deletion test" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
               <h4 id="b-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
               <p class="mt-3 leading-7 text-indigo-950">
                 <strong>Question:</strong> If a shared deployment-identity module is later deleted, what happens?
@@ -851,7 +851,7 @@ flowchart TB
             </section>
 
             <div class="mt-8 grid gap-6 lg:grid-cols-2">
-              <section aria-labelledby="b-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+              <section aria-label="Candidate B benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
                 <h4 id="b-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Benefits</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
                   <li><strong>Locality:</strong> plugin identity is recorded in one TypeScript module.</li>
@@ -860,7 +860,7 @@ flowchart TB
                   <li><strong>Future additions:</strong> fewer repeated hand edits can drift.</li>
                 </ul>
               </section>
-              <section aria-labelledby="b-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+              <section aria-label="Candidate B costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
                 <h4 id="b-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and constraints</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-amber-950">
                   <li>The registry must be inlined at build time, not become a runtime dependency.</li>
@@ -871,7 +871,7 @@ flowchart TB
               </section>
             </div>
 
-            <section aria-labelledby="b-drift" class="mt-8 rounded-2xl border border-rose-300 bg-rose-50 p-6">
+            <section aria-label="Candidate B drift evidence" class="mt-8 rounded-2xl border border-rose-300 bg-rose-50 p-6">
               <h4 id="b-drift" class="font-serif text-2xl font-semibold text-rose-950">Existing drift that demonstrates the friction</h4>
               <p class="mt-3 leading-7 text-rose-950">
                 <code>src/index.node.ts</code> says the sidecars are emitted by <code>tsdown.node.config.ts</code>, but the
@@ -906,7 +906,7 @@ flowchart TB
             </div>
           </header>
           <div class="p-6 sm:p-9">
-            <section aria-labelledby="c-background">
+            <section aria-label="Candidate C background">
               <h4 id="c-background" class="font-serif text-2xl font-semibold">Background in plain language</h4>
               <p class="mt-3 leading-7 text-slate-700">
                 The test-import plugin's built entry has two audiences. Production config imports the default plugin.
@@ -925,7 +925,7 @@ flowchart TB
               </p>
             </section>
 
-            <section aria-labelledby="c-evidence" class="mt-8">
+            <section aria-label="Candidate C evidence" class="mt-8">
               <h4 id="c-evidence" class="font-serif text-2xl font-semibold">Verified evidence</h4>
               <div class="mt-4 grid gap-4 md:grid-cols-3">
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
@@ -983,7 +983,7 @@ flowchart LR
               </div>
             </section>
 
-            <section aria-labelledby="c-examples" class="mt-8">
+            <section aria-label="Candidate C observable examples" class="mt-8">
               <h4 id="c-examples" class="font-serif text-2xl font-semibold">What rule-level scenarios can observe</h4>
               <div class="mt-4 grid gap-4 md:grid-cols-2">
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
@@ -1016,7 +1016,7 @@ flowchart LR
               </div>
             </section>
 
-            <section aria-labelledby="c-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <section aria-label="Candidate C deletion test" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
               <h4 id="c-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
               <p class="mt-3 leading-7 text-indigo-950">
                 <strong>Question:</strong> If helper exports leave the built package entry, does their behavior vanish?
@@ -1029,7 +1029,7 @@ flowchart LR
             </section>
 
             <div class="mt-8 grid gap-6 lg:grid-cols-2">
-              <section aria-labelledby="c-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+              <section aria-label="Candidate C benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
                 <h4 id="c-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Benefits</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
                   <li><strong>Locality:</strong> tests describe rule behavior, not helper arrangement.</li>
@@ -1038,7 +1038,7 @@ flowchart LR
                   <li><strong>Refactor survival:</strong> tests can survive internal file movement.</li>
                 </ul>
               </section>
-              <section aria-labelledby="c-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+              <section aria-label="Candidate C costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
                 <h4 id="c-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and preconditions</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-amber-950">
                   <li>Rule scenarios spawn local Oxlint processes and use more fixture setup.</li>
@@ -1077,7 +1077,7 @@ flowchart LR
           </header>
 
           <div class="p-6 sm:p-9">
-            <section aria-labelledby="d-background">
+            <section aria-label="Candidate D background">
               <h4 id="d-background" class="font-serif text-2xl font-semibold">Why this is separate from Candidate C</h4>
               <p class="mt-3 leading-7 text-slate-700">
                 The prefer-readonly plugin is a semantic analyzer with caches, authority data, branded effect slots,
@@ -1091,7 +1091,7 @@ flowchart LR
               </p>
             </section>
 
-            <section aria-labelledby="d-evidence" class="mt-8">
+            <section aria-label="Candidate D evidence" class="mt-8">
               <h4 id="d-evidence" class="font-serif text-2xl font-semibold">Verified evidence</h4>
               <div class="mt-4 grid gap-4 md:grid-cols-3">
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
@@ -1150,7 +1150,7 @@ flowchart TB
               </div>
             </section>
 
-            <section aria-labelledby="d-mutant" class="mt-8 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6">
+            <section aria-label="Candidate D mutant gate" class="mt-8 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6">
               <h4 id="d-mutant" class="font-serif text-2xl font-semibold text-amber-950">Why removal needs a mutant gate</h4>
               <p class="mt-3 leading-7 text-amber-950">
                 The package entry documents one precise history: a mutant that restored incorrect formal-to-actual
@@ -1169,7 +1169,7 @@ flowchart TB
               </p>
             </section>
 
-            <section aria-labelledby="d-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <section aria-label="Candidate D deletion test" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
               <h4 id="d-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
               <p class="mt-3 leading-7 text-indigo-950">
                 <strong>Observable diagnostic helpers:</strong> deletion can concentrate behavior behind the rule if a
@@ -1183,7 +1183,7 @@ flowchart TB
             </section>
 
             <div class="mt-8 grid gap-6 lg:grid-cols-2">
-              <section aria-labelledby="d-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+              <section aria-label="Candidate D benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
                 <h4 id="d-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Potential benefits</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
                   <li>Rule-level regressions cover orchestration rather than isolated helpers.</li>
@@ -1191,7 +1191,7 @@ flowchart TB
                   <li>Tests for observable behavior survive internal file movement.</li>
                 </ul>
               </section>
-              <section aria-labelledby="d-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+              <section aria-label="Candidate D costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
                 <h4 id="d-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and stop conditions</h4>
                 <ul class="mt-4 space-y-3 leading-7 text-amber-950">
                   <li>Keep any probe whose fact cannot be observed through diagnostics.</li>
