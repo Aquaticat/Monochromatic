@@ -1,0 +1,149 @@
+# Grading round three of the translation-repair precision gate
+
+Round three asks TWO questions and hands you TWO files to answer them in.
+This is the first round with a second sheet,
+so the ordering below is not a formality:
+grading them out of order changes what the first number measures.
+
+## Before you start
+
+Both sheets quote UNLICENSED corpus text.
+They live outside the repo,
+under `node_modules/.monochromatic/translation-repair-runs/`,
+and must never be committed.
+
+The files are named after the draw seed:
+
+```text
+grading-sheet-milestone-three-precision-round-three.md
+repair-sheet-milestone-three-precision-round-three.md
+```
+
+A `-preliminary` suffix means a scratch draw taken before coverage filled.
+Those are meant to be redrawn and are not the gate.
+
+## Step 1: grade the detection sheet, and only that
+
+Open `grading-sheet-...-round-three.md`.
+
+Each item asks one question:
+is this accepted issue a REAL translation defect,
+or a false positive?
+Replace `[ ]` with `Y` or `N`.
+
+Add rationale freely after the letter.
+Both earlier rounds carry rationale that nothing else reproduces,
+and it is read:
+round two's notes are what raised the repair-quality question in the first
+place.
+Either form parses:
+
+```text
+### 3. grade: [Y]  (Y = real defect · N = false positive)
+### 4. grade: [Y, but the warmer word would be "naps"]  (Y = ...)
+### 5. grade: N. The original does quote this.  (Y = ...)
+```
+
+If you cannot decide, say so instead of guessing:
+
+```text
+### 6. grade: [Not enough context to grade]  (Y = ...)
+```
+
+Answers that name no verdict are counted as DECLINED,
+kept out of both the numerator and the denominator,
+and reported separately.
+A declined item is more useful than a coerced one.
+
+DO NOT OPEN THE REPAIR SHEET YET.
+Seeing a proposed correction makes an alleged defect look more real,
+which moves these grades.
+Round one and round two were both graded without any correction visible,
+so reading the repair sheet first would compare round three against them
+through a different instrument,
+and the change of instrument would show up as if the pipeline had improved.
+
+## Step 2: grade the repair sheet
+
+Open `repair-sheet-...-round-three.md` only once step one is finished.
+
+Item numbers match the detection sheet exactly.
+For every item you graded `Y` there,
+answer whether the text the pipeline produced actually fixes it:
+
+```text
+- repair grade: [ ]  (Y = fully fixes this defect and breaks nothing nearby · N = it does not)
+```
+
+`Y` means the returned wording resolves the defect AND introduces no new error
+nearby.
+A better phrasing existing does not make it `N`;
+if you want to say so, write it as rationale after the letter.
+
+Leave items blank where you graded `N` for detection:
+there was no defect to fix,
+so the question has no answer.
+
+Some items carry no grade box at all.
+That is deliberate, and the sheet says which case it is:
+
+-   `not-selected`:
+    a repair was written, but the unchanged text won its slice.
+-   `withdrawn`:
+    a repair was written, but the whole page was blocked as non-translation.
+-   `no-region`:
+    no targeted repair exists for that issue at all.
+
+Those count against COVERAGE rather than against repair quality,
+and the sheet shows what was attempted anyway so the attempt is visible.
+
+Two things worth knowing while you read:
+
+-   A `SHARED` line means one edit was written for several accepted issues at
+    once, and names the other sheet items it repeats under.
+    You will meet the same before-and-after text there.
+    Judge it against the claim of the item you are on.
+-   A `NOTE` about a naturalness pass means a later stage rewrote the slice,
+    so the edit shown is not the final wording.
+    The sheet then prints the slice as actually returned;
+    grade THAT.
+
+## Step 3: get the numbers
+
+```bash
+mise run //package/module/translation-repair:score-agreement -- \
+  --sheet /ABSOLUTE/path/to/grading-sheet-milestone-three-precision-round-three.md
+```
+
+Pass an ABSOLUTE path.
+The task runs with the package directory as its working directory,
+so a repo-relative path resolves somewhere unintended.
+
+It prints three precision readings and, when blind pre-grades were recorded for
+the draw, the agreement rate against them:
+
+```text
+PRECISION items=50 scored=47 realDefects=37 strict=0.740 excluded=0.787 lenient=0.800 unscored=10,12,17
+```
+
+-   `strict` counts a declined item as a false positive.
+-   `excluded` drops declined items from the denominator.
+-   `lenient` counts a declined item as a real defect.
+
+The gate bar is 0.9.
+Earlier rounds by the same tool:
+round one 0.560 / 0.636 / 0.680,
+round two 0.740 / 0.787 / 0.800.
+
+Output carries counts and sheet positions only,
+never a quote or your rationale,
+so it is safe to paste anywhere the sheets themselves are not.
+
+## What this round cannot tell you
+
+Round three changed many things at once:
+the roster, the editor ensemble, the checker set, the quorum rule, the
+adjudication policy, the house policy, the naturalness lane, and the
+resolution-credit rule.
+A precision delta will not be attributable to any single one of them.
+Say so in the verdict rather than implying otherwise.
