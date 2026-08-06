@@ -173,6 +173,28 @@ await describe({
     },),
 
     it({
+      name: 'withholds the refinement caveat from an ungradable item, since '
+        + '"grade the final wording" beside "not graded" is a contradiction '
+        + 'the grader would have to resolve alone',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({
+              repair: catRepair({
+                disposition: 'not-selected',
+                refined: true,
+              },),
+            },),
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+        expect(sheet.includes('grade the FINAL wording',),).toBe(false,);
+        expect(sheet.includes('counts against coverage',),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'marks a pre-recording item as ungradable rather than as a repair '
         + 'that never happened',
       fn: async () => {

@@ -113,6 +113,14 @@ function renderRepair(
   const note = DISPOSITION_NOTES[repair.disposition]
     ?? 'unrecognized disposition; report this rather than grading it';
 
+  /**
+   * Whether this item is gradable at all, which also gates the refinement
+   * caveat: telling a grader to judge the final wording of a repair that never
+   * reached the reader, immediately before telling them not to grade it, is a
+   * contradiction they would have to resolve on their own.
+   */
+  const gradable = repair.disposition === SHIPPED_DISPOSITION;
+
   return [
     `- outcome: ${repair.disposition} (${note})`,
     ...repair.regions
@@ -122,14 +130,14 @@ function renderRepair(
           issueId,
         },);
       },),
-    ...(repair.refined
+    ...(gradable && repair.refined
       ? [
         '- NOTE: a later naturalness pass rewrote this paragraph, so the wording above is not final.',
         `- final paragraph as returned: “${repair.finalSliceText ?? ''}”`,
         '- grade the FINAL wording, using the edit above only to see what was attempted.',
       ]
       : []),
-    ...(repair.disposition === SHIPPED_DISPOSITION
+    ...(gradable
       ? ['- repair grade: [ ]  (Y = fully fixes this defect and breaks nothing nearby · N = it does not)',]
       : ['- not graded: no targeted repair reached the reader, which counts against coverage, not against repair quality',]),
   ].join('\n',);
