@@ -4929,3 +4929,46 @@ issue is named by none, and `judgeDisposition` answers `no-region` for an empty
 region list before it ever considers selection or blocking.
 
 Verified by reading those three, not inferred from the filter.
+
+### Budget risk: 15 entries may not fit the 12-hour soft budget
+
+Measured off `pass8-run-007` rather than assumed, at 59 minutes elapsed:
+
+```text
+per-chunk minutes: 2.7, 8.2, 11.8, 8.0, 11.0, 12.0
+mean 9.80 min/chunk including setup
+```
+
+Projected to the fifteen settled entries the draw needs:
+
+```text
+3 slices/entry ->  7.4 h   fits
+5 slices/entry -> 12.3 h   marginal, over the 12 h soft budget
+7 slices/entry -> 17.2 h   does not fit
+```
+
+The entry running when this was measured has SEVEN slices.
+
+TWO CAUSES, and they are not equally fixable.
+Provider latency is running high right now: first-byte times of 126, 176 and
+192 seconds appear in this log, which is most of the per-chunk cost and is
+nobody's design decision.
+The introduced-defect probe also adds one stage per chunk that has applied
+operations, three parallel calls, which is real but small beside the six-model
+critic and panel stages.
+
+WHAT HAPPENS AT THE BUDGET: `corpus-pass.ts` stops STARTING new entries once
+`SOFT_BUDGET_MS` is reached, and finishes the one in flight. It does not crash
+and loses nothing already settled. A short round is a smaller sample, not a
+broken one.
+
+THE DECISION IF IT MATERIALIZES IS THE USER'S, because both options spend
+something they own: raise `SOFT_BUDGET_MINUTES` and spend more quota and wall
+clock, or draw the sheets from fewer than fifteen entries and accept narrower
+page diversity. Note that the fifty-issue sample size is unaffected either way;
+entry count buys diversity across pages, not statistical power, which is the
+same arithmetic recorded when the cap was set.
+
+DO NOT silently raise the budget. Measure again at the halfway mark: the band
+interleave means small entries settle faster, so the mean over fifteen may come
+in well under the seven-slice worst case this projection uses.
