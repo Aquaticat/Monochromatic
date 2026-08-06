@@ -1,0 +1,203 @@
+/**
+ * Depth guard for forced continuation.
+ *
+ * Forced continuation originally relied on Claude Code ending the blocked chain
+ * by itself. That was measured and is false. Two disposable runs whose agent
+ * produced no tool calls ended after nine dispatches, and one producing modest
+ * work ended after seventeen, which together looked like a platform ceiling. A
+ * run whose agent ran one shell command per continuation reached thirty-one
+ * dispatches and stopped only because the probe's own cap fired: Claude Code
+ * never intervened. An always-blocking hook is therefore unbounded exactly when
+ * the agent stays busy, which is the case that costs the most.
+ *
+ * The guard counts how many forced continuations have already happened since
+ * the last human turn and allows the stop once that reaches the limit. Counting
+ * comes from the transcript rather than a sidecar so there is no state to
+ * corrupt, no cleanup to miss, and resuming a session cannot lose the count.
+ *
+ * @module
+ */
+
+import { open, } from 'node:fs/promises';
+
+/**
+ * Marker identifying this hook's own forced-continuation feedback in a transcript.
+ *
+ * Matches the opening clause of {@link autoContinueReason}. Sharing the literal
+ * would couple the reason's wording to transcript parsing, so the marker is
+ * deliberately short enough to survive edits to the rest of the reason.
+ */
+const CONTINUATION_MARKER = 'You are stopping while tracked work may remain' as const;
+
+/**
+ * Prefix Claude Code puts on the transcript record it feeds back to the model.
+ *
+ * Required alongside {@link CONTINUATION_MARKER} because each block writes the
+ * reason twice: once as this feedback record and once inside a
+ * `hook_blocking_error` attachment. Counting both double-counts every block,
+ * which halves the effective limit.
+ */
+const FEEDBACK_PREFIX = 'Stop hook feedback' as const;
+
+/**
+ * Environment variable overriding {@link DEFAULT_MAX_DEPTH}.
+ */
+const MAX_DEPTH_ENV = 'MONOCHROMATIC_STOP_AUTO_CONTINUE_MAX' as const;
+
+/**
+ * Forced continuations allowed per human turn before a stop is permitted.
+ *
+ * Chosen well above the observed productive range so ordinary work is never
+ * cut short, while still bounding a runaway. The measured live session used 14
+ * across its whole run and the busiest probe reached 31 without self-limiting.
+ */
+const DEFAULT_MAX_DEPTH = 25;
+
+/**
+ * Transcript bytes read from the end of the file when counting depth.
+ *
+ * Depth only ever spans the records since the last human turn, so the whole
+ * transcript never needs parsing. Sized to hold far more than one turn's worth
+ * of records even when tool results are large.
+ */
+const TAIL_BYTES = 4_000_000;
+
+/**
+ * Resolves the configured depth limit.
+ *
+ * @param rawSetting - value read from {@link MAX_DEPTH_ENV}
+ *
+ * @returns configured limit, or {@link DEFAULT_MAX_DEPTH} when unset or unparsable
+ *
+ * @example
+ * ```ts
+ * maxContinuationDepth('40'); // 40
+ * maxContinuationDepth(''); // 25
+ * ```
+ */
+function maxContinuationDepth(rawSetting: string,): number {
+  /**
+   * Parsed limit; `Number` rejects blanks and words as `NaN`.
+   */
+  const parsed = Number(rawSetting.trim(),);
+
+  if ((!Number.isInteger(parsed,))
+    || (parsed < 1)) {
+    return DEFAULT_MAX_DEPTH;
+  }
+  return parsed;
+}
+
+/**
+ * Counts forced continuations already issued since the last human turn.
+ *
+ * Scans transcript records newest first and stops at the first genuine human
+ * turn, so the count describes the current turn only. Tool results carry
+ * `role: 'user'` and are excluded by requiring the human origin marker.
+ *
+ * @param transcriptLines - transcript JSONL lines, oldest first
+ *
+ * @returns forced continuations since the last human turn
+ *
+ * @example
+ * ```ts
+ * continuationDepth(['{"type":"user","origin":{"kind":"human"}}']); // 0
+ * ```
+ */
+function continuationDepth(transcriptLines: readonly string[],): number {
+  /**
+   * Running count of this hook's own feedback records seen so far.
+   */
+  let depth = 0;
+
+  for (let index = transcriptLines.length - 1; index >= 0; index--) {
+    /**
+     * Raw transcript line under inspection.
+     */
+    const line = transcriptLines[index] ?? '';
+
+    if (line === '') {
+      continue;
+    }
+    if (line.includes(CONTINUATION_MARKER,)
+      && line.includes(FEEDBACK_PREFIX,)) {
+      depth += 1;
+      continue;
+    }
+    // A human turn closes the window; anything before it belongs to an earlier turn.
+    if (line.includes('"kind":"human"',)) {
+      return depth;
+    }
+  }
+  return depth;
+}
+
+/**
+ * Reads the tail of a transcript and reports the current continuation depth.
+ *
+ * Failure to read is treated as depth zero rather than propagated: a hook that
+ * throws produces no stdout, which Claude Code reads as permission to stop, and
+ * silently disabling the response-quality detectors would be worse than
+ * over-counting by one turn.
+ *
+ * @param transcriptPath - filesystem path from the `Stop` event
+ *
+ * @returns forced continuations since the last human turn, or `0` when unreadable
+ *
+ * @example
+ * ```ts
+ * await continuationDepthAt('/home/user/.claude/projects/x/y.jsonl');
+ * ```
+ */
+async function continuationDepthAt(transcriptPath: string,): Promise<number> {
+  try {
+    /**
+     * Open transcript handle, closed by scope exit even when reading throws.
+     */
+    await using handle = await open(
+      transcriptPath,
+      'r',
+    );
+    /**
+     * Byte length of the transcript, used to read only its tail.
+     */
+    const { size, } = await handle.stat();
+    /**
+     * Offset of the first byte read; clamped so small transcripts read whole.
+     */
+    const start = Math.max(
+      0,
+      size - TAIL_BYTES,
+    );
+    /**
+     * Destination for the tail bytes.
+     */
+    const buffer = Buffer.alloc(size
+      - start,);
+
+    await handle.read(
+      buffer,
+      0,
+      buffer.length,
+      start,
+    );
+    return continuationDepth(buffer.toString('utf8',)
+      .split('\n',),);
+  }
+  catch (error) {
+    // stderr is safe here: stdout carries the hook protocol and must stay clean.
+    process.stderr
+      .write(`stop-reminder: continuation depth unavailable, treating as 0: ${String(error,)}\n`,);
+    return 0;
+  }
+}
+
+export {
+  CONTINUATION_MARKER,
+  FEEDBACK_PREFIX,
+  continuationDepth,
+  continuationDepthAt,
+  DEFAULT_MAX_DEPTH,
+  MAX_DEPTH_ENV,
+  maxContinuationDepth,
+};

@@ -12,44 +12,10 @@ import {
   DISABLING_VALUES,
   UNSET_SETTING,
 } from './auto-continue.ts';
-import { stopRemindersHandler, } from './index.ts';
-
-/**
- * Scoped kill-switch override that restores the prior environment on scope exit.
- *
- * The handler reads the kill switch from this process, so the disabled branch is
- * only reachable by setting the variable. Disposal restores exactly what was
- * there, including absence, so sibling tests observe an unchanged environment.
- *
- * @param value - kill-switch value applied for enclosing scope
- *
- * @returns disposable carrying applied value, restoring prior state when disposed
- *
- * @example
- * ```ts
- * using killSwitch = killSwitchSetTo('off');
- * ```
- */
-function killSwitchSetTo(value: string,): Disposable & { readonly value: string; } {
-  /**
-   * Value present before the override, restored verbatim on disposal.
-   */
-  const restore = process.env[AUTO_CONTINUE_ENV];
-
-  process.env[AUTO_CONTINUE_ENV] = value;
-
-  return {
-    value,
-    [Symbol.dispose]: (): void => {
-      if (restore === undefined) {
-        // oxlint-disable-next-line eslint/no-dynamic-delete -- restoring absence requires removing the key; blanking it would leave a different observable state
-        delete process.env[AUTO_CONTINUE_ENV];
-        return;
-      }
-      process.env[AUTO_CONTINUE_ENV] = restore;
-    },
-  };
-}
+import {
+  stopRemindersDecision,
+  stopRemindersHandler,
+} from './index.ts';
 
 /**
  * Fields a test varies on the built stop event; anything omitted keeps its default.
@@ -154,108 +120,93 @@ await describe({
     },),
 
     describe({
-      name: stopRemindersHandler.name,
+      name: stopRemindersDecision.name,
       children: [
         it({
-          name: 'blocks a clean response that would otherwise have been allowed',
+          name: "blocks a clean response that would otherwise have been allowed",
           fn: async () => {
-            expect(stopRemindersHandler(stopEvent(),).decision,).toBe('block',);
+            expect(stopRemindersDecision({ event: stopEvent(), forcedContinuationAllowed: true, },).decision,)
+              .toBe("block",);
           },
         },),
         it({
-          name: 'still blocks inside a chain, where the quality detectors no longer apply',
+          name: "still blocks inside a chain, where the quality detectors no longer apply",
           fn: async () => {
-            /**
-             * Stop occurring after a previous block, carrying hedging the first pass already flagged.
-             */
-            const output = stopRemindersHandler(
-              stopEvent({ stop_hook_active: true, last_assistant_message: 'This probably works.', },),
-            );
+            const output = stopRemindersDecision({
+              event: stopEvent({ stop_hook_active: true, last_assistant_message: "This probably works.", },),
+              forcedContinuationAllowed: true,
+            },);
 
-            expect(output.decision,).toBe('block',);
-            expect(output.reason,).not.toContain('uncertain language',);
+            expect(output.decision,).toBe("block",);
+            expect(output.reason,).not.toContain("uncertain language",);
           },
         },),
         it({
-          name: 'reports hedging on the first stop of a chain',
+          name: "reports hedging on the first stop of a chain",
           fn: async () => {
-            expect(
-              stopRemindersHandler(stopEvent({ last_assistant_message: 'This probably works.', },),).reason,
-            ).toContain('uncertain language',);
+            expect(stopRemindersDecision({
+              event: stopEvent({ last_assistant_message: "This probably works.", },),
+              forcedContinuationAllowed: true,
+            },).reason,).toContain("uncertain language",);
           },
         },),
         it({
-          name: 'allows a clean stop once the kill switch disables forced continuation',
+          name: "allows a clean stop once forced continuation is disallowed",
           fn: async () => {
-            using killSwitch = killSwitchSetTo('off',);
-            /**
-             * Handler result while forced continuation is disabled; the clean message
-             * trips no response-quality detector, so nothing should block.
-             */
-            const output = stopRemindersHandler(stopEvent(),);
+            expect(stopRemindersDecision({ event: stopEvent(), forcedContinuationAllowed: false, },),)
+              .toEqual({},);
+          },
+        },),
+        it({
+          name: "still reports hedging while forced continuation is disallowed",
+          fn: async () => {
+            const output = stopRemindersDecision({
+              event: stopEvent({ last_assistant_message: "This probably works.", },),
+              forcedContinuationAllowed: false,
+            },);
 
-            expect(killSwitch.value,).toBe('off',);
-            expect(output,).toEqual({},);
+            expect(output.decision,).toBe("block",);
+            expect(output.reason,).toContain("uncertain language",);
           },
         },),
         it({
-          name: 'still reports hedging while the kill switch is set',
+          name: "reports an uncited dismissal on the first stop of a chain",
           fn: async () => {
-            using killSwitch = killSwitchSetTo('off',);
-            /**
-             * Handler result for a hedged message; the kill switch must silence forced
-             * continuation only, leaving the response-quality detectors in force.
-             */
-            const output = stopRemindersHandler(
-              stopEvent({ last_assistant_message: 'This probably works.', },),
-            );
+            expect(stopRemindersDecision({
+              event: stopEvent({ last_assistant_message: "This project doesn't use that.", },),
+              forcedContinuationAllowed: true,
+            },).reason,).toContain("categorical dismissal",);
+          },
+        },),
+        it({
+          name: "suppresses the dismissal report inside a chain, leaving only continuation",
+          fn: async () => {
+            const output = stopRemindersDecision({
+              event: stopEvent({ stop_hook_active: true, last_assistant_message: "This project doesn't use that.", },),
+              forcedContinuationAllowed: true,
+            },);
 
-            expect(killSwitch.value,).toBe('off',);
-            expect(output.decision,).toBe('block',);
-            expect(output.reason,).toContain('uncertain language',);
+            expect(output.decision,).toBe("block",);
+            expect(output.reason,).not.toContain("categorical dismissal",);
+            expect(output.reason,).toContain("Resume the next item now",);
           },
         },),
         it({
-          name: 'reports an uncited dismissal on the first stop of a chain',
+          name: "yields precedence to a trailing question instead of contradicting it",
           fn: async () => {
-            expect(
-              stopRemindersHandler(
-                stopEvent({ last_assistant_message: 'This project doesn\'t use that.', },),
-              ).reason,
-            ).toContain('categorical dismissal',);
-          },
-        },),
-        it({
-          name: 'suppresses the dismissal report inside a chain, leaving only continuation',
-          fn: async () => {
-            /**
-             * Same dismissal seen on a later stop, where gating must silence the report
-             * so a forced continuation is not re-blocked for text already answered for.
-             */
-            const output = stopRemindersHandler(
-              stopEvent({
-                stop_hook_active: true,
-                last_assistant_message: 'This project doesn\'t use that.',
-              },),
-            );
+            const output = stopRemindersDecision({
+              event: stopEvent({ last_assistant_message: "Which package should I migrate first?", },),
+              forcedContinuationAllowed: true,
+            },);
 
-            expect(output.decision,).toBe('block',);
-            expect(output.reason,).not.toContain('categorical dismissal',);
-            expect(output.reason,).toContain('Resume the next item now',);
+            expect(output.reason,).toContain("AskUserQuestion",);
+            expect(output.reason,).not.toContain("Resume the next item now",);
           },
         },),
         it({
-          name: 'yields precedence to a trailing question instead of contradicting it',
+          name: "wires the handler through to a real block on a live event",
           fn: async () => {
-            /**
-             * Response ending in a user-directed question, which the question detector refuses on its own.
-             */
-            const output = stopRemindersHandler(
-              stopEvent({ last_assistant_message: 'Which package should I migrate first?', },),
-            );
-
-            expect(output.reason,).toContain('AskUserQuestion',);
-            expect(output.reason,).not.toContain('Resume the next item now',);
+            expect((await stopRemindersHandler(stopEvent(),)).decision,).toBe("block",);
           },
         },),
       ],

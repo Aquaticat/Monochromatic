@@ -9,6 +9,11 @@ import {
   autoContinueReason,
 } from './auto-continue.ts';
 import {
+  continuationDepthAt,
+  MAX_DEPTH_ENV,
+  maxContinuationDepth,
+} from './continuation-depth.ts';
+import {
   findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
@@ -47,27 +52,42 @@ type StopRemindersOutput = StopOutput;
  * 4. **Trailing-question scan**: {@link findTrailingQuestion} looks for
  *    sentences ending in `?` in the last 500 characters; rhetorical/conditional
  *    prefixes are excluded.
- * 5. **Forced continuation**: unless a trailing question matched, and unless the
- *    kill switch is set, {@link autoContinueReason} is appended on every stop
- *    including stops inside a blocked chain. This is the one detector that
- *    re-arms, and it reads none of the response text. Claude Code ends the
- *    resulting chain on its own, at a bound that varies between runs, so the
- *    loop terminates without this module counting anything. See
- *    {@link autoContinueReason} for the measurements behind that claim.
+ * 5. **Forced continuation**: unless a trailing question matched, and unless
+ *    `forcedContinuationAllowed` is false, {@link autoContinueReason} is
+ *    appended on every stop including stops inside a blocked chain. This is the
+ *    one detector that re-arms, and it reads none of the response text.
+ *    Claude Code does not reliably end the resulting chain, so the caller is
+ *    responsible for bounding it; see `continuation-depth.ts`.
  * 6. **Result**: if any reasons accumulated, returns
  *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
  *    otherwise `\{\}`.
  *
+ * Pure by construction: every ambient input arrives as a parameter, so each
+ * branch is reachable in a test without touching process state. An earlier
+ * revision read the kill switch inside this function, which made the disabled
+ * branch testable only by mutating `process.env` and left those tests racing
+ * once the handler became asynchronous.
+ *
  * @param event - parsed {@link StopInput} event from Claude Code
+ *
+ * @param forcedContinuationAllowed - whether to append the continuation reason
  *
  * @returns blocking output when reminders apply, otherwise `{}`
  *
  * @example
  * ```ts
- * stopRemindersHandler({ stop_hook_active: false, last_assistant_message: 'Done?' });
+ * stopRemindersDecision({ event, forcedContinuationAllowed: true });
  * ```
  */
-function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOutput {
+function stopRemindersDecision(
+  {
+    event,
+    forcedContinuationAllowed,
+  }: {
+    readonly event: ReadonlyDeep<StopInput>;
+    readonly forcedContinuationAllowed: boolean;
+  },
+): StopRemindersOutput {
   /**
    * Whether the response-quality detectors apply to this stop.
    *
@@ -140,7 +160,7 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   // agent to resume work and to route its question through AskUserQuestion in the
   // same reason would be contradictory, and the question reason already refuses the stop.
   if ((question === NO_MATCH)
-    && autoContinueActive()) {
+    && forcedContinuationAllowed) {
     reasons.push(...autoContinueReason(),);
   }
 
@@ -153,6 +173,44 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   }
 
   return {};
+}
+
+/**
+ * Reads ambient state, then delegates to {@link stopRemindersDecision}.
+ *
+ * All environment and filesystem access lives here so the policy stays pure and
+ * testable. Depth is only computed when forced continuation is enabled, since
+ * the transcript read is pointless otherwise.
+ *
+ * @param event - parsed {@link StopInput} event from Claude Code
+ *
+ * @returns blocking output when reminders apply, otherwise `{}`
+ *
+ * @example
+ * ```ts
+ * await stopRemindersHandler(event);
+ * ```
+ */
+async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<StopRemindersOutput> {
+  /**
+   * Whether the kill switch leaves forced continuation enabled.
+   */
+  const enabled = autoContinueActive();
+  /**
+   * Forced continuations already issued for this human turn.
+   *
+   * Claude Code does not reliably end a blocked chain, so this bound is the
+   * only termination guarantee; see `continuation-depth.ts` for the measurement.
+   */
+  const depth = enabled
+    ? await continuationDepthAt(event.transcript_path,)
+    : 0;
+
+  return stopRemindersDecision({
+    event,
+    forcedContinuationAllowed: enabled
+      && (depth < maxContinuationDepth(process.env[MAX_DEPTH_ENV] ?? '',)),
+  },);
 }
 
 /**
@@ -197,6 +255,7 @@ function stopRemindersWriter(output: StopRemindersOutput,): string {
 export type { StopRemindersOutput, };
 
 export {
+  stopRemindersDecision,
   stopRemindersHandler,
   stopRemindersParser,
   stopRemindersWriter,

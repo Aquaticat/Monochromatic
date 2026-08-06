@@ -1,0 +1,138 @@
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
+  continuationDepth,
+  CONTINUATION_MARKER,
+  continuationDepthAt,
+  DEFAULT_MAX_DEPTH,
+  FEEDBACK_PREFIX,
+  maxContinuationDepth,
+} from './continuation-depth.ts';
+
+/**
+ * Transcript line standing for one forced-continuation feedback record.
+ */
+const BLOCK_LINE = `{"type":"user","message":{"content":"${FEEDBACK_PREFIX}:\\n${CONTINUATION_MARKER}."}}`;
+
+/**
+ * Attachment record Claude Code writes alongside every block.
+ *
+ * Carries the reason but not the feedback prefix, so it must not be counted.
+ */
+const ATTACHMENT_LINE =
+  `{"type":"attachment","attachment":{"type":"hook_blocking_error","blockingError":{"blockingError":"${CONTINUATION_MARKER}."}}}`;
+
+/**
+ * Transcript line standing for a genuine human turn, which closes the counting window.
+ */
+const HUMAN_LINE = '{"type":"user","origin":{"kind":"human"},"message":{"content":"do the thing"}}';
+
+/**
+ * Transcript line standing for an assistant turn, which neither counts nor closes.
+ */
+const ASSISTANT_LINE = '{"type":"assistant","message":{"content":[{"type":"text","text":"working"}]}}';
+
+await describe({
+  name: 'forced-continuation depth guard',
+  children: [
+    describe({
+      name: maxContinuationDepth.name,
+      children: [
+        it({
+          name: 'falls back to the default when unset',
+          fn: async () => {
+            expect(maxContinuationDepth('',),).toBe(DEFAULT_MAX_DEPTH,);
+          },
+        },),
+        it({
+          name: 'falls back when the value is not an integer',
+          fn: async () => {
+            for (const value of ['abc', '3.5', '', '  ',]) {
+              expect(maxContinuationDepth(value,),).toBe(DEFAULT_MAX_DEPTH,);
+            }
+          },
+        },),
+        it({
+          name: 'falls back on zero and negatives rather than disabling the guard',
+          fn: async () => {
+            expect(maxContinuationDepth('0',),).toBe(DEFAULT_MAX_DEPTH,);
+            expect(maxContinuationDepth('-4',),).toBe(DEFAULT_MAX_DEPTH,);
+          },
+        },),
+        it({
+          name: 'accepts an explicit positive integer',
+          fn: async () => {
+            expect(maxContinuationDepth(' 40 ',),).toBe(40,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: continuationDepth.name,
+      children: [
+        it({
+          name: 'counts zero for an empty transcript',
+          fn: async () => {
+            expect(continuationDepth([],),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'counts consecutive forced continuations',
+          fn: async () => {
+            expect(continuationDepth([HUMAN_LINE, BLOCK_LINE, ASSISTANT_LINE, BLOCK_LINE,],),).toBe(2,);
+          },
+        },),
+        it({
+          name: 'stops counting at the last human turn so earlier turns do not accumulate',
+          fn: async () => {
+            expect(
+              continuationDepth([BLOCK_LINE, BLOCK_LINE, BLOCK_LINE, HUMAN_LINE, BLOCK_LINE,],),
+            ).toBe(1,);
+          },
+        },),
+        it({
+          name: 'ignores blank lines from a trailing newline',
+          fn: async () => {
+            expect(continuationDepth([HUMAN_LINE, BLOCK_LINE, '',],),).toBe(1,);
+          },
+        },),
+        it({
+          name: 'counts nothing when the turn has only assistant activity',
+          fn: async () => {
+            expect(continuationDepth([HUMAN_LINE, ASSISTANT_LINE, ASSISTANT_LINE,],),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'counts each block once despite its paired attachment carrying the same reason',
+          fn: async () => {
+            expect(
+              continuationDepth([HUMAN_LINE, BLOCK_LINE, ATTACHMENT_LINE, BLOCK_LINE, ATTACHMENT_LINE,],),
+            ).toBe(2,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: continuationDepthAt.name,
+      children: [
+        it({
+          name: 'reports zero rather than throwing when the transcript is missing',
+          fn: async () => {
+            expect(await continuationDepthAt('/nonexistent/transcript.jsonl',),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'reports zero for an empty transcript',
+          fn: async () => {
+            expect(await continuationDepthAt('/dev/null',),).toBe(0,);
+          },
+        },),
+      ],
+    },),
+  ],
+},);
