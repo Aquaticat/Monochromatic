@@ -208,6 +208,29 @@ export type SelectionTally = {
 };
 
 /**
+ * Which kind of failure a decline was.
+ *
+ * The two are not interchangeable, and treating them alike is how a pipeline
+ * either overrides its judges or throws away work over a coin flip:
+ *
+ * -   `indecision` means judges answered but did not converge, by tying or by
+ *     leaving the leader short of the minimum votes. Every candidate may be
+ *     perfectly good; nobody said otherwise. This is a failure to rank.
+ * -   `rejection` means judges affirmatively answered that NO candidate is
+ *     acceptable, or that no disinterested judge could be seated at all. This
+ *     is a substantive negative verdict, and shipping over it would be
+ *     overruling the judges rather than routing around their silence.
+ *
+ * @example
+ * ```ts
+ * const disposition: SelectionDisposition = 'indecision';
+ * ```
+ */
+export type SelectionDisposition =
+  | 'indecision'
+  | 'rejection';
+
+/**
  * What a selection round decided.
  *
  * @example
@@ -246,6 +269,12 @@ export type SelectionOutcome<ValueT,> =
      * Why nothing was selected, in scorecard-stable wording.
      */
     readonly reason: string;
+
+    /**
+     * Which kind of failure this was, so callers can answer the two very
+     * different questions separately.
+     */
+    readonly disposition: SelectionDisposition;
 
     /**
      * What the round counted.

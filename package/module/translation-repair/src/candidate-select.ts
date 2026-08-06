@@ -122,6 +122,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'no candidates proposed',
+      disposition: 'rejection',
       tally: emptyTally,
     };
 
@@ -145,6 +146,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'no disinterested judge available',
+      disposition: 'rejection',
       tally: emptyTally,
     };
   }
@@ -232,6 +234,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'every judge declined',
+      disposition: 'rejection',
       tally: counted,
     };
   }
@@ -245,6 +248,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'judges tied',
+      disposition: 'indecision',
       tally: counted,
     };
   }
@@ -259,6 +263,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'winner short of the minimum vote count',
+      disposition: 'indecision',
       tally: counted,
     };
   }
@@ -271,6 +276,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'winning index out of range',
+      disposition: 'rejection',
       tally: counted,
     };
   }

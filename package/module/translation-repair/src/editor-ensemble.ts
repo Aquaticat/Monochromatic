@@ -371,8 +371,11 @@ export async function selectPerEnvelope(
  *
  * @param sourceText - original chunk text, evidence for judges
  *
- * @param fallback - patch adopted when judges decline; callers must pass a
- * patch that actually repairs something, never the untouched translation
+ * @param indecisionFallback - patch adopted when judges answered but failed to
+ * converge; callers must pass a patch that actually repairs something
+ *
+ * @param rejectionFallback - patch adopted when judges affirmatively found no
+ * candidate acceptable; normally the untouched translation
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -393,7 +396,8 @@ export async function selectChunkPatch(
     candidates,
     judgeModelIds,
     sourceText,
-    fallback,
+    indecisionFallback,
+    rejectionFallback,
     signal,
     perCallTimeoutMs,
     l,
@@ -402,7 +406,8 @@ export async function selectChunkPatch(
     readonly candidates: readonly Candidate<PatchOutcome>[];
     readonly judgeModelIds: readonly SyntheticModelId[];
     readonly sourceText: string;
-    readonly fallback: PatchOutcome;
+    readonly indecisionFallback: PatchOutcome;
+    readonly rejectionFallback: PatchOutcome;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -455,11 +460,21 @@ export async function selectChunkPatch(
     l,
   },);
   if (outcome.kind === 'declined') {
-    // Falling back to no repair at all would discard fixes the panel already
-    // ruled real, turning a disagreement about wording into a recall loss, so
-    // the caller's fallback is a repaired patch rather than the original text.
-    cl.info(`${outcome.reason}; shipping the fallback patch`,);
-    return fallback;
+    // Judges failing to RANK the candidates says nothing against any of them,
+    // and dropping every repair over that would turn a disagreement about
+    // wording into a recall loss. The repair is not unexamined either: the
+    // checkers and then `selectRepairCandidate` still make it beat the
+    // untouched text on measurements before it can ship.
+    //
+    // Judges REJECTING every candidate is the opposite: a substantive verdict
+    // that none of this is good enough. Shipping a repair over that would
+    // overrule the panel rather than route around its silence.
+    if (outcome.disposition === 'indecision') {
+      cl.info(`${outcome.reason}; shipping the strongest repair anyway`,);
+      return indecisionFallback;
+    }
+    cl.info(`${outcome.reason}; shipping no repair for this chunk`,);
+    return rejectionFallback;
   }
   cl.info(
     `chunk patch from ${describeProducer(outcome.producer,)} won ${String(outcome.votes,)} of ${

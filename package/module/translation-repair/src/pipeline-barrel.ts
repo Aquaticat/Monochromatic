@@ -111,6 +111,7 @@ export {
   mergeProducers,
   MIN_SELECTION_VOTES,
   producerModelIds,
+  type SelectionDisposition,
   type SelectionOutcome,
   type SelectionTally,
 } from './candidate-select-model.ts';
