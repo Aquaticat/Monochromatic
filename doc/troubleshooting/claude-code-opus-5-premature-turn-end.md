@@ -237,11 +237,22 @@ Both runs behaved identically:
 A third run, of the shipped handler rather than a minimal probe,
 ended after 17 dispatches, all of them forced continuations.
 So 9 is not a Claude Code constant.
-What the three runs establish is weaker and still sufficient:
-the CLI ends the chain on its own in every run,
-so an unconditional blocker does not loop indefinitely,
-but the bound varies and the rule governing it is not established.
-Do not rely on a specific number.
+
+A fourth run retracts the rest of the claim.
+Its hook blocked unconditionally up to a self-imposed cap of 30,
+and its block reason told the agent to run one shell command before continuing.
+It reached 31 dispatches with 31 `Bash` calls across 124 assistant turns,
+and stopped only because the probe's own cap fired.
+Claude Code never intervened.
+
+So the CLI does not reliably end a blocked chain.
+The earlier runs ended because their agents ran out of things to do,
+not because a ceiling was enforced:
+the first two produced no tool calls at all
+and merely repeated a one-word reply.
+An always-blocking hook is unbounded exactly when the agent stays busy,
+which is the case that costs the most.
+Any such hook must bound itself.
 
 The `Stop` input carried exactly these keys:
 `background_tasks`, `cwd`, `hook_event_name`, `last_assistant_message`,
@@ -427,10 +438,27 @@ Its subsequent firings are scheduled by the harness rather than chosen by the mo
 so the rejection applies to starting the loop and not to sustaining it.
 That distinction is recorded because it decides whether the option is actually foreclosed.
 
-Claude Code ending the chain on its own is what makes this safe,
-so no counter in this repository is load-bearing for termination.
-That safety rests on termination being reliable, not on any particular bound,
-which is why nothing here hard-codes 9 or 17.
+Termination is this repository's responsibility, not Claude Code's.
+The first version shipped without a bound,
+on the belief that the CLI enforced one,
+and that belief was false.
+`continuation-depth.ts` now counts this hook's own feedback records
+since the last human turn and allows the stop at the limit,
+default 25,
+overridden with `MONOCHROMATIC_STOP_AUTO_CONTINUE_MAX`.
+
+Two implementation notes worth keeping,
+both found by exercising the built hook rather than by unit tests:
+
+- Each block writes its reason to the transcript twice,
+  once as the feedback record fed back to the model
+  and once inside a `hook_blocking_error` attachment.
+  Counting both halves the effective limit.
+  Verified live at a limit of 4, which produced exactly 4 blocks.
+- Making the handler asynchronous broke the kill-switch tests,
+  which had mutated `process.env` and now raced across the await.
+  The policy was split into a pure function taking its inputs as parameters,
+  so no test touches process state.
 
 The cost falls on every session, not only queue-shaped ones.
 A turn that genuinely had nothing left to do

@@ -11,12 +11,13 @@
  * deleting that sentence, which converts an informative stop into a silent one.
  * This detector cannot be satisfied that way because it reads nothing.
  *
- * Termination comes from Claude Code, not from this module, which counts
- * nothing. Measured against Claude Code 2.1.220 on three disposable sessions,
- * the CLI ended the chain on its own every time, but not at a fixed count: two
- * runs of a minimal always-blocking hook ended after nine dispatches, and a run
- * of this handler ended after seventeen. Termination is reliable; the bound is
- * not a constant, and the rule governing it is not established. See
+ * Termination does not come from Claude Code. An earlier revision of this
+ * comment claimed it did, on three disposable sessions that ended after nine,
+ * nine, and seventeen dispatches. That looked like a platform ceiling and was
+ * not one: a fourth run, whose agent ran one shell command per continuation,
+ * reached thirty-one dispatches and stopped only because the probe's own cap
+ * fired. The chain is unbounded exactly when the agent stays busy, which is the
+ * case that costs the most. Bounding lives in `continuation-depth.ts`. See
  * `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
  *
  * @module

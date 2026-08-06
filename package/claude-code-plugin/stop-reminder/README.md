@@ -63,17 +63,29 @@ A trailing question takes precedence,
 and to route its question through `AskUserQuestion`
 in the same reason would be contradictory.
 
-**Termination** comes from Claude Code,
- not from this hook,
- which counts nothing.
-Measured on three disposable sessions against Claude Code 2.1.220,
- the CLI ended the chain on its own every time,
- but not at a fixed count:
- two runs of a minimal always-blocking hook ended after nine dispatches,
- and a run of this handler ended after seventeen.
-Termination is reliable;
- the bound is not a constant,
- and the rule governing it is not established.
+**Termination comes from this hook,
+ not from Claude Code.
+** Measured against Claude Code 2.1.220,
+ three disposable sessions ended after nine,
+ nine,
+ and seventeen dispatches,
+ which looked like a platform ceiling.
+It is not one.
+A fourth session,
+ whose agent ran one shell command per continuation,
+ reached thirty-one dispatches
+and stopped only because the probe's own cap fired.
+The chain is unbounded exactly when the agent stays busy.
+
+The hook therefore counts its own feedback records in the transcript
+since the last human turn
+and allows the stop once that reaches the limit,
+default 25,
+overridden with `MONOCHROMATIC_STOP_AUTO_CONTINUE_MAX`.
+Counting reads the transcript rather than a sidecar,
+so there is no state to corrupt,
+no cleanup to miss,
+and resuming a session cannot lose the count.
 
 `stop_hook_active` is false on the first dispatch and true on every one after,
  never clearing,
