@@ -4769,3 +4769,39 @@ A synthetic panel check would answer a weaker version of a question whose
 stronger answer is already arriving.
 Reach for it only if the graded sheet leaves the cause of the false positives
 unclear.
+
+#### Correction: the first sensitivity run tested the wrong configuration
+
+The result stands, but the evidence for it did not, and the gap was mine.
+
+The first run passed `issues: []`, so the sheet rendered "(none recorded)".
+PRODUCTION NEVER DOES THAT.
+Every real region arrives with the accepted issues it was cut for, printed under
+"PRE-EXISTING DEFECTS THIS EDIT TARGETED (these are NOT your findings)",
+and that line is one of the three defenses against a prober reporting the old
+defect.
+It is therefore also the likeliest single thing to talk a prober out of
+reporting anything at all.
+Measuring sensitivity without it described a stage that does not run.
+
+Re-run as a controlled pair, every region probed twice:
+
+```text
+clean          prior=absent  noneFound=3      prior=shown  noneFound=3
+omitting       prior=absent  removal=3        prior=shown  removal=3
+contradicting  prior=absent  corroborated=3   prior=shown  corroborated=3
+```
+
+Identical in both conditions.
+Showing the prior defect suppresses reporting THAT defect without suppressing
+reporting NEW damage, and does not induce a false positive on the clean control
+either.
+The defense does exactly the job it was designed for and nothing more.
+
+So run 007's zeros remain the benign reading, now established under the
+configuration that actually runs rather than a simplified one.
+
+THE LESSON, worth more than the result: a sensitivity check inherits every
+simplification its harness makes. Ask what the production call passes that the
+check does not, BEFORE reporting the check as decisive. I reported it as
+decisive first.

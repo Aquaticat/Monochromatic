@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import {
@@ -80,6 +81,33 @@ const BASELINE_TEXT = `The cat is doing the sleeping on the windowsill, and she 
 The cat is doing the chasing of butterflies, which she loves.`;
 
 /**
+ * Accepted issue every region was cut for, rendered into the sheet exactly as
+ * production renders it.
+ *
+ * Its summary names the progressive gloss, which IS present in each region's
+ * before text and IS fixed by each replacement. That is the point: a prober
+ * tempted to report the region's known defect has one sitting in front of it,
+ * labelled as not a finding.
+ */
+const PRIOR_ISSUE: AdjudicatedIssue = {
+  issueId: 'adjudicated/tense',
+  status: 'accepted',
+  severity: 'major',
+  claims: [
+    {
+      claimId: 'claim/tense',
+      claim: {
+        category: 'style/awkward-phrasing',
+        severity: 'major',
+        summary: 'Progressive gloss "is doing the" reads as machine output.',
+        spans: [],
+      },
+    },
+  ],
+  tallies: {},
+};
+
+/**
  * Runs the probe over one deliberately shaped region and reports what it said.
  *
  * @param region - region under test
@@ -96,9 +124,13 @@ async function probeOne(
   {
     region,
     expectation,
+    issues,
+    condition,
   }: {
     readonly region: RepairRegion;
     readonly expectation: string;
+    readonly issues: readonly AdjudicatedIssue[];
+    readonly condition: string;
   },
 ): Promise<void> {
   /**
@@ -110,7 +142,7 @@ async function probeOne(
     sourceText: SOURCE_TEXT,
     baselineText: BASELINE_TEXT,
     regions: [region,],
-    issues: [],
+    issues,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-sensitivity', },),
@@ -122,7 +154,9 @@ async function probeOne(
   const tally = report.regions[0];
 
   console.log(
-    `SENSITIVITY ${region.envelopeId} expected=${expectation} heard=${
+    `SENSITIVITY ${region.envelopeId} prior=${condition} expected=${
+      expectation
+    } heard=${
       String(report.heardProbers,)
     }/${String(report.configuredProbers,)} corroborated=${
       String(tally?.corroborated ?? 0,)
@@ -145,9 +179,18 @@ async function probeOne(
  * ```
  */
 async function main(): Promise<void> {
-  // Sequential rather than concurrent: three regions is nothing next to a
-  // running corpus pass, and serializing keeps this from competing with it for
-  // the per-model stream slots.
+  // Each damaged region runs TWICE, and the pairing is the point.
+  //
+  // Production never shows a bare region: every one arrives with the accepted
+  // issues it was cut for, rendered under "PRE-EXISTING DEFECTS THIS EDIT
+  // TARGETED (these are NOT your findings)". That line is one of the three
+  // defenses against a prober reporting the old defect, and it is therefore
+  // also the likeliest thing to talk a prober out of reporting anything at all.
+  // A sensitivity result measured WITHOUT it would not describe the stage that
+  // actually runs.
+  //
+  // Sequential so this never competes with a running corpus pass for the
+  // per-model stream slots.
   /* oxlint-disable no-await-in-loop -- sequential by design, see comment */
   for (const probe of [
     {
@@ -162,14 +205,24 @@ async function main(): Promise<void> {
       region: CONTRADICTING_REGION,
       expectation: 'damage-meaning-inverted',
     },
-  ])
-    await probeOne(probe,);
+  ]) {
+    await probeOne({
+      ...probe,
+      issues: [],
+      condition: 'absent',
+    },);
+    await probeOne({
+      ...probe,
+      issues: [PRIOR_ISSUE,],
+      condition: 'shown',
+    },);
+  }
   /* oxlint-enable no-await-in-loop */
 
   console.log(
-    'NOTE a probe that reports no claims on the two damaged regions is deaf '
-      + 'rather than conservative, and a round of zeros from it would mean '
-      + 'nothing. Claims on the clean region mean the opposite problem.',
+    'NOTE compare each region\'s two lines. A stage that claims damage with '
+      + 'prior=absent and goes quiet with prior=shown is one the production '
+      + 'prompt silences, and its zeros in a real run would mean nothing.',
   );
 }
 
