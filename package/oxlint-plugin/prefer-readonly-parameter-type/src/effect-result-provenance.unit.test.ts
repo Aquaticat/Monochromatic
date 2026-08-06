@@ -52,6 +52,15 @@ function receiverHolding({
     receiver: [sentinel,],
     argumentsByMember: {
       at: [0,],
+      /* A predicate that accepts, so the probe measures what the member hands back on a
+       * hit. The miss path returns `undefined` for both, which is not the sentinel and
+       * would fail the comparison for a reason that says nothing about the relation. */
+      find: [function acceptsFirst(): boolean {
+        return true;
+      },],
+      findLast: [function acceptsLast(): boolean {
+        return true;
+      },],
       pop: [],
       shift: [],
     },

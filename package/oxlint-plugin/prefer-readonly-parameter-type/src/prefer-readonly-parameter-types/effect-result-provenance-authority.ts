@@ -78,6 +78,14 @@ const PROVENANCE_BY_OWNER: Readonly<
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
     },
+    find: {
+      relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
+    findLast: {
+      relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
     pop: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
@@ -89,6 +97,14 @@ const PROVENANCE_BY_OWNER: Readonly<
   },
   ReadonlyArray: {
     at: {
+      relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
+    find: {
+      relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
+    findLast: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
     },
@@ -133,7 +149,7 @@ export const RESULT_PROVENANCE_BY_INTERFACE: ReadonlyMap<
  * cannot pass unnoticed: the author must change a number in a second file, which is
  * the point at which the identity probe becomes unavoidable.
  */
-export const VERIFIED_RESULT_RELATION_COUNT = 6;
+export const VERIFIED_RESULT_RELATION_COUNT = 10;
 
 /**
  * Members deliberately absent because their result is a fresh container.
