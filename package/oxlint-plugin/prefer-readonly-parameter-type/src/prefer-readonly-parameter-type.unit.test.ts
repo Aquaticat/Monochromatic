@@ -162,11 +162,56 @@ children: [
       expect(messages.some(function catalogRemediationRemoved(message,): boolean {
         return message.includes('audited-call catalogue',);
       },),).toBe(false,);
+      /* Nine findings still say a contract cannot discharge an unresolved implementation, and
+       * two of them now say it in the collection message's words instead. Both sentences are
+       * counted, because the claim this pins is that no finding offers a contract as a way
+       * out, not which of the two texts carries it. Splitting the count would let a finding
+       * lose the claim entirely by moving between messages. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
-        );
+        )
+          || message.includes(
+            'ForeignHostCapability does not apply here.',
+          );
       },).length,).toBe(9,);
+    },
+  },),
+  it({
+    name: 'tells a collection finding what would resolve it, and nothing that would not',
+    fn: async () => {
+      /* The message issue #414 asked for, pinned by content rather than by count. Its
+       * complaint was that the four printed remediations named no change resolving a finding
+       * about an array method: an engine intrinsic has no repository-owned implementation to
+       * add to a tsconfig, and ordinary rows are not a runtime-owned host capability. A
+       * finding whose every cause is a collection member now gets a message whose every
+       * remediation is a measured behaviour of this rule. */
+      const messages = (await lintReadonly('readonly-result-provenance-invalid.ts',))
+        .map(function diagnosticMessage(diagnostic,): string {
+          return diagnostic.message;
+        },);
+      /**
+       * Findings routed to the collection message.
+       */
+      const collectionMessages = messages.filter(function isCollection(message,): boolean {
+        return message.includes('used as the object for these collection calls',);
+      },);
+      expect(collectionMessages.length > 0,).toBe(true,);
+      expect(collectionMessages.every(function namesEveryRemediation(message,): boolean {
+        return message.includes('an observer this repository owns',)
+          && message.includes('Keep the result inside this function.',)
+          && message.includes('Fold to a primitive',)
+          && message.includes('Iterate directly with for...of',);
+      },),).toBe(true,);
+      /* And none of the remediations that fit nothing here. The tsconfig one names a
+       * repository-owned implementation, which no intrinsic has, and the marker one names a
+       * host capability, which ordinary collection data is not. */
+      expect(collectionMessages.some(function offersTsconfig(message,): boolean {
+        return message.includes('nearest tsconfig.json',);
+      },),).toBe(false,);
+      expect(collectionMessages.every(function refusesTheMarker(message,): boolean {
+        return message.includes('ForeignHostCapability does not apply here.',);
+      },),).toBe(true,);
     },
   },),
   it({
@@ -213,8 +258,14 @@ children: [
        * author's stated intent rather than a weakening. No offer appeared with the report
        * removed, which is the check that matters: this file emits none. */
       expect(diagnostics.length,).toBe(3,);
+      /* Every one still says the input reaches something unproven, and the collection findings
+       * among them now say it in the collection message's words: `join` and a bare `toSorted()`
+       * supply no observer to analyze, so they keep reporting and get the text that names what
+       * would resolve them. Accepting either sentence keeps this about the claim rather than
+       * about which message carries it. */
       expect(diagnostics.every(function unresolvedBoundary(diagnostic,): boolean {
-        return diagnostic.message.includes('cannot inspect enough of those calls',);
+        return diagnostic.message.includes('cannot inspect enough of those calls',)
+          || diagnostic.message.includes('code this rule cannot follow',);
       },),).toBe(true,);
     },
   },),
@@ -330,9 +381,13 @@ children: [
        * returning the accumulator it was handed has result type `string[]` over
        * `string[][]`, a type reference whose only argument is primitive, which the
        * exposure test alone reads as a fresh container of primitives. */
+      /* Named as a collection call now, since every cause of this finding is one. The claim is
+       * unchanged and so is the finding: `reduce` has no result relation, the aliasing fallback
+       * still refuses it, and the parameter stays opaque. Only the sentence naming the calls
+       * moved, which is what issue #414 asked for. */
       expect(messages.some(function accumulatorStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "rows" is used as the object for these method calls: rows.reduce [',
+          'The function input named "rows" is used as the object for these collection calls: rows.reduce [',
         );
       },),).toBe(true,);
       /* An answered receiver claim must not carry the argument analysis with it.
@@ -364,7 +419,7 @@ children: [
        * read-only suggestion for an array whose element the body rewrites. */
       expect(messages.some(function observerResultStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "values" is used as the object for these method calls: values.find [',
+          'The function input named "values" is used as the object for these collection calls: values.find [',
         );
       },),).toBe(true,);
       /* `at` no longer reports, and that is the hole this rule was carrying rather than
@@ -475,7 +530,11 @@ children: [
        */
       function namingCall(call: string,): number {
         return messages.filter(function namesCall(message,): boolean {
-          return message.includes(`method calls: ${call} [`,);
+          /* Either phrasing, since a finding whose causes are all collection members now says
+           * so, and which of the two texts carries a named call is not what these counts are
+           * about. */
+          return message.includes(`method calls: ${call} [`,)
+            || message.includes(`collection calls: ${call} [`,);
         },).length;
       }
       /* Two `Map.get` receivers left, down from five, and which two is the whole point.
@@ -1383,7 +1442,10 @@ children: [
        *
        * Twenty-eight since the assignment group arrived, one for each of its two registry parameters. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
-        return message.includes('used as the object for these method calls',);
+        /* Both phrasings, so the count keeps measuring opacity reports rather than which
+         * message text a finding was routed to. */
+        return message.includes('used as the object for these method calls',)
+          || message.includes('used as the object for these collection calls',);
       },);
       expect(opacityMessages.length,).toBe(28,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {

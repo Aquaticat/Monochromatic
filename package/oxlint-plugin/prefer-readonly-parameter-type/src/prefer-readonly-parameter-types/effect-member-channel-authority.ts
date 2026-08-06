@@ -296,6 +296,25 @@ export const OBSERVER_BEARING_MEMBER_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Every default-library collection member name this rule recognises, for any purpose.
+ *
+ * Derived from the tables rather than written out, so it cannot drift from them. It exists
+ * for one consumer, the diagnostic, which needs to know whether a finding is entirely about
+ * collection calls in order to say something true about them: the remediations that fit an
+ * unresolved package call fit none of these, which is what issue #414 reports.
+ *
+ * Recognition only. Membership here proves nothing about a member's channel or its result,
+ * and no discharge may consult it.
+ */
+export const COLLECTION_MEMBER_NAMES: ReadonlySet<string> = new Set([
+  ...Object.values(CHANNELS_BY_OWNER,)
+    .flatMap(function ownerMembers(members,): readonly string[] {
+      return Object.keys(members,);
+    },),
+  ...OBSERVER_BEARING_MEMBER_NAMES,
+],);
+
+/**
  * Tests whether a member invokes a caller-supplied observer.
  *
  * @param memberName - Member being called.
