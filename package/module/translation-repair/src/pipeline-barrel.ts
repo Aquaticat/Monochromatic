@@ -132,6 +132,18 @@ export {
   selectPerEnvelope,
 } from './editor-ensemble.ts';
 export {
+  type AtomGateVerdict,
+  gateParagraphRewrite,
+  inspectParagraph,
+  type InspectionRejection,
+  type ParagraphInspection,
+} from './inspect-paragraph.ts';
+export {
+  type AtomKind,
+  type ProtectedAtom,
+  scanTextAtoms,
+} from './protected-atom.ts';
+export {
   type IneligibleReason,
   type ParagraphEligibility,
   selectRefinableParagraphs,
