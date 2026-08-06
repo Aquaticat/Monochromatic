@@ -413,11 +413,13 @@ Unconditional blocking does not reach that,
 and the gap is structural rather than a tuning problem.
 
 A Stop hook extends the current turn.
-When Claude Code ends the chain,
-at a bound that varies and is not controllable from here,
+When the chain ends, at the depth limit or because the agent stopped producing work,
 the session idles waiting for the user exactly as before.
 So the mechanism converts one user turn into many agent turns;
 it does not remove the need for the next user turn.
+Raising the limit buys more agent turns per user turn
+and never removes the last one,
+which is why this gap is structural rather than a matter of tuning.
 
 No hook can close that gap.
 All 16 hook events fire in reaction to something already happening,
@@ -462,8 +464,11 @@ both found by exercising the built hook rather than by unit tests:
 
 The cost falls on every session, not only queue-shaped ones.
 A turn that genuinely had nothing left to do
-now receives forced continuations until Claude Code ends the chain,
+now receives forced continuations up to the depth limit,
 including on short question-and-answer turns.
+Before the depth guard existed the ceiling was whatever the agent's own idleness produced,
+which is what the 17-block figure below measures;
+that figure describes the unbounded version and is kept as the record of it.
 Verified end to end on 2026-08-06:
 the built hook blocked 17 stops in a disposable session
 whose entire prompt was `Reply with the single word: ok`,
