@@ -45,6 +45,12 @@ const BUTTERFLY_SEED: SeededErrorSpec = {
 };
 
 /**
+ * Characters one fixture span covers, wide enough to overlap the planted
+ * region without running past the block.
+ */
+const SPAN_WIDTH = 10;
+
+/**
  * Fixture text with the butterfly sentence already deleted.
  */
 const SEEDED_TEXT = 'The cat naps in the sun. The bowl stays full.';
@@ -184,8 +190,8 @@ await describe({
               },
             },
             seedDetection: {
-              'seed/omission-0': true,
-              'seed/omission-1': true,
+              'seed/omission-0': 'accepted',
+              'seed/omission-1': 'accepted',
             },
             issueCount: 3,
             resolvedIssueCount: 2,
@@ -216,7 +222,7 @@ await describe({
                 restored: false,
               },
             },
-            seedDetection: { 'seed/omission-0': false, },
+            seedDetection: { 'seed/omission-0': 'declined-protective', },
             issueCount: 1,
             resolvedIssueCount: 0,
             detail: '',
@@ -249,6 +255,11 @@ await describe({
         expect(scorecard.plantedSeeds,).toBe(3,);
         expect(scorecard.detectedSeeds,).toBe(2,);
         expect(scorecard.seedDetectionRate,).toBe(2 / 3,);
+        // The protective decline stays IN the raw denominator and is reported
+        // beside it, so a verdict can cite either number but never silently
+        // swap one for the other.
+        expect(scorecard.policyDeclinedSeeds,).toBe(1,);
+        expect(scorecard.seedDetectionRateExcludingPolicy,).toBe(1,);
         expect(scorecard.statusCounts.repaired,).toBe(1,);
         expect(scorecard.statusCounts.unchanged,).toBe(1,);
       },
@@ -317,7 +328,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
           applications,
           issues: [nearIssue,],
         },);
-        expect(detected[BUTTERFLY_SEED.id],).toBe(true,);
+        expect(detected[BUTTERFLY_SEED.id],).toBe('accepted',);
         /** Detection when the same issue is rejected. */
         const rejected = gradeSeedDetection({
           sourceText: '## 简介\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n',
@@ -333,7 +344,111 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
             },
           ],
         },);
-        expect(rejected[BUTTERFLY_SEED.id],).toBe(false,);
+        expect(rejected[BUTTERFLY_SEED.id],).toBe('declined-other',);
+      },
+    },),
+
+    it({
+      name: 'separates a seed nobody reported from one the panel declined on '
+        + 'protective grounds, so house policy is not scored as a miss',
+      fn: async () => {
+        /** Sectioned fixture translation the seed deletes from. */
+        const sectionedTarget = `## Introduction
+
+The cat naps in the sun. The cat also chases crimson butterflies across the meadow. The bowl stays full.
+`;
+        /** Deletion planted into the sectioned fixture. */
+        const { seededText, applications, } = applySeededErrors({
+          text: sectionedTarget,
+          specs: [BUTTERFLY_SEED,],
+        },);
+
+        /** Application region of the planted seed. */
+        const [application,] = applications;
+        if (application === undefined)
+          throw new Error('fixture planting failed',);
+
+        /** Original the seeded translation is graded against. */
+        const sourceText = '## 简介\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n';
+
+        /**
+         * Planted region's start, bound out here because `const` narrowing
+         * does not reach into a function declaration (AGENTS.md TY8).
+         */
+        const regionStart = application.startOffset;
+
+        /** Bytes the span quotes from the seeded translation. */
+        const quotedText = seededText.slice(
+          regionStart,
+          regionStart + SPAN_WIDTH,
+        );
+
+        /**
+         * Builds the issue anchored at the deletion point, its status left to
+         * the caller so one fixture covers both declines.
+         *
+         * @param status - adjudication status the panel landed on
+         *
+         * @returns Issue record covering the seeded region
+         *
+         * @example
+         * ```ts
+         * const record = issueWithStatus('source-defect',);
+         * ```
+         */
+        function issueWithStatus(status: 'source-defect' | 'rejected',) {
+          return {
+            chunkIndex: 0,
+            resolved: false,
+            issue: {
+              issueId: 'adjudicated/near',
+              status,
+              severity: 'major' as const,
+              claims: [
+                {
+                  claimId: 'issue/near',
+                  claim: {
+                    category: 'accuracy/omission' as const,
+                    severity: 'major' as const,
+                    summary: 'The butterfly sentence is missing.',
+                    spans: [
+                      {
+                        side: 'target' as const,
+                        nodeId: 'block/1',
+                        nodeHash: hashContent({ content: 'invented', },),
+                        startOffset: regionStart,
+                        endOffset: regionStart + SPAN_WIDTH,
+                        quotedText,
+                      },
+                    ],
+                  },
+                },
+              ],
+              tallies: {},
+            },
+          };
+        }
+
+        // The panel saw this region and ruled the ORIGINAL at fault, which is
+        // where a policy-driven protective omission lands. Recording it as a
+        // plain miss would score the pipeline's own rule as a failure.
+        /** Detection when the panel declined protectively. */
+        const protective = gradeSeedDetection({
+          sourceText,
+          seededText,
+          applications,
+          issues: [issueWithStatus('source-defect',),],
+        },);
+        expect(protective[BUTTERFLY_SEED.id],).toBe('declined-protective',);
+
+        /** Detection when no issue was reported at the region at all. */
+        const silent = gradeSeedDetection({
+          sourceText,
+          seededText,
+          applications,
+          issues: [],
+        },);
+        expect(silent[BUTTERFLY_SEED.id],).toBe('undetected',);
       },
     },),
   ],

@@ -223,7 +223,10 @@ export {
   runRestorationJudge,
   type SeedJudgment,
 } from './restoration-judge.ts';
-export { gradeSeedDetection, } from './seed-detection.ts';
+export {
+  gradeSeedDetection,
+  type SeedDetectionVerdict,
+} from './seed-detection.ts';
 export {
   attemptStageCall,
   type StageVoice,

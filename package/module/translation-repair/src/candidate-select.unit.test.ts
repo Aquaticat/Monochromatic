@@ -26,6 +26,7 @@ import {
   selectChunkPatch,
   selectPerEnvelope,
   type SyntheticClient,
+  type SyntheticModelId,
 } from '../dist/final/neutral/index.mjs';
 
 /**
@@ -53,6 +54,7 @@ const ENVELOPE: EditableEnvelope = {
     + 'The cat hates butterflies.'.length,
   baseText: 'The cat hates butterflies.',
   baseHash: hashContent({ content: 'The cat hates butterflies.', },),
+  issueIds: ['adjudicated/butterflies',],
 };
 
 /**
@@ -139,7 +141,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
 /**
  * Whole roster selection draws judges from.
  */
-const JUDGES: readonly string[] = [
+const JUDGES: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.6-27B',
   'hf:moonshotai/Kimi-K3',
@@ -313,7 +315,7 @@ function candidateFor(
     modelId,
     newText,
   }: {
-    readonly modelId: string;
+    readonly modelId: SyntheticModelId;
     readonly newText: string;
   },
 ): EditorCandidate {

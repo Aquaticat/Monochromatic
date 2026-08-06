@@ -9,7 +9,10 @@ import {
   measureSeedRestoration,
   type SeedRestoration,
 } from './lexical-restoration.ts';
-import { gradeSeedDetection, } from './seed-detection.ts';
+import {
+  gradeSeedDetection,
+  type SeedDetectionVerdict,
+} from './seed-detection.ts';
 import {
   repairTranslation,
   type RepairStatus,
@@ -103,10 +106,10 @@ export type RepairAttemptRecord = {
   readonly seedGrades: Readonly<Record<string, SeedRestoration>>;
 
   /**
-   * Whether an ACCEPTED issue anchored at each planted seed's region,
-   * separating detection failures from repair failures.
+   * How each planted seed fared at detection, separating detection failures
+   * from repair failures and from panel declines made on protective grounds.
    */
-  readonly seedDetection: Readonly<Record<string, boolean>>;
+  readonly seedDetection: Readonly<Record<string, SeedDetectionVerdict>>;
 
   /**
    * Adjudicated issues the run reported.
@@ -166,6 +169,27 @@ export type RepairScorecard = {
    * every miss.
    */
   readonly seedDetectionRate: number;
+
+  /**
+   * Planted seeds the panel saw and declined on protective grounds.
+   *
+   * Not detection failures. The house policy instructs the pipeline never to
+   * restore a suicide method or a drug name and dosage even when the original
+   * states it plainly, while this benchmark plants seeds by deleting published
+   * English and scores restoration. Where the two meet, declining is the
+   * pipeline obeying its own rules, and counting it as a miss would score
+   * correct behavior as failure.
+   */
+  readonly policyDeclinedSeeds: number;
+
+  /**
+   * Detection rate over seeds the pipeline was actually free to repair.
+   *
+   * Published BESIDE {@link RepairScorecard.seedDetectionRate} rather than
+   * replacing it: both are true, and a verdict has to say which one it cites.
+   * They differ only when `policyDeclinedSeeds` is above zero.
+   */
+  readonly seedDetectionRateExcludingPolicy: number;
 
   /**
    * Seeds the bilingual judge ensemble reached a quorum verdict on,
@@ -267,8 +291,21 @@ export function computeRepairScorecard(
    * Seeds whose region carried an accepted issue.
    */
   const detected = detections.filter(function isDetected(verdict,) {
-    return verdict;
+    return verdict === 'accepted';
   },);
+
+  /**
+   * Seeds the panel saw and declined on protective grounds, which the house
+   * policy makes correct behavior rather than a miss.
+   */
+  const policyDeclined = detections.filter(function isProtective(verdict,) {
+    return verdict === 'declined-protective';
+  },);
+
+  /**
+   * Seeds the pipeline was free to repair at all.
+   */
+  const repairableSeeds = detections.length - policyDeclined.length;
 
   /**
    * Judge verdicts with a quorum ruling across dispatched attempts.
@@ -311,6 +348,10 @@ export function computeRepairScorecard(
     plantedSeeds: detections.length,
     detectedSeeds: detected.length,
     seedDetectionRate: detections.length === 0 ? 0 : detected.length / detections.length,
+    policyDeclinedSeeds: policyDeclined.length,
+    seedDetectionRateExcludingPolicy: repairableSeeds === 0
+      ? 0
+      : detected.length / repairableSeeds,
     judgedSeeds: judgments.length,
     restoredSeeds: judgeRestored.length,
     partialSeeds: judgeLenient.length - judgeRestored.length,

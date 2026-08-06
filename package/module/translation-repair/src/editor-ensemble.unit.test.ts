@@ -28,6 +28,7 @@ import {
   type PatchOutcome,
   pickFallbackPatch,
   producerModelIds,
+  type SyntheticModelId,
 } from '../dist/final/neutral/index.mjs';
 
 /**
@@ -45,6 +46,7 @@ const ENVELOPE: EditableEnvelope = {
     + 'The cat hates butterflies.'.length,
   baseText: 'The cat hates butterflies.',
   baseHash: hashContent({ content: 'The cat hates butterflies.', },),
+  issueIds: ['adjudicated/butterflies',],
 };
 
 /**
@@ -67,7 +69,7 @@ function candidateFor(
     modelId,
     newText,
   }: {
-    readonly modelId: string;
+    readonly modelId: SyntheticModelId;
     readonly newText: string;
   },
 ): EditorCandidate {
