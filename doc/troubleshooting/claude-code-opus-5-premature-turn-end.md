@@ -192,12 +192,19 @@ Both runs behaved identically:
 
 - The CLI dispatched the Stop hook 9 times, then ended the turn
   despite the ninth response being another block.
-  Claude Code therefore imposes its own ceiling,
-  and an unconditional blocker cannot loop indefinitely.
 - `stop_hook_active` was `false` on the first dispatch and `true` on all 8 after.
   It never cleared.
   Honoring it therefore caps forced continuation at exactly one,
   and ignoring it yields up to 9.
+
+A third run, of the shipped handler rather than a minimal probe,
+ended after 17 dispatches, all of them forced continuations.
+So 9 is not a Claude Code constant.
+What the three runs establish is weaker and still sufficient:
+the CLI ends the chain on its own in every run,
+so an unconditional blocker does not loop indefinitely,
+but the bound varies and the rule governing it is not established.
+Do not rely on a specific number.
 
 The `Stop` input carried exactly these keys:
 `background_tasks`, `cwd`, `hook_event_name`, `last_assistant_message`,
@@ -297,14 +304,19 @@ while forced continuation re-arms on every stop.
 A trailing question keeps precedence over it.
 `MONOCHROMATIC_STOP_AUTO_CONTINUE` set to `off`, `0`, `false`, or `no` disables it.
 
-The measured ceiling is what makes this safe:
-Claude Code ends the turn after 9 dispatches regardless,
+Claude Code ending the chain on its own is what makes this safe,
 so no counter in this repository is load-bearing for termination.
+That safety rests on termination being reliable, not on any particular bound,
+which is why nothing here hard-codes 9 or 17.
 
 The cost is unmeasured and falls on every session, not only queue-shaped ones.
 A turn that genuinely had nothing left to do
-now receives up to 9 forced continuations,
-including short question-and-answer turns.
+now receives forced continuations until Claude Code ends the chain,
+observed as high as 17,
+including on short question-and-answer turns.
+Verified end to end on 2026-08-06:
+the built hook blocked 17 stops in a disposable session
+whose entire prompt was `Reply with the single word: ok`.
 
 ## Remediation options considered
 

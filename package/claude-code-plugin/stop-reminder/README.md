@@ -56,10 +56,17 @@ and to route its question through `AskUserQuestion`
 in the same reason would be contradictory.
 
 **Termination** comes from Claude Code,
- not from this hook.
-Measured on two disposable sessions against Claude Code 2.1.220,
- a hook that blocks unconditionally is dispatched nine times,
- after which the CLI ends the turn regardless of the ninth block.
+ not from this hook,
+ which counts nothing.
+Measured on three disposable sessions against Claude Code 2.1.220,
+ the CLI ended the chain on its own every time,
+ but not at a fixed count:
+ two runs of a minimal always-blocking hook ended after nine dispatches,
+ and a run of this handler ended after seventeen.
+Termination is reliable;
+ the bound is not a constant,
+ and the rule governing it is not established.
+
 `stop_hook_active` is false on the first dispatch and true on every one after,
  never clearing,
  so honoring it caps forced continuation at one.
