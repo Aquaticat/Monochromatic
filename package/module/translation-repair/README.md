@@ -67,6 +67,19 @@ const result = await repairTranslation({
   and degradation findings.
   When no candidate demonstrably beats the input,
   the input is returned unchanged with its unresolved issues.
+- Every issue record also carries WHAT WAS WRITTEN for it,
+  so repair quality can be judged apart from whether the issue was real.
+  `repairRegions` records replaced regions rather than per-issue repairs,
+  because envelopes merge overlapping and touching evidence,
+  so one replacement can serve several accepted issues and fix only some;
+  each region names every issue it serves.
+  `repairDisposition` says what became of that repair in the returned document
+  (`shipped`, `not-selected`, `withdrawn`, or `no-region`),
+  and is decided after document-level blocking and the naturalness lane,
+  neither of which any single slice can see.
+  `refined` marks a slice the naturalness lane rewrote afterwards,
+  which is where the recorded replacement stops being the returned wording,
+  and `finalSliceText` carries that wording exactly there.
 - Translation policy files (register, terminology, tense discipline)
   are deliberately open;
   the system functions without them using conservative defaults.
@@ -93,6 +106,17 @@ const result = await repairTranslation({
 - **Refusals are handled reactively, never predicted.**
   Content is never pre-classified for sensitivity;
   refusals reroute across model families and feed a measured scorecard.
+- **Detection and repair are graded by separate instruments.**
+  `formatGradingSheet` asks only whether an accepted issue is a real defect and
+  shows no correction, because seeing one makes an alleged defect look more
+  real and would move that answer.
+  `formatRepairSheet` asks, on its own sheet and after the first is done,
+  whether the returned wording fixes it.
+  Keeping them apart is what lets one round's precision be compared with
+  another's rather than with a changed instrument.
+  Model and corpus text reaches those sheets fenced
+  (`fenceForMarkdown`), since a replacement is arbitrary text crossing into
+  Markdown grammar and can otherwise invent a heading or a grade box.
 
 ## Status
 
