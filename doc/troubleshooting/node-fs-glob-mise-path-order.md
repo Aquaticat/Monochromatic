@@ -135,6 +135,38 @@ For example,
 `package/pi-plugin/advisor/node_modules/.bin` win for `pi` and
 `package/cli/git-clone-size/node_modules/.bin` win for `tsc`.
 
+## Regeneration on a partially installed workspace deletes entries
+
+Membership is installation-dependent,
+ so `mise run file-enforcer` on a workspace where some packages have no
+materialized `node_modules/.bin` writes a shorter `_.path` list than the committed one.
+The diff reads as
+a deliberate removal and is not one.
+
+Observed 2026-08-06 while regenerating `CLAUDE.md` after an `AGENTS.md` edit.
+That run also rewrote
+`mise.toml`,
+ dropping seven entries including `package/git-policy/cli/node_modules/.bin` and
+`package/config/oxlint/node_modules/.bin`,
+ on a machine where those directories were absent.
+
+This is the one place `WC2` in `AGENTS.md`,
+ "managed -> edit source, run file-enforcer, commit output
+as-is",
+ needs a qualifier.
+Commit the generated file the edit was for.
+Check `git diff` for the generated
+`mise.toml` separately,
+ and restore it with `git checkout --` when the only change is `_.path` membership,
+because those entries belong to whoever has the packages installed rather than to whoever last ran the
+generator.
+
+Staging explicit scoped pathspecs,
+ which `CLG` already requires,
+ is what keeps this from landing by
+accident:
+ a pathspec naming `AGENTS.md` and `CLAUDE.md` cannot carry a `mise.toml` rewrite with it.
+
 ## What does not work
 
 - Re-running an unsorted generator on one machine does not prove portability.
