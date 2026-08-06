@@ -89,16 +89,26 @@ function countMarker(
  * choosing issues per request so slices script differently
  *
  * @param checkerVerdict - verdict every checker casts on every issue
+ *
+ * @param proberVerdict - verdict every prober casts on every replaced region
+ *
+ * @param proberEvidence - wording every prober quotes as introduced damage;
+ * the screen decides what it proves, so a quote lifted from the replacement
+ * corroborates while one lifted from the baseline is contradicted
  */
 function scriptedClient(
   {
     criticIssues,
     checkerVerdict = 'fixed',
+    proberVerdict = 'no-introduced-defect-found',
+    proberEvidence = '',
   }: {
     readonly criticIssues:
       | readonly Record<string, unknown>[]
       | ((request: ChatJsonRequest<unknown>,) => readonly Record<string, unknown>[]);
     readonly checkerVerdict?: string;
+    readonly proberVerdict?: string;
+    readonly proberEvidence?: string;
   },
 ): SyntheticClient {
   return {
@@ -155,6 +165,22 @@ function scriptedClient(
               return {
                 issue,
                 verdict: checkerVerdict,
+              };
+            },),
+        }
+        : stage === 'introduced_defect_report'
+        ? {
+          checks: oneBasedNumbers({
+            count: countMarker({ request, marker: '\nREGION ', },),
+          },)
+            .map(function toCheck(region,) {
+              return {
+                region,
+                verdict: proberVerdict,
+                category: proberEvidence === '' ? '' : 'accuracy/mistranslation',
+                severity: proberEvidence === '' ? '' : 'major',
+                evidence: proberEvidence,
+                reason: proberEvidence === '' ? '' : 'absent before the edit',
               };
             },),
         }
@@ -257,6 +283,99 @@ await describe({
               return (record.repairDisposition === 'shipped') && record.resolved;
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'carries the probe tally onto the records of the issues whose '
+        + 'regions were probed, so a graded item and the probe\'s opinion of '
+        + 'that same item join up in the artifact',
+      fn: async () => {
+        const result = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /** Record of the issue an applied operation served. */
+        const shipped = result.issues
+          .find(function wasShipped(record,) {
+            return record.repairDisposition === 'shipped';
+          },);
+        expect(shipped?.introducedDefects,).toHaveLength(1,);
+        expect(shipped?.introducedDefects?.[0]?.noneFound,)
+          .toBe(MODELS.checkerModelIds
+            .length,);
+        expect(shipped?.introducedDefects?.[0]?.corroborated,).toBe(0,);
+        expect(shipped?.introducedDefects?.[0]?.envelopeId,)
+          .toBe(shipped?.repairRegions[0]
+            ?.envelopeId,);
+      },
+    },),
+
+    it({
+      name: 'ships the repair anyway when every prober corroborates an '
+        + 'introduced defect, because the probe is shadow-mode telemetry and '
+        + 'nothing has yet measured how often it is wrong',
+      fn: async () => {
+        // The evidence quotes the replacement the editor stub writes, so the
+        // deterministic screen corroborates it: absent from the baseline,
+        // present in the new text. This is the strongest claim the probe can
+        // produce, and it must still not decide anything.
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: [MISTRANSLATION_ISSUE,],
+            proberVerdict: 'introduced-defect',
+            proberEvidence: 'The cat also loves chasing butterflies.',
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /** Record of the issue an applied operation served. */
+        const shipped = result.issues
+          .find(function wasShipped(record,) {
+            return record.repairDisposition === 'shipped';
+          },);
+        expect(result.status,).toBe('repaired',);
+        expect(result.repairedText,).toContain('The cat also loves chasing butterflies.',);
+        expect(shipped?.introducedDefects?.[0]?.corroborated,)
+          .toBe(MODELS.checkerModelIds
+            .length,);
+        expect(shipped?.introducedDefects?.[0]?.contradicted,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'records a quote lifted from the baseline as contradicted rather '
+        + 'than corroborated, since replacing text cannot introduce wording '
+        + 'the text already carried',
+      fn: async () => {
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: [MISTRANSLATION_ISSUE,],
+            proberVerdict: 'introduced-defect',
+            proberEvidence: 'The cat',
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /** Record of the issue an applied operation served. */
+        const shipped = result.issues
+          .find(function wasShipped(record,) {
+            return record.repairDisposition === 'shipped';
+          },);
+        expect(shipped?.introducedDefects?.[0]?.contradicted,)
+          .toBe(MODELS.checkerModelIds
+            .length,);
+        expect(shipped?.introducedDefects?.[0]?.corroborated,).toBe(0,);
       },
     },),
 
