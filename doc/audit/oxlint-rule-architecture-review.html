@@ -5,19 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Oxlint rule architecture audit</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module">
-      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-      const preferredColorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-      mermaid.initialize({
-        startOnLoad: true,
-        theme: preferredColorScheme.matches ? 'dark' : 'neutral',
-        securityLevel: 'loose',
-        flowchart: { curve: 'basis', htmlLabels: true },
-      });
-      preferredColorScheme.addEventListener('change', function reloadForMermaidTheme() {
-        window.location.reload();
-      });
-    </script>
     <style>
       :root {
         --color-page: #fafaf9;
@@ -299,6 +286,25 @@
         }
       }
     </style>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      const preferredColorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+      const documentStyles = window.getComputedStyle(document.documentElement);
+      const darkThemeVariables = {
+        edgeLabelBackground: documentStyles.getPropertyValue('--color-dark-surface-2').trim(),
+        textColor: documentStyles.getPropertyValue('--color-dark-text').trim(),
+      };
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: preferredColorScheme.matches ? 'dark' : 'neutral',
+        themeVariables: preferredColorScheme.matches ? darkThemeVariables : {},
+        securityLevel: 'loose',
+        flowchart: { curve: 'basis', htmlLabels: true },
+      });
+      preferredColorScheme.addEventListener('change', function reloadForMermaidTheme() {
+        window.location.reload();
+      });
+    </script>
   </head>
   <body class="font-sans text-slate-900">
     <main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12">
