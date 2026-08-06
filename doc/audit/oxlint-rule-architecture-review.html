@@ -477,7 +477,7 @@ flowchart TB
   HOST --> RULES["enabled named rules"]
   RULES --> DIAGNOSTICS["diagnostics tied to source text"]
   classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
-  classDef adapter fill:#ecfdf5,stroke:#059669,stroke-width:2px;
+  classDef adapter fill:#ecfdf5,color:#0f172a,stroke:#059669,stroke-width:2px;
   class CONFIG deep;
   class DEV,BUILT adapter;
             </pre>
@@ -843,7 +843,7 @@ flowchart TB
   F3 --> INDEX
   FN --> INDEX
   INDEX --> CONFIG["18 config entries"]
-  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  classDef leak fill:#fff1f2,color:#0f172a,stroke:#e11d48,stroke-width:2px;
   class F1,F2,F3,FN,INDEX,CONFIG leak;
                 </pre>
               </div>
@@ -1023,7 +1023,7 @@ flowchart TB
   DEV -. repeated knowledge .-> BUILT
   BUILT -. repeated knowledge .-> INPUT
   INPUT --> FILE["physical sidecar entry"]
-  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  classDef leak fill:#fff1f2,color:#0f172a,stroke:#e11d48,stroke-width:2px;
   class DEV,BUILT,INPUT leak;
                 </pre>
               </div>
@@ -1041,7 +1041,7 @@ flowchart TB
   DEV --> OXLINT["Oxlint"]
   FILE --> OXLINT
   classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
-  classDef adapter fill:#ecfdf5,stroke:#059669,stroke-width:2px;
+  classDef adapter fill:#ecfdf5,color:#0f172a,stroke:#059669,stroke-width:2px;
   class REG deep;
   class DEV,BUILT adapter;
                 </pre>
@@ -1196,7 +1196,7 @@ flowchart LR
   ENTRY --> OWNER["owning package lookup"]
   ENTRY --> CLASSIFY["import classifier"]
   RULE["1 rule-level suite"] --> PLUGIN["default plugin"]
-  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  classDef leak fill:#fff1f2,color:#0f172a,stroke:#e11d48,stroke-width:2px;
   class ENTRY,GLOB,MANIFEST,OWNER,CLASSIFY leak;
                 </pre>
               </div>
@@ -1361,7 +1361,7 @@ flowchart TB
   ENTRY --> CACHE["cache stats and clear hooks"]
   ENTRY --> AUTH["authority constants"]
   ENTRY --> HELPERS["slot and path helpers"]
-  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  classDef leak fill:#fff1f2,color:#0f172a,stroke:#e11d48,stroke-width:2px;
   class ENTRY,SUMMARIES,CACHE,AUTH,HELPERS leak;
                 </pre>
               </div>
