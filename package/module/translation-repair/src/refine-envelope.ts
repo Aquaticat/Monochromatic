@@ -49,6 +49,39 @@ const DEFINITION_KINDS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Collects the link and footnote definition lines of one document.
+ *
+ * Taken from the whole assembled `T1` rather than from one slice: a paragraph
+ * may reference a footnote defined in a different slice, and a reference whose
+ * definition is out of scope does not parse as a reference at all.
+ *
+ * @param document - parsed document to read definitions from
+ *
+ * @returns Definition lines joined as the parser would see them
+ *
+ * @example
+ * ```ts
+ * const definitions = collectDefinitions({ document, },);
+ * ```
+ */
+export function collectDefinitions(
+  {
+    document,
+  }: {
+    readonly document: RepairDocument;
+  },
+): string {
+  return document.nodes
+    .filter(function isDefinition(node,) {
+      return DEFINITION_KINDS.has(node.kind,);
+    },)
+    .map(function toText(node,) {
+      return node.text;
+    },)
+    .join('\n',);
+}
+
+/**
  * Derives the refinable envelopes of one repaired slice.
  *
  * @param document - REPAIRED slice, parsed after accuracy edits landed
@@ -72,19 +105,8 @@ export function deriveRefinableEnvelopes(
    */
   const verdicts = selectRefinableParagraphs({ document, },);
 
-  /**
-   * Definition blocks of this slice, joined as the parser would see them.
-   */
-  const definitions = document.nodes
-    .filter(function isDefinition(node,) {
-      return DEFINITION_KINDS.has(node.kind,);
-    },)
-    .map(function toText(node,) {
-      return node.text;
-    },)
-    .join('\n',);
   return {
-    definitions,
+    definitions: collectDefinitions({ document, },),
     envelopes: verdicts
       .flatMap(function toEnvelope(verdict,): readonly EditableEnvelope[] {
         if (!verdict.eligible)

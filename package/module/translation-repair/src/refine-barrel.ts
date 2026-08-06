@@ -4,6 +4,7 @@
 // pipeline barrel so each stays under the file-size budget.
 
 export {
+  collectDefinitions,
   deriveRefinableEnvelopes,
   type RefinableSlice,
 } from './refine-envelope.ts';
@@ -40,5 +41,11 @@ export {
   type ParagraphEligibility,
   selectRefinableParagraphs,
 } from './refine-eligibility.ts';
+
+export {
+  type RefinePhaseResult,
+  runRefinePhase,
+} from './refine-phase.ts';
+export { spliceSlices, } from './splice-slices.ts';
 
 //endregion Refinement barrel

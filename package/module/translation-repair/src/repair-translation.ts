@@ -21,7 +21,9 @@ import {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
 } from './slice-pair.ts';
+import { runRefinePhase, } from './refine-phase.ts';
 import { repairChunk, } from './repair-chunk.ts';
+import { spliceSlices, } from './splice-slices.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
@@ -405,60 +407,52 @@ export async function repairTranslation(
   }
 
   /**
-   * Changed chunks in descending document order,
-   * so splicing one never shifts the offsets of those still pending.
+   * Naturalness lane over every settled slice.
+   *
+   * Runs HERE, after every accuracy outcome settled and after the
+   * non-translation dominance decision, and before anything below reads
+   * `changed`. A blocked document already returned above, so no rewriter call
+   * is ever spent on one, and a refinement-only change reaches
+   * `changedOutcomes` and `anyChanged` because those are computed from these
+   * final outcomes rather than from the accuracy ones.
    */
-  const changedOutcomes = outcomes
-    .filter(function isChanged(outcome,) {
-      return outcome.changed;
-    },)
-    .toSorted(function byOffsetDescending(
-      left,
-      right,
-    ) {
-      /**
-       * Target slices of both outcomes for their offsets.
-       */
-      const leftChunk = slices[left.chunkIndex]
-        ?.target;
-
-      /**
-       * Right-side slice.
-       */
-      const rightChunk = slices[right.chunkIndex]
-        ?.target;
-      return (rightChunk?.startOffset ?? 0) - (leftChunk?.startOffset ?? 0);
-    },);
+  const phase = await runRefinePhase({
+    client,
+    targetText,
+    slices,
+    outcomes,
+    models,
+    ...identityFragment,
+    signal,
+    perCallTimeoutMs,
+    l: rl,
+  },);
 
   /**
-   * Translation rebuilt chunk by chunk.
+   * Final per-slice outcomes, accuracy plus any refinement that survived.
    */
-  const repairedText = changedOutcomes.reduce(
-    function spliceChunk(
-      text,
-      outcome,
-    ): string {
-      /**
-       * Target slice being replaced, present by construction.
-       */
-      const chunk = slices[outcome.chunkIndex]
-        ?.target;
-      if (chunk === undefined)
-        throw new Error(`repair lost slice ${String(outcome.chunkIndex,)}`,);
-      return text.slice(
-        0,
-        chunk.startOffset,
-      )
-        + outcome.repairedText
-        + text.slice(chunk.endOffset,);
-    },
+  const finalOutcomes = phase.outcomes;
+
+  /**
+   * Slices whose shipped text differs from the input.
+   */
+  const changedOutcomes = finalOutcomes.filter(function isChanged(outcome,) {
+    return outcome.changed;
+  },);
+
+  /**
+   * Translation rebuilt slice by slice.
+   */
+  const repairedText = spliceSlices({
     targetText,
-  );
+    slices,
+    outcomes: finalOutcomes,
+  },);
 
   /**
    * Whole-document issue report.
    */
-  const issues = outcomes.flatMap(function toRecords(outcome,) {
+  const issues = finalOutcomes.flatMap(function toRecords(outcome,) {
     return outcome.issues
       .map(function toRecord(issue,): RepairIssueRecord {
       return {
@@ -475,9 +469,10 @@ export async function repairTranslation(
    */
   const findings = [
     ...alignmentFindings,
-    ...outcomes.flatMap(function toFindings(outcome,) {
+    ...finalOutcomes.flatMap(function toFindings(outcome,) {
       return outcome.findings;
     },),
+    ...phase.findings,
   ];
 
   /**
@@ -487,7 +482,7 @@ export async function repairTranslation(
   rl.info(
     `repair ${anyChanged ? 'shipped' : 'kept input'}: ${
       String(changedOutcomes.length,)
-    }/${String(outcomes.length,)} chunks changed, ${String(issues.length,)} issues`,
+    }/${String(finalOutcomes.length,)} chunks changed, ${String(issues.length,)} issues`,
   );
 
   return {
