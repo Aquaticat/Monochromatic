@@ -142,7 +142,8 @@ if (!willDelegateToPacquet && !opts2.trustLockfile) {
 
 ### Why an older cached verdict still verifies current content
 
-Source audit used pnpm tag `v11.15.1`, commit `331c26aa4bb8c12a2ce64ca989a9e3a73b571340`.
+Source audit used pnpm tag `v11.15.1`,
+commit `331c26aa4bb8c12a2ce64ca989a9e3a73b571340`.
 `pnpm11/installing/deps-installer/src/install/verifyLockfileResolutionsCache.ts:17-32`
 defines parsed lockfile content as primary key and path metadata as shortcut:
 
