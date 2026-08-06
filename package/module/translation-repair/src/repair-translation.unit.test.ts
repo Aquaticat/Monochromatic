@@ -314,12 +314,18 @@ await describe({
           .find(function wasShipped(record,) {
             return record.repairDisposition === 'shipped';
           },);
-        expect(shipped?.introducedDefects,).toHaveLength(1,);
-        expect(shipped?.introducedDefects?.[0]?.noneFound,)
+        expect(shipped?.introducedDefects?.regions,).toHaveLength(1,);
+        expect(shipped?.introducedDefects?.configuredProbers,)
           .toBe(MODELS.checkerModelIds
             .length,);
-        expect(shipped?.introducedDefects?.[0]?.corroborated,).toBe(0,);
-        expect(shipped?.introducedDefects?.[0]?.envelopeId,)
+        expect(shipped?.introducedDefects?.heardProbers,)
+          .toBe(MODELS.checkerModelIds
+            .length,);
+        expect(shipped?.introducedDefects?.regions[0]?.noneFound,)
+          .toBe(MODELS.checkerModelIds
+            .length,);
+        expect(shipped?.introducedDefects?.regions[0]?.corroborated,).toBe(0,);
+        expect(shipped?.introducedDefects?.regions[0]?.envelopeId,)
           .toBe(shipped?.repairRegions[0]
             ?.envelopeId,);
       },
@@ -353,10 +359,10 @@ await describe({
           },);
         expect(result.status,).toBe('repaired',);
         expect(result.repairedText,).toContain('The cat also loves chasing butterflies.',);
-        expect(shipped?.introducedDefects?.[0]?.corroborated,)
+        expect(shipped?.introducedDefects?.regions[0]?.corroborated,)
           .toBe(MODELS.checkerModelIds
             .length,);
-        expect(shipped?.introducedDefects?.[0]?.contradicted,).toBe(0,);
+        expect(shipped?.introducedDefects?.regions[0]?.contradicted,).toBe(0,);
       },
     },),
 
@@ -382,10 +388,10 @@ await describe({
           .find(function wasShipped(record,) {
             return record.repairDisposition === 'shipped';
           },);
-        expect(shipped?.introducedDefects?.[0]?.contradicted,)
+        expect(shipped?.introducedDefects?.regions[0]?.contradicted,)
           .toBe(MODELS.checkerModelIds
             .length,);
-        expect(shipped?.introducedDefects?.[0]?.corroborated,).toBe(0,);
+        expect(shipped?.introducedDefects?.regions[0]?.corroborated,).toBe(0,);
       },
     },),
 

@@ -61,7 +61,7 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * `ChunkRepairOutcome` changes shape OR an existing field changes meaning; the
  * structural guard in the cache store catches only the first of those.
  */
-const SLICE_CACHE_VERSION = 4;
+const SLICE_CACHE_VERSION = 5;
 
 /**
  * Completion status of one repair run;

@@ -32,5 +32,12 @@ export {
   longestFenceRun,
   selectFence,
 } from './prompt-fence.ts';
+export {
+  corroboratedCount,
+  judgeRegionProbe,
+  type ProbeTelemetrySummary,
+  type RegionProbeVerdict,
+  summarizeProbeTelemetry,
+} from './probe-telemetry.ts';
 
 //endregion Probe barrel

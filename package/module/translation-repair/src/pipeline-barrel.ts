@@ -236,6 +236,7 @@ export {
 export {
   buildIssueRecords,
   type RepairDisposition,
+  type IssueProbeReading,
   type RepairIssueRecord,
 } from './repair-record.ts';
 export {

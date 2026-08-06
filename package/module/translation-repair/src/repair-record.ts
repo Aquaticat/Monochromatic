@@ -60,6 +60,31 @@ export type RepairDisposition =
   | 'no-region';
 
 /**
+ * Probe result as one issue's record carries it.
+ *
+ * @example
+ * ```ts
+ * const reading: IssueProbeReading = { heardProbers: 3, configuredProbers: 3, regions: [], };
+ * ```
+ */
+export type IssueProbeReading = {
+  /**
+   * Probers whose reply arrived and validated for this issue's chunk.
+   */
+  readonly heardProbers: number;
+
+  /**
+   * Probers asked, which is the denominator a majority rule needs.
+   */
+  readonly configuredProbers: number;
+
+  /**
+   * Screened tallies for the regions serving this issue.
+   */
+  readonly regions: readonly RegionDefectTally[];
+};
+
+/**
  * One adjudicated issue in the whole-document report.
  *
  * @example
@@ -104,15 +129,21 @@ export type RepairIssueRecord = {
   readonly repairDisposition: RepairDisposition;
 
   /**
-   * Shadow-mode probe tallies for the regions serving this issue, absent where
+   * Shadow-mode probe result for the regions serving this issue, absent where
    * the chunk was never probed.
    *
    * Carried per issue rather than per chunk so a graded sheet item and the
    * probe's opinion of that same item sit side by side in the artifact, which
    * is what a calibration comparing the two has to join on. Nothing reads it to
    * decide what ships.
+   *
+   * The roster sizes ride along with the tallies rather than being left on the
+   * chunk, because without them an artifact cannot answer whether a MAJORITY
+   * agreed. Heard voices are recoverable from a tally by summing its verdicts,
+   * but the configured roster is not recoverable from anything, and two of three
+   * heard is different evidence from two of six configured.
    */
-  readonly introducedDefects?: readonly RegionDefectTally[];
+  readonly introducedDefects?: IssueProbeReading;
 
   /**
    * Whether the naturalness lane rewrote this issue's slice afterwards, making
@@ -240,7 +271,17 @@ export function buildIssueRecords(
           refined: outcome.refined,
           ...(probed.length === 0
             ? {}
-            : { introducedDefects: probed, }),
+            : {
+              introducedDefects: {
+                heardProbers: outcome.introducedDefects
+                  ?.heardProbers
+                  ?? 0,
+                configuredProbers: outcome.introducedDefects
+                  ?.configuredProbers
+                  ?? 0,
+                regions: probed,
+              },
+            }),
           ...(outcome.refined
             ? { finalSliceText: outcome.repairedText, }
             : {}),
