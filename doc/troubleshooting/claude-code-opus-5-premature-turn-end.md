@@ -395,6 +395,38 @@ while forced continuation re-arms on every stop.
 A trailing question keeps precedence over it.
 `MONOCHROMATIC_STOP_AUTO_CONTINUE` set to `off`, `0`, `false`, or `no` disables it.
 
+### What this does not achieve
+
+The stated goal was that auto-prompting on every stop would eventually finish the work.
+Unconditional blocking does not reach that,
+and the gap is structural rather than a tuning problem.
+
+A Stop hook extends the current turn.
+When Claude Code ends the chain,
+at a bound that varies and is not controllable from here,
+the session idles waiting for the user exactly as before.
+So the mechanism converts one user turn into many agent turns;
+it does not remove the need for the next user turn.
+
+No hook can close that gap.
+All 16 hook events fire in reaction to something already happening,
+and every output field they carry
+(`decision`, `reason`, `additionalContext`, `systemMessage`)
+modifies the turn in progress.
+None starts a turn.
+The `prompt` field in `UserPromptSubmit` is input describing a prompt the user already submitted,
+not an output that creates one.
+
+Closing the gap therefore needs a driver outside the hook system,
+something that submits a fresh prompt once the chain ends.
+The `loop` skill is the in-harness form of that.
+It was rejected as model-mediated,
+which is accurate about its invocation:
+the model decides to start it.
+Its subsequent firings are scheduled by the harness rather than chosen by the model,
+so the rejection applies to starting the loop and not to sustaining it.
+That distinction is recorded because it decides whether the option is actually foreclosed.
+
 Claude Code ending the chain on its own is what makes this safe,
 so no counter in this repository is load-bearing for termination.
 That safety rests on termination being reliable, not on any particular bound,
