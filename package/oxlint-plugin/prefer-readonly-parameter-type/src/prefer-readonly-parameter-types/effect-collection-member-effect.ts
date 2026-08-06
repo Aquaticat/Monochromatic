@@ -22,6 +22,7 @@ import {
 } from './effect-default-library-readonly-view.ts';
 import { rootParameterOrigins, } from './effect-call-resolution.ts';
 import {
+  callResultElementReceiver,
   callResultReceiver,
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
@@ -130,16 +131,33 @@ function receiverClaimAnswerable({
    * body there is nothing to scan, so nothing can be shown non-escaping. */
   if (body === undefined)
     return false;
+  /* Asked once, before either relation, because the escape test is relation-agnostic: it
+   * follows this call's result to whatever binding holds it and answers about every holder,
+   * whichever relation the result satisfies. */
+  if (resultEscapesCallable({
+    project,
+    body,
+    call,
+  },))
+    return false;
+  /* Either relation licenses the discharge on that same condition. A direct result is the
+   * receiver's own value and a container result holds them, and once provenance tracks
+   * either, the opacity report is redundant exactly while every use stays inside this
+   * callable. The element step is what makes the container half true: a write through
+   * `copy[0]`, a destructured element, an iterated one or a spread one is attributed to the
+   * receiver's parameter, so this trades a report for an attribution rather than for
+   * silence. Landing it while those attributions were empty would produce a false offer,
+   * which is what `effect-summaries.unit.test.ts` pins. */
   return (callResultReceiver({
       project,
       checker,
       call,
     },) !== RESULT_NOT_RECEIVER_STATE)
-    && (!resultEscapesCallable({
+    || (callResultElementReceiver({
       project,
-      body,
+      checker,
       call,
-    },));
+    },) !== RESULT_NOT_RECEIVER_STATE);
 }
 
 /**

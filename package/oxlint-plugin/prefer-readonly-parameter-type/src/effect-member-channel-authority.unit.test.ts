@@ -8,6 +8,7 @@ import {
 import {
   ITERATOR_MEMBER_NAMES,
   MEMBER_CHANNEL_RECEIVER_INDEX,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
   MEMBER_CHANNELS_BY_INTERFACE,
   memberInvokesObserver,
   OBSERVER_BEARING_MEMBER_NAMES,
@@ -442,9 +443,15 @@ await describe({
               memberName,
             },)
               .filter(function outsideChannel(hit,): boolean {
-                return (channel === MEMBER_CHANNEL_RECEIVER_INDEX)
-                  ? !RECEIVER_INDEX_HITS.has(hit,)
-                  : true;
+                if (channel === MEMBER_CHANNEL_RECEIVER_INDEX)
+                  return !RECEIVER_INDEX_HITS.has(hit,);
+                /* The species channel admits everything own-index access admits and the
+                 * species hook besides, and nothing else. Element coercion and a property
+                 * read still fail a member claiming it, which is what keeps this wider
+                 * channel from becoming a way to list anything. */
+                if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES)
+                  return (hit !== 'species') && (!RECEIVER_INDEX_HITS.has(hit,));
+                return true;
               },);
             if (disallowed.length > 0)
               escaped.push(`${ownerName}.${memberName} reached ${disallowed.join(', ',)}`,);
@@ -465,6 +472,17 @@ await describe({
          * report a clean run for every member, and the table would look verified
          * while proving nothing. Each names an excluded member and the channel that
          * excludes it. */
+        /* The species control moved off `slice` when the stated trust baseline admitted
+         * that channel and `slice` joined the table. A control has to name a member the
+         * authority still excludes, or it stops proving the instrumentation is live and
+         * starts restating an entry. `concat` consults species and stays excluded, for
+         * reasons of its own recorded beside `FRESH_CONTAINER_MEMBER_NAMES`. */
+        expect(reachedHooks({
+          ownerName: 'Array',
+          memberName: 'concat',
+        },).includes('species',),).toBe(true,);
+        /* And the listed member reaches it too, which is the claim rather than the
+         * control: the channel is admitted, not avoided. */
         expect(reachedHooks({
           ownerName: 'Array',
           memberName: 'slice',

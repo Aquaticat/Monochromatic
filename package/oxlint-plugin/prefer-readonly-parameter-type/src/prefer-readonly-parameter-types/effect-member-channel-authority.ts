@@ -52,6 +52,28 @@ export const MEMBER_CHANNEL_RECEIVER_INDEX: unique symbol = Symbol(
 );
 
 /**
+ * Member reaching own-index access and the species construction channel.
+ *
+ * `Array.prototype.slice` builds its result through `ArraySpeciesCreate`, which reads
+ * `constructor[Symbol.species]` and calls what it returns. That is caller-selected code,
+ * and the stated trust baseline in
+ * `doc/decision/prefer-readonly-member-channel-authority.md` admits it: an own
+ * `constructor` and an own `Symbol.iterator` are both ordinary data properties, so
+ * refusing species while `for...of` and spread are accepted drew a line no principle
+ * supports.
+ *
+ * Kept distinct from the own-index channel rather than merged into it, because what each
+ * probe must prove differs. A member here is permitted to reach the species hook and
+ * nothing wider, so the probe still fails it for element coercion or a property read.
+ *
+ * This says nothing about what the result carries. `effect-result-provenance-authority.ts`
+ * answers that separately, and a container result stays tracked through its own relation.
+ */
+export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES: unique symbol = Symbol(
+  'collection member reaches own-index access and the species construction channel',
+);
+
+/**
  * Member whose channel no probe has established, so it stays failing closed.
  *
  * Absence from the table is never a claim that a member dispatches, only that
@@ -66,7 +88,8 @@ export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
  */
 export type MemberUserCodeChannel =
   | typeof MEMBER_CHANNEL_INTERNAL_SLOT
-  | typeof MEMBER_CHANNEL_RECEIVER_INDEX;
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES;
 
 /**
  * Default-library collection members whose user-code channel is verified, by owner.
@@ -98,6 +121,7 @@ const CHANNELS_BY_OWNER: Readonly<
 > = {
   Array: {
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
+    slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
     indexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
     lastIndexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -117,6 +141,7 @@ const CHANNELS_BY_OWNER: Readonly<
   },
   ReadonlyArray: {
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
+    slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
     indexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
     lastIndexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -188,7 +213,7 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 51;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 53;
 
 /**
  * Members returning an iterator, whose entries claim creation and drainage together.

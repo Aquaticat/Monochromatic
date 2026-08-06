@@ -427,14 +427,14 @@ children: [
        * earns the offer its sibling assertion below names. Their callers, which do write
        * through the returned holder, are contracted and report nothing.
        *
-       * The container cases added the last seven, all reports rather than offers, and all of
-       * them the receiver opacity of an undischarged `slice` or `filter`. That opacity is
-       * what withholds an offer from a parameter written through a fresh container, and the
-       * element step is what attributes the write beneath it: every one of these parameters
-       * is now recorded as mutated in `effect-summaries.unit.test.ts` while still reporting
-       * here. Discharging the container members is what turns these seven into silence, and
-       * the attribution is what makes that safe. */
-      expect(messages.length,).toBe(15,);
+       * The container cases added seven reports, and discharging `slice` removed two of them
+       * and added one offer, which is that increment's whole visible effect here. What went
+       * silent went silent because the write beneath it is attributed instead: every
+       * container parameter is recorded as mutated in `effect-summaries.unit.test.ts`, and
+       * `containerGrowthEffect` writes nothing at all, which is why it earns the projection
+       * offer the enumeration below names. The `filter` cases keep reporting, since that
+       * member's observer obligation is still gated by the type-shape result test. */
+      expect(messages.length,).toBe(13,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat
@@ -512,10 +512,16 @@ children: [
        * contract-name defect. `row` is deliberately absent from this filter: the offers
        * this fixture still emits name a parameter called `row`, and they are pinned as a
        * set immediately below rather than folded into a claim about lookup receivers. */
+      /* `rows` is matched on the writable-property form alone, which is the shape the
+       * `at`-result defect produced. The projection form is a different claim and a correct
+       * one: `containerGrowthEffect` copies its parameter and writes only the copy, so a
+       * `readonly` projection applies and still type-checks, since `ReadonlyArray.slice`
+       * returns a mutable array. Matching the name alone would have made this assertion
+       * reject the first true offer the container discharge produced. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
           || message.includes('"records" should be readonly',)
-          || message.includes('"rows" should be readonly',);
+          || message.includes('"rows" should be readonly: property',);
       },),).toEqual([],);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
@@ -537,12 +543,17 @@ children: [
        * write nothing, so a read-only projection applies to each. They are listed here in
        * full rather than counted, so a future change that turns one of them into a defect
        * has to edit this list and say why. */
+      /* The container discharge added the projection offer, and it is the first offer in this
+       * fixture that exists because a member was discharged rather than despite it.
+       * `containerGrowthEffect` slices its parameter and pushes onto the copy, so nothing
+       * reaches the caller's array and `readonly LabelledRow[]` applies. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
       },)
         .toSorted(),).toEqual([
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "held" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection.',
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },

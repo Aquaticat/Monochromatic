@@ -13,6 +13,7 @@ import {
   rootParameterOrigins,
 } from './effect-call-resolution.ts';
 import { effectCallName, } from './effect-call-name.ts';
+import { expressionElementOrigins, } from './effect-element-origin.ts';
 import {
   memberCallReceiver,
   NO_MEMBER_RECEIVER,
@@ -98,8 +99,14 @@ export function recordOpaqueBoundary({
   /**
    * Caller parameters the unresolved receiver can hold.
    */
+  /* Through elements, because an unresolved call on a fresh container reaches the caller's own
+   * values exactly as one on the parameter does. `tree.children.slice().filter(observer)`
+   * leaves `filter` underived, and asking only the value question about its receiver found no
+   * origin at all once `slice` discharged, so a report that had named `tree` named nothing.
+   * Measured on `filterForeignFixtureTree` and `filterAliasedForeignFixtureTree`, both of
+   * which lost their finding entirely before this. */
   const receiverOrigins: SlotOrigins = receiverClaimOutstanding
-    ? rootParameterOrigins({
+    ? expressionElementOrigins({
       project,
       bindingOriginBySymbolId,
       node: callReceiver,
