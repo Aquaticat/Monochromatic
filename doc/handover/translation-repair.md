@@ -4031,3 +4031,89 @@ Output carries counts and sheet POSITIONS only,
 never a quote, a claim, or a grader's rationale,
 so it is safe to paste into a verdict or a message
 even though the sheets hold unlicensed corpus text.
+
+### Policy change: land certainly-good pipeline fixes immediately (user, 2026-08-06)
+
+User instruction, verbatim intent:
+land all certainly-good pipeline changes immediately and restart the runs as
+many times as needed;
+there is no need to save tokens on this provider.
+
+This REVERSES the sequencing used earlier in the session,
+where pipeline fixes were held so the round-three measurement would run against
+frozen code.
+Restarting is cheap;
+measuring a pipeline you already know is wrong is not.
+
+"Certainly-good" still does work in that sentence.
+Landed under it:
+
+-    Task 52, credit only served issues.
+    The defect is indefensible rather than debatable:
+    a patch could win on credit for an issue nothing touched.
+-    Task 56, cache key covers run shape.
+    Same character:
+    a resumed slice could carry another roster's outcome silently.
+
+NOT landed under it,
+because each is a design choice rather than a defect with one right answer:
+
+-    Task 53's REBUILD half.
+    Renaming `regressionCount` and `changedCharCount` to what they measure is
+    safe;
+    building the measurements their names promise changes what selection ranks
+    by and needs a decision.
+-    Task 31, judge crosscheck.
+    A new stage with its own cost and failure modes.
+-    Task 54.
+    Purely additive telemetry, so it is safe, but it was not needed to unblock
+    the run and can land beside 53's rename.
+
+### Round three, run 002
+
+Run 001 was stopped after one entry and three slices.
+Its slice cache was DELETED rather than kept:
+the pipeline changed under it,
+and although the new run-shape key would have missed those entries anyway,
+leaving them invites the exact confusion the key exists to prevent.
+Artifacts were still empty, so nothing settled was lost.
+
+`pass8-run-002.log` is the live run.
+Stop condition remains fifteen settled entries.
+
+### Findings from run 001 that survive the restart
+
+REPAIR PROVENANCE WORKS END TO END ON LIVE DATA.
+Three real slice outcomes yielded seven accepted issues,
+all `shipped`,
+all carrying regions.
+Rendering both sheets from them showed:
+seven grade boxes and seven headings OUTSIDE fenced blocks,
+no replacement text outside a fence,
+and no replacement text anywhere in the detection sheet.
+
+READING THE SHEET AS A GRADER FOUND WHAT COUNTS COULD NOT.
+The SHARED line printed five full 64-character issue ids,
+about a third of a kilobyte of hash a grader cannot look up,
+burying the one fact they can act on:
+the same before and after text is about to repeat under other items.
+It now names those items by SHEET POSITION,
+and says plainly when a sibling was not drawn into the sample.
+Structural checks over that same file all passed,
+so nothing but reading it would have caught this.
+Generate a sheet and READ it before every round.
+
+MEASURED THROUGHPUT, corrected.
+An earlier claim that the run was slower than round two was WRONG:
+it divided wall clock from PASS start,
+which includes corpus fetch and setup,
+rather than from when `repairTranslation` began.
+Measured from the log timestamps on a large-band entry:
+7 slices declared,
+finished slices at 1.52 and 7.35 minutes,
+mean 4.44 min/slice,
+against round two's 8.56 min/slice for large.
+Per-slice speed is fine.
+The genuinely new cost is the naturalness lane,
+which did not exist when round two's 36 min/entry was measured
+and adds a rewriter call, a judge round, and a recheck per eligible slice.
