@@ -32,4 +32,4 @@ jobs:
       run: pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
 
     - name: Check final newlines in isolated repository
-      run: node package/git-policy/cli/src/trust/fixtures/final-newline-workflow.ts
+      run: node package/git-policy/cli/src/trust/fixture/final-newline-workflow.ts
