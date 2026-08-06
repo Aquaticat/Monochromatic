@@ -112,10 +112,50 @@ async function probeCorpusEntries(): Promise<void> {
           .status
           === 'accepted';
       },);
+      /**
+       * Accepted issues counted by what became of their repair, so a probe
+       * shows whether repair provenance is actually recorded rather than only
+       * whether issues were found. Sorted so two probe lines compare directly.
+       */
+      const dispositions = Object.entries(
+        accepted.reduce(
+          function tally(
+            counts: Record<string, number>,
+            record,
+          ) {
+            counts[record.repairDisposition] = (counts[record.repairDisposition] ?? 0)
+              + 1;
+            return counts;
+          },
+          {},
+        ),
+      )
+        .toSorted(function byName(
+          left,
+          right,
+        ) {
+          return left[0]
+            .localeCompare(right[0],);
+        },)
+        .map(function toPair(entry,) {
+          return `${entry[0]}:${String(entry[1],)}`;
+        },)
+        .join(',',);
+
       console.log(
         `PROBE ${id} status=${result.status} issues=${String(result.issues
-          .length,)} accepted=${String(accepted.length,)} findings=${String(result.findings
-            .length,)} ms=${String(Date.now() - t0,)}`,
+          .length,)} accepted=${String(accepted.length,)} repairs=${
+          dispositions === '' ? 'none' : dispositions
+        } refinedIssues=${
+          String(
+            result.issues
+              .filter(function wasRefined(record,) {
+                return record.refined;
+              },)
+              .length,
+          )
+        } findings=${String(result.findings
+          .length,)} ms=${String(Date.now() - t0,)}`,
       );
     }
     catch (error) {
