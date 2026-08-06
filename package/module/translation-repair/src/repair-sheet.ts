@@ -1,3 +1,4 @@
+import { fenceForMarkdown, } from './markdown-fence.ts';
 import type {
   GradableRepair,
   GradableRepairRegion,
@@ -74,8 +75,18 @@ function renderRegion(
     },);
 
   return [
-    `- before: ${region.before === '' ? '(nothing: text was inserted here)' : `“${region.before}”`}`,
-    `- after: “${region.editorAfter}”`,
+    ...(region.before === ''
+      ? ['- before: (nothing; this is an insertion point, a real place in the translation with no text at it)',]
+      : [
+        '- before, the text that was replaced:',
+        fenceForMarkdown({ text: region.before, },),
+      ]),
+    ...(region.editorAfter === ''
+      ? ['- after: (nothing; the text above was DELETED rather than rewritten)',]
+      : [
+        '- after, what the pipeline wrote:',
+        fenceForMarkdown({ text: region.editorAfter, },),
+      ]),
     ...(siblings.length === 0
       ? []
       : [
@@ -130,17 +141,59 @@ function renderRepair(
           issueId,
         },);
       },),
-    ...(gradable && repair.refined
+    // The naturalness lane rewrites whole slices AFTER the accuracy stage, and
+    // it does so whether or not that stage's patch was selected. So a rewrite
+    // can reach the reader for an issue whose targeted repair did not, and
+    // saying only "nothing reached the reader" would be true of the repair and
+    // false of the text. The final wording is shown either way; only the grade
+    // box depends on whether a targeted repair shipped.
+    ...(repair.refined
       ? [
-        '- NOTE: a later naturalness pass rewrote this paragraph, so the wording above is not final.',
-        `- final paragraph as returned: “${repair.finalSliceText ?? ''}”`,
-        '- grade the FINAL wording, using the edit above only to see what was attempted.',
+        gradable
+          ? '- NOTE: a later naturalness pass rewrote this slice, so the wording above is not final.'
+          : '- NOTE: no targeted repair shipped, but a later naturalness pass rewrote this slice anyway, so the returned text is not the original either.',
+        '- the slice as actually returned:',
+        fenceForMarkdown({ text: repair.finalSliceText ?? '', },),
+        ...(gradable
+          ? ['- grade the RETURNED wording, using the edit above only to see what was attempted.',]
+          : []),
       ]
       : []),
     ...(gradable
       ? ['- repair grade: [ ]  (Y = fully fixes this defect and breaks nothing nearby · N = it does not)',]
       : ['- not graded: no targeted repair reached the reader, which counts against coverage, not against repair quality',]),
   ].join('\n',);
+}
+
+/**
+ * Joins quotes onto one line, or says why there are none.
+ *
+ * Quotes are short anchored spans rather than whole slices, so they stay inline
+ * rather than fenced; newlines are flattened so one quote cannot break the
+ * bullet it sits in.
+ *
+ * @param quotes - distinct quotes for one side
+ *
+ * @returns Display line
+ *
+ * @example
+ * ```ts
+ * const line = quoteList({ quotes: candidate.sourceQuotes, },);
+ * ```
+ */
+function quoteList(
+  { quotes, }: { readonly quotes: readonly string[]; },
+): string {
+  if (quotes.length === 0)
+    return '(nothing quoted on this side)';
+  return quotes
+    .map(function quoted(text,) {
+      return `“${text.replaceAll(
+        '\n',
+        ' ',
+      )}”`;
+    },)
+    .join(' · ',);
 }
 
 /**
@@ -178,16 +231,12 @@ function renderCandidate(
   return [
     `### ${String(index,)}. ${candidate.entryId} · ${candidate.band}`,
     `- claim: ${candidate.summary}`,
+    // The original is what "does it fix it" is answered against, so the zh
+    // evidence belongs on this sheet too rather than only on the detection
+    // sheet the grader has by then set aside.
+    `- zh original says: ${quoteList({ quotes: candidate.sourceQuotes, },)}`,
     `- original translation said: ${
-      candidate.targetQuotes
-        .length
-        === 0
-        ? '(nothing quoted; the claim is that something was missing)'
-        : candidate.targetQuotes
-          .map(function quoted(text,) {
-            return `“${text}”`;
-          },)
-          .join(' · ',)
+      quoteList({ quotes: candidate.targetQuotes, },)
     }`,
     body,
   ].join('\n',);

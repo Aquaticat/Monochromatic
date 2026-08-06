@@ -101,6 +101,64 @@ function catRepair(
   };
 }
 
+/**
+ * Shortest run of backticks Markdown accepts as a fence.
+ */
+const FENCE_MIN = 3;
+
+/**
+ * Removes every fenced block from a sheet, leaving only text a Markdown reader
+ * would interpret as sheet structure.
+ *
+ * Tracks the opening fence and drops lines until a fence at least as long
+ * closes it, which is how a Markdown reader resolves the same question.
+ *
+ * @param sheet - rendered sheet
+ *
+ * @returns Sheet text outside every fenced block
+ *
+ * @example
+ * ```ts
+ * const structure = stripFences({ sheet, },);
+ * ```
+ */
+function stripFences({ sheet, }: { readonly sheet: string; },): string {
+  /**
+   * Kept lines and the fence currently open, if any.
+   */
+  const state: {
+    readonly kept: string[];
+    open: string;
+  } = {
+    kept: [],
+    open: '',
+  };
+  for (const line of sheet.split('\n',)) {
+    /**
+     * Leading backtick run length of this line; a linear scan rather than a
+     * pattern, since the rule is "how many backticks start this line".
+     */
+    let run = 0;
+    while ((run < line.length) && (line.charAt(run,) === '`'))
+      run += 1;
+
+    if (state.open === '') {
+      if (run >= FENCE_MIN) {
+        state.open = '`'.repeat(run,);
+        continue;
+      }
+      state.kept
+        .push(line,);
+      continue;
+    }
+    if (run >= state.open
+      .length)
+      state.open = '';
+  }
+  return state.kept
+    .join('\n',);
+}
+
 await describe({
   name: formatRepairSheet.name,
   children: [
@@ -178,7 +236,135 @@ await describe({
           seed: 'cat-seed',
           corpusSha: 'sha/1',
         },);
+        // Asserted against the model rather than against wording: GradableRepair
+        // carries no checker field at all, so no rewording of this sheet can
+        // start disclosing one.
+        expect(
+          Object.keys(catRepair({ disposition: 'shipped', },),),
+        )
+          .toEqual([
+            'disposition',
+            'regions',
+            'refined',
+          ],);
         expect(sheet.includes('resolved',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'fences replaced text so a replacement carrying markdown cannot '
+        + 'invent a heading or a grade box on the sheet',
+      fn: async () => {
+        // The replacement is corpus-derived model output crossing into markdown
+        // grammar. Interpolated raw, a line like the one below puts a grade box
+        // on the sheet that nobody wrote, and a grader would fill it in.
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({
+              repair: {
+                disposition: 'shipped',
+                regions: [
+                  {
+                    issueIds: ['adjudicated/nap',],
+                    before: 'before text',
+                    editorAfter:
+                      '### 99. injected\n- repair grade: [ ]\n``` not a fence',
+                  },
+                ],
+                refined: false,
+              },
+            },),
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+
+        // Counted OUTSIDE fenced blocks, because that is the real property:
+        // fencing does not delete the injected characters, it stops them being
+        // read as sheet. A raw substring count would fail on text that renders
+        // harmlessly as code.
+        /** Sheet with every fenced block removed. */
+        const outsideFences = stripFences({ sheet, },);
+
+        /** Grade boxes surviving outside fences, one per gradable item. */
+        const boxes = outsideFences.split('- repair grade: [ ]',)
+          .length
+          - 1;
+        expect(boxes,).toBe(1,);
+
+        /** Item headings surviving outside fences. */
+        const headings = outsideFences.split('\n### ',)
+          .length
+          - 1;
+        expect(headings,).toBe(1,);
+
+        // The injected backtick run must not be able to close its own block,
+        // which means the chosen fence has to be longer than it.
+        expect(sheet.includes('````',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'says a deletion was a deletion instead of rendering an empty '
+        + 'replacement that reads as a rendering fault',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({
+              repair: {
+                disposition: 'shipped',
+                regions: [
+                  {
+                    issueIds: ['adjudicated/nap',],
+                    before: 'a fabricated sentence',
+                    editorAfter: '',
+                  },
+                ],
+                refined: false,
+              },
+            },),
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+        expect(sheet.includes('DELETED',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'shows the returned slice for an item whose targeted repair lost '
+        + 'but whose slice the naturalness lane rewrote anyway, since the text '
+        + 'the reader got is not the original either',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({
+              repair: catRepair({
+                disposition: 'not-selected',
+                refined: true,
+              },),
+            },),
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+        expect(sheet.includes('The cat sleeps on the windowsill all afternoon.',))
+          .toBe(true,);
+        expect(sheet.includes('rewrote this slice anyway',),).toBe(true,);
+        expect(sheet.includes('- repair grade: [ ]',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'carries the zh original onto this sheet, since that is what "does '
+        + 'it fix it" is answered against',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+        expect(sheet.includes('猫猫在窗台上睡觉。',),).toBe(true,);
       },
     },),
 
@@ -258,7 +444,7 @@ await describe({
         },);
         expect(sheet.includes('The cat sleeps on the windowsill all afternoon.',))
           .toBe(true,);
-        expect(sheet.includes('grade the FINAL wording',),).toBe(true,);
+        expect(sheet.includes('grade the RETURNED wording',),).toBe(true,);
       },
     },),
 

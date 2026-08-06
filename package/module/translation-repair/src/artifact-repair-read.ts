@@ -27,10 +27,25 @@ import type {
 // `no-region` means the run measured that no targeted repair exists.
 
 /**
- * Field naming what became of an issue's repair; its absence is what marks an
- * artifact as predating repair recording.
+ * Field naming what became of an issue's repair.
  */
 const DISPOSITION_FIELD = 'repairDisposition';
+
+/**
+ * Every field a recorded repair contributes to an issue record.
+ *
+ * A record is treated as predating repair recording only when it carries NONE
+ * of them. Keying that judgement on the disposition alone would read a record
+ * carrying regions but no disposition as a legacy record, which is the one way
+ * a genuinely malformed repair could slip past a parser whose whole doctrine is
+ * that malformed measurements are surfaced rather than skipped.
+ */
+const REPAIR_FIELDS: readonly string[] = [
+  DISPOSITION_FIELD,
+  'repairRegions',
+  'refined',
+  'finalSliceText',
+];
 
 /**
  * Parses one replaced region.
@@ -147,7 +162,9 @@ export function parseRecordRepair(
     readonly path: string;
   },
 ): RecordRepairReading {
-  if (!(DISPOSITION_FIELD in record))
+  if (!REPAIR_FIELDS.some(function present(field,) {
+    return field in record;
+  },))
     return { kind: 'unrecorded', };
 
   /**

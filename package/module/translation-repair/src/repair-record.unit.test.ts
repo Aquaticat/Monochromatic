@@ -20,9 +20,23 @@ import {
 } from '../dist/final/neutral/index.mjs';
 
 /**
- * Repaired slice text, used as the final wording when refinement fired.
+ * Slice text after the naturalness lane rewrote it.
  */
 const REFINED_TEXT = 'The cat naps in the sun and chases butterflies.';
+
+/**
+ * Slice text a shipped, unrefined repair returns: it CONTAINS the region's
+ * replacement verbatim, which is the property the conditional `finalSliceText`
+ * rests on. Using the refined wording here regardless would let the conditional
+ * test pass while the fixture modelled a state that cannot occur.
+ */
+const PATCHED_TEXT = 'The cat is asleep. She wakes at dusk.';
+
+/**
+ * Replacement the fixture region writes, and a substring of
+ * {@link PATCHED_TEXT}.
+ */
+const REPLACEMENT = 'The cat is asleep.';
 
 /**
  * Builds one accepted issue with no claims, since nothing under test reads
@@ -66,7 +80,7 @@ function catRegion(
     envelopeId: `envelope/${issueIds.join('-',)}`,
     issueIds,
     before: 'The cat is doing the sleeping.',
-    editorAfter: 'The cat is asleep.',
+    editorAfter: REPLACEMENT,
   };
 }
 
@@ -107,7 +121,15 @@ function catOutcome(
 ): ChunkRepairOutcome {
   return {
     chunkIndex: 3,
-    repairedText: REFINED_TEXT,
+    // Modelled the way the pipeline actually assembles it: a refined slice
+    // returns the rewritten text, a shipped unrefined slice returns the patched
+    // text carrying the replacement verbatim, and an unselected unrefined slice
+    // returns the original.
+    repairedText: refined
+      ? REFINED_TEXT
+      : accuracyPatchSelected
+      ? PATCHED_TEXT
+      : 'The cat is doing the sleeping. She wakes at dusk.',
     changed: accuracyPatchSelected || refined,
     issues,
     resolvedIssueIds,
@@ -225,6 +247,60 @@ await describe({
         },);
         expect(untouched[0]?.refined,).toBe(false,);
         expect(untouched[0]?.finalSliceText,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'omits the final slice text only where the replacement really is '
+        + 'verbatim in the returned slice, which is the claim that justifies '
+        + 'omitting it',
+      fn: async () => {
+        /** Shipped, unrefined: the returned slice must carry the replacement. */
+        const shipped = buildIssueRecords({
+          outcomes: [
+            catOutcome({
+              issues: [catIssue({ issueId: 'adjudicated/nap', },),],
+              repairRegions: [catRegion({ issueIds: ['adjudicated/nap',], },),],
+            },),
+          ],
+          blocked: false,
+        },);
+        expect(shipped[0]?.repairDisposition,).toBe('shipped',);
+        expect(shipped[0]?.finalSliceText,).toBeUndefined();
+        expect(
+          PATCHED_TEXT.includes(
+            shipped[0]
+              ?.repairRegions[0]
+              ?.editorAfter
+              ?? 'absent',
+          ),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'still carries the final slice text when the naturalness lane '
+        + 'rewrote a slice whose accuracy patch was NOT selected, since the '
+        + 'returned text changed even though no targeted repair shipped',
+      fn: async () => {
+        // The two stages decide independently: refinement runs whatever the
+        // accuracy selection did, so this pairing is reachable and is the case
+        // where "nothing reached the reader" is true of the repair and false of
+        // the text.
+        const records = buildIssueRecords({
+          outcomes: [
+            catOutcome({
+              issues: [catIssue({ issueId: 'adjudicated/nap', },),],
+              repairRegions: [catRegion({ issueIds: ['adjudicated/nap',], },),],
+              accuracyPatchSelected: false,
+              refined: true,
+            },),
+          ],
+          blocked: false,
+        },);
+        expect(records[0]?.repairDisposition,).toBe('not-selected',);
+        expect(records[0]?.refined,).toBe(true,);
+        expect(records[0]?.finalSliceText,).toBe(REFINED_TEXT,);
       },
     },),
 

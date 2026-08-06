@@ -33,7 +33,12 @@ export type RepairDisposition =
   | 'shipped'
   /**
    * A replaced region served this issue, but the unchanged text won its
-   * slice's selection, so nothing reached the reader.
+   * slice's selection, so that repair reached no reader.
+   *
+   * Says nothing about the returned TEXT: the naturalness lane runs after the
+   * accuracy stage regardless of what that stage's selection decided, so a
+   * slice can still have been rewritten. {@link RepairIssueRecord.refined} is
+   * what answers that, and the repair sheet discloses it here too.
    */
   | 'not-selected'
   /**
@@ -47,6 +52,9 @@ export type RepairDisposition =
    * cut from its evidence, or its envelope received no operation that survived
    * the apply gate. The two are merged because both mean the same thing to a
    * measurement, that no targeted repair exists to grade.
+   *
+   * Also says nothing about the returned text, for the reason given on
+   * {@link RepairDisposition} `not-selected`.
    */
   | 'no-region';
 

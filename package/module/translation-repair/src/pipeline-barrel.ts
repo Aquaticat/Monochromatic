@@ -178,6 +178,10 @@ export {
 export { formatGradingSheet, } from './grading-sheet.ts';
 export { formatRepairSheet, } from './repair-sheet.ts';
 export {
+  fenceForMarkdown,
+  longestBacktickRun,
+} from './markdown-fence.ts';
+export {
   collectIdentityLines,
   type DeclaredIdentity,
   extractDeclaredIdentity,

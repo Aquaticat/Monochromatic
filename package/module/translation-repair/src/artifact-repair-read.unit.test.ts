@@ -90,6 +90,30 @@ await describe({
     },),
 
     it({
+      name: 'refuses a PARTIALLY recorded repair rather than reading it as a '
+        + 'legacy record, since a half-written repair is a malformed '
+        + 'measurement and silently dropping it shortens the denominator',
+      fn: async () => {
+        /** Failure raised by the record carrying regions but no disposition. */
+        let caught: unknown;
+        try {
+          /** Record with the disposition removed and everything else kept. */
+          const partial = catRecord({},);
+          delete partial.repairDisposition;
+          parseRecordRepair({
+            record: partial,
+            path: 'Kitten issues[0]',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(ArtifactParseError,);
+        expect((caught as Error).message,).toContain('repairDisposition',);
+      },
+    },),
+
+    it({
       name: 'reads the final slice text when refinement made the recorded '
         + 'replacement stale',
       fn: async () => {

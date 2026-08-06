@@ -50,9 +50,15 @@ export const DEFAULT_PRECISION_BAR = 0.9;
  * would be scored partly on its own calibration set and would read better
  * than the pipeline is. The suffix records which measurement round a seed
  * belongs to; the first round's seed was `milestone-three-precision`, whose
- * fifty grades produced the identity, alignment, and policy fixes.
+ * fifty grades produced the identity, alignment, and policy fixes, and
+ * `-round-two` produced the roster, editor-ensemble, and house-policy changes.
+ *
+ * A new seed does NOT guarantee that no already-graded issue is drawn again: a
+ * different shuffle can reselect one. It is the population that mostly changes
+ * between rounds, since round three draws from artifacts produced by a fresh
+ * pass, and issue ids are content-derived rather than stable across runs.
  */
-export const DEFAULT_SAMPLE_SEED = 'milestone-three-precision-round-two';
+export const DEFAULT_SAMPLE_SEED = 'milestone-three-precision-round-three';
 
 /**
  * One of the three page-size bands the corpus stratifies into.

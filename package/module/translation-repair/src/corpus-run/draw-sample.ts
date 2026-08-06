@@ -242,23 +242,42 @@ async function drawGradingSample(): Promise<void> {
   },);
 
   /**
-   * Rendered grading sheet, with a preliminary banner unless this is final.
+   * Sampled items carrying no recorded repair at all, which is what a draw over
+   * pre-recording artifacts looks like.
    */
-  const sheet = `${
-    isFinal
-      ? ''
-      : '> PRELIMINARY draw over whatever has settled so far; the large band is '
-        + 'not yet filled, so this is for validating the sheet, NOT for final '
-        + 'grading. The final draw shifts as the pool grows.\n\n'
-  }${
-    formatGradingSheet({
-      sample,
-      seed: DEFAULT_SAMPLE_SEED,
-      bar: DEFAULT_PRECISION_BAR,
-      corpusSha: RUN_CORPUS_PIN.commitSha,
-    },)
-  }`;
+  const unrecorded = sample.filter(function lacksRepair(candidate,) {
+    return candidate.repair === undefined;
+  },)
+    .length;
 
+  // A gate sheet whose items cannot state what was written is not a repair
+  // measurement, and the failure is silent: the sheet renders, every item reads
+  // NOT GRADABLE, and the round produces a repair number over whatever fraction
+  // happened to be recorded. corpus-pass skips any entry whose artifact file
+  // already exists, so this is reachable simply by drawing against a directory
+  // that still holds an earlier round's artifacts.
+  if (isFinal && (unrecorded > 0))
+    throw new Error(
+      `refusing a final draw: ${String(unrecorded,)} of ${
+        String(sample.length,)
+      } sampled issues carry no recorded repair, so repair quality cannot be `
+        + `measured over this sample. Those artifacts predate repair recording; `
+        + `move them aside and rerun the pass into a fresh artifacts directory.`,
+    );
+
+  /**
+   * Banner marking a scratch draw, prepended to BOTH sheets so neither can be
+   * mistaken for the gate sheet on its contents alone.
+   */
+  const banner = isFinal
+    ? ''
+    : '> PRELIMINARY draw over whatever has settled so far; the large band is '
+      + 'not yet filled, so this is for validating the sheets, NOT for final '
+      + 'grading. The final draw shifts as the pool grows.\n\n';
+
+  // Both paths resolve BEFORE either file is written. Writing the detection
+  // sheet first would leave it in place, and protected against overwrite, when
+  // the repair path turns out to be refused.
   /**
    * Output path, named after the draw seed so one round cannot target another
    * round's sheet, and refused outright when a final sheet is already there.
@@ -268,17 +287,13 @@ async function drawGradingSample(): Promise<void> {
     seed: DEFAULT_SAMPLE_SEED,
     isFinal,
   },);
-  await writeFile(
-    outPath,
-    sheet,
-  );
 
   /**
-   * Companion repair sheet over the SAME sample in the same order. Written as
-   * its own file rather than as extra boxes on the detection sheet: a visible
-   * correction makes an alleged defect look more real, so folding the two
-   * together would change what the detection number measures and break
-   * comparison with the rounds already graded.
+   * Companion repair sheet path. The repair sheet is its own file rather than
+   * extra boxes on the detection sheet: a visible correction makes an alleged
+   * defect look more real, so folding the two together would change what the
+   * detection number measures and break comparison with the rounds already
+   * graded.
    */
   const repairPath = await resolveSheetPath({
     runsDir,
@@ -286,23 +301,28 @@ async function drawGradingSample(): Promise<void> {
     isFinal,
     kind: 'repair',
   },);
+
+  await writeFile(
+    outPath,
+    `${banner}${
+      formatGradingSheet({
+        sample,
+        seed: DEFAULT_SAMPLE_SEED,
+        bar: DEFAULT_PRECISION_BAR,
+        corpusSha: RUN_CORPUS_PIN.commitSha,
+      },)
+    }`,
+  );
   await writeFile(
     repairPath,
-    formatRepairSheet({
-      sample,
-      seed: DEFAULT_SAMPLE_SEED,
-      corpusSha: RUN_CORPUS_PIN.commitSha,
-    },),
+    `${banner}${
+      formatRepairSheet({
+        sample,
+        seed: DEFAULT_SAMPLE_SEED,
+        corpusSha: RUN_CORPUS_PIN.commitSha,
+      },)
+    }`,
   );
-
-  /**
-   * Sampled items carrying no recorded repair at all, which is what a draw over
-   * pre-recording artifacts looks like.
-   */
-  const unrecorded = sample.filter(function lacksRepair(candidate,) {
-    return candidate.repair === undefined;
-  },)
-    .length;
 
   console.log(
     `SAMPLE final=${String(isFinal,)} pool=${String(pool.length,)} drawn=${
