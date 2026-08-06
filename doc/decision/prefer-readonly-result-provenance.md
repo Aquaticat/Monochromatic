@@ -697,11 +697,36 @@ container,
 `expressionElementOrigins` answers and what the element facet was added for.
  The change is that one call.
 
-It widens and never narrows.
- For a receiver that is itself a parameter the element walk finds no
-declaration initializer to follow and falls back to exactly the value origins,
- which is why all six
-container fixtures read byte-identical across the change and the unit suite is unaffected.
+It widens and never narrows,
+ and that holds by construction rather than by observation.
+`rootParameterOrigins` is a pass-through to `expressionValueOrigins` with the same arguments,
+ and
+`expressionElementOrigins` calls the same function and then returns one of three things:
+ the value origins
+unchanged when the expression is not a verified container,
+ the value origins unchanged when the container's
+receiver resolves to nothing,
+ or the union of the two.
+ Every branch is a superset of what the old call
+answered,
+ so no expression shape can yield fewer origins and no report can be lost by resolving fewer.
+ The
+observation agrees:
+ all six container fixtures read byte-identical across the change and the unit suite is
+unaffected.
+
+What the superset argument does not cover,
+ stated so it is not mistaken for proven:
+ a receiver that
+resolves to origins where it previously resolved to none now runs the observer derivation instead of
+falling to the opaque boundary,
+ which is the intended change.
+ That discharge rests on the same derivation
+already used for a receiver that is a parameter,
+ unchanged here,
+ and on the result gate,
+ which is what
+still catches `observerAccumulatorEscapeEffect`.
 
 ### What the earlier attempts got wrong
 
