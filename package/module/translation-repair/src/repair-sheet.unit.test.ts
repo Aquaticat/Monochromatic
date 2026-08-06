@@ -511,8 +511,42 @@ await describe({
           corpusSha: 'sha/1',
         },);
         expect(sheet.includes('SHARED',),).toBe(true,);
-        expect(sheet.includes('adjudicated/chase',),).toBe(true,);
-        expect(sheet.includes('adjudicated/nap',),).toBe(false,);
+        // Issue ids are 64-character hashes a grader cannot look up, so the
+        // sheet names sheet POSITIONS instead and says plainly when a sibling
+        // was not drawn.
+        expect(sheet.includes('adjudicated/chase',),).toBe(false,);
+        expect(sheet.includes('none of which were drawn into this sample',),)
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'names the sheet positions a shared edit repeats under, since that '
+        + 'is the fact a grader can act on when they meet the same before and '
+        + 'after text again',
+      fn: async () => {
+        /** Two drawn issues served by one shared region. */
+        const shared = catRepair({
+          disposition: 'shipped',
+          issueIds: [
+            'adjudicated/nap',
+            'adjudicated/chase',
+          ],
+        },);
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({ repair: shared, },),
+            {
+              ...catCandidate({ repair: shared, },),
+              issueId: 'adjudicated/chase',
+            },
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+        expect(sheet.includes('appear here as item(s) 2',),).toBe(true,);
+        expect(sheet.includes('appear here as item(s) 1',),).toBe(true,);
+        expect(sheet.includes('adjudicated/chase',),).toBe(false,);
       },
     },),
 

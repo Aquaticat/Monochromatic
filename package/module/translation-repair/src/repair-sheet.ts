@@ -61,9 +61,11 @@ function renderRegion(
   {
     region,
     issueId,
+    positionByIssueId,
   }: {
     readonly region: GradableRepairRegion;
     readonly issueId: string;
+    readonly positionByIssueId: ReadonlyMap<string, number>;
   },
 ): string {
   /**
@@ -72,6 +74,28 @@ function renderRegion(
   const siblings = region.issueIds
     .filter(function isOther(candidate,) {
       return candidate !== issueId;
+    },);
+
+  /**
+   * Sheet positions of the siblings that were also drawn, ascending.
+   *
+   * Positions rather than issue ids, because an id is a 64-character hash a
+   * grader cannot look up, and five of them on one line is a third of a
+   * kilobyte of noise obscuring the one fact that matters: this same edit is
+   * about to be shown again under other items.
+   */
+  const onSheet = siblings.flatMap(function toPosition(candidate,) {
+    /**
+     * Sibling's position, absent when it was not drawn into this sample.
+     */
+    const position = positionByIssueId.get(candidate,);
+    return position === undefined ? [] : [position,];
+  },)
+    .toSorted(function ascending(
+      left,
+      right,
+    ) {
+      return left - right;
     },);
 
   return [
@@ -92,9 +116,13 @@ function renderRegion(
       : [
         `- SHARED: this one edit was also written for ${
           String(siblings.length,)
-        } other accepted issue(s) (${
-          siblings.join(', ',)
-        }), so judge it against THIS item's claim only`,
+        } other accepted issue(s)${
+          onSheet.length === 0
+            ? ', none of which were drawn into this sample'
+            : `, of which ${
+              onSheet.length === siblings.length ? 'all' : String(onSheet.length,)
+            } appear here as item(s) ${onSheet.join(', ',)}`
+        }. The same before and after text repeats under those items; judge it against THIS item's claim only.`,
       ]),
   ].join('\n',);
 }
@@ -113,9 +141,11 @@ function renderRepair(
   {
     repair,
     issueId,
+    positionByIssueId,
   }: {
     readonly repair: GradableRepair;
     readonly issueId: string;
+    readonly positionByIssueId: ReadonlyMap<string, number>;
   },
 ): string {
   /**
@@ -139,6 +169,7 @@ function renderRepair(
         return renderRegion({
           region,
           issueId,
+          positionByIssueId,
         },);
       },),
     // The naturalness lane rewrites whole slices AFTER the accuracy stage, and
@@ -209,9 +240,11 @@ function renderCandidate(
   {
     candidate,
     index,
+    positionByIssueId,
   }: {
     readonly candidate: GradingCandidate;
     readonly index: number;
+    readonly positionByIssueId: ReadonlyMap<string, number>;
   },
 ): string {
   /**
@@ -226,6 +259,7 @@ function renderCandidate(
     : renderRepair({
       repair: candidate.repair,
       issueId: candidate.issueId,
+      positionByIssueId,
     },);
 
   return [
@@ -300,6 +334,20 @@ export function formatRepairSheet(
     '',
   ].join('\n',);
 
+  /**
+   * Sheet position of every drawn issue, so a shared edit can name the other
+   * ITEMS a grader will meet it under instead of quoting hashes at them.
+   */
+  const positionByIssueId = new Map(sample.map(function toEntry(
+    candidate,
+    position,
+  ) {
+    return [
+      candidate.issueId,
+      position + 1,
+    ] as const;
+  },),);
+
   return `${header}${
     sample
       .map(function renderAt(
@@ -309,6 +357,7 @@ export function formatRepairSheet(
         return renderCandidate({
           candidate,
           index: position + 1,
+          positionByIssueId,
         },);
       },)
       .join('\n\n',)
