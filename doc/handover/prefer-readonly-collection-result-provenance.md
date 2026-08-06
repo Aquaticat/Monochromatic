@@ -336,33 +336,61 @@ consumes it,
    The
   catalog-free fixture stays at 16.
 
+- `84a29cfd1`,
+   `178dd6ae7`,
+   `c6d4c54c7` and `eaeff893d`,
+   the rest of the plan.
+   An observer handing its element back
+  propagates as receiver opacity;
+   `map` and `flatMap` carry the observer-return relation,
+   probed
+  against a marker the receiver never held;
+   the type-shape gate is replaced by `viewResultUnaccounted`,
+  which requires a relation and,
+   for a container,
+   that the result stay inside the callable;
+   and a
+  collection-only finding gets a message whose every remediation is a measured behaviour of the rule.
+
+  Measured after all four:
+   the fresh-object `map` is clean,
+   which is what issue #414 turns on;
+   a
+  locally read `filter` is clean;
+   an escaping `filter`,
+   a foreign observer,
+   an identity `map` and a
+  `reduce` accumulator all still report;
+   a mutating observer attributes rather than reports.
+- `2b03eaaad`,
+   the matched measurement.
+   302 errors and 206 from this rule before,
+   232 and 135 after,
+   on
+  source `git diff` reports as identical,
+   which reproduces this issue's recorded numbers and attributes
+  the whole delta to the rule.
+   Recorded in `doc/decision/prefer-readonly-result-provenance.md`,
+  "Consequences of the provenance replacement, measured".
+
 ### Next
 
-`84a29cfd1` landed the fact the observer path was missing:
- an observer that hands its element back puts receiver state into the result,
- which neither the mutation nor the opacity dimension sees,
- and propagation now records it as receiver opacity.
- Verdict-neutral,
- because the type-shape gate still refuses every observer-bearing member.
+Merging,
+ once the whole-workspace lint run confirms nothing outside the measured package moved in a way
+the branch cannot explain.
+ The per-package pair is matched and understood;
+ the workspace run is the wider
+check,
+ and what it has to rule out is a finding that disappeared for neither allowed reason:
+ a container
+write became an attribution,
+ or a member's result gained a relation that accounts for it.
 
-What that gate cannot simply be deleted for is `toSorted`.
- Measured reasoning rather than a guess:
- `map` and `flatMap` build their results out of observer returns,
- which `84a29cfd1` now accounts for;
- `filter` and `slice` build containers of receiver elements,
- which the container relation accounts for;
- `toSorted` builds a fresh array of receiver elements while its observer only compares,
- so neither mechanism names it,
- and `rows.toSorted(compare)[0].label = x` would discharge with the write attributed to nothing.
-
-So the gate is replaced rather than removed,
- and the replacement needs one more authority fact:
- a result relation naming which members build their result from observer returns.
- With that in place the rule becomes:
- a state-carrying result must have a relation covering it,
- a container relation additionally requires the result not to escape,
- and anything else keeps failing closed.
-
-The escape half is already threaded for the direct path through `receiverClaimAnswerable`;
- the observer path in `readonlyViewElementApplications` has no `body` parameter yet,
- so it cannot ask the escape question until one is passed from `recordCollectionMemberEffect`.
+Open afterwards:
+ the chained receiver,
+ `rows.filter(observer).reduce(fold)`,
+ which still reports because
+the container result is consumed as another call's receiver.
+ Precision rather than soundness,
+ and it is
+issue #414's own snippet in its chained form.
