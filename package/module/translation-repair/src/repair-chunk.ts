@@ -8,9 +8,10 @@ import {
   nonTranslationVotesStand,
   screenNonTranslationVotes,
 } from './non-translation-evidence.ts';
+import { measurePatchedCandidate, } from './chunk-measure.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
-import { downgradeCount, } from './downgrade-count.ts';
 import { parseDocument, } from './parse-document.ts';
+import { collectRepairRegions, } from './repair-region.ts';
 import {
   assertCheckerIndependence,
   type ChunkRepairOutcome,
@@ -161,6 +162,9 @@ export async function repairChunk(
     repairedText: targetText,
     changed: false,
     resolvedIssueIds: [],
+    repairRegions: [],
+    accuracyPatchSelected: false,
+    refined: false,
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: screening.contradicted,
     nonTranslationStanding: votesStand,
@@ -311,24 +315,6 @@ export async function repairChunk(
     },);
 
   /**
-   * High-severity subset of the resolved issues.
-   */
-  const resolvedHighSeverity = acceptedIssues.filter(function isResolvedHigh(issue,) {
-    if (checker.tallies[issue.issueId]
-      ?.resolved
-      !== true)
-      return false;
-    return (issue.severity === 'major') || (issue.severity === 'critical');
-  },)
-    .length;
-
-  /**
-   * Parsed patched candidate for the integrity measurement.
-   */
-  const patchedDocument = parseDocument({ text: editor.patch
-    .patchedText, },);
-
-  /**
    * Selection between unchanged and the patched candidate.
    */
   const selection = selectRepairCandidate({
@@ -342,41 +328,17 @@ export async function repairChunk(
         candidateId: `candidate/chunk-${String(chunkIndex,)}`,
         text: editor.patch
           .patchedText,
-        measurements: {
-          integrityOk: downgradeCount({ document: patchedDocument, },)
-            <= downgradeCount({ document: documents.target, },),
-          resolvedHighSeverity,
+        measurements: measurePatchedCandidate({
+          acceptedIssues,
+          tallies: checker.tallies,
           resolvedTotal: resolvedIssueIds.length,
-          regressionCount: acceptedIssues.filter(function isRegressed(issue,) {
-            return checker.tallies[issue.issueId]
-              ?.regressed
-              === true;
-          },)
-            .length,
-          changedCharCount: editor.patch
-            .applied
-            .reduce(
-            function addChange(
-              sum,
-              operation,
-            ): number {
-              /**
-               * Envelope of this operation for its base length.
-               */
-              const envelope = envelopes.find(function matches(candidate,) {
-                return candidate.envelopeId === operation.envelopeId;
-              },);
-              return sum + Math.max(
-                envelope?.baseText
-                  .length
-                  ?? 0,
-                operation.newText
-                  .length,
-              );
-            },
-            0,
-          ),
-        },
+          envelopes,
+          applied: editor.patch
+            .applied,
+          patchedDocument: parseDocument({ text: editor.patch
+            .patchedText, },),
+          targetDocument: documents.target,
+        },),
       },
     ],
   },);
@@ -402,6 +364,13 @@ export async function repairChunk(
     changed,
     issues: panel.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
+    repairRegions: collectRepairRegions({
+      envelopes,
+      applied: editor.patch
+        .applied,
+    },),
+    accuracyPatchSelected: changed,
+    refined: false,
     nonTranslationVotes: critic.nonTranslationVotes,
     nonTranslationContradicted: screening.contradicted,
     nonTranslationStanding: votesStand,

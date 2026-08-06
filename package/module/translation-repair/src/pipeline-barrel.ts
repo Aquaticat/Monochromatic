@@ -157,8 +157,13 @@ export {
   screenNonTranslationVotes,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
+export { ArtifactParseError, } from './artifact-guard.ts';
 export {
-  ArtifactParseError,
+  parseRecordRepair,
+  type RecordRepairReading,
+} from './artifact-repair-read.ts';
+export {
+  type ParsedAcceptedIssue,
   type ParsedArtifact,
   parseSettledArtifact,
 } from './artifact-read.ts';
@@ -171,6 +176,7 @@ export {
   type AlignmentStep,
 } from './align-blocks-walk.ts';
 export { formatGradingSheet, } from './grading-sheet.ts';
+export { formatRepairSheet, } from './repair-sheet.ts';
 export {
   collectIdentityLines,
   type DeclaredIdentity,
@@ -189,6 +195,8 @@ export {
   extractGradingCandidate,
   type GradableClaim,
   type GradableIssue,
+  type GradableRepair,
+  type GradableRepairRegion,
   type GradableSpan,
   type GradingCandidate,
   MEDIUM_BAND_MAX_BYTES,
@@ -201,12 +209,20 @@ export {
   subdivideChunkPair,
 } from './slice-pair.ts';
 export {
-  type RepairIssueRecord,
   type RepairStatus,
   repairTranslation,
   type RepairTranslationResult,
   type SliceCache,
 } from './repair-translation.ts';
+export {
+  buildIssueRecords,
+  type RepairDisposition,
+  type RepairIssueRecord,
+} from './repair-record.ts';
+export {
+  collectRepairRegions,
+  type RepairRegion,
+} from './repair-region.ts';
 export {
   buildRestorationJudgeMessages,
   isRestorationJudgeWire,

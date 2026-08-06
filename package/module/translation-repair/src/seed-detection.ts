@@ -4,7 +4,7 @@ import {
 } from './chunk-document.ts';
 import { parseDocument, } from './parse-document.ts';
 import { subdivideChunkPair, } from './slice-pair.ts';
-import type { RepairIssueRecord, } from './repair-translation.ts';
+import type { RepairIssueRecord, } from './repair-record.ts';
 import {
   seedHitByRegion,
   type SeededErrorApplication,

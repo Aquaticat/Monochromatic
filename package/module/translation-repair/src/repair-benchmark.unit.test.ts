@@ -295,6 +295,9 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         const nearIssue = {
           chunkIndex: 0,
           resolved: false,
+          repairRegions: [],
+          repairDisposition: 'no-region' as const,
+          refined: false,
           issue: {
             issueId: 'adjudicated/near',
             status: 'accepted' as const,
@@ -430,6 +433,9 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
             {
               chunkIndex: sliceIndex,
               resolved: false,
+              repairRegions: [],
+              repairDisposition: 'no-region' as const,
+              refined: false,
               issue: {
                 issueId: 'adjudicated/late',
                 status: 'accepted' as const,
@@ -518,6 +524,9 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
           return {
             chunkIndex: 0,
             resolved: false,
+            repairRegions: [],
+            repairDisposition: 'no-region' as const,
+            refined: false,
             issue: {
               issueId: 'adjudicated/near',
               status,

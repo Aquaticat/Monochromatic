@@ -1,10 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type {
-  AdjudicatedIssue,
-  AdjudicationConfig,
-} from './adjudicate-model.ts';
+import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   alignDocumentSections,
@@ -23,6 +20,10 @@ import {
 } from './slice-pair.ts';
 import { runRefinePhase, } from './refine-phase.ts';
 import { repairChunk, } from './repair-chunk.ts';
+import {
+  buildIssueRecords,
+  type RepairIssueRecord,
+} from './repair-record.ts';
 import { spliceSlices, } from './splice-slices.ts';
 import type {
   ChunkRepairOutcome,
@@ -49,29 +50,18 @@ const l = tagged({ tag: 'translation-repair-pipeline', },);
 const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
 
 /**
- * One adjudicated issue in the whole-document report.
+ * Slice-cache schema version, mixed into every cache key.
  *
- * @example
- * ```ts
- * const record: RepairIssueRecord = { chunkIndex: 0, issue, resolved: false, };
- * ```
+ * The cache stores serialized `ChunkRepairOutcome` values, so a run resuming
+ * across a change to that shape would splice yesterday's outcomes into today's
+ * report and silently answer a question they never recorded. Cached repair
+ * provenance is the live example: outcomes written before repairs existed carry
+ * none, and a resumed slice would contribute ungradable items to a precision
+ * sheet without anything looking wrong. Bump this whenever
+ * `ChunkRepairOutcome` changes shape OR an existing field changes meaning; the
+ * structural guard in the cache store catches only the first of those.
  */
-export type RepairIssueRecord = {
-  /**
-   * Chunk the issue belongs to.
-   */
-  readonly chunkIndex: number;
-
-  /**
-   * Adjudicated issue exactly as the panel decided it.
-   */
-  readonly issue: AdjudicatedIssue;
-
-  /**
-   * Whether the checkers confirmed it fixed in the shipped text.
-   */
-  readonly resolved: boolean;
-};
+const SLICE_CACHE_VERSION = 2;
 
 /**
  * Completion status of one repair run;
@@ -299,11 +289,13 @@ export async function repairTranslation(
   const outcomes: ChunkRepairOutcome[] = [];
   for (const slice of slices) {
     /**
-     * Cross-run key for this slice: its index and both texts, so a slicing
-     * change or a content change misses the cache and recomputes.
+     * Cross-run key for this slice: the schema version, its index, and both
+     * texts, so a slicing change, a content change, or an outcome-shape change
+     * misses the cache and recomputes.
      */
     const sliceKey = hashContent({
       content: JSON.stringify([
+        SLICE_CACHE_VERSION,
         slice.target
           .chunkIndex,
         slice.source
@@ -383,15 +375,9 @@ export async function repairTranslation(
       return {
         repairedText: targetText,
         status: 'blocked-non-translation',
-        issues: outcomes.flatMap(function toRecords(done,) {
-          return done.issues
-            .map(function toRecord(issue,): RepairIssueRecord {
-            return {
-              chunkIndex: done.chunkIndex,
-              issue,
-              resolved: false,
-            };
-          },);
+        issues: buildIssueRecords({
+          outcomes,
+          blocked: true,
         },),
         findings: [
           ...alignmentFindings,
@@ -452,16 +438,9 @@ export async function repairTranslation(
   /**
    * Whole-document issue report.
    */
-  const issues = finalOutcomes.flatMap(function toRecords(outcome,) {
-    return outcome.issues
-      .map(function toRecord(issue,): RepairIssueRecord {
-      return {
-        chunkIndex: outcome.chunkIndex,
-        issue,
-        resolved: outcome.resolvedIssueIds
-          .includes(issue.issueId,),
-      };
-    },);
+  const issues = buildIssueRecords({
+    outcomes: finalOutcomes,
+    blocked: false,
   },);
 
   /**

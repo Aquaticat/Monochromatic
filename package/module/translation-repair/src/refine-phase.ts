@@ -216,6 +216,10 @@ export async function runRefinePhase(
         ...outcome,
         repairedText: refined.refinedText,
         changed: true,
+        // Marks every recorded repair in this slice as pre-refinement text, so
+        // a grading sheet can say so instead of presenting an editor
+        // replacement as the words that shipped.
+        refined: true,
       },);
     /* oxlint-enable no-await-in-loop */
   }

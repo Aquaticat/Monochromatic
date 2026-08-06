@@ -1,5 +1,6 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { MIN_SELECTION_VOTES, } from './candidate-select-model.ts';
+import type { RepairRegion, } from './repair-region.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Repair contract
@@ -329,6 +330,37 @@ export type ChunkRepairOutcome = {
    * empty when unchanged won.
    */
   readonly resolvedIssueIds: readonly string[];
+
+  /**
+   * Regions the accuracy stage replaced, with the accepted issues each served.
+   *
+   * Recorded whether or not the patched candidate won, because "no repair was
+   * attempted" and "a repair was attempted and lost to unchanged" are different
+   * facts and only the second one indicts the stage.
+   */
+  readonly repairRegions: readonly RepairRegion[];
+
+  /**
+   * Whether the patched candidate beat unchanged in the ACCURACY stage's own
+   * selection.
+   *
+   * Separate from {@link ChunkRepairOutcome.changed} because the two diverge
+   * downstream: the naturalness lane sets `changed` on a refinement-only
+   * rewrite, so after that phase `changed` no longer answers whether any
+   * accuracy repair was selected. Reading `changed` for that would report a
+   * rejected repair as a shipped one whenever refinement happened to touch the
+   * same slice.
+   */
+  readonly accuracyPatchSelected: boolean;
+
+  /**
+   * Whether the naturalness lane rewrote this slice after the accuracy pass
+   * settled, which makes every {@link RepairRegion.editorAfter} in
+   * {@link ChunkRepairOutcome.repairRegions} pre-refinement text rather than
+   * what shipped. A grading sheet has to disclose that, and disclosing it only
+   * where it happened keeps the caveat meaningful.
+   */
+  readonly refined: boolean;
 
   /**
    * Critics reporting critical non-translation at wire level.

@@ -120,6 +120,9 @@ function settledOutcome(
       };
     },),
     resolvedIssueIds,
+    repairRegions: [],
+    accuracyPatchSelected: false,
+    refined: false,
     nonTranslationVotes: 0,
     nonTranslationContradicted: false,
     nonTranslationStanding: false,

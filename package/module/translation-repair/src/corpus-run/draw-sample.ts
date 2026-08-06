@@ -9,6 +9,7 @@ import { parseSettledArtifact, } from '../artifact-read.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { formatGradingSheet, } from '../grading-sheet.ts';
 import { isJsonRecord, } from '../json-guard.ts';
+import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
 import {
   classifyBand,
@@ -133,11 +134,14 @@ async function loadEntry(
     id: parsed.id,
     band,
     candidates: parsed.acceptedIssues
-      .map(function toCandidate(issue,) {
+      .map(function toCandidate(accepted,) {
         return extractGradingCandidate({
-          issue,
+          issue: accepted.issue,
           entryId: parsed.id,
           band,
+          ...(accepted.repair === undefined
+            ? {}
+            : { repair: accepted.repair, }),
         },);
       },),
   };
@@ -269,10 +273,41 @@ async function drawGradingSample(): Promise<void> {
     sheet,
   );
 
+  /**
+   * Companion repair sheet over the SAME sample in the same order. Written as
+   * its own file rather than as extra boxes on the detection sheet: a visible
+   * correction makes an alleged defect look more real, so folding the two
+   * together would change what the detection number measures and break
+   * comparison with the rounds already graded.
+   */
+  const repairPath = await resolveSheetPath({
+    runsDir,
+    seed: DEFAULT_SAMPLE_SEED,
+    isFinal,
+    kind: 'repair',
+  },);
+  await writeFile(
+    repairPath,
+    formatRepairSheet({
+      sample,
+      seed: DEFAULT_SAMPLE_SEED,
+      corpusSha: RUN_CORPUS_PIN.commitSha,
+    },),
+  );
+
+  /**
+   * Sampled items carrying no recorded repair at all, which is what a draw over
+   * pre-recording artifacts looks like.
+   */
+  const unrecorded = sample.filter(function lacksRepair(candidate,) {
+    return candidate.repair === undefined;
+  },)
+    .length;
+
   console.log(
     `SAMPLE final=${String(isFinal,)} pool=${String(pool.length,)} drawn=${
       String(sample.length,)
-    } out=${outPath}`,
+    } unrecordedRepairs=${String(unrecorded,)} out=${outPath} repairOut=${repairPath}`,
   );
 }
 

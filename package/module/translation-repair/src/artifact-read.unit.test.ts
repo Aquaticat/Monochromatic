@@ -97,10 +97,10 @@ await describe({
         expect(parsed.id,).toBe('Kitten',);
         expect(parsed.status,).toBe('repaired',);
         expect(parsed.acceptedIssues,).toHaveLength(1,);
-        expect(parsed.acceptedIssues[0]?.issueId,).toBe('adjudicated/purr',);
-        expect(parsed.acceptedIssues[0]?.claims[0]?.claim.category,)
+        expect(parsed.acceptedIssues[0]?.issue.issueId,).toBe('adjudicated/purr',);
+        expect(parsed.acceptedIssues[0]?.issue.claims[0]?.claim.category,)
           .toBe('accuracy/omission',);
-        expect(parsed.acceptedIssues[0]?.claims[0]?.claim.spans,).toHaveLength(2,);
+        expect(parsed.acceptedIssues[0]?.issue.claims[0]?.claim.spans,).toHaveLength(2,);
       },
     },),
 
@@ -129,7 +129,7 @@ await describe({
           },),
         },);
         expect(parsed.acceptedIssues,).toHaveLength(1,);
-        expect(parsed.acceptedIssues[0]?.issueId,).toBe('adjudicated/purr',);
+        expect(parsed.acceptedIssues[0]?.issue.issueId,).toBe('adjudicated/purr',);
       },
     },),
 

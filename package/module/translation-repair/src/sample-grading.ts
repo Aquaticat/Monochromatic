@@ -146,6 +146,88 @@ export type GradingCandidate = {
    * at nothing in it, which a grader cannot check.
    */
   readonly sourceAnchor: SourceAnchorKind;
+
+  /**
+   * What the accuracy stage wrote for this issue and what became of it, when
+   * the run recorded that at all.
+   *
+   * ABSENT is not the same as a repair with no regions, and no sheet may merge
+   * them. Absent is a run predating repair recording, where repair quality is
+   * unknowable and the item cannot enter any repair denominator; a recorded
+   * repair reporting `no-region` is a real measurement that belongs in the
+   * coverage denominator.
+   */
+  readonly repair?: GradableRepair;
+};
+
+/**
+ * One replaced region as a grading sheet reads it.
+ *
+ * @example
+ * ```ts
+ * const region: GradableRepairRegion = {
+ *   issueIds: ['adjudicated/one',],
+ *   before: 'The cat is doing the sleeping.',
+ *   editorAfter: 'The cat is asleep.',
+ * };
+ * ```
+ */
+export type GradableRepairRegion = {
+  /**
+   * Every accepted issue the replaced region was cut for, so a shared edit is
+   * disclosed as shared rather than presented as this issue's own repair.
+   */
+  readonly issueIds: readonly string[];
+
+  /**
+   * Region content before the replacement; empty at an insertion point.
+   */
+  readonly before: string;
+
+  /**
+   * Replacement the selected accuracy patch carried.
+   */
+  readonly editorAfter: string;
+};
+
+/**
+ * One issue's repair as a grading sheet reads it.
+ *
+ * @example
+ * ```ts
+ * const repair: GradableRepair = {
+ *   disposition: 'shipped',
+ *   regions: [],
+ *   refined: false,
+ * };
+ * ```
+ */
+export type GradableRepair = {
+  /**
+   * What became of the repair in the returned document, kept a plain display
+   * string for the same reason as {@link GradingCandidate.category}: a value
+   * the sheet does not recognize must still reach the grader rather than drop
+   * the item out of the population.
+   */
+  readonly disposition: string;
+
+  /**
+   * Replaced regions serving this issue, in document order.
+   */
+  readonly regions: readonly GradableRepairRegion[];
+
+  /**
+   * Whether the naturalness lane rewrote this issue's slice afterwards, making
+   * every {@link GradableRepairRegion.editorAfter} pre-refinement wording.
+   */
+  readonly refined: boolean;
+
+  /**
+   * Final text of the issue's slice, carried only when
+   * {@link GradableRepair.refined} is set, which is exactly where the recorded
+   * replacement stopped being the returned wording.
+   */
+  readonly finalSliceText?: string;
 };
 
 /**
@@ -349,6 +431,9 @@ function sideQuotes(
  *
  * @param band - size band of that entry
  *
+ * @param repair - what became of this issue's repair, omitted for artifacts
+ * written before repair recording existed
+ *
  * @returns The flattened grading candidate
  *
  * @example
@@ -365,10 +450,12 @@ export function extractGradingCandidate(
     issue,
     entryId,
     band,
+    repair,
   }: {
     readonly issue: GradableIssue;
     readonly entryId: string;
     readonly band: SizeBand;
+    readonly repair?: GradableRepair;
   },
 ): GradingCandidate {
   /**
@@ -399,6 +486,7 @@ export function extractGradingCandidate(
       issue,
       side: 'target',
     },),
+    ...(repair === undefined ? {} : { repair, }),
   };
 }
 

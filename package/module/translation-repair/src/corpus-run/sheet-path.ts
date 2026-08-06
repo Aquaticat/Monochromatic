@@ -72,6 +72,20 @@ function unsafeSeedMessage({ seed, }: { readonly seed: string; },): string {
 }
 
 /**
+ * Which sheet of the grading pair a path is for.
+ *
+ * Two sheets rather than two questions on one, because showing a grader the
+ * correction makes the alleged defect look more real and would move the
+ * detection grades. They are separate files so the second cannot be read early.
+ *
+ * @example
+ * ```ts
+ * const kind: SheetKind = 'repair';
+ * ```
+ */
+export type SheetKind = 'detection' | 'repair';
+
+/**
  * Raised when a final grading sheet already exists at the target path, which
  * may mean it already carries human grades.
  *
@@ -180,6 +194,10 @@ async function pathExists({ path, }: { readonly path: string; },): Promise<boole
  *
  * @param isFinal - whether this is the gate sheet rather than scratch
  *
+ * @param kind - which sheet of the pair this is; repair grading lives on its
+ * own sheet so the detection sheet stays the instrument earlier rounds were
+ * measured with, and defaults to the detection sheet
+ *
  * @returns Absolute path the sheet may be written to
  *
  * @throws {@link UnsafeSeedError} when the seed cannot become a file name
@@ -196,14 +214,25 @@ export async function resolveSheetPath(
     runsDir,
     seed,
     isFinal,
+    kind = 'detection',
   }: {
     readonly runsDir: string;
     readonly seed: string;
     readonly isFinal: boolean;
+    readonly kind?: SheetKind;
   },
 ): Promise<string> {
   if (!isSeedSafe({ seed, },))
     throw new UnsafeSeedError({ seed, },);
+
+  /**
+   * File-name stem for this sheet kind. The detection sheet keeps its original
+   * name because two graded rounds already live under it, and renaming would
+   * make one continuous series look like two different measurements.
+   */
+  const stem = kind === 'detection'
+    ? 'grading-sheet'
+    : 'repair-sheet';
 
   /**
    * Sheet path for this seed and draw kind; the seed in the name is what keeps
@@ -212,8 +241,8 @@ export async function resolveSheetPath(
   const path = join(
     runsDir,
     isFinal
-      ? `grading-sheet-${seed}.md`
-      : `grading-sheet-${seed}-preliminary.md`,
+      ? `${stem}-${seed}.md`
+      : `${stem}-${seed}-preliminary.md`,
   );
 
   // Preliminary sheets are redrawn on purpose as the pool grows, so only the

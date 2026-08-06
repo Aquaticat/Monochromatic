@@ -1,10 +1,14 @@
 import {
-  isJsonArray,
-  isJsonRecord,
-} from './json-guard.ts';
+  ArtifactParseError,
+  requireArray,
+  requireRecord,
+  requireString,
+} from './artifact-guard.ts';
+import { parseRecordRepair, } from './artifact-repair-read.ts';
 import type {
   GradableClaim,
   GradableIssue,
+  GradableRepair,
   GradableSpan,
 } from './sample-grading.ts';
 
@@ -17,116 +21,6 @@ import type {
 // are legitimately excluded -- they are not accepted, so not in the
 // denominator. Category and severity stay plain display strings, so no
 // off-taxonomy value is ever a reason to drop an issue.
-
-/**
- * Thrown when an artifact, or an accepted issue within it, is structurally
- * malformed. Aborting loudly is deliberate: a skipped accepted issue would
- * bias the precision denominator without a trace.
- */
-export class ArtifactParseError extends Error {
-  /**
-   * Builds failure naming the malformed path.
-   *
-   * @param path - dotted path to the malformed value
-   *
-   * @param reason - what the value was expected to be
-   *
-   * @example
-   * ```ts
-   * throw new ArtifactParseError({ path: 'Kitten issues[3].issue.status', reason: 'a string', },);
-   * ```
-   */
-  public constructor(
-    {
-      path,
-      reason,
-    }: {
-      readonly path: string;
-      readonly reason: string;
-    },
-  ) {
-    super(`artifact parse failed at ${path}: expected ${reason}.`,);
-    this.name = 'ArtifactParseError';
-  }
-}
-
-/**
- * Reads a required string, throwing when the value is any other shape.
- *
- * @param value - value to check
- *
- * @param path - dotted path for the error message
- *
- * @returns The value as a string
- */
-function requireString(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): string {
-  if ((typeof value) !== 'string')
-    throw new ArtifactParseError({
-      path,
-      reason: 'a string',
-    },);
-  return value;
-}
-
-/**
- * Reads a required record, throwing when the value is any other shape.
- *
- * @param value - value to check
- *
- * @param path - dotted path for the error message
- *
- * @returns The value as a record
- */
-function requireRecord(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): Record<string, unknown> {
-  if (!isJsonRecord(value,))
-    throw new ArtifactParseError({
-      path,
-      reason: 'an object',
-    },);
-  return value;
-}
-
-/**
- * Reads a required array, throwing when the value is any other shape.
- *
- * @param value - value to check
- *
- * @param path - dotted path for the error message
- *
- * @returns The value as an array
- */
-function requireArray(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly unknown[] {
-  if (!isJsonArray(value,))
-    throw new ArtifactParseError({
-      path,
-      reason: 'an array',
-    },);
-  return value;
-}
 
 /**
  * Parses one span, requiring a known side and a quoted-text string.
@@ -283,6 +177,32 @@ function parseAcceptedIssue(
 }
 
 /**
+ * One accepted issue with whatever the run recorded about repairing it.
+ *
+ * Kept a wrapper rather than folded into {@link GradableIssue} so the issue
+ * shape stays the thing a pipeline `AdjudicatedIssue` satisfies structurally,
+ * and so repair provenance stays visibly a property of the RECORD the driver
+ * built rather than of the panel's decision.
+ *
+ * @example
+ * ```ts
+ * const accepted: ParsedAcceptedIssue = { issue, };
+ * ```
+ */
+export type ParsedAcceptedIssue = {
+  /**
+   * Accepted issue as the panel decided it.
+   */
+  readonly issue: GradableIssue;
+
+  /**
+   * What became of its repair; absent for artifacts written before repair
+   * recording existed, which is not the same as no repair having happened.
+   */
+  readonly repair?: GradableRepair;
+};
+
+/**
  * One artifact's settled identity and its accepted issues.
  *
  * @example
@@ -308,7 +228,7 @@ export type ParsedArtifact = {
   /**
    * Every accepted issue, the precision denominator for this entry.
    */
-  readonly acceptedIssues: readonly GradableIssue[];
+  readonly acceptedIssues: readonly ParsedAcceptedIssue[];
 };
 
 /**
@@ -361,7 +281,7 @@ export function parseSettledArtifact(
   /**
    * Accepted issues gathered across every issue record.
    */
-  const acceptedIssues: readonly GradableIssue[] = requireArray({
+  const acceptedIssues: readonly ParsedAcceptedIssue[] = requireArray({
     value: artifact.issues,
     path: `${id}.issues`,
   },)
@@ -396,11 +316,25 @@ export function parseSettledArtifact(
       if (issueStatus !== 'accepted')
         return [];
 
+      /**
+       * Repair provenance of this record, or a named absence when the artifact
+       * predates repair recording.
+       */
+      const reading = parseRecordRepair({
+        record,
+        path: `${id}.issues[${String(recordIndex,)}]`,
+      },);
+
       return [
-        parseAcceptedIssue({
-          issue,
-          path: `${id}.issues[${String(recordIndex,)}].issue`,
-        },),
+        {
+          issue: parseAcceptedIssue({
+            issue,
+            path: `${id}.issues[${String(recordIndex,)}].issue`,
+          },),
+          ...(reading.kind === 'unrecorded'
+            ? {}
+            : { repair: reading.repair, }),
+        },
       ];
     },);
 
