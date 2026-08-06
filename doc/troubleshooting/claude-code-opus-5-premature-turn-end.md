@@ -38,6 +38,17 @@ A turn counts as a restart nudge when a human-typed message under 200 characters
 asks the agent to resume (`continue`, `go on`, `keep going`, `are you working`, `you stopped`, and similar).
 Model attribution comes from the `message.model` field of the assistant turn preceding the nudge.
 
+Two counting bases appear in this document and they do not agree,
+so every figure names which one it uses.
+Model-attributed counting keeps only the human turns whose preceding assistant turn ran the named model.
+Whole-session counting keeps every human turn in the transcript.
+Sessions switch models, so the same session yields different totals:
+the longest Opus 5 session is 43 turns with 15 nudges model-attributed,
+and 50 turns with 16 nudges whole-session.
+Figures in this section are model-attributed.
+Comparing a figure from one basis against a figure from the other is not valid,
+and doing so is the defect retracted in the goal feature section.
+
 Restart-nudge rate with reasoning effort held constant at `xhigh`,
 Wilson 95% intervals:
 
@@ -84,6 +95,12 @@ Median length of the non-nudge human turns:
 - `claude-opus-4-8`, 62-turn session: 58 characters
 - `claude-fable-5`, 50-turn session: 69 characters
 - `claude-fable-5`, 51-turn session: 120 characters
+
+Session sizes here are model-attributed.
+The gap between the bases is large for the second Opus 5 session,
+which is 15 turns model-attributed and 82 whole-session,
+so these sessions were heavily multi-model
+and the medians describe the model-attributed slice rather than the session as a whole.
 
 The Opus 5 sessions were more queue-execution-shaped
 and the Fable 5 sessions more design-conversational,
@@ -254,15 +271,27 @@ Per block it performs better than the phrase detectors:
 all 27 issued tool calls, state-changing calls, and task-state changes,
 and none was immediately followed by a nudge.
 
-It did not reduce the session-level nudge rate.
-The session where it ran, 50 human turns with 27 goal blocks, required 16 nudges, 32%.
-The six Opus 5 sessions without it averaged 26.9% across 26 turns.
+It did not prevent the session from needing nudges.
+The session where it ran took 16 restart nudges across its 50 human turns
+despite 27 goal blocks.
 
+An earlier revision of this document compared that against
+a 26.9% average over the Opus 5 sessions without the feature.
+That comparison is retracted.
+It grouped sessions by dominant model while counting turns on a different basis per arm,
+so the two rates were not measured the same way.
+The corpus cannot support a goal-active against goal-absent rate comparison.
+
+What survives is narrower:
+the goal feature rescued every stop it caught,
+and the one session that ran it still required 16 nudges.
 The mechanism rescues each stop it catches
 and does not stop the agent from stopping again later.
-With one goal-active session this cannot estimate an effect size,
-and the goal-active session is also the most queue-shaped in the corpus,
-so its rate is inflated by the denominator problem described in the confounds section.
+
+Any recomputation from here needs care,
+because forced continuation now emits Stop feedback
+that a text classifier cannot distinguish from a goal block.
+Sessions after 2026-08-06 will show apparent goal blocks that are this repository's own hook.
 
 The practical consequence is that building a state-based detector into `ccsr`
 would reimplement a mechanism the user already runs,
