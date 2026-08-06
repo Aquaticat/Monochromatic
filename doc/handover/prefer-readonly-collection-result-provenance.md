@@ -208,8 +208,18 @@ extractor without a consumer would be a wide edit that proves nothing.
  The pruning half had a measurable
 effect on its own and landed on its own.
 
-After that,
- increment 4,
- the element-reachability facet,
- then 5 and 6,
- which are the first verdict changes.
+Increments 4 and 5 swapped order,
+ for the reason that deferred the discriminated answer.
+ Enumerated rather
+than assumed:
+ no binding can hold element-only origins today,
+ because `callResultReceiver` answers only for
+the direct-value relation and every entry in the result-provenance authority is one.
+ So the facet would have
+had no consumer and no test that fails without it.
+
+The order is now the container relation first,
+ exposed but consulted by no discharge,
+ then the facet that
+consumes it,
+ then the discharge that needs both.

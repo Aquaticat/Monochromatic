@@ -55,6 +55,9 @@ function receiverHolding({
       /* A predicate that accepts, so the probe measures what the member hands back on a
        * hit. The miss path returns `undefined` for both, which is not the sentinel and
        * would fail the comparison for a reason that says nothing about the relation. */
+      filter: [function keepsEvery(): boolean {
+        return true;
+      },],
       find: [function acceptsFirst(): boolean {
         return true;
       },],
@@ -63,6 +66,7 @@ function receiverHolding({
       },],
       pop: [],
       shift: [],
+      slice: [],
     },
   };
 }
@@ -78,9 +82,12 @@ await describe({
          * Entries whose result was not identically the sentinel.
          */
         const notIdentical: string[] = [];
+        /**
+         * Container entries failing either half of their own probe.
+         */
+        const notFreshCarrier: string[] = [];
         for (const [ownerName, members,] of RESULT_PROVENANCE_BY_INTERFACE) {
           for (const [memberName, provenance,] of members) {
-            expect(provenance.relation,).toBe(RESULT_RELATION_RECEIVER_VALUE,);
             /**
              * Fresh sentinel per member, so one member cannot pass on another's value.
              */
@@ -98,8 +105,20 @@ await describe({
                 ...args: readonly unknown[]
               ) => unknown
             ).apply(receiver, [...argumentsByMember[memberName] ?? [],],);
-            if (result !== sentinel)
-              notIdentical.push(`${ownerName}.${memberName}`,);
+            if (provenance.relation === RESULT_RELATION_RECEIVER_VALUE) {
+              if (result !== sentinel)
+                notIdentical.push(`${ownerName}.${memberName}`,);
+              continue;
+            }
+            /* Both halves, because either alone passes for the wrong value. A member
+             * returning the receiver itself satisfies the membership half, and a member
+             * returning an empty fresh array satisfies the freshness half, and the
+             * relation claims exactly the conjunction: a new container holding what the
+             * receiver holds. */
+            if ((result === receiver)
+              || (!Array.isArray(result,))
+              || (!result.includes(sentinel,)))
+              notFreshCarrier.push(`${ownerName}.${memberName}`,);
           }
         }
         /* A non-empty list means a listed member returns something other than the
@@ -107,6 +126,7 @@ await describe({
          * parameter would attribute mutations to state the caller never shared.
          * Remove the entry rather than weaken this comparison. */
         expect(notIdentical,).toEqual([],);
+        expect(notFreshCarrier,).toEqual([],);
       },
     },),
     it({
@@ -179,8 +199,12 @@ await describe({
          * it happens to be safe. */
         expect(notFreshContainer,).toEqual([],);
         /* And the list is not vacuous, which an empty set would make every loop above
-         * pass without checking anything. */
-        expect(FRESH_CONTAINER_MEMBER_NAMES.size,).toBe(7,);
+         * pass without checking anything. It went from seven to five when `filter` and
+         * `slice` gained the container relation, and each name that remains is held back
+         * for a reason recorded beside the set: mixed element sources for `concat`, `with`
+         * and `toSpliced`, a descendant rather than an element for `flat`, and a probe
+         * shape not yet exercised for `toReversed`. */
+        expect(FRESH_CONTAINER_MEMBER_NAMES.size,).toBe(5,);
       },
     },),
     it({

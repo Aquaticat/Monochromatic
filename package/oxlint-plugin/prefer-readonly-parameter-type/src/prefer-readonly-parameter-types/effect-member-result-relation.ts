@@ -26,6 +26,8 @@ import {
 } from './effect-member-call-receiver.ts';
 import {
   memberResultProvenance,
+  RESULT_RELATION_RECEIVER_ELEMENTS,
+  RESULT_RELATION_RECEIVER_VALUE,
   RESULT_RELATION_UNPROVEN,
 } from './effect-result-provenance-authority.ts';
 
@@ -253,6 +255,13 @@ export function callResultReceiver({
   const provenance = memberResultProvenance(member,);
   if (provenance === RESULT_RELATION_UNPROVEN)
     return RESULT_NOT_RECEIVER_STATE;
+  /* This function answers one question, whether the result IS receiver state, and a
+   * container relation answers a different one. `values.slice()` hands back an array that
+   * is not the receiver and whose elements are, so returning the receiver here would
+   * attribute `copy.push(row)` to an array that never received it. `callResultElementReceiver`
+   * answers the container half; keeping them apart is the whole reason there are two. */
+  if (provenance.relation !== RESULT_RELATION_RECEIVER_VALUE)
+    return RESULT_NOT_RECEIVER_STATE;
   /**
    * Receiver type, whose arguments name what it holds.
    */
@@ -274,6 +283,96 @@ export function callResultReceiver({
       resultType,
       heldType,
     },)
+    ? receiver
+    : RESULT_NOT_RECEIVER_STATE;
+}
+
+/**
+ * Resolves the receiver whose values a call's fresh container result may hold.
+ *
+ * The container half of the same question `callResultReceiver` answers for direct values,
+ * kept separate because the two demand opposite answers about one value: mutating an
+ * element of `values.filter(kept)` reaches the receiver, and mutating the container does
+ * not.
+ *
+ * Validated the same way and with the same limit. The authority establishes the relation,
+ * by probe, and type identity only checks that this call is instantiated so the result's
+ * element position is the receiver's held position. A narrowing type-predicate overload
+ * turns `(A | B)[]` into `A[]`, whose element type is identical to nothing the receiver
+ * holds, so this answers with the sentinel and the call stays undischarged. That is
+ * withholding rather than asserting, which is the safe direction: nothing may discharge on
+ * this answer's absence.
+ *
+ * @param project - TypeScript project proving default-library ownership.
+ *
+ * @param checker - TypeScript checker resolving signature and types.
+ *
+ * @param call - Call expression whose result may hold receiver values.
+ *
+ * @returns receiver expression, or sentinel when no container relation is verified.
+ *
+ * @example
+ * ```ts
+ * callResultElementReceiver({ project, checker, call });
+ * ```
+ */
+export function callResultElementReceiver({
+  project,
+  checker,
+  call,
+}: {
+  readonly project: Project;
+  readonly checker: Checker;
+  readonly call: CallExpression;
+},): Expression | typeof RESULT_NOT_RECEIVER_STATE {
+  /**
+   * Expression the member was called on, however the member was named.
+   */
+  const receiver = memberCallReceiver({ call, },);
+  if (receiver === NO_MEMBER_RECEIVER)
+    return RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Default-library interface and member this call selected.
+   */
+  const member = defaultLibraryMember({
+    project,
+    checker,
+    call,
+  },);
+  if (member === NOT_DEFAULT_LIBRARY_MEMBER)
+    return RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Verified relation for the selected member.
+   */
+  const provenance = memberResultProvenance(member,);
+  if ((provenance === RESULT_RELATION_UNPROVEN)
+    || (provenance.relation !== RESULT_RELATION_RECEIVER_ELEMENTS))
+    return RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Receiver type, whose arguments name what it holds.
+   */
+  const receiverType = checker.getTypeAtLocation(receiver,);
+  if ((receiverType === undefined) || (!receiverType.isTypeReference()))
+    return RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Receiver-held type at the position the authority recorded.
+   */
+  const heldType = checker.getTypeArguments(receiverType,)
+    .at(provenance.receiverTypeArgumentIndex,);
+  /**
+   * Container type this call produced.
+   */
+  const resultType = checker.getTypeAtLocation(call,);
+  if ((heldType === undefined)
+    || (resultType === undefined)
+    || (!resultType.isTypeReference()))
+    return RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Type the result container holds at the same position.
+   */
+  const resultHeldType = checker.getTypeArguments(resultType,)
+    .at(provenance.receiverTypeArgumentIndex,);
+  return (resultHeldType === heldType)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
 }

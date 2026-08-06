@@ -84,7 +84,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
       enforcedBy: [
         'effect-result-provenance.unit.test.ts',
       ],
-      entryCount: 10,
+      entryCount: 14,
     },
   ],
 ],);

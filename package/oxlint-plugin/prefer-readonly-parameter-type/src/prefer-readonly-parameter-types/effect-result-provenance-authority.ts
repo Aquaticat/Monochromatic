@@ -34,9 +34,31 @@ export const RESULT_RELATION_UNPROVEN: unique symbol = Symbol(
 );
 
 /**
+ * Result is a freshly built container that may hold values the receiver holds.
+ *
+ * `values.filter(kept)` hands back a new array whose elements are the receiver's own, so
+ * `copy[0].label = 'x'` reaches the receiver while `copy.push(row)` reaches nothing the
+ * caller shared. Those are different answers about one value, which is why this is a
+ * second relation rather than a wider reading of the first.
+ *
+ * "May hold" rather than "holds", deliberately. A predicate can reject every element, and
+ * a member outside this increment can mix receiver elements with argument elements. The
+ * relation therefore bounds what the result can carry and never asserts that it does.
+ *
+ * Established by a probe with two halves, since either alone is satisfied by the wrong
+ * value: the result is not the receiver, and an element of the result is the sentinel the
+ * receiver held.
+ */
+export const RESULT_RELATION_RECEIVER_ELEMENTS: unique symbol = Symbol(
+  'collection member returns a fresh container that may hold receiver values',
+);
+
+/**
  * Which receiver-state relation one default-library member's result satisfies.
  */
-export type MemberResultRelation = typeof RESULT_RELATION_RECEIVER_VALUE;
+export type MemberResultRelation =
+  | typeof RESULT_RELATION_RECEIVER_VALUE
+  | typeof RESULT_RELATION_RECEIVER_ELEMENTS;
 
 /**
  * One verified result relation, with the receiver position its result comes from.
@@ -78,6 +100,10 @@ const PROVENANCE_BY_OWNER: Readonly<
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
     },
+    filter: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
+      receiverTypeArgumentIndex: 0,
+    },
     find: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
@@ -94,10 +120,18 @@ const PROVENANCE_BY_OWNER: Readonly<
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
     },
+    slice: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
+      receiverTypeArgumentIndex: 0,
+    },
   },
   ReadonlyArray: {
     at: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
+    filter: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
     },
     find: {
@@ -106,6 +140,10 @@ const PROVENANCE_BY_OWNER: Readonly<
     },
     findLast: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
+    slice: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
     },
   },
@@ -149,22 +187,30 @@ export const RESULT_PROVENANCE_BY_INTERFACE: ReadonlyMap<
  * cannot pass unnoticed: the author must change a number in a second file, which is
  * the point at which the identity probe becomes unavoidable.
  */
-export const VERIFIED_RESULT_RELATION_COUNT = 10;
+export const VERIFIED_RESULT_RELATION_COUNT = 14;
 
 /**
- * Members deliberately absent because their result is a fresh container.
+ * Fresh-container members still absent, each for a reason of its own.
  *
- * Named rather than merely omitted, because these are the members most likely to be
- * added by someone reading "returns receiver elements" as "returns receiver state".
- * `slice`, `concat`, `filter` and `toReversed` all hand back a new array whose
- * elements are the receiver's. Mutating an element reaches the receiver; mutating the
- * array does not. Representing that needs a container relation and a resolver that
- * keeps the two apart, which nothing here does yet.
+ * `slice` and `filter` left this list when the container relation arrived. The rest stay,
+ * and not merely because nobody got to them:
+ *
+ * - `concat`, `with` and `toSpliced` mix receiver elements with argument elements, so
+ *   `rows.with(0, replacement)` can hand back a container whose written element came from
+ *   the argument. The relation would have to union two sources, and the probe would have to
+ *   record that it is non-exclusive.
+ * - `flat` returns descendants rather than the receiver's immediate held type:
+ *   `readonly (readonly Row[])[]` flattens to `Row[]`, so the type argument this authority
+ *   records names the wrong level, and greater depths reach further.
+ * - `concat` additionally consults `Symbol.isConcatSpreadable` and traverses its arguments,
+ *   which is a channel the stated trust baseline does not cover.
+ * - `toReversed` is uniform and would likely qualify, and is held back only to keep the
+ *   first container increment to members whose probe shape is already proven.
+ *
+ * Their exclusion is asserted, so removing one without adding its relation fails a test.
  */
 export const FRESH_CONTAINER_MEMBER_NAMES: ReadonlySet<string> = new Set([
-  'slice',
   'concat',
-  'filter',
   'toReversed',
   'toSpliced',
   'with',
