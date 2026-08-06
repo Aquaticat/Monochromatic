@@ -440,20 +440,63 @@ iterator's contents rather than the call's channel.
 
 Measured 2026-08-06:
  of 1689 findings across the workspace,
- 62 name a collection iterator member among their
-causes and 16 name nothing else.
+ 62 named a collection iterator member among their
+causes and 16 named nothing else.
  Of those 16,
- 14 are `entries` and 2 are `values`,
- and all 14 are the same
-idiom,
+ 14 were `entries` and 2 were `values`,
+ and all 14 were the
+same idiom,
  `for (const [index, item,] of items.entries())`.
- `values` fits the existing element relation and its
-existing probe shape;
- `entries` fits neither,
- because it yields fresh pairs that contain a receiver element
-rather than alias one.
- Written up with a proposed order in
-`doc/planning/prefer-readonly-iterator-member-provenance.md`.
+
+### Closed the same day,
+ with the residue at zero
+
+`values`,
+ `entries` and `keys` all carry result relations now,
+ and iterator-only findings stand at 0 from
+16.
+ The rule reports 1682 across the workspace,
+ from 1689,
+ with read-only offers unchanged at 33 through
+every increment,
+ which is the number that matters:
+ a false offer is the failure mode and no parameter
+became offerable.
+
+What the increments were,
+ in the order they landed and each with its own matched pair:
+
+- `values` under the existing element relation,
+   whose identity probe had to learn to drain a non-array
+  result,
+   since an iterator carries its elements the same way and exposes none of them to
+  `Array.isArray`.
+- A defect that increment exposed:
+   `callResultElementReceiver` compared the result's type argument at
+  the *receiver's* position,
+   so `Map.values` was inert on arrival because `MapIterator` has no position 1.
+  The element relation now carries its own `resultTypeArgumentIndex`.
+- `RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED` for `entries`,
+   whose yielded pairs are allocated by the
+  member and so are never identical to a receiver element.
+   Its recorded position proves the claim rather
+  than bounding it,
+   which is what keeps a write through a `Map` key attributed.
+- Admitting the iterated and spread element steps in the escape walk,
+   scoped by an
+  `elementStepsAttributed` flag so the argument-side path in `effect-call-analysis.ts` is untouched.
+   This
+  is the only one that moved verdicts.
+- `keys` for `Map` and `ReadonlyMap`,
+   which supplies the attribution and the discharge together.
+
+Two decisions recorded against this arc were overturned by measurement rather than by argument,
+ and both
+retractions are kept in `doc/planning/prefer-readonly-iterator-member-provenance.md` beside what replaced
+them.
+ The failure was the same each time and is now `AGENTS.md` rule `QAB`:
+ a reading of the state before a
+change is not evidence about the state after it.
 
 ## Adopted for issue #414: the collection result gate moves from type shape to provenance
 
