@@ -4117,3 +4117,41 @@ Per-slice speed is fine.
 The genuinely new cost is the naturalness lane,
 which did not exist when round two's 36 min/entry was measured
 and adds a rewriter call, a judge round, and a recheck per eligible slice.
+
+### Run 003, and the rest of the certainly-good backlog
+
+Landed after run 002 started, so the pass restarted again as `pass8-run-003`:
+
+TASK 54, `candidateResolvedIssueIds` on `ChunkRepairOutcome`.
+`resolvedIssueIds` discards two different things and both are worth auditing:
+verdicts on issues no operation served,
+which must not earn selection credit but are still what the checkers SAID,
+and every verdict at all when the unchanged text won,
+so a rejected candidate left no trace of how it was judged.
+The new field records them and decides nothing.
+`SLICE_CACHE_VERSION` went 2 -> 3 for the shape change.
+
+The served-issue derivation moved to `chunk-measure.ts` as
+`selectCreditableIssues`,
+because adding the telemetry pushed `repair-chunk.ts` to 301 lines.
+Splitting rather than raising the budget, as MXL requires;
+`chunk-measure.ts` is where the other selection inputs already live.
+
+STILL NOT LANDED, and still deliberately:
+
+-    Task 53's rebuild half.
+    The RENAME half is safe and pending only because it changes a public type
+    for no measurement gain mid-run;
+    it can land any time.
+-    Task 31, judge crosscheck.
+    A new stage with its own cost and failure modes.
+
+RESTART DISCIPLINE that emerged, worth keeping:
+stop the pass, CONFIRM no `corpus-pass` process survives
+(`ps --no-headers -eo pid,args | rg corpus-pass | rg --invert-match 'rg |pgrep'`,
+since a bare `pgrep --full` matches its own command line and reads as a false
+positive),
+delete the slice cache,
+then start the next numbered log.
+Deleting the cache is belt and braces now that the key covers run shape,
+but a stale directory invites exactly the confusion the key exists to prevent.
