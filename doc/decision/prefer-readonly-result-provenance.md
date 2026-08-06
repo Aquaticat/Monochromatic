@@ -524,7 +524,22 @@ Reporting stays where `effect-result-escape.ts` already puts it:
  a use that mutates an origin or hands it
 across an opaque boundary.
 
-### What this does not decide
+### What this does not decide, decided separately on 2026-08-06
+
+The question below was left open here and answered in
+`doc/decision/prefer-readonly-member-channel-authority.md`,
+ "The stated trust baseline",
+ which resolves
+issue #415:
+ standard dispatch,
+ indexed data properties,
+ the standard iterator and default `Symbol.species`
+are trusted for a value typed as a collection view.
+ So the container cases are no longer gated on the
+channel,
+ and both increments below proceed together.
+ The rest of this section records why the question
+existed and the measurement that settled it.
 
 Whether a collection-returning member discharges at all depends on a question this decision leaves open,
 tracked separately:
