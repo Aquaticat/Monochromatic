@@ -119,7 +119,7 @@ await describe({
           record: {
             ...MISMATCH_RECORD,
             outcomeKind: 'http-error',
-            detail: 'transport: Error: Timeout: hf:MiniMaxAI/MiniMax-M3'
+            detail: 'transport: Error: Timeout: hf:moonshotai/Kimi-K3'
               + ' exceeded its 480000ms deadline',
           },
         },),).toBe(true,);

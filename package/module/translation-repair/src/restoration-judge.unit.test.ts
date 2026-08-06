@@ -108,7 +108,7 @@ function judgingClient(
 const JUDGES: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:Qwen/Qwen3.6-27B',
-  'hf:moonshotai/Kimi-K2.7-Code',
+  'hf:moonshotai/Kimi-K3',
 ];
 
 await describe({
@@ -169,7 +169,7 @@ await describe({
             verdictsByModel: {
               'hf:zai-org/GLM-5.2': ['restored', 'restored',],
               'hf:Qwen/Qwen3.6-27B': ['partial', 'restored',],
-              'hf:moonshotai/Kimi-K2.7-Code': ['absent', 'restored',],
+              'hf:moonshotai/Kimi-K3': ['absent', 'restored',],
             },
           },),
           judgeModelIds: JUDGES,
@@ -197,7 +197,7 @@ await describe({
               'hf:zai-org/GLM-5.2': ['restored', 'restored',],
               'hf:Qwen/Qwen3.6-27B': ['absent', 'restored',],
             },
-            silent: new Set(['hf:moonshotai/Kimi-K2.7-Code',],),
+            silent: new Set(['hf:moonshotai/Kimi-K3',],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫追蝴蝶。碗是满的。',
@@ -220,7 +220,7 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: { 'hf:zai-org/GLM-5.2': ['restored', 'restored',], },
-            silent: new Set(['hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K2.7-Code',],),
+            silent: new Set(['hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],),
           },),
           judgeModelIds: JUDGES,
           sourceText: '猫猫追蝴蝶。碗是满的。',

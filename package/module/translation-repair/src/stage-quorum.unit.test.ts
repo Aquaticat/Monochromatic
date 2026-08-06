@@ -120,7 +120,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K2.7-Code',],
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -144,10 +144,10 @@ await describe({
         /** Gather where two of three answer immediately and one never does. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:MiniMaxAI/MiniMax-M3': 99, },
+            failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:MiniMaxAI/MiniMax-M3',],
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -160,22 +160,21 @@ await describe({
         expect(gather.quorumMet,).toBe(true,);
         // Quorum (2 of 3) was met after the first round, so the lost
         // voice is never re-asked.
-        expect(calls['hf:MiniMaxAI/MiniMax-M3'],).toBe(1,);
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(1,);
       },
     },),
 
     it({
-      name: 'retries lost voices to quorum and recovers a 1-of-7 round',
+      name: 'retries lost voices to quorum and recovers a 1-of-6 round',
       fn: async () => {
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};
-        /** Seven-model roster where six fail once then answer. */
+        /** Full six-model roster where five fail once then answer. */
         const roster: readonly SyntheticModelId[] = [
           'hf:zai-org/GLM-5.2',
           'hf:zai-org/GLM-4.7-Flash',
           'hf:Qwen/Qwen3.6-27B',
-          'hf:moonshotai/Kimi-K2.7-Code',
-          'hf:MiniMaxAI/MiniMax-M3',
+          'hf:moonshotai/Kimi-K3',
           'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
           'hf:openai/gpt-oss-120b',
         ];
@@ -198,7 +197,7 @@ await describe({
           stage: 'critic',
           l,
         },);
-        expect(gather.voices,).toHaveLength(7,);
+        expect(gather.voices,).toHaveLength(6,);
         expect(gather.quorumMet,).toBe(true,);
         expect(calls['hf:zai-org/GLM-5.2'],).toBe(1,);
         expect(calls['hf:openai/gpt-oss-120b'],).toBe(2,);
@@ -215,11 +214,11 @@ await describe({
           client: flakyClient({
             failuresByModel: {
               'hf:Qwen/Qwen3.6-27B': 99,
-              'hf:MiniMaxAI/MiniMax-M3': 99,
+              'hf:moonshotai/Kimi-K3': 99,
             },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:MiniMaxAI/MiniMax-M3',],
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -244,10 +243,10 @@ await describe({
         /** Gather where two answer at once and one answers on retry. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:MiniMaxAI/MiniMax-M3': 1, },
+            failuresByModel: { 'hf:moonshotai/Kimi-K3': 1, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:MiniMaxAI/MiniMax-M3',],
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -261,7 +260,7 @@ await describe({
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toHaveLength(0,);
         // Quorum stood after round zero, yet the lost voice was re-asked.
-        expect(calls['hf:MiniMaxAI/MiniMax-M3'],).toBe(2,);
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(2,);
       },
     },),
 
@@ -273,10 +272,10 @@ await describe({
         /** Gather where one voice never answers despite every round. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { 'hf:MiniMaxAI/MiniMax-M3': 99, },
+            failuresByModel: { 'hf:moonshotai/Kimi-K3': 99, },
             calls,
           },),
-          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:MiniMaxAI/MiniMax-M3',],
+          modelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B', 'hf:moonshotai/Kimi-K3',],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -290,7 +289,7 @@ await describe({
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toContain('stage-roster-incomplete (critic 2/3)',);
         // Initial ask plus every retry round.
-        expect(calls['hf:MiniMaxAI/MiniMax-M3'],).toBe(4,);
+        expect(calls['hf:moonshotai/Kimi-K3'],).toBe(4,);
       },
     },),
 

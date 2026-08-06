@@ -44,24 +44,50 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
   'hf:zai-org/GLM-5.2',
   'hf:zai-org/GLM-4.7-Flash',
   'hf:Qwen/Qwen3.6-27B',
-  'hf:moonshotai/Kimi-K2.7-Code',
-  'hf:MiniMaxAI/MiniMax-M3',
+  'hf:moonshotai/Kimi-K3',
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   'hf:openai/gpt-oss-120b',
 ];
 
 /**
- * Role roster for a corpus run: all seven critique and adjudicate, GLM-5.2
- * edits, the strongest three check the shipped repair.
+ * Role roster for a corpus run: all SIX critique and adjudicate, GLM-5.2
+ * edits, and three check the shipped repair.
+ *
+ * The panel is six rather than seven because the provider withdrew two models
+ * and only one replacement (Kimi-K3) appeared. The stage quorum is unaffected:
+ * `gatherStageVoices` computes it as `voices > modelIds.length / 2`, which
+ * needs 4 voices at seven models and 4 at six.
+ *
+ * The ISSUE-acceptance gate does move, and the user accepted the move rather
+ * than it happening unnoticed: `DEFAULT_ADJUDICATION_CONFIG.minBallotWeight` is
+ * the absolute value 3, so the share of the panel that must cast a non-abstain
+ * ballot before any decision rises from 3-of-7 (43 percent) to 3-of-6 (50).
+ * User decision, 2026-08-05: "50% is okay here."
+ *
+ * Kimi-K3 EDITS, replacing GLM-5.2, because the user reports it as much stronger
+ * than anything else currently offered and the editor is where model strength
+ * converts most directly into repair quality. The round-two grading supports
+ * spending strength there specifically: four of the 37 true positives carried
+ * notes saying detection was right but the proposed repair was poor ("is there
+ * a better way?"), which is an editor complaint, not a critic one.
+ *
+ * Checkers deliberately EXCLUDE the editor, so nothing checks its own work.
+ * Previously GLM-5.2 both edited and checked; that self-check is now gone.
+ *
+ * Attribution cost, accepted by the user ("Bundle all the improvements that
+ * could be made, in"): round three changes the roster, the editor, the checker
+ * set, and adds a naturalness pass at once, so a precision delta cannot be
+ * attributed to any single change. Record this in the round-three verdict
+ * rather than rediscovering it during analysis.
  */
 export const RUN_MODELS: RepairModels = {
   criticModelIds: RUN_ROSTER,
   panelModelIds: RUN_ROSTER,
-  editorModelId: 'hf:zai-org/GLM-5.2',
+  editorModelId: 'hf:moonshotai/Kimi-K3',
   checkerModelIds: [
     'hf:zai-org/GLM-5.2',
     'hf:Qwen/Qwen3.6-27B',
-    'hf:moonshotai/Kimi-K2.7-Code',
+    'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
   ],
 };
 

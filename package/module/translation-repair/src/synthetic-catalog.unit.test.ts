@@ -51,7 +51,7 @@ await describe({
     },),
 
     it({
-      name: 'spans six vendor families across seven models',
+      name: 'spans five vendor families across six distinct models',
       fn: async () => {
         /** Distinct families in the catalog. */
         const families = new Set(
@@ -60,14 +60,17 @@ await describe({
           },),
         );
         expect([...families,].toSorted(),).toEqual([
-          'minimax',
           'moonshot',
           'nvidia',
           'openai',
           'qwen',
           'zai',
         ],);
-        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(7,);
+        // Six, not the ten ids the models endpoint lists: syn:large:text,
+        // syn:large:vision, syn:small:text, and syn:small:vision each alias a
+        // model already counted here. Admitting one would seat a single model
+        // twice on a voting panel and count one opinion as two confirmations.
+        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(6,);
       },
     },),
   ],

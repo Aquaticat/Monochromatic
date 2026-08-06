@@ -41,12 +41,29 @@ export type SyntheticVendorFamily =
   | 'zai'
   | 'qwen'
   | 'moonshot'
-  | 'minimax'
   | 'nvidia'
   | 'openai';
 
 /**
  * Every always-on Synthetic chat model this pipeline may call.
+ *
+ * These are the SIX genuinely distinct models the provider offers. The models
+ * endpoint also lists `syn:large:text`, `syn:large:vision`, `syn:small:text`,
+ * and `syn:small:vision`, and those are DELIBERATELY ABSENT here: each is an
+ * alias onto a model already listed, which the endpoint states in its own
+ * `hugging_face_id` field (`syn:large:text` is GLM-5.2, `syn:large:vision` is
+ * Kimi-K3, `syn:small:text` is GLM-4.7-Flash, `syn:small:vision` is
+ * Qwen3.6-27B). Admitting an alias would let one model occupy two seats on a
+ * voting panel, so a single opinion would be counted as two independent
+ * confirmations and the adjudication tally would silently overstate agreement.
+ * Any future roster edit must dedupe on `hugging_face_id`, never on id.
+ *
+ * Two ids were REMOVED 2026-08-05, `moonshotai/Kimi-K2.7-Code` and
+ * `MiniMaxAI/MiniMax-M3` (written without the `hf:` prefix here so a future
+ * bulk id rewrite cannot silently edit this sentence, which is exactly what
+ * happened once). Both now answer HTTP 404 "is no longer supported", and 404 is
+ * not in the transient retry set, so leaving them listed cost a lost voice per
+ * stage per call, silently.
  *
  * @example
  * ```ts
@@ -57,8 +74,7 @@ export type SyntheticModelId =
   | 'hf:zai-org/GLM-5.2'
   | 'hf:zai-org/GLM-4.7-Flash'
   | 'hf:Qwen/Qwen3.6-27B'
-  | 'hf:moonshotai/Kimi-K2.7-Code'
-  | 'hf:MiniMaxAI/MiniMax-M3'
+  | 'hf:moonshotai/Kimi-K3'
   | 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4'
   | 'hf:openai/gpt-oss-120b';
 
@@ -121,8 +137,8 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
     family: 'zai',
     contextLength: 524_288,
     maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.0000014,
-    completionDollarsPerToken: 0.0000044,
+    promptDollarsPerToken: 0.000001,
+    completionDollarsPerToken: 0.000003,
   },
   'hf:zai-org/GLM-4.7-Flash': {
     id: 'hf:zai-org/GLM-4.7-Flash',
@@ -138,23 +154,15 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticModelId, SyntheticModelI
     contextLength: 262_144,
     maxOutputLength: 65_536,
     promptDollarsPerToken: 0.00000045,
-    completionDollarsPerToken: 0.0000036,
+    completionDollarsPerToken: 0.0000022,
   },
-  'hf:moonshotai/Kimi-K2.7-Code': {
-    id: 'hf:moonshotai/Kimi-K2.7-Code',
+  'hf:moonshotai/Kimi-K3': {
+    id: 'hf:moonshotai/Kimi-K3',
     family: 'moonshot',
-    contextLength: 262_144,
+    contextLength: 524_288,
     maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.00000095,
-    completionDollarsPerToken: 0.000004,
-  },
-  'hf:MiniMaxAI/MiniMax-M3': {
-    id: 'hf:MiniMaxAI/MiniMax-M3',
-    family: 'minimax',
-    contextLength: 262_144,
-    maxOutputLength: 65_536,
-    promptDollarsPerToken: 0.0000006,
-    completionDollarsPerToken: 0.0000012,
+    promptDollarsPerToken: 0.000003,
+    completionDollarsPerToken: 0.000015,
   },
   'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4': {
     id: 'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
