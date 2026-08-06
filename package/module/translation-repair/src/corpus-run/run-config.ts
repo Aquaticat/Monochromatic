@@ -51,7 +51,8 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
 
 /**
  * Role roster for a corpus run: all SIX critique and adjudicate, two edit
- * against each other, and three check the shipped repair.
+ * against each other, one refines the result for naturalness, and three check
+ * the shipped repair.
  *
  * The panel is six rather than seven because the provider withdrew two models
  * and only one replacement (Kimi-K3) appeared. `gatherStageVoices` computes
@@ -90,6 +91,18 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * that most often loses its voice to schema mismatch, and the checker stage is
  * where a lost voice costs proof rather than coverage.
  *
+ * ONE refiner runs the naturalness lane, and it is Kimi-K3, which also edits.
+ * Nothing forbids that: judges exclude producers per selection round, so the
+ * refinement is still chosen by models with no stake in it, and the checker
+ * roster excludes every editor and every refiner, so nothing certifies its own
+ * text. The tradeoff is real and is accepted rather than hidden: a model that
+ * just wrote a paragraph is a poor judge of whether that paragraph reads
+ * awkwardly. The alternative was GLM-4.7-Flash, the only strong-enough model
+ * that neither edits nor checks, and it is also the model that most often
+ * loses its voice to schema mismatch. Naturalness is a writing task, so
+ * strength won. Revisit if the `refine-` findings show the lane changing
+ * little.
+ *
  * Attribution cost, accepted by the user ("Bundle all the improvements that
  * could be made, in"): round three changes the roster, the editor, the checker
  * set, and adds a naturalness pass at once, so a precision delta cannot be
@@ -104,6 +117,7 @@ export const RUN_MODELS: RepairModels = {
     'hf:zai-org/GLM-5.2',
   ],
   judgeModelIds: RUN_ROSTER,
+  refinerModelIds: ['hf:moonshotai/Kimi-K3',],
   checkerModelIds: [
     'hf:Qwen/Qwen3.6-27B',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
