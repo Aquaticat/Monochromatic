@@ -1,0 +1,188 @@
+/**
+ * Tests for reading repair provenance back out of a run artifact, including
+ * the one tolerance: artifacts written before repair recording existed.
+ * Fixtures are cat-themed invention mirroring corpus structure only.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  ArtifactParseError,
+  parseRecordRepair,
+} from '../dist/final/neutral/index.mjs';
+
+/**
+ * Builds one issue record wrapper carrying repair provenance.
+ *
+ * @param overrides - fields replacing the well-formed defaults
+ *
+ * @returns Record the reader parses
+ *
+ * @example
+ * ```ts
+ * const record = catRecord({},);
+ * ```
+ */
+function catRecord(
+  overrides: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  return {
+    chunkIndex: 0,
+    resolved: true,
+    repairDisposition: 'shipped',
+    refined: false,
+    repairRegions: [
+      {
+        envelopeId: 'envelope/nap',
+        issueIds: ['adjudicated/nap',],
+        before: 'The cat is doing the sleeping.',
+        editorAfter: 'The cat is asleep.',
+      },
+    ],
+    ...overrides,
+  };
+}
+
+await describe({
+  name: parseRecordRepair.name,
+  children: [
+    it({
+      name: 'reads a recorded repair with its regions',
+      fn: async () => {
+        const reading = parseRecordRepair({
+          record: catRecord({},),
+          path: 'Kitten issues[0]',
+        },);
+        expect(reading.kind,).toBe('recorded',);
+        if (reading.kind !== 'recorded')
+          throw new Error('expected a recorded reading',);
+        expect(reading.repair.disposition,).toBe('shipped',);
+        expect(reading.repair.regions,).toHaveLength(1,);
+        expect(reading.repair.regions[0]?.editorAfter,)
+          .toBe('The cat is asleep.',);
+        expect(reading.repair.finalSliceText,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'names the absence rather than inventing an empty repair when the '
+        + 'artifact predates repair recording, so a legacy round can still be '
+        + 'read for detection without entering any repair denominator',
+      fn: async () => {
+        /** Round-two shaped record: an issue wrapper with no repair fields. */
+        const legacy = {
+          chunkIndex: 0,
+          resolved: true,
+          issue: { issueId: 'adjudicated/nap', },
+        };
+        const reading = parseRecordRepair({
+          record: legacy,
+          path: 'Kitten issues[0]',
+        },);
+        expect(reading.kind,).toBe('unrecorded',);
+      },
+    },),
+
+    it({
+      name: 'reads the final slice text when refinement made the recorded '
+        + 'replacement stale',
+      fn: async () => {
+        const reading = parseRecordRepair({
+          record: catRecord({
+            refined: true,
+            finalSliceText: 'The cat naps in the sun.',
+          },),
+          path: 'Kitten issues[0]',
+        },);
+        if (reading.kind !== 'recorded')
+          throw new Error('expected a recorded reading',);
+        expect(reading.repair.refined,).toBe(true,);
+        expect(reading.repair.finalSliceText,).toBe('The cat naps in the sun.',);
+      },
+    },),
+
+    it({
+      name: 'throws when a refined record carries no final slice text, since '
+        + 'nothing then states the wording a grader must judge',
+      fn: async () => {
+        /** Failure raised by the missing final text. */
+        let caught: unknown;
+        try {
+          parseRecordRepair({
+            record: catRecord({ refined: true, },),
+            path: 'Kitten issues[0]',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(ArtifactParseError,);
+        expect((caught as Error).message,).toContain('finalSliceText',);
+      },
+    },),
+
+    it({
+      name: 'throws on a malformed region rather than dropping it, because a '
+        + 'silently short repair record biases what it measures',
+      fn: async () => {
+        /** Failure raised by the non-string replacement. */
+        let caught: unknown;
+        try {
+          parseRecordRepair({
+            record: catRecord({
+              repairRegions: [
+                {
+                  envelopeId: 'envelope/nap',
+                  issueIds: ['adjudicated/nap',],
+                  before: 'The cat is doing the sleeping.',
+                  editorAfter: 42,
+                },
+              ],
+            },),
+            path: 'Kitten issues[0]',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(ArtifactParseError,);
+        expect((caught as Error).message,).toContain('editorAfter',);
+      },
+    },),
+
+    it({
+      name: 'throws when a recorded repair has a non-string issue id on a '
+        + 'region, which would break attribution to the sampled issue',
+      fn: async () => {
+        /** Failure raised by the non-string issue id. */
+        let caught: unknown;
+        try {
+          parseRecordRepair({
+            record: catRecord({
+              repairRegions: [
+                {
+                  envelopeId: 'envelope/nap',
+                  issueIds: [42,],
+                  before: '',
+                  editorAfter: 'The cat is asleep.',
+                },
+              ],
+            },),
+            path: 'Kitten issues[0]',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(ArtifactParseError,);
+        expect((caught as Error).message,).toContain('issueIds',);
+      },
+    },),
+  ],
+},);

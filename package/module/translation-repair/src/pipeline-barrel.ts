@@ -223,6 +223,7 @@ export {
   collectRepairRegions,
   type RepairRegion,
 } from './repair-region.ts';
+export { measurePatchedCandidate, } from './chunk-measure.ts';
 export {
   buildRestorationJudgeMessages,
   isRestorationJudgeWire,
