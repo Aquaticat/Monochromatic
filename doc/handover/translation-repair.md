@@ -5048,3 +5048,44 @@ WHAT SURVIVES of the earlier sections: the measured 9.80 min/chunk, the
 band-independence of per-chunk cost, the ~85 slices for fifteen entries, and
 that provider latency dominates and is unstable. Only the framing as a
 user-facing tradeoff was wrong.
+
+### First real artifact: the probe fires on corpus data
+
+`AmbeR_the_anpa` settled and `score-probe` read it:
+
+```text
+PROBE  entries=1 shippedRecords=35 unprobedRecords=0 regions=13
+       majorityIntroduced=1 minorityIntroduced=1 noneIntroduced=11
+CLAIMS added=1 dropped=2 contradicted=0 unanchored=0 degradedRosterRegions=0
+```
+
+FOUR THINGS THIS SETTLES.
+
+The plumbing works end to end on real output, not only on fixtures:
+35 shipped records, 0 unprobed, every one carrying telemetry the reader could
+parse.
+
+THE DEDUPE IS NOT A DETAIL. Thirty-five shipped records collapsed to THIRTEEN
+distinct regions, a factor of 2.7. Summing over records rather than envelopes
+would have inflated every count by that much, and nothing downstream would have
+looked wrong.
+
+The probe is not silent on real data. The earlier "eight regions, zero claims"
+reading was a small sample and has now moved: three claims across thirteen
+regions, one region drawing a majority and one a minority.
+
+THE OMISSION DIRECTION IS EARNING ITS PLACE. Two of the three claims are
+`dropped`, meaning wording present before the edit and absent after. Under the
+forward-only screen this session started with, those two claims could not have
+anchored at all. The fix advisor caught is now validated on corpus data rather
+than on a cat fixture.
+
+ALSO WORTH NOTING: zero contradicted and zero unanchored. Every claim the
+probers made resolved against the region it was about, so the verbatim-quote
+requirement is being honored rather than worked around.
+
+WHAT IT DOES NOT SETTLE: one entry. `majorityIntroduced=1` of 13 regions is
+about 8 percent, which is the rate a gate would have blocked, and whether those
+blocks would have been RIGHT is exactly what the repair grades decide. Do not
+read 8 percent as a defect rate; read it as the population `refutedByHuman` will
+be measured against.
