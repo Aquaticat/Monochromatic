@@ -5012,3 +5012,39 @@ STILL THE USER'S CALL, and now worth raising BEFORE the budget fires rather than
 after: accept twelve or thirteen entries, or raise `SOFT_BUDGET_MINUTES`. The
 fifty-issue sample is unaffected either way, so the cost of the short round is
 page diversity alone.
+
+#### CORRECTION: the budget caps an INVOCATION, not the round
+
+The previous two sections framed a choice between raising
+`SOFT_BUDGET_MINUTES` and accepting a short round. That choice does not exist,
+and I raised it with the user before checking.
+
+`corpus-pass.ts` computes its `done` set by READING THE ARTIFACTS DIRECTORY:
+
+```ts
+const done = new Set(
+  (await readdir(artifactsDir,))
+    .filter(isArtifactFile,)
+    .map(toId,),
+);
+```
+
+So a second invocation skips every entry already carrying an artifact and
+continues with the rest. The soft budget bounds how long ONE run keeps starting
+entries; it does not bound how many entries a round accumulates. Artifacts
+persist, `attempts.json` persists, and the per-entry slice cache is discarded on
+settle so nothing stale carries over.
+
+THE ACTUAL PROCEDURE when the budget fires: start the pass again. It will report
+`done=N` for whatever settled and work the remainder. Nothing is lost and no
+configuration changes.
+
+The projection still MATTERS, just not as a decision: it says the round needs
+roughly one and a half invocations rather than one, so plan for a second run
+rather than being surprised by a short first one. The pass is a tracked
+background task, so its exit notifies without polling.
+
+WHAT SURVIVES of the earlier sections: the measured 9.80 min/chunk, the
+band-independence of per-chunk cost, the ~85 slices for fifteen entries, and
+that provider latency dominates and is unstable. Only the framing as a
+user-facing tradeoff was wrong.
