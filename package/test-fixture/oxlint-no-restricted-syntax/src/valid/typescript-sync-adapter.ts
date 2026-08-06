@@ -465,6 +465,74 @@ export function boundContainerFoldEffect(
 }
 
 /**
+ * Writes elements of a filtered container consumed as the next call's receiver.
+ *
+ * The half of the container-receiver question that must not go quiet. Resolving the
+ * receiver through its elements is what lets the observer derivation run at all, and a
+ * derivation that runs has to attribute what the observer does: `filter` hands back the
+ * receiver's own rows, so the write inside the fold reaches what the caller passed and
+ * belongs to the parameter. A discharge that cleared the opacity without recording this
+ * would have traded a report for silence rather than for a proof.
+ *
+ * @param states - Container whose elements this writes while folding.
+ *
+ * @returns count of written elements.
+ *
+ * @mutates states - Writes value on every folded element that carries one.
+ *
+ * @example
+ * ```ts
+ * chainedContainerFoldWriteEffect([{ value: 'x' }]);
+ * ```
+ */
+export function chainedContainerFoldWriteEffect(
+  states: { value: string; }[],
+): number {
+  return states
+    .filter(function present(state,): boolean {
+      return state.value !== '';
+    },)
+    .reduce(function foldWriting(total, state,): number {
+      state.value = 'changed';
+      return total + 1;
+    }, 0,);
+}
+
+/**
+ * Writes elements of the same filtered container through a binding.
+ *
+ * The control for `chainedContainerFoldWriteEffect`, holding the pair symmetric with the
+ * reading pair: binding the container may not change whether the write is attributed.
+ *
+ * @param states - Container whose elements this writes while folding.
+ *
+ * @returns count of written elements.
+ *
+ * @mutates states - Writes value on every folded element that carries one.
+ *
+ * @example
+ * ```ts
+ * boundContainerFoldWriteEffect([{ value: 'x' }]);
+ * ```
+ */
+export function boundContainerFoldWriteEffect(
+  states: { value: string; }[],
+): number {
+  /**
+   * Entries carrying a value.
+   */
+  const present = states
+    .filter(function carriesValue(state,): boolean {
+      return state.value !== '';
+    },);
+  return present
+    .reduce(function foldWriting(total, state,): number {
+      state.value = 'changed';
+      return total + 1;
+    }, 0,);
+}
+
+/**
  * Mutates receiver-reachable state through the whole-array callback parameter.
  *
  * `forEach` hands the receiver itself to parameter 2, so matching only the

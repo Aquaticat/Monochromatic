@@ -2705,6 +2705,55 @@ await describe({
          * unanalyzable callee, and a default sort on an array carrying an own hook. */
         expect(opaqueIndexes('opaqueSemanticEffect',),).toEqual([0,],);
         expect(opaqueIndexes('hookedArrayDefaultSortOpaqueEffect',),).toEqual([0,],);
+        /**
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * Reads `referentMutatedParameterIndexes`, the set the read-only offer is gated
+         * on, rather than its union with the invoked set.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns written parameter indexes in ascending order.
+         */
+        function writtenIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.referentMutatedParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /* The other half of the same question, and the half a discharge can quietly lose.
+         * Clearing the opacity is only correct if the derivation that cleared it also
+         * reports what the observer does, so the same two spellings with a writing fold
+         * must attribute the write to the parameter: `filter` hands back the receiver's
+         * own rows, and the fold writes one. A discharge that recorded nothing here would
+         * have traded a report for silence rather than for a proof, which is the failure
+         * the effect-model split already caught once when an empty observer match dropped
+         * a real mutation. */
+        expect(writtenIndexes('chainedContainerFoldWriteEffect',),).toEqual([0,],);
+        expect(writtenIndexes('boundContainerFoldWriteEffect',),).toEqual([0,],);
+        /* And the reading pair stays unwritten, so the assertions above are discriminating
+         * rather than true of every fold. */
+        expect(writtenIndexes('chainedContainerFoldEffect',),).toEqual([],);
+        expect(writtenIndexes('boundContainerFoldEffect',),).toEqual([],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();
