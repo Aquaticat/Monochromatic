@@ -117,6 +117,28 @@ const result = await repairTranslation({
   Model and corpus text reaches those sheets fenced
   (`fenceForMarkdown`), since a replacement is arbitrary text crossing into
   Markdown grammar and can otherwise invent a heading or a grade box.
+- **Text entering a prompt is fenced against its own content.**
+  `selectFence` chooses a delimiter strictly longer than any run inside every
+  string a prompt encloses.
+  A fixed delimiter would let a translation containing a setext heading
+  underline close its own block and have the rest of its text read as
+  instructions.
+- **A new measurement records before it decides.**
+  `runIntroducedDefectProbe` asks whether a repair broke something nobody
+  raised, which `regressedKnownIssues` cannot see because it reads verdicts
+  keyed by issues a critic already filed.
+  It ships in shadow mode: the report reaches the outcome and the artifacts,
+  and candidate selection does not read it.
+  Every region it inspects contains a defect by construction, that being why
+  the region was edited, so a model asked whether anything is wrong will find
+  something;
+  until that false-positive rate is measured against human repair grades,
+  letting the probe block a repair would discard correct fixes on unmeasured
+  evidence.
+  Claims are screened deterministically rather than believed:
+  a quote must be new in the replacement, or gone from it for dropped content,
+  and `screenNonTranslationVotes` is the precedent for evidence that dismisses
+  an impossible claim without having to prove a possible one.
 
 ## Status
 
