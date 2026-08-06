@@ -400,6 +400,71 @@ export function reduceElementParameterEffect(
 }
 
 /**
+ * Folds a filtered container consumed directly as the next call's receiver.
+ *
+ * The receiver of `reduce` is a container `filter` built, so no parameter is the
+ * value it holds and the question the observer derivation needs is where its
+ * elements came from. Asking for the value answers nothing, which left the call
+ * to the receiver claim, which cannot answer for a member carrying an observer,
+ * so the parameter stayed opaque for a fold that reads nothing but a length.
+ *
+ * @param states - Readonly container this reads.
+ *
+ * @returns total length of every non-empty value.
+ *
+ * @example
+ * ```ts
+ * chainedContainerFoldEffect([{ value: '' }]);
+ * ```
+ */
+export function chainedContainerFoldEffect(
+  states: readonly { value: string; }[],
+): number {
+  return states
+    .filter(function present(state,): boolean {
+      return state.value !== '';
+    },)
+    .reduce(function fold(total, state,): number {
+      return total + state.value
+        .length;
+    }, 0,);
+}
+
+/**
+ * Folds the same filtered container through a binding.
+ *
+ * The control for `chainedContainerFoldEffect`, and the reason the receiver
+ * resolution rather than the chaining is what this pins: binding the container
+ * changes the spelling of the cause and nothing else, so both forms must clear
+ * together or neither does.
+ *
+ * @param states - Readonly container this reads.
+ *
+ * @returns total length of every non-empty value.
+ *
+ * @example
+ * ```ts
+ * boundContainerFoldEffect([{ value: '' }]);
+ * ```
+ */
+export function boundContainerFoldEffect(
+  states: readonly { value: string; }[],
+): number {
+  /**
+   * Entries carrying a value.
+   */
+  const present = states
+    .filter(function carriesValue(state,): boolean {
+      return state.value !== '';
+    },);
+  return present
+    .reduce(function fold(total, state,): number {
+      return total + state.value
+        .length;
+    }, 0,);
+}
+
+/**
  * Mutates receiver-reachable state through the whole-array callback parameter.
  *
  * `forEach` hands the receiver itself to parameter 2, so matching only the

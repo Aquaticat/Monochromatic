@@ -16,10 +16,8 @@ import {
   type Type,
 } from 'typescript/unstable/sync';
 
-import {
-  callableDeclaration,
-  rootParameterOrigins,
-} from './effect-call-resolution.ts';
+import { callableDeclaration, } from './effect-call-resolution.ts';
+import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
 import { viewResultUnaccounted, } from './effect-view-result-gate.ts';
 import {
@@ -408,7 +406,7 @@ export function readonlyViewElementApplications({
  *
  * @param call - Read-only view call expression.
  *
- * @param receiver - Receiver expression whose parameter root is required.
+ * @param receiver - Receiver expression whose element origins are required.
  *
  * @param summary - Caller summary receiving derived relations.
  *
@@ -442,14 +440,27 @@ export function recordReadonlyViewApplications({
   readonly analysisRoot?: string;
   readonly body?: Node;
 },): boolean {
+  // The element question rather than the value question, and the two differ exactly
+  // where this derivation is needed most. A receiver that is a container another
+  // member built, `rows.filter(keep).reduce(fold, 0)` in either its chained or its
+  // bound spelling, is a value no parameter holds, so asking which parameter owns it
+  // answers nothing and this returns before deriving anything. The call then falls to
+  // the receiver claim, which cannot answer for a member carrying an observer, and the
+  // parameter stayed opaque for a fold that reads a length. Asking where the receiver's
+  // elements came from answers the parameter, which is what the observer derivation is
+  // about: the observer receives elements, never the container.
+  //
+  // Widening only, never narrowing: for a receiver that is a parameter the element walk
+  // finds no declaration initializer to follow and falls back to exactly the value
+  // origins, which is why every container fixture reads identically across the change.
   /**
-   * Caller parameters owning receiver, when receiver can carry mutable state.
+   * Caller parameters owning receiver elements, when receiver can carry mutable state.
    */
   const receiverOrigins = expressionCanCarryMutableState({
       checker,
       node: receiver,
     },)
-    ? rootParameterOrigins({
+    ? expressionElementOrigins({
       project,
       bindingOriginBySymbolId,
       node: receiver,
