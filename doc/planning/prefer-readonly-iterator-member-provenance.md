@@ -381,32 +381,57 @@ say.
    of `useEscapes` recognises.
    It is not.
 
-   Measured rather than assumed:
-   ascending spread-into-array-literal steps so the question is asked
-   about the literal,
-   whose position as a call receiver is already attributed,
-   changed nothing at all.
-   Identical errors,
-   identical rule findings,
-   identical offers,
-   and finding sets identical line for
-   line.
-   The change was reverted rather than kept as a principled no-op,
-   because an increment that
-   cannot be shown to do anything is one more thing to maintain and one more thing to disbelieve.
+   The reading was right and the first implementation of it was off by one node,
+   which is worth
+   recording because the measurement said "changed nothing" and that looked like evidence against
+   the idea rather than against the code.
+   Ascending from the node's parent found no spread and did
+   nothing.
+   `valueConsumer` already returns the spread element itself,
+   so the ascent has to start at
+   the node.
 
-   So the blocker for these six is somewhere after the escape test,
-   and the next investigation
-   starts by finding which gate refuses `checkBaseline` in
-   `package/module/jsonc-edit.fuzz/src/coverage-report.ts`,
-   whose receiver is a `ReadonlyMap<string, number>`
-   and whose pair type is therefore entirely primitive.
-   Note before starting that the paired relation
-   should verify there,
-   `number` against `number` being interned and identical,
-   which means the
-   refusal is unlikely to be the relation and the first thing to instrument is
-   `receiverClaimAnswerable`.
+   Instrumenting settled it in one run,
+   which is what the earlier round of reasoning should have been
+   spent on.
+   `receiverClaimAnswerable` was reached,
+   the channel was narrow,
+   the relation verified,
+   and
+   the refusal came from the escape test:
+   the consumer was `...baseline.entries()`,
+   whose parent is the
+   array literal,
+   so the literal branch asked "is this literal a call argument",
+   and for a literal used
+   as `.flatMap`'s receiver the answer is no.
+
+   With the ascent starting at the node,
+   `spreadCarrier` reaches the literal and its position as a
+   receiver is already attributed.
+   The redundant spread branch went with it,
+   so one question is asked in
+   one place.
+
+   Measured:
+   3023 errors to 3020,
+   1685 rule findings to 1682,
+   semantic failures and read-only offers
+   unchanged at 4 and 33,
+   three findings removed and none added.
+   `spreadContainerWriteEffect` cleared
+   too and its `referentMutated` still reads `[0]`,
+   the same trade every other container case made,
+   while `containerGrowthEffect` still reports at its row parameter because nothing attributes where
+   that row ends up.
+
+   **Iterator-only findings are now zero,
+   from 16 when this arc started.
+   ** Every remaining mention of an
+   iterator member sits beside another cause that is doing the reporting,
+   which is the honest state:
+   the
+   iterator question is answered and what is left is about something else.
 
 5.    `keys` last and separately:
    its elements are indices,

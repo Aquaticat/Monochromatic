@@ -140,6 +140,42 @@ function isEnclosingLiteral({ node, }: { readonly node: Node; },): boolean {
 }
 
 /**
+ * Ascends spread-into-array-literal steps to the literal that carries the value.
+ *
+ * `[...pairs.entries(),].flatMap(compare)` puts one collection's elements into a literal
+ * whose own position decides everything: as a call's receiver or argument the obligation
+ * transfers to that call, and stored or returned it leaves. Classifying the spread instead
+ * asks about a node whose parent is always a literal, which answers "is that literal an
+ * argument", and for a literal used as a receiver that is no.
+ *
+ * Starts from the node itself rather than its parent, because `valueConsumer` already
+ * returns the spread element. Ascending from the parent instead looks one node too high,
+ * finds no spread, and changes nothing, which is exactly what a first attempt at this
+ * measured.
+ *
+ * Iterative because the step composes: `[...[...pairs,],]` is two hops asking the identical
+ * question one node further out.
+ *
+ * @param node - Expression possibly sitting inside one or more spreads.
+ *
+ * @returns outermost literal carrying this value, or node itself when it is not spread.
+ *
+ * @example
+ * ```ts
+ * spreadCarrier({ node: spreadElement });
+ * ```
+ */
+function spreadCarrier({ node, }: { readonly node: Node; },): Node {
+  /**
+   * Value reached so far while ascending spread steps.
+   */
+  let carried = node;
+  while (isSpreadElement(carried,) && isArrayLiteralExpression(carried.parent,))
+    carried = carried.parent;
+  return carried;
+}
+
+/**
  * Tests whether a node sits in a position this analysis cannot follow.
  *
  * Attributed positions are deliberately enumerated rather than inferred from what is
@@ -161,33 +197,37 @@ function useEscapes({
   readonly node: Node;
   readonly elementStepsAttributed: boolean;
 },): boolean {
+  /* A spread carries its operand's elements into the enclosing array literal, so the
+   * question is about where that literal goes rather than about the spread. Gated with
+   * the iterated position below: only a caller that walks elements may treat reaching one
+   * as attributed. */
+  /**
+   * Value whose position decides this, with spread-into-literal steps ascended.
+   */
+  const carried = elementStepsAttributed
+    ? spreadCarrier({ node, },)
+    : node;
   /**
    * Syntactic context consuming this value.
    */
-  const { parent, } = node;
+  const { parent, } = carried;
   if (isReturnStatement(parent,) || isYieldExpression(parent,))
     return true;
-  /* Two element steps that reach a value without writing an access node, admitted only
-   * for the callers that attribute element steps. `containerElementWriteEffect` consumes
-   * its container through `copy[0]`, which the access branch already answers, while
-   * `iteratedContainerWriteEffect` and `spreadContainerWriteEffect` reach the same
-   * elements through `for...of` and a spread and were answered as escapes, so a container
-   * that never leaves reported anyway.
+  /* The other element step reaching a value without writing an access node.
+   * `containerElementWriteEffect` consumes its container through `copy[0]`, which the
+   * access branch below already answers, while `iteratedContainerWriteEffect` reaches the
+   * same elements through `for...of` and was answered as leaving, so a container that
+   * never leaves reported anyway.
    *
-   * Gated rather than unconditional, because these positions are only attributed where
+   * Gated rather than unconditional, because the position is only attributed where
    * something walks the elements. `effect-call-analysis.ts` asks the same question about a
    * call result reaching an argument, and there nothing does: widening it globally cleared
    * an argument-side obligation that arrives by propagation from a callee, measured on
    * `formatUsageWarningStatus`. */
-  if (elementStepsAttributed) {
-    if (isForOfStatement(parent,) && (parent.expression === node))
-      return false;
-    /* A spread carries its operand's elements into the enclosing literal, so the question
-     * transfers to that literal exactly as membership does, and is answered the same way
-     * rather than by a second rule. */
-    if (isSpreadElement(parent,) && isArrayLiteralExpression(parent.parent,))
-      return !literalIsCallArgument({ literal: parent.parent, },);
-  }
+  if (elementStepsAttributed
+    && isForOfStatement(parent,)
+    && (parent.expression === carried))
+    return false;
   /* Placed in an object or array literal. Whether that is an escape depends entirely
    * on where the literal goes, and getting this wrong defeats discharge throughout
    * this repository: `ST9` makes every multi-argument call pass one object literal, so

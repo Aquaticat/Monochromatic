@@ -504,10 +504,14 @@ children: [
        * reached its copy through `for...of`, a spelling the escape walk did not attribute,
        * so a container that never leaves reported anyway. Its write is recorded against
        * `rows` in `effect-summaries.unit.test.ts`, so this is the same trade every other
-       * container case in this fixture made. `spreadContainerWriteEffect` still reports,
-       * and correctly: its spread builds a literal that is bound rather than passed, and a
-       * stored literal is where tracking genuinely ends. */
-      expect(messages.length,).toBe(11,);
+       * container case in this fixture made. `spreadContainerWriteEffect` went the same way
+       * once the spread step was ascended to the literal carrying it: `referentMutated`
+       * reads `[0]` for both, so both traded a report for a write already recorded.
+       *
+       * `containerGrowthEffect` is what keeps that from being a blanket discharge. It
+       * pushes a caller-owned row into a fresh container and is still reported at its row
+       * parameter, because nothing attributes where that row ends up. */
+      expect(messages.length,).toBe(10,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat
