@@ -3906,3 +3906,86 @@ produced by a fresh pass and issue ids are content-derived.
 how many issues were refined, so a real-model probe can tell a run that records
 provenance from one that does not.
 That check is the one unit tests cannot do.
+
+### Round three run policy (user decision, 2026-08-06)
+
+STOP AT ~15 SETTLED ENTRIES, then draw.
+User asked why the next step needed twelve hours;
+it does not,
+and the twelve-hour figure was the run's SOFT BUDGET rather than a wait.
+
+The arithmetic that decided it,
+recorded because it recurs every round:
+
+- The sample is 50 ISSUES, not 50 entries.
+  Round two's 31 entries produced 2257 accepted issues,
+  so issue supply is never the constraint.
+- What entry count buys is PAGE DIVERSITY.
+  `selectFromBand` round-robins across entries,
+  so 31 entries spread 50 issues over ~31 pages
+  and 15 entries spread them over ~15, about 3 to 4 per page.
+  Sample size is unchanged either way,
+  so the confidence interval is unchanged;
+  what rises is clustering,
+  since issues from one page share a translator and an error style.
+- `band-order.ts` interleaves bands round-robin and documents reaching
+  ten per band at about thirty entries,
+  so fifteen entries lands about five per band by construction.
+  A plain artifact count is therefore a correct stop condition;
+  no band-aware check is needed.
+- At round two's measured rate (252 min for 7 entries, about 36 min/entry),
+  fifteen entries is roughly seven to nine hours,
+  against roughly eighteen for thirty.
+
+The pass is NOT reconfigured for this.
+`SOFT_BUDGET_MINUTES` stays 720;
+the run is stopped by hand once the artifact count reaches fifteen.
+Changing run config mid-run would not affect the running process anyway.
+
+### Task 48 tooling, built while the pass ran
+
+`grade-sheet-read.ts` (`parseGradedSheet`) and
+`grade-agreement.ts` (`scoreGradeAgreement`, `scoreGradedPrecision`).
+
+The parsing rules come from the two sheets the user has ACTUALLY graded,
+which are in different formats and neither of which anyone specified:
+
+-   round one: `### 3. grade: Y  (Y = ...)`, bare,
+    and `### 2. grade: N. <rationale>`.
+-   round two: `### 4. grade: [Y]`, bracketed,
+    and `### 7. grade: [Y, <rationale>]`.
+-   both rounds: answers that are NO verdict,
+    such as `[Not enough context to grade]` and
+    `[Not sure which tense is best here...]`.
+
+A verdict letter counts as a verdict only when a delimiter follows it.
+`Not enough context to grade` begins with `N`,
+and reading it as a false positive would move a question the grader DECLINED
+into the precision denominator on the strength of one letter.
+Both denominators exclude declined items and report their positions,
+so their number is never invisible.
+
+PRE-GRADES STAY IN THEIR OWN FILE, never printed on the sheet.
+This was decided rather than asked,
+because the user's own stated plan determines it:
+showing the agent's grade would anchor the human toward agreeing,
+and the same sheet produces the milestone gate number,
+so the calibration would be bought by corrupting the measurement it calibrates
+against.
+Nothing is lost,
+because the agreed plan only starts FILTERING items a round later.
+
+### Provenance verified in a live run
+
+The first slice the round-three pass persisted
+(`slice-cache/AmbeR_the_anpa/a821a954...json`) carries
+`repairRegions` with one real region
+(envelope id, one issue served, 14 characters replaced by 12),
+`accuracyPatchSelected: true`,
+`refined: false`,
+and that issue in `resolvedIssueIds`.
+The slice cache is what made this checkable in minutes rather than after a whole
+entry:
+it serializes `ChunkRepairOutcome` after EVERY finished slice,
+so provenance is inspectable long before the first artifact lands.
+Use it that way next time instead of gating a long run behind a probe entry.
