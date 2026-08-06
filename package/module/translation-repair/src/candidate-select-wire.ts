@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { selectFence, } from './prompt-fence.ts';
 
 //region Candidate selection wire format
 // Free-text candidates cannot be voted on the way claims are: two editors fixing
@@ -16,85 +17,6 @@ import { isJsonRecord, } from './json-guard.ts';
 //
 // Declining is a first-class answer, not a failure: `best: 0` means no candidate
 // is good enough, and the caller falls back to text it already trusts.
-
-/**
- * Shortest fence used when nothing in the prompt competes with it.
- */
-const SELECT_FENCE_MIN = 5;
-
-/**
- * Longest unbroken run of the fence character anywhere in one text.
- *
- * Candidate text is arbitrary translation prose and can legitimately contain a
- * row of equals signs, a setext heading underline being the ordinary case. A
- * fixed fence would then let a candidate close its own block and have the rest
- * of its text read as instructions, so the fence has to be chosen against the
- * content it encloses.
- *
- * @param text - content that will be fenced
- *
- * @returns Longest run length, zero when the character never appears
- *
- * @example
- * ```ts
- * const longest = longestFenceRun('a ==== b',);
- * ```
- */
-function longestFenceRun(text: string,): number {
-  /**
-   * Best and running run lengths across one linear pass.
-   */
-  const counters = {
-    best: 0,
-    current: 0,
-  };
-  for (const character of text) {
-    if (character !== '=') {
-      counters.current = 0;
-      continue;
-    }
-    counters.current += 1;
-    counters.best = Math.max(
-      counters.best,
-      counters.current,
-    );
-  }
-  return counters.best;
-}
-
-/**
- * Chooses a fence no enclosed text can reproduce.
- *
- * @param texts - every text this prompt will fence
- *
- * @returns Fence strictly longer than any run inside them
- *
- * @example
- * ```ts
- * const fence = selectFence({ texts: [evidence.text, ...rendered,], },);
- * ```
- */
-function selectFence({ texts, }: { readonly texts: readonly string[]; },): string {
-  /**
-   * Longest fence-character run anywhere in the enclosed content.
-   */
-  const longest = texts.reduce(
-    function longerRun(
-      best: number,
-      text,
-    ): number {
-      return Math.max(
-        best,
-        longestFenceRun(text,),
-      );
-    },
-    0,
-  );
-  return '='.repeat(Math.max(
-    SELECT_FENCE_MIN,
-    longest + 1,
-  ),);
-}
 
 /**
  * Source and baseline material judges compare candidates against.

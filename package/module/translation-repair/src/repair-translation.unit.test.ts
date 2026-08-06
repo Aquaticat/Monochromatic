@@ -176,7 +176,11 @@ function scriptedClient(
         : stage === 'introduced_defect_report'
         ? {
           checks: oneBasedNumbers({
-            count: countMarker({ request, marker: '\nREGION ', },),
+            // Counted as a fenced heading rather than a line start, because the
+            // probe sheet chooses its fence against the enclosed text and so
+            // has no fixed-width prefix to anchor on. The trailing space keeps
+            // this off the `REPLACED REGIONS` banner.
+            count: countMarker({ request, marker: ' REGION ', },),
           },)
             .map(function toCheck(region,) {
               return {

@@ -6,6 +6,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { selectFence, } from './prompt-fence.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
 //region Introduced-defect probe wire
@@ -31,10 +32,6 @@ import type { RepairRegion, } from './repair-region.ts';
 // would have left omission, the likeliest damage a rewriting editor causes,
 // permanently unprovable.
 
-/**
- * Fence line separating instructions from document text.
- */
-const PROBE_FENCE = '=====';
 
 /**
  * Every verdict a prober may cast on one region, closed vocabulary.
@@ -221,21 +218,43 @@ export function buildIntroducedDefectMessages(
   },
 ): IntroducedDefectPromptPlan {
   /**
+   * Fence no enclosed text can reproduce.
+   *
+   * Chosen against every text this sheet carries rather than fixed, because all
+   * of them are arbitrary prose: a setext heading underline is an ordinary row
+   * of equals signs, and a translation may contain one. A fixed fence would let
+   * a region close its own block and have the rest of its text read as sheet
+   * structure, which is how a corpus paragraph gets to invent a region.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      baselineText,
+      ...regions.flatMap(function toTexts(region,) {
+        return [
+          region.before,
+          region.editorAfter,
+        ];
+      },),
+    ],
+  },);
+
+  /**
    * Rendered region blocks in numbering order.
    */
   const blocks = regions.map(function toBlock(
     region,
     index,
   ) {
-    return `REGION ${index + 1}
+    return `${fence} REGION ${index + 1} ${fence}
 PRE-EXISTING DEFECTS THIS EDIT TARGETED (these are NOT your findings):
 ${renderPriorIssues({
       region,
       issues,
     },)}
-BEFORE:
+${fence} BEFORE ${String(index + 1,)} ${fence}
 ${region.before}
-AFTER:
+${fence} AFTER ${String(index + 1,)} ${fence}
 ${region.editorAfter}`;
   },);
 
@@ -247,13 +266,13 @@ ${region.editorAfter}`;
       },
       {
         role: 'user',
-        content: `${PROBE_FENCE} ORIGINAL ${PROBE_FENCE}
+        content: `${fence} ORIGINAL ${fence}
 ${sourceText}
-${PROBE_FENCE} BASELINE TRANSLATION ${PROBE_FENCE}
+${fence} BASELINE TRANSLATION ${fence}
 ${baselineText}
-${PROBE_FENCE} REPLACED REGIONS ${PROBE_FENCE}
+${fence} REPLACED REGIONS ${fence}
 ${blocks.join('\n\n',)}
-${PROBE_FENCE} END ${PROBE_FENCE}`,
+${fence} END ${fence}`,
       },
     ],
     envelopeIds: regions.map(function toId(region,) {
