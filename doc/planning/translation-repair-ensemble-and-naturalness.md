@@ -9,10 +9,11 @@ They look like separate asks and share a mechanism.
 
 The editor is the only stage where a single model decides alone.
 Critics, panel, and checkers are all ensembles;
-`RepairModels.editorModelId` is one `SyntheticModelId`,
-and `runEditorStage` passes `modelIds: [editorModelId,]` to `gatherStageVoices`.
+`RepairModels.editorModelId` WAS one `SyntheticModelId`,
+and `runEditorStage` passed `modelIds: [editorModelId,]` to `gatherStageVoices`.
 User directive:
 no single model should control any part of the pipeline.
+That half is now BUILT; this paragraph describes the state it replaced.
 
 The naturalness lane needs candidate generation with independent judging,
 because a rewrite has no defect to anchor to and the generator must not approve its own work.
@@ -77,8 +78,9 @@ did it apply the accepted issues,
 is it faithful to the source,
 is the English grammatical and natural.
 
-Open question, needs a decision before building:
-judge per envelope or per chunk.
+RESOLVED by user decision, and this paragraph's recommendation was overridden:
+judge per envelope AND per chunk, both.
+The original open question read:
 Per envelope is finer and lets the best fix of each issue win independently,
 but a chunk assembled from several models' operations is a text no model wrote or checked as a whole.
 Per chunk keeps coherence and wastes good individual fixes.
@@ -143,16 +145,36 @@ It judges per envelope AND per chunk by user decision,
 overriding this document's "per chunk first" recommendation.
 These five are settled for the lane itself.
 
-The lane runs INSIDE `repairChunk`, not as a separate pass in `repairTranslation`.
-`changedOutcomes` filters on `outcome.changed` and `anyChanged` derives from it,
-so a lane outside the chunk runner needs both recomputed,
-and the `blocked-non-translation` early return happens before either,
-so it keeps returning the input untouched for free.
+The lane runs as a SECOND PER-SLICE PHASE in `repairTranslation`,
+after every T1 outcome settles and non-translation dominance is decided,
+and before `changedOutcomes`, the issue records, the status, and final assembly.
 
-The slice cache key gains a lane version constant.
-The key already hashes chunk index and both texts,
-so adding a version makes every pre-lane entry miss,
-which is what stops a cached slice from bypassing the lane.
+An earlier version of this section said the opposite,
+that the lane belongs inside `repairChunk`.
+That was WRONG and is retracted.
+`repairChunk` returns early when the non-translation votes stand,
+when `screening.claims.length === 0`,
+when `envelopes.length === 0`,
+and when no operation survives the gate.
+A lane appended to the bottom of it would never run on text that carries no
+accuracy defect,
+and text that is merely awkward rather than wrong is precisely what this lane
+exists for.
+The placement would have missed its own primary target.
+
+The price of the correct placement is real and is accepted:
+T1 and final outcomes need separate records,
+each final slice must map back to its source slice and T1 text,
+and the lane needs its own cache rather than inheriting the accuracy one.
+
+Keep TWO caches rather than versioning the one key.
+The accuracy cache stays keyed to T0 inputs and accuracy-stage configuration;
+the naturalness cache keys on the source slice,
+the exact T1 slice hash,
+the global definitions the paragraph depends on,
+and a lane schema version.
+Two caches mean a naturalness change never invalidates expensive T1 work,
+which one shared version constant would have done on every lane edit.
 
 A failed recheck falls back to `T1` for the WHOLE slice, not per paragraph.
 Checkers report per ISSUE while refinement happens per paragraph,
@@ -161,27 +183,124 @@ so per-paragraph attribution is not derivable from what the checker returns.
 Log which issue regressed
 so a later session can judge whether finer attribution is worth building.
 
-The lane runs BEFORE `selectRepairCandidate`, and that comparison measures `T2`.
-This is the trap.
-`selectRepairCandidate` is what makes shipping a repair safe,
-and its measurements come from `editor.patch`:
-`changedCharCount` sums over `patch.applied`,
-and `integrityOk` compares `downgradeCount` on the patched document.
-A refinement-only change has NO applied operation.
-Refining after selection and shipping `T2` under `T1`'s measurements
-would leave that gate silently not covering the shipped bytes,
-which is the same class of defect as `RepairIssueRecord.resolved` going stale
-and considerably less visible.
+The lane does NOT run through `selectRepairCandidate`, and an earlier version of
+this section saying it should is retracted.
+That function is deterministic measurement ranking with no producer exclusion,
+and its comparison would defeat the lane outright.
+`compareCandidates` in `select-candidate.ts` is lexicographic, and once
+integrity and the resolution counts tie,
+it reaches `l.changedCharCount - r.changedCharCount`,
+which prefers the candidate that changed FEWER characters.
+A naturalness refinement resolves no additional issue by construction,
+so `T1` and `T2` tie on every earlier key and `T1` then wins on that one,
+every time.
+Naturalness selection therefore uses `selectBestCandidate` instead,
+which is the producer-excluding judge component.
 
-First cut uses ONE rewriter with independent judges.
-The invariant that matters is that a generator never approves its own work,
-and one rewriter preserves it;
-a second rewriter doubles calls to buy a second opinion
-on text nobody claimed was wrong.
-Cost is the binding constraint here rather than ensemble symmetry:
-two unmeasured multipliers are already stacked,
-per-envelope ballots plus this lane,
-and they must be measured SEPARATELY before round three (task 50).
+The lane must NOT reuse `selectChunkPatch`.
+That wrapper ships its strongest repair on `indecision`,
+which is right for accuracy because a later gate still makes the repair
+beat the untouched text on measurements.
+Naturalness has no such later gate,
+and nobody claimed the text was wrong in the first place,
+so BOTH decline dispositions map to exact `T1`.
+
+First cut uses ONE rewriter, called once per slice rather than per paragraph.
+That call returns zero or more paragraph operations,
+each carrying a paragraph identity, a `T1` base hash, and a replacement;
+each operation is gated independently;
+the survivors apply to immutable `T1` to form one full-slice candidate.
+This keeps paragraph-level containment
+while judging coherence at slice level,
+which is the same problem whole-chunk judging solves for the editor:
+independently selected paragraph rewrites otherwise form a slice
+no model ever assessed as a whole.
+One producer still cannot make text ship alone,
+because `selectBestCandidate` judges even a lone candidate
+and requires `MIN_SELECTION_VOTES`.
+
+Two roster invariants the current asserts do NOT cover, and must:
+several rewriters could consume the whole judge roster,
+so the lane needs its own assertion analogous to
+`assertJudgeableEditorRoster`;
+and `assertCheckerIndependence` considers only `editorModelIds`,
+so a naturalness rewriter can currently sit in the checker roster
+and certify its own rewrite during the recheck.
+
+Exclusive attribution as this document originally phrased it is IMPOSSIBLE.
+When `T2` rewrites a paragraph containing a `T1` insertion,
+the final text has causal contributions from both stages,
+so no rule assigns every shipped character to exactly one of them.
+Guarantee REPLAYABLE stage operations, T0 to T1 to T2, instead,
+and drop the claim that each change traces to exactly one stage.
+
+## Still open before the lane can be built
+
+Eligibility cannot read the original target's `DocumentNode`s:
+accuracy edits shift offsets and can change block structure,
+so `T1` has to be reparsed.
+
+"No hard line break" is not a verse detector and must not be called one.
+An mdast `break` node, a soft source wrap inside `DocumentNode.text`,
+and an HTML or MDX `<br>` are three different things,
+and none of them identifies poetry.
+`flattenContainers` also loses disclosure-container ancestry,
+so `kind === 'paragraph'` does not prove ordinary top-level prose.
+Ship a conservative ELIGIBILITY FILTER instead, named as such:
+exactly one physical source line,
+no mdast `break`,
+no HTML or MDX break element,
+no excluded container ancestry,
+no parse downgrade or masked region,
+and both a minimum and a maximum length.
+Single-line poetry still passes it and wrapped prose is still skipped;
+that is acceptable for a filter and would be dishonest for a detector.
+
+Structural gating compares an ORDERED sequence of protected atoms,
+never a multiset.
+A multiset admits swaps that change meaning while passing:
+"3 cats and 5 dogs" becoming "5 cats and 3 dogs",
+two links exchanging destinations,
+two names exchanging positions.
+Protected atoms cover link and image URLs,
+references resolved through the whole-document definition map,
+footnote identifiers and convention,
+inline code,
+number tokens,
+CJK runs,
+and raw HTML, MDX expressions, and JSX,
+plus the handles, identities, and dates this document already named.
+`identityLines` already exists in `repairTranslation` and should reach the lane.
+Reference links cannot be resolved by parsing an isolated paragraph,
+so the global definition map has to come from the assembled `T1` document,
+and document-wide footnote and reference integrity has to be validated
+by parsing the complete `T2` at the end;
+paragraph-local reparsing cannot establish it.
+Expose the reference collection under `buildFootnoteGraph`
+rather than writing a second footnote grammar.
+Numbers are not mdast nodes:
+scan only text leaves with a linear character-state scanner,
+never the Markdown syntax,
+and decide up front whether signs, decimal separators, percentages, dates,
+ranges, full-width digits, and ordinal suffixes are one token or several.
+
+`ChunkRepairOutcome.changed` currently means an accuracy candidate beat
+unchanged, so its TSDoc goes false the moment a refinement-only change exists.
+Introduce a final slice outcome rather than overloading it.
+Findings strings are also not enough for provenance:
+refinement records need the `T1` paragraph identity and hash,
+the replacement hash,
+producer provenance,
+the gate result,
+the selection tally,
+and the rollback result.
+
+Issue rechecking proves nothing on a slice that had no accepted issues,
+which is most of the lane's target.
+The judge prompt is the only guard there,
+so it must show source, `T1`, and candidate together,
+rank faithfulness first,
+and require a clear improvement over `T1` rather than a preference.
 
 ## Attribution warning
 
