@@ -68,8 +68,16 @@ const MINUTES_PER_HOUR = 60;
 
 /**
  * Hours the whole benchmark may run.
+ *
+ * Raised from 4 on run 001's own timing: it settled seven of nine entries in
+ * 252 minutes and recorded the other two as skipped, coverage 0.778. Detection
+ * has to be re-measured anyway after the slice-index fix, and the rerun also
+ * carries the ensemble and the naturalness lane, both of which only add wall
+ * time, so a four-hour budget would lose more than two entries next time.
+ * Coverage is the thing this protects; the plan is flat rate, so a longer run
+ * costs nothing but waiting.
  */
-const BUDGET_HOURS = 4;
+const BUDGET_HOURS = 12;
 
 /**
  * Wall budget for the whole benchmark; entries the budget cannot fit record as

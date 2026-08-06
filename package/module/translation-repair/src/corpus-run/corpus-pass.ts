@@ -63,14 +63,25 @@ const MS_PER_MINUTE = 60_000;
  * and this check then refuses to start anything else. Runs 010 and 011 both
  * show exactly that, one settling a single entry and one settling none.
  *
- * Four hours lets a run chain several entries instead. It is scheduling only:
- * it changes when a run stops starting work, never what the pipeline finds, so
- * unlike the per-call deadline it can move without splitting the pool into
- * incomparable cohorts. The per-entry hard cap still bounds any single runaway,
- * and slice-level resumability means an entry cut by that cap resumes on the
- * next run rather than restarting.
+ * A long budget lets a run chain several entries instead. It is scheduling
+ * only: it changes when a run stops starting work, never what the pipeline
+ * finds, so unlike the per-call deadline it can move without splitting the pool
+ * into incomparable cohorts. The per-entry hard cap still bounds any single
+ * runaway, and slice-level resumability means an entry cut by that cap resumes
+ * on the next run rather than restarting.
+ *
+ * Raised from 240 alongside the hard cap, and for the same measured reason.
+ * Recall run 001 spent 252 minutes settling SEVEN of nine entries under a
+ * four-hour budget and recorded the other two as skipped, coverage 0.778. The
+ * ensemble and the naturalness lane only make each entry slower, so holding
+ * 240 would have shrunk that further. Twelve hours leaves room for a full
+ * nine-entry pass.
+ *
+ * A skipped entry is lost coverage in the verdict, not saved money: the plan
+ * is flat rate, quota regenerates faster than runs spend, and the user
+ * confirmed cost does not matter.
  */
-const SOFT_BUDGET_MINUTES = 240;
+const SOFT_BUDGET_MINUTES = 720;
 
 /**
  * Minutes of wall time ONE entry may run before its exchanges abort.
@@ -78,12 +89,31 @@ const SOFT_BUDGET_MINUTES = 240;
  * whole loop, so an entry that started near the soft budget got only the
  * remaining sliver, and Arita (12 slices, ~68 min) could never finish. A
  * fresh timer per entry gives each its full budget regardless of start
- * time; 90 clears every entry up to ~16 slices with margin at the measured
- * ~5.5 min/slice while still bounding a runaway. Entries larger than that
- * (aiyysk 77 slices, hulicaijia 65, ...) still exceed any single-run
- * ceiling and need slice-level resumability, tracked separately.
+ * time. Entries far larger than the cap clears (aiyysk 77 slices,
+ * hulicaijia 65, ...) still exceed any single-run ceiling and need
+ * slice-level resumability, tracked separately.
+ *
+ * Raised from 90 on measurement rather than on feel. Recall run 001 timed
+ * seven entries end to end: per-slice rate ran 3.25 min at best, 5.56 at the
+ * median, and 8.56 at the worst, and its longest entry took 74.7 minutes for
+ * 12 slices. The old 90 was therefore ALREADY marginal before this branch
+ * changed anything: at the worst observed rate a 12-slice entry needs 103
+ * minutes and would have been cut. The measured median also confirms the
+ * ~5.5 min/slice figure the old comment claimed.
+ *
+ * That rate is PRE-ENSEMBLE. It predates per-envelope judge rounds, the
+ * chunk-level round, and the whole naturalness lane, every one of which only
+ * adds. How much they add is unmeasured, so this is a bound against runaway
+ * rather than a tuned value: 180 clears 21 slices even at the worst observed
+ * rate, and 32 at the median.
+ *
+ * Cost is not the constraint being traded here. The plan is flat rate and
+ * quota regenerates faster than runs spend, and the user confirmed cost does
+ * not matter, so the thing a low cap actually costs is entries covered per
+ * run. Slice-level resumability means a capped entry resumes next run, so a
+ * generous cap risks wall time and never work.
  */
-const HARD_CAP_MINUTES = 90;
+const HARD_CAP_MINUTES = 180;
 
 /**
  * Soft budget in milliseconds.
