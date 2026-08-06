@@ -452,13 +452,28 @@ never checked;
  and a measurable fact gets measured
 rather than recalled from what a failing test run seemed to say.
 
+Landed as `ab8dda1f1`,
+ merged as `d59f7618b`,
+ and issue #417 is closed.
+ Workspace matched pair in one
+worktree:
+ 3378 errors and 1722 rule findings before,
+ 3345 and 1689 after,
+ warnings and semantic-failure
+counts identical across both runs,
+ and comparing findings by parameter and location rather than by message,
+no parameter became opaque that was not opaque before.
+ Recorded in
+`doc/decision/prefer-readonly-result-provenance.md`,
+ "The receiver question was the value question, and it
+should have been the element question".
+
 The full write-up is on issue #417.
- Branch `feat/readonly-chained-container-receiver` at
-`/home/user/worktrees/chained-container-receiver` carries the one-line receiver swap,
- two fixtures in
-`valid/typescript-sync-adapter.ts`,
- and a test pinning both spellings clean against two controls that must
-stay opaque.
- The test fails on the revert with `expected [ 0 ] to deeply equal []`,
- checked rather than
-assumed.
+ The change is the one-line receiver swap,
+ two fixtures in `valid/typescript-sync-adapter.ts`,
+ and a test
+pinning both spellings clean against two controls that must stay opaque.
+ The test fails on the revert with
+`expected [ 0 ] to deeply equal []`,
+ checked rather than assumed.
+ The worktree and branch are removed.
