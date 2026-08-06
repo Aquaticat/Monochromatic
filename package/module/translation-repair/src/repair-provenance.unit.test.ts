@@ -29,6 +29,7 @@ import {
   extractGradingCandidate,
   formatGradingSheet,
   formatRepairSheet,
+  parseGradedRepairSheet,
   hashContent,
   parseSettledArtifact,
   type PatchOperation,
@@ -240,6 +241,41 @@ await describe({
         // text the run actually returns rather than against a fixture constant.
         expect(candidates[0]?.repair?.finalSliceText,).toBeUndefined();
         expect(PATCHED_TEXT.includes(REPLACEMENT,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'reads its own graded sheet back, closing the loop between the '
+        + 'formatter and the parser rather than testing each against a fixture '
+        + 'of the other\'s shape',
+      fn: async () => {
+        const candidates = throughArtifact({ accuracyPatchSelected: true, },);
+
+        /** Sheet exactly as the runbook hands it to the grader. */
+        const blank = formatRepairSheet({
+          sample: candidates,
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+        },);
+
+        /** Same sheet with the one box filled in, as a grader leaves it. */
+        const graded = blank.replace(
+          '- repair grade: [ ]',
+          '- repair grade: [Y, the tense now matches]',
+        );
+
+        /** Verdicts read back off the grader's file. */
+        const items = parseGradedRepairSheet({ text: graded, },);
+        expect(items,).toHaveLength(candidates.length,);
+        expect(items[0]?.verdict,).toBe('fixes',);
+        expect(items[0]?.note,).toBe('the tense now matches',);
+
+        // The ungraded sheet must read as unscored, or a blank run would look
+        // like a graded one whose repairs all failed.
+        expect(
+          parseGradedRepairSheet({ text: blank, },)[0]
+            ?.verdict,
+        ).toBe('unscored',);
       },
     },),
 
