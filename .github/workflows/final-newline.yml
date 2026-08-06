@@ -28,8 +28,8 @@ jobs:
     - name: Set up pnpm
       run: npm install --global pnpm@11.10.0
 
-    - name: Install cli-git dependency closure
-      run: pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
+    - name: Install git-policy-cli dependency closure
+      run: pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
 
     - name: Check final newlines in isolated repository
       run: node package/git-policy/cli/src/trust/fixtures/final-newline-workflow.ts
