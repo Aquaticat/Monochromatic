@@ -216,6 +216,35 @@ await describe({
           },
         },),
         it({
+          name: 'reports an uncited dismissal on the first stop of a chain',
+          fn: async () => {
+            expect(
+              stopRemindersHandler(
+                stopEvent({ last_assistant_message: 'This project doesn\'t use that.', },),
+              ).reason,
+            ).toContain('categorical dismissal',);
+          },
+        },),
+        it({
+          name: 'suppresses the dismissal report inside a chain, leaving only continuation',
+          fn: async () => {
+            /**
+             * Same dismissal seen on a later stop, where gating must silence the report
+             * so a forced continuation is not re-blocked for text already answered for.
+             */
+            const output = stopRemindersHandler(
+              stopEvent({
+                stop_hook_active: true,
+                last_assistant_message: 'This project doesn\'t use that.',
+              },),
+            );
+
+            expect(output.decision,).toBe('block',);
+            expect(output.reason,).not.toContain('categorical dismissal',);
+            expect(output.reason,).toContain('Resume the next item now',);
+          },
+        },),
+        it({
           name: 'yields precedence to a trailing question instead of contradicting it',
           fn: async () => {
             /**
