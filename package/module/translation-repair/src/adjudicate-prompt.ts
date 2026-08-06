@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
+import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 
 //region Adjudication prompt
 // One prompt per panelist per chunk, covering every cluster in it. Claims are
@@ -30,6 +31,8 @@ For EVERY claim, cast exactly one vote:
 - abstain: you cannot judge this claim at all
 
 Before voting supported, check the claim against its OWN quoted evidence, which is the cheapest way a claim fails. A claim that something is missing is contradicted when the quoted TRANSLATION text already carries it, even in different words; a claim that something was added is contradicted when the quoted ORIGINAL text already carries it. Vote unsupported whenever the claim's own quotes refute it, however confidently it is worded.
+
+${HOUSE_POLICY_BLOCK}
 
 Translation policy, which governs what may count as a defect at all. A claim that survives its own quotes can still be unsupported because it asks for the wrong thing:
 - Non-literalness is not a defect. A rendering whose wording, sentence boundaries, or clause order differ from the ORIGINAL is correct when it reads naturally and carries the same feeling. Vote unsupported on any claim whose whole case is that a more literal rendering exists.
