@@ -4889,3 +4889,26 @@ ensemble as a finding. This entire pipeline exists because individual models are
 unreliable, and every stage in it votes for exactly that reason. A single
 adverse draw is the least surprising thing such a system can produce. Replicate
 before recording, especially when the observation is the interesting one.
+
+#### The probe result held to the same standard that killed the other one
+
+Withdrawing the checker finding for lack of replication while continuing to
+assert the probe finding would have been selective skepticism: keep the result
+that flatters the work, discard the one that does not. Both were low-n. So the
+probe check was rerun under the same scrutiny.
+
+Every line identical to the first run:
+
+```text
+clean          absent noneFound=3     shown noneFound=3
+omitting       absent removal=3       shown removal=3
+contradicting  absent corroborated=3  shown corroborated=3
+```
+
+Two runs, two prior conditions, unanimous across all four cells per region.
+THE PROBE FINDING SURVIVES the standard that refuted the other one, which is the
+only reason it may now be quoted.
+
+The durable point is the symmetry, not the outcome. An adverse result rerun and
+a favourable result taken on faith is how a measurement programme talks itself
+into whatever it started out believing. Rerun both, or neither.
