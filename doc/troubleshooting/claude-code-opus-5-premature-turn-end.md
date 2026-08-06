@@ -1,15 +1,16 @@
 # Opus 5 ends turns on announced-but-undone work
 
 Status on 2026-08-06:
-Claude Code sessions running `claude-opus-5` end turns roughly ten times more often
-on a status report that names its own next action without performing it,
-compared with `claude-fable-5` and `claude-opus-4-8` under identical settings.
-The user has to type a bare `Continue.` to restart execution.
+Claude Code turns end on a status report that names the turn's own next action without performing it,
+leaving the user to type a bare `Continue.` to restart execution.
 
-This is a model-behavior finding measured from local transcripts,
-corroborated by two independent upstream reports.
-It is not a configuration defect in this repository,
-and prose rules in `AGENTS.md` did not correct it.
+The failure shape is verified from local transcripts and corroborated by two independent upstream reports.
+Prose rules in `AGENTS.md` did not correct it.
+
+The rate is much higher on `claude-opus-5` than on `claude-fable-5` or `claude-opus-4-8` in this corpus,
+but that comparison is confounded,
+and this document does not claim the model is the established cause.
+See the confounds section for what the comparison cannot support.
 
 ## Symptom
 
@@ -45,6 +46,8 @@ Wilson 95% intervals:
 - `claude-opus-4-8`: 0 of 12 turns, 0.0%, CI [0.0, 24.3]
 
 The intervals for Opus 5 and Fable 5 do not overlap.
+This is a descriptive difference between two populations,
+not an isolated model effect.
 
 Session-level spread, which rules out a single unrepresentative session:
 
@@ -52,13 +55,69 @@ Session-level spread, which rules out a single unrepresentative session:
 - `claude-fable-5`: nudges appear in 4 of 15 sessions, 27%
 - `claude-opus-4-8`: nudges appear in 2 of 15 sessions, 13%
 
-Long queue-driven sessions are not the cause.
+Session length alone does not explain the rate.
 The two longest Fable 5 sessions, 51 and 50 human turns,
 ran at 8% and 0%.
 The longest Opus 4.8 session, 62 turns, ran at 6%.
 Both long Opus 5 sessions, 43 and 14 turns, ran at 35% and 29% independently.
+Session length and task shape are distinct,
+and the confounds section shows the long sessions differ in shape,
+so this comparison bounds session length as an explanation without isolating the model.
+
+## Confounds on the model comparison
+
+The rate difference is real as a description of what happened.
+It does not establish that the model is the cause,
+because three differences separate the two populations and all push the same way.
+
+Task shape,
+which contaminates the denominator directly.
+The metric is nudges divided by human turns,
+so a session where the user only types `continue` approaches 100% by construction,
+while a session carrying substantive direction approaches 0%
+even if the model stops early just as often.
+The populations differ exactly this way.
+Median length of the non-nudge human turns:
+
+- `claude-opus-5`, 43-turn session: 33 characters, with turns like `finish the migration` and `Let's split the model.`
+- `claude-opus-5`, 15-turn session: 75 characters
+- `claude-opus-4-8`, 62-turn session: 58 characters
+- `claude-fable-5`, 50-turn session: 69 characters
+- `claude-fable-5`, 51-turn session: 120 characters
+
+The Opus 5 sessions were more queue-execution-shaped
+and the Fable 5 sessions more design-conversational,
+so the denominators are not comparable populations.
+
+Time and project.
+The Fable 5 turns span 07-16 to 07-23 and the Opus 5 turns span 07-25 to 08-06.
+The windows are disjoint,
+across different projects and different Claude Code versions.
+
+Instructions.
+`AGENTS.md` rule `PXQ` landed 2026-07-28,
+after nearly all Fable 5 turns and before most Opus 5 turns,
+so the two populations did not run under identical instructions.
+This difference cuts against the observed direction rather than explaining it,
+since the stricter instruction applied to the worse-performing population.
+
+What the corpus does support:
+the failure shape is real and reproducible,
+it is concentrated in queue-shaped work,
+and it persisted across every corrective this repository applied.
+An unconfounded rate comparison between models
+would need the same task shape, period, and instructions on both arms,
+which this corpus does not contain.
 
 ## What was ruled out
+
+Automation artifact:
+the user configured an automatic `continue` send on 2026-07-29.
+No such send appears as a human turn in the corpus.
+Every nudge carries `origin.kind` of `human`,
+with `promptSource` of `typed` for 22 of the Opus 5 nudges and `queued` for 5,
+`queued` being a message the user typed while the agent was busy.
+The counted nudges are genuine user typing.
 
 Reasoning effort:
 every Opus 5 turn in the corpus ran at `xhigh`,
@@ -136,25 +195,25 @@ but the `reason` it delivers is still an instruction the model may or may not fo
 It does not execute the announced action.
 
 This matters for the user's stated constraint that adjusting prompts and instructions does not fix the behavior.
-Of the candidates recorded here,
-only routing work to a different model changes outcomes without relying on the model obeying an instruction.
 Every hook-based option is a better-targeted instruction delivered at a better moment,
 not an escape from instruction-following.
+Of the candidates recorded here,
+only routing work to a different model would act without relying on the model obeying an instruction,
+and its effect on this failure is unestablished.
 
 ## Remediation options
 
-Ranked by measured effect,
-strongest first.
-Only the first has a measured effect size in this corpus;
-the rest are untested here and are recorded as candidates, not as recommendations proven to work.
+No option here has an established effect on this failure.
+The model comparison is confounded,
+and every hook-based option is untested in this repository.
+They are candidates ranked by expected value against implementation cost,
+not by proven results.
 
-- Route long queue-driven sessions to `claude-fable-5`.
-  This is the only intervention with a measured effect,
-  3.4% against 34.2% at identical effort, hooks, and instructions.
-  Cost: a different capability profile on hard analysis work,
-  which this corpus does not measure.
-- Block on tracked-task state rather than on wording,
+- Block on tracked-task state at the Stop hook,
   with a high-confidence phrase detector only as fallback when task state is unavailable.
+  This ranks first because it addresses the failure where it happens,
+  independently of which model is in use and independently of how the turn is worded,
+  and because the enforcement point already exists and already blocks stops.
   State-first ordering is what defends against the main hazard:
   a wording-keyed rule can be satisfied by deleting the announcement instead of doing the work,
   converting an informative stop into a silent one.
@@ -176,12 +235,26 @@ the rest are untested here and are recorded as candidates, not as recommendation
   for a compaction boundary or a genuine blocker,
   needs an exact user-supplied marker consumed from `UserPromptSubmit`,
   never a marker the assistant can print to authorize itself.
+- Route long queue-shaped sessions to `claude-fable-5`,
+  run as a deliberate comparison rather than adopted as a fix.
+  This ranks below state-based blocking because its supporting evidence is confounded
+  and because it trades away capability on exactly the hard analysis work
+  these sessions consist of.
+  It ranks above harness-driven continuation because it is the only candidate
+  that could remove the failure rather than absorb its cost,
+  and because running it on the same task shape in the same period
+  is the experiment the corpus lacks.
 - Drive continuation from the harness rather than from the user,
   using the `loop` skill's self-paced mode.
-  This removes the typing cost without claiming to fix the underlying stop.
+  This ranks below the model comparison because it treats the symptom:
+  it removes the typing cost without changing how often the agent stops.
+  It ranks above the upstream report because it returns time immediately.
 - Add this repository's measurement to upstream issue 84007.
-  The measurement isolates the model variable,
-  which neither existing report does.
+  It ranks last because it cannot change local behavior,
+  and because it is an external communication on a repository the user does not control,
+  so it needs the user's decision before anything is posted.
+  Its value is that the corpus records per-model rates and hook-level detail
+  that neither existing report carries.
 
 ## Open questions
 
