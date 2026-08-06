@@ -112,6 +112,124 @@ async function checkOne(
 }
 
 /**
+ * Second accepted issue of the mixed sheet: a genuine mistranslation.
+ */
+const MEANING_ISSUE: AdjudicatedIssue = {
+  issueId: 'adjudicated/meaning',
+  status: 'accepted',
+  severity: 'critical',
+  claims: [
+    {
+      claimId: 'claim/meaning',
+      claim: {
+        category: 'accuracy/mistranslation',
+        severity: 'critical',
+        summary: 'The original says the cat wakes when the sun moves, not that she sleeps through it.',
+        spans: [],
+      },
+    },
+  ],
+  tallies: {},
+};
+
+/**
+ * Third accepted issue of the mixed sheet: a fabricated defect that is not in
+ * the text at all.
+ *
+ * Nothing in either version mentions a dog. A checker reading the revision can
+ * only answer `not-fixed` or refuse; one that answers `fixed` is agreeing with
+ * the sheet rather than reading.
+ */
+const ABSENT_ISSUE: AdjudicatedIssue = {
+  issueId: 'adjudicated/absent',
+  status: 'accepted',
+  severity: 'major',
+  claims: [
+    {
+      claimId: 'claim/absent',
+      claim: {
+        category: 'accuracy/omission',
+        severity: 'major',
+        summary: 'The translation omits the dog barking in the garden.',
+        spans: [],
+      },
+    },
+  ],
+  tallies: {},
+};
+
+/**
+ * Asks the checkers about a SHEET of issues at once, as production does.
+ *
+ * The single-issue cases establish that the stage can discriminate at all. This
+ * one asks whether it still discriminates when the sheet is mixed, which is the
+ * only shape the 98.1 percent rate was ever measured on: production passes
+ * every accepted issue of a chunk in one call, so a checker that keeps up on
+ * one issue and agrees with everything on seven would produce that rate while
+ * proving nothing.
+ *
+ * @example
+ * ```ts
+ * await checkMixedSheet();
+ * ```
+ */
+async function checkMixedSheet(): Promise<void> {
+  /**
+   * Candidate fixing the tense only: the meaning defect survives untouched and
+   * the fabricated one was never there.
+   */
+  const patchedText = 'The cat sleeps on the windowsill, and she sleeps on through the sun moving.';
+
+  /**
+   * Checker result over the mixed sheet.
+   */
+  const checker = await runCheckerStage({
+    client: createRunClient(),
+    checkerModelIds: RUN_MODELS.checkerModelIds,
+    sourceText: SOURCE_TEXT,
+    patchedText,
+    issues: [
+      TENSE_ISSUE,
+      MEANING_ISSUE,
+      ABSENT_ISSUE,
+    ],
+    signal: new AbortController().signal,
+    perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+    l: tagged({ tag: 'checker-sensitivity', },),
+  },);
+
+  for (const [
+    issueId,
+    expectation,
+  ] of [
+    [
+      TENSE_ISSUE.issueId,
+      'fixed',
+    ],
+    [
+      MEANING_ISSUE.issueId,
+      'not-fixed',
+    ],
+    [
+      ABSENT_ISSUE.issueId,
+      'not-fixed-defect-was-never-there',
+    ],
+  ] as const) {
+    /**
+     * Tally for this issue of the sheet.
+     */
+    const tally = checker.tallies[issueId];
+    console.log(
+      `CHECKER mixed-sheet/${issueId} expected=${expectation} fixed=${
+        String(tally?.fixed ?? 0,)
+      } notFixed=${String(tally?.notFixed ?? 0,)} worse=${
+        String(tally?.worse ?? 0,)
+      } resolved=${String(tally?.resolved ?? false,)}`,
+    );
+  }
+}
+
+/**
  * Runs the three cases that separate a discriminating checker from a
  * rubber-stamping one.
  *
@@ -150,10 +268,14 @@ async function main(): Promise<void> {
     await checkOne(check,);
   /* oxlint-enable no-await-in-loop */
 
+  await checkMixedSheet();
+
   console.log(
     'NOTE the untouched case is the one that matters: a majority calling an '
       + 'unrepaired text fixed would mean the 98.1 percent resolution rate '
-      + 'measures the checkers rather than the repairs.',
+      + 'measures the checkers rather than the repairs. The mixed sheet asks '
+      + 'the same question under the shape that rate was measured on, since '
+      + 'production passes every accepted issue of a chunk in one call.',
   );
 }
 

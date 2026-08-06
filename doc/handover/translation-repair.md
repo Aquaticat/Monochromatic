@@ -4805,3 +4805,44 @@ THE LESSON, worth more than the result: a sensitivity check inherits every
 simplification its harness makes. Ask what the production call passes that the
 check does not, BEFORE reporting the check as decisive. I reported it as
 decisive first.
+
+#### The checker check had the same fidelity gap, and closing it inverted the worry
+
+The single-issue cases asked whether the stage CAN discriminate. Production
+never asks it that way: `repair-chunk.ts` passes every accepted issue of a chunk
+in ONE call, and the 98.1 percent rate was only ever measured on mixed sheets.
+A checker that keeps up on one issue and agrees with everything on seven would
+produce that rate while proving nothing, so the single-issue result could not
+carry the conclusion on its own.
+
+Mixed sheet, three issues over one candidate that fixes the first and leaves the
+second standing, with a third that was never in the text at all:
+
+```text
+mixed-sheet/tense    truth=fixed      fixed=1 notFixed=2  resolved=FALSE
+mixed-sheet/meaning  truth=not-fixed  fixed=0 notFixed=3  resolved=false
+mixed-sheet/absent   truth=absent     fixed=1 notFixed=2  resolved=false
+```
+
+THE WORRY INVERTS. The concern was permissiveness. What the mixed sheet shows is
+the opposite: the checkers UNDER-credited a genuinely fixed issue, two of three
+calling the repaired tense gloss unfixed. The gloss really was gone. What else
+was in the candidate was a glaring meaning error, and the plausible reading is
+contamination: a defect elsewhere in the text drags verdicts down on unrelated
+issues sharing the sheet.
+
+They also mostly refused a fabricated defect, 2 of 3 answering not-fixed for
+something never present, which is the right answer available to them.
+
+WHAT THIS IS AND IS NOT. One sheet, one deliberately adversarial fixture, and a
+candidate carrying a far louder defect than any real editor would leave. It does
+NOT establish that production under-credits: the observed 98.1 percent rate is
+hard to reconcile with strong under-crediting, so either real chunks rarely
+carry an unfixed issue beside a fixed one, or the effect is fixture-specific.
+
+WHY IT MATTERS ANYWAY: if the effect is real at any scale it biases
+`resolvedIssueIds` DOWNWARD on multi-issue chunks, which feeds `resolvedTotal`
+and `resolvedHighSeverity` into candidate selection. That direction makes the
+pipeline ship fewer repairs than it earned, which is the safe direction to err
+but is still a measurement error. Worth a proper look with real chunk shapes if
+round three's resolution counts look low against its repair grades.
