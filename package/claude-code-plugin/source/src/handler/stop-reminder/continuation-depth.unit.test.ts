@@ -9,6 +9,7 @@ import {
   continuationDepthAt,
   DEFAULT_MAX_DEPTH,
   FEEDBACK_PREFIX,
+  MAX_DEPTH_ENV,
   maxContinuationDepth,
 } from './continuation-depth.ts';
 
@@ -66,6 +67,22 @@ await describe({
           name: 'accepts an explicit positive integer',
           fn: async () => {
             expect(maxContinuationDepth(' 40 ',),).toBe(40,);
+          },
+        },),
+        it({
+          name: 'names the override variable exactly as the README and troubleshooting doc do',
+          fn: async () => {
+            // Both documents spell this out for the user to type, so a rename that
+            // missed them would leave a documented control that silently does nothing.
+            expect(MAX_DEPTH_ENV,).toBe('MONOCHROMATIC_STOP_AUTO_CONTINUE_MAX',);
+          },
+        },),
+        it({
+          name: 'defaults high enough to clear the longest productive run observed',
+          fn: async () => {
+            // The busiest probe reached 31 dispatches only because its agent was told to
+            // work on every continuation; real sessions here stayed well under 20.
+            expect(DEFAULT_MAX_DEPTH,).toBeGreaterThan(20,);
           },
         },),
       ],
