@@ -134,6 +134,7 @@ function settledOutcome(
     changed: accuracyPatchSelected,
     issues: [ISSUE,],
     resolvedIssueIds: accuracyPatchSelected ? [ISSUE.issueId,] : [],
+    candidateResolvedIssueIds: [ISSUE.issueId,],
     repairRegions: collectRepairRegions({
       envelopes: [ENVELOPE,],
       applied: [OPERATION,],

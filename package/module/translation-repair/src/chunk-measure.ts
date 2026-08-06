@@ -21,6 +21,58 @@ import type { CandidateMeasurements, } from './select-candidate.ts';
 // pipeline decision, not a refactor.
 
 /**
+ * Accepted issues an applied operation actually served.
+ *
+ * Selection credit is limited to these. Checkers are asked about EVERY accepted
+ * issue, including ones no envelope could be cut for and ones whose envelope
+ * received no surviving operation, and a checker reading the patched text can
+ * call such an issue fixed. Counting that let a patch touching issue A beat
+ * unchanged on credit for issue B that nothing touched, which is not evidence
+ * the patch improved anything. Verdicts on unserved issues remain in the
+ * tallies as telemetry; they simply stop deciding the selection.
+ *
+ * @param acceptedIssues - every accepted issue of the chunk
+ *
+ * @param envelopes - envelopes operations were written against
+ *
+ * @param applied - operations that survived the apply gate
+ *
+ * @returns Accepted issues an applied operation served, in issue order
+ *
+ * @example
+ * ```ts
+ * const creditable = selectCreditableIssues({ acceptedIssues, envelopes, applied, },);
+ * ```
+ */
+export function selectCreditableIssues(
+  {
+    acceptedIssues,
+    envelopes,
+    applied,
+  }: {
+    readonly acceptedIssues: readonly AdjudicatedIssue[];
+    readonly envelopes: readonly EditableEnvelope[];
+    readonly applied: readonly PatchOperation[];
+  },
+): readonly AdjudicatedIssue[] {
+  /**
+   * Issues named by the envelope of some applied operation.
+   */
+  const served = new Set(
+    applied.flatMap(function servedBy(operation,) {
+      return envelopes.find(function matches(candidate,) {
+        return candidate.envelopeId === operation.envelopeId;
+      },)
+        ?.issueIds
+        ?? [];
+    },),
+  );
+  return acceptedIssues.filter(function wasServed(issue,) {
+    return served.has(issue.issueId,);
+  },);
+}
+
+/**
  * Measures the patched candidate against the unchanged translation.
  *
  * @param acceptedIssues - accepted issues the checkers examined

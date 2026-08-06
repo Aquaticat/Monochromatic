@@ -8,7 +8,10 @@ import {
   nonTranslationVotesStand,
   screenNonTranslationVotes,
 } from './non-translation-evidence.ts';
-import { measurePatchedCandidate, } from './chunk-measure.ts';
+import {
+  measurePatchedCandidate,
+  selectCreditableIssues,
+} from './chunk-measure.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { parseDocument, } from './parse-document.ts';
 import { collectRepairRegions, } from './repair-region.ts';
@@ -162,6 +165,7 @@ export async function repairChunk(
     repairedText: targetText,
     changed: false,
     resolvedIssueIds: [],
+    candidateResolvedIssueIds: [],
     repairRegions: [],
     accuracyPatchSelected: false,
     refined: false,
@@ -287,34 +291,14 @@ export async function repairChunk(
   }
 
   /**
-   * Accepted issues an applied operation actually served.
-   *
-   * Selection credit is limited to these. Checkers are asked about every
-   * accepted issue, including ones no envelope could be cut for and ones whose
-   * envelope received no surviving operation, and a checker reading the patched
-   * text can call such an issue fixed. Counting that toward the patched
-   * candidate let a patch touching issue A beat unchanged on credit for issue B
-   * that nothing touched, which is not evidence the patch improved anything.
-   * The verdicts on unserved issues stay in the tallies as telemetry; they just
-   * no longer decide the selection.
+   * Accepted issues eligible to count toward the patched candidate; see
+   * `selectCreditableIssues` for why the rest are excluded.
    */
-  const servedIssueIds = new Set(
-    editor.patch
-      .applied
-      .flatMap(function servedBy(operation,) {
-        return envelopes.find(function matches(candidate,) {
-          return candidate.envelopeId === operation.envelopeId;
-        },)
-          ?.issueIds
-          ?? [];
-      },),
-  );
-
-  /**
-   * Accepted issues eligible to count toward the patched candidate.
-   */
-  const creditableIssues = acceptedIssues.filter(function wasServed(issue,) {
-    return servedIssueIds.has(issue.issueId,);
+  const creditableIssues = selectCreditableIssues({
+    acceptedIssues,
+    envelopes,
+    applied: editor.patch
+      .applied,
   },);
 
   /**
@@ -395,6 +379,15 @@ export async function repairChunk(
     changed,
     issues: panel.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
+    candidateResolvedIssueIds: acceptedIssues
+      .filter(function confirmedOnCandidate(issue,) {
+        return checker.tallies[issue.issueId]
+          ?.resolved
+          === true;
+      },)
+      .map(function toId(issue,) {
+        return issue.issueId;
+      },),
     repairRegions: collectRepairRegions({
       envelopes,
       applied: editor.patch

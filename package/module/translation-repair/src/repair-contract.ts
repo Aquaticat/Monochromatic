@@ -332,6 +332,20 @@ export type ChunkRepairOutcome = {
   readonly resolvedIssueIds: readonly string[];
 
   /**
+   * Every accepted issue the checkers confirmed fixed IN THE PATCHED CANDIDATE,
+   * whether or not an applied operation served it and whether or not that
+   * candidate won.
+   *
+   * Kept because {@link ChunkRepairOutcome.resolvedIssueIds} discards two
+   * different things and both are worth auditing: verdicts on issues no
+   * operation served, which must not earn selection credit but are still what
+   * the checkers said, and every verdict at all when the unchanged text won, so
+   * that a rejected candidate leaves no trace of how it was judged. This field
+   * decides nothing; it exists so a later analysis can ask why.
+   */
+  readonly candidateResolvedIssueIds: readonly string[];
+
+  /**
    * Regions the accuracy stage replaced, with the accepted issues each served.
    *
    * Recorded whether or not the patched candidate won, because "no repair was

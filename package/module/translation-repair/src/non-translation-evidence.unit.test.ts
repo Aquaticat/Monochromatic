@@ -129,6 +129,7 @@ function catOutcome(
     changed: false,
     issues,
     resolvedIssueIds: [],
+    candidateResolvedIssueIds: [],
     repairRegions: [],
     accuracyPatchSelected: false,
     refined: false,

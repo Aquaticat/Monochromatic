@@ -133,6 +133,7 @@ function catOutcome(
     changed: accuracyPatchSelected || refined,
     issues,
     resolvedIssueIds,
+    candidateResolvedIssueIds: resolvedIssueIds,
     repairRegions,
     accuracyPatchSelected,
     refined,
