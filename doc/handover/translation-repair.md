@@ -4912,3 +4912,20 @@ only reason it may now be quoted.
 The durable point is the symmetry, not the outcome. An adverse result rerun and
 a favourable result taken on faith is how a measurement programme talks itself
 into whatever it started out believing. Rerun both, or neither.
+
+#### Why rejected issues cannot reach the probe denominator
+
+A worry worth writing down because the answer is not local to the reader.
+`result.issues` carries EVERY adjudicated issue, rejected and needs-human
+included, not only the accepted ones. `readArtifactProbe` filters on
+`repairDisposition === 'shipped'`, so if a rejected issue could ever carry that
+disposition it would land in a denominator the repair sheet never grades.
+
+It cannot, and the reason lives two modules away. `deriveEditableEnvelopes`
+filters to accepted issues BEFORE cutting any envelope, so `EditableEnvelope`
+`issueIds`, and therefore `RepairRegion.issueIds`, only ever name accepted
+issues. `buildIssueRecords` gives an issue the regions naming it, a rejected
+issue is named by none, and `judgeDisposition` answers `no-region` for an empty
+region list before it ever considers selection or blocking.
+
+Verified by reading those three, not inferred from the filter.
