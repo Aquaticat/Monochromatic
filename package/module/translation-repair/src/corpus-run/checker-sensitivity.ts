@@ -230,6 +230,65 @@ async function checkMixedSheet(): Promise<void> {
 }
 
 /**
+ * Asks the checkers about a sheet of three issues that were ALL fixed.
+ *
+ * Isolates the variable the mixed sheet left confounded. That sheet changed two
+ * things at once against the single-issue case: it grew to three issues AND its
+ * candidate carried a loud unfixed defect, so under-crediting there could have
+ * come from either. Here the sheet is the same size and every issue really is
+ * repaired. Continued under-crediting indicts SHEET SIZE; correct crediting
+ * points at contamination from the unfixed defect instead.
+ *
+ * @example
+ * ```ts
+ * await checkAllFixedSheet();
+ * ```
+ */
+async function checkAllFixedSheet(): Promise<void> {
+  /**
+   * Candidate repairing all three stated defects.
+   */
+  const patchedText = 'The cat sleeps on the windowsill, she wakes when the sun moves, '
+    + 'and a dog barks in the garden.';
+
+  /**
+   * Checker result over the all-fixed sheet.
+   */
+  const checker = await runCheckerStage({
+    client: createRunClient(),
+    checkerModelIds: RUN_MODELS.checkerModelIds,
+    sourceText: `${SOURCE_TEXT}花园里有狗在叫。`,
+    patchedText,
+    issues: [
+      TENSE_ISSUE,
+      MEANING_ISSUE,
+      ABSENT_ISSUE,
+    ],
+    signal: new AbortController().signal,
+    perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+    l: tagged({ tag: 'checker-sensitivity', },),
+  },);
+
+  for (const issue of [
+    TENSE_ISSUE,
+    MEANING_ISSUE,
+    ABSENT_ISSUE,
+  ]) {
+    /**
+     * Tally for this issue of the sheet.
+     */
+    const tally = checker.tallies[issue.issueId];
+    console.log(
+      `CHECKER all-fixed/${issue.issueId} expected=fixed fixed=${
+        String(tally?.fixed ?? 0,)
+      } notFixed=${String(tally?.notFixed ?? 0,)} worse=${
+        String(tally?.worse ?? 0,)
+      } resolved=${String(tally?.resolved ?? false,)}`,
+    );
+  }
+}
+
+/**
  * Runs the three cases that separate a discriminating checker from a
  * rubber-stamping one.
  *
@@ -269,6 +328,7 @@ async function main(): Promise<void> {
   /* oxlint-enable no-await-in-loop */
 
   await checkMixedSheet();
+  await checkAllFixedSheet();
 
   console.log(
     'NOTE the untouched case is the one that matters: a majority calling an '

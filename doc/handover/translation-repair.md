@@ -4846,3 +4846,46 @@ and `resolvedHighSeverity` into candidate selection. That direction makes the
 pipeline ship fewer repairs than it earned, which is the safe direction to err
 but is still a measurement error. Worth a proper look with real chunk shapes if
 round three's resolution counts look low against its repair grades.
+
+#### CORRECTION: the under-crediting did not replicate
+
+The previous section reported that checkers under-credited a genuinely fixed
+issue on a mixed sheet, two of three calling the repaired tense gloss unfixed,
+and recorded it as a direction to watch that could bias `resolvedIssueIds`
+downward.
+
+Rerun with IDENTICAL inputs:
+
+```text
+mixed-sheet/tense    first run  fixed=1 notFixed=2  resolved=false
+mixed-sheet/tense    rerun      fixed=3 notFixed=0  resolved=true
+```
+
+It did not reproduce. That was run-to-run variance, and the finding is
+WITHDRAWN.
+
+The isolation case, added to attribute a cause that turned out not to exist,
+still answers its own question and is worth keeping:
+
+```text
+all-fixed/tense    fixed=3  resolved=true
+all-fixed/meaning  fixed=3  resolved=true
+all-fixed/absent   fixed=3  resolved=true
+```
+
+Three issues on one sheet, all genuinely repaired, all credited unanimously.
+SHEET SIZE DOES NOT DEGRADE CHECKER ACCURACY, which was the concern worth
+ruling out, and it is now ruled out on the shape production actually uses.
+
+THE ONE CONSISTENT IMPERFECTION, seen in both runs: the fabricated defect
+(`adjudicated/absent`, describing a dog that appears nowhere in either text)
+drew one `fixed` vote out of three, both times. The majority correctly answered
+`not-fixed`, so the tally lands right, but one checker in three will affirm a
+defect that never existed. Quorum absorbs it. Worth remembering if the checker
+roster ever shrinks below three.
+
+THE LESSON, and it is mine: I reported an n=1 observation from a STOCHASTIC
+ensemble as a finding. This entire pipeline exists because individual models are
+unreliable, and every stage in it votes for exactly that reason. A single
+adverse draw is the least surprising thing such a system can produce. Replicate
+before recording, especially when the observation is the interesting one.
