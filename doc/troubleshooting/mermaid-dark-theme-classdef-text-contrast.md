@@ -388,3 +388,166 @@ this only works when the diagram is always dark.
 If the same source switches to a light theme,
 its inherited foreground can become dark and recreate the problem in reverse.
 It is not suitable for this report's automatic light and dark modes.
+
+## What does not work
+
+### Switching to Mermaid's stock dark text color
+
+Removing the report's `textColor:#f8fafc` override changes the inherited text
+to Mermaid's `#ccc`.
+The light rose and green nodes still measure only `1.46:1` and `1.52:1`.
+This softens the symptom but does not meet `4.5:1`.
+
+### Changing only the global text color
+
+A global foreground cannot contrast with both dark default nodes and arbitrary
+light custom fills.
+Making it light preserves dark nodes and breaks light fills;
+making it dark repairs light fills and can break dark nodes.
+The foreground belongs with each explicit fill.
+
+### Overriding generated nodes with ordinary external CSS
+
+Mermaid's flowchart documentation warns at
+`packages/mermaid/src/docs/syntax/flowchart.md:1251-1253`:
+
+```text
+Applying styles to Mermaid nodes via external CSS ... does not work reliably.
+Mermaid's internal styles are injected with !important ...
+The recommended approach is to use the classDef syntax ...
+```
+
+The implementation confirms this:
+`styles2String` adds `!important` to both label and node styles at
+`packages/mermaid/src/rendering-util/rendering-elements/shapes/handDrawnShapeStyles.ts:70-74`.
+An external override would need its own `!important`,
+which conflicts with this repository's CSS policy and creates a specificity
+contest against generated markup.
+
+### Relying on Axe alone for Mermaid node contrast
+
+Axe reported zero violations while marking SVG `foreignObject` contrast checks
+as inconclusive.
+The browser-side computed-style harness found 23 failing nodes in the same
+render.
+Axe remains useful for the rest of the document,
+but a direct foreground-to-fill measurement is required for Mermaid nodes.
+
+### Treating issue #1955 as evidence that `color` is still broken
+
+[Issue #1955][issue-1955] reported that `classDef color` did not work in 2021.
+[PR #1956][pr-1956] merged the text-color path the same day.
+The 11.16.1 harness renders `color:#0f172a !important` on the label and measures
+`16.25:1`.
+The old capability gap is not present in the incident version.
+
+## Upstream filing artifact
+
+### Upstream filing decision
+
+No `.out-of-scope/` exemption names Mermaid,
+diagrams,
+themes,
+contrast,
+CDNs,
+or jsDelivr.
+All files in `.out-of-scope/` were searched before evaluating a filing.
+
+Tracker searches covered open and closed issues and pull requests for:
+
+- `dark theme classDef fill text color`
+- `classDef text color`
+- `fill dark theme text`
+
+No exact report of automatic foreground contrast for fill-only classes was
+found.
+Three older issues are related but not duplicates:
+
+- [Issue #1955][issue-1955] and [PR #1956][pr-1956] cover explicit
+  `classDef color` support.
+- [Issue #487][issue-487] covers the older inability to change node text color.
+- [Issue #885][issue-885] covers text rendering with `htmlLabels: false`.
+
+The issues and their comments were read in full.
+None describes Mermaid choosing an unsafe foreground after a consumer supplies
+only a light custom fill under a dark theme.
+
+The six filing constraints resolve as follows:
+
+1.  **Is it really upstream's fault? No.**
+    The consumer supplied half of a palette pair.
+    `classDef` is a direct styling mechanism,
+    and Mermaid correctly preserved both the requested fill and the selected
+    theme foreground.
+    The flowchart docs demonstrate an explicit node style containing both
+    `fill` and `color` at
+    `packages/mermaid/src/docs/syntax/flowchart.md:1192-1200`:
+
+    ```mermaid
+    style id1 fill:#f9f,stroke:#333,stroke-width:4px
+    style id2 fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff
+    ```
+
+2.  **Can upstream fix it? Yes, technically.**
+    Mermaid could derive foreground contrast after every custom fill or add a
+    documentation warning.
+    Automatic derivation would change direct CSS semantics and could override
+    deliberate author choices.
+    This possibility does not turn the consumer omission into an upstream bug.
+
+3.  **Are they supporting this use case? Yes, with explicit styling.**
+    The theming guide calls `dark` suitable for dark elements at
+    `packages/mermaid/src/docs/config/theming.md:13`,
+    and the flowchart guide documents `classDef` at
+    `packages/mermaid/src/docs/syntax/flowchart.md:1203-1217`.
+    Neither promises contrast inference for a custom fill.
+
+4.  **Would the repository welcome a contribution? Yes.**
+    The guide opens with this statement at
+    `packages/mermaid/src/docs/community/contributing.md:3`:
+
+    ```text
+    You decided to take part in the development? Welcome!
+    ```
+
+    It requires regression tests for bug fixes at
+    `packages/mermaid/src/docs/community/contributing.md:297`
+    and routes changes through pull requests at `:546`.
+    The bug template requests reproduction code and suggested solutions at
+    `.github/ISSUE_TEMPLATE/bug_report.yml:26-65`.
+    `CONTRIBUTING.md`,
+    the comprehensive guide,
+    issue templates,
+    pull request template,
+    and code of conduct contain no ban on AI-assisted reports.
+
+5.  **Will they likely fix it? Yes for a real defect; no refusal signal exists.**
+    PR #1956 shows maintainers previously merged explicit text-color support.
+    Recent history in `flowDb.ts` and `styles.ts` contains no rejection of
+    contrast work.
+    Mermaid 11.16.1 does not change the relevant path from 11.16.0.
+    This constraint does not justify filing because constraint 1 fails.
+
+6.  **Have we prototyped a minimal upstream fix? No.**
+    The automatic prototype rule does not trigger because constraint 1 is an
+    outright failure.
+    The verified consumer fix is intentionally at this repository's styling
+    interface and does not pretend to be an upstream engine patch.
+
+The filing gate fails constraints 1 and 6.
+The correct action is to keep the consumer-side palette fix and not file an
+upstream defect.
+
+### Nothing to add upstream
+
+There is no new-issue draft and no additive-comment draft.
+Posting to issue #1955 would only restate that explicit `color` now works,
+which its merged PR already establishes.
+Opening a new issue would mislabel a fill-only consumer style as a Mermaid bug.
+Post nothing unless a future Mermaid version ignores an explicit foreground or
+claims to derive accessible contrast for custom fills.
+
+[issue-1955]: https://github.com/mermaid-js/mermaid/issues/1955
+[issue-487]: https://github.com/mermaid-js/mermaid/issues/487
+[issue-885]: https://github.com/mermaid-js/mermaid/issues/885
+[pr-1956]: https://github.com/mermaid-js/mermaid/pull/1956
