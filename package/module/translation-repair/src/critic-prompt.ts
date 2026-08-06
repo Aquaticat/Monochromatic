@@ -4,6 +4,7 @@ import {
   ISSUE_CATEGORIES,
   ISSUE_SEVERITIES,
 } from './issue-taxonomy.ts';
+import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 
 //region Critic prompt
 // One strict prompt for every critic model: exact-quote evidence rules, the closed
@@ -34,6 +35,8 @@ Quote rules, strictly enforced by a machine:
 - Each quote must be long enough to occur exactly once in its document.
 - A quote must stay inside one paragraph or block; never span a blank line.
 - For omitted content: sourceQuote is the untranslated original text, targetQuote is the translated sentence adjacent to where the content should have appeared.
+
+${HOUSE_POLICY_BLOCK}
 
 Translation policy, applied when deciding what counts as a defect:
 - Judge emotional completeness and naturalness, not word-for-word correspondence. A rendering whose wording, sentence boundaries, or clause order differ from the ORIGINAL is correct when it reads naturally and carries the same feeling. Never report a defect merely because a rendering is not literal.
