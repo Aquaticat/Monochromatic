@@ -3362,6 +3362,42 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   that same text, so the ballot cannot change the output. A sole per-envelope
   proposal is adopted unjudged because that operation also sits inside its
   author's whole-chunk candidate, which IS judged at chunk level.
+- HOUSE POLICY AND THE RECALL BENCHMARK CONTRADICT EACH OTHER, and the
+  contradiction is structural rather than a bug in either (task 49, still OPEN
+  because it is the user's call).
+  `HOUSE_POLICY_BLOCK` tells critics and the panel, verbatim: "Never report that
+  as an omission, and never restore the detail, even when the ORIGINAL states it
+  plainly", for suicide method and for drug names and dosages.
+  `deriveOmissionSeeds` plants seeds by DELETING the longest sentences from the
+  clean English translation, and the benchmark scores whether the pipeline
+  restored them. When a deleted sentence's Chinese counterpart carries protected
+  content, the policy instructs the pipeline not to restore it and the benchmark
+  records a recall MISS. Correct behavior scores as failure.
+  The ground truths genuinely differ, and neither is wrong. The benchmark's is
+  "this sentence was in the published English, so it belongs", which is sound
+  because the community wrote that English under its own rules. The critic
+  cannot see that: it sees only the mutilated English and the Chinese, so
+  Chinese-only sensitive detail reads to it as a deliberate omission.
+  MAGNITUDE IS UNMEASURED. Establishing it means reading corpus content to
+  classify 27 seeded sentences, which is possible (the clone is readable) but
+  has not been done, so do not describe the effect as small or large.
+  RUN 001 IS UNAFFECTED, verified rather than assumed: the run's own START line
+  records `tip=2cf7fd453bb3a20b889b9c01d5640dd7fe81e858`, committed 23:19:51,
+  and the process began 23:20:01, while `house-policy.ts` and its splice into
+  the critic prompt landed in `5daf7b853` at 23:42:53, 23 minutes later. The
+  process resolved its module graph at startup and has no runtime dynamic
+  imports, so run 001 measures a policy-free pipeline.
+  That makes run 001 a clean POLICY-FREE RECALL BASELINE, and it also means
+  round-three recall will not be comparable to it on this axis.
+  Options, ranked, for the user to choose from before round three:
+  attribute rather than exclude (record why a seed went unrestored, separating
+  "never detected" from "detected and declined on protective grounds", using the
+  panel status the pipeline already produces) beats excluding protected
+  sentences from seeding, because exclusion needs a classifier over sensitive
+  content and misfiring keyword matching on suicide and medication topics is its
+  own harm; and excluding beats running the benchmark with the policy disabled,
+  because that would measure a pipeline that is not the one shipping. The
+  attribution route also costs no extra model calls.
 - COST OF THE ENSEMBLE IS UNMEASURED, and this is the gate before round three.
   Per-envelope ballots run sequentially, one selection round per envelope with
   more than one distinct proposal, and each now carries source plus envelope
