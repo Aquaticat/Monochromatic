@@ -4733,3 +4733,39 @@ WHAT THIS DOES NOT LICENSE: it is one fixture, and it says nothing about how
 often such damage occurs in real repairs. Run 007's first eight regions suggest
 rarely. The gate question still needs the round's numbers and is still the
 user's.
+
+### Stage sensitivity checks, as a practice
+
+Two of these were built in one sitting and each settled a question that had been
+argued for weeks:
+whether the introduced-defect probe can hear anything,
+and whether the checkers can say no.
+Both were cheap, both used cat fixtures with no corpus text, both wrote nothing,
+and each cost three model calls.
+
+THE SHAPE, worth reusing:
+hand a stage a case where the right answer is obvious and known in advance,
+plus a control where the opposite answer is right,
+and see whether it distinguishes them.
+An ensemble stage that agrees with itself proves nothing;
+one that answers a planted case correctly proves it is reading.
+
+WHEN TO REACH FOR IT:
+whenever a rate is being quoted as evidence
+(98.1 percent resolved, zero introduced defects)
+and nobody has shown the stage producing it can return the other answer.
+A quiet instrument and a broken instrument look identical from the outside, and
+waiting for more data separates them not at all.
+
+DELIBERATELY NOT BUILT: the same check for the adjudication panel.
+It is the most load-bearing stage for the milestone, since precision IS the gate
+and round two failed it at 0.740,
+so a panel that waved through an obviously false claim would be the single most
+valuable finding available.
+It was skipped anyway, because round three MEASURES this directly and better:
+the human grades every sampled accepted issue as real or false, with written
+rationale saying why, over fifty real claims rather than one planted one.
+A synthetic panel check would answer a weaker version of a question whose
+stronger answer is already arriving.
+Reach for it only if the graded sheet leaves the cause of the false positives
+unclear.
