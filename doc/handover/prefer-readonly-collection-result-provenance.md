@@ -338,28 +338,31 @@ consumes it,
 
 ### Next
 
-`filter` still reports,
- tracked as its own item:
- its observer obligation runs through
-`recordReadonlyViewApplications`,
- which still refuses on `resultExposesMutableState`,
- so the type-shape
-gate has to go first.
- That is the increment below,
- and `filter` follows it rather than preceding it.
+`84a29cfd1` landed the fact the observer path was missing:
+ an observer that hands its element back puts receiver state into the result,
+ which neither the mutation nor the opacity dimension sees,
+ and propagation now records it as receiver opacity.
+ Verdict-neutral,
+ because the type-shape gate still refuses every observer-bearing member.
 
-Withdraw the type-shape result gate,
- which is what still refuses `filter` and the fresh-object `map`.
+What that gate cannot simply be deleted for is `toSorted`.
+ Measured reasoning rather than a guess:
+ `map` and `flatMap` build their results out of observer returns,
+ which `84a29cfd1` now accounts for;
+ `filter` and `slice` build containers of receiver elements,
+ which the container relation accounts for;
+ `toSorted` builds a fresh array of receiver elements while its observer only compares,
+ so neither mechanism names it,
+ and `rows.toSorted(compare)[0].label = x` would discharge with the write attributed to nothing.
 
-`resultExposesMutableState` gates `readonlyViewElementApplications` and the first half of
-`receiverClaimAnswerable`,
- and every member it covers now needs either a relation or a recorded exclusion before it goes.
- `find` and `findLast` have one,
- `filter` and `slice` have one,
- and `map` needs the observer-return relation that is still unbuilt.
+So the gate is replaced rather than removed,
+ and the replacement needs one more authority fact:
+ a result relation naming which members build their result from observer returns.
+ With that in place the rule becomes:
+ a state-carrying result must have a relation covering it,
+ a container relation additionally requires the result not to escape,
+ and anything else keeps failing closed.
 
-The escape question is settled and needs no further checking:
- `resultEscapesCallable` is relation-agnostic,
- and the two consumers that were not are fixed and measured.
- What is not settled is which further members earn a relation,
- recorded beside `FRESH_CONTAINER_MEMBER_NAMES`.
+The escape half is already threaded for the direct path through `receiverClaimAnswerable`;
+ the observer path in `readonlyViewElementApplications` has no `body` parameter yet,
+ so it cannot ask the escape question until one is passed from `recordCollectionMemberEffect`.
