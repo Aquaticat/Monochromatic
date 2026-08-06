@@ -391,24 +391,74 @@ Nothing outstanding for issue #414.
  documented and merged.
 
 Issue #417 is a follow-up this work created rather than anything the issue asked for:
- the chained
-receiver,
- `rows.filter(observer).reduce(fold)`,
- still reports while the bound form is clean.
+ a fold whose
+receiver is a container `filter` built reports,
+ in both the chained and the bound spelling.
  Precision
 rather than soundness.
- Two attempts are recorded and both are reverted,
- and the question that has to be
-answered before a third is why attempt one moved any verdict at all:
- for a parameter receiver,
+
+The measurement that was owed here has since been run,
+ and it retracted what this section used to
+say.
+ The regression recorded against the first attempt does not reproduce:
+ the two fixtures it was
+blamed for,
+ `iteratedContainerWriteEffect` and `spreadContainerWriteEffect`,
+ already report `rows.slice`
+on merged `main`,
+ and swapping `recordReadonlyViewApplications` to `expressionElementOrigins` leaves every
+container fixture byte-identical and the whole unit suite green.
+ The issue title was wrong too:
+ the bound
+form is not clean,
+ it reports `kept.reduce` where the chained form reports the whole chain,
+ so binding
+changes the spelling of the cause and nothing else.
+
+The swap is the fix,
+ and the reason is the one the element facet was built for.
+ For `kept.reduce(fold, 0)`
+no parameter is the value `kept` holds,
+ so `rootParameterOrigins` answers empty,
+ `recordReadonlyViewApplications`
+returns on `receiverOrigins.size === 0` before deriving anything,
+ and the call falls to a receiver claim that
+cannot answer for a member carrying an observer.
+ Parameter 0 is where the receiver's elements came from,
+which is the question the observer derivation needs,
+ and once it is asked the derivation discharges on its
+merits.
+ The reduce-escape control,
+ `observerAccumulatorEscapeEffect`,
+ still reports under the change,
+ because
+what catches it is the result gate on the reduce result type rather than the receiver resolution.
+
+Superseded,
+ and left here because the reasoning that produced it was the error:
+ the claim that
+for a parameter receiver,
  element
 origins and value origins agree,
  so resolving the receiver through `expressionElementOrigins` should have
 changed nothing,
  and it changed two of the three container fixtures.
- That is a measurement,
- not a design,
-and it is written up in full on issue #417.
+ The first half was right and the second half was
+never checked;
+ the fixtures already read that way before anything was touched.
+ The lesson is the one
+`AGENTS.md` already states under `QF1`:
+ a verdict change is measurable,
+ and a measurable fact gets measured
+rather than recalled from what a failing test run seemed to say.
+
+The full write-up is on issue #417.
  Branch `feat/readonly-chained-container-receiver` at
-`/home/user/worktrees/chained-container-receiver` sits at `origin/main` with a green suite,
- ready for it.
+`/home/user/worktrees/chained-container-receiver` carries the one-line receiver swap,
+ two fixtures in
+`valid/typescript-sync-adapter.ts`,
+ and a test pinning both spellings clean against two controls that must
+stay opaque.
+ The test fails on the revert with `expected [ 0 ] to deeply equal []`,
+ checked rather than
+assumed.
