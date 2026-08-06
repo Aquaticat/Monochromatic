@@ -162,11 +162,56 @@ children: [
       expect(messages.some(function catalogRemediationRemoved(message,): boolean {
         return message.includes('audited-call catalogue',);
       },),).toBe(false,);
+      /* Nine findings still say a contract cannot discharge an unresolved implementation, and
+       * two of them now say it in the collection message's words instead. Both sentences are
+       * counted, because the claim this pins is that no finding offers a contract as a way
+       * out, not which of the two texts carries it. Splitting the count would let a finding
+       * lose the claim entirely by moving between messages. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
-        );
+        )
+          || message.includes(
+            'ForeignHostCapability does not apply here.',
+          );
       },).length,).toBe(9,);
+    },
+  },),
+  it({
+    name: 'tells a collection finding what would resolve it, and nothing that would not',
+    fn: async () => {
+      /* The message issue #414 asked for, pinned by content rather than by count. Its
+       * complaint was that the four printed remediations named no change resolving a finding
+       * about an array method: an engine intrinsic has no repository-owned implementation to
+       * add to a tsconfig, and ordinary rows are not a runtime-owned host capability. A
+       * finding whose every cause is a collection member now gets a message whose every
+       * remediation is a measured behaviour of this rule. */
+      const messages = (await lintReadonly('readonly-result-provenance-invalid.ts',))
+        .map(function diagnosticMessage(diagnostic,): string {
+          return diagnostic.message;
+        },);
+      /**
+       * Findings routed to the collection message.
+       */
+      const collectionMessages = messages.filter(function isCollection(message,): boolean {
+        return message.includes('used as the object for these collection calls',);
+      },);
+      expect(collectionMessages.length > 0,).toBe(true,);
+      expect(collectionMessages.every(function namesEveryRemediation(message,): boolean {
+        return message.includes('an observer this repository owns',)
+          && message.includes('Keep the result inside this function.',)
+          && message.includes('Fold to a primitive',)
+          && message.includes('Iterate directly with for...of',);
+      },),).toBe(true,);
+      /* And none of the remediations that fit nothing here. The tsconfig one names a
+       * repository-owned implementation, which no intrinsic has, and the marker one names a
+       * host capability, which ordinary collection data is not. */
+      expect(collectionMessages.some(function offersTsconfig(message,): boolean {
+        return message.includes('nearest tsconfig.json',);
+      },),).toBe(false,);
+      expect(collectionMessages.every(function refusesTheMarker(message,): boolean {
+        return message.includes('ForeignHostCapability does not apply here.',);
+      },),).toBe(true,);
     },
   },),
   it({
@@ -213,8 +258,14 @@ children: [
        * author's stated intent rather than a weakening. No offer appeared with the report
        * removed, which is the check that matters: this file emits none. */
       expect(diagnostics.length,).toBe(3,);
+      /* Every one still says the input reaches something unproven, and the collection findings
+       * among them now say it in the collection message's words: `join` and a bare `toSorted()`
+       * supply no observer to analyze, so they keep reporting and get the text that names what
+       * would resolve them. Accepting either sentence keeps this about the claim rather than
+       * about which message carries it. */
       expect(diagnostics.every(function unresolvedBoundary(diagnostic,): boolean {
-        return diagnostic.message.includes('cannot inspect enough of those calls',);
+        return diagnostic.message.includes('cannot inspect enough of those calls',)
+          || diagnostic.message.includes('code this rule cannot follow',);
       },),).toBe(true,);
     },
   },),
@@ -330,9 +381,13 @@ children: [
        * returning the accumulator it was handed has result type `string[]` over
        * `string[][]`, a type reference whose only argument is primitive, which the
        * exposure test alone reads as a fresh container of primitives. */
+      /* Named as a collection call now, since every cause of this finding is one. The claim is
+       * unchanged and so is the finding: `reduce` has no result relation, the aliasing fallback
+       * still refuses it, and the parameter stays opaque. Only the sentence naming the calls
+       * moved, which is what issue #414 asked for. */
       expect(messages.some(function accumulatorStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "rows" is used as the object for these method calls: rows.reduce [',
+          'The function input named "rows" is used as the object for these collection calls: rows.reduce [',
         );
       },),).toBe(true,);
       /* An answered receiver claim must not carry the argument analysis with it.
@@ -364,7 +419,7 @@ children: [
        * read-only suggestion for an array whose element the body rewrites. */
       expect(messages.some(function observerResultStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "values" is used as the object for these method calls: values.find [',
+          'The function input named "values" is used as the object for these collection calls: values.find [',
         );
       },),).toBe(true,);
       /* `at` no longer reports, and that is the hole this rule was carrying rather than
@@ -416,12 +471,38 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      /* Five reports and one offer. The count went to seven while the packaged-callable
+      /* Five reports and three offers. The count went to seven while the packaged-callable
        * gap was open, since that gap produced offers rather than reports, and back to
        * five once both halves of it landed. Caller-side property matching then added the
-       * sixth, which is the offer: `narrowingPrecisionCostEffect` hands `second` to a
-       * property its callee only reads, so nothing writes it. */
-      expect(messages.length,).toBe(6,);
+       * sixth, which is an offer: `narrowingPrecisionCostEffect` hands `second` to a
+       * property its callee only reads, so nothing writes it.
+       *
+       * The shorthand provenance pair added two, and both are correct: neither
+       * `packageRowShorthand` nor `packageRowExplicit` writes the row it packages, so each
+       * earns the offer its sibling assertion below names. Their callers, which do write
+       * through the returned holder, are contracted and report nothing.
+       *
+       * The container cases added seven reports, and discharging `slice` removed two of them
+       * and added one offer, which is that increment's whole visible effect here. What went
+       * silent went silent because the write beneath it is attributed instead: every
+       * container parameter is recorded as mutated in `effect-summaries.unit.test.ts`, and
+       * `containerGrowthEffect` writes nothing at all, which is why it earns the projection
+       * offer the enumeration below names.
+       *
+       * Replacing the type-shape gate took the last one: `filteredElementWriteEffect` writes
+       * through a filtered copy, that write is attributed to `rows`, and the report it used
+       * to carry is now that attribution. Every container case in this fixture has made the
+       * same trade, which is why the count fell three times and no offer appeared for a
+       * parameter any of them writes. */
+      expect(messages.length,).toBe(12,);
+      /* Both spellings of the packaging pair are offered, which is what makes the pair a
+       * control for each other rather than two unrelated cases. Before the shorthand value
+       * symbol reached the provenance walk the offers were also two, and the difference sat
+       * where no message could show it: in whether the callers' writes were attributed.
+       * `effect-summaries.unit.test.ts` pins that half. */
+      expect(messages.filter(function offersPackagedRow(message,): boolean {
+        return message.startsWith('Parameter "held" should be readonly',);
+      },).length,).toBe(2,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -449,7 +530,11 @@ children: [
        */
       function namingCall(call: string,): number {
         return messages.filter(function namesCall(message,): boolean {
-          return message.includes(`method calls: ${call} [`,);
+          /* Either phrasing, since a finding whose causes are all collection members now says
+           * so, and which of the two texts carries a named call is not what these counts are
+           * about. */
+          return message.includes(`method calls: ${call} [`,)
+            || message.includes(`collection calls: ${call} [`,);
         },).length;
       }
       /* Two `Map.get` receivers left, down from five, and which two is the whole point.
@@ -491,10 +576,16 @@ children: [
        * contract-name defect. `row` is deliberately absent from this filter: the offers
        * this fixture still emits name a parameter called `row`, and they are pinned as a
        * set immediately below rather than folded into a claim about lookup receivers. */
+      /* `rows` is matched on the writable-property form alone, which is the shape the
+       * `at`-result defect produced. The projection form is a different claim and a correct
+       * one: `containerGrowthEffect` copies its parameter and writes only the copy, so a
+       * `readonly` projection applies and still type-checks, since `ReadonlyArray.slice`
+       * returns a mutable array. Matching the name alone would have made this assertion
+       * reject the first true offer the container discharge produced. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
           || message.includes('"records" should be readonly',)
-          || message.includes('"rows" should be readonly',);
+          || message.includes('"rows" should be readonly: property',);
       },),).toEqual([],);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
@@ -511,9 +602,22 @@ children: [
        * slot the callee reads. Reverting `effect-argument-properties.ts` empties this
        * list again, and `narrowingPrecisionCostEffect` goes back to reporting both
        * parameters written in `effect-summaries.unit.test.ts`. */
+      /* The packaging pair adds two more, and both are correct rather than tolerated:
+       * `packageRowShorthand` and `packageRowExplicit` return the row they are handed and
+       * write nothing, so a read-only projection applies to each. They are listed here in
+       * full rather than counted, so a future change that turns one of them into a defect
+       * has to edit this list and say why. */
+      /* The container discharge added the projection offer, and it is the first offer in this
+       * fixture that exists because a member was discharged rather than despite it.
+       * `containerGrowthEffect` slices its parameter and pushes onto the copy, so nothing
+       * reaches the caller's array and `readonly LabelledRow[]` applies. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
-      },),).toEqual([
+      },)
+        .toSorted(),).toEqual([
+        'Parameter "held" should be readonly: property label is writable.',
+        'Parameter "held" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection.',
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },
@@ -1338,7 +1442,10 @@ children: [
        *
        * Twenty-eight since the assignment group arrived, one for each of its two registry parameters. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
-        return message.includes('used as the object for these method calls',);
+        /* Both phrasings, so the count keeps measuring opacity reports rather than which
+         * message text a finding was routed to. */
+        return message.includes('used as the object for these method calls',)
+          || message.includes('used as the object for these collection calls',);
       },);
       expect(opacityMessages.length,).toBe(28,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {

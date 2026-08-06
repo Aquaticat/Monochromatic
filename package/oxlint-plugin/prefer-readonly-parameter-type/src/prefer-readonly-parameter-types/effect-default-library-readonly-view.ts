@@ -19,6 +19,7 @@ import {
 import {
   collectionMemberUserCodeChannel,
   MEMBER_CHANNEL_UNPROVEN,
+  memberInvokesObserver,
 } from './effect-member-channel-authority.ts';
 
 /**
@@ -156,6 +157,16 @@ export function collectionStructureClaim({
  * them distinct in the authority is about what each probe must prove, not about
  * what either discharges.
  *
+ * A member that invokes a caller-supplied observer is refused here whatever its
+ * ambient channel is, and that refusal is the invariant rather than an accident of
+ * which members the table currently lists. The ambient half and the observer half
+ * are separate obligations: `filter` reaches own-index access and default species,
+ * both trusted under the stated baseline, and it also runs whatever predicate the
+ * caller passed. Only `recordReadonlyViewApplications` can answer the second half,
+ * by resolving that predicate to owned source. Discharging on the first half alone
+ * would accept `rows.filter(foreignMutatingPredicate)`, whose predicate received
+ * every element of the receiver.
+ *
  * @param project - TypeScript project proving default-library ownership.
  *
  * @param declaration - Selected callable declaration.
@@ -186,10 +197,16 @@ export function memberChannelIsVerifiedNarrow({
   const owner = declaration.parent;
   if ((!isInterfaceDeclaration(owner,)) || (!isIdentifier(owner.name,)))
     return false;
+  /**
+   * Member name deciding both the ambient channel and the observer obligation.
+   */
+  const memberName = declaration.name
+    .text;
+  if (memberInvokesObserver({ memberName, },))
+    return false;
   return collectionMemberUserCodeChannel({
     ownerName: owner.name
       .text,
-    memberName: declaration.name
-      .text,
+    memberName,
   },) !== MEMBER_CHANNEL_UNPROVEN;
 }

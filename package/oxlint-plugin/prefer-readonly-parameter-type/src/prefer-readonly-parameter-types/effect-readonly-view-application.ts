@@ -7,6 +7,7 @@
 import type {
   CallExpression,
   Expression,
+  Node,
 } from 'typescript/unstable/ast';
 import {
   type Checker,
@@ -20,10 +21,9 @@ import {
   rootParameterOrigins,
 } from './effect-call-resolution.ts';
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
-import { resultAliasesReceiverState, } from './effect-view-result-aliasing.ts';
+import { viewResultUnaccounted, } from './effect-view-result-gate.ts';
 import {
   expressionCanCarryMutableState,
-  resultExposesMutableState,
   typeCanCarryMutableState,
 } from './effect-primitive-origin.ts';
 import {
@@ -216,6 +216,7 @@ export function readonlyViewElementApplications({
   receiver,
   receiverSlot,
   analysisRoot,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -223,6 +224,7 @@ export function readonlyViewElementApplications({
   readonly receiver: Expression;
   readonly receiverSlot: EffectSlot;
   readonly analysisRoot?: string;
+  readonly body?: Node;
 },): readonly ElementApplication[] | typeof READONLY_VIEW_UNDISCHARGED {
   /**
    * Receiver collection type carrying the element type argument.
@@ -266,29 +268,13 @@ export function readonlyViewElementApplications({
   const resultType = checker.getTypeAtLocation(call,);
   if (resultType === undefined)
     return READONLY_VIEW_UNDISCHARGED;
-  if (resultExposesMutableState({
+  if (viewResultUnaccounted({
+    project,
     checker,
-    type: resultType,
-  },))
-    return READONLY_VIEW_UNDISCHARGED;
-  // Being a generic instantiation does not make a result freshly built. That is a
-  // fact about the type's representation, not about where the value came from, and
-  // reading it as provenance let one case through: `rows.reduce((kept) => kept)`
-  // over `string[][]` returns the accumulator it was handed, whose type is `string[]`,
-  // a type reference whose only argument is primitive. The exposure test above reads
-  // that as a fresh container of primitives and discharges, so `first.push('x')`
-  // mutated a caller-owned row unreported, while the same mutation through `rows[0]`
-  // was reported.
-  //
-  // Identity separates them. The member's signature is instantiated with the
-  // receiver's type arguments, so a result that is receiver state is the identical
-  // `Type` instance rather than merely an equivalent one, exactly as observed
-  // positions are matched. State-carrying only: a `readonly string[]` filtered to
-  // `string[]` shares the primitive element type and exposes nothing.
-  if (resultAliasesReceiverState({
-    checker,
+    call,
     resultType,
     elementTypes,
+    ...(body === undefined) ? {} : { body, },
   },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
@@ -445,6 +431,7 @@ export function recordReadonlyViewApplications({
   receiver,
   summary,
   analysisRoot,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -453,6 +440,7 @@ export function recordReadonlyViewApplications({
   readonly receiver: Expression;
   readonly summary: MutableEffectSummary;
   readonly analysisRoot?: string;
+  readonly body?: Node;
 },): boolean {
   /**
    * Caller parameters owning receiver, when receiver can carry mutable state.
@@ -488,6 +476,7 @@ export function recordReadonlyViewApplications({
       call,
       receiver,
       receiverSlot,
+      ...(body === undefined) ? {} : { body, },
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },);
     if (applications === READONLY_VIEW_UNDISCHARGED)

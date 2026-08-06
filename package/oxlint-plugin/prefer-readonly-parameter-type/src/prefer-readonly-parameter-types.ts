@@ -84,6 +84,27 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nResolve the call by one of these proof-pre
   + '\n\nAn @mutates block alone documents known effects but cannot make an unresolved implementation safe.';
 
 /**
+ * Why a collection call can carry caller state whatever the input's type says.
+ */
+const COLLECTION_CHANGE_EXPLANATION = '\n\nA readonly type stops this code from writing through the input. It does not stop the call from handing an element to code this rule cannot follow, and that is what stays unproven here: not what this function does to the input, but which of its values leave.';
+
+/**
+ * Every remediation that fits a collection member, and none that does not.
+ *
+ * Each is a measured behaviour of this rule rather than a suggestion: an owned observer
+ * resolves where a foreign one does not, a result kept inside the callable discharges where a
+ * returned one does not, a primitive fold discharges, and direct iteration discharges. Issue
+ * #414 is the record of what happens when a message lists remediations nobody verified
+ * against the finding they are printed under.
+ */
+const COLLECTION_REMEDIATION = '\n\nResolve it by one of these changes:'
+  + '\n1. Give the call an observer this repository owns, so its effects can be read. A function declared here resolves; one imported from a package whose implementation is unavailable does not.'
+  + '\n2. Keep the result inside this function. A result that is returned, stored, or handed to a call this rule cannot resolve leaves what the analysis can follow.'
+  + '\n3. Fold to a primitive instead of building a collection. A count, a sum or a joined string carries no element onward.'
+  + '\n4. Iterate directly with for...of when the result itself is not needed.'
+  + '\n\nForeignHostCapability does not apply here. It marks runtime-owned host objects, not ordinary collection data.';
+
+/**
  * Prefers readonly parameters and requires documentation for unresolved effects.
  *
  * @example
@@ -109,6 +130,8 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
         'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects any classification: the underlying type is already deeply readonly and no effect reaches this parameter. Remove the marker, or mark the genuinely mutable foreign type instead.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
+      opaqueCollectionEffect:
+        `{{inputSubject}} used as the object for these collection calls: {{boundaries}}.${COLLECTION_CHANGE_EXPLANATION}${COLLECTION_REMEDIATION}`,
       dishonestReadonly: 'Parameter "{{parameterName}}" claims readonly semantics dishonestly: {{reason}}.',
       inconsistentMutatesContract: 'Mutation contracts disagree across callable signatures.',
     },

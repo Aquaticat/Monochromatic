@@ -891,3 +891,307 @@ export function arrowReturnPackagedEffect(row: LabelledRow,): void {
     },
   },);
 }
+
+/**
+ * Holder returned by the shorthand and explicit packaging pair.
+ */
+export type PackagedRow = {
+  /**
+   * Row the holder was built around.
+   */
+  readonly held: LabelledRow;
+};
+
+/**
+ * Packages a parameter into a returned literal written in shorthand form.
+ *
+ * The shorthand name resolves to the property rather than to the local it reads, so the
+ * provenance walk asked the checker for the wrong symbol and recorded no returned origin.
+ * Its sibling `packageRowExplicit` writes the identical literal in longhand and recorded
+ * one, which is how the two are kept together: they must agree.
+ *
+ * @param held - Row the returned holder carries.
+ *
+ * @returns holder carrying the row it was given.
+ *
+ * @example
+ * ```ts
+ * packageRowShorthand({ label: '' });
+ * ```
+ */
+export function packageRowShorthand(held: LabelledRow,): PackagedRow {
+  return { held, };
+}
+
+/**
+ * Packages a parameter into a returned literal written in longhand form.
+ *
+ * @param held - Row the returned holder carries.
+ *
+ * @returns holder carrying the row it was given.
+ *
+ * @example
+ * ```ts
+ * packageRowExplicit({ label: '' });
+ * ```
+ */
+export function packageRowExplicit(held: LabelledRow,): PackagedRow {
+  return { held: held, };
+}
+
+/**
+ * Writes through a holder packaged in shorthand form.
+ *
+ * The write lands on the caller's own row, reached through the returned holder. Without the
+ * shorthand value symbol the callee returned no origin, this write was attributed to
+ * nothing, and the parameter it mutates kept its read-only offer while
+ * `explicitPackagedWriteEffect` reported the identical write.
+ *
+ * @param row - Row this writes through the returned holder.
+ *
+ * @mutates row - Writes the label through a returned shorthand holder.
+ *
+ * @example
+ * ```ts
+ * shorthandPackagedWriteEffect({ label: '' });
+ * ```
+ */
+export function shorthandPackagedWriteEffect(row: LabelledRow,): void {
+  /**
+   * Holder carrying the caller's row.
+   */
+  const packaged = packageRowShorthand(row,);
+  packaged.held
+    .label = 'written';
+}
+
+/**
+ * Writes through a holder packaged in longhand form.
+ *
+ * The control for `shorthandPackagedWriteEffect`, identical in every respect except how the
+ * callee wrote its literal.
+ *
+ * @param row - Row this writes through the returned holder.
+ *
+ * @mutates row - Writes the label through a returned longhand holder.
+ *
+ * @example
+ * ```ts
+ * explicitPackagedWriteEffect({ label: '' });
+ * ```
+ */
+export function explicitPackagedWriteEffect(row: LabelledRow,): void {
+  /**
+   * Holder carrying the caller's row.
+   */
+  const packaged = packageRowExplicit(row,);
+  packaged.held
+    .label = 'written';
+}
+
+/**
+ * Row whose every reachable property is readonly, so it draws no offer of its own.
+ */
+export type SealedRow = {
+  /**
+   * Label this fixture reads and never writes.
+   */
+  readonly label: string;
+};
+
+/**
+ * Packages a primitive read into a freshly allocated object.
+ *
+ * The returned object holds one string and shares no identity with the parameter, so a
+ * caller can reach nothing through it. The walk reached the parameter anyway, because
+ * `expressionRoot` strips the property access back to the receiver, which answers what was
+ * read rather than what can be reached. That made this indistinguishable from
+ * `packageRowShorthand`, which does hand the row back, and the whole result-provenance
+ * decision rests on telling those two apart.
+ *
+ * Its parameter is deeply readonly so the case pins the returned origin alone and adds no
+ * diagnostic to the sibling count.
+ *
+ * @param row - Row this reads one primitive from.
+ *
+ * @returns freshly allocated holder carrying no caller identity.
+ *
+ * @example
+ * ```ts
+ * packageCountFresh({ label: '' });
+ * ```
+ */
+export function packageCountFresh(row: SealedRow,): { readonly named: string; } {
+  return { named: row.label, };
+}
+
+/**
+ * Writes an element of a fresh container built from the parameter.
+ *
+ * `slice` hands back a new array holding the receiver's own rows, so this write lands on
+ * the caller's row. Nothing attributes it today, and nothing has to: `slice` is
+ * undischarged, so the parameter is opaque and no offer is made. The element facet is what
+ * turns the opacity into an attribution, and until it exists this case records which of the
+ * two is carrying the parameter.
+ *
+ * @param rows - Rows whose element this writes through a copy.
+ *
+ * @mutates rows - Writes a row reached through a fresh container.
+ *
+ * @example
+ * ```ts
+ * containerElementWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function containerElementWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  /**
+   * First row of the copy, which is the caller's row.
+   */
+  const first = copy[0];
+  if (first !== undefined)
+    first.label = 'written';
+}
+
+/**
+ * Grows a fresh container built from the parameter.
+ *
+ * The opposite answer about the same value, and the reason the facet cannot be one set: the
+ * push reaches the copy and nothing the caller shared, so `rows` must never be recorded as
+ * mutated here however the element write above is attributed.
+ *
+ * @param rows - Rows this copies and does not write.
+ *
+ * @param fresh - Row appended to the copy.
+ *
+ * @example
+ * ```ts
+ * containerGrowthEffect([{ label: '' }], { label: '' });
+ * ```
+ */
+export function containerGrowthEffect(
+  rows: LabelledRow[],
+  fresh: LabelledRow,
+): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  copy.push(fresh,);
+}
+
+/**
+ * Writes an element of a fresh container bound by an array pattern.
+ *
+ * The second element-step spelling, and the first that writes no element access. A pattern
+ * binds elements, so it asks the element question; an object pattern beside it keeps asking
+ * the value question, because a container's properties are its own rather than its elements.
+ *
+ * @param rows - Rows whose element this writes through a destructured copy.
+ *
+ * @mutates rows - Writes a row bound out of a fresh container by pattern.
+ *
+ * @example
+ * ```ts
+ * destructuredContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function destructuredContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  /**
+   * First row, bound by a pattern rather than by an element access.
+   */
+  const [first,] = copy;
+  if (first !== undefined)
+    first.label = 'written';
+}
+
+/**
+ * Writes every element of a fresh container reached by iteration.
+ *
+ * The third spelling. Iteration advances an iterator through no element access and no call
+ * this walk can inspect, which is why the element question is asked of the iterated
+ * expression rather than derived from its syntax.
+ *
+ * @param rows - Rows this writes through an iterated copy.
+ *
+ * @mutates rows - Writes rows reached by iterating a fresh container.
+ *
+ * @example
+ * ```ts
+ * iteratedContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function iteratedContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  for (const row of copy) {
+    row.label = 'written';
+  }
+}
+
+/**
+ * Writes an element of a container built by spreading another container.
+ *
+ * The fourth spelling, and the one that stacks two element steps: the spread carries the
+ * receiver's rows into a new array, and the access takes one back out.
+ *
+ * @param rows - Rows this writes through a spread copy.
+ *
+ * @mutates rows - Writes a row reached through a spread of a fresh container.
+ *
+ * @example
+ * ```ts
+ * spreadContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function spreadContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array built by spreading another fresh array.
+   */
+  const copy = [...rows.slice(),];
+  /**
+   * First row of the spread copy, which is the caller's row.
+   */
+  const first = copy[0];
+  if (first !== undefined)
+    first.label = 'written';
+}
+
+/**
+ * Writes an element of a filtered container built from the parameter.
+ *
+ * The same shape as `containerElementWriteEffect` through the other member carrying the
+ * container relation, so neither member's behaviour rests on the other's case.
+ *
+ * @param rows - Rows whose element this writes through a filtered copy.
+ *
+ * @mutates rows - Writes a row reached through a filtered container.
+ *
+ * @example
+ * ```ts
+ * filteredElementWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function filteredElementWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Filtered array holding the caller's own rows.
+   */
+  const kept = rows.filter(function keepsEvery(): boolean {
+    return true;
+  },);
+  /**
+   * First row of the filtered copy, which is the caller's row.
+   */
+  const first = kept[0];
+  if (first !== undefined)
+    first.label = 'written';
+}

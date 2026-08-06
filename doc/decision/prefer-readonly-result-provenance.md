@@ -604,3 +604,53 @@ fresh-object case whichever way it goes.
 species channel is trusted,
  because provenance says the container holds receiver origins and the gate then
 asks who builds the container.
+
+## Consequences of the provenance replacement, measured
+
+Matched pair on identical source,
+ measured 2026-08-06.
+`git diff --stat main -- package/git-policy/cli/src` is empty,
+ so the whole delta belongs to the rule.
+
+`//package/git-policy/cli:lint:oxlint`:
+
+- before,
+   from `main`:
+   302 errors,
+   206 of them this rule.
+   These are the numbers issue #414 recorded,
+  reproduced exactly.
+- after,
+   from `feat/readonly-collection-result-provenance`:
+   232 errors,
+   135 of them this rule.
+
+The 12 warnings the second run also reports are a fresh-worktree artifact rather than a change:
+`src/api.unit.test.ts` imports `../dist/final/node/index.mjs`,
+ which is unbuilt there,
+ so TypeScript
+resolves it as an error type and `no-unsafe-call` and `no-unsafe-assignment` speak.
+ The same lint from a
+built worktree reports none.
+
+What the 135 survivors are:
+
+- 103 argument-side findings,
+   `used by these calls`,
+   which `String`,
+   `Object.entries` and
+  `JSON.stringify` earn by being able to run a getter,
+   a proxy trap or a `toJSON`.
+   Untouched by this
+  work and correct,
+   exactly as the effect-model split recorded.
+- 15 receiver findings on members that are not collections.
+- 15 receiver findings on collection members,
+   which now carry the message naming what would resolve
+  them.
+
+Reaching zero was never the goal and would mean the guarantee had been abandoned.
+What matters is that every finding which went away went away for a stated reason:
+ a container write became
+an attribution,
+ or a member's result gained a relation that accounts for it.

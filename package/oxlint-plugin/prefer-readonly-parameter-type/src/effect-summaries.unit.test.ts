@@ -325,6 +325,49 @@ await describe({
         /* A function returning nothing parameter-derived records nothing, so the fact
          * is not simply "every callable returns something". */
         expect(returnedIndexes('readOnlyLookupEffect',),).toEqual([],);
+        /* How the callee spells its returned literal must not decide what its callers
+         * can see. A shorthand property's name resolves to the property rather than to
+         * the local it reads, so the provenance walk asked for the wrong symbol and
+         * `packageRowShorthand` recorded no returned origin while its longhand sibling
+         * recorded one. Reverting the shorthand value-symbol lookup in
+         * `effect-expression-provenance.ts` empties the first of each pair below and
+         * leaves the second passing, which is the asymmetry these pin. */
+        expect(returnedIndexes('packageRowShorthand',),).toEqual([0,],);
+        expect(returnedIndexes('packageRowExplicit',),).toEqual([0,],);
+        /* And the consequence that made it a defect rather than a precision gap: the
+         * caller's write through the returned holder was attributed to nothing, so the
+         * row it mutates kept its read-only offer while the identical longhand write
+         * reported the mutation. */
+        expect(mutatedIndexes('shorthandPackagedWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('explicitPackagedWriteEffect',),).toEqual([0,],);
+        /* And the other direction of the same question. `packageCountFresh` returns an
+         * object holding one string, so a caller reaches nothing through it, while the walk
+         * credited the parameter because `expressionRoot` strips a property access back to
+         * its receiver. Dropping the successor pruning in `effect-expression-provenance.ts`
+         * turns this into `[0]` and makes it indistinguishable from the pair above, which
+         * is the distinction result provenance is being built on. */
+        expect(returnedIndexes('packageCountFresh',),).toEqual([],);
+        /* What carries the parameter through a fresh container, and what does not. Both
+         * element writes reach the caller's own row through a copy that holds it, and the
+         * push reaches a container whose identity is fresh. One set of origins cannot answer
+         * both, which is why the element step is resolved before the access layers are
+         * stripped rather than after.
+         *
+         * All three were empty before the element step was answered, and the growth staying
+         * empty is what makes the other two evidence: dropping the element-access branch in
+         * `effect-expression-provenance.ts` empties the writes, and crediting the container
+         * itself would fill the growth. */
+        expect(mutatedIndexes('containerElementWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('filteredElementWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('containerGrowthEffect',),).toEqual([],);
+        /* The three spellings that take an element step without writing an element access.
+         * Each was empty until the element question was asked of the pattern's initializer,
+         * the iterated expression and the spread source, and each reaches the caller's row
+         * exactly as the access spelling does. Syntax decides how the step is spelled and
+         * nothing about what it reaches. */
+        expect(mutatedIndexes('destructuredContainerWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('iteratedContainerWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('spreadContainerWriteEffect',),).toEqual([0,],);
       },
     },),
     it({

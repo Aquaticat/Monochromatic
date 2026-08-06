@@ -52,6 +52,28 @@ export const MEMBER_CHANNEL_RECEIVER_INDEX: unique symbol = Symbol(
 );
 
 /**
+ * Member reaching own-index access and the species construction channel.
+ *
+ * `Array.prototype.slice` builds its result through `ArraySpeciesCreate`, which reads
+ * `constructor[Symbol.species]` and calls what it returns. That is caller-selected code,
+ * and the stated trust baseline in
+ * `doc/decision/prefer-readonly-member-channel-authority.md` admits it: an own
+ * `constructor` and an own `Symbol.iterator` are both ordinary data properties, so
+ * refusing species while `for...of` and spread are accepted drew a line no principle
+ * supports.
+ *
+ * Kept distinct from the own-index channel rather than merged into it, because what each
+ * probe must prove differs. A member here is permitted to reach the species hook and
+ * nothing wider, so the probe still fails it for element coercion or a property read.
+ *
+ * This says nothing about what the result carries. `effect-result-provenance-authority.ts`
+ * answers that separately, and a container result stays tracked through its own relation.
+ */
+export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES: unique symbol = Symbol(
+  'collection member reaches own-index access and the species construction channel',
+);
+
+/**
  * Member whose channel no probe has established, so it stays failing closed.
  *
  * Absence from the table is never a claim that a member dispatches, only that
@@ -66,7 +88,8 @@ export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
  */
 export type MemberUserCodeChannel =
   | typeof MEMBER_CHANNEL_INTERNAL_SLOT
-  | typeof MEMBER_CHANNEL_RECEIVER_INDEX;
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES;
 
 /**
  * Default-library collection members whose user-code channel is verified, by owner.
@@ -98,6 +121,7 @@ const CHANNELS_BY_OWNER: Readonly<
 > = {
   Array: {
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
+    slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
     indexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
     lastIndexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -117,6 +141,7 @@ const CHANNELS_BY_OWNER: Readonly<
   },
   ReadonlyArray: {
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
+    slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
     indexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
     lastIndexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -188,7 +213,7 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 51;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 53;
 
 /**
  * Members returning an iterator, whose entries claim creation and drainage together.
@@ -228,6 +253,82 @@ export const ITERATOR_MEMBER_NAMES: ReadonlySet<string> = new Set([
   'values',
   'entries',
 ],);
+
+/**
+ * Members that invoke a caller-supplied observer, whatever their ambient channel is.
+ *
+ * The channel above and this set answer different halves of one question, and collapsing
+ * them was the first draft of the trust-baseline work. `filter` reaches own-index access
+ * and default species, both trusted, and it also calls whatever predicate the caller
+ * passed. Admitting it to the table on the strength of the first half alone would
+ * discharge `rows.filter(foreignMutatingPredicate)` on a receiver every element of which
+ * that predicate received.
+ *
+ * So the ambient half may be recorded in the table and the observer half may not be
+ * discharged there at all: it belongs to `recordReadonlyViewApplications`, which resolves
+ * the observer to owned source and derives what its effects do to the receiver, or leaves
+ * the call undischarged when it cannot.
+ *
+ * Keyed by member name alone, deliberately over-approximating. A name listed here can
+ * only withhold a discharge, never grant one, so a name that turns out to take no
+ * observer costs precision and nothing else. `sort` and `toSorted` are listed although
+ * their comparator is optional, because an absent comparator runs the default one, which
+ * coerces elements and is not owned source either way.
+ *
+ * Enforced by `effect-member-channel-authority.unit.test.ts`, which fails when any entry
+ * in the table names a member listed here.
+ */
+export const OBSERVER_BEARING_MEMBER_NAMES: ReadonlySet<string> = new Set([
+  'every',
+  'filter',
+  'find',
+  'findIndex',
+  'findLast',
+  'findLastIndex',
+  'flatMap',
+  'forEach',
+  'map',
+  'reduce',
+  'reduceRight',
+  'some',
+  'sort',
+  'toSorted',
+],);
+
+/**
+ * Every default-library collection member name this rule recognises, for any purpose.
+ *
+ * Derived from the tables rather than written out, so it cannot drift from them. It exists
+ * for one consumer, the diagnostic, which needs to know whether a finding is entirely about
+ * collection calls in order to say something true about them: the remediations that fit an
+ * unresolved package call fit none of these, which is what issue #414 reports.
+ *
+ * Recognition only. Membership here proves nothing about a member's channel or its result,
+ * and no discharge may consult it.
+ */
+export const COLLECTION_MEMBER_NAMES: ReadonlySet<string> = new Set([
+  ...Object.values(CHANNELS_BY_OWNER,)
+    .flatMap(function ownerMembers(members,): readonly string[] {
+      return Object.keys(members,);
+    },),
+  ...OBSERVER_BEARING_MEMBER_NAMES,
+],);
+
+/**
+ * Tests whether a member invokes a caller-supplied observer.
+ *
+ * @param memberName - Member being called.
+ *
+ * @returns whether the member hands receiver state to a function the caller passed.
+ *
+ * @example
+ * ```ts
+ * memberInvokesObserver({ memberName: 'filter' });
+ * ```
+ */
+export function memberInvokesObserver({ memberName, }: { readonly memberName: string; },): boolean {
+  return OBSERVER_BEARING_MEMBER_NAMES.has(memberName,);
+}
 
 /**
  * Resolves which user-code channel a collection member is verified to open.
