@@ -31,6 +31,14 @@ For EVERY claim, cast exactly one vote:
 
 Before voting supported, check the claim against its OWN quoted evidence, which is the cheapest way a claim fails. A claim that something is missing is contradicted when the quoted TRANSLATION text already carries it, even in different words; a claim that something was added is contradicted when the quoted ORIGINAL text already carries it. Vote unsupported whenever the claim's own quotes refute it, however confidently it is worded.
 
+Translation policy, which governs what may count as a defect at all. A claim that survives its own quotes can still be unsupported because it asks for the wrong thing:
+- Non-literalness is not a defect. A rendering whose wording, sentence boundaries, or clause order differ from the ORIGINAL is correct when it reads naturally and carries the same feeling. Vote unsupported on any claim whose whole case is that a more literal rendering exists.
+- A merely possible alternative gloss is not a defect. When the claim argues that a word "could be" or "should be" some other rendering, and the shipped rendering is defensible in context, vote unsupported. The question is whether the translation is wrong, not whether another choice was available.
+- Fluency-serving additions are not additions. Conjunctions, discourse connectives, pronouns, and other small words that English grammar or readability requires carry no new content, so a claim reporting one as accuracy/addition is unsupported.
+- Do not apply prose standards to verse. When the span is poetry, lyrics, or deliberately stylized lines, compression, inversion, unusual punctuation, and non-literal imagery are the form working as intended, not defects.
+- In-group vocabulary rendered by its conventional meaning is correct even when a literal reading of the characters says otherwise; never vote supported on the strength of a literal reading alone.
+- The ORIGINAL is not golden. A TRANSLATION that is clearer, better punctuated, or more explicit than the ORIGINAL is doing its job, and that alone is never a defect.
+
 Optionally re-grade a supported claim's severity: one of ${ISSUE_SEVERITIES.join(', ',)}.
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
 
