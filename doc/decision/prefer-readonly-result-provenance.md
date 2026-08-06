@@ -532,13 +532,36 @@ rule cannot name.
 which is a correct report about a value that really does leave.
 
 Reaching zero was never the goal and would mean the guarantee had been abandoned.
- The measurable
-observation is narrower:
- the largest single cause is an implementation outside the analyzable scope,
- whose
-remediation is on the calling side rather than in this rule,
- and it is recorded in the diagnostic's own
-first offer.
+
+The largest cause invites one wrong conclusion,
+ so it is worth stating what it is not.
+ "Bodyless
+callable" sounds like an implementation the analyzed scope is missing,
+ and 189 of the 193 point at
+workspace source rather than `node_modules`,
+ which makes a `tsconfig.json` fix sound plausible.
+ Resolving
+the offsets says otherwise.
+ The largest single group,
+ 50 in `package/module/i18n-compose`,
+ points at
+declarations like `(phrase: NounPhrase<S, N>,) => string`:
+ function *types* on parameters,
+ not functions
+missing bodies.
+
+So the call goes through a value the caller supplied,
+ and which implementation runs is a fact about the
+caller rather than about the callee's file.
+ Bringing more source into scope cannot answer it.
+ What could
+is the existing owned-callable resolution,
+ where every call site passes a callable the rule can read,
+ and
+that is a property of each call graph rather than a configuration change.
+ No estimate of how many of the
+189 satisfy it is offered here,
+ because none has been measured.
 
 ## Adopted for issue #414: the collection result gate moves from type shape to provenance
 
