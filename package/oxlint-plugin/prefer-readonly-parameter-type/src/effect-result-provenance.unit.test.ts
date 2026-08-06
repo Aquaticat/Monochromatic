@@ -32,6 +32,46 @@ const OBSERVER_MARKER: { readonly marker: 'observer-returned'; } = {
 };
 
 /**
+ * Sentinel for a result that cannot be drained because it is not iterable.
+ */
+const NOT_ITERABLE: unique symbol = Symbol(
+  'member result is neither an array nor iterable',
+);
+
+/**
+ * Drains an iterable result into the elements it yields.
+ *
+ * Separate from the array case because a member claiming the element relation may hand
+ * back an iterator rather than a container, and the claim is the same either way: the
+ * object is fresh and what it yields is what the receiver holds. A non-iterable result
+ * cannot satisfy that claim at all, which is why it gets a sentinel rather than an empty
+ * array; an empty array would fail the membership half for a reason that reads as a
+ * missing sentinel instead of a wrong shape.
+ *
+ * @param result - Value the member handed back.
+ *
+ * @returns yielded elements, or sentinel when result cannot be iterated.
+ *
+ * @example
+ * ```ts
+ * iterableElements(new Map([['k', value,],],).values());
+ * ```
+ */
+function iterableElements(
+  result: unknown,
+): readonly unknown[] | typeof NOT_ITERABLE {
+  if ((result === undefined) || (result === null))
+    return NOT_ITERABLE;
+  /**
+   * Iteration method the result exposes, when it exposes one.
+   */
+  const iterate = (result as Partial<Iterable<unknown>>)[Symbol.iterator];
+  if (typeof iterate !== 'function')
+    return NOT_ITERABLE;
+  return [...(result as Iterable<unknown>),];
+}
+
+/**
  * Builds one receiver of the named interface holding the sentinel.
  *
  * @param ownerName - Declaring default-library interface name.
@@ -151,10 +191,20 @@ await describe({
              * returning the receiver itself satisfies the membership half, and a member
              * returning an empty fresh array satisfies the freshness half, and the
              * relation claims exactly the conjunction: a new container holding what the
-             * receiver holds. */
+             * receiver holds.
+             *
+             * Drained rather than indexed, because an iterator carries its elements the
+             * same way an array does and exposes none of them to `Array.isArray`. The
+             * drain is what the relation is about for `values`: the object handed back is
+             * fresh, and advancing it yields what the receiver holds. A result that is
+             * neither an array nor iterable drains to nothing and fails, which is the
+             * intended answer rather than a gap. */
+            const drained = Array.isArray(result,)
+              ? result
+              : iterableElements(result,);
             if ((result === receiver)
-              || (!Array.isArray(result,))
-              || (!result.includes(sentinel,)))
+              || (drained === NOT_ITERABLE)
+              || (!drained.includes(sentinel,)))
               notFreshCarrier.push(`${ownerName}.${memberName}`,);
           }
         }

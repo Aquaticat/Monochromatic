@@ -65,8 +65,24 @@ a sentinel in a real receiver and compares identity against the result.
 `values()` fits `RESULT_RELATION_RECEIVER_ELEMENTS` exactly as `filter` and `slice` do:
  the elements the
 iterator yields are the receiver's own values,
- by identity,
- so the existing probe shape passes unchanged.
+ by identity.
+
+The probe shape does not pass unchanged,
+ which this document first claimed and which is wrong.
+ The container
+half asserts `Array.isArray(result)`,
+ and an iterator is not an array,
+ so every `values` entry failed it.
+ The
+probe now drains a non-array result through `Symbol.iterator` and compares membership in what it yields,
+ which
+is the same claim the relation makes:
+ the object handed back is fresh,
+ and advancing it yields what the
+receiver holds.
+ A result that is neither an array nor iterable drains to a sentinel rather than to an empty
+list,
+ so a wrong shape fails as a wrong shape instead of reading as a missing sentinel.
 
 `entries()` does not fit any of the three.
  The elements it yields are freshly allocated pairs which *contain*
@@ -88,15 +104,46 @@ say.
 
 ## Proposed order
 
-1.    `values` on `Map`,
-   `ReadonlyMap`,
-   `Array`,
+1.    Done.
+   `values` on `Array`,
    `ReadonlyArray`,
-   `Set` and `ReadonlySet`,
-   with the existing
-   identity probe shape and the pinned relation count moved.
-   Clears 2 findings and changes no verdict that
-   rests on anything else.
+   `Map` and `ReadonlyMap`,
+   with the drained probe and both
+   pinned counts moved from 18 to 22.
+   `Set` and `ReadonlySet` are deliberately absent:
+   `receiverHolding`
+   builds a `Map` or an array and nothing else,
+   so a `Set` entry could not be probed,
+   and no finding in the
+   residue involves one.
+
+   It clears nothing on its own,
+   measured rather than predicted.
+   The two `values` findings survive for a
+   reason the relation does not address:
+   in `zip-writer` the iterator is passed straight into
+   `computeOffsets(entries.values(),)`,
+   so the result escapes into a call,
+   and the callee is itself opaque at
+   that parameter because it pushes each entry into an array it returns.
+   In `file-manager-electron` the
+   `values` cause sits beside `getBoundingClientRect`,
+   `querySelectorAll` and `scrollIntoView`,
+   which dominate
+   it.
+   Workspace matched pair either side of the one file:
+   3028 errors,
+   3903 warnings,
+   1689 rule findings and
+   4 semantic failures on both runs,
+   with the finding sets identical line for line.
+
+   Kept anyway,
+   on the same ground as increments 1 to 4 of the result-provenance arc:
+   the entry is a true,
+   probed fact the later steps need,
+   and landing it separately keeps the step that does change verdicts
+   small enough to measure.
 2.    A relation for a result whose elements hold the receiver's element at a fixed position,
    with a probe
    shape that reads that position rather than the element itself.
