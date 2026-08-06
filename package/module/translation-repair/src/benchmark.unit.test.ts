@@ -96,7 +96,7 @@ const CANNED: Readonly<Record<string, {
   },
   'hf:zai-org/GLM-4.7-Flash': { kind: 'refusal', },
   'hf:Qwen/Qwen3.6-27B': { kind: 'mismatch', },
-  'hf:MiniMaxAI/MiniMax-M3': { kind: 'http', },
+  'hf:moonshotai/Kimi-K3': { kind: 'http', },
 };
 
 /**
@@ -174,7 +174,7 @@ await describe({
             'hf:zai-org/GLM-5.2',
             'hf:zai-org/GLM-4.7-Flash',
             'hf:Qwen/Qwen3.6-27B',
-            'hf:MiniMaxAI/MiniMax-M3',
+            'hf:moonshotai/Kimi-K3',
           ],
           signal: new AbortController().signal,
         },);
@@ -201,7 +201,7 @@ await describe({
 
         /** Record of the model whose 429s exhausted both attempts. */
         const throttled = nonNullishOrThrow(result.attempts.find(function byModel(attempt,) {
-          return attempt.modelId === 'hf:MiniMaxAI/MiniMax-M3';
+          return attempt.modelId === 'hf:moonshotai/Kimi-K3';
         },),);
         // HTTP failures earn the single second attempt too.
         expect(throttled.retriedFirstAttemptDetail,).toBe('HTTP 429',);

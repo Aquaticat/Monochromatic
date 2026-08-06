@@ -983,7 +983,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the refused exchange. */
         const outcome = await client.chatJson({
-          modelId: 'hf:MiniMaxAI/MiniMax-M3',
+          modelId: 'hf:moonshotai/Kimi-K3',
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
