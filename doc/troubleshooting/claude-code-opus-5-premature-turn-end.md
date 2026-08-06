@@ -127,6 +127,20 @@ The practical consequence for any new detector:
 it shares a single block slot per turn with the existing three,
 so detector ordering decides which failure actually gets corrected.
 
+## What a hook can and cannot do here
+
+A Stop hook is mechanical in when it fires.
+Its payload is not.
+Blocking a stop rejects one stop attempt and re-enters the model,
+but the `reason` it delivers is still an instruction the model may or may not follow.
+It does not execute the announced action.
+
+This matters for the user's stated constraint that adjusting prompts and instructions does not fix the behavior.
+Of the candidates recorded here,
+only routing work to a different model changes outcomes without relying on the model obeying an instruction.
+Every hook-based option is a better-targeted instruction delivered at a better moment,
+not an escape from instruction-following.
+
 ## Remediation options
 
 Ranked by measured effect,
@@ -139,15 +153,29 @@ the rest are untested here and are recorded as candidates, not as recommendation
   3.4% against 34.2% at identical effort, hooks, and instructions.
   Cost: a different capability profile on hard analysis work,
   which this corpus does not measure.
-- Add an announced-continuation detector to `ccsr`,
-  ordered ahead of the hedging and question detectors so it wins the single block slot.
-  Risk to weigh first:
-  the detector keys on the announcement sentence,
-  so the failure it could induce is suppression of the announcement rather than performance of the work,
-  which would convert an informative stop into a silent one.
-  Keying on tracked-task state read through `transcript_path`,
-  rather than on announcement phrasing,
-  avoids that failure mode and is the better shape if this option is taken.
+- Block on tracked-task state rather than on wording,
+  with a high-confidence phrase detector only as fallback when task state is unavailable.
+  State-first ordering is what defends against the main hazard:
+  a wording-keyed rule can be satisfied by deleting the announcement instead of doing the work,
+  converting an informative stop into a silent one.
+  Three mitigations belong in any implementation of this option:
+  enforcement keyed on state so deleting the phrase does not help,
+  a block reason that explicitly tells the model to keep the status line rather than rephrase it,
+  and shadow logging of stops that leave actionable work open with no announcement present,
+  which is the only way to detect suppression once it starts.
+  Durable task state is cheaper to maintain through `PostToolUse` hooks on the task tools,
+  written to a sidecar keyed by `session_id`,
+  than to reconstruct by replaying the transcript on every stop.
+  The handler is currently synchronous,
+  but `HookHandler` in
+  `package/claude-code-plugin/source/src/runtime/handler-runtime.ts`
+  already admits a promise-returning handler.
+  Trailing-question handling must keep precedence,
+  since the existing detector treats a trailing question as itself an invalid stop.
+  User authorization to pause,
+  for a compaction boundary or a genuine blocker,
+  needs an exact user-supplied marker consumed from `UserPromptSubmit`,
+  never a marker the assistant can print to authorize itself.
 - Drive continuation from the harness rather than from the user,
   using the `loop` skill's self-paced mode.
   This removes the typing cost without claiming to fix the underlying stop.
@@ -166,3 +194,16 @@ Whether the announcement sentence causes the stop
 or merely accompanies it
 is likewise untested,
 and the distinction decides whether a phrase-keyed detector can work at all.
+
+The rescue rate of the existing hook is unmeasured.
+The corpus records 67 blocking events but not whether the forced continuation
+produced a task transition before the next stop.
+That figure decides whether one block per turn suffices
+or whether bounded, progress-rearmed re-blocking is needed,
+and it is answerable from the transcripts already on disk.
+
+Detector precision is likewise unmeasured.
+The nudge rate does not estimate it.
+Estimating it means running a candidate detector over every stop in the corpus
+and labeling the matches by hand,
+including matches on turns the user did not nudge.
