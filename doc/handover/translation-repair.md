@@ -3430,10 +3430,40 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   at U+FAFF, so a given name in Han Extension B produced NO atom and could be
   deleted silently. That is the character most likely to be a person's name.
   Both now have regression tests.
-  STILL TO BUILD: the rewriter call (one per slice, returning paragraph
-  operations), candidate assembly, `selectBestCandidate` with BOTH decline
-  dispositions mapping to exact `T1`, the retained-issue recheck, the two
-  roster asserts, and the phase wiring in `repairTranslation`.
+- NATURALNESS LANE COMPLETE (task 46, commits `b3aee385a`, `acc5022e5`,
+  `6d695fe4e`). One rewriter call per slice returns paragraph rewrites, each
+  gated on the ordered atoms, applied through the SAME deterministic gate the
+  editor uses, and judged as whole slices by models that wrote none of them.
+  Batched per slice rather than per paragraph for correctness as much as wall
+  clock: paragraphs rewritten in separate calls are chosen against each other
+  by nobody, so the slice reads as stitched fragments. Same problem whole-chunk
+  judging solves for the editor.
+  BOTH decline dispositions keep `T1`, unlike the editor stage, and the
+  asymmetry is the point. The editor works from panel-accepted issues with
+  checkers proving each one gone, so shipping on indecision is safe because a
+  later gate still tests it. Nothing here claimed the text was wrong, and on a
+  slice with no accepted issues nothing downstream re-examines a refusal.
+  The lane is a SECOND per-slice phase in `repairTranslation`, not inside
+  `repairChunk`, and the first phase test is the reason: `repairChunk` returns
+  early when no claim validates, so text with no accuracy defect never reaches
+  its bottom, and that text is the lane's primary target.
+  A failed recheck rolls back the WHOLE slice, with the regressed issue named.
+  The recheck is skipped when the slice had no confirmed issue, which is the
+  common case.
+  Definitions come from the assembled `T1`, since a paragraph may reference a
+  footnote defined in another slice and an out-of-scope reference does not parse
+  as a reference at all. `spliceSlices` was extracted because the driver now
+  assembles twice.
+  ON for corpus runs: `refinerModelIds: ['hf:moonshotai/Kimi-K3']`. It also
+  edits, which nothing forbids (judges exclude producers; checkers exclude
+  editors AND refiners), but a model that just wrote a paragraph judges its own
+  awkwardness poorly. The only strong-enough model that neither edits nor checks
+  is GLM-4.7-Flash, the one that most often loses its voice to schema mismatch,
+  so strength won. Revisit if the `refine-` findings show little change.
+  NOT YET MEASURED: the lane has never run against the real provider. Every test
+  is over a scripted client, so the prompt's "leave it alone unless the
+  improvement is clear" instruction is unvalidated against real model behavior,
+  and that instruction is the main guard on a slice with no accepted issues.
 - THE ENSEMBLE'S WALL-CLOCK IS UNMEASURED, and this is NOT a cost question.
   An earlier version of this note called it cost and treated it as a gate on
   round three. Both were wrong, and the user corrected the first directly ("I
