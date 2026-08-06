@@ -96,11 +96,123 @@ function maxContinuationDepth(rawSetting: string,): number {
 }
 
 /**
+ * Reports whether a record is one of this hook's own forced-continuation blocks.
+ *
+ * Claude Code delivers the block reason as a user record whose whole content is
+ * a string opening with {@link FEEDBACK_PREFIX}. Requiring that shape excludes
+ * the paired `hook_blocking_error` attachment, which carries the same reason and
+ * would otherwise double every count.
+ *
+ * @param record - parsed transcript record
+ *
+ * @returns whether this record is a forced-continuation block
+ *
+ * @example
+ * ```ts
+ * isForcedContinuationRecord({ type: 'user', message: { content: 'Stop hook feedback:\nYou are stopping...' } });
+ * ```
+ */
+function isForcedContinuationRecord(record: TranscriptRecord,): boolean {
+  /**
+   * Record content, only a string for the feedback records this counts.
+   */
+  const content = record
+    .message
+    ?.content;
+
+  return (record.type === 'user')
+    && (record.toolUseResult === undefined)
+    && ((typeof content) === 'string')
+    && (content.startsWith(FEEDBACK_PREFIX,))
+    && (content.includes(CONTINUATION_MARKER,));
+}
+
+/**
+ * Reports whether a record is a genuine turn typed by the user.
+ *
+ * Tool results also carry `type: 'user'`, and subagent branches repeat the
+ * origin marker, so both are excluded explicitly.
+ *
+ * @param record - parsed transcript record
+ *
+ * @returns whether this record closes the counting window
+ *
+ * @example
+ * ```ts
+ * isHumanTurnRecord({ type: 'user', origin: { kind: 'human' } }); // true
+ * ```
+ */
+function isHumanTurnRecord(record: TranscriptRecord,): boolean {
+  /**
+   * Origin marker, present only on records Claude Code attributes to a speaker.
+   */
+  const originKind = record
+    .origin
+    ?.kind;
+
+  return (record.type === 'user')
+    && (originKind === 'human')
+    && (record.isSidechain !== true)
+    && (record.toolUseResult === undefined);
+}
+
+/**
+ * Transcript record shape this module inspects.
+ *
+ * Only the fields that classify a record; everything else is ignored.
+ */
+type TranscriptRecord = {
+  readonly type?: string;
+  readonly isSidechain?: boolean;
+  readonly toolUseResult?: unknown;
+  readonly origin?: { readonly kind?: string; };
+  readonly message?: { readonly content?: unknown; };
+};
+
+/**
+ * Parses one transcript line, or reports it as unreadable.
+ *
+ * @param line - raw JSONL line
+ *
+ * @returns parsed record, or {@link UNPARSABLE} for a truncated or partial line
+ *
+ * @example
+ * ```ts
+ * parseRecord('{"type":"user"}');
+ * ```
+ */
+function parseRecord(line: string,): TranscriptRecord | typeof UNPARSABLE {
+  try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSONL written by Claude Code
+    return JSON.parse(line,) as TranscriptRecord;
+  }
+  catch (error) {
+    void error;
+    return UNPARSABLE;
+  }
+}
+
+/**
+ * Sentinel for a transcript line that is not valid JSON.
+ *
+ * A truncated final line is normal while a session is live, so this is an
+ * expected value rather than an error condition.
+ */
+const UNPARSABLE: unique symbol = Symbol('claude-code-plugin/stop-reminder/unparsable-transcript-line',);
+
+/**
  * Counts forced continuations already issued since the last human turn.
  *
  * Scans transcript records newest first and stops at the first genuine human
- * turn, so the count describes the current turn only. Tool results carry
- * `role: 'user'` and are excluded by requiring the human origin marker.
+ * turn, so the count describes the current turn only.
+ *
+ * Both classifications parse the record rather than matching substrings. A
+ * substring test is wrong in both directions here, and both directions were
+ * observed on a real transcript: a tool result that printed `"kind":"human"`
+ * while inspecting transcripts ended the scan early and undercounted depth by
+ * nearly half, which lets the chain run past its limit; and any record quoting
+ * the block reason, including this repository's own documentation being read
+ * back, would otherwise count as a block that never happened.
  *
  * @param transcriptLines - transcript JSONL lines, oldest first
  *
@@ -123,16 +235,28 @@ function continuationDepth(transcriptLines: readonly string[],): number {
      */
     const line = transcriptLines[index] ?? '';
 
-    if (line === '') {
+    // Cheap pre-filter: only lines mentioning either marker can change the outcome,
+    // so the scan parses a handful of records rather than the whole tail.
+    if ((line === '')
+      || ((!line.includes(CONTINUATION_MARKER,))
+        && (!line.includes('"kind":"human"',)))) {
       continue;
     }
-    if (line.includes(CONTINUATION_MARKER,)
-      && line.includes(FEEDBACK_PREFIX,)) {
+
+    /**
+     * Parsed record for a line that might be a block or a human turn.
+     */
+    const record = parseRecord(line,);
+
+    if (record === UNPARSABLE) {
+      continue;
+    }
+    if (isForcedContinuationRecord(record,)) {
       depth += 1;
       continue;
     }
     // A human turn closes the window; anything before it belongs to an earlier turn.
-    if (line.includes('"kind":"human"',)) {
+    if (isHumanTurnRecord(record,)) {
       return depth;
     }
   }

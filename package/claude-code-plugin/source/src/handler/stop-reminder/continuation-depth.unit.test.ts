@@ -133,6 +133,46 @@ await describe({
           },
         },),
         it({
+          name: 'does not end the scan on a tool result that merely prints the human-origin marker',
+          fn: async () => {
+            // Observed live: inspecting transcripts printed this exact string into tool
+            // output, which ended a substring-based scan early and undercounted depth by
+            // nearly half. Undercounting lets the chain run past its limit.
+            const toolResultQuotingOrigin =
+              String.raw`{"type":"user","toolUseResult":{"stdout":"origin.kind is \"kind\":\"human\" here"}}`;
+
+            expect(
+              continuationDepth([HUMAN_LINE, BLOCK_LINE, toolResultQuotingOrigin, BLOCK_LINE,],),
+            ).toBe(2,);
+          },
+        },),
+        it({
+          name: 'does not count a record that merely quotes the block reason',
+          fn: async () => {
+            // Documentation and tool output both quote this reason verbatim, so a
+            // substring test would count blocks that never happened.
+            const quotingRecord =
+              `{"type":"assistant","message":{"content":[{"type":"text","text":"${CONTINUATION_MARKER}"}]}}`;
+
+            expect(continuationDepth([HUMAN_LINE, quotingRecord, quotingRecord,],),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'does not treat a subagent human-origin record as closing the window',
+          fn: async () => {
+            const sidechainHuman =
+              '{"type":"user","origin":{"kind":"human"},"isSidechain":true,"message":{"content":"sub"}}';
+
+            expect(continuationDepth([HUMAN_LINE, BLOCK_LINE, sidechainHuman, BLOCK_LINE,],),).toBe(2,);
+          },
+        },),
+        it({
+          name: 'skips a truncated final line rather than throwing',
+          fn: async () => {
+            expect(continuationDepth([HUMAN_LINE, BLOCK_LINE, '{"type":"user","mess',],),).toBe(1,);
+          },
+        },),
+        it({
           name: 'counts each block once despite its paired attachment carrying the same reason',
           fn: async () => {
             expect(
