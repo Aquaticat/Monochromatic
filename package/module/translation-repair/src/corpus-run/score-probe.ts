@@ -5,8 +5,14 @@ import {
 import { join, } from 'node:path';
 
 import { readArtifactProbe, } from '../artifact-probe-read.ts';
-import type { IssueProbeReading, } from '../repair-record.ts';
+import {
+  type ProbeAgreementItem,
+  scoreProbeAgainstGrades,
+} from '../probe-agreement.ts';
 import { summarizeProbeTelemetry, } from '../probe-telemetry.ts';
+import { parseGradedRepairSheet, } from '../repair-grade-read.ts';
+import type { IssueProbeReading, } from '../repair-record.ts';
+import { parseSampleManifest, } from '../sample-manifest.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Score probe
@@ -40,6 +46,7 @@ async function gatherReadings(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<{
   readonly readings: readonly IssueProbeReading[];
+  readonly byIssueId: ReadonlyMap<string, IssueProbeReading>;
   readonly entries: number;
   readonly shippedRecords: number;
   readonly unprobedRecords: number;
@@ -72,10 +79,33 @@ async function gatherReadings(
     },);
   },),);
 
+  /**
+   * Every reading across every artifact.
+   */
+  const readings = perEntry.flatMap(function toReadings(entry,) {
+    return entry.readings;
+  },);
+
   return {
-    readings: perEntry.flatMap(function toReadings(entry,) {
-      return entry.readings;
-    },),
+    readings,
+    // Keyed by the issues each reading's regions served, which is how a graded
+    // sheet position reaches a probe verdict: position to issue id through the
+    // manifest, then issue id to reading here.
+    byIssueId: new Map(readings.flatMap(function toEntries(reading,) {
+      return reading.regions
+        .flatMap(function toIssueEntries(tally,) {
+          return tally.issueIds
+            .map(function toPair(issueId,): readonly [
+              string,
+              IssueProbeReading,
+            ] {
+            return [
+              issueId,
+              reading,
+            ];
+          },);
+        },);
+    },),),
     entries: perEntry.length,
     shippedRecords: perEntry.reduce(
       function addShipped(
@@ -96,6 +126,30 @@ async function gatherReadings(
       0,
     ),
   };
+}
+
+/**
+ * Reads one command-line option's value.
+ *
+ * @param flag - long-form flag, including leading dashes
+ *
+ * @returns Value following the flag; empty when absent, which is also how a
+ * flag left blank is treated, since neither names a file
+ *
+ * @example
+ * ```ts
+ * const sheet = optionValue({ flag: '--repair-sheet', },);
+ * ```
+ */
+function optionValue({ flag, }: { readonly flag: string; },): string {
+  /**
+   * Where the flag sits among the arguments.
+   */
+  const at = process.argv
+    .indexOf(flag,);
+  if (at === (-1))
+    return '';
+  return process.argv[at + 1] ?? '';
 }
 
 /**
@@ -141,10 +195,96 @@ async function main(): Promise<void> {
       String(summary.unanchored,)
     } degradedRosterRegions=${String(summary.degradedRosterRegions,)}`,
   );
+  /**
+   * Graded repair sheet and its draw manifest, when both were passed.
+   */
+  const joinPaths = {
+    sheet: optionValue({ flag: '--repair-sheet', },),
+    manifest: optionValue({ flag: '--manifest', },),
+  };
+  if ((joinPaths.sheet === '') || (joinPaths.manifest === '')) {
+    console.log(
+      'NOTE majorityIntroduced counts regions a gate WOULD have blocked, not '
+        + 'regions that were damaged. Pass --repair-sheet PATH --manifest PATH '
+        + 'to score it against the human grades.',
+    );
+    return;
+  }
+
+  /**
+   * Draw manifest, the only record of which issue sat at which position.
+   */
+  const manifest = parseSampleManifest({
+    value: JSON.parse(
+      await readFile(
+        joinPaths.manifest,
+        'utf8',
+      ),
+    ),
+  },);
+
+  /**
+   * Human verdicts in sheet order.
+   */
+  const graded = parseGradedRepairSheet({
+    text: await readFile(
+      joinPaths.sheet,
+      'utf8',
+    ),
+  },);
+  if (graded.length
+    !== manifest.items
+    .length) {
+    throw new Error(
+      `sheet and manifest disagree about the draw: sheet has ${
+        String(graded.length,)
+      } items, manifest has ${String(manifest.items
+        .length,)}. Joining them by position would mislabel every verdict after `
+        + `the first divergence.`,
+    );
+  }
+
+  /**
+   * Graded issues paired with the probe reading of the same issue.
+   */
+  const items: readonly ProbeAgreementItem[] = manifest.items
+    .map(function toItem(
+      entry,
+      index,
+    ): ProbeAgreementItem {
+    /**
+     * Probe reading covering this issue, absent when unprobed.
+     */
+    const reading = gathered.byIssueId
+      .get(entry.issueId,);
+    return {
+      verdict: graded[index]
+        ?.verdict
+        ?? 'unscored',
+      ...(reading === undefined ? {} : { reading, }),
+    };
+  },);
+
+  /**
+   * Joint counts across both instruments.
+   */
+  const agreement = scoreProbeAgainstGrades({ items, },);
+
   console.log(
-    'NOTE majorityIntroduced counts regions a gate WOULD have blocked, not '
-      + 'regions that were damaged; pair it with the graded repair sheet before '
-      + 'reading it as precision.',
+    `AGREEMENT joined=${String(agreement.joined,)} probeFlagged=${
+      String(agreement.probeFlagged,)
+    } refutedByHuman=${String(agreement.refutedByHuman,)} sharedWithHuman=${
+      String(agreement.sharedWithHuman,)
+    } flaggedUnscored=${String(agreement.flaggedUnscored,)} unflaggedFailures=${
+      String(agreement.unflaggedFailures,)
+    }`,
+  );
+  console.log(
+    'NOTE refutedByHuman is the clean number: the human read the same wording '
+      + 'and said it breaks nothing nearby, so each one is a correct repair a '
+      + 'gate would have discarded. sharedWithHuman is NOT confirmation, since '
+      + 'the sheet\'s N fires both for a repair that did not fix its target and '
+      + 'for one that broke something.',
   );
 }
 

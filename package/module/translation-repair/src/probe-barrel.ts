@@ -37,6 +37,12 @@ export {
   readArtifactProbe,
 } from './artifact-probe-read.ts';
 export {
+  type ProbeAgreement,
+  type ProbeAgreementItem,
+  probeFlaggedIssue,
+  scoreProbeAgainstGrades,
+} from './probe-agreement.ts';
+export {
   corroboratedCount,
   judgeRegionProbe,
   type ProbeTelemetrySummary,
