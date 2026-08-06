@@ -40,9 +40,16 @@ This exists because Claude routinely ends a turn by announcing its next action
 instead of performing it,
  leaving the user to type `Continue.`
 Measured across this repository's transcripts,
- a forced continuation issues a tool call 91% of the time,
- a state-changing call 88% of the time,
- and runs a median of nine tool calls.
+ blocking a stop puts the agent back to work most of the time,
+ with a median of nine tool calls per forced continuation.
+The rate depends on what did the blocking,
+ and the conservative figure is the right one to plan against:
+ text-detector blocks issued a tool call 88% of the time
+and a state-changing call 84% of the time,
+ falling to 82% and 82% on Opus 5,
+ where 27% still needed a human nudge afterwards.
+Goal-condition blocks scored 100% on every metric,
+ which is why pooling the two overstates the case.
 
 This detector reads none of the response text.
 That is the point:

@@ -240,18 +240,44 @@ A block counts as a rescue when the forced continuation issues at least one tool
 before the next stop boundary,
 where the boundary is the next human turn, the next block, or end of session.
 
+Pooling every block hides the difference that matters,
+so the figures are given by block type.
+An earlier revision of this document reported only the pooled rates,
+which overstated the case:
+the goal blocks score perfectly on every metric and carry the pooled average.
+
 Across all 94 blocks:
 91% issued at least one tool call,
 88% issued a state-changing call,
 the median continuation ran 9 tool calls,
 and 7% were followed by a human restart nudge anyway.
 
-Restricted to `claude-opus-5`, 49 blocks:
-92% issued at least one tool call,
-92% issued a state-changing call,
-73% changed task state,
-median 9 tool calls,
-and 12% were followed by a nudge anyway.
+Split by what did the blocking:
+
+- Goal-condition blocks, 27:
+  100% issued a tool call,
+  100% issued a state-changing call,
+  100% changed task state,
+  and none was followed by a nudge.
+- `ccsr` text-detector blocks, 67:
+  88% issued a tool call,
+  84% issued a state-changing call,
+  25% changed task state,
+  and 10% were followed by a nudge anyway.
+
+Restricted to `claude-opus-5`, 49 blocks, the same split is sharper:
+
+- Goal-condition blocks, 27: 100% on every metric, none nudged again.
+- `ccsr` text-detector blocks, 22:
+  82% issued a tool call,
+  82% issued a state-changing call,
+  41% changed task state,
+  and 27% were followed by a nudge anyway.
+
+Neither figure is a clean prior for unconditional blocking,
+which conditions on neither text nor state and had no instance in the corpus.
+The text-detector rate is the more conservative of the two
+and the closer analogue in that it also fires without consulting task state.
 
 The one-shot guard is therefore not the bottleneck.
 A single block reliably puts the agent back to work,
