@@ -18,7 +18,7 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts';
+import { resolveGit, } from '@monochromatic-dev/git-policy-cli';
 import {
   describe,
   expect,
