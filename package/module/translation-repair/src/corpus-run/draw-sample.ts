@@ -11,6 +11,7 @@ import { formatGradingSheet, } from '../grading-sheet.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
+import { buildSampleManifest, } from '../sample-manifest.ts';
 import {
   assertRepairMeasurable,
   classifyBand,
@@ -310,10 +311,40 @@ async function drawGradingSample(): Promise<void> {
     }`,
   );
 
+  /**
+   * Companion manifest path.
+   */
+  const manifestPath = await resolveSheetPath({
+    runsDir,
+    seed: DEFAULT_SAMPLE_SEED,
+    isFinal,
+    kind: 'manifest',
+  },);
+
+  // Written in the same breath as the sheets, because this is the only instant
+  // the mapping exists. The sheets print no issue id, and re-running the draw
+  // does not recover one: the draw is deterministic in its seed but not in its
+  // POOL, which grows with every entry that settles. Without this file no human
+  // grade can ever be joined to a machine verdict about the same item.
+  await writeFile(
+    manifestPath,
+    `${JSON.stringify(
+      buildSampleManifest({
+        sample,
+        seed: DEFAULT_SAMPLE_SEED,
+        corpusSha: RUN_CORPUS_PIN.commitSha,
+      },),
+      undefined,
+      2,
+    )}\n`,
+  );
+
   console.log(
     `SAMPLE final=${String(isFinal,)} pool=${String(pool.length,)} drawn=${
       String(sample.length,)
-    } unrecordedRepairs=${String(unrecorded,)} out=${outPath} repairOut=${repairPath}`,
+    } unrecordedRepairs=${String(unrecorded,)} out=${outPath} repairOut=${
+      repairPath
+    } manifest=${manifestPath}`,
   );
 }
 

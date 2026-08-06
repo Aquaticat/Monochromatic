@@ -83,7 +83,37 @@ function unsafeSeedMessage({ seed, }: { readonly seed: string; },): string {
  * const kind: SheetKind = 'repair';
  * ```
  */
-export type SheetKind = 'detection' | 'repair';
+export type SheetKind = 'detection' | 'repair' | 'manifest';
+
+/**
+ * File-name stem and extension for each draw output.
+ *
+ * The detection sheet keeps its original name because two graded rounds already
+ * live under it, and renaming would make one continuous series look like two
+ * different measurements.
+ *
+ * The manifest is not a sheet and is never shown to a grader; it rides here
+ * because it must be seed-named and overwrite-protected exactly as the sheets
+ * are. Losing it silently would cost more than losing a sheet, since a sheet
+ * can be redrawn and the mapping it records cannot.
+ */
+const DRAW_OUTPUTS: Readonly<Record<SheetKind, {
+  readonly stem: string;
+  readonly extension: string;
+}>> = {
+  detection: {
+    stem: 'grading-sheet',
+    extension: 'md',
+  },
+  repair: {
+    stem: 'repair-sheet',
+    extension: 'md',
+  },
+  manifest: {
+    stem: 'sample-manifest',
+    extension: 'json',
+  },
+};
 
 /**
  * Raised when a final grading sheet already exists at the target path, which
@@ -226,23 +256,19 @@ export async function resolveSheetPath(
     throw new UnsafeSeedError({ seed, },);
 
   /**
-   * File-name stem for this sheet kind. The detection sheet keeps its original
-   * name because two graded rounds already live under it, and renaming would
-   * make one continuous series look like two different measurements.
+   * Name parts for this draw output.
    */
-  const stem = kind === 'detection'
-    ? 'grading-sheet'
-    : 'repair-sheet';
+  const output = DRAW_OUTPUTS[kind];
 
   /**
-   * Sheet path for this seed and draw kind; the seed in the name is what keeps
-   * one round from targeting another round's file.
+   * Path for this seed and draw kind; the seed in the name is what keeps one
+   * round from targeting another round's file.
    */
   const path = join(
     runsDir,
     isFinal
-      ? `${stem}-${seed}.md`
-      : `${stem}-${seed}-preliminary.md`,
+      ? `${output.stem}-${seed}.${output.extension}`
+      : `${output.stem}-${seed}-preliminary.${output.extension}`,
   );
 
   // Preliminary sheets are redrawn on purpose as the pool grows, so only the

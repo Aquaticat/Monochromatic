@@ -213,6 +213,12 @@ export {
   drawStratifiedSample,
 } from './sample-draw.ts';
 export {
+  buildSampleManifest,
+  parseSampleManifest,
+  type SampleManifest,
+  type SampleManifestItem,
+} from './sample-manifest.ts';
+export {
   assertRepairMeasurable,
   type BandQuota,
   classifyBand,
