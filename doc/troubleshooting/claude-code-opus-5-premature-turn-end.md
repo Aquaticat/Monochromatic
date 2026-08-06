@@ -186,6 +186,61 @@ The practical consequence for any new detector:
 it shares a single block slot per turn with the existing three,
 so detector ordering decides which failure actually gets corrected.
 
+## Rescue rate, measured
+
+The corpus contains 94 Stop-hook feedback records on the main branch.
+Only 67 carry a `hook_blocking_error` attachment;
+the remaining 27 are goal-condition blocks, described in the goal feature section.
+
+A block counts as a rescue when the forced continuation issues at least one tool call
+before the next stop boundary,
+where the boundary is the next human turn, the next block, or end of session.
+
+Across all 94 blocks:
+91% issued at least one tool call,
+88% issued a state-changing call,
+the median continuation ran 9 tool calls,
+and 7% were followed by a human restart nudge anyway.
+
+Restricted to `claude-opus-5`, 49 blocks:
+92% issued at least one tool call,
+92% issued a state-changing call,
+73% changed task state,
+median 9 tool calls,
+and 12% were followed by a nudge anyway.
+
+The one-shot guard is therefore not the bottleneck.
+A single block reliably puts the agent back to work,
+so bounded progress-rearmed re-blocking is not the missing piece.
+What is missing is a detector that fires on this failure at all,
+since the hedging and trailing-question detectors do not.
+
+## The goal feature already implements state-based blocking
+
+Claude Code's goal feature was active in one session,
+where it produced 27 Stop blocks.
+Its feedback text keys on exactly the failure shape described here,
+for example
+`The assistant explicitly states 'Remaining: #105, #109, ...'`.
+
+Per block it performs better than the phrase detectors:
+all 27 issued tool calls, state-changing calls, and task-state changes,
+and none was immediately followed by a nudge.
+
+It did not reduce the session-level nudge rate.
+The session where it ran, 50 human turns with 27 goal blocks, required 16 nudges, 32%.
+The six Opus 5 sessions without it averaged 26.9% across 26 turns.
+
+The mechanism rescues each stop it catches
+and does not stop the agent from stopping again later.
+With one goal-active session this cannot estimate an effect size,
+and the goal-active session is also the most queue-shaped in the corpus,
+so its rate is inflated by the denominator problem described in the confounds section.
+
+The practical consequence is that building a state-based detector into `ccsr`
+would reimplement a mechanism the user already runs,
+with evidence that the mechanism does not remove the problem.
+
 ## What a hook can and cannot do here
 
 A Stop hook is mechanical in when it fires.
@@ -205,15 +260,35 @@ and its effect on this failure is unestablished.
 
 No option here has an established effect on this failure.
 The model comparison is confounded,
-and every hook-based option is untested in this repository.
-They are candidates ranked by expected value against implementation cost,
+and the one state-based mechanism actually deployed, the goal feature,
+rescued every stop it caught without lowering the session nudge rate.
+These are candidates ranked by expected value against implementation cost,
 not by proven results.
 
-- Block on tracked-task state at the Stop hook,
+- Run the goal feature deliberately across several queue-shaped sessions,
+  and compare against matched sessions without it.
+  This ranks first because it is the cheapest remaining action,
+  requires no code,
+  and tests the state-based approach before anything is built.
+  The corpus contains one goal-active session,
+  which is too few to estimate an effect,
+  and that session is also the most queue-shaped,
+  so its 32% rate is inflated by the denominator problem.
+  Getting three or four matched sessions settles whether state-based blocking helps at all.
+- Route long queue-shaped sessions to `claude-fable-5`,
+  run as a deliberate comparison rather than adopted as a fix.
+  This ranks below the goal experiment because it costs capability on the hard analysis work
+  these sessions consist of,
+  where the goal experiment costs nothing.
+  It ranks above building a detector because it is still only a measurement,
+  and the corpus lacks exactly this comparison at matched task shape and period.
+- Build tracked-task-state blocking into `ccsr`,
   with a high-confidence phrase detector only as fallback when task state is unavailable.
-  This ranks first because it addresses the failure where it happens,
-  independently of which model is in use and independently of how the turn is worded,
-  and because the enforcement point already exists and already blocks stops.
+  This ranks below both measurements because it is the largest build here
+  and would reimplement what the goal feature already does,
+  against evidence that the goal feature did not lower the nudge rate.
+  Take it only if the goal experiment shows state-based blocking helps
+  and the goal feature itself proves too coarse to configure.
   State-first ordering is what defends against the main hazard:
   a wording-keyed rule can be satisfied by deleting the announcement instead of doing the work,
   converting an informative stop into a silent one.
@@ -235,26 +310,20 @@ not by proven results.
   for a compaction boundary or a genuine blocker,
   needs an exact user-supplied marker consumed from `UserPromptSubmit`,
   never a marker the assistant can print to authorize itself.
-- Route long queue-shaped sessions to `claude-fable-5`,
-  run as a deliberate comparison rather than adopted as a fix.
-  This ranks below state-based blocking because its supporting evidence is confounded
-  and because it trades away capability on exactly the hard analysis work
-  these sessions consist of.
-  It ranks above harness-driven continuation because it is the only candidate
-  that could remove the failure rather than absorb its cost,
-  and because running it on the same task shape in the same period
-  is the experiment the corpus lacks.
 - Drive continuation from the harness rather than from the user,
   using the `loop` skill's self-paced mode.
-  This ranks below the model comparison because it treats the symptom:
-  it removes the typing cost without changing how often the agent stops.
-  It ranks above the upstream report because it returns time immediately.
-- Add this repository's measurement to upstream issue 84007.
-  It ranks last because it cannot change local behavior,
-  and because it is an external communication on a repository the user does not control,
-  so it needs the user's decision before anything is posted.
-  Its value is that the corpus records per-model rates and hook-level detail
-  that neither existing report carries.
+  This ranks last because it treats the symptom:
+  it removes the typing cost without changing how often the agent stops,
+  and it spends tokens on turns the user would otherwise have judged unnecessary.
+  It is still worth having if the measurements above come back negative,
+  since absorbing the cost beats paying it by hand.
+
+Filing upstream is not an option here.
+`.out-of-scope/claude-code-upstream-bugs.md` settles it:
+this project does not file or track Claude Code bugs as GitHub issues,
+and the trigger to revisit is empirical evidence that a report produced a timely fix,
+not the severity of any individual defect.
+This document is the local record that policy prescribes instead.
 
 ## Open questions
 
@@ -268,14 +337,18 @@ or merely accompanies it
 is likewise untested,
 and the distinction decides whether a phrase-keyed detector can work at all.
 
-The rescue rate of the existing hook is unmeasured.
-The corpus records 67 blocking events but not whether the forced continuation
-produced a task transition before the next stop.
-That figure decides whether one block per turn suffices
-or whether bounded, progress-rearmed re-blocking is needed,
-and it is answerable from the transcripts already on disk.
+How many goal-active sessions are needed to settle the state-based question is open,
+but one is certainly too few,
+and the single available session is the corpus's most queue-shaped.
 
-Detector precision is likewise unmeasured.
+Why the goal feature rescued every stop it caught
+while the session still needed 16 nudges is unexplained.
+The candidate readings are that the goal condition allowed stops it judged satisfied,
+that it evaluated only at some stops,
+or that the agent stopped again promptly after each rescue.
+Distinguishing them means reading that session's goal blocks against its nudges in sequence.
+
+Detector precision is unmeasured.
 The nudge rate does not estimate it.
 Estimating it means running a candidate detector over every stop in the corpus
 and labeling the matches by hand,
