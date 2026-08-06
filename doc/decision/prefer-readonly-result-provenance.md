@@ -554,14 +554,28 @@ So the call goes through a value the caller supplied,
  and which implementation runs is a fact about the
 caller rather than about the callee's file.
  Bringing more source into scope cannot answer it.
- What could
-is the existing owned-callable resolution,
- where every call site passes a callable the rule can read,
- and
-that is a property of each call graph rather than a configuration change.
- No estimate of how many of the
-189 satisfy it is offered here,
- because none has been measured.
+ Nor is this an unmeasured subset waiting to be counted.
+ `recordBodylessEffects` in
+`direct-bodyless-summary.ts` gives a bodyless callable one summary:
+ every parameter that can carry mutable
+state takes opacity,
+ because no body proves what the implementation does with it,
+ and an authored contract
+adds known effects on top without removing that opacity.
+ A function type has no body by construction,
+ so
+that summary is the designed answer rather than a failure to look harder.
+
+Moving these would take a technique the rule does not currently apply to general calls:
+ substituting the
+callable an argument actually holds at each call site,
+ which it does do for observers through
+`callableDeclaration` and for ownership through `proveForeignBorrowed`,
+ the latter documented as the single
+largest cost the rule carries.
+ Whether that generalizes is a design question about the backwards call-graph
+walk,
+ not a configuration change and not a measurement gap.
 
 ## Adopted for issue #414: the collection result gate moves from type shape to provenance
 
