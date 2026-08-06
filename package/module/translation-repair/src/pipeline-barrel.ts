@@ -182,6 +182,16 @@ export {
   parseGradedSheet,
 } from './grade-sheet-read.ts';
 export {
+  type GradedRepairItem,
+  parseGradedRepairSheet,
+  type RepairVerdict,
+} from './repair-grade-read.ts';
+export {
+  opensWithVerdict,
+  trimLeadingDelimiters,
+  VERDICT_DELIMITERS,
+} from './verdict-letter.ts';
+export {
   type AgreementTally,
   parsePreGrades,
   type PrecisionTally,
