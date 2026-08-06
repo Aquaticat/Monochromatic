@@ -3402,6 +3402,38 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   are their own harm; running the benchmark with the policy disabled would
   measure a pipeline that is not the one shipping. Attribution also costs no
   extra model calls.
+- NATURALNESS LANE, DETERMINISTIC HALF BUILT (task 46, still in progress).
+  `refine-eligibility.ts` (`84e8fc380`) decides which paragraphs of a REPAIRED
+  slice the lane may touch. It is named a FILTER, never a verse detector,
+  because nothing in the parsed model identifies poetry: an mdast `break`, a
+  soft source wrap inside node text, and an HTML or MDX break element are three
+  different things and none means verse. It admits only single-line prose, so
+  single-line poetry still passes and wrapped prose is still skipped.
+  It reads the repaired slice, never the original target: accuracy edits shift
+  offsets and can change block structure.
+  Every block gets a verdict and skips carry their reason, so lane yield is
+  explainable. A degraded parse disqualifies the WHOLE slice, since a downgrade
+  or a masked region changes how every block was read.
+  `protected-atom.ts` plus `inspect-paragraph.ts` (`b87753ce9`) are the
+  structural gate. Atoms compare as an ORDERED SEQUENCE: a multiset would pass
+  "3 cats and 5 dogs" becoming "5 cats and 3 dogs", two links exchanging
+  destinations, and two names exchanging positions, all of which are now tests.
+  TWO DEFECTS FOUND BY RUNNING THE CODE, not by reading it, both worth keeping
+  in mind because both were silent:
+  A paragraph parsed in isolation does not resolve references. GFM only yields
+  a `footnoteReference` when a matching definition is in scope, so `[^1]` came
+  back as literal text: the digit was protected as a number while the marker
+  around it was not, and a rewrite turning `[^1]` into `1` would have passed.
+  Fixed by parsing twice, alone for structure and with the document definitions
+  for references.
+  The first version walked code points correctly but stopped its foreign ranges
+  at U+FAFF, so a given name in Han Extension B produced NO atom and could be
+  deleted silently. That is the character most likely to be a person's name.
+  Both now have regression tests.
+  STILL TO BUILD: the rewriter call (one per slice, returning paragraph
+  operations), candidate assembly, `selectBestCandidate` with BOTH decline
+  dispositions mapping to exact `T1`, the retained-issue recheck, the two
+  roster asserts, and the phase wiring in `repairTranslation`.
 - THE ENSEMBLE'S WALL-CLOCK IS UNMEASURED, and this is NOT a cost question.
   An earlier version of this note called it cost and treated it as a gate on
   round three. Both were wrong, and the user corrected the first directly ("I
