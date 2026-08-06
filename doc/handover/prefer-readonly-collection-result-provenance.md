@@ -120,9 +120,11 @@ diagnostic #414 asked for.
   authority documents' own standard.
 - The two fixture diagnostic counts move together with the fixtures:
    `readonly-result-provenance-invalid.ts`
-  is pinned at 8 messages in `prefer-readonly-parameter-type.unit.test.ts`,
-   with the offer list enumerated in
-  full.
+  is pinned at 13 messages in `prefer-readonly-parameter-type.unit.test.ts` with its offer list enumerated in
+  full,
+   and `readonly-catalog-free-invalid.ts` at 16.
+   A count that drops is a report traded for something:
+  check it was traded for an attribution and not for silence.
 
 ## Progress
 
@@ -185,7 +187,7 @@ diagnostic #414 asked for.
    Whole suite unchanged,
    and the baseline above is unchanged.
 
-### Next
+### Deferred, with its reason
 
 Increment 2,
  second half:
