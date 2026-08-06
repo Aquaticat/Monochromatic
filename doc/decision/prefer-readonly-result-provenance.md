@@ -665,3 +665,110 @@ What matters is that every finding which went away went away for a stated reason
  a container write became
 an attribution,
  or a member's result gained a relation that accounts for it.
+
+## The receiver question was the value question, and it should have been the element question
+
+Issue #417,
+ measured and fixed 2026-08-06.
+
+`recordReadonlyViewApplications` resolved its receiver with `rootParameterOrigins`,
+ which asks which
+caller parameter owns the value the receiver holds.
+ For a fold whose receiver is a container another
+member built,
+ `rows.filter(keep).reduce(fold, 0)` in either its chained or its bound spelling,
+ no
+parameter owns that value:
+ `filter` built it.
+ The origins came back empty,
+ the function returned on
+`receiverOrigins.size === 0` before deriving anything,
+ and the call fell through to the receiver claim,
+which cannot answer for a member carrying an observer.
+ The parameter stayed opaque for a fold that reads
+a length and returns a number.
+
+The observer derivation never needed the value question.
+ An observer receives elements,
+ never the
+container,
+ so what it needs is where the receiver's elements came from,
+ which is what
+`expressionElementOrigins` answers and what the element facet was added for.
+ The change is that one call.
+
+It widens and never narrows.
+ For a receiver that is itself a parameter the element walk finds no
+declaration initializer to follow and falls back to exactly the value origins,
+ which is why all six
+container fixtures read byte-identical across the change and the unit suite is unaffected.
+
+### What the earlier attempts got wrong
+
+Two attempts were recorded against this and both were reverted on a regression that does not exist.
+`iteratedContainerWriteEffect` and `spreadContainerWriteEffect` were blamed for gaining a `rows.slice`
+report;
+ both already carried one on merged `main`,
+ checked by probing the summaries before touching
+anything.
+ The issue title was wrong in the same way:
+ the bound form is not clean,
+ it reports `kept.reduce`
+where the chained form reports the whole chain,
+ so binding changes the spelling of the cause and nothing
+else.
+ The reasoning that should have caught this was written down at the time,
+ that element and value
+origins agree for a parameter receiver,
+ and it was used to predict a no-op and then not checked against
+what the fixtures actually said.
+
+### Consequences, measured
+
+Matched pair in one worktree,
+ same source but for the one-line change,
+ `mise run lint:oxlint` across
+the workspace:
+
+- before:
+   3378 errors,
+   9789 warnings,
+   1722 from this rule.
+- after:
+   3345 errors,
+   9789 warnings,
+   1689 from this rule.
+
+The warning count is identical and every one of the 33 fewer errors is a finding of this rule,
+ so nothing
+outside it moved.
+ Both runs logged the same 4 files where the semantic rule could not run,
+ checked rather
+than assumed,
+ so neither run bought its number by silently skipping work.
+
+Comparing findings by parameter name and source location rather than by message,
+ no parameter became
+opaque that was not opaque before.
+ Two findings survived while naming one fewer parameter:
+ `overwriteTomlKey`
+in `package/dev-script/file-enforcer/src/io/write-toml.ts` and its counterpart in `src/pipeline/toml.ts`
+each named `path` and `value` before and name only `value` now.
+ `path.reduce` is the fold this change
+resolves;
+ `value` keeps its own opacity,
+ which is argument-side and comes from `Object.getPrototypeOf` and
+`toISOString`,
+ and is untouched.
+
+The soundness control is `observerAccumulatorEscapeEffect` in `readonly-member-channel-invalid.ts`,
+ where
+the fold returns the accumulator itself and the receiver's element therefore escapes.
+ It still reports
+under the change,
+ because what catches it is the result gate on the reduce result type rather than the
+receiver resolution.
+ The two spellings are pinned clean in `effect-summaries.unit.test.ts` against that
+control and against `hookedArrayDefaultSortOpaqueEffect`;
+ reverting the one-line change fails the pin with
+`expected [ 0 ] to deeply equal []`.

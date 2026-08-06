@@ -2638,6 +2638,79 @@ await describe({
       },
     },),
     it({
+      name: 'resolves a container receiver through its elements, in both fold spellings',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns opaque parameter indexes in ascending order.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /* Both spellings fold a container `filter` built, and no parameter is the value
+         * that container holds, so asking where the receiver's value came from answers
+         * nothing and the call falls to the receiver claim, which cannot answer for a
+         * member carrying an observer. Asking where its elements came from answers the
+         * parameter, and the observer derivation then discharges on its merits: the fold
+         * reads a length and returns a number, so nothing receiver-reachable leaves.
+         *
+         * Measured by reverting `recordReadonlyViewApplications` to resolve the receiver
+         * through `rootParameterOrigins`, where both read `[0]` with `reduce` named as
+         * the cause. The pair matters as much as either case: binding the container
+         * changes only the spelling of the cause, so both clear together or the fix is
+         * keyed to syntax rather than to provenance. */
+        expect(opaqueIndexes('chainedContainerFoldEffect',),).toEqual([],);
+        expect(opaqueIndexes('boundContainerFoldEffect',),).toEqual([],);
+        /* A fold whose receiver is the parameter itself, which resolved before this and
+         * must keep resolving: the element question has to subsume the value question,
+         * never replace it. */
+        expect(opaqueIndexes('reduceElementParameterEffect',),).toEqual([],);
+        /* The controls that keep the three above from passing vacuously. Widening how a
+         * receiver resolves must not discharge a parameter whose opacity is real, and
+         * these two are opaque for reasons the receiver walk never touches: an
+         * unanalyzable callee, and a default sort on an array carrying an own hook. */
+        expect(opaqueIndexes('opaqueSemanticEffect',),).toEqual([0,],);
+        expect(opaqueIndexes('hookedArrayDefaultSortOpaqueEffect',),).toEqual([0,],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'reuses direct scans in process and through persistent cache',
       fn: async () => {
         using cache = disposableCacheDirectory();
