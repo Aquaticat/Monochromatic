@@ -4642,3 +4642,49 @@ the verdict. The diagnostic that separates the two readings is the CONTRADICTED
 count: a probe that is looking and failing to anchor produces contradicted and
 unanchored claims, while a probe that has been talked out of claiming produces
 neither. Zero of everything is the shape that indicts the prompt.
+
+### The probe is not deaf: sensitivity measured, not assumed
+
+`mise run //package/module/translation-repair:probe-sensitivity`
+(commit adds `corpus-run/probe-sensitivity.ts`).
+Cat-themed fixtures only, no corpus text, writes nothing, three model calls.
+
+Run 007's first eight regions produced no claims at all, which fits two very
+different stories, and waiting for the round to end separates them not at all.
+Injecting damage does. Result:
+
+```text
+envelope/clean         heard=3/3  noneFound=3   (no claims)
+envelope/omitting      heard=3/3  removal=3
+envelope/contradicting heard=3/3  corroborated=3
+```
+
+Perfect discrimination.
+Zero false positives on a replacement that fixes its defect and introduces
+nothing;
+unanimous detection of a dropped clause;
+unanimous detection of an inverted meaning.
+Every claim anchored well enough for the deterministic screen to uphold it,
+with nothing contradicted and nothing unanchored.
+
+THE CONCLUSION THAT MATTERS: run 007's zeros are the benign reading.
+Those repairs are clean, and a round reporting `majorityIntroduced=0` can be
+reported as evidence rather than as an instrument with no reading.
+The warning recorded in the previous section is DISCHARGED, and the discharge
+is measured rather than argued.
+
+SECOND RESULT, unplanned: this independently validates the two-direction screen.
+The omitting region is exactly the case a forward-only quote requirement could
+never anchor, and it came back `removal=3` rather than `unanchored=3`.
+Had the omission fix not landed, this check would have shown a probe that misses
+the likeliest damage class, and the whole round's zeros would have looked like
+the broken reading.
+
+MINOR, not acted on: two of three probers left `category` and `severity` empty
+on their claims while still quoting usable evidence.
+The fields are telemetry, nothing reads them, and the schema requires them so
+they arrive as empty strings rather than missing.
+Worth a prompt line only if a later analysis wants to group claims by class.
+
+KEEP THIS CHECK. It is cheap, needs no corpus, and answers the one question a
+quiet instrument always raises. Run it whenever the probe prompt changes.

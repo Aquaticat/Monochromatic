@@ -58,3 +58,7 @@ run = "node src/corpus-run/score-probe.ts"
 [tasks."recall-benchmark"]
 description = "Measure recall: plant known omissions into clean translations, run the repair loop, and grade restoration against the deletions (append -- --plan for a zero-quota setup check)"
 run = "node src/corpus-run/recall-benchmark.ts"
+
+[tasks."probe-sensitivity"]
+description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
+run = "node src/corpus-run/probe-sensitivity.ts"
