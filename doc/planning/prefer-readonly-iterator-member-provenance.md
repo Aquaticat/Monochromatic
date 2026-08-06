@@ -425,6 +425,34 @@ say.
    while `containerGrowthEffect` still reports at its row parameter because nothing attributes where
    that row ends up.
 
+   The ascent covers array literals only,
+   and that guard was checked rather than reasoned about.
+   Probed
+   over an overlay against an unresolvable sink:
+
+   -    `unresolvedRowSink(...rows.values(),)`,
+      a call-argument spread:
+      `opaque=[0]`.
+   -    `unresolvedSink({ ...rows.values(), },)`,
+      an object-literal spread:
+      `opaque=[0]`.
+   -    `unresolvedSink([...rows.values(),],)`,
+      an array-literal spread that itself escapes:
+      `opaque=[0]`.
+   -    `for (const row of [...rows.values(),])` reading only:
+      `opaque=[]`.
+
+   The third is the one that matters:
+   ascending to the literal does not discharge it,
+   because the
+   literal's own position is an argument to a call nothing can read.
+   The ascent moves the question rather
+   than answering it,
+   which is what keeps it from being a blanket discharge.
+   `escapingLookupEffect` in
+   `readonly-result-provenance-invalid.ts` is the standing fixture control for that shape and still reads
+   `opaque=[0]`.
+
    **Iterator-only findings are now zero,
    from 16 when this arc started.
    ** Every remaining mention of an
