@@ -347,6 +347,17 @@ await describe({
          * turns this into `[0]` and makes it indistinguishable from the pair above, which
          * is the distinction result provenance is being built on. */
         expect(returnedIndexes('packageCountFresh',),).toEqual([],);
+        /* What carries the parameter through a fresh container today, recorded before it
+         * changes. The container relation is verified and no discharge consults it, so
+         * `slice` and `filter` leave their receiver opaque and that opacity, not an
+         * attribution, is what withholds the offer.
+         *
+         * When the element facet lands, the two element writes must move to `[0]` and the
+         * growth must stay empty. A change that moves all three, or neither, is the
+         * failure this pins: one set cannot answer both questions about one value. */
+        expect(mutatedIndexes('containerElementWriteEffect',),).toEqual([],);
+        expect(mutatedIndexes('filteredElementWriteEffect',),).toEqual([],);
+        expect(mutatedIndexes('containerGrowthEffect',),).toEqual([],);
       },
     },),
     it({

@@ -1024,3 +1024,91 @@ export type SealedRow = {
 export function packageCountFresh(row: SealedRow,): { readonly named: string; } {
   return { named: row.label, };
 }
+
+/**
+ * Writes an element of a fresh container built from the parameter.
+ *
+ * `slice` hands back a new array holding the receiver's own rows, so this write lands on
+ * the caller's row. Nothing attributes it today, and nothing has to: `slice` is
+ * undischarged, so the parameter is opaque and no offer is made. The element facet is what
+ * turns the opacity into an attribution, and until it exists this case records which of the
+ * two is carrying the parameter.
+ *
+ * @param rows - Rows whose element this writes through a copy.
+ *
+ * @mutates rows - Writes a row reached through a fresh container.
+ *
+ * @example
+ * ```ts
+ * containerElementWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function containerElementWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  /**
+   * First row of the copy, which is the caller's row.
+   */
+  const first = copy[0];
+  if (first !== undefined)
+    first.label = 'written';
+}
+
+/**
+ * Grows a fresh container built from the parameter.
+ *
+ * The opposite answer about the same value, and the reason the facet cannot be one set: the
+ * push reaches the copy and nothing the caller shared, so `rows` must never be recorded as
+ * mutated here however the element write above is attributed.
+ *
+ * @param rows - Rows this copies and does not write.
+ *
+ * @param fresh - Row appended to the copy.
+ *
+ * @example
+ * ```ts
+ * containerGrowthEffect([{ label: '' }], { label: '' });
+ * ```
+ */
+export function containerGrowthEffect(
+  rows: LabelledRow[],
+  fresh: LabelledRow,
+): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  copy.push(fresh,);
+}
+
+/**
+ * Writes an element of a filtered container built from the parameter.
+ *
+ * The same shape as `containerElementWriteEffect` through the other member carrying the
+ * container relation, so neither member's behaviour rests on the other's case.
+ *
+ * @param rows - Rows whose element this writes through a filtered copy.
+ *
+ * @mutates rows - Writes a row reached through a filtered container.
+ *
+ * @example
+ * ```ts
+ * filteredElementWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function filteredElementWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Filtered array holding the caller's own rows.
+   */
+  const kept = rows.filter(function keepsEvery(): boolean {
+    return true;
+  },);
+  /**
+   * First row of the filtered copy, which is the caller's row.
+   */
+  const first = kept[0];
+  if (first !== undefined)
+    first.label = 'written';
+}

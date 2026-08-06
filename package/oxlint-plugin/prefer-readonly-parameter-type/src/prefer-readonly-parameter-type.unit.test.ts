@@ -422,11 +422,17 @@ children: [
        * sixth, which is an offer: `narrowingPrecisionCostEffect` hands `second` to a
        * property its callee only reads, so nothing writes it.
        *
-       * The shorthand provenance pair added the last two, and both are correct: neither
+       * The shorthand provenance pair added two, and both are correct: neither
        * `packageRowShorthand` nor `packageRowExplicit` writes the row it packages, so each
        * earns the offer its sibling assertion below names. Their callers, which do write
-       * through the returned holder, are contracted and report nothing. */
-      expect(messages.length,).toBe(8,);
+       * through the returned holder, are contracted and report nothing.
+       *
+       * The container trio added the last four, all reports rather than offers, and all of
+       * them the receiver opacity of an undischarged `slice` or `filter`. That opacity is
+       * what withholds an offer from a parameter written through a fresh container today,
+       * so these four are the count to watch when the element facet lands: they should
+       * become attributions, not disappear. */
+      expect(messages.length,).toBe(12,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat
