@@ -239,12 +239,11 @@ overrides:
   # (last commit 2022-05).
   # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
   'argparse': '-'
-  # Patch GHSA-mh99-v99m-4gvg / CVE-2026-14257: <=5.0.7 bounds the number of
-  # expand() results but not their length, so a chain of brace groups can
-  # exhaust memory and crash the process with an uncatchable OOM. Only
-  # transitive consumer is minimatch@10.2.5 (`brace-expansion: ^5.0.5`);
-  # patch-level bump is range-compatible.
-  'brace-expansion': '>=5.0.8'
+  # Patch GHSA-rgw5-rvv9-x895 / CVE-2026-69152: >=4.0.0 <5.0.9 can build
+  # unbounded intermediate arrays, bypassing the prior output cap and allowing
+  # denial of service. Every transitive path resolves through minimatch@10.2.5
+  # (`brace-expansion: ^5.0.5`), so the fixed release is range-compatible.
+  'brace-expansion': '>=5.0.9'
   # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
   # the native binary; each invocation pays the Node startup cost (multiple
   # seconds in this workspace, vs sub-100ms for the native binary directly).
@@ -258,12 +257,12 @@ overrides:
   # package/config/dprint/README.md for the policy and VSCode-extension
   # workaround. Refs #163.
   'dprint': '-'
-  # Patch GHSA-v39h-62p7-jpjc / CVE-2026-6322: <=3.1.1 decodes percent-encoded
-  # authority delimiters inside the host, letting a normalized URL re-parse
-  # against a different host than the source string appeared to encode. Only
-  # transitive consumer is ajv@8.18.0 (pulled in by stylelint > table); a
-  # patch-level bump is range-compatible with ajv's `^3.0.0` dep.
-  'fast-uri': '>=3.1.2'
+  # Patch GHSA-7p8r-x3mc-p8w7 / CVE-2026-18446: >=4.0.0 <4.1.2 can treat a
+  # backslash as an authority introducer, causing host confusion. Only
+  # transitive consumer is ajv@8.20.0 (pulled in by stylelint > table); the
+  # workspace already overrides ajv's `^3.0.1` request to v4, and this keeps
+  # the effective dependency on a patched v4 release.
+  'fast-uri': '>=4.1.2'
   # Patch GHSA-5wm8-gmm8-39j9 / CVE-2026-44665: <=1.1.6 lets quote characters
   # in attribute values break out of the attribute and inject sibling
   # attributes when processEntities is disabled. Only transitive consumer is
