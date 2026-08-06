@@ -26,6 +26,7 @@ import {
 } from './effect-member-call-receiver.ts';
 import {
   memberResultProvenance,
+  RESULT_RELATION_OBSERVER_RETURN,
   RESULT_RELATION_RECEIVER_ELEMENTS,
   RESULT_RELATION_RECEIVER_VALUE,
   RESULT_RELATION_UNPROVEN,
@@ -285,6 +286,54 @@ export function callResultReceiver({
     },)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
+}
+
+/**
+ * Tests whether a call's result is built out of what its observer returned.
+ *
+ * The third answer to the result question, and the one that needs no receiver: `map` and
+ * `flatMap` hold nothing the receiver held, so what their result carries is decided by the
+ * observer, which `propagateElementApplications` reads from the observer's own summary.
+ * A caller therefore learns nothing here beyond which mechanism owns the answer.
+ *
+ * @param project - TypeScript project proving default-library ownership.
+ *
+ * @param checker - TypeScript checker resolving the signature.
+ *
+ * @param call - Call expression whose result may come from its observer.
+ *
+ * @returns whether the observer-return relation is verified for this member.
+ *
+ * @example
+ * ```ts
+ * callResultComesFromObserver({ project, checker, call });
+ * ```
+ */
+export function callResultComesFromObserver({
+  project,
+  checker,
+  call,
+}: {
+  readonly project: Project;
+  readonly checker: Checker;
+  readonly call: CallExpression;
+},): boolean {
+  /**
+   * Default-library interface and member this call selected.
+   */
+  const member = defaultLibraryMember({
+    project,
+    checker,
+    call,
+  },);
+  if (member === NOT_DEFAULT_LIBRARY_MEMBER)
+    return false;
+  /**
+   * Verified relation for the selected member.
+   */
+  const provenance = memberResultProvenance(member,);
+  return (provenance !== RESULT_RELATION_UNPROVEN)
+    && (provenance.relation === RESULT_RELATION_OBSERVER_RETURN);
 }
 
 /**

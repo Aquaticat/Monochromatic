@@ -432,9 +432,14 @@ children: [
        * silent went silent because the write beneath it is attributed instead: every
        * container parameter is recorded as mutated in `effect-summaries.unit.test.ts`, and
        * `containerGrowthEffect` writes nothing at all, which is why it earns the projection
-       * offer the enumeration below names. The `filter` cases keep reporting, since that
-       * member's observer obligation is still gated by the type-shape result test. */
-      expect(messages.length,).toBe(13,);
+       * offer the enumeration below names.
+       *
+       * Replacing the type-shape gate took the last one: `filteredElementWriteEffect` writes
+       * through a filtered copy, that write is attributed to `rows`, and the report it used
+       * to carry is now that attribution. Every container case in this fixture has made the
+       * same trade, which is why the count fell three times and no offer appeared for a
+       * parameter any of them writes. */
+      expect(messages.length,).toBe(12,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat

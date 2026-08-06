@@ -273,6 +273,7 @@ export function recordCollectionMemberEffect({
     receiver,
     summary,
     ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+    ...(body === undefined) ? {} : { body, },
   },))
     return COLLECTION_CALL_DERIVED;
   return receiverClaimAnswerable({
