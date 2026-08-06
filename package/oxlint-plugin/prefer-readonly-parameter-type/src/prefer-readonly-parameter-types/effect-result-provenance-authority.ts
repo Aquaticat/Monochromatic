@@ -279,6 +279,11 @@ const PROVENANCE_BY_OWNER: Readonly<
       resultTypeArgumentIndex: 0,
       pairedElementIndex: 1,
     },
+    keys: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
+      receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
+    },
     values: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 1,
@@ -295,6 +300,11 @@ const PROVENANCE_BY_OWNER: Readonly<
       receiverTypeArgumentIndex: 1,
       resultTypeArgumentIndex: 0,
       pairedElementIndex: 1,
+    },
+    keys: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
+      receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
     values: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
@@ -330,7 +340,7 @@ export const RESULT_PROVENANCE_BY_INTERFACE: ReadonlyMap<
  * cannot pass unnoticed: the author must change a number in a second file, which is
  * the point at which the identity probe becomes unavoidable.
  */
-export const VERIFIED_RESULT_RELATION_COUNT = 26;
+export const VERIFIED_RESULT_RELATION_COUNT = 28;
 
 /**
  * Fresh-container members still absent, each for a reason of its own.

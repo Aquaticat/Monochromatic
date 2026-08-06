@@ -81,3 +81,57 @@ export function rewriteMutableStoredPair(rows: StoredPair[],): void {
   for (const pair of rows.values())
     pair[0] = 'rewritten';
 }
+
+/**
+ * Row carrying one mutable label, held as a map key.
+ */
+type KeyedRow = { label: string; };
+
+/**
+ * Rewrites rows a map holds as its own keys.
+ *
+ * The key-side counterpart of `rewriteStoredPair`, and the case that decides whether
+ * `keys` may carry a result relation at all. Without one the parameter is reported
+ * opaque and nothing is attributed, so the report is the only thing withholding the
+ * offer. With one the write lands on `rows` instead, which is the trade every other
+ * member here makes: a report exchanged for a recorded write rather than for silence.
+ *
+ * @param rows - Map whose keys this rewrites in place.
+ *
+ * @mutates rows - Writes every key of the map.
+ *
+ * @example
+ * ```ts
+ * rewriteMapKey(new Map(),);
+ * ```
+ */
+export function rewriteMapKey(rows: Map<KeyedRow, string>,): void {
+  for (const row of rows.keys())
+    row.label = 'rewritten';
+}
+
+/**
+ * Reads rows a map holds as its own keys.
+ *
+ * The control, and the reason the case above measures the write rather than the
+ * iteration: same receiver, same member, same loop, no write.
+ *
+ * @param rows - Map whose keys this measures.
+ *
+ * @returns total label length across keys.
+ *
+ * @example
+ * ```ts
+ * readMapKey(new Map(),);
+ * ```
+ */
+export function readMapKey(rows: Map<KeyedRow, string>,): number {
+  /**
+   * Running total across every key.
+   */
+  const measured = { total: 0, };
+  for (const row of rows.keys())
+    measured.total += row.label
+      .length;
+  return measured.total;
+}

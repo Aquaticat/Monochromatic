@@ -90,9 +90,11 @@ function iterableElements(
  */
 function receiverHolding({
   ownerName,
+  memberName,
   sentinel,
 }: {
   readonly ownerName: string;
+  readonly memberName: string;
   readonly sentinel: Sentinel;
 },): {
   readonly receiver: unknown;
@@ -100,7 +102,14 @@ function receiverHolding({
 } {
   if (ownerName.endsWith('Map',))
     return {
-      receiver: new Map([['key', sentinel,],],),
+      /* Which side of the entry holds the sentinel depends on the member, because a map
+       * has two of them and its relations name different ones. `get`, `values` and
+       * `entries` are claims about the value at position 1, and `keys` is a claim about
+       * the key at position 0. A single receiver could only probe one of those, and the
+       * other would pass or fail for a reason that has nothing to do with its entry. */
+      receiver: (memberName === 'keys')
+        ? new Map([[sentinel, 'held',],],)
+        : new Map([['key', sentinel,],],),
       argumentsByMember: { get: ['key',], },
     };
   return {
@@ -166,6 +175,7 @@ await describe({
             const sentinel: Sentinel = { marker: 'receiver-held', };
             const { receiver, argumentsByMember, } = receiverHolding({
               ownerName,
+              memberName,
               sentinel,
             },);
             /**

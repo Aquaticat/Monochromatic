@@ -2820,6 +2820,14 @@ await describe({
          * wrong question: the reader iterates the identical receiver through the identical
          * member and writes nothing. */
         expect(writtenIndexes('readStoredPair',),).toEqual([],);
+        /* The key side of the same question. A map holds caller-owned state on both sides
+         * of an entry, and `keys` carries the element relation for position 0, so a write
+         * through an iterated key lands on the parameter exactly as a write through an
+         * iterated value does. Measured before the entry existed: this read `[]` while the
+         * parameter was reported opaque, which is the shape that produces a false offer the
+         * moment anything discharges that report. */
+        expect(writtenIndexes('rewriteMapKey',),).toEqual([0,],);
+        expect(writtenIndexes('readMapKey',),).toEqual([],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();

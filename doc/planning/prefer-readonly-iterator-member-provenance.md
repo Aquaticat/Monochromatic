@@ -433,28 +433,64 @@ say.
    the
    iterator question is answered and what is left is about something else.
 
-5.    Decided rather than implemented,
-   and the measurement inverts what this document first proposed.
+5.    Done for `Map` and `ReadonlyMap`,
+   after an experiment overturned a decision this document had
+   already recorded against it.
 
-   `keys` must stay unregistered,
-   and the reason is the opposite of the one written below.
-   Probed
-   over an overlay,
-   `writeThroughMapKey(rows: Map<KeyRow, string>)` iterating `rows.keys()` and writing
-   `row.label` reads `referentMutated=[]` and `opaque=[0]`,
-   naming `rows.keys`.
-   The write is not
-   attributed;
-   the opacity is the only thing withholding the read-only offer.
+   The recorded decision said `keys` must stay unregistered,
+   on the grounds that
+   `writeThroughMapKey(rows: Map<KeyRow, string>)` reads `referentMutated=[]` with `opaque=[0]`,
+   so
+   discharging the report would leave a false offer on a function that rewrites every key.
+   The premise
+   was measured and the conclusion did not follow.
+   The attribution is empty *because* the relation is
+   missing:
+   with no relation the element walk cannot resolve `rows.keys()`,
+   so the iterated binding
+   carries no origins and the write lands on nothing.
 
-   So registering `Map.keys` under the element relation would discharge that opacity while the
-   attribution behind it is empty,
-   which is a false offer on a function that rewrites every key it is
-   handed.
-   That is precisely the failure `effect-collection-member-effect.ts` names in its own comment,
-   and it is the same order-of-work error the escape-walk step made:
-   the discharge may only land after
-   something attributes the write.
+   Registering it supplies both halves at once.
+   Measured with the entry in place:
+   `writeThroughMapKey`
+   reads `referentMutated=[0]` and `opaque=[]`,
+   and the attribution is what withholds the offer,
+   while
+   its reader control stays empty on both.
+   That is the ordinary trade,
+   not the failure mode.
+
+   The lesson is narrower than "measure more" and worth stating exactly:
+   an observation about the state
+   before a change is not evidence about the state after it,
+   and this document asserted the second from
+   the first twice in one arc.
+
+   The probe needed a receiver per member rather than per owner.
+   A map holds caller-owned state on both
+   sides of an entry,
+   `get`,
+   `values` and `entries` claim the value at position 1 and `keys` claims the
+   key at position 0,
+   so one receiver could only ever probe one of them and the other would pass or fail
+   for reasons unrelated to its entry.
+   `receiverHolding` now places the sentinel on the side the member
+   names.
+
+   Fixture pair `rewriteMapKey` and `readMapKey` in `readonly-tuple-exposure-invalid.ts`,
+   with the
+   attribution pinned in `effect-summaries.unit.test.ts` beside the tuple pair.
+   Counts moved 26 to 28.
+
+   Workspace:
+   3020 errors,
+   1682 rule findings,
+   4 semantic failures and 33 offers,
+   all unchanged with
+   finding sets identical line for line.
+   Nothing in this repository iterates a map's keys in a way that
+   was reporting,
+   so the entry buys correctness for the shape rather than a smaller number.
 
    The array half needs no entry at all.
    `sumIndexes(rows: readonly KeyRow[])` iterating `rows.keys()`
@@ -466,7 +502,7 @@ say.
    yields are not the receiver's elements.
 
    Superseded proposal,
-   kept because its instinct was right and its conclusion was backwards:
+   kept because it named the right risk for the wrong member:
    its elements are indices,
    so the interesting claim is that it carries no
    receiver state at all,
