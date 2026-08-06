@@ -4688,3 +4688,48 @@ Worth a prompt line only if a later analysis wants to group claims by class.
 
 KEEP THIS CHECK. It is cheap, needs no corpus, and answers the one question a
 quiet instrument always raises. Run it whenever the probe prompt changes.
+
+### The checkers can say no, and are blind to collateral damage
+
+`mise run //package/module/translation-repair:checker-sensitivity`.
+Same experiment as the probe check, aimed at the older and more load-bearing
+stage. Cat fixtures, no corpus text, three calls.
+
+```text
+genuinely-fixed    heard=3  fixed=3 notFixed=0 worse=0  resolved=true
+untouched          heard=3  fixed=0 notFixed=3 worse=0  resolved=false
+fixed-but-damaged  heard=3  fixed=3 notFixed=0 worse=0  resolved=true
+```
+
+FIRST RESULT, and it settles a standing doubt.
+Sol read the 98.1 percent resolution rate (2215 of 2257 accepted issues) as
+"direct evidence that the current checker task is permissive and poorly
+discriminating".
+It is not.
+Handed a candidate that is the DEFECTIVE TEXT ITSELF, unrepaired in every
+respect, all three checkers answered `not-fixed`.
+A rubber stamp cannot do that.
+The 98.1 percent therefore measures the repairs, not the checkers, and may be
+quoted as such.
+
+SECOND RESULT, which is the one worth acting on.
+The third case fixes the stated defect and DROPS a clause while doing it:
+`...windowsill, and she wakes when the sun moves.` becomes
+`The cat sleeps on the windowsill.`
+All three checkers called it `fixed`. Not one voted `worse`.
+
+That is the same damage, in the same shape, that the introduced-defect probe
+caught 3 of 3 as `removal-corroborated` in its own sensitivity check. The two
+stages were handed equivalent fixtures and answered oppositely.
+
+So the gap the probe was built for is now MEASURED rather than argued:
+checkers answer the narrow question they are asked, "is this accepted issue
+gone", and do not report damage the repair caused on its way. `worse` is the
+verdict that feeds `regressedKnownIssues`, and it did not fire on real
+collateral damage, which is exactly the weakness recorded on task 53 and now
+demonstrated instead of inferred.
+
+WHAT THIS DOES NOT LICENSE: it is one fixture, and it says nothing about how
+often such damage occurs in real repairs. Run 007's first eight regions suggest
+rarely. The gate question still needs the round's numbers and is still the
+user's.

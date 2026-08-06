@@ -62,3 +62,7 @@ run = "node src/corpus-run/recall-benchmark.ts"
 [tasks."probe-sensitivity"]
 description = "Ask whether the introduced-defect probe can detect damage at all: one clean region and two with damage injected, cat-themed fixtures only"
 run = "node src/corpus-run/probe-sensitivity.ts"
+
+[tasks."checker-sensitivity"]
+description = "Ask whether the resolution checkers can say no: a genuine fix, an untouched text, and a fix that damaged its slice, cat-themed fixtures only"
+run = "node src/corpus-run/checker-sensitivity.ts"
