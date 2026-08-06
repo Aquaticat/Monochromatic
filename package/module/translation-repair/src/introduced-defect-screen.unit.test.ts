@@ -38,6 +38,8 @@ const REGION: RepairRegion = {
  *
  * @param evidence - wording quoted from the replacement
  *
+ * @param omittedText - wording quoted from the text the replacement replaced
+ *
  * @param region - one-based region number on the sheet
  *
  * @returns Check the screen reads
@@ -51,10 +53,12 @@ function catCheck(
   {
     verdict,
     evidence = '',
+    omittedText = '',
     region = 1,
   }: {
     readonly verdict: string;
     readonly evidence?: string;
+    readonly omittedText?: string;
     readonly region?: number;
   },
 ): IntroducedDefectCheckWire {
@@ -64,6 +68,7 @@ function catCheck(
     category: 'omission',
     severity: 'major',
     evidence,
+    omittedText,
     reason: 'the second clause is gone',
   };
 }
@@ -79,6 +84,7 @@ await describe({
         expect(
           screenEvidence({
             evidence: 'The cat sleeps.',
+            omittedText: '',
             region: REGION,
           },),
         ).toBe('corroborated',);
@@ -95,6 +101,7 @@ await describe({
         expect(
           screenEvidence({
             evidence: 'The cat',
+            omittedText: '',
             region: REGION,
           },),
         ).toBe('contradicted',);
@@ -109,15 +116,96 @@ await describe({
         expect(
           screenEvidence({
             evidence: 'the dog barks',
+            omittedText: '',
             region: REGION,
           },),
         ).toBe('unanchored',);
         expect(
           screenEvidence({
             evidence: '',
+            omittedText: '',
             region: REGION,
           },),
         ).toBe('unanchored',);
+      },
+    },),
+
+    it({
+      name: 'corroborates dropped content quoted from the text the edit '
+        + 'replaced, which is the only way an omission can ever be proved: its '
+        + 'absence IS the defect, so there is nothing in the new text to quote',
+      fn: async () => {
+        expect(
+          screenEvidence({
+            evidence: '',
+            omittedText: 'and she wakes at dusk',
+            region: REGION,
+          },),
+        ).toBe('removal-corroborated',);
+      },
+    },),
+
+    it({
+      name: 'contradicts a dropped-content claim whose wording is still there '
+        + 'after the edit, the mirror of the added-damage contradiction',
+      fn: async () => {
+        expect(
+          screenEvidence({
+            evidence: '',
+            omittedText: 'The cat',
+            region: REGION,
+          },),
+        ).toBe('contradicted',);
+      },
+    },),
+
+    it({
+      name: 'refuses a dropped-content claim quoting wording that was never in '
+        + 'the replaced text, since nothing proves it was ever there to drop',
+      fn: async () => {
+        expect(
+          screenEvidence({
+            evidence: '',
+            omittedText: 'and she hunts at dawn',
+            region: REGION,
+          },),
+        ).toBe('unanchored',);
+      },
+    },),
+
+    it({
+      name: 'refuses a claim anchored in both directions at once, because '
+        + 'screening each and taking the better answer would let a prober '
+        + 'launder a contradicted quote by attaching a second one',
+      fn: async () => {
+        expect(
+          screenEvidence({
+            evidence: 'The cat sleeps.',
+            omittedText: 'and she wakes at dusk',
+            region: REGION,
+          },),
+        ).toBe('unanchored',);
+      },
+    },),
+
+    it({
+      name: 'proves a deletion that emptied its region entirely, the case a '
+        + 'forward-only screen could never have anchored',
+      fn: async () => {
+        /** Region the editors emptied outright. */
+        const deleted: RepairRegion = {
+          envelopeId: 'envelope/gone',
+          issueIds: [],
+          before: 'She wakes at dusk.',
+          editorAfter: '',
+        };
+        expect(
+          screenEvidence({
+            evidence: '',
+            omittedText: 'She wakes at dusk.',
+            region: deleted,
+          },),
+        ).toBe('removal-corroborated',);
       },
     },),
 
@@ -128,6 +216,7 @@ await describe({
         expect(
           screenEvidence({
             evidence: 'The\n  cat   sleeps.',
+            omittedText: '',
             region: REGION,
           },),
         ).toBe('corroborated',);
@@ -157,14 +246,19 @@ await describe({
             },),],
             'hf:cat/three': [catCheck({ verdict: 'no-introduced-defect-found', },),],
             'hf:cat/four': [catCheck({ verdict: 'uncertain', },),],
+            'hf:cat/five': [catCheck({
+              verdict: 'introduced-defect',
+              omittedText: 'and she wakes at dusk',
+            },),],
           },
         },);
         expect(tally?.corroborated,).toBe(1,);
+        expect(tally?.removalCorroborated,).toBe(1,);
         expect(tally?.contradicted,).toBe(1,);
         expect(tally?.unanchored,).toBe(0,);
         expect(tally?.noneFound,).toBe(1,);
         expect(tally?.uncertain,).toBe(1,);
-        expect(tally?.claims,).toHaveLength(2,);
+        expect(tally?.claims,).toHaveLength(3,);
         expect(tally?.claims[0]?.modelId,).toBe('hf:cat/one',);
         expect(tally?.envelopeId,).toBe('envelope/nap',);
       },

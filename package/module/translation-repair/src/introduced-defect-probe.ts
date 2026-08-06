@@ -183,12 +183,14 @@ export async function runIntroducedDefectProbe(
     ) {
       return {
         corroborated: running.corroborated + tally.corroborated,
+        removalCorroborated: running.removalCorroborated + tally.removalCorroborated,
         contradicted: running.contradicted + tally.contradicted,
         unanchored: running.unanchored + tally.unanchored,
       };
     },
     {
       corroborated: 0,
+      removalCorroborated: 0,
       contradicted: 0,
       unanchored: 0,
     },
@@ -198,7 +200,9 @@ export async function runIntroducedDefectProbe(
     `introduced-defect probe: ${String(Object.keys(ballots,)
       .length,)}/${String(proberModelIds.length,)} heard over ${
       String(regions.length,)
-    } regions, ${String(totals.corroborated,)} corroborated, ${
+    } regions, ${String(totals.corroborated,)} added-damage corroborated, ${
+      String(totals.removalCorroborated,)
+    } dropped-content corroborated, ${
       String(totals.contradicted,)
     } contradicted by the baseline, ${String(totals.unanchored,)} unanchored`,
   );

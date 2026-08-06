@@ -95,6 +95,9 @@ function countMarker(
  * @param proberEvidence - wording every prober quotes as introduced damage;
  * the screen decides what it proves, so a quote lifted from the replacement
  * corroborates while one lifted from the baseline is contradicted
+ *
+ * @param proberOmittedText - wording every prober quotes as content the edit
+ * dropped, checked in the opposite direction
  */
 function scriptedClient(
   {
@@ -102,6 +105,7 @@ function scriptedClient(
     checkerVerdict = 'fixed',
     proberVerdict = 'no-introduced-defect-found',
     proberEvidence = '',
+    proberOmittedText = '',
   }: {
     readonly criticIssues:
       | readonly Record<string, unknown>[]
@@ -109,6 +113,7 @@ function scriptedClient(
     readonly checkerVerdict?: string;
     readonly proberVerdict?: string;
     readonly proberEvidence?: string;
+    readonly proberOmittedText?: string;
   },
 ): SyntheticClient {
   return {
@@ -180,6 +185,7 @@ function scriptedClient(
                 category: proberEvidence === '' ? '' : 'accuracy/mistranslation',
                 severity: proberEvidence === '' ? '' : 'major',
                 evidence: proberEvidence,
+                omittedText: proberOmittedText,
                 reason: proberEvidence === '' ? '' : 'absent before the edit',
               };
             },),

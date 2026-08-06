@@ -26,6 +26,7 @@ import {
  */
 export type ClaimAdmissibility =
   | 'corroborated'
+  | 'removal-corroborated'
   | 'contradicted'
   | 'unanchored';
 
@@ -55,9 +56,15 @@ export type ScreenedDefectClaim = {
   readonly severity: string;
 
   /**
-   * Wording the prober quoted from the AFTER text.
+   * Wording the prober quoted from the AFTER text, for damage the edit added.
    */
   readonly evidence: string;
+
+  /**
+   * Wording the prober quoted from the BEFORE text, for content the edit
+   * dropped; empty on claims of added damage.
+   */
+  readonly omittedText: string;
 
   /**
    * Why the prober says the BEFORE text lacked this defect.
@@ -94,18 +101,26 @@ export type RegionDefectTally = {
   readonly issueIds: readonly string[];
 
   /**
-   * Claims whose quote is in the AFTER text and absent from BEFORE.
+   * Claims of ADDED damage whose quote is in the AFTER text and absent from
+   * BEFORE.
    */
   readonly corroborated: number;
 
   /**
-   * Claims whose quote already occurred in BEFORE, so the replacement cannot
-   * have introduced it.
+   * Claims of DROPPED content whose quote is in the BEFORE text and absent from
+   * AFTER, so the edit demonstrably removed it.
+   */
+  readonly removalCorroborated: number;
+
+  /**
+   * Claims the differential refutes in the direction claimed: added wording
+   * that already occurred before the edit, or dropped wording still present
+   * after it.
    */
   readonly contradicted: number;
 
   /**
-   * Claims whose quote is missing or does not occur in the AFTER text, leaving
+   * Claims carrying no usable anchor, neither anchor, or both at once, leaving
    * nothing to check them against.
    */
   readonly unanchored: number;
@@ -161,9 +176,25 @@ export function flattenSpace({ text, }: { readonly text: string; },): string {
 }
 
 /**
- * Decides what one quote proves about one region.
+ * Decides what a claim's anchors prove about one region.
  *
- * @param evidence - wording the prober quoted
+ * The differential runs in BOTH directions, because collateral damage comes in
+ * two shapes and only one of them can be quoted from the new text. Wording the
+ * edit ADDED is checkable as present in AFTER and absent from BEFORE. Wording
+ * the edit DROPPED cannot be quoted from AFTER at all, since its absence is the
+ * defect, and is checkable as present in BEFORE and absent from AFTER. Judging
+ * only the first direction would have made every omission claim unanchored,
+ * which is the failure mode worth guarding hardest against: dropping a clause
+ * while rewriting is among the likeliest ways an editor causes damage.
+ *
+ * A claim carrying BOTH anchors is a wire fault rather than a stronger claim.
+ * Screening each and taking the better answer would let a prober launder a
+ * contradicted anchor by attaching a second one.
+ *
+ * @param evidence - wording quoted from the replacement, for added damage
+ *
+ * @param omittedText - wording quoted from the replaced text, for dropped
+ * content
  *
  * @param region - region the claim is about
  *
@@ -171,31 +202,49 @@ export function flattenSpace({ text, }: { readonly text: string; },): string {
  *
  * @example
  * ```ts
- * const admissibility = screenEvidence({ evidence: 'the cat sleeping', region, },);
+ * const admissibility = screenEvidence({ evidence, omittedText: '', region, },);
  * ```
  */
 export function screenEvidence(
   {
     evidence,
+    omittedText,
     region,
   }: {
     readonly evidence: string;
+    readonly omittedText: string;
     readonly region: RepairRegion;
   },
 ): ClaimAdmissibility {
   /**
-   * Quote with whitespace collapsed, as both texts are compared.
+   * Added-wording anchor, whitespace collapsed as both texts are compared.
    */
-  const quoted = flattenSpace({ text: evidence, },);
-  if (quoted === '')
+  const added = flattenSpace({ text: evidence, },);
+
+  /**
+   * Dropped-wording anchor, likewise collapsed.
+   */
+  const dropped = flattenSpace({ text: omittedText, },);
+  if ((added === '') === (dropped === ''))
     return 'unanchored';
-  if (!flattenSpace({ text: region.editorAfter, },)
-    .includes(quoted,))
+
+  /**
+   * Replacement text both directions are checked against.
+   */
+  const after = flattenSpace({ text: region.editorAfter, },);
+
+  /**
+   * Replaced text both directions are checked against.
+   */
+  const before = flattenSpace({ text: region.before, },);
+  if (dropped === '') {
+    if (!after.includes(added,))
+      return 'unanchored';
+    return before.includes(added,) ? 'contradicted' : 'corroborated';
+  }
+  if (!before.includes(dropped,))
     return 'unanchored';
-  if (flattenSpace({ text: region.before, },)
-    .includes(quoted,))
-    return 'contradicted';
-  return 'corroborated';
+  return after.includes(dropped,) ? 'contradicted' : 'removal-corroborated';
 }
 
 /**
@@ -302,11 +351,15 @@ export function screenIntroducedDefects(
             .severity,
           evidence: entry.check
             .evidence,
+          omittedText: entry.check
+            .omittedText,
           reason: entry.check
             .reason,
           admissibility: screenEvidence({
             evidence: entry.check
               .evidence,
+            omittedText: entry.check
+              .omittedText,
             region,
           },),
         };
@@ -318,6 +371,10 @@ export function screenIntroducedDefects(
       corroborated: countAdmissibility({
         claims,
         wanted: 'corroborated',
+      },),
+      removalCorroborated: countAdmissibility({
+        claims,
+        wanted: 'removal-corroborated',
       },),
       contradicted: countAdmissibility({
         claims,

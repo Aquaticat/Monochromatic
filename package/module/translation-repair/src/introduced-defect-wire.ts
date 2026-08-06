@@ -21,8 +21,15 @@ import type { RepairRegion, } from './repair-region.ts';
 // none of them is the prompt alone: the verdict vocabulary refuses to offer
 // `clean`, which would be false of a region whose original defect survives; the
 // pre-existing issues are shown and labelled as NOT findings; and every claim
-// must quote candidate evidence, which `introduced-defect-screen.ts` then checks
-// against the baseline deterministically.
+// must quote verbatim wording, which `introduced-defect-screen.ts` then checks
+// deterministically.
+//
+// A claim anchors in one of two directions and never both, because damage comes
+// in two shapes. Added wording is quoted from the AFTER text; content the edit
+// DROPPED has nothing in the AFTER text to quote, its absence being the defect,
+// so it is quoted from the BEFORE text instead. Accepting only forward quotes
+// would have left omission, the likeliest damage a rewriting editor causes,
+// permanently unprovable.
 
 /**
  * Fence line separating instructions from document text.
@@ -103,9 +110,13 @@ Verdicts:
 - no-introduced-defect-found: you looked and found no defect the replacement caused; the region may still be imperfect
 - uncertain: you cannot tell from what you were shown
 
-For introduced-defect, quote the exact damaged wording FROM THE AFTER TEXT in "evidence", and say in "reason" why the BEFORE text did not have it.
-Leave "evidence" and "reason" as empty strings for other verdicts.
-Reply with ONLY a JSON object of shape {"checks": [{"region": 1, "verdict": "no-introduced-defect-found", "category": "", "severity": "", "evidence": "", "reason": ""}]}. No prose, no code fences.
+For introduced-defect, anchor the claim with EXACTLY ONE of these, never both:
+- "evidence": the exact damaged wording quoted FROM THE AFTER TEXT, when the edit ADDED or altered something. Leave "omittedText" empty.
+- "omittedText": the exact wording quoted FROM THE BEFORE TEXT that the edit DROPPED, when the defect is missing content. Leave "evidence" empty.
+Quote verbatim. A paraphrase cannot be checked and the claim will be discarded.
+Say in "reason" why this is damage the edit caused.
+Leave "evidence", "omittedText", "category", "severity" and "reason" as empty strings for other verdicts.
+Reply with ONLY a JSON object of shape {"checks": [{"region": 1, "verdict": "no-introduced-defect-found", "category": "", "severity": "", "evidence": "", "omittedText": "", "reason": ""}]}. No prose, no code fences.
 Every region number must appear exactly once in checks.`;
 
 /**
@@ -287,6 +298,15 @@ export type IntroducedDefectCheckWire = {
   readonly evidence: string;
 
   /**
+   * Wording quoted from the BEFORE text that the edit dropped.
+   *
+   * Omission damage has no wording in the AFTER text to point at, since its
+   * absence IS the defect, so a probe accepting only forward quotes could never
+   * corroborate the likeliest kind of collateral damage an editor causes.
+   */
+  readonly omittedText: string;
+
+  /**
    * Why the BEFORE text did not carry this defect.
    */
   readonly reason: string;
@@ -336,6 +356,7 @@ function isIntroducedDefectCheckWire(value: unknown,): value is IntroducedDefect
     'category',
     'severity',
     'evidence',
+    'omittedText',
     'reason',
   ].every(function isString(field,) {
     return (typeof value[field]) === 'string';
@@ -393,6 +414,7 @@ export const INTRODUCED_DEFECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
               'category',
               'severity',
               'evidence',
+              'omittedText',
               'reason',
             ],
             additionalProperties: false,
@@ -402,6 +424,7 @@ export const INTRODUCED_DEFECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
               category: { type: 'string', },
               severity: { type: 'string', },
               evidence: { type: 'string', },
+              omittedText: { type: 'string', },
               reason: { type: 'string', },
             },
           },
