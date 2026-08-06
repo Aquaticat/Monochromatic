@@ -43,7 +43,10 @@ import {
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
-import { receiverElementsArePrimitive, } from './effect-primitive-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  receiverElementsArePrimitive,
+} from './effect-primitive-origin.ts';
 import {
   expressionRoot,
   NO_SLOT_ORIGIN,
@@ -386,10 +389,33 @@ export function expressionValueOrigins({
       },);
       continue;
     }
+    /* A successor that cannot carry mutable identity contributes no origin, however it was
+     * derived from a parameter. `{ chars: slice.targetChars }` packages a number, and the
+     * walk reached `slice` from it only because `expressionRoot` strips the property access
+     * back to the receiver, which answers "what was read" rather than "what can be reached".
+     * Measured: the fresh object recorded the callback parameter as a returned origin, so a
+     * caller could not tell it apart from `row => row`, which is exactly the distinction the
+     * result-provenance decision rests on.
+     *
+     * This is type evidence used in the one direction the decision permits. A type may prove
+     * a value carries no mutable identity, and `typeCanCarryMutableState` fails closed for
+     * `any` and `unknown`. It may never prove that a mutable value is fresh, which stays a
+     * provenance question and is why this prunes leaves rather than deciding results.
+     *
+     * The sibling walks already do this at their own boundaries: `packagedCallableOrigins`
+     * skips a binding that cannot carry state, the array-literal branch above drops a spread
+     * of primitives, and `recordReturnEffects` gates the whole returned expression the same
+     * way. Doing it here is what keeps them agreeing on identical state. */
     provenanceSuccessors({
       project,
       node: root,
     },)
+      .filter(function carriesIdentity(successor,): boolean {
+        return expressionCanCarryMutableState({
+          checker: project.checker,
+          node: successor,
+        },);
+      },)
       .forEach(function queueSuccessor(successor,): void {
         pending.push(successor,);
       },);

@@ -340,6 +340,13 @@ await describe({
          * reported the mutation. */
         expect(mutatedIndexes('shorthandPackagedWriteEffect',),).toEqual([0,],);
         expect(mutatedIndexes('explicitPackagedWriteEffect',),).toEqual([0,],);
+        /* And the other direction of the same question. `packageCountFresh` returns an
+         * object holding one string, so a caller reaches nothing through it, while the walk
+         * credited the parameter because `expressionRoot` strips a property access back to
+         * its receiver. Dropping the successor pruning in `effect-expression-provenance.ts`
+         * turns this into `[0]` and makes it indistinguishable from the pair above, which
+         * is the distinction result provenance is being built on. */
+        expect(returnedIndexes('packageCountFresh',),).toEqual([],);
       },
     },),
     it({

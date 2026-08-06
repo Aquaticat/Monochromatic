@@ -988,3 +988,39 @@ export function explicitPackagedWriteEffect(row: LabelledRow,): void {
   packaged.held
     .label = 'written';
 }
+
+/**
+ * Row whose every reachable property is readonly, so it draws no offer of its own.
+ */
+export type SealedRow = {
+  /**
+   * Label this fixture reads and never writes.
+   */
+  readonly label: string;
+};
+
+/**
+ * Packages a primitive read into a freshly allocated object.
+ *
+ * The returned object holds one string and shares no identity with the parameter, so a
+ * caller can reach nothing through it. The walk reached the parameter anyway, because
+ * `expressionRoot` strips the property access back to the receiver, which answers what was
+ * read rather than what can be reached. That made this indistinguishable from
+ * `packageRowShorthand`, which does hand the row back, and the whole result-provenance
+ * decision rests on telling those two apart.
+ *
+ * Its parameter is deeply readonly so the case pins the returned origin alone and adds no
+ * diagnostic to the sibling count.
+ *
+ * @param row - Row this reads one primitive from.
+ *
+ * @returns freshly allocated holder carrying no caller identity.
+ *
+ * @example
+ * ```ts
+ * packageCountFresh({ label: '' });
+ * ```
+ */
+export function packageCountFresh(row: SealedRow,): { readonly named: string; } {
+  return { named: row.label, };
+}
