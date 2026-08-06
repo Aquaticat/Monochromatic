@@ -28,5 +28,9 @@ export {
   type IntroducedDefectReport,
   runIntroducedDefectProbe,
 } from './introduced-defect-probe.ts';
+export {
+  longestFenceRun,
+  selectFence,
+} from './prompt-fence.ts';
 
 //endregion Probe barrel
