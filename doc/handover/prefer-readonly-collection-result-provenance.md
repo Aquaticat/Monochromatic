@@ -142,12 +142,59 @@ diagnostic #414 asked for.
    asserted in `effect-summaries.unit.test.ts`.
 - `268a81632`.
    The increment plan and the traps.
+- `873d444ea`,
+   increment 1.
+   The observer obligation is separate from the ambient channel.
+   `OBSERVER_BEARING_MEMBER_NAMES` and `memberInvokesObserver` in
+  `effect-member-channel-authority.ts`,
+   consulted by `memberChannelIsVerifiedNarrow`,
+   which now refuses an
+  observer-bearing member whatever its ambient channel is.
+   A new case in
+  `effect-member-channel-authority.unit.test.ts` fails if any table entry ever names one,
+   which is the guard
+  the first draft of this work lacked.
+   Verdicts unchanged,
+   confirmed against the baseline above.
+- `0ce8ede07`,
+   increment 3.
+   `find` and `findLast` carry the direct receiver-value relation on `Array` and
+  `ReadonlyArray`,
+   probed for identity against a sentinel with an accepting predicate,
+   so the miss path
+  cannot pass the comparison vacuously.
+   `VERIFIED_RESULT_RELATION_COUNT` and the architecture guard's registry
+  both move to 10.
+   Verdicts unchanged,
+   because both members invoke an observer and the composition from
+  increment 1 still withholds their receiver claim.
 
 ### Next
 
-Increment 1,
- splitting the channel authority so an observer-bearing member records its ambient channel and its
-observer obligation separately.
- No member's verdict changes;
- the point is that the composition becomes
-expressible and the invariant becomes enforced.
+Increment 2,
+ the largest remaining piece and the one every later step consumes:
+ give `expressionOrigins` a
+discriminated answer,
+ proven-with-origins against unproven,
+ and prune leaves that provably cannot carry
+mutable identity.
+
+Two measurements bound it.
+ `row => ({ count: row.count })` currently reports the callback parameter as an
+origin,
+ because the object-literal branch queues `row.count` and `expressionRoot` strips the property access
+back to `row`;
+ that is the false positive the fresh-object `map` case turns on.
+ And `NO_SLOT_ORIGIN` today
+means both "proven to carry nothing" and "could not be resolved",
+ so discharging on an empty set would
+repeat the defect the effect-model split already caught once,
+ where an empty match silently dropped a real
+mutation.
+ `rows.map(row => unknownClone(row))` is the case that must stay unproven.
+
+After that,
+ increment 4,
+ the element-reachability facet,
+ then 5 and 6,
+ which are the first verdict changes.
