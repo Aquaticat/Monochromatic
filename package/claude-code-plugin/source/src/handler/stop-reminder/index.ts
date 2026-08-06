@@ -5,6 +5,10 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 
 import {
+  autoContinueActive,
+  autoContinueReason,
+} from './auto-continue.ts';
+import {
   findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
@@ -29,8 +33,11 @@ type StopRemindersOutput = StopOutput;
  *
  * Decision tree:
  *
- * 1. **Loop guard**: when `stop_hook_active` is `true`, returns `{}` to allow
- *    the stop unconditionally; re-blocking would create an endless cycle.
+ * 1. **Response-quality gate**: the hedging, dismissal, and trailing-question
+ *    detectors run only when `stop_hook_active` is `false`. They ask whether
+ *    this response is defective, so re-running them inside a blocked chain
+ *    would re-block on text the agent was already told about. Claude Code sets
+ *    `stop_hook_active` on every stop of a blocked chain and never clears it.
  * 2. **Prose extraction**: {@link stripNonProseRegions} strips code blocks,
  *    inline code, blockquotes, and quoted strings from `last_assistant_message`
  *    before scanning.
@@ -40,7 +47,13 @@ type StopRemindersOutput = StopOutput;
  * 4. **Trailing-question scan**: {@link findTrailingQuestion} looks for
  *    sentences ending in `?` in the last 500 characters; rhetorical/conditional
  *    prefixes are excluded.
- * 5. **Result**: if any reasons accumulated, returns
+ * 5. **Forced continuation**: unless a trailing question matched, and unless the
+ *    kill switch is set, {@link autoContinueReason} is appended on every stop
+ *    including stops inside a blocked chain. This is the one detector that
+ *    re-arms, and it reads none of the response text. Claude Code bounds the
+ *    resulting chain at nine dispatches, so the loop terminates without this
+ *    module counting anything.
+ * 6. **Result**: if any reasons accumulated, returns
  *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
  *    otherwise `\{\}`.
  *
@@ -54,8 +67,13 @@ type StopRemindersOutput = StopOutput;
  * ```
  */
 function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOutput {
-  if (event.stop_hook_active)
-    return {};
+  /**
+   * Whether the response-quality detectors apply to this stop.
+   *
+   * False for every stop after the first in a blocked chain, so a forced
+   * continuation is never re-blocked for wording the agent already answered for.
+   */
+  const responseQualityApplies = !event.stop_hook_active;
 
   /**
    * Final assistant message with code blocks, inline code, and quotes stripped before scanning.
@@ -65,15 +83,21 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   /**
    * First hedging-phrase hit, or `NO_MATCH`; populates the uncertainty reminder when matched.
    */
-  const match = findUncertainty(prose,);
+  const match = responseQualityApplies
+    ? findUncertainty(prose,)
+    : NO_MATCH;
   /**
    * First uncited categorical-dismissal hit, or `NO_MATCH`; populates the dismissal reminder when matched.
    */
-  const dismissal = findCategoricalDismissal(prose,);
+  const dismissal = responseQualityApplies
+    ? findCategoricalDismissal(prose,)
+    : NO_MATCH;
   /**
    * Trailing user-directed question hit, or `NO_MATCH`; populates the AskUserQuestion reminder when matched.
    */
-  const question = findTrailingQuestion(prose,);
+  const question = responseQualityApplies
+    ? findTrailingQuestion(prose,)
+    : NO_MATCH;
 
   /**
    * Reminder lines accumulated across the three detectors; joined into the final block reason.
@@ -109,6 +133,14 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
       'The AskUserQuestion tool ensures the user sees and can respond to your question directly.',
       'Rephrase your question as an AskUserQuestion tool call and continue.',
     );
+  }
+
+  // A trailing question takes precedence over forced continuation: instructing the
+  // agent to resume work and to route its question through AskUserQuestion in the
+  // same reason would be contradictory, and the question reason already refuses the stop.
+  if ((question === NO_MATCH)
+    && autoContinueActive()) {
+    reasons.push(...autoContinueReason(),);
   }
 
   if (reasons.length
