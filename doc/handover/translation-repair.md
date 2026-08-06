@@ -3801,3 +3801,108 @@ Writing the paths into a prompt file and passing that file got back
 Passing each source as its own `@path` argument and the question as the message
 works, and sidesteps the `Argument list too long` failure that killed an earlier
 163 kB inline prompt.
+
+### Second review, and what it caught (2026-08-06)
+
+A second sol pass over the IMPLEMENTED code found five real defects,
+all fixed in `21134e8bb`.
+Recording them because each is a class of mistake, not a one-off.
+
+REFINEMENT-ONLY SHIPMENT WAS HIDDEN.
+`runRefinePhase` runs whatever the accuracy selection decided,
+so a slice whose targeted repair lost can still be rewritten and reach the
+reader.
+The sheet said only "nothing reached the reader",
+which is true of the repair and false of the text.
+The disposition itself is correct and was left alone;
+it describes the TARGETED repair's fate,
+and its TSDoc now says so explicitly.
+The returned slice is shown either way now;
+only the grade box depends on a targeted repair having shipped.
+An earlier fix of mine (`cc9f6ad58`) had made this worse:
+it removed the refinement caveat from ungradable items to resolve a
+contradiction,
+which resolved the contradiction by deleting the true half.
+
+REPLACED TEXT CROSSED INTO MARKDOWN GRAMMAR RAW.
+A replacement is arbitrary corpus-derived model output.
+Interpolated into a bullet list it can contain a line starting `###`,
+a literal `- repair grade: [ ]`,
+or a backtick run,
+and the first invents a heading,
+the second puts a grade box on the sheet that nobody wrote,
+and the third breaks the block.
+Curly quotation marks are not Markdown syntax and prevent none of it.
+This is AGENTS.md SYB, and it was missed in review-one because the question
+asked was about measurement bias rather than about encoding.
+Both sides are fenced now via `markdown-fence.ts`,
+which chooses the fence against the content the way
+`candidate-select-wire.ts` already chooses its prompt fence.
+The test asserts grade boxes OUTSIDE fenced blocks,
+since fencing does not delete the injected characters,
+it stops them being read as sheet.
+
+A RECORD CARRYING REGIONS BUT NO DISPOSITION READ AS A LEGACY RECORD.
+Keying the legacy judgement on one field made a half-written repair the one
+malformed shape a strict parser would silently accept.
+Absence is now judged over every repair field.
+
+A FINAL DRAW OVER PRE-RECORDING ARTIFACTS RENDERED FIFTY UNGRADABLE ITEMS AND
+REPORTED A NUMBER ANYWAY.
+`--final` now refuses when any sampled item carries no recorded repair.
+Reachable simply by drawing against a directory still holding an earlier
+round's artifacts,
+which `corpus-pass` never overwrites.
+
+SHEET WRITES WERE NOT TRANSACTIONAL.
+The detection sheet was written before the repair path was resolved,
+so a refused repair path left a protected detection sheet with no companion.
+Both paths resolve before either write now.
+
+Also from that review:
+the preliminary banner now reaches both sheets rather than only the detection
+one;
+the slice-cache guard requires `refined`;
+the zh original is carried onto the repair sheet,
+since that is what "does it fix it" is answered against;
+and a deletion says it is a deletion instead of rendering `after: ""`,
+which read as a rendering fault.
+
+TEST FIXTURE THAT PROVED NOTHING.
+`repair-record.unit.test.ts` used the refined wording as `repairedText` even
+when `refined` was false,
+so the conditional-`finalSliceText` test passed while modelling a state its own
+documentation says cannot occur.
+The fixture now returns patched text carrying the replacement verbatim for a
+shipped unrefined slice,
+and a test asserts that containment directly.
+
+STILL OPEN FROM THAT REVIEW, deliberately:
+the slice-cache key covers version, index, and both texts but NOT the model
+roster, adjudication config, editor addendum, or identity context, so a
+cross-run cache could return an outcome produced under different inputs.
+Not a live hazard for round three because the round-two slice cache was
+archived with its artifacts and the version bumped, but it is a real gap.
+
+### Round three preparation
+
+Round two ARCHIVED to `round-two-archive/` inside the runs dir, mirroring the
+existing `round-one-archive/` layout:
+`artifacts/`, `attempts.json`, `slice-cache/` moved, and `gate-verdict.md` plus
+`grading-sheet.md` COPIED so the seed-named originals stay where
+`resolveSheetPath` protects them from being clobbered.
+A fresh empty `artifacts/` was created in their place.
+
+`corpus-pass -- --plan` verified at zero quota after the archive:
+tip `f7943a196`, 92 pending, 0 done, client constructed,
+soft budget 12h, hard cap 3h per entry.
+
+`DEFAULT_SAMPLE_SEED` advanced to `milestone-three-precision-round-three`.
+A new seed does NOT guarantee no already-graded issue is redrawn;
+what mostly changes is the population, since round three draws from artifacts
+produced by a fresh pass and issue ids are content-derived.
+
+`sentinel-probe` now reports accepted issues counted by repair disposition and
+how many issues were refined, so a real-model probe can tell a run that records
+provenance from one that does not.
+That check is the one unit tests cannot do.
