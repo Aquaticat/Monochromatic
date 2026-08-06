@@ -208,6 +208,44 @@ extractor without a consumer would be a wide edit that proves nothing.
  The pruning half had a measurable
 effect on its own and landed on its own.
 
+- `449d3f945`,
+   the container relation,
+   which is increment 5's first half.
+   `RESULT_RELATION_RECEIVER_ELEMENTS`
+  for `filter` and `slice` on `Array` and `ReadonlyArray`,
+   resolved by `callResultElementReceiver`
+  rather than by `callResultReceiver`,
+   which keeps meaning direct identity and now refuses any other
+  relation explicitly.
+   Probed in both halves,
+   since either passes for the wrong value:
+   the result is not
+  the receiver,
+   and an element of it is the sentinel.
+   `FRESH_CONTAINER_MEMBER_NAMES` drops to five,
+   each
+  remaining name held back for a reason recorded beside it.
+   Counts move to 14 in both places.
+   No discharge
+  consults the new query,
+   so no verdict moves.
+- `12ee85fb8`,
+   the pin the facet has to move.
+   `containerElementWriteEffect`,
+   `filteredElementWriteEffect`
+  and `containerGrowthEffect` in the result-provenance fixture,
+   all three recording no mutation today,
+   with
+  the receiver opacity of an undischarged member doing the withholding.
+   When the facet lands the two element
+  writes must become `[0]` and the push must stay empty;
+   a change moving all three,
+   or neither,
+   is the
+  failure this pins.
+   The fixture's pinned message count moves to 12,
+   its offer list is unchanged at three.
+
 Increments 4 and 5 swapped order,
  for the reason that deferred the discriminated answer.
  Enumerated rather
