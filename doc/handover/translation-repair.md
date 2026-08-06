@@ -3430,6 +3430,35 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   at U+FAFF, so a given name in Han Extension B produced NO atom and could be
   deleted silently. That is the character most likely to be a person's name.
   Both now have regression tests.
+- RECALL RUN 001 LANDED 2026-08-06, and its DETECTION number was invalid until
+  `6bb299773`. Raw scorecard:
+  `dispatched=7 coverage=0.778 planted=21 detected=8 detectionRate=0.381`
+  `judged=21 restored=19 partial=1 strict=0.905 lenient=0.952`.
+  The two halves contradict each other, which is what exposed the bug: the
+  pipeline only edits inside envelopes cut from accepted issues, so restoring 19
+  seeds requires accepted issues at their regions, while detection claimed 8.
+  CAUSE: `gradeSeedDetection` indexed `alignment.pairs` with
+  `record.chunkIndex`, which is a global SLICE index from `subdivideChunkPair`,
+  not a pair index. Past the pair count it read nothing and called every issue
+  there absent; within it, it added a pair start offset to a slice-local span
+  offset. Detection collapsed toward counting only seeds landing in the first
+  slice of a pair, the one case where pair and slice share a start offset.
+  Every dispatched entry subdivided (1 pair to 12 slices, 6 to 12, 1 to 7, 2 to
+  7, 1 to 4, 2 to 3), so only a 1-pair-1-slice entry was unaffected.
+  WHAT SURVIVES: `strict=0.905` and `lenient=0.952` over 21 judged seeds are
+  SOUND. The restoration judge compares the needle's meaning against the
+  repaired text with the Chinese as anchor and never touches that mapping.
+  This is also the POLICY-FREE recall baseline, since the run started 23 minutes
+  before the house policy landed.
+  WHAT DOES NOT: `detected=8` and `detectionRate=0.381` mean nothing. Do not
+  quote them. Detection has to be re-measured on a fresh run.
+  ALSO SUSPECT: any previously reported seed-detection figure from a run where
+  slicing subdivided, which includes anything after task 35 introduced paragraph
+  slicing. The milestone-two detection figure of 166/174 predates slicing, but
+  that has NOT been verified against those runs' pair and slice counts, so treat
+  it as unchecked rather than as confirmed.
+  Two of nine entries were skipped by the 4h dispatch budget, giving coverage
+  0.778; that is the coverage-per-run effect task 50 is about.
 - NATURALNESS LANE COMPLETE (task 46, commits `b3aee385a`, `acc5022e5`,
   `6d695fe4e`). One rewriter call per slice returns paragraph rewrites, each
   gated on the ordered atoms, applied through the SAME deterministic gate the
