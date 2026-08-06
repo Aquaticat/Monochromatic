@@ -46,6 +46,9 @@ T2  naturalness refinement        diff(T1,T2) confined to one recorded paragraph
 
 Every change in the shipped text traces to exactly one of:
 an accepted issue repair, or an accepted paragraph refinement with recorded gate results.
+RETRACTED, see "Still open before the lane can be built":
+that guarantee is unachievable once `T2` rewrites a paragraph holding a `T1` insertion,
+and replayable stage operations replace it.
 
 Paragraph containment is provable deterministically.
 Semantic preservation is not provable by an LLM panel,
@@ -108,6 +111,8 @@ Gates, all of which must pass:
 
 Poetry, quotations, tables, and code are routed away or abstained on,
 which is also the fix for round-two false positive 26.
+See "Still open before the lane can be built":
+this is a conservative ELIGIBILITY FILTER and must not be called verse detection.
 
 ## Contract breakages this creates, all of which must be handled
 
@@ -117,7 +122,9 @@ which is also the fix for round-two false positive 26.
 -    `changedOutcomes` and `anyChanged` in `repair-translation.ts` miss refinement-only changes
      if the lane is bolted on after they are computed.
 -    `SliceCache` entries predate the lane, so a cached slice would bypass it.
-     The cache key or schema must be versioned.
+     SUPERSEDED by "Settled before building the lane":
+     two separate caches, not one versioned key,
+     so a lane edit never invalidates expensive `T1` work.
 -    The `blocked-non-translation` path must keep returning the original untouched.
 -    A refinement-only change has no representation in `issues` and needs its own record type.
 
