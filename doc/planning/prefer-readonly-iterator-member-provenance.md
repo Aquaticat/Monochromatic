@@ -230,7 +230,55 @@ say.
    which consumes its container by element access,
    does not.
 
-2.    Attribute the element-step spellings in the escape walk:
+2.    Attempted and reverted, with a soundness result that changes what the step has to be.
+
+   The change was scoped by construction rather than global:
+   `resultEscapesCallable` gained an
+   `elementStepsAttributed` flag,
+   admitting the `for...of` expression position and a spread element,
+   passed `true` from `effect-view-result-gate.ts` and `effect-collection-member-effect.ts` and `false`
+   from `effect-call-analysis.ts`.
+   The scoping worked for what it was aimed at:
+   `formatUsageWarningStatus` held,
+   which is the control the earlier attempt on issue #417 broke.
+
+   Three other pins did not hold,
+   and one of them is not a count.
+   `readonly-tuple-exposure-invalid.ts`
+   went from three reports to zero,
+   and that fixture's test already records what those three protect:
+   with them discharged,
+   `rewriteMutableStoredPair` is offered read-only while its body runs
+   `pair[0] = 'rewritten'` on a tuple the array holds.
+   A tuple is caller-owned state whatever its
+   positions are,
+   because the tuple itself is writable.
+
+   So the widening trades a report for silence rather than for an attribution,
+   which is precisely the
+   failure `effect-collection-member-effect.ts` warns about in its own comment:
+   the element step makes the
+   container half true only while a write reaching through that step is actually attributed.
+   For a write
+   through an observer it is,
+   pinned by `chainedContainerFoldWriteEffect`.
+   For a write through a
+   `for...of` binding over a `values()` iterator it is not,
+   which is what the tuple fixture measures.
+
+   The next attempt therefore cannot start at the escape walk.
+   It has to start by making a write through
+   an iterated binding attribute to the receiver's parameter,
+   with `readonly-tuple-exposure-invalid.ts`
+   as the control that must keep reporting throughout,
+   and only then admit the position.
+   Stated the
+   other way round:
+   admitting a position in the escape walk is sound exactly when something already
+   walks that position,
+   and this pair of steps was attempted in the wrong order.
+
+3.    Attribute the element-step spellings in the escape walk:
    the `for...of` expression position and a
    spread element.
    This is the step that clears the 14,
