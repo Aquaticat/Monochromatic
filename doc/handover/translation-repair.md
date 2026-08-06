@@ -4294,3 +4294,70 @@ Three cases now cover it, and the middle one is the load-bearing assertion:
 a defect EVERY prober corroborates must still ship.
 That test fails the moment anything downstream starts reading the report,
 which is what pins shadow mode against a future accidental gate.
+
+### Run 005: the probe could not prove an omission
+
+Commit `ec92567a5`. Found by the advisor review immediately after run 004
+started, so the pass restarted again as `pass8-run-005` with zero artifacts lost.
+
+The screen ran the differential in ONE direction only:
+a quote had to be present in the AFTER text and absent from BEFORE.
+The prompt said as much, "quote the exact damaged wording FROM THE AFTER TEXT".
+
+Omission damage has nothing in the AFTER text to quote.
+Its absence IS the defect.
+So every claim of the form "this edit dropped a clause" landed in `unanchored`
+however true it was,
+and a region the editors emptied outright could not be claimed against at all.
+
+That is worse than a crash for a measurement instrument.
+Dropping a clause while rewriting is among the likeliest ways an editor causes
+collateral damage,
+so `unanchored` would have filled with exactly the class that matters most,
+and I would have read the round-three telemetry as "probers gave unusable
+quotes" rather than "the screen cannot express this claim".
+Sol's earlier review had flagged it in advance,
+"zero-width insertions and empty replacements need explicit boundary-anchor
+support",
+and I shipped without it.
+
+The fix is symmetric and was always available.
+Wording present in BEFORE and absent from AFTER proves the edit removed it,
+exactly as mechanically as the forward check proves it added something.
+Claims now carry `evidence` for added damage or `omittedText` for dropped
+content, and `removal-corroborated` is its own count so the two never blur.
+
+EXACTLY ONE anchor per claim.
+Both at once is a wire fault, not a stronger claim:
+screening each and taking the better answer would let a prober launder a
+contradicted quote by attaching a second one.
+
+#### Two aggregation traps, recorded on task 53
+
+Neither is guarded in code and both silently mix populations.
+
+FILTER TO SHIPPED.
+The probe runs wherever an operation applied, including candidates selection
+later rejected, so `introducedDefects` sits on records whose disposition is
+`not-selected` or `withdrawn`.
+The human repair sheet grades only `shipped` items.
+Without the filter the denominator includes regions nobody graded.
+
+DE-DUPLICATE BY ENVELOPE ID.
+Every issue sharing a merged envelope carries the SAME tally,
+so aggregating over records counts one region once per issue it served.
+
+#### Lint debt cleared while here
+
+Commit `9183e3128`, on the user's "Fix even pre-existing issues".
+Nineteen warnings to zero: Unicode blocks named in `protected-atom.ts`,
+a real type guard replacing `verdict as GradeVerdict` in `grade-agreement.ts`,
+the JSON round trip in `repair-provenance.unit.test.ts` split into a named
+serialized form, and the rate precision named in `score-agreement.ts`.
+
+The `structuredClone` suggestion was REFUSED with reason rather than applied:
+that test exists to cross the disk boundary, and JSON drops what a clone keeps,
+which is precisely what every optional field on a repair record depends on.
+
+The remaining 150 errors are all `prefer-readonly-parameter-types`,
+ignored on this branch by user decision under issue #414.
