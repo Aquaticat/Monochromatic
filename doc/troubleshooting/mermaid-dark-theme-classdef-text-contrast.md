@@ -43,7 +43,7 @@ That combination produced these measured pairs:
    foreground `rgb(248, 250, 252)`,
   background `rgb(255, 241, 242)`,
   contrast `1.05:1`.
-- Twenty-three of 58 rendered flowchart nodes were below `4.5:1`.
+- Twenty-three of 58 rendered flowchart nodes had contrast under `4.5:1`.
 
 The page itself had no JavaScript error.
 Axe reported the SVG `foreignObject` nodes as inconclusive rather than as
@@ -115,27 +115,13 @@ The deciding code is in
 `packages/mermaid/src/diagrams/flowchart/flowDb.ts:406-427`:
 
 ```typescript
-public addClass(ids: string, _style: string[]) {
-  const style = _style
-    .join()
-    .replace(/\\,/g, '§§§')
-    .replace(/,/g, ';')
-    .replace(/§§§/g, ',')
-    .split(';');
-  ids.split(',').forEach((id) => {
-    let classNode = this.classes.get(id);
-    if (classNode === undefined) {
-      classNode = { id, styles: [], textStyles: [] };
-      this.classes.set(id, classNode);
+if (style !== undefined && style !== null) {
+  style.forEach((s) => {
+    if (/color/.exec(s)) {
+      const newStyle = s.replace('fill', 'bgFill'); // .replace('color', 'fill');
+      classNode.textStyles.push(newStyle);
     }
-
-    style.forEach((s) => {
-      if (/color/.exec(s)) {
-        const newStyle = s.replace('fill', 'bgFill');
-        classNode.textStyles.push(newStyle);
-      }
-      classNode.styles.push(s);
-    });
+    classNode.styles.push(s);
   });
 }
 ```
@@ -325,6 +311,10 @@ agent-browser --session mermaid-classdef --allow-file-access get text '#results'
 agent-browser --session mermaid-classdef --allow-file-access close
 ```
 
+Without `agent-browser`,
+open the HTML file in any browser and read the JSON rendered under the diagram.
+The page computes its own measurements after Mermaid finishes rendering.
+
 Measured output:
 
 ```text
@@ -359,8 +349,8 @@ light fill and dark color  #0f172a on #fff1f2   16.25:1
 
 ### Pair every explicit light fill with an explicit foreground
 
-The repository fix adds `color:#0f172a` to every light `adapter` and `leak`
-class at
+The applied fix in commit `e917b3e10` adds `color:#0f172a` to every light
+`adapter` and `leak` class at
 `doc/audit/oxlint-rule-architecture-review.html:480`,
 `:846`,
 `:1026`,
@@ -408,7 +398,7 @@ Making it light preserves dark nodes and breaks light fills;
 making it dark repairs light fills and can break dark nodes.
 The foreground belongs with each explicit fill.
 
-### Overriding generated nodes with ordinary external CSS
+### Rejected without applying ordinary external CSS
 
 Mermaid's flowchart documentation warns at
 `packages/mermaid/src/docs/syntax/flowchart.md:1251-1253`:
@@ -455,24 +445,41 @@ CDNs,
 or jsDelivr.
 All files in `.out-of-scope/` were searched before evaluating a filing.
 
-Tracker searches covered open and closed issues and pull requests for:
+Initial multi-term searches for `dark theme classDef fill text color`,
+`classDef text color`,
+and `fill dark theme text` returned no results.
+Those queries were too restrictive and did not even return known issue #1955,
+so they were rejected as incomplete evidence.
 
-- `dark theme classDef fill text color`
-- `classDef text color`
-- `fill dark theme text`
+Broad searches then covered open and closed issues for `classDef` and
+`text color`,
+plus open and closed pull requests for `classDef`,
+with up to 100 results per query.
+They returned the historical text-color threads and these near matches:
 
-No exact report of automatic foreground contrast for fill-only classes was
-found.
-Three older issues are related but not duplicates:
-
-- [Issue #1955][issue-1955] and [PR #1956][pr-1956] cover explicit
+- [Issue #1955][issue-1955] and [PR #1956][pr-1956] cover explicit flowchart
   `classDef color` support.
-- [Issue #487][issue-487] covers the older inability to change node text color.
-- [Issue #885][issue-885] covers text rendering with `htmlLabels: false`.
+- [Issue #487][issue-487] covers the older inability to change flowchart node
+  text color.
+- [Issue #885][issue-885] covers SVG text rendering with
+  `htmlLabels: false`.
+- [Issue #7833][issue-7833] and [PR #7850][pr-7850] cover block diagrams
+  ignoring an explicitly supplied `color`.
+  This report's flowchart honored explicit `color`.
+- [Issue #7596][issue-7596] covers wrapped shapes after an SVG consumer strips
+  inline style attributes.
+  This report uses rectangles in standalone HTML and retains inline styles.
+- [Issue #7742][issue-7742] covers Mermaid's default sequence-diagram `rect`
+  contrast,
+  not a custom flowchart fill.
+- [Issue #7815][issue-7815] requests consistent theming across diagram types,
+  but does not report automatic contrast for fill-only flowchart classes.
 
-The issues and their comments were read in full.
-None describes Mermaid choosing an unsafe foreground after a consumer supplies
-only a light custom fill under a dark theme.
+The listed issues,
+their comments,
+and both pull-request threads were read in full.
+No thread describes Mermaid choosing an unsafe foreground after a consumer
+supplies only a light custom fill under a dark theme.
 
 The six filing constraints resolve as follows:
 
@@ -561,4 +568,9 @@ claims to derive accessible contrast for custom fills.
 [issue-1955]: https://github.com/mermaid-js/mermaid/issues/1955
 [issue-487]: https://github.com/mermaid-js/mermaid/issues/487
 [issue-885]: https://github.com/mermaid-js/mermaid/issues/885
+[issue-7596]: https://github.com/mermaid-js/mermaid/issues/7596
+[issue-7742]: https://github.com/mermaid-js/mermaid/issues/7742
+[issue-7815]: https://github.com/mermaid-js/mermaid/issues/7815
+[issue-7833]: https://github.com/mermaid-js/mermaid/issues/7833
 [pr-1956]: https://github.com/mermaid-js/mermaid/pull/1956
+[pr-7850]: https://github.com/mermaid-js/mermaid/pull/7850
