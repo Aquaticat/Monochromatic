@@ -174,17 +174,37 @@ Measured hook behavior across the corpus:
 67 blocking events,
 of which 61 turns carried exactly one block and 3 turns carried two.
 
-The near-universal cap of one block per turn is self-imposed,
-not a platform limit.
-The handler returns `{}` unconditionally when `stop_hook_active` is set,
-at `package/claude-code-plugin/source/src/handler/stop-reminder/index.ts:57`.
-The published hook reference documents no platform-side limit on repeat blocking,
-and it documents `hookSpecificOutput.additionalContext` on `Stop`
-as non-error feedback that continues the conversation.
+The cap of one block per turn was self-imposed.
+The handler returned `{}` unconditionally when `stop_hook_active` was set.
 
-The practical consequence for any new detector:
-it shares a single block slot per turn with the existing three,
-so detector ordering decides which failure actually gets corrected.
+The three turns carrying two blocks are not evidence that the hook re-armed.
+This repository runs two Stop hooks, `ccsr` and `cctt`, plus goal blocks,
+so two blocks in one turn is more readily two hooks than one hook firing twice.
+
+### Measured on a throwaway
+
+Claude Code's own behavior was measured directly rather than inferred,
+on two disposable sessions against Claude Code 2.1.220,
+each a temporary directory with `--settings` naming a single Stop hook
+that logged its input and blocked unconditionally up to a self-imposed cap of 15.
+
+Both runs behaved identically:
+
+- The CLI dispatched the Stop hook 9 times, then ended the turn
+  despite the ninth response being another block.
+  Claude Code therefore imposes its own ceiling,
+  and an unconditional blocker cannot loop indefinitely.
+- `stop_hook_active` was `false` on the first dispatch and `true` on all 8 after.
+  It never cleared.
+  Honoring it therefore caps forced continuation at exactly one,
+  and ignoring it yields up to 9.
+
+The `Stop` input carried exactly these keys:
+`background_tasks`, `cwd`, `hook_event_name`, `last_assistant_message`,
+`permission_mode`, `prompt_id`, `session_crons`, `session_id`,
+`stop_hook_active`, `transcript_path`.
+The published hook reference lists `effort` among the common fields;
+no `effort` key was present on any of the 18 logged dispatches.
 
 ## Rescue rate, measured
 
@@ -256,7 +276,37 @@ Of the candidates recorded here,
 only routing work to a different model would act without relying on the model obeying an instruction,
 and its effect on this failure is unestablished.
 
-## Remediation options
+## What was adopted
+
+The user rejected the measurement-first options recorded here:
+no model comparison,
+no broad adoption of the goal feature,
+and not the `loop` skill.
+The stated reason is that the goal feature and `loop`
+are both model-mediated,
+since the model decides whether to invoke them
+or whether a stated condition is satisfied,
+so they inherit the failure they are meant to correct.
+The stated design is to auto-prompt on every stop.
+
+Implemented as unconditional stop-blocking in the existing hook,
+`package/claude-code-plugin/source/src/handler/stop-reminder/auto-continue.ts`.
+Gating became per-detector:
+the three response-quality detectors still run only on the first stop of a chain,
+while forced continuation re-arms on every stop.
+A trailing question keeps precedence over it.
+`MONOCHROMATIC_STOP_AUTO_CONTINUE` set to `off`, `0`, `false`, or `no` disables it.
+
+The measured ceiling is what makes this safe:
+Claude Code ends the turn after 9 dispatches regardless,
+so no counter in this repository is load-bearing for termination.
+
+The cost is unmeasured and falls on every session, not only queue-shaped ones.
+A turn that genuinely had nothing left to do
+now receives up to 9 forced continuations,
+including short question-and-answer turns.
+
+## Remediation options considered
 
 No option here has an established effect on this failure.
 The model comparison is confounded,
