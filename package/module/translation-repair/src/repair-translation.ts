@@ -284,6 +284,29 @@ export async function repairTranslation(
   );
 
   /**
+   * Everything about this run that changes what the models are ASKED, folded
+   * into every cache key.
+   *
+   * Without it a resumed slice could return an outcome produced under a
+   * different roster, a different adjudication threshold, or a different editor
+   * addendum, and nothing would look wrong: the texts match, so the key matches.
+   * That is the failure a version constant cannot catch, because no shape
+   * changed. Identity context belongs here for the same reason, since it is
+   * front-matter-derived prompt content that varies per document pair.
+   */
+  const runShape = JSON.stringify([
+    models.criticModelIds,
+    models.panelModelIds,
+    models.editorModelIds,
+    models.judgeModelIds,
+    models.refinerModelIds ?? [],
+    models.checkerModelIds,
+    models.editorRuleAddendum ?? '',
+    adjudicationConfig ?? null,
+    identityFragment.identityContext ?? '',
+  ],);
+
+  /**
    * Slice outcomes in document order; sequential by design (see TSDoc).
    */
   const outcomes: ChunkRepairOutcome[] = [];
@@ -296,6 +319,7 @@ export async function repairTranslation(
     const sliceKey = hashContent({
       content: JSON.stringify([
         SLICE_CACHE_VERSION,
+        runShape,
         slice.target
           .chunkIndex,
         slice.source

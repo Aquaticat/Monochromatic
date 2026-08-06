@@ -287,6 +287,37 @@ export async function repairChunk(
   }
 
   /**
+   * Accepted issues an applied operation actually served.
+   *
+   * Selection credit is limited to these. Checkers are asked about every
+   * accepted issue, including ones no envelope could be cut for and ones whose
+   * envelope received no surviving operation, and a checker reading the patched
+   * text can call such an issue fixed. Counting that toward the patched
+   * candidate let a patch touching issue A beat unchanged on credit for issue B
+   * that nothing touched, which is not evidence the patch improved anything.
+   * The verdicts on unserved issues stay in the tallies as telemetry; they just
+   * no longer decide the selection.
+   */
+  const servedIssueIds = new Set(
+    editor.patch
+      .applied
+      .flatMap(function servedBy(operation,) {
+        return envelopes.find(function matches(candidate,) {
+          return candidate.envelopeId === operation.envelopeId;
+        },)
+          ?.issueIds
+          ?? [];
+      },),
+  );
+
+  /**
+   * Accepted issues eligible to count toward the patched candidate.
+   */
+  const creditableIssues = acceptedIssues.filter(function wasServed(issue,) {
+    return servedIssueIds.has(issue.issueId,);
+  },);
+
+  /**
    * Checker proof over the patched candidate.
    */
   const checker = await runCheckerStage({
@@ -304,7 +335,7 @@ export async function repairChunk(
   /**
    * Issue ids the checker majority confirmed fixed.
    */
-  const resolvedIssueIds = acceptedIssues
+  const resolvedIssueIds = creditableIssues
     .filter(function isResolved(issue,) {
       return checker.tallies[issue.issueId]
         ?.resolved
@@ -329,7 +360,7 @@ export async function repairChunk(
         text: editor.patch
           .patchedText,
         measurements: measurePatchedCandidate({
-          acceptedIssues,
+          acceptedIssues: creditableIssues,
           tallies: checker.tallies,
           resolvedTotal: resolvedIssueIds.length,
           envelopes,
@@ -352,9 +383,9 @@ export async function repairChunk(
   l.info(
     `chunk ${String(chunkIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
       String(resolvedIssueIds.length,)
-    }/${String(acceptedIssues.length,)} accepted issues resolved, ${
-      String(unenveloped.length,)
-    } unenveloped`,
+    }/${String(creditableIssues.length,)} served accepted issues resolved (${
+      String(acceptedIssues.length,)
+    } accepted, ${String(unenveloped.length,)} unenveloped)`,
   );
 
   return {
