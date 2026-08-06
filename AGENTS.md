@@ -278,6 +278,14 @@ Agent has tools;
  using them is its job,
  not user's.
 
+QAB:
+ Before-state reading isn't after-state evidence.
+Predicting a change's effect from unchanged code is inference.
+Apply it in a fork,
+ measure,
+ then conclude.
+Covers reverting on a predicted regression.
+
 ASK:
  **Non-measurable facts:
  ask.
