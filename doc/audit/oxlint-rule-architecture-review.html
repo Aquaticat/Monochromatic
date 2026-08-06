@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oxlint rule architecture audit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "neutral",
+        securityLevel: "loose",
+        flowchart: { curve: "basis", htmlLabels: true },
+      });
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background:
+          radial-gradient(circle at top left, rgb(224 231 255 / 0.7), transparent 34rem),
+          #fafaf9;
+      }
+
+      code {
+        overflow-wrap: anywhere;
+      }
+
+      .paper-grid {
+        background-image:
+          linear-gradient(to right, rgb(226 232 240 / 0.55) 1px, transparent 1px),
+          linear-gradient(to bottom, rgb(226 232 240 / 0.55) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+
+      .deep-module {
+        background: linear-gradient(145deg, #0f172a, #1e293b);
+      }
+
+      .seam-line {
+        border-style: dashed;
+      }
+
+      .source-citation {
+        border-left: 3px solid #6366f1;
+        background: #eef2ff;
+      }
+
+      .mermaid svg {
+        max-height: 440px;
+        width: 100% !important;
+      }
+
+      .candidate-diagram .mermaid svg {
+        max-height: 340px;
+      }
+
+      .prose-block p + p {
+        margin-top: 0.9rem;
+      }
+
+      .prose-block ul,
+      .prose-block ol {
+        margin-top: 0.75rem;
+      }
+    </style>
+  </head>
+  <body class="font-sans text-slate-900">
+    <main class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12">
+      <header class="rounded-3xl border border-slate-200 bg-white/95 p-7 shadow-sm sm:p-10">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div class="max-w-4xl">
+            <p class="text-xs font-bold uppercase tracking-[0.24em] text-indigo-700">Architecture audit</p>
+            <h1 class="mt-3 font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
+              Monochromatic's custom Oxlint rules
+            </h1>
+            <p class="mt-5 text-lg leading-8 text-slate-700">
+              This report assumes no prior knowledge of Oxlint, this repository, or the architecture vocabulary used
+              to evaluate it. It explains the current linting system before presenting any recommendation.
+            </p>
+          </div>
+          <div class="rounded-2xl bg-slate-950 p-5 text-sm text-slate-200">
+            <p><span class="text-slate-400">Reviewed:</span> 2026-08-06 03:39 UTC</p>
+            <p class="mt-2"><span class="text-slate-400">Repository HEAD:</span> <code>87d0dcd3662a</code></p>
+            <p class="mt-2"><span class="text-slate-400">Scope:</span> five rule plugins and their shared config</p>
+            <p class="mt-2"><span class="text-slate-400">Source quality:</span> repository source and installed schema</p>
+          </div>
+        </div>
+
+        <nav aria-label="Report sections" class="mt-8 border-t border-slate-200 pt-6">
+          <ul class="flex flex-wrap gap-2 text-sm">
+            <li><a class="rounded-full bg-slate-100 px-4 py-2 hover:bg-slate-200" href="#summary">Summary</a></li>
+            <li><a class="rounded-full bg-slate-100 px-4 py-2 hover:bg-slate-200" href="#primer">System primer</a></li>
+            <li><a class="rounded-full bg-slate-100 px-4 py-2 hover:bg-slate-200" href="#vocabulary">Vocabulary</a></li>
+            <li><a class="rounded-full bg-emerald-100 px-4 py-2 text-emerald-900 hover:bg-emerald-200" href="#candidate-a">Candidate A</a></li>
+            <li><a class="rounded-full bg-emerald-100 px-4 py-2 text-emerald-900 hover:bg-emerald-200" href="#candidate-b">Candidate B</a></li>
+            <li><a class="rounded-full bg-amber-100 px-4 py-2 text-amber-900 hover:bg-amber-200" href="#candidate-c">Candidate C</a></li>
+            <li><a class="rounded-full bg-slate-200 px-4 py-2 text-slate-800 hover:bg-slate-300" href="#candidate-d">Candidate D</a></li>
+            <li><a class="rounded-full bg-indigo-100 px-4 py-2 text-indigo-900 hover:bg-indigo-200" href="#ranking">Ranking</a></li>
+            <li><a class="rounded-full bg-slate-100 px-4 py-2 hover:bg-slate-200" href="#sources">Sources</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      <section id="summary" aria-labelledby="summary-heading" class="mt-10 grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
+        <article class="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Executive summary</p>
+          <h2 id="summary-heading" class="mt-2 font-serif text-3xl font-semibold">What this audit found</h2>
+          <div class="prose-block mt-5 text-base leading-7 text-slate-700">
+            <p>
+              Monochromatic uses Oxlint to enforce both ordinary correctness rules and project-specific coding laws.
+              Those project laws are implemented by five JavaScript plugins that register 88 named rules across 287
+              production TypeScript files. Physical line counts total 57,185, including comments and documentation.
+            </p>
+            <p>
+              Most of that code is not architecturally shallow. The largest plugin, the semantic readonly analyzer,
+              already hides complex behavior behind a small rule interface. File count alone is not evidence that a
+              module should be collapsed.
+            </p>
+            <p>
+              The clearest shallow area is different: directive governance. Twenty files each supply only a protected
+              rule identity, description, and diagnostic message to one shared implementation. Deleting those files
+              would concentrate their knowledge in one module without changing any external rule name. That is the top
+              recommendation.
+            </p>
+          </div>
+        </article>
+
+        <aside class="rounded-3xl border-2 border-indigo-700 bg-indigo-950 p-7 text-white shadow-lg sm:p-9">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300">Top recommendation</p>
+          <h2 class="mt-3 font-serif text-3xl font-semibold">Collapse directive governance</h2>
+          <p class="mt-5 leading-7 text-indigo-100">
+            Keep all existing Oxlint rule names, but author their shared behavior and policy data in one deep module.
+          </p>
+          <a class="mt-6 inline-block rounded-lg bg-white px-5 py-3 font-semibold text-indigo-950" href="#candidate-a">
+            Read the evidence and trade-offs
+          </a>
+        </aside>
+      </section>
+
+      <section aria-label="What the reader is deciding" class="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-6">
+        <h2 class="font-serif text-2xl font-semibold text-amber-950">What choosing a candidate means</h2>
+        <p class="mt-3 max-w-5xl leading-7 text-amber-950">
+          Choosing a candidate does not authorize an implementation yet. It starts a design conversation that tests
+          constraints, preserves required behavior, decides what belongs behind the seam, and identifies which tests
+          must survive. This report deliberately describes behavior and structure without proposing TypeScript
+          interfaces.
+        </p>
+      </section>
+
+      <section id="primer" aria-labelledby="primer-heading" class="mt-12">
+        <div class="max-w-4xl">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">System primer</p>
+          <h2 id="primer-heading" class="mt-2 font-serif text-4xl font-semibold">What Oxlint does in this repository</h2>
+          <p class="mt-5 text-lg leading-8 text-slate-700">
+            Oxlint reads source files, builds syntax trees, runs enabled rules, and reports diagnostics. A diagnostic
+            is a concrete complaint tied to source text, such as “switch statements are banned.” A rule is the module
+            that decides when to report that complaint.
+          </p>
+        </div>
+
+        <div class="mt-7 grid gap-5 md:grid-cols-3">
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">Rule</p>
+            <h3 class="mt-2 text-xl font-semibold">One enforceable law</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              Example: <code>no-restricted-syntax/no-switch</code> visits every switch statement and reports it.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">Plugin</p>
+            <h3 class="mt-2 text-xl font-semibold">A published rule collection</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              A plugin gives Oxlint a name and a collection of named rules. Config can enable each rule separately.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">Config</p>
+            <h3 class="mt-2 text-xl font-semibold">The selected policy</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              The shared config chooses plugin locations, enabled rule names, severities, ignored paths, and overrides.
+            </p>
+          </article>
+        </div>
+
+        <article class="mt-7 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <h3 class="font-serif text-2xl font-semibold">A concrete example: banning a switch statement</h3>
+          <div class="mt-5 grid gap-5 lg:grid-cols-2">
+            <div>
+              <p class="font-semibold text-slate-700">Source that violates the rule</p>
+              <pre class="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>switch (status) {
+  case 'ready':
+    run();
+}</code></pre>
+            </div>
+            <div>
+              <p class="font-semibold text-slate-700">A comment that would normally suppress it</p>
+              <pre class="mt-3 overflow-x-auto rounded-xl bg-slate-950 p-5 text-sm leading-6 text-slate-100"><code>// oxlint-disable-next-line no-restricted-syntax/no-switch -- legacy code
+switch (status) {
+  case 'ready':
+    run();
+}</code></pre>
+            </div>
+          </div>
+          <p class="mt-5 leading-7 text-slate-700">
+            This repository also enables <code>no-disable-no-switch</code>. That second rule scans comments and reports
+            the suppression itself. In plain language: the project bans switch statements and also bans bypassing that
+            ban with an inline disable comment. Candidate A concerns the family of rules that govern these comments.
+          </p>
+          <p class="source-citation mt-5 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+            <strong>Primary source:</strong>
+            <code>package/oxlint-plugin/no-restricted-syntax/src/rule/_ban-disable-factory.ts:58-111</code>
+            implements the shared comment scan and report behavior.
+          </p>
+        </article>
+
+        <article class="mt-7 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <h3 class="font-serif text-2xl font-semibold">How configuration reaches Oxlint</h3>
+          <p class="mt-3 leading-7 text-slate-700">
+            The root file <code>oxlint.config.ts</code> imports and spreads
+            <code>@monochromatic-dev/config-oxlint</code>. That package has two paths to the same five plugins. The
+            development path points directly at TypeScript source. The built path points at co-located JavaScript
+            sidecars using <code>file://</code> URLs. A sidecar is a separate built plugin file placed next to the built
+            config file.
+          </p>
+          <div class="mt-6 rounded-2xl border border-slate-200 bg-stone-50 p-4 sm:p-6">
+            <pre class="mermaid">
+flowchart TB
+  ROOT["root oxlint.config.ts"] --> CONFIG["config-oxlint"]
+  CONFIG --> DEV["development entry"]
+  CONFIG --> BUILT["built Node entry"]
+  DEV --> SOURCE["five TypeScript plugin sources"]
+  BUILT --> SIDECARS["five plugin-*.mjs sidecars"]
+  SOURCE --> HOST["Oxlint host"]
+  SIDECARS --> HOST
+  HOST --> RULES["enabled named rules"]
+  RULES --> DIAGNOSTICS["diagnostics tied to source text"]
+  classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
+  classDef adapter fill:#ecfdf5,stroke:#059669,stroke-width:2px;
+  class CONFIG deep;
+  class DEV,BUILT adapter;
+            </pre>
+          </div>
+          <div class="mt-5 grid gap-4 md:grid-cols-2">
+            <p class="source-citation rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+              <strong>Root and development sources:</strong>
+              <code>oxlint.config.ts:17-23</code> and
+              <code>package/config/oxlint/src/index.ts:34-55</code>.
+            </p>
+            <p class="source-citation rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+              <strong>Built source:</strong>
+              <code>package/config/oxlint/src/index.node.ts:26-49</code> points to five sidecars.
+            </p>
+          </div>
+        </article>
+
+        <div class="mt-7">
+          <h3 class="font-serif text-3xl font-semibold">The five custom rule plugins</h3>
+          <p class="mt-3 max-w-4xl leading-7 text-slate-700">
+            Counts come from the working tree at the reviewed commit. “Production files” excludes files ending in
+            <code>.test.ts</code>. “Physical lines” uses <code>wc -l</code>, so comments and documentation are included.
+            Registered rules are names in each plugin entry; not every registered rule is necessarily enabled.
+          </p>
+          <div class="mt-5 grid gap-5 lg:grid-cols-2">
+            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">no-restricted-syntax</h4>
+                  <p class="mt-1 text-sm text-slate-500">75 production files · 11,278 physical lines · 47 rules</p>
+                </div>
+                <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">policy</span>
+              </div>
+              <p class="mt-4 leading-7 text-slate-700">
+                Implements project-specific syntax bans that built-in Oxlint rules cannot express, plus governance of
+                inline disable comments.
+              </p>
+            </article>
+            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">prefer-readonly-parameter-type</h4>
+                  <p class="mt-1 text-sm text-slate-500">137 production files · 30,556 physical lines · 1 rule</p>
+                </div>
+                <span class="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800">semantic</span>
+              </div>
+              <p class="mt-4 leading-7 text-slate-700">
+                Uses TypeScript semantic information and cross-file effect summaries to verify honest readonly
+                parameter contracts.
+              </p>
+            </article>
+            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">stylistic</h4>
+                  <p class="mt-1 text-sm text-slate-500">34 production files · 7,043 physical lines · 17 rules</p>
+                </div>
+                <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">formatting</span>
+              </div>
+              <p class="mt-4 leading-7 text-slate-700">
+                Enforces line layout, semicolons, trailing commas, expression grouping, and chain formatting.
+              </p>
+            </article>
+            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">tsdoc</h4>
+                  <p class="mt-1 text-sm text-slate-500">31 production files · 6,173 physical lines · 22 rules</p>
+                </div>
+                <span class="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-800">documentation</span>
+              </div>
+              <p class="mt-4 leading-7 text-slate-700">
+                Parses TSDoc comments and checks presence, tags, parameters, returns, examples, and mutation contracts.
+              </p>
+            </article>
+            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">test-import</h4>
+                  <p class="mt-1 text-sm text-slate-500">10 production files · 2,135 physical lines · 1 rule</p>
+                </div>
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">artifact testing</span>
+              </div>
+              <p class="mt-4 leading-7 text-slate-700">
+                Requires tests to import the artifact their package ships instead of importing sibling source files.
+                This rule exists because defects have previously survived the test suite by appearing only in built
+                output.
+              </p>
+              <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+                <strong>Primary source:</strong>
+                <code>package/oxlint-plugin/test-import/README.md:3-14</code> states the failure history and rule purpose.
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <article class="mt-7 rounded-3xl border border-amber-300 bg-amber-50 p-6 sm:p-8">
+          <h3 class="font-serif text-2xl font-semibold text-amber-950">What “built artifact” means here</h3>
+          <p class="mt-3 leading-7 text-amber-950">
+            TypeScript source is what maintainers edit. A build turns that source into files under locations such as
+            <code>dist/final</code>. Those emitted files are the artifact that users actually load. A test that imports
+            source can pass even when the emitted artifact is missing an export, bundles the wrong code, or differs in
+            another build-only way. This repository therefore makes tests import built output when a package has a
+            build task.
+          </p>
+          <p class="mt-3 leading-7 text-amber-950">
+            This policy is central to Candidates C and D. It explains why internal test helpers are re-exported from
+            built package entries instead of being imported directly from source.
+          </p>
+        </article>
+      </section>
+
+      <section id="vocabulary" aria-labelledby="vocabulary-heading" class="mt-14">
+        <div class="max-w-4xl">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Architecture vocabulary</p>
+          <h2 id="vocabulary-heading" class="mt-2 font-serif text-4xl font-semibold">How this report judges structure</h2>
+          <p class="mt-5 text-lg leading-8 text-slate-700">
+            These words have precise meanings. The report uses them consistently so a recommendation can be checked
+            rather than accepted as a vague request to “clean up” code.
+          </p>
+        </div>
+
+        <div class="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Module</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              Anything with an interface and an implementation. A module can be one function, one file, one package,
+              or a larger slice. File count does not determine module count.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Interface</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              Everything a caller must know to use a module correctly: names, inputs, outputs, errors, ordering,
+              configuration, and important performance facts.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Implementation</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              Behavior hidden inside the module. Deepening aims to move knowledge here so callers do not repeat it.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Deep and shallow</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              A deep module provides substantial behavior through a small interface. A shallow module exposes nearly
+              as much knowledge as its implementation contains.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Seam</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              A place where behavior can change without editing the caller. The interface lives at the seam.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Adapter</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              A concrete implementation used at a seam. In this report, source-resolved plugin paths and built sidecar
+              paths are two adapters for loading the same plugin identities.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Leverage</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              What callers gain when one small interface provides behavior to multiple call sites and tests.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Locality</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              Change, bugs, knowledge, and verification stay in one place instead of being repeated across callers.
+            </p>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xl font-semibold">Leakage</h3>
+            <p class="mt-3 leading-7 text-slate-700">
+              Knowledge that crosses a seam and must be repeated elsewhere. In this report, leakage is architectural,
+              not a security incident.
+            </p>
+          </article>
+        </div>
+
+        <div class="mt-7 grid gap-5 lg:grid-cols-3">
+          <article class="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <h3 class="text-xl font-semibold text-indigo-950">The deletion test</h3>
+            <p class="mt-3 leading-7 text-indigo-950">
+              Imagine deleting the suspected shallow module. If its complexity disappears, it was pass-through. If
+              the same knowledge must be repeated across callers, it was earning its place. A good deepening candidate
+              lets deletion concentrate knowledge instead of spreading it.
+            </p>
+          </article>
+          <article class="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <h3 class="text-xl font-semibold text-indigo-950">The interface is the test surface</h3>
+            <p class="mt-3 leading-7 text-indigo-950">
+              Callers and tests should normally cross the same seam. Tests that require many implementation facts can
+              force the interface to mirror the implementation and can break whenever internals move.
+            </p>
+          </article>
+          <article class="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+            <h3 class="text-xl font-semibold text-indigo-950">Two adapters make a real seam</h3>
+            <p class="mt-3 leading-7 text-indigo-950">
+              One adapter can be unnecessary indirection. Two adapters prove that behavior genuinely varies at that
+              seam. The source and built plugin-loading paths in Candidate B satisfy this test.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="method" aria-labelledby="method-heading" class="mt-14 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Method and confidence</p>
+        <h2 id="method-heading" class="mt-2 font-serif text-3xl font-semibold">What was measured and how badges were assigned</h2>
+        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+          <div class="prose-block leading-7 text-slate-700">
+            <p>
+              The audit read plugin entry points, rule implementations, focused tests, package documentation, shared
+              config source, relevant planning records, installed Oxlint 1.75.0's configuration schema, and git history
+              for the addition of the test-import plugin.
+            </p>
+            <p>
+              File and line counts were measured from the current working tree. Rule-family uniformity was checked
+              structurally: every directive-governance file has one exported constant initialized directly by
+              <code>banDisableRule</code>, one <code>ruleId</code>, and no function, class, or type declaration.
+            </p>
+            <p>
+              An independent reviewer challenged the candidate scopes. Its main corrections are incorporated here:
+              Candidate B does not pretend static package dependencies or physical sidecar files can disappear;
+              Candidates C and D are separated because their test observability differs.
+            </p>
+          </div>
+          <div class="space-y-4">
+            <div class="rounded-xl border border-emerald-300 bg-emerald-50 p-5">
+              <p class="font-semibold text-emerald-950">Strong</p>
+              <p class="mt-2 text-sm leading-6 text-emerald-950">
+                The deletion test passes, required behavior is known, and evidence supports the proposed scope.
+              </p>
+            </div>
+            <div class="rounded-xl border border-amber-300 bg-amber-50 p-5">
+              <p class="font-semibold text-amber-950">Worth exploring</p>
+              <p class="mt-2 text-sm leading-6 text-amber-950">
+                The opportunity is real, but tests or constraints must prove which parts may move behind the seam.
+              </p>
+            </div>
+            <div class="rounded-xl border border-slate-300 bg-slate-100 p-5">
+              <p class="font-semibold text-slate-900">Speculative</p>
+              <p class="mt-2 text-sm leading-6 text-slate-700">
+                Friction exists, but the deletion test passes only for part of the scope or the replacement test
+                surface is not yet proven.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+          <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+            <p class="font-semibold text-indigo-950">in-process</p>
+            <p class="mt-2 text-sm leading-6 text-indigo-950">
+              The candidate is TypeScript computation or build configuration with no remote dependency.
+            </p>
+          </div>
+          <div class="rounded-xl border border-sky-200 bg-sky-50 p-5">
+            <p class="font-semibold text-sky-950">local-substitutable</p>
+            <p class="mt-2 text-sm leading-6 text-sky-950">
+              The candidate touches the local filesystem or Oxlint process, but disposable fixture directories provide
+              a realistic test adapter.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="candidates" aria-labelledby="candidates-heading" class="mt-16">
+        <div class="max-w-4xl">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Deepening candidates</p>
+          <h2 id="candidates-heading" class="mt-2 font-serif text-4xl font-semibold">What could change and why</h2>
+          <p class="mt-5 text-lg leading-8 text-slate-700">
+            Each candidate states its evidence, current workflow, proposed behavior, invariants, deletion test,
+            testing consequences, benefits, costs, and unresolved questions.
+          </p>
+        </div>
+
+        <article id="candidate-a" class="mt-9 overflow-hidden rounded-3xl border-2 border-emerald-500 bg-white shadow-lg">
+          <header class="bg-emerald-950 p-7 text-white sm:p-9">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="max-w-4xl">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Candidate A</p>
+                <h3 class="mt-2 font-serif text-4xl font-semibold">Collapse directive governance</h3>
+                <p class="mt-4 text-lg leading-8 text-emerald-100">
+                  Replace twenty data-only authoring modules with one deep directive-governance module while keeping
+                  all external Oxlint rule names and diagnostics stable.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="rounded-full bg-emerald-200 px-4 py-2 text-sm font-bold text-emerald-950">Strong</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">in-process</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">Rank 1</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="p-6 sm:p-9">
+            <section aria-labelledby="a-background">
+              <h4 id="a-background" class="font-serif text-2xl font-semibold">Background in plain language</h4>
+              <p class="mt-3 leading-7 text-slate-700">
+                The no-restricted-syntax plugin registers ordinary bans such as <code>no-switch</code> and a second
+                family whose names begin with <code>no-disable-</code>. Each second-family rule protects one target rule
+                from being suppressed by an inline <code>oxlint-disable</code> comment.
+              </p>
+              <p class="mt-3 leading-7 text-slate-700">
+                All twenty protected-rule files call the same factory. Their only unique information is three pieces
+                of data: the target rule identity, a documentation description, and a diagnostic message. None contains
+                custom detection behavior.
+              </p>
+            </section>
+
+            <section aria-labelledby="a-evidence" class="mt-8">
+              <h4 id="a-evidence" class="font-serif text-2xl font-semibold">Verified evidence</h4>
+              <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">20</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">directive-governance files</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">322</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">physical lines across those files</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">54</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">physical lines in the shared factory body</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">18</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">currently enabled in shared config</p>
+                </div>
+              </div>
+              <div class="source-citation mt-5 rounded-r-xl p-5 text-sm leading-6 text-indigo-950">
+                <p>
+                  <strong>Uniformity check:</strong> every file matches one direct <code>banDisableRule</code>
+                  initialization and exactly the keys <code>ruleId</code>, <code>description</code>, and
+                  <code>message</code>.
+                </p>
+                <p class="mt-2">
+                  <strong>Sources:</strong>
+                  <code>package/oxlint-plugin/no-restricted-syntax/src/rule/no-disable-*.ts</code> and
+                  <code>package/oxlint-plugin/no-restricted-syntax/src/rule/_ban-disable-factory.ts:58-111</code>.
+                </p>
+              </div>
+            </section>
+
+            <section aria-label="Candidate A before and after diagrams" class="candidate-diagram mt-8 grid gap-6 lg:grid-cols-2">
+              <div class="rounded-2xl border border-rose-300 bg-rose-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-rose-950">Current authoring flow</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Before</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart TB
+  F1["no-disable-no-switch.ts"] --> FACTORY["banDisableRule"]
+  F2["no-disable-no-enum.ts"] --> FACTORY
+  F3["no-disable-require-tsdoc.ts"] --> FACTORY
+  FN["17 more files"] --> FACTORY
+  F1 --> INDEX["plugin index registration"]
+  F2 --> INDEX
+  F3 --> INDEX
+  FN --> INDEX
+  INDEX --> CONFIG["18 config entries"]
+  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  class F1,F2,F3,FN,INDEX,CONFIG leak;
+                </pre>
+              </div>
+              <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-emerald-950">Deepened authoring flow</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">After</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart TB
+  CATALOG["Deep directive-governance module"] --> NAMES["same 20 external rule names"]
+  CATALOG --> BEHAVIOR["one comment-scan implementation"]
+  CATALOG --> STATE["enabled or intentionally off state"]
+  NAMES --> OXLINT["stable Oxlint plugin interface"]
+  BEHAVIOR --> OXLINT
+  classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
+  class CATALOG deep;
+                </pre>
+              </div>
+            </section>
+            <section aria-labelledby="a-workflow" class="mt-8">
+              <h4 id="a-workflow" class="font-serif text-2xl font-semibold">What changes in daily work</h4>
+              <div class="mt-4 grid gap-5 lg:grid-cols-2">
+                <div class="rounded-2xl border border-rose-200 bg-rose-50 p-6">
+                  <h5 class="font-semibold text-rose-950">Today</h5>
+                  <ol class="mt-3 list-decimal space-y-2 pl-5 leading-7 text-rose-950">
+                    <li>Create a new <code>no-disable-*.ts</code> file.</li>
+                    <li>Repeat the factory call and three data fields.</li>
+                    <li>Import the new constant in the plugin entry.</li>
+                    <li>Register the external rule name in the plugin entry.</li>
+                    <li>Decide whether to add another config entry.</li>
+                    <li>Keep the explicit test catalog synchronized.</li>
+                  </ol>
+                </div>
+                <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                  <h5 class="font-semibold text-emerald-950">After deepening</h5>
+                  <ol class="mt-3 list-decimal space-y-2 pl-5 leading-7 text-emerald-950">
+                    <li>Record the protected rule's policy data in one module.</li>
+                    <li>Derive the same external rule registration from that data.</li>
+                    <li>Record whether the rule is enabled or intentionally registered but off.</li>
+                    <li>Retain the explicit rename-guard test list as an independent contract.</li>
+                  </ol>
+                </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="a-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+              <h4 id="a-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Question:</strong> If the twenty individual files disappear, where does their complexity go?
+              </p>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Answer:</strong> Their unique knowledge is only policy data. It concentrates in one module. No
+                caller needs to learn twenty different behaviors because there are not twenty different behaviors.
+                This is a clean pass.
+              </p>
+            </section>
+
+            <div class="mt-8 grid gap-6 lg:grid-cols-2">
+              <section aria-labelledby="a-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+                <h4 id="a-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Benefits</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
+                  <li><strong>Locality:</strong> protected-rule identity, message, and configured state live together.</li>
+                  <li><strong>Leverage:</strong> one implementation serves every protected rule name.</li>
+                  <li><strong>Drift visibility:</strong> registered-but-off rules become explicit policy decisions.</li>
+                  <li><strong>Test stability:</strong> existing tests can continue using external rule names.</li>
+                </ul>
+              </section>
+              <section aria-labelledby="a-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+                <h4 id="a-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and constraints</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-amber-950">
+                  <li>The twenty external rule names must remain independently configurable.</li>
+                  <li>The explicit <code>BAN_DISABLE_RULES</code> test list should remain independent.</li>
+                  <li>Diagnostics and inline suppression matching must remain byte-for-byte compatible.</li>
+                  <li>This candidate does not absorb unrelated syntax-rule families.</li>
+                </ul>
+              </section>
+            </div>
+
+            <section aria-labelledby="a-open" class="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6">
+              <h4 id="a-open" class="font-serif text-2xl font-semibold text-amber-950">Open decision before implementation</h4>
+              <p class="mt-3 leading-7 text-amber-950">
+                <code>no-disable-max-lines</code> and <code>no-disable-no-misused-promises</code> are registered by the
+                plugin but are not enabled in <code>restriction.ts</code>. The deepened module should record whether
+                this is intentional. The existing planning document already names the same pair, so this is not a new
+                discovery, but the source count has moved from the document's 19 directive rules to 20.
+              </p>
+              <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+                <strong>Sources:</strong>
+                <code>doc/planning/oxlint-plugin-decomposition.md:9-14,98</code>,
+                <code>package/oxlint-plugin/no-restricted-syntax/src/index.ts:125-145</code>, and
+                <code>package/config/oxlint/src/rule/restriction.ts:181-198</code>.
+              </p>
+            </section>
+          </div>
+        </article>
+
+        <article id="candidate-b" class="mt-10 overflow-hidden rounded-3xl border-2 border-emerald-500 bg-white shadow-lg">
+          <header class="bg-slate-950 p-7 text-white sm:p-9">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="max-w-4xl">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Candidate B</p>
+                <h3 class="mt-2 font-serif text-4xl font-semibold">Concentrate plugin deployment identity</h3>
+                <p class="mt-4 text-lg leading-8 text-slate-200">
+                  Keep the real source and built adapters, but stop repeating the same plugin identities across three
+                  TypeScript lists.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="rounded-full bg-emerald-200 px-4 py-2 text-sm font-bold text-emerald-950">Strong</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">in-process</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">Rank 2</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="p-6 sm:p-9">
+            <section aria-labelledby="b-background">
+              <h4 id="b-background" class="font-serif text-2xl font-semibold">Background in plain language</h4>
+              <p class="mt-3 leading-7 text-slate-700">
+                Each custom plugin has one identity, such as <code>test-import</code>. The config package currently
+                repeats that identity in the development entry, the built entry, and the Rolldown build input. It also
+                needs a physical sidecar entry file and a static package dependency.
+              </p>
+              <p class="mt-3 leading-7 text-slate-700">
+                Repetition is not automatically wrong. The source and built paths are genuinely different adapters.
+                What repeats unnecessarily is the inventory of which plugins exist and how each identity maps to those
+                adapters.
+              </p>
+            </section>
+
+            <section aria-labelledby="b-constraint" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+              <h4 id="b-constraint" class="font-serif text-2xl font-semibold text-indigo-950">Why two adapters must remain</h4>
+              <p class="mt-3 leading-7 text-indigo-950">
+                The installed Oxlint version is 1.75.0. Its configuration schema accepts a JavaScript plugin entry as
+                either a path or package-name string, or an object containing <code>name</code> and
+                <code>specifier</code>. It does not accept an in-memory plugin object. The built config must therefore
+                point to actual sidecar files, while development can point to TypeScript source files.
+              </p>
+              <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+                <strong>Installed primary source:</strong>
+                <code>node_modules/oxlint/package.json:3</code> and
+                <code>node_modules/oxlint/configuration_schema.json:10851-10875</code>.
+              </p>
+            </section>
+
+            <section aria-labelledby="b-evidence" class="mt-8">
+              <h4 id="b-evidence" class="font-serif text-2xl font-semibold">Concrete evidence from the last plugin addition</h4>
+              <p class="mt-3 leading-7 text-slate-700">
+                Commit <code>675ee22e3</code> added the test-import plugin to shared config. One plugin identity required
+                hand edits to six config-package files. The lockfile change was generated separately.
+              </p>
+              <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <code class="rounded-lg bg-slate-100 p-3 text-sm">package.json</code>
+                <code class="rounded-lg bg-slate-100 p-3 text-sm">rolldown.node.config.ts</code>
+                <code class="rounded-lg bg-slate-100 p-3 text-sm">src/index.node.ts</code>
+                <code class="rounded-lg bg-slate-100 p-3 text-sm">src/index.ts</code>
+                <code class="rounded-lg bg-slate-100 p-3 text-sm">src/plugin-test-import.ts</code>
+                <code class="rounded-lg bg-slate-100 p-3 text-sm">src/rule/restriction.ts</code>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-slate-600">
+                Only three of these express repeated deployment identity. Package dependency, physical sidecar entry,
+                and rule severity remain separate responsibilities.
+              </p>
+            </section>
+            <section aria-label="Candidate B before and after diagrams" class="candidate-diagram mt-8 grid gap-6 lg:grid-cols-2">
+              <div class="rounded-2xl border border-rose-300 bg-rose-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-rose-950">Current deployment knowledge</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Before</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart TB
+  ID["plugin identity"] --> DEV["development source list"]
+  ID --> BUILT["built sidecar URL list"]
+  ID --> INPUT["Rolldown input list"]
+  DEV -. repeated knowledge .-> BUILT
+  BUILT -. repeated knowledge .-> INPUT
+  INPUT --> FILE["physical sidecar entry"]
+  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  class DEV,BUILT,INPUT leak;
+                </pre>
+              </div>
+              <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-emerald-950">Deepened deployment knowledge</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">After</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart TB
+  REG["Deep plugin deployment module"] --> DEV["source-resolved adapter"]
+  REG --> BUILT["built sidecar adapter"]
+  REG --> INPUT["Rolldown input derivation"]
+  BUILT --> FILE["physical sidecar entries remain"]
+  DEV --> OXLINT["Oxlint"]
+  FILE --> OXLINT
+  classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
+  classDef adapter fill:#ecfdf5,stroke:#059669,stroke-width:2px;
+  class REG deep;
+  class DEV,BUILT adapter;
+                </pre>
+              </div>
+            </section>
+
+            <section aria-labelledby="b-scope" class="mt-8">
+              <h4 id="b-scope" class="font-serif text-2xl font-semibold">Exact scope</h4>
+              <div class="mt-4 grid gap-5 lg:grid-cols-2">
+                <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+                  <h5 class="font-semibold text-emerald-950">Knowledge that can concentrate</h5>
+                  <ul class="mt-3 space-y-2 leading-7 text-emerald-950">
+                    <li>The inventory of plugin identities.</li>
+                    <li>The source package specifier for each plugin.</li>
+                    <li>The sidecar output name for each plugin.</li>
+                    <li>The Rolldown input name derived from the same identity.</li>
+                  </ul>
+                </div>
+                <div class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+                  <h5 class="font-semibold text-amber-950">Responsibilities that must remain separate</h5>
+                  <ul class="mt-3 space-y-2 leading-7 text-amber-950">
+                    <li><code>package.json</code> remains a static dependency declaration.</li>
+                    <li>Each physical <code>plugin-*.ts</code> entry remains a build input.</li>
+                    <li>Rule enablement and severity remain config policy.</li>
+                    <li>Generated lockfile changes remain package-manager output.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="b-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+              <h4 id="b-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Question:</strong> If a shared deployment-identity module is later deleted, what happens?
+              </p>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Answer:</strong> The same identity mapping must reappear in the development entry, built entry,
+                and Rolldown config. The proposed module would therefore concentrate real knowledge used by three
+                callers. The two loading adapters remain separate because they genuinely vary.
+              </p>
+            </section>
+
+            <div class="mt-8 grid gap-6 lg:grid-cols-2">
+              <section aria-labelledby="b-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+                <h4 id="b-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Benefits</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
+                  <li><strong>Locality:</strong> plugin identity is recorded in one TypeScript module.</li>
+                  <li><strong>Leverage:</strong> three representations derive from one inventory.</li>
+                  <li><strong>Parity:</strong> tests can prove source, built, and build-input sets agree.</li>
+                  <li><strong>Future additions:</strong> fewer repeated hand edits can drift.</li>
+                </ul>
+              </section>
+              <section aria-labelledby="b-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+                <h4 id="b-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and constraints</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-amber-950">
+                  <li>The registry must be inlined at build time, not become a runtime dependency.</li>
+                  <li>Separate sidecars and plugin namespaces from issue 238 remain invariant.</li>
+                  <li>Static package dependencies still require an explicit edit.</li>
+                  <li>A physical entry file still exists for every sidecar.</li>
+                </ul>
+              </section>
+            </div>
+
+            <section aria-labelledby="b-drift" class="mt-8 rounded-2xl border border-rose-300 bg-rose-50 p-6">
+              <h4 id="b-drift" class="font-serif text-2xl font-semibold text-rose-950">Existing drift that demonstrates the friction</h4>
+              <p class="mt-3 leading-7 text-rose-950">
+                <code>src/index.node.ts</code> says the sidecars are emitted by <code>tsdown.node.config.ts</code>, but the
+                current build file is <code>rolldown.node.config.ts</code>. This stale comment is not itself the
+                architectural problem. It is concrete evidence that deployment knowledge is repeated and can diverge.
+              </p>
+              <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+                <strong>Sources:</strong>
+                <code>package/config/oxlint/src/index.node.ts:4-5,21-49</code> and
+                <code>package/config/oxlint/rolldown.node.config.ts:17-25</code>.
+              </p>
+            </section>
+          </div>
+        </article>
+
+        <article id="candidate-c" class="mt-10 overflow-hidden rounded-3xl border-2 border-amber-500 bg-white shadow-lg">
+          <header class="bg-amber-950 p-7 text-white sm:p-9">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="max-w-4xl">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Candidate C</p>
+                <h3 class="mt-2 font-serif text-4xl font-semibold">Test test-import through its rule interface</h3>
+                <p class="mt-4 text-lg leading-8 text-amber-100">
+                  Move observable helper behavior into end-to-end rule scenarios so the built package entry no longer
+                  needs to expose every classifier and path helper solely for tests.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="rounded-full bg-amber-200 px-4 py-2 text-sm font-bold text-amber-950">Worth exploring</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">local-substitutable</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">Rank 3</span>
+              </div>
+            </div>
+          </header>
+          <div class="p-6 sm:p-9">
+            <section aria-labelledby="c-background">
+              <h4 id="c-background" class="font-serif text-2xl font-semibold">Background in plain language</h4>
+              <p class="mt-3 leading-7 text-slate-700">
+                The test-import plugin's built entry has two audiences. Production config imports the default plugin.
+                The package's own tests import named classifiers and path helpers from the same built entry. The source
+                explicitly marks those named exports <code>@internal</code> and says they exist so tests can obey the
+                package's own built-artifact rule.
+              </p>
+              <p class="mt-3 leading-7 text-slate-700">
+                This is an intentional design, not accidental leakage. The question is whether behavior that users
+                observe through diagnostics should be tested through the rule interface instead of through each helper
+                interface.
+              </p>
+              <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+                <strong>Primary source:</strong>
+                <code>package/oxlint-plugin/test-import/src/index.ts:3-8</code> documents why the named exports exist.
+              </p>
+            </section>
+
+            <section aria-labelledby="c-evidence" class="mt-8">
+              <h4 id="c-evidence" class="font-serif text-2xl font-semibold">Verified evidence</h4>
+              <div class="mt-4 grid gap-4 md:grid-cols-3">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">8</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">helper-focused test files importing the built entry</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">1</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">existing end-to-end rule suite</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">0</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">non-test named-export consumers found inside this monorepo</p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-slate-600">
+                The zero-consumer result is scoped to a repository search. The package is publishable, so this search
+                cannot prove that no external installation imports a named export. The <code>@internal</code> contract,
+                not the search alone, is what permits narrowing.
+              </p>
+            </section>
+
+            <section aria-label="Candidate C before and after diagrams" class="candidate-diagram mt-8 grid gap-6 lg:grid-cols-2">
+              <div class="rounded-2xl border border-rose-300 bg-rose-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-rose-950">Current test surface</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Before</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart LR
+  TESTS["8 helper test files"] --> ENTRY["built package entry"]
+  ENTRY --> GLOB["glob matcher"]
+  ENTRY --> MANIFEST["manifest parser"]
+  ENTRY --> OWNER["owning package lookup"]
+  ENTRY --> CLASSIFY["import classifier"]
+  RULE["1 rule-level suite"] --> PLUGIN["default plugin"]
+  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  class ENTRY,GLOB,MANIFEST,OWNER,CLASSIFY leak;
+                </pre>
+              </div>
+              <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-emerald-950">Deepened test surface</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">After</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart LR
+  SCENARIOS["rule scenarios in disposable packages"] --> PLUGIN["default plugin interface"]
+  PLUGIN --> INTERNALS["classification implementation"]
+  INTERNALS --> GLOB["glob matcher stays internal"]
+  INTERNALS --> MANIFEST["manifest parsing stays internal"]
+  classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
+  class PLUGIN deep;
+                </pre>
+              </div>
+            </section>
+
+            <section aria-labelledby="c-examples" class="mt-8">
+              <h4 id="c-examples" class="font-serif text-2xl font-semibold">What rule-level scenarios can observe</h4>
+              <div class="mt-4 grid gap-4 md:grid-cols-2">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="font-semibold">Manifest and artifact behavior</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    A fixture package can declare a built entry, import source from a test, and assert that the rule
+                    reports the import. It can also prove that source-pointing entries do not count as artifacts.
+                  </p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="font-semibold">Build-task behavior</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    A disposable package can omit a build task and prove that the rule remains silent, then add a build
+                    task and prove that enforcement activates.
+                  </p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="font-semibold">Path normalization behavior</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    Imports containing traversal segments can prove that a path merely resembling
+                    <code>dist/final</code> is still rejected after normalization.
+                  </p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="font-semibold">Fixture allowlist behavior</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-700">
+                    A test-support module can re-export source and prove that the rule catches this laundering path.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="c-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+              <h4 id="c-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Question:</strong> If helper exports leave the built package entry, does their behavior vanish?
+              </p>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Answer:</strong> No. The behavior concentrates behind the rule and remains observable through
+                diagnostics in disposable packages. The deletion test appears to pass for these helpers, but each
+                focused test must first be mapped to an equivalent rule scenario.
+              </p>
+            </section>
+
+            <div class="mt-8 grid gap-6 lg:grid-cols-2">
+              <section aria-labelledby="c-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+                <h4 id="c-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Benefits</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
+                  <li><strong>Locality:</strong> tests describe rule behavior, not helper arrangement.</li>
+                  <li><strong>Leverage:</strong> one scenario crosses parsing, package lookup, and classification.</li>
+                  <li><strong>Interface depth:</strong> the built entry stops mirroring helper structure.</li>
+                  <li><strong>Refactor survival:</strong> tests can survive internal file movement.</li>
+                </ul>
+              </section>
+              <section aria-labelledby="c-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+                <h4 id="c-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and preconditions</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-amber-950">
+                  <li>Rule scenarios spawn local Oxlint processes and use more fixture setup.</li>
+                  <li>Every helper test needs an explicit scenario replacement before deletion.</li>
+                  <li>Failure messages may be less local than direct helper assertions.</li>
+                  <li>The package's own built-artifact testing law must continue to hold.</li>
+                </ul>
+              </section>
+            </div>
+            <p class="source-citation mt-8 rounded-r-lg p-5 text-sm leading-6 text-indigo-950">
+              <strong>Existing test seam:</strong>
+              <code>package/oxlint-plugin/test-import/src/oxlint-test-import.unit.test.ts:73</code> begins the current
+              end-to-end suite; eight sibling test files import helper behavior from built output.
+            </p>
+          </div>
+        </article>
+
+        <article id="candidate-d" class="mt-10 overflow-hidden rounded-3xl border-2 border-slate-400 bg-white shadow-lg">
+          <header class="bg-slate-800 p-7 text-white sm:p-9">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="max-w-4xl">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-300">Candidate D</p>
+                <h3 class="mt-2 font-serif text-4xl font-semibold">Narrow prefer-readonly test probes selectively</h3>
+                <p class="mt-4 text-lg leading-8 text-slate-200">
+                  Replace only those internal built-entry probes whose behavior can be proven through the readonly
+                  rule's diagnostics. Keep probes for cache, authority, and performance facts that diagnostics cannot
+                  reveal.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="rounded-full bg-slate-200 px-4 py-2 text-sm font-bold text-slate-900">Speculative</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">local-substitutable</span>
+                <span class="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold">Rank 4</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="p-6 sm:p-9">
+            <section aria-labelledby="d-background">
+              <h4 id="d-background" class="font-serif text-2xl font-semibold">Why this is separate from Candidate C</h4>
+              <p class="mt-3 leading-7 text-slate-700">
+                The prefer-readonly plugin is a semantic analyzer with caches, authority data, branded effect slots,
+                a TypeScript bridge, and cross-file summaries. Some tests inspect observable diagnostics. Other tests
+                inspect internal facts such as cache statistics or the exact number of verified standard-library
+                readers. Those facts do not necessarily change a diagnostic.
+              </p>
+              <p class="mt-3 leading-7 text-slate-700">
+                Treating all 17 built-entry test files as replaceable would be inaccurate. Candidate D asks for a
+                per-test observability audit, not a wholesale interface reduction.
+              </p>
+            </section>
+
+            <section aria-labelledby="d-evidence" class="mt-8">
+              <h4 id="d-evidence" class="font-serif text-2xl font-semibold">Verified evidence</h4>
+              <div class="mt-4 grid gap-4 md:grid-cols-3">
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">17</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">test files importing the built entry</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">137</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">production files behind one rule</p>
+                </div>
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <p class="text-3xl font-semibold">0</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-600">non-test named-export consumers found in this monorepo</p>
+                </div>
+              </div>
+              <p class="mt-4 text-sm leading-6 text-slate-600">
+                As with Candidate C, the consumer search is repository-scoped. The package is publishable, so external
+                use is not measurable from this working tree.
+              </p>
+            </section>
+
+            <section aria-label="Candidate D current and selective future diagrams" class="candidate-diagram mt-8 grid gap-6 lg:grid-cols-2">
+              <div class="rounded-2xl border border-rose-300 bg-rose-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-rose-950">Current built entry</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Before</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart TB
+  TESTS["17 built-entry test files"] --> ENTRY["published plugin entry"]
+  ENTRY --> PLUGIN["default readonly rule"]
+  ENTRY --> SUMMARIES["effect summary functions"]
+  ENTRY --> CACHE["cache stats and clear hooks"]
+  ENTRY --> AUTH["authority constants"]
+  ENTRY --> HELPERS["slot and path helpers"]
+  classDef leak fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+  class ENTRY,SUMMARIES,CACHE,AUTH,HELPERS leak;
+                </pre>
+              </div>
+              <div class="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="font-semibold text-emerald-950">Selective deepening</h4>
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">Possible after</span>
+                </div>
+                <pre class="mermaid mt-4">
+flowchart TB
+  SCENARIOS["diagnostic scenarios"] --> PLUGIN["default readonly rule interface"]
+  PROBES["irreducible internal probes"] --> CACHE["cache and lifecycle facts"]
+  PROBES --> AUTH["authority registration facts"]
+  PLUGIN --> ENGINE["semantic implementation"]
+  CACHE --> ENGINE
+  AUTH --> ENGINE
+  classDef deep fill:#172033,color:#fff,stroke:#0f172a,stroke-width:4px;
+  class PLUGIN deep;
+                </pre>
+              </div>
+            </section>
+
+            <section aria-labelledby="d-mutant" class="mt-8 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6">
+              <h4 id="d-mutant" class="font-serif text-2xl font-semibold text-amber-950">Why removal needs a mutant gate</h4>
+              <p class="mt-3 leading-7 text-amber-950">
+                The package entry documents one precise history: a mutant that restored incorrect formal-to-actual
+                argument indexing survived the whole suite. The package therefore exports
+                <code>formalArgumentIndexes</code> for a direct built-artifact test. A mutant is an intentional code
+                change used to check whether tests detect the wrong behavior.
+              </p>
+              <p class="mt-3 leading-7 text-amber-950">
+                That export may leave the interface only after a rule-level fixture reproduces the spread-argument case
+                and demonstrably kills the same mutant. Similar traceability is required for every proposed deletion.
+              </p>
+              <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+                <strong>Primary source:</strong>
+                <code>package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts:111-123</code> records the escaped
+                mutant and why the test export exists.
+              </p>
+            </section>
+
+            <section aria-labelledby="d-deletion" class="mt-8 rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-6">
+              <h4 id="d-deletion" class="font-serif text-2xl font-semibold text-indigo-950">Deletion test</h4>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Observable diagnostic helpers:</strong> deletion can concentrate behavior behind the rule if a
+                scenario proves the same outcome.
+              </p>
+              <p class="mt-3 leading-7 text-indigo-950">
+                <strong>Cache, authority, and performance probes:</strong> deletion can remove test observability rather
+                than concentrate complexity. Those probes fail the test unless another reliable surface exists. This
+                mixed result is why Candidate D is speculative.
+              </p>
+            </section>
+
+            <div class="mt-8 grid gap-6 lg:grid-cols-2">
+              <section aria-labelledby="d-benefits" class="rounded-2xl border border-emerald-300 bg-emerald-50 p-6">
+                <h4 id="d-benefits" class="font-serif text-2xl font-semibold text-emerald-950">Potential benefits</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-emerald-950">
+                  <li>Rule-level regressions cover orchestration rather than isolated helpers.</li>
+                  <li>The published interface can stop growing for replaceable probes.</li>
+                  <li>Tests for observable behavior survive internal file movement.</li>
+                </ul>
+              </section>
+              <section aria-labelledby="d-costs" class="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+                <h4 id="d-costs" class="font-serif text-2xl font-semibold text-amber-950">Costs and stop conditions</h4>
+                <ul class="mt-4 space-y-3 leading-7 text-amber-950">
+                  <li>Keep any probe whose fact cannot be observed through diagnostics.</li>
+                  <li>Keep any probe until its historical mutant is killed elsewhere.</li>
+                  <li>Do not weaken cache, lifecycle, authority, or performance verification.</li>
+                  <li>Do not import source from tests as an escape from the artifact policy.</li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="not-proposed" aria-labelledby="not-proposed-heading" class="mt-16">
+        <div class="max-w-4xl">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Ideas examined but not recommended</p>
+          <h2 id="not-proposed-heading" class="mt-2 font-serif text-4xl font-semibold">Why obvious-looking refactors were excluded</h2>
+          <p class="mt-5 text-lg leading-8 text-slate-700">
+            A useful audit states what it rejected. Otherwise a reader cannot tell whether an omission was deliberate
+            or merely overlooked.
+          </p>
+        </div>
+
+        <div class="mt-7 grid gap-6 lg:grid-cols-2">
+          <article class="rounded-2xl border border-slate-300 bg-white p-7 shadow-sm">
+            <h3 class="font-serif text-2xl font-semibold">Do not collapse the entire readonly analyzer</h3>
+            <p class="mt-4 leading-7 text-slate-700">
+              The prefer-readonly plugin has 137 production files, but those files collectively form one large
+              implementation behind a rule interface and an effect-summary interface. Deleting focused effect files
+              would move the same semantic complexity into larger files. It would not concentrate knowledge.
+            </p>
+            <p class="mt-4 leading-7 text-slate-700">
+              The implementation plan also explicitly chose focused sibling modules for the host rule, semantic
+              adapter, readonly classifier, effect summaries, TSDoc effect lookup, and suggestions.
+            </p>
+            <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+              <strong>Source:</strong>
+              <code>doc/planning/replace-prefer-readonly-parameter-types.md:955-969</code>.
+            </p>
+          </article>
+
+          <article class="rounded-2xl border border-slate-300 bg-white p-7 shadow-sm">
+            <h3 class="font-serif text-2xl font-semibold">Do not merge all plugin sidecars or namespaces</h3>
+            <p class="mt-4 leading-7 text-slate-700">
+              The built config uses separate sidecars because Oxlint registers a plugin namespace from each loaded
+              plugin. Merging files would force rule-name migration or lose independent namespaces. Issue 238 measured
+              a merged-sidecar prototype and found no clear runtime justification for that migration.
+            </p>
+            <p class="mt-4 leading-7 text-slate-700">
+              Candidate B preserves the separate sidecars. It concentrates only the repeated inventory that feeds them.
+            </p>
+            <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+              <strong>Sources:</strong> repository issue 238 and
+              <code>package/config/oxlint/src/index.node.ts:26-49</code>.
+            </p>
+          </article>
+
+          <article class="rounded-2xl border border-slate-300 bg-white p-7 shadow-sm">
+            <h3 class="font-serif text-2xl font-semibold">Do not generalize Candidate A to every rule factory</h3>
+            <p class="mt-4 leading-7 text-slate-700">
+              The method-call factory has three consumers and may offer a smaller later cleanup. The simple-ban factory
+              has seven consumers, but it permits rule-specific predicates. For example,
+              <code>no-nullish-union</code> defines custom <code>shouldReport</code> behavior. These families are not as
+              uniformly data-only as directive governance.
+            </p>
+            <p class="mt-4 leading-7 text-slate-700">
+              Candidate A stays narrow because all twenty files passed the same structural uniformity check.
+            </p>
+            <p class="source-citation mt-4 rounded-r-lg p-4 text-sm leading-6 text-indigo-950">
+              <strong>Sources:</strong>
+              <code>package/oxlint-plugin/no-restricted-syntax/src/rule/_simple-ban-rule.ts:71-123</code> and
+              <code>package/oxlint-plugin/no-restricted-syntax/src/rule/no-nullish-union.ts:133-145</code>.
+            </p>
+          </article>
+
+          <article class="rounded-2xl border border-slate-300 bg-white p-7 shadow-sm">
+            <h3 class="font-serif text-2xl font-semibold">Do not treat the current test exports as accidental</h3>
+            <p class="mt-4 leading-7 text-slate-700">
+              Candidates C and D revisit deliberate choices. The test-import entry explicitly says internal exports
+              exist so tests can exercise built output. The readonly entry records focused probes added because broader
+              scenarios missed defects or mutants.
+            </p>
+            <p class="mt-4 leading-7 text-slate-700">
+              Any narrowing must replace evidence before removing its current seam. “Fewer exports” is not a goal that
+              outranks regression detection.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="ranking" aria-labelledby="ranking-heading" class="mt-16 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Comparison and ranking</p>
+        <h2 id="ranking-heading" class="mt-2 font-serif text-4xl font-semibold">Which candidate should go first</h2>
+        <div class="mt-8 space-y-5">
+          <article class="grid gap-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 p-6 lg:grid-cols-[auto_1fr]">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-700 text-2xl font-bold text-white">1</div>
+            <div>
+              <h3 class="text-2xl font-semibold text-emerald-950">Collapse directive governance</h3>
+              <p class="mt-2 leading-7 text-emerald-950">
+                Best deletion test, uniform source shape, stable external rule names, and existing tests can remain at
+                the plugin interface. The only prerequisite is confirming the intended state of two registered-but-off
+                rules.
+              </p>
+            </div>
+          </article>
+          <article class="grid gap-5 rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-6 lg:grid-cols-[auto_1fr]">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl font-bold text-white">2</div>
+            <div>
+              <h3 class="text-2xl font-semibold text-emerald-950">Concentrate plugin deployment identity</h3>
+              <p class="mt-2 leading-7 text-emerald-950">
+                Real seam with two adapters and commit-backed friction. It ranks after Candidate A because physical
+                sidecar entries and static dependencies remain, and build behavior needs parity verification.
+              </p>
+            </div>
+          </article>
+          <article class="grid gap-5 rounded-2xl border-2 border-amber-400 bg-amber-50 p-6 lg:grid-cols-[auto_1fr]">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-amber-600 text-2xl font-bold text-white">3</div>
+            <div>
+              <h3 class="text-2xl font-semibold text-amber-950">Test test-import through its rule interface</h3>
+              <p class="mt-2 leading-7 text-amber-950">
+                Its helpers produce outcomes visible through diagnostics, so deepening is plausible. It ranks after
+                Candidate B because every focused test needs a more expensive disposable-package scenario before its
+                export can leave the interface.
+              </p>
+            </div>
+          </article>
+          <article class="grid gap-5 rounded-2xl border-2 border-slate-400 bg-slate-100 p-6 lg:grid-cols-[auto_1fr]">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-slate-700 text-2xl font-bold text-white">4</div>
+            <div>
+              <h3 class="text-2xl font-semibold">Narrow prefer-readonly test probes selectively</h3>
+              <p class="mt-2 leading-7 text-slate-700">
+                Some probes may move behind the rule interface, but cache and authority facts may have no equivalent
+                diagnostic surface. It ranks last because deletion is conditional and past mutants prove the risk.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <div class="mt-8 rounded-2xl border border-indigo-300 bg-indigo-50 p-6">
+          <h3 class="font-serif text-2xl font-semibold text-indigo-950">Adjacent ranking reasons</h3>
+          <ul class="mt-4 space-y-3 leading-7 text-indigo-950">
+            <li><strong>A over B:</strong> A collapses uniformly data-only modules without crossing build adapters.</li>
+            <li><strong>B over C:</strong> B has a proven recurring edit pattern; C first needs per-test scenario replacement.</li>
+            <li><strong>C over D:</strong> C's helper outcomes are visible through diagnostics; D includes facts diagnostics cannot expose.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="decision" aria-labelledby="decision-heading" class="mt-16 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+        <article class="rounded-3xl border-2 border-indigo-700 bg-indigo-950 p-7 text-white shadow-lg sm:p-10">
+          <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300">Decision guide</p>
+          <h2 id="decision-heading" class="mt-2 font-serif text-4xl font-semibold">What happens after you choose</h2>
+          <ol class="mt-6 space-y-5 leading-7 text-indigo-100">
+            <li>
+              <strong class="text-white">Clarify constraints.</strong>
+              Identify behavior that must not change, deployment assumptions, performance requirements, and external
+              rule names that remain invariant.
+            </li>
+            <li>
+              <strong class="text-white">Apply the deletion test in detail.</strong>
+              Trace every caller and test to prove knowledge concentrates instead of moving elsewhere.
+            </li>
+            <li>
+              <strong class="text-white">Design the deepened module more than one way.</strong>
+              Compare alternatives on interface size, depth, seam placement, leverage, locality, and test survival.
+            </li>
+            <li>
+              <strong class="text-white">Choose tests before implementation.</strong>
+              State which tests remain, which are replaced, and what regression each one protects.
+            </li>
+            <li>
+              <strong class="text-white">Only then authorize code changes.</strong>
+              This report is an architecture audit, not an implementation decision.
+            </li>
+          </ol>
+          <p class="mt-7 text-xl font-semibold text-white">Which candidate would you like to explore?</p>
+        </article>
+
+        <aside class="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+          <h2 class="font-serif text-3xl font-semibold">Fast choice</h2>
+          <div class="mt-5 space-y-4">
+            <a class="block rounded-xl border-2 border-emerald-500 bg-emerald-50 p-5 hover:bg-emerald-100" href="#candidate-a">
+              <span class="font-semibold text-emerald-950">Choose A</span>
+              <span class="mt-1 block text-sm leading-6 text-emerald-900">Lowest uncertainty and strongest locality gain.</span>
+            </a>
+            <a class="block rounded-xl border-2 border-emerald-400 bg-emerald-50 p-5 hover:bg-emerald-100" href="#candidate-b">
+              <span class="font-semibold text-emerald-950">Choose B</span>
+              <span class="mt-1 block text-sm leading-6 text-emerald-900">Reduce recurring config deployment drift.</span>
+            </a>
+            <a class="block rounded-xl border-2 border-amber-400 bg-amber-50 p-5 hover:bg-amber-100" href="#candidate-c">
+              <span class="font-semibold text-amber-950">Choose C</span>
+              <span class="mt-1 block text-sm leading-6 text-amber-900">Deepen the artifact-rule test surface.</span>
+            </a>
+            <a class="block rounded-xl border-2 border-slate-400 bg-slate-100 p-5 hover:bg-slate-200" href="#candidate-d">
+              <span class="font-semibold text-slate-900">Choose D</span>
+              <span class="mt-1 block text-sm leading-6 text-slate-700">Audit readonly probes without promising removal.</span>
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <section id="sources" aria-labelledby="sources-heading" class="mt-16 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-indigo-700">Evidence appendix</p>
+        <h2 id="sources-heading" class="mt-2 font-serif text-4xl font-semibold">Primary sources and measurements</h2>
+        <p class="mt-5 max-w-5xl leading-7 text-slate-700">
+          All repository paths are relative to <code>/var/home/user/Monochromatic</code>. Line references match commit
+          <code>87d0dcd3662a</code>. Counts were measured from the working tree at that commit.
+        </p>
+
+        <div class="mt-7 grid gap-5 lg:grid-cols-2">
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 class="text-xl font-semibold">System and config</h3>
+            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              <li><code>oxlint.config.ts:17-23</code>: root config imports and spreads shared config.</li>
+              <li><code>package/config/oxlint/src/index.ts:34-55</code>: development plugin source paths.</li>
+              <li><code>package/config/oxlint/src/index.node.ts:26-49</code>: built sidecar URLs.</li>
+              <li><code>package/config/oxlint/rolldown.node.config.ts:17-25</code>: sidecar build inputs.</li>
+              <li><code>node_modules/oxlint/configuration_schema.json:10851-10875</code>: current plugin entry schema.</li>
+            </ul>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 class="text-xl font-semibold">Directive governance</h3>
+            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              <li><code>package/oxlint-plugin/no-restricted-syntax/src/rule/_ban-disable-factory.ts:58-111</code>.</li>
+              <li><code>package/oxlint-plugin/no-restricted-syntax/src/rule/no-disable-*.ts</code>.</li>
+              <li><code>package/oxlint-plugin/no-restricted-syntax/src/index.ts:125-145</code>.</li>
+              <li><code>package/config/oxlint/src/rule/restriction.ts:181-198</code>.</li>
+              <li><code>package/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts:279-330</code>.</li>
+              <li><code>doc/planning/oxlint-plugin-decomposition.md:9-14,98</code>.</li>
+            </ul>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 class="text-xl font-semibold">Artifact testing</h3>
+            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              <li><code>package/oxlint-plugin/test-import/README.md:3-14</code>: why built artifacts matter.</li>
+              <li><code>package/oxlint-plugin/test-import/src/index.ts:3-8</code>: deliberate internal exports.</li>
+              <li><code>package/oxlint-plugin/test-import/src/oxlint-test-import.unit.test.ts:73-160</code>.</li>
+              <li><code>package/oxlint-plugin/test-import/src/*.unit.test.ts</code>: helper-focused built tests.</li>
+            </ul>
+          </article>
+          <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 class="text-xl font-semibold">Readonly analyzer testing</h3>
+            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              <li><code>package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts:10-65</code>: named exports.</li>
+              <li><code>package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts:101-153</code>: internal probes.</li>
+              <li><code>package/oxlint-plugin/prefer-readonly-parameter-type/src/index.ts:111-123</code>: mutant rationale.</li>
+              <li><code>doc/planning/replace-prefer-readonly-parameter-types.md:955-969</code>: focused sibling decision.</li>
+            </ul>
+          </article>
+        </div>
+
+        <article class="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-6">
+          <h3 class="text-xl font-semibold text-indigo-950">Measurement notes</h3>
+          <ul class="mt-4 space-y-3 leading-7 text-indigo-950">
+            <li>Production file counts include <code>.ts</code> files and exclude paths ending in <code>.test.ts</code>.</li>
+            <li>Physical line counts include source, comments, blank lines, and embedded documentation.</li>
+            <li>Registered rule counts come from each plugin's <code>rules</code> object.</li>
+            <li>The named-export consumer search covered this monorepo and excluded package tests and config default adapters.</li>
+            <li>The report uses Tailwind and Mermaid from CDNs, so first rendering requires network access.</li>
+          </ul>
+        </article>
+      </section>
+
+      <footer class="mt-12 border-t border-slate-300 py-8 text-sm leading-6 text-slate-600">
+        <p>
+          Report file: <code>doc/audit/oxlint-rule-architecture-review.html</code>.
+          This audit changes no production code and proposes no concrete interfaces.
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
