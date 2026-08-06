@@ -111,8 +111,17 @@ await describe({
           corpusSha: 'sha/1',
         },);
 
+        /**
+         * Manifest text exactly as the draw writes it beside the sheets.
+         *
+         * Serialized and re-read rather than cloned, for the same reason the
+         * provenance suite is: the file is the boundary under test, and a deep
+         * clone would keep what a file drops.
+         */
+        const onDisk = JSON.stringify(built,);
+
         expect(
-          parseSampleManifest({ value: JSON.parse(JSON.stringify(built,),), },),
+          parseSampleManifest({ value: JSON.parse(onDisk,), },),
         ).toEqual(built,);
       },
     },),
