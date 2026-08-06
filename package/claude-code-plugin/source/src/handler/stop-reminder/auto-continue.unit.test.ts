@@ -15,6 +15,43 @@ import {
 import { stopRemindersHandler, } from './index.ts';
 
 /**
+ * Scoped kill-switch override that restores the prior environment on scope exit.
+ *
+ * The handler reads the kill switch from this process, so the disabled branch is
+ * only reachable by setting the variable. Disposal restores exactly what was
+ * there, including absence, so sibling tests observe an unchanged environment.
+ *
+ * @param value - kill-switch value applied for enclosing scope
+ *
+ * @returns disposable carrying applied value, restoring prior state when disposed
+ *
+ * @example
+ * ```ts
+ * using killSwitch = killSwitchSetTo('off');
+ * ```
+ */
+function killSwitchSetTo(value: string,): Disposable & { readonly value: string; } {
+  /**
+   * Value present before the override, restored verbatim on disposal.
+   */
+  const restore = process.env[AUTO_CONTINUE_ENV];
+
+  process.env[AUTO_CONTINUE_ENV] = value;
+
+  return {
+    value,
+    [Symbol.dispose]: (): void => {
+      if (restore === undefined) {
+        // oxlint-disable-next-line eslint/no-dynamic-delete -- restoring absence requires removing the key; blanking it would leave a different observable state
+        delete process.env[AUTO_CONTINUE_ENV];
+        return;
+      }
+      process.env[AUTO_CONTINUE_ENV] = restore;
+    },
+  };
+}
+
+/**
  * Fields a test varies on the built stop event; anything omitted keeps its default.
  */
 type StopEventOverrides = {
@@ -145,6 +182,37 @@ await describe({
             expect(
               stopRemindersHandler(stopEvent({ last_assistant_message: 'This probably works.', },),).reason,
             ).toContain('uncertain language',);
+          },
+        },),
+        it({
+          name: 'allows a clean stop once the kill switch disables forced continuation',
+          fn: async () => {
+            using killSwitch = killSwitchSetTo('off',);
+            /**
+             * Handler result while forced continuation is disabled; the clean message
+             * trips no response-quality detector, so nothing should block.
+             */
+            const output = stopRemindersHandler(stopEvent(),);
+
+            expect(killSwitch.value,).toBe('off',);
+            expect(output,).toEqual({},);
+          },
+        },),
+        it({
+          name: 'still reports hedging while the kill switch is set',
+          fn: async () => {
+            using killSwitch = killSwitchSetTo('off',);
+            /**
+             * Handler result for a hedged message; the kill switch must silence forced
+             * continuation only, leaving the response-quality detectors in force.
+             */
+            const output = stopRemindersHandler(
+              stopEvent({ last_assistant_message: 'This probably works.', },),
+            );
+
+            expect(killSwitch.value,).toBe('off',);
+            expect(output.decision,).toBe('block',);
+            expect(output.reason,).toContain('uncertain language',);
           },
         },),
         it({
