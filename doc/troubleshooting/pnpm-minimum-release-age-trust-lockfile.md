@@ -1,4 +1,4 @@
-# pnpm strict `minimumReleaseAge` rejects immature packages in non-interactive installs
+# pnpm 11.5.1 to 11.15.1 strict `minimumReleaseAge` rejects immature packages in non-interactive installs
 
 ## Symptom
 
@@ -25,6 +25,19 @@ The install succeeded with:
 ```bash
 env PNPM_CONFIG_TRUST_LOCKFILE=true mise run prepare:pnpm:install
 ```
+
+### Cached success verdict
+
+pnpm 11.15.1 can report a successful cached verdict:
+
+```text
+✓ Lockfile passes supply-chain policies (verified 4d ago)
+```
+
+This does not mean pnpm checked different lockfile content four days ago.
+The age describes a successful verdict for the same parsed lockfile content under policy
+that every current verifier considers sufficient.
+The current install still checks the lockfile identity and active policy before reusing that verdict.
 
 ### Fresh resolution without a lockfile
 
@@ -127,14 +140,109 @@ if (!willDelegateToPacquet && !opts2.trustLockfile) {
     await verifyLockfileResolutions(ctx.wantedLockfile, opts2.resolutionVerifiers, {
 ```
 
+### Why an older cached verdict still verifies current content
+
+Source audit used pnpm tag `v11.15.1`, commit `331c26aa4bb8c12a2ce64ca989a9e3a73b571340`.
+`pnpm11/installing/deps-installer/src/install/verifyLockfileResolutionsCache.ts:17-32`
+defines parsed lockfile content as primary key and path metadata as shortcut:
+
+```typescript
+/**
+ * On-disk cache of verifyLockfileResolutions results, keyed by lockfile
+ * content hash. Lets repeat installs against an unchanged lockfile skip
+ * the per-package registry round trips entirely — including across git
+ * worktrees, where the same lockfile content lives at different paths.
+ *
+ * Two indexes share the same JSONL records:
+ *
+ * - **by content hash** — the primary index. Recognizing the same
+ *   lockfile content regardless of where it sits on disk is what makes
+ *   worktrees and lockfile copies hit.
+ * - **by absolute path** — a same-machine stat shortcut.
+ */
+```
+
+`pnpm11/installing/deps-installer/src/install/verifyLockfileResolutionsCache.ts:275-304`
+shows that a stat miss hashes current content and accepts the cached record only when every active verifier
+trusts cached policy:
+
+```typescript
+hash = key.hashLockfile()
+const byHashRecord = indexes.byHash.get(hash)
+if (!byHashRecord) return { hit: false, precomputed: { stat, hash } }
+if (!everyVerifierTrustsCachedRun(byHashRecord, key.verifiers)) {
+  return { hit: false, precomputed: { stat, hash } }
+}
+
+function everyVerifierTrustsCachedRun (record: CacheRecord, verifiers: readonly VerifierCacheIdentity[]): boolean {
+  for (const verifier of verifiers) {
+    if (!verifier.canTrustPastCheck(record.policy)) return false
+  }
+  return true
+}
+```
+
+`pnpm11/installing/deps-installer/src/install/verifyLockfileResolutions.ts:133-157`
+hashes parsed in-memory lockfile and emits cached verdict only after lookup succeeds:
+
+```typescript
+const hashLockfile = (): string => {
+  if (cachedHash == null) cachedHash = hashObject(lockfile)
+  return cachedHash
+}
+// ...
+if (result.hit) {
+  lockfileVerificationLogger.debug({
+    status: 'cached',
+    verifiedAt: result.verifiedAt,
+    lockfilePath: options?.lockfilePath,
+  })
+  return
+}
+```
+
+Finally,
+`pnpm11/cli/default-reporter/src/reporterForClient/reportLockfileVerification.ts:32-35`
+renders cache timestamp as successful policy result:
+
+```typescript
+if (log.status === 'cached') {
+  return {
+    msg: `${chalk.green('✓')} Lockfile${path_} passes supply-chain policies (${formatCachedVerdict(log.verifiedAt)})`,
+  }
+}
+```
+
+An earlier concern that `verified 4d ago` meant newly introduced tarballs escaped current lockfile identity checking was wrong.
+The source proves cache reuse requires same parsed lockfile content and acceptable cached policy.
+
 ## Verification
 
-Version under test:
+Versions under test:
 
 ```bash
 mise exec -- pnpm --version
-# 11.5.1
+# 11.5.1 in original reproduction
+# 11.15.1 in cached-verdict reproduction
 ```
+
+Cached-verdict pattern:
+
+```bash
+mise run prepare:pnpm:install
+# ✓ Lockfile passes supply-chain policies (verified 4d ago)
+```
+
+A disposable worktree containing identical lockfile content also reused the record by content hash:
+
+```bash
+pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
+# ✓ Lockfile passes supply-chain policies (verified 8m ago)
+```
+
+Both installs completed.
+The second command used a different absolute path,
+so the source-defined content-hash lookup rather than same-path stat shortcut explains the cache hit.
 
 Failure pattern:
 
@@ -224,33 +332,44 @@ throw new PnpmError("STRICT_MIN_RELEASE_AGE_REQUIRES_SAVE", "minimumReleaseAgeSt
 });
 ```
 
-## Draft upstream issue
+## Upstream filing decision
 
-Do not file as-is.
+No entry in `.out-of-scope/` covers pnpm or lockfile verification.
 
-### Why this is not filed upstream
+Searches covered open and closed pnpm issues and pull requests for
+`minimumReleaseAge`,
+`trustLockfile`,
+and lockfile verification cache behavior.
+[pnpm issue 12324](https://github.com/pnpm/pnpm/issues/12324)
+asked whether an update with `trustLockfile` had checked policy because it completed without output.
+A maintainer explained that same-lockfile verification can reuse cached results.
+[pnpm pull request 12326](https://github.com/pnpm/pnpm/pull/12326)
+then added the visible cached-verdict message reproduced here.
 
-1.  Is it really upstream's fault?
-     No. pnpm is enforcing configured release-age policy in a non-interactive session.
-2.  Can upstream fix it?
-     Not applicable because the observed behavior is the intended policy path.
-3.  Are they supporting this use case?
-     Yes.
-     The error hint names the supported choices:
-     interactive approval,
-    `minimumReleaseAgeExclude`,
-     or waiting.
-4.  Will they likely fix it?
-     Not applicable because this is not a defect report.
-5.  Have we prototyped a minimal fix compatible with their architecture?
-     No. A code fix is not appropriate for a
-    repository-policy gate.
+1.  **Is it really upstream's fault?**
+    No.
+    Strict rejection enforces repository policy,
+    while cached success is valid reuse keyed by current parsed lockfile content and acceptable policy.
+2.  **Can upstream fix it?**
+    Yes in general,
+    and upstream already fixed the formerly silent cache reuse by displaying cached verdict age.
+    No remaining defect is identified here.
+3.  **Are they supporting this use case?**
+    Yes.
+    pnpm source tests cover same-path and cross-worktree content-hash hits,
+    stricter-policy misses,
+    and cached-verdict rendering.
+4.  **Would the repository welcome our contribution?**
+    Yes for a demonstrated defect with tests and a changeset.
+    `CONTRIBUTING.md`,
+    `.github/pull_request_template.md`,
+    and `.github/ISSUE_TEMPLATE/bug-report.yaml` request those artifacts and contain no AI-assistance ban.
+5.  **Will they likely fix it?**
+    Not applicable to current behavior because no defect remains.
+    Related cache and reporter fixes have already merged.
+6.  **Have we prototyped a minimal compatible fix?**
+    No prototype is appropriate because constraint one fails and the installed behavior matches upstream design.
 
-Searched for an existing upstream issue with:
-
-```bash
-gh search issues "pnpm minimumReleaseAge trust-lockfile NO_MATURE_MATCHING_VERSION" --repo pnpm/pnpm --limit 5
-```
-
-The search returned no matching issues.
- No upstream issue should be opened for this repository-specific install choice.
+There is nothing additive to post on issue 12324.
+The maintainer comment and merged pull request already contain the source-backed explanation and user-visible resolution.
+No new issue or comment should be filed.
