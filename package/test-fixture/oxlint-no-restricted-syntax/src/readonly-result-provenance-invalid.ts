@@ -891,3 +891,100 @@ export function arrowReturnPackagedEffect(row: LabelledRow,): void {
     },
   },);
 }
+
+/**
+ * Holder returned by the shorthand and explicit packaging pair.
+ */
+export type PackagedRow = {
+  /**
+   * Row the holder was built around.
+   */
+  readonly held: LabelledRow;
+};
+
+/**
+ * Packages a parameter into a returned literal written in shorthand form.
+ *
+ * The shorthand name resolves to the property rather than to the local it reads, so the
+ * provenance walk asked the checker for the wrong symbol and recorded no returned origin.
+ * Its sibling `packageRowExplicit` writes the identical literal in longhand and recorded
+ * one, which is how the two are kept together: they must agree.
+ *
+ * @param held - Row the returned holder carries.
+ *
+ * @returns holder carrying the row it was given.
+ *
+ * @example
+ * ```ts
+ * packageRowShorthand({ label: '' });
+ * ```
+ */
+export function packageRowShorthand(held: LabelledRow,): PackagedRow {
+  return { held, };
+}
+
+/**
+ * Packages a parameter into a returned literal written in longhand form.
+ *
+ * @param held - Row the returned holder carries.
+ *
+ * @returns holder carrying the row it was given.
+ *
+ * @example
+ * ```ts
+ * packageRowExplicit({ label: '' });
+ * ```
+ */
+export function packageRowExplicit(held: LabelledRow,): PackagedRow {
+  return { held: held, };
+}
+
+/**
+ * Writes through a holder packaged in shorthand form.
+ *
+ * The write lands on the caller's own row, reached through the returned holder. Without the
+ * shorthand value symbol the callee returned no origin, this write was attributed to
+ * nothing, and the parameter it mutates kept its read-only offer while
+ * `explicitPackagedWriteEffect` reported the identical write.
+ *
+ * @param row - Row this writes through the returned holder.
+ *
+ * @mutates row - Writes the label through a returned shorthand holder.
+ *
+ * @example
+ * ```ts
+ * shorthandPackagedWriteEffect({ label: '' });
+ * ```
+ */
+export function shorthandPackagedWriteEffect(row: LabelledRow,): void {
+  /**
+   * Holder carrying the caller's row.
+   */
+  const packaged = packageRowShorthand(row,);
+  packaged.held
+    .label = 'written';
+}
+
+/**
+ * Writes through a holder packaged in longhand form.
+ *
+ * The control for `shorthandPackagedWriteEffect`, identical in every respect except how the
+ * callee wrote its literal.
+ *
+ * @param row - Row this writes through the returned holder.
+ *
+ * @mutates row - Writes the label through a returned longhand holder.
+ *
+ * @example
+ * ```ts
+ * explicitPackagedWriteEffect({ label: '' });
+ * ```
+ */
+export function explicitPackagedWriteEffect(row: LabelledRow,): void {
+  /**
+   * Holder carrying the caller's row.
+   */
+  const packaged = packageRowExplicit(row,);
+  packaged.held
+    .label = 'written';
+}

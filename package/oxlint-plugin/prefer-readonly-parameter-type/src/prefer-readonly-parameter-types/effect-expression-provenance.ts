@@ -357,9 +357,24 @@ export function expressionValueOrigins({
     if (isIdentifier(root,) || isThisExpression(root,)) {
       /**
        * Symbol the root identifier or `this` expression resolves to.
+       *
+       * A shorthand property's name resolves to the property rather than to the local it
+       * reads, so the value symbol has to be asked for separately. Every other walk in this
+       * package already does: `packagedCallableOrigins`, `parameterIndexes` and the
+       * `ForeignBorrowed` classifier. This one did not, and the object-literal branch above
+       * hands it exactly that node, so a returned `{ slice }` recorded no origin while
+       * `{ slice: slice }` recorded one. Measured: a caller writing through the returned
+       * object was attributed nothing and kept its read-only offer, while the identical
+       * write through the explicit form reported the mutation.
        */
-      const symbol = project.checker
-        .getSymbolAtLocation(root,);
+      const symbol = isShorthandPropertyAssignment(root.parent,)
+          && (root.parent
+            .name
+            === root)
+        ? project.checker
+          .getShorthandAssignmentValueSymbol(root.parent,)
+        : project.checker
+          .getSymbolAtLocation(root,);
       /**
        * Origins already recorded for this binding.
        */

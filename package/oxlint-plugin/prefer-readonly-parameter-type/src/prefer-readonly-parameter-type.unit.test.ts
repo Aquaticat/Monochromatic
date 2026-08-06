@@ -416,12 +416,25 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      /* Five reports and one offer. The count went to seven while the packaged-callable
+      /* Five reports and three offers. The count went to seven while the packaged-callable
        * gap was open, since that gap produced offers rather than reports, and back to
        * five once both halves of it landed. Caller-side property matching then added the
-       * sixth, which is the offer: `narrowingPrecisionCostEffect` hands `second` to a
-       * property its callee only reads, so nothing writes it. */
-      expect(messages.length,).toBe(6,);
+       * sixth, which is an offer: `narrowingPrecisionCostEffect` hands `second` to a
+       * property its callee only reads, so nothing writes it.
+       *
+       * The shorthand provenance pair added the last two, and both are correct: neither
+       * `packageRowShorthand` nor `packageRowExplicit` writes the row it packages, so each
+       * earns the offer its sibling assertion below names. Their callers, which do write
+       * through the returned holder, are contracted and report nothing. */
+      expect(messages.length,).toBe(8,);
+      /* Both spellings of the packaging pair are offered, which is what makes the pair a
+       * control for each other rather than two unrelated cases. Before the shorthand value
+       * symbol reached the provenance walk the offers were also two, and the difference sat
+       * where no message could show it: in whether the callers' writes were attributed.
+       * `effect-summaries.unit.test.ts` pins that half. */
+      expect(messages.filter(function offersPackagedRow(message,): boolean {
+        return message.startsWith('Parameter "held" should be readonly',);
+      },).length,).toBe(2,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -511,9 +524,17 @@ children: [
        * slot the callee reads. Reverting `effect-argument-properties.ts` empties this
        * list again, and `narrowingPrecisionCostEffect` goes back to reporting both
        * parameters written in `effect-summaries.unit.test.ts`. */
+      /* The packaging pair adds two more, and both are correct rather than tolerated:
+       * `packageRowShorthand` and `packageRowExplicit` return the row they are handed and
+       * write nothing, so a read-only projection applies to each. They are listed here in
+       * full rather than counted, so a future change that turns one of them into a defect
+       * has to edit this list and say why. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
-      },),).toEqual([
+      },)
+        .toSorted(),).toEqual([
+        'Parameter "held" should be readonly: property label is writable.',
+        'Parameter "held" should be readonly: property label is writable.',
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },

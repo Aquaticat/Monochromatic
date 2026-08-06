@@ -325,6 +325,21 @@ await describe({
         /* A function returning nothing parameter-derived records nothing, so the fact
          * is not simply "every callable returns something". */
         expect(returnedIndexes('readOnlyLookupEffect',),).toEqual([],);
+        /* How the callee spells its returned literal must not decide what its callers
+         * can see. A shorthand property's name resolves to the property rather than to
+         * the local it reads, so the provenance walk asked for the wrong symbol and
+         * `packageRowShorthand` recorded no returned origin while its longhand sibling
+         * recorded one. Reverting the shorthand value-symbol lookup in
+         * `effect-expression-provenance.ts` empties the first of each pair below and
+         * leaves the second passing, which is the asymmetry these pin. */
+        expect(returnedIndexes('packageRowShorthand',),).toEqual([0,],);
+        expect(returnedIndexes('packageRowExplicit',),).toEqual([0,],);
+        /* And the consequence that made it a defect rather than a precision gap: the
+         * caller's write through the returned holder was attributed to nothing, so the
+         * row it mutates kept its read-only offer while the identical longhand write
+         * reported the mutation. */
+        expect(mutatedIndexes('shorthandPackagedWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('explicitPackagedWriteEffect',),).toEqual([0,],);
       },
     },),
     it({
