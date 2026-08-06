@@ -212,6 +212,55 @@ await describe({
     },),
 
     it({
+      name: 'gives an accepted issue no envelope could serve no resolution '
+        + 'credit, however confidently the checkers call it fixed',
+      fn: async () => {
+        // Checkers are asked about EVERY accepted issue, including ones that
+        // anchor nothing in the translation, and a checker reading the patched
+        // text will happily call such an issue fixed. Counting that let a patch
+        // touching one issue win on credit for another nothing touched. The
+        // scripted checkers here say "fixed" for both.
+        /** Claim anchoring only the original, so no envelope can be cut. */
+        const sourceOnlyIssue = {
+          category: 'accuracy/omission',
+          severity: 'major',
+          summary: 'Something in the original is unaccounted for.',
+          sourceQuote: '猫猫喜欢在窗台上晒太阳。',
+        };
+        const result = await repairTranslation({
+          client: scriptedClient({
+            criticIssues: [
+              MISTRANSLATION_ISSUE,
+              sourceOnlyIssue,
+            ],
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /** Record of the issue no envelope could serve. */
+        const unserved = result.issues
+          .find(function isSourceOnly(record,) {
+            return record.repairDisposition === 'no-region';
+          },);
+        expect(unserved,).toBeDefined();
+        expect(unserved?.resolved,).toBe(false,);
+        expect(unserved?.repairRegions,).toHaveLength(0,);
+
+        // The issue an operation did serve still earns its credit, so the
+        // restriction removes false credit rather than all credit.
+        expect(
+          result.issues
+            .some(function isServedAndResolved(record,) {
+              return (record.repairDisposition === 'shipped') && record.resolved;
+            },),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'keeps the input when checkers refuse to confirm the fix',
       fn: async () => {
         /** Full run whose checkers vote not-fixed. */
