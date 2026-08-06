@@ -3452,11 +3452,30 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   before the house policy landed.
   WHAT DOES NOT: `detected=8` and `detectionRate=0.381` mean nothing. Do not
   quote them. Detection has to be re-measured on a fresh run.
-  ALSO SUSPECT: any previously reported seed-detection figure from a run where
-  slicing subdivided, which includes anything after task 35 introduced paragraph
-  slicing. The milestone-two detection figure of 166/174 predates slicing, but
-  that has NOT been verified against those runs' pair and slice counts, so treat
-  it as unchecked rather than as confirmed.
+  MILESTONE TWO IS UNAFFECTED, now CHECKED rather than assumed. `slice-pair.ts`
+  and its wiring into the driver first appear in `88eb42add`, AUTHORED
+  2026-07-23, while milestone two was declared 2026-07-18. Those runs had no
+  subdivision, so pairs and slices were the same list and the mismatch could not
+  bite. The 166/174 detection figure stands.
+  Run 001 is the ONLY affected run: it is the only artifact anywhere under the
+  runs dir carrying `seedDetection`, and every post-slicing pass log
+  (`pass4`, `pass5`, `pass6`) records precision passes that emit no detection
+  figure at all.
+  DATE TRAP, worth remembering: the rebase rewrote every committer date on this
+  branch to 2026-08-05T23:4x. Reading `%cI` says slicing landed AFTER the recall
+  run started, which is false and would have inverted this conclusion. Use `%aI`
+  for chronology on this branch, or better, test the tree directly.
+  RUN 001 IS POLICY-FREE, verified by tree content rather than by timestamps:
+  at the run's own recorded tip `2cf7fd453`, `house-policy.ts` is ABSENT and
+  `critic-prompt.ts` carries zero references to `HOUSE_POLICY_BLOCK`.
+  `candidate-select.ts` and `editor-ensemble.ts` are absent too, so it is a
+  pre-ensemble baseline as well. `slice-pair.ts` IS present, which is why the
+  detection mismatch applied.
+  THREE INDEPENDENT SIGNALS said detection was wrong before the code was read:
+  the pipeline only edits inside accepted-issue envelopes, so 19 restorations
+  need accepted issues; `statusCounts` records `repaired: 7`, every dispatched
+  entry shipping a repair; and the retired lexical grader put restoration at
+  15/21, also far above 8/21.
   Two of nine entries were skipped by the 4h dispatch budget, giving coverage
   0.778; that is the coverage-per-run effect task 50 is about.
 - NATURALNESS LANE COMPLETE (task 46, commits `b3aee385a`, `acc5022e5`,
