@@ -11,7 +11,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  alignDocumentSections,
   applySeededErrors,
+  type ChunkPair,
   computeRepairScorecard,
   contentWords,
   DEFAULT_JUDGE_MODEL_IDS,
@@ -21,8 +23,10 @@ import {
   type RepairAttemptRecord,
   type RepairModels,
   type repairTranslation,
+  parseDocument,
   runRepairBenchmark,
   type runRestorationJudge,
+  subdivideChunkPair,
   type SeededErrorSpec,
   SYNTHETIC_MODELS,
 } from '../dist/final/neutral/index.mjs';
@@ -345,6 +349,120 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
           ],
         },);
         expect(rejected[BUTTERFLY_SEED.id],).toBe('declined-other',);
+      },
+    },),
+
+    it({
+      name: 'resolves spans through the SLICES the pipeline repaired, not the '
+        + 'aligned pairs, so a seed past the first slice is still seen',
+      fn: async () => {
+        /**
+         * Filler paragraph long enough that the document subdivides; the
+         * slice budget is 400 target characters.
+         */
+        const filler = Array.from(
+          { length: 6, },
+          function toParagraph(
+            _unused,
+            index,
+          ) {
+            return `Paragraph ${String(index,)} about the cat, long enough to push the slicer past its budget so the document splits into several slices instead of one.`;
+          },
+        ).join('\n\n',);
+
+        /** Sectioned target whose seed sits AFTER the filler. */
+        const sectionedTarget =
+          `## Introduction\n\n${filler}\n\nThe cat naps in the sun. The cat also chases crimson butterflies across the meadow. The bowl stays full.\n`;
+
+        /** Deletion planted into the late paragraph. */
+        const { seededText, applications, } = applySeededErrors({
+          text: sectionedTarget,
+          specs: [BUTTERFLY_SEED,],
+        },);
+
+        /** Application region of the planted seed. */
+        const [application,] = applications;
+        if (application === undefined)
+          throw new Error('fixture planting failed',);
+
+        /** Original the seeded translation is graded against. */
+        const sourceText = `## 简介\n\n${filler}\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n`;
+
+        /** Slices the driver would build over the seeded pair. */
+        const slices: ChunkPair[] = [];
+        for (
+          const pair of alignDocumentSections({
+            source: parseDocument({ text: sourceText, },),
+            target: parseDocument({ text: seededText, },),
+          },).pairs
+        ) {
+          slices.push(...subdivideChunkPair({
+            pair,
+            sourceText,
+            targetText: seededText,
+            baseIndex: slices.length,
+          },),);
+        }
+
+        /** Slice whose target region covers the planted seed. */
+        const sliceIndex = slices.findIndex(function covers(slice,) {
+          return (slice.target.startOffset <= application.startOffset)
+            && (application.startOffset < slice.target.endOffset);
+        },);
+        // The whole point of the fixture: the seed must NOT be in slice zero,
+        // because slice zero is the one case the old pair indexing got right.
+        expect(sliceIndex,).toBeGreaterThan(0,);
+
+        /** Slice the seed landed in, present by the assertion above. */
+        const slice = slices[sliceIndex];
+        if (slice === undefined)
+          throw new Error('fixture lost its slice',);
+
+        /** Accepted issue anchored at the deletion, in slice-local offsets. */
+        const localStart = application.startOffset - slice.target.startOffset;
+
+        /** Detection over an issue reported against that slice. */
+        const detected = gradeSeedDetection({
+          sourceText,
+          seededText,
+          applications,
+          issues: [
+            {
+              chunkIndex: sliceIndex,
+              resolved: false,
+              issue: {
+                issueId: 'adjudicated/late',
+                status: 'accepted' as const,
+                severity: 'major' as const,
+                claims: [
+                  {
+                    claimId: 'issue/late',
+                    claim: {
+                      category: 'accuracy/omission' as const,
+                      severity: 'major' as const,
+                      summary: 'The butterfly sentence is missing.',
+                      spans: [
+                        {
+                          side: 'target' as const,
+                          nodeId: 'block/1',
+                          nodeHash: hashContent({ content: 'invented', },),
+                          startOffset: localStart,
+                          endOffset: localStart + SPAN_WIDTH,
+                          quotedText: seededText.slice(
+                            application.startOffset,
+                            application.startOffset + SPAN_WIDTH,
+                          ),
+                        },
+                      ],
+                    },
+                  },
+                ],
+                tallies: {},
+              },
+            },
+          ],
+        },);
+        expect(detected[BUTTERFLY_SEED.id],).toBe('accepted',);
       },
     },),
 

@@ -1,5 +1,9 @@
-import { alignDocumentSections, } from './chunk-document.ts';
+import {
+  alignDocumentSections,
+  type ChunkPair,
+} from './chunk-document.ts';
 import { parseDocument, } from './parse-document.ts';
+import { subdivideChunkPair, } from './slice-pair.ts';
 import type { RepairIssueRecord, } from './repair-translation.ts';
 import {
   seedHitByRegion,
@@ -86,12 +90,34 @@ export function gradeSeedDetection(
   },
 ): Readonly<Record<string, SeedDetectionVerdict>> {
   /**
-   * The same alignment the pipeline computed, for chunk start offsets.
+   * The same alignment the pipeline computed.
    */
   const alignment = alignDocumentSections({
     source: parseDocument({ text: sourceText, },),
     target: parseDocument({ text: seededText, },),
   },);
+
+  /**
+   * The same SLICES the pipeline repaired, rebuilt the same way the driver
+   * builds them.
+   *
+   * Issue records carry a slice index, not a pair index, because the driver
+   * subdivides every aligned pair before repairing it. Indexing the pair list
+   * with a slice index was silently wrong for any document that subdivided at
+   * all: past the pair count it read nothing and reported every issue there as
+   * absent, and within the pair count it mixed a pair's start offset with a
+   * slice-local span offset. Detection collapsed toward counting only seeds
+   * that happened to land in the first slice of a pair.
+   */
+  const slices: ChunkPair[] = [];
+  for (const pair of alignment.pairs) {
+    slices.push(...subdivideChunkPair({
+      pair,
+      sourceText,
+      targetText: seededText,
+      baseIndex: slices.length,
+    },),);
+  }
 
   /**
    * Every target-side span in whole-document coordinates, carrying the status
@@ -100,9 +126,9 @@ export function gradeSeedDetection(
    */
   const regions = issues.flatMap(function toRegions(record,) {
     /**
-     * Target chunk this issue's spans are local to.
+     * Target slice this issue's spans are local to.
      */
-    const chunk = alignment.pairs[record.chunkIndex]
+    const chunk = slices[record.chunkIndex]
       ?.target;
     if (chunk === undefined)
       return [];
