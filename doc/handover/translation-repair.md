@@ -4361,3 +4361,108 @@ which is precisely what every optional field on a repair record depends on.
 
 The remaining 150 errors are all `prefer-readonly-parameter-types`,
 ignored on this branch by user decision under issue #414.
+
+### Runs 006 and 007: the telemetry becomes readable
+
+Commits `acdcd39ee`, `b111fc376`, `9533b0ba8`, `a13ea1acf`, plus tests in
+`01a46e265` and README in `0bcb1328f`.
+
+#### A quiet probe line said nothing
+
+The first live line read
+`3/3 heard over 1 regions, 0 corroborated, 0 contradicted, 0 unanchored`,
+which is equally consistent with every prober finding nothing,
+every prober declining,
+and every ballot being dropped as a wire fault.
+Those are three different states and the line could not tell them apart.
+The negative verdicts now print beside the positive ones.
+
+NOT restarted for this one:
+artifacts already carried the full breakdown,
+so the change affects what a run is readable as WHILE it runs, not what it
+records.
+The two wire changes below did force restarts, because telemetry has to come
+from the shipped prompt.
+On run 007 the same line reads `3 found nothing, 0 declined`,
+which is the verification the terse line could not give.
+
+#### Corpus prose could forge the probe sheet
+
+The sheet fenced with a fixed `=====` and marked regions with bare `REGION n`,
+`BEFORE:` and `AFTER:` lines.
+A setext heading underline IS a row of equals signs,
+so a translation containing one could close its own block and have the rest
+read as sheet structure.
+
+The package had already solved this TWICE and said so out loud:
+`markdown-fence.ts` chooses a fence against enclosed content, and its own
+comment points at `candidate-select-wire.ts` doing the same for a prompt.
+The probe shipped without either.
+`selectFence` now lives in `prompt-fence.ts` and both use it.
+Extracted rather than copied:
+two implementations of a boundary deciding whether model-facing text can
+impersonate instructions is one too many.
+
+The adversarial test caught ME rather than the code.
+The first assertion checked `sheet.includes('===== END =====')` was false,
+but `====== END ======` CONTAINS that string,
+so it would have passed at any fence width while proving nothing.
+Line comparison, not substring, whenever a delimiter is the subject.
+
+#### The records could not answer the question they existed for
+
+Each issue record carried its regions' tallies but not the roster size.
+Heard voices are recoverable by summing a tally's verdicts;
+the CONFIGURED roster is recoverable from nothing.
+So no artifact could answer whether a MAJORITY agreed,
+which is the only thing the gate decision turns on.
+Records now carry `IssueProbeReading`: tallies plus both roster counts.
+
+This is the second time review caught a defect the probe's own passing tests
+did not.
+Both times the tests checked what the code did rather than what the measurement
+would need.
+
+#### Reading it back
+
+`summarizeProbeTelemetry` holds the two joins no type enforces:
+
+-   DISTINCT ENVELOPES.
+    Every issue of a merged envelope carries the same tally, so summing over
+    records counts one region once per issue it served.
+-   SHIPPED ONLY.
+    The probe runs on candidates selection later rejected;
+    the repair sheet grades only what shipped.
+
+Majority is measured against the CONFIGURED roster, never the heard one:
+retry-to-quorum lets six models settle with three heard,
+and a majority of those would be two probers speaking for six.
+Unheard voices count as non-confirming,
+the conservative direction for a probe whose false positives discard correct
+repairs.
+Contradicted claims count as NO evidence, not weak evidence.
+
+`readArtifactProbe` deliberately breaks with `artifact-read.ts` doctrine.
+That reader feeds the precision gate and throws on everything malformed.
+Here absence and malformation differ:
+a record with no probe field is ordinary,
+a field PRESENT and malformed means writer and reader disagree.
+First is counted, second throws.
+Claims are dropped rather than parsed, since they carry corpus quotes and the
+CLI output must stay safe to paste where artifacts are not.
+
+Run it with
+`mise run //package/module/translation-repair:score-probe`.
+
+Verified against a THROWAWAY fixture, not an empty directory, which proves
+nothing:
+two shipped records sharing one merged envelope collapsed to `regions=1`,
+and a `not-selected` record carrying three corroborated claims was excluded,
+so `majorityIntroduced` read 1 and not 2.
+
+#### Restart ledger
+
+Runs 004 through 007, four restarts, ZERO artifacts lost:
+every one happened inside the first entry.
+Wire or record-shape changes restart;
+log wording and read-side code do not.
