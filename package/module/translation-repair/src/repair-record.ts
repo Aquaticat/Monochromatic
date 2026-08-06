@@ -1,4 +1,5 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import type { RegionDefectTally, } from './introduced-defect-screen.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
@@ -103,6 +104,17 @@ export type RepairIssueRecord = {
   readonly repairDisposition: RepairDisposition;
 
   /**
+   * Shadow-mode probe tallies for the regions serving this issue, absent where
+   * the chunk was never probed.
+   *
+   * Carried per issue rather than per chunk so a graded sheet item and the
+   * probe's opinion of that same item sit side by side in the artifact, which
+   * is what a calibration comparing the two has to join on. Nothing reads it to
+   * decide what ships.
+   */
+  readonly introducedDefects?: readonly RegionDefectTally[];
+
+  /**
    * Whether the naturalness lane rewrote this issue's slice afterwards, making
    * every {@link RepairRegion.editorAfter} pre-refinement wording.
    */
@@ -201,6 +213,18 @@ export function buildIssueRecords(
               .includes(issue.issueId,);
           },);
 
+        /**
+         * Probe tallies for exactly those regions, empty when unprobed.
+         */
+        const probed = (outcome.introducedDefects
+          ?.regions
+          ?? [])
+          .filter(function coversRegion(tally,) {
+            return regions.some(function isSame(region,) {
+              return region.envelopeId === tally.envelopeId;
+            },);
+          },);
+
         return {
           chunkIndex: outcome.chunkIndex,
           issue,
@@ -214,6 +238,9 @@ export function buildIssueRecords(
             blocked,
           },),
           refined: outcome.refined,
+          ...(probed.length === 0
+            ? {}
+            : { introducedDefects: probed, }),
           ...(outcome.refined
             ? { finalSliceText: outcome.repairedText, }
             : {}),

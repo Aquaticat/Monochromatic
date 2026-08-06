@@ -1,5 +1,6 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { MIN_SELECTION_VOTES, } from './candidate-select-model.ts';
+import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -222,20 +223,29 @@ export function assertJudgeableProducerRoster(
  */
 export class CheckerIndependenceError extends Error {
   /**
-   * Builds the report from the models holding both roles.
+   * Builds the report from whichever fault was found.
    *
-   * @param overlapping - models that both edit and check
+   * @param overlapping - models that both write and check; empty when the
+   * roster fault is a repeat rather than an overlap
+   *
+   * @param duplicated - checker ids listed more than once
    */
   constructor(
     {
-      overlapping,
+      overlapping = [],
+      duplicated = [],
     }: {
-      readonly overlapping: readonly SyntheticModelId[];
+      readonly overlapping?: readonly SyntheticModelId[];
+      readonly duplicated?: readonly SyntheticModelId[];
     },
   ) {
     super(
-      `these models would check text they wrote themselves: [${overlapping.join(', ',)}]; `
-        + `checkerModelIds must exclude every editor and every refiner`,
+      overlapping.length === 0
+        ? `these checker ids are listed more than once: [${duplicated.join(', ',)}]; a repeated id `
+          + `is one model counted twice, which meets quorum on fewer independent voices than the `
+          + `roster size promises`
+        : `these models would check text they wrote themselves: [${overlapping.join(', ',)}]; `
+          + `checkerModelIds must exclude every editor and every refiner`,
     );
     this.name = 'CheckerIndependenceError';
   }
@@ -272,6 +282,29 @@ export function assertCheckerIndependence(
     readonly checkerModelIds: readonly SyntheticModelId[];
   },
 ): void {
+  /**
+   * Checker ids keyed for membership tests, also revealing repeats by size.
+   *
+   * Refused for the same reason `assertJudgeableProducerRoster` refuses
+   * repeated producers, and the consequence here is quieter: `gatherStageVoices`
+   * counts a repeated id's replies separately toward quorum, while
+   * `runCheckerStage` keys its ballots by model id and so collapses them into
+   * one. A roster of three with a repeat could therefore report quorum on two
+   * voices that are one model.
+   */
+  const distinctCheckers = new Set(checkerModelIds,);
+  if (distinctCheckers.size !== checkerModelIds.length) {
+    throw new CheckerIndependenceError({
+      duplicated: [...distinctCheckers,].filter(function repeats(modelId,) {
+        return checkerModelIds.filter(function isSame(candidate,) {
+          return candidate === modelId;
+        },)
+          .length
+          > 1;
+      },),
+    },);
+  }
+
   /**
    * Every model that writes shipped text, keyed for membership tests.
    *
@@ -353,6 +386,19 @@ export type ChunkRepairOutcome = {
    * facts and only the second one indicts the stage.
    */
   readonly repairRegions: readonly RepairRegion[];
+
+  /**
+   * Shadow-mode audit of defects the edit itself introduced, absent on chunks
+   * where no region was replaced and so nothing was probed.
+   *
+   * Nothing reads this to decide what ships. It exists because
+   * `regressedKnownIssues` can only see issues a critic already raised, so a
+   * patch that fixes its target and mangles the clause beside it currently
+   * scores as clean and the pipeline had no way to notice. Whether these
+   * verdicts deserve to gate is a question this round's human repair grades
+   * answer, not one the probe's existence settles.
+   */
+  readonly introducedDefects?: IntroducedDefectReport;
 
   /**
    * Whether the patched candidate beat unchanged in the ACCURACY stage's own

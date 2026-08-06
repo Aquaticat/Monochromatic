@@ -1,0 +1,221 @@
+/**
+ * Tests for the introduced-defect probe sheet and its wire guards.
+ * Fixtures are cat-themed invention mirroring corpus structure only.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  type AdjudicatedIssue,
+  buildIntroducedDefectMessages,
+  INTRODUCED_DEFECT_VERDICTS,
+  isIntroducedDefectReportWire,
+  isIntroducedDefectVerdict,
+  type RepairRegion,
+} from '../dist/final/neutral/index.mjs';
+
+/**
+ * Accepted issue the fixture region was cut for.
+ */
+const ISSUE: AdjudicatedIssue = {
+  issueId: 'adjudicated/nap',
+  status: 'accepted',
+  severity: 'major',
+  claims: [
+    {
+      claimId: 'issue/nap',
+      claim: {
+        category: 'fluency/grammar',
+        severity: 'major',
+        summary: 'progressive aspect is wrong for a habitual action',
+        spans: [
+          {
+            side: 'target',
+            nodeId: 'node/nap',
+            nodeHash: 'unread-by-the-sheet',
+            quotedText: 'is doing the sleeping',
+            startOffset: 8,
+            endOffset: 29,
+          },
+        ],
+      },
+    },
+  ],
+  tallies: {},
+};
+
+/**
+ * Region the editors replaced.
+ */
+const REGION: RepairRegion = {
+  envelopeId: 'envelope/nap',
+  issueIds: ['adjudicated/nap',],
+  before: 'The cat is doing the sleeping.',
+  editorAfter: 'The cat sleeps.',
+};
+
+await describe({
+  name: 'introduced-defect verdict vocabulary',
+  children: [
+    it({
+      name: 'offers no clean verdict, because a region can carry no introduced '
+        + 'damage while its original defect survives, and a vocabulary forcing '
+        + 'that choice would push every such region into the defect bucket',
+      fn: async () => {
+        // Widened deliberately: the tuple type already refuses `clean` at
+        // compile time, and this asserts the runtime vocabulary agrees, which
+        // is what a model's reply is checked against.
+        expect((INTRODUCED_DEFECT_VERDICTS as readonly string[]).includes('clean',),)
+          .toBe(false,);
+        expect(isIntroducedDefectVerdict('no-introduced-defect-found',),).toBe(true,);
+        expect(isIntroducedDefectVerdict('uncertain',),).toBe(true,);
+        expect(isIntroducedDefectVerdict('introduced-defect',),).toBe(true,);
+        expect(isIntroducedDefectVerdict('clean',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: buildIntroducedDefectMessages.name,
+  children: [
+    it({
+      name: 'shows the pre-existing defects and marks them as NOT findings, '
+        + 'which is the one instruction standing between the probe and '
+        + 're-reporting the defect the edit was written to fix',
+      fn: async () => {
+        const plan = buildIntroducedDefectMessages({
+          sourceText: '猫在睡觉。',
+          baselineText: 'The cat is doing the sleeping.',
+          regions: [REGION,],
+          issues: [ISSUE,],
+        },);
+
+        /** Rendered sheet the prober reads. */
+        const sheet = plan.messages[1]
+          ?.content
+          ?? '';
+        expect(sheet.includes('NOT your findings',),).toBe(true,);
+        expect(sheet.includes('progressive aspect is wrong for a habitual action',),)
+          .toBe(true,);
+        expect(sheet.includes('BEFORE:\nThe cat is doing the sleeping.',),).toBe(true,);
+        expect(sheet.includes('AFTER:\nThe cat sleeps.',),).toBe(true,);
+        expect(plan.envelopeIds,).toEqual(['envelope/nap',],);
+      },
+    },),
+
+    it({
+      name: 'says the pre-existing list is empty rather than omitting the '
+        + 'heading, so a region with unresolvable claims still reads as one '
+        + 'whose prior defects were disclosed',
+      fn: async () => {
+        const plan = buildIntroducedDefectMessages({
+          sourceText: '猫在睡觉。',
+          baselineText: 'The cat is doing the sleeping.',
+          regions: [REGION,],
+          issues: [],
+        },);
+        expect(
+          (plan.messages[1]
+            ?.content
+            ?? '')
+            .includes('(none recorded)',),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'numbers regions in the order envelopeIds records them, since '
+        + 'every verdict resolves back through that index',
+      fn: async () => {
+        /** Second region on the same sheet. */
+        const other: RepairRegion = {
+          envelopeId: 'envelope/chase',
+          issueIds: [],
+          before: 'She chase butterflies.',
+          editorAfter: 'She chases butterflies.',
+        };
+
+        const plan = buildIntroducedDefectMessages({
+          sourceText: '猫在睡觉。',
+          baselineText: 'The cat is doing the sleeping.',
+          regions: [
+            REGION,
+            other,
+          ],
+          issues: [ISSUE,],
+        },);
+
+        /** Rendered sheet the prober reads. */
+        const sheet = plan.messages[1]
+          ?.content
+          ?? '';
+        expect(plan.envelopeIds,).toEqual([
+          'envelope/nap',
+          'envelope/chase',
+        ],);
+        expect(sheet.indexOf('REGION 1',),).toBeLessThan(sheet.indexOf('REGION 2',),);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isIntroducedDefectReportWire.name,
+  children: [
+    it({
+      name: 'accepts a fully populated report and rejects one missing a text '
+        + 'field, since the screen reads evidence off every check',
+      fn: async () => {
+        expect(
+          isIntroducedDefectReportWire({
+            checks: [
+              {
+                region: 1,
+                verdict: 'introduced-defect',
+                category: 'omission',
+                severity: 'major',
+                evidence: 'The cat sleeps.',
+                reason: 'the second clause is gone',
+              },
+            ],
+          },),
+        ).toBe(true,);
+        expect(
+          isIntroducedDefectReportWire({
+            checks: [
+              {
+                region: 1,
+                verdict: 'introduced-defect',
+                category: 'omission',
+                severity: 'major',
+                reason: 'the second clause is gone',
+              },
+            ],
+          },),
+        ).toBe(false,);
+        expect(
+          isIntroducedDefectReportWire({
+            checks: [
+              {
+                region: 1.5,
+                verdict: 'uncertain',
+                category: '',
+                severity: '',
+                evidence: '',
+                reason: '',
+              },
+            ],
+          },),
+        ).toBe(false,);
+        expect(isIntroducedDefectReportWire({ checks: 'none', },),).toBe(false,);
+      },
+    },),
+  ],
+},);

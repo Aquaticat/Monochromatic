@@ -4,10 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import {
-  nonTranslationVotesStand,
-  screenNonTranslationVotes,
-} from './non-translation-evidence.ts';
+import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
   measurePatchedCandidate,
   selectCreditableIssues,
@@ -21,11 +18,9 @@ import {
   type RepairModels,
 } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
+import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
-import {
-  runCriticStage,
-  runPanelStage,
-} from './repair-stages.ts';
+import { runPanelStage, } from './repair-stages.ts';
 import {
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
@@ -34,10 +29,12 @@ import {
 
 //region Chunk repair
 // One chunk pair through the whole loop: critics, aggregation, panel,
-// envelopes, editor, apply gate, checkers, measurement, selection. Every
-// early exit returns the chunk unchanged with whatever issues were decided;
-// the unchanged text always competes and wins by default.
-// The roster and outcome types live in repair-contract.ts.
+// envelopes, editor, apply gate, checkers, the introduced-defect probe,
+// measurement, selection. Every early exit returns the chunk unchanged with
+// whatever issues were decided; the unchanged text always competes and wins by
+// default.
+// The roster and outcome types live in repair-contract.ts, and the critic stage
+// with its vote screening in chunk-critic-phase.ts.
 
 /**
  * Runs one chunk pair through the whole repair loop.
@@ -110,51 +107,19 @@ export async function repairChunk(
   };
 
   /**
-   * Critic fan-out result.
+   * Critics plus the deterministic screen over their non-translation votes.
    */
-  const critic = await runCriticStage({
+  const critic = await runChunkCriticPhase({
     client,
     criticModelIds: models.criticModelIds,
     sourceText,
     targetText,
     documents,
     ...(identityContext === undefined ? {} : { identityContext, }),
+    chunkIndex,
     signal,
     perCallTimeoutMs,
     l,
-  },);
-
-  /**
-   * Vote screening against deterministic evidence; contradicted votes
-   * fall together with their claims.
-   */
-  const screening = screenNonTranslationVotes({
-    votes: critic.nonTranslationVotes,
-    claims: critic.claims,
-  },);
-  if (screening.contradicted) {
-    l.warn(
-      `chunk ${String(chunkIndex,)}: ${
-        String(critic.nonTranslationVotes,)
-      } non-translation votes dismissed: ${screening.findings
-        .join('; ',)}`,
-    );
-  }
-
-  /**
-   * Critic findings plus the contradiction record when votes fell.
-   */
-  const criticFindings = [
-    ...critic.findings,
-    ...screening.findings,
-  ];
-
-  /**
-   * Whether votes met the block threshold uncontradicted.
-   */
-  const votesStand = nonTranslationVotesStand({
-    votes: critic.nonTranslationVotes,
-    contradicted: screening.contradicted,
   },);
 
   /**
@@ -170,11 +135,11 @@ export async function repairChunk(
     accuracyPatchSelected: false,
     refined: false,
     nonTranslationVotes: critic.nonTranslationVotes,
-    nonTranslationContradicted: screening.contradicted,
-    nonTranslationStanding: votesStand,
+    nonTranslationContradicted: critic.contradicted,
+    nonTranslationStanding: critic.votesStand,
     heardCritics: critic.heardCritics,
   };
-  if (votesStand) {
+  if (critic.votesStand) {
     l.warn(
       `chunk ${String(chunkIndex,)}: ${
         String(critic.nonTranslationVotes,)
@@ -184,28 +149,28 @@ export async function repairChunk(
       ...unchangedOutcome,
       issues: [],
       findings: [
-        ...criticFindings,
+        ...critic.findings,
         `non-translation votes stand (${
           String(critic.nonTranslationVotes,)
         }/${String(critic.heardCritics,)} heard); slice unchanged`,
       ],
     };
   }
-  if (screening.claims
+  if (critic.claims
     .length
     === 0) {
     l.info(`chunk ${String(chunkIndex,)}: no validated claims, unchanged`,);
     return {
       ...unchangedOutcome,
       issues: [],
-      findings: criticFindings,
+      findings: critic.findings,
     };
   }
 
   /**
    * Merge-proposal clusters over the validated claims.
    */
-  const { clusters, } = aggregateClaims({ claims: screening.claims, },);
+  const { clusters, } = aggregateClaims({ claims: critic.claims, },);
 
   /**
    * Panel decision over the clusters.
@@ -226,7 +191,7 @@ export async function repairChunk(
    * Findings across the stages so far.
    */
   const stageFindings = [
-    ...criticFindings,
+    ...critic.findings,
     ...panel.findings,
   ];
 
@@ -317,6 +282,33 @@ export async function repairChunk(
   },);
 
   /**
+   * Regions the accuracy stage replaced.
+   */
+  const repairRegions = collectRepairRegions({
+    envelopes,
+    applied: editor.patch
+      .applied,
+  },);
+
+  /**
+   * Shadow-mode audit of damage the edit itself caused.
+   *
+   * Nothing downstream reads this to decide what ships, on purpose: see
+   * `introduced-defect-probe.ts` for why an unmeasured probe must not gate.
+   */
+  const introducedDefects = await runIntroducedDefectProbe({
+    client,
+    proberModelIds: models.checkerModelIds,
+    sourceText,
+    baselineText: targetText,
+    regions: repairRegions,
+    issues: acceptedIssues,
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+
+  /**
    * Issue ids the checker majority confirmed fixed.
    */
   const resolvedIssueIds = creditableIssues
@@ -388,16 +380,13 @@ export async function repairChunk(
       .map(function toId(issue,) {
         return issue.issueId;
       },),
-    repairRegions: collectRepairRegions({
-      envelopes,
-      applied: editor.patch
-        .applied,
-    },),
+    repairRegions,
+    introducedDefects,
     accuracyPatchSelected: changed,
     refined: false,
     nonTranslationVotes: critic.nonTranslationVotes,
-    nonTranslationContradicted: screening.contradicted,
-    nonTranslationStanding: votesStand,
+    nonTranslationContradicted: critic.contradicted,
+    nonTranslationStanding: critic.votesStand,
     heardCritics: critic.heardCritics,
     findings: [
       ...stageFindings,
