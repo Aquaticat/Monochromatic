@@ -305,11 +305,21 @@ which conditions on neither text nor state and had no instance in the corpus.
 The text-detector rate is the more conservative of the two
 and the closer analogue in that it also fires without consulting task state.
 
-The one-shot guard is therefore not the bottleneck.
-A single block reliably puts the agent back to work,
-so bounded progress-rearmed re-blocking is not the missing piece.
-What is missing is a detector that fires on this failure at all,
-since the hedging and trailing-question detectors do not.
+The one-shot guard is therefore not the main bottleneck,
+though it is not irrelevant either.
+A single block puts the agent back to work in the large majority of cases,
+and on the closest analogue, Opus 5 text-detector blocks,
+roughly one block in five produced no tool call
+and roughly one in four was followed by a nudge regardless.
+So bounded progress-rearmed re-blocking would recover something,
+but it is second-order next to the larger gap:
+no detector fired on this failure at all,
+since the hedging and trailing-question detectors do not look for it.
+
+An earlier revision said a single block "reliably" restores work
+and concluded re-blocking was not the missing piece.
+That sentence was written against the pooled rate
+and was left standing when the pooled rate was disaggregated.
 
 ## The goal feature already implements state-based blocking
 
@@ -390,14 +400,39 @@ so no counter in this repository is load-bearing for termination.
 That safety rests on termination being reliable, not on any particular bound,
 which is why nothing here hard-codes 9 or 17.
 
-The cost is unmeasured and falls on every session, not only queue-shaped ones.
+The cost falls on every session, not only queue-shaped ones.
 A turn that genuinely had nothing left to do
 now receives forced continuations until Claude Code ends the chain,
-observed as high as 17,
 including on short question-and-answer turns.
 Verified end to end on 2026-08-06:
 the built hook blocked 17 stops in a disposable session
-whose entire prompt was `Reply with the single word: ok`.
+whose entire prompt was `Reply with the single word: ok`,
+where the agent visibly cast around for work that did not exist.
+
+### First observation on a real session
+
+The session that built this feature then ran under it,
+which is the only observation of unconditional blocking on real work.
+Measured from its own transcript:
+10 forced-continuation blocks,
+against 3 human turns,
+producing 10 commits.
+
+Each block was answered with a real defect fix rather than filler.
+The finds included two wrong published figures,
+a retracted comparison built on mixed counting bases,
+an unpinned corpus that was drifting while being measured,
+and two conclusion sentences left standing after the numbers beneath them were corrected.
+
+Read carefully, because this cuts both ways.
+The mechanism worked far better here than the disposable probe suggested,
+and the reason is that this session had genuine unexamined surface:
+a long analysis whose figures had been asserted from memory rather than re-derived.
+A session without that surface is the `Reply with the single word: ok` case instead.
+One session is not a rate,
+and the agent measuring the benefit is the same agent that produced the defects,
+so treat this as an existence proof that the blocks can be productive,
+not as an estimate of how often they are.
 
 ## Remediation options considered
 
