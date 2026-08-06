@@ -186,6 +186,37 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Immediate next steps
 
+PICK UP HERE (2026-08-06, end of the probe session).
+
+STATE: `pass8-run-007` is running at tip `9533b0ba8`, 92 entries pending, zero
+settled. It needs FIFTEEN settled entries before the sheets can be drawn.
+Confirm it is alive with
+`ps --no-headers -eo pid,args | rg corpus-pass | rg --invert-match 'rg |pgrep'`
+before assuming anything; a bare `pgrep --full` matches its own command line.
+
+WHEN THE FIRST ARTIFACT LANDS: read its `introducedDefects` block end to end.
+That is the only remaining unverified link, since every other part of the chain
+was exercised on throwaway fixtures rather than on real pipeline output.
+
+WHEN FIFTEEN SETTLE:
+1.    `mise run //package/module/translation-repair:draw-sample -- --final`.
+    It now writes THREE files: both sheets and `sample-manifest-<seed>.json`.
+    The manifest is not optional and cannot be regenerated later;
+    see "The draw recorded nothing about what it drew".
+2.    Hand the user `doc/runbook/translation-repair-round-three-grading.md`.
+    Detection sheet FIRST and alone, then the repair sheet.
+3.    `score-agreement` for the precision gate (bar 0.9;
+    round one 0.560/0.636/0.680, round two 0.740/0.787/0.800).
+4.    `score-probe --repair-sheet PATH --manifest PATH` for the probe.
+
+THEN ASK, DO NOT ASSUME. Task 53's gate-versus-rank question is the user's.
+They declined all four options offered and named a better one they have not
+written down. `refutedByHuman` from step 4 is the evidence that question needed,
+not its answer.
+
+DO NOT start the recall re-measure (task 51) while a pass is running; it
+contends for the same quota.
+
 MILESTONE TWO DECLARED COMPLETE (2026-07-18, user directive
 "Promote the clause-enumeration rule and declare milestone two").
 Final accumulated numbers over 20 judge-graded runs (22 to 41),
