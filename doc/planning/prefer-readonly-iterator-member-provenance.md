@@ -144,6 +144,40 @@ say.
    probed fact the later steps need,
    and landing it separately keeps the step that does change verdicts
    small enough to measure.
+1.    Done,
+   and it was a defect rather than an increment.
+   `callResultElementReceiver` read
+   `receiverTypeArgumentIndex` on both sides of its type-identity comparison,
+   so an element entry whose two
+   positions differ could never verify.
+   `Map.values` and `ReadonlyMap.values` were inert on arrival for exactly
+   that reason:
+   the receiver holds its values at position 1,
+   `MapIterator` holds them at position 0,
+   and
+   the comparison read `undefined` against `V`.
+   `MemberResultProvenance` is now a union giving the element
+   relation its own `resultTypeArgumentIndex`.
+
+   Measured:
+   the same 3028 errors,
+   3903 warnings,
+   1689 rule findings and 4 semantic failures, with the
+   finding sets identical line for line,
+   so no verdict moved.
+   What moved is the diagnosis:
+   `serializeEntries` named `entries.values` before and names only `positioned.push` after,
+   and no finding in
+   the workspace names a `values` call any more.
+   The remaining opacity there is the callee pushing each entry
+   into an array it returns,
+   which is a real escape and not an iterator question at all.
+
+   The lesson generalises past this table:
+   an authority entry can pass its runtime identity probe and still be
+   unreachable through the static check that consumes it,
+   so a probe alone does not prove an entry does
+   anything.
 2.    A relation for a result whose elements hold the receiver's element at a fixed position,
    with a probe
    shape that reads that position rather than the element itself.

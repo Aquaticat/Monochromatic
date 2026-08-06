@@ -90,10 +90,29 @@ export type MemberResultRelation =
  * source would let a `Map<Labelled, string>` lookup claim its `string` result
  * aliases the `Labelled` key. Recording the position keeps the claim member-specific.
  */
-export type MemberResultProvenance = {
-  readonly relation: MemberResultRelation;
-  readonly receiverTypeArgumentIndex: number;
-};
+export type MemberResultProvenance =
+  | {
+    readonly relation:
+      | typeof RESULT_RELATION_RECEIVER_VALUE
+      | typeof RESULT_RELATION_OBSERVER_RETURN;
+    readonly receiverTypeArgumentIndex: number;
+  }
+  | {
+    readonly relation: typeof RESULT_RELATION_RECEIVER_ELEMENTS;
+    readonly receiverTypeArgumentIndex: number;
+    /**
+     * Position in the result's own type arguments holding what the receiver held.
+     *
+     * Separate from the receiver's position because the two coincide only by accident.
+     * They agree for `filter` and `slice`, whose result is another array, and they
+     * disagree for `Map<K, V>.values`, whose receiver holds its values at position 1
+     * and whose result is a `MapIterator<V>` holding them at position 0. Reading one
+     * index on both sides made that entry unverifiable: the result has no position 1,
+     * so the comparison read `undefined` against `V` and answered with the sentinel
+     * for a relation that is true.
+     */
+    readonly resultTypeArgumentIndex: number;
+  };
 
 /**
  * Members whose result provenance is verified, by declaring interface.
@@ -133,6 +152,7 @@ const PROVENANCE_BY_OWNER: Readonly<
     filter: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
     find: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
@@ -153,10 +173,12 @@ const PROVENANCE_BY_OWNER: Readonly<
     slice: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
     values: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
   },
   ReadonlyArray: {
@@ -175,6 +197,7 @@ const PROVENANCE_BY_OWNER: Readonly<
     filter: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
     find: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
@@ -187,10 +210,12 @@ const PROVENANCE_BY_OWNER: Readonly<
     slice: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
     values: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
     },
   },
   Map: {
@@ -201,6 +226,7 @@ const PROVENANCE_BY_OWNER: Readonly<
     values: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 1,
+      resultTypeArgumentIndex: 0,
     },
   },
   ReadonlyMap: {
@@ -211,6 +237,7 @@ const PROVENANCE_BY_OWNER: Readonly<
     values: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 1,
+      resultTypeArgumentIndex: 0,
     },
   },
 };

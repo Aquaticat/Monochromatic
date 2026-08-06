@@ -420,7 +420,7 @@ export function callResultElementReceiver({
    * Type the result container holds at the same position.
    */
   const resultHeldType = checker.getTypeArguments(resultType,)
-    .at(provenance.receiverTypeArgumentIndex,);
+    .at(provenance.resultTypeArgumentIndex,);
   return (resultHeldType === heldType)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
