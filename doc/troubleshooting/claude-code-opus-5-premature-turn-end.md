@@ -49,10 +49,18 @@ Figures in this section are model-attributed.
 Comparing a figure from one basis against a figure from the other is not valid,
 and doing so is the defect retracted in the goal feature section.
 
+The session in which this investigation ran is excluded from every figure.
+Its human turns are responses to the investigation rather than instances of the failure,
+and it grew while being measured:
+figures first recorded as 26 of 76 turns and 5 of 8 sessions
+drifted to 27 of 82 and 5 of 9 within the same working session.
+Excluding it makes the numbers reproducible.
+Any rerun must exclude the session doing the rerunning.
+
 Restart-nudge rate with reasoning effort held constant at `xhigh`,
 Wilson 95% intervals:
 
-- `claude-opus-5`: 26 of 76 turns, 34.2%, CI [24.5, 45.4]
+- `claude-opus-5`: 27 of 80 turns, 33.8%, CI [24.3, 44.6]
 - `claude-fable-5`: 4 of 119 turns, 3.4%, CI [1.3, 8.3]
 - `claude-opus-4-8`: 0 of 12 turns, 0.0%, CI [0.0, 24.3]
 
@@ -60,7 +68,9 @@ The intervals for Opus 5 and Fable 5 do not overlap.
 This is a descriptive difference between two populations,
 not an isolated model effect.
 
-Session-level spread, which rules out a single unrepresentative session:
+Session-level spread, which rules out a single unrepresentative session.
+A session counts for a model when any human turn in it was attributed to that model,
+so a session running several models counts for each and the totals overlap:
 
 - `claude-opus-5`: nudges appear in 5 of 8 sessions, 63%
 - `claude-fable-5`: nudges appear in 4 of 15 sessions, 27%
