@@ -1084,6 +1084,89 @@ export function containerGrowthEffect(
 }
 
 /**
+ * Writes an element of a fresh container bound by an array pattern.
+ *
+ * The second element-step spelling, and the first that writes no element access. A pattern
+ * binds elements, so it asks the element question; an object pattern beside it keeps asking
+ * the value question, because a container's properties are its own rather than its elements.
+ *
+ * @param rows - Rows whose element this writes through a destructured copy.
+ *
+ * @mutates rows - Writes a row bound out of a fresh container by pattern.
+ *
+ * @example
+ * ```ts
+ * destructuredContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function destructuredContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  /**
+   * First row, bound by a pattern rather than by an element access.
+   */
+  const [first,] = copy;
+  if (first !== undefined)
+    first.label = 'written';
+}
+
+/**
+ * Writes every element of a fresh container reached by iteration.
+ *
+ * The third spelling. Iteration advances an iterator through no element access and no call
+ * this walk can inspect, which is why the element question is asked of the iterated
+ * expression rather than derived from its syntax.
+ *
+ * @param rows - Rows this writes through an iterated copy.
+ *
+ * @mutates rows - Writes rows reached by iterating a fresh container.
+ *
+ * @example
+ * ```ts
+ * iteratedContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function iteratedContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows.
+   */
+  const copy = rows.slice();
+  for (const row of copy) {
+    row.label = 'written';
+  }
+}
+
+/**
+ * Writes an element of a container built by spreading another container.
+ *
+ * The fourth spelling, and the one that stacks two element steps: the spread carries the
+ * receiver's rows into a new array, and the access takes one back out.
+ *
+ * @param rows - Rows this writes through a spread copy.
+ *
+ * @mutates rows - Writes a row reached through a spread of a fresh container.
+ *
+ * @example
+ * ```ts
+ * spreadContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function spreadContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array built by spreading another fresh array.
+   */
+  const copy = [...rows.slice(),];
+  /**
+   * First row of the spread copy, which is the caller's row.
+   */
+  const first = copy[0];
+  if (first !== undefined)
+    first.label = 'written';
+}
+
+/**
  * Writes an element of a filtered container built from the parameter.
  *
  * The same shape as `containerElementWriteEffect` through the other member carrying the

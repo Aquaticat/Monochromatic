@@ -427,12 +427,14 @@ children: [
        * earns the offer its sibling assertion below names. Their callers, which do write
        * through the returned holder, are contracted and report nothing.
        *
-       * The container trio added the last four, all reports rather than offers, and all of
+       * The container cases added the last seven, all reports rather than offers, and all of
        * them the receiver opacity of an undischarged `slice` or `filter`. That opacity is
-       * what withholds an offer from a parameter written through a fresh container today,
-       * so these four are the count to watch when the element facet lands: they should
-       * become attributions, not disappear. */
-      expect(messages.length,).toBe(12,);
+       * what withholds an offer from a parameter written through a fresh container, and the
+       * element step is what attributes the write beneath it: every one of these parameters
+       * is now recorded as mutated in `effect-summaries.unit.test.ts` while still reporting
+       * here. Discharging the container members is what turns these seven into silence, and
+       * the attribution is what makes that safe. */
+      expect(messages.length,).toBe(15,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat

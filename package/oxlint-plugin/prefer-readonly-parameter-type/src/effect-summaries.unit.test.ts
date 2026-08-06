@@ -360,6 +360,14 @@ await describe({
         expect(mutatedIndexes('containerElementWriteEffect',),).toEqual([0,],);
         expect(mutatedIndexes('filteredElementWriteEffect',),).toEqual([0,],);
         expect(mutatedIndexes('containerGrowthEffect',),).toEqual([],);
+        /* The three spellings that take an element step without writing an element access.
+         * Each was empty until the element question was asked of the pattern's initializer,
+         * the iterated expression and the spread source, and each reaches the caller's row
+         * exactly as the access spelling does. Syntax decides how the step is spelled and
+         * nothing about what it reaches. */
+        expect(mutatedIndexes('destructuredContainerWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('iteratedContainerWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('spreadContainerWriteEffect',),).toEqual([0,],);
       },
     },),
     it({

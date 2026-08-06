@@ -28,6 +28,7 @@ import {
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { expressionValueOrigins, } from './effect-expression-provenance.ts';
 import {
   parameterBindingSlots,
@@ -381,14 +382,25 @@ export function discoverAliasOrigins({
         },);
       if (declaration.initializer === undefined)
         return;
+      /* An array pattern binds elements, so it takes the element step even though it writes
+       * no element access. `const [first] = copy` over a fresh container reached nothing
+       * before this, while the same write through `copy[0]` was attributed. An object
+       * pattern keeps asking the value question: it binds properties, and a container's
+       * properties are its own rather than its elements. */
       /**
-       * Parameter origins of initializer root.
+       * Parameter origins of initializer root, through elements for an array pattern.
        */
-      const parameterOrigins = expressionOrigins({
-        project,
-        bindingOriginBySymbolId,
-        node: declaration.initializer,
-      },);
+      const parameterOrigins = isArrayBindingPattern(declaration.name,)
+        ? expressionElementOrigins({
+          project,
+          bindingOriginBySymbolId,
+          node: declaration.initializer,
+        },)
+        : expressionOrigins({
+          project,
+          bindingOriginBySymbolId,
+          node: declaration.initializer,
+        },);
       state.changed = registerBindingOrigins({
         project,
         name: declaration.name,
@@ -397,10 +409,13 @@ export function discoverAliasOrigins({
       },) || state.changed;
     },);
     forOfStatements.forEach(function discoverIteration(statement,): void {
+      /* Iteration is an element step with no element access written, so it asks the element
+       * question. Over a parameter the value origins already answer it, and over a fresh
+       * container only the container relation does. */
       /**
-       * Parameter origins of iterated expression.
+       * Parameter origins reached through the iterated expression's elements.
        */
-      const parameterOrigins = expressionOrigins({
+      const parameterOrigins = expressionElementOrigins({
         project,
         bindingOriginBySymbolId,
         node: statement.expression,

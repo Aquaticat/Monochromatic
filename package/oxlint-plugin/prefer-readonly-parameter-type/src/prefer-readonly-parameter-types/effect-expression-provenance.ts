@@ -241,13 +241,31 @@ function provenanceSuccessors({
          */
         const spreadType = project.checker
           .getTypeAtLocation(element.expression,);
-        return ((spreadType !== undefined)
-            && receiverElementsArePrimitive({
-              checker: project.checker,
-              type: spreadType,
-            },))
-          ? []
-          : [element.expression,];
+        if ((spreadType !== undefined)
+          && receiverElementsArePrimitive({
+            checker: project.checker,
+            type: spreadType,
+          },))
+          return [];
+        /* Spreading is the fourth element-step spelling. `[...rows.slice()]` builds an array
+         * holding the receiver's own rows, and the spread expression's own value carries
+         * nothing, so following it as a value loses them exactly as iteration did. Both are
+         * returned rather than one: the value answers when a parameter is spread directly,
+         * and the receiver answers when a fresh container is. */
+        /**
+         * Receiver whose elements the spread container holds, when that is verified.
+         */
+        const elementReceiver = containerElementReceiver({
+          project,
+          checker: project.checker,
+          node: element.expression,
+        },);
+        return (elementReceiver === NOT_A_RECEIVER_CONTAINER)
+          ? [element.expression,]
+          : [
+            element.expression,
+            elementReceiver,
+          ];
       },);
   if (!isCallExpression(node,))
     return [];
