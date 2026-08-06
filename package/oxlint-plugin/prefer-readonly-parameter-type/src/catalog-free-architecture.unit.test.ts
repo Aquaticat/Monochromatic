@@ -78,6 +78,16 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
     },
   ],
   [
+    'effect-unpaired-view-authority.ts',
+    {
+      decision: 'doc/decision/prefer-readonly-unpaired-view-membership.md',
+      enforcedBy: [
+        'effect-unpaired-view.unit.test.ts',
+      ],
+      entryCount: 14,
+    },
+  ],
+  [
     'effect-result-provenance-authority.ts',
     {
       decision: 'doc/decision/prefer-readonly-result-provenance.md',

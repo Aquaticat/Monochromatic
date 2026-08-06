@@ -13,6 +13,10 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
+  UNPAIRED_VIEW_UNKNOWN,
+  unpairedViewMembers,
+} from './effect-unpaired-view-authority.ts';
+import {
   defaultLibraryViewMembers,
   READONLY_VIEW_INTERFACE_PREFIX,
 } from './effect-default-library-view-members.ts';
@@ -130,14 +134,27 @@ export function collectionStructureClaim({
    */
   const pairedViewMembers = defaultLibraryViewMembers({ project, },)
     .get(`${READONLY_VIEW_INTERFACE_PREFIX}${ownerName}`,);
-  if (pairedViewMembers === undefined)
-    return COLLECTION_UNRECOGNIZED;
   /**
-   * Member name deciding whether the paired view retains this operation.
+   * Member name deciding whether the read-only view retains this operation.
    */
   const memberName = declaration.name
     .text;
-  return pairedViewMembers.has(memberName,)
+  if (pairedViewMembers !== undefined)
+    return pairedViewMembers.has(memberName,)
+      ? COLLECTION_STRUCTURE_PRESERVED
+      : COLLECTION_STRUCTURE_MUTATED;
+  /* The library pairs most of what this rule cares about and leaves some of it unpaired,
+   * `DataView` being the measured case, so the derivation above has nothing to diff and
+   * answered "unrecognized" for every buffer write. The authority declares the membership
+   * the library omits, which lets the identical diff run rather than introducing a second
+   * rule that could disagree with it. */
+  /**
+   * Declared read-only membership for an interface the library never paired.
+   */
+  const declaredViewMembers = unpairedViewMembers({ ownerName, },);
+  if (declaredViewMembers === UNPAIRED_VIEW_UNKNOWN)
+    return COLLECTION_UNRECOGNIZED;
+  return declaredViewMembers.has(memberName,)
     ? COLLECTION_STRUCTURE_PRESERVED
     : COLLECTION_STRUCTURE_MUTATED;
 }

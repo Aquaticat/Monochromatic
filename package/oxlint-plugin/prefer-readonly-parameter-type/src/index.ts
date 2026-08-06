@@ -149,6 +149,11 @@ export {
  * @internal
  */
 export {
+  UNPAIRED_VIEW_INTERFACES,
+  VERIFIED_UNPAIRED_VIEW_COUNT,
+} from './prefer-readonly-parameter-types/effect-unpaired-view-authority.ts';
+
+export {
   FRESH_CONTAINER_MEMBER_NAMES,
   RESULT_PROVENANCE_BY_INTERFACE,
   RESULT_RELATION_OBSERVER_RETURN,
