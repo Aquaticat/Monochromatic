@@ -191,8 +191,11 @@ export {
   drawStratifiedSample,
 } from './sample-draw.ts';
 export {
+  assertRepairMeasurable,
   type BandQuota,
   classifyBand,
+  countUnrecordedRepairs,
+  UnmeasurableRepairError,
   DEFAULT_PRECISION_BAR,
   DEFAULT_SAMPLE_SEED,
   DEFAULT_SAMPLE_SIZE,

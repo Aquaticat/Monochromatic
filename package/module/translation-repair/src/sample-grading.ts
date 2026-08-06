@@ -326,6 +326,98 @@ export type GradableIssue = {
 };
 
 /**
+ * Raised when a sample cannot support a repair measurement because some of its
+ * issues predate repair recording.
+ *
+ * @example
+ * ```ts
+ * throw new UnmeasurableRepairError({ unrecorded: 50, sampled: 50, },);
+ * ```
+ */
+export class UnmeasurableRepairError extends Error {
+  /**
+   * Builds the refusal from the counts that make the sample unmeasurable.
+   *
+   * @param unrecorded - sampled issues carrying no recorded repair
+   *
+   * @param sampled - size of the drawn sample
+   */
+  constructor(
+    {
+      unrecorded,
+      sampled,
+    }: {
+      readonly unrecorded: number;
+      readonly sampled: number;
+    },
+  ) {
+    super(
+      `refusing a final draw: ${String(unrecorded,)} of ${
+        String(sampled,)
+      } sampled issues carry no recorded repair, so repair quality cannot be `
+        + `measured over this sample. Those artifacts predate repair recording; `
+        + `move them aside and rerun the pass into a fresh artifacts directory.`,
+    );
+    this.name = 'UnmeasurableRepairError';
+  }
+}
+
+/**
+ * Counts sampled issues whose run never recorded what was written.
+ *
+ * @param sample - drawn candidates
+ *
+ * @returns How many carry no repair provenance at all
+ *
+ * @example
+ * ```ts
+ * const unrecorded = countUnrecordedRepairs({ sample, },);
+ * ```
+ */
+export function countUnrecordedRepairs(
+  { sample, }: { readonly sample: readonly GradingCandidate[]; },
+): number {
+  return sample.filter(function lacksRepair(candidate,) {
+    return candidate.repair === undefined;
+  },)
+    .length;
+}
+
+/**
+ * Refuses a gate sample that cannot state what the pipeline wrote.
+ *
+ * The failure this prevents is silent rather than loud: the sheets render, every
+ * ungradable item reads as such, and the round still reports a repair number
+ * over whatever fraction happened to be recorded. It is reachable by simply
+ * drawing against a directory that still holds an earlier round's artifacts,
+ * since the corpus pass never overwrites one.
+ *
+ * @param sample - drawn candidates
+ *
+ * @throws {@link UnmeasurableRepairError} when any sampled issue carries no
+ * recorded repair
+ *
+ * @example
+ * ```ts
+ * assertRepairMeasurable({ sample, },);
+ * ```
+ */
+export function assertRepairMeasurable(
+  { sample, }: { readonly sample: readonly GradingCandidate[]; },
+): void {
+  /**
+   * Sampled issues whose run never recorded a repair.
+   */
+  const unrecorded = countUnrecordedRepairs({ sample, },);
+  if (unrecorded === 0)
+    return;
+  throw new UnmeasurableRepairError({
+    unrecorded,
+    sampled: sample.length,
+  },);
+}
+
+/**
  * Classifies a page into its size band by zh source byte length, using the
  * same tertile cuts the accumulation loop sorts by.
  *

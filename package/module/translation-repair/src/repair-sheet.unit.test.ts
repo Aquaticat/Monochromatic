@@ -13,10 +13,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  assertRepairMeasurable,
+  countUnrecordedRepairs,
   formatGradingSheet,
   formatRepairSheet,
   type GradableRepair,
   type GradingCandidate,
+  UnmeasurableRepairError,
 } from '../dist/final/neutral/index.mjs';
 
 /**
@@ -409,6 +412,46 @@ await describe({
         },);
         expect(sheet.includes('grade the FINAL wording',),).toBe(false,);
         expect(sheet.includes('counts against coverage',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'refuses a gate sample carrying ANY pre-recording item, since the '
+        + 'sheet would otherwise render and the round would report a repair '
+        + 'number over whatever fraction happened to be recorded',
+      fn: async () => {
+        /** Mixed sample: one recorded repair and one from an older run. */
+        const mixed = [
+          catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),
+          catCandidate({},),
+        ];
+        expect(countUnrecordedRepairs({ sample: mixed, },),).toBe(1,);
+
+        /** Failure raised by the unmeasurable item. */
+        let caught: unknown;
+        try {
+          assertRepairMeasurable({ sample: mixed, },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(UnmeasurableRepairError,);
+        expect((caught as Error).message,).toContain('1 of 2',);
+      },
+    },),
+
+    it({
+      name: 'admits a gate sample where every item states what was written',
+      fn: async () => {
+        /** Sample whose every item carries recorded provenance. */
+        const measurable = [
+          catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),
+          catCandidate({ repair: catRepair({ disposition: 'no-region', },), },),
+        ];
+        expect(countUnrecordedRepairs({ sample: measurable, },),).toBe(0,);
+        // A `no-region` item is a real measurement, not a missing one: it says
+        // no targeted repair exists, which belongs in the coverage denominator.
+        assertRepairMeasurable({ sample: measurable, },);
       },
     },),
 

@@ -12,7 +12,9 @@ import { isJsonRecord, } from '../json-guard.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
 import {
+  assertRepairMeasurable,
   classifyBand,
+  countUnrecordedRepairs,
   DEFAULT_PRECISION_BAR,
   DEFAULT_SAMPLE_SEED,
   DEFAULT_SAMPLE_SIZE,
@@ -245,25 +247,9 @@ async function drawGradingSample(): Promise<void> {
    * Sampled items carrying no recorded repair at all, which is what a draw over
    * pre-recording artifacts looks like.
    */
-  const unrecorded = sample.filter(function lacksRepair(candidate,) {
-    return candidate.repair === undefined;
-  },)
-    .length;
-
-  // A gate sheet whose items cannot state what was written is not a repair
-  // measurement, and the failure is silent: the sheet renders, every item reads
-  // NOT GRADABLE, and the round produces a repair number over whatever fraction
-  // happened to be recorded. corpus-pass skips any entry whose artifact file
-  // already exists, so this is reachable simply by drawing against a directory
-  // that still holds an earlier round's artifacts.
-  if (isFinal && (unrecorded > 0))
-    throw new Error(
-      `refusing a final draw: ${String(unrecorded,)} of ${
-        String(sample.length,)
-      } sampled issues carry no recorded repair, so repair quality cannot be `
-        + `measured over this sample. Those artifacts predate repair recording; `
-        + `move them aside and rerun the pass into a fresh artifacts directory.`,
-    );
+  const unrecorded = countUnrecordedRepairs({ sample, },);
+  if (isFinal)
+    assertRepairMeasurable({ sample, },);
 
   /**
    * Banner marking a scratch draw, prepended to BOTH sheets so neither can be
