@@ -289,6 +289,22 @@ async function drawGradingSample(): Promise<void> {
     kind: 'repair',
   },);
 
+  /**
+   * Companion manifest path.
+   *
+   * Resolved with the sheets and BEFORE any write, never after. Every one of
+   * these throws when a final file already exists, which is the protection
+   * against overwriting graded work, and a path resolved after a write turns
+   * that protection into damage: the sheets would be replaced and the run would
+   * then abort, leaving a graded set half rewritten.
+   */
+  const manifestPath = await resolveSheetPath({
+    runsDir,
+    seed: DEFAULT_SAMPLE_SEED,
+    isFinal,
+    kind: 'manifest',
+  },);
+
   await writeFile(
     outPath,
     `${banner}${
@@ -310,16 +326,6 @@ async function drawGradingSample(): Promise<void> {
       },)
     }`,
   );
-
-  /**
-   * Companion manifest path.
-   */
-  const manifestPath = await resolveSheetPath({
-    runsDir,
-    seed: DEFAULT_SAMPLE_SEED,
-    isFinal,
-    kind: 'manifest',
-  },);
 
   // Written in the same breath as the sheets, because this is the only instant
   // the mapping exists. The sheets print no issue id, and re-running the draw
