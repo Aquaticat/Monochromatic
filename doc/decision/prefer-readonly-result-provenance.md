@@ -621,9 +621,20 @@ Matched pair on identical source,
    These are the numbers issue #414 recorded,
   reproduced exactly.
 - after,
-   from `feat/readonly-collection-result-provenance`:
-   232 errors,
+   from the merge on `main`:
+   231 errors,
    135 of them this rule.
+
+Both runs come from the same built worktree,
+ which matters more than it first appeared.
+ The same lint from the feature worktree reported 232 errors and 12 warnings,
+ and that worktree is missing `tsgolint` and several built dependencies,
+ so a whole-workspace run there logged `semantic rule failed` for many files and measured nothing.
+ Neither `git-policy/cli` run logged one,
+ checked rather than assumed,
+ so the pair above was sound before it was repeated;
+ it is repeated because a measurement taken in an environment that can silently skip the rule
+ is not one to rest a decision on.
 
 The 12 warnings the second run also reports are a fresh-worktree artifact rather than a change:
 `src/api.unit.test.ts` imports `../dist/final/node/index.mjs`,
