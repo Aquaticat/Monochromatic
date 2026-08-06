@@ -414,25 +414,40 @@ where the agent visibly cast around for work that did not exist.
 The session that built this feature then ran under it,
 which is the only observation of unconditional blocking on real work.
 Measured from its own transcript:
-10 forced-continuation blocks,
+14 forced-continuation blocks,
 against 3 human turns,
-producing 10 commits.
+producing 13 commits.
 
-Each block was answered with a real defect fix rather than filler.
+The yield was not uniform,
+and the shape of the decline is the useful part.
+The first 10 blocks each produced a committed fix.
 The finds included two wrong published figures,
 a retracted comparison built on mixed counting bases,
 an unpinned corpus that was drifting while being measured,
-and two conclusion sentences left standing after the numbers beneath them were corrected.
+and several conclusion sentences left standing after the numbers beneath them were corrected.
+Blocks 11 and 12 still found real defects,
+including a retracted claim surviving in source rather than prose.
+Block 13 found nothing:
+every check it ran confirmed existing work was already correct.
+Yield therefore fell to zero once the session's unexamined surface was exhausted,
+after roughly a dozen blocks on an unusually deep backlog of unverified assertions.
 
 Read carefully, because this cuts both ways.
 The mechanism worked far better here than the disposable probe suggested,
 and the reason is that this session had genuine unexamined surface:
 a long analysis whose figures had been asserted from memory rather than re-derived.
-A session without that surface is the `Reply with the single word: ok` case instead.
+A session without that surface is the `Reply with the single word: ok` case instead,
+where the same hook produced 17 blocks and no work at all.
 One session is not a rate,
 and the agent measuring the benefit is the same agent that produced the defects,
 so treat this as an existence proof that the blocks can be productive,
 not as an estimate of how often they are.
+
+The practical reading for tuning:
+the mechanism converts unexamined surface into commits until that surface is gone,
+then costs a full model turn per stop to confirm there is nothing left.
+Neither the benefit nor the cost is constant,
+and which dominates is a property of the session rather than of the hook.
 
 ## Remediation options considered
 
