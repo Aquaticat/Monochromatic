@@ -3512,6 +3512,21 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   is over a scripted client, so the prompt's "leave it alone unless the
   improvement is clear" instruction is unvalidated against real model behavior,
   and that instruction is the main guard on a slice with no accepted issues.
+- RUN CAPS RAISED ON MEASUREMENT (task 50 COMPLETE, commit `96e7c5ec4`).
+  Recall run 001's seven entries were timed end to end from its own log:
+  per-slice 3.25 min best, 5.56 median, 8.56 worst; longest entry 74.7 min for
+  12 slices; 252 min total for seven entries.
+  That CONFIRMS the ~5.5 min/slice figure `corpus-pass.ts` already claimed, and
+  shows `HARD_CAP_MINUTES = 90` was ALREADY marginal before this branch: at the
+  worst observed rate a 12-slice entry needs 103 min and would have been cut.
+  `HARD_CAP_MINUTES` 90 -> 180, `SOFT_BUDGET_MINUTES` 240 -> 720,
+  recall `BUDGET_HOURS` 4 -> 12.
+  The measured rate is PRE-ENSEMBLE: it predates per-envelope ballots, the chunk
+  round, and the naturalness lane, all of which only add. 180 is therefore a
+  bound against runaway, not a tuned value; it clears 21 slices at the worst
+  observed rate and 32 at the median. Re-derive once a post-ensemble pass has
+  enough slices to project from, and remember the Susiethegamer lesson: per-slice
+  cost varies about 4x WITHIN one entry, so do not project from a handful.
 - THE ENSEMBLE'S WALL-CLOCK IS UNMEASURED, and this is NOT a cost question.
   An earlier version of this note called it cost and treated it as a gate on
   round three. Both were wrong, and the user corrected the first directly ("I
