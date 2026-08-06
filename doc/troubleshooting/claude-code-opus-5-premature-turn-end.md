@@ -320,37 +320,45 @@ whose entire prompt was `Reply with the single word: ok`.
 
 ## Remediation options considered
 
-No option here has an established effect on this failure.
+This section is a historical record of what was weighed before the decision,
+kept because the reasoning stays useful if the adopted approach is revisited.
+None of it is a live recommendation.
+Every option here was either rejected by the user or superseded by what was adopted,
+and each carries its disposition.
+
+No option here had an established effect on this failure.
 The model comparison is confounded,
 and the one state-based mechanism actually deployed, the goal feature,
 rescued every stop it caught without lowering the session nudge rate.
-These are candidates ranked by expected value against implementation cost,
-not by proven results.
+The ranking below weighed expected value against implementation cost,
+not proven results.
 
-- Run the goal feature deliberately across several queue-shaped sessions,
+- **Rejected.** Run the goal feature deliberately across several queue-shaped sessions,
   and compare against matched sessions without it.
-  This ranks first because it is the cheapest remaining action,
-  requires no code,
-  and tests the state-based approach before anything is built.
+  Ranked first at the time because it was the cheapest remaining action,
+  required no code,
+  and tested the state-based approach before anything was built.
   The corpus contains one goal-active session,
   which is too few to estimate an effect,
   and that session is also the most queue-shaped,
   so its 32% rate is inflated by the denominator problem.
   Getting three or four matched sessions settles whether state-based blocking helps at all.
-- Route long queue-shaped sessions to `claude-fable-5`,
+- **Rejected.** Route long queue-shaped sessions to `claude-fable-5`,
   run as a deliberate comparison rather than adopted as a fix.
-  This ranks below the goal experiment because it costs capability on the hard analysis work
+  Ranked below the goal experiment because it costs capability on the hard analysis work
   these sessions consist of,
   where the goal experiment costs nothing.
-  It ranks above building a detector because it is still only a measurement,
+  Ranked above building a detector because it is still only a measurement,
   and the corpus lacks exactly this comparison at matched task shape and period.
-- Build tracked-task-state blocking into `ccsr`,
+- **Superseded** by unconditional blocking, which needs no task state at all.
+  Build tracked-task-state blocking into `ccsr`,
   with a high-confidence phrase detector only as fallback when task state is unavailable.
-  This ranks below both measurements because it is the largest build here
+  Ranked below both measurements because it is the largest build here
   and would reimplement what the goal feature already does,
   against evidence that the goal feature did not lower the nudge rate.
-  Take it only if the goal experiment shows state-based blocking helps
-  and the goal feature itself proves too coarse to configure.
+  Its guidance still applies if unconditional blocking proves too blunt
+  and a narrower trigger is wanted,
+  since narrowing the trigger is exactly what this option describes.
   State-first ordering is what defends against the main hazard:
   a wording-keyed rule can be satisfied by deleting the announcement instead of doing the work,
   converting an informative stop into a silent one.
@@ -372,13 +380,14 @@ not by proven results.
   for a compaction boundary or a genuine blocker,
   needs an exact user-supplied marker consumed from `UserPromptSubmit`,
   never a marker the assistant can print to authorize itself.
-- Drive continuation from the harness rather than from the user,
+- **Rejected.** Drive continuation from the harness rather than from the user,
   using the `loop` skill's self-paced mode.
-  This ranks last because it treats the symptom:
+  Ranked last because it treats the symptom:
   it removes the typing cost without changing how often the agent stops,
   and it spends tokens on turns the user would otherwise have judged unnecessary.
-  It is still worth having if the measurements above come back negative,
-  since absorbing the cost beats paying it by hand.
+  Rejected on the same ground as the goal feature,
+  that the model decides whether to invoke it,
+  so it inherits the failure it is meant to correct.
 
 Filing upstream is not an option here.
 `.out-of-scope/claude-code-upstream-bugs.md` settles it:
