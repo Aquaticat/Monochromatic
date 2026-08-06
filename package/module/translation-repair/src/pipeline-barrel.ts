@@ -176,6 +176,17 @@ export {
   type AlignmentStep,
 } from './align-blocks-walk.ts';
 export { formatGradingSheet, } from './grading-sheet.ts';
+export {
+  type GradedItem,
+  type GradeVerdict,
+  parseGradedSheet,
+} from './grade-sheet-read.ts';
+export {
+  type AgreementTally,
+  type PrecisionTally,
+  scoreGradeAgreement,
+  scoreGradedPrecision,
+} from './grade-agreement.ts';
 export { formatRepairSheet, } from './repair-sheet.ts';
 export {
   fenceForMarkdown,
