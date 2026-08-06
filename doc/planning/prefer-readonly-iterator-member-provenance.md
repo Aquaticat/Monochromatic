@@ -367,7 +367,48 @@ say.
    an argument-side obligation that arrives by propagation from a callee,
    and any attempt needs that
    function as a named control rather than as a surprise.
-4.    `keys` last and separately:
+4.    Where the residue actually stands,
+   measured after step 3.
+
+   Iterator-only findings fell from 16 to 6,
+   all `entries`,
+   and every one of the six is the same
+   shape:
+   `[...collection.entries(),]` fed straight to `.map` or `.toSorted`.
+   The obvious reading is
+   that the spread is the blocker,
+   since asking about a spread operand answers about a node no branch
+   of `useEscapes` recognises.
+   It is not.
+
+   Measured rather than assumed:
+   ascending spread-into-array-literal steps so the question is asked
+   about the literal,
+   whose position as a call receiver is already attributed,
+   changed nothing at all.
+   Identical errors,
+   identical rule findings,
+   identical offers,
+   and finding sets identical line for
+   line.
+   The change was reverted rather than kept as a principled no-op,
+   because an increment that
+   cannot be shown to do anything is one more thing to maintain and one more thing to disbelieve.
+
+   So the blocker for these six is somewhere after the escape test,
+   and the next investigation
+   starts by finding which gate refuses `checkBaseline` in
+   `package/module/jsonc-edit.fuzz/src/coverage-report.ts`,
+   whose receiver is a `ReadonlyMap<string, number>`
+   and whose pair type is therefore entirely primitive.
+   Note before starting that the paired relation
+   should verify there,
+   `number` against `number` being interned and identical,
+   which means the
+   refusal is unlikely to be the relation and the first thing to instrument is
+   `receiverClaimAnswerable`.
+
+5.    `keys` last and separately:
    its elements are indices,
    so the interesting claim is that it carries no
    receiver state at all,
