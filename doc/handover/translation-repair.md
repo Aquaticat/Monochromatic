@@ -4972,3 +4972,43 @@ same arithmetic recorded when the cap was set.
 DO NOT silently raise the budget. Measure again at the halfway mark: the band
 interleave means small entries settle faster, so the mean over fifteen may come
 in well under the seven-slice worst case this projection uses.
+
+#### Sharpened: the projection is band-aware, and 15 entries probably will not fit
+
+The first projection spanned 7.4 to 17.2 hours because it guessed at slices per
+entry. Two facts remove that guess.
+
+SLICES ARE SIZE-CAPPED at `SLICE_CHAR_BUDGET = 400` target characters, so a
+slice costs roughly the same wherever it comes from. Band does not change the
+price of a chunk, only HOW MANY chunks an entry has. The 9.80 min/chunk mean is
+therefore usable across bands rather than only for the large entry it was
+measured on.
+
+THE PASS INTERLEAVES BANDS so coverage fills evenly, so the first fifteen
+settled entries are about five per band rather than fifteen of any one.
+
+Estimating slice counts from the band thresholds (`SMALL_BAND_MAX_BYTES` 1843,
+`MEDIUM_BAND_MAX_BYTES` 3686, Chinese at roughly three bytes per character and
+an English expansion near 1.6):
+
+```text
+small   ~2 slices     medium  ~4 slices     large  ~11 slices
+15 entries at five per band ~ 85 slices
+85 x 9.80 min = 13.9 h against a 12.0 h soft budget
+```
+
+Per-chunk time would have to fall to 8.5 minutes for fifteen entries to fit.
+
+SO THE LIKELY OUTCOME IS A SHORT ROUND, not a failed one: the pass stops
+starting entries at the budget and finishes the one in flight, and roughly
+twelve to thirteen entries settle instead of fifteen.
+
+THE ONE VARIABLE THAT COULD CHANGE IT is provider latency, which is the bulk of
+the per-chunk cost right now (first-byte 126 to 192 seconds in this log) and is
+not stable. It has been better in earlier runs this session. Re-measure rather
+than trusting this.
+
+STILL THE USER'S CALL, and now worth raising BEFORE the budget fires rather than
+after: accept twelve or thirteen entries, or raise `SOFT_BUDGET_MINUTES`. The
+fifty-issue sample is unaffected either way, so the cost of the short round is
+page diversity alone.
