@@ -3389,25 +3389,42 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   imports, so run 001 measures a policy-free pipeline.
   That makes run 001 a clean POLICY-FREE RECALL BASELINE, and it also means
   round-three recall will not be comparable to it on this axis.
-  Options, ranked, for the user to choose from before round three:
-  attribute rather than exclude (record why a seed went unrestored, separating
-  "never detected" from "detected and declined on protective grounds", using the
-  panel status the pipeline already produces) beats excluding protected
-  sentences from seeding, because exclusion needs a classifier over sensitive
-  content and misfiring keyword matching on suicide and medication topics is its
-  own harm; and excluding beats running the benchmark with the policy disabled,
-  because that would measure a pipeline that is not the one shipping. The
-  attribution route also costs no extra model calls.
-- COST OF THE ENSEMBLE IS UNMEASURED, and this is the gate before round three.
-  Per-envelope ballots run sequentially, one selection round per envelope with
-  more than one distinct proposal, and each now carries source plus envelope
-  base plus 800 characters of context. Measured first-byte latencies in this
-  package span 1.5 s to 180 s and one large entry already took 80+ minutes.
-  Run ONE slice end to end and compare call count and wall clock against a
-  pre-change slice before committing a full pass. The `editor-candidates`,
-  `editor-envelope-select`, and `editor-chunk-select` findings are the
-  instrument: if chunk-level declines dominate, the ensemble bought several
-  times the editor tokens for output identical to one model's.
+  RESOLVED by user decision 2026-08-06 ("I'll go with your recommendation"):
+  ATTRIBUTE rather than exclude, shipped in `363d4649e`.
+  `gradeSeedDetection` returns a `SeedDetectionVerdict` instead of a boolean:
+  `accepted`, `declined-protective` (the panel landed `source-defect` at the
+  seed's region), `declined-other`, or `undetected`. The scorecard reports
+  `policyDeclinedSeeds` and `seedDetectionRateExcludingPolicy` BESIDE the raw
+  `seedDetectionRate` rather than replacing it, because both numbers are true
+  and a verdict has to say which it cites.
+  Rejected alternatives, with reasons: excluding protected sentences from
+  seeding needs a classifier over suicide and medication topics whose misfires
+  are their own harm; running the benchmark with the policy disabled would
+  measure a pipeline that is not the one shipping. Attribution also costs no
+  extra model calls.
+- THE ENSEMBLE'S WALL-CLOCK IS UNMEASURED, and this is NOT a cost question.
+  An earlier version of this note called it cost and treated it as a gate on
+  round three. Both were wrong, and the user corrected the first directly ("I
+  don't think the cost matters"). The plan is flat rate and quota regenerates
+  faster than runs spend, which is the user's own directive and the reason
+  stages retry lost voices freely, so tokens are free.
+  What is actually at stake is COVERAGE PER RUN. `HARD_CAP_MINUTES = 90` in
+  `corpus-pass.ts` aborts one entry's exchanges, and its own comment records the
+  measured ~5.5 min/slice rate that makes 90 minutes clear about 16 slices.
+  Per-envelope ballots run sequentially, one round per envelope with more than
+  one distinct proposal, each now carrying source plus envelope base plus 800
+  characters of context, so per-slice time rises and the slices an entry can
+  finish falls. Slice-level resumability means a capped entry resumes next run,
+  so the harm is entries covered per run rather than lost work.
+  That makes this a CONSTANT TO SET, not a gate. Read the per-slice rate off the
+  first slices of the round-three pass and raise `HARD_CAP_MINUTES` and
+  `SOFT_BUDGET_MINUTES` to fit, rather than holding the pass for a separate
+  measurement run (task 50).
+  Do NOT project from a handful of slices: the Susiethegamer projection missed
+  by 2x (projected 37 min, actual 80.9) because per-slice cost varies about 4x
+  WITHIN one entry.
+  The `editor-candidates`, `editor-envelope-select`, and `editor-chunk-select`
+  findings are the instrument for how often judging actually fires.
 - BRANCH REBASED onto main (main was 1228 commits ahead; 276 branch commits
   replayed). Conflict surface was five files. `pnpm-lock.yaml` was never
   hand-resolved (LFW): upstream taken at each conflict and the lockfile
@@ -3438,8 +3455,13 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   `@monochromatic-dev/git-policy-cli/ts/resolve-git.ts`. `resolve-git.ts` pulls
   in two node builtins and two small workspace modules; the artifact dropped
   from 651 kB to 167 kB.
-  TRAP FOR NEXT TIME: `lint:types` does NOT cover the unit tests, which import
-  from `dist`, so a green type-check says nothing about them. Run `test:unit`.
+  TRAP FOR NEXT TIME, and the first version of this note got it WRONG. It said
+  `lint:types` does not cover the unit tests. It does. What actually happened is
+  that the tests type-check against `dist`, and `dist` was STALE: it still
+  carried the old `RepairModels` with `editorModelId`, so tests referencing the
+  removed field checked out clean against the old API. The correct rule is
+  BUILD FIRST, then `lint:types`, then `test:unit`; a green type-check over a
+  stale `dist` proves nothing about either.
 - `prefer-readonly-parameter-types` IS BEING IGNORED ON THIS BRANCH by user
   decision, and is filed as
   https://github.com/Aquaticat/Monochromatic/issues/414.
