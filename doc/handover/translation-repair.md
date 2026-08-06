@@ -4155,3 +4155,142 @@ delete the slice cache,
 then start the next numbered log.
 Deleting the cache is belt and braces now that the key covers run shape,
 but a stale directory invites exactly the confusion the key exists to prevent.
+
+### Run 004: the introduced-defect probe, and a misread of the user I had to undo
+
+Commits `21f5e9092` (probe) and `e3ba6d325` (integration tests).
+The pass restarted as `pass8-run-004`.
+
+#### What I got wrong first, because it will recur
+
+The user was asked two questions.
+Whether regressions should gate or rank, offered as four options,
+and whether to build a check for defects nobody had raised.
+They answered the second with "Build it now"
+and the first with "I believe there is a better option than those 4 you
+listed", naming none.
+
+I then told them my reading was "build the check, let it gate",
+and called that their better option.
+That is supplying an answer to the one question they withheld.
+My own hedge in the same message, "if that's not the better option you had in
+mind, tell me", was the tell that I knew I was guessing.
+
+The rule this earns:
+a declined menu is not a delegation.
+When a user rejects every option and names no replacement,
+the question is still theirs,
+and the only honest move is to do the part that WAS authorized and leave the
+rest open.
+
+#### Shadow mode, and why it is also the better engineering
+
+The probe records and decides nothing.
+`compareCandidates` is untouched.
+
+That is not only deference.
+The probe's failure mode is known before its first call:
+every region it inspects contains a defect BY CONSTRUCTION,
+since that is why the region was edited,
+so a model asked whether anything is wrong will find something.
+Its false-positive rate is unmeasured.
+Wiring an unmeasured stage into a blocking position would let one bad verdict
+discard a whole chunk's repair including fixes in other envelopes.
+The 98.1 percent checker confirmation rate already on record is the reason to
+measure a new prompt rather than assume a differently worded one discriminates.
+
+Round three's artifacts plus the human repair-sheet grades
+("fully fixes this defect AND breaks nothing nearby") are the measurement.
+Re-open the gate question only with those numbers in hand.
+
+#### Three defenses against the known failure mode
+
+The verdict vocabulary offers NO `clean`.
+It is `introduced-defect`, `no-introduced-defect-found`, `uncertain`.
+`clean` would be false of a region whose original defect survives,
+and forcing a prober to choose between `clean` and a defect verdict would push
+every such region into the defect bucket.
+The long negative name says what a negative verdict actually proves.
+
+The pre-existing accepted issues are rendered into the sheet under
+"PRE-EXISTING DEFECTS THIS EDIT TARGETED (these are NOT your findings)".
+
+Every claim must quote the damaged wording from the AFTER text,
+and `introduced-defect-screen.ts` then judges the quote with no model involved:
+present in AFTER and absent from BEFORE is `corroborated`,
+already present in BEFORE is `contradicted`,
+missing or unfindable is `unanchored`.
+Whitespace is collapsed on both sides first so a rewrapped quote still resolves.
+That follows `screenNonTranslationVotes`:
+deterministic evidence DISMISSES an impossible claim and never has to prove a
+possible one.
+There is no mechanical test for mistranslation,
+so demanding positive proof would blind the probe to its own subject.
+
+#### Where the telemetry lands
+
+`ChunkRepairOutcome.introducedDefects` carries the whole report;
+`RepairIssueRecord.introducedDefects` carries the tallies for the regions
+serving THAT issue, so a sheet item and the probe's opinion of the same item
+join up inside one artifact record.
+Both optional, absent meaning unprobed.
+The corpus artifact writer serializes `result.issues` wholesale,
+so no writer change was needed.
+
+`SLICE_CACHE_VERSION` 3 -> 4.
+
+#### Also landed, found by sol while reviewing the probe
+
+`assertCheckerIndependence` now refuses a checker roster listing one model
+twice.
+`gatherStageVoices` counts a repeated id's replies separately toward quorum
+while `runCheckerStage` keys ballots by model id and collapses them,
+so a three-model roster with a repeat could report quorum on what is really one
+independent voice.
+`assertJudgeableProducerRoster` already refused repeats for producers.
+Latent, not live: the configured roster has no duplicates. Verified.
+
+Sol also flagged that `repair-chunk.ts` calls `assertCheckerIndependence`
+without `refinerModelIds`.
+CHECKED, and it is not a defect:
+`refine-phase.ts:111` makes the same call WITH refiners before any refinement
+runs, and returns early when the lane is off.
+The chunk-level call happens before any refiner has written anything.
+
+#### Gaps left open on purpose
+
+The probe inspects the ACCURACY patch only.
+The refiner lane is on (Kimi-K3, which also edits), so a defect the naturalness
+rewrite introduces is invisible to it.
+Sol's recommendation was to probe after every text-producing stage.
+Not built: it doubles the probe's cost and round three needs the accuracy
+measurement first.
+Watch for it when reading grades where `refined` is set,
+since a human grading the final wording can mark N for damage the probe never
+saw.
+
+Sol's Q1 preference was a writer-disjoint DISCOVERY roster separate from a
+confirming one, so no model confirms its own claim.
+The probe uses the checker roster for both.
+Recorded because it is the first thing to try if the measured precision is poor.
+
+#### File-budget moves
+
+The critic stage plus its vote screening moved to `chunk-critic-phase.ts`,
+and the probe exports to `probe-barrel.ts`,
+both because the additions pushed `repair-chunk.ts` to 310 lines and
+`pipeline-barrel.ts` to 324.
+Split, never raised (MXL).
+`refine-barrel.ts` was the existing precedent for a second barrel.
+
+#### The integration gap the warnings exposed
+
+The pipeline stub in `repair-translation.unit.test.ts` had no script for
+`introduced_defect_report`, so every end-to-end run lost all prober voices and
+the probe returned an empty report:
+the wiring was never exercised and the suite would have stayed green if the
+tally never reached the records.
+Three cases now cover it, and the middle one is the load-bearing assertion:
+a defect EVERY prober corroborates must still ship.
+That test fails the moment anything downstream starts reading the report,
+which is what pins shadow mode against a future accidental gate.
