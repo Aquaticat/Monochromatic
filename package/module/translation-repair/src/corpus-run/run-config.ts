@@ -54,9 +54,9 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * against each other, and three check the shipped repair.
  *
  * The panel is six rather than seven because the provider withdrew two models
- * and only one replacement (Kimi-K3) appeared. The stage quorum is unaffected:
- * `gatherStageVoices` computes it as `voices > modelIds.length / 2`, which
- * needs 4 voices at seven models and 4 at six.
+ * and only one replacement (Kimi-K3) appeared. `gatherStageVoices` computes
+ * the stage quorum as `voices >= ceil(modelIds.length / 2)`, so seven models
+ * need 4 voices and six need 3.
  *
  * The ISSUE-acceptance gate does move, and the user accepted the move rather
  * than it happening unnoticed: `DEFAULT_ADJUDICATION_CONFIG.minBallotWeight` is

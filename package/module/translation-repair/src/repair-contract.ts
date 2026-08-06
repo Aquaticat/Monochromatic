@@ -1,4 +1,5 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { MIN_SELECTION_VOTES, } from './candidate-select-model.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
 //region Repair contract
@@ -93,20 +94,26 @@ export class EditorRosterError extends Error {
 }
 
 /**
- * Refuses a roster whose judges are all editors.
+ * Refuses a roster that cannot seat enough disinterested judges.
  *
- * Selection removes producers from the judge roster, so an all-editor roster
- * does not fail loudly on its own: every round would return
- * `no disinterested judge available` and the ensemble would silently degrade
- * into always shipping its fallback, which looks like a working pipeline in
- * logs and in tests. Refusing at stage entry turns that into a first-chunk
- * crash instead of a wasted corpus run.
+ * Selection removes producers from the judge roster, so a roster short of
+ * judges does not fail loudly on its own: rounds would return
+ * `no disinterested judge available` or `winner short of the minimum vote
+ * count`, and the ensemble would silently degrade into always shipping its
+ * fallback, which looks like a working pipeline in logs and in tests. Refusing
+ * at stage entry turns that into a first-chunk crash instead of a wasted
+ * corpus run.
+ *
+ * Duplicate editor ids are refused for the same reason: a repeated id is one
+ * model counted twice, which inflates the apparent ensemble without adding an
+ * independent voice.
  *
  * @param editorModelIds - editors that propose candidates
  *
  * @param judgeModelIds - roster judges are drawn from
  *
- * @throws {@link EditorRosterError} when no judge sits outside the editors
+ * @throws {@link EditorRosterError} when editors repeat or too few judges sit
+ * outside the editors
  *
  * @example
  * ```ts
@@ -123,17 +130,101 @@ export function assertJudgeableEditorRoster(
   },
 ): void {
   /**
-   * Editors keyed for membership tests.
+   * Editors keyed for membership tests, also revealing repeats by size.
    */
   const editors = new Set(editorModelIds,);
-  if (judgeModelIds.some(function isDisinterested(modelId,) {
-    return !editors.has(modelId,);
-  },))
+  if ((editors.size !== editorModelIds.length) || (editors.size === 0))
+    throw new EditorRosterError({
+      editorModelIds,
+      judgeModelIds,
+    },);
+
+  /**
+   * Judges with no stake in any editor candidate.
+   */
+  const disinterested = new Set(
+    judgeModelIds.filter(function isDisinterested(modelId,) {
+      return !editors.has(modelId,);
+    },),
+  );
+  if (disinterested.size >= MIN_SELECTION_VOTES)
     return;
   throw new EditorRosterError({
     editorModelIds,
     judgeModelIds,
   },);
+}
+
+/**
+ * Thrown when a checker would certify text it helped write.
+ *
+ * @example
+ * ```ts
+ * throw new CheckerIndependenceError({ overlapping, },);
+ * ```
+ */
+export class CheckerIndependenceError extends Error {
+  /**
+   * Builds the report from the models holding both roles.
+   *
+   * @param overlapping - models that both edit and check
+   */
+  constructor(
+    {
+      overlapping,
+    }: {
+      readonly overlapping: readonly SyntheticModelId[];
+    },
+  ) {
+    super(
+      `these models would check their own edits: [${overlapping.join(', ',)}]; `
+        + `checkerModelIds must exclude every editor`,
+    );
+    this.name = 'CheckerIndependenceError';
+  }
+}
+
+/**
+ * Refuses a roster where an editor also checks.
+ *
+ * The checker stage is the proof that an accepted issue is actually gone. A
+ * model grading its own rewrite is not proof, and unlike the judge roster this
+ * one is not filtered at runtime, so nothing else would catch the overlap.
+ *
+ * @param editorModelIds - editors that propose candidates
+ *
+ * @param checkerModelIds - checkers proving the shipped repair
+ *
+ * @throws {@link CheckerIndependenceError} when any model holds both roles
+ *
+ * @example
+ * ```ts
+ * assertCheckerIndependence({ editorModelIds, checkerModelIds, },);
+ * ```
+ */
+export function assertCheckerIndependence(
+  {
+    editorModelIds,
+    checkerModelIds,
+  }: {
+    readonly editorModelIds: readonly SyntheticModelId[];
+    readonly checkerModelIds: readonly SyntheticModelId[];
+  },
+): void {
+  /**
+   * Editors keyed for membership tests.
+   */
+  const editors = new Set(editorModelIds,);
+
+  /**
+   * Models holding both roles.
+   */
+  const overlapping = checkerModelIds.filter(function alsoEdits(modelId,) {
+    return editors.has(modelId,);
+  },);
+  if (overlapping.length === 0)
+    return;
+  throw new CheckerIndependenceError({ overlapping, },);
 }
 
 /**

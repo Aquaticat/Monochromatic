@@ -11,9 +11,10 @@ import {
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { downgradeCount, } from './downgrade-count.ts';
 import { parseDocument, } from './parse-document.ts';
-import type {
-  ChunkRepairOutcome,
-  RepairModels,
+import {
+  assertCheckerIndependence,
+  type ChunkRepairOutcome,
+  type RepairModels,
 } from './repair-contract.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
@@ -91,6 +92,11 @@ export async function repairChunk(
     readonly l: Logger;
   }>,
 ): Promise<ChunkRepairOutcome> {
+  assertCheckerIndependence({
+    editorModelIds: models.editorModelIds,
+    checkerModelIds: models.checkerModelIds,
+  },);
+
   /**
    * Parsed chunk pair claims anchor against.
    */

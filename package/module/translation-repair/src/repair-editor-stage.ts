@@ -218,6 +218,7 @@ export async function runEditorStage(
     envelopes,
     judgeModelIds,
     sourceText,
+    targetText,
     signal,
     perCallTimeoutMs,
     l,

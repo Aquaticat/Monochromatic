@@ -89,7 +89,9 @@ export {
 } from './repair-benchmark.ts';
 export { repairChunk, } from './repair-chunk.ts';
 export {
+  assertCheckerIndependence,
   assertJudgeableEditorRoster,
+  CheckerIndependenceError,
   type ChunkRepairOutcome,
   EditorRosterError,
   type RepairModels,
@@ -107,6 +109,7 @@ export {
   type CandidateProducer,
   describeProducer,
   mergeProducers,
+  MIN_SELECTION_VOTES,
   producerModelIds,
   type SelectionOutcome,
   type SelectionTally,
@@ -118,6 +121,7 @@ export {
   CANDIDATE_SELECT_RESPONSE_FORMAT,
   type CandidateBallotWire,
   isCandidateBallotWire,
+  type SelectEvidence,
 } from './candidate-select-wire.ts';
 export {
   applyCandidate,

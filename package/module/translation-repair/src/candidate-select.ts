@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import {
   type Candidate,
   describeProducer,
+  MIN_SELECTION_VOTES,
   producerModelIds,
   type SelectionOutcome,
   type SelectionTally,
@@ -16,6 +17,7 @@ import {
   CANDIDATE_NONE,
   CANDIDATE_SELECT_RESPONSE_FORMAT,
   isCandidateBallotWire,
+  type SelectEvidence,
 } from './candidate-select-wire.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
@@ -61,7 +63,7 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
  *
  * @param criteria - ordered decision rules, most important first
  *
- * @param evidence - source and baseline text judges compare against
+ * @param evidence - source and baseline material judges compare against
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -94,7 +96,7 @@ export async function selectBestCandidate<ValueT,>(
     readonly judgeModelIds: readonly SyntheticModelId[];
     readonly task: string;
     readonly criteria: readonly string[];
-    readonly evidence: string;
+    readonly evidence: readonly SelectEvidence[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -243,6 +245,20 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'judges tied',
+      tally: counted,
+    };
+  }
+  if (leader[1] < MIN_SELECTION_VOTES) {
+    // A plurality of one is not agreement. Lost voices and abstentions can
+    // leave a single judge as the only one who named anything, and letting
+    // that judge decide would put one model back in control of the stage.
+    sl.info(
+      `winner drew only ${String(leader[1],)} of ${String(counted.ballots,)} ballots `
+      + `(${String(counted.abstentions,)} abstentions); keeping the fallback`,
+    );
+    return {
+      kind: 'declined',
+      reason: 'winner short of the minimum vote count',
       tally: counted,
     };
   }

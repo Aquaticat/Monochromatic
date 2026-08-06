@@ -7,6 +7,17 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // stops a stitched composite from being reported as one model's work.
 
 /**
+ * Votes a winner must draw before a selection counts.
+ *
+ * One vote deciding is one model deciding, which is the exact thing the
+ * ensemble exists to prevent: a round where every other judge abstained or was
+ * lost would otherwise hand the whole chunk to whichever single judge answered.
+ * Two is the smallest number that makes a selection an agreement rather than an
+ * opinion.
+ */
+export const MIN_SELECTION_VOTES = 2;
+
+/**
  * Who produced a candidate.
  *
  * A composite is text NO model wrote or read as a whole, so it names its
