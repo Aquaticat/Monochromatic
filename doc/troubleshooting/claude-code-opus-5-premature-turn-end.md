@@ -100,11 +100,15 @@ even if the model stops early just as often.
 The populations differ exactly this way.
 Median length of the non-nudge human turns:
 
+Every model-attributed session of at least 14 turns is listed,
+so the comparison is not a selected subset:
+
 - `claude-opus-5`, 43-turn session: 33 characters, with turns like `finish the migration` and `Let's split the model.`
 - `claude-opus-5`, 15-turn session: 75 characters
 - `claude-opus-4-8`, 62-turn session: 58 characters
 - `claude-fable-5`, 50-turn session: 69 characters
 - `claude-fable-5`, 51-turn session: 120 characters
+- `claude-fable-5`, 27-turn session: 155 characters
 
 Session sizes here are model-attributed.
 The gap between the bases is large for the second Opus 5 session,
@@ -241,6 +245,12 @@ The published hook reference lists `effort` among the common fields;
 no `effort` key was present on any of the 18 logged dispatches.
 
 ## Rescue rate, measured
+
+These figures come from a snapshot taken before forced continuation shipped,
+and the investigating session contributed no blocks to it,
+so they carry none of the drift the measurement section describes.
+A rerun today would not reproduce them:
+this repository's own hook now emits Stop feedback on every turn.
 
 The corpus contains 94 Stop-hook feedback records on the main branch.
 Only 67 carry a `hook_blocking_error` attachment;
