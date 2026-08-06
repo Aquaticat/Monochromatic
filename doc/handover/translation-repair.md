@@ -132,7 +132,14 @@ consumers and deployment are deliberately out of scope for now.
 
 ## Where work lives
 
-- Worktree `${HOME}/worktrees/translation-repair`, branch `translation-repair`.
+- Worktree `${HOME}/worktrees/translation-repair`, branch
+  `translation-repair-rebased` since 2026-08-06. The work MOVED off
+  `translation-repair`: that branch is protected against force-push, so the
+  rebase onto main could never land on it, and the remote copy is frozen at the
+  pre-rebase history. Work on `translation-repair-rebased` from now on, and
+  treat `origin/translation-repair` as stale rather than as the branch to push
+  to. The pre-rebase tip is also kept locally as
+  `translation-repair-prerebase-backup`.
   Moved 2026-07-24 (`git worktree move`) out of the old in-repo
   `.claude/worktrees/translation-repair`, which risked the same stray-cleanup loss
   as `${HOME}/temp`; it now sits alongside the repo's other worktrees under
