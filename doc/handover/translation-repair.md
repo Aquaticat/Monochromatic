@@ -3150,3 +3150,65 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   the panel stage at 16:12:01Z and the next critic stage at 16:40:20Z there is a
   28 minute gap with no editor or checker line logged, though the panel had
   issued 11 issues. Cause not established; do not assume it is provider latency.
+- ROUND-TWO GATE VERDICT: FAILED at 0.74 / 0.787 / 0.80 (strict / partials
+  excluded / ceiling), against round one's 0.56 / 0.64 / 0.68. 37 clear Y, 10
+  clear N, 3 ungradable of 50. Bar needs 45 of 50. Full analysis in
+  `node_modules/.monochromatic/translation-repair-runs/gate-verdict-round-two.md`
+  (outside git, quotes UNLICENSED corpus).
+  Fixes A-F did real work (+0.18 strict, clear false positives 16 -> 10) and the
+  direction is right, but the gate is not close.
+  The band-balanced (0.788) and pool-weighted (0.794) readings agree to within a
+  point, so the weighting question flagged before the draw did not need the
+  user's decision. Record that it was computed, not skipped.
+- NATURALNESS GAP CONFIRMED, both architecturally and empirically. The user
+  suspected paragraph-level rewriting for English naturalness was not
+  implemented; it is not.
+  Architecturally: repairs are ISSUE-DRIVEN. `edit-prompt.ts` already tells the
+  editor that "Emotional completeness and naturalness outrank word-for-word
+  correspondence" and may "recast wording, sentence boundaries, and clause order
+  freely", but the editor only ever touches a region an accepted issue already
+  covers. A paragraph that is accurate, complete, and grammatical but stilted is
+  never visited, because nothing generates an issue for it.
+  Empirically, over all 2257 accepted issues: accuracy 77.4 percent (omission
+  31.6, mistranslation 23.3, addition 21.8), style 13.6 (emotional-flattening
+  8.9, awkward-phrasing 4.5, register 0.1), fluency 4.0, terminology 3.0,
+  policy 1.4. Paragraph-level naturalness work is 4.6 percent of output.
+  The grading confirms the harm is active, not merely absent: 3 of the 10 clear
+  false positives are literalism FIGHTING fluency (poetry judged literally,
+  总是 forced to "always", conjunctions counted as additions when they are what
+  makes the English read well).
+- SYNTHETIC ROSTER CHANGED UNDER US (measured 2026-08-05 against the live
+  `GET https://api.synthetic.new/openai/v1/models`, not from memory).
+  TWO OF THE SEVEN ROSTER MODELS ARE GONE: `hf:moonshotai/Kimi-K2.7-Code` and
+  `hf:MiniMaxAI/MiniMax-M3` both return HTTP 404
+  `"... is no longer supported. Try using a different model, like
+  hf:zai-org/GLM-5.2"`. Both were live during run 017, so this landed in the
+  days since.
+  404 is NOT in `transient-retry.ts`'s retry set (408, 429, 500, 502, 503, 504),
+  so each is a non-transient throw: the stage loses that voice immediately with
+  no retry and the run continues DEGRADED. Unchanged, every stage would now run
+  at 5 of 7 voices, permanently and quietly.
+  THE ALIAS TRAP, which is the part worth reading twice: the endpoint lists 10
+  ids but only SIX are distinct models. `syn:large:text` is GLM-5.2,
+  `syn:large:vision` is Kimi-K3, `syn:small:text` is GLM-4.7-Flash, and
+  `syn:small:vision` is Qwen3.6-27B, each confirmed by the `hugging_face_id`
+  field. Restoring a 7-voice panel by adding a `syn:` alias would put the SAME
+  model on the panel twice, and the voting stages would count one model's
+  opinion as two independent confirmations. Never select roster members by id
+  alone; dedupe on `hugging_face_id`.
+  Distinct models now available, with context lengths: GLM-5.2 (524288),
+  Kimi-K3 (524288, NEW, text+image), Qwen3.6-27B (262144, text+image),
+  Nemotron-3-Super-120B (262144), GLM-4.7-Flash (196608), gpt-oss-120b (131072).
+  So the panel can hold at most SIX independent voices, down from seven, unless
+  Kimi-K3 counts as the replacement for Kimi-K2.7-Code and MiniMax-M3 goes
+  unreplaced. Quorum thresholds and cross-round comparability both depend on
+  this; decide it explicitly rather than letting the roster silently shrink.
+- NEW USER INSTRUCTION (2026-08-05): before handing over a grading sheet,
+  pre-resolve the unambiguous Y/N items and hand over only genuinely contested
+  ones. This revives task 31 (judge crosscheck) as the mechanism.
+  MUST be calibrated before it is trusted: if the agent resolves items, the
+  reported precision partly reflects the agent's judgement rather than the
+  user's, which is the measurement the gate exists to protect. The user has now
+  graded 100 items across two rounds, which is exactly the calibration set.
+  Measure agreement against those 100 BEFORE pre-resolving anything, and report
+  the agreement rate alongside the next sheet.
