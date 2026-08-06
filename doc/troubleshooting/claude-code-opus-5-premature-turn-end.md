@@ -163,7 +163,12 @@ Repository instructions:
 `AGENTS.md` rule `PXQ`,
 which states plainly that a turn must never end on a status report the user answers with `continue`,
 was committed 2026-07-28 in `af1c69278`.
-Of the 15 literal `Continue.` nudges under Opus 5, 12 occurred after that commit.
+Counting only turns whose entire text is some spelling of `continue`,
+a stricter set than the restart-nudge definition used elsewhere,
+Opus 5 drew 16 of them and 13 came after that commit.
+An earlier revision said 15 and 12,
+which mixed a snapshot taken before the corpus was pinned
+with a nudge set that also admitted `go ahead`.
 
 Reactive automation:
 on 2026-07-29 the user reported having configured an automatic `continue` send.
@@ -226,7 +231,8 @@ Both runs behaved identically:
 - `stop_hook_active` was `false` on the first dispatch and `true` on all 8 after.
   It never cleared.
   Honoring it therefore caps forced continuation at exactly one,
-  and ignoring it yields up to 9.
+  and ignoring it yields as many continuations as Claude Code allows,
+  which is not a fixed number.
 
 A third run, of the shipped handler rather than a minimal probe,
 ended after 17 dispatches, all of them forced continuations.
