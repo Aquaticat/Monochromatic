@@ -433,7 +433,40 @@ say.
    the
    iterator question is answered and what is left is about something else.
 
-5.    `keys` last and separately:
+5.    Decided rather than implemented,
+   and the measurement inverts what this document first proposed.
+
+   `keys` must stay unregistered,
+   and the reason is the opposite of the one written below.
+   Probed
+   over an overlay,
+   `writeThroughMapKey(rows: Map<KeyRow, string>)` iterating `rows.keys()` and writing
+   `row.label` reads `referentMutated=[]` and `opaque=[0]`,
+   naming `rows.keys`.
+   The write is not
+   attributed;
+   the opacity is the only thing withholding the read-only offer.
+
+   So registering `Map.keys` under the element relation would discharge that opacity while the
+   attribution behind it is empty,
+   which is a false offer on a function that rewrites every key it is
+   handed.
+   That is precisely the failure `effect-collection-member-effect.ts` names in its own comment,
+   and it is the same order-of-work error the escape-walk step made:
+   the discharge may only land after
+   something attributes the write.
+
+   The array half needs no entry at all.
+   `sumIndexes(rows: readonly KeyRow[])` iterating `rows.keys()`
+   is already fully silent,
+   because the result carries indices and the exposure test answers before any
+   relation is consulted.
+   An entry there would be false as well as useless:
+   the indices a key iterator
+   yields are not the receiver's elements.
+
+   Superseded proposal,
+   kept because its instinct was right and its conclusion was backwards:
    its elements are indices,
    so the interesting claim is that it carries no
    receiver state at all,
