@@ -169,29 +169,44 @@ diagnostic #414 asked for.
    because both members invoke an observer and the composition from
   increment 1 still withholds their receiver claim.
 
+- `4307d6fde`,
+   increment 2,
+   first half.
+   The shared resolver prunes a successor that cannot carry mutable
+  identity,
+   so `{ named: row.label }` records no origin while `{ row }`,
+   `{ row: row }` and `[row]`
+  still do.
+   Measured before and after on the same overlay sources.
+   `packageCountFresh` in the
+  result-provenance fixture pins it,
+   with a deeply readonly parameter so it adds no diagnostic to the
+  sibling counts.
+   Whole suite unchanged,
+   and the baseline above is unchanged.
+
 ### Next
 
 Increment 2,
- the largest remaining piece and the one every later step consumes:
- give `expressionOrigins` a
-discriminated answer,
- proven-with-origins against unproven,
- and prune leaves that provably cannot carry
-mutable identity.
-
-Two measurements bound it.
- `row => ({ count: row.count })` currently reports the callback parameter as an
-origin,
- because the object-literal branch queues `row.count` and `expressionRoot` strips the property access
-back to `row`;
- that is the false positive the fresh-object `map` case turns on.
- And `NO_SLOT_ORIGIN` today
-means both "proven to carry nothing" and "could not be resolved",
- so discharging on an empty set would
-repeat the defect the effect-model split already caught once,
- where an empty match silently dropped a real
-mutation.
+ second half:
+ the discriminated answer,
+ proven-with-origins against unproven.
+ `NO_SLOT_ORIGIN`
+today means both "proven to carry nothing" and "could not be resolved",
+ and discharging on an empty set
+would repeat the defect the effect-model split already caught once,
+ where an empty match silently dropped a
+real mutation.
  `rows.map(row => unknownClone(row))` is the case that must stay unproven.
+
+Deliberately deferred to increment 6 rather than done with the pruning:
+ its only consumer is the observer-return
+relation,
+ nothing today discharges on a returned set,
+ and changing the resolver's return type across every
+extractor without a consumer would be a wide edit that proves nothing.
+ The pruning half had a measurable
+effect on its own and landed on its own.
 
 After that,
  increment 4,
