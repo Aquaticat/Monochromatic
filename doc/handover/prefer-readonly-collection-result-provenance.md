@@ -477,3 +477,84 @@ pinning both spellings clean against two controls that must stay opaque.
 `expected [ 0 ] to deeply equal []`,
  checked rather than assumed.
  The worktree and branch are removed.
+
+## A second arc followed, on iterator members
+
+Picked up after issue #414 closed,
+ chosen by the repository owner from a list of open directions.
+ Complete
+and merged;
+ this section exists so the reasoning survives with the commits.
+
+The decision record's "Remaining work" said iterator members were unproven and named a finding that no longer
+existed.
+ Measuring first was what made the arc tractable,
+ and it changed the target:
+ the channel was already
+proven,
+ and what was unproven was the returned iterator's contents.
+ Of 1689 findings,
+ 62 named an iterator
+member and 16 named nothing else,
+ 14 of them the one idiom `for (const [index, item,] of items.entries())`.
+
+Landed,
+ each with its own matched pair and none of them changing the read-only offer count of 33:
+
+- `d5e522ad4`,
+   `values` under the existing element relation.
+   The identity probe had to learn to drain a
+  non-array result.
+- `b0e560f90`,
+   a defect the previous commit exposed.
+   The element relation compared the result's type
+  argument at the receiver's position,
+   so `Map.values` was inert on arrival.
+   The relation now carries its
+  own `resultTypeArgumentIndex`.
+- `0d88c4d2e`,
+   `RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED` for `entries`.
+- `2527eee1c` and `c29df4e9b`,
+   the escape walk admitting the iterated position and then ascending a spread
+  to the literal carrying it.
+   The only commits here that moved verdicts.
+- `7577f123b`,
+   `keys` for `Map` and `ReadonlyMap`.
+
+Result:
+ iterator-only findings 0 from 16,
+ the rule 1682 from 1689,
+ semantic failures steady at 4.
+
+### What to carry forward, which is not the code
+
+Two decisions in this arc were committed and then overturned by measurement,
+ and one revert was itself
+mistaken.
+ The failure was identical each time:
+ reading the state before a change and concluding something
+about the state after it.
+ It is now `AGENTS.md` rule `QAB`,
+ and the retractions are kept beside their
+replacements in `doc/planning/prefer-readonly-iterator-member-provenance.md` rather than tidied away.
+
+The other lesson is cheaper to apply:
+ twice I spent a round of reasoning where one instrumented run
+answered the question immediately.
+ `receiverClaimAnswerable` and `resultEscapesCallable` both take well to a
+temporary `console.error` per gate,
+ and the gate that refuses is usually not the one the argument predicts.
+
+### Still open, none of it started
+
+- Attributing a write through an iterated binding is the unlocking step for anything further here,
+   with
+  `readonly-tuple-exposure-invalid.ts` as the control that must stay green throughout.
+- `Set` and `ReadonlySet` have no result-relation entries.
+   Nothing needs them,
+   and `receiverHolding` builds
+  only a `Map` or an array,
+   so adding one means probe work for no measured effect.
+- `keys` for `Array` and `ReadonlyArray` is deliberately absent:
+   indices are not the receiver's elements,
+  and the exposure test already answers before any relation is consulted.
