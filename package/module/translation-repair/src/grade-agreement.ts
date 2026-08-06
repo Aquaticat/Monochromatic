@@ -2,6 +2,7 @@ import type {
   GradedItem,
   GradeVerdict,
 } from './grade-sheet-read.ts';
+import { isJsonRecord, } from './json-guard.ts';
 
 //region Grade agreement
 // Scoring a blind pre-grade against the human's grades, and scoring precision
@@ -82,6 +83,74 @@ export type PrecisionTally = {
  * Verdict meaning the grader declined to answer.
  */
 const UNSCORED: GradeVerdict = 'unscored';
+
+/**
+ * Verdicts a recorded pre-grade may carry, which are exactly the verdicts a
+ * sheet reader produces.
+ */
+const KNOWN_VERDICTS: ReadonlySet<string> = new Set([
+  'real-defect',
+  'false-positive',
+  'unscored',
+],);
+
+/**
+ * Parses recorded blind pre-grades.
+ *
+ * Strict for the same reason `artifact-read.ts` is strict: this is a
+ * measurement instrument, and a pre-grade quietly dropped for being malformed
+ * would shift the agreement denominator without leaving a trace. Every failure
+ * names the position it happened at.
+ *
+ * @param text - pre-grade file contents, as JSON
+ *
+ * @returns Pre-graded items in file order
+ *
+ * @throws {@link Error} when the file is not an array of usable pre-grades
+ *
+ * @example
+ * ```ts
+ * const agent = parsePreGrades({ text: await readFile(path, 'utf8',), },);
+ * ```
+ */
+export function parsePreGrades(
+  { text, }: { readonly text: string; },
+): readonly GradedItem[] {
+  /**
+   * Raw parsed file, untyped until checked.
+   */
+  const raw: unknown = JSON.parse(text,);
+  if (!Array.isArray(raw,))
+    throw new Error('pre-grades file must hold an array of graded items.',);
+
+  return raw.map(function toItem(
+    value: unknown,
+    position: number,
+  ): GradedItem {
+    if (!isJsonRecord(value,))
+      throw new Error(`pre-grade ${String(position,)} is not an object.`,);
+
+    /**
+     * Fields one recorded pre-grade carries.
+     */
+    const {
+      index,
+      verdict,
+      note,
+    } = value;
+    if ((typeof index) !== 'number')
+      throw new Error(`pre-grade ${String(position,)} has no numeric index.`,);
+    if (((typeof verdict) !== 'string') || (!KNOWN_VERDICTS.has(verdict,)))
+      throw new Error(
+        `pre-grade ${String(index,)} carries an unknown verdict ${String(verdict,)}.`,
+      );
+    return {
+      index,
+      verdict: verdict as GradeVerdict,
+      note: (typeof note) === 'string' ? note : '',
+    };
+  },);
+}
 
 /**
  * Sheet positions the human declined to score.

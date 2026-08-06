@@ -19,6 +19,7 @@ import {
 import {
   type GradedItem,
   parseGradedSheet,
+  parsePreGrades,
   scoreGradeAgreement,
   scoreGradedPrecision,
 } from '../dist/final/neutral/index.mjs';
@@ -228,6 +229,80 @@ await describe({
         expect(tally.scored,).toBe(3,);
         expect(tally.realDefects,).toBe(2,);
         expect(tally.unscored,).toEqual([4,],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: parsePreGrades.name,
+  children: [
+    it({
+      name: 'reads well-formed pre-grades, defaulting a missing note to empty',
+      fn: async () => {
+        const items = parsePreGrades({
+          text: JSON.stringify([
+            {
+              index: 1,
+              verdict: 'real-defect',
+              note: 'clear omission',
+            },
+            {
+              index: 2,
+              verdict: 'unscored',
+            },
+          ],),
+        },);
+        expect(items,).toHaveLength(2,);
+        expect(items[0]?.note,).toBe('clear omission',);
+        expect(items[1]?.verdict,).toBe('unscored',);
+        expect(items[1]?.note,).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'throws rather than dropping a malformed pre-grade, since a '
+        + 'silently skipped one shifts the agreement denominator',
+      fn: async () => {
+        for (
+          const [
+            text,
+            expected,
+          ] of [
+            [
+              '{}',
+              'array',
+            ],
+            [
+              JSON.stringify(['not an object',],),
+              'not an object',
+            ],
+            [
+              JSON.stringify([{ verdict: 'real-defect', },],),
+              'numeric index',
+            ],
+            [
+              JSON.stringify([
+                {
+                  index: 1,
+                  verdict: 'maybe',
+                },
+              ],),
+              'unknown verdict',
+            ],
+          ] as const
+        ) {
+          /** Failure raised by this malformed file. */
+          let caught: unknown;
+          try {
+            parsePreGrades({ text, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught,).toBeInstanceOf(Error,);
+          expect((caught as Error).message,).toContain(expected,);
+        }
       },
     },),
   ],

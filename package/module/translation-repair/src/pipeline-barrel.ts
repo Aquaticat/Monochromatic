@@ -183,6 +183,7 @@ export {
 } from './grade-sheet-read.ts';
 export {
   type AgreementTally,
+  parsePreGrades,
   type PrecisionTally,
   scoreGradeAgreement,
   scoreGradedPrecision,

@@ -4,14 +4,11 @@ import {
 import { join, } from 'node:path';
 
 import {
+  parsePreGrades,
   scoreGradeAgreement,
   scoreGradedPrecision,
 } from '../grade-agreement.ts';
-import {
-  type GradedItem,
-  parseGradedSheet,
-} from '../grade-sheet-read.ts';
-import { isJsonRecord, } from '../json-guard.ts';
+import { parseGradedSheet, } from '../grade-sheet-read.ts';
 import { DEFAULT_SAMPLE_SEED, } from '../sample-grading.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
@@ -67,59 +64,6 @@ function optionValue({ flag, }: { readonly flag: string; },): string {
   return process.argv
     .at(at + 1,)
     ?? '';
-}
-
-/**
- * Parses recorded pre-grades, requiring the same shape the reader produces.
- *
- * @param text - pre-grade file contents
- *
- * @returns Pre-graded items
- *
- * @throws {@link Error} when an entry is not a usable pre-grade, since a
- * silently dropped one would shift the agreement denominator
- *
- * @example
- * ```ts
- * const agent = parsePreGrades({ text, },);
- * ```
- */
-function parsePreGrades({ text, }: { readonly text: string; },): readonly GradedItem[] {
-  /**
-   * Raw parsed file, untyped until checked.
-   */
-  const raw: unknown = JSON.parse(text,);
-  if (!Array.isArray(raw,))
-    throw new Error('pre-grades file must hold an array of graded items.',);
-
-  return raw.map(function toItem(
-    value: unknown,
-    position: number,
-  ): GradedItem {
-    if (!isJsonRecord(value,))
-      throw new Error(`pre-grade ${String(position,)} is not an object.`,);
-
-    /**
-     * Fields one recorded pre-grade carries.
-     */
-    const {
-      index,
-      verdict,
-      note,
-    } = value;
-    if ((typeof index) !== 'number')
-      throw new Error(`pre-grade ${String(position,)} has no numeric index.`,);
-    if ((verdict !== 'real-defect') && (verdict !== 'false-positive')
-      && (verdict !== 'unscored'))
-      throw new Error(
-        `pre-grade ${String(index,)} carries an unknown verdict ${String(verdict,)}.`,
-      );
-    return {
-      index,
-      verdict,
-      note: (typeof note) === 'string' ? note : '',
-    };
-  },);
 }
 
 /**
