@@ -178,4 +178,47 @@ export function requireArray(
   return value;
 }
 
+/**
+ * Reads a required count, throwing on any other shape.
+ *
+ * Rejects fractions and negatives as well as non-numbers, because every count
+ * this layer reads is a tally of votes or regions. A fractional one means the
+ * writer and the reader disagree about what the field holds, and coercing it
+ * here would carry that disagreement into a measurement unnoticed.
+ *
+ * @param value - value to check
+ *
+ * @param path - dotted path for error message
+ *
+ * @returns Value as a non-negative integer
+ *
+ * @throws {@link ArtifactParseError} when the value is not one
+ *
+ * @example
+ * ```ts
+ * const heard = requireCount({ value: probe.heardProbers, path: 'probe.heardProbers', },);
+ * ```
+ */
+export function requireCount(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): number {
+  if ((typeof value) !== 'number')
+    throw new ArtifactParseError({
+      path,
+      reason: 'a number',
+    },);
+  if ((!Number.isInteger(value,)) || (value < 0))
+    throw new ArtifactParseError({
+      path,
+      reason: 'a non-negative integer',
+    },);
+  return value;
+}
+
 //endregion Artifact guards

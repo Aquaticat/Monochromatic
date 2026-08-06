@@ -33,6 +33,10 @@ export {
   selectFence,
 } from './prompt-fence.ts';
 export {
+  type ArtifactProbeReading,
+  readArtifactProbe,
+} from './artifact-probe-read.ts';
+export {
   corroboratedCount,
   judgeRegionProbe,
   type ProbeTelemetrySummary,
