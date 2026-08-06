@@ -4466,3 +4466,103 @@ Runs 004 through 007, four restarts, ZERO artifacts lost:
 every one happened inside the first entry.
 Wire or record-shape changes restart;
 log wording and read-side code do not.
+
+### The measurement chain, completed while the pass ran
+
+Commits `f1737d6b4`, `9d1dec09c`, `51960a35c`, `f93d86617`, `aa8b9b1ce`.
+Read-side only, so `pass8-run-007` kept running throughout.
+
+Three holes, each of which would have made the round-three telemetry
+unusable, and one of them unrecoverably so.
+
+#### Nothing could read a graded repair sheet
+
+`formatRepairSheet` had existed since the two-sheet split and the runbook told
+the user to fill it in,
+but `parseGradedSheet` reads the DETECTION format only.
+So the repair-quality number the second sheet exists to produce was
+unobtainable, and so was anything needing it.
+
+`parseGradedRepairSheet` TRACKS FENCES, which is why it cannot be a line filter.
+The sheet quotes corpus prose that may contain a literal
+`- repair grade: [Y]`,
+and `repair-sheet.ts` fences that text precisely because it might.
+A parser ignoring the fence would let quoted text fabricate a human verdict.
+That is strictly worse than dropping one:
+a missing grade shows up as an unscored item, an invented grade shows up as
+evidence.
+
+`opensWithVerdict` and `trimLeadingDelimiters` moved to `verdict-letter.ts`.
+Both sheets need the identical one-character rule separating a verdict from a
+word starting with the same letter, and two copies would drift into two
+denominators.
+
+#### The draw recorded nothing about what it drew
+
+THIS IS THE UNRECOVERABLE ONE, and it was caught with hours to spare.
+
+The draw wrote two sheets and nothing else.
+Sheets are numbered positions;
+every machine verdict is keyed by issue id;
+and the sheets deliberately print no issue id because a 64-hex string is noise
+a grader reads past.
+Re-running the draw does not recover the mapping:
+the draw is deterministic in its SEED but not its POOL,
+and the pool grows with every entry that settles,
+so a draw taken at fifteen entries stops reproducing when the sixteenth lands.
+
+Had round three been drawn before this landed,
+the probe would have spent the whole round recording evidence for a question
+nothing could ever ask.
+`sample-manifest.json` is now written in the same breath as the sheets,
+seed-named and overwrite-protected exactly as they are, identifiers only.
+
+#### The two instruments could not be asked about the same item
+
+`probe-agreement.ts` joins them at ISSUE level, not region level,
+because that is the level they share:
+a merged envelope serves several issues and the human grades issues, so
+"what did the human say about this region" has no answer when those issues were
+graded differently.
+
+ONE CELL IS EVIDENCE AND THE REST ARE NOT.
+A repair grade of `Y` means "fully fixes this defect AND breaks nothing nearby",
+so `Y` beside a probe finding is a direct human refutation:
+each `refutedByHuman` is a correct repair a gate would have discarded, and that
+is the number a gate proposal has to answer for.
+`N` is ambiguous BY CONSTRUCTION, firing both for a repair that did not fix its
+target and for one that damaged something,
+so `sharedWithHuman` is reported as suggestive and never as confirmation, and
+`unflaggedFailures` is an upper bound on misses rather than a count.
+
+Sheet and manifest lengths must agree or the run throws.
+Joining across a disagreement would not lose a verdict,
+it would MISLABEL every verdict after the divergence, which nothing downstream
+could detect.
+
+#### Run it
+
+```bash
+mise run //package/module/translation-repair:score-probe -- \
+  --repair-sheet /ABSOLUTE/path/to/repair-sheet-<seed>.md \
+  --manifest /ABSOLUTE/path/to/sample-manifest-<seed>.json
+```
+
+Verified end to end on a throwaway fixture, never on the run's own directory:
+a probe-flagged issue graded `Y` scored `refutedByHuman=1`,
+a probe-clean issue graded `N` scored `unflaggedFailures=1`,
+two shipped records sharing one merged envelope collapsed to `regions=1`,
+a `not-selected` record was excluded entirely,
+and a truncated sheet threw rather than joining.
+
+#### What is left, and what it waits on
+
+Everything buildable without round-three data now exists.
+The remaining items wait on the pass reaching fifteen settled entries:
+task 53's gate decision (needs the grades),
+task 48's blind pre-grade calibration (needs the sheet;
+rounds one and two are NOT usable for it, because those graded sheets may have
+been read this session and blindness cannot be claimed),
+task 51's recall re-measure (would contend for quota with the pass),
+and task 58's refinement probe (needs the accuracy probe's measured
+false-positive rate first).
