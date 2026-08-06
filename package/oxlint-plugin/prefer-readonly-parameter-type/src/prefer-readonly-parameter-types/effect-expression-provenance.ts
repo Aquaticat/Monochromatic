@@ -20,6 +20,7 @@ import {
   isBinaryExpression,
   isCallExpression,
   isConditionalExpression,
+  isElementAccessExpression,
   isIdentifier,
   isNonNullExpression,
   isObjectLiteralExpression,
@@ -43,6 +44,10 @@ import {
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
+import {
+  containerElementReceiver,
+  NOT_A_RECEIVER_CONTAINER,
+} from './effect-container-element-origin.ts';
 import {
   expressionCanCarryMutableState,
   receiverElementsArePrimitive,
@@ -343,6 +348,30 @@ export function expressionValueOrigins({
     const current = pending.pop();
     if (current === undefined)
       continue;
+    /* An element step is where a container's two answers separate. `copy.push(row)` reaches
+     * the container, whose identity is fresh and shares nothing with the caller, while
+     * `copy[0].label = 'x'` reaches an element, which is the receiver's own row. Stripping
+     * both to `copy` and asking one question about it cannot answer them differently, so the
+     * element step is answered here, before the strip, and only for a container whose
+     * relation is verified.
+     *
+     * Nothing is queued when the relation is unproven, which leaves the walk exactly as it
+     * was: a fresh container of unknown provenance still contributes no origin, and the
+     * receiver's own opacity is what withholds the offer until it is discharged. */
+    if (isElementAccessExpression(current,)) {
+      /**
+       * Receiver whose elements this container holds, when that is verified.
+       */
+      const elementReceiver = containerElementReceiver({
+        project,
+        checker: project.checker,
+        node: current.expression,
+      },);
+      if (elementReceiver !== NOT_A_RECEIVER_CONTAINER) {
+        pending.push(elementReceiver,);
+        continue;
+      }
+    }
     /**
      * Root after property and element access removal.
      */

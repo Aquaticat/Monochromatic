@@ -347,16 +347,18 @@ await describe({
          * turns this into `[0]` and makes it indistinguishable from the pair above, which
          * is the distinction result provenance is being built on. */
         expect(returnedIndexes('packageCountFresh',),).toEqual([],);
-        /* What carries the parameter through a fresh container today, recorded before it
-         * changes. The container relation is verified and no discharge consults it, so
-         * `slice` and `filter` leave their receiver opaque and that opacity, not an
-         * attribution, is what withholds the offer.
+        /* What carries the parameter through a fresh container, and what does not. Both
+         * element writes reach the caller's own row through a copy that holds it, and the
+         * push reaches a container whose identity is fresh. One set of origins cannot answer
+         * both, which is why the element step is resolved before the access layers are
+         * stripped rather than after.
          *
-         * When the element facet lands, the two element writes must move to `[0]` and the
-         * growth must stay empty. A change that moves all three, or neither, is the
-         * failure this pins: one set cannot answer both questions about one value. */
-        expect(mutatedIndexes('containerElementWriteEffect',),).toEqual([],);
-        expect(mutatedIndexes('filteredElementWriteEffect',),).toEqual([],);
+         * All three were empty before the element step was answered, and the growth staying
+         * empty is what makes the other two evidence: dropping the element-access branch in
+         * `effect-expression-provenance.ts` empties the writes, and crediting the container
+         * itself would fill the growth. */
+        expect(mutatedIndexes('containerElementWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('filteredElementWriteEffect',),).toEqual([0,],);
         expect(mutatedIndexes('containerGrowthEffect',),).toEqual([],);
       },
     },),
