@@ -365,32 +365,50 @@ consumes it,
 - `2b03eaaad`,
    the matched measurement.
    302 errors and 206 from this rule before,
-   232 and 135 after,
+   231 and 135 after,
    on
   source `git diff` reports as identical,
    which reproduces this issue's recorded numbers and attributes
   the whole delta to the rule.
    Recorded in `doc/decision/prefer-readonly-result-provenance.md`,
   "Consequences of the provenance replacement, measured".
+   The after-count read 232 when taken from the
+  feature worktree,
+   which has no `tsgolint`,
+   so its lint could not run the semantic rule on every file;
+   231 is
+  the figure from the built main worktree and is the one to quote.
+- `c6e99c4e8`,
+   the merge to `main`,
+   dirty worktree and no pull request,
+   as instructed.
 
 ### Next
 
-Merging,
- once the whole-workspace lint run confirms nothing outside the measured package moved in a way
-the branch cannot explain.
- The per-package pair is matched and understood;
- the workspace run is the wider
-check,
- and what it has to rule out is a finding that disappeared for neither allowed reason:
- a container
-write became an attribution,
- or a member's result gained a relation that accounts for it.
+Nothing outstanding for issue #414.
+ Its scope is implemented,
+ measured,
+ documented and merged.
 
-Open afterwards:
- the chained receiver,
+Issue #417 is a follow-up this work created rather than anything the issue asked for:
+ the chained
+receiver,
  `rows.filter(observer).reduce(fold)`,
- which still reports because
-the container result is consumed as another call's receiver.
- Precision rather than soundness,
- and it is
-issue #414's own snippet in its chained form.
+ still reports while the bound form is clean.
+ Precision
+rather than soundness.
+ Two attempts are recorded and both are reverted,
+ and the question that has to be
+answered before a third is why attempt one moved any verdict at all:
+ for a parameter receiver,
+ element
+origins and value origins agree,
+ so resolving the receiver through `expressionElementOrigins` should have
+changed nothing,
+ and it changed two of the three container fixtures.
+ That is a measurement,
+ not a design,
+and it is written up in full on issue #417.
+ Branch `feat/readonly-chained-container-receiver` at
+`/home/user/worktrees/chained-container-receiver` sits at `origin/main` with a green suite,
+ ready for it.
