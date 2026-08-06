@@ -4597,3 +4597,48 @@ been read this session and blindness cannot be claimed),
 task 51's recall re-measure (would contend for quota with the pass),
 and task 58's refinement probe (needs the accuracy probe's measured
 false-positive rate first).
+
+### Early signal from run 007: the probe has claimed nothing at all
+
+Verified from the LIVE slice cache rather than waiting for an artifact.
+Cached `ChunkRepairOutcome` values carry the probe report, so the serialization
+can be checked while the entry is still in flight:
+
+```text
+chunk=0 regions=1 probe=heard=3/3 probedRegions=1
+chunk=1 regions=1 probe=heard=3/3 probedRegions=1
+chunk=2 regions=2 probe=heard=3/3 probedRegions=2
+chunk=3 regions=4 probe=heard=3/3 probedRegions=4
+```
+
+Serialization is correct: all nine tally keys present, `probedRegions` matching
+`repairRegions` exactly, full roster heard every time.
+
+THE PART TO WATCH: across 8 regions and 24 prober verdicts, every verdict was
+`no-introduced-defect-found`. Zero corroborated, zero contradicted, zero
+unanchored, zero claims of any kind.
+
+Two readings and they are not equally comfortable.
+
+The benign one: these edits really are clean. They survived an editor ensemble,
+a judge selection, and a checker stage before the probe ever saw them, so a low
+damage rate is what a working pipeline should produce.
+
+The uncomfortable one: I OVER-CORRECTED. The whole design fought one failure
+mode, a prober reporting the pre-existing defect because every region contains
+one by construction, and it fought it three ways at once: no `clean` verdict,
+pre-existing issues shown and labelled as not findings, and a verbatim-quote
+requirement. A probe that never claims anything is not a conservative probe, it
+is an instrument with no reading, and `majorityIntroduced=0` across the round
+would be indistinguishable from a stage that is silently broken.
+
+NOT acted on yet, deliberately: 8 regions is far too small to retune a prompt,
+and a restart now costs the round's progress for a guess.
+
+WHAT TO DO WITH IT: watch the claim counts as entries settle. If the round ends
+with zero claims of ANY kind across every region, the probe has not measured
+anything and must not be reported as evidence that repairs are clean. Say so in
+the verdict. The diagnostic that separates the two readings is the CONTRADICTED
+count: a probe that is looking and failing to anchor produces contradicted and
+unanchored claims, while a probe that has been talked out of claiming produces
+neither. Zero of everything is the shape that indicts the prompt.
