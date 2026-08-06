@@ -112,7 +112,7 @@ classDefStatement:CLASSDEF SPACE idString SPACE stylesOpt
 but only an explicit property containing `color` is also recorded as a text
 style.
 The deciding code is in
-`packages/mermaid/src/diagrams/flowchart/flowDb.ts:406-427`:
+`packages/mermaid/src/diagrams/flowchart/flowDb.ts:420-429`:
 
 ```typescript
 if (style !== undefined && style !== null) {
