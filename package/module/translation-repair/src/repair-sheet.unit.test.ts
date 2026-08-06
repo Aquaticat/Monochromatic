@@ -105,20 +105,52 @@ await describe({
   name: formatRepairSheet.name,
   children: [
     it({
-      name: 'the DETECTION sheet still shows no repair text, which is what '
-        + 'keeps this round comparable with the rounds already graded',
+      name: 'the DETECTION sheet renders only its six known lines per item, so '
+        + 'no repair field can reach it and change what its number measures',
       fn: async () => {
         // A visible correction makes an alleged defect look more real. If it
         // leaked onto the detection sheet, round three's precision would be
-        // measured by a different instrument than round two's.
+        // measured by a different instrument than round two's, and the change
+        // of instrument would read as a change in the pipeline.
+        //
+        // Asserted structurally rather than by naming the strings that must be
+        // absent: a check for "does not contain the replacement text" passes
+        // happily on a leak through some FUTURE field, which is exactly the
+        // leak nothing else would catch.
         const sheet = formatGradingSheet({
           sample: [catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),],
           seed: 'cat-seed',
           bar: 0.9,
           corpusSha: 'sha/1',
         },);
+
+        /** Line prefixes the detection sheet is allowed to render per item. */
+        const allowed = [
+          '### ',
+          '- entry: ',
+          '- category: ',
+          '- claim: ',
+          '- zh source: ',
+          '- en target: ',
+        ];
+
+        /** Item block, everything after the header's horizontal rule. */
+        const body = sheet.split('\n---\n',)
+          .at(-1,)
+          ?? '';
+
+        /** Rendered lines that no allowed prefix accounts for. */
+        const unexpected = body.split('\n',)
+          .filter(function isRendered(line,) {
+            return line !== '';
+          },)
+          .filter(function isUnaccounted(line,) {
+            return !allowed.some(function starts(prefix,) {
+              return line.startsWith(prefix,);
+            },);
+          },);
+        expect(unexpected,).toEqual([],);
         expect(sheet.includes(REPLACEMENT,),).toBe(false,);
-        expect(sheet.includes('repair grade',),).toBe(false,);
       },
     },),
 

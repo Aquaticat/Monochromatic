@@ -104,11 +104,15 @@ export type RepairIssueRecord = {
    * Final text of this issue's slice, carried ONLY when
    * {@link RepairIssueRecord.refined} is set.
    *
-   * Present exactly where the recorded replacement stopped being the returned
-   * wording, so a grader always judges what shipped. Absent otherwise because
-   * the replacement is then verbatim in the returned document, and copying a
-   * slice onto every one of its issues would multiply a large document's text
-   * by its accepted-issue count for no added fact.
+   * Present exactly where a SHIPPED replacement stopped being the returned
+   * wording, so a grader judging a shipped repair always judges what shipped.
+   * Absent otherwise, for two different reasons that both make it needless.
+   * Under {@link RepairDisposition} `shipped` with no refinement, `spliceSlices`
+   * splices the patched slice verbatim, so the replacement IS the returned
+   * wording and copying the slice onto every one of its issues would multiply a
+   * large document's text by its accepted-issue count for no added fact. Under
+   * every other disposition the replacement reached no reader at all, so there
+   * is no shipped wording to compare it against and the sheet grades nothing.
    */
   readonly finalSliceText?: string;
 };
