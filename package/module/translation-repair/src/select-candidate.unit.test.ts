@@ -59,8 +59,8 @@ await describe({
             integrityOk: true,
             resolvedHighSeverity: 1,
             resolvedTotal: 1,
-            regressionCount: 0,
-            changedCharCount: 20,
+            regressedKnownIssues: 0,
+            touchedRegionChars: 20,
           },
         },);
         /** Selection over both. */
@@ -79,8 +79,8 @@ await describe({
             integrityOk: true,
             resolvedHighSeverity: 0,
             resolvedTotal: 0,
-            regressionCount: 0,
-            changedCharCount: 35,
+            regressedKnownIssues: 0,
+            touchedRegionChars: 35,
           },
         },);
         /** Selection over both. */
@@ -99,8 +99,8 @@ await describe({
             integrityOk: false,
             resolvedHighSeverity: 5,
             resolvedTotal: 8,
-            regressionCount: 0,
-            changedCharCount: 10,
+            regressedKnownIssues: 0,
+            touchedRegionChars: 10,
           },
         },);
         /** Selection over both. */
@@ -122,8 +122,8 @@ await describe({
             integrityOk: true,
             resolvedHighSeverity: 2,
             resolvedTotal: 2,
-            regressionCount: 1,
-            changedCharCount: 60,
+            regressedKnownIssues: 1,
+            touchedRegionChars: 60,
           },
         },);
         /** Repair resolving one critical cleanly. */
@@ -133,8 +133,8 @@ await describe({
             integrityOk: true,
             resolvedHighSeverity: 1,
             resolvedTotal: 1,
-            regressionCount: 0,
-            changedCharCount: 15,
+            regressedKnownIssues: 0,
+            touchedRegionChars: 15,
           },
         },);
         /** Same measurements as timid but touching more text. */
@@ -144,8 +144,8 @@ await describe({
             integrityOk: true,
             resolvedHighSeverity: 1,
             resolvedTotal: 1,
-            regressionCount: 0,
-            changedCharCount: 90,
+            regressedKnownIssues: 0,
+            touchedRegionChars: 90,
           },
         },);
         /** Selection over the full slate. */

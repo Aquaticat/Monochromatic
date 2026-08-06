@@ -11,14 +11,14 @@ import type { CandidateMeasurements, } from './select-candidate.ts';
 // one place so the chunk runner stays a sequence of stages rather than a stage
 // with arithmetic in it.
 //
-// Two of these measurements are narrower than their names promise, and both
-// belong in `doc/todo` rather than in a silent rewrite here: `regressionCount`
-// can only count EXISTING accepted issues the checkers marked regressed, so a
-// wholly new defect the patch introduces has nowhere to be counted; and
-// `changedCharCount` sums touched-region sizes rather than differing
-// characters, which a merged envelope serving several issues makes broad.
-// Neither is changed here, because changing what selection ranks by is a
-// pipeline decision, not a refactor.
+// Two of these measure less than their original names promised, and both now
+// carry names that say what they actually count. `regressedKnownIssues` can only
+// see EXISTING accepted issues the checkers marked worse, so a wholly new defect
+// the patch introduces has nowhere to be counted; `touchedRegionChars` sums each
+// touched envelope's longer side rather than differing characters, which a
+// merged envelope serving several issues makes broad. The BEHAVIOR is unchanged
+// on purpose: renaming is honest, while changing what selection ranks by is a
+// pipeline decision that needs its own evidence.
 
 /**
  * Accepted issues an applied operation actually served.
@@ -127,13 +127,13 @@ export function measurePatchedCandidate(
     },)
       .length,
     resolvedTotal,
-    regressionCount: acceptedIssues.filter(function isRegressed(issue,) {
+    regressedKnownIssues: acceptedIssues.filter(function isRegressed(issue,) {
       return tallies[issue.issueId]
         ?.regressed
         === true;
     },)
       .length,
-    changedCharCount: applied.reduce(
+    touchedRegionChars: applied.reduce(
       function addChange(
         sum,
         operation,

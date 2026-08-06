@@ -19,8 +19,8 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
  *   integrityOk: true,
  *   resolvedHighSeverity: 2,
  *   resolvedTotal: 3,
- *   regressionCount: 0,
- *   changedCharCount: 41,
+ *   regressedKnownIssues: 0,
+ *   touchedRegionChars: 41,
  * };
  * ```
  */
@@ -42,15 +42,26 @@ export type CandidateMeasurements = {
   readonly resolvedTotal: number;
 
   /**
-   * New defects the no-regression check found in changed regions.
+   * Accepted issues the checkers marked WORSE in the patched candidate.
+   *
+   * Named for what it can see. The check reads checker verdicts keyed by
+   * existing accepted issue ids, so a wholly new defect the patch introduces
+   * has nowhere to be counted; only a known issue can regress here. Counting
+   * genuinely new defects would need a check that does not exist yet, and the
+   * old name (`regressionCount`, documented as "new defects") promised one.
    */
-  readonly regressionCount: number;
+  readonly regressedKnownIssues: number;
 
   /**
-   * Characters differing from the unchanged translation;
+   * Total size of the regions the patch touched, larger side of each;
    * smaller is more conservative.
+   *
+   * Not a count of differing characters, which the old name
+   * (`changedCharCount`) claimed: it sums each touched envelope's replaced or
+   * replacing length, whichever is longer, so a one-word fix inside a merged
+   * envelope serving several issues scores as the whole envelope.
    */
-  readonly changedCharCount: number;
+  readonly touchedRegionChars: number;
 };
 
 /**
@@ -98,8 +109,8 @@ export const UNCHANGED_MEASUREMENTS: CandidateMeasurements = {
   integrityOk: true,
   resolvedHighSeverity: 0,
   resolvedTotal: 0,
-  regressionCount: 0,
-  changedCharCount: 0,
+  regressedKnownIssues: 0,
+  touchedRegionChars: 0,
 };
 
 /**
@@ -146,12 +157,12 @@ export function compareCandidates(
     return l.integrityOk ? -1 : 1;
   if (l.resolvedHighSeverity !== r.resolvedHighSeverity)
     return r.resolvedHighSeverity - l.resolvedHighSeverity;
-  if (l.regressionCount !== r.regressionCount)
-    return l.regressionCount - r.regressionCount;
+  if (l.regressedKnownIssues !== r.regressedKnownIssues)
+    return l.regressedKnownIssues - r.regressedKnownIssues;
   if (l.resolvedTotal !== r.resolvedTotal)
     return r.resolvedTotal - l.resolvedTotal;
-  if (l.changedCharCount !== r.changedCharCount)
-    return l.changedCharCount - r.changedCharCount;
+  if (l.touchedRegionChars !== r.touchedRegionChars)
+    return l.touchedRegionChars - r.touchedRegionChars;
   if ((left.candidateId === UNCHANGED_CANDIDATE_ID) !== (right.candidateId === UNCHANGED_CANDIDATE_ID))
     return left.candidateId === UNCHANGED_CANDIDATE_ID ? -1 : 1;
   return left.candidateId

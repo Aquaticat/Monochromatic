@@ -206,7 +206,7 @@ await describe({
           targetDocument: parseDocument({ text: TARGET_TEXT, },),
         },);
         expect(measurements.resolvedHighSeverity,).toBe(0,);
-        expect(measurements.regressionCount,).toBe(1,);
+        expect(measurements.regressedKnownIssues,).toBe(1,);
       },
     },),
 
@@ -229,7 +229,7 @@ await describe({
           targetDocument: parseDocument({ text: TARGET_TEXT, },),
         },);
         expect(measurements.resolvedHighSeverity,).toBe(0,);
-        expect(measurements.regressionCount,).toBe(0,);
+        expect(measurements.regressedKnownIssues,).toBe(0,);
       },
     },),
 
@@ -247,7 +247,7 @@ await describe({
           patchedDocument: parseDocument({ text: TARGET_TEXT, },),
           targetDocument: parseDocument({ text: TARGET_TEXT, },),
         },);
-        expect(shrinking.changedCharCount,).toBe('is doing the sleeping'.length,);
+        expect(shrinking.touchedRegionChars,).toBe('is doing the sleeping'.length,);
 
         /** Insertion into a zero-width envelope. */
         const inserting = measurePatchedCandidate({
@@ -259,7 +259,7 @@ await describe({
           patchedDocument: parseDocument({ text: TARGET_TEXT, },),
           targetDocument: parseDocument({ text: TARGET_TEXT, },),
         },);
-        expect(inserting.changedCharCount,).toBe(' She purrs.'.length,);
+        expect(inserting.touchedRegionChars,).toBe(' She purrs.'.length,);
       },
     },),
 
