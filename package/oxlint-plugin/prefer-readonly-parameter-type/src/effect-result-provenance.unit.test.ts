@@ -7,6 +7,7 @@ import {
 import {
   FRESH_CONTAINER_MEMBER_NAMES,
   RESULT_PROVENANCE_BY_INTERFACE,
+  RESULT_RELATION_OBSERVER_RETURN,
   RESULT_RELATION_RECEIVER_VALUE,
   VERIFIED_RESULT_RELATION_COUNT,
 } from '../dist/final/node/index.mjs';
@@ -18,6 +19,17 @@ import {
  * copy fails the probe. Comparing shapes would pass for `structuredClone`.
  */
 type Sentinel = { readonly marker: 'receiver-held'; };
+
+/**
+ * Value only an observer can put into a result, recognised by identity.
+ *
+ * Distinct from the receiver's sentinel on purpose. A member claiming the observer-return
+ * relation has to hand back what the observer produced and nothing the receiver held, and
+ * one marker could not tell those apart.
+ */
+const OBSERVER_MARKER: { readonly marker: 'observer-returned'; } = {
+  marker: 'observer-returned',
+};
 
 /**
  * Builds one receiver of the named interface holding the sentinel.
@@ -58,6 +70,15 @@ function receiverHolding({
       filter: [function keepsEvery(): boolean {
         return true;
       },],
+      /* An observer returning something the receiver never held, so a member that hands
+       * back receiver elements instead fails the probe rather than passing it by
+       * coincidence. `flatMap` returns it wrapped, since it flattens one level. */
+      map: [function projectsMarker(): unknown {
+        return OBSERVER_MARKER;
+      },],
+      flatMap: [function projectsMarkerList(): readonly unknown[] {
+        return [OBSERVER_MARKER,];
+      },],
       find: [function acceptsFirst(): boolean {
         return true;
       },],
@@ -86,6 +107,10 @@ await describe({
          * Container entries failing either half of their own probe.
          */
         const notFreshCarrier: string[] = [];
+        /**
+         * Observer-return entries whose result failed either half of their probe.
+         */
+        const notObserverDerived: string[] = [];
         for (const [ownerName, members,] of RESULT_PROVENANCE_BY_INTERFACE) {
           for (const [memberName, provenance,] of members) {
             /**
@@ -110,6 +135,18 @@ await describe({
                 notIdentical.push(`${ownerName}.${memberName}`,);
               continue;
             }
+            if (provenance.relation === RESULT_RELATION_OBSERVER_RETURN) {
+              /* Both halves again, and here they pull apart the two containers. The result
+               * must hold what the observer produced, which a member ignoring its observer
+               * fails, and must hold nothing the receiver held, which `filter` fails. That
+               * second half is what keeps this relation from being applied to a member whose
+               * result really does carry caller-owned elements. */
+              if ((!Array.isArray(result,))
+                || (!result.includes(OBSERVER_MARKER,))
+                || result.includes(sentinel,))
+                notObserverDerived.push(`${ownerName}.${memberName}`,);
+              continue;
+            }
             /* Both halves, because either alone passes for the wrong value. A member
              * returning the receiver itself satisfies the membership half, and a member
              * returning an empty fresh array satisfies the freshness half, and the
@@ -127,6 +164,10 @@ await describe({
          * Remove the entry rather than weaken this comparison. */
         expect(notIdentical,).toEqual([],);
         expect(notFreshCarrier,).toEqual([],);
+        /* A non-empty list means a member claiming to build its result out of observer
+         * returns either ignored the observer or handed back receiver elements. Either way
+         * the relation is wrong for it, and the entry goes rather than this comparison. */
+        expect(notObserverDerived,).toEqual([],);
       },
     },),
     it({

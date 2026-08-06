@@ -54,11 +54,33 @@ export const RESULT_RELATION_RECEIVER_ELEMENTS: unique symbol = Symbol(
 );
 
 /**
+ * Result is a freshly built container holding what the observer returned.
+ *
+ * `values.map(project)` holds no element the receiver held, whatever the receiver holds:
+ * every element of its result came out of the observer. So what the result carries is a
+ * question about the observer rather than about the receiver, and
+ * `propagateElementApplications` answers it from the observer's own summary, recording
+ * receiver opacity when the observer hands its element back.
+ *
+ * Separate from the container relation for exactly that reason. Reading `map` as a
+ * container of receiver elements would report every projection, including the fresh one
+ * issue #414 is about; reading `filter` as observer-derived would lose the elements it
+ * really does carry. The two are opposite answers and the members are not interchangeable.
+ *
+ * Established by a probe placing one sentinel in the receiver and returning a different one
+ * from the observer, so a member handing back receiver elements fails it.
+ */
+export const RESULT_RELATION_OBSERVER_RETURN: unique symbol = Symbol(
+  'collection member returns a fresh container holding what its observer returned',
+);
+
+/**
  * Which receiver-state relation one default-library member's result satisfies.
  */
 export type MemberResultRelation =
   | typeof RESULT_RELATION_RECEIVER_VALUE
-  | typeof RESULT_RELATION_RECEIVER_ELEMENTS;
+  | typeof RESULT_RELATION_RECEIVER_ELEMENTS
+  | typeof RESULT_RELATION_OBSERVER_RETURN;
 
 /**
  * One verified result relation, with the receiver position its result comes from.
@@ -100,6 +122,14 @@ const PROVENANCE_BY_OWNER: Readonly<
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
     },
+    flatMap: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+    },
+    map: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+    },
     filter: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
@@ -128,6 +158,14 @@ const PROVENANCE_BY_OWNER: Readonly<
   ReadonlyArray: {
     at: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
+      receiverTypeArgumentIndex: 0,
+    },
+    flatMap: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+    },
+    map: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
       receiverTypeArgumentIndex: 0,
     },
     filter: {
@@ -187,7 +225,7 @@ export const RESULT_PROVENANCE_BY_INTERFACE: ReadonlyMap<
  * cannot pass unnoticed: the author must change a number in a second file, which is
  * the point at which the identity probe becomes unavoidable.
  */
-export const VERIFIED_RESULT_RELATION_COUNT = 14;
+export const VERIFIED_RESULT_RELATION_COUNT = 18;
 
 /**
  * Fresh-container members still absent, each for a reason of its own.
