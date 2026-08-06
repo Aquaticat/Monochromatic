@@ -28,6 +28,7 @@ import {
   memberResultProvenance,
   RESULT_RELATION_OBSERVER_RETURN,
   RESULT_RELATION_RECEIVER_ELEMENTS,
+  RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED,
   RESULT_RELATION_RECEIVER_VALUE,
   RESULT_RELATION_UNPROVEN,
 } from './effect-result-provenance-authority.ts';
@@ -395,7 +396,8 @@ export function callResultElementReceiver({
    */
   const provenance = memberResultProvenance(member,);
   if ((provenance === RESULT_RELATION_UNPROVEN)
-    || (provenance.relation !== RESULT_RELATION_RECEIVER_ELEMENTS))
+    || ((provenance.relation !== RESULT_RELATION_RECEIVER_ELEMENTS)
+      && (provenance.relation !== RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED)))
     return RESULT_NOT_RECEIVER_STATE;
   /**
    * Receiver type, whose arguments name what it holds.
@@ -421,7 +423,23 @@ export function callResultElementReceiver({
    */
   const resultHeldType = checker.getTypeArguments(resultType,)
     .at(provenance.resultTypeArgumentIndex,);
-  return (resultHeldType === heldType)
+  if (resultHeldType === undefined)
+    return RESULT_NOT_RECEIVER_STATE;
+  if (provenance.relation === RESULT_RELATION_RECEIVER_ELEMENTS)
+    return (resultHeldType === heldType)
+      ? receiver
+      : RESULT_NOT_RECEIVER_STATE;
+  // One level deeper for a paired result, whose elements are tuples the member built.
+  // The receiver's own type never appears among the result's type arguments there, so
+  // comparing at this level would answer with the sentinel for a relation that holds.
+  if (!resultHeldType.isTypeReference())
+    return RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Type each yielded tuple holds at the position the authority recorded.
+   */
+  const pairedType = checker.getTypeArguments(resultHeldType,)
+    .at(provenance.pairedElementIndex,);
+  return (pairedType === heldType)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
 }

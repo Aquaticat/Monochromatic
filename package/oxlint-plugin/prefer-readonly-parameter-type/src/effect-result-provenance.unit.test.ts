@@ -8,6 +8,7 @@ import {
   FRESH_CONTAINER_MEMBER_NAMES,
   RESULT_PROVENANCE_BY_INTERFACE,
   RESULT_RELATION_OBSERVER_RETURN,
+  RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED,
   RESULT_RELATION_RECEIVER_VALUE,
   VERIFIED_RESULT_RELATION_COUNT,
 } from '../dist/final/node/index.mjs';
@@ -65,8 +66,10 @@ function iterableElements(
   /**
    * Iteration method the result exposes, when it exposes one.
    */
-  const iterate = (result as Partial<Iterable<unknown>>)[Symbol.iterator];
-  if (typeof iterate !== 'function')
+  const iterate = (result as {
+    readonly [Symbol.iterator]?: unknown;
+  })[Symbol.iterator];
+  if ((typeof iterate) !== 'function')
     return NOT_ITERABLE;
   return [...(result as Iterable<unknown>),];
 }
@@ -151,6 +154,10 @@ await describe({
          * Observer-return entries whose result failed either half of their probe.
          */
         const notObserverDerived: string[] = [];
+        /**
+         * Paired entries whose tuples did not hold the sentinel at their position.
+         */
+        const notPairedCarrier: string[] = [];
         for (const [ownerName, members,] of RESULT_PROVENANCE_BY_INTERFACE) {
           for (const [memberName, provenance,] of members) {
             /**
@@ -187,6 +194,26 @@ await describe({
                 notObserverDerived.push(`${ownerName}.${memberName}`,);
               continue;
             }
+            if (provenance.relation
+              === RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED) {
+              /* Three parts, because the container probe's two cannot see the nesting.
+               * The result is fresh, no element of it is the sentinel, which is what
+               * separates this relation from the container one rather than merely
+               * restating it, and the recorded position inside an element is. A member
+               * whose pairs happen to hold the sentinel somewhere else fails, which is
+               * the point: the position is what the entry claims. */
+              const yielded = iterableElements(result,);
+              if ((result === receiver)
+                || (yielded === NOT_ITERABLE)
+                || yielded.includes(sentinel,)
+                || (!yielded
+                  .some(function holdsAtPosition(element,): boolean {
+                    return Array.isArray(element,)
+                      && (element[provenance.pairedElementIndex] === sentinel);
+                  },)))
+                notPairedCarrier.push(`${ownerName}.${memberName}`,);
+              continue;
+            }
             /* Both halves, because either alone passes for the wrong value. A member
              * returning the receiver itself satisfies the membership half, and a member
              * returning an empty fresh array satisfies the freshness half, and the
@@ -218,6 +245,11 @@ await describe({
          * returns either ignored the observer or handed back receiver elements. Either way
          * the relation is wrong for it, and the entry goes rather than this comparison. */
         expect(notObserverDerived,).toEqual([],);
+        /* A non-empty list means a member claiming to yield tuples carrying a receiver
+         * element at a recorded position does not, so crediting everything reachable
+         * through one of its tuples to the receiver would attribute writes to state the
+         * caller never shared. Remove the entry rather than widen the search. */
+        expect(notPairedCarrier,).toEqual([],);
       },
     },),
     it({

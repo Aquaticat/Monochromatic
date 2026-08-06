@@ -178,11 +178,75 @@ say.
    unreachable through the static check that consumes it,
    so a probe alone does not prove an entry does
    anything.
-2.    A relation for a result whose elements hold the receiver's element at a fixed position,
-   with a probe
-   shape that reads that position rather than the element itself.
-3.    `entries` on the same owners under that relation.
-   Clears the remaining 14.
+1.    Done,
+   and it does not clear the 14,
+   which is the useful finding.
+   `RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED`
+   describes a result whose elements are tuples the member allocated,
+   one recorded position of which is a
+   receiver element,
+   and `entries` is registered under it for `Array`,
+   `ReadonlyArray`,
+   `Map` and
+   `ReadonlyMap`.
+   The probe has three parts rather than the container probe's two:
+   the result is not the
+   receiver,
+   no element of the result is the sentinel,
+   and the recorded position inside an element is.
+   The
+   middle part is what separates this relation from the container one instead of restating it.
+
+   The position proves the claim and does not bound it.
+   Once a pair is known to carry a receiver element,
+   everything reachable through that pair can reach the receiver,
+   so flow covers the whole pair.
+   That
+   matters for `Map`,
+   whose pairs hold a caller-owned key at position 0 and a caller-owned value at
+   position 1:
+   verifying either establishes the claim and flow then covers both.
+   Reading the position as
+   a bound would lose a write through the key of a `Map<Labelled, string>`.
+
+   Measured:
+   3028 errors,
+   1689 rule findings and 4 semantic failures, finding sets identical line for line.
+
+   The blocker is not the relation.
+   `drawEach` still names `items.entries` with the relation verifying,
+   because the iterator is consumed by `for...of`,
+   and `for...of` is a spelling the escape walk does not
+   attribute.
+   An unattributed use reads as the result leaving the callable,
+   and a container result that
+   escapes is refused whatever relation it carries.
+   The same blocker is already visible on `main` without
+   any of this work:
+   `iteratedContainerWriteEffect` and `spreadContainerWriteEffect` in
+   `readonly-result-provenance-invalid.ts` report `rows.slice` for a container that never leaves,
+   while
+   `containerElementWriteEffect`,
+   which consumes its container by element access,
+   does not.
+
+2.    Attribute the element-step spellings in the escape walk:
+   the `for...of` expression position and a
+   spread element.
+   This is the step that clears the 14,
+   and it is the one to approach carefully.
+   An
+   earlier attempt at exactly this widening,
+   recorded on issue #417,
+   held every container control and still
+   moved `formatUsageWarningStatus` in `package/pi-plugin/statusline/src/usage-warning.ts` from `opaque=[0]`
+   to `[]`,
+   which `effect-summaries.unit.test.ts` pins deliberately with the note that only deriving the
+   `Object` readers should clear it.
+   So the widening must reach the receiver resolution without discharging
+   an argument-side obligation that arrives by propagation from a callee,
+   and any attempt needs that
+   function as a named control rather than as a surprise.
 4.    `keys` last and separately:
    its elements are indices,
    so the interesting claim is that it carries no
