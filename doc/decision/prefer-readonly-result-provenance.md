@@ -429,10 +429,31 @@ and the correction of an earlier revision that called it unsound.
 
 ## Remaining work
 
-Iterator members remain separately unproven.
-`summaries.values` is a cause of the `effect-fixed-point-propagation.ts:37` finding,
- so
-that one cannot clear on result provenance alone.
+Iterator members remain separately unproven,
+ but not in the way this section first recorded and not for the
+reason it gave.
+ The `effect-fixed-point-propagation.ts:37` finding it named no longer exists,
+ because the
+channel authority now claims iterator creation and drainage together.
+ What is unproven is the returned
+iterator's contents rather than the call's channel.
+
+Measured 2026-08-06:
+ of 1689 findings across the workspace,
+ 62 name a collection iterator member among their
+causes and 16 name nothing else.
+ Of those 16,
+ 14 are `entries` and 2 are `values`,
+ and all 14 are the same
+idiom,
+ `for (const [index, item,] of items.entries())`.
+ `values` fits the existing element relation and its
+existing probe shape;
+ `entries` fits neither,
+ because it yields fresh pairs that contain a receiver element
+rather than alias one.
+ Written up with a proposed order in
+`doc/planning/prefer-readonly-iterator-member-provenance.md`.
 
 ## Adopted for issue #414: the collection result gate moves from type shape to provenance
 
