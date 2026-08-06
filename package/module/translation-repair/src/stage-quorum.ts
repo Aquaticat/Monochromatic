@@ -64,7 +64,7 @@ export type StageGather<ValueT,> = {
   readonly voices: readonly HeardVoice<ValueT>[];
 
   /**
-   * Whether over half the roster was heard.
+   * Whether at least half the roster, rounded up, was heard.
    */
   readonly quorumMet: boolean;
 
@@ -79,7 +79,7 @@ export type StageGather<ValueT,> = {
  * Fans one prompt out to a roster and retries lost voices to the stage's
  * retry target.
  * Each round re-asks only the still-lost models on fresh deadlines;
- * under `quorum` the loop stops as soon as over half the roster is heard,
+ * under `quorum` the loop stops as soon as half the roster, rounded up, is heard,
  * under `full-roster` it keeps re-asking while any voice is missing, and
  * either way it ends when the retry rounds are spent.
  *
@@ -143,9 +143,15 @@ export async function gatherStageVoices<ValueT,>(
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
-   * Weight of a quorum: strictly more than half the roster.
+   * Voices a quorum needs: at least half the roster, rounded up.
+   *
+   * Was "strictly more than half", which differs only on EVEN rosters and was
+   * costing a round there. At six models the old rule demanded 4 while this
+   * demands 3; at seven both demand 4, so odd rosters are unaffected. User
+   * decision 2026-08-05, taken when the roster shrank to six: exactly half of
+   * an even panel is a quorum.
    */
-  const quorumFloor = modelIds.length / 2;
+  const quorumNeeded = Math.ceil(modelIds.length / 2,);
 
   /**
    * Heard voices accumulated across rounds;
@@ -170,7 +176,7 @@ export async function gatherStageVoices<ValueT,>(
       if (
         (round > 0)
         && (retryTarget === 'quorum')
-          && (collected.length > quorumFloor)
+          && (collected.length >= quorumNeeded)
       ) {
         break;
       }
@@ -224,9 +230,9 @@ export async function gatherStageVoices<ValueT,>(
   })();
 
   /**
-   * Whether over half the roster ended up heard.
+   * Whether at least half the roster, rounded up, ended up heard.
    */
-  const quorumMet = voices.length > quorumFloor;
+  const quorumMet = voices.length >= quorumNeeded;
 
   /**
    * Roster shortfall wording shared by both degradation findings.

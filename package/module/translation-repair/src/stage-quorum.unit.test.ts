@@ -165,6 +165,78 @@ await describe({
     },),
 
     it({
+      name: 'counts exactly half of an even roster as quorum',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Four-model roster where exactly two never answer. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({
+            failuresByModel: {
+              'hf:moonshotai/Kimi-K3': 99,
+              'hf:openai/gpt-oss-120b': 99,
+            },
+            calls,
+          },),
+          modelIds: [
+            'hf:zai-org/GLM-5.2',
+            'hf:Qwen/Qwen3.6-27B',
+            'hf:moonshotai/Kimi-K3',
+            'hf:openai/gpt-oss-120b',
+          ],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+        },);
+        // 2 of 4 is exactly half. The superseded "strictly more than half"
+        // rule would have called this short and burned every retry round;
+        // ceil(4 / 2) = 2 makes it a quorum.
+        expect(gather.voices,).toHaveLength(2,);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.findings,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'still refuses quorum one voice below half an even roster',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Four-model roster where only one ever answers. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({
+            failuresByModel: {
+              'hf:Qwen/Qwen3.6-27B': 99,
+              'hf:moonshotai/Kimi-K3': 99,
+              'hf:openai/gpt-oss-120b': 99,
+            },
+            calls,
+          },),
+          modelIds: [
+            'hf:zai-org/GLM-5.2',
+            'hf:Qwen/Qwen3.6-27B',
+            'hf:moonshotai/Kimi-K3',
+            'hf:openai/gpt-oss-120b',
+          ],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'panel',
+          l,
+        },);
+        expect(gather.voices,).toHaveLength(1,);
+        expect(gather.quorumMet,).toBe(false,);
+        expect(gather.findings,).not.toHaveLength(0,);
+      },
+    },),
+
+    it({
       name: 'retries lost voices to quorum and recovers a 1-of-6 round',
       fn: async () => {
         /** Call log shared with the scripted client. */
