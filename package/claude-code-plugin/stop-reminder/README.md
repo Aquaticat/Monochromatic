@@ -2,7 +2,8 @@
 
 Claude Code `Stop` hook that detects uncertain language in Claude's responses
 and reminds it to investigate rather than guess,
-and that refuses to let a turn end while work remains.
+and that refuses every stop unconditionally,
+whether or not work remains.
 
 ## What it does
 

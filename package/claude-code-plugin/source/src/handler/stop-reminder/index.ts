@@ -50,9 +50,10 @@ type StopRemindersOutput = StopOutput;
  * 5. **Forced continuation**: unless a trailing question matched, and unless the
  *    kill switch is set, {@link autoContinueReason} is appended on every stop
  *    including stops inside a blocked chain. This is the one detector that
- *    re-arms, and it reads none of the response text. Claude Code bounds the
- *    resulting chain at nine dispatches, so the loop terminates without this
- *    module counting anything.
+ *    re-arms, and it reads none of the response text. Claude Code ends the
+ *    resulting chain on its own, at a bound that varies between runs, so the
+ *    loop terminates without this module counting anything. See
+ *    {@link autoContinueReason} for the measurements behind that claim.
  * 6. **Result**: if any reasons accumulated, returns
  *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
  *    otherwise `\{\}`.
