@@ -207,5 +207,6 @@ export {
 } from './validate-issue.ts';
 
 export * from './pipeline-barrel.ts';
+export * from './refine-barrel.ts';
 
 //endregion Public barrel

@@ -53,8 +53,16 @@ export type RepairModels = {
   readonly editorRuleAddendum?: string;
 
   /**
-   * Resolution checkers proving the repair. Must exclude every editor, or a
-   * model ends up certifying text it wrote.
+   * Rewriters proposing naturalness refinements over the repaired text.
+   *
+   * Absent means the lane is off, which is a supported configuration: the
+   * accuracy pipeline is complete without it.
+   */
+  readonly refinerModelIds?: readonly SyntheticModelId[];
+
+  /**
+   * Resolution checkers proving the repair. Must exclude every editor AND
+   * every refiner, or a model ends up certifying text it wrote.
    */
   readonly checkerModelIds: readonly SyntheticModelId[];
 };
@@ -72,22 +80,29 @@ export class EditorRosterError extends Error {
   /**
    * Builds the report from the two colliding rosters.
    *
-   * @param editorModelIds - editors that propose candidates
+   * @param editorModelIds - producers that propose candidates
    *
    * @param judgeModelIds - roster judges are drawn from
+   *
+   * @param role - what the producers do, so the message names the real stage
+   * rather than always saying editor; defaults to `editor`
    */
   constructor(
     {
       editorModelIds,
       judgeModelIds,
+      role = 'editor',
     }: {
       readonly editorModelIds: readonly SyntheticModelId[];
       readonly judgeModelIds: readonly SyntheticModelId[];
+      readonly role?: string;
     },
   ) {
     super(
-      `every judge is also an editor, so no model could judge the ensemble without grading itself: `
-        + `editors [${editorModelIds.join(', ',)}], judges [${judgeModelIds.join(', ',)}]`,
+      `too few judges sit outside the ${role} roster, so selection could not run without a model `
+        + `grading itself: ${role}s [${editorModelIds.join(', ',)}], judges [${
+          judgeModelIds.join(', ',)
+        }]`,
     );
     this.name = 'EditorRosterError';
   }
@@ -129,29 +144,70 @@ export function assertJudgeableEditorRoster(
     readonly judgeModelIds: readonly SyntheticModelId[];
   },
 ): void {
+  assertJudgeableProducerRoster({
+    producerModelIds: editorModelIds,
+    judgeModelIds,
+    role: 'editor',
+  },);
+}
+
+/**
+ * Refuses a producer roster that cannot seat enough disinterested judges.
+ *
+ * Shared by the editor ensemble and the naturalness lane because the failure is
+ * identical in both: selection removes producers from the judge roster, so a
+ * roster short of judges declines every round and the stage silently degrades
+ * into always shipping its fallback, which reads as a working pipeline in logs
+ * and in tests.
+ *
+ * @param producerModelIds - models that generate candidates
+ *
+ * @param judgeModelIds - roster judges are drawn from
+ *
+ * @throws {@link EditorRosterError} when producers repeat or too few judges sit
+ * outside them
+ *
+ * @example
+ * ```ts
+ * assertJudgeableProducerRoster({ producerModelIds, judgeModelIds, },);
+ * ```
+ */
+export function assertJudgeableProducerRoster(
+  {
+    producerModelIds,
+    judgeModelIds,
+    role,
+  }: {
+    readonly producerModelIds: readonly SyntheticModelId[];
+    readonly judgeModelIds: readonly SyntheticModelId[];
+    readonly role: string;
+  },
+): void {
   /**
-   * Editors keyed for membership tests, also revealing repeats by size.
+   * Producers keyed for membership tests, also revealing repeats by size.
    */
-  const editors = new Set(editorModelIds,);
-  if ((editors.size !== editorModelIds.length) || (editors.size === 0))
+  const producers = new Set(producerModelIds,);
+  if ((producers.size !== producerModelIds.length) || (producers.size === 0))
     throw new EditorRosterError({
-      editorModelIds,
+      editorModelIds: producerModelIds,
       judgeModelIds,
+      role,
     },);
 
   /**
-   * Judges with no stake in any editor candidate.
+   * Judges with no stake in any candidate this roster produces.
    */
   const disinterested = new Set(
     judgeModelIds.filter(function isDisinterested(modelId,) {
-      return !editors.has(modelId,);
+      return !producers.has(modelId,);
     },),
   );
   if (disinterested.size >= MIN_SELECTION_VOTES)
     return;
   throw new EditorRosterError({
-    editorModelIds,
+    editorModelIds: producerModelIds,
     judgeModelIds,
+    role,
   },);
 }
 
@@ -177,8 +233,8 @@ export class CheckerIndependenceError extends Error {
     },
   ) {
     super(
-      `these models would check their own edits: [${overlapping.join(', ',)}]; `
-        + `checkerModelIds must exclude every editor`,
+      `these models would check text they wrote themselves: [${overlapping.join(', ',)}]; `
+        + `checkerModelIds must exclude every editor and every refiner`,
     );
     this.name = 'CheckerIndependenceError';
   }
@@ -193,6 +249,8 @@ export class CheckerIndependenceError extends Error {
  *
  * @param editorModelIds - editors that propose candidates
  *
+ * @param refinerModelIds - naturalness rewriters; absent means the lane is off
+ *
  * @param checkerModelIds - checkers proving the shipped repair
  *
  * @throws {@link CheckerIndependenceError} when any model holds both roles
@@ -205,22 +263,31 @@ export class CheckerIndependenceError extends Error {
 export function assertCheckerIndependence(
   {
     editorModelIds,
+    refinerModelIds = [],
     checkerModelIds,
   }: {
     readonly editorModelIds: readonly SyntheticModelId[];
+    readonly refinerModelIds?: readonly SyntheticModelId[];
     readonly checkerModelIds: readonly SyntheticModelId[];
   },
 ): void {
   /**
-   * Editors keyed for membership tests.
+   * Every model that writes shipped text, keyed for membership tests.
+   *
+   * Refiners belong here as much as editors do: the recheck that follows a
+   * refinement asks the checkers whether the accepted issues survived it, and
+   * a refiner among them would be answering for its own rewrite.
    */
-  const editors = new Set(editorModelIds,);
+  const writers = new Set([
+    ...editorModelIds,
+    ...refinerModelIds,
+  ],);
 
   /**
    * Models holding both roles.
    */
-  const overlapping = checkerModelIds.filter(function alsoEdits(modelId,) {
-    return editors.has(modelId,);
+  const overlapping = checkerModelIds.filter(function alsoWrites(modelId,) {
+    return writers.has(modelId,);
   },);
   if (overlapping.length === 0)
     return;
