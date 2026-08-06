@@ -35,10 +35,12 @@ themeVariables: preferredColorScheme.matches ? darkThemeVariables : {},
 
 That combination produced these measured pairs:
 
-- Light green nodes: foreground `rgb(248, 250, 252)`,
+- Light green nodes:
+   foreground `rgb(248, 250, 252)`,
   background `rgb(236, 253, 245)`,
   contrast `1.01:1`.
-- Light rose nodes: foreground `rgb(248, 250, 252)`,
+- Light rose nodes:
+   foreground `rgb(248, 250, 252)`,
   background `rgb(255, 241, 242)`,
   contrast `1.05:1`.
 - Twenty-three of 58 rendered flowchart nodes were below `4.5:1`.
@@ -474,7 +476,8 @@ only a light custom fill under a dark theme.
 
 The six filing constraints resolve as follows:
 
-1.  **Is it really upstream's fault? No.**
+1.  **Is it really upstream's fault?
+     No.**
     The consumer supplied half of a palette pair.
     `classDef` is a direct styling mechanism,
     and Mermaid correctly preserved both the requested fill and the selected
@@ -488,21 +491,26 @@ The six filing constraints resolve as follows:
     style id2 fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff
     ```
 
-2.  **Can upstream fix it? Yes, technically.**
+2.  **Can upstream fix it?
+     Yes,
+     technically.**
     Mermaid could derive foreground contrast after every custom fill or add a
     documentation warning.
     Automatic derivation would change direct CSS semantics and could override
     deliberate author choices.
     This possibility does not turn the consumer omission into an upstream bug.
 
-3.  **Are they supporting this use case? Yes, with explicit styling.**
+3.  **Are they supporting this use case?
+     Yes,
+     with explicit styling.**
     The theming guide calls `dark` suitable for dark elements at
     `packages/mermaid/src/docs/config/theming.md:13`,
     and the flowchart guide documents `classDef` at
     `packages/mermaid/src/docs/syntax/flowchart.md:1203-1217`.
     Neither promises contrast inference for a custom fill.
 
-4.  **Would the repository welcome a contribution? Yes.**
+4.  **Would the repository welcome a contribution?
+     Yes.**
     The guide opens with this statement at
     `packages/mermaid/src/docs/community/contributing.md:3`:
 
@@ -521,14 +529,17 @@ The six filing constraints resolve as follows:
     pull request template,
     and code of conduct contain no ban on AI-assisted reports.
 
-5.  **Will they likely fix it? Yes for a real defect; no refusal signal exists.**
+5.  **Will they likely fix it?
+     Yes for a real defect;
+     no refusal signal exists.**
     PR #1956 shows maintainers previously merged explicit text-color support.
     Recent history in `flowDb.ts` and `styles.ts` contains no rejection of
     contrast work.
     Mermaid 11.16.1 does not change the relevant path from 11.16.0.
     This constraint does not justify filing because constraint 1 fails.
 
-6.  **Have we prototyped a minimal upstream fix? No.**
+6.  **Have we prototyped a minimal upstream fix?
+     No.**
     The automatic prototype rule does not trigger because constraint 1 is an
     outright failure.
     The verified consumer fix is intentionally at this repository's styling
