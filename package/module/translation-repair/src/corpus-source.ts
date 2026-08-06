@@ -1,7 +1,7 @@
 import { execFile, } from 'node:child_process';
 import { promisify, } from 'node:util';
 
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli';
+import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
 
 //region Corpus source
