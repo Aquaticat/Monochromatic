@@ -230,7 +230,79 @@ say.
    which consumes its container by element access,
    does not.
 
-2.    Attempted and reverted, with a soundness result that changes what the step has to be.
+2.    Landed after a first pass was reverted on a misreading, which is worth recording because the
+   misreading was mine and the evidence for it was available at the time.
+
+   The change:
+   `resultEscapesCallable` gained an `elementStepsAttributed` flag admitting the `for...of`
+   expression position and a spread element,
+   passed `true` from `effect-view-result-gate.ts` and
+   `effect-collection-member-effect.ts` and `false` from `effect-call-analysis.ts`,
+   where nothing walks
+   the elements.
+   That scoping is what keeps `formatUsageWarningStatus` intact,
+   the control the attempt on
+   issue #417 broke.
+
+   Three count pins moved and I first read one of them,
+   `readonly-tuple-exposure-invalid.ts` going from
+   three reports to zero,
+   as the unsoundness that fixture's test documents.
+   It is not.
+   That comment
+   describes recursing into tuple positions via `checker.isTupleType`,
+   which destroys the attribution;
+   this change leaves it standing.
+   Measured either side:
+   `rewriteStoredPair` and `rewriteMutableStoredPair`
+   both keep `referentMutated=[0]`,
+   so no read-only offer can be made for a parameter they rewrite,
+   and
+   the fixture's own "offers nothing" assertion holds rather than passing vacuously.
+   The guarantee moved
+   to where it can be asserted:
+   `effect-summaries.unit.test.ts` now pins those two attributions and the
+   reader's empty one,
+   so the silence in the diagnostics test rests on an assertion instead of on nothing.
+
+   The other two moved for the reasons their own comments predicted.
+   `readonly-member-channel-invalid.ts`
+   went 7 to 5 by discharging `entries.values` and `entries.entries`,
+   which that case says would clear
+   "only under a relation describing a container whose elements are receiver state",
+   and both loops only
+   read,
+   so nothing is left unattributed.
+   `readonly-result-provenance-invalid.ts` went 12 to 11 by
+   discharging `iteratedContainerWriteEffect`,
+   whose write is recorded against `rows`.
+   `spreadContainerWriteEffect` still reports,
+   correctly:
+   its spread builds a literal that is bound rather
+   than passed, and a stored literal is where tracking genuinely ends.
+
+   Workspace effect:
+   3028 errors to 3023,
+   1689 rule findings to 1685,
+   4 semantic failures either side,
+   and read-only offers unchanged at 33,
+   which is the check that matters most since a false offer is
+   the failure mode.
+   Four findings cleared outright,
+   including the `tasks.entries()` idiom in
+   `package/cli/git-clone-size/src/async-queue.ts`.
+   Several more kept reporting while their cause changed
+   from the iterator to the real one:
+   `blocks.entries` became `blocks.slice` and `blocks.with`,
+   `calls.entries` became `output.content.push`,
+   and `ctx.childrenByParent.get` became `ctx.shapes.set`.
+   One parameter dropped off a shared finding,
+   `strokes` in the doodle-widget export pages,
+   which is
+   `readonly StrokeData[]` and never written there.
+
+   Superseded reading,
+   kept because the error is instructive:
 
    The change was scoped by construction rather than global:
    `resultEscapesCallable` gained an

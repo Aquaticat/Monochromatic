@@ -332,7 +332,7 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(7,);
+      expect(messages.length,).toBe(5,);
       /* A channel entry for an iterator member discharges exactly when the iterator
        * yields primitives, and these two are the whole of what it buys on its own.
        * Both loops iterate something whose element type carries no receiver state, so
@@ -345,21 +345,27 @@ children: [
       expect(messages.some(function indexIterationStaysSilent(message,): boolean {
         return message.includes('values.keys',);
       },),).toBe(false,);
-      /* And the two it does not buy, which is why the entries are not the whole
-       * answer. `values` hands back what the receiver holds, and `entries` hands back
-       * a tuple, an object however primitive its positions are. Both keep reporting,
-       * and both would clear only under a relation describing a container whose
-       * elements are receiver state. */
-      expect(messages.some(function heldValueIterationStaysOpaque(
+      /* And the two the entries did not buy on their own, which now clear under exactly
+       * the condition this case predicted: a relation describing a container whose
+       * elements are receiver state. `values` carries the element relation and `entries`
+       * the paired one, and admitting the `for...of` position stops the iterator reading
+       * as a value that leaves.
+       *
+       * Both loops only read, `held.label.length` and `key.length + held.length`, so no
+       * attribution replaces these two: there is nothing beneath them to attribute. That
+       * is what separates them from the container cases in the sibling fixture, where a
+       * report is traded for a recorded write rather than for a proof that no write
+       * exists. */
+      expect(messages.some(function heldValueIterationDischarges(
         message,
       ): boolean {
         return message.includes('entries.values',);
-      },),).toBe(true,);
-      expect(messages.some(function primitivePairIterationStaysOpaque(
+      },),).toBe(false,);
+      expect(messages.some(function primitivePairIterationDischarges(
         message,
       ): boolean {
         return message.includes('entries.entries',);
-      },),).toBe(true,);
+      },),).toBe(false,);
       /* A higher-order member is not opaque by virtue of being higher-order.
        * `[...records,].reduce(owned, 0)` is answered by
        * `recordReadonlyViewApplications`, which runs before the channel check and
@@ -494,7 +500,14 @@ children: [
        * to carry is now that attribution. Every container case in this fixture has made the
        * same trade, which is why the count fell three times and no offer appeared for a
        * parameter any of them writes. */
-      expect(messages.length,).toBe(12,);
+      /* Admitting the iterated element step took the twelfth: `iteratedContainerWriteEffect`
+       * reached its copy through `for...of`, a spelling the escape walk did not attribute,
+       * so a container that never leaves reported anyway. Its write is recorded against
+       * `rows` in `effect-summaries.unit.test.ts`, so this is the same trade every other
+       * container case in this fixture made. `spreadContainerWriteEffect` still reports,
+       * and correctly: its spread builds a literal that is bound rather than passed, and a
+       * stored literal is where tracking genuinely ends. */
+      expect(messages.length,).toBe(11,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat
@@ -1680,13 +1693,13 @@ children: [
        * A note for anyone retrying it: `Type.isTupleType()` answers false for these
        * arguments and `checker.isTupleType(type)` answers true, so a first attempt
        * can look like a safe no-op while testing nothing. */
-      expect(diagnostics.length,).toBe(3,);
-      expect(diagnostics.every(function reportsIteratorOpacity(
-        diagnostic,
-      ): boolean {
-        return diagnostic.message
-          .includes('rows.values',);
-      },),).toBe(true,);
+      expect(diagnostics.length,).toBe(0,);
+      /* The assertion that still carries the guarantee, because an empty list satisfies
+       * every "no offer" test vacuously. What must remain true is the attribution, and it
+       * is asserted where it lives: `effect-summaries.unit.test.ts` pins
+       * `rewriteMutableStoredPair` and `rewriteStoredPair` at `referentMutated=[0]`, which
+       * is what withholds the read-only offer the comment above warns about. Silence here
+       * is only correct while that pin holds, so the two move together. */
       expect(diagnostics.some(function offersAnything(diagnostic,): boolean {
         return diagnostic.message
           .includes('should be readonly',);

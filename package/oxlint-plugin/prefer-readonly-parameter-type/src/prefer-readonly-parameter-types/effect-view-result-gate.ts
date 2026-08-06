@@ -115,6 +115,7 @@ export function viewResultUnaccounted({
           project,
           body,
           call,
+          elementStepsAttributed: true,
         },)))
       return true;
   }

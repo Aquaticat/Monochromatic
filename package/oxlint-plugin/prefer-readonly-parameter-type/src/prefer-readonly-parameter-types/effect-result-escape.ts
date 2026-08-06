@@ -28,11 +28,13 @@ import {
   isCallExpression,
   isElementAccessExpression,
   isExpressionStatement,
+  isForOfStatement,
   isIdentifier,
   isObjectLiteralExpression,
   isPrefixUnaryExpression,
   isPropertyAccessExpression,
   isReturnStatement,
+  isSpreadElement,
   isTypeOfExpression,
   isVariableDeclaration,
   isVoidExpression,
@@ -152,13 +154,40 @@ function isEnclosingLiteral({ node, }: { readonly node: Node; },): boolean {
  * useEscapes({ node: identifier });
  * ```
  */
-function useEscapes({ node, }: { readonly node: Node; },): boolean {
+function useEscapes({
+  node,
+  elementStepsAttributed,
+}: {
+  readonly node: Node;
+  readonly elementStepsAttributed: boolean;
+},): boolean {
   /**
    * Syntactic context consuming this value.
    */
   const { parent, } = node;
   if (isReturnStatement(parent,) || isYieldExpression(parent,))
     return true;
+  /* Two element steps that reach a value without writing an access node, admitted only
+   * for the callers that attribute element steps. `containerElementWriteEffect` consumes
+   * its container through `copy[0]`, which the access branch already answers, while
+   * `iteratedContainerWriteEffect` and `spreadContainerWriteEffect` reach the same
+   * elements through `for...of` and a spread and were answered as escapes, so a container
+   * that never leaves reported anyway.
+   *
+   * Gated rather than unconditional, because these positions are only attributed where
+   * something walks the elements. `effect-call-analysis.ts` asks the same question about a
+   * call result reaching an argument, and there nothing does: widening it globally cleared
+   * an argument-side obligation that arrives by propagation from a callee, measured on
+   * `formatUsageWarningStatus`. */
+  if (elementStepsAttributed) {
+    if (isForOfStatement(parent,) && (parent.expression === node))
+      return false;
+    /* A spread carries its operand's elements into the enclosing literal, so the question
+     * transfers to that literal exactly as membership does, and is answered the same way
+     * rather than by a second rule. */
+    if (isSpreadElement(parent,) && isArrayLiteralExpression(parent.parent,))
+      return !literalIsCallArgument({ literal: parent.parent, },);
+  }
   /* Placed in an object or array literal. Whether that is an escape depends entirely
    * on where the literal goes, and getting this wrong defeats discharge throughout
    * this repository: `ST9` makes every multi-argument call pass one object literal, so
@@ -273,14 +302,19 @@ export function resultEscapesCallable({
   project,
   body,
   call,
+  elementStepsAttributed,
 }: {
   readonly project: Project;
   readonly body: Node;
   readonly call: CallExpression;
+  readonly elementStepsAttributed: boolean;
 },): boolean {
   /* The call's own position first. A call whose result is returned outright, or
    * placed straight into a container, escapes without ever being bound. */
-  if (useEscapes({ node: valueConsumer({ node: call, },), },))
+  if (useEscapes({
+    node: valueConsumer({ node: call, },),
+    elementStepsAttributed,
+  },))
     return true;
   /* Then any store performed on the way to that position. `sink.value = facts.get(k)`
    * consumes the assignment expression as a discarded statement, so the position test
@@ -320,7 +354,10 @@ export function resultEscapesCallable({
         node,
         body,
       },)
-        || useEscapes({ node: valueConsumer({ node, },), },)
+        || useEscapes({
+          node: valueConsumer({ node, },),
+          elementStepsAttributed,
+        },)
         || assignmentStoreEscapes({
           project,
           node,

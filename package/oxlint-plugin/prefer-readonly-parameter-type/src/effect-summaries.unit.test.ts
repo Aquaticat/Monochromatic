@@ -2760,6 +2760,72 @@ await describe({
       },
     },),
     it({
+      name: 'keeps a write through an iterated tuple attributed to its parameter',
+      fn: async () => {
+        /** Fixture separating a held pair from a freshly built one. */
+        const tuplePath = fileURLToPath(new URL(
+          '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-tuple-exposure-invalid.ts',
+          import.meta.url,
+        ),);
+        /** Current tuple-exposure fixture text. */
+        const tupleSource = readFileSync(tuplePath, 'utf8',);
+        const session = openSemanticFile({
+          fileName: tuplePath,
+          sourceText: tupleSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns written parameter indexes.
+         */
+        function writtenIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            tupleSource.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.referentMutatedParameterIndexes,];
+        }
+        /* This is the guarantee `prefer-readonly-parameter-type.unit.test.ts` gave up when
+         * the opacity reports on this fixture went silent. A tuple the receiver holds is
+         * caller-owned state whatever its positions are, because the tuple itself is
+         * writable, so `pair[0] = 'rewritten'` reached through `rows.values()` writes
+         * `rows`. While these two read `[0]` no read-only offer can be made for a
+         * parameter either of them rewrites, which is what makes the silence over there
+         * correct rather than merely quiet. */
+        expect(writtenIndexes('rewriteMutableStoredPair',),).toEqual([0,],);
+        expect(writtenIndexes('rewriteStoredPair',),).toEqual([0,],);
+        /* The control, and the reason a change making all three silent has answered the
+         * wrong question: the reader iterates the identical receiver through the identical
+         * member and writes nothing. */
+        expect(writtenIndexes('readStoredPair',),).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'reuses direct scans in process and through persistent cache',
       fn: async () => {
         using cache = disposableCacheDirectory();

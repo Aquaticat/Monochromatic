@@ -291,6 +291,9 @@ export function inspectEffectCall({
           project,
           body,
           call,
+          /* Element steps are not attributed on this path: nothing here walks the
+           * elements of a call result reaching an argument. */
+          elementStepsAttributed: false,
         },)))
         /* The result carries the operand's values, and every use of it is one this
          * analysis attributes, so tracking replaces the boundary exactly as it does for a

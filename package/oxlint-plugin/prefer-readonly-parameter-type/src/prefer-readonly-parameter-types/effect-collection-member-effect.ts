@@ -138,6 +138,7 @@ function receiverClaimAnswerable({
     project,
     body,
     call,
+    elementStepsAttributed: true,
   },))
     return false;
   /* Either relation licenses the discharge on that same condition. A direct result is the
