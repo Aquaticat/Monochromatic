@@ -413,7 +413,8 @@ where the agent visibly cast around for work that did not exist.
 
 The session that built this feature then ran under it,
 which is the only observation of unconditional blocking on real work.
-Measured from its own transcript:
+Measured from its own transcript through block 14,
+at which point counting was deliberately stopped for the reason given below:
 14 forced-continuation blocks,
 against 3 human turns,
 producing 13 commits.
@@ -448,6 +449,28 @@ the mechanism converts unexamined surface into commits until that surface is gon
 then costs a full model turn per stop to confirm there is nothing left.
 Neither the benefit nor the cost is constant,
 and which dominates is a property of the session rather than of the hook.
+
+### Self-referential yield, a hazard worth naming
+
+Block 14 found a real defect:
+this section's own figures had drifted,
+because the section was written at block 10 and the blocks kept coming.
+That defect existed only because the mechanism was running.
+
+This is a failure mode distinct from a false positive.
+A false positive produces no work.
+A self-referential block produces work that is genuine,
+committed,
+and caused entirely by the blocking,
+so it is indistinguishable from real yield by any measure taken from commits.
+An agent recording its own forced-continuation statistics
+will therefore find fresh work at every block forever,
+and each fix will look justified.
+
+Counting was stopped at block 14 for this reason,
+and the figures here are deliberately not maintained.
+Anyone evaluating a stop-blocking mechanism on commit counts
+should exclude commits that only update the evaluation.
 
 ## Remediation options considered
 
