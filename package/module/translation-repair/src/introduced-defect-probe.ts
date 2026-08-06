@@ -186,6 +186,8 @@ export async function runIntroducedDefectProbe(
         removalCorroborated: running.removalCorroborated + tally.removalCorroborated,
         contradicted: running.contradicted + tally.contradicted,
         unanchored: running.unanchored + tally.unanchored,
+        noneFound: running.noneFound + tally.noneFound,
+        uncertain: running.uncertain + tally.uncertain,
       };
     },
     {
@@ -193,9 +195,15 @@ export async function runIntroducedDefectProbe(
       removalCorroborated: 0,
       contradicted: 0,
       unanchored: 0,
+      noneFound: 0,
+      uncertain: 0,
     },
   );
 
+  // The negative counts belong in the line as much as the positive ones. All
+  // claim counts at zero is equally consistent with every prober finding
+  // nothing, every prober declining, and every ballot being dropped as a wire
+  // fault, and those are three very different states to read a quiet run as.
   l.info(
     `introduced-defect probe: ${String(Object.keys(ballots,)
       .length,)}/${String(proberModelIds.length,)} heard over ${
@@ -204,7 +212,9 @@ export async function runIntroducedDefectProbe(
       String(totals.removalCorroborated,)
     } dropped-content corroborated, ${
       String(totals.contradicted,)
-    } contradicted by the baseline, ${String(totals.unanchored,)} unanchored`,
+    } contradicted by the baseline, ${String(totals.unanchored,)} unanchored, ${
+      String(totals.noneFound,)
+    } found nothing, ${String(totals.uncertain,)} declined`,
   );
 
   return {
