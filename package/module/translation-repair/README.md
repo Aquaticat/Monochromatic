@@ -20,7 +20,8 @@ const result = await repairTranslation({
   models: {
     criticModelIds,
     panelModelIds,
-    editorModelId,
+    editorModelIds,
+    judgeModelIds,
     checkerModelIds,
   },
   signal,
@@ -32,11 +33,33 @@ const result = await repairTranslation({
   the library performs no IO of its own.
 - `models` names the role roster:
   critic fan-out, provenance-blind adjudication panel,
-  editor, and resolution checkers.
-  A stage that loses voices retries exactly the lost ones until over
+  editors, selection judges, and resolution checkers.
+  A stage that loses voices retries exactly the lost ones until at least
   half its roster is heard.
   An optional `editorRuleAddendum` splices one extra machine-enforced
   rule line into the editor prompt for calibration experiments.
+- No single model decides the repaired text.
+  Every editor in `editorModelIds` rewrites the chunk independently,
+  each proposal passes the same deterministic apply gate,
+  and judges drawn from `judgeModelIds` choose what ships.
+  Selection removes producers from the judge roster per round,
+  so `judgeModelIds` must contain at least one model that never edits;
+  `assertJudgeableEditorRoster` refuses a roster that does not,
+  because an all-editor roster would otherwise degrade silently into
+  always shipping the fallback.
+  `checkerModelIds` should likewise exclude every editor,
+  so nothing certifies text it wrote.
+- Judging runs at two granularities.
+  Per envelope, the best fix for each individual issue can win even when
+  the model that wrote it botched the rest of the chunk;
+  the winners are assembled into a composite candidate.
+  Per chunk, whole candidates compete, including that composite,
+  which is the only level at which coherence across envelopes is visible.
+  The composite has to win on its merits rather than being adopted by
+  construction.
+  When judges decline, the strongest editor patch ships anyway:
+  falling back to the untouched translation would turn a disagreement
+  about wording into a lost repair.
 - The result is never an unqualified "corrected translation":
   `repairedText` ships with a completion status
   (`repaired`, `unchanged`, or `blocked-non-translation`),

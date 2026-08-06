@@ -5,6 +5,13 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  type Candidate,
+  describeProducer,
+  producerModelIds,
+  type SelectionOutcome,
+  type SelectionTally,
+} from './candidate-select-model.ts';
+import {
   buildCandidateSelectMessages,
   CANDIDATE_NONE,
   CANDIDATE_SELECT_RESPONSE_FORMAT,
@@ -22,86 +29,33 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // Two invariants make the ensemble worth having, and both are enforced here
 // rather than trusted to callers:
 //
-// - A model NEVER judges a candidate set containing its own work. Any model that
-//   produced a candidate is removed from the judge roster.
+// - A model NEVER judges a candidate set containing its own work. Every model
+//   that contributed to a candidate is removed from the judge roster, which for
+//   a composite means all of its contributors.
 // - A tie or an empty judge roster DECLINES. Declining returns the caller's
 //   fallback, which is text the pipeline already trusts, so the conservative
 //   outcome is the default whenever the ensemble fails to agree.
+//
+// Callers pass their WHOLE roster as `judgeModelIds` and let this function
+// subtract producers. Hand-partitioning a judge list outside is how a caller
+// ends up with an empty roster it cannot see.
 
 /**
- * One proposed candidate with the model that produced it.
- *
- * @example
- * ```ts
- * const candidate: Candidate<string> = { modelId, value: patched, rendered: patched, };
- * ```
- */
-export type Candidate<ValueT,> = {
-  /**
-   * Model that produced this candidate; excluded from judging it.
-   */
-  readonly modelId: SyntheticModelId;
-
-  /**
-   * Value handed back when this candidate wins.
-   */
-  readonly value: ValueT;
-
-  /**
-   * Text judges compare; may be a rendering of `value` rather than `value`.
-   */
-  readonly rendered: string;
-};
-
-/**
- * What a selection round decided.
- *
- * @example
- * ```ts
- * const outcome: SelectionOutcome<string> = { kind: 'declined', reason: 'tied', };
- * ```
- */
-export type SelectionOutcome<ValueT,> =
-  | {
-    readonly kind: 'selected';
-    /**
-     * Winning candidate's value.
-     */
-    readonly value: ValueT;
-
-    /**
-     * Model that produced the winner.
-     */
-    readonly modelId: SyntheticModelId;
-
-    /**
-     * Votes the winner drew.
-     */
-    readonly votes: number;
-
-    /**
-     * Ballots cast in total, the vote's denominator.
-     */
-    readonly ballots: number;
-  }
-  | {
-    readonly kind: 'declined';
-    /**
-     * Why nothing was selected, in scorecard-stable wording.
-     */
-    readonly reason: string;
-  };
-
-/**
- * Runs one selection round: judges that produced no candidate compare the
+ * Runs one selection round: judges that contributed no candidate compare the
  * anonymized set and name a winner, and anything short of a clear plurality
  * declines.
+ *
+ * Every candidate handed in is judged, including a lone one. A caller that has
+ * already deduplicated its set and knows one candidate survived may short
+ * circuit before calling; this function does not assume that on its behalf,
+ * because a single candidate arriving here is generally the caller's only
+ * proposal rather than a proven consensus.
  *
  * @param client - injected model client
  *
  * @param candidates - proposals in caller-fixed order
  *
- * @param judgeModelIds - roster judges are drawn from; producers are removed
+ * @param judgeModelIds - whole roster; producers are removed here
  *
  * @param task - one sentence naming what candidates attempt
  *
@@ -115,7 +69,8 @@ export type SelectionOutcome<ValueT,> =
  *
  * @param l - logger of the calling stage
  *
- * @returns Winner with its vote count, or a decline carrying its reason
+ * @returns Winner with its vote count, or a decline carrying its reason;
+ * either way the round's tally
  *
  * @example
  * ```ts
@@ -153,22 +108,27 @@ export async function selectBestCandidate<ValueT,>(
     l,
   },);
 
+  /**
+   * Tally of a round that never reached the judges.
+   */
+  const emptyTally: SelectionTally = {
+    judgesAvailable: 0,
+    ballots: 0,
+    abstentions: 0,
+  };
   if (candidates.length === 0)
     return {
       kind: 'declined',
       reason: 'no candidates proposed',
+      tally: emptyTally,
     };
 
-  // One candidate still goes to judging rather than winning by default. An
-  // ensemble whose single survivor ships unexamined is not an ensemble, and the
-  // fallback is text that already passed the pipeline's other gates.
-
   /**
-   * Models that produced a candidate, barred from judging this set.
+   * Models that contributed to any candidate, barred from judging this set.
    */
   const producers = new Set(
-    candidates.map(function toProducer(candidate,) {
-      return candidate.modelId;
+    candidates.flatMap(function toProducers(candidate,) {
+      return [...producerModelIds(candidate.producer,),];
     },),
   );
 
@@ -179,10 +139,11 @@ export async function selectBestCandidate<ValueT,>(
     return !producers.has(modelId,);
   },);
   if (judges.length === 0) {
-    sl.warn('every judge produced a candidate; declining rather than letting a model grade itself',);
+    sl.warn('every judge contributed a candidate; declining rather than letting a model grade itself',);
     return {
       kind: 'declined',
       reason: 'no disinterested judge available',
+      tally: emptyTally,
     };
   }
 
@@ -213,6 +174,7 @@ export async function selectBestCandidate<ValueT,>(
    * declines are counted as abstentions rather than discarded silently.
    */
   const tally = new Map<number, number>();
+
   /**
    * Ballots that named no usable candidate, kept so a selection that failed
    * for want of agreement is distinguishable from one nobody voted in.
@@ -238,6 +200,16 @@ export async function selectBestCandidate<ValueT,>(
   }
 
   /**
+   * What this round counted, reported whichever way it ends.
+   */
+  const counted: SelectionTally = {
+    judgesAvailable: judges.length,
+    ballots: gather.voices
+      .length,
+    abstentions: counters.abstained,
+  };
+
+  /**
    * Candidate indexes ordered by votes, most first.
    */
   const ranked = [...tally.entries(),].toSorted(function byVotes(
@@ -258,6 +230,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'every judge declined',
+      tally: counted,
     };
   }
 
@@ -270,6 +243,7 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'judges tied',
+      tally: counted,
     };
   }
 
@@ -281,20 +255,19 @@ export async function selectBestCandidate<ValueT,>(
     return {
       kind: 'declined',
       reason: 'winning index out of range',
+      tally: counted,
     };
   }
   sl.info(
-    `candidate ${String(leader[0],)} from ${winner.modelId} won ${String(leader[1],)} of `
-    + `${String(gather.voices
-      .length,)} ballots`,
+    `candidate ${String(leader[0],)} from ${describeProducer(winner.producer,)} won `
+    + `${String(leader[1],)} of ${String(counted.ballots,)} ballots`,
   );
   return {
     kind: 'selected',
     value: winner.value,
-    modelId: winner.modelId,
+    producer: winner.producer,
     votes: leader[1],
-    ballots: gather.voices
-      .length,
+    tally: counted,
   };
 }
 

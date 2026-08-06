@@ -55,7 +55,8 @@ const SEEDED_TEXT = 'The cat naps in the sun. The bowl stays full.';
 const MODELS: RepairModels = {
   criticModelIds: ['hf:zai-org/GLM-5.2',],
   panelModelIds: ['hf:zai-org/GLM-5.2',],
-  editorModelId: 'hf:zai-org/GLM-5.2',
+  editorModelIds: ['hf:zai-org/GLM-5.2',],
+  judgeModelIds: ['hf:zai-org/GLM-5.2', 'hf:Qwen/Qwen3.6-27B',],
   checkerModelIds: ['hf:zai-org/GLM-5.2',],
 };
 

@@ -11,8 +11,10 @@ import {
 } from './apply-patch.ts';
 import {
   type Candidate,
-  selectBestCandidate,
-} from './candidate-select.ts';
+  describeProducer,
+  producerModelIds,
+} from './candidate-select-model.ts';
+import { selectBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
@@ -37,13 +39,18 @@ import type { SyntheticModelId, } from './synthetic-catalog.ts';
 // text no model wrote or read as a whole, so it has to win on its merits against
 // candidates that were written coherently, rather than being adopted by
 // construction.
+//
+// Proposals are read from each candidate's APPLIED operations, not from what its
+// model proposed. The deterministic gate rejects stale hashes, drifted
+// envelopes, and no-op replacements, so judging pre-gate text would spend model
+// calls choosing between operations that cannot ship.
 
 /**
  * One editor's proposal for a chunk.
  *
  * @example
  * ```ts
- * const candidate: EditorCandidate = { modelId, operations, patch, };
+ * const candidate: EditorCandidate = { modelId, patch, };
  * ```
  */
 export type EditorCandidate = {
@@ -53,14 +60,46 @@ export type EditorCandidate = {
   readonly modelId: SyntheticModelId;
 
   /**
-   * Operations it proposed, one per envelope it chose to edit.
+   * Apply-gate outcome of the operations it proposed.
+   */
+  readonly patch: PatchOutcome;
+};
+
+/**
+ * What per-envelope selection assembled, with the counts that say how much of
+ * the composite was actually voted on.
+ *
+ * @example
+ * ```ts
+ * const { operations, contributors, } = await selectPerEnvelope({ ... },);
+ * ```
+ */
+export type EnvelopeSelection = {
+  /**
+   * Winning operation per envelope, in envelope order.
    */
   readonly operations: readonly PatchOperation[];
 
   /**
-   * Apply-gate outcome of those operations.
+   * Models whose operations the composite carries, in first-win order.
    */
-  readonly patch: PatchOutcome;
+  readonly contributors: readonly SyntheticModelId[];
+
+  /**
+   * Envelopes adopted without a vote because only one editor proposed for
+   * them, counting envelopes where every proposal was identical.
+   */
+  readonly soleCount: number;
+
+  /**
+   * Envelopes decided by a judged vote.
+   */
+  readonly judgedCount: number;
+
+  /**
+   * Envelopes left unedited because judges declined every proposal.
+   */
+  readonly declinedCount: number;
 };
 
 /**
@@ -76,7 +115,7 @@ export type EditorCandidate = {
  *
  * @param envelopes - envelopes of this chunk
  *
- * @param judgeModelIds - roster judges are drawn from
+ * @param judgeModelIds - whole roster; producers are removed downstream
  *
  * @param sourceText - original chunk text, evidence for judges
  *
@@ -113,7 +152,7 @@ export async function selectPerEnvelope(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
   }>,
-): Promise<readonly PatchOperation[]> {
+): Promise<EnvelopeSelection> {
   /**
    * Logger tagged with this selection pass.
    */
@@ -126,17 +165,37 @@ export async function selectPerEnvelope(
    * Winning operation per envelope, filled in envelope order.
    */
   const winners: PatchOperation[] = [];
+
+  /**
+   * Contributing models in first-win order, deduplicated by `seen`.
+   */
+  const contributors: SyntheticModelId[] = [];
+
+  /**
+   * Models already credited as contributors.
+   */
+  const seen = new Set<SyntheticModelId>();
+
+  /**
+   * How each envelope was decided.
+   */
+  const counters = {
+    sole: 0,
+    judged: 0,
+    declined: 0,
+  };
   for (const envelope of envelopes) {
     /**
-     * Every distinct proposal for this envelope, first proposer winning ties
-     * on identical text so the set stays deduplicated.
+     * Every distinct APPLIED proposal for this envelope, first proposer
+     * winning ties on identical text so the set stays deduplicated.
      */
     const proposals: Candidate<PatchOperation>[] = [];
     for (const candidate of candidates) {
       /**
-       * This model's operation for this envelope, when it wrote one.
+       * This model's applied operation for this envelope, when it has one.
        */
-      const operation = candidate.operations
+      const operation = candidate.patch
+        .applied
         .find(function forEnvelope(op,) {
           return op.envelopeId === envelope.envelopeId;
         },);
@@ -149,7 +208,10 @@ export async function selectPerEnvelope(
       },))
         continue;
       proposals.push({
-        modelId: candidate.modelId,
+        producer: {
+          kind: 'model',
+          modelId: candidate.modelId,
+        },
         value: operation,
         rendered: operation.newText,
       },);
@@ -159,12 +221,19 @@ export async function selectPerEnvelope(
       continue;
 
     /**
-     * Sole proposal, adopted without a vote because there is nothing to
-     * compare it against; chunk-level judging still sees it.
+     * Sole distinct proposal, adopted without a vote because there is nothing
+     * to compare it against; chunk-level judging still sees it.
      */
     const [sole,] = proposals;
     if ((proposals.length === 1) && (sole !== undefined)) {
+      counters.sole += 1;
       winners.push(sole.value,);
+      for (const modelId of producerModelIds(sole.producer,)) {
+        if (seen.has(modelId,))
+          continue;
+        seen.add(modelId,);
+        contributors.push(modelId,);
+      }
       continue;
     }
 
@@ -189,14 +258,28 @@ export async function selectPerEnvelope(
       l,
     },);
     if (outcome.kind === 'declined') {
+      counters.declined += 1;
       el.info(
         `envelope ${envelope.envelopeId}: ${outcome.reason}; leaving it unedited in the composite`,
       );
       continue;
     }
+    counters.judged += 1;
     winners.push(outcome.value,);
+    for (const modelId of producerModelIds(outcome.producer,)) {
+      if (seen.has(modelId,))
+        continue;
+      seen.add(modelId,);
+      contributors.push(modelId,);
+    }
   }
-  return winners;
+  return {
+    operations: winners,
+    contributors,
+    soleCount: counters.sole,
+    judgedCount: counters.judged,
+    declinedCount: counters.declined,
+  };
 }
 
 /**
@@ -206,11 +289,12 @@ export async function selectPerEnvelope(
  *
  * @param candidates - whole-chunk proposals including the composite
  *
- * @param judgeModelIds - roster judges are drawn from
+ * @param judgeModelIds - whole roster; producers are removed downstream
  *
  * @param sourceText - original chunk text, evidence for judges
  *
- * @param fallback - patch adopted when judges decline
+ * @param fallback - patch adopted when judges decline; callers must pass a
+ * patch that actually repairs something, never the untouched translation
  *
  * @param signal - caller abort honored by every exchange
  *
@@ -256,10 +340,17 @@ export async function selectChunkPatch(
 
   /**
    * Sole candidate, which needs no vote.
+   *
+   * Callers deduplicate by rendered text before calling, so one candidate here
+   * means every editor and the composite agreed on the same text. That is
+   * unanimity rather than an unexamined survivor, and the text still faces the
+   * resolution checkers and the unchanged-versus-repaired selection after this.
    */
   const [sole,] = candidates;
-  if ((candidates.length === 1) && (sole !== undefined))
+  if ((candidates.length === 1) && (sole !== undefined)) {
+    cl.info(`every proposal was identical; shipping ${describeProducer(sole.producer,)} unjudged`,);
     return sole.value;
+  }
 
   /**
    * Judges verdict over the whole-chunk candidates.
@@ -288,8 +379,9 @@ export async function selectChunkPatch(
     return fallback;
   }
   cl.info(
-    `chunk patch from ${outcome.modelId} won ${String(outcome.votes,)} of ${
-      String(outcome.ballots,)
+    `chunk patch from ${describeProducer(outcome.producer,)} won ${String(outcome.votes,)} of ${
+      String(outcome.tally
+        .ballots,)
     } ballots`,
   );
   return outcome.value;

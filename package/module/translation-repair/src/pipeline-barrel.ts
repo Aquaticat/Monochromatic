@@ -89,15 +89,50 @@ export {
 } from './repair-benchmark.ts';
 export { repairChunk, } from './repair-chunk.ts';
 export {
+  assertJudgeableEditorRoster,
   type ChunkRepairOutcome,
+  EditorRosterError,
   type RepairModels,
 } from './repair-contract.ts';
 export {
   type CheckerStageResult,
-  type EditorStageResult,
   runCheckerStage,
-  runEditorStage,
 } from './repair-edit-stages.ts';
+export {
+  type EditorStageResult,
+  runEditorStage,
+} from './repair-editor-stage.ts';
+export {
+  type Candidate,
+  type CandidateProducer,
+  describeProducer,
+  mergeProducers,
+  producerModelIds,
+  type SelectionOutcome,
+  type SelectionTally,
+} from './candidate-select-model.ts';
+export { selectBestCandidate, } from './candidate-select.ts';
+export {
+  buildCandidateSelectMessages,
+  CANDIDATE_NONE,
+  CANDIDATE_SELECT_RESPONSE_FORMAT,
+  type CandidateBallotWire,
+  isCandidateBallotWire,
+} from './candidate-select-wire.ts';
+export {
+  applyCandidate,
+  type EditorCandidate,
+  type EnvelopeSelection,
+  selectChunkPatch,
+  selectPerEnvelope,
+} from './editor-ensemble.ts';
+export {
+  buildChunkCandidates,
+  buildEditorCandidates,
+  type ChunkCandidateSet,
+  type EditorCandidateSet,
+  pickFallbackPatch,
+} from './editor-candidates.ts';
 export {
   type CriticStageResult,
   type PanelStageResult,

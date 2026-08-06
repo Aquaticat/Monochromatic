@@ -2,18 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import {
-  applyPatchOperations,
-  type PatchOutcome,
-} from './apply-patch.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { buildEditorMessages, } from './edit-prompt.ts';
-import {
-  EDITOR_RESPONSE_FORMAT,
-  isEditorReportWire,
-  resolveEditorEdits,
-} from './edit-wire.ts';
-import type { EditableEnvelope, } from './patch-model.ts';
 import {
   buildResolutionMessages,
   isResolutionReportWire,
@@ -28,171 +17,11 @@ import {
   tallyResolutionChecks,
 } from './tally-resolution.ts';
 
-//region Editor and checker stages
-// The candidate-producing stages of one chunk's repair: one editor rewrites
-// inside envelopes through the deterministic apply gate, then checker
-// models judge whether each accepted issue is actually gone. A lost editor
-// voice means an unchanged chunk; lost checker voices weaken the proof and
-// with it the candidate's measurements.
-
-/**
- * Everything the editor stage produced for one chunk.
- *
- * @example
- * ```ts
- * const { patch, editorHeard, } = await runEditorStage({ ... },);
- * ```
- */
-export type EditorStageResult = {
-  /**
-   * Apply-gate outcome; unchanged text when the editor voice was lost.
-   */
-  readonly patch: PatchOutcome;
-
-  /**
-   * Whether the editor's reply arrived and validated.
-   */
-  readonly editorHeard: boolean;
-
-  /**
-   * Wire irregularities in scorecard-stable wording.
-   */
-  readonly findings: readonly string[];
-};
-
-/**
- * Runs one editor over one chunk's envelopes and applies the result.
- *
- * @param client - injected model client
- *
- * @param editorModelId - editor voice for this chunk
- *
- * @param editorRuleAddendum - extra rule line for prompt calibration
- *
- * @param sourceText - original chunk text
- *
- * @param targetText - translation chunk text the envelopes were cut from
- *
- * @param envelopes - non-overlapping envelopes in document order
- *
- * @param issues - adjudicated issues the envelopes serve
- *
- * @param signal - caller abort honored by the exchange
- *
- * @param perCallTimeoutMs - deadline for the exchange
- *
- * @param l - pipeline logger
- *
- * @returns Apply-gate outcome plus findings
- *
- * @example
- * ```ts
- * const editor = await runEditorStage({ ... },);
- * ```
- */
-export async function runEditorStage(
-  {
-    client,
-    editorModelId,
-    editorRuleAddendum,
-    sourceText,
-    targetText,
-    envelopes,
-    issues,
-    signal,
-    perCallTimeoutMs,
-    l,
-  }: ForeignBorrowed<{
-    readonly client: SyntheticClient;
-    readonly editorModelId: SyntheticModelId;
-    readonly editorRuleAddendum?: string;
-    readonly sourceText: string;
-    readonly targetText: string;
-    readonly envelopes: readonly EditableEnvelope[];
-    readonly issues: readonly AdjudicatedIssue[];
-    readonly signal: AbortSignal;
-    readonly perCallTimeoutMs: number;
-    readonly l: Logger;
-  }>,
-): Promise<EditorStageResult> {
-  /**
-   * Editor sheet for this chunk.
-   */
-  const plan = buildEditorMessages({
-    sourceText,
-    targetText,
-    envelopes,
-    issues,
-    ...(editorRuleAddendum === undefined ? {} : { editorRuleAddendum, }),
-  },);
-
-  /**
-   * Editor's reply after retry-to-quorum;
-   * a one-model roster means retries continue until the voice is heard
-   * or the rounds are spent.
-   */
-  const gather = await gatherStageVoices({
-    client,
-    modelIds: [editorModelId,],
-    messages: plan.messages,
-    signal,
-    exchangeTimeoutMs: perCallTimeoutMs,
-    responseFormat: EDITOR_RESPONSE_FORMAT,
-    validate: isEditorReportWire,
-    stage: 'editor',
-    l,
-  },);
-
-  /**
-   * Sole editor voice, when heard.
-   */
-  const [voice,] = gather.voices;
-  if (voice === undefined) {
-    return {
-      patch: {
-        patchedText: targetText,
-        applied: [],
-        rejected: [],
-      },
-      editorHeard: false,
-      findings: gather.findings,
-    };
-  }
-
-  /**
-   * Operations bound through the prompt plan.
-   */
-  const {
-    operations,
-    findings,
-  } = resolveEditorEdits({
-    wire: voice.value,
-    envelopes: plan.envelopes,
-  },);
-
-  /**
-   * Apply-gate outcome over the resolved operations.
-   */
-  const patch = applyPatchOperations({
-    targetText,
-    envelopes,
-    operations,
-  },);
-
-  l.info(
-    `editor stage: ${String(patch.applied
-      .length,)} applied, ${
-      String(patch.rejected
-        .length,)
-    } rejected, ${String(findings.length,)} findings`,
-  );
-
-  return {
-    patch,
-    editorHeard: true,
-    findings,
-  };
-}
+//region Checker stage
+// The proving stage of one chunk's repair: checker models judge whether each
+// accepted issue is actually gone from the candidate the editor ensemble chose.
+// Lost checker voices weaken the proof and with it the candidate's
+// measurements. The editors themselves live in `repair-editor-stage.ts`.
 
 /**
  * Everything the checker stage produced for one chunk.
@@ -344,4 +173,4 @@ export async function runCheckerStage(
   };
 }
 
-//endregion Editor and checker stages
+//endregion Checker stage

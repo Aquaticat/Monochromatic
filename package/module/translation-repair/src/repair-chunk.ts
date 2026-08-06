@@ -15,10 +15,8 @@ import type {
   ChunkRepairOutcome,
   RepairModels,
 } from './repair-contract.ts';
-import {
-  runCheckerStage,
-  runEditorStage,
-} from './repair-edit-stages.ts';
+import { runCheckerStage, } from './repair-edit-stages.ts';
+import { runEditorStage, } from './repair-editor-stage.ts';
 import {
   runCriticStage,
   runPanelStage,
@@ -250,7 +248,8 @@ export async function repairChunk(
    */
   const editor = await runEditorStage({
     client,
-    editorModelId: models.editorModelId,
+    editorModelIds: models.editorModelIds,
+    judgeModelIds: models.judgeModelIds,
     ...(models.editorRuleAddendum === undefined
       ? {}
       : { editorRuleAddendum: models.editorRuleAddendum, }),

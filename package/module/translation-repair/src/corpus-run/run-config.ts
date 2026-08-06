@@ -50,8 +50,8 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
 ];
 
 /**
- * Role roster for a corpus run: all SIX critique and adjudicate, GLM-5.2
- * edits, and three check the shipped repair.
+ * Role roster for a corpus run: all SIX critique and adjudicate, two edit
+ * against each other, and three check the shipped repair.
  *
  * The panel is six rather than seven because the provider withdrew two models
  * and only one replacement (Kimi-K3) appeared. The stage quorum is unaffected:
@@ -64,15 +64,31 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * ballot before any decision rises from 3-of-7 (43 percent) to 3-of-6 (50).
  * User decision, 2026-08-05: "50% is okay here."
  *
- * Kimi-K3 EDITS, replacing GLM-5.2, because the user reports it as much stronger
- * than anything else currently offered and the editor is where model strength
- * converts most directly into repair quality. The round-two grading supports
- * spending strength there specifically: four of the 37 true positives carried
- * notes saying detection was right but the proposed repair was poor ("is there
- * a better way?"), which is an editor complaint, not a critic one.
+ * TWO editors, not one, on the user's rule that no single model should control
+ * any part of the pipeline. Kimi-K3 is one of them because the user reports it
+ * as much stronger than anything else currently offered, and the editor is
+ * where model strength converts most directly into repair quality. The
+ * round-two grading supports spending strength there specifically: four of the
+ * 37 true positives carried notes saying detection was right but the proposed
+ * repair was poor ("is there a better way?"), which is an editor complaint, not
+ * a critic one. GLM-5.2 is the second editor, having held the role alone
+ * before.
  *
- * Checkers deliberately EXCLUDE the editor, so nothing checks its own work.
- * Previously GLM-5.2 both edited and checked; that self-check is now gone.
+ * Two rather than three deliberately. Every editor is barred from judging its
+ * own chunk, so each added editor costs a judge as well as its own calls: at
+ * two editors four judges remain, at three only three, and a plurality gets
+ * harder to reach exactly as the candidate set gets wider. Raise it only after
+ * the `editor-chunk-select` findings show how often judging converges.
+ *
+ * Judges are the WHOLE roster. Selection removes producers per round, so
+ * passing the whole roster lets an editor judge the envelopes it did not
+ * propose for, while never judging its own text.
+ *
+ * Checkers deliberately EXCLUDE every editor, so nothing checks its own work.
+ * That drops GLM-5.2 from the checker set it held while it was also editing,
+ * and gpt-oss-120b takes the seat. GLM-4.7-Flash stays out: it is the model
+ * that most often loses its voice to schema mismatch, and the checker stage is
+ * where a lost voice costs proof rather than coverage.
  *
  * Attribution cost, accepted by the user ("Bundle all the improvements that
  * could be made, in"): round three changes the roster, the editor, the checker
@@ -83,11 +99,15 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
 export const RUN_MODELS: RepairModels = {
   criticModelIds: RUN_ROSTER,
   panelModelIds: RUN_ROSTER,
-  editorModelId: 'hf:moonshotai/Kimi-K3',
-  checkerModelIds: [
+  editorModelIds: [
+    'hf:moonshotai/Kimi-K3',
     'hf:zai-org/GLM-5.2',
+  ],
+  judgeModelIds: RUN_ROSTER,
+  checkerModelIds: [
     'hf:Qwen/Qwen3.6-27B',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',
+    'hf:openai/gpt-oss-120b',
   ],
 };
 
