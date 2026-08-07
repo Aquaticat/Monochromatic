@@ -1,3 +1,8 @@
+import {
+  MEDIUM_BAND_MAX_BYTES,
+  SMALL_BAND_MAX_BYTES,
+} from '../sample-grading.ts';
+
 //region Band ordering
 // Decides the order a corpus pass starts entries in, so coverage fills every
 // size band at the same pace.
@@ -21,15 +26,23 @@
  * Page-source byte size below which an entry sits in the small band. The
  * corpus page.md sizes fall into rough tertiles with the lower cut near
  * 1.8 KiB.
+ *
+ * Takes its value from `sample-grading.ts` rather than restating it. The bands
+ * a pass FILLS have to be the bands a sample STRATIFIES over, or the graded
+ * sheet is drawn from a population the accumulation never balanced. Two
+ * literals kept equal by a doc comment is the arrangement that fails silently,
+ * because nothing about a wrong number looks wrong.
  */
-export const SMALL_PAGE_BYTES = 1_843;
+export const SMALL_PAGE_BYTES: typeof SMALL_BAND_MAX_BYTES = SMALL_BAND_MAX_BYTES;
 
 /**
  * Page-source byte size at or above which an entry sits in the large band, the
- * upper tertile cut. Matches `MEDIUM_BAND_MAX_BYTES` in `sample-grading.ts`, so
- * the bands the pass fills are exactly the bands the sample stratifies over.
+ * upper tertile cut.
+ *
+ * Shares its definition with the sampler for the reason given on
+ * {@link SMALL_PAGE_BYTES}.
  */
-export const MEDIUM_PAGE_BYTES = 3_686;
+export const MEDIUM_PAGE_BYTES: typeof MEDIUM_BAND_MAX_BYTES = MEDIUM_BAND_MAX_BYTES;
 
 /**
  * Size bands in the order they lead within one rank. The larger band goes
