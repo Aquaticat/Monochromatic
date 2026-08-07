@@ -202,6 +202,90 @@ export function judgeRegionProbe(
 }
 
 /**
+ * One envelope's evidence as a single record carried it.
+ */
+type RegionEvidence = {
+  /**
+   * Screened tally of the region.
+   */
+  readonly tally: RegionDefectTally;
+
+  /**
+   * Probers asked for the region's chunk.
+   */
+  readonly configuredProbers: number;
+
+  /**
+   * Probers whose reply arrived and validated.
+   */
+  readonly heardProbers: number;
+};
+
+/**
+ * Renders everything the summary reads off one copy, as a comparable string.
+ *
+ * @param evidence - one record's copy of an envelope's evidence
+ *
+ * @returns Fingerprint equal exactly when two copies agree
+ *
+ * @example
+ * ```ts
+ * const fingerprint = evidenceFingerprint({ evidence, },);
+ * ```
+ */
+function evidenceFingerprint(
+  { evidence, }: { readonly evidence: RegionEvidence; },
+): string {
+  /**
+   * Screened tally of this copy.
+   */
+  const { tally, } = evidence;
+  return [
+    evidence.configuredProbers,
+    evidence.heardProbers,
+    tally.corroborated,
+    tally.removalCorroborated,
+    tally.contradicted,
+    tally.unanchored,
+    tally.noneFound,
+    tally.uncertain,
+    corroboratingProberCount({ tally, },),
+  ].join('|',);
+}
+
+/**
+ * Whether two copies of one envelope's evidence say the same thing.
+ *
+ * Compares what the summary actually reads: the roster sizes, the five screened
+ * counts, and the number of distinct probers upholding damage. Claim text is
+ * not compared because the reader drops it, so comparing it would only ever be
+ * comparing two empty strings.
+ *
+ * @param kept - copy already recorded for the envelope
+ *
+ * @param found - copy met on a later record
+ *
+ * @returns True when the two agree on every figure the summary uses
+ *
+ * @example
+ * ```ts
+ * const agrees = sameRegionEvidence({ kept, found, },);
+ * ```
+ */
+function sameRegionEvidence(
+  {
+    kept,
+    found,
+  }: {
+    readonly kept: RegionEvidence;
+    readonly found: RegionEvidence;
+  },
+): boolean {
+  return evidenceFingerprint({ evidence: kept, },)
+    === evidenceFingerprint({ evidence: found, },);
+}
+
+/**
  * Summarizes probe readings over the distinct regions that actually shipped.
  *
  * @param readings - probe readings of SHIPPED issue records only; the caller
@@ -220,15 +304,36 @@ export function summarizeProbeTelemetry(
   /**
    * One entry per distinct envelope, keeping the first reading that named it.
    */
-  const distinct = new Map<string, {
-    readonly tally: RegionDefectTally;
-    readonly configuredProbers: number;
-    readonly heardProbers: number;
-  }>();
+  const distinct = new Map<string, RegionEvidence>();
   for (const reading of readings) {
     for (const tally of reading.regions) {
-      if (distinct.has(tally.envelopeId,))
+      /**
+       * Copy already kept for this envelope, absent on first sighting.
+       */
+      const kept = distinct.get(tally.envelopeId,);
+      if (kept !== undefined) {
+        // Every record serving a merged envelope carries the SAME tally, and
+        // an envelope lives inside one chunk so its records were probed by one
+        // roster. Copies that disagree therefore cannot both be right, and
+        // keeping the first would make the whole summary depend on artifact
+        // read order while reporting a number that looks settled.
+        if (!sameRegionEvidence({
+          kept,
+          found: {
+            tally,
+            configuredProbers: reading.configuredProbers,
+            heardProbers: reading.heardProbers,
+          },
+        },))
+          throw new Error(
+            `envelope ${tally.envelopeId} carries disagreeing probe copies `
+              + 'across the records it served. Every record of a merged '
+              + 'envelope carries the same tally and one roster probed them '
+              + 'all, so keeping either copy would make this summary depend on '
+              + 'the order artifacts were read.',
+          );
         continue;
+      }
       distinct.set(
         tally.envelopeId,
         {

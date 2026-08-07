@@ -294,6 +294,43 @@ await describe({
     },),
 
     it({
+      name: 'THROWS when two records carry disagreeing copies of one '
+        + 'envelope. Every record of a merged envelope carries the same tally '
+        + 'and one roster probed them all, so copies that differ cannot both '
+        + 'be right, and keeping the first would make the summary depend on '
+        + 'the order artifacts happened to be read while reporting a figure '
+        + 'that looks settled',
+      fn: async () => {
+        expect(function summarizesDisagreement() {
+          summarizeProbeTelemetry({
+            readings: [
+              {
+                heardProbers: 3,
+                configuredProbers: 3,
+                regions: [
+                  catTally({
+                    envelopeId: 'envelope/shared',
+                    corroborated: 3,
+                  },),
+                ],
+              },
+              {
+                heardProbers: 3,
+                configuredProbers: 3,
+                regions: [
+                  catTally({
+                    envelopeId: 'envelope/shared',
+                    corroborated: 1,
+                  },),
+                ],
+              },
+            ],
+          },);
+        },).toThrow('envelope/shared',);
+      },
+    },),
+
+    it({
       name: 'separates majority from minority findings, which is the split '
         + 'between what a gate would have blocked and what it would not',
       fn: async () => {
