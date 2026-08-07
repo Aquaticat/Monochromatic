@@ -470,7 +470,7 @@ None starts a turn.
 The `prompt` field in `UserPromptSubmit` is input describing a prompt the user already submitted,
 not an output that creates one.
 
-Closing the gap therefore needs a driver outside the hook system,
+Closing the gap would need a driver outside the hook system,
 something that submits a fresh prompt once the chain ends.
 The `loop` skill is the in-harness form of that.
 It was rejected as model-mediated,
@@ -478,7 +478,20 @@ which is accurate about its invocation:
 the model decides to start it.
 Its subsequent firings are scheduled by the harness rather than chosen by the model,
 so the rejection applies to starting the loop and not to sustaining it.
-That distinction is recorded because it decides whether the option is actually foreclosed.
+
+**Decision, 2026-08-07: the gap is accepted and will not be closed.**
+The measured problem was 33.8% of Opus 5 turns needing a nudge,
+and that cost is now absorbed inside each turn.
+What remains is one prompt per chain end,
+a much smaller cost than the one this work removed.
+The alternatives were weighed and declined:
+an external re-prompt driver is the only fully non-model-mediated route
+but carries real runaway risk on the user's quota for the largest build of the options,
+and raising the depth limit does not close the gap at all,
+it only lengthens each chain while weakening the bound
+that the platform cap does not supply for a busy agent.
+Revisit only if long unattended runs become common enough
+that stalling at each chain end outweighs that risk.
 
 ### Releasing, not only bounding
 
