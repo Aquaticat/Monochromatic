@@ -60,6 +60,10 @@ export {
   type EditableEnvelope,
   type EnvelopePlan,
 } from './patch-model.ts';
+export {
+  type ChunkCriticPhase,
+  runChunkCriticPhase,
+} from './chunk-critic-phase.ts';
 export { repairChunk, } from './repair-chunk.ts';
 export {
   assertCheckerIndependence,
