@@ -581,12 +581,48 @@ its assertion true measures the arguments rather than the member.
 
 So the honest form is conditional on an initial value being supplied,
  which is an argument-count fact
-about the call rather than a fact about the member,
- and the table is keyed by member.
- That is the same
-shape `join` needed and would need its own consumer-side condition;
- it is a separate increment rather than
-an entry.
+about the call rather than a fact about the member.
+ That was then built,
+ measured,
+ and reverted,
+ which is
+the useful part.
+
+`seededOnly` on the entry,
+ checked in `callResultComesFromObserver` by counting the call's arguments,
+ with
+the probe extended two ways:
+ a member returning one observer result satisfies the relation by identity
+where a member returning a container satisfies it by membership,
+ and a `seededOnly` entry must *fail* its
+own relation unseeded or the condition is decoration.
+ The unseeded fold hands the sentinel straight back,
+so the condition is load-bearing and now provably so.
+
+It changes nothing.
+ Finding sets byte-identical across the workspace,
+ no cause text moved,
+ 1628 either
+side.
+ Reverted on the same ground as the spread ascent earlier in this work:
+ an increment that cannot be
+shown to do anything is one more thing to maintain and one more thing to disbelieve.
+
+Why it changes nothing is the part to keep,
+ and it corrects this document's own earlier claim.
+ The
+`reduce` findings do not survive because the member lacks a relation.
+ `groupRuns` in
+`package/module/logger/src/sink/console.ts` seeds its fold with `[]`,
+ so the relation applies,
+ and it
+still reports because the observer hands the accumulator back holding the receiver's own records,
+ which
+then leave through the return.
+ The relation explains that finding rather than discharging it,
+ which is
+the relation working.
+ A fold whose accumulator never holds a receiver element is already silent.
 
 No provably inert group remains,
  checked rather than assumed:
