@@ -56,7 +56,10 @@ export {
   type AttemptMap,
   readAttemptMap,
 } from './corpus-run/attempt-store.ts';
-export { resolveRunsDir, } from './corpus-run/run-config.ts';
+export {
+  createRunClient,
+  resolveRunsDir,
+} from './corpus-run/run-config.ts';
 export {
   discardSliceCache,
   listResumableEntries,
