@@ -45,18 +45,41 @@ with the offer set unchanged at 34 through every increment except one adjudicate
 `stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts`,
  which is correct.
 
-Seven conditions guard it.
-Four have a failing case in `prefer-readonly-parameter-type.unit.test.ts`:
- the reassignable
-binding, the written endpoint, the wrapper unwrap, and the only-escape condition.
-Two are masked by other charge paths,
- the containment check and the relation requirement,
- and
-one is unreachable by construction,
- the unresolved base.
-Each says which it is at its point of use,
- and "Two of the guards do have a failing case after
-all" records how the first three were finally isolated.
+Eight conditions decide the discharge,
+ and each states at its point of use which of four
+kinds it is.
+
+Four have a failing case in `prefer-readonly-parameter-type.unit.test.ts`,
+ meaning the suite
+fails when the condition is removed:
+ the reassignable binding,
+ the written endpoint,
+ the
+wrapper unwrap,
+ and the only-escape condition.
+
+Two are masked by other charge paths and were measured to be so:
+ the containment check,
+ which
+`resultEscapesCallable` pre-empts by treating any reference inside a nested callable as
+escaping,
+ and the relation requirement,
+ which the observer path pre-empts.
+
+One is unreachable by construction,
+ the unresolved base,
+ because both entry points reach this
+only for a member call and the relation test refuses the sentinel before the descent can
+produce one.
+
+One is believed unreachable by argument rather than measurement,
+ the alias-cycle refusal,
+since only `const` bindings are followed and TypeScript rejects a cycle among them as use
+before declaration.
+
+"Two of the guards do have a failing case after all" records how the first three of the tested
+four were finally isolated,
+ after two earlier attempts concluded the opposite.
 
 `localReceiverElements` in the provenance fixture is the positive control:
  unexported,
