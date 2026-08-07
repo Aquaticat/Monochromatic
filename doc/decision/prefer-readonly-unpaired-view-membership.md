@@ -76,7 +76,9 @@ The count is pinned in two files,
 
 ## What it does, measured
 
-Both halves landed. The channel probe gained a `DataView` receiver: a real view over a real
+Both halves landed.
+ The channel probe gained a `DataView` receiver:
+ a real view over a real
 `ArrayBuffer`,
  driven with plain numeric arguments on purpose,
  since a recording argument would report
@@ -181,8 +183,8 @@ lookups a caller can answer,
  and the locale members process caller-supplied `locales` and `options` that a
 member name alone cannot describe.
  They stay off until a probe drives them,
- and they stay *in* the membership
-table,
+ and the membership table still names
+them,
  because preserving the receiver and dispatching to user code are separate questions.
 
 Three names the engine provides are absent from both,
@@ -260,7 +262,9 @@ Measured rather than assumed,
 work.
 
 The stake is small:
- about ten findings, with `subarray` at eight mentions and `set` at six, and
+ about ten findings,
+ with `subarray` at eight mentions and `set` at six,
+ and
 `Uint8Array` is the only typed array any of them uses,
  checked against the parameter declarations in
 `package/module/zip-writer/src/headers.ts`,
@@ -278,7 +282,9 @@ structure",
 document rejects in its own alternatives.
  The entry has to be complete:
  33 preserving members against 7
-mutating ones, counting `setFromBase64` and `setFromHex` as writes, which they are.
+mutating ones,
+ counting `setFromBase64` and `setFromHex` as writes,
+ which they are.
 
 Completeness is what makes the probe hard rather than long.
  `DataView` was probeable because every member
