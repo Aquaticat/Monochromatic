@@ -5318,3 +5318,27 @@ AN ENTRY TAKING MUCH LONGER THAN ITS PREDECESSORS IS USUALLY CHUNK COUNT, NOT A
 HANG. Entries here range from a handful of chunks to more than thirteen, and
 settle time tracks that count nearly linearly. Check how many chunks the entry
 has emitted before concluding anything is wrong with it.
+
+## Probe trigger rate: the decision doc is canonical now
+
+Issue #53 is decided: the probe stays in shadow mode, recorded in
+`doc/decision/introduced-defect-probe-gating.md` with the rejected gating
+designs and the condition that reopens it. The follow-up measurement, comparing
+corroborated regions against the round-three human repair grades, is tracked
+separately and is blocked on those grades existing.
+
+STOP ADDING A SECTION PER SETTLED ENTRY. This file accumulated one at five
+entries and another at seven, which makes the series hard to read and easy to
+quote stale. The current figures live in the decision doc; refresh them there
+with `mise run //package/module/translation-repair:score-probe`, which costs no
+quota and reads only local artifacts.
+
+THE SERIES SO FAR, for whoever wants the shape without rerunning anything:
+`majorityIntroduced` has been 1 at every checkpoint (1, 5, 6, 7, 8 entries)
+while regions went 13, 67, 68, 72, 79. The numerator has never moved.
+`minorityIntroduced` was 1 at one entry, 5 at five, and 6 at eight; the
+intermediate checkpoints recorded only the majority column, so treat the
+minority series as three points rather than five. `contradicted` and
+`unanchored` are still zero, and at eight entries `unprobedRecords` is zero
+across 198 shipped records, so the probe is reaching everything rather than
+skipping quietly.

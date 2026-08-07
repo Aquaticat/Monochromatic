@@ -31,7 +31,7 @@ Ranked best first,
     Chosen.
     Preserves every correct fix,
      and the measurement that would settle the question is already scheduled at no extra quota.
-    Costs the roughly one corroborated region per 72 continuing to ship.
+    Costs the single corroborated region across 79 continuing to ship.
 -   **Fall back to the runner-up editor candidate.**
     Preserves a repair at no new model calls,
      since every candidate was already produced,
@@ -47,7 +47,7 @@ Ranked best first,
      checking,
      probing,
      and selection per trigger,
-    to buy one region's worth of preserved repair per five entries.
+    to buy the one region's worth of preserved repair seen across eight entries.
 -   **Reject the whole chunk.**
     Simplest to implement and never ships a flagged repair.
     Ranked last because observed chunks resolve 9/9 to 17/17 accepted issues,
@@ -66,11 +66,13 @@ THE CORROBORATION COLUMNS SEPARATE CLEANLY.
 `majorityIntroduced` has stayed at exactly 1 across 1,
  5,
  6,
- and 7 settled entries while the region count went 13,
+ 7,
+ and 8 settled entries while the region count went 13,
  67,
  68,
- 72.
-`minorityIntroduced` went from 1 to 5,
+ 72,
+ 79.
+`minorityIntroduced` went from 1 to 6,
  tracking region count almost exactly.
 Probers keep making claims;
  what stays rare is a majority agreeing on one region.
@@ -78,7 +80,9 @@ That is the shape of a sensitive but noisy instrument,
  and it is the opposite of the silently-always-negative failure the sensitivity check was built to rule out.
 
 THE DETERMINISTIC SCREEN IS HOLDING.
-Zero contradicted and zero unanchored across 72 regions.
+Zero contradicted and zero unanchored across 79 regions,
+ with `unprobedRecords` at zero over 198 shipped records,
+so the probe is reaching everything it should rather than skipping quietly.
 A quote must be new in the replacement,
  or gone from it for dropped content,
 so an impossible claim is dismissed without anyone having to prove a possible one.
