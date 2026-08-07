@@ -30,6 +30,7 @@ import {
   NO_BINDING_INITIALIZER,
 } from './effect-binding-initializer.ts';
 import { bindingAssignedWithin, } from './effect-binding-assignment.ts';
+import { callersAreEnumerable, } from './effect-caller-enumeration.ts';
 import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
 import {
   NOTHING_WRAPPED,
@@ -138,11 +139,18 @@ function callIsReturnedOutright(
  * declaration on workspace source, so asking it directly costs a fraction of that graph and
  * needs none of its state threaded into this layer.
  *
- * Completeness means what it means for that graph: every usage TypeScript can enumerate
- * resolves. A callable exported from a published package has consumers TypeScript cannot
- * enumerate, so this answers true for it, which is the completeness notion the ownership
- * inference already trusts. Adopting a different one here would leave the two disagreeing
- * about identical callables.
+ * Completeness means what it means for that graph, and what that is changed. Both used to
+ * read "every usage TypeScript can enumerate resolves" as completeness, which is true of an
+ * exported callable with one in-program caller while consumers outside the program go
+ * unenumerated. The argument for keeping it was that the two mechanisms must agree about
+ * identical callables.
+ *
+ * That argument was wrong in a way worth recording, because it is nearly right. The two do
+ * have to share a notion, but the one they shared was sound for only one of them: the
+ * ownership graph over-approximates and adds charges, while this under-approximates and
+ * removes one, and an enumeration that may be missing callers is safe to trust only in the
+ * first direction. So the shared predicate was strengthened rather than forked, and
+ * `callersAreEnumerable` is now asked by both.
  *
  * @param project - TypeScript project enumerating signature usage.
  *
@@ -167,6 +175,15 @@ function callersAllResolve({
    */
   const declaration = body.parent;
   if (!isEffectCallableDeclaration(declaration,))
+    return false;
+  /* Whether the enumeration can be complete at all, asked before what it contains. A callable
+   * other files may import has callers `getSignatureUsage` never sees, and requiring a
+   * non-empty result does not reach that: one in-program call satisfies it while a consumer
+   * outside the program writes through the returned container unattributed. */
+  if (!callersAreEnumerable({
+    project,
+    declaration,
+  },))
     return false;
   try {
     /**

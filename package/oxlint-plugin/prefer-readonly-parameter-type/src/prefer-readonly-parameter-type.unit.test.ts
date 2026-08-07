@@ -579,7 +579,23 @@ children: [
        * either way, by a path that never consults the discharge. So it pins the shape and
        * does not isolate the check, and no program was found that does. The check stays as
        * defence in depth, and this count records a report rather than a prevented offer. */
-      expect(messages.length,).toBe(17,);
+      /* Seventeen to nineteen when the shared completeness predicate began requiring
+       * closed-world callers, and the two that came back are the two the discharge had
+       * cleared. Every callable here is exported, so `callersAreEnumerable` refuses each one:
+       * a file's module surface is how a caller outside this program reaches it, and an
+       * enumeration that cannot see those callers cannot license removing a charge on the
+       * strength of what they substitute.
+       *
+       * The offer count falls with it, which is the honest price of the change rather than a
+       * side effect. The discharge now fires only for a callable no other file can import, so
+       * on this fixture it fires for none of them.
+       *
+       * Measured through this harness rather than through the `lint-fixture-readonly-*` mise
+       * tasks. Those lint one file on its own, so `getSignatureUsage` finds no callers at all
+       * and the discharge is refused before any of its own conditions are reached. A probe run
+       * there reports no difference for any change to this feature, which is a property of the
+       * probe and not of the code. */
+      expect(messages.length,).toBe(19,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because
@@ -722,10 +738,23 @@ children: [
        * What keeps that from spreading to callables that do write is unchanged: a write
        * through any of these results is attributed to the caller's own parameter, which is
        * why `writesThroughReturnedContainer` still records `referentMutated=[0]` and is
-       * still reported. */
+       * still reported.
+       *
+       * Three to zero when the shared completeness predicate began requiring closed-world
+       * callers, and this assertion is kept at zero rather than deleted because it is the
+       * honest record of what that cost. Each of the three offers is still accurate about its
+       * callable. What changed is that none of them can be *proven* any more: all three are
+       * exported, a file's module surface is how a caller outside this program reaches one,
+       * and a discharge licensed by what callers substitute cannot rest on an enumeration
+       * that may not have seen them all.
+       *
+       * So the returned-result discharge now fires only for a callable no other file can
+       * import, and this fixture contains none. Whether that price is worth paying is a
+       * judgement recorded in `doc/planning/prefer-readonly-return-substitution.md`; this
+       * number is what it costs. */
       expect(messages.filter(function offersReturningReceiver(message,): boolean {
         return message.includes('"rows" should be readonly: property',);
-      },).length,).toBe(3,);
+      },).length,).toBe(0,);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
        * involved, `rows` through a discharged `at` result, and
@@ -762,23 +791,20 @@ children: [
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection.',
-        /* Three from the returned-result discharge, on the callables that hand a container
-         * of the caller's rows back. `returnsReceiverElements` and
-         * `returnsComposedReceiverElements` build a fresh container and write nothing;
-         * `readsReturnedContainerLength` reads a length through one. A read-only parameter
-         * describes each of them accurately.
+        /* Three offers from the returned-result discharge stood here, on the callables that
+         * hand a container of the caller's rows back, and all three are gone. Removed rather
+         * than left with a note, because a list that names offers the rule no longer makes
+         * would stop being the exhaustive record it exists to be.
          *
-         * They rest on the judgement recorded two comments above for the packaging pair,
-         * which returns caller-owned state in a fresh holder and earns its offers for
-         * writing nothing. These return it in a fresh container. Deciding those two
-         * differently would make the answer depend on the wrapper's shape rather than on
-         * what the callable does.
+         * They were accurate: `returnsReceiverElements` and `returnsComposedReceiverElements`
+         * build a fresh container and write nothing, and `readsReturnedContainerLength` reads
+         * a length through one. What changed is not the judgement but what can be proven.
+         * All three are exported, so a caller outside this program can reach them, and a
+         * discharge licensed by what callers substitute cannot rest on an enumeration that may
+         * not have seen every caller.
          *
-         * They are listed rather than counted for the same reason as the pair: a change
-         * that turns any of them into a defect has to edit this list and say why. */
-        'Parameter "rows" should be readonly: property label is writable.',
-        'Parameter "rows" should be readonly: property label is writable.',
-        'Parameter "rows" should be readonly: property label is writable.',
+         * Their absence is the visible price of requiring closed-world callers, and the
+         * assertion above keeps it at an explicit zero so the cost stays legible. */
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },
