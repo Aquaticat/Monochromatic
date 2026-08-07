@@ -29,3 +29,9 @@ run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-invali
 [tasks."lint-fixture-readonly-provenance"]
 description = "Exercise readonly-effect diagnostics on result-provenance fixture"
 run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-result-provenance-invalid.ts"
+
+# Same reason as the provenance task: prefer-readonly-parameter-type.unit.test.ts asserts this
+# file by count alone, so a count change otherwise has to be read by editing the test to print.
+[tasks."lint-fixture-readonly-catalog-free"]
+description = "Exercise readonly-effect diagnostics on catalog-free fixture"
+run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-catalog-free-invalid.ts"
