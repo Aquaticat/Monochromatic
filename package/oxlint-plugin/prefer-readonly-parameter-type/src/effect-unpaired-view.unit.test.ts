@@ -79,7 +79,7 @@ function exerciseMember({
   /* A `Big` member rejects a number outright, so the written value has to match the member's
    * own domain or the probe fails on argument conversion rather than measuring anything. */
   const written = memberName.includes('Big',)
-    ? BigInt(PROBE_WRITE_VALUE,)
+    ? 1n
     : PROBE_WRITE_VALUE;
   (held as (this: DataView, ...args: readonly unknown[]) => unknown)
     .apply(
