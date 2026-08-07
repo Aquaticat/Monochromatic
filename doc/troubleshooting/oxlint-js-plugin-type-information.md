@@ -1,4 +1,4 @@
-# Oxlint 1.73 does not supply TypeScript type information to JavaScript plugins, so custom rules need an independent semantic bridge
+# Oxlint 1.75 does not supply TypeScript type information to JavaScript plugins, so custom rules need an independent semantic bridge
 
 ## Supersession
 
@@ -38,8 +38,14 @@ so absent Oxlint parser services do not prove that type-aware replacement semant
 
 ## Root cause
 
-Verified against `oxc-project/oxc` commit `8de6fcaac7037d37e7f971e67a474b3ae442513a`,
+Originally verified against `oxc-project/oxc` commit `8de6fcaac7037d37e7f971e67a474b3ae442513a`,
 cloned from `https://github.com/oxc-project/oxc.git` on 2026-07-12.
+Reverified against tag `apps_v1.75.0`,
+commit `83abe3b49c0913b1a984a7eec5e433a59fd76eae`,
+on 2026-08-07.
+The source paths and quoted behavior remain unchanged,
+and the current official JavaScript-plugin documentation still lists
+"Lint rules that rely on TypeScript type-awareness" as unsupported.
 
 The JavaScript plugin `SourceCode` object explicitly installs one frozen empty parser-services object.
 `apps/oxlint/src-js/plugins/source_code.ts:229-234`:
@@ -101,11 +107,27 @@ The `--type-aware` flag enables that second path but does not change the JavaScr
 
 Versions under test:
 
-- Oxlint 1.73.0 from `node_modules/.bin/oxlint`;
-- `@oxlint/plugins` 1.73.0;
-- `oxlint-tsgolint` 0.24.0;
+- original probe:
+  Oxlint 1.73.0,
+  `@oxlint/plugins` 1.73.0,
+  and `oxlint-tsgolint` 0.24.0;
+- current revalidation:
+  Oxlint 1.75.0,
+  `@oxlint/plugins` 1.75.0,
+  and `oxlint-tsgolint` 7.0.2001;
 - Node.
   js through the repository's mise environment.
+
+The current revalidation used the same plugin,
+configuration,
+and TypeScript input in a disposable directory.
+It supplied the installed platform `tsgolint` binary through `OXLINT_TSGOLINT_PATH`
+because dependency lookup starts from the disposable working directory.
+Oxlint 1.75.0 produced the same output:
+
+```text
+probe.ts:1:1: error type-probe(probe): parserServices keys=; count=0
+```
 
 The following disposable harness creates a plugin,
 config,
