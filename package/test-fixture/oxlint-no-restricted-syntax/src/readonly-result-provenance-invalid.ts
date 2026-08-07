@@ -323,6 +323,59 @@ export function readsLocalRepointedLength(
 }
 
 /**
+ * Hands back elements of a repointed parameter hidden behind a type assertion.
+ *
+ * The wrapper unwrap's program, and it works by making another guard unreachable rather than
+ * by being refused itself. `bindingAssignedWithin` can only answer about an `Identifier`, so an
+ * assertion around the base hides the name from it and the written-endpoint check silently
+ * passes on a parameter that was pointed elsewhere.
+ *
+ * That is the shape of the whole family: every structural test in the descent asks what kind of
+ * expression the base is, and a wrapper answers for itself. `as`, parentheses, `!` and
+ * `satisfies` all do it, and this is the ordinary spelling.
+ *
+ * @param rows - Rows pointed at the other parameter before use.
+ *
+ * @param other - Rows the parameter is pointed at.
+ *
+ * @returns fresh container of whichever rows the parameter last held.
+ *
+ * @example
+ * ```ts
+ * readsLocalAssertedRepointedLength([], [],);
+ * ```
+ */
+function localAssertedRepointedElements(
+  rows: readonly Labelled[],
+  other: readonly Labelled[],
+): readonly Labelled[] {
+  rows = other;
+  return (rows as readonly Labelled[]).slice(0,);
+}
+
+/**
+ * Reads how many rows the asserted repointed container holds, so its callee has a caller.
+ *
+ * @param rows - Rows pointed at the other parameter before use.
+ *
+ * @param other - Rows the parameter is pointed at.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalAssertedRepointedLength([], [],);
+ * ```
+ */
+export function readsLocalAssertedRepointedLength(
+  rows: readonly Labelled[],
+  other: readonly Labelled[],
+): number {
+  return localAssertedRepointedElements(rows, other,)
+    .length;
+}
+
+/**
  * Reads only how many rows a returned container holds.
  *
  * The control keeping the returned origin from becoming a blanket attribution. Nothing here

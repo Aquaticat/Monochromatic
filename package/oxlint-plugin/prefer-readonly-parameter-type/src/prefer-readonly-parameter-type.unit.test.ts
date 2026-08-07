@@ -596,10 +596,11 @@ children: [
        * there reports no difference for any change to this feature, which is a property of the
        * probe and not of the code. */
       /* Nineteen to twenty-one for the positive control and its caller, then to twenty-nine
-       * for the two guard programs and theirs. Each of those four callables charges both its
-       * parameters, which is the whole of the difference: they are the positive control with
-       * one statement added, and that statement is what the guard refuses to reason past. */
-      expect(messages.length,).toBe(29,);
+       * for the two guard programs and theirs, then to thirty-three for a third. Each of those
+       * six callables charges both its parameters, which is the whole of the difference: they
+       * are the positive control with one statement added, and that statement is what the
+       * guard refuses to reason past. */
+      expect(messages.length,).toBe(33,);
       /* The two guards that are now known to have a failing case, pinned by the programs that
        * fail without them rather than by a count that would not move.
        *
@@ -609,10 +610,16 @@ children: [
        * offered read-only if their guard is removed: measured by neutralising each condition
        * in turn, four offers appear in the first case and four in the second.
        *
+       * `localAssertedRepointedElements` is the third, and it works by making another guard
+       * unreachable rather than by being refused itself. `bindingAssignedWithin` can only
+       * answer about an `Identifier`, so an assertion around the base hides the name from it
+       * and the written-endpoint check passes on a parameter that was pointed elsewhere.
+       * Removing the wrapper unwrap offers four parameters that must not be offered.
+       *
        * That is what the earlier guard programs could not show. They were exported, so
        * `callersAreEnumerable` refused them before any guard was consulted, and they were run
        * through a per-file task where the discharge is refused before that. Being unexported
-       * with an in-file caller is what makes these two reach the code they test. */
+       * with an in-file caller is what makes these three reach the code they test. */
       expect(messages.filter(function offersGuardedProgram(message,): boolean {
         return message.includes('"other" should be readonly',);
       },).length,).toBe(0,);

@@ -316,9 +316,13 @@ export function returnedResultDischargeable({
      * parentheses, `!` and `satisfies` all do it. Shared with the provenance walk rather
      * than restated, so the two cannot disagree about which forms erase.
      *
-     * MASKED for the same reason as the requirement it protects: the shapes a wrapper would
-     * hide are charged by the observer path regardless, so removing this changes no
-     * diagnostic today. It stops being masked exactly when that requirement does. */
+     * NOT masked, and the first guess that it was is worth recording as wrong. It looked
+     * masked because the relation requirement it protects is masked, but that is not the only
+     * thing a wrapper hides: `bindingAssignedWithin` can answer only about an `Identifier`, so
+     * an assertion around the base hides the name from it and the written-endpoint check
+     * passes on a parameter that was pointed elsewhere. Removing this offers four parameters
+     * that must not be offered, pinned by `localAssertedRepointedElements`. A structural test
+     * is only as good as its ability to see what it is testing. */
     /**
      * Inner expression, when this base is a wrapper whose value is exactly its operand's.
      */
