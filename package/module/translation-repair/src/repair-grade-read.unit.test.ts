@@ -12,7 +12,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseGradedRepairSheet, } from '../dist/final/node/index.mjs';
+import {
+  parseGradedRepairSheet,
+  readSheetIdentity,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Grade line as the sheet prints it, before a grader touches it.
@@ -151,6 +154,72 @@ await describe({
           ].join('\n',),
         },);
         expect(items[0]?.verdict,).toBe('fixes',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readSheetIdentity.name,
+  children: [
+    it({
+      name: 'reads the draw a sheet declares, which is what lets a graded '
+        + 'sheet be refused against the wrong manifest. Equal item counts are '
+        + 'not evidence two files describe the same items, since unrelated '
+        + 'draws of one size match on count and would mislabel every verdict',
+      fn: async () => {
+        /**
+         * Sheet header as the formatter prints it.
+         */
+        const text = [
+          '# Repair sheet',
+          '',
+          'Draw seed: milestone-three-precision-round-three',
+          'Corpus pin: a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+          'Sample size: 50',
+          '',
+          '### 1. cat naps',
+        ].join('\n',);
+
+        expect(readSheetIdentity({ text, },),).toEqual({
+          seed: 'milestone-three-precision-round-three',
+          corpusSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+        },);
+      },
+    },),
+
+    it({
+      name: 'STOPS at the first item, so a quoted line inside an item cannot '
+        + 'introduce a second identity. Sheets quote corpus prose and model '
+        + 'output verbatim, and a quote reading "Draw seed: something else" '
+        + 'would otherwise talk the join into accepting a mismatched manifest',
+      fn: async () => {
+        const text = [
+          'Draw seed: real-seed',
+          'Corpus pin: real-sha',
+          '',
+          '### 1. cat naps',
+          '',
+          'Draw seed: forged-seed',
+          'Corpus pin: forged-sha',
+        ].join('\n',);
+
+        expect(readSheetIdentity({ text, },),).toEqual({
+          seed: 'real-seed',
+          corpusSha: 'real-sha',
+        },);
+      },
+    },),
+
+    it({
+      name: 'returns empty strings for a sheet carrying no header at all, so '
+        + 'an older sheet reads as declaring nothing rather than as declaring '
+        + 'whatever it is compared against',
+      fn: async () => {
+        expect(readSheetIdentity({ text: '### 1. cat naps\n', },),).toEqual({
+          seed: '',
+          corpusSha: '',
+        },);
       },
     },),
   ],
