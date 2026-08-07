@@ -1343,11 +1343,12 @@ looking obviously safe.
 numbering there is internal to that line of work rather than GitHub issues,
  checked rather than assumed.
 
-## Observer members whose result carries objects, an unresolved gap
+## Observer members whose result carries objects, resolved into one gap and one design
 
-Measured 2026-08-07 alongside the `toSorted` work,
- and written down as measurements because the mechanism
-is not established.
+Measured 2026-08-07 alongside the `toSorted` work.
+ Two candidate discriminators were separated,
+ and
+they turned out to be a defect and a deliberate answer rather than two halves of one thing.
 
 Same harness,
  same receiver,
@@ -1365,33 +1366,64 @@ Same harness,
 - `filter`,
  whose result is a container of receiver elements and which takes an observer:
  clean.
-- `find` and `findLast`,
- whose result is a receiver value and which take an observer:
+- `find` over primitives:
+ clean.
+- `find` and `findLast` over objects:
  opaque.
-- `map` returning objects:
+- `map` returning the receiver's own objects:
  opaque.
+- `map` returning fresh objects:
+ clean.
 
-`at` and `find` carry the same relation,
- `RESULT_RELATION_RECEIVER_VALUE`,
- and differ only in that one takes
-an observer.
- That is one candidate discriminator.
- But `map` returning objects does not fit it cleanly,
- since
-`map`'s result is a container rather than a receiver value,
- which makes an observer return carrying objects a
-second candidate discriminator and possibly a second gap.
+### The gap: the result gate had no arm for a bare value
 
-The two have not been separated,
- so no cause is claimed here.
- What is claimed is the table above,
- which is
-reproducible,
- and the fact that `filter` sits on the clean side while `find` does not,
- which is where an
-investigation should start.
- `strip.panes.find` accounts for 28 workspace findings.
+`viewResultUnaccounted` asked two questions,
+ whether the result came from the observer and whether it is a
+container of receiver elements,
+ and a member whose result *is* one receiver element matched neither.
+ So
+`find` and `findLast` fell through to the aliasing fallback and failed closed,
+ while `at` carries the very
+same `RESULT_RELATION_RECEIVER_VALUE` and never showed the gap,
+ because it takes no observer and answers
+from the channel table before this gate runs.
 
+That asymmetry is the whole finding:
+ the identical write through the identical kind of element was
+attributed for one member and merely reported for the other.
+ The `at` half was already recognised as a
+hole rather than a discharge granted on trust,
+ recorded in
+`prefer-readonly-parameter-type.unit.test.ts`,
+ and this is the same hole reached by a different route.
+
+The third arm is held to the container arm's standard rather than the observer's:
+ writes through the
+element are attributed by the element step,
+ and a result that leaves the callable still fails closed.
+Checked before landing:
+ a write through the found element and a writing predicate both report
+`mutated=[0]`,
+ while a result stored to an outer binding and a returned element both stay opaque.
+
+### The design: an observer that hands its element back
+
+`map` returning the receiver's own objects is not a gap and should not be closed.
+`propagateElementApplications` records it as opacity on the receiver deliberately,
+ and says why in place:
+`rows.map(row => row,)` builds a container the caller can write through,
+ the observer performs no write and
+resolves everything it touches,
+ so only its returned set names the exposure.
+ The caller's own escape
+analysis cannot answer it either,
+ because the result is built by the member rather than bound from a
+tracked call.
+
+The fresh-object projection stays clean,
+ which is the shape issue #414 reports,
+ so the two are already
+separated by the returned set rather than by type shape.
 ## Consequences of the provenance replacement, measured
 
 Matched pair on identical source,
