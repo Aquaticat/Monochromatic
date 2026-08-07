@@ -12583,3 +12583,63 @@ Counting charges showed it immediately:
 Third instrument in one session that answered a different question than the one asked,
  and the
 first where the instrument was a script written that same hour to check the previous one.
+
+### How much of the issue #414 class is left
+
+The five reports the widening cleared were all on parameters already readonly at every
+level,
+ which is what #414 was filed about:
+ a finding whose printed remediations name no action
+its author can take.
+So the remaining population was measured.
+
+Between 6 and 66 of the 1483 parsed reports,
+ against 6 and 69 before the widening.
+The range is the answer rather than a hedge around one,
+ because the two bounds are computed
+from different assumptions about types this cannot resolve.
+
+The upper bound counts a parameter whose declared type is a readonly array,
+ `ReadonlyMap`,
+`ReadonlySet` or `Readonly<...>`.
+It over-counts,
+ and `statementWorkItems` in
+`package/agent-harness-shared/shell-command-analyzer/src/work-items.ts` shows how:
+ its
+`readonly statements: readonly ForeignBorrowed<UnbashStatement>[]` is a readonly array of
+*foreign-owned* elements,
+ so the report is about ownership reaching those elements and is
+correct rather than noise.
+
+The lower bound additionally requires every named type in the annotation to be one this can
+verify,
+ which excludes every element type with a name.
+It under-counts by exactly the cases where a named element type is in fact deeply readonly.
+
+Sizing this needs the checker rather than the source text,
+ and the honest reading of the range
+is that the #414 class is now small:
+ at most one report in twenty-two,
+ and plausibly far fewer.
+
+#### The classifier's own controls caught two defects
+
+Written down because it is the rule working on its author.
+The first version reported 375,
+ five times the upper bound above.
+Two faults,
+ both caught by a control asserting known cases before any count was believed.
+
+`readonly signal: AbortSignal` counted as already-readonly,
+ conflating a readonly *binding*
+with immutable *data*;
+ a capability object behind a readonly modifier is exactly what the rule
+should still report.
+And the type capture stopped at the first `;`,
+ which truncates
+`readonly { readonly a: number; }[]` mid-annotation,
+ so the shape #414 actually cites was
+being missed while looser shapes were counted.
+
+Reporting 375 would have argued that a quarter of the rule's output is unactionable noise.
+The measured figure argues the opposite.
