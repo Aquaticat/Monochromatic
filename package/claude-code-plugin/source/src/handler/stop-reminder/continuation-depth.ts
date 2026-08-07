@@ -1,14 +1,13 @@
 /**
  * Depth guard for forced continuation.
  *
- * Forced continuation originally relied on Claude Code ending the blocked chain
- * by itself. That was measured and is false. Two disposable runs whose agent
- * produced no tool calls ended after nine dispatches, and one producing modest
- * work ended after seventeen, which together looked like a platform ceiling. A
- * run whose agent ran one shell command per continuation reached thirty-one
- * dispatches and stopped only because the probe's own cap fired: Claude Code
- * never intervened. An always-blocking hook is therefore unbounded exactly when
- * the agent stays busy, which is the case that costs the most.
+ * Claude Code has its own cap, `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`, present in
+ * the 2.1.224 binary. It does not make this guard redundant, because it does
+ * not bound the expensive case. Runs whose agent produced no tool calls were
+ * overridden after nine consecutive blocks, while a run whose agent ran one
+ * shell command per continuation reached thirty-one and was never overridden.
+ * The platform cap therefore catches an idle loop and not a busy one, which is
+ * the loop that costs real money.
  *
  * The guard counts how many forced continuations have already happened since
  * the last human turn and allows the stop once that reaches the limit. Counting

@@ -11,13 +11,12 @@
  * deleting that sentence, which converts an informative stop into a silent one.
  * This detector cannot be satisfied that way because it reads nothing.
  *
- * Termination does not come from Claude Code. An earlier revision of this
- * comment claimed it did, on three disposable sessions that ended after nine,
- * nine, and seventeen dispatches. That looked like a platform ceiling and was
- * not one: a fourth run, whose agent ran one shell command per continuation,
- * reached thirty-one dispatches and stopped only because the probe's own cap
- * fired. The chain is unbounded exactly when the agent stays busy, which is the
- * case that costs the most. Bounding lives in `continuation-depth.ts`. See
+ * Termination is shared. Claude Code caps consecutive blocks through
+ * `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`, but only reliably when the agent is idle:
+ * runs producing no tool calls were overridden after nine blocks, while a run
+ * working on every continuation reached thirty-one unchecked. This repository
+ * bounds the busy case in `continuation-depth.ts` and releases the pointless
+ * cases in `continuation-progress.ts` and `continuation-tasks.ts`. See
  * `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
  *
  * @module

@@ -238,21 +238,26 @@ A third run, of the shipped handler rather than a minimal probe,
 ended after 17 dispatches, all of them forced continuations.
 So 9 is not a Claude Code constant.
 
-A fourth run retracts the rest of the claim.
+A fourth run refines the claim.
 Its hook blocked unconditionally up to a self-imposed cap of 30,
 and its block reason told the agent to run one shell command before continuing.
 It reached 31 dispatches with 31 `Bash` calls across 124 assistant turns,
 and stopped only because the probe's own cap fired.
-Claude Code never intervened.
 
-So the CLI does not reliably end a blocked chain.
-The earlier runs ended because their agents ran out of things to do,
-not because a ceiling was enforced:
-the first two produced no tool calls at all
-and merely repeated a one-word reply.
-An always-blocking hook is unbounded exactly when the agent stays busy,
-which is the case that costs the most.
-Any such hook must bound itself.
+Claude Code does have a cap.
+`CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` is present in the 2.1.224 binary,
+alongside the override message
+`A hook blocked the turn from ending`.
+An earlier revision of this document concluded no cap existed,
+on the strength of the 31-dispatch run alone.
+
+The cap bounds an idle loop, not a busy one.
+The runs overridden at 9 produced no tool calls and repeated a one-word reply;
+the run that reached 31 worked on every continuation.
+So a hook that keeps a busy agent blocked is not bounded by the platform,
+and must bound itself.
+That is the case that costs real money,
+which is why the depth guard stays even though the platform cap exists.
 
 The `Stop` input carried exactly these keys:
 `background_tasks`, `cwd`, `hook_event_name`, `last_assistant_message`,
@@ -440,10 +445,42 @@ Its subsequent firings are scheduled by the harness rather than chosen by the mo
 so the rejection applies to starting the loop and not to sustaining it.
 That distinction is recorded because it decides whether the option is actually foreclosed.
 
-Termination is this repository's responsibility, not Claude Code's.
+### Releasing, not only bounding
+
+The first version had a depth bound and no release condition,
+which produced the opposite waste from a runaway.
+Reported from a real session:
+blocked on a long-running process with nothing else to do,
+the hook forced eleven turns that each restated the same blocker,
+until Claude Code's cap overrode it.
+
+Three releases now apply, each read from state rather than from the response text
+and none asking the agent whether it considers itself finished:
+
+- A background task is running,
+  so the session waits on something another turn cannot advance.
+  `background_tasks` carries this on the `Stop` event
+  and was missing from this repository's `StopInput` type until then.
+- The previous forced continuation issued no tool call,
+  so pushing bought prose rather than work.
+- Every tracked task is finished,
+  replayed from `TaskCreate` results and `TaskUpdate` calls.
+  An absent task list is deliberately not treated as finished,
+  since most sessions never create one.
+
+The block reason also routes a decision-blocked agent to `AskUserQuestion`.
+That tool waits for the user,
+so it is the one exit that gets the agent what stopping was reaching for,
+and the hook has nothing to refuse.
+This reframes the mechanism from forbidding a stop
+to naming the right tool for what the agent wanted.
+
+### Bounding
+
+Termination is shared with Claude Code rather than delegated to it.
 The first version shipped without a bound,
 on the belief that the CLI enforced one,
-and that belief was false.
+and that belief was wrong in the direction that mattered.
 `continuation-depth.ts` now counts this hook's own feedback records
 since the last human turn and allows the stop at the limit,
 default 25,

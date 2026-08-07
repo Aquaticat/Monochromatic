@@ -63,25 +63,42 @@ A trailing question takes precedence,
 and to route its question through `AskUserQuestion`
 in the same reason would be contradictory.
 
-**Termination comes from this hook,
- not from Claude Code.
-** Measured against Claude Code 2.1.220,
- three disposable sessions ended after nine,
- nine,
- and seventeen dispatches,
- which looked like a platform ceiling.
-It is not one.
-A fourth session,
- whose agent ran one shell command per continuation,
- reached thirty-one dispatches
-and stopped only because the probe's own cap fired.
-The chain is unbounded exactly when the agent stays busy.
+## Releases
 
-The hook therefore counts its own feedback records in the transcript
-since the last human turn
-and allows the stop once that reaches the limit,
-default 25,
-overridden with `MONOCHROMATIC_STOP_AUTO_CONTINUE_MAX`.
+The hook lets a stop through in four situations,
+ three of them read from state rather than from the response text.
+
+- **A background task is running.
+** The session waits on something another turn cannot advance;
+ `background_tasks` on the `Stop` event carries this.
+- **The previous forced continuation issued no tool call.
+** Pushing an agent that already did nothing buys prose,
+ which the measured rescue rates show rarely recovers.
+- **Every tracked task is finished.
+** Replayed from `TaskCreate` results and `TaskUpdate` calls in the transcript.
+ A session with no task list does not count as finished,
+ since most sessions never create one
+and releasing there would disable the mechanism everywhere.
+- **The depth limit is reached**,
+ default 25,
+ overridden with `MONOCHROMATIC_STOP_AUTO_CONTINUE_MAX`.
+
+**Blocked on a decision?
+** The block reason tells Claude to use `AskUserQuestion` rather than stop.
+That tool waits for the user's answer,
+ which is what a blocked agent actually needs,
+ whereas a stopped turn only ends the work and waits to be restarted by hand.
+
+**Termination is shared with Claude Code,
+ which is not the same as delegated to it.
+** The CLI caps consecutive blocks through `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`,
+ but only reliably when the agent is idle.
+Measured against 2.1.224,
+ sessions producing no tool calls were overridden after nine blocks,
+ while a session running one shell command per continuation
+reached thirty-one and was never overridden.
+The platform cap catches an idle loop, not a busy one,
+ so this hook bounds the busy case itself.
 Counting reads the transcript rather than a sidecar,
 so there is no state to corrupt,
 no cleanup to miss,
