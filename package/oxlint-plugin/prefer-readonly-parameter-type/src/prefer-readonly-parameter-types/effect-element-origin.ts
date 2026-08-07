@@ -120,10 +120,14 @@ export function expressionElementOrigins({
       checker: project.checker,
       node: current,
     },);
-    if ((elementReceiver === NOT_A_RECEIVER_CONTAINER)
-      || visited.has(elementReceiver,))
+    if (elementReceiver === NOT_A_RECEIVER_CONTAINER)
       continue;
-    visited.add(elementReceiver,);
+    /* Collected before the visited test rather than after it, because the set records that a
+     * node will be examined and not that its origins were taken, and one test cannot answer
+     * both. A receiver reached first as a selected operand is queued without its origins
+     * being collected, since selection is traversed to find relations rather than to collect;
+     * reaching the same node again as a verified receiver is new information about it, and
+     * skipping the collection because it was already queued would discard exactly that. */
     for (
       const slot of expressionValueOrigins({
         project,
@@ -132,6 +136,9 @@ export function expressionElementOrigins({
       },)
     )
       origins.add(slot,);
+    if (visited.has(elementReceiver,))
+      continue;
+    visited.add(elementReceiver,);
     pending.push(elementReceiver,);
   }
   return origins;
