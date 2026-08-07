@@ -11490,3 +11490,41 @@ Worth trying first:
 itself rather than merely reaching a return,
  which would shrink the blast radius to the shape
 this document is actually about.
+
+#### The narrower condition, tried and measured
+
+Written because the first attempt's reach looked like an artifact of how the position was
+tested.
+It was not,
+ which is worth more than the narrowing was.
+
+The first form asked `valueConsumer` for the position and tested its parent,
+ which ascends
+through every step that passes a value outward and so admits a call reaching a return from
+other positions.
+The second required the call to be the returned expression itself,
+ `return rows.slice(0,);`
+and nothing looser.
+
+```text
+wide     fixture counts 16 -> 13 and 18 -> 14,  pinned effect list changes
+narrow   fixture counts 16 -> 13 and 18 -> 15,  pinned effect list changes
+```
+
+One diagnostic came back and the guard still trips.
+So the reach is not an artifact of the loose position test,
+ and tightening the position
+further is not the lever.
+Both forms discharge the target shapes correctly and keep the caller's write attributed,
+ so
+what is left is not a question about the condition at all.
+
+It is a question about roughly a dozen pinned effects and three fixture diagnostics,
+ each of
+which has to be decided on its own terms:
+ whether every write is still charged to the
+parameter,
+ and whether the discharge is right for that shape.
+That list does not exist yet,
+ and producing it is the first thing the next attempt should do,
+before any code is kept.
