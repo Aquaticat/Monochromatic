@@ -10745,3 +10745,75 @@ tracked with a probe as its required first step.
 Two hypotheses were refuted by measurement earlier in the same session,
  so a trace is a lead
 here and not a finding.
+
+#### What selection measured
+
+Workspace either side:
+ errors unchanged at 2904,
+ warnings unchanged at 3902,
+ rule findings unchanged at 1566,
+ and the read-only offer set byte-identical at 34.
+No diagnostic moved anywhere in the corpus.
+
+So this is a prerequisite rather than a result,
+ and belongs in the same category as the two
+increments before it that moved a summary fact and cleared nothing.
+The shapes it fixes are real and the corpus does not currently write them at a point where a
+diagnostic depends on them.
+
+The comparison itself needed correcting once,
+ which is worth recording because the first
+reading looked like the guarded failure.
+Pairing each offer with the nearest preceding source location reported four offers withdrawn
+and four appearing,
+ which would have meant offers moving.
+The location line follows its message in this output rather than preceding it,
+ so every offer
+had been paired with the previous diagnostic's location.
+Pairing forward instead gives byte-identical sets.
+A measurement that reports the failure mode is worth re-deriving before it is believed,
+ in
+the direction that confirms it as well as the direction that clears it.
+
+#### The fixture that was written, measured and reverted
+
+Two fixtures were written for the iteration spelling,
+ `const copy = cond ? rows.slice() : [];`
+followed by a `for...of` that writes through `copy`,
+ on the assumption that they exercised
+what had just been fixed.
+They did not.
+Each produced two diagnostics:
+ a stale `@mutates` contract,
+ and a read-only offer on a
+parameter the callable writes.
+
+The cause is a composition neither half of the walk owns.
+Element origins are asked about `copy`,
+ a plain identifier;
+ `containerElementReceiver` follows
+it to its declaration initializer,
+ finds a selector rather than a call,
+ and gives up;
+ and the
+selection family is empty for an identifier,
+ so the walk never reaches the initializer.
+The existing `iteratedContainerWriteEffect` passes only because its initializer is
+`rows.slice()` directly.
+
+They were reverted rather than committed with an updated count.
+Recording a wrong offer as the expected value is how it stops being visible,
+ and the offer
+list in that fixture exists so that a change withdrawing an entry has to say why.
+The shape is tracked instead,
+ with the measurement that produced it,
+ and it is the acceptance
+test for the composition when that is taken.
+
+What was committed in their place is the pair that does exercise the change:
+a callable returning its receiver's elements from whichever branch supplies them,
+ and a
+caller writing through that result.
+Both are pinned at summary level and both report at diagnostic level,
+ taking that fixture
+from sixteen to eighteen with its offer set unchanged.
