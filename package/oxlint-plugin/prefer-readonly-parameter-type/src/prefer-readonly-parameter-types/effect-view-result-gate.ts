@@ -22,6 +22,7 @@ import {
 } from './effect-member-result-relation.ts';
 import { resultExposesMutableState, } from './effect-primitive-origin.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
+import { returnedResultDischargeable, } from './effect-returned-result-discharge.ts';
 import { resultAliasesReceiverState, } from './effect-view-result-aliasing.ts';
 
 /**
@@ -138,12 +139,21 @@ export function viewResultUnaccounted({
       return true;
     if ((containerDerived || valueDerived)
       && ((body === undefined)
-        || resultEscapesCallable({
+        || (resultEscapesCallable({
           project,
           body,
           call,
           elementStepsAttributed: true,
-        },)))
+        },)
+          /* Returning outright is the one escape whose destination this analysis follows,
+           * and only where every caller is visible and the receiver is not foreign-owned.
+           * The charge stands "until a caller substitutes through `directReturned`", so this
+           * discharges that stated condition rather than weakening it. */
+          && (!returnedResultDischargeable({
+            project,
+            call,
+            body,
+          },)))))
       return true;
   }
   return (!observerDerived)

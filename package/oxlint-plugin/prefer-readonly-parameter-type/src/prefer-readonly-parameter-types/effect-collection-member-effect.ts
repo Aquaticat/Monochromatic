@@ -29,6 +29,7 @@ import {
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
+import { returnedResultDischargeable, } from './effect-returned-result-discharge.ts';
 import {
   expressionCanCarryMutableState,
   resultExposesMutableState,
@@ -149,12 +150,18 @@ function receiverClaimAnswerable({
   /* Asked once, before either relation, because the escape test is relation-agnostic: it
    * follows this call's result to whatever binding holds it and answers about every holder,
    * whichever relation the result satisfies. */
+  /* Both gates ask this for the same discharge, so narrowing one alone changes nothing. */
   if (resultEscapesCallable({
-    project,
-    body,
-    call,
-    elementStepsAttributed: true,
-  },))
+      project,
+      body,
+      call,
+      elementStepsAttributed: true,
+    },)
+    && (!returnedResultDischargeable({
+      project,
+      call,
+      body,
+    },)))
     return false;
   /* Either relation licenses the discharge on that same condition. A direct result is the
    * receiver's own value and a container result holds them, and once provenance tracks

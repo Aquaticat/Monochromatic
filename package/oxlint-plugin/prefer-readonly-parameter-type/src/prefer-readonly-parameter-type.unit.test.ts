@@ -544,7 +544,23 @@ children: [
        * had to be: with the returned origin missing it had nothing to substitute, so its
        * write landed on no parameter and `rows` was offerable while the callable rewrites a
        * row it holds. */
-      expect(messages.length,).toBe(18,);
+      /* Eighteen to sixteen when the returned-result discharge landed, and the two that
+       * went quiet are the ones this fixture carried for it.
+       * `writesThroughReturnedContainer` and `writesThroughComposedContainer` are two thirds
+       * of the returned-container trio that
+       * `doc/planning/prefer-readonly-return-substitution.md` named as the shape a discharge
+       * would clear, on the stated condition that their write attribution survive. It does:
+       * both still record `referentMutated=[0]` in `effect-summaries.unit.test.ts`, so each
+       * traded a report for an attribution rather than for silence.
+       *
+       * Three controls keep it from being a blanket discharge, each measured rather than
+       * assumed. `returnedLookupEffect` keeps its report, having no caller in the program at
+       * all, and a discharge resting on callers that do not exist rests on nothing. The
+       * three `ForeignBorrowed` cases in the catalog-free fixture are untouched, since a
+       * container returned out of foreign-owned state is refused however completely its
+       * callers enumerate. And the pinned effect list in `effect-summaries.unit.test.ts` is
+       * unchanged. */
+      expect(messages.length,).toBe(16,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because
@@ -664,9 +680,33 @@ children: [
        * reject the first true offer the container discharge produced. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
-          || message.includes('"records" should be readonly',)
-          || message.includes('"rows" should be readonly: property',);
+          || message.includes('"records" should be readonly',);
       },),).toEqual([],);
+      /* `rows` moved out of the filter above rather than being dropped from it, because the
+       * two claims stopped being the same one. That filter guards the `at`-result defect,
+       * which offered a receiver whose element a callable had written through, and it still
+       * guards it for every lookup receiver named there.
+       *
+       * These three are a different cause and each is true of its own callable.
+       * `returnsReceiverElements` and `returnsComposedReceiverElements` hand back a fresh
+       * container of the caller's rows, and `readsReturnedContainerLength` reads a length;
+       * none of the three writes anything, so a read-only parameter is an accurate
+       * description of what each does.
+       *
+       * The judgement they rest on is the repository's own, recorded for the packaging pair
+       * in this same fixture: neither `packageRowShorthand` nor `packageRowExplicit` writes
+       * the row it packages, "so each earns the offer". Those return caller-owned state in a
+       * fresh holder; these return it in a fresh container. Refusing one while allowing the
+       * other would make the rule's answer depend on the shape of the wrapper rather than on
+       * what the callable does.
+       *
+       * What keeps that from spreading to callables that do write is unchanged: a write
+       * through any of these results is attributed to the caller's own parameter, which is
+       * why `writesThroughReturnedContainer` still records `referentMutated=[0]` and is
+       * still reported. */
+      expect(messages.filter(function offersReturningReceiver(message,): boolean {
+        return message.includes('"rows" should be readonly: property',);
+      },).length,).toBe(3,);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
        * involved, `rows` through a discharged `at` result, and
@@ -703,6 +743,23 @@ children: [
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection.',
+        /* Three from the returned-result discharge, on the callables that hand a container
+         * of the caller's rows back. `returnsReceiverElements` and
+         * `returnsComposedReceiverElements` build a fresh container and write nothing;
+         * `readsReturnedContainerLength` reads a length through one. A read-only parameter
+         * describes each of them accurately.
+         *
+         * They rest on the judgement recorded two comments above for the packaging pair,
+         * which returns caller-owned state in a fresh holder and earns its offers for
+         * writing nothing. These return it in a fresh container. Deciding those two
+         * differently would make the answer depend on the wrapper's shape rather than on
+         * what the callable does.
+         *
+         * They are listed rather than counted for the same reason as the pair: a change
+         * that turns any of them into a defect has to edit this list and say why. */
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },
