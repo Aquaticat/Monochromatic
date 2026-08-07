@@ -1232,6 +1232,106 @@ species channel is trusted,
  because provenance says the container holds receiver origins and the gate then
 asks who builds the container.
 
+## toSorted joins the container relation, 2026-08-07
+
+Found while working the argument side,
+ by comparing members that resolve against members that do not:
+`filter` and `slice` discharge their receiver while `toSorted` never did,
+ not even bare with no comparator
+at all.
+
+The cause was absence rather than exclusion.
+ `toSorted` was not in the table,
+ and it was not in
+`FRESH_CONTAINER_MEMBER_NAMES` either,
+ whose comment names every held-back member with a reason of its own.
+So it had never been considered,
+ which is a different thing from having been rejected.
+
+It qualifies on the same terms `toReversed` is described as qualifying:
+ the result is a fresh container of
+the receiver's own elements,
+ uniform,
+ with no argument elements mixed in and no depth question.
+ What held
+the first container increment back was probe shape,
+ and `filter` and `slice` proved that shape.
+
+Recorded as `RESULT_RELATION_RECEIVER_ELEMENTS` on `Array` and `ReadonlyArray`,
+ with the pinned relation
+count going 32 to 34 and the architecture guard's literal with it.
+ The identity probe drives it like every
+other entry,
+ with a fresh sentinel per member,
+ and finds the result holding the value the receiver held.
+
+Two soundness checks beyond the shared probe,
+ because the member takes an observer and the earlier entries
+did not.
+ A comparator that writes an element still reports `mutated=[0]`,
+ so admitting the result relation
+does not blind the rule to a writing observer.
+ A write through the result's elements,
+`rows.toSorted(cmp)[0].label = x`,
+ also reports `mutated=[0]`,
+ matching `slice` and `filter` exactly,
+ while a
+read through them stays clean.
+
+`toReversed` stays out.
+ Nothing here changes the reason recorded for it,
+ and it is not what the findings
+named.
+
+## Observer members whose result carries objects, an unresolved gap
+
+Measured 2026-08-07 alongside the `toSorted` work,
+ and written down as measurements because the mechanism
+is not established.
+
+Same harness,
+ same receiver,
+ varying one thing at a time:
+
+- `at`,
+ a plain index read,
+ and a property read through either:
+ clean.
+- `some`,
+ `findIndex`,
+ `map` returning a primitive,
+ `flatMap` returning primitives:
+ clean.
+- `filter`,
+ whose result is a container of receiver elements and which takes an observer:
+ clean.
+- `find` and `findLast`,
+ whose result is a receiver value and which take an observer:
+ opaque.
+- `map` returning objects:
+ opaque.
+
+`at` and `find` carry the same relation,
+ `RESULT_RELATION_RECEIVER_VALUE`,
+ and differ only in that one takes
+an observer.
+ That is one candidate discriminator.
+ But `map` returning objects does not fit it cleanly,
+ since
+`map`'s result is a container rather than a receiver value,
+ which makes an observer return carrying objects a
+second candidate discriminator and possibly a second gap.
+
+The two have not been separated,
+ so no cause is claimed here.
+ What is claimed is the table above,
+ which is
+reproducible,
+ and the fact that `filter` sits on the clean side while `find` does not,
+ which is where an
+investigation should start.
+ `strip.panes.find` accounts for 28 workspace findings.
+
 ## Consequences of the provenance replacement, measured
 
 Matched pair on identical source,
