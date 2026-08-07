@@ -524,8 +524,23 @@ and semantic failures at 0.
    34 `reduce`,
    30 `filter`,
    15 `find`:
-   observer-bearing members whose observer is not
-  resolvable to owned source, which is the honest answer for a callback the caller supplies.
+   observer-bearing members whose *result* is unaccounted.
+  Not, as this list first said, members whose observer cannot be resolved.
+   Checked by reading three
+  of them:
+   `groupRuns` in `package/module/logger/src/sink/console.ts`,
+   the rebuild fold in
+  `package/module/css-edit/src/transform.ts`,
+   and `readCandidate` in
+  `package/agent-harness-shared/session-discovery/src/newest.ts` all pass an inline named function,
+  which is owned source sitting at the call.
+   `reduce` carries no result relation at all,
+   so the
+  aliasing fallback refuses it however its observer resolves,
+   and the `map` case hands its result
+  straight to `Promise.all`,
+   so the result leaves.
+   Two different limits wearing one name.
 - 20 `entries`,
    16 `get`:
    collection members carrying a relation whose result escapes the callable.
