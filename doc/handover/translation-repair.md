@@ -5352,6 +5352,30 @@ RUN 008 IS ACCUMULATING ON TOP OF THIS. Settled entries are not recomputed and
 the slice cache preserves partial work, so the two timed-out entries resume from
 their cached chunks rather than restarting from zero.
 
+## Verifying a sheet renders is in tension with pre-grading it blind
+
+READING A GRADING SHEET CONTAMINATES ANY LATER BLIND PRE-GRADE OF THE ITEMS
+READ. This session printed the first 48 lines of the round-three preliminary
+detection sheet to confirm it was well-formed, which put items 1 through 5,
+their claims, and their source and target quotes into an agent context. Those
+five can no longer be pre-graded blind by that session.
+
+WHY IT MATTERS BEYOND ONE SESSION: `scoreGradeAgreement` weights every row the
+same, so a handful of sighted rows inflate the agreement figure that the
+calibration task exists to produce, and nothing in the artifact records which
+rows were sighted. The damage is invisible in the output.
+
+HOW TO KEEP BOTH: verify structure without reading claims. Count `###` item
+headings, check the header block and the `[ ]` slots, confirm the banner and the
+corpus pin, and stop there. If item text must be inspected, do it in a session
+that will not produce the pre-grades, or record the sighted indices alongside
+the pre-grades so they can be excluded.
+
+THIS PARTICULAR CONTAMINATION IS MOSTLY MOOT, because the preliminary draw is
+not the gate sheet and the final draw shifts as the pool grows, so pre-grades
+keyed to preliminary indices do not transfer anyway. Do not let that specific
+reprieve hide the general rule.
+
 ## Probe trigger rate: the decision doc is canonical now
 
 Issue #53 is decided: the probe stays in shadow mode, recorded in
