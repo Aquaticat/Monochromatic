@@ -275,7 +275,11 @@ rolldown config so no dist bundle could ever build (source-importing
 tests hid this); the config landed and the bundle plus `.d.mts` now
 build. SUPERSEDED 2026-08-06 (user "Please turn this pkg into `node`
 builds only."): the target moved from `neutral` to `node`, so the
-import path is now `dist/final/node/index.mjs`. A pre-alignment audit proved every test-imported symbol
+import path is now `dist/final/node/index.mjs`. Rolldown's `cleanDir`
+clears only the output directory it writes, so a checkout that built
+before this change keeps a stale `dist/final/neutral/` that nothing
+removes. Harmless, since no manifest entry and no import points at it
+now, but delete it rather than wondering why both exist. A pre-alignment audit proved every test-imported symbol
 already public (the PKG surface pass had closed the last gaps).
 Mechanical codemod (scratchpad `dist-import-codemod.ts`) merged
 each file's relative imports into one dist import with inline type
