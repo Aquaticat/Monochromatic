@@ -5207,6 +5207,37 @@ PKG makes this a completeness condition, so the package is not finished while
 the list is non-empty. It is also entirely zero-quota work, which makes it the
 right thing to reach for whenever a corpus pass is holding the provider budget.
 
+### Trigger rate at seven entries: numerator still one
+
+```text
+PROBE  entries=7 shippedRecords=188 unprobedRecords=0 regions=72
+       majorityIntroduced=1 minorityIntroduced=5 noneIntroduced=66
+CLAIMS added=5 dropped=2 contradicted=0 unanchored=0 degradedRosterRegions=0
+```
+
+THE NUMERATOR HAS NOT MOVED ONCE. Across 1, 5, 6, and 7 entries the count of
+regions a gate would have blocked has stayed at exactly 1 while the denominator
+went 13, 67, 68, 72. Reading that as roughly 1.4 percent is the wrong emphasis;
+the shape is that a SECOND blocking region has not appeared at all across
+seventy-odd regions of real corpus output.
+
+WHAT IT MEANS FOR ISSUE #53. Every option on the table (fall back to a
+runner-up candidate, salvage by dropping confirmed-defective operations and
+revalidating, reject the whole chunk) is machinery that runs only when the probe
+confirms a defect. At one region per seven entries, a salvage pass that must
+reapply from the original target and rerun judging, checking, probing,
+measurement, and selection buys one region of preserved repair per seven
+entries. That is the cost-per-trigger the decision turns on, and it is measured
+rather than projected.
+
+WHAT IT DOES NOT MEAN. This is the rate a gate would FIRE at, not a defect
+rate. Whether that single blocking region was right is what the repair grades
+decide, and `refutedByHuman` is the cell that answers it.
+
+ALSO CONFIRMED HERE: the tightened `requireRecord` (which now refuses an array)
+read all seven settled artifacts without throwing, so that change is verified
+against real data rather than only against fixtures.
+
 ### The trigger rate at five entries, and why the one-entry reading misled
 
 Five entries settled (`AmbeR_the_anpa`, `Arita`, `Acheron`, `Anilovr`,
