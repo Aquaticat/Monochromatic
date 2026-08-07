@@ -291,6 +291,10 @@ await describe({
         const wroteThroughCarried = mutatedIndexes('writesThroughReturnedContainer',);
         /** Read of nothing but the returned container's length. */
         const readCarriedLength = mutatedIndexes('readsReturnedContainerLength',);
+        /** Returned origins of a callable composing two container members. */
+        const composedContainer = returnedIndexes('returnsComposedReceiverElements',);
+        /** Write through a composed container another callable returned. */
+        const wroteThroughComposed = mutatedIndexes('writesThroughComposedContainer',);
         /** Mutation through a lookup narrowed by a runtime-erased assertion. */
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
@@ -345,6 +349,12 @@ await describe({
         /* And the control that keeps it from being blanket attribution: a returned origin
          * says a caller can reach the parameter through the result, not that this one did. */
         expect(readCarriedLength,).toEqual([],);
+        /* Container members compose, and the element walk resolved one relation and
+         * stopped, so `rows.slice(0,).toReversed()` reported no origin though every step in
+         * it holds. Its one-member sibling above is the control: without the composition the
+         * two disagree about identical state reached through one extra member. */
+        expect(composedContainer,).toEqual([0,],);
+        expect(wroteThroughComposed,).toEqual([0,],);
         /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
          * assertion expressions from `transparentOperand` empties this one. */
         expect(asserted,).toEqual([0,],);

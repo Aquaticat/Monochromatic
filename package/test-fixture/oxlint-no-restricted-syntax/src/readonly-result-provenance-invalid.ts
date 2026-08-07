@@ -39,6 +39,62 @@ export function returnsReceiverElements(rows: readonly Labelled[],): readonly La
 }
 
 /**
+ * Hands back the receiver's elements through two composed container members.
+ *
+ * The shape the corpus actually writes, and the one a single-hop element walk answered
+ * nothing for. `orderedRoots` in `package/desktop-app/file-manager-electron/src/strip.ts`
+ * returns `panes.filter(rootLike,).toSorted(bySpawnOrder,)`; this is that reduced to its
+ * parts. The outer member's receiver is the inner call, whose own value origins are empty
+ * because the array it returns is fresh, so a chain of relations each of which holds
+ * reported no origin between them.
+ *
+ * @param rows - Rows whose elements the composed result carries.
+ *
+ * @returns fresh container of the caller's own rows, reversed.
+ *
+ * @example
+ * ```ts
+ * returnsComposedReceiverElements([],);
+ * ```
+ */
+export function returnsComposedReceiverElements(
+  rows: readonly Labelled[],
+): readonly Labelled[] {
+  return rows
+    .slice(0,)
+    .toReversed();
+}
+
+/**
+ * Writes the caller's row through a composed container another callable returned.
+ *
+ * The half that makes the composition matter, and the control against the single-hop pair
+ * beside it: if the walk stops at the first relation, this attributes nothing while its
+ * one-member sibling attributes the write, and the two disagree about identical state
+ * reached through one extra member.
+ *
+ * @param rows - Rows whose element is rewritten through a composed container.
+ *
+ * @example
+ * ```ts
+ * writesThroughComposedContainer([],);
+ * ```
+ */
+export function writesThroughComposedContainer(rows: readonly Labelled[],): void {
+  /**
+   * Container returned by the composing callable, holding the caller's rows.
+   */
+  const carried = returnsComposedReceiverElements(rows,);
+  /**
+   * Row reached through the composed container.
+   */
+  const first = carried[0];
+  if (first === undefined)
+    throw new Error('Expected a composed row to rewrite.',);
+  first.label = 'rewritten';
+}
+
+/**
  * Writes the caller's row through a container another callable returned.
  *
  * The half that makes the first half matter. The write lands on a row `rows` holds, reached

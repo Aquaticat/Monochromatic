@@ -530,7 +530,7 @@ children: [
        * `containerGrowthEffect` is what keeps that from being a blanket discharge. It
        * pushes a caller-owned row into a fresh container and is still reported at its row
        * parameter, because nothing attributes where that row ends up. */
-      expect(messages.length,).toBe(14,);
+      expect(messages.length,).toBe(16,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because
@@ -540,7 +540,13 @@ children: [
        * `doc/planning/prefer-readonly-return-substitution.md` would clear. When it lands,
        * these three go quiet and the write attribution asserted for them in
        * `effect-summaries.unit.test.ts` has to survive: a discharge that empties both is the
-       * failure that document records being refuted once already. */
+       * failure that document records being refuted once already.
+       *
+       * The composed pair beside them takes the count to sixteen and reports for the same
+       * reason through one more member. They are here because the element walk resolved a
+       * single relation before composing them, so `rows.slice(0,).toReversed()` carried no
+       * origin at all while its one-member sibling carried one, and the two disagreed about
+       * identical state reached through one extra call. */
       /* The eleventh is the container record's visible consequence, and it is an offer
        * rather than a report. `heldContainerRestructureEffect` builds an array around its
        * parameter and pops it, so it restructures a container this callable made and writes
