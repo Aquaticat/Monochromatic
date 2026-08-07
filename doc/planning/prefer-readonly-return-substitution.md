@@ -11977,3 +11977,49 @@ The fixtures are where they are decided.
 The catalog-free fixture goes from sixteen findings to twenty and the provenance fixture from
 sixteen to seventeen,
  and each added report is a discharge that the unfixed code granted.
+
+### The third gate asking the escape question, and why it does not get the discharge
+
+`resultEscapesCallable` has three callers,
+ not the two the discharge was fitted to.
+The third is the verified-reader path in `effect-call-analysis.ts`,
+ which asks it with
+`elementStepsAttributed: false` and consults no discharge.
+
+That asymmetry is deliberate now that it has been looked at,
+ and it is the conservative
+direction:
+ the reader path keeps a boundary the collection path releases,
+ so it charges more
+rather than fewer.
+Two independent reasons say it should stay that way.
+
+The ownership question is about a different node.
+A reader takes its caller-owned value as an argument rather than as a receiver,
+ which is the
+distinction that path exists for.
+`returnedResultDischargeable` descends the receiver chain through `memberCallReceiver`,
+ so on
+`Object.keys(rows,)` it would classify `Object`,
+ find nothing foreign about it,
+ and discharge
+on the ownership of a node that carries none of the state in question.
+Applying the helper here unchanged would not extend the discharge;
+ it would add a fifth
+fail-open branch.
+
+And the element attribution the discharge rests on is absent.
+The collection path passes `elementStepsAttributed: true` because a write through `copy[0]`,
+a destructured element,
+ an iterated one or a spread one is attributed to the receiver's
+parameter,
+ and that attribution is what makes trading the report for tracking honest.
+The reader path passes `false`,
+ with the note that nothing walks the elements of a call result
+reaching an argument,
+ so the same trade there would be a report exchanged for silence.
+
+Extending the discharge to readers is therefore a separate piece of work needing an
+argument-chain descent and element attribution on that path,
+ not a third call added to the
+existing helper.
