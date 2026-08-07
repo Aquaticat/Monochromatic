@@ -5357,6 +5357,41 @@ RUN 008 IS ACCUMULATING ON TOP OF THIS. Settled entries are not recomputed and
 the slice cache preserves partial work, so the two timed-out entries resume from
 their cached chunks rather than restarting from zero.
 
+## State at the 2026-08-07 compaction
+
+WHAT IS RUNNING: `pass8-run-008`, started 2026-08-07, logging to
+`pass8-run-008.log` in the runs directory. It resumed `Dethelly` from cached
+chunk 14 and was past chunk 18 an hour in. Nine artifacts settled, all from run
+007. The run notifies on exit; do not poll it.
+
+WHAT TO DO WHEN IT EXITS, in order:
+
+-   Read the `DONE` line, never the exit code. Exit 0 means the driver stopped
+    cleanly at its soft budget.
+-   Re-run `score-probe`. Costs no quota, reads local artifacts, refreshes the
+    figures the gating decision doc quotes.
+-   Check whether the large band gained entries. If it did, redraw with
+    `draw-sample -- --final` for the gate sheet; if not, restart the pass.
+-   Check whether `Dethelly` or `Futajuhuacha` reached `TALLY status=repaired`.
+    That answers the open half of the deadline task.
+
+THE ONE BLOCKER EVERYTHING CHAINS OFF: the final gate sheet needs more
+large-band entries. Precision re-measure waits on that, pre-grading waits on the
+gate sheet, the probe false-positive comparison waits behind pre-grading, and
+the recall re-measure, naturalness probe, and judge crosscheck want throughput
+this run holds while the provider is the measured bottleneck (54.7s mean first
+byte over 1488 calls, 336s max).
+
+DECIDED THIS SESSION: the introduced-defect probe stays in shadow mode, recorded
+in `doc/decision/introduced-defect-probe-gating.md`. Nothing else is waiting on
+a decision.
+
+NOT DONE ON PURPOSE, so nobody re-opens these as oversights: no pre-grading (the
+preliminary sheet is not the gate sheet, and items 1 through 5 were sighted); no
+change to the per-entry deadline or soft budget (resume is measured to work, so
+the deadline costs wall time rather than entries, and both limits are the user's
+design call); no concurrent quota-bound measurement while the pass runs.
+
 ## The per-entry deadline is starving the large band specifically
 
 Measured read-only off run 007 at zero quota, so this needs no rerun.
