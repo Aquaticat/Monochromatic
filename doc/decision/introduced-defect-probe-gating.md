@@ -70,22 +70,32 @@ THE CORROBORATION COLUMNS SEPARATE CLEANLY.
  6,
  7,
  8,
- and 9 settled entries while the region count went 13,
+ 9,
+ and 15 settled entries while the region count went 13,
  67,
  68,
  72,
  79,
- 83.
-`minorityIntroduced` went from 1 to 6,
+ 83,
+ 210.
+`minorityIntroduced` went from 1 to 18,
  tracking region count almost exactly.
+The region count has now grown by a factor of 16 without the majority column
+ moving off 1,
+which is the strongest form this evidence has taken.
 Probers keep making claims;
  what stays rare is a majority agreeing on one region.
 That is the shape of a sensitive but noisy instrument,
  and it is the opposite of the silently-always-negative failure the sensitivity check was built to rule out.
 
-THE DETERMINISTIC SCREEN IS HOLDING.
-Zero contradicted and zero unanchored across 83 regions,
- with `unprobedRecords` at zero over 202 shipped records,
+THE DETERMINISTIC SCREEN IS HOLDING,
+ and it has now fired.
+At 210 regions it has thrown out 1 contradicted claim and 2 unanchored ones,
+ where at 83 regions it had thrown out none,
+so the screen is demonstrably capable of rejecting a claim rather than merely
+ never having met one it disliked.
+`unprobedRecords` stays at zero over 647 shipped records
+ and `degradedRosterRegions` at zero,
 so the probe is reaching everything it should rather than skipping quietly.
 A quote must be new in the replacement,
  or gone from it for dropped content,
