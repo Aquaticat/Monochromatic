@@ -212,6 +212,117 @@ export function readsLocalContainerLength(rows: readonly Labelled[],): number {
 }
 
 /**
+ * Hands back elements of whichever rows a reassignable name last held.
+ *
+ * `localReceiverElements` with one statement added, which is what makes it a test rather than
+ * another program. The declaration hop follows a name to the value it was declared with, and
+ * that hop is shared with a walk that uses it to add origins, where ignoring later assignment
+ * over-attributes harmlessly. Proving a receiver is *not* foreign-owned reads the same property
+ * backwards, so a name that could have moved is refused instead of followed.
+ *
+ * @param rows - Rows the name is declared with.
+ *
+ * @param other - Rows the name is pointed at instead.
+ *
+ * @returns fresh container of whichever rows the name last held.
+ *
+ * @example
+ * ```ts
+ * readsLocalReassignedLength([], [],);
+ * ```
+ */
+function localReassignedElements(
+  rows: readonly Labelled[],
+  other: readonly Labelled[],
+): readonly Labelled[] {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- A reassignable binding whose
+   * value survives to the return is the whole program under test, and every remedy the rule
+   * names removes it: `const` deletes the reassignment, and both the helper shape and the
+   * named-function IIFE require the body to end in `return <identifier>` where the discharge
+   * requires the member call itself to be returned. Rule source read at
+   * `package/oxlint-plugin/no-restricted-syntax/src/rule/no-function-root-let.ts`, whose own
+   * message prescribes this disable for the unavoidable case. */
+  /**
+   * Rows held first from one parameter and then from the other.
+   */
+  let held = rows;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
+  held = other;
+  return held.slice(0,);
+}
+
+/**
+ * Reads how many rows the reassigned-name container holds, so its callee has a caller.
+ *
+ * @param rows - Rows the name is declared with.
+ *
+ * @param other - Rows the name is pointed at instead.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalReassignedLength([], [],);
+ * ```
+ */
+export function readsLocalReassignedLength(
+  rows: readonly Labelled[],
+  other: readonly Labelled[],
+): number {
+  return localReassignedElements(rows, other,)
+    .length;
+}
+
+/**
+ * Hands back elements of a parameter pointed somewhere else first.
+ *
+ * The endpoint no declaration can answer for, and the sibling of the reassignable-name case. A
+ * `let` carries its own answer; a parameter is declared once and any statement may point it
+ * elsewhere. The ownership marker does not stop that, since `ForeignBorrowed<Value>` intersects
+ * an *optional* property and so assigns to a plain `Value` with no error.
+ *
+ * @param rows - Rows pointed at the other parameter before use.
+ *
+ * @param other - Rows the parameter is pointed at.
+ *
+ * @returns fresh container of whichever rows the parameter last held.
+ *
+ * @example
+ * ```ts
+ * readsLocalRepointedLength([], [],);
+ * ```
+ */
+function localRepointedElements(
+  rows: readonly Labelled[],
+  other: readonly Labelled[],
+): readonly Labelled[] {
+  rows = other;
+  return rows.slice(0,);
+}
+
+/**
+ * Reads how many rows the repointed-parameter container holds, so its callee has a caller.
+ *
+ * @param rows - Rows pointed at the other parameter before use.
+ *
+ * @param other - Rows the parameter is pointed at.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalRepointedLength([], [],);
+ * ```
+ */
+export function readsLocalRepointedLength(
+  rows: readonly Labelled[],
+  other: readonly Labelled[],
+): number {
+  return localRepointedElements(rows, other,)
+    .length;
+}
+
+/**
  * Reads only how many rows a returned container holds.
  *
  * The control keeping the returned origin from becoming a blanket attribution. Nothing here

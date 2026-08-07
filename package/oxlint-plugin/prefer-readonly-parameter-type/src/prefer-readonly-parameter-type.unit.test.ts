@@ -595,8 +595,27 @@ children: [
        * and the discharge is refused before any of its own conditions are reached. A probe run
        * there reports no difference for any change to this feature, which is a property of the
        * probe and not of the code. */
-      /* Nineteen to twenty-one for the positive control and its caller. */
-      expect(messages.length,).toBe(21,);
+      /* Nineteen to twenty-one for the positive control and its caller, then to twenty-nine
+       * for the two guard programs and theirs. Each of those four callables charges both its
+       * parameters, which is the whole of the difference: they are the positive control with
+       * one statement added, and that statement is what the guard refuses to reason past. */
+      expect(messages.length,).toBe(29,);
+      /* The two guards that are now known to have a failing case, pinned by the programs that
+       * fail without them rather than by a count that would not move.
+       *
+       * `localReassignedElements` holds its rows in a `let` pointed at the other parameter
+       * before the member runs, and `localRepointedElements` does the same to a parameter
+       * directly. Both are `localReceiverElements` with one statement added, and both are
+       * offered read-only if their guard is removed: measured by neutralising each condition
+       * in turn, four offers appear in the first case and four in the second.
+       *
+       * That is what the earlier guard programs could not show. They were exported, so
+       * `callersAreEnumerable` refused them before any guard was consulted, and they were run
+       * through a per-file task where the discharge is refused before that. Being unexported
+       * with an in-file caller is what makes these two reach the code they test. */
+      expect(messages.filter(function offersGuardedProgram(message,): boolean {
+        return message.includes('"other" should be readonly',);
+      },).length,).toBe(0,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because
