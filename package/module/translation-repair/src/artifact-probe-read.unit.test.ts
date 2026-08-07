@@ -39,10 +39,12 @@ function catTally(
     envelopeId,
     corroborated = 0,
     issueIds = ['adjudicated/nap',],
+    claims = [],
   }: {
     readonly envelopeId: string;
     readonly corroborated?: number;
     readonly issueIds?: readonly string[];
+    readonly claims?: readonly unknown[];
   },
 ): Record<string, unknown> {
   return {
@@ -54,7 +56,44 @@ function catTally(
     unanchored: 0,
     noneFound: 3 - corroborated,
     uncertain: 0,
-    claims: [],
+    claims,
+  };
+}
+
+/**
+ * Builds one screened claim as an artifact carries it, quotes included.
+ *
+ * The quote fields are present here precisely so a case can assert the reader
+ * DROPS them.
+ *
+ * @param modelId - prober that made the claim
+ *
+ * @param admissibility - what the screen made of the quote
+ *
+ * @returns Claim object for a fixture artifact
+ *
+ * @example
+ * ```ts
+ * const claim = catClaim({ modelId: 'cat/one', },);
+ * ```
+ */
+function catClaim(
+  {
+    modelId,
+    admissibility = 'corroborated',
+  }: {
+    readonly modelId: string;
+    readonly admissibility?: string;
+  },
+): Record<string, unknown> {
+  return {
+    modelId,
+    admissibility,
+    category: 'meaning',
+    severity: 'major',
+    evidence: 'the cat naps on the sunlit sill',
+    omittedText: 'the cat had not napped',
+    reason: 'this wording is new in the replacement',
   };
 }
 
@@ -191,6 +230,89 @@ await describe({
           'adjudicated/chase',
         ],);
         expect(reading.owned,).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'keeps claim IDENTITY and drops the quotes. The majority rule '
+        + 'counts distinct probers, so modelId and admissibility have to '
+        + 'survive parsing or every region reads as uncorroborated; the quote '
+        + 'fields carry unlicensed corpus text into a summary meant to be '
+        + 'pasteable, so they must not',
+      fn: async () => {
+        const reading = readArtifactProbe({
+          value: {
+            id: 'Kitten',
+            issues: [
+              catRecord({
+                repairDisposition: 'shipped',
+                introducedDefects: {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [
+                    catTally({
+                      envelopeId: 'envelope/nap',
+                      corroborated: 1,
+                      claims: [catClaim({ modelId: 'cat/one', },),],
+                    },),
+                  ],
+                },
+              },),
+            ],
+          },
+          path: 'Kitten',
+        },);
+
+        /**
+         * Sole parsed claim.
+         */
+        const claim = reading.readings[0]
+          ?.regions[0]
+          ?.claims[0];
+
+        expect(claim?.modelId,).toBe('cat/one',);
+        expect(claim?.admissibility,).toBe('corroborated',);
+        expect(claim?.evidence,).toBe('',);
+        expect(claim?.omittedText,).toBe('',);
+        expect(claim?.reason,).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'THROWS on an admissibility the screen never emits, rather than '
+        + 'treating it as non-upholding. An unrecognized verdict name would '
+        + 'silently zero the corroboration of every region and read as a clean '
+        + 'run, which is the failure shape that looks most like success',
+      fn: async () => {
+        expect(function readsUnknownAdmissibility() {
+          readArtifactProbe({
+            value: {
+              id: 'Kitten',
+              issues: [
+                catRecord({
+                  repairDisposition: 'shipped',
+                  introducedDefects: {
+                    heardProbers: 3,
+                    configuredProbers: 3,
+                    regions: [
+                      catTally({
+                        envelopeId: 'envelope/nap',
+                        corroborated: 1,
+                        claims: [
+                          catClaim({
+                            modelId: 'cat/one',
+                            admissibility: 'probably-fine',
+                          },),
+                        ],
+                      },),
+                    ],
+                  },
+                },),
+              ],
+            },
+            path: 'Kitten',
+          },);
+        },).toThrow(ArtifactParseError,);
       },
     },),
 
