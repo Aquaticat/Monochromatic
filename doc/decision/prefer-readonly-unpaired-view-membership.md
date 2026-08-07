@@ -103,12 +103,53 @@ nothing about it.
  so its `@mutates view`
 contract is satisfied by inference and its `ForeignBorrowed` marker is no longer doing any work.
 
-The obvious next extension is the typed arrays,
- which the `buffer` remainder names precisely.
- They are a
-larger surface than `DataView` and each carries genuine collection members alongside the buffer ones,
- so
-they are a separate measurement rather than a copy of this one.
+### The typed arrays are the obvious next extension and should not be taken
+
+Measured rather than assumed,
+ because the `buffer` remainder makes them look like an easy repeat of this
+work.
+
+The stake is small:
+ about ten findings, with `subarray` at eight mentions and `set` at six, and
+`Uint8Array` is the only typed array any of them uses,
+ checked against the parameter declarations in
+`package/module/zip-writer/src/headers.ts`,
+ `package/figma/kiwi/src/zip.ts` and `package/cli/mvm`.
+
+The cost is not small,
+ and the reason is this authority's own semantics.
+ Membership means "preserves
+structure",
+ so every member omitted from a declared interface is thereby claimed to mutate.
+ A partial
+`Uint8Array` entry covering only the members that appear in findings would therefore record `map` and
+`filter` as restructuring their receiver,
+ which is false and is exactly the wrong-inference failure this
+document rejects in its own alternatives.
+ The entry has to be complete:
+ 33 preserving members against 7
+mutating ones, counting `setFromBase64` and `setFromHex` as writes, which they are.
+
+Completeness is what makes the probe hard rather than long.
+ `DataView` was probeable because every member
+takes numbers,
+ so one generic call exercised all of them.
+ A third of the `Uint8Array` surface takes a
+callback or a replacement array,
+ and a member that throws for want of an argument leaves the buffer
+unchanged,
+ which this probe would read as proof that it preserves structure.
+ A vacuous pass is worse than
+no entry,
+ and per-member arguments for 40 members is a different piece of work from what landed here.
+
+So the ratio is ten findings against a table that is unsound if partial and a probe that is vacuous if
+careless.
+ Left undone deliberately,
+ on the same ground as `Set` and `ReadonlySet` in the result-relation
+work:
+ an increment whose cost is dominated by making its own evidence trustworthy is not improved by
+doing it quickly.
 
 ## What it did not do on its own, measured
 
