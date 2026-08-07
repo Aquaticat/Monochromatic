@@ -5631,3 +5631,41 @@ When a join key is derived rather than carried,
      because `ArtsEpiphany` settled `unchanged` and accepts nothing.
     Judge readiness on contributing entries,
      never on the raw entry count.
+
+## What the precision figure estimates: entries, not issues
+
+Worth stating plainly because two reviewers raised it independently and nothing
+ recorded it.
+
+The draw allocates slots per BAND, and within a band round-robins across
+ ENTRIES.
+So an entry contributing 12 candidates and one contributing 198 receive about
+ the same number of slots.
+Their per-issue inclusion rates therefore differ by more than an order of
+ magnitude,
+and the pool itself is lopsided:
+ small holds 38 accepted issues,
+ medium 160,
+ large 449,
+while the sample splits roughly 17 / 17 / 16.
+
+The number the gate reads is therefore **entry-balanced precision within each
+ size band**.
+It is not an unbiased estimate of precision over the accepted-issue population,
+ and it was never meant to be.
+Two properties are being bought with that:
+
+-   A band's figure describes the band rather than its largest entry.
+    Round two reported 0.740 / 0.787 / 0.800 per band, which is only meaningful
+     if a band's number is not dominated by whichever entry happened to be
+     prolific.
+-   Rounds stay comparable.
+    Round one and round two were drawn this way, and changing the estimand now
+     would make round three a different measurement wearing the same name.
+
+The figure to quote alongside it is the per-entry composition the POOL lines
+ print,
+because that is what says whether a band's spread is real.
+Do NOT reweight the sample by inclusion probability to recover an
+ issue-weighted precision without saying so explicitly:
+ it would answer a different question from the one rounds one and two answered.
