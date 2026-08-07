@@ -12298,8 +12298,10 @@ Unexported,
 positive control needed,
  and the same three every future probe of this feature will need.
 
-Five remain untested,
+Four remain untested,
  and two of those look unreachable rather than merely untested.
+The wrapper unwrap was the fifth and is settled below;
+ it discriminates.
 The relation guard was retested here and does not discriminate,
  because `owned.map(...)`
 charges its receiver through the observer path whatever the discharge decides.
@@ -12412,3 +12414,40 @@ measurement above,
 
 This document remains the working record,
  including the two claims made and withdrawn.
+
+### The wrapper unwrap discriminates, and the guess that it did not was wrong
+
+Recorded because the error has the same shape as the two before it.
+
+The unwrap was annotated `MASKED` on the reasoning that the relation requirement it protects
+is masked,
+ so anything a wrapper hides would be charged anyway.
+That reasoning was never measured.
+It was an inference from one true fact,
+ written in the place where the file records
+measurements,
+ which is exactly the confusion the rest of this document is about.
+
+The relation requirement is not the only thing a wrapper hides.
+`bindingAssignedWithin` can answer only about an `Identifier`,
+ so
+`return (rows as readonly Labelled[]).slice(0,);` after `rows = other;` hides the name from
+the written-endpoint check and the discharge accepts a parameter pointed somewhere else.
+`localAssertedRepointedElements` and its caller are offered read-only without the unwrap,
+ four
+offers,
+ and none with it.
+
+So three of the seven guards have a demonstrated failing case:
+ the reassignable-binding guard,
+the written-endpoint guard,
+ and the unwrap that makes the second of those reachable at all.
+
+The general form is worth stating once more,
+ since this is the third instance.
+A structural test is only as good as its ability to see what it is testing,
+ whether the thing
+that cannot see is a probe harness,
+ a per-file lint scope,
+ or a predicate handed an
+`AsExpression` where it expects a name.
