@@ -10591,3 +10591,157 @@ So five panics correspond to three omitted callables,
  But a capture must now be read for omissions under `node_modules` too,
  which no
  earlier capture needed.
+
+### Selection landed, 2026-08-07
+
+The chain step closed one of the shapes this document tracks and left the conditional open.
+Probing the conditional found that it was not one gap but eleven,
+ and that the boundary was not "branching" but "selection".
+
+`expressionValueOrigins` already saw through every form whose result is an operand it was
+given:
+ parentheses,
+ `as`,
+ a non-null assertion,
+ `satisfies`,
+ the comma operator,
+ `?:`,
+ `??`,
+ `||` and `&&`.
+The container relation saw through none of them.
+So `return (rows.slice(0,));` recorded no element origins while the bare `return (rows);`
+recorded them correctly,
+ and the same split appeared for every form.
+Measured before the change,
+ with the bare form as the control in each case:
+
+```text
+direct, binding, chain            returned=[0]     already worked
+conditional, nested conditional   returned=[]      recorded nothing
+??, ||, &&                        returned=[]      recorded nothing
+parens, as, non-null, satisfies   returned=[]      recorded nothing
+comma                             returned=[]      recorded nothing
+bare parameter in all the above   returned=[0]     value provenance saw through them
+```
+
+The control line is what named the cause.
+A walk that loses `(rows.slice(0,))` and keeps `(rows)` is not failing at parentheses;
+ it is failing to ask the container question anywhere except the root.
+
+So the fix is not branch descent.
+It is one shared definition of the family,
+ `selectedOperandSuccessors`,
+ exported from
+`effect-expression-provenance.ts` and consulted by both walks.
+Growing a second copy inside the element walk would have been the smaller diff and the worse
+one:
+ that file's own comments already worry twice about the two walks disagreeing about
+identical state,
+ once for spreads and once for shorthand properties,
+ and a second copy is the
+mechanism by which that happens.
+
+Aggregates are deliberately outside the shared family.
+`[a, b,]` builds a value no operand held,
+ so crediting its contents is a claim about what a
+container packages rather than about which operand arrived,
+ and `provenanceSuccessors` keeps
+that claim to itself.
+
+#### The hop count was unsound, not merely approximate
+
+Reviewing the walk for branching surfaced a defect in the chain step that shipped two
+increments earlier.
+`CONTAINER_CHAIN_HOP_LIMIT = 8` truncated silently:
+
+```text
+eight composed slice calls    returned=[0]  opaque=[0]
+nine composed slice calls     returned=[]   opaque=[0]
+twelve composed slice calls   returned=[]   opaque=[]
+```
+
+The third line is the one that matters.
+At twelve the parameter comes back with no opacity at all,
+ which is the state a read-only
+offer is minted from.
+Its TSDoc claimed that stopping early "only withholds an origin",
+ and that framing is backwards for this rule:
+ every consumer of the returned set only ever
+adds a charge,
+ so a withheld origin is a withheld charge and a withheld charge is an offer.
+
+A hop count could not have bounded this walk correctly in any case.
+`containerElementReceiver` follows an identifier to its declaration initializer,
+ which is not
+a descendant of the node it started from,
+ so the walk leaves its own subtree and the
+descendant argument that bounds `expressionValueOrigins` does not hold here.
+What does hold is that a file has finitely many nodes and no node is examined twice,
+ so the
+count is replaced by a visited set and the truncation goes away rather than moving.
+
+Nine composed container calls do not appear in the corpus,
+ so this cleared nothing.
+It removes a way to be wrong rather than a report,
+ which is the same standard
+`doc/decision/prefer-readonly-unpaired-view-membership.md` set:
+ a wrong inference is worse
+than an absent one.
+
+#### What the monotonicity check covered, and what it nearly missed
+
+The change only adds origins,
+ so it is safe exactly to the extent that every consumer treats a
+larger set as more conservative.
+Checked at all six call sites of `expressionElementOrigins` rather than at the returned set
+alone,
+ which was the first and insufficient reading:
+
+- `effect-return-effects.ts` records them,
+ and every consumer of the returned set adds a
+charge:
+ `effect-element-application.ts` adds opacity,
+ `substituteRetainedOrigins` adds opacity
+and provenance,
+ `substituteReturnedOrigins` adds origins.
+ `returnedParameterIndexes` has no
+production consumer at all.
+- `effect-opaque-boundary.ts` turns each origin into an `addOpaqueEffect`,
+ one charge per
+origin.
+- `effect-readonly-view-application.ts` is the one worth the scrutiny,
+ because it decides a
+discharge rather than a charge.
+ It still comes out safe in both directions.
+ With an empty
+origin set it returns early and the call falls to the opaque boundary,
+ which uses the same
+walk and so was equally empty before the change,
+ meaning the receiver was charged nothing by
+either path.
+ With a larger set its derivation loop has more chances to reach
+`READONLY_VIEW_UNDISCHARGED`,
+ and any one of them sends the whole call back to the opaque
+boundary.
+- `effect-binding-origins.ts` and `effect-call-resolution.ts` feed the origin maps the
+charges are read from.
+
+#### A composition this did not fix
+
+`containerElementReceiver` owns the declaration hop and answers only when it lands on a call,
+so an initializer that is itself a selector still stops it,
+ while the outer walk owns
+selection and never performs a declaration hop.
+The two steps do not compose:
+
+```ts
+const maybe: LabelledRow[] | undefined = cond ? rows.slice() : undefined;
+const copy = maybe ?? [];
+```
+
+Recorded as a prediction from reading the source rather than as a measurement,
+ and it is
+tracked with a probe as its required first step.
+Two hypotheses were refuted by measurement earlier in the same session,
+ so a trace is a lead
+here and not a finding.
