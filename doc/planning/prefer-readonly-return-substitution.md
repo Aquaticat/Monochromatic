@@ -11732,3 +11732,72 @@ That distinction is real,
 The blunt form must not land either way,
  because it withdraws two offers this repository has
 already decided are correct.
+
+### The discharge landed, 2026-08-07
+
+Three requirements,
+ each found by measuring rather than designed:
+ the call is returned
+outright;
+ the base of its receiver chain,
+ descended through composed member calls and through
+declaration initializers,
+ is not foreign-borrowed;
+ and its callers are enumerable,
+ all
+resolvable,
+ and non-empty.
+
+Two reports clear,
+ and both keep `referentMutated=[0]`,
+ so each trades a report for an
+attribution rather than for silence.
+The pinned effect list and the catalog-free fixture are byte-identical.
+
+#### The offers were accepted by extending a judgement, not by applying one
+
+Worth stating plainly,
+ because the commit that landed this says the three offers "rest on
+the judgement this fixture already records for the packaging pair",
+ and a reader who checks
+that comment will find it does not mention returned containers at all.
+
+The recorded judgement is about `packageRowShorthand` and `packageRowExplicit`:
+ neither writes
+the row it packages,
+ "so each earns the offer".
+It was written about shorthand value-symbol provenance,
+ a different mechanism from this one.
+
+What was done here is to extend it.
+Those two return caller-owned state in a fresh holder;
+ `returnsReceiverElements` returns it
+in a fresh container;
+ and none of them writes anything.
+Refusing the second while allowing the first would make the rule's answer depend on the shape
+of the wrapper rather than on what the callable does,
+ which is not a distinction the rule
+makes anywhere else.
+
+That is an inference rather than a precedent,
+ and it is the load-bearing step in accepting
+three offers where this rule had never emitted one.
+Anyone revisiting the decision should weigh it as such.
+
+#### What the guarded failure means for this increment
+
+It has to be restated for this one change,
+ because the standing form of it would reject
+something deliberately accepted.
+
+Every other increment this session added charges,
+ so a new offer meant the reasoning was
+wrong.
+This one removes a charge and mints offers by design,
+ so the test becomes whether each new
+offer names a callable that writes nothing,
+ and whether callers that write through a returned
+result still report.
+An offer on a parameter with a recorded write would be the failure,
+ and would mean the
+discharge is firing where substitution does not happen.
