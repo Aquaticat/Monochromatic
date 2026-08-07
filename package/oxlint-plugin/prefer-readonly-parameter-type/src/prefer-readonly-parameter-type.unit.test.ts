@@ -338,7 +338,7 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(5,);
+      expect(messages.length,).toBe(4,);
       /* A channel entry for an iterator member discharges exactly when the iterator
        * yields primitives, and these two are the whole of what it buys on its own.
        * Both loops iterate something whose element type carries no receiver state, so
@@ -431,15 +431,22 @@ children: [
       expect(messages.some(function statelessResultStaysSilent(message,): boolean {
         return message.includes('entries.has',);
       },),).toBe(false,);
-      /* `find` answers what user code runs, its observer being owned, but returns
-       * `Labelled | undefined`. A union carries no type arguments, so a species
-       * gate reading only those discharged the call and handed back a clean
-       * read-only suggestion for an array whose element the body rewrites. */
+      /* `find` no longer reports either, and it closed the same hole `at` did rather
+       * than widening a discharge. Both carry the verified relation saying the result is
+       * one of the receiver's own elements; `at` answered from the channel table while
+       * `find`, being observer-bearing, reached the result gate, which had an observer arm
+       * and a container arm and no arm for a bare value. So the identical write through the
+       * identical kind of element was attributed for one member and merely reported for the
+       * other. With the value arm present, `observerResultEscapeEffect` reads
+       * `mutated=[0]` with `opaque=[]`, exactly as its `at` sibling does, and
+       * `effect-summaries.unit.test.ts` asserts the mutation that replaced this message
+       * through `observerValueResultMutationEffect`. Removing the value arm from
+       * `viewResultUnaccounted` puts this message back. */
       expect(messages.some(function observerResultStaysOpaque(message,): boolean {
         return message.startsWith(
           'The function input named "values" is used as the object for these collection calls: values.find [',
         );
-      },),).toBe(true,);
+      },),).toBe(false,);
       /* `at` no longer reports, and that is the hole this rule was carrying rather than
        * a discharge granted on trust. `interiorEscapeEffect` writes through the element
        * `values.at(0)` hands back, and result provenance now tracks that element as

@@ -17,6 +17,7 @@ import type {
 import {
   callResultComesFromObserver,
   callResultElementReceiver,
+  callResultReceiver,
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import { resultExposesMutableState, } from './effect-primitive-origin.ts';
@@ -43,6 +44,9 @@ import { resultAliasesReceiverState, } from './effect-view-result-aliasing.ts';
  * - a container of receiver elements is answered by the element step, which attributes writes
  *   through it, and additionally has to stay inside this callable, because nothing attributes
  *   a use that leaves;
+ * - a single receiver element handed back on its own, `find` and `findLast`, is answered the
+ *   same way and held to the same escape condition, since it is the same state reached by a
+ *   shorter route;
  * - anything else keeps failing closed exactly as before.
  *
  * The aliasing test is the fallback for a member with no relation, and it yields to one that
@@ -103,13 +107,36 @@ export function viewResultUnaccounted({
     checker,
     call,
   },) !== RESULT_NOT_RECEIVER_STATE;
+  /**
+   * Whether the result is a verified element of the receiver, handed back on its own.
+   *
+   * The third arm, and its absence was a gap rather than a decision. `find` and `findLast`
+   * carry a verified relation saying the result is one of the receiver's own elements, and
+   * this gate asked only the observer and container questions, so a member holding that
+   * relation reached the fallback and failed closed. `at` carries the same relation and
+   * never showed it, because it takes no observer and so answers from the channel table
+   * before this gate is reached. Measured: `find` over a collection of objects was opaque
+   * while `at` over the same collection was clean, and `find` over primitives was clean
+   * too, which is what named the result rather than the member as the cause.
+   *
+   * Held to the container arm's standard rather than the observer's, for the same reason:
+   * the element is caller state, writes through it are attributed by the element step, and
+   * nothing attributes a use that leaves the callable.
+   */
+  const valueDerived = callResultReceiver({
+    project,
+    checker,
+    call,
+  },) !== RESULT_NOT_RECEIVER_STATE;
   if (resultExposesMutableState({
     checker,
     type: resultType,
   },)) {
-    if ((!observerDerived) && (!containerDerived))
+    if ((!observerDerived)
+      && (!containerDerived)
+      && (!valueDerived))
       return true;
-    if (containerDerived
+    if ((containerDerived || valueDerived)
       && ((body === undefined)
         || resultEscapesCallable({
           project,
@@ -121,6 +148,7 @@ export function viewResultUnaccounted({
   }
   return (!observerDerived)
     && (!containerDerived)
+    && (!valueDerived)
     && resultAliasesReceiverState({
       checker,
       resultType,

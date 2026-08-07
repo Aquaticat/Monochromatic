@@ -275,6 +275,8 @@ await describe({
         const chained = mutatedIndexes('chainedLookupMutationEffect',);
         /** Property write through an element obtained by `at`. */
         const element = mutatedIndexes('chainedElementWriteEffect',);
+        /** Property write through an element obtained by an observer member. */
+        const observerValue = mutatedIndexes('observerValueResultMutationEffect',);
         /** Mutation through a lookup narrowed by a runtime-erased assertion. */
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
@@ -293,6 +295,13 @@ await describe({
         expect(bound,).toEqual([0,],);
         expect(chained,).toEqual([0,],);
         expect(element,).toEqual([0,],);
+        /* The observer sibling of the `at` case above, and the reason it is asserted here
+         * rather than as a message: the value arm of `viewResultUnaccounted` discharges the
+         * receiver, so `find` stopped reporting opacity and only the summary shows the write
+         * that replaced it. Removing that arm reports opacity again; removing the element
+         * attribution beneath it empties this and grants a read-only offer for an array whose
+         * element the body rewrites. */
+        expect(observerValue,).toEqual([0,],);
         /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
          * assertion expressions from `transparentOperand` empties this one. */
         expect(asserted,).toEqual([0,],);

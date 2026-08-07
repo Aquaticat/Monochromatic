@@ -17,6 +17,43 @@ type Labelled = {
 };
 
 /**
+ * Mutates the element an observer member handed back on its own.
+ *
+ * The pair to `boundLookupMutationEffect`, for the arm of the result gate that answers
+ * a bare value rather than a container. `find` carries the verified relation saying its
+ * result is one of the receiver's own elements, and it takes an owned observer, so the
+ * receiver is discharged and the write below is recorded against `rows` directly.
+ *
+ * Before that arm existed the call reported opacity instead, which read as caution and
+ * was a hole: `at` carries the identical relation and answered from the channel table,
+ * so the same write through the same kind of element was attributed for one member and
+ * merely reported for the other.
+ *
+ * Both directions fail here. Remove the value arm from `viewResultUnaccounted` and this
+ * reports opacity rather than a mutation; remove the element attribution beneath it and
+ * the mutation disappears while the discharge stays, which is the wrong offer this
+ * fixture exists to prevent.
+ *
+ * @param rows - Rows whose matching element is rewritten through a result.
+ *
+ * @example
+ * ```ts
+ * observerValueResultMutationEffect([{ label: 'target' },]);
+ * ```
+ */
+export function observerValueResultMutationEffect(rows: Labelled[],): void {
+  /**
+   * Matching element obtained through an owned predicate.
+   */
+  const found = rows.find(function isTarget(candidate: { readonly label: string; },): boolean {
+    return candidate.label === 'target';
+  },);
+  if (found === undefined)
+    throw new Error('Expected a match to rewrite.',);
+  found.label = 'rewritten';
+}
+
+/**
  * Mutates a looked-up value through an intermediate binding.
  *
  * The shape the rule's own `addUncertaintyProvenance` uses, and the reason
