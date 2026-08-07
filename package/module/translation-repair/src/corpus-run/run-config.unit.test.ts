@@ -25,10 +25,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
   createRunClient,
+  readHeadSha,
   resolveRunsDir,
 } from '../../dist/final/node/index.mjs';
 
@@ -303,6 +305,71 @@ await describe({
         expect(function buildWithoutKey() {
           createRunClient();
         },).toThrow('mise',);
+      },
+    },),
+  ],
+},);
+
+/**
+ * Moves the process working directory for the life of a scope and restores it
+ * on exit.
+ *
+ * @param path - directory to move to
+ *
+ * @returns Disposable restoring the previous working directory
+ *
+ * @example
+ * ```ts
+ * using _elsewhere = inDirectory({ path: tmpdir(), },);
+ * ```
+ */
+function inDirectory({ path, }: { readonly path: string; },): Disposable {
+  /**
+   * Working directory before this scope.
+   */
+  const original = process.cwd();
+  process.chdir(path,);
+  return {
+    [Symbol.dispose](): void {
+      process.chdir(original,);
+    },
+  };
+}
+
+await describe({
+  name: readHeadSha.name,
+  children: [
+    it({
+      name: 'reads the sha of THIS repository regardless of the working '
+        + 'directory the task was invoked from. The pin is what says which '
+        + 'pipeline version produced an artifact, so resolving it against the '
+        + 'process cwd would stamp another repository\'s sha onto a run, or '
+        + 'fail outright when a task ran from a directory git does not track',
+      fn: async () => {
+        /**
+         * Sha read from the ordinary working directory.
+         */
+        const fromHere = await readHeadSha();
+
+        using _elsewhere = inDirectory({ path: tmpdir(), },);
+
+        expect(await readHeadSha(),).toBe(fromHere,);
+      },
+    },),
+
+    it({
+      name: 'returns a bare 40-character sha with no trailing newline, since '
+        + 'it is written into artifacts and a stray newline there would travel '
+        + 'into every file that records the pin',
+      fn: async () => {
+        /**
+         * Sha under test.
+         */
+        const sha = await readHeadSha();
+
+        expect(sha.length,).toBe(40,);
+        expect(sha.includes('\n',),).toBe(false,);
+        expect(sha,).toBe(sha.trim(),);
       },
     },),
   ],

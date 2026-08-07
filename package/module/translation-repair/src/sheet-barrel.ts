@@ -58,6 +58,7 @@ export {
 } from './corpus-run/attempt-store.ts';
 export {
   createRunClient,
+  readHeadSha,
   resolveRunsDir,
 } from './corpus-run/run-config.ts';
 export {
