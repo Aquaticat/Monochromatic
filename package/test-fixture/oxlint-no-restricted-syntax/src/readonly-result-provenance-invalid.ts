@@ -142,6 +142,12 @@ export function writesThroughReturnedContainer(rows: readonly Labelled[],): void
  * depend on the discharge. No program was found that isolates it, which makes the check
  * defence in depth rather than a fix with a failing case behind it.
  *
+ * Retested the same day after the position condition widened to attribute returns, on the
+ * theory that crediting a nested `return` would need the check. An unexported twin with an
+ * in-file caller, compared on charges rather than offers, was byte-identical again: the escape
+ * test treats any reference inside a nested callable as escaping, so the parameter is charged
+ * before the discharge is consulted. The twin was removed for isolating nothing.
+ *
  * @param rows - Rows the returned callable hands back.
  *
  * @returns callable handing back a fresh container of the caller's own rows.
