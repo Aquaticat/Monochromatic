@@ -30,6 +30,26 @@ import type { IssueProbeReading, } from './repair-record.ts';
 const SHIPPED_DISPOSITION = 'shipped';
 
 /**
+ * One probe reading together with the issue that owns it.
+ *
+ * @example
+ * ```ts
+ * const owned: OwnedProbeReading = { issueId: 'adjudicated/nap', reading, };
+ * ```
+ */
+export type OwnedProbeReading = {
+  /**
+   * Issue whose record carried this reading.
+   */
+  readonly issueId: string;
+
+  /**
+   * Reading exactly as that record carried it.
+   */
+  readonly reading: IssueProbeReading;
+};
+
+/**
  * Probe readings of one artifact plus what it could not offer.
  *
  * @example
@@ -42,6 +62,18 @@ export type ArtifactProbeReading = {
    * One reading per shipped record that carried probe telemetry.
    */
   readonly readings: readonly IssueProbeReading[];
+
+  /**
+   * The same readings, each paired with the issue whose record carried it.
+   *
+   * Ownership cannot be recovered from a reading alone. A reading's regions
+   * name every issue each region serves, and one replacement can serve several
+   * accepted issues, so an issue appears in the regions of every reading whose
+   * record shared that replacement. Deciding ownership from those lists picks
+   * an arbitrary one of them. Here the record is in hand, so the answer is
+   * exact.
+   */
+  readonly owned: readonly OwnedProbeReading[];
 
   /**
    * Shipped records seen, probed or not, so a run whose probe never fired is
@@ -203,9 +235,10 @@ export function readArtifactProbe(
     },);
 
   /**
-   * Readings of the shipped records that carried telemetry.
+   * Readings of the shipped records that carried telemetry, each still paired
+   * with the issue whose record carried it.
    */
-  const readings = shipped.flatMap(function toReading(entry,): readonly IssueProbeReading[] {
+  const owned = shipped.flatMap(function toReading(entry,): readonly OwnedProbeReading[] {
     /**
      * Probe field of this record, absent when the chunk was never probed.
      */
@@ -226,35 +259,59 @@ export function readArtifactProbe(
       value: probe,
       path: probePath,
     },);
+    /**
+     * Adjudicated issue this record is about.
+     */
+    const issue = requireRecord({
+      value: entry.record
+        .issue,
+      path: `${path}.issues[${String(entry.index,)}].issue`,
+    },);
+
     return [
       {
-        heardProbers: requireCount({
-          value: reading.heardProbers,
-          path: `${probePath}.heardProbers`,
+        issueId: requireString({
+          value: issue.issueId,
+          path: `${path}.issues[${String(entry.index,)}].issue.issueId`,
         },),
-        configuredProbers: requireCount({
-          value: reading.configuredProbers,
-          path: `${probePath}.configuredProbers`,
-        },),
-        regions: requireArray({
-          value: reading.regions,
-          path: `${probePath}.regions`,
-        },)
-          .map(function toTally(
-            regionValue,
-            regionIndex,
-          ) {
-            return parseRegionTally({
-              value: regionValue,
-              path: `${probePath}.regions[${String(regionIndex,)}]`,
-            },);
+        reading: {
+          heardProbers: requireCount({
+            value: reading.heardProbers,
+            path: `${probePath}.heardProbers`,
           },),
+          configuredProbers: requireCount({
+            value: reading.configuredProbers,
+            path: `${probePath}.configuredProbers`,
+          },),
+          regions: requireArray({
+            value: reading.regions,
+            path: `${probePath}.regions`,
+          },)
+            .map(function toTally(
+              regionValue,
+              regionIndex,
+            ) {
+              return parseRegionTally({
+                value: regionValue,
+                path: `${probePath}.regions[${String(regionIndex,)}]`,
+              },);
+            },),
+        },
       },
     ];
   },);
 
+  /**
+   * Readings alone, for the aggregate summary that does not care which issue
+   * owns which.
+   */
+  const readings = owned.map(function toReading(entry,) {
+    return entry.reading;
+  },);
+
   return {
     readings,
+    owned,
     shippedRecords: shipped.length,
     unprobedRecords: shipped.length - readings.length,
   };

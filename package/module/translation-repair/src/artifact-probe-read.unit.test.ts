@@ -24,6 +24,9 @@ import {
  *
  * @param corroborated - upheld claims of added damage
  *
+ * @param issueIds - every issue this region serves, which is more than one
+ * whenever a single replacement covered several accepted issues
+ *
  * @returns Tally object for a fixture artifact
  *
  * @example
@@ -35,14 +38,16 @@ function catTally(
   {
     envelopeId,
     corroborated = 0,
+    issueIds = ['adjudicated/nap',],
   }: {
     readonly envelopeId: string;
     readonly corroborated?: number;
+    readonly issueIds?: readonly string[];
   },
 ): Record<string, unknown> {
   return {
     envelopeId,
-    issueIds: ['adjudicated/nap',],
+    issueIds,
     corroborated,
     removalCorroborated: 0,
     contradicted: 0,
@@ -60,6 +65,10 @@ function catTally(
  *
  * @param introducedDefects - probe reading, or absent when never probed
  *
+ * @param issueId - adjudicated issue this record is about; defaults to one id
+ * because most cases have a single record and only ownership cases need to
+ * tell two apart
+ *
  * @returns Record object for a fixture artifact
  *
  * @example
@@ -71,9 +80,11 @@ function catRecord(
   {
     repairDisposition,
     introducedDefects,
+    issueId = 'adjudicated/nap',
   }: {
     readonly repairDisposition: string;
     readonly introducedDefects?: unknown;
+    readonly issueId?: string;
   },
 ): Record<string, unknown> {
   return {
@@ -81,6 +92,7 @@ function catRecord(
     repairDisposition,
     resolved: true,
     refined: false,
+    issue: { issueId, },
     ...(introducedDefects === undefined ? {} : { introducedDefects, }),
   };
 }
@@ -122,6 +134,63 @@ await describe({
         expect(reading.readings[0]
           ?.regions[0]
           ?.envelopeId,).toBe('envelope/nap',);
+      },
+    },),
+
+    it({
+      name: 'pairs each reading with the issue whose RECORD carried it, not '
+        + 'with the issues its regions name. One replacement can serve several '
+        + 'accepted issues, so a shared envelope appears in every one of their '
+        + 'readings and names all of them; deciding ownership from those lists '
+        + 'attaches whichever record was indexed last, which is how a graded '
+        + 'sheet position would receive another record\'s probe verdict while '
+        + 'the counts looked entirely normal',
+      fn: async () => {
+        /**
+         * Envelope serving both issues, exactly as a merged replacement does.
+         */
+        const shared = catTally({
+          envelopeId: 'envelope/shared',
+          issueIds: [
+            'adjudicated/nap',
+            'adjudicated/chase',
+          ],
+        },);
+        const reading = readArtifactProbe({
+          value: {
+            id: 'Kitten',
+            issues: [
+              catRecord({
+                repairDisposition: 'shipped',
+                issueId: 'adjudicated/nap',
+                introducedDefects: {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [shared,],
+                },
+              },),
+              catRecord({
+                repairDisposition: 'shipped',
+                issueId: 'adjudicated/chase',
+                introducedDefects: {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [shared,],
+                },
+              },),
+            ],
+          },
+          path: 'Kitten',
+        },);
+
+        expect(reading.owned
+          .map(function toIssueId(entry,) {
+            return entry.issueId;
+          },),).toEqual([
+          'adjudicated/nap',
+          'adjudicated/chase',
+        ],);
+        expect(reading.owned,).toHaveLength(2,);
       },
     },),
 

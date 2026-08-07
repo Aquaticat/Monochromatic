@@ -4,7 +4,10 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { readArtifactProbe, } from '../artifact-probe-read.ts';
+import {
+  type OwnedProbeReading,
+  readArtifactProbe,
+} from '../artifact-probe-read.ts';
 import {
   type ProbeAgreementItem,
   scoreProbeAgainstGrades,
@@ -26,6 +29,58 @@ import { resolveRunsDir, } from './run-config.ts';
 // This number is NOT a precision on its own. It says how often the probe would
 // have blocked a repair; whether it was RIGHT to needs the human repair grades
 // beside it, which is the comparison this exists to enable.
+
+/**
+ * Indexes readings by the issue that OWNS each one.
+ *
+ * This map is how a graded sheet position reaches a probe verdict: position to
+ * issue id through the manifest, then issue id to reading here. Ownership comes
+ * from the record the reading was written on, never from the issue lists inside
+ * its regions. A region names every issue it serves, and one replacement can
+ * serve several accepted issues, so reading ownership off those lists attaches
+ * whichever record happened to be indexed last. That is not a rare collision:
+ * it is the ordinary case whenever an envelope served more than one issue, and
+ * the joint counts would look perfectly normal while describing the wrong
+ * record.
+ *
+ * @param owned - readings paired with their owning issue, across every artifact
+ *
+ * @returns Issue-keyed readings
+ *
+ * @throws {@link Error} when two records claim one issue id, which would mean
+ * the identity this join rests on is not unique
+ *
+ * @example
+ * ```ts
+ * const byIssueId = indexReadingsByIssue({ owned, },);
+ * ```
+ */
+function indexReadingsByIssue(
+  { owned, }: { readonly owned: readonly OwnedProbeReading[]; },
+): ReadonlyMap<string, IssueProbeReading> {
+  /**
+   * Issue-keyed readings, filled with a conflict check per insertion.
+   */
+  const byIssueId = new Map<string, IssueProbeReading>();
+  for (const entry of owned) {
+    /**
+     * Reading already recorded for this issue, absent on first sighting.
+     */
+    const existing = byIssueId.get(entry.issueId,);
+    if ((existing !== undefined) && (existing !== entry.reading))
+      throw new Error(
+        `two shipped records claim issue ${entry.issueId}. The graded sheet `
+          + 'joins to probe verdicts through this id, so a duplicate would '
+          + 'attach one record\'s verdict to another record\'s position '
+          + 'without the counts showing it.',
+      );
+    byIssueId.set(
+      entry.issueId,
+      entry.reading,
+    );
+  }
+  return byIssueId;
+}
 
 /**
  * Reads every settled artifact of a run.
@@ -61,8 +116,12 @@ async function gatherReadings(
     .toSorted();
 
   /**
-   * One reading set per artifact, read sequentially so a malformed file names
-   * itself before any later one is opened.
+   * One reading set per artifact, read concurrently.
+   *
+   * Every parse failure carries the artifact path it came from, so a malformed
+   * file names itself regardless of read order. Which of several malformed
+   * files reports first is not fixed, since `Promise.all` rejects with whichever
+   * rejected soonest rather than the earliest in the sorted list.
    */
   const perEntry = await Promise.all(names.map(async function toReading(name,) {
     return readArtifactProbe({
@@ -88,24 +147,11 @@ async function gatherReadings(
 
   return {
     readings,
-    // Keyed by the issues each reading's regions served, which is how a graded
-    // sheet position reaches a probe verdict: position to issue id through the
-    // manifest, then issue id to reading here.
-    byIssueId: new Map(readings.flatMap(function toEntries(reading,) {
-      return reading.regions
-        .flatMap(function toIssueEntries(tally,) {
-          return tally.issueIds
-            .map(function toPair(issueId,): readonly [
-              string,
-              IssueProbeReading,
-            ] {
-            return [
-              issueId,
-              reading,
-            ];
-          },);
-        },);
-    },),),
+    byIssueId: indexReadingsByIssue({
+      owned: perEntry.flatMap(function toOwned(entry,) {
+        return entry.owned;
+      },),
+    },),
     entries: perEntry.length,
     shippedRecords: perEntry.reduce(
       function addShipped(
