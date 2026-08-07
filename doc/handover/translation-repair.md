@@ -5669,3 +5669,32 @@ because that is what says whether a band's spread is real.
 Do NOT reweight the sample by inclusion probability to recover an
  issue-weighted precision without saying so explicitly:
  it would answer a different question from the one rounds one and two answered.
+
+## Two things verified rather than assumed, for whoever runs #60
+
+**The join runs, and it resolves every position.** The ownership fix, the
+identity check, and their tests were all in place while the command itself had
+never been executed. Exercised against the preliminary pair at zero quota:
+
+```text
+AGREEMENT joined=50 probeFlagged=0 refutedByHuman=0 sharedWithHuman=0 flaggedUnscored=0 unflaggedFailures=0
+```
+
+`joined=50` is the figure that matters.
+The zeros are expected on an ungraded sheet,
+ but `joined=0` would also have printed as a clean run,
+so check that number first rather than the ones beside it.
+
+**`--repair-sheet` and `--manifest` need ABSOLUTE paths.** The mise task runs
+from the package directory, not the repo root, so a path relative to the runs
+directory fails with `ENOENT` after the summary has already printed. Build them
+from `$(pwd)` at the worktree root.
+
+**The entry-balanced estimand does cover round one.** The claim recorded above
+rests on rounds one and two sharing the draw, and task #32 is titled "draw
+50-issue uniform sample", which reads like a contradiction. It is stale wording
+from before the tooling was designed: `sample-draw.ts` has exactly ONE commit
+(`da6d66fa2`, 2026-07-25), has never been modified since, and already contained
+`selectFromBand`'s round-robin. Round one's sheet is dated 2026-07-26, after it.
+So both graded rounds were drawn entry-balanced and the comparability argument
+holds.
