@@ -12719,11 +12719,40 @@ verify,
  which excludes every element type with a name.
 It under-counts by exactly the cases where a named element type is in fact deeply readonly.
 
-Sizing this needs the checker rather than the source text,
- and the honest reading of the range
-is that the #414 class is now small:
- at most one report in twenty-two,
- and plausibly far fewer.
+Splitting that upper bound by message family sharpens it considerably,
+ because #414 was about
+one family and not the others.
+
+Of the 66,
+ fifty-seven say "used by these calls",
+ which names an unresolved owned or external
+call rather than a collection member.
+That family is defensible on an already-readonly parameter:
+ `readonly` is erased at runtime,
+so a callee this rule cannot read receives a genuinely mutable array whatever the annotation
+says.
+`runAdb` in `package/cli/android-exempt-unused/src/adb.ts` hands `readonly string[]` to
+`nano-spawn`,
+ and the report is about exactly that.
+
+Eight are the collection family,
+ which is the shape #414 cites.
+One is a method call.
+
+So the complaint's own class is at most eight of 1555 findings,
+ about one in two hundred,
+ and
+some of those eight are correct too:
+ `locateBlock` in
+`package/module/toml-edit/src/resolve-block.ts` takes `readonly Block[]` and calls `find`,
+ which
+hands back an element whose own properties this classifier cannot check and which the caller
+may well be able to write through.
+
+The measurement therefore closes the question rather than opening work.
+Sizing it exactly needs the checker,
+ and the number it would refine is already small enough
+that no remediation follows from it.
 
 #### The classifier's own controls caught two defects
 
