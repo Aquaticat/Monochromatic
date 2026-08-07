@@ -26,6 +26,77 @@ import {
 const ITEM_PREFIX = '### ';
 
 /**
+ * Header line declaring the seed a sheet was drawn under.
+ */
+const SEED_PREFIX = 'Draw seed: ';
+
+/**
+ * Header line declaring the corpus commit a sheet was produced against.
+ */
+const CORPUS_PREFIX = 'Corpus pin: ';
+
+/**
+ * What a sheet says about the draw it belongs to.
+ *
+ * @example
+ * ```ts
+ * const identity: SheetIdentity = { seed: 'round-three', corpusSha: 'a41fc60', };
+ * ```
+ */
+export type SheetIdentity = {
+  /**
+   * Seed the sheet declares, empty when the header carried none.
+   */
+  readonly seed: string;
+
+  /**
+   * Corpus commit the sheet declares, empty when the header carried none.
+   */
+  readonly corpusSha: string;
+};
+
+/**
+ * Reads the draw a sheet says it belongs to.
+ *
+ * Only the header is read, and only up to the first item, so a line quoted
+ * inside an item cannot introduce a second identity. Both sheets and the
+ * manifest are written in one breath by one draw, so these agreeing is what
+ * makes joining them by POSITION sound. Equal item counts alone do not: two
+ * unrelated draws of the same size match on count and mislabel every verdict.
+ *
+ * @param text - sheet contents as the grader left them
+ *
+ * @returns Declared seed and corpus commit, each empty when absent
+ *
+ * @example
+ * ```ts
+ * const identity = readSheetIdentity({ text, },);
+ * ```
+ */
+export function readSheetIdentity(
+  { text, }: { readonly text: string; },
+): SheetIdentity {
+  /**
+   * Values found so far in the header.
+   */
+  const found = {
+    seed: '',
+    corpusSha: '',
+  };
+  for (const line of text.split('\n',)) {
+    if (line.startsWith(ITEM_PREFIX,))
+      break;
+    if (line.startsWith(SEED_PREFIX,))
+      found.seed = line.slice(SEED_PREFIX.length,)
+        .trim();
+    else if (line.startsWith(CORPUS_PREFIX,))
+      found.corpusSha = line.slice(CORPUS_PREFIX.length,)
+        .trim();
+  }
+  return found;
+}
+
+/**
  * Marker introducing the grade on a repair-sheet item.
  */
 const GRADE_MARKER = '- repair grade:';

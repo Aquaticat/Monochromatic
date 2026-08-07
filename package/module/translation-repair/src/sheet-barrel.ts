@@ -37,6 +37,8 @@ export {
 export {
   type GradedRepairItem,
   parseGradedRepairSheet,
+  readSheetIdentity,
+  type SheetIdentity,
   type RepairVerdict,
 } from './repair-grade-read.ts';
 export {
@@ -66,7 +68,7 @@ export {
   listResumableEntries,
   openSliceCache,
 } from './corpus-run/slice-cache-store.ts';
-export { indexReadingsByIssue, } from './corpus-run/score-probe.ts';
+export { indexReadingsByIssue, } from './probe-issue-index.ts';
 export {
   bandOf,
   countSettledPerBand,

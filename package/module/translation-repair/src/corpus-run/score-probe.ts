@@ -12,8 +12,12 @@ import {
   type ProbeAgreementItem,
   scoreProbeAgainstGrades,
 } from '../probe-agreement.ts';
+import { indexReadingsByIssue, } from '../probe-issue-index.ts';
 import { summarizeProbeTelemetry, } from '../probe-telemetry.ts';
-import { parseGradedRepairSheet, } from '../repair-grade-read.ts';
+import {
+  parseGradedRepairSheet,
+  readSheetIdentity,
+} from '../repair-grade-read.ts';
 import type { IssueProbeReading, } from '../repair-record.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
 import { resolveRunsDir, } from './run-config.ts';
@@ -30,57 +34,6 @@ import { resolveRunsDir, } from './run-config.ts';
 // have blocked a repair; whether it was RIGHT to needs the human repair grades
 // beside it, which is the comparison this exists to enable.
 
-/**
- * Indexes readings by the issue that OWNS each one.
- *
- * This map is how a graded sheet position reaches a probe verdict: position to
- * issue id through the manifest, then issue id to reading here. Ownership comes
- * from the record the reading was written on, never from the issue lists inside
- * its regions. A region names every issue it serves, and one replacement can
- * serve several accepted issues, so reading ownership off those lists attaches
- * whichever record happened to be indexed last. That is not a rare collision:
- * it is the ordinary case whenever an envelope served more than one issue, and
- * the joint counts would look perfectly normal while describing the wrong
- * record.
- *
- * @param owned - readings paired with their owning issue, across every artifact
- *
- * @returns Issue-keyed readings
- *
- * @throws {@link Error} when two records claim one issue id, which would mean
- * the identity this join rests on is not unique
- *
- * @example
- * ```ts
- * const byIssueId = indexReadingsByIssue({ owned, },);
- * ```
- */
-export function indexReadingsByIssue(
-  { owned, }: { readonly owned: readonly OwnedProbeReading[]; },
-): ReadonlyMap<string, IssueProbeReading> {
-  /**
-   * Issue-keyed readings, filled with a conflict check per insertion.
-   */
-  const byIssueId = new Map<string, IssueProbeReading>();
-  for (const entry of owned) {
-    /**
-     * Reading already recorded for this issue, absent on first sighting.
-     */
-    const existing = byIssueId.get(entry.issueId,);
-    if ((existing !== undefined) && (existing !== entry.reading))
-      throw new Error(
-        `two shipped records claim issue ${entry.issueId}. The graded sheet `
-          + 'joins to probe verdicts through this id, so a duplicate would '
-          + 'attach one record\'s verdict to another record\'s position '
-          + 'without the counts showing it.',
-      );
-    byIssueId.set(
-      entry.issueId,
-      entry.reading,
-    );
-  }
-  return byIssueId;
-}
 
 /**
  * Reads every settled artifact of a run.
@@ -270,14 +223,38 @@ async function main(): Promise<void> {
   },);
 
   /**
+   * Sheet contents, read once and used for both identity and verdicts.
+   */
+  const sheetText = await readFile(
+    joinPaths.sheet,
+    'utf8',
+  );
+
+  /**
+   * Draw the sheet says it belongs to.
+   */
+  const identity = readSheetIdentity({ text: sheetText, },);
+  if (identity.seed !== manifest.seed)
+    throw new Error(
+      `sheet and manifest belong to different draws: sheet says seed ${
+        JSON.stringify(identity.seed,)
+      }, manifest says ${JSON.stringify(manifest.seed,)}. Item counts can `
+        + 'match across unrelated draws of the same size, so position is not '
+        + 'evidence they describe the same items.',
+    );
+  if (identity.corpusSha !== manifest.corpusSha)
+    throw new Error(
+      `sheet and manifest were produced against different corpus commits: `
+        + `sheet says ${JSON.stringify(identity.corpusSha,)}, manifest says ${
+          JSON.stringify(manifest.corpusSha,)
+        }. The same entry can carry different text at two commits, so the `
+        + 'grades and the artifacts would be about different documents.',
+    );
+
+  /**
    * Human verdicts in sheet order.
    */
-  const graded = parseGradedRepairSheet({
-    text: await readFile(
-      joinPaths.sheet,
-      'utf8',
-    ),
-  },);
+  const graded = parseGradedRepairSheet({ text: sheetText, },);
   if (graded.length
     !== manifest.items
     .length) {
@@ -334,6 +311,10 @@ async function main(): Promise<void> {
   );
 }
 
-await main();
+// Guarded like every sibling task script. Unguarded, this ran on IMPORT, so
+// anything that pulled this module into the package bundle made importing the
+// library scan a corpus directory and print to stdout.
+if (import.meta.main)
+  await main();
 
 //endregion Score probe
