@@ -12342,3 +12342,61 @@ Only the wrapper guard is untested in the ordinary sense,
  and it looks masked too,
  since the
 requirement it protects is itself masked.
+
+### What the module-export over-approximation actually costs
+
+Measured 2026-08-07 by instrumenting `callersAreEnumerable` to record every verdict during a
+cold-cache workspace sweep,
+ then classifying each declaring file as public or internal.
+A file counts as public when a `package.json` `exports` entry names it,
+ when a public file
+re-exports it,
+ or when a wildcard subpath such as `"./ts/*": "./src/*"` publishes its tree.
+
+The predicate is consulted 377 times:
+ 302 admitted,
+ 75 refused,
+ across 40 distinct files.
+Twenty-eight of those files are reachable from a package export,
+ so refusing them is correct
+rather than costly.
+Twelve are internal,
+ and they carry 27 of the 75 refusals.
+
+Twenty-seven refusals is the entire precision cost of using module export as the boundary.
+The concentration is worth seeing:
+ `package/pi-plugin/auto-mode/src/signals.ts` accounts for
+eight of them and
+`package/rolldown-plugin/import-attributes/src/ast-extract.ts` for five,
+ so half the cost sits
+in two files.
+
+That answers the question against building entry-point resolution.
+The upper bound on what the narrower predicate could recover is 27 refusals,
+ and the real
+figure is lower,
+ because a refusal only becomes an offer when no other path charges the
+parameter,
+ which this rule's redundancy makes uncommon.
+Against that:
+ entry resolution has to follow conditional exports,
+ wildcards and re-export
+chains,
+ and a bug in it fails *open*,
+ which is the direction that mints wrong offers.
+
+The wildcard handling is the part worth remembering,
+ because getting it wrong changed the
+answer by a factor of four.
+A first pass ignored `*` specifiers and classified 377 of 3054 workspace sources as public;
+expanding wildcards raised that to 1483.
+Reported from the first pass,
+ the same probe would have said most refusals were internal and
+argued for building the machinery.
+
+### Where the discharge stands
+
+The predicate admits four out of five callables it is asked about,
+ so requiring closed-world
+callers did not disable the feature at workspace scale.
+The provenance fixture made it look otherwise only because every callable in it is exported.
