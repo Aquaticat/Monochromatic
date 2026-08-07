@@ -5089,3 +5089,46 @@ about 8 percent, which is the rate a gate would have blocked, and whether those
 blocks would have been RIGHT is exactly what the repair grades decide. Do not
 read 8 percent as a defect rate; read it as the population `refutedByHuman` will
 be measured against.
+
+### The trigger rate at five entries, and why the one-entry reading misled
+
+Five entries settled (`AmbeR_the_anpa`, `Arita`, `Acheron`, `Anilovr`,
+`Chinatsu_Suzuki`) and `score-probe` read all of them:
+
+```text
+PROBE  entries=5 shippedRecords=179 unprobedRecords=0 regions=67
+       majorityIntroduced=1 minorityIntroduced=5 noneIntroduced=61
+CLAIMS added=5 dropped=2 contradicted=0 unanchored=0 degradedRosterRegions=0
+```
+
+THE HEADLINE IS THE DENOMINATOR. `majorityIntroduced` did not move at all: it
+was 1 at one entry and is still 1 at five. The region count went from 13 to 67.
+So the rate a gate would fire at is about 1.5 percent of regions, not the 8
+percent the first entry suggested, and the single blocking region found so far
+is one region across five entries rather than one per entry.
+
+THIS IS THE CONSTRAINT ANY DESIGN OPTION MUST CLEAR. Every option on the table
+for issue #53 (fall back to another editor candidate, salvage by dropping
+confirmed-defective operations and revalidating, reject the whole chunk) is
+machinery that only runs when the probe confirms a defect. At roughly one region
+per five entries, a salvage pass that must reapply from the original target and
+rerun judging, checking, probing, measurement, and selection buys one region's
+worth of preserved repair per five entries. Cost per trigger is the number to
+argue about, and it is now measured rather than guessed.
+
+WHAT MOVED INSTEAD IS THE MINORITY COLUMN: `minorityIntroduced` went from 1 to
+5, tracking the region count almost exactly. Probers keep making claims; what
+stays rare is a MAJORITY of them agreeing on the same region. That is the shape
+you would expect from an instrument with real but noisy sensitivity, and it is
+the opposite of the "silently broken, always negative" failure the sensitivity
+check was built to rule out.
+
+STILL ZERO contradicted and ZERO unanchored across 67 regions. The
+verbatim-quote requirement is holding at scale, not just on the first entry.
+
+THE METHOD LESSON, AGAIN: this session already withdrew a checker finding taken
+off n=1, wrote down that n=1 on a stochastic ensemble proves nothing, and then
+quoted an n=1 probe rate as a design constraint anyway. The rule is not "be
+careful with small samples", it is DO NOT QUOTE A RATE WHOSE DENOMINATOR IS ONE
+ENTRY. Re-run `score-probe` as entries settle; it costs no quota and reads only
+local artifacts, so there is never a reason to be working from the stale one.
