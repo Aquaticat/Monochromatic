@@ -257,6 +257,50 @@ A future version is worth retesting the same way:
  sweep,
  and grep the output for `semantic rule failed`.
 
+## The omission was fail-closed on one side only, fixed
+
+Recorded 2026-08-07,
+ because the panic's cost was much larger than this document described and the
+reason was on our side.
+
+`effect-demand-index.ts` catches the failed summary build and omits that one callable,
+ and its comment
+states the omission is fail-closed:
+ callers hit the absent-callee branch in
+`effect-fixed-point-propagation.ts` and take opacity.
+ That half was true.
+ `assertReachedCallSummaries` in
+`effect-reached-edge.ts` then refused any call edge whose callee had no summary,
+ including the one just
+omitted on purpose,
+ and threw.
+ The throw aborts the whole program's analysis.
+
+So one panicking callable cost every file in that program its readonly analysis rather than costing
+itself its summary.
+ Measured before the fix:
+ `package/claude-code-plugin/statusline` lost `activity.ts`,
+`render.ts` and `statusline.ts` entirely,
+ reported as `semantic rule failed, so ... has no readonly
+analysis this run`.
+
+The assertion now receives the set of deliberately omitted keys and skips them,
+ for callee and callback
+edges alike.
+ Measured after:
+ workspace semantic failures 3 to 0,
+ rule findings 1677 to 1678,
+ which is the
+one real finding those three files were hiding,
+ and read-only offers unchanged at 33.
+
+The panic itself is untouched and still fires.
+ Checked across every sweep taken during this work,
+ the
+earliest predating all of it:
+ 16 occurrences each time, so nothing in the rule's own changes caused or
+worsened it.
+
 ## What we do about it
 
 An internal failure no longer reports a lint issue.
