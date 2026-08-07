@@ -35,8 +35,13 @@ import { resolveSheetPath, } from './sheet-path.ts';
 // flattens accepted issues into grading candidates, and draws the stratified
 // precision sample into a grading sheet written OUTSIDE the repo (the sheet
 // quotes UNLICENSED corpus text). Default run is PRELIMINARY validation over
-// whatever has settled; pass `--final` once the large band fills to write the
-// gate sheet. The reconcile below aborts loudly if a parsed accepted count
+// whatever has settled; pass `--final` once every band has enough CONTRIBUTING
+// entries to spread the draw, and only once the pass writing artifacts has
+// stopped, since a live run can add one after the directory is read. Readiness
+// is judged on contributing entries rather than accepted counts because the
+// draw round-robins across entries. A preliminary run draws with a different
+// seed on purpose, so repeated previews can never become a way of choosing the
+// gate sample. The reconcile below aborts loudly if a parsed accepted count
 // disagrees with the artifact's own tally, so the sample is never silently
 // short.
 
@@ -58,6 +63,22 @@ type BandedEntry = {
    * Accepted issues flattened into grading candidates.
    */
   readonly candidates: readonly GradingCandidate[];
+};
+
+/**
+ * One entry's share of a band, carried as a record rather than a formatted
+ * string so the sort compares numbers instead of reparsing its own output.
+ */
+type EntryContribution = {
+  /**
+   * Entry id.
+   */
+  readonly id: string;
+
+  /**
+   * Candidates this entry contributes to the band.
+   */
+  readonly count: number;
 };
 
 /**
@@ -168,6 +189,35 @@ async function drawGradingSample(): Promise<void> {
     .includes('--final',);
 
   /**
+   * Seed the DRAW uses, which is deliberately NOT the gate seed on a
+   * preliminary run.
+   *
+   * A preliminary draw exists to check that the sheets render and that the pool
+   * reconciles, and it is run repeatedly while the pool grows. Drawing it with
+   * the gate seed would make each one a preview of the gate sample over the
+   * pool of the moment, and choosing when to finalize after seeing those
+   * previews is selecting the sample on its contents. The file naming still
+   * keys on {@link DEFAULT_SAMPLE_SEED} so one round cannot target another
+   * round's path; only the shuffle differs.
+   */
+  const drawSeed = isFinal
+    ? DEFAULT_SAMPLE_SEED
+    : `${DEFAULT_SAMPLE_SEED}-preliminary`;
+
+  /**
+   * Write mode for this draw's outputs.
+   *
+   * Final outputs are created exclusively. `resolveSheetPath` already refuses a
+   * path that exists, but that check and this write are separate steps, so two
+   * draws racing each other can both see absence and both truncate. The whole
+   * purpose of the refusal is that human grades exist nowhere else, which makes
+   * the narrow race worth closing rather than reasoning about.
+   */
+  const writeFlag = isFinal
+    ? 'wx'
+    : 'w';
+
+  /**
    * Durable, gitignored output root.
    */
   const runsDir = await resolveRunsDir();
@@ -228,10 +278,56 @@ async function drawGradingSample(): Promise<void> {
       },
       0,
     );
+    /**
+     * Entries actually contributing a candidate.
+     *
+     * An entry that settled `unchanged` accepts nothing, so it raises the entry
+     * count while adding no candidate and no spread. Reading readiness off the
+     * raw count would credit it for coverage it does not provide.
+     */
+    const contributing = bandEntries.filter(function hasCandidates(
+      { candidates, },
+    ) {
+      return candidates.length > 0;
+    },);
+    /**
+     * Per-entry candidate counts, heaviest first.
+     *
+     * Printed because the band totals hide how lopsided a band is: the draw
+     * round-robins across entries, so a band's spread comes from how many
+     * entries contribute, not from how many candidates they brought. Seeing the
+     * shape here is what keeps that distinction from being guessed at.
+     */
+    const composition = contributing
+      .map(function toCount(
+        {
+          id,
+          candidates,
+        },
+      ): EntryContribution {
+        return {
+          id,
+          count: candidates.length,
+        };
+      },)
+      .toSorted(function byCountDescending(
+        a: EntryContribution,
+        b: EntryContribution,
+      ) {
+        return b.count - a.count;
+      },)
+      .map(function toLabel(
+        {
+          id,
+          count,
+        },
+      ) {
+        return `${id}:${String(count,)}`;
+      },);
     console.log(
-      `POOL band=${band} entries=${String(bandEntries.length,)} accepted=${
-        String(bandAccepted,)
-      }`,
+      `POOL band=${band} entries=${String(bandEntries.length,)} contributing=${
+        String(contributing.length,)
+      } accepted=${String(bandAccepted,)} perEntry=${composition.join(',',)}`,
     );
   }
 
@@ -241,7 +337,7 @@ async function drawGradingSample(): Promise<void> {
   const sample = drawStratifiedSample({
     candidates: pool,
     size: DEFAULT_SAMPLE_SIZE,
-    seed: DEFAULT_SAMPLE_SEED,
+    seed: drawSeed,
   },);
 
   /**
@@ -258,9 +354,11 @@ async function drawGradingSample(): Promise<void> {
    */
   const banner = isFinal
     ? ''
-    : '> PRELIMINARY draw over whatever has settled so far; the large band is '
-      + 'not yet filled, so this is for validating the sheets, NOT for final '
-      + 'grading. The final draw shifts as the pool grows.\n\n';
+    : '> PRELIMINARY draw over whatever has settled so far, for validating the '
+      + 'sheets and the pool, NOT for final grading. It is drawn with a '
+      + 'different seed from the gate sheet, so these are deliberately not the '
+      + 'items the gate will draw, and the final draw shifts again as the pool '
+      + 'grows.\n\n';
 
   // Both paths resolve BEFORE either file is written. Writing the detection
   // sheet first would leave it in place, and protected against overwrite, when
@@ -310,21 +408,23 @@ async function drawGradingSample(): Promise<void> {
     `${banner}${
       formatGradingSheet({
         sample,
-        seed: DEFAULT_SAMPLE_SEED,
+        seed: drawSeed,
         bar: DEFAULT_PRECISION_BAR,
         corpusSha: RUN_CORPUS_PIN.commitSha,
       },)
     }`,
+    { flag: writeFlag, },
   );
   await writeFile(
     repairPath,
     `${banner}${
       formatRepairSheet({
         sample,
-        seed: DEFAULT_SAMPLE_SEED,
+        seed: drawSeed,
         corpusSha: RUN_CORPUS_PIN.commitSha,
       },)
     }`,
+    { flag: writeFlag, },
   );
 
   // Written in the same breath as the sheets, because this is the only instant
@@ -337,20 +437,21 @@ async function drawGradingSample(): Promise<void> {
     `${JSON.stringify(
       buildSampleManifest({
         sample,
-        seed: DEFAULT_SAMPLE_SEED,
+        seed: drawSeed,
         corpusSha: RUN_CORPUS_PIN.commitSha,
       },),
       undefined,
       2,
     )}\n`,
+    { flag: writeFlag, },
   );
 
   console.log(
-    `SAMPLE final=${String(isFinal,)} pool=${String(pool.length,)} drawn=${
-      String(sample.length,)
-    } unrecordedRepairs=${String(unrecorded,)} out=${outPath} repairOut=${
-      repairPath
-    } manifest=${manifestPath}`,
+    `SAMPLE final=${String(isFinal,)} seed=${drawSeed} pool=${
+      String(pool.length,)
+    } drawn=${String(sample.length,)} unrecordedRepairs=${
+      String(unrecorded,)
+    } out=${outPath} repairOut=${repairPath} manifest=${manifestPath}`,
   );
 }
 
