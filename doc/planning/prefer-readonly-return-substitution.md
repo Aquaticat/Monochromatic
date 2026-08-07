@@ -10817,3 +10817,88 @@ caller writing through that result.
 Both are pinned at summary level and both report at diagnostic level,
  taking that fixture
 from sixteen to eighteen with its offer set unchanged.
+
+### The composition landed, 2026-08-07
+
+The fixture reverted in the selection entry is the acceptance test for this one,
+ and it now
+passes.
+
+Two steps existed and neither owned their composition.
+`containerElementReceiver` follows a name to its declaration initializer,
+ but answers only
+when it lands on a call,
+ so an initializer that is a selector stopped it.
+The element walk traverses selection,
+ but only where it stands in the expression,
+ and the
+selection family is empty for a name,
+ so it never reached an initializer.
+Between them,
+ `const copy = cond ? rows.slice() : [];` was reachable by neither.
+
+What that cost was not a report.
+Measured on the fixture before the fix,
+ each of two spellings produced two diagnostics:
+
+```text
+Parameter "rows" has stale @mutates contract
+Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection
+```
+
+The second is the guarded failure.
+The callable rewrites a row the caller owns,
+ the write was attributed to no parameter,
+ and
+the rule offered the parameter read-only.
+
+The hop is now `bindingDeclarationInitializer`,
+ one definition shared by both rather than
+repeated in each,
+ and the element walk performs it over the same visited set it already uses
+for selection.
+Names and selectors then compose however they alternate,
+ which
+`nestedSelectorWriteEffect` measures:
+ a name whose initializer is a selector,
+ whose operand
+is another name,
+ whose initializer is the container call.
+A single pass of each step answers the two simpler cases and still answers nothing for that
+one.
+
+All three fixtures add no diagnostic at all.
+Their contracts are satisfied,
+ where two of them each produced a wrong offer before,
+ and the
+fixture's total stays at eighteen with its offer set unchanged.
+
+#### It dissolved one tracked item and sharpened another
+
+The alias truncation tracked separately was re-probed rather than assumed still to hold,
+ and
+half of it had gone:
+ a nine-hop alias chain reaching a container now records its origin,
+because the element walk's own hop has no cap.
+
+The other half got worse than the entry describing it claimed.
+`containerElementReceiver` has a second caller,
+ `expressionValueOrigins`,
+ which has no hop of
+its own,
+ and there the cap still bites.
+Measured by chaining a container call through N aliases and writing through an element:
+
+```text
+one alias, three aliases    referentMutated=[0]  opaque=[]
+seven aliases onward        referentMutated=[]   opaque=[]
+```
+
+The parameter is not merely unattributed past the threshold.
+It is clean,
+ opacity included,
+ so the rule offers it read-only while the callable writes a
+row through it.
+That is the guarded failure occurring today rather than a precision loss,
+ and it is what the
+remaining entry is now about.
