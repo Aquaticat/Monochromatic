@@ -1527,3 +1527,93 @@ export function writesThroughSelectedContainer(rows: readonly Labelled[],): void
     throw new Error('Expected a selected row to rewrite.',);
   first.label = 'rewritten';
 }
+
+/**
+ * Writes an element of a container chosen by a conditional.
+ *
+ * The composition case, and the one that measured a wrong offer rather than a lost report.
+ * Element origins are asked about `copy`, a name; the container resolver follows a name to
+ * its declaration but answers only at a call, so a selector there stopped it; and the
+ * selection family is empty for a name, so the walk never reached the initializer. Neither
+ * half owned the composition, the write landed on no parameter, and `rows` was offered
+ * read-only while this rewrites a row it holds.
+ *
+ * @param rows - Rows this writes through a conditionally chosen copy.
+ *
+ * @mutates rows - Writes a row reached through a container one branch supplies.
+ *
+ * @example
+ * ```ts
+ * selectedContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function selectedContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows, supplied by whichever branch runs.
+   */
+  const copy = rows.length > 0
+    ? rows.slice()
+    : [];
+  for (const row of copy) {
+    row.label = 'written';
+  }
+}
+
+/**
+ * Writes an element of a container behind a wrapper that erases at runtime.
+ *
+ * The same composition reached by different syntax, kept because one holding is no evidence
+ * for the other. `satisfies` rather than an assertion, because `rows.slice() as LabelledRow[]`
+ * asserts the type the expression already has and invites removal as redundant.
+ *
+ * @param rows - Rows this writes through a wrapped copy.
+ *
+ * @mutates rows - Writes a row reached through a container behind an erasing wrapper.
+ *
+ * @example
+ * ```ts
+ * wrappedContainerWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function wrappedContainerWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Fresh array holding the caller's own rows, reached through a wrapper that erases.
+   */
+  const copy = rows.slice() satisfies LabelledRow[];
+  for (const row of copy) {
+    row.label = 'written';
+  }
+}
+
+/**
+ * Writes an element reached through two declarations and two selectors.
+ *
+ * The case proving the hop and the selection compose repeatedly rather than once. A single
+ * pass of each answers the two cases beside this one and still answers nothing here, because
+ * the second name's initializer is a selector whose operand is another name. Both steps
+ * belong to one walk over one visited set, which is what this measures.
+ *
+ * @param rows - Rows this writes through two chained locals.
+ *
+ * @mutates rows - Writes a row reached through a container behind two declarations.
+ *
+ * @example
+ * ```ts
+ * nestedSelectorWriteEffect([{ label: '' }]);
+ * ```
+ */
+export function nestedSelectorWriteEffect(rows: LabelledRow[],): void {
+  /**
+   * Container this callable built, or nothing when there was nothing to copy.
+   */
+  const maybe = rows.length > 0
+    ? rows.slice()
+    : undefined;
+  /**
+   * Container reached past a second selector over a name.
+   */
+  const copy = maybe ?? [];
+  for (const row of copy) {
+    row.label = 'written';
+  }
+}

@@ -8,16 +8,16 @@ import type {
   Expression,
   Node,
 } from 'typescript/unstable/ast';
-import {
-  isCallExpression,
-  isIdentifier,
-  isVariableDeclaration,
-} from 'typescript/unstable/ast/is';
+import { isCallExpression, } from 'typescript/unstable/ast/is';
 import type {
   Checker,
   Project,
 } from 'typescript/unstable/sync';
 
+import {
+  bindingDeclarationInitializer,
+  NO_BINDING_INITIALIZER,
+} from './effect-binding-initializer.ts';
 import {
   callResultElementReceiver,
   RESULT_NOT_RECEIVER_STATE,
@@ -106,27 +106,17 @@ export function containerElementReceiver({
         ? NOT_A_RECEIVER_CONTAINER
         : receiver;
     }
-    if (!isIdentifier(cursor.current,))
-      return NOT_A_RECEIVER_CONTAINER;
     /**
-     * Binding this identifier names.
+     * Value this name was declared with, when it names one local declaration.
      */
-    const symbol = checker.getSymbolAtLocation(cursor.current,);
-    /**
-     * Declaration the binding was introduced by, when there is exactly one.
-     */
-    const declaration = (symbol === undefined)
-        || (symbol.declarations
-          .length
-          !== 1)
-      ? undefined
-      : symbol.declarations[0]
-        ?.resolve(project,);
-    if ((declaration === undefined)
-      || (!isVariableDeclaration(declaration,))
-      || (declaration.initializer === undefined))
+    const initializer = bindingDeclarationInitializer({
+      project,
+      checker,
+      node: cursor.current,
+    },);
+    if (initializer === NO_BINDING_INITIALIZER)
       return NOT_A_RECEIVER_CONTAINER;
-    cursor.current = declaration.initializer;
+    cursor.current = initializer;
     cursor.hops += 1;
   }
   return NOT_A_RECEIVER_CONTAINER;

@@ -8,6 +8,10 @@ import type { Node, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
+  bindingDeclarationInitializer,
+  NO_BINDING_INITIALIZER,
+} from './effect-binding-initializer.ts';
+import {
   containerElementReceiver,
   NOT_A_RECEIVER_CONTAINER,
 } from './effect-container-element-origin.ts';
@@ -106,6 +110,31 @@ export function expressionElementOrigins({
         visited.add(successor,);
         pending.push(successor,);
       }
+    /* The declaration hop belongs to this walk as well, and not only to
+     * `containerElementReceiver`, because the two steps have to compose. That resolver owns
+     * a hop of its own but answers only when it lands on a call, so an initializer that is
+     * itself a selector stopped it, while selection was traversed only where it stood in the
+     * expression and never behind a name. Neither half could reach
+     * `const copy = cond ? rows.slice() : [];`, whose write through `copy` was then
+     * attributed to nothing and offered its parameter read-only while the callable rewrites
+     * a row it holds.
+     *
+     * Queued rather than resolved here, so a name reached through any number of selectors and
+     * declarations arrives at the same visited-set walk instead of a second cursor with its
+     * own bound. */
+    /**
+     * Value the current name was declared with, when it names one local declaration.
+     */
+    const declared = bindingDeclarationInitializer({
+      project,
+      checker: project.checker,
+      node: current,
+    },);
+    if ((declared !== NO_BINDING_INITIALIZER)
+      && (!visited.has(declared,))) {
+      visited.add(declared,);
+      pending.push(declared,);
+    }
     /**
      * Receiver whose elements the current value holds, when that relation is verified.
      *
