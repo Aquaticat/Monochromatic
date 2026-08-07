@@ -135,6 +135,9 @@ const result = await repairTranslation({
   until that false-positive rate is measured against human repair grades,
   letting the probe block a repair would discard correct fixes on unmeasured
   evidence.
+  Shadow mode is a recorded decision rather than an unfinished edge, with the
+  rejected gating designs and the condition that reopens it in
+  `doc/decision/introduced-defect-probe-gating.md`.
   Claims are screened deterministically rather than believed:
   a quote must be new in the replacement, or gone from it for dropped content,
   and `screenNonTranslationVotes` is the precedent for evidence that dismisses
