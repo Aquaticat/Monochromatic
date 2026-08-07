@@ -66,6 +66,7 @@ export {
   listResumableEntries,
   openSliceCache,
 } from './corpus-run/slice-cache-store.ts';
+export { indexReadingsByIssue, } from './corpus-run/score-probe.ts';
 export {
   bandOf,
   countSettledPerBand,

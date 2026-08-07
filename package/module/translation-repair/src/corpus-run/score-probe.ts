@@ -55,7 +55,7 @@ import { resolveRunsDir, } from './run-config.ts';
  * const byIssueId = indexReadingsByIssue({ owned, },);
  * ```
  */
-function indexReadingsByIssue(
+export function indexReadingsByIssue(
   { owned, }: { readonly owned: readonly OwnedProbeReading[]; },
 ): ReadonlyMap<string, IssueProbeReading> {
   /**
