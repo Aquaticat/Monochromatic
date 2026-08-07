@@ -164,6 +164,54 @@ export function returnsFromNestedCallable(
 }
 
 /**
+ * Hands back the receiver's elements without letting any other file reach this callable.
+ *
+ * The positive control the guard programs never had, and the reason they proved nothing. A
+ * program only reaches the returned-result discharge when two things hold that none of them
+ * held: it must not be exported, since `callersAreEnumerable` refuses any callable another
+ * file can import, and it must have a caller here, since an empty enumeration is refused.
+ *
+ * This is `returnsReceiverElements` with both satisfied. It is offered read-only, and the
+ * assertion that it is offered is what proves the harness can observe this feature at all.
+ * Without such a control, a probe reporting no difference is indistinguishable from a probe
+ * that cannot see the thing it is probing, which is exactly what happened to the six programs
+ * written before it.
+ *
+ * It also fixes the reach of requiring closed-world callers. Every other program exercising
+ * the discharge here is exported and so refused, which made the feature look dead; this one
+ * shows it is scoped rather than gone.
+ *
+ * @param rows - Rows whose elements the result carries.
+ *
+ * @returns fresh container of the caller's own rows.
+ *
+ * @example
+ * ```ts
+ * readsLocalContainerLength([],);
+ * ```
+ */
+function localReceiverElements(rows: readonly Labelled[],): readonly Labelled[] {
+  return rows.slice(0,);
+}
+
+/**
+ * Reads how many rows the unexported container holds, so its callee has a caller.
+ *
+ * @param rows - Rows counted through an unexported container.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalContainerLength([],);
+ * ```
+ */
+export function readsLocalContainerLength(rows: readonly Labelled[],): number {
+  return localReceiverElements(rows,)
+    .length;
+}
+
+/**
  * Reads only how many rows a returned container holds.
  *
  * The control keeping the returned origin from becoming a blanket attribution. Nothing here

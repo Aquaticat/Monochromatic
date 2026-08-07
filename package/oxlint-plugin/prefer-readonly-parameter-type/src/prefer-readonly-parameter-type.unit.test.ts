@@ -595,7 +595,8 @@ children: [
        * and the discharge is refused before any of its own conditions are reached. A probe run
        * there reports no difference for any change to this feature, which is a property of the
        * probe and not of the code. */
-      expect(messages.length,).toBe(19,);
+      /* Nineteen to twenty-one for the positive control and its caller. */
+      expect(messages.length,).toBe(21,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because
@@ -740,21 +741,25 @@ children: [
        * why `writesThroughReturnedContainer` still records `referentMutated=[0]` and is
        * still reported.
        *
-       * Three to zero when the shared completeness predicate began requiring closed-world
-       * callers, and this assertion is kept at zero rather than deleted because it is the
-       * honest record of what that cost. Each of the three offers is still accurate about its
-       * callable. What changed is that none of them can be *proven* any more: all three are
-       * exported, a file's module surface is how a caller outside this program reaches one,
-       * and a discharge licensed by what callers substitute cannot rest on an enumeration
-       * that may not have seen them all.
+       * Three to two when the shared completeness predicate began requiring closed-world
+       * callers, and the two are not among the three. Each of the original three is still
+       * accurate about its callable; what changed is that none can be *proven* any more. All
+       * three are exported, a file's module surface is how a caller outside this program
+       * reaches one, and a discharge licensed by what callers substitute cannot rest on an
+       * enumeration that may not have seen them all.
        *
-       * So the returned-result discharge now fires only for a callable no other file can
-       * import, and this fixture contains none. Whether that price is worth paying is a
-       * judgement recorded in `doc/planning/prefer-readonly-return-substitution.md`; this
-       * number is what it costs. */
+       * The two that remain are `localReceiverElements` and its caller, added with that
+       * predicate and identical in shape to the first of the three but for being unexported.
+       * They are what keeps this number honest in both directions: without them the count
+       * would read zero and the feature would look dead rather than scoped, and a probe of
+       * this feature reporting no difference would again be indistinguishable from a probe
+       * that cannot see it.
+       *
+       * Whether the price is worth paying is recorded in
+       * `doc/planning/prefer-readonly-return-substitution.md`; this number is what it costs. */
       expect(messages.filter(function offersReturningReceiver(message,): boolean {
         return message.includes('"rows" should be readonly: property',);
-      },).length,).toBe(0,);
+      },).length,).toBe(2,);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
        * involved, `rows` through a discharged `at` result, and
@@ -805,6 +810,18 @@ children: [
          *
          * Their absence is the visible price of requiring closed-world callers, and the
          * assertion above keeps it at an explicit zero so the cost stays legible. */
+        /* The positive control and its caller, and the only offers here the returned-result
+         * discharge still makes. `localReceiverElements` is `returnsReceiverElements` with one
+         * difference, that no other file can import it, and `readsLocalContainerLength` reads
+         * a length through it. Both write nothing, so read-only describes each accurately.
+         *
+         * They earn their place by answering the question the six removed guard programs could
+         * not. A probe reporting no difference proves nothing until the harness is known to be
+         * able to show one, and these are that proof: they are offered, they were not offered
+         * while every program here was exported, and they go quiet if the discharge is
+         * disabled. Any future probe of this feature belongs beside them. */
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },
