@@ -237,10 +237,13 @@ export function readsLocalContainerLength(rows: readonly Labelled[],): number {
  * readsLocalReassignedLength([], [],);
  * ```
  */
-function localReassignedElements(
-  rows: readonly Labelled[],
-  other: readonly Labelled[],
-): readonly Labelled[] {
+function localReassignedElements({
+  rows,
+  other,
+}: {
+  rows: readonly Labelled[];
+  other: readonly Labelled[];
+},): readonly Labelled[] {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- A reassignable binding whose
    * value survives to the return is the whole program under test, and every remedy the rule
    * names removes it: `const` deletes the reassignment, and both the helper shape and the
@@ -271,11 +274,14 @@ function localReassignedElements(
  * readsLocalReassignedLength([], [],);
  * ```
  */
-export function readsLocalReassignedLength(
-  rows: readonly Labelled[],
-  other: readonly Labelled[],
-): number {
-  return localReassignedElements(rows, other,)
+export function readsLocalReassignedLength({
+  rows,
+  other,
+}: {
+  rows: readonly Labelled[];
+  other: readonly Labelled[];
+},): number {
+  return localReassignedElements({ rows, other, },)
     .length;
 }
 
@@ -298,10 +304,13 @@ export function readsLocalReassignedLength(
  * readsLocalRepointedLength([], [],);
  * ```
  */
-function localRepointedElements(
-  rows: readonly Labelled[],
-  other: readonly Labelled[],
-): readonly Labelled[] {
+function localRepointedElements({
+  rows,
+  other,
+}: {
+  rows: readonly Labelled[];
+  other: readonly Labelled[];
+},): readonly Labelled[] {
   rows = other;
   return rows.slice(0,);
 }
@@ -320,11 +329,14 @@ function localRepointedElements(
  * readsLocalRepointedLength([], [],);
  * ```
  */
-export function readsLocalRepointedLength(
-  rows: readonly Labelled[],
-  other: readonly Labelled[],
-): number {
-  return localRepointedElements(rows, other,)
+export function readsLocalRepointedLength({
+  rows,
+  other,
+}: {
+  rows: readonly Labelled[];
+  other: readonly Labelled[];
+},): number {
+  return localRepointedElements({ rows, other, },)
     .length;
 }
 
@@ -351,10 +363,13 @@ export function readsLocalRepointedLength(
  * readsLocalAssertedRepointedLength([], [],);
  * ```
  */
-function localAssertedRepointedElements(
-  rows: readonly Labelled[],
-  other: readonly Labelled[],
-): readonly Labelled[] {
+function localAssertedRepointedElements({
+  rows,
+  other,
+}: {
+  rows: readonly Labelled[];
+  other: readonly Labelled[];
+},): readonly Labelled[] {
   rows = other;
   return (rows as readonly Labelled[]).slice(0,);
 }
@@ -373,11 +388,14 @@ function localAssertedRepointedElements(
  * readsLocalAssertedRepointedLength([], [],);
  * ```
  */
-export function readsLocalAssertedRepointedLength(
-  rows: readonly Labelled[],
-  other: readonly Labelled[],
-): number {
-  return localAssertedRepointedElements(rows, other,)
+export function readsLocalAssertedRepointedLength({
+  rows,
+  other,
+}: {
+  rows: readonly Labelled[];
+  other: readonly Labelled[];
+},): number {
+  return localAssertedRepointedElements({ rows, other, },)
     .length;
 }
 

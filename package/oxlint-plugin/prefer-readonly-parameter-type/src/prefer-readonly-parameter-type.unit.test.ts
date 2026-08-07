@@ -601,9 +601,18 @@ children: [
        * are the positive control with one statement added, and that statement is what the
        * guard refuses to reason past. */
       /* Thirty-three to thirty-nine when the position condition widened from "returned
-       * outright" to "returning is the only escape". Three programs and their callers came
-       * with it: two that the widening discharges and one that it must not. */
-      expect(messages.length,).toBe(39,);
+       * outright" to "returning is the only escape", then back to thirty-three when the six
+       * two-parameter programs took a destructured parameter, which merges each pair of
+       * charges into one message naming both inputs.
+       *
+       * Destructuring them was measured rather than assumed. The first version kept positional
+       * parameters on the reasoning that a destructured binding declares a `BindingElement`
+       * rather than a `VariableDeclaration`, which is what `bindingIsReassignable` keys on, so
+       * destructuring might void the very tests these programs exist for. It does not: only
+       * this total moved, and every discriminating assertion below is unchanged, because the
+       * reassignable binding under test is a `let` inside the body and the repointed one is
+       * reached by symbol rather than by declaration kind. */
+      expect(messages.length,).toBe(33,);
       /* The condition that makes widening safe, pinned by the charge it keeps rather than by
        * an offer, which is what makes this assertion the discriminating one.
        *
