@@ -5554,3 +5554,80 @@ The earlier worry about 2 large-band entries was still correct,
  but for the right reason:
  two entries meant eight slots each,
  not that they held most of the candidates.
+
+## The probe join attached the wrong record's verdict, and the aggregates never showed it
+
+Found by review, not by symptom.
+A guard written to test a hypothetical collision fired immediately on the live
+ run's own artifacts,
+ in `Acheron`.
+
+`score-probe` joins a graded sheet position to a probe verdict through the issue
+ id:
+ position to issue id through the manifest,
+ then issue id to reading.
+That second map was built from each reading's `regions[].issueIds`.
+A region names EVERY issue it serves,
+ and the README already says one replacement can serve several accepted issues,
+so a shared envelope appears in the readings of every record it served and names
+ all of them.
+Handing those pairs to the `Map` constructor keeps the LAST one,
+ so an issue could resolve to a different record's reading.
+
+This is the ordinary case,
+ not a rare hash collision.
+It happens whenever an envelope served more than one issue,
+ which is the merging behavior the pipeline is built around.
+
+Two things this did NOT affect,
+ both verified rather than assumed:
+
+-   The aggregate figures.
+    `summarizeProbeTelemetry` deduplicates by `envelopeId` before judging,
+     so `regions`,
+     `majorityIntroduced`,
+     and `minorityIntroduced` never read the broken map.
+    Re-running after the fix returned `entries=15 shippedRecords=647
+    regions=210 majorityIntroduced=1 minorityIntroduced=18` unchanged,
+    so every figure quoted in
+     `doc/decision/introduced-defect-probe-gating.md` stands.
+-   Any measurement taken so far.
+    The join only runs with `--repair-sheet` and `--manifest`,
+     which is task #60,
+     and #60 has never been run.
+
+The fix takes ownership from the record at parse time,
+ where it is exact:
+ `readArtifactProbe` now returns `owned`,
+ pairing each reading with its own record's issue id,
+ and a duplicate id throws rather than overwriting.
+
+The lesson worth keeping is narrower than "check your joins".
+The regions list was a plausible-looking key that was never an identity.
+Nothing downstream could have detected it,
+ because a wrong-but-well-formed reading produces counts that look exactly like
+ right ones.
+When a join key is derived rather than carried,
+ ask what happens when the derivation is many-to-one.
+
+## Three smaller draw-integrity fixes landed alongside
+
+-   Preliminary draws used the GATE seed,
+     differing from the final only in file name.
+    Since a preliminary is re-run as the pool grows,
+     each one previewed the gate sample,
+     and choosing when to finalize after seeing them would be selecting the
+     sample on its contents.
+    Preliminary now draws with a derived seed.
+    No contamination occurred:
+     this round's preliminary sheets were never read.
+-   Final sheets are now created exclusively (`flag: 'wx'`).
+    `resolveSheetPath` refuses a path that exists,
+     but that check and the write were separate steps,
+     and human grades exist nowhere else.
+-   The pool report gained `contributing=` and `perEntry=`.
+    This immediately corrected a reading:
+     the small band shows `entries=5` but `contributing=4`,
+     because `ArtsEpiphany` settled `unchanged` and accepts nothing.
+    Judge readiness on contributing entries,
+     never on the raw entry count.
