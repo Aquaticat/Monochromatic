@@ -124,6 +124,40 @@ export function writesThroughReturnedContainer(rows: readonly Labelled[],): void
 }
 
 /**
+ * Hands back a callable that returns the receiver's elements, rather than the elements.
+ *
+ * The control on which callable the discharge reasons about. `rows.slice(0,)` is returned
+ * outright here exactly as in `returnsReceiverElements`, but the `return` belongs to `inner`
+ * while the callers being enumerated are this function's. Those callers substitute for this
+ * function, whose result is a callable and not a container, so nothing they record accounts
+ * for a write made through what `inner` later returns.
+ *
+ * Its two siblings differ from it only in where the `return` is written, which is the whole
+ * claim: the position test accepts a `ReturnStatement` wherever it appears, so the callable
+ * it belongs to has to be checked separately.
+ *
+ * @param rows - Rows the returned callable hands back.
+ *
+ * @returns callable handing back a fresh container of the caller's own rows.
+ *
+ * @example
+ * ```ts
+ * returnsFromNestedCallable([],);
+ * ```
+ */
+export function returnsFromNestedCallable(
+  rows: readonly Labelled[],
+): () => readonly Labelled[] {
+  /**
+   * Hands back the caller's rows in a fresh container, from its own `return`.
+   */
+  function inner(): readonly Labelled[] {
+    return rows.slice(0,);
+  }
+  return inner;
+}
+
+/**
  * Reads only how many rows a returned container holds.
  *
  * The control keeping the returned origin from becoming a blanket attribution. Nothing here

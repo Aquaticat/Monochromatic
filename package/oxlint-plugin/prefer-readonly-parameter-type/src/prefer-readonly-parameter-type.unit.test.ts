@@ -155,18 +155,41 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
-      expect(diagnostics.length,).toBe(16,);
+      /* Sixteen to twenty-one when the returned-result discharge grew its two ownership
+       * guards, and five of the twenty-one are the pair of programs those guards exist for.
+       * Each contributes a report per parameter plus an offer for its observer's `child`,
+       * which is offerable in both and unrelated to what they pin.
+       *
+       * `filterReassignedForeignFixtureTree` holds the foreign tree's children in a `let`
+       * first bound to this fixture's own array. The discharge followed a name to its
+       * declaration initializer, a hop borrowed from a walk that uses it to add origins,
+       * where ignoring later assignment over-attributes and costs only precision. Proving a
+       * receiver is *not* foreign-owned reads that property backwards, and this program
+       * answers clean twice over: the initializer names the owned array, and the name
+       * carries the type that array gave it. Only refusing a reassignable binding outright
+       * reports it.
+       *
+       * `filterMappedForeignFixtureTree` returns `owned.map(lift,).slice()`, where every
+       * element came from the observer and none from the receiver. The descent read syntax
+       * where it needed provenance, reaching `owned` and finding it clean while the elements
+       * are the foreign tree's. `map` carries no receiver relation for exactly that reason,
+       * so requiring one is the test the descent was missing. */
+      expect(diagnostics.length,).toBe(21,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
       expect(messages.some(function catalogRemediationRemoved(message,): boolean {
         return message.includes('audited-call catalogue',);
       },),).toBe(false,);
-      /* Nine findings still say a contract cannot discharge an unresolved implementation, and
-       * two of them now say it in the collection message's words instead. Both sentences are
+      /* Twelve findings still say a contract cannot discharge an unresolved implementation,
+       * and two of them say it in the collection message's words instead. Both sentences are
        * counted, because the claim this pins is that no finding offers a contract as a way
        * out, not which of the two texts carries it. Splitting the count would let a finding
-       * lose the claim entirely by moving between messages. */
+       * lose the claim entirely by moving between messages.
+       *
+       * Nine to twelve with the two ownership-guard programs, whose three reports each carry
+       * the claim: a guard that restores a report must restore one saying the same thing as
+       * the reports beside it, or it has traded a wrong discharge for a wrong remediation. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
@@ -174,7 +197,7 @@ children: [
           || message.includes(
             'ForeignHostCapability does not apply here.',
           );
-      },).length,).toBe(9,);
+      },).length,).toBe(12,);
     },
   },),
   it({
@@ -560,7 +583,19 @@ children: [
        * container returned out of foreign-owned state is refused however completely its
        * callers enumerate. And the pinned effect list in `effect-summaries.unit.test.ts` is
        * unchanged. */
-      expect(messages.length,).toBe(16,);
+      /* Sixteen to seventeen when `returnsFromNestedCallable` was added, and it is a control
+       * on which callable the discharge reasons about rather than another instance of the
+       * shape. Its `rows.slice(0,)` is returned outright exactly as in
+       * `returnsReceiverElements`, and it keeps its report because the `return` belongs to a
+       * nested declaration while the callers being enumerated are the outer function's.
+       * Those callers substitute for a result that is a callable rather than a container, so
+       * none of them accounts for a write through what the inner one returns.
+       *
+       * Without that check the position test accepted a `ReturnStatement` wherever it was
+       * written, so this program discharged on another callable's callers. The offer count
+       * is unchanged by it, which is the part that matters: the three accepted offers are
+       * all returned from the function whose callers were counted. */
+      expect(messages.length,).toBe(17,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because

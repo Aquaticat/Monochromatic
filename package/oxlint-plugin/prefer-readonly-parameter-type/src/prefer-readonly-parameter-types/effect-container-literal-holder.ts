@@ -6,16 +6,16 @@
 
 import {
   type Node,
-  NodeFlags,
   type VariableDeclaration,
 } from 'typescript/unstable/ast';
 import {
   isArrayLiteralExpression,
   isIdentifier,
   isObjectLiteralExpression,
-  isVariableDeclarationList,
 } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
+
+import { declaredConst, } from './effect-binding-initializer.ts';
 
 /**
  * Passes the alias walk takes before it stops, a backstop rather than the terminator.
@@ -63,38 +63,6 @@ function bindingSymbolId({
   if (symbol === undefined)
     return NO_BINDING_SYMBOL;
   return symbol.id;
-}
-
-/**
- * Tests whether a declaration cannot be pointed somewhere else after it is written.
- *
- * The guard that makes the whole record safe to consult at a call site rather than only
- * at the declaration. `let stack = [root,]; stack = config.rows; stack.pop();` holds a
- * container this callable built at its declaration and one it was given by the time the
- * member runs, and suppressing the charge on the strength of the declaration would lose
- * that write. A `const` cannot move, so the declaration answers for every later use.
- *
- * @param declaration - Variable declaration under test.
- *
- * @returns whether the binding is declared `const`.
- *
- * @example
- * ```ts
- * declaredConst({ declaration });
- * ```
- */
-function declaredConst({
-  declaration,
-}: {
-  readonly declaration: VariableDeclaration;
-},): boolean {
-  /**
-   * List the declaration belongs to, carrying the `const` flag for every name in it.
-   */
-  const list = declaration.parent;
-  if (!isVariableDeclarationList(list,))
-    return false;
-  return (list.flags & NodeFlags.Const) !== 0;
 }
 
 /**

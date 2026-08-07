@@ -13,12 +13,23 @@ import {
   isCallExpression,
   isReturnStatement,
 } from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+import type {
+  Checker,
+  Project,
+} from 'typescript/unstable/sync';
+
+import {
+  callResultElementReceiver,
+  callResultReceiver,
+  RESULT_NOT_RECEIVER_STATE,
+} from './effect-member-result-relation.ts';
 
 import {
   bindingDeclarationInitializer,
+  bindingIsReassignable,
   NO_BINDING_INITIALIZER,
 } from './effect-binding-initializer.ts';
+import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import {
   memberCallReceiver,
@@ -30,6 +41,48 @@ import { isEffectCallableDeclaration, } from './effect-summary-model.ts';
  * Returned-result discharge logger.
  */
 const l = tagged({ tag: 'effect-returned-result-discharge', },);
+
+/**
+ * Tests whether a call's result is a verified piece of its own receiver's state.
+ *
+ * Either relation answers it, and the two are the same claim at different arity: a container
+ * result holds the receiver's elements and a direct result is one of them. The receiver-chain
+ * descent needs only that the receiver governs what comes back, so both qualify and neither
+ * alone does.
+ *
+ * @param project - TypeScript project proving default-library ownership.
+ *
+ * @param checker - TypeScript checker resolving signature and types.
+ *
+ * @param call - Call whose result provenance is in question.
+ *
+ * @returns whether a verified relation names the receiver as the result's source.
+ *
+ * @example
+ * ```ts
+ * callResultIsReceiverState({ project, checker, call });
+ * ```
+ */
+function callResultIsReceiverState({
+  project,
+  checker,
+  call,
+}: {
+  readonly project: Project;
+  readonly checker: Checker;
+  readonly call: CallExpression;
+},): boolean {
+  return (callResultElementReceiver({
+      project,
+      checker,
+      call,
+    },) !== RESULT_NOT_RECEIVER_STATE)
+    || (callResultReceiver({
+      project,
+      checker,
+      call,
+    },) !== RESULT_NOT_RECEIVER_STATE);
+}
 
 /**
  * Tests whether a call is returned outright, as the whole returned expression.
@@ -189,6 +242,16 @@ export function returnedResultDischargeable({
 },): boolean {
   if (!callIsReturnedOutright({ call, },))
     return false;
+  /* Returned by *this* callable, not merely by some callable. `callIsReturnedOutright`
+   * accepts a `ReturnStatement` wherever it is written, and the callers enumerated below are
+   * enumerated for the body handed in, so a call returned from a nested declaration decides
+   * its discharge on a different callable's callers. `writtenDirectlyInBody` names the case
+   * and `returnsFromNestedCallable` in the provenance fixture is the program. */
+  if (!writtenDirectlyInBody({
+    node: call,
+    body,
+  },))
+    return false;
   /* Asked at the base of the receiver chain rather than at the immediate receiver, because
    * the shapes this exists for compose members. `tree.children.slice().filter(observer,)`
    * has a call for its receiver, and a call carries no ownership of its own, so asking the
@@ -208,15 +271,44 @@ export function returnedResultDischargeable({
     && (!visited.has(base.current,))) {
     visited.add(base.current,);
     if (isCallExpression(base.current,)) {
+      /* Descended only where a verified relation says the result is the receiver's own
+       * state. Following every member call syntactically assumes what the relation exists
+       * to prove: `local.map(function lift() { return foreign; },).slice(0,)` reaches
+       * `local` and reports a clean base, while every element of the returned container
+       * came from the observer instead. `map` and `flatMap` carry no receiver relation for
+       * exactly that reason, so asking for one turns the assumption into a test. */
+      if (!callResultIsReceiverState({
+        project,
+        checker: project.checker,
+        call: base.current,
+      },))
+        return false;
       base.current = memberCallReceiver({ call: base.current, },);
       continue;
     }
-    /* Names are descended too, and the same hop the element walk uses.
+    /* Names are descended too, and nearly the same hop the element walk uses.
      * `const copied = tree.children.slice(); return copied.filter(observer,);` puts a name
      * where the composed form puts a call, and stopping at the name left
      * `filterAliasedForeignFixtureTree` discharged while its two siblings were restored.
      * Its own doc calls it the aliased spelling of the case beside it, so the two agreeing
-     * is the point of it existing. */
+     * is the point of it existing.
+     *
+     * A reassignable name is refused before the hop rather than stopped at, and the two
+     * differ. That hop ignores later assignment, which its own doc calls "the
+     * over-attributing direction and deliberate": a reassigned local keeps answering for
+     * the container it was declared with, costing precision and never an offer. Read
+     * backwards for a *negative* ownership proof the same property is unsound, since
+     * `let held = owned; held = foreign; return held.filter(keep,);` proves clean from an
+     * initializer the receiver no longer holds. Stopping at the name instead proves it
+     * clean a second way, because the name carries the type the initializer gave it, so
+     * only refusing outright answers correctly. `declaredConst` already carried this
+     * argument for the container record, against the same `let` shape. */
+    if (bindingIsReassignable({
+      project,
+      checker: project.checker,
+      node: base.current,
+    },))
+      return false;
     /**
      * Value this name was declared with, when it names one local declaration.
      */
@@ -229,11 +321,19 @@ export function returnedResultDischargeable({
       break;
     base.current = declared;
   }
-  if ((base.current !== NO_MEMBER_RECEIVER)
-    && expressionContainsForeignBorrowed({
-      project,
-      node: base.current,
-    },))
+  /* An unresolved base is refused rather than skipped, and the two are opposite answers.
+   * The sentinel means the descent ran out of receiver before it reached anything ownership
+   * can be asked of: `read().slice(0,)` has a call for its receiver whose own callee names
+   * no member, so `memberCallReceiver` answers the sentinel and there is no node left to
+   * classify. Treating that as "no foreign state found" reads an absent answer as a clean
+   * one, which is the guarded failure exactly. `returnsSliceOfOpaqueCallResult` is the
+   * program, and it is offered read-only without this. */
+  if (base.current === NO_MEMBER_RECEIVER)
+    return false;
+  if (expressionContainsForeignBorrowed({
+    project,
+    node: base.current,
+  },))
     return false;
   return callersAllResolve({
     project,

@@ -47,11 +47,9 @@ import {
   isPresentNode,
   valueConsumer,
 } from './effect-value-consumer.ts';
-import {
-  collectAstNodes,
-  isEffectCallableDeclaration,
-} from './effect-summary-model.ts';
+import { collectAstNodes, } from './effect-summary-model.ts';
 import { resultReachableSymbolIds, } from './effect-result-holders.ts';
+import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
 
 /**
  * Binary operators that only test a value and keep no reference to it.
@@ -409,6 +407,14 @@ export function resultEscapesCallable({
 /**
  * Tests whether a node sits inside a callable nested under the given body.
  *
+ * The ascent itself moved to `effect-enclosing-callable.ts`, where the returned-result
+ * discharge asks the same containment question for a different reason. Two walks answering
+ * one question is what `AGENTS.md` calls a shared definition, and keeping them apart had
+ * already let them disagree about the case neither reaches: this one answered "not nested"
+ * when it ran off the root, which is the permissive direction, while the discharge needs the
+ * conservative one. Unified on the conservative answer, since the note this replaces states
+ * that every caller passes a node inside `body` and so neither can observe the difference.
+ *
  * @param node - Reference being classified.
  *
  * @param body - Outer callable body boundary.
@@ -427,28 +433,8 @@ function enclosedByNestedCallable({
   readonly node: Node;
   readonly body: Node;
 },): boolean {
-  /**
-   * Cursor ascending toward the outer body, absent once the root is passed.
-   *
-   * Stops on an absent parent as well as a self-referential one, for the reason recorded
-   * on `nodeWithin` in `effect-value-consumer.ts`: a source file's parent is `undefined`
-   * here while the type says otherwise. Every caller passes a node inside `body`, so this
-   * walk should meet the boundary first, and carrying the same false assumption as the
-   * function that did throw is not worth the wager.
-   */
-  const cursor: { current: Node; } = { current: node.parent, };
-  while (cursor.current !== body) {
-    if (isEffectCallableDeclaration(cursor.current,))
-      return true;
-    /**
-     * Enclosing node, absent at the root whatever the declared type says.
-     */
-    const { parent, } = cursor.current;
-    if (!isPresentNode({ candidate: parent, },))
-      return false;
-    if (parent === cursor.current)
-      return false;
-    cursor.current = parent;
-  }
-  return false;
+  return !writtenDirectlyInBody({
+    node: node.parent,
+    body,
+  },);
 }

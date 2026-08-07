@@ -220,6 +220,62 @@ export function sortForeignFixtureTree(
 }
 
 /**
+ * Filters foreign descendants reached through a reassignable local.
+ *
+ * The returned-result discharge follows a name to the value it was declared with, and that
+ * hop is borrowed from a walk that uses it to add origins, where ignoring later assignment
+ * over-attributes harmlessly. Used to prove a receiver is *not* foreign-owned it is unsound
+ * both ways at once: the initializer names `owned`, and the name itself carries the type
+ * `owned` gave it, so following the hop and stopping at it agree on the wrong answer while
+ * the value reaching `filter` is the tree's.
+ *
+ * @param owned - Children this fixture allocates, naming the binding first.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns children carrying non-empty values.
+ */
+export function filterReassignedForeignFixtureTree(
+  owned: ForeignFixtureChild[],
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): readonly ForeignFixtureChild[] {
+  /**
+   * Children held first from this fixture's own array and then from the foreign tree.
+   */
+  let held = owned;
+  held = tree.children;
+  return held.filter(function retainReassignedNonEmptyChild(child,) {
+    return child.value.length > 0;
+  },);
+}
+
+/**
+ * Filters descendants of a container built by an observer rather than by its receiver.
+ *
+ * The receiver-chain descent reads syntax where it needs provenance. `owned.map(...)` has
+ * `owned` for its receiver and hands back whatever the observer returned, so descending to
+ * `owned` and finding it clean says nothing about the elements, every one of which is the
+ * foreign tree's. `map` carries no receiver relation precisely because its result is not the
+ * receiver's state, so the relation is the test the descent was missing.
+ *
+ * @param owned - Children this fixture allocates, standing as the clean receiver.
+ *
+ * @param tree - Root handle supplied by foreign parser-like API.
+ *
+ * @returns children lifted out of the foreign tree.
+ */
+export function filterMappedForeignFixtureTree(
+  owned: readonly ForeignFixtureChild[],
+  tree: ForeignBorrowed<ForeignFixtureTree>,
+): readonly ForeignFixtureChild[] {
+  return owned
+    .map(function liftForeignFixtureChild(child,) {
+      return tree.children[0] ?? child;
+    },)
+    .slice();
+}
+
+/**
  * Reads first foreign descendant reached through synchronous iteration.
  *
  * @param tree - Root handle supplied by foreign parser-like API.
