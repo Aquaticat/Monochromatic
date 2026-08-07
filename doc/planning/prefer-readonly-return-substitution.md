@@ -12316,3 +12316,29 @@ the thing being measured,
  and the fix each time was a control:
  a program known to move when
 the code moves.
+
+### The containment guard is masked, not merely untested
+
+Retried under all three conditions the positive control established:
+ unexported,
+ with an
+in-file caller,
+ through the unit suite.
+Neutralising it changes nothing,
+ and the reason is in `effect-result-escape.ts` rather than
+in the discharge.
+
+A reference inside a nested callable is treated as escaping by that test outright,
+ on the
+stated ground that a captured use outlives its reasoning about statement order.
+So a parameter reached from inside `inner` is charged whether or not the discharge refuses,
+and the containment guard cannot be the deciding step for any program of that shape.
+
+That puts it with the relation guard,
+ the unresolved-base guard and the cycle guard:
+ three
+of the five remaining are masked or unreachable rather than waiting for a better program.
+Only the wrapper guard is untested in the ordinary sense,
+ and it looks masked too,
+ since the
+requirement it protects is itself masked.
