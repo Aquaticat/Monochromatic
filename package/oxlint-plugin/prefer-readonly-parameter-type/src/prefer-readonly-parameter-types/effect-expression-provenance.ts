@@ -107,7 +107,7 @@ const RIGHT_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
  * A sentinel rather than `undefined`, since this repo models absence without nullish
  * unions.
  */
-const NOTHING_WRAPPED: unique symbol = Symbol(
+export const NOTHING_WRAPPED: unique symbol = Symbol(
   'expression passes through no operand value',
 );
 
@@ -132,7 +132,7 @@ const NOTHING_WRAPPED: unique symbol = Symbol(
  * transparentOperand({ node });
  * ```
  */
-function transparentOperand(
+export function transparentOperand(
   { node, }: { readonly node: Node; },
 ): Node | typeof NOTHING_WRAPPED {
   /**

@@ -29,7 +29,12 @@ import {
   bindingIsReassignable,
   NO_BINDING_INITIALIZER,
 } from './effect-binding-initializer.ts';
+import { bindingAssignedWithin, } from './effect-binding-assignment.ts';
 import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
+import {
+  NOTHING_WRAPPED,
+  transparentOperand,
+} from './effect-expression-provenance.ts';
 import { expressionContainsForeignBorrowed, } from './foreign-borrowed-classifier.ts';
 import {
   memberCallReceiver,
@@ -267,9 +272,30 @@ export function returnedResultDischargeable({
    * Expressions already descended through, so an alias cycle cannot spin this.
    */
   const visited = new Set<Node>();
-  while ((base.current !== NO_MEMBER_RECEIVER)
-    && (!visited.has(base.current,))) {
+  while (base.current !== NO_MEMBER_RECEIVER) {
+    /* A repeat ends the walk by refusing it rather than by falling out of it. Reaching a
+     * node twice means the descent produced no base, and a walk proving absence has to read
+     * "no answer" as "not proven": ending the loop and classifying whatever the cursor last
+     * held would report a cycle clean. Ending it at all is still required, since nothing
+     * else bounds the alias hops. */
+    if (visited.has(base.current,))
+      return false;
     visited.add(base.current,);
+    /* Runtime-transparent wrappers are stripped before any structural test, because every
+     * test below asks what kind of expression this is and a wrapper answers for itself.
+     * `(owned.map(lift,) as Row[]).slice(0,)` is an assertion rather than a call, so the
+     * relation requirement never ran and the walk stopped at the wrapper and classified it,
+     * which is the same provenance hole that requirement closes wearing a cast. `as`,
+     * parentheses, `!` and `satisfies` all do it. Shared with the provenance walk rather
+     * than restated, so the two cannot disagree about which forms erase. */
+    /**
+     * Inner expression, when this base is a wrapper whose value is exactly its operand's.
+     */
+    const unwrapped = transparentOperand({ node: base.current, },);
+    if (unwrapped !== NOTHING_WRAPPED) {
+      base.current = unwrapped;
+      continue;
+    }
     if (isCallExpression(base.current,)) {
       /* Descended only where a verified relation says the result is the receiver's own
        * state. Following every member call syntactically assumes what the relation exists
@@ -329,6 +355,19 @@ export function returnedResultDischargeable({
    * one, which is the guarded failure exactly. `returnsSliceOfOpaqueCallResult` is the
    * program, and it is offered read-only without this. */
   if (base.current === NO_MEMBER_RECEIVER)
+    return false;
+  /* The endpoint has to still hold what its declaration says, and a declaration cannot
+   * answer that for a parameter. `bindingIsReassignable` settles a `let` because the
+   * declaration carries the answer; a parameter is declared once and may be pointed
+   * elsewhere by any statement. The ownership marker does not prevent it, since
+   * `ForeignBorrowed<Value>` intersects an optional property and so assigns to a plain
+   * `Value` with no error, which makes `owned = foreign;` legal and leaves the classifier
+   * reading a declared type the binding no longer holds. */
+  if (bindingAssignedWithin({
+    project,
+    body,
+    node: base.current,
+  },))
     return false;
   if (expressionContainsForeignBorrowed({
     project,

@@ -136,6 +136,12 @@ export function writesThroughReturnedContainer(rows: readonly Labelled[],): void
  * claim: the position test accepts a `ReturnStatement` wherever it appears, so the callable
  * it belongs to has to be checked separately.
  *
+ * Measured 2026-08-07, and the measurement corrects what this comment first said. Removing the
+ * containment check leaves this program's diagnostics byte-identical, so it pins the shape and
+ * does not isolate that check. `rows` is charged here either way, by a path that does not
+ * depend on the discharge. No program was found that isolates it, which makes the check
+ * defence in depth rather than a fix with a failing case behind it.
+ *
  * @param rows - Rows the returned callable hands back.
  *
  * @returns callable handing back a fresh container of the caller's own rows.

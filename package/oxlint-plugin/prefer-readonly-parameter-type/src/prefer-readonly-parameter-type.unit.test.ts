@@ -155,41 +155,24 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
-      /* Sixteen to twenty when the returned-result discharge grew its two ownership guards,
-       * and four of the twenty are the pair of programs those guards exist for. Each
-       * contributes one report naming every parameter it charges plus an offer for its
-       * observer's `child`, which is offerable in both and unrelated to what they pin.
-       *
-       * `filterReassignedForeignFixtureTree` holds the foreign tree's children in a `let`
-       * first bound to this fixture's own array. The discharge followed a name to its
-       * declaration initializer, a hop borrowed from a walk that uses it to add origins,
-       * where ignoring later assignment over-attributes and costs only precision. Proving a
-       * receiver is *not* foreign-owned reads that property backwards, and this program
-       * answers clean twice over: the initializer names the owned array, and the name
-       * carries the type that array gave it. Only refusing a reassignable binding outright
-       * reports it.
-       *
-       * `filterMappedForeignFixtureTree` returns `owned.map(lift,).slice()`, where every
-       * element came from the observer and none from the receiver. The descent read syntax
-       * where it needed provenance, reaching `owned` and finding it clean while the elements
-       * are the foreign tree's. `map` carries no receiver relation for exactly that reason,
-       * so requiring one is the test the descent was missing. */
-      expect(diagnostics.length,).toBe(20,);
+      /* Back to sixteen. Four programs were added here for the returned-result discharge's
+       * ownership guards and all four were removed again, because each was charged through
+       * the foreign-borrowed opaque boundary and never reached the discharge at all: removing
+       * every guard left their diagnostics byte-identical. A fixture that answers the same
+       * with and without the code it was written for tests that code not at all, and keeping
+       * it would have recorded a passing count as evidence of a guard it never exercised. */
+      expect(diagnostics.length,).toBe(16,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
       expect(messages.some(function catalogRemediationRemoved(message,): boolean {
         return message.includes('audited-call catalogue',);
       },),).toBe(false,);
-      /* Twelve findings still say a contract cannot discharge an unresolved implementation,
-       * and two of them say it in the collection message's words instead. Both sentences are
+      /* Nine findings still say a contract cannot discharge an unresolved implementation, and
+       * two of them say it in the collection message's words instead. Both sentences are
        * counted, because the claim this pins is that no finding offers a contract as a way
        * out, not which of the two texts carries it. Splitting the count would let a finding
-       * lose the claim entirely by moving between messages.
-       *
-       * Nine to eleven with the two ownership-guard programs, whose reports each carry the
-       * claim: a guard that restores a report must restore one saying the same thing as the
-       * reports beside it, or it has traded a wrong discharge for a wrong remediation. */
+       * lose the claim entirely by moving between messages. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
@@ -197,7 +180,7 @@ children: [
           || message.includes(
             'ForeignHostCapability does not apply here.',
           );
-      },).length,).toBe(11,);
+      },).length,).toBe(9,);
     },
   },),
   it({
@@ -591,10 +574,11 @@ children: [
        * Those callers substitute for a result that is a callable rather than a container, so
        * none of them accounts for a write through what the inner one returns.
        *
-       * Without that check the position test accepted a `ReturnStatement` wherever it was
-       * written, so this program discharged on another callable's callers. The offer count
-       * is unchanged by it, which is the part that matters: the three accepted offers are
-       * all returned from the function whose callers were counted. */
+       * Measured 2026-08-07, correcting what this comment first claimed. Removing the
+       * containment check leaves this program's diagnostics byte-identical: `rows` is charged
+       * either way, by a path that never consults the discharge. So it pins the shape and
+       * does not isolate the check, and no program was found that does. The check stays as
+       * defence in depth, and this count records a report rather than a prevented offer. */
       expect(messages.length,).toBe(17,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
