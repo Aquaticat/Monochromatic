@@ -10,6 +10,13 @@ extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build the node bundle, then drive it with a Stop payload per release condition"
+run = ["mise run build", "mise run test:unit"]
+
 [tasks.build]
 extends = "build"
 

@@ -808,6 +808,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
