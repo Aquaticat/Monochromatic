@@ -1406,6 +1406,23 @@ Checked before landing:
 `mutated=[0]`,
  while a result stored to an outer binding and a returned element both stay opaque.
 
+Measured across the workspace:
+ 2916 errors to 2908,
+ 1578 rule findings to 1570,
+ eight cleared.
+ The
+read-only offer set is byte-identical either side,
+ not merely the same size:
+ no offer appeared,
+ none
+disappeared,
+ and none moved.
+ That is the number this change had to be judged on,
+ because it removes
+reports rather than adding them and `pop` and `shift` carry the same relation while also mutating.
+ Stale
+`@mutates` findings held at 14 and warnings at 3902.
+
 ### The design: an observer that hands its element back
 
 `map` returning the receiver's own objects is not a gap and should not be closed.
