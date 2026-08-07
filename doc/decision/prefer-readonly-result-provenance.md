@@ -545,6 +545,49 @@ and semantic failures at 0.
    16 `get`:
    collection members carrying a relation whose result escapes the callable.
 
+### `reduce` can carry the observer-return relation, but not unconditionally
+
+Attempted and reverted 2026-08-07,
+ with a specification fact that decides it.
+
+The reasoning is attractive:
+ `reduce` hands back the accumulator,
+ the accumulator is what the observer
+returned,
+ so `RESULT_RELATION_OBSERVER_RETURN` describes it exactly as it describes `map`.
+ The identity
+probe passes,
+ once taught that a member returning one observer result satisfies the relation by identity
+where a member returning a container satisfies it by membership.
+
+It is false for the form without an initial value.
+ `Array.prototype.reduce` called with only a callback
+takes the receiver's first element as the accumulator and never calls the callback for it,
+ so over a
+one-element receiver the result *is* a receiver element that never passed through the observer.
+ An entry
+claiming observer-derived provenance for that is claiming something the specification contradicts.
+
+The probe did not catch this,
+ and the reason is worth more than the entry.
+ The seed argument was added
+because a fold over a single-element receiver otherwise returns that element without calling the
+observer,
+ and the probe then compared the sentinel against the marker and failed.
+ Supplying a seed made
+the probe pass by removing the case that falsifies the claim.
+ A probe whose arguments are chosen to make
+its assertion true measures the arguments rather than the member.
+
+So the honest form is conditional on an initial value being supplied,
+ which is an argument-count fact
+about the call rather than a fact about the member,
+ and the table is keyed by member.
+ That is the same
+shape `join` needed and would need its own consumer-side condition;
+ it is a separate increment rather than
+an entry.
+
 No provably inert group remains,
  checked rather than assumed:
  `includes`,
