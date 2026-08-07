@@ -15,8 +15,48 @@ import {
 import {
   type IssueProbeReading,
   probeFlaggedIssue,
+  type ScreenedDefectClaim,
   scoreProbeAgainstGrades,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Builds upheld claims, one per DISTINCT prober.
+ *
+ * The majority rule counts probers, so a region's corroborated COUNT has to be
+ * backed by claims carrying that many distinct model ids. A fixture pairing a
+ * count with an empty claim list describes a state the screen cannot emit and
+ * reads as nobody having corroborated anything.
+ *
+ * @param count - claims to build, each from its own prober
+ *
+ * @returns Claims carrying distinct model ids
+ *
+ * @example
+ * ```ts
+ * const claims = catClaims({ count: 3, },);
+ * ```
+ */
+function catClaims(
+  { count, }: { readonly count: number; },
+): readonly ScreenedDefectClaim[] {
+  return Array.from(
+    { length: count, },
+    function toClaim(
+      _unused,
+      index,
+    ) {
+      return {
+        modelId: `cat/prober-${String(index,)}`,
+        category: 'meaning',
+        severity: 'major',
+        evidence: 'the cat naps',
+        omittedText: '',
+        reason: 'the cat did not nap before',
+        admissibility: 'corroborated',
+      } as ScreenedDefectClaim;
+    },
+  );
+}
 
 /**
  * Builds a probe reading whose single region carries the given corroboration.
@@ -54,7 +94,7 @@ function catReading(
         unanchored: 0,
         noneFound: configuredProbers - corroborated,
         uncertain: 0,
-        claims: [],
+        claims: catClaims({ count: corroborated, },),
       },
     ],
   };
@@ -82,7 +122,7 @@ await describe({
               unanchored: 0,
               noneFound: 0,
               uncertain: 0,
-              claims: [],
+              claims: catClaims({ count: 3, },),
             },
           ],
         };

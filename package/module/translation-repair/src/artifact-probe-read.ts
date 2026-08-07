@@ -1,10 +1,14 @@
 import {
+  ArtifactParseError,
   requireArray,
   requireCount,
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
-import type { RegionDefectTally, } from './introduced-defect-screen.ts';
+import type {
+  ClaimAdmissibility,
+  RegionDefectTally,
+} from './introduced-defect-screen.ts';
 import type { IssueProbeReading, } from './repair-record.ts';
 
 //region Artifact probe reading
@@ -28,6 +32,68 @@ import type { IssueProbeReading, } from './repair-record.ts';
  * Disposition whose repair reached the reader, and the only one graded.
  */
 const SHIPPED_DISPOSITION = 'shipped';
+
+/**
+ * Every admissibility the screen can record.
+ */
+const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
+  'corroborated',
+  'removal-corroborated',
+  'contradicted',
+  'unanchored',
+];
+
+/**
+ * Reads a claim's admissibility, refusing a value the screen cannot have
+ * written.
+ *
+ * Narrowing rather than asserting, because the majority rule counts only the
+ * two upheld values. An unrecognized string would be silently non-upholding, so
+ * a writer emitting a new verdict name would quietly zero the corroboration
+ * every region reports rather than announce that the schemas diverged.
+ *
+ * @param value - candidate admissibility from artifact JSON
+ *
+ * @param path - dotted path for error messages
+ *
+ * @returns Admissibility as the screen recorded it
+ *
+ * @throws {@link ArtifactParseError} when the value is not one the screen emits
+ *
+ * @example
+ * ```ts
+ * const admissibility = requireAdmissibility({ value, path, },);
+ * ```
+ */
+function requireAdmissibility(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): ClaimAdmissibility {
+  /**
+   * Candidate as a string, which it must be before it can be one of the set.
+   */
+  const text = requireString({
+    value,
+    path,
+  },);
+  /**
+   * Matching admissibility, absent when the writer emitted something else.
+   */
+  const found = ADMISSIBILITY_VALUES.find(function matches(candidate,) {
+    return candidate === text;
+  },);
+  if (found === undefined)
+    throw new ArtifactParseError({
+      path,
+      reason: `one of ${ADMISSIBILITY_VALUES.join(', ',)}`,
+    },);
+  return found;
+}
 
 /**
  * One probe reading together with the issue that owns it.
@@ -163,9 +229,46 @@ function parseRegionTally(
     unanchored: countAt('unanchored',),
     noneFound: countAt('noneFound',),
     uncertain: countAt('uncertain',),
-    // Claims carry corpus quotes and nothing in the summary reads them, so they
-    // are deliberately dropped here rather than parsed and carried around.
-    claims: [],
+    // Claim IDENTITY only. The majority rule counts distinct probers, so the
+    // verdict cannot be computed without modelId and admissibility, and reading
+    // the counts alone silently judged every region as uncorroborated.
+    //
+    // The quote fields stay empty on purpose, which is the original reason this
+    // list was dropped whole: `evidence`, `omittedText`, and `reason` carry
+    // UNLICENSED corpus text, this reader feeds a summary that is meant to be
+    // pasteable into a verdict, and nothing downstream of here reads them.
+    // Parsing who said what is not the same as parsing what they quoted.
+    claims: requireArray({
+      value: tally.claims,
+      path: `${path}.claims`,
+    },)
+      .map(function toClaim(
+        entry,
+        index,
+      ) {
+        /**
+         * Claim as a record.
+         */
+        const claim = requireRecord({
+          value: entry,
+          path: `${path}.claims[${String(index,)}]`,
+        },);
+        return {
+          modelId: requireString({
+            value: claim.modelId,
+            path: `${path}.claims[${String(index,)}].modelId`,
+          },),
+          admissibility: requireAdmissibility({
+            value: claim.admissibility,
+            path: `${path}.claims[${String(index,)}].admissibility`,
+          },),
+          category: '',
+          severity: '',
+          evidence: '',
+          omittedText: '',
+          reason: '',
+        };
+      },),
   };
 }
 

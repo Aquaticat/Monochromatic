@@ -44,6 +44,7 @@ export {
 } from './probe-agreement.ts';
 export {
   corroboratedCount,
+  corroboratingProberCount,
   judgeRegionProbe,
   type ProbeTelemetrySummary,
   type RegionProbeVerdict,

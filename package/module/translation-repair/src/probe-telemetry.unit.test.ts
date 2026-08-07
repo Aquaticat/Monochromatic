@@ -14,11 +14,65 @@ import {
 
 import {
   corroboratedCount,
+  corroboratingProberCount,
   type IssueProbeReading,
   judgeRegionProbe,
   type RegionDefectTally,
+  type ScreenedDefectClaim,
   summarizeProbeTelemetry,
 } from '../dist/final/node/index.mjs';
+
+/**
+ * Builds upheld claims, one per DISTINCT prober.
+ *
+ * This mirrors what the run actually produces: measured across the 210 distinct
+ * regions settled so far, no prober ever filed more than one upheld claim on
+ * one region. Fixtures that pair a count with an empty claim list describe a
+ * state the screen cannot emit, and they hid the units defect for as long as
+ * they existed.
+ *
+ * @param count - claims to build
+ *
+ * @param admissibility - what the screen made of each quote
+ *
+ * @param prefix - distinguishes one call's probers from another's
+ *
+ * @returns Claims carrying distinct model ids
+ *
+ * @example
+ * ```ts
+ * const claims = catClaims({ count: 2, admissibility: 'corroborated', prefix: 'add', },);
+ * ```
+ */
+function catClaims(
+  {
+    count,
+    admissibility,
+    prefix,
+  }: {
+    readonly count: number;
+    readonly admissibility: string;
+    readonly prefix: string;
+  },
+): readonly ScreenedDefectClaim[] {
+  return Array.from(
+    { length: count, },
+    function toClaim(
+      _unused,
+      index,
+    ) {
+      return {
+        modelId: `cat/${prefix}-prober-${String(index,)}`,
+        category: 'meaning',
+        severity: 'major',
+        evidence: 'the cat naps',
+        omittedText: '',
+        reason: 'the cat did not nap before',
+        admissibility,
+      } as ScreenedDefectClaim;
+    },
+  );
+}
 
 /**
  * Builds one region tally with the counts under test and zeros elsewhere.
@@ -30,6 +84,9 @@ import {
  * @param removalCorroborated - upheld claims of dropped content
  *
  * @param contradicted - claims the screen refuted
+ *
+ * @param claims - overrides the generated claim list, for cases about who
+ * filed what rather than how many were filed
  *
  * @returns Tally the summary reads
  *
@@ -44,11 +101,13 @@ function catTally(
     corroborated = 0,
     removalCorroborated = 0,
     contradicted = 0,
+    claims,
   }: {
     readonly envelopeId: string;
     readonly corroborated?: number;
     readonly removalCorroborated?: number;
     readonly contradicted?: number;
+    readonly claims?: readonly ScreenedDefectClaim[];
   },
 ): RegionDefectTally {
   return {
@@ -60,7 +119,23 @@ function catTally(
     unanchored: 0,
     noneFound: 0,
     uncertain: 0,
-    claims: [],
+    claims: claims ?? [
+      ...catClaims({
+        count: corroborated,
+        admissibility: 'corroborated',
+        prefix: 'add',
+      },),
+      ...catClaims({
+        count: removalCorroborated,
+        admissibility: 'removal-corroborated',
+        prefix: 'drop',
+      },),
+      ...catClaims({
+        count: contradicted,
+        admissibility: 'contradicted',
+        prefix: 'refuted',
+      },),
+    ],
   };
 }
 
@@ -101,6 +176,61 @@ await describe({
               envelopeId: 'envelope/nap',
               corroborated: 1,
               removalCorroborated: 1,
+            },),
+            configuredProbers: 3,
+          },),
+        ).toBe('majority-introduced',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES to let one prober filing twice carry a roster. Counting '
+        + 'claims against a roster size compares claims with voices, and the '
+        + 'same tally already counts probers on its other side, so two upheld '
+        + 'claims from one model would have read as a majority of three and a '
+        + 'gate would have discarded that repair on one opinion',
+      fn: async () => {
+        /**
+         * Two upheld claims, both from the same prober.
+         */
+        const tally = catTally({
+          envelopeId: 'envelope/nap',
+          corroborated: 2,
+          claims: [
+            ...catClaims({
+              count: 1,
+              admissibility: 'corroborated',
+              prefix: 'lone',
+            },),
+            ...catClaims({
+              count: 1,
+              admissibility: 'corroborated',
+              prefix: 'lone',
+            },),
+          ],
+        },);
+
+        expect(corroboratedCount({ tally, },),).toBe(2,);
+        expect(corroboratingProberCount({ tally, },),).toBe(1,);
+        expect(
+          judgeRegionProbe({
+            tally,
+            configuredProbers: 3,
+          },),
+        ).toBe('minority-introduced',);
+      },
+    },),
+
+    it({
+      name: 'still reaches a majority when the SAME number of upheld claims '
+        + 'comes from different probers, so the stricter numerator narrows the '
+        + 'rule to independent voices rather than weakening it',
+      fn: async () => {
+        expect(
+          judgeRegionProbe({
+            tally: catTally({
+              envelopeId: 'envelope/nap',
+              corroborated: 2,
             },),
             configuredProbers: 3,
           },),

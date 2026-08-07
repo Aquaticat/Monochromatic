@@ -111,6 +111,53 @@ export function corroboratedCount(
 }
 
 /**
+ * Admissibility values that uphold a claim that the edit caused damage.
+ */
+const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
+  'corroborated',
+  'removal-corroborated',
+],);
+
+/**
+ * Counts the distinct PROBERS with at least one upheld claim on a region.
+ *
+ * The majority rule weighs voices against a roster size, so its numerator has
+ * to be voices too. {@link corroboratedCount} counts CLAIMS, and one prober may
+ * file several on a single region, so a three-model roster could reach a
+ * "majority" on one prober filing twice. The other half of the same tally
+ * already counts probers rather than claims, since `noneFound` and `uncertain`
+ * are per-prober, which is what makes the mixed units a defect rather than a
+ * deliberate choice.
+ *
+ * Measured before changing, across the 210 distinct regions settled at the
+ * time: no prober had ever filed more than one upheld claim on one region, so
+ * this agrees with the claim count on every region measured so far and revises
+ * no figure already reported. It removes the case that would have inflated one.
+ *
+ * @param tally - screened tally of one region, whose claims carry `modelId`
+ *
+ * @returns Distinct probers upholding damage on this region
+ *
+ * @example
+ * ```ts
+ * const voices = corroboratingProberCount({ tally, },);
+ * ```
+ */
+export function corroboratingProberCount(
+  { tally, }: { readonly tally: RegionDefectTally; },
+): number {
+  return new Set(
+    tally.claims
+      .filter(function upholds(claim,) {
+        return UPHELD_ADMISSIBILITY.has(claim.admissibility,);
+      },)
+      .map(function toProber(claim,) {
+        return claim.modelId;
+      },),
+  ).size;
+}
+
+/**
  * Applies the majority rule to one region.
  *
  * The denominator is the CONFIGURED roster, never the heard one. Under
@@ -118,6 +165,10 @@ export function corroboratedCount(
  * a majority of THOSE would let two probers speak for six. Unheard voices count
  * as non-confirming, which is the conservative direction for a probe whose
  * false positives discard correct repairs.
+ *
+ * The numerator counts PROBERS, not claims, so both sides of the comparison are
+ * voices. See {@link corroboratingProberCount} for why the claim count cannot
+ * play that role.
  *
  * @param tally - screened tally of one region
  *
@@ -140,9 +191,9 @@ export function judgeRegionProbe(
   },
 ): RegionProbeVerdict {
   /**
-   * Corroborated claims on this region.
+   * Distinct probers upholding damage on this region.
    */
-  const upheld = corroboratedCount({ tally, },);
+  const upheld = corroboratingProberCount({ tally, },);
   if (upheld === 0)
     return 'none-introduced';
   return ((upheld * 2) > configuredProbers)
