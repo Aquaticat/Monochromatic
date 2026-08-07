@@ -11593,3 +11593,79 @@ So the next attempt is the two predicates,
  that exclusion,
  and then a
 justified update of two counts and one pin rather than a bare renumbering.
+
+### The discharge reduced to one question, 2026-08-07
+
+Built again against the enumerated blast radius,
+ and every mechanical objection to it is now
+answered.
+What is left is a design question that no measurement settles.
+
+Three conditions,
+ and each was found by measuring rather than designed:
+
+- the call must be returned outright;
+- the base of its receiver chain must not be foreign-borrowed,
+ descending through composed
+member calls **and** through declaration initializers,
+ because
+`filterAliasedForeignFixtureTree` binds its copy first and stayed silenced when only calls
+were descended;
+- its callers must be enumerable,
+ all resolvable,
+ and **non-empty**.
+
+The last is the one worth keeping.
+`every` over an empty enumeration is true,
+ so a callable with no caller in the program
+discharged vacuously,
+ and a callable with no caller in the program is exactly the one whose
+callers cannot be seen:
+ an exported `returnedLookupEffect` handing back a `Set` its caller
+owns has consumers no enumeration in this repository reaches.
+Requiring a caller means the discharge rests on substitution that demonstrably happens rather
+than on absence of evidence.
+
+With all three,
+ the reach is two diagnostics.
+`writesThroughReturnedContainer` and `writesThroughComposedContainer` go quiet and both keep
+`referentMutated=[0]`,
+ which is the trade this document asked for.
+The pinned effect list and the catalog-free fixture are byte-identical to baseline.
+
+#### What blocks it
+
+Three read-only offers appear,
+ all naming `rows` on the callables that return caller
+elements.
+Offers appearing is this rule's guarded failure,
+ and
+`prefer-readonly-parameter-type.unit.test.ts` asserts that none do.
+
+Its comment anticipated them:
+ "No lookup receiver is offered read-only yet,
+ not even
+`readOnlyLookupEffect`'s,
+ which only reads:
+ that awaits the discharge,
+ not the attribution."
+Foreseen,
+ and never decided.
+
+The question is whether a callable that returns caller-owned state may have its parameter
+offered deeply read-only.
+It writes nothing itself,
+ so the offer is true of its own body.
+But the effect of taking the offer is to make what it returns deeply read-only,
+ which is
+exactly how a caller is stopped from writing through the value it hands back.
+
+Answer yes and the three offers are correct and this lands.
+Answer no and the escape charge has to survive for any callable whose result carries receiver
+elements,
+ which makes this task unlandable as conceived and it should be closed rather than
+deferred again.
+
+The module is kept in the scratch notes on the task,
+ finished,
+ pending that answer.
