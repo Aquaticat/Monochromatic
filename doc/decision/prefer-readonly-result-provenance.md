@@ -1278,10 +1278,8 @@ does not blind the rule to a writing observer.
  while a
 read through them stays clean.
 
-`toReversed` stays out.
- Nothing here changes the reason recorded for it,
- and it is not what the findings
-named.
+`toReversed` joined it on 2026-08-07,
+ and the entry that admitted it is described below.
 
 ### What it did, measured, and why most of the findings stayed
 
@@ -1342,6 +1340,72 @@ looking obviously safe.
  The
 numbering there is internal to that line of work rather than GitHub issues,
  checked rather than assumed.
+
+## toReversed joins them, and the reason it was held expired
+
+Its exclusion recorded a timing condition rather than a property:
+ uniform,
+ likely to qualify,
+ held back
+only to keep the first container increment to members whose probe shape was already proven.
+ `filter` and
+`slice` proved that shape and `toSorted` repeated it,
+ so leaving the entry out would have kept an exclusion
+standing on a reason that no longer held.
+ Every other name in the set stays,
+ and none of them is held for a
+timing reason.
+
+Probed like the others:
+ a discarded or read result no longer makes the receiver opaque,
+ a write through
+the reversed result reports `mutated=[0]` exactly as the sorted and sliced equivalents do,
+ and a returned
+container still fails closed alongside them.
+
+Workspace either side:
+ 2907 errors to 2906,
+ 1569 rule findings to 1568,
+ read-only offers byte-identical
+at 34.
+
+### Three findings went and two arrived, and the two are consistency rather than regression
+
+Worth recording because the net of one hides it.
+ Three findings cleared in `package/git-policy/cli`,
+ and
+two appeared in `package/pi-plugin/goal/src/review-contract.ts`,
+ both naming
+`chunks.toReversed().reduce`.
+
+The reducer there accumulates into an object holding the chunks it folds,
+ so the result carries the
+receiver's elements onward.
+ Reduced to one variable and measured:
+
+- `chunks.reduce(accumulatingFold,)` is clean.
+- `chunks.slice(0,).reduce(accumulatingFold,)` is `opaque=[0]`.
+- `chunks.toReversed().reduce(accumulatingFold,)` is `opaque=[0]`.
+
+`slice` has carried the container relation since long before this entry,
+ and produces the identical result
+on the identical shape.
+ So the two new findings are `toReversed` behaving like its established siblings,
+and its previous silence was the anomaly:
+ with no relation recorded,
+ the reversed copy read as unrelated to
+its receiver and the chain was invisible.
+
+The odd member of that trio is the direct call.
+ A `reduce` reached through a container relation reports while
+the same `reduce` on the receiver itself does not,
+ which is an asymmetry of the same kind as `find` against
+`at` and predates this entry,
+ as `slice` demonstrates on its own.
+ Recorded here rather than acted on:
+ it is
+a separate question,
+ and nothing in this entry decided it.
 
 ## Observer members whose result carries objects, resolved into one gap and one design
 
