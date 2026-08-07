@@ -11166,3 +11166,106 @@ so it earns the same treatment as the discharge this document owns:
  evidence that nothing
 unattributed escapes,
  before anything is withdrawn.
+
+### The observer receiver landed, 2026-08-07
+
+Instrumenting the gate settled the mechanism the entry above could only narrow.
+Printing every arm for both forms of the same fold showed one difference and no others:
+
+```text
+chunks.reduce(fold, seed,)           observerDerived=true    clean
+chunks.slice(0,).reduce(fold, seed,) observerDerived=false   opaque
+```
+
+Everything else matched:
+ `exposes` true both times,
+ container and value arms false both times,
+the aliasing fallback false both times,
+ element types `string` both times,
+ result type
+identical.
+So `resultAliasesReceiverState` was not answering after all,
+ which the entry above had reasoned
+its way to;
+ the first arm was firing because no arm was true.
+
+The refusal turned out to be deliberate and documented rather than missing.
+`callResultComesFromObserver` refuses a fold whose receiver is itself a call,
+ because the
+elements folded may have come from a call this analysis cannot see into,
+ and
+`Object.entries(root,).reduce(fold, seed,)` is the case recorded on it.
+
+Blunt rather than wrong.
+It refused every call receiver,
+ including one carrying a verified element relation,
+ which
+says exactly what it holds:
+ its own receiver's elements.
+A fold on that sees what a fold on the named receiver sees.
+Narrowed to receivers whose elements are genuinely unknown,
+ `Object.entries` and
+`Object.values` stay refused and the chained form agrees with the direct one.
+
+Not a discharge,
+ which matters for how much evidence it needs.
+Making the observer arm true routes the fold to the handling the named-receiver form already
+gets,
+ where `propagateElementApplications` marks the receiver opaque when the observer hands
+an element back.
+An earlier note on this thread claimed it needed the escape-sufficiency evidence the return
+discharge needs.
+It does not,
+ and the two are not coupled.
+
+#### What it measured
+
+Workspace either side:
+ 2908 errors to 2906,
+ 1570 rule findings to 1568,
+ warnings unchanged
+at 3902,
+ and the read-only offer set byte-identical at 34,
+ none appearing,
+ moving or
+withdrawing.
+Wall time 10m35s.
+
+The offer set was the gate rather than a formality here.
+Every increment before this one added charges;
+ this one removes them,
+ so an offer appearing
+was possible for the first time.
+None did.
+
+Four findings cleared and two returned at the same two locations with fewer calls named,
+ so
+two cleared outright.
+Both check out:
+
+- `retainNewest` in `package/pi-plugin/goal/src/review-contract.ts` folds `readonly string[]`
+into an accumulator holding `readonly string[]`.
+ Elements and accumulator are primitive
+throughout,
+ so no caller-owned object is reachable and the opacity described nothing.
+- The second is its caller,
+ inheriting the same opacity transitively.
+
+#### The prediction that was wrong
+
+This thread expected `package/module/toml-edit/src/value-materialize.ts` to clear,
+ and it did
+not.
+That expectation was wrong rather than unfulfilled.
+Its accumulator is
+`{ readonly cursor: Record<string, unknown>; readonly frames: readonly DescentFrame[] }`,
+ a
+cursor descending into caller-owned state,
+ and the observer carries `@mutates acc` because
+`Object.hasOwn` can reach proxy descriptor hooks through it.
+That fold really does carry caller state,
+ so its receiver stays opaque and should.
+
+Which is the reassuring half of the measurement.
+The narrowing cleared folds over primitives and left the fold that touches caller state alone,
+without either outcome being asked for by name.
