@@ -12023,3 +12023,43 @@ Extending the discharge to readers is therefore a separate piece of work needing
 argument-chain descent and element attribution on that path,
  not a third call added to the
 existing helper.
+
+### Which part of the shared ascent is asserted rather than measured
+
+Moving the ascent into `effect-enclosing-callable.ts` changed one answer in
+`resultEscapesCallable`,
+ and it is worth naming because it is the least-verified thing in the
+change.
+
+The old `enclosedByNestedCallable` answered false when the walk ran off the root,
+ meaning
+"not nested",
+ which lets the escape scan continue.
+The shared form answers "not written directly in this body",
+ which that caller reads as
+nested,
+ so the reference is treated as escaping.
+Permissive to conservative,
+ which is the safe direction for a charge,
+ but still a changed
+answer on a hot predicate.
+
+The argument that no caller can observe it is the claim the replaced comment made:
+ "every
+caller passes a node inside `body`".
+That is an assertion inherited from the code being replaced,
+ not something proven here.
+
+The evidence that it is at least not observable in practice is the sweep:
+ 1557 findings and
+34 offers byte-identical across the whole workspace,
+ where a reachable difference in a
+predicate consulted for every result holder in every scanned callable would be unlikely to
+leave every verdict intact.
+That is strong for absence and is not proof,
+ since a reachable off-root walk could exist
+whose answer no final verdict depends on.
+
+Anyone changing this should know the inversion rests on those two things together and on no
+direct test,
+ because no fixture reaches the root.
