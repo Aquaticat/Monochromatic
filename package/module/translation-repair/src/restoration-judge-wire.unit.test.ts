@@ -17,7 +17,7 @@ import {
   buildRestorationJudgeMessages,
   isRestorationVerdict,
   RESTORATION_JUDGE_VERDICTS,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented zh source the judge anchors restoration against.

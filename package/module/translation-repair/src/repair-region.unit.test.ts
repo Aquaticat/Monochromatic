@@ -17,7 +17,7 @@ import {
   type EditableEnvelope,
   hashContent,
   type PatchOperation,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one envelope over the given base text and served issues.

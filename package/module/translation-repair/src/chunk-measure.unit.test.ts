@@ -20,7 +20,7 @@ import {
   measurePatchedCandidate,
   parseDocument,
   type PatchOperation,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one checker tally with the vote counts a majority of that shape would

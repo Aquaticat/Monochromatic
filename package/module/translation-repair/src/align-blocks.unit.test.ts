@@ -10,7 +10,7 @@ import {
   parseDocument,
   scorePairing,
   tokenize,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 //region Block alignment tests
 // The regression fixture reproduces the STRUCTURE read off the pinned corpus,

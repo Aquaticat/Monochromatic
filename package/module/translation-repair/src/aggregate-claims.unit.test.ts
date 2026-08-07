@@ -18,7 +18,7 @@ import {
   type IssueClaim,
   type IssueSeverity,
   type SpanAnchor,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented target-side quoted span at chosen offsets.

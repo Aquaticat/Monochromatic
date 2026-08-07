@@ -18,7 +18,7 @@ import {
   DERIVABILITY_RESPONSE_FORMAT,
   DERIVABILITY_VERDICTS,
   isDerivabilityVerdict,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented zh source the probe judges against.

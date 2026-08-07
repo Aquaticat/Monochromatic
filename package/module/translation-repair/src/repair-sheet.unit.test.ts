@@ -20,7 +20,7 @@ import {
   type GradableRepair,
   type GradingCandidate,
   UnmeasurableRepairError,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Replacement text no detection sheet may ever contain.

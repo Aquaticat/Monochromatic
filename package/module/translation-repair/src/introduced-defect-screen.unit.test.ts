@@ -18,7 +18,7 @@ import {
   type RepairRegion,
   screenEvidence,
   screenIntroducedDefects,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Region whose replacement fixed a tense error and, for the damage fixtures,

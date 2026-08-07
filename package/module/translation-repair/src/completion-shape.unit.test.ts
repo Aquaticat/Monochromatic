@@ -17,7 +17,7 @@ import {
   MalformedCompletionError,
   readUsage,
   SyntheticHttpError,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Character count of the body excerpt embedded in thrown HTTP errors,

@@ -26,7 +26,7 @@ import {
   nonTranslationVotesStand,
   screenNonTranslationVotes,
   sliceAnchorsTranslation,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one claim with chosen category and span side.

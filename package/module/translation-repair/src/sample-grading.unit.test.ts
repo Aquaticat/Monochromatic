@@ -16,7 +16,7 @@ import {
   MEDIUM_BAND_MAX_BYTES,
   type SizeBand,
   SMALL_BAND_MAX_BYTES,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds a grading candidate for the given entry and band; only the fields a

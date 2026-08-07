@@ -2,10 +2,11 @@
  * Tests for where a draw writes its outputs and, more importantly, when it
  * refuses to.
  *
- * Imports the module SOURCE rather than the built barrel, unlike every other
- * suite here. Nothing under `corpus-run/` is exported from any barrel, because
- * it is run-driving tooling rather than package API, and widening the public
- * surface to reach a test would be the wrong way round.
+ * Imports the built artifact like every other suite here. The guard is exported
+ * through `sheet-barrel.ts` and marked `@internal`: it is run-driving tooling
+ * rather than package API, but it is also the check standing between a routine
+ * redraw and hours of human grading, so it is worth testing as what ships
+ * rather than as what compiles.
  *
  * Fixtures are cat-themed invention mirroring corpus structure only.
  *
@@ -29,7 +30,7 @@ import {
   GradedSheetExistsError,
   resolveSheetPath,
   UnsafeSeedError,
-} from './sheet-path.ts';
+} from '../../dist/final/node/index.mjs';
 
 /**
  * Fresh throwaway directory standing in for a runs directory.

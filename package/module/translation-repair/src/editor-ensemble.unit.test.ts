@@ -29,7 +29,7 @@ import {
   pickFallbackPatch,
   producerModelIds,
   type SyntheticModelId,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Translation the envelopes are cut from.

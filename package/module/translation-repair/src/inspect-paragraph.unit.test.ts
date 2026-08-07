@@ -14,7 +14,7 @@ import {
   gateParagraphRewrite,
   inspectParagraph,
   scanTextAtoms,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Atom values of one paragraph, for order-sensitive assertions.

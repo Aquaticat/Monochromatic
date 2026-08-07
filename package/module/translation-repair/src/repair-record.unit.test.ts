@@ -17,7 +17,7 @@ import {
   buildIssueRecords,
   type ChunkRepairOutcome,
   type RepairRegion,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Slice text after the naturalness lane rewrote it.

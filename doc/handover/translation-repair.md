@@ -268,13 +268,14 @@ Closing verification: 85 unit suites pass, oxlint 0 warnings 0
 errors, lint:types exit 0.
 DIST-IMPORT ALIGNMENT COMPLETE (2026-07-23, user "Align it.",
 resolving the open question this section used to carry). Every unit
-test now imports package behavior from the built
-`dist/final/neutral/index.mjs` per the testing-practices skill;
-none import sibling source anymore. Enablers: the package was
-scaffolded without its sibling one-liner `rolldown.browser.config.ts`
-so no dist bundle could ever build (source-importing tests hid
-this); the config landed and the neutral bundle plus `.d.mts` now
-build. A pre-alignment audit proved every test-imported symbol
+test now imports package behavior from the built bundle per the
+testing-practices skill; none import sibling source anymore.
+Enablers: the package was scaffolded without its sibling one-liner
+rolldown config so no dist bundle could ever build (source-importing
+tests hid this); the config landed and the bundle plus `.d.mts` now
+build. SUPERSEDED 2026-08-06 (user "Please turn this pkg into `node`
+builds only."): the target moved from `neutral` to `node`, so the
+import path is now `dist/final/node/index.mjs`. A pre-alignment audit proved every test-imported symbol
 already public (the PKG surface pass had closed the last gaps).
 Mechanical codemod (scratchpad `dist-import-codemod.ts`) merged
 each file's relative imports into one dist import with inline type

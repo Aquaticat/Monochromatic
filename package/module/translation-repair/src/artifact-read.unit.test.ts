@@ -7,7 +7,7 @@ import {
 import {
   ArtifactParseError,
   parseSettledArtifact,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one issue record wrapper with the chosen fate and claim fields; extra

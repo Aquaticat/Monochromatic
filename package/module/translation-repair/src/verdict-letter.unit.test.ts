@@ -19,7 +19,7 @@ import {
   opensWithVerdict,
   trimLeadingDelimiters,
   VERDICT_DELIMITERS,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: opensWithVerdict.name,

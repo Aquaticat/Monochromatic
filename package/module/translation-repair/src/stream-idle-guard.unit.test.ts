@@ -10,7 +10,7 @@ import {
   STREAM_FIRST_BYTE_MS,
   STREAM_IDLE_MS,
   StreamStalledError,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 // Cat-themed invention throughout: no corpus text ever reaches a committed

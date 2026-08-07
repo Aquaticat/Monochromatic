@@ -13,7 +13,7 @@ import {
 import {
   parseQuotaSnapshot,
   QuotaShapeError,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Recorded-shaped body with invented numbers;

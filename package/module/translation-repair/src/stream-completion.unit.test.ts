@@ -12,7 +12,7 @@ import {
 import {
   extractStreamedCompletion,
   MalformedCompletionError,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: extractStreamedCompletion.name,

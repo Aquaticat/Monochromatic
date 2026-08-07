@@ -19,7 +19,7 @@ import {
   type ChunkPair,
   parseDocument,
   subdivideChunkPair,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Original with one section of three short paragraphs.

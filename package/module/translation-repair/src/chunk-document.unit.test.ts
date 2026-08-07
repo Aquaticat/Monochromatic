@@ -16,7 +16,7 @@ import {
   alignDocumentSections,
   chunkByHeadings,
   parseDocument,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Two-section fixture with front matter and a preamble paragraph.

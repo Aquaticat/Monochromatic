@@ -14,7 +14,7 @@ import {
   buildAdjudicationMessages,
   type ClaimCluster,
   hashContent,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Two clusters: a two-member group then a solo group,

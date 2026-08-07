@@ -26,7 +26,7 @@ import {
   SyntheticHttpError,
   type TransportExchange,
   type TransportReply,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Delay of the deliberately slow budget-test clients;

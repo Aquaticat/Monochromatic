@@ -18,7 +18,7 @@ import {
   hashContent,
   isResolutionVerdict,
   RESOLUTION_VERDICTS,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Accepted issue whose fix the checkers must confirm.

@@ -14,7 +14,7 @@ import {
 import {
   parseDocument,
   selectRefinableParagraphs,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Prose long enough to clear the minimum, on one physical line.

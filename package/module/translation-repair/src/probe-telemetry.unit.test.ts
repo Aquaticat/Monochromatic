@@ -17,7 +17,7 @@ import {
   judgeRegionProbe,
   type RegionDefectTally,
   summarizeProbeTelemetry,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one region tally with the counts under test and zeros elsewhere.

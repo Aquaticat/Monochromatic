@@ -12,7 +12,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { normalizePunctuation, } from '../dist/final/neutral/index.mjs';
+import { normalizePunctuation, } from '../dist/final/node/index.mjs';
 
 /**
  * Variant-to-canonical pairs the normalizer must collapse.

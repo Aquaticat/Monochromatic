@@ -18,7 +18,7 @@ import {
   isIntroducedDefectReportWire,
   isIntroducedDefectVerdict,
   type RepairRegion,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Accepted issue the fixture region was cut for.

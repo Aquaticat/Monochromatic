@@ -29,7 +29,7 @@ import {
   subdivideChunkPair,
   type SeededErrorSpec,
   SYNTHETIC_MODELS,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Clean fixture translation the seed deletes from.

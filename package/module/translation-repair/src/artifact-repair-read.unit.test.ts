@@ -15,7 +15,7 @@ import {
 import {
   ArtifactParseError,
   parseRecordRepair,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one issue record wrapper carrying repair provenance.

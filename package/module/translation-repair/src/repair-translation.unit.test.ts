@@ -19,7 +19,7 @@ import {
   type RepairModels,
   repairTranslation,
   type SyntheticClient,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Original document of the fixture pair.

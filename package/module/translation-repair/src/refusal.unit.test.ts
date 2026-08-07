@@ -12,7 +12,7 @@ import {
 import {
   detectRefusalShape,
   REFUSAL_SCAN_WINDOW,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: detectRefusalShape.name,

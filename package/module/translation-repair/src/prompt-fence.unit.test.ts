@@ -14,7 +14,7 @@ import {
 import {
   longestFenceRun,
   selectFence,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: longestFenceRun.name,

@@ -29,7 +29,7 @@ import {
   CorpusReadError,
   listCorpusPeople,
   readCorpusFile,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Real git binary for fixture setup and pinned reads;

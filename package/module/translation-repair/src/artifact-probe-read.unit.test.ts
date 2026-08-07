@@ -15,7 +15,7 @@ import {
 import {
   ArtifactParseError,
   readArtifactProbe,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one region tally as an artifact carries it.

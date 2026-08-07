@@ -15,7 +15,7 @@ import {
   type CriticAttemptRecord,
   isRetryableAttempt,
   isTruncatedAttempt,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Baseline schema-mismatch record corruptions derive from.

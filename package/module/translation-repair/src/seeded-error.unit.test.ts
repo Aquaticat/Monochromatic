@@ -18,7 +18,7 @@ import {
   type SeededErrorSpec,
   seedHitByRegion,
   splitSentences,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Clean target text seeds are planted into.

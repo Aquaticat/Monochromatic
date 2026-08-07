@@ -13,7 +13,7 @@ import {
   estimateRequestWeight,
   SYNTHETIC_BASELINE_MODEL_ID,
   SYNTHETIC_MODELS,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: estimateRequestWeight.name,

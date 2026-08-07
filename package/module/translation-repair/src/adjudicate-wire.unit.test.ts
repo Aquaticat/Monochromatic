@@ -13,7 +13,7 @@ import {
 import {
   isPanelBallotWire,
   resolvePanelBallot,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Claim ids in prompt numbering order for resolution tests.

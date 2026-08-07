@@ -4,7 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseDocument, } from '../dist/final/neutral/index.mjs';
+import { parseDocument, } from '../dist/final/node/index.mjs';
 
 //region Container unwrapping tests
 // Fixtures are cat-themed inventions that reproduce the STRUCTURE read off the

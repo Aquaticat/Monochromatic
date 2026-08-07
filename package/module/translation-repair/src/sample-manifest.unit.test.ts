@@ -17,7 +17,7 @@ import {
   buildSampleManifest,
   type GradingCandidate,
   parseSampleManifest,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds one drawn candidate carrying only what the manifest reads.

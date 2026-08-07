@@ -22,7 +22,7 @@ import {
   parsePreGrades,
   scoreGradeAgreement,
   scoreGradedPrecision,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Legend every graded line carries, which bounds the grader's answer.

@@ -18,7 +18,7 @@ import {
   type PanelBallot,
   type PanelVoteState,
   tallyVotes,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented member claim with chosen id suffix and severity.

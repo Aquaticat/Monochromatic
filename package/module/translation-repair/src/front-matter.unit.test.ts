@@ -13,7 +13,7 @@ import {
 import {
   FrontMatterParseError,
   splitFrontMatter,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Well-formed corpus-shaped source with invented metadata and body.

@@ -15,7 +15,7 @@ import {
 import {
   formatUsageNote,
   parseModelJson,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: '',

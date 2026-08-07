@@ -14,7 +14,7 @@ import {
 import {
   fenceForMarkdown,
   longestBacktickRun,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: longestBacktickRun.name,

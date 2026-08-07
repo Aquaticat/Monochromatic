@@ -16,7 +16,7 @@ import {
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,
   UNCHANGED_MEASUREMENTS,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * The always-competing unchanged candidate.

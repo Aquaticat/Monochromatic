@@ -17,7 +17,7 @@ import {
   hashContent,
   isEditorReportWire,
   resolveEditorEdits,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented translation the fixtures cut regions from.

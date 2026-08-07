@@ -20,7 +20,7 @@ import {
   type RepairModels,
   runRefinePhase,
   type SyntheticClient,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Logger for the phase under test.

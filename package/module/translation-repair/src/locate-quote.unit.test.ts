@@ -15,7 +15,7 @@ import {
 import {
   locateQuote,
   parseDocument,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented document carrying a unique phrase, a repeated phrase,

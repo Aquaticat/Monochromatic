@@ -19,7 +19,7 @@ import {
   parseDocument,
   type SpanAnchor,
   validateIssueClaim,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented zh source with heading, footnoted paragraph, and definition.

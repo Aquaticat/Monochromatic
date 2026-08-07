@@ -15,7 +15,7 @@ import {
 import {
   prepareBenchmarkEntry,
   type SeededErrorSpec,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented zh source of the prepared entry.

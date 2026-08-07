@@ -33,7 +33,7 @@ import {
   hashContent,
   parseSettledArtifact,
   type PatchOperation,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Translation before repair.

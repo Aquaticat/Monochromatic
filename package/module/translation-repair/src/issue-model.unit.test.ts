@@ -21,7 +21,7 @@ import {
   ISSUE_SEVERITIES,
   type IssueClaim,
   type SpanAnchor,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Reusable anchored span with invented content;

@@ -16,7 +16,7 @@ import {
   type IssueProbeReading,
   probeFlaggedIssue,
   scoreProbeAgainstGrades,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds a probe reading whose single region carries the given corroboration.

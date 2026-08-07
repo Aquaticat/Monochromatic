@@ -13,7 +13,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { armCallDeadline, } from '../dist/final/neutral/index.mjs';
+import { armCallDeadline, } from '../dist/final/node/index.mjs';
 
 /**
  * Deadline short enough to expire inside a test.

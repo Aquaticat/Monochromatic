@@ -23,7 +23,7 @@ import {
   SyntheticHttpError,
   type TransportExchange,
   type TransportReply,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Milliseconds granted for queued microtasks and limiter slots to settle.

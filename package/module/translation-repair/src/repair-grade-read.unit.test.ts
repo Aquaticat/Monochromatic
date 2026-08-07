@@ -12,7 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseGradedRepairSheet, } from '../dist/final/neutral/index.mjs';
+import { parseGradedRepairSheet, } from '../dist/final/node/index.mjs';
 
 /**
  * Grade line as the sheet prints it, before a grader touches it.

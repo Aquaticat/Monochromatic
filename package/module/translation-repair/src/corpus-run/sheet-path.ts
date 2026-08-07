@@ -82,6 +82,8 @@ function unsafeSeedMessage({ seed, }: { readonly seed: string; },): string {
  * ```ts
  * const kind: SheetKind = 'repair';
  * ```
+ *
+ * @internal
  */
 export type SheetKind = 'detection' | 'repair' | 'manifest';
 
@@ -123,6 +125,8 @@ const DRAW_OUTPUTS: Readonly<Record<SheetKind, {
  * ```ts
  * throw new GradedSheetExistsError({ path: '/runs/grading-sheet-seed.md', },);
  * ```
+ *
+ * @internal
  */
 export class GradedSheetExistsError extends Error {
   /**
@@ -143,6 +147,8 @@ export class GradedSheetExistsError extends Error {
  * ```ts
  * throw new UnsafeSeedError({ seed: '../escape', },);
  * ```
+ *
+ * @internal
  */
 export class UnsafeSeedError extends Error {
   /**
@@ -238,6 +244,8 @@ async function pathExists({ path, }: { readonly path: string; },): Promise<boole
  * ```ts
  * const outPath = await resolveSheetPath({ runsDir, seed, isFinal: true, },);
  * ```
+ *
+ * @internal
  */
 export async function resolveSheetPath(
   {

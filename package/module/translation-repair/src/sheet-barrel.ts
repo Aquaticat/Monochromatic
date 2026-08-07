@@ -7,6 +7,12 @@
 
 export { ArtifactParseError, } from './artifact-guard.ts';
 export {
+  GradedSheetExistsError,
+  resolveSheetPath,
+  type SheetKind,
+  UnsafeSeedError,
+} from './corpus-run/sheet-path.ts';
+export {
   parseRecordRepair,
   type RecordRepairReading,
 } from './artifact-repair-read.ts';

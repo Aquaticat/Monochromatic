@@ -14,7 +14,7 @@ import {
 import {
   hashContent,
   parseDocument,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Memorial-shaped fixture mirroring corpus structure with cat-themed invention:

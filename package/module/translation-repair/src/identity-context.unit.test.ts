@@ -8,7 +8,7 @@ import {
   buildCriticMessages,
   collectIdentityLines,
   extractDeclaredIdentity,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 //region Identity context tests
 // Fixtures are cat-themed inventions, never real corpus entries, but they

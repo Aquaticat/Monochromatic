@@ -19,7 +19,7 @@ import {
   scanFullwidthMarkers,
   scanGfmReferenceLiterals,
   UnpositionedNodeError,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: scanFullwidthMarkers.name,

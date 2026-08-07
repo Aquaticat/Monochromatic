@@ -13,7 +13,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { fetchTransport, } from '../dist/final/neutral/index.mjs';
+import { fetchTransport, } from '../dist/final/node/index.mjs';
 
 /**
  * Request init the stubbed fetch captured, probed field by field.

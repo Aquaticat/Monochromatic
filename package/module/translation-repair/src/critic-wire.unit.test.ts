@@ -15,7 +15,7 @@ import {
   isCriticReportWire,
   parseDocument,
   resolveCriticIssue,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Parsed pair resolutions anchor against.

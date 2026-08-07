@@ -20,7 +20,7 @@ import {
   runRefineStage,
   type SyntheticClient,
   type SyntheticModelId,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Logger for the stage under test.

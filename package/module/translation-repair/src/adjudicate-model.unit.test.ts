@@ -13,7 +13,7 @@ import {
 import {
   isPanelVoteState,
   PANEL_VOTE_STATES,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: isPanelVoteState.name,

@@ -10,7 +10,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { remapCategoryLeaf, } from '../dist/final/neutral/index.mjs';
+import { remapCategoryLeaf, } from '../dist/final/node/index.mjs';
 
 await describe({
   name: remapCategoryLeaf.name,

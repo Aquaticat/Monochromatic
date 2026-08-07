@@ -18,7 +18,7 @@ import {
   EnvelopeOverlapError,
   hashContent,
   type SpanAnchor,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented translation every fixture cuts envelopes from.

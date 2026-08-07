@@ -16,7 +16,7 @@ import {
   buildCriticMessages,
   ISSUE_CATEGORIES,
   ISSUE_SEVERITIES,
-} from '../dist/final/neutral/index.mjs';
+} from '../dist/final/node/index.mjs';
 
 /**
  * Invented zh source shown to critics.
