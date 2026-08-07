@@ -12643,3 +12643,46 @@ being missed while looser shapes were counted.
 
 Reporting 375 would have argued that a quarter of the rule's output is unactionable noise.
 The measured figure argues the opposite.
+
+### A leftover inference of my own, tested and found wrong
+
+Six guard programs were written with positional parameters,
+ adding six
+`require-destructured-params` findings to a fixture that carried fourteen.
+The reason recorded at the time:
+ a destructured binding declares a `BindingElement` rather than
+a `VariableDeclaration`,
+ which is what `bindingIsReassignable` keys on,
+ so destructuring might
+void the tests those programs exist for.
+
+That was reasoning presented where a measurement belonged,
+ which is the fault this document
+spends most of its length on,
+ committed by the same hand that wrote QPC.
+
+Destructured and measured:
+ only the total moves,
+ from thirty-nine to thirty-three,
+ because
+each pair of charges merges into one message naming both inputs.
+Every discriminating assertion is unchanged:
+ ten collection charges on the negative control,
+six `rows` offers,
+ zero `other` offers.
+The reason the fear was misplaced is that the reassignable binding under test is a `let` inside
+the body,
+ not a parameter,
+ and the repointed parameter is reached by symbol rather than by
+declaration kind.
+
+All four conditions were then re-checked against the new baseline rather than the old one,
+ and
+each still fails the suite when removed.
+The fixture is back to its pre-existing fourteen findings.
+
+The pattern worth keeping:
+ an inference is cheapest to test at the moment you notice you made
+one,
+ and the cost of not testing it here was six lint findings carried for several hours
+behind a justification that turned out to be false.
