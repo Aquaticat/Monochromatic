@@ -775,6 +775,54 @@ not,
  and those already discharge,
  which is why the sweep moved by exactly zero rather than by a little.
 
+### Both halves together produce a false offer, measured and reverted
+
+Attempted 2026-08-07 and reverted, and the pair is the point: each half alone changes nothing, and
+together they cross the line this work has held all session.
+
+The halves are the ones the trace named.
+ `unobservedArgument` asks whether an argument's *type* can
+carry state, so a fold's `[]` seed is refused although it holds nothing at the moment of the call;
+asking instead whether the argument has parameter origins is the provenance question rather than the
+shape question.
+ And `reduce` seeded carries the observer-return relation.
+ Applied separately each
+measured at exactly zero,
+ because the first is blocked by the missing relation and the second by the
+seed it needs.
+
+Applied together:
+ 2959 errors to 2953,
+ 1621 rule findings to 1615,
+ and **read-only offers 33 to 35**.
+That last number has held at 33 through every increment in this work and is the failure mode every
+matched pair has been watching for.
+
+The new offer is `buildToml` in `package/module/toml-edit/src/conformance/encode.ts`,
+ whose body is
+`Object.entries(root,).reduce(applyEntry, emptyTomlEdit(),)`.
+ Its own observer carries
+`@mutates entry - Tagged child conversion may invoke proxy and accessor hooks recursively`,
+ so the rule
+would be offering `root` as deeply read-only while the author documents that converting a child may run
+arbitrary hooks.
+ Whether that offer is defensible was not established,
+ and an offer that cannot be shown
+correct is not one to land at the end of a long session.
+
+What this does not say is that either half is wrong.
+ The provenance reading of `unobservedArgument` still
+looks right,
+ and a fresh literal still cannot carry what the receiver held.
+ What the measurement says is
+that discharging the fold reaches further than the fold:
+ `Object.entries` is a host call that can run a
+getter,
+ and the accumulator it feeds is reachable from the parameter.
+ The next attempt needs the offer
+side of that case understood before the discharge side,
+ not after.
+
 That also sharpens the `unobservedArgument` exit itself,
  which is the next thing worth attacking here.
 Its rule is that an unmodelled argument may carry receiver state onward,
