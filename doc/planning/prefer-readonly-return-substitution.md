@@ -11269,3 +11269,103 @@ That fold really does carry caller state,
 Which is the reassuring half of the measurement.
 The narrowing cleared folds over primitives and left the fold that touches caller state alone,
 without either outcome being asked for by name.
+
+### The discharge, scoped rather than built, 2026-08-07
+
+This document owns the discharge and has deferred it three times.
+Scoped properly here,
+ with the variant chosen and a cost that only appeared once the
+mechanism was read.
+
+The current state,
+ re-probed rather than taken from the earlier entry:
+
+```text
+returnsContainer      opaque=[0]  returned=[0]  referentMutated=[]
+writesThroughReturn   opaque=[0]  returned=[]   referentMutated=[0]
+readsLengthOnly       opaque=[0]  returned=[]   referentMutated=[]
+storesContainer       opaque=[0]  returned=[]   referentMutated=[1]
+localOnly             opaque=[]   returned=[]   referentMutated=[]
+```
+
+`localOnly` is the line that matters for framing.
+A container that never leaves is already clean,
+ so the charge is about escape and nothing
+else,
+ and `writesThroughReturn` shows that an in-program caller does substitute through
+`directReturned` and does attribute the write.
+
+So the precondition the charge names is met for callers this analysis can see.
+`effect-result-escape.ts` states the charge exactly:
+ returning parameter-reachable state is
+benign by accepted policy,
+ "that policy is about the callee not being blamed,
+ not about the
+value becoming untracked:
+ until a caller substitutes through `directReturned`,
+ a returned
+result is still a use this analysis cannot follow".
+
+That is a precisely reasoned charge rather than a blunt one,
+ which is the difference between
+this and the observer guard narrowed earlier today.
+The observer guard refused a case its own reason did not reach.
+This one refuses exactly what its reason describes,
+ so the way through is to prove the
+caller-side precondition rather than to narrow the guard.
+
+#### The predicate already exists
+
+`foreign-borrowed-complete-graph.ts` enumerates inbound callers through TypeScript signature
+usage,
+ and represents incompleteness by adding a synthetic caller,
+`\0unknown-inbound:<calleeKey>`,
+ whenever the usage query is unavailable or a usage will not
+resolve.
+A synthetic edge rather than a boolean,
+ so uncertainty propagates through the fixed point
+instead of depending on every reader remembering to check a flag.
+
+That is the "all callers resolve" predicate,
+ already built and already trusted for ownership
+inference.
+
+#### The cost that appeared on reading it
+
+The graph is demand-bounded.
+It is built for foreign-borrowed candidates only,
+ and each callable in it costs a signature
+usage query that the analysis budget times by name.
+Consulting it for every callable's escape decision means whole-program signature enumeration,
+which is a different order of cost from anything landed today,
+ against a sweep currently
+running about ten and a half minutes.
+
+So the shape to build is the demand-bounded one:
+ ask the expensive question only for callables
+that actually record returned container origins,
+ which is a small fraction of the program and
+the only place the answer can change a verdict.
+
+#### One cheap subset considered and rejected
+
+"Not exported" is tempting and is not sufficient.
+A callable that is not exported can still be handed to external code as a callback,
+ or reached
+through an exported object,
+ so its callers are not all visible merely because its name is not.
+Any cheap variant needs callable-escape analysis,
+ which is the same class of work as the
+question it was meant to avoid.
+
+#### Direction
+
+Unchanged and worth repeating,
+ because every increment landed today ran the other way.
+This removes a charge.
+Every other change this session added them,
+ which is why their offer sets could not move for
+structural reasons;
+ here an offer appearing is genuinely possible,
+ and the offer set is the
+gate rather than a formality.
