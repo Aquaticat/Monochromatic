@@ -11669,3 +11669,66 @@ deferred again.
 The module is kept in the scratch notes on the task,
  finished,
  pending that answer.
+
+### Suppressing the offer, built and measured
+
+The mechanism the third option named does exist,
+ and it was smaller than expected.
+
+`verifier.ts` has one offer gate,
+ and `retained` already sits in it as a fact that "gates the
+offer and nothing else".
+A sibling fact,
+ `returnedOutward`,
+ reading the `returnedParameterIndexes` set that was already
+computed and had no production consumer at all,
+ drops into the same position.
+So the report can be cleared while the offer stays withheld,
+ which is exactly what was asked
+for.
+
+What it does not do is discriminate.
+
+```text
+suppressed as intended   the returning callables the discharge clears
+suppressed wrongly       packageRowShorthand and packageRowExplicit
+appeared, and correct    readsReturnedContainerLength
+```
+
+The middle line is the problem,
+ and it is a conflict rather than a bug.
+`prefer-readonly-parameter-type.unit.test.ts` records a judgement on those two:
+ "both are
+correct:
+ neither `packageRowShorthand` nor `packageRowExplicit` writes the row it packages,
+ so
+each earns the offer".
+
+`packageRowShorthand` returns `{ held, }`.
+`returnsReceiverElements` returns `rows.slice(0,)`.
+Both hand caller-owned state outward and neither writes it.
+If the first earns an offer,
+ the second is hard to refuse,
+ and the repository has therefore
+already half-answered the question that blocked this.
+
+The last line supports the same reading.
+`readsReturnedContainerLength` only reads a length,
+ gains an offer,
+ and the assertion
+forbidding such offers says in its own comment that this one "awaits the discharge".
+
+So the choice is between accepting that family of offers as correct and adjudicating the
+three,
+ or finding a fact narrower than "this parameter's state is returned":
+ one that
+separates handing back the caller's own elements from packaging the parameter into a fresh
+holder.
+That distinction is real,
+ the elements being the caller's objects while the holder is not,
+ and
+`returnedParameterIndexes` does not carry it.
+
+The blunt form must not land either way,
+ because it withdraws two offers this repository has
+already decided are correct.
