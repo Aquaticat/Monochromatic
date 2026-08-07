@@ -11949,3 +11949,31 @@ And a call through an interface method resolves to the interface's declaration r
 any implementation,
  so discharging one implementation would require a closed dispatch set.
 Neither is a branch to patch in this file.
+
+### What the guards measured
+
+Workspace sweep after all four:
+ the rule's 1557 findings and 34 offers are byte-identical to
+the sweep before them.
+The one error of difference is `no-import-type-side-effects` on
+`effect-container-literal-holder.ts:7:1`,
+ left behind when `NodeFlags` moved out of that
+file and fixed after the sweep was launched.
+
+That is the expected result and not a weak one.
+These branches were found by reading the helper rather than by measuring it,
+ precisely
+because the workspace holds none of the shapes:
+ no returned member call in the corpus sits
+inside a nested declaration,
+ travels through a reassignable local,
+ or takes its base from a
+mapped container.
+A sweep can only report the shapes present in what it sweeps,
+ so it confirms that the guards
+cost nothing and cannot confirm that they were unnecessary.
+
+The fixtures are where they are decided.
+The catalog-free fixture goes from sixteen findings to twenty and the provenance fixture from
+sixteen to seventeen,
+ and each added report is a discharge that the unfixed code granted.
