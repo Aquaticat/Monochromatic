@@ -1402,10 +1402,39 @@ the same `reduce` on the receiver itself does not,
  which is an asymmetry of the same kind as `find` against
 `at` and predates this entry,
  as `slice` demonstrates on its own.
- Recorded here rather than acted on:
- it is
-a separate question,
- and nothing in this entry decided it.
+
+Narrowed further before being left alone,
+ because the first reading of it was wrong.
+ It is not the chain:
+`chunks.slice(0,).reduce(fold, 0,)` returning a number is clean,
+ and so is the same call accumulating into
+a `readonly string[]`.
+ The asymmetry appears only when the accumulator is an object holding the
+receiver's elements,
+ `{ readonly n: number; readonly chunks: readonly string[]; }`,
+ where the direct call
+is clean and the chained one is not.
+
+Two candidate mechanisms were also checked and refuted.
+ It is not the receiver origins:
+`readonlyViewElementApplications` resolves them with `expressionElementOrigins`,
+ which composes container
+relations,
+ so a call receiver resolves to its parameter.
+ And it is not a missing relation:
+ `reduce` carries
+one,
+ recorded `seededOnly`.
+
+So the mechanism is unestablished and no cause is claimed.
+ What is claimed is the reproduction:
+ vary the
+accumulator shape,
+ hold the member and the chain fixed,
+ and the asymmetry appears and disappears with it.
+`path.slice(0, -1,).reduce(...)` in `package/module/toml-edit/src/value-materialize.ts` is the instance,
+named by 21 findings,
+ and it accumulates into exactly that kind of object.
 
 ## Observer members whose result carries objects, resolved into one gap and one design
 
