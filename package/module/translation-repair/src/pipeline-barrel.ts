@@ -1,7 +1,8 @@
 //region Pipeline barrel
 // Repair-phase surface: claim aggregation, adjudication, envelopes and the
-// patch gate, editor and checker stages, candidate selection, the
-// end-to-end driver, and the milestone-two benchmark. Split from the root
+// patch gate, editor and checker stages, candidate selection, and the
+// end-to-end driver. What a run PRODUCES lives here; what measures a finished
+// run afterwards lives in the sheet and recall barrels. Split from the root
 // barrel so each stays under the file-size budget.
 
 export {
@@ -43,19 +44,6 @@ export {
   type PatchRejection,
 } from './apply-patch.ts';
 export {
-  runDerivabilityProbe,
-  type SeedDerivability,
-} from './derivability-probe.ts';
-export {
-  buildDerivabilityMessages,
-  DERIVABILITY_RESPONSE_FORMAT,
-  DERIVABILITY_VERDICTS,
-  type DerivabilityPlan,
-  type DerivabilityVerdict,
-  isDerivabilityVerdict,
-  resolveDerivabilityJudgment,
-} from './derivability-wire.ts';
-export {
   buildEditorMessages,
   type EditorPromptPlan,
 } from './edit-prompt.ts';
@@ -72,21 +60,6 @@ export {
   type EditableEnvelope,
   type EnvelopePlan,
 } from './patch-model.ts';
-export {
-  contentWords,
-  measureSeedRestoration,
-  RESTORATION_WORD_THRESHOLD,
-  type SeedRestoration,
-} from './lexical-restoration.ts';
-export {
-  computeRepairScorecard,
-  DEFAULT_JUDGE_MODEL_IDS,
-  MIN_REPAIR_DISPATCH_BUDGET_MS,
-  type RepairAttemptRecord,
-  type RepairBenchmarkResult,
-  type RepairScorecard,
-  runRepairBenchmark,
-} from './repair-benchmark.ts';
 export { repairChunk, } from './repair-chunk.ts';
 export {
   assertCheckerIndependence,
@@ -157,16 +130,6 @@ export {
   screenNonTranslationVotes,
   sliceAnchorsTranslation,
 } from './non-translation-evidence.ts';
-export { ArtifactParseError, } from './artifact-guard.ts';
-export {
-  parseRecordRepair,
-  type RecordRepairReading,
-} from './artifact-repair-read.ts';
-export {
-  type ParsedAcceptedIssue,
-  type ParsedArtifact,
-  parseSettledArtifact,
-} from './artifact-read.ts';
 export {
   scorePairing,
   tokenize,
@@ -175,30 +138,6 @@ export {
   alignBlocks,
   type AlignmentStep,
 } from './align-blocks-walk.ts';
-export { formatGradingSheet, } from './grading-sheet.ts';
-export {
-  type GradedItem,
-  type GradeVerdict,
-  parseGradedSheet,
-} from './grade-sheet-read.ts';
-export {
-  type GradedRepairItem,
-  parseGradedRepairSheet,
-  type RepairVerdict,
-} from './repair-grade-read.ts';
-export {
-  opensWithVerdict,
-  trimLeadingDelimiters,
-  VERDICT_DELIMITERS,
-} from './verdict-letter.ts';
-export {
-  type AgreementTally,
-  parsePreGrades,
-  type PrecisionTally,
-  scoreGradeAgreement,
-  scoreGradedPrecision,
-} from './grade-agreement.ts';
-export { formatRepairSheet, } from './repair-sheet.ts';
 export {
   fenceForMarkdown,
   longestBacktickRun,
@@ -208,37 +147,6 @@ export {
   type DeclaredIdentity,
   extractDeclaredIdentity,
 } from './identity-context.ts';
-export {
-  allocateBandQuota,
-  drawStratifiedSample,
-} from './sample-draw.ts';
-export {
-  buildSampleManifest,
-  parseSampleManifest,
-  type SampleManifest,
-  type SampleManifestItem,
-} from './sample-manifest.ts';
-export {
-  assertRepairMeasurable,
-  type BandQuota,
-  classifyBand,
-  countUnrecordedRepairs,
-  UnmeasurableRepairError,
-  DEFAULT_PRECISION_BAR,
-  DEFAULT_SAMPLE_SEED,
-  DEFAULT_SAMPLE_SIZE,
-  extractGradingCandidate,
-  type GradableClaim,
-  type GradableIssue,
-  type GradableRepair,
-  type GradableRepairRegion,
-  type GradableSpan,
-  type GradingCandidate,
-  MEDIUM_BAND_MAX_BYTES,
-  SIZE_BANDS,
-  type SizeBand,
-  SMALL_BAND_MAX_BYTES,
-} from './sample-grading.ts';
 export {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,
@@ -260,27 +168,6 @@ export {
   type RepairRegion,
 } from './repair-region.ts';
 export { measurePatchedCandidate, } from './chunk-measure.ts';
-export {
-  buildRestorationJudgeMessages,
-  isRestorationJudgeWire,
-  isRestorationVerdict,
-  type JudgeReference,
-  RESTORATION_JUDGE_RESPONSE_FORMAT,
-  RESTORATION_JUDGE_VERDICTS,
-  type RestorationJudgePlan,
-  type RestorationJudgeWire,
-  type RestorationJudgmentWire,
-  type RestorationVerdict,
-  resolveRestorationJudgment,
-} from './restoration-judge-wire.ts';
-export {
-  runRestorationJudge,
-  type SeedJudgment,
-} from './restoration-judge.ts';
-export {
-  gradeSeedDetection,
-  type SeedDetectionVerdict,
-} from './seed-detection.ts';
 export {
   attemptStageCall,
   type StageVoice,
