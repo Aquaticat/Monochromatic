@@ -1324,9 +1324,24 @@ So the remainder is the escape question,
 cleared are the ones whose result stayed inside its callable.
  Nothing here argues the escape answer is
 wrong;
- it argues only that `toSorted` was never the thing holding those seven back,
- and that a future
-increment aimed at them should start from the returned container rather than from this table.
+ it argues only that `toSorted` was never the thing holding those seven back.
+
+That question is already worked out,
+ and a reader arriving here should go to
+`doc/planning/prefer-readonly-return-substitution.md` rather than re-deriving it.
+ Its ranked
+recommendation covers exactly this:
+ whether a verified direct return may discharge receiver opacity is the
+last of its four items and is deferred on purpose,
+ because a closely related refinement was refuted after
+looking obviously safe.
+ The first item landed in `a57bb6f56`,
+ and the next is closing the holder set in
+`resultHolderSymbolIds`,
+ which that document names as the direct cause of a measured false offer.
+ The
+numbering there is internal to that line of work rather than GitHub issues,
+ checked rather than assumed.
 
 ## Observer members whose result carries objects, an unresolved gap
 
