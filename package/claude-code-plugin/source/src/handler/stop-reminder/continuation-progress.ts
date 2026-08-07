@@ -14,6 +14,18 @@
  * so it stays outside the model's control in the way the goal feature and the
  * `loop` skill are not.
  *
+ * One push is the threshold because a second rarely recovers. Across this
+ * repository's transcripts, of the blocks whose push produced no tool call and
+ * were followed by another block, only 22% of those second pushes produced work
+ * (2 of 9). The sample is small, so the figure argues against pushing twice
+ * rather than establishing a rate.
+ *
+ * The cost of releasing early is real and accepted: an agent that answers a
+ * block with another announcement instead of doing the work is released, which
+ * is the original failure slipping through. The task-list and background-task
+ * releases do not have that weakness, and they cover the cases this one was
+ * added for, so this condition is the loosest of the three by design.
+ *
  * @module
  */
 

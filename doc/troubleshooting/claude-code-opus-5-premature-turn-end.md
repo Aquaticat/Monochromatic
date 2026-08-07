@@ -463,6 +463,16 @@ and none asking the agent whether it considers itself finished:
   and was missing from this repository's `StopInput` type until then.
 - The previous forced continuation issued no tool call,
   so pushing bought prose rather than work.
+  One push is the threshold because a second rarely recovers:
+  of the blocks in this corpus whose push produced no tool call
+  and were followed by another block,
+  only 2 of 9 second pushes produced work, 22%.
+  The sample is small,
+  so that argues against pushing twice rather than establishing a rate.
+  The accepted cost is that an agent answering a block with another announcement
+  is released, which is the original failure slipping through;
+  the other two releases do not have that weakness
+  and cover the cases this one was added for.
 - Every tracked task is finished,
   replayed from `TaskCreate` results and `TaskUpdate` calls.
   An absent task list is deliberately not treated as finished,
