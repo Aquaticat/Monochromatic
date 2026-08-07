@@ -277,6 +277,14 @@ await describe({
         const element = mutatedIndexes('chainedElementWriteEffect',);
         /** Property write through an element obtained by an observer member. */
         const observerValue = mutatedIndexes('observerValueResultMutationEffect',);
+        /** Write through an object this callable built around the parameter. */
+        const heldObject = mutatedIndexes('heldObjectMutationEffect',);
+        /** Write through an array this callable built around the parameter. */
+        const heldArray = mutatedIndexes('heldArrayMutationEffect',);
+        /** Restructuring of a container this callable built, writing nothing. */
+        const heldContainer = mutatedIndexes('heldContainerRestructureEffect',);
+        /** Restructuring of a container the caller owns, reached through one hop. */
+        const borrowedContainer = mutatedIndexes('borrowedContainerRestructureEffect',);
         /** Mutation through a lookup narrowed by a runtime-erased assertion. */
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
@@ -302,6 +310,23 @@ await describe({
          * attribution beneath it empties this and grants a read-only offer for an array whose
          * element the body rewrites. */
         expect(observerValue,).toEqual([0,],);
+        /* The two programs `doc/planning/prefer-readonly-container-value-provenance.md`
+         * names as the ones a careless container fix would wrongly offer read-only. Both
+         * write the caller's value *through* a container this callable built, one by
+         * property and one by element, and both must stay attributed. Emptying a fresh
+         * literal's value origins, which is the redesign that document costs and rejects,
+         * empties these two and nothing else here would catch it. */
+        expect(heldObject,).toEqual([0,],);
+        expect(heldArray,).toEqual([0,],);
+        /* And the direction the record exists for. Nothing writes the parameter: `pop`
+         * restructures the fresh array, and the parameter is what the array holds rather
+         * than what holds the array. This read `[0]` before the record existed. */
+        expect(heldContainer,).toEqual([],);
+        /* The control that keeps the record from covering every local. `inner` names the
+         * caller's own array, so its binding arrives through a property step, the record
+         * is not set, and the charge stands. Keying the record on locality rather than on
+         * how the value was built discharges this and loses a real write. */
+        expect(borrowedContainer,).toEqual([0,],);
         /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
          * assertion expressions from `transparentOperand` empties this one. */
         expect(asserted,).toEqual([0,],);

@@ -530,7 +530,21 @@ children: [
        * `containerGrowthEffect` is what keeps that from being a blanket discharge. It
        * pushes a caller-owned row into a fresh container and is still reported at its row
        * parameter, because nothing attributes where that row ends up. */
-      expect(messages.length,).toBe(10,);
+      expect(messages.length,).toBe(11,);
+      /* The eleventh is the container record's visible consequence, and it is an offer
+       * rather than a report. `heldContainerRestructureEffect` builds an array around its
+       * parameter and pops it, so it restructures a container this callable made and writes
+       * nothing the caller owns. It was reported as mutating before the record existed, so
+       * no offer could be made; now the parameter is correctly offered read-only.
+       *
+       * Its three siblings in the same fixture are the controls and stay silent here:
+       * `heldObjectMutationEffect` and `heldArrayMutationEffect` write the caller's value
+       * through the container they built, and `borrowedContainerRestructureEffect`
+       * restructures a container the caller owns. `effect-summaries.unit.test.ts` pins all
+       * four at summary level, which is where the distinction actually lives. */
+      expect(messages.some(function offersContainerHolder(message,): boolean {
+        return message.startsWith('Parameter "box" should be readonly',);
+      },),).toBe(true,);
       /* Both spellings of the packaging pair are offered, which is what makes the pair a
        * control for each other rather than two unrelated cases. Before the shorthand value
        * symbol reached the provenance walk the offers were also two, and the difference sat
@@ -651,6 +665,11 @@ children: [
         return message.includes('should be readonly',);
       },)
         .toSorted(),).toEqual([
+        /* The container record added this one, and it is the first offer in this fixture
+         * that exists because a wrong mutation was withdrawn rather than because a call was
+         * discharged. `heldContainerRestructureEffect` pops an array it built around `box`,
+         * so it writes nothing the caller owns. */
+        'Parameter "box" should be readonly: property label is writable.',
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "held" should be readonly: property label is writable.',
         'Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection.',

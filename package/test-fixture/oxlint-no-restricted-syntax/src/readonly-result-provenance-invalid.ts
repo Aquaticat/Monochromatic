@@ -17,6 +17,115 @@ type Labelled = {
 };
 
 /**
+ * Mutates a parameter held inside an object this callable built.
+ *
+ * The first of the two programs `doc/planning/prefer-readonly-container-value-provenance.md`
+ * names as the ones a careless container fix would wrongly offer read-only. The write goes
+ * *through* the fresh object to the caller's own value, so it has to stay attributed.
+ *
+ * The container record that suppresses `stack.pop()` must not touch this: it is consulted
+ * only where a member restructures its receiver, and this is an ordinary property write
+ * whose origins run through the value path. Emptying those origins instead, which is the
+ * redesign that document costs and rejects, empties this.
+ *
+ * @param box - Value written through a locally built object.
+ *
+ * @example
+ * ```ts
+ * heldObjectMutationEffect({ label: 'original', },);
+ * ```
+ */
+export function heldObjectMutationEffect(box: Labelled,): void {
+  /**
+   * Object built here, holding the caller's value.
+   */
+  const held = {
+    inner: box,
+  };
+  held.inner.label = 'rewritten';
+}
+
+/**
+ * Mutates a parameter held inside an array this callable built.
+ *
+ * The second of the two programs, through the element path rather than the property path.
+ * `held` is a container this callable constructed, so the record covers it and the
+ * structural charge on it is suppressed; the write below is still the caller's value being
+ * rewritten and is attributed by the element step.
+ *
+ * @param box - Value written through a locally built array.
+ *
+ * @example
+ * ```ts
+ * heldArrayMutationEffect({ label: 'original', },);
+ * ```
+ */
+export function heldArrayMutationEffect(box: Labelled,): void {
+  /**
+   * Array built here, holding the caller's value.
+   */
+  const held = [box,];
+  /**
+   * Element read back out of the local array.
+   */
+  const first = held[0];
+  if (first === undefined)
+    throw new Error('Expected the held element to rewrite.',);
+  first.label = 'rewritten';
+}
+
+/**
+ * Restructures a container this callable built while holding a parameter.
+ *
+ * The case the container record exists for, and the direction opposite to the two above.
+ * Nothing writes `box`: `pop` restructures the fresh array, and the parameter is what the
+ * array holds rather than what holds the array. Reported as a mutation before the record
+ * existed, on the work-stack idiom `AGENTS.md` requires over recursion.
+ *
+ * @param box - Value the local array holds and nothing writes.
+ *
+ * @returns whether the array still holds anything.
+ *
+ * @example
+ * ```ts
+ * heldContainerRestructureEffect({ label: 'original', },);
+ * ```
+ */
+export function heldContainerRestructureEffect(box: Labelled,): boolean {
+  /**
+   * Array built here, holding the caller's value.
+   */
+  const stack = [box,];
+  stack.pop();
+  return stack.length > 0;
+}
+
+/**
+ * Restructures a container the caller owns, reached through one local hop.
+ *
+ * The control that keeps the record from covering every local. `inner` names the caller's
+ * own array rather than one built here, so its binding arrives through a property step,
+ * the record is not set, and the structural charge stands. A record keyed on locality
+ * rather than on how the value was built would discharge this and lose a real write.
+ *
+ * @param carrier - Carrier whose own array is restructured.
+ *
+ * @example
+ * ```ts
+ * borrowedContainerRestructureEffect({ rows: [], },);
+ * ```
+ */
+export function borrowedContainerRestructureEffect(
+  carrier: { rows: Labelled[]; },
+): void {
+  /**
+   * Caller's own array, reached through one local hop.
+   */
+  const inner = carrier.rows;
+  inner.push({ label: 'appended', },);
+}
+
+/**
  * Mutates the element an observer member handed back on its own.
  *
  * The pair to `boundLookupMutationEffect`, for the arm of the result gate that answers
