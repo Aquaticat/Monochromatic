@@ -103,6 +103,156 @@ nothing about it.
  so its `@mutates view`
 contract is satisfied by inference and its `ForeignBorrowed` marker is no longer doing any work.
 
+## Date, the second unpaired interface
+
+Accepted 2026-08-07,
+ on the same ground and by the same shape.
+ `lib.es5.d.ts` declares `Date` and no `ReadonlyDate`,
+ checked rather than assumed,
+so the diff had nothing to compare and every date member landed on the opaque boundary.
+
+### The spike came before the table
+
+Ordering that matters,
+ because the `DataView` half of this document records that a membership table alone
+changed nothing until channel entries joined it.
+ So the smallest possible version went in first:
+ `Date` declaring one member,
+ `toISOString`,
+ with one channel entry beside it,
+ and the real
+`package/module/toml-edit/src/values.ts` probed either side.
+
+Without it,
+ `encodeValue` and the three callables around it all read `opaque=[0]`.
+ With it,
+ all four read
+`opaque=[]`.
+ That is the whole payoff established before any of the table was written,
+ which is what the
+`Object.getPrototypeOf` reader entry immediately before it had failed to establish:
+ that entry removed a
+cause from 46 messages and cleared one finding,
+ because a second cause,
+ this one,
+ stood behind it.
+
+The blocker was never narrowing,
+ which is worth recording because it looked like it was.
+ `encodeValue` takes
+`input: unknown` and reaches `toISOString` through `input instanceof Date`,
+ and a first probe of that shape
+stayed opaque.
+ The confound was in the probe:
+ its fallback branch called `String(input)`,
+ which coerces
+through `toString` or `valueOf` and is a genuine user-code channel.
+ Isolated,
+ a parameter narrowed from
+`unknown` by `instanceof` and used for nothing else discharges cleanly.
+
+### Membership is complete and the channel is not, deliberately
+
+The two tables carry opposite defaults,
+ so completeness is required of one and forbidden of the other.
+
+Omitting a member from the membership claims it restructures its receiver,
+ so that table has to name every
+preserving member or it states something false.
+ It names 29:
+ the eighteen field readers,
+ the ten
+formatting and conversion members,
+ and `valueOf`.
+ A `Date` has one mutable specification slot,
+ `[[DateValue]]`,
+ and the fifteen declared setters write it.
+
+Omitting a member from the channel table claims only that nothing has proven it narrow,
+ so that table names
+one member.
+ `toISOString` reads the slot and formats it,
+ reaching no property of its receiver.
+ Its siblings
+are not all so simple:
+ ECMA-262 has `toJSON` perform `ToPrimitive` and then `Invoke(O, "toISOString")`,
+ both
+lookups a caller can answer,
+ and the locale members process caller-supplied `locales` and `options` that a
+member name alone cannot describe.
+ They stay off until a probe drives them,
+ and they stay *in* the membership
+table,
+ because preserving the receiver and dispatching to user code are separate questions.
+
+Three names the engine provides are absent from both,
+ and the absence claims nothing:
+ `getYear`,
+ `setYear`
+and `toGMTString` are Annex B members TypeScript never declares,
+ so no lookup can reach the table holding
+one.
+ `getVarDate` is declared,
+ but only by `lib.scripthost.d.ts`,
+ which `"lib": ["ESNext"]` in
+`package/config/typescript/tsconfig.options.json` never includes and no engine here provides;
+ an entry for it
+could not be probed,
+ and an unprobed entry is the one thing this design refuses.
+ `[Symbol.toPrimitive]` is
+declared and preserving and still absent,
+ because `collectionStructureClaim` rejects a computed member name
+before consulting the table:
+ it stays unrecognized rather than being claimed to mutate.
+
+### The probe had a hole and the extension closed it
+
+The `DataView` probe called each member once with a fixed argument.
+ Run against `Date`,
+ that design read
+`setUTCDate` as read-only,
+ because `setUTCDate(1)` on an epoch date writes the day it already holds.
+ A
+vacuous pass,
+ of exactly the kind this document warned about when it argued the typed arrays were not
+worth taking,
+ and it was found by extending the probe rather than by reasoning about it.
+
+Five corrections landed together,
+ and they apply to both interfaces rather than only the new one.
+ Each
+member now runs from a receiver of its own,
+ against three distinct arguments,
+ so a write of a value the
+receiver already holds cannot read as inert.
+ The date's slot is read through the intrinsic obtained from its
+own property descriptor,
+ so a member that shadowed `getTime` could not be measured by itself.
+ The snapshot
+covers own properties and their descriptors as well as the specification slot,
+ since a member could add or
+redefine a property without touching the slot.
+ A call that throws disqualifies its unchanged reading as
+evidence,
+ rather than passing as proof the member changes nothing.
+ And the surface comes from
+`Reflect.ownKeys`,
+ so the symbol member is excluded by a filter that names it instead of by an enumeration
+that never mentioned it.
+
+The channel probe gained a `Date` receiver recording every conversion lookup a date member can dispatch to:
+`toString`,
+ `valueOf` and `[Symbol.toPrimitive]`.
+ `toISOString` is deliberately not shadowed,
+ since the probe
+resolves members off the receiver and a recorder in that position would measure the recorder.
+ `toJSON` is
+the control:
+ it is excluded from the channel table,
+ it reaches those recorders,
+ and without it "the listed
+member reached nothing" would be indistinguishable from a receiver carrying no instrumentation at all.
+
 ### The typed arrays are the obvious next extension and should not be taken
 
 Measured rather than assumed,
