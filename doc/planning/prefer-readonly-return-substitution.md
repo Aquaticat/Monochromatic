@@ -12124,3 +12124,22 @@ and was only proof the count had not moved.
 Both failures share a shape,
  which is reading the absence of a difference as evidence for the
 mechanism you happened to be thinking about.
+
+### Final sweep
+
+3902 warnings and 2895 errors,
+ 1557 rule findings,
+ 34 offers,
+ all byte-identical to the
+sweep before any of the seven guards landed.
+
+Wall time 10m53s,
+ against 10m57s for the previous sweep and 11m10s for the one before it.
+Worth stating because `bindingAssignedWithin` walks the whole body at every discharge endpoint
+where the previous code did a symbol lookup,
+ and the concern was that this sits next to
+issue #374,
+ which wants a warm whole-repo run under sixty seconds.
+The walk is not measurable against sweep noise,
+ so it adds nothing that issue has to account
+for.
