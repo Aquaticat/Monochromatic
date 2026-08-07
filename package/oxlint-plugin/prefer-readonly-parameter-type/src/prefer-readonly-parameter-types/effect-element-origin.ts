@@ -15,6 +15,14 @@ import { expressionValueOrigins, } from './effect-expression-provenance.ts';
 import type { SlotOrigins, } from './effect-summary-model.ts';
 
 /**
+ * Container relations the element walk composes before it stops.
+ *
+ * A backstop rather than the terminator: the walk ends when a step finds no verified
+ * relation, and each step consumes one member call, so authored chains end far sooner.
+ */
+const CONTAINER_CHAIN_HOP_LIMIT = 8;
+
+/**
  * Resolves parameter origins a binding takes from an expression's elements.
  *
  * The spelling of an element step decides nothing about its meaning, and three of the four
@@ -59,27 +67,48 @@ export function expressionElementOrigins({
     node,
   },);
   /**
-   * Receiver whose elements this expression holds, when that relation is verified.
+   * Origins found so far, starting from what the expression's own value carries.
    */
-  const elementReceiver = containerElementReceiver({
-    project,
-    checker: project.checker,
-    node,
-  },);
-  if (elementReceiver === NOT_A_RECEIVER_CONTAINER)
-    return valueOrigins;
+  const origins = new Set(valueOrigins,);
   /**
-   * Origins reached through the container's receiver.
+   * Cursor descending one container relation at a time toward a named receiver.
+   *
+   * A loop rather than one resolution, because container members compose and the corpus
+   * composes them. `panes.filter(rootLike,).toSorted(bySpawnOrder,)` in
+   * `package/desktop-app/file-manager-electron/src/strip.ts` is the shape: the outer
+   * member's receiver is the inner call, whose own value origins are empty because the
+   * array it returns is fresh. Resolving once answered `rows.slice(0,)` and answered
+   * nothing at all for `rows.slice(0,).toReversed()`, so a chain of relations each of
+   * which holds reported no origin between them.
+   *
+   * Bounded rather than recursive, per `ITR`, and the bound is a backstop: each step
+   * consumes one syntactic member call, so a chain in real source ends long before it.
    */
-  const receiverOrigins = expressionValueOrigins({
-    project,
-    bindingOriginBySymbolId,
-    node: elementReceiver,
-  },);
-  if (receiverOrigins.size === 0)
-    return valueOrigins;
-  return new Set([
-    ...valueOrigins,
-    ...receiverOrigins,
-  ],);
+  const walk = {
+    current: node,
+    hops: 0,
+  };
+  while (walk.hops < CONTAINER_CHAIN_HOP_LIMIT) {
+    /**
+     * Receiver whose elements the cursor's value holds, when that relation is verified.
+     */
+    const elementReceiver = containerElementReceiver({
+      project,
+      checker: project.checker,
+      node: walk.current,
+    },);
+    if (elementReceiver === NOT_A_RECEIVER_CONTAINER)
+      break;
+    for (
+      const slot of expressionValueOrigins({
+        project,
+        bindingOriginBySymbolId,
+        node: elementReceiver,
+      },)
+    )
+      origins.add(slot,);
+    walk.current = elementReceiver;
+    walk.hops += 1;
+  }
+  return origins;
 }
