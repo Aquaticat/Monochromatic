@@ -12143,3 +12143,63 @@ issue #374,
 The walk is not measurable against sweep noise,
  so it adds nothing that issue has to account
 for.
+
+### Correction to the correction: the probe harness was blind
+
+The retraction recorded above says no guard has a program that isolates it,
+ measured by
+neutralising each guard and re-running the fixtures.
+Those runs went through the `lint-fixture-readonly-*` tasks in
+`package/test-fixture/oxlint-no-restricted-syntax/mise.toml`,
+ which lint one file on its own.
+
+A single file is its own program.
+`getSignatureUsage` therefore finds no callers for anything in it,
+ `callersAllResolve`
+refuses on the empty enumeration,
+ and the discharge returns false before any of its own
+conditions are reached.
+Every probe run there reports no difference for any change to this feature,
+ including
+disabling the feature outright,
+ which is what those runs actually showed.
+
+The unit suite is the valid harness and disagrees plainly.
+It pins three offers from the discharge in `prefer-readonly-parameter-type.unit.test.ts`,
+ and
+requiring closed-world callers takes that assertion from three to zero while the fixture count
+goes from seventeen to nineteen.
+Same fixture,
+ same guards,
+ opposite answer:
+ the feature is live there and inert through the
+task.
+
+So two claims have to be withdrawn,
+ not one.
+The first is the original claim that the guard fixtures discriminate.
+The second is the retraction of it.
+Both were measured through a harness that cannot observe this feature at all,
+ which makes the
+question open rather than settled in either direction.
+
+What a valid test needs is now known.
+The program has to be reached by the discharge,
+ which means it must not be exported,
+ since
+`callersAreEnumerable` refuses every exported callable,
+ and it must have an in-file caller,
+since the empty enumeration is refused.
+It has to be exercised through the unit suite rather than through a per-file task.
+None of the six programs written for these guards met the first two conditions and none was
+run under the third.
+
+The general failure is worth naming twice over,
+ because it recurred within one session after
+being written down.
+A measurement that reports no difference is evidence only once you know the harness could have
+shown one,
+ and neither the sweep,
+ the fixture count,
+ nor the per-file task was ever checked
+against that.
