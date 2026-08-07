@@ -5280,3 +5280,41 @@ quoted an n=1 probe rate as a design constraint anyway. The rule is not "be
 careful with small samples", it is DO NOT QUOTE A RATE WHOSE DENOMINATOR IS ONE
 ENTRY. Re-run `score-probe` as entries settle; it costs no quota and reads only
 local artifacts, so there is never a reason to be working from the stale one.
+
+## How to read corpus-pass progress without inventing a stall
+
+Reading the pass log for liveness has one trap, and it cost this session several
+probes before it resolved.
+
+CHUNK INDICES ARE NOT MONOTONIC ACROSS THE LOG. A tail of `chunk N: repaired`
+lines reads `1, 3, 1, 2, 3, 4, 5, 6, 3, 5, 9, 11, 12, 13, 1, 0, 11`. That is not
+corruption and not a restart loop. Indices are per entry, and the slice cache
+resumes a partial entry by recomputing only its uncached chunks, so an entry that
+already has chunks 0 through 8 cached emits 9, 11, 12, 13 and nothing else.
+
+THE FALSE ALARM THIS PRODUCES: comparing the newest artifact mtime against the
+newest `chunk 1: repaired` line suggests the run sat idle for hours. It did not.
+The interval was full of `selectBestCandidate` ballots, which are per envelope
+inside the editor stage and carry no chunk or stage prefix, so a grep filtered to
+`stage:` or `chunk ` shows an empty window over an hour that logged 120 lines.
+
+WHAT ACTUALLY ESTABLISHES LIVENESS, in increasing order of cost:
+
+-   Per-hour line counts including `drainBody`. A live pass logs a few hundred
+    per hour. Zero for an hour is the real stall signal.
+-   Chunk completion timestamps. Steady spacing means healthy; this run held ten
+    to fifteen minutes per chunk across forty chunks.
+-   Stage lines for the entry in flight, which show `critic` through `checker`
+    advancing rather than one stage repeating.
+
+FIRST-BYTE LATENCY IS NOT A HEALTH SIGNAL AT THIS PROVIDER. Consecutive calls
+reading 58s, 126s, 163s, 193s, 222s look like a provider degrading under a
+climbing backlog. Measured across the whole run the mean is 54.7s over 1488
+calls with a maximum of 336s, so that climb is ordinary variance sampled at a
+window boundary. Do not infer throttling from a handful of adjacent lines; take
+the distribution over the run.
+
+AN ENTRY TAKING MUCH LONGER THAN ITS PREDECESSORS IS USUALLY CHUNK COUNT, NOT A
+HANG. Entries here range from a handful of chunks to more than thirteen, and
+settle time tracks that count nearly linearly. Check how many chunks the entry
+has emitted before concluding anything is wrong with it.
