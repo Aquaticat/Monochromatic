@@ -624,3 +624,71 @@ back is attributed to the parameter it came from.
  not a table entry,
  and it is not
 attempted here.
+
+## A channel that is narrow conditionally, added 2026-08-07
+
+`join` was absent from the table, and that absence was nearly right rather than an oversight.
+It reads `length` and each index,
+ both trusted by the baseline above,
+ and then calls `ToString` on
+what it read.
+ For a primitive element that runs nothing.
+ For an object element it reaches that
+value's own `toString` or `valueOf`,
+ which is user code.
+
+So its channel is narrow conditionally,
+ on a fact about the receiver's elements rather than about
+the member,
+ and the table is keyed by member name and cannot say that.
+ Leaving it out was the correct
+answer for a table that can only speak about members.
+
+`MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION` names the composition,
+ in the same shape
+`MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES` already composes two facts,
+ and
+`memberChannelIsVerifiedNarrow` discharges it only where every element type is strictly primitive.
+The probe admits the coercion hit for this channel alone,
+ exactly as it admits the species hook for
+the species channel,
+ so a member claiming it still fails on anything else.
+
+### Strictly primitive, and the fixture that insisted on it
+
+The first condition was "elements cannot carry mutable state",
+ reusing `typeCanCarryMutableState`.
+`elementCoercionEffect` in `readonly-member-channel-invalid.ts` refutes that in one run:
+ its element
+is `type SealedLabel = { readonly label: string; }`,
+ which carries nothing writable and is still an
+object,
+ so coercing it reaches whatever `toString` the runtime value actually has and no shape in
+the type system constrains that.
+
+Worth stating because the obvious helper is wrong for this too:
+ `receiverElementsArePrimitive` in
+`effect-primitive-origin.ts` delegates to the same looser test and would admit the sealed object.
+
+### Measured
+
+Workspace either side:
+ 3016 errors to 2967,
+ 1678 rule findings to 1628,
+ semantic failures and
+read-only offers unchanged at 0 and 33.
+ Sixty findings removed and ten added,
+ and every one of the
+ten is at a location that also appears among the removed:
+ its `join` cause was discharged and another
+cause remains,
+ so no parameter became opaque that was not opaque before.
+
+One diagnostic sentence moved rather than disappearing.
+ `values.join` over `readonly SealedLabel[]`
+still reports and now reads "collection calls" instead of "method calls",
+ because
+`COLLECTION_MEMBER_NAMES` derives from these tables.
+ That wording change is what a first reading of the
+failing pin mistook for a lost report,
+ and the finding was there the whole time.

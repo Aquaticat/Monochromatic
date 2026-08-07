@@ -79,6 +79,20 @@ export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES: unique symbol = Symbol(
  * Absence from the table is never a claim that a member dispatches, only that
  * nothing here has shown it does not.
  */
+/**
+ * Member reads its receiver by index and then coerces each element it read.
+ *
+ * Narrow conditionally rather than absolutely, which is why it is its own symbol.
+ * `memberChannelIsVerifiedNarrow` discharges it only where every element type is strictly
+ * primitive, and withholds otherwise.
+ */
+export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION: unique symbol = Symbol(
+  'collection member reads its receiver by index and coerces each element it read',
+);
+
+/**
+ * Member opens a channel this authority has not verified.
+ */
 export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
   'collection member has no verified user-code channel',
 );
@@ -89,7 +103,8 @@ export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
 export type MemberUserCodeChannel =
   | typeof MEMBER_CHANNEL_INTERNAL_SLOT
   | typeof MEMBER_CHANNEL_RECEIVER_INDEX
-  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES;
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION;
 
 /**
  * Default-library collection members whose user-code channel is verified, by owner.
@@ -120,6 +135,7 @@ const CHANNELS_BY_OWNER: Readonly<
   Record<string, Readonly<Record<string, MemberUserCodeChannel>>>
 > = {
   Array: {
+    join: MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
     slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -140,6 +156,7 @@ const CHANNELS_BY_OWNER: Readonly<
     entries: MEMBER_CHANNEL_RECEIVER_INDEX,
   },
   ReadonlyArray: {
+    join: MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
     slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -237,7 +254,7 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 75;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 77;
 
 /**
  * Members returning an iterator, whose entries claim creation and drainage together.

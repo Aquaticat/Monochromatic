@@ -9,6 +9,7 @@ import {
   ITERATOR_MEMBER_NAMES,
   UNPAIRED_VIEW_INTERFACES,
   MEMBER_CHANNEL_RECEIVER_INDEX,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
   MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
   MEMBER_CHANNELS_BY_INTERFACE,
   memberInvokesObserver,
@@ -473,6 +474,13 @@ await describe({
                  * channel from becoming a way to list anything. */
                 if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES)
                   return (hit !== 'species') && (!RECEIVER_INDEX_HITS.has(hit,));
+                /* The coercion channel admits own-index access and the coercion itself, and
+                 * nothing else. That is not a free pass: the consumer discharges this channel
+                 * only where every element is strictly primitive, so the admitted coercion is
+                 * one that provably runs nothing. */
+                if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION)
+                  return (hit !== 'element-coercion')
+                    && (!RECEIVER_INDEX_HITS.has(hit,));
                 return true;
               },);
             if (disallowed.length > 0)

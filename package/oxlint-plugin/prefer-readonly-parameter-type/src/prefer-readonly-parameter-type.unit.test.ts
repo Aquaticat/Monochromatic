@@ -257,7 +257,13 @@ children: [
        * it an enumeration "without a hook-class effect", so recognizing it is the fixture
        * author's stated intent rather than a weakening. No offer appeared with the report
        * removed, which is the check that matters: this file emits none. */
-      expect(diagnostics.length,).toBe(3,);
+      /* Two, since `joinPlainElements` stopped reporting when `join` gained the coercion
+       * channel. Its elements are `number`, so the coercion the member performs provably
+       * runs nothing and the receiver claim is answered. `labels.toSorted` and the `String`
+       * argument still report, which is what keeps this from reading as a blanket discharge
+       * of the fixture: the first invokes a comparator and the second hands a value to a
+       * host call that can reach a getter. */
+      expect(diagnostics.length,).toBe(2,);
       /* Every one still says the input reaches something unproven, and the collection findings
        * among them now say it in the collection message's words: `join` and a bare `toSorted()`
        * supply no observer to analyze, so they keep reporting and get the text that names what
@@ -407,10 +413,16 @@ children: [
       },),).toBe(true,);
       /* `join` returns a `string`, so the result condition alone would discharge it
        * while it coerces every element. Dropping the verified-channel condition puts
-       * this diagnostic out. */
+       * this diagnostic out.
+       *
+       * Named as a collection call since `join` joined the channel table under the
+       * coercion channel. The finding is unchanged and so is the reason for it: its
+       * elements are `SealedLabel`, an object, so the coercion reaches that value's own
+       * `toString` and the channel is withheld. Only the sentence naming the calls moved,
+       * which is what `COLLECTION_MEMBER_NAMES` deriving from the tables does. */
       expect(messages.some(function coercionStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "values" is used as the object for these method calls: values.join [',
+          'The function input named "values" is used as the object for these collection calls: values.join [',
         );
       },),).toBe(true,);
       /* `ReadonlyMap.has` reaches no user code and returns a boolean, so the

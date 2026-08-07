@@ -22,6 +22,7 @@ import {
 } from './effect-default-library-view-members.ts';
 import {
   collectionMemberUserCodeChannel,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
   MEMBER_CHANNEL_UNPROVEN,
   memberInvokesObserver,
 } from './effect-member-channel-authority.ts';
@@ -198,9 +199,11 @@ export function collectionStructureClaim({
 export function memberChannelIsVerifiedNarrow({
   project,
   declaration,
+  elementsArePrimitive,
 }: {
   readonly project: Project;
   readonly declaration: Node;
+  readonly elementsArePrimitive: boolean;
 }): boolean {
   if ((!isMethodSignatureDeclaration(declaration,))
     || (!isIdentifier(declaration.name,))
@@ -221,9 +224,19 @@ export function memberChannelIsVerifiedNarrow({
     .text;
   if (memberInvokesObserver({ memberName, },))
     return false;
-  return collectionMemberUserCodeChannel({
+  /**
+   * Channel this member opens on its receiver.
+   */
+  const channel = collectionMemberUserCodeChannel({
     ownerName: owner.name
       .text,
     memberName,
-  },) !== MEMBER_CHANNEL_UNPROVEN;
+  },);
+  /* One channel is narrow conditionally: a member coercing what it read reaches user code
+   * exactly when an element is not primitive. `parts.join(' ')` over strings runs nothing, and
+   * the same call over `{ readonly label: string }` reaches that value's own `toString`, which
+   * no shape in the type system constrains. */
+  if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION)
+    return elementsArePrimitive;
+  return channel !== MEMBER_CHANNEL_UNPROVEN;
 }

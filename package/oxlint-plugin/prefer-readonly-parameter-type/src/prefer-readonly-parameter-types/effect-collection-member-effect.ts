@@ -21,6 +21,7 @@ import {
   memberChannelIsVerifiedNarrow,
 } from './effect-default-library-readonly-view.ts';
 import { rootParameterOrigins, } from './effect-call-resolution.ts';
+import { receiverElementsArePrimitiveHere, } from './effect-receiver-elements.ts';
 import {
   callResultElementReceiver,
   callResultReceiver,
@@ -112,6 +113,10 @@ function receiverClaimAnswerable({
   if (!memberChannelIsVerifiedNarrow({
     project,
     declaration,
+    elementsArePrimitive: receiverElementsArePrimitiveHere({
+      checker,
+      call,
+    },),
   },))
     return false;
   /**
