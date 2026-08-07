@@ -11369,3 +11369,44 @@ structural reasons;
  here an offer appearing is genuinely possible,
  and the offer set is the
 gate rather than a formality.
+
+#### Reading the decision point changed the plan
+
+Three things settled the shape,
+ each read rather than assumed.
+
+The predicate is not reachable from where the decision is made.
+`readonlyViewElementApplications` holds the project,
+ the checker,
+ the enclosing body and an
+optional analysis root,
+ and nothing that reaches the inbound graph.
+Consulting it there means threading the summaries,
+ the analysis budget and the indexed
+sources down into the view layer,
+ which is the wrong shape for a question asked about a
+declaration rather than about a call.
+
+The opacity cannot currently be traced back to this cause.
+`effect-opaque-boundary.ts` sets its provenance to `effectCallName(call.expression,)`,
+ the
+call's own name such as `rows.slice`,
+ rather than a category.
+So a later pass cannot tell opacity charged for a returned result from opacity charged for
+any other unresolved call,
+ and a post-pass has nothing to select on.
+
+Both point at the same plan,
+ and it is cheaper than threading anything.
+Record a distinguishable category when the refusal is specifically that the result escapes by
+return while its origins are recorded.
+Then add a pass over summaries that withdraws opacity whose only cause is that category,
+ for
+callables whose inbound enumeration finds no synthetic unknown caller.
+
+The demand bound falls out rather than being imposed.
+The expensive signature query is asked only for callables that both record returned container
+origins and carry that category,
+ which is a small fraction of a program,
+ and it is asked
+about the declaration once rather than about every call in its body.
