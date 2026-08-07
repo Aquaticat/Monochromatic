@@ -626,7 +626,7 @@ A test file covering sync matchers but skipping async matchers is the same as no
 `AGENTS.md` deliberately does not expose the existence of Claude Code hooks,
  not merely their names:
  the stop hook (`ccsr`) enforcing hedge-phrase and trailing-question rules
- and refusing stops unconditionally up to a depth limit,
+ and refusing stops that state says another turn could still advance,
  the PreToolUse guardrail (`ccgr`),
  the roadmap PostToolUse type-check.
  Flagging the machinery at all lets agents game the surface pattern (swapping one hedge for a novel one that passes but carries the same epistemic gap) and reframes an internalized rule as an external gate to dodge.

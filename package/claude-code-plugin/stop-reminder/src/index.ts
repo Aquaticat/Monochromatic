@@ -2,8 +2,9 @@
 
 /**
  * Claude Code Stop hook that detects uncertain language and trailing questions
- * in Claude's responses, and that refuses every stop so a turn cannot end on an
- * announced-but-unperformed next action.
+ * in Claude's responses, and that refuses a stop whenever pushing could
+ * plausibly help, so a turn cannot end on an announced-but-unperformed next
+ * action. Releases are decided from state, never from the response text.
  *
  * Thin shim; handler logic, parser, and writer live in
  * `@monochromatic-dev/claude-code-plugin-source/handler/stop-reminder`.

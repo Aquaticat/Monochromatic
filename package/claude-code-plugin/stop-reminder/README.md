@@ -2,8 +2,7 @@
 
 Claude Code `Stop` hook that detects uncertain language in Claude's responses
 and reminds it to investigate rather than guess,
-and that refuses every stop unconditionally,
-whether or not work remains.
+and that refuses a stop whenever pushing could plausibly help.
 
 ## What it does
 
@@ -36,7 +35,8 @@ for wording Claude was already told about.
 ## Forced continuation
 
 Separately from the response-quality detectors,
- the hook blocks every stop unconditionally.
+ the hook blocks a stop without reading the response text at all,
+ releasing only when state shows another turn cannot help.
 This exists because Claude routinely ends a turn by announcing its next action
 instead of performing it,
  leaving the user to type `Continue.`
