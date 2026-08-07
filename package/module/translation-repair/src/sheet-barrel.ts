@@ -5,7 +5,14 @@
 // pass rather than inside one. Split from the pipeline barrel so each stays
 // under the file-size budget.
 
-export { ArtifactParseError, } from './artifact-guard.ts';
+export {
+  ArtifactParseError,
+  requireArray,
+  requireBoolean,
+  requireCount,
+  requireRecord,
+  requireString,
+} from './artifact-guard.ts';
 export {
   GradedSheetExistsError,
   resolveSheetPath,
