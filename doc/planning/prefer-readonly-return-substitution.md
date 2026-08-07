@@ -12451,3 +12451,55 @@ that cannot see is a probe harness,
  a per-file lint scope,
  or a predicate handed an
 `AsExpression` where it expects a name.
+
+### Auditing the wrapper class across the rule
+
+The unwrap finding is about a predicate handed an `AsExpression` where it expects a name,
+ so
+every other place the rule tests `isIdentifier` was checked for the same hazard.
+Two shapes exist and only one of them has it.
+
+**Enumerate then filter** is immune.
+`resultEscapesCallable` walks `collectAstNodes(body,)` and keeps the identifiers,
+ and a
+wrapper is a separate node *containing* the identifier rather than replacing it,
+ so nothing is
+hidden.
+The same holds everywhere `collectAstNodes` feeds the test.
+
+**Walk then test at the endpoint** is the hazard,
+ because there the wrapper *is* the endpoint.
+`bindingAssignedWithin` was the only instance sitting in a charge-dropping position,
+ and the
+unwrap already fixes it.
+
+The others in that shape fail the safe way.
+`effect-result-holders.ts` descends wrappers itself through `carrierSuccessors`.
+`inspectDirectWrite` returns early only for a bare name,
+ so a wrapped target falls through to
+`expressionOrigins` and is over-attributed,
+ which adds a charge.
+`receiverHoldsConstructedContainer` suppresses a charge when it recognises a locally built
+container,
+ so failing to recognise one through a wrapper leaves the charge standing.
+
+Checked rather than reasoned,
+ on the most dangerous member of the class:
+ a mutation hidden
+behind a cast.
+`rowsPlain.push(...)` and `(rowsCast as Labelled[]).push(...)` produce identical output,
+ and
+neither parameter is offered.
+Had the cast hidden the write,
+ `rowsCast` would have been offered read-only while its plain
+twin was not.
+
+The first attempt at that probe was inconclusive and nearly reported as a result.
+Both functions carried `@mutates`,
+ which makes a correctly contracted mutation silent either
+way,
+ so the probe could not have distinguished a seen write from a missed one.
+Removing the contract is what made absence of an offer mean something.
+That is the fifth instance in this session of an instrument that could not answer the question
+put to it,
+ and the second where the tell was a result that looked clean.
