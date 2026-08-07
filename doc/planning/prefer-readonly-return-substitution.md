@@ -11009,3 +11009,33 @@ Removing a cap deletes a branch rather than adding one,
 the loop,
  and the threshold and its reason sit on the visited set where a reader tempted to
 reinstate a bound will be reading.
+
+#### What the alias cap removal measured
+
+Workspace either side:
+ errors unchanged at 2908,
+ warnings unchanged at 3902,
+ rule findings
+unchanged at 1570,
+ and the read-only offer set byte-identical at 34.
+No diagnostic moved.
+
+Wall time 10m31s against 10m of the increment before it,
+ slightly faster rather than slower.
+Both bounds in this neighbourhood were cost bounds by their own comments,
+ and removing both
+cost nothing measurable.
+That is the only cost data on either,
+ and it is worth having before a third conservatism in the
+same walk is considered.
+
+So this cleared nothing,
+ exactly like the chain cap before it.
+Chains of seven local aliases between a container call and a write do not appear in the
+corpus,
+ and the entry predicted that.
+What it removes is a way for the rule to be confidently wrong about code nobody has written
+yet,
+ in the direction that produces advice rather than noise:
+ not a missing report but a
+parameter offered read-only while the callable writes through it.
