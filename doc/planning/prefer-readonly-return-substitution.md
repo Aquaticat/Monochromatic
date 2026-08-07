@@ -11528,3 +11528,68 @@ parameter,
 That list does not exist yet,
  and producing it is the first thing the next attempt should do,
 before any code is kept.
+
+#### The blast radius, enumerated
+
+The reach that reverted this twice turned out to be six diagnostics and one pinned effect,
+not the dozen the earlier entry guessed at.
+Enumerating it took one probe over the pinned list and a lint task per fixture,
+ and it
+converts the remaining work from a review of unknown size into three named decisions.
+
+One pinned effect changed out of fifty-three,
+ and it is correct.
+`objectArraySortCallbackEffect` goes from `opaque=[0]` to clean while recording
+`returned=[0]`,
+ so what it trades is an unexplained opacity for a precise fact about where
+its result came from,
+ which callers substitute through.
+That is the property the discharge has to have.
+
+Three went quiet in the result-provenance fixture,
+ and two of them are the ones this document
+predicted would.
+The entry recording the returned-container trio said they are "here as the shape the deferred
+discharge would clear",
+ with the condition that "the write attribution asserted for them in
+`effect-summaries.unit.test.ts` has to survive:
+ a discharge that empties both is the failure".
+It survives.
+The third,
+ `returnedLookupEffect`,
+ hands back the receiver's own value through
+`facts.get(key,)` and wants the same check applied before it is accepted.
+
+#### The exclusion the enumeration found
+
+The other three are all `ForeignBorrowed` parameters,
+ and they are the reason this cannot land
+as written.
+
+```text
+filterForeignFixtureTree
+filterAliasedForeignFixtureTree
+sortForeignFixtureTree
+```
+
+`effect-opaque-boundary.ts` names the first two directly.
+Its comment records that they "lost their finding entirely" once before,
+ diagnosed as a
+defect and fixed by asking the element question about an unresolved receiver.
+Discharging them now reintroduces precisely that loss.
+
+Which is the right answer rather than an obstacle.
+`ForeignBorrowed` marks an ownership boundary,
+ and a container returned out of foreign-owned
+state is not something an in-program caller can be trusted to account for,
+ however completely
+that caller enumerates.
+The discharge needs an exclusion for it,
+ and with one the three findings should return while
+the six correct outcomes stay.
+
+So the next attempt is the two predicates,
+ both gate edits,
+ that exclusion,
+ and then a
+justified update of two counts and one pin rather than a bare renumbering.
