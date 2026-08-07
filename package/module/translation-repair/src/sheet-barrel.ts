@@ -52,6 +52,10 @@ export {
   scoreGradedPrecision,
 } from './grade-agreement.ts';
 export { formatRepairSheet, } from './repair-sheet.ts';
+export {
+  type AttemptMap,
+  readAttemptMap,
+} from './corpus-run/attempt-store.ts';
 export { resolveRunsDir, } from './corpus-run/run-config.ts';
 export {
   bandOf,
