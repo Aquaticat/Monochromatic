@@ -11039,3 +11039,71 @@ yet,
  in the direction that produces advice rather than noise:
  not a missing report but a
 parameter offered read-only while the callable writes through it.
+
+### The value-origin pruning stays, 2026-08-07
+
+Raised by external review as an under-attribution hole,
+ confirmed by measurement,
+ and
+deliberately left alone.
+Recorded because "confirmed and not fixed" is easy to mistake later for "not noticed".
+
+`expressionValueOrigins` filters its successors through `expressionCanCarryMutableState`
+before traversing them,
+ so a selected operand whose declared type carries no mutable state is
+never followed.
+The reviewer's shape reaches a parameter behind exactly such an operand:
+
+```ts
+for (const raw of choose ? (rows as unknown as string) : '') {
+  (raw as unknown as Row).label = 'written';
+}
+```
+
+Measured,
+ with the honest iteration as the control:
+
+```text
+prunedSelector, prunedNullish   referentMutated=[]   opaque=[]
+honestIteration                 referentMutated=[0]  opaque=[]
+freshContainer                  referentMutated=[]   opaque=[]
+```
+
+The first line is a clean parameter on a callable that writes through it,
+ which is the state
+an offer is minted from,
+ so the hole is real on its own terms.
+
+What decided it was asking which shapes can reach it.
+Every honestly typed spelling attributes correctly:
+
+```text
+honestUnion      choose ? rows : 'abc'          referentMutated=[0]
+honestOptional   rows ?? []                     referentMutated=[0]
+widenedUnknown   const held: unknown = rows     referentMutated=[0]
+```
+
+The last is the one that settles it.
+`typeCanCarryMutableState` fails closed on `unknown` by its own documentation,
+ so widening
+does not prune,
+ and the only way through is to assert past `unknown` to a primitive.
+That is the canonical statement that the author knows better than the checker.
+
+So the hole is not reachable by writing ordinary code,
+ only by telling the checker something
+false.
+The whole rule rests on declared types,
+ and an author who writes `as unknown as` defeats any
+analysis built on them;
+ the pruning is type evidence used in the one direction its own comment
+permits.
+
+The available fix is to collect value origins at every node the element walk reaches rather
+than at containers and the root.
+That adds origins wherever the pruner currently declines,
+ across the corpus,
+ against a shape
+that requires a deliberate lie.
+Precision is what pays for the offers this rule does make,
+ so it is not spent here.
