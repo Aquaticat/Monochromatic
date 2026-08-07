@@ -487,7 +487,17 @@ export function callResultElementReceiver({
    */
   const pairedType = checker.getTypeArguments(resultHeldType,)
     .at(provenance.pairedElementIndex,);
-  return (pairedType === heldType)
+  if (pairedType === undefined)
+    return RESULT_NOT_RECEIVER_STATE;
+  /* The same comparison the element relation makes, and it needs the same latitude for the
+   * same reason: a narrowing of the receiver's element type can only have come from the
+   * receiver. Identity alone was measured too strict one level up, on a `filter` whose
+   * predicate is a type guard, and nothing about pairing changes that argument. */
+  return heldTypeSurvives({
+    checker,
+    heldType,
+    resultHeldType: pairedType,
+  },)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
 }

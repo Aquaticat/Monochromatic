@@ -693,6 +693,25 @@ unchanged at 0 and 33.
 that also appears among the removed,
  so no parameter became opaque that was not opaque before.
 
+The paired comparison got the same latitude,
+ in a separate commit that changes nothing measurable and
+lands anyway.
+ It is not new capability:
+ `heldTypeSurvives` was introduced for the element relation and
+its sibling branch was left on strict identity,
+ so the asymmetry was introduced by this work rather than
+found in it,
+ and there is no argument for the paired comparison being the stricter of the two.
+ Measured
+identical either side,
+ 2959 errors and 1621 findings with offers at 33.
+ Landing a no-op is the exception
+here rather than the rule,
+ and the exception is "finish the edit you started",
+ not "keep a true fact
+nothing needs":
+ the spread ascent and the seeded fold were both reverted under the latter.
+
 ### Where the refusals actually are, and which gate to instrument
 
 Measured across six files on 2026-08-07,
