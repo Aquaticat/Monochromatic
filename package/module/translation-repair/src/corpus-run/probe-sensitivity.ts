@@ -151,7 +151,7 @@ async function probeOne(
   /**
    * Screened tally of the single region.
    */
-  const tally = report.regions[0];
+  const [tally,] = report.regions;
 
   console.log(
     `SENSITIVITY ${region.envelopeId} prior=${condition} expected=${
