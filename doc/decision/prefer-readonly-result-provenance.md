@@ -712,6 +712,60 @@ here rather than the rule,
 nothing needs":
  the spread ascent and the seeded fold were both reverted under the latter.
 
+### A refusal is not a finding, and the receiver side is clean
+
+Measured 2026-08-07 after the last increment landed,
+ and it corrects the method this document
+recommended two sections down as much as it reports a result.
+
+Instrumenting the reporting decision across six of the files carrying the most findings gives 51
+channel refusals,
+ 2 escapes,
+ 2 no-relation.
+ Instrumenting the gate before it gives 236
+`receiver-no-origins`.
+ That last number is the tell:
+ most collection calls in this repository are on
+locals,
+ their receiver carries no parameter origins,
+ and they were never going to produce a receiver
+finding at all.
+ Counting refusals counts those too.
+
+So the denominator has to be refusals whose receiver *is* parameter-derived,
+ which is the only kind that
+can report.
+ That subset is 13:
+
+- 8 `join`
+- 2 `filter`
+- 1 `findLast`
+- 1 `splice`
+
+And all 13 are correct.
+ The `join` calls are over arrays of objects,
+ where coercion genuinely reaches
+each element's `toString`,
+ which is exactly what the conditional channel added above withholds;
+ `filter`
+and `findLast` are observer-bearing and answered elsewhere by design;
+ `splice` restructures.
+
+**The receiver side has no incorrect refusal left in this sample.** That matches the classification
+above from the other direction:
+ 1172 of the findings are argument-side,
+ and the receiver-side groups
+that remain are host calls, bodyless callables and arguments genuinely stored into caller-owned
+containers.
+ The work that remains in this rule is not on the path this document is about.
+
+One caution for the next reader,
+ since this cost a measurement to learn:
+ a cold cache is required.
+`buildEffectSummaryIndex` reuses summaries,
+ so a second instrumented run over the same files prints
+nothing at all and reads as "no refusals" rather than "already answered".
+
 ### Where the refusals actually are, and which gate to instrument
 
 Measured across six files on 2026-08-07,
