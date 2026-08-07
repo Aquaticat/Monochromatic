@@ -10902,3 +10902,52 @@ row through it.
 That is the guarded failure occurring today rather than a precision loss,
  and it is what the
 remaining entry is now about.
+
+#### What the composition measured
+
+Workspace either side:
+ 2904 errors to 2908,
+ 1566 rule findings to 1570,
+ warnings unchanged at 3902,
+and the read-only offer set byte-identical at 34,
+ none withdrawn and none appearing.
+Sweep wall time 10m42s,
+ so removing the element walk's bound cost nothing measurable.
+
+Four findings added and none cleared,
+ which is the direction this change can move in:
+ it adds
+attribution,
+ every consumer of the origins adds a charge,
+ and a charge is a report.
+
+All four name `availableModels` in `package/pi-shared/model-selection`,
+ and the shape is the
+one the synthetic fixture was written from,
+ found in the corpus rather than invented:
+
+```ts
+const aliases = matches.filter(function keepAlias(model,) { return isAlias(model.id,); },);
+const candidates = aliases.length > 0 ? aliases : matches;
+const sortedCandidates = candidates.toSorted(compareByIdDesc,);
+```
+
+`candidates` is a name whose initializer selects between two names,
+ one of which is a filter
+of a container that traces back to the parameter.
+The walk stopped at that conditional before,
+ so the receiver of `toSorted` carried no origin
+and the parameter was not implicated.
+It is implicated now,
+ and correctly:
+ the parameter really does reach that call.
+
+Worth stating plainly,
+ because the temptation is to read four new reports as a regression.
+The finding is true.
+Whether the call should then be discharged is the escape question this document owns,
+ and it
+is a separate step from establishing that the parameter reaches the call at all.
+The same sequence happened two increments earlier,
+ where composing container relations added
+a finding that the locale channel then discharged.
