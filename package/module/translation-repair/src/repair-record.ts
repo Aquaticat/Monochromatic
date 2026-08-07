@@ -60,6 +60,24 @@ export type RepairDisposition =
   | 'no-region';
 
 /**
+ * Every disposition the pipeline writes, as data.
+ *
+ * Kept beside the union so a reader can check a value against it without
+ * restating the list, which is how the two drift apart.
+ *
+ * @example
+ * ```ts
+ * const known = REPAIR_DISPOSITIONS.includes('shipped',);
+ * ```
+ */
+export const REPAIR_DISPOSITIONS: readonly RepairDisposition[] = [
+  'shipped',
+  'not-selected',
+  'withdrawn',
+  'no-region',
+];
+
+/**
  * Probe result as one issue's record carries it.
  *
  * @example

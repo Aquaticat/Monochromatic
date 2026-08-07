@@ -9,7 +9,11 @@ import type {
   ClaimAdmissibility,
   RegionDefectTally,
 } from './introduced-defect-screen.ts';
-import type { IssueProbeReading, } from './repair-record.ts';
+import {
+  type IssueProbeReading,
+  REPAIR_DISPOSITIONS,
+  type RepairDisposition,
+} from './repair-record.ts';
 
 //region Artifact probe reading
 // Lifting shadow-mode probe readings back out of a settled artifact.
@@ -32,6 +36,53 @@ import type { IssueProbeReading, } from './repair-record.ts';
  * Disposition whose repair reached the reader, and the only one graded.
  */
 const SHIPPED_DISPOSITION = 'shipped';
+
+/**
+ * Reads a record's disposition, refusing a value the pipeline never writes.
+ *
+ * @param value - candidate disposition from artifact JSON
+ *
+ * @param path - dotted path for error messages
+ *
+ * @returns Disposition as the pipeline recorded it
+ *
+ * @throws {@link ArtifactParseError} when the value is not one the pipeline
+ * writes, since silently filing it under not-shipped changes a denominator
+ *
+ * @example
+ * ```ts
+ * const disposition = requireDisposition({ value, path, },);
+ * ```
+ */
+function requireDisposition(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): RepairDisposition {
+  /**
+   * Candidate as a string, which it must be before it can be one of the set.
+   */
+  const text = requireString({
+    value,
+    path,
+  },);
+  /**
+   * Matching disposition, absent when the writer emitted something else.
+   */
+  const found = REPAIR_DISPOSITIONS.find(function matches(candidate,) {
+    return candidate === text;
+  },);
+  if (found === undefined)
+    throw new ArtifactParseError({
+      path,
+      reason: `one of ${REPAIR_DISPOSITIONS.join(', ',)}`,
+    },);
+  return found;
+}
 
 /**
  * Every admissibility the screen can record.
@@ -332,9 +383,21 @@ export function readArtifactProbe(
       };
     },)
     .filter(function wasShipped(entry,) {
-      return entry.record
-        .repairDisposition
-        === SHIPPED_DISPOSITION;
+      // Validated rather than compared directly. A disposition the pipeline
+      // never writes, a typo included, is not "some other disposition": it
+      // means writer and reader disagree, and a plain equality test would file
+      // it under not-shipped, shrinking the denominator of a rate with nothing
+      // anywhere recording that it happened.
+      //
+      // The repair reader deliberately does the opposite and keeps the
+      // disposition an unnarrowed string, because there an unrecognized value
+      // must still reach a human grader rather than drop the item. Here nobody
+      // reads it, so silence is the only outcome.
+      return requireDisposition({
+        value: entry.record
+          .repairDisposition,
+        path: `${path}.issues[${String(entry.index,)}].repairDisposition`,
+      },) === SHIPPED_DISPOSITION;
     },);
 
   /**

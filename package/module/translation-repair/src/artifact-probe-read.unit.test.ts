@@ -317,6 +317,25 @@ await describe({
     },),
 
     it({
+      name: 'THROWS on a disposition the pipeline never writes rather than '
+        + 'filing it under not-shipped. A typo is not another disposition, it '
+        + 'means writer and reader disagree, and quietly excluding the record '
+        + 'shrinks the denominator of a rate with nothing recording that it '
+        + 'happened',
+      fn: async () => {
+        expect(function readsUnknownDisposition() {
+          readArtifactProbe({
+            value: {
+              id: 'Kitten',
+              issues: [catRecord({ repairDisposition: 'shippped', },),],
+            },
+            path: 'Kitten',
+          },);
+        },).toThrow(ArtifactParseError,);
+      },
+    },),
+
+    it({
       name: 'treats an absent probe field as ordinary and counts it, because '
         + 'an artifact predating the probe is not a fault while a run whose '
         + 'probe never fired still has to be visible',
