@@ -530,7 +530,17 @@ children: [
        * `containerGrowthEffect` is what keeps that from being a blanket discharge. It
        * pushes a caller-owned row into a fresh container and is still reported at its row
        * parameter, because nothing attributes where that row ends up. */
-      expect(messages.length,).toBe(11,);
+      expect(messages.length,).toBe(14,);
+      /* Three of the fourteen are the returned-container trio, and all three are correct as
+       * things stand rather than tolerated. `returnsReceiverElements` hands back a container
+       * of the caller's own rows, which the escape condition refuses to discharge because
+       * nothing attributes a use that leaves the callable; its two callers inherit that.
+       *
+       * They are here as the shape the deferred discharge in
+       * `doc/planning/prefer-readonly-return-substitution.md` would clear. When it lands,
+       * these three go quiet and the write attribution asserted for them in
+       * `effect-summaries.unit.test.ts` has to survive: a discharge that empties both is the
+       * failure that document records being refuted once already. */
       /* The eleventh is the container record's visible consequence, and it is an offer
        * rather than a report. `heldContainerRestructureEffect` builds an array around its
        * parameter and pops it, so it restructures a container this callable made and writes

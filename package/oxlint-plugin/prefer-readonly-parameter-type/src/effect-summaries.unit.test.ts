@@ -285,6 +285,12 @@ await describe({
         const heldContainer = mutatedIndexes('heldContainerRestructureEffect',);
         /** Restructuring of a container the caller owns, reached through one hop. */
         const borrowedContainer = mutatedIndexes('borrowedContainerRestructureEffect',);
+        /** Returned origins of a callable handing back the receiver's own elements. */
+        const carriedContainer = returnedIndexes('returnsReceiverElements',);
+        /** Write through a container another callable returned. */
+        const wroteThroughCarried = mutatedIndexes('writesThroughReturnedContainer',);
+        /** Read of nothing but the returned container's length. */
+        const readCarriedLength = mutatedIndexes('readsReturnedContainerLength',);
         /** Mutation through a lookup narrowed by a runtime-erased assertion. */
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
@@ -327,6 +333,18 @@ await describe({
          * is not set, and the charge stands. Keying the record on locality rather than on
          * how the value was built discharges this and loses a real write. */
         expect(borrowedContainer,).toEqual([0,],);
+        /* A returned container of receiver elements is a fact callers propagate, and it was
+         * not recorded at all until the return asked its element sibling as well as its
+         * value one. The value question is right to answer nothing here: the array handed
+         * back is not `rows`. What a caller reaches through it is every element `rows` held. */
+        expect(carriedContainer,).toEqual([0,],);
+        /* Which is what makes the caller's write attributable. Dropping the element origins
+         * from the return empties both of these while every diagnostic count stays put,
+         * since the callables involved are opaque either way. */
+        expect(wroteThroughCarried,).toEqual([0,],);
+        /* And the control that keeps it from being blanket attribution: a returned origin
+         * says a caller can reach the parameter through the result, not that this one did. */
+        expect(readCarriedLength,).toEqual([],);
         /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
          * assertion expressions from `transparentOperand` empties this one. */
         expect(asserted,).toEqual([0,],);

@@ -17,6 +17,78 @@ type Labelled = {
 };
 
 /**
+ * Hands back a container holding the receiver's own elements.
+ *
+ * Half of the pair proving a returned container is a fact callers can propagate. The array
+ * returned is fresh and the elements in it are the caller's, so `expressionOrigins` finds
+ * nothing here and the element origins find the parameter. Before both were asked, this
+ * recorded no returned origin at all and every caller of it was left with nothing to
+ * substitute.
+ *
+ * @param rows - Rows whose elements the result carries.
+ *
+ * @returns fresh container of the caller's own rows.
+ *
+ * @example
+ * ```ts
+ * returnsReceiverElements([],);
+ * ```
+ */
+export function returnsReceiverElements(rows: readonly Labelled[],): readonly Labelled[] {
+  return rows.slice(0,);
+}
+
+/**
+ * Writes the caller's row through a container another callable returned.
+ *
+ * The half that makes the first half matter. The write lands on a row `rows` holds, reached
+ * through a container `returnsReceiverElements` built, so it is attributed to `rows` only
+ * when that callable records its returned origin. Its element sibling, writing through a
+ * returned element rather than a returned container, worked before this and is the control.
+ *
+ * @param rows - Rows whose element is rewritten through a returned container.
+ *
+ * @example
+ * ```ts
+ * writesThroughReturnedContainer([],);
+ * ```
+ */
+export function writesThroughReturnedContainer(rows: readonly Labelled[],): void {
+  /**
+   * Container returned by the callable above, holding the caller's rows.
+   */
+  const carried = returnsReceiverElements(rows,);
+  /**
+   * Row reached through the returned container.
+   */
+  const first = carried[0];
+  if (first === undefined)
+    throw new Error('Expected a carried row to rewrite.',);
+  first.label = 'rewritten';
+}
+
+/**
+ * Reads only how many rows a returned container holds.
+ *
+ * The control keeping the returned origin from becoming a blanket attribution. Nothing here
+ * reaches an element, so nothing may be recorded against `rows`: a returned origin says a
+ * caller *can* reach the parameter through the result, not that this caller did.
+ *
+ * @param rows - Rows counted through a returned container.
+ *
+ * @returns how many rows the returned container holds.
+ *
+ * @example
+ * ```ts
+ * readsReturnedContainerLength([],);
+ * ```
+ */
+export function readsReturnedContainerLength(rows: readonly Labelled[],): number {
+  return returnsReceiverElements(rows,)
+    .length;
+}
+
+/**
  * Mutates a parameter held inside an object this callable built.
  *
  * The first of the two programs `doc/planning/prefer-readonly-container-value-provenance.md`
