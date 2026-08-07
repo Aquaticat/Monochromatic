@@ -70,6 +70,10 @@ export {
 } from './corpus-run/slice-cache-store.ts';
 export { indexReadingsByIssue, } from './probe-issue-index.ts';
 export {
+  type DrawOutputs,
+  trackDrawOutputs,
+} from './corpus-run/draw-outputs.ts';
+export {
   bandOf,
   countSettledPerBand,
   MEDIUM_PAGE_BYTES,
