@@ -339,6 +339,22 @@ Apply it in a fork,
  then conclude.
 Covers reverting on a predicted regression.
 
+QPC:
+ "No difference" is evidence only from a probe proven able to show one.
+Run a positive control first:
+ a case that must move.
+Unvalidated null result means nothing.
+
+QIV:
+ Validate scope,
+ caches,
+ and harness before trusting a null.
+Single-file lint,
+ stale cache,
+ contract-silenced fixture,
+ wrong assertion:
+ each answers a different question than asked.
+
 ASK:
  **Non-measurable facts:
  ask.
