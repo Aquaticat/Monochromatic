@@ -1283,6 +1283,51 @@ read through them stays clean.
  and it is not what the findings
 named.
 
+### What it did, measured, and why most of the findings stayed
+
+Workspace either side:
+ 2924 errors to 2916,
+ 1586 rule findings to 1578,
+ warnings unchanged at 3902.
+ Eight
+findings cleared.
+ Read-only offers did not move,
+ holding at 34,
+ and stale `@mutates` findings held at 14.
+
+Forty-three findings named one of the three `toSorted` call sites before this,
+ and eight cleared,
+ so the
+gap is worth explaining rather than leaving as a shortfall.
+ The cause disappeared entirely at two sites and
+persists at seven.
+ Where it persists,
+ the reason is not `toSorted`.
+
+`orderedRoots` in `package/desktop-app/file-manager-electron/src/strip.ts` is the shape:
+ it returns
+`panes.filter(rootLike,).toSorted(bySpawnOrder,)`.
+ The chain looked like the explanation and is not.
+ Measured
+one hop at a time,
+ every container of caller elements is opaque when it is **returned**,
+ including
+`rows.filter(keeps,)` alone and `rows.filter(keeps,).slice(0,)`,
+ both of which use entries that predate this
+one.
+ A held or discarded result is clean;
+ a returned one is not.
+
+So the remainder is the escape question,
+ answered elsewhere and unchanged by this entry.
+ The eight that
+cleared are the ones whose result stayed inside its callable.
+ Nothing here argues the escape answer is
+wrong;
+ it argues only that `toSorted` was never the thing holding those seven back,
+ and that a future
+increment aimed at them should start from the returned container rather than from this table.
+
 ## Observer members whose result carries objects, an unresolved gap
 
 Measured 2026-08-07 alongside the `toSorted` work,
