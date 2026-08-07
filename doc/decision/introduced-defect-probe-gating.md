@@ -8,7 +8,9 @@ The probe stays in shadow mode,
  recording into the outcome and the artifacts while candidate selection ignores it,
 until its false-positive rate has been graded against a human repair sheet.
 
-This closes issue #53.
+This closes task #53 in the session task tracker,
+ which is a different numbering from GitHub issues;
+GitHub issue 53 is an unrelated port-registry item.
 
 ## Background
 
@@ -31,7 +33,7 @@ Ranked best first,
     Chosen.
     Preserves every correct fix,
      and the measurement that would settle the question is already scheduled at no extra quota.
-    Costs the single corroborated region across 79 continuing to ship.
+    Costs the single corroborated region across 83 continuing to ship.
 -   **Fall back to the runner-up editor candidate.**
     Preserves a repair at no new model calls,
      since every candidate was already produced,
@@ -47,7 +49,7 @@ Ranked best first,
      checking,
      probing,
      and selection per trigger,
-    to buy the one region's worth of preserved repair seen across eight entries.
+    to buy the one region's worth of preserved repair seen across nine entries.
 -   **Reject the whole chunk.**
     Simplest to implement and never ships a flagged repair.
     Ranked last because observed chunks resolve 9/9 to 17/17 accepted issues,
@@ -67,11 +69,13 @@ THE CORROBORATION COLUMNS SEPARATE CLEANLY.
  5,
  6,
  7,
- and 8 settled entries while the region count went 13,
+ 8,
+ and 9 settled entries while the region count went 13,
  67,
  68,
  72,
- 79.
+ 79,
+ 83.
 `minorityIntroduced` went from 1 to 6,
  tracking region count almost exactly.
 Probers keep making claims;
@@ -80,8 +84,8 @@ That is the shape of a sensitive but noisy instrument,
  and it is the opposite of the silently-always-negative failure the sensitivity check was built to rule out.
 
 THE DETERMINISTIC SCREEN IS HOLDING.
-Zero contradicted and zero unanchored across 79 regions,
- with `unprobedRecords` at zero over 198 shipped records,
+Zero contradicted and zero unanchored across 83 regions,
+ with `unprobedRecords` at zero over 202 shipped records,
 so the probe is reaching everything it should rather than skipping quietly.
 A quote must be new in the replacement,
  or gone from it for dropped content,
@@ -97,8 +101,9 @@ Only a human repair grade answers that,
 
 Reopen this decision when the round-three repair sheet has been graded
  and the probe's corroborated regions can be compared against those grades.
-That grading is tracked as issue #48;
- the comparison itself is tracked as its own issue so this deferral cannot quietly become an omission.
+That grading is tracked as task #48;
+ the comparison itself is task #60,
+so this deferral cannot quietly become an omission.
 
 Two outcomes are worth naming in advance:
 

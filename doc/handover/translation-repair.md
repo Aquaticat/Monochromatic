@@ -5319,6 +5319,39 @@ HANG. Entries here range from a handful of chunks to more than thirteen, and
 settle time tracks that count nearly linearly. Check how many chunks the entry
 has emitted before concluding anything is wrong with it.
 
+## Run 007 ended on its budget, not on its target
+
+`pass8-run-007` exited 0, which reads like success and is not one. The final
+lines are what matter:
+
+```text
+SOFT budget reached after 52381272ms; not starting new entries
+DONE processed=9 of pending=92; artifacts=9/92 elapsed=52381272ms
+```
+
+IT STOPPED BECAUSE TIME RAN OUT, having settled 9 entries of 92 pending in
+14.5 hours. Exit 0 means the driver shut down cleanly at its own soft budget,
+so never read a zero exit from `corpus-pass` as "the corpus was processed".
+Read the `DONE` line.
+
+TWO OF ELEVEN ATTEMPTED ENTRIES WERE LOST TO THE PER-ENTRY DEADLINE. `Dethelly`
+and `Futajuhuacha` each burned the full 10800000ms (3 hours) and produced no
+artifact, so roughly 41 percent of the budget bought nothing. Tracked as its own
+task; do not change either limit without measuring first, because the large band
+is the thinnest part of the sample pool and abandoning large entries earlier
+would degrade stratification exactly where it is weakest.
+
+WHAT THE 9 SETTLED ENTRIES SUPPORT. `draw-sample` produced a real round-three
+sheet from them: small 3 entries with 22 accepted, medium 4 with 108, large 2
+with 72, pool 202, drawn 50, `unrecordedRepairs=0`. All three bands are
+represented, so the sheet is gradeable. Entry coverage is still far short of the
+~10/10/10 target, so treat the resulting precision as provisional until more
+entries settle.
+
+RUN 008 IS ACCUMULATING ON TOP OF THIS. Settled entries are not recomputed and
+the slice cache preserves partial work, so the two timed-out entries resume from
+their cached chunks rather than restarting from zero.
+
 ## Probe trigger rate: the decision doc is canonical now
 
 Issue #53 is decided: the probe stays in shadow mode, recorded in
@@ -5334,11 +5367,11 @@ with `mise run //package/module/translation-repair:score-probe`, which costs no
 quota and reads only local artifacts.
 
 THE SERIES SO FAR, for whoever wants the shape without rerunning anything:
-`majorityIntroduced` has been 1 at every checkpoint (1, 5, 6, 7, 8 entries)
-while regions went 13, 67, 68, 72, 79. The numerator has never moved.
-`minorityIntroduced` was 1 at one entry, 5 at five, and 6 at eight; the
-intermediate checkpoints recorded only the majority column, so treat the
-minority series as three points rather than five. `contradicted` and
-`unanchored` are still zero, and at eight entries `unprobedRecords` is zero
-across 198 shipped records, so the probe is reaching everything rather than
+`majorityIntroduced` has been 1 at every checkpoint (1, 5, 6, 7, 8, 9 entries)
+while regions went 13, 67, 68, 72, 79, 83. The numerator has never moved.
+`minorityIntroduced` was 1 at one entry, 5 at five, and 6 at both eight and
+nine; the six- and seven-entry checkpoints recorded only the majority column, so
+treat the minority series as four measured points, not six. `contradicted` and
+`unanchored` are still zero, and at nine entries `unprobedRecords` is zero
+across 202 shipped records, so the probe is reaching everything rather than
 skipping quietly.
