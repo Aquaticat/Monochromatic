@@ -11801,3 +11801,151 @@ result still report.
 An offer on a parameter with a recorded write would be the failure,
  and would mean the
 discharge is firing where substitution does not happen.
+
+### Four fail-open branches, found by review rather than by measurement
+
+The workspace sweep after the discharge landed was byte-identical in its offer set,
+ and that
+turned out not to be evidence of soundness.
+It is evidence that the workspace contains none of the shapes below,
+ which is a different
+claim,
+ and the fixture where the discharge does fire exercised none of them either.
+So the discharge shipped with no test covering any branch that decides it.
+
+A review pass over the whole helper found four,
+ each confirmed against source before being
+believed,
+ and each in the direction that mints a wrong offer.
+
+#### The return had to belong to the callable whose callers were counted
+
+`callIsReturnedOutright` tests that a call's parent is a `ReturnStatement`.
+It does not test whose.
+Callers are enumerated for the body the gates hand in,
+ so:
+
+```ts
+function outer(rows: Row[],): () => Row[] {
+  function inner(): Row[] {
+    return rows.slice(0,);
+  }
+  return inner;
+}
+```
+
+discharges `inner`'s return on `outer`'s callers.
+They substitute for `outer`,
+ whose result is a callable and not a container,
+ so no caller
+accounts for a write through what `inner` later hands back.
+`returnsFromNestedCallable` in the provenance fixture is the program,
+ and it keeps its report
+while its two siblings,
+ differing only in where the `return` is written,
+ keep their offers.
+
+The ascent answering this is the one `resultEscapesCallable` already had for its own reason,
+so it moved to `effect-enclosing-callable.ts`.
+The two had disagreed about the case neither reaches:
+ the escape test answered "not nested"
+on running off the root,
+ which is permissive,
+ where this needs the conservative answer.
+Unified on the conservative one.
+
+#### The declaration hop was borrowed from a walk with the opposite failure direction
+
+`bindingDeclarationInitializer` resolves a declaration initializer and ignores later
+assignment.
+Its own doc calls that "the over-attributing direction and deliberate",
+ correctly:
+ a
+reassigned local keeps answering for the container it was declared with,
+ which costs
+precision and never an offer.
+
+Read backwards for a proof that a receiver is *not* foreign-owned,
+ the same property is
+unsound,
+ and `filterReassignedForeignFixtureTree` answers clean two separate ways.
+Following the hop reaches the owned array the binding was declared with.
+Stopping at the name instead reaches a name carrying the type that array gave it.
+Only refusing a reassignable binding outright reports it,
+ which is why the fix is
+`bindingIsReassignable` rather than a `const`-only hop:
+ a hop returning one sentinel cannot
+distinguish a parameter,
+ which must be classified,
+ from a reassignable local,
+ which must not.
+
+`declaredConst` already carried this argument for the container record against the same `let`
+shape,
+ and moved beside the hop it guards.
+
+#### The receiver-chain descent read syntax where it needed provenance
+
+Every member call was descended without asking what its result is made of.
+`owned.map(lift,).slice()` reaches `owned`,
+ reports a clean base,
+ and every element of the
+returned container came from the observer.
+`map` and `flatMap` carry no receiver relation for exactly that reason,
+ so requiring one
+turns the assumption into a test.
+`filterMappedForeignFixtureTree` is the program.
+
+#### An unresolved base was skipped rather than refused
+
+When the descent ended at `NO_MEMBER_RECEIVER` the ownership test was not run at all,
+ which
+reads an absent answer as a clean one.
+
+This one has no discriminating program and is recorded as an invariant rather than as a
+measured fix.
+The relation requirement rejects the same shapes earlier,
+ since a call reaching the sentinel
+is a call whose callee names no member and therefore carries no receiver relation either.
+A fixture written for it produced no diagnostic either way and was removed rather than kept as
+a control that controls nothing.
+
+### Known limitations left in place, with the argument for leaving them
+
+`callersAllResolve` tests that each enumerated usage resolves.
+That is an AST-resolution test,
+ not a substitution test,
+ and the difference is real:
+
+```ts
+export function copyRows(rows: Row[],): Row[] {
+  return rows.slice();
+}
+
+void copyRows([],);
+```
+
+The in-project call makes the enumeration non-empty and resolvable.
+A consumer outside the repository can then write `copyRows(rows,)[0].value = 1`,
+ and no
+substitution attributes it.
+
+Left as it is,
+ and the reason is consistency rather than comfort.
+`completeForeignBorrowedGraph` already treats "every usage TypeScript can enumerate resolves"
+as completeness,
+ and adopting a stricter notion here alone would leave the two mechanisms
+disagreeing about identical callables.
+Tightening it means deciding the export-visibility question for the ownership inference too,
+which is a separate change touching a separate fixed point.
+
+Two smaller ones share that status.
+An overloaded callable resolves each call to the selected overload signature while the body
+belongs to the implementation,
+ so the discharge is safe only if both canonicalize to one
+summary key,
+ which nothing here tests.
+And a call through an interface method resolves to the interface's declaration rather than to
+any implementation,
+ so discharging one implementation would require a closed dispatch set.
+Neither is a branch to patch in this file.
