@@ -376,6 +376,135 @@ export function readsLocalAssertedRepointedLength(
 }
 
 /**
+ * Holder keeping a container beyond the call, written without invoking anything.
+ *
+ * A property assignment rather than a `push`, deliberately. A call into a collection member
+ * charges the parameter on its own, which would hide whichever condition the store is meant to
+ * test; a bare store reaches the escape test and nothing else.
+ */
+const carriedHolder: { current: readonly Labelled[]; } = { current: [], };
+
+/**
+ * Hands back the receiver's elements through a local bound first.
+ *
+ * Route the discharge does not yet accept. `callIsReturnedOutright` requires the call to be
+ * the returned expression itself, and here a `const` stands between, though the value reaching
+ * the caller is the same one.
+ *
+ * @param rows - Rows whose elements the result carries.
+ *
+ * @returns fresh container of the caller's own rows.
+ *
+ * @example
+ * ```ts
+ * readsLocalBoundLength([],);
+ * ```
+ */
+function localBoundElements(rows: readonly Labelled[],): readonly Labelled[] {
+  /**
+   * Fresh container holding the caller's rows.
+   */
+  const copy = rows.slice(0,);
+  return copy;
+}
+
+/**
+ * Reads how many rows the bound container holds, so its callee has a caller.
+ *
+ * @param rows - Rows counted through a bound container.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalBoundLength([],);
+ * ```
+ */
+export function readsLocalBoundLength(rows: readonly Labelled[],): number {
+  return localBoundElements(rows,)
+    .length;
+}
+
+/**
+ * Hands back the receiver's elements through a transparent wrapper.
+ *
+ * The other route, and the smaller one: an assertion erases at runtime, so the returned value
+ * is the call's own.
+ *
+ * @param rows - Rows whose elements the result carries.
+ *
+ * @returns fresh container of the caller's own rows.
+ *
+ * @example
+ * ```ts
+ * readsLocalWrappedLength([],);
+ * ```
+ */
+function localWrappedElements(rows: readonly Labelled[],): readonly Labelled[] {
+  return (rows.slice(0,) as readonly Labelled[]);
+}
+
+/**
+ * Reads how many rows the wrapped container holds, so its callee has a caller.
+ *
+ * @param rows - Rows counted through a wrapped container.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalWrappedLength([],);
+ * ```
+ */
+export function readsLocalWrappedLength(rows: readonly Labelled[],): number {
+  return localWrappedElements(rows,)
+    .length;
+}
+
+/**
+ * Hands back the receiver's elements after also storing them outside this callable.
+ *
+ * The negative control, and the condition widening the route has to carry. Returning is the one
+ * escape whose destination this analysis follows; a store into module state is not, and nothing
+ * a caller substitutes accounts for a write made through the stored copy. So this must keep its
+ * report however the return is spelled.
+ *
+ * @param rows - Rows whose elements are both stored and returned.
+ *
+ * @returns fresh container of the caller's own rows.
+ *
+ * @example
+ * ```ts
+ * readsLocalStoredLength([],);
+ * ```
+ */
+function localBoundAndStoredElements(rows: readonly Labelled[],): readonly Labelled[] {
+  /**
+   * Fresh container holding the caller's rows, kept beyond this call.
+   */
+  const copy = rows.slice(0,);
+  carriedHolder.current = copy;
+  return copy;
+}
+
+/**
+ * Reads how many rows the stored container holds, so its callee has a caller.
+ *
+ * @param rows - Rows counted through a stored container.
+ *
+ * @returns how many rows it holds.
+ *
+ * @example
+ * ```ts
+ * readsLocalStoredLength([],);
+ * ```
+ */
+export function readsLocalStoredLength(rows: readonly Labelled[],): number {
+  return localBoundAndStoredElements(rows,)
+    .length;
+}
+
+/**
  * Reads only how many rows a returned container holds.
  *
  * The control keeping the returned origin from becoming a blanket attribution. Nothing here

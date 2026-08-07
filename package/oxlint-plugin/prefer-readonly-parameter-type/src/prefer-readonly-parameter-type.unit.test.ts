@@ -600,7 +600,31 @@ children: [
        * six callables charges both its parameters, which is the whole of the difference: they
        * are the positive control with one statement added, and that statement is what the
        * guard refuses to reason past. */
-      expect(messages.length,).toBe(33,);
+      /* Thirty-three to thirty-nine when the position condition widened from "returned
+       * outright" to "returning is the only escape". Three programs and their callers came
+       * with it: two that the widening discharges and one that it must not. */
+      expect(messages.length,).toBe(39,);
+      /* The condition that makes widening safe, pinned by the charge it keeps rather than by
+       * an offer, which is what makes this assertion the discriminating one.
+       *
+       * `localBoundAndStoredElements` writes its copy into a module-level holder and then
+       * returns it. Returning is the one escape whose destination this analysis follows; the
+       * store is not, and no caller substitution accounts for a write made through it. So the
+       * charge has to stand, and with the condition removed it silently does not: both this
+       * callable and its caller lose their diagnostic entirely.
+       *
+       * Ten with the condition and eight without it, measured both ways. Counted rather than
+       * named because the message carries no callable name, and the two that vanish are this
+       * program and its caller.
+       *
+       * The store is a property assignment rather than a `push` on purpose. A collection call
+       * charges the parameter by itself, which hid this condition completely when the first
+       * version of the program used one, and made a probe of it report no difference. The
+       * probe that finally showed it had to count charges rather than offers, since neither
+       * callable is offered either way. */
+      expect(messages.filter(function keepsStoredCharge(message,): boolean {
+        return message.includes('used as the object for these collection calls: rows.slice',);
+      },).length,).toBe(10,);
       /* The two guards that are now known to have a failing case, pinned by the programs that
        * fail without them rather than by a count that would not move.
        *
@@ -782,10 +806,17 @@ children: [
        * that cannot see it.
        *
        * Whether the price is worth paying is recorded in
-       * `doc/planning/prefer-readonly-return-substitution.md`; this number is what it costs. */
+       * `doc/planning/prefer-readonly-return-substitution.md`; this number is what it costs.
+       *
+       * Two to six when the position condition widened to "returning is the only escape".
+       * `localBoundElements` binds its call to a `const` before returning and
+       * `localWrappedElements` wraps it in an assertion, and each is joined by its caller.
+       * Both hand the caller the same value by the same route as `localReceiverElements`, so
+       * refusing them was a property of how the return was spelled rather than of what the
+       * callable does. */
       expect(messages.filter(function offersReturningReceiver(message,): boolean {
         return message.includes('"rows" should be readonly: property',);
-      },).length,).toBe(2,);
+      },).length,).toBe(6,);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
        * involved, `rows` through a discharged `at` result, and
@@ -846,6 +877,14 @@ children: [
          * able to show one, and these are that proof: they are offered, they were not offered
          * while every program here was exported, and they go quiet if the discharge is
          * disabled. Any future probe of this feature belongs beside them. */
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
+        /* Four more once returning stopped having to be spelled outright: a call bound to a
+         * `const` and one wrapped in an assertion, each with its caller. Listed rather than
+         * counted for the same reason as the pair above, so a change that turns any of them
+         * into a defect has to edit this list and say why. */
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
         'Parameter "rows" should be readonly: property label is writable.',
         'Parameter "rows" should be readonly: property label is writable.',
         'Parameter "second" should be readonly: property label is writable.',

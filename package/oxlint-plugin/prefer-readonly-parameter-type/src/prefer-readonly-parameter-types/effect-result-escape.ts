@@ -181,19 +181,29 @@ function spreadCarrier({ node, }: { readonly node: Node; },): Node {
  *
  * @param node - Expression whose enclosing use is classified.
  *
+ * @param elementStepsAttributed - Whether a caller walks this result's elements.
+ *
+ * @param returnsAttributed - Whether returning counts as followed rather than as leaving.
+ *
+ * @param body - Body whose own returns may be attributed, absent when none may be.
+ *
  * @returns whether the value at this position leaves attributed tracking.
  *
  * @example
  * ```ts
- * useEscapes({ node: identifier });
+ * useEscapes({ node: identifier, elementStepsAttributed, returnsAttributed });
  * ```
  */
 function useEscapes({
   node,
   elementStepsAttributed,
+  returnsAttributed,
+  body,
 }: {
   readonly node: Node;
   readonly elementStepsAttributed: boolean;
+  readonly returnsAttributed: boolean;
+  readonly body?: Node;
 },): boolean {
   /* A spread carries its operand's elements into the enclosing array literal, so the
    * question is about where that literal goes rather than about the spread. Gated with
@@ -209,8 +219,23 @@ function useEscapes({
    * Syntactic context consuming this value.
    */
   const { parent, } = carried;
-  if (isReturnStatement(parent,) || isYieldExpression(parent,))
+  if (isYieldExpression(parent,))
     return true;
+  if (isReturnStatement(parent,)) {
+    /* Returning is the one escape whose destination this analysis can follow, and only a
+     * caller asking for that may treat it as followed. `yield` stays an escape beside it: a
+     * generator's consumer is not enumerable the way a call site is.
+     *
+     * The return must belong to the body being scanned. A `return` written inside a nested
+     * declaration hands the value to whoever calls *that*, and this scan's callers are the
+     * outer callable's, so attributing it would credit substitution nobody performs. */
+    return !(returnsAttributed
+      && (body !== undefined)
+      && writtenDirectlyInBody({
+        node: parent,
+        body,
+      },));
+  }
   /* The other element step reaching a value without writing an access node.
    * `containerElementWriteEffect` consumes its container through `copy[0]`, which the
    * access branch below already answers, while `iteratedContainerWriteEffect` reaches the
@@ -341,17 +366,21 @@ export function resultEscapesCallable({
   body,
   call,
   elementStepsAttributed,
+  returnsAttributed = false,
 }: {
   readonly project: Project;
   readonly body: Node;
   readonly call: CallExpression;
   readonly elementStepsAttributed: boolean;
+  readonly returnsAttributed?: boolean;
 },): boolean {
   /* The call's own position first. A call whose result is returned outright, or
    * placed straight into a container, escapes without ever being bound. */
   if (useEscapes({
     node: valueConsumer({ node: call, },),
     elementStepsAttributed,
+    returnsAttributed,
+    body,
   },))
     return true;
   /* Then any store performed on the way to that position. `sink.value = facts.get(k)`
@@ -395,6 +424,8 @@ export function resultEscapesCallable({
         || useEscapes({
           node: valueConsumer({ node, },),
           elementStepsAttributed,
+          returnsAttributed,
+          body,
         },)
         || assignmentStoreEscapes({
           project,

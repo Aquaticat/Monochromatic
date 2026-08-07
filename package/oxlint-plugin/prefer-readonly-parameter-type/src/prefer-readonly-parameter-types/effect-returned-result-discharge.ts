@@ -9,10 +9,7 @@ import type {
   CallExpression,
   Node,
 } from 'typescript/unstable/ast';
-import {
-  isCallExpression,
-  isReturnStatement,
-} from 'typescript/unstable/ast/is';
+import { isCallExpression, } from 'typescript/unstable/ast/is';
 import type {
   Checker,
   Project,
@@ -30,6 +27,7 @@ import {
   NO_BINDING_INITIALIZER,
 } from './effect-binding-initializer.ts';
 import { bindingAssignedWithin, } from './effect-binding-assignment.ts';
+import { resultEscapesCallable, } from './effect-result-escape.ts';
 import { callersAreEnumerable, } from './effect-caller-enumeration.ts';
 import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
 import {
@@ -88,41 +86,6 @@ function callResultIsReceiverState({
       checker,
       call,
     },) !== RESULT_NOT_RECEIVER_STATE);
-}
-
-/**
- * Tests whether a call is returned outright, as the whole returned expression.
- *
- * The narrowest form of the question, and narrower than a first attempt that asked
- * `valueConsumer` for the position and tested its parent. That ascends through every step
- * passing a value outward, so it admitted calls reaching a return from other positions.
- * Measured: the wider form discharged one further diagnostic and changed nothing else, so
- * the reach was never about the position test and this form is kept for being the smaller
- * claim.
- *
- * `return rows.slice(0,);` qualifies. A call bound first, placed in a literal, spread,
- * wrapped, or handed to another call on its way to the return does not. Those may well be
- * dischargeable too, and none of them is proven by this.
- *
- * @param call - Call whose position is being classified.
- *
- * @returns whether this call is exactly what its callable returns.
- *
- * @example
- * ```ts
- * callIsReturnedOutright({ call });
- * ```
- */
-function callIsReturnedOutright(
-  { call, }: { readonly call: CallExpression; },
-): boolean {
-  /**
-   * Syntactic context holding this call.
-   */
-  const { parent, } = call;
-  if (!isReturnStatement(parent,))
-    return false;
-  return parent.expression === call;
 }
 
 /**
@@ -226,7 +189,14 @@ function callersAllResolve({
  * can see everyone who receives it. Three conditions, each added for a measured case rather
  * than for symmetry.
  *
- * The result must be returned outright, so the position is the one being reasoned about.
+ * Returning must be the result's only escape, which is what the position condition became.
+ * It began as a syntactic test for `return rows.slice(0,);` exactly, and that is the narrowest
+ * case of the question rather than the question: a call bound to a `const` and then returned,
+ * or wrapped in an assertion, hands the caller the same value by the same route. Asking the
+ * escape test with this body's returns attributed answers all of them at once, and refuses a
+ * result that also leaves by a route no caller substitutes for, such as a store into module
+ * state.
+ *
  * Every caller must be enumerable and resolvable, because a caller the fixed point never
  * visits never substitutes, and the returned fact would then be recorded and read by nobody.
  *
@@ -262,7 +232,24 @@ export function returnedResultDischargeable({
   readonly call: CallExpression;
   readonly body: Node;
 },): boolean {
-  if (!callIsReturnedOutright({ call, },))
+  /* Returning has to be the *only* escape, which is a different question from the call being
+   * the returned expression. Asked of the escape test with returns attributed: if the result
+   * still escapes with this body's own returns discounted, some other route carries it out and
+   * no caller substitution accounts for that one. `localBoundAndStoredElements` stores its copy
+   * in module state and returns it, and must keep its report for the store alone.
+   *
+   * Replaces a syntactic test that required `return rows.slice(0,);` exactly. That form is the
+   * narrowest case of this one, and the wider question is the one the discharge always meant:
+   * a call bound to a `const` and then returned, or wrapped in an assertion, hands the caller
+   * the same value by the same route, and the escape test already follows a result through its
+   * holders. */
+  if (resultEscapesCallable({
+    project,
+    body,
+    call,
+    elementStepsAttributed: true,
+    returnsAttributed: true,
+  },))
     return false;
   /* Returned by *this* callable, not merely by some callable. `callIsReturnedOutright`
    * accepts a `ReturnStatement` wherever it is written, and the callers enumerated below are
