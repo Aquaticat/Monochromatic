@@ -53,6 +53,15 @@ export {
 } from './grade-agreement.ts';
 export { formatRepairSheet, } from './repair-sheet.ts';
 export {
+  bandOf,
+  countSettledPerBand,
+  MEDIUM_PAGE_BYTES,
+  rankWithinBands,
+  type SizedEntry,
+  smallBandIds,
+  SMALL_PAGE_BYTES,
+} from './corpus-run/band-order.ts';
+export {
   allocateBandQuota,
   drawStratifiedSample,
 } from './sample-draw.ts';
