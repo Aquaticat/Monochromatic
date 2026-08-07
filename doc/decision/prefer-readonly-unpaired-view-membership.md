@@ -182,10 +182,14 @@ are not all so simple:
 lookups a caller can answer,
  and the locale members process caller-supplied `locales` and `options` that a
 member name alone cannot describe.
- They stay off until a probe drives them,
- and the membership table still names
-them,
+ `toJSON` stays off until a probe drives it,
+ and the membership table still
+names it,
  because preserving the receiver and dispatching to user code are separate questions.
+ The locale
+members joined the channel table later,
+ on a condition rather than outright,
+ which is described below.
 
 Three names the engine provides are absent from both,
  and the absence claims nothing:
@@ -290,6 +294,78 @@ including `@mutates input` on `encodeInlineTable`,
  which is the outcome the rule exists to produce rather
 than a cost:
  a contract describing an effect that cannot happen is the failure `AGENTS.md` names in `JCH`.
+
+### The locale members joined the channel on a condition, 2026-08-07
+
+The `Date` channel table listed one member and named the locale members as the reason it could not list
+more:
+ ECMA-402 has them read properties off a caller-supplied options object,
+ so they run any accessor on
+one,
+ and a member name alone cannot say whether such an object was passed.
+
+That is a fact about the call rather than about the member,
+ which is what makes it answerable.
+`pubDateDate.toLocaleString()` in `package/webapp-productivity/rss/src/html-item.ts` passes nothing at all,
+so there is no options object and no accessor to reach.
+ The member reads `[[DateValue]]`,
+ consults ambient
+locale data,
+ and returns a string.
+ Ambient locale and time zone change what that string says and not what
+the receiver holds,
+ so they are not a channel into caller state.
+
+Modelled on the conditional channel that already existed rather than as a new kind of thing.
+ The coercion
+channel is discharged only where every element is strictly primitive;
+ this one only where the call site
+passes no arguments.
+ Measured:
+ no arguments discharges,
+ a locale string withholds,
+ an options object
+withholds,
+ and `toISOString` beside them is unaffected.
+
+Deliberately coarse in one direction.
+ A bare `'en-US'` carries no accessor and still withholds,
+ because the
+condition is an empty argument list rather than primitive arguments.
+ That is the conservative side of the
+line and it can be narrowed later on the same evidence the coercion channel narrowed on.
+
+### The probe found a bug in itself, which is the point of driving both directions
+
+The tripwire had to fire for an options object as well as stay silent for none,
+ or the entry would claim
+something no probe had seen.
+ Driving it that way failed immediately,
+ and not for the reason expected:
+ every
+locale call threw `probeArguments is not a function or its return value is not iterable`.
+
+The probe looks its arguments up in an object literal keyed by member name.
+ `toLocaleString` is a member of
+`Object.prototype`,
+ so the lookup found the inherited function rather than `undefined`,
+ the nullish
+fallback never fired,
+ and the caller spread a function.
+ The channel assertion reported that as the member
+reaching a hook,
+ which is the right shape of failure for the wrong reason.
+
+The same collision appears in the type system,
+ and was reduced to four lines against TypeScript 7.0.2:
+ an
+object literal checked against `Record<string, MemberUserCodeChannel>` widens the `unique symbol` at a
+`toLocaleString` key to `symbol`,
+ while accepting `toISOString` and `toLocaleDateString` beside it.
+ Both
+sites now say so where the workaround sits,
+ because a reader who does not know the collision will read
+either as arbitrary.
 
 ### The typed arrays are the obvious next extension and should not be taken
 
