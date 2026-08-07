@@ -367,6 +367,31 @@ sites now say so where the workaround sits,
  because a reader who does not know the collision will read
 either as arbitrary.
 
+### What the locale channel measured
+
+Workspace either side:
+ 2907 errors to 2904,
+ 1569 rule findings to 1566,
+ warnings unchanged at 3902,
+stale contracts at 14,
+ and the read-only offer set byte-identical at 34.
+ The cause `toLocaleString` went
+from three mentions to none and three findings cleared,
+ with nothing added.
+
+One of the three is worth naming.
+ `getIndexHtmlBody` in `package/webapp-productivity/rss/src/html.ts` was
+not reporting at all two increments earlier;
+ composing container relations connected its `options` to the
+locale call through the elements,
+ which added the finding,
+ and this entry then discharged it.
+ The finding
+was true while it stood:
+ the parameter really does reach that call.
+ Surfacing it and answering it are
+different steps and both were needed.
+
 ### The typed arrays are the obvious next extension and should not be taken
 
 Measured rather than assumed,
