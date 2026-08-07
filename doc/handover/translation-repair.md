@@ -5490,3 +5490,67 @@ treat the minority series as four measured points, not six. `contradicted` and
 `unanchored` are still zero, and at nine entries `unprobedRecords` is zero
 across 202 shipped records, so the probe is reaching everything rather than
 skipping quietly.
+
+## The deadline costs wall time and a restart, never an entry (#61 answered)
+
+Both entries that hit the 3-hour per-entry deadline in run 007 settled on
+resume in run 008:
+
+```text
+TALLY Dethelly status=repaired issues=282 accepted=198 resolved=198 ms=6900394
+TALLY Futajuhuacha status=repaired issues=229 accepted=167 resolved=165 ms=3685583
+```
+
+The slice cache is what makes this true.
+A timed-out entry banks every completed chunk,
+ and the next pass resumes from the highest cached index rather than from zero.
+Dethelly spent 3 hours in run 007 reaching chunk 14,
+ then 1.9 hours in run 008 finishing from there:
+ about 4.9 hours of real work split across two passes,
+not 3 hours thrown away and 4.9 spent again.
+
+Run 008 produced a third casualty,
+ `Huasheng` at `ms=10800002 aborted=true`,
+which confirms the pattern rather than contradicting it.
+It will settle the same way on the next restart.
+
+So the answer to #61 is that the per-entry deadline is NOT the knob.
+Raising it would let one pathological entry monopolize the soft budget,
+ and the thing it currently costs,
+ a restart,
+ is already automated by the cache.
+What actually bounds throughput is the 12-hour soft budget and provider latency,
+ not the 3-hour deadline.
+Close #61 on this evidence rather than tuning the deadline.
+
+## Entry count per band is not what protects the draw; round-robin is
+
+Do not read `POOL band=large entries=5` as the safety property.
+The large band's candidates are wildly unequal:
+ of its 449 accepted issues,
+ 198 are Dethelly's and 167 are Futajuhuacha's,
+ so two entries hold 81% of the band.
+
+That concentration does not reach the sample.
+`selectFromBand` in `package/module/translation-repair/src/sample-draw.ts`
+ groups candidates by entry,
+ ranks each entry's issues among themselves,
+ and sorts by rank BEFORE entry,
+so the draw takes one issue from every entry before any entry's second.
+With 16 large-band slots over 5 entries each entry gets about three,
+ whichever entry brought 198 candidates and whichever brought 12.
+`sample-grading.unit.test.ts:376` pins this:
+ a pool where `Heavy` holds five candidates and `Light` holds one,
+ drawn to two slots,
+ must contain both.
+
+The consequence for judgment:
+ when deciding whether the pool is ready for the gate sheet,
+ count ENTRIES per band,
+ because that is what sets the spread,
+and ignore the accepted-issue totals,
+ because round-robin has already flattened them.
+The earlier worry about 2 large-band entries was still correct,
+ but for the right reason:
+ two entries meant eight slots each,
+ not that they held most of the candidates.
