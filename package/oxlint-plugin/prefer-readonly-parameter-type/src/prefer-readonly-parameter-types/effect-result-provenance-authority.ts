@@ -121,6 +121,10 @@ export type MemberResultProvenance =
       | typeof RESULT_RELATION_RECEIVER_VALUE
       | typeof RESULT_RELATION_OBSERVER_RETURN;
     readonly receiverTypeArgumentIndex: number;
+    /**
+     * Whether the relation holds only when the call supplies a starting accumulator.
+     */
+    readonly seededOnly?: boolean;
   }
   | {
     readonly relation: typeof RESULT_RELATION_RECEIVER_ELEMENTS;
@@ -175,6 +179,16 @@ const PROVENANCE_BY_OWNER: Readonly<
   Record<string, Readonly<Record<string, MemberResultProvenance>>>
 > = {
   Array: {
+    reduce: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+      seededOnly: true,
+    },
+    reduceRight: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+      seededOnly: true,
+    },
     at: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
@@ -226,6 +240,16 @@ const PROVENANCE_BY_OWNER: Readonly<
     },
   },
   ReadonlyArray: {
+    reduce: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+      seededOnly: true,
+    },
+    reduceRight: {
+      relation: RESULT_RELATION_OBSERVER_RETURN,
+      receiverTypeArgumentIndex: 0,
+      seededOnly: true,
+    },
     at: {
       relation: RESULT_RELATION_RECEIVER_VALUE,
       receiverTypeArgumentIndex: 0,
@@ -340,7 +364,7 @@ export const RESULT_PROVENANCE_BY_INTERFACE: ReadonlyMap<
  * cannot pass unnoticed: the author must change a number in a second file, which is
  * the point at which the identity probe becomes unavoidable.
  */
-export const VERIFIED_RESULT_RELATION_COUNT = 28;
+export const VERIFIED_RESULT_RELATION_COUNT = 32;
 
 /**
  * Fresh-container members still absent, each for a reason of its own.

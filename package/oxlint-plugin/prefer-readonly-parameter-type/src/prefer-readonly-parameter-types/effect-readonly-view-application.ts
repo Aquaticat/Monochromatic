@@ -17,6 +17,7 @@ import {
 } from 'typescript/unstable/sync';
 
 import { callableDeclaration, } from './effect-call-resolution.ts';
+import { expressionOrigins, } from './effect-binding-origins.ts';
 import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
 import { viewResultUnaccounted, } from './effect-view-result-gate.ts';
@@ -192,6 +193,8 @@ function observedParameterIndexes({
  *
  * @param checker - TypeScript checker resolving receiver and parameter types.
  *
+ * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ *
  * @param call - Read-only view call expression.
  *
  * @param receiver - Receiver expression rooted at a caller parameter.
@@ -210,6 +213,7 @@ function observedParameterIndexes({
 export function readonlyViewElementApplications({
   project,
   checker,
+  bindingOriginBySymbolId,
   call,
   receiver,
   receiverSlot,
@@ -218,6 +222,7 @@ export function readonlyViewElementApplications({
 }: {
   readonly project: Project;
   readonly checker: Checker;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly receiverSlot: EffectSlot;
@@ -317,16 +322,31 @@ export function readonlyViewElementApplications({
   // Anything else passed alongside the observers reaches the member by a route
   // the element-flow derivation does not describe, `map`'s `thisArg` being the
   // standing example, so state arriving that way leaves the call underived.
+  /* "Arriving" is the whole of it. Asking whether the argument's type can carry state asked
+   * something wider: a fold's `[]` seed is an object, so the type test said yes, while the
+   * value holds nothing at the moment of the call and nothing the receiver owns can arrive
+   * through it. What the observer puts in afterwards is the observer's effect. */
   if (typedArguments
     .some(function unobservedArgument({ argument, },): boolean {
-      return (!observers
+      if (observers
         .some(function isObserver(observer,): boolean {
           return observer.argument === argument;
         },))
-        && expressionCanCarryMutableState({
-          checker,
-          node: argument,
-        },);
+        return false;
+      if (!expressionCanCarryMutableState({
+        checker,
+        node: argument,
+      },))
+        return false;
+      /**
+       * Caller parameters this argument already holds when the call is made.
+       */
+      const arriving = expressionOrigins({
+        project,
+        bindingOriginBySymbolId,
+        node: argument,
+      },);
+      return arriving.size > 0;
     },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
@@ -484,6 +504,7 @@ export function recordReadonlyViewApplications({
     const applications = readonlyViewElementApplications({
       project,
       checker,
+      bindingOriginBySymbolId,
       call,
       receiver,
       receiverSlot,

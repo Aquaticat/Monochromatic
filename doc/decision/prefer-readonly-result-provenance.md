@@ -794,7 +794,50 @@ not,
  and those already discharge,
  which is why the sweep moved by exactly zero rather than by a little.
 
-### Both halves together produce a false offer, measured and reverted
+### Excluding a host-call receiver lands both halves, measured
+
+The repository owner asked for a recommendation with measurement behind it rather than a guess,
+ so the
+third option was built and swept instead of argued about.
+ It works,
+ and by slightly more than predicted.
+
+The guard is one condition on the fold relation:
+ a receiver that is itself a call carries whatever that
+call returned,
+ and this analysis cannot see what.
+ `Object.entries(root,).reduce(fold, seed,)` is the
+measured case,
+ where the elements folded came out of a host call that can run a getter on caller-owned
+state,
+ so discharging the fold would discharge the traversal behind it.
+ The rule already says exactly
+this about a call receiver in `effect-collection-member-effect.ts`;
+ the guard applies it here.
+
+Measured against the state before either half:
+ 2959 errors to 2953,
+ 1621 rule findings to 1614,
+ **read-only offers 33 and unchanged**,
+ semantic failures 0 either side.
+ That is one finding more than
+the unguarded pair cleared,
+ and without the offer it produced:
+ 28 findings removed and 21 added,
+ every
+one of the 21 at a location that also appears among the removed,
+ so no parameter became opaque that was
+not opaque before.
+
+The recommendation, since one was asked for:
+ land this.
+ It does not extend the trust baseline,
+ it
+narrows a discharge to exclude the case the baseline already treats as unanalyzable,
+ and the number that
+would show it wrong is the one that did not move.
+
+### Both halves together produced a false offer, measured and reverted
 
 Attempted 2026-08-07 and reverted, and the pair is the point: each half alone changes nothing, and
 together they cross the line this work has held all session.

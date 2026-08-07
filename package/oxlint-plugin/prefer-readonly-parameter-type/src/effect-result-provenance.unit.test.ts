@@ -134,6 +134,18 @@ function receiverHolding({
       find: [function acceptsFirst(): boolean {
         return true;
       },],
+      reduce: [
+        function foldsToMarker(): unknown {
+          return OBSERVER_MARKER;
+        },
+        'seed',
+      ],
+      reduceRight: [
+        function foldsRightToMarker(): unknown {
+          return OBSERVER_MARKER;
+        },
+        'seed',
+      ],
       findLast: [function acceptsLast(): boolean {
         return true;
       },],
@@ -163,6 +175,10 @@ await describe({
          * Observer-return entries whose result failed either half of their probe.
          */
         const notObserverDerived: string[] = [];
+        /**
+         * Seeded-only entries whose condition turned out not to be load-bearing.
+         */
+        const notConditional: string[] = [];
         /**
          * Paired entries whose tuples did not hold the sentinel at their position.
          */
@@ -198,10 +214,36 @@ await describe({
                * fails, and must hold nothing the receiver held, which `filter` fails. That
                * second half is what keeps this relation from being applied to a member whose
                * result really does carry caller-owned elements. */
-              if ((!Array.isArray(result,))
-                || (!result.includes(OBSERVER_MARKER,))
-                || result.includes(sentinel,))
+              /* A member handing back one observer return rather than a container of them
+               * satisfies the relation by identity where a container satisfies it by
+               * membership. */
+              if (Array.isArray(result,)) {
+                if ((!result.includes(OBSERVER_MARKER,))
+                  || result.includes(sentinel,))
+                  notObserverDerived.push(`${ownerName}.${memberName}`,);
+                continue;
+              }
+              if (result !== OBSERVER_MARKER)
                 notObserverDerived.push(`${ownerName}.${memberName}`,);
+              /* The condition is probed, not asserted: a `seededOnly` entry must fail its own
+               * relation unseeded, or the flag is decoration. */
+              if (provenance.seededOnly === true) {
+                /**
+                 * What the same member hands back with no starting accumulator.
+                 */
+                const unseeded = (
+                  (receiver as Record<string, unknown>)[memberName] as (
+                    this: unknown,
+                    ...args: readonly unknown[]
+                  ) => unknown
+                ).apply(receiver, [
+                  function foldsToMarker(): unknown {
+                    return OBSERVER_MARKER;
+                  },
+                ],);
+                if (unseeded !== sentinel)
+                  notConditional.push(`${ownerName}.${memberName}`,);
+              }
               continue;
             }
             if (provenance.relation
@@ -255,6 +297,7 @@ await describe({
          * returns either ignored the observer or handed back receiver elements. Either way
          * the relation is wrong for it, and the entry goes rather than this comparison. */
         expect(notObserverDerived,).toEqual([],);
+        expect(notConditional,).toEqual([],);
         /* A non-empty list means a member claiming to yield tuples carrying a receiver
          * element at a recorded position does not, so crediting everything reachable
          * through one of its tuples to the receiver would attribute writes to state the

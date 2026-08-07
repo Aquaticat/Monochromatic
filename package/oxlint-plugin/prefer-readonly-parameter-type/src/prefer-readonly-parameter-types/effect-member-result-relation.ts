@@ -9,6 +9,7 @@ import type {
   Expression,
 } from 'typescript/unstable/ast';
 import {
+  isCallExpression,
   isIdentifier,
   isInterfaceDeclaration,
   isMethodSignatureDeclaration,
@@ -333,8 +334,30 @@ export function callResultComesFromObserver({
    * Verified relation for the selected member.
    */
   const provenance = memberResultProvenance(member,);
-  return (provenance !== RESULT_RELATION_UNPROVEN)
-    && (provenance.relation === RESULT_RELATION_OBSERVER_RETURN);
+  if ((provenance === RESULT_RELATION_UNPROVEN)
+    || (provenance.relation !== RESULT_RELATION_OBSERVER_RETURN))
+    return false;
+  if (!(provenance.seededOnly ?? false))
+    return true;
+  /* A receiver that is itself a call carries whatever that call returned, and this analysis
+   * cannot see what. `Object.entries(root,).reduce(fold, seed,)` is the measured case: the
+   * elements folded came out of a host call that can run a getter on caller-owned state, so
+   * discharging the fold would discharge the traversal behind it too. */
+  /**
+   * Expression the fold was called on.
+   */
+  const foldReceiver = memberCallReceiver({ call, },);
+  if ((foldReceiver !== NO_MEMBER_RECEIVER)
+    && isCallExpression(foldReceiver,))
+    return false;
+  /* A fold's result is observer-derived only when the call seeds it. Unseeded, the receiver's
+   * first element becomes the accumulator without the observer ever seeing it. */
+  /**
+   * Arguments this call site supplies.
+   */
+  const supplied = call.arguments
+    .length;
+  return supplied >= SEEDED_FOLD_ARGUMENT_COUNT;
 }
 
 /**
@@ -380,6 +403,11 @@ function heldTypeSurvives({
     heldType,
   );
 }
+
+/**
+ * Arguments a fold carries when it supplies its own starting accumulator.
+ */
+const SEEDED_FOLD_ARGUMENT_COUNT = 2;
 
 /**
  * Resolves the receiver whose values a call's fresh container result may hold.
