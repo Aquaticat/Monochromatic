@@ -4,10 +4,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import {
-  type OwnedProbeReading,
-  readArtifactProbe,
-} from '../artifact-probe-read.ts';
+import { readArtifactProbe, } from '../artifact-probe-read.ts';
 import {
   type ProbeAgreementItem,
   scoreProbeAgainstGrades,

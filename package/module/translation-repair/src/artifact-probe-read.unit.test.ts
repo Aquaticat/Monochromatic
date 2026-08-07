@@ -317,6 +317,43 @@ await describe({
     },),
 
     it({
+      name: 'THROWS when a declared count disagrees with the claim list it is '
+        + 'the tally of. The screen derives one from the other, so they are a '
+        + 'single fact written twice, but they are read by different consumers: '
+        + 'the CLAIMS report sums the counts while the majority rule reads the '
+        + 'claims. A disagreement makes a region report one corroboration and '
+        + 'flag nothing, or flag a majority while reporting none, and both look '
+        + 'like ordinary output',
+      fn: async () => {
+        expect(function readsDisagreeingCount() {
+          readArtifactProbe({
+            value: {
+              id: 'Kitten',
+              issues: [
+                catRecord({
+                  repairDisposition: 'shipped',
+                  introducedDefects: {
+                    heardProbers: 3,
+                    configuredProbers: 3,
+                    regions: [
+                      catTally({
+                        envelopeId: 'envelope/nap',
+                        // Says two were upheld while listing one.
+                        corroborated: 2,
+                        claims: [catClaim({ modelId: 'cat/one', },),],
+                      },),
+                    ],
+                  },
+                },),
+              ],
+            },
+            path: 'Kitten',
+          },);
+        },).toThrow(ArtifactParseError,);
+      },
+    },),
+
+    it({
       name: 'THROWS on a disposition the pipeline never writes rather than '
         + 'filing it under not-shipped. A typo is not another disposition, it '
         + 'means writer and reader disagree, and quietly excluding the record '

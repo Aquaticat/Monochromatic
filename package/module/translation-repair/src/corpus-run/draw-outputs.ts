@@ -14,6 +14,19 @@ import { rm, } from 'node:fs/promises';
 // graded. Removing what the failed invocation created is what returns the
 // directory to a state a draw can be retried from, and it can never remove
 // graded work, because a graded sheet is one an earlier invocation committed.
+//
+// TRACKING IS FOR FINAL DRAWS ONLY, and that is a correctness requirement
+// rather than an optimization. A final output is created with `wx`, so its path
+// did not exist a moment earlier and removing it can only remove what this
+// invocation made. A preliminary output is written with `w`, which REPLACES
+// whatever was there, so removing one on failure would delete a file this
+// invocation never created. Preliminary draws need no protection anyway: they
+// carry no overwrite guard, so a partial one is replaced by the next draw
+// rather than blocking it.
+//
+// Paths are recorded BEFORE their write, not after. A write can create or
+// truncate a file and then fail, and a path recorded only on success would
+// leave exactly that file behind.
 
 /**
  * Files a draw has written, and whether it finished writing all of them.
@@ -38,16 +51,22 @@ export type DrawOutputs = AsyncDisposable & {
 /**
  * Tracks the files a draw writes and removes them unless it finished.
  *
+ * @param enabled - whether this draw's outputs are exclusively created, which
+ * is true of a final draw and false of a preliminary one; a disabled tracker
+ * records nothing and removes nothing
+ *
  * @returns Tracker to be held with `await using`
  *
  * @example
  * ```ts
- * await using outputs = trackDrawOutputs();
+ * await using outputs = trackDrawOutputs({ enabled: isFinal, },);
  * outputs.record({ path: sheetPath, },);
  * outputs.commit();
  * ```
  */
-export function trackDrawOutputs(): DrawOutputs {
+export function trackDrawOutputs(
+  { enabled, }: { readonly enabled: boolean; },
+): DrawOutputs {
   /**
    * Paths written so far, and whether the set completed.
    */
@@ -57,6 +76,8 @@ export function trackDrawOutputs(): DrawOutputs {
   };
   return {
     record({ path, }: { readonly path: string; },): void {
+      if (!enabled)
+        return;
       state.paths
         .push(path,);
     },

@@ -82,7 +82,7 @@ await describe({
         );
 
         {
-          await using outputs = trackDrawOutputs();
+          await using outputs = trackDrawOutputs({ enabled: true, },);
           await writeFile(
             sheet,
             'partial',
@@ -103,7 +103,7 @@ await describe({
         await using scratch = await scratchDir();
 
         {
-          await using outputs = trackDrawOutputs();
+          await using outputs = trackDrawOutputs({ enabled: true, },);
           /**
            * Every output of the completed set.
            */
@@ -156,7 +156,7 @@ await describe({
         );
 
         {
-          await using outputs = trackDrawOutputs();
+          await using outputs = trackDrawOutputs({ enabled: true, },);
           /**
            * This draw's own output.
            */
@@ -184,7 +184,7 @@ await describe({
       fn: async () => {
         await using scratch = await scratchDir();
 
-        await using outputs = trackDrawOutputs();
+        await using outputs = trackDrawOutputs({ enabled: true, },);
         outputs.record({
           path: join(
             scratch.path,
@@ -194,6 +194,65 @@ await describe({
 
         // Disposing must not throw; reaching the next line is the assertion.
         await outputs[Symbol.asyncDispose]();
+        expect(await readdir(scratch.path,),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'records nothing when DISABLED, which is what a preliminary draw '
+        + 'needs. Preliminary outputs are written with `w` and replace whatever '
+        + 'was there, so removing one on failure would delete a file this '
+        + 'invocation never created; and they carry no overwrite guard, so a '
+        + 'partial one is replaced by the next draw rather than blocking it',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        /**
+         * Preliminary sheet standing in for one an earlier draw left behind.
+         */
+        const sheet = join(
+          scratch.path,
+          'grading-sheet-preliminary.md',
+        );
+
+        {
+          await using outputs = trackDrawOutputs({ enabled: false, },);
+          await writeFile(
+            sheet,
+            'replaced contents',
+          );
+          outputs.record({ path: sheet, },);
+          // Ends without commit, exactly as the failing case does.
+        }
+
+        expect(await readdir(scratch.path,),).toEqual([
+          'grading-sheet-preliminary.md',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'removes a file recorded BEFORE its write, which is the only order '
+        + 'that catches a write that created the file and then failed. '
+        + 'Recording on success alone would leave exactly that file behind, and '
+        + 'it is the one the overwrite guard then refuses to replace',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        /**
+         * Path recorded first, then written only partially.
+         */
+        const sheet = join(
+          scratch.path,
+          'grading-sheet.md',
+        );
+
+        {
+          await using outputs = trackDrawOutputs({ enabled: true, },);
+          outputs.record({ path: sheet, },);
+          await writeFile(
+            sheet,
+            'truncated before the failure',
+          );
+        }
+
         expect(await readdir(scratch.path,),).toEqual([],);
       },
     },),

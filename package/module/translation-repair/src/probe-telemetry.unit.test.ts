@@ -331,6 +331,51 @@ await describe({
     },),
 
     it({
+      name: 'THROWS when two copies of one envelope name DIFFERENT probers in '
+        + 'equal numbers. Comparing totals alone would pass them, and the '
+        + 'invariant this guard states is that disagreeing copies are refused, '
+        + 'not that copies with matching arithmetic are accepted',
+      fn: async () => {
+        expect(function summarizesDifferentProbers() {
+          summarizeProbeTelemetry({
+            readings: [
+              {
+                heardProbers: 3,
+                configuredProbers: 3,
+                regions: [
+                  catTally({
+                    envelopeId: 'envelope/shared',
+                    corroborated: 1,
+                    claims: catClaims({
+                      count: 1,
+                      admissibility: 'corroborated',
+                      prefix: 'first',
+                    },),
+                  },),
+                ],
+              },
+              {
+                heardProbers: 3,
+                configuredProbers: 3,
+                regions: [
+                  catTally({
+                    envelopeId: 'envelope/shared',
+                    corroborated: 1,
+                    claims: catClaims({
+                      count: 1,
+                      admissibility: 'corroborated',
+                      prefix: 'second',
+                    },),
+                  },),
+                ],
+              },
+            ],
+          },);
+        },).toThrow('envelope/shared',);
+      },
+    },),
+
+    it({
       name: 'separates majority from minority findings, which is the split '
         + 'between what a gate would have blocked and what it would not',
       fn: async () => {

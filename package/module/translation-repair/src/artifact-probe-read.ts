@@ -8,6 +8,7 @@ import {
 import type {
   ClaimAdmissibility,
   RegionDefectTally,
+  ScreenedDefectClaim,
 } from './introduced-defect-screen.ts';
 import {
   type IssueProbeReading,
@@ -256,6 +257,57 @@ function parseRegionTally(
     },);
   }
 
+  // Claim IDENTITY only. The majority rule counts distinct probers, so the
+  // verdict cannot be computed without modelId and admissibility, and reading
+  // the counts alone silently judged every region as uncorroborated.
+  //
+  // The quote fields stay empty on purpose, which is the original reason this
+  // list was dropped whole: `evidence`, `omittedText`, and `reason` carry
+  // UNLICENSED corpus text, this reader feeds a summary that is meant to be
+  // pasteable into a verdict, and nothing downstream of here reads them.
+  // Parsing who said what is not the same as parsing what they quoted.
+  /**
+   * Screened claims of this region, identity only.
+   */
+  const claims = parseClaimIdentities({
+    value: tally.claims,
+    path,
+  },);
+
+  /**
+   * Counts as the artifact declares them.
+   */
+  const declared = {
+    corroborated: countAt('corroborated',),
+    removalCorroborated: countAt('removalCorroborated',),
+    contradicted: countAt('contradicted',),
+    unanchored: countAt('unanchored',),
+  };
+
+  // The screen DERIVES each count from the claim list, so the two are one fact
+  // written twice and can only disagree in a malformed artifact. They are not
+  // interchangeable downstream: the CLAIMS report sums the counts while the
+  // majority rule reads the claims, so a disagreement makes a region report one
+  // corroboration and flag nothing, or flag a majority while reporting none.
+  // Both look like ordinary output.
+  for (const [field, count,] of Object.entries(declared,)) {
+    /**
+     * Claims actually carrying this admissibility.
+     */
+    const observed = claims
+      .filter(function matches(claim,) {
+        return claim.admissibility === ADMISSIBILITY_FIELDS[field];
+      },)
+      .length;
+    if (observed !== count)
+      throw new ArtifactParseError({
+        path: `${path}.${field}`,
+        reason: `${String(observed,)} to match its claim list, not ${
+          String(count,)
+        }`,
+      },);
+  }
+
   return {
     envelopeId: requireString({
       value: tally.envelopeId,
@@ -274,53 +326,79 @@ function parseRegionTally(
           path: `${path}.issueIds[${String(index,)}]`,
         },);
       },),
-    corroborated: countAt('corroborated',),
-    removalCorroborated: countAt('removalCorroborated',),
-    contradicted: countAt('contradicted',),
-    unanchored: countAt('unanchored',),
+    ...declared,
     noneFound: countAt('noneFound',),
     uncertain: countAt('uncertain',),
-    // Claim IDENTITY only. The majority rule counts distinct probers, so the
-    // verdict cannot be computed without modelId and admissibility, and reading
-    // the counts alone silently judged every region as uncorroborated.
-    //
-    // The quote fields stay empty on purpose, which is the original reason this
-    // list was dropped whole: `evidence`, `omittedText`, and `reason` carry
-    // UNLICENSED corpus text, this reader feeds a summary that is meant to be
-    // pasteable into a verdict, and nothing downstream of here reads them.
-    // Parsing who said what is not the same as parsing what they quoted.
-    claims: requireArray({
-      value: tally.claims,
-      path: `${path}.claims`,
-    },)
-      .map(function toClaim(
-        entry,
-        index,
-      ) {
-        /**
-         * Claim as a record.
-         */
-        const claim = requireRecord({
-          value: entry,
-          path: `${path}.claims[${String(index,)}]`,
-        },);
-        return {
-          modelId: requireString({
-            value: claim.modelId,
-            path: `${path}.claims[${String(index,)}].modelId`,
-          },),
-          admissibility: requireAdmissibility({
-            value: claim.admissibility,
-            path: `${path}.claims[${String(index,)}].admissibility`,
-          },),
-          category: '',
-          severity: '',
-          evidence: '',
-          omittedText: '',
-          reason: '',
-        };
-      },),
+    claims,
   };
+}
+
+/**
+ * Admissibility each declared count is the tally of.
+ */
+const ADMISSIBILITY_FIELDS: Readonly<Record<string, ClaimAdmissibility>> = {
+  corroborated: 'corroborated',
+  removalCorroborated: 'removal-corroborated',
+  contradicted: 'contradicted',
+  unanchored: 'unanchored',
+};
+
+/**
+ * Parses a region's claim list down to who said what.
+ *
+ * @param value - candidate claim array from artifact JSON
+ *
+ * @param path - dotted path of the owning tally, for error messages
+ *
+ * @returns Claims carrying identity and empty quote fields
+ *
+ * @throws {@link ArtifactParseError} when a claim is malformed
+ *
+ * @example
+ * ```ts
+ * const claims = parseClaimIdentities({ value: tally.claims, path, },);
+ * ```
+ */
+function parseClaimIdentities(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): readonly ScreenedDefectClaim[] {
+  return requireArray({
+    value,
+    path: `${path}.claims`,
+  },)
+    .map(function toClaim(
+      entry,
+      index,
+    ) {
+      /**
+       * Claim as a record.
+       */
+      const claim = requireRecord({
+        value: entry,
+        path: `${path}.claims[${String(index,)}]`,
+      },);
+      return {
+        modelId: requireString({
+          value: claim.modelId,
+          path: `${path}.claims[${String(index,)}].modelId`,
+        },),
+        admissibility: requireAdmissibility({
+          value: claim.admissibility,
+          path: `${path}.claims[${String(index,)}].admissibility`,
+        },),
+        category: '',
+        severity: '',
+        evidence: '',
+        omittedText: '',
+        reason: '',
+      };
+    },);
 }
 
 /**

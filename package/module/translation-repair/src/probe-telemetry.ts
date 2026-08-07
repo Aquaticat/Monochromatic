@@ -222,7 +222,12 @@ type RegionEvidence = {
 };
 
 /**
- * Renders everything the summary reads off one copy, as a comparable string.
+ * Renders one copy of an envelope's evidence as a comparable string.
+ *
+ * Identities rather than only counts. Two copies naming DIFFERENT probers or
+ * serving different issues, in equal numbers, are as much a contradiction as
+ * two different totals, and comparing totals alone would let them through while
+ * the invariant claims disagreement is refused.
  *
  * @param evidence - one record's copy of an envelope's evidence
  *
@@ -241,15 +246,25 @@ function evidenceFingerprint(
    */
   const { tally, } = evidence;
   return [
-    evidence.configuredProbers,
-    evidence.heardProbers,
-    tally.corroborated,
-    tally.removalCorroborated,
-    tally.contradicted,
-    tally.unanchored,
-    tally.noneFound,
-    tally.uncertain,
-    corroboratingProberCount({ tally, },),
+    String(evidence.configuredProbers,),
+    String(evidence.heardProbers,),
+    String(tally.corroborated,),
+    String(tally.removalCorroborated,),
+    String(tally.contradicted,),
+    String(tally.unanchored,),
+    String(tally.noneFound,),
+    String(tally.uncertain,),
+    // Sorted so two copies listing the same probers in different orders are
+    // still one fact rather than a contradiction.
+    tally.claims
+      .map(function toIdentity(claim,) {
+        return `${claim.modelId}/${claim.admissibility}`;
+      },)
+      .toSorted()
+      .join(','),
+    tally.issueIds
+      .toSorted()
+      .join(','),
   ].join('|',);
 }
 

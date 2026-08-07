@@ -444,8 +444,11 @@ async function drawGradingSample(): Promise<void> {
    * Files this invocation creates, removed on the way out unless all three
    * land.
    */
-  await using outputs = trackDrawOutputs();
+  await using outputs = trackDrawOutputs({ enabled: isFinal, },);
 
+  // Recorded BEFORE each write, since a write can create the file and then
+  // fail, and a path recorded only on success would leave that file behind.
+  outputs.record({ path: outPath, },);
   await writeFile(
     outPath,
     `${banner}${
@@ -458,7 +461,7 @@ async function drawGradingSample(): Promise<void> {
     }`,
     { flag: writeFlag, },
   );
-  outputs.record({ path: outPath, },);
+  outputs.record({ path: repairPath, },);
   await writeFile(
     repairPath,
     `${banner}${
@@ -470,13 +473,13 @@ async function drawGradingSample(): Promise<void> {
     }`,
     { flag: writeFlag, },
   );
-  outputs.record({ path: repairPath, },);
 
   // Written in the same breath as the sheets, because this is the only instant
   // the mapping exists. The sheets print no issue id, and re-running the draw
   // does not recover one: the draw is deterministic in its seed but not in its
   // POOL, which grows with every entry that settles. Without this file no human
   // grade can ever be joined to a machine verdict about the same item.
+  outputs.record({ path: manifestPath, },);
   await writeFile(
     manifestPath,
     `${JSON.stringify(
@@ -490,7 +493,6 @@ async function drawGradingSample(): Promise<void> {
     )}\n`,
     { flag: writeFlag, },
   );
-  outputs.record({ path: manifestPath, },);
 
   // Every output landed, so the set is the complete record of one draw and
   // nothing is removed on the way out.
