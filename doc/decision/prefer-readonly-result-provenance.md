@@ -750,16 +750,41 @@ separately,
  which is where the type-guard narrowing fixed above was found and is the same
 place a further increment would land.
 
-The seeded-fold open end survives this.
- The relation should carry `groupRuns` past the result gate,
- its
-observer is owned and its positions are described,
- so the derivation should have succeeded and the sweep
-still showed nothing.
- Distribution sampling cannot say why:
- that needs a trace of one call rather than
-counts across many,
- which is a different technique and the honest next step.
+The seeded-fold open end is closed,
+ by tracing one call rather than counting many.
+
+With the relation applied,
+ `records.reduce<Run[]>(appendToRuns, [],)` in
+`package/module/logger/src/sink/console.ts` never reached the observer derivation at all.
+ Not cached,
+checked with a fresh cache root.
+ It exits at `unobservedArgument`:
+ "anything else passed alongside the
+observers reaches the member by a route the element-flow derivation does not describe",
+ and the seed is
+exactly such an argument whenever it can carry mutable state.
+
+So the seeded-fold relation could never have helped,
+ and the reason is a small joke at its expense:
+ the
+seed that makes the relation sound is itself the argument that blocks the derivation.
+ A fold
+accumulating into an array or an object always passes one.
+ A fold seeded with a number or a string does
+not,
+ and those already discharge,
+ which is why the sweep moved by exactly zero rather than by a little.
+
+That also sharpens the `unobservedArgument` exit itself,
+ which is the next thing worth attacking here.
+Its rule is that an unmodelled argument may carry receiver state onward,
+ which is right for a `thisArg`
+and wrong for a fresh literal the call site just created:
+ `[]` cannot carry anything the receiver held,
+because nothing has put anything into it yet.
+ Distinguishing a freshly built argument from a passed-in
+one is the same provenance question this document is about,
+ asked one level down.
 
 Superseded next step,
  kept because the instrumentation that replaced it is the method worth copying:
