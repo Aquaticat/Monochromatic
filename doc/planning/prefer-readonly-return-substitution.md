@@ -468,6 +468,49 @@ stand,
  the observer members are excluded on stated grounds,
  and what is left in one place is these 134.
 
+## The third item is half built, and the measurement says which half
+
+Probed after the stake above,
+ because "build caller-side substitution" is a large description and a
+large description is worth checking against what already runs.
+
+A callable returning one receiver *element* already records the fact and the caller already uses it:
+
+```text
+pickElement(rows)  { return rows.at(0,); }        returned=[0]
+drivePickElement   { pickElement(rows,)?.label = x }  referentMutated=[0]
+```
+
+A callable returning a *container* of receiver elements records nothing,
+ and the caller attributes
+nothing:
+
+```text
+pickContainer(rows) { return rows.slice(0,); }    returned=[]
+drivePickContainer  { pickContainer(rows,)[0].label = x }  referentMutated=[]
+```
+
+Both are `opaque=[0]`,
+ which is what keeps the second pair safe today:
+ the caller is told nothing about
+the parameter,
+ so nothing is offered.
+ It is also exactly why the fourth item cannot be taken first.
+Discharge that opacity while the container return records no fact and `drivePickContainer` gets a clean
+parameter with an unattributed write through it,
+ which is the shape `#35` refuted.
+
+So the third item is narrower than its own description.
+ The value half works;
+ what is missing is the
+container half:
+ a returned container of receiver elements has to record its parameter the way a returned
+element does.
+ That direction adds attribution rather than removing it,
+ which is the safe direction for this
+rule,
+ and it is the precondition the fourth item actually needs.
+
 ## Recommendation
 
 Ranking:
