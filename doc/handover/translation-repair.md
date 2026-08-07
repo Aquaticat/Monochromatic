@@ -5352,6 +5352,44 @@ RUN 008 IS ACCUMULATING ON TOP OF THIS. Settled entries are not recomputed and
 the slice cache preserves partial work, so the two timed-out entries resume from
 their cached chunks rather than restarting from zero.
 
+## The per-entry deadline is starving the large band specifically
+
+Measured read-only off run 007 at zero quota, so this needs no rerun.
+
+BAND THE ATTEMPTED ENTRIES BY `page.md` SOURCE BYTES, using the pipeline's own
+cuts from `band-order.ts` (`SMALL_PAGE_BYTES` 1843, `MEDIUM_PAGE_BYTES` 3686).
+That reproduces `draw-sample`'s split exactly (small 3, medium 4, large 2),
+which is what makes the proxy trustworthy rather than a second, different
+measurement:
+
+-   large: `Dethelly` 6171 TIMEOUT, `Arita` 5951 settled, `Futajuhuacha` 5448
+    TIMEOUT, `Chinatsu_Suzuki` 5353 settled. Two of four lost.
+-   medium: `Considerate_cat` 3513, `AmbeR_the_anpa` 2122, `Anilovr` 1985,
+    `Everythings99` 1859. Four of four settled.
+-   small: `Aniloviraw` 1481, `Acheron` 938, `AkiraComplex` 743. Three of three
+    settled.
+
+FIFTY PERCENT LOSS IN THE LARGE BAND, ZERO EVERYWHERE ELSE. The deadline is not
+trimming entries at random.
+
+SIZE CORRELATES BUT DOES NOT DETERMINE, and this is the part worth not
+forgetting. `Dethelly` is the largest and timed out, but `Futajuhuacha` at 5448
+timed out while the LARGER `Arita` at 5951 settled. Something beyond size varies,
+most plausibly provider latency across the window. Do not model the deadline as
+a pure size threshold and do not predict which large entries will fail.
+
+WHY IT BLOCKS THE MILESTONE RATHER THAN JUST COSTING TIME. `draw-sample` refuses
+a final gate sheet until the large band fills, and the preliminary draw pulls 16
+large-band slots from 2 entries. The deadline is starving exactly the band the
+gate depends on, so the budget task and the precision re-measure are one problem,
+not two.
+
+THE DESIGN ALREADY EXPECTS THIS. `band-order.ts` orders the large band first,
+commenting that a large entry may need a second run to settle so starting it
+earlier lets it resume sooner. What is still unmeasured is whether a re-attempt
+resumes far enough from cached chunks to finish inside a fresh deadline. Run 008
+answers that, and the answer decides whether the deadline needs raising at all.
+
 ## Verifying a sheet renders is in tension with pre-grading it blind
 
 READING A GRADING SHEET CONTAMINATES ANY LATER BLIND PRE-GRADE OF THE ITEMS
