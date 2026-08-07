@@ -693,6 +693,47 @@ unchanged at 0 and 33.
 that also appears among the removed,
  so no parameter became opaque that was not opaque before.
 
+### Where the refusals actually are, and which gate to instrument
+
+Measured across six files on 2026-08-07,
+ at `receiverClaimAnswerable`,
+ which is the decision that
+produces a finding:
+
+- 32 the channel is not verified narrow
+- 7 the result escapes
+- 6 neither relation answers
+
+Instrumenting `viewResultUnaccounted` instead gives a different and misleading picture,
+ 7 no-relation
+against 2 escapes,
+ because that gate refusing does not by itself produce a finding:
+ a member carrying
+the direct-value relation is answered later by `callResultReceiver`.
+ Instrument the reporting decision,
+not the gate that feeds it.
+
+The 32 need reading carefully rather than acting on.
+ An observer-bearing member is refused there *by
+design*,
+ since its observer obligation belongs to `recordReadonlyViewApplications`;
+ reaching that branch
+at all means the observer analysis already declined. So the number counts consequences, and the cause
+sits upstream in `readonlyViewElementApplications`,
+ which has several exits:
+ the result gate, no
+observers, an observer that is not owned source, and undescribed observer positions.
+ Which of those
+fires has not been measured,
+ and it is the next thing to measure rather than to reason about.
+
+That is also the open end of the seeded-fold attempt above.
+ With the relation added, `groupRuns` should
+have passed the result gate and derived its observer, and the sweep still showed nothing, so an exit
+after the gate is declining.
+ Naming which one needs stepping through a single call rather than another
+distribution.
+
 Superseded next step,
  kept because the instrumentation that replaced it is the method worth copying:
  starting with `records.reduce<Run[]>` in
