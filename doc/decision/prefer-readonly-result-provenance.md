@@ -806,9 +806,16 @@ The new offer is `buildToml` in `package/module/toml-edit/src/conformance/encode
  so the rule
 would be offering `root` as deeply read-only while the author documents that converting a child may run
 arbitrary hooks.
- Whether that offer is defensible was not established,
- and an offer that cannot be shown
-correct is not one to land at the end of a long session.
+ That offer was then examined rather than left open,
+ and it is not defensible.
+`taggedToInput` recurses through caller-owned structures,
+ calling `tree.map(...)` and record
+predicates on values reached from `root`,
+ and both it and its inner `element` observer carry
+`@mutates child - Recursive traversal can invoke caller-owned array, proxy, and accessor hooks`.
+Offering `root` as deeply read-only asserts that no such hook can write,
+ which is the claim this rule
+keeps fail-closed everywhere else and the one these authors doubted in writing.
 
 What this does not say is that either half is wrong.
  The provenance reading of `unobservedArgument` still
