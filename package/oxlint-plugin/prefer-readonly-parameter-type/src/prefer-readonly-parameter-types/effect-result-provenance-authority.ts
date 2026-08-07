@@ -232,6 +232,11 @@ const PROVENANCE_BY_OWNER: Readonly<
       receiverTypeArgumentIndex: 0,
       resultTypeArgumentIndex: 0,
     },
+    toReversed: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
+      receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
+    },
     entries: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED,
       receiverTypeArgumentIndex: 0,
@@ -286,6 +291,11 @@ const PROVENANCE_BY_OWNER: Readonly<
       resultTypeArgumentIndex: 0,
     },
     toSorted: {
+      relation: RESULT_RELATION_RECEIVER_ELEMENTS,
+      receiverTypeArgumentIndex: 0,
+      resultTypeArgumentIndex: 0,
+    },
+    toReversed: {
       relation: RESULT_RELATION_RECEIVER_ELEMENTS,
       receiverTypeArgumentIndex: 0,
       resultTypeArgumentIndex: 0,
@@ -374,13 +384,14 @@ export const RESULT_PROVENANCE_BY_INTERFACE: ReadonlyMap<
  * cannot pass unnoticed: the author must change a number in a second file, which is
  * the point at which the identity probe becomes unavoidable.
  */
-export const VERIFIED_RESULT_RELATION_COUNT = 34;
+export const VERIFIED_RESULT_RELATION_COUNT = 36;
 
 /**
  * Fresh-container members still absent, each for a reason of its own.
  *
- * `slice` and `filter` left this list when the container relation arrived. The rest stay,
- * and not merely because nobody got to them:
+ * `slice` and `filter` left this list when the container relation arrived, and `toReversed`
+ * followed once that shape was proven. The rest stay, and not merely because nobody got to
+ * them:
  *
  * - `concat`, `with` and `toSpliced` mix receiver elements with argument elements, so
  *   `rows.with(0, replacement)` can hand back a container whose written element came from
@@ -391,14 +402,14 @@ export const VERIFIED_RESULT_RELATION_COUNT = 34;
  *   records names the wrong level, and greater depths reach further.
  * - `concat` additionally consults `Symbol.isConcatSpreadable` and traverses its arguments,
  *   which is a channel the stated trust baseline does not cover.
- * - `toReversed` is uniform and would likely qualify, and is held back only to keep the
- *   first container increment to members whose probe shape is already proven.
+ * `toReversed` used to be listed here, held back only until the container probe shape was
+ * proven. `filter` and `slice` proved it and `toSorted` repeated it, so the reason expired
+ * and the entry was added rather than left standing on a condition that no longer held.
  *
  * Their exclusion is asserted, so removing one without adding its relation fails a test.
  */
 export const FRESH_CONTAINER_MEMBER_NAMES: ReadonlySet<string> = new Set([
   'concat',
-  'toReversed',
   'toSpliced',
   'with',
   'flat',

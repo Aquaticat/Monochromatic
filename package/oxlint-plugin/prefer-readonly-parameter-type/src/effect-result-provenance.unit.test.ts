@@ -376,11 +376,14 @@ await describe({
         expect(notFreshContainer,).toEqual([],);
         /* And the list is not vacuous, which an empty set would make every loop above
          * pass without checking anything. It went from seven to five when `filter` and
-         * `slice` gained the container relation, and each name that remains is held back
-         * for a reason recorded beside the set: mixed element sources for `concat`, `with`
-         * and `toSpliced`, a descendant rather than an element for `flat`, and a probe
-         * shape not yet exercised for `toReversed`. */
-        expect(FRESH_CONTAINER_MEMBER_NAMES.size,).toBe(5,);
+         * `slice` gained the container relation, and from five to four when `toReversed`
+         * did: it was held back only until that probe shape was proven, and `toSorted`
+         * repeating it retired the condition rather than the member changing.
+         *
+         * Each name that remains is held back for a reason recorded beside the set, and
+         * none of them is a timing reason: mixed element sources for `concat`, `with` and
+         * `toSpliced`, and a descendant rather than an element for `flat`. */
+        expect(FRESH_CONTAINER_MEMBER_NAMES.size,).toBe(4,);
       },
     },),
     it({
