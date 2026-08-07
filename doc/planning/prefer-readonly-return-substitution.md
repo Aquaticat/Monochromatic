@@ -12203,3 +12203,65 @@ shown one,
  the fixture count,
  nor the per-file task was ever checked
 against that.
+
+### What requiring closed-world callers cost, measured
+
+Workspace sweep on a cold cache:
+ 2898 errors against 2895,
+ 1560 rule findings against 1557,
+ 34 offers to 35.
+
+Two of the three added findings are restored charges,
+`package/cli/mutation-test/src/engine/suppression.ts:229:38` and
+`package/desktop-app/file-manager-electron/src/listing-sort.ts:103:3`,
+ which is the direction
+a stricter completeness requirement is supposed to move.
+
+The third is an offer,
+ and an offer appearing is the guarded failure's own signature,
+ so it
+was adjudicated rather than accepted.
+`stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts` takes
+`expected: ExpectedObservedState`,
+ which is `JsonObject` and carries a writable index
+signature.
+It reads the parameter through `Object.entries` and compares values;
+ nothing in the file
+writes it.
+So read-only describes what the callable does and the offer is correct.
+
+Why it appeared is the interesting half.
+The parameter previously carried *inferred* foreign provenance,
+ which suppressed the offer.
+Requiring complete inbounds makes the ownership graph record an unknown inbound instead,
+ and
+an unknown inbound rejects inferred provenance,
+ so the parameter is now treated as the
+ordinary value it is.
+Strengthening the predicate therefore adds charges on one side and removes a foreign
+inference on the other,
+ and only the first was expected.
+
+Worth carrying forward:
+ this predicate is shared by a mechanism that adds charges and one
+that removes them,
+ so tightening it moves the output in both directions at once.
+The reasoning that "stricter is always safer" does not survive contact with that,
+ which is
+the same shape as the reasoning it replaced.
+
+### The fixture cost, and the control that makes it readable
+
+All three offers the discharge made in the provenance fixture are gone,
+ because every callable
+there is exported.
+`localReceiverElements` and `readsLocalContainerLength` were added unexported,
+ and are
+offered,
+ which is what distinguishes a scoped feature from a dead one.
+
+That pair is also the first assertion in this repository that fails if the returned-result
+discharge stops working.
+Everything written for it before was exported,
+ run through a per-file task,
+ or both.
