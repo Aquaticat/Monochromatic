@@ -24,6 +24,7 @@ import {
   SIZE_BANDS,
   type SizeBand,
 } from '../sample-grading.ts';
+import { trackDrawOutputs, } from './draw-outputs.ts';
 import {
   RUN_CORPUS_PIN,
   resolveRunsDir,
@@ -439,6 +440,12 @@ async function drawGradingSample(): Promise<void> {
     kind: 'manifest',
   },);
 
+  /**
+   * Files this invocation creates, removed on the way out unless all three
+   * land.
+   */
+  await using outputs = trackDrawOutputs();
+
   await writeFile(
     outPath,
     `${banner}${
@@ -451,6 +458,7 @@ async function drawGradingSample(): Promise<void> {
     }`,
     { flag: writeFlag, },
   );
+  outputs.record({ path: outPath, },);
   await writeFile(
     repairPath,
     `${banner}${
@@ -462,6 +470,7 @@ async function drawGradingSample(): Promise<void> {
     }`,
     { flag: writeFlag, },
   );
+  outputs.record({ path: repairPath, },);
 
   // Written in the same breath as the sheets, because this is the only instant
   // the mapping exists. The sheets print no issue id, and re-running the draw
@@ -481,6 +490,11 @@ async function drawGradingSample(): Promise<void> {
     )}\n`,
     { flag: writeFlag, },
   );
+  outputs.record({ path: manifestPath, },);
+
+  // Every output landed, so the set is the complete record of one draw and
+  // nothing is removed on the way out.
+  outputs.commit();
 
   console.log(
     `SAMPLE final=${String(isFinal,)} seed=${drawSeed} pool=${
