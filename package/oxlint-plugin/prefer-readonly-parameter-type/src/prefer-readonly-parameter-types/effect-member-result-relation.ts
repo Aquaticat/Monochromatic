@@ -342,13 +342,35 @@ export function callResultComesFromObserver({
   /* A receiver that is itself a call carries whatever that call returned, and this analysis
    * cannot see what. `Object.entries(root,).reduce(fold, seed,)` is the measured case: the
    * elements folded came out of a host call that can run a getter on caller-owned state, so
-   * discharging the fold would discharge the traversal behind it too. */
+   * discharging the fold would discharge the traversal behind it too.
+   *
+   * Narrowed to calls whose elements are genuinely unknown, rather than every call. A
+   * receiver call carrying a verified element relation says exactly what it holds, its
+   * receiver's own elements, so the fold sees what a fold on the named receiver sees and the
+   * reason above does not reach it. `Object.entries` carries no such relation and stays
+   * refused, which is the case the reason was written from.
+   *
+   * The blunt form cost a real report shape. Measured: `chunks.reduce(fold, seed,)` folding
+   * into `{ readonly n: number }` is clean, while `chunks.slice(0,).reduce(fold, seed,)`
+   * with the identical fold is opaque, and instrumenting the gate showed this test to be the
+   * only arm differing between them. The accumulator holds one number and shares nothing
+   * with the receiver, so the opacity described nothing about the program.
+   *
+   * This routes the fold to the observer handling the named-receiver form already gets rather
+   * than discharging it: `propagateElementApplications` still marks the receiver opaque when
+   * the observer hands an element back. */
   /**
    * Expression the fold was called on.
    */
   const foldReceiver = memberCallReceiver({ call, },);
   if ((foldReceiver !== NO_MEMBER_RECEIVER)
-    && isCallExpression(foldReceiver,))
+    && isCallExpression(foldReceiver,)
+    && (callResultElementReceiver({
+        project,
+        checker,
+        call: foldReceiver,
+      },)
+      === RESULT_NOT_RECEIVER_STATE))
     return false;
   /* A fold's result is observer-derived only when the call seeds it. Unseeded, the receiver's
    * first element becomes the accumulator without the observer ever seeing it. */
