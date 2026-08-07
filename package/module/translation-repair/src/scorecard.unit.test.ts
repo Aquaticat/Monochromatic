@@ -517,15 +517,13 @@ await describe({
     },),
 
     it({
-      name: 'measures per-model recall by OCCURRENCE and ensemble recall by '
-        + 'DISTINCT entry-scoped seed, which are different questions: a model '
-        + 'that reviewed one entry twice has that entry\'s seeds counted twice '
-        + 'in its own row and once in the universe. Neither is wrong, but the '
-        + 'two numbers are not comparable, and reading a row\'s recall as a '
-        + 'share of the ensemble ceiling would be',
+      name: 'reports a ceiling ABOVE EVERY INDIVIDUAL ROW when models miss '
+        + 'different seeds, which is what makes it an ensemble ceiling rather '
+        + 'than a best-model score: two models each finding half, but not the '
+        + 'same half, means the roster together found everything',
       fn: async () => {
         /**
-         * One model reviewing the SAME entry twice, finding the seed once.
+         * Two models over one entry, each finding the seed the other missed.
          */
         const scorecard = computeScorecard({
           attempts: [
@@ -536,24 +534,31 @@ await describe({
               resolvedClaimCount: 1,
               unresolvedReasons: [],
               seededHitIds: ['seed/0',],
-              plantedSeedIds: ['seed/0',],
+              plantedSeedIds: [
+                'seed/0',
+                'seed/1',
+              ],
             },),
             attempt({
-              modelId: MODEL_A,
+              modelId: MODEL_B,
               entryId: 'whiskers',
               outcomeKind: 'ok',
-              resolvedClaimCount: 0,
+              resolvedClaimCount: 1,
               unresolvedReasons: [],
-              seededHitIds: [],
-              plantedSeedIds: ['seed/0',],
+              seededHitIds: ['seed/1',],
+              plantedSeedIds: [
+                'seed/0',
+                'seed/1',
+              ],
             },),
           ],
         },);
 
-        // Two records, so the row's denominator is two planted occurrences.
-        expect(scorecard.rows[0]?.seededRecall,).toBe(1 / 2,);
-        // One distinct entry-scoped seed, found, so the ceiling is whole.
-        expect(scorecard.seedUniverse,).toBe(1,);
+        // Neither model alone got past half.
+        for (const row of scorecard.rows)
+          expect(row.seededRecall,).toBe(1 / 2,);
+        // The union of what anyone found is everything.
+        expect(scorecard.seedUniverse,).toBe(2,);
         expect(scorecard.ensembleRecall,).toBe(1,);
       },
     },),
