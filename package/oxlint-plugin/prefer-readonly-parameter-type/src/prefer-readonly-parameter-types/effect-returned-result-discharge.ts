@@ -267,8 +267,13 @@ export function returnedResultDischargeable({
   /* Returned by *this* callable, not merely by some callable. `callIsReturnedOutright`
    * accepts a `ReturnStatement` wherever it is written, and the callers enumerated below are
    * enumerated for the body handed in, so a call returned from a nested declaration decides
-   * its discharge on a different callable's callers. `writtenDirectlyInBody` names the case
-   * and `returnsFromNestedCallable` in the provenance fixture is the program. */
+   * its discharge on a different callable's callers.
+   *
+   * MASKED, measured 2026-08-07: removing this changes no diagnostic. `resultEscapesCallable`
+   * treats any reference inside a nested callable as escaping outright, on the ground that a
+   * captured use outlives its reasoning about statement order, so a parameter reached from
+   * inside the inner declaration is charged whether or not this refuses. Kept because that
+   * masking lives in another module and is not a property of this decision. */
   if (!writtenDirectlyInBody({
     node: call,
     body,
@@ -294,7 +299,12 @@ export function returnedResultDischargeable({
      * node twice means the descent produced no base, and a walk proving absence has to read
      * "no answer" as "not proven": ending the loop and classifying whatever the cursor last
      * held would report a cycle clean. Ending it at all is still required, since nothing
-     * else bounds the alias hops. */
+     * else bounds the alias hops.
+     *
+     * MASKED, and unreachable rather than merely masked: no program was found that reaches
+     * a repeat. A `const` alias cycle needs each binding to read the next before it is
+     * initialised, which a temporal dead zone rejects at runtime. Kept as the loop's
+     * termination answer, which it has to give whether or not anything reaches it. */
     if (visited.has(base.current,))
       return false;
     visited.add(base.current,);
@@ -304,7 +314,11 @@ export function returnedResultDischargeable({
      * relation requirement never ran and the walk stopped at the wrapper and classified it,
      * which is the same provenance hole that requirement closes wearing a cast. `as`,
      * parentheses, `!` and `satisfies` all do it. Shared with the provenance walk rather
-     * than restated, so the two cannot disagree about which forms erase. */
+     * than restated, so the two cannot disagree about which forms erase.
+     *
+     * MASKED for the same reason as the requirement it protects: the shapes a wrapper would
+     * hide are charged by the observer path regardless, so removing this changes no
+     * diagnostic today. It stops being masked exactly when that requirement does. */
     /**
      * Inner expression, when this base is a wrapper whose value is exactly its operand's.
      */
@@ -319,7 +333,13 @@ export function returnedResultDischargeable({
        * to prove: `local.map(function lift() { return foreign; },).slice(0,)` reaches
        * `local` and reports a clean base, while every element of the returned container
        * came from the observer instead. `map` and `flatMap` carry no receiver relation for
-       * exactly that reason, so asking for one turns the assumption into a test. */
+       * exactly that reason, so asking for one turns the assumption into a test.
+       *
+       * MASKED, measured 2026-08-07: removing this changes no diagnostic. Every member
+       * without a receiver relation takes an observer, and the observer path marks the
+       * receiver opaque on its own, so the shapes this refuses are charged anyway. The two
+       * facts are independent, and a member gaining a relation-free result without an
+       * observer would separate them. */
       if (!callResultIsReceiverState({
         project,
         checker: project.checker,
@@ -364,7 +384,12 @@ export function returnedResultDischargeable({
       break;
     base.current = declared;
   }
-  /* An unresolved base is refused rather than skipped, and the two are opposite answers.
+  /* MASKED, measured 2026-08-07: the relation requirement in the loop rejects these shapes
+   * first, since a call reaching this sentinel names no member and so carries no receiver
+   * relation either. Kept because the two say different things: that one requires a proven
+   * relation, this one requires a node to classify at all.
+   *
+   * An unresolved base is refused rather than skipped, and the two are opposite answers.
    * The sentinel means the descent ran out of receiver before it reached anything ownership
    * can be asked of: `read().slice(0,)` has a call for its receiver whose own callee names
    * no member, so `memberCallReceiver` answers the sentinel and there is no node left to
