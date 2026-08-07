@@ -12063,3 +12063,64 @@ whose answer no final verdict depends on.
 Anyone changing this should know the inversion rests on those two things together and on no
 direct test,
  because no fixture reaches the root.
+
+### Correction: none of the guards has a program that isolates it
+
+An earlier section here says the guard fixtures "each keep a report that was discharged
+before".
+That is wrong,
+ and the commits that landed them say the same wrong thing.
+Recorded rather than quietly fixed,
+ because the error is the interesting part.
+
+Measured 2026-08-07 by neutralising each guard's condition in turn and re-running the
+fixtures.
+Every guard,
+ including the containment check,
+ leaves its intended program's diagnostics
+byte-identical.
+Six programs were written across two fixtures to isolate them and not one does.
+
+The reasons differ and both are instructive.
+Two were written into the catalog-free fixture,
+ where the receiver is `ForeignBorrowed`,
+ so
+they take the opaque boundary and never reach the discharge at all.
+Four more were written into the provenance fixture,
+ where the discharge does fire,
+ and were
+refused by the non-empty caller requirement instead,
+ having no caller in the fixture.
+Adding a caller for each did not change the answer either:
+ the parameters stay charged by
+paths that never consult the discharge.
+
+So the guards are defence in depth,
+ not fixes with a failing case behind them.
+Each closes a branch confirmed by reading the source,
+ each fails closed,
+ and the workspace
+sweep says each costs nothing.
+None is known to change an outcome on any program,
+ and the honest reading is that this
+analysis charges these shapes through several independent paths,
+ so removing one wrong
+discharge among them is not observable from the outside.
+
+That is worth keeping in mind before writing the next guard here.
+A fixture that answers the same with and without the code it was written for tests that code
+not at all,
+ and a passing count next to it reads exactly like evidence while being none.
+The two removed vacuous fixtures and the corrected comment on `returnsFromNestedCallable` are
+there so a later reader does not have to rediscover this.
+
+The general lesson has a sharper form.
+This session repeatedly found that measurement answered a different question from the one
+asked:
+ the byte-identical sweep looked like proof the discharge was sound and was only proof
+the workspace lacked the shapes,
+ and a passing fixture count looked like proof a guard worked
+and was only proof the count had not moved.
+Both failures share a shape,
+ which is reading the absence of a difference as evidence for the
+mechanism you happened to be thinking about.
