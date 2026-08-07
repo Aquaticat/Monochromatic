@@ -727,12 +727,39 @@ observers, an observer that is not owned source, and undescribed observer positi
 fires has not been measured,
  and it is the next thing to measure rather than to reason about.
 
-That is also the open end of the seeded-fold attempt above.
- With the relation added, `groupRuns` should
-have passed the result gate and derived its observer, and the sweep still showed nothing, so an exit
-after the gate is declining.
- Naming which one needs stepping through a single call rather than another
-distribution.
+Measured too,
+ across the same files,
+ by instrumenting all nine exits of
+`readonlyViewElementApplications`:
+
+- 14 no observers
+- 9 the result is unaccounted
+- 1 the observer is not owned source
+
+Only one of those is a limit worth attacking.
+ The 14 are members carrying no callable argument at all,
+`slice`,
+ `entries`,
+ `at`;
+ there is nothing to derive and `receiverClaimAnswerable` answers them
+separately,
+ so the exit is correct.
+ The single unowned observer is the analysis honestly declining.
+ The
+9 are the result gate,
+ which is where the type-guard narrowing fixed above was found and is the same
+place a further increment would land.
+
+The seeded-fold open end survives this.
+ The relation should carry `groupRuns` past the result gate,
+ its
+observer is owned and its positions are described,
+ so the derivation should have succeeded and the sweep
+still showed nothing.
+ Distribution sampling cannot say why:
+ that needs a trace of one call rather than
+counts across many,
+ which is a different technique and the honest next step.
 
 Superseded next step,
  kept because the instrumentation that replaced it is the method worth copying:
