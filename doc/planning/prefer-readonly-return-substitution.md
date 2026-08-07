@@ -386,18 +386,34 @@ reference-position classification would misreport every assignment-established a
  so the two are
 entangled by design.
 
-What follows for the ranking is narrower than it looks.
- The holder-set item is no longer the fail-closed
-half of a remedy for a live false offer,
- because there is no live false offer on this probe.
- It may still
-be worth doing for precision,
- since every one of these four now reports opacity where at least the two
-selectors arguably should not.
- That is a different case from the one recorded above,
- and it needs its own
-measurement before it is taken:
- the argument for it can no longer be "a wrong offer is being made".
+What is left reporting is not a nesting question either,
+ which is worth stating because the probe above
+invites that reading.
+ Measured against the flat equivalent:
+ `config.rows.at(0,)` read for a property is
+clean,
+ and so is `rows.at(0,)`;
+ `return rows.at(0,)` is opaque,
+ and so is the nested form.
+ Returning the
+element discriminates and the extra property step does not,
+ so this document's earlier claim that a nested
+receiver is classified exactly as a flat one is confirmed rather than contradicted.
+
+That places the entire remainder inside the last of the four items,
+ whether a verified direct return may
+discharge receiver opacity,
+ which this document already defers on stated grounds.
+ The holder-set item is
+therefore not the fail-closed half of a remedy for a live false offer,
+ because there is no live false offer
+and what still reports is the deferred question wearing a different shape.
+
+Nothing here argues the deferral was wrong.
+ It argues that the ranking's second item has lost the
+justification written for it,
+ and that anyone picking this up should start by re-deriving whether the
+holder set is worth closing on its own terms rather than inheriting an argument that no longer measures.
 
 ## Recommendation
 
