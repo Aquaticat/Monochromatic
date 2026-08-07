@@ -281,6 +281,30 @@ function continuationDepth(transcriptLines: readonly string[],): number {
  * ```
  */
 async function continuationDepthAt(transcriptPath: string,): Promise<number> {
+  return continuationDepth(await readTranscriptTail(transcriptPath,),);
+}
+
+/**
+ * Reads the tail of a transcript as lines.
+ *
+ * Separated from the counters so one stop reads the file once and answers both
+ * the depth question and the progress question from the same bytes.
+ *
+ * Failure to read yields no lines rather than propagating: a hook that throws
+ * produces no stdout, which Claude Code reads as permission to stop, and
+ * silently disabling the response-quality detectors would be worse than
+ * treating one stop as if it opened a fresh turn.
+ *
+ * @param transcriptPath - filesystem path from the `Stop` event
+ *
+ * @returns tail lines oldest first, or an empty array when unreadable
+ *
+ * @example
+ * ```ts
+ * const lines = await readTranscriptTail(event.transcript_path);
+ * ```
+ */
+async function readTranscriptTail(transcriptPath: string,): Promise<readonly string[]> {
   try {
     /**
      * Open transcript handle, closed by scope exit even when reading throws.
@@ -312,23 +336,29 @@ async function continuationDepthAt(transcriptPath: string,): Promise<number> {
       buffer.length,
       start,
     );
-    return continuationDepth(buffer.toString('utf8',)
-      .split('\n',),);
+    return buffer.toString('utf8',)
+      .split('\n',);
   }
   catch (error) {
     // stderr is safe here: stdout carries the hook protocol and must stay clean.
     process.stderr
-      .write(`stop-reminder: continuation depth unavailable, treating as 0: ${String(error,)}\n`,);
-    return 0;
+      .write(`stop-reminder: transcript unreadable, treating turn as fresh: ${String(error,)}\n`,);
+    return [];
   }
 }
 
+export type { TranscriptRecord, };
+
 export {
   CONTINUATION_MARKER,
-  FEEDBACK_PREFIX,
   continuationDepth,
   continuationDepthAt,
   DEFAULT_MAX_DEPTH,
+  FEEDBACK_PREFIX,
+  isForcedContinuationRecord,
   MAX_DEPTH_ENV,
   maxContinuationDepth,
+  parseRecord,
+  readTranscriptTail,
+  UNPARSABLE,
 };

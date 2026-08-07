@@ -9,10 +9,15 @@ import {
   autoContinueReason,
 } from './auto-continue.ts';
 import {
-  continuationDepthAt,
+  continuationDepth,
   MAX_DEPTH_ENV,
   maxContinuationDepth,
+  readTranscriptTail,
 } from './continuation-depth.ts';
+import {
+  hasRunningBackgroundTask,
+  workedSinceLastForcedContinuation,
+} from './continuation-progress.ts';
 import {
   findCategoricalDismissal,
   findTrailingQuestion,
@@ -202,14 +207,34 @@ async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<St
    * Claude Code does not reliably end a blocked chain, so this bound is the
    * only termination guarantee; see `continuation-depth.ts` for the measurement.
    */
-  const depth = enabled
-    ? await continuationDepthAt(event.transcript_path,)
-    : 0;
+  const transcript = enabled
+    ? await readTranscriptTail(event.transcript_path,)
+    : [];
+  /**
+   * Forced continuations already issued for this human turn.
+   */
+  const depth = continuationDepth(transcript,);
+  /**
+   * Whether the previous forced continuation produced any tool call.
+   *
+   * Releases a session that is blocked on something outside the agent control,
+   * where pushing again yields another restatement rather than work.
+   */
+  const worked = workedSinceLastForcedContinuation(transcript,);
+  /**
+   * Whether a background task is still running.
+   *
+   * The session is waiting on something another turn cannot advance, so pushing
+   * buys a restatement of the wait rather than work.
+   */
+  const waiting = hasRunningBackgroundTask(event.background_tasks,);
 
   return stopRemindersDecision({
     event,
     forcedContinuationAllowed: enabled
-      && (depth < maxContinuationDepth(process.env[MAX_DEPTH_ENV] ?? '',)),
+      && (depth < maxContinuationDepth(process.env[MAX_DEPTH_ENV] ?? '',))
+      && worked
+      && (!waiting),
   },);
 }
 
