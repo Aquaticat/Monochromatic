@@ -263,6 +263,41 @@ The `Stop` input carried exactly these keys:
 `background_tasks`, `cwd`, `hook_event_name`, `last_assistant_message`,
 `permission_mode`, `prompt_id`, `session_crons`, `session_id`,
 `stop_hook_active`, `transcript_path`.
+
+### Undocumented Stop fields
+
+Two of those keys are absent from the published hook reference,
+and one of them turned out to carry the signal this whole mechanism needed.
+
+`background_tasks` is an array of objects shaped like this,
+captured by dumping a live payload on 2.1.224
+while a backgrounded shell command ran:
+
+```json
+[
+  {
+    "id": "b6ldjvy2v",
+    "type": "shell",
+    "status": "running",
+    "description": "Sleep for 60 seconds in background",
+    "command": "sleep 60"
+  }
+]
+```
+
+A `status` of `running` is the only reliable way a Stop hook can tell
+that the session is waiting on something another turn cannot advance.
+Without it the hook has no way to distinguish
+an agent that stopped early from one that stopped because it is blocked,
+which is exactly the confusion that produced the eleven-turn incident.
+
+`session_crons` is an empty array when no scheduled jobs exist;
+its populated shape is unmeasured.
+
+Both are now declared in
+`package/claude-code-plugin/hook-type/src/events-agent.ts`.
+The published reference also lists `effort` among the common fields,
+which was absent from every payload observed here.
 The published hook reference lists `effort` among the common fields;
 no `effort` key was present on any of the 18 logged dispatches.
 
