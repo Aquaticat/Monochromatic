@@ -1,7 +1,9 @@
 # Caller-side substitution for returned parameter state
 
-Proposal,
- not an accepted decision.
+Working record.
+The proposal it opened as has landed;
+ the settled part is
+`doc/decision/readonly-caller-enumeration-boundary.md`.
 Scope:
  `package/oxlint-plugin/prefer-readonly-parameter-type`.
 Opened from task #38,
@@ -21,6 +23,84 @@ On the structural path the same alias hop does produce a false offer,
  measured end to end against the shipped rule with nothing mutated,
  and it is set out in "A false offer on the structural path".
 That finding is what the ranking now rests on.
+
+## Current state, 2026-08-07
+
+This document is long and append-only,
+ so what follows is where things stand.
+Everything below this section is the record of getting here,
+ including claims that were made
+and withdrawn.
+
+The returned-result discharge is landed and measured.
+A verified collection member whose result carries receiver state no longer forces the receiver
+opaque when returning is that result's only escape,
+ the callable's callers are all enumerable
+and resolvable,
+ and the base of its receiver chain is not foreign-owned.
+
+Workspace effect:
+ 2893 errors and 1555 rule findings against 2906 and 1568 before any of this,
+with the offer set unchanged at 34 through every increment except one adjudicated addition,
+`stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts`,
+ which is correct.
+
+Seven conditions guard it.
+Four have a failing case in `prefer-readonly-parameter-type.unit.test.ts`:
+ the reassignable
+binding, the written endpoint, the wrapper unwrap, and the only-escape condition.
+Two are masked by other charge paths,
+ the containment check and the relation requirement,
+ and
+one is unreachable by construction,
+ the unresolved base.
+Each says which it is at its point of use,
+ and "Two of the guards do have a failing case after
+all" records how the first three were finally isolated.
+
+`localReceiverElements` in the provenance fixture is the positive control:
+ unexported,
+ with an
+in-file caller,
+ and the first assertion in this repository that fails if the discharge stops
+working at all.
+
+### Open questions
+
+`callersAllResolve` proves every *enumerable* usage resolves,
+ and module export is a
+deliberate over-approximation of reachable-from-outside.
+Narrowing it to published entry points was measured and rejected;
+ the argument and the
+reopening conditions are in the decision document.
+
+Overload canonicalization and interface dispatch are unmodelled,
+ recorded in "Known
+limitations left in place, with the argument for leaving them",
+ and neither is a branch to
+patch in the discharge.
+
+Extending the discharge to further escape routes is now mostly moot:
+ a returned object literal
+or spread is refused by the escape test itself,
+ correctly,
+ because substitution does not track
+through them.
+Widening that would mean widening what substitution tracks,
+ which is a different change.
+
+### Reading this document
+
+The three corrections worth knowing before trusting any measurement quoted below:
+ "Correction:
+none of the guards has a program that isolates it",
+ "Correction to the correction:
+ the probe
+harness was blind",
+ and "Two of the guards do have a failing case after all",
+ in that order.
+They contradict each other on purpose,
+ and the last one is current.
 
 ## What was measured
 
