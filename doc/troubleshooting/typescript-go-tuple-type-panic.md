@@ -301,6 +301,45 @@ earliest predating all of it:
  16 occurrences each time, so nothing in the rule's own changes caused or
 worsened it.
 
+## The remaining cost, and the shape of a narrower catch
+
+With the assertion fixed the panic no longer costs a program its analysis,
+ but it still costs 16
+callables their summaries per sweep,
+ counted identically in every sweep taken during this work.
+ Their
+callers take opacity through the absent-callee branch,
+ so this is precision rather than soundness:
+ the
+answer is conservative, not wrong.
+
+The trigger is narrower than "a tuple".
+ `findGerundInText` in
+`package/claude-code-plugin/statusline/src/activity.ts` writes
+`lowercaseValue.match(GERUND_PATTERN,) ?? []`,
+ whose type is `RegExpMatchArray | []`,
+ and `[]` is an empty
+tuple.
+ The serializer reads `Reference | Tuple` off that type's own object flags and immediately asserts
+tuple data,
+ which an instantiated type does not carry.
+ So the shape to look for when this fires elsewhere
+is a `?? []` or `: []` fallback beside a non-tuple array type, not a declared tuple.
+
+A narrower catch would recover the 16.
+ The panic surfaces when a type crosses the sync bridge, so
+catching it at the type query rather than at the callable would lose one fact instead of one summary,
+and the rule already treats an unresolved type as fail-closed nearly everywhere.
+ The cost is that
+`getTypeAtLocation` is called from about a dozen modules,
+ so it means a helper plus a mechanical
+replacement at every site,
+ and every site then has to be checked for whether `undefined` really is its
+fail-closed direction.
+ Not attempted here:
+ a wide mechanical change to recover precision is worth doing
+deliberately rather than at the end of a long session.
+
 ## What we do about it
 
 An internal failure no longer reports a lint issue.
