@@ -5334,12 +5334,17 @@ IT STOPPED BECAUSE TIME RAN OUT, having settled 9 entries of 92 pending in
 so never read a zero exit from `corpus-pass` as "the corpus was processed".
 Read the `DONE` line.
 
-TWO OF ELEVEN ATTEMPTED ENTRIES WERE LOST TO THE PER-ENTRY DEADLINE. `Dethelly`
-and `Futajuhuacha` each burned the full 10800000ms (3 hours) and produced no
-artifact, so roughly 41 percent of the budget bought nothing. Tracked as its own
-task; do not change either limit without measuring first, because the large band
-is the thinnest part of the sample pool and abandoning large entries earlier
-would degrade stratification exactly where it is weakest.
+TWO OF ELEVEN ATTEMPTED ENTRIES HIT THE PER-ENTRY DEADLINE. `Dethelly` and
+`Futajuhuacha` each burned the full 10800000ms (3 hours) and produced no
+artifact.
+
+CORRECTION TO AN EARLIER READING OF THIS, recorded because the wrong version was
+committed first: that is NOT 41 percent of the budget wasted. Each of those
+entries banked 15 completed chunks into the slice cache before the deadline
+fired, and run 008 resumed both from there. No artifact is not the same as no
+progress, and the slice cache is exactly the mechanism that makes the difference.
+Judge a timed-out entry by its cached chunk count, never by the missing
+artifact.
 
 WHAT THE 9 SETTLED ENTRIES SUPPORT. `draw-sample` produced a real round-three
 sheet from them: small 3 entries with 22 accepted, medium 4 with 108, large 2
@@ -5384,11 +5389,24 @@ large-band slots from 2 entries. The deadline is starving exactly the band the
 gate depends on, so the budget task and the precision re-measure are one problem,
 not two.
 
-THE DESIGN ALREADY EXPECTS THIS. `band-order.ts` orders the large band first,
-commenting that a large entry may need a second run to settle so starting it
-earlier lets it resume sooner. What is still unmeasured is whether a re-attempt
-resumes far enough from cached chunks to finish inside a fresh deadline. Run 008
-answers that, and the answer decides whether the deadline needs raising at all.
+THE DESIGN ALREADY EXPECTS THIS, AND RESUME IS NOW MEASURED TO WORK.
+`band-order.ts` orders the large band first, commenting that a large entry may
+need a second run to settle so starting it earlier lets it resume sooner.
+
+THE EVIDENCE, observed live: after run 007 died on both entries, the slice cache
+held `Dethelly` and `Futajuhuacha` only, at chunks 0 through 14 each, contiguous
+from zero. Settled entries discard their caches, which is why nothing else is
+there. Run 008's FIRST chunk completion is `chunk 14`, roughly eight minutes
+after it started, not `chunk 0`.
+
+WHAT THAT SETTLES: the deadline costs wall time, not entries, as long as the pass
+is restarted. Raising it is therefore not urgent and probably not the right knob.
+The remaining cost is only the work in flight when the deadline fires, which is
+at most one chunk, plus the per-restart overhead of reaching the entry again.
+
+WHAT IT DOES NOT SETTLE: whether these entries eventually settle at all, or keep
+consuming a deadline per run without reaching their last chunk. That needs run
+008 to carry one of them to a `TALLY ... status=repaired`.
 
 ## Verifying a sheet renders is in tension with pre-grading it blind
 
