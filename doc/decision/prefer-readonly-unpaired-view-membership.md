@@ -255,6 +255,42 @@ the control:
  and without it "the listed
 member reached nothing" would be indistinguishable from a receiver carrying no instrumentation at all.
 
+### What Date did, measured
+
+Workspace either side:
+ 2952 errors to 2924,
+ 1586 rule findings from 1614,
+ warnings unchanged at 3902.
+ The cause
+`input.toISOString` went from 48 mentions to none,
+ and 28 findings cleared outright.
+
+The read-only offer count moved,
+ 33 to 34,
+ for the first time in this line of work,
+ and the new offer is
+correct rather than a regression.
+ It lands on `encodeInlineTable` in the same file:
+ the callable reads
+`Object.entries(input,)`,
+ maps each entry to a string and joins them,
+ writing nothing,
+ while its declared
+`Record<string, unknown>` carries a writable index signature.
+ The offer says to close it.
+ No offer landed
+on a parameter typed `Date`,
+ which was the specific hazard to check,
+ since `Readonly<Date>` would not stop
+`setTime` and an offer there would be correct and useless at once.
+
+Stale `@mutates` findings went from 11 to 14.
+ All three are contracts this change made provably wrong,
+including `@mutates input` on `encodeInlineTable`,
+ which is the outcome the rule exists to produce rather
+than a cost:
+ a contract describing an effect that cannot happen is the failure `AGENTS.md` names in `JCH`.
+
 ### The typed arrays are the obvious next extension and should not be taken
 
 Measured rather than assumed,
