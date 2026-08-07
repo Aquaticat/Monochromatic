@@ -2834,6 +2834,70 @@ await describe({
       },
     },),
     it({
+      name: 'charges draining an iterator this repository declares, and not the trusted one',
+      fn: async () => {
+        /** Fixture separating a trusted iterator from a repository-declared one. */
+        const drainPath = fileURLToPath(new URL(
+          '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-iteration-channel-invalid.ts',
+          import.meta.url,
+        ),);
+        /** Current iteration-channel fixture text. */
+        const drainSource = readFileSync(drainPath, 'utf8',);
+        const session = openSemanticFile({
+          fileName: drainPath,
+          sourceText: drainSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns parameter indexes left opaque.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            drainSource.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,];
+        }
+        /* Draining is a call, and the baseline trusts only an iterator the default library
+         * declares. `CountingIterable` declares its own and writes `count` from it, so both
+         * spellings run repository code that mutates what the caller passed. Measured before
+         * `effect-iteration-channel.ts`: both read `[]`, so the parameter was offerable while
+         * the loop rewrote it. The pair matters because the two reach the walk through
+         * different branches, `for...of` and a spread element. */
+        expect(opaqueIndexes('iterateCountingValue',),).toEqual([0,],);
+        expect(opaqueIndexes('spreadCountingValue',),).toEqual([0,],);
+        /* The control, and the reason this is not simply "iteration is opaque now": a plain
+         * array drains an iterator too, and that one the library declares. */
+        expect(opaqueIndexes('iterateTrustedRows',),).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
       name: 'reuses direct scans in process and through persistent cache',
       fn: async () => {
         using cache = disposableCacheDirectory();
