@@ -98,6 +98,20 @@ function isRunningTask(task: BackgroundTask,): boolean {
  * a turn that engaged with the task, and treating research as idleness would
  * release exactly when the agent is orienting.
  *
+ * Known gap, observed while building this: searching for work counts as work.
+ * An agent pushed on a finished session will investigate whether anything
+ * remains, and that investigation issues tool calls, which reads as progress and
+ * re-arms the block. The session can hold itself blocked by looking for things
+ * to do. The release still fires, but only on the first turn the agent answers
+ * in prose alone, so the cost is one extra turn per unproductive investigation
+ * rather than one per session.
+ *
+ * Not fixed, because every candidate fix is worse. Discounting read-only tools
+ * would release an agent that is legitimately orienting. Asking the agent
+ * whether it is done is model-mediated, which is the property this whole
+ * mechanism exists to avoid. A session that tracks tasks does not have the gap
+ * at all, since `continuation-tasks.ts` sees the finished list directly.
+ *
  * On a truncated tail this errs toward blocking, unlike the task-list release
  * which errs toward releasing and therefore refuses to read a truncated tail at
  * all. If the block itself fell outside the window, the scan finds no block and
