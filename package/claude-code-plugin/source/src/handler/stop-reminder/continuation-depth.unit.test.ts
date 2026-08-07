@@ -11,6 +11,7 @@ import {
   FEEDBACK_PREFIX,
   MAX_DEPTH_ENV,
   maxContinuationDepth,
+  readTranscriptTail,
 } from './continuation-depth.ts';
 
 /**
@@ -190,6 +191,18 @@ await describe({
           name: 'reports zero rather than throwing when the transcript is missing',
           fn: async () => {
             expect(await continuationDepthAt('/nonexistent/transcript.jsonl',),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'marks an unreadable transcript truncated so absence-based releases stay off',
+          fn: async () => {
+            expect((await readTranscriptTail('/nonexistent/transcript.jsonl',)).truncated,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'marks a whole small transcript untruncated',
+          fn: async () => {
+            expect((await readTranscriptTail('/dev/null',)).truncated,).toBe(false,);
           },
         },),
         it({

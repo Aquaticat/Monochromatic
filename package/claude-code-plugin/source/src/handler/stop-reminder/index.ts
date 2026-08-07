@@ -210,18 +210,21 @@ async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<St
    */
   const transcript = enabled
     ? await readTranscriptTail(event.transcript_path,)
-    : [];
+    : {
+      lines: [],
+      truncated: false,
+    };
   /**
    * Forced continuations already issued for this human turn.
    */
-  const depth = continuationDepth(transcript,);
+  const depth = continuationDepth(transcript.lines,);
   /**
    * Whether the previous forced continuation produced any tool call.
    *
    * Releases a session that is blocked on something outside the agent control,
    * where pushing again yields another restatement rather than work.
    */
-  const worked = workedSinceLastForcedContinuation(transcript,);
+  const worked = workedSinceLastForcedContinuation(transcript.lines,);
   /**
    * Whether a background task is still running.
    *
@@ -234,9 +237,13 @@ async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<St
    *
    * A session with no task list is excluded, since most sessions never create
    * one and releasing on an empty list would disable forced continuation
-   * everywhere.
+   * everywhere. A truncated tail is excluded too: a task created before the
+   * window and never updated inside it is invisible, so an open list can look
+   * finished, and this release must not conclude anything from an absence it
+   * cannot see.
    */
-  const nothingTracked = taskListState(transcript,) === 'all-finished';
+  const nothingTracked = (!transcript.truncated)
+    && (taskListState(transcript.lines,) === 'all-finished');
 
   return stopRemindersDecision({
     event,

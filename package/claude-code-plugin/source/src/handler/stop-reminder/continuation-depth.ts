@@ -269,8 +269,29 @@ function continuationDepth(transcriptLines: readonly string[],): number {
  * ```
  */
 async function continuationDepthAt(transcriptPath: string,): Promise<number> {
-  return continuationDepth(await readTranscriptTail(transcriptPath,),);
+  return continuationDepth((await readTranscriptTail(transcriptPath,)).lines,);
 }
+
+/**
+ * Tail of a transcript plus whether it starts mid-file.
+ *
+ * Truncation matters to callers differently. Depth overcounts when truncated,
+ * which releases sooner and is safe. Task state under-counts, because a task
+ * created before the window and never updated inside it is invisible, so a list
+ * with open work can look finished. Callers that would release on an absence
+ * must therefore refuse to conclude anything from a truncated tail.
+ */
+type TranscriptTail = {
+  /**
+   * Tail lines, oldest first.
+   */
+  readonly lines: readonly string[];
+
+  /**
+   * `true` when earlier bytes were skipped or the file could not be read.
+   */
+  readonly truncated: boolean;
+};
 
 /**
  * Reads the tail of a transcript as lines.
@@ -285,14 +306,14 @@ async function continuationDepthAt(transcriptPath: string,): Promise<number> {
  *
  * @param transcriptPath - filesystem path from the `Stop` event
  *
- * @returns tail lines oldest first, or an empty array when unreadable
+ * @returns tail lines oldest first plus whether earlier bytes were skipped
  *
  * @example
  * ```ts
- * const lines = await readTranscriptTail(event.transcript_path);
+ * const { lines, truncated } = await readTranscriptTail(event.transcript_path);
  * ```
  */
-async function readTranscriptTail(transcriptPath: string,): Promise<readonly string[]> {
+async function readTranscriptTail(transcriptPath: string,): Promise<TranscriptTail> {
   try {
     /**
      * Open transcript handle, closed by scope exit even when reading throws.
@@ -324,16 +345,24 @@ async function readTranscriptTail(transcriptPath: string,): Promise<readonly str
       buffer.length,
       start,
     );
-    return buffer.toString('utf8',)
-      .split('\n',);
+    return {
+      lines: buffer.toString('utf8',)
+        .split('\n',),
+      truncated: start > 0,
+    };
   }
   catch (error) {
     // stderr is safe here: stdout carries the hook protocol and must stay clean.
     process.stderr
       .write(`stop-reminder: transcript unreadable, treating turn as fresh: ${String(error,)}\n`,);
-    return [];
+    return {
+      lines: [],
+      truncated: true,
+    };
   }
 }
+
+export type { TranscriptTail, };
 
 export {
   CONTINUATION_MARKER,
