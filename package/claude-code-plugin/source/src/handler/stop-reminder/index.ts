@@ -18,6 +18,7 @@ import {
   hasRunningBackgroundTask,
   workedSinceLastForcedContinuation,
 } from './continuation-progress.ts';
+import { taskListState, } from './continuation-tasks.ts';
 import {
   findCategoricalDismissal,
   findTrailingQuestion,
@@ -228,13 +229,22 @@ async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<St
    * buys a restatement of the wait rather than work.
    */
   const waiting = hasRunningBackgroundTask(event.background_tasks,);
+  /**
+   * Whether every tracked task is finished.
+   *
+   * A session with no task list is excluded, since most sessions never create
+   * one and releasing on an empty list would disable forced continuation
+   * everywhere.
+   */
+  const nothingTracked = taskListState(transcript,) === 'all-finished';
 
   return stopRemindersDecision({
     event,
     forcedContinuationAllowed: enabled
       && (depth < maxContinuationDepth(process.env[MAX_DEPTH_ENV] ?? '',))
       && worked
-      && (!waiting),
+      && (!waiting)
+      && (!nothingTracked),
   },);
 }
 

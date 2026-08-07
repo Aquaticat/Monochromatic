@@ -18,6 +18,8 @@
  * @module
  */
 
+import type { TranscriptRecord, } from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
+
 import { open, } from 'node:fs/promises';
 
 /**
@@ -155,19 +157,6 @@ function isHumanTurnRecord(record: TranscriptRecord,): boolean {
     && (record.isSidechain !== true)
     && (record.toolUseResult === undefined);
 }
-
-/**
- * Transcript record shape this module inspects.
- *
- * Only the fields that classify a record; everything else is ignored.
- */
-type TranscriptRecord = {
-  readonly type?: string;
-  readonly isSidechain?: boolean;
-  readonly toolUseResult?: unknown;
-  readonly origin?: { readonly kind?: string; };
-  readonly message?: { readonly content?: unknown; };
-};
 
 /**
  * Parses one transcript line, or reports it as unreadable.
@@ -346,8 +335,6 @@ async function readTranscriptTail(transcriptPath: string,): Promise<readonly str
     return [];
   }
 }
-
-export type { TranscriptRecord, };
 
 export {
   CONTINUATION_MARKER,

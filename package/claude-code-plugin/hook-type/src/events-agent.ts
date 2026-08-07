@@ -54,27 +54,27 @@ type BackgroundTask = {
   /**
    * Identifier used to address the task from tooling.
    */
-  id: string;
+  readonly id: string;
 
   /**
    * Task family, `shell` for backgrounded commands.
    */
-  type: string;
+  readonly type: string;
 
   /**
    * Lifecycle state; `running` while the task has not exited.
    */
-  status: string;
+  readonly status: string;
 
   /**
    * Human-readable summary shown in the session UI.
    */
-  description?: string;
+  readonly description?: string;
 
   /**
    * Command backing the task, present for shell tasks.
    */
-  command?: string;
+  readonly command?: string;
 };
 
 /**

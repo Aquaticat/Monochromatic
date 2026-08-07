@@ -116,6 +116,15 @@ await describe({
               .join(' ',),).toContain('name the concrete blocker',);
           },
         },),
+        it({
+          name: 'routes a decision-blocked agent to AskUserQuestion rather than to a stop',
+          fn: async () => {
+            // That tool waits for the user, so it is the one exit that gets the agent
+            // what stopping was reaching for, and the hook has nothing to refuse.
+            expect(autoContinueReason()
+              .join(' ',),).toContain('AskUserQuestion',);
+          },
+        },),
       ],
     },),
 

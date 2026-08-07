@@ -100,6 +100,13 @@ function autoContinueActive(): boolean {
  * this guard targets is announcing work instead of doing it, and a silent stop
  * is strictly worse than an announced one.
  *
+ * The `AskUserQuestion` route matters because it is the only exit that actually
+ * gets the agent what a stop was reaching for. That tool waits for the user's
+ * answer, so an agent genuinely blocked on a decision can pause without ending
+ * its turn, and the hook has nothing to refuse. Stopping, by contrast, ends the
+ * work and waits to be restarted by hand, which is the cost this whole
+ * mechanism exists to remove.
+ *
  * @returns reminder lines, joined by callers into one block reason
  *
  * @example
@@ -115,8 +122,12 @@ function autoContinueReason(): readonly string[] {
     'Keep writing status and next-step prose exactly as you would have;',
     'do not delete, shorten, or rephrase it to avoid this check,',
     'because a silent stop is worse than an announced one.',
-    'If work genuinely cannot proceed, name the concrete blocker',
-    'and the user action or external event required to clear it.',
+    'If nothing can proceed without a decision from the user,',
+    'ask them with the AskUserQuestion tool instead of stopping.',
+    'That tool waits for their answer, which is what you actually need;',
+    'a stopped turn only ends your work and waits to be restarted.',
+    'If the blocker is an external event rather than a decision,',
+    'name the concrete blocker and what will clear it.',
   ];
 }
 

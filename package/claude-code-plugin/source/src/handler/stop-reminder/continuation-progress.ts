@@ -17,7 +17,10 @@
  * @module
  */
 
-import type { BackgroundTask, } from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
+import type {
+  BackgroundTask,
+  TranscriptRecord,
+} from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
 
 import {
   isForcedContinuationRecord,
@@ -69,16 +72,6 @@ function hasRunningBackgroundTask(backgroundTasks: readonly BackgroundTask[] = [
 function isRunningTask(task: BackgroundTask,): boolean {
   return task.status === RUNNING_STATUS;
 }
-
-/**
- * Minimal record shape {@link recordCarriesToolUse} inspects.
- */
-type ToolUseCandidate = {
-  readonly type?: string;
-  readonly message?: {
-    readonly content?: unknown;
-  };
-};
 
 /**
  * Reports whether the agent issued any tool call since the most recent forced
@@ -143,7 +136,7 @@ function workedSinceLastForcedContinuation(transcriptLines: readonly string[],):
  * recordCarriesToolUse({ type: 'assistant', message: { content: [{ type: 'tool_use' }] } });
  * ```
  */
-function recordCarriesToolUse(record: ToolUseCandidate,): boolean {
+function recordCarriesToolUse(record: TranscriptRecord,): boolean {
   /**
    * Assistant content blocks, an array only for structured messages.
    */
@@ -152,7 +145,8 @@ function recordCarriesToolUse(record: ToolUseCandidate,): boolean {
     ?.content;
 
   if ((record.type !== 'assistant')
-    || (!Array.isArray(content,))) {
+    || (content === undefined)
+    || ((typeof content) === 'string')) {
     return false;
   }
   return content.some(isToolUseBlock,);
