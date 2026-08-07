@@ -139,6 +139,10 @@ export {
   type AlignmentStep,
 } from './align-blocks-walk.ts';
 export {
+  type AlignedRun,
+  groupNodesAligned,
+} from './group-aligned.ts';
+export {
   fenceForMarkdown,
   longestBacktickRun,
 } from './markdown-fence.ts';
