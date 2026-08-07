@@ -11107,3 +11107,62 @@ That adds origins wherever the pruner currently declines,
 that requires a deliberate lie.
 Precision is what pays for the offers this rule does make,
  so it is not spent here.
+
+### The reduce asymmetry, narrowed again, 2026-08-07
+
+Re-probed after the walk changes rather than assumed still to hold,
+ which is how two other
+entries in this document turned out to be stale.
+It survives all of them,
+ and the reproduction recorded for it was itself wrong about the cause.
+
+The entry said the asymmetry needed an accumulator holding the receiver's own elements.
+It does not.
+Holding the member and the chain fixed and varying only the accumulator:
+
+```text
+directFlat          chunks.reduce(fold, {n:0})               opaque=[]
+chainedFlat         chunks.slice(0).reduce(fold, {n:0})      opaque=[0]
+chainedFlatTwoHops  chunks.slice(0).toReversed().reduce(..)  opaque=[0]
+chainedMapFlat      chunks.slice(0).map(..)                  opaque=[]
+```
+
+The accumulator is `{ readonly n: number }`.
+It holds one number,
+ shares nothing with the receiver by construction,
+ and the chained form
+is still reported opaque while the identical fold on the parameter directly is clean.
+
+Two readings fall out of that.
+It is not about what the accumulator holds,
+ since a flat object triggers it,
+ though it is
+about the result being an object at all:
+ a number accumulator and a `readonly string[]` one
+are clean either way.
+And it is not about chained receivers generally,
+ since `map` over the same chain is clean.
+It is `reduce` on a chain.
+
+Which narrows where to instrument,
+ and the gate says where.
+`viewResultUnaccounted` documents `reduce` as the member with no result relation,
+ the case
+the aliasing fallback was kept for.
+So for `reduce` the observer, container and value arms are false by construction and
+`resultAliasesReceiverState` is what must be answering true.
+The open question is why it answers differently for a chained receiver when the result type is
+identical,
+ which points at how `elementTypes` are resolved for a view whose receiver is a call
+result rather than a name.
+
+Still not taken.
+Clearing this removes an opacity charge,
+ and removing a charge is the direction that mints
+offers.
+The report is a precision cost rather than a wrong answer,
+ since opacity withholds an offer,
+so it earns the same treatment as the discharge this document owns:
+ evidence that nothing
+unattributed escapes,
+ before anything is withdrawn.
