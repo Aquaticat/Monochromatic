@@ -553,12 +553,48 @@ actually affects.
  since no
 diagnostic count could hold it.
 
-The fourth item is now unblocked by its own stated precondition.
- Nothing here takes it.
- The three fixture
-cases added with this are the shape it would clear,
- and the write attribution asserted beside them is what
-a careless discharge would empty.
+The fourth item is still blocked,
+ and the container half landing is what made it possible to say so
+precisely.
+
+Probed across the shapes a return actually takes,
+ rather than the one the fix was built against:
+
+```text
+return rows.slice(0,);                                  returned=[0]
+const part = rows.slice(0,); return part;               returned=[0]
+return [...rows.slice(0,),];                            returned=[0]
+return rows.slice(0,).toReversed();                     returned=[]
+const part = rows.slice(0,); return part.toReversed();  returned=[]
+return rows.length > 0 ? rows.slice(0,) : [];           returned=[]
+```
+
+Three of six record nothing,
+ and the chain is not an exotic case:
+ `orderedRoots` returns
+`panes.filter(rootLike,).toSorted(bySpawnOrder,)`,
+ which is the shape most of the 134 take.
+ Discharging
+the return escape today would hand those callers a clean parameter with no returned fact at all,
+ which is
+exactly the hole this document records being refuted once already.
+
+So the precondition holds for a direct return and for a single binding hop,
+ and fails for a chain and for a
+conditional.
+ The next step is not the discharge:
+ it is making the element-origin walk follow a chain of
+container relations,
+ which is the same safe direction the container half was and which
+`containerElementReceiver` stops short of today,
+ following an identifier to its declaration but answering
+immediately at the first call it reaches.
+
+Nothing here takes either.
+ The three fixture cases added with the container half are the shape the
+discharge would clear,
+ and the write attribution asserted beside them is what a careless discharge would
+empty.
 
 ## Recommendation
 
