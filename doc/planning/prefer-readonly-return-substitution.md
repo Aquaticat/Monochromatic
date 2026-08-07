@@ -511,6 +511,55 @@ element does.
 rule,
  and it is the precondition the fourth item actually needs.
 
+### The container half landed, 2026-08-07
+
+One line of cause and a long comment.
+ `recordReturnStatementEffects` asked `expressionOrigins` of the
+returned expression and never asked `expressionElementOrigins`,
+ so one relation was consulted and its
+sibling was not.
+ The value question is right to answer nothing on `return rows.slice(0,)`:
+ the array
+handed back is not `rows`.
+ What a caller reaches through it is every element `rows` held,
+ which is what
+the element question answers.
+
+Measured either side:
+ `pickContainer` records `returned=[0]` where it recorded nothing,
+ and
+`drivePickContainer` reports `referentMutated=[0]` where it reported nothing.
+ The element pair is
+unchanged,
+ and a caller reading only the returned container's length still attributes nothing,
+ which is
+the control that keeps a returned origin from becoming a claim that every caller used it.
+
+Across the workspace it changes no diagnostic at all:
+ 2906 errors,
+ 1568 findings,
+ 34 read-only offers
+byte-identical,
+ 14 stale contracts.
+ That is the honest description and it is not an argument against the
+change.
+ It moves a summary fact rather than a message,
+ the fact is the one the fourth item is blocked
+on,
+ and the `DataView` authority landed on the same footing:
+ a prerequisite measured at the boundary it
+actually affects.
+ Held to `effect-summaries.unit.test.ts` rather than to a diagnostic count,
+ since no
+diagnostic count could hold it.
+
+The fourth item is now unblocked by its own stated precondition.
+ Nothing here takes it.
+ The three fixture
+cases added with this are the shape it would clear,
+ and the write attribution asserted beside them is what
+a careless discharge would empty.
+
 ## Recommendation
 
 Ranking:
