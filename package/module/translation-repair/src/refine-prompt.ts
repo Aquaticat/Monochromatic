@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+import { selectFence, } from './prompt-fence.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 
 //region Refinement prompt
@@ -14,10 +15,13 @@ import type { EditableEnvelope, } from './patch-model.ts';
 // between an unnecessary rewrite and shipped text, and it is written to be
 // easier to obey than to ignore.
 
-/**
- * Fence separating instructions from content.
- */
-const REFINE_FENCE = '=====';
+// Fences are chosen against the content they enclose rather than fixed, the
+// same way `candidate-select-wire.ts` and the introduced-defect probe choose
+// theirs. A fixed fence is forgeable: enclosed text carrying a line of the
+// fence character closes its own block early, so the rest of that paragraph
+// reads to the model as instructions rather than as content. The old fixed
+// value was `=====`, which is ordinary Markdown (a setext heading underline),
+// so this is a shape real documents contain rather than an invented one.
 
 /**
  * Messages plus the paragraph numbering they were built from.
@@ -69,6 +73,20 @@ export function buildRefineMessages(
   },
 ): RefinePromptPlan {
   /**
+   * Fence longer than any run inside anything this prompt encloses, so no
+   * enclosed text can close a block it sits in.
+   */
+  const fence = selectFence({
+    texts: [
+      sourceText,
+      ...envelopes.map(function toBaseText(envelope,) {
+        return envelope.baseText;
+      },),
+      ...(identityContext === undefined ? [] : [identityContext,]),
+    ],
+  },);
+
+  /**
    * Numbered paragraph blocks in document order.
    */
   const blocks = envelopes
@@ -76,7 +94,7 @@ export function buildRefineMessages(
       envelope,
       index,
     ) {
-      return `PARAGRAPH ${String(index + 1,)}\n${REFINE_FENCE}\n${envelope.baseText}\n${REFINE_FENCE}`;
+      return `PARAGRAPH ${String(index + 1,)}\n${fence}\n${envelope.baseText}\n${fence}`;
     },)
     .join('\n\n',);
 
@@ -107,7 +125,7 @@ Reply with ONLY a JSON object of shape {"rewrites": [{"paragraph": 1, "newText":
       {
         role: 'user',
         content:
-          `ORIGINAL (Chinese), for checking that meaning survives\n${REFINE_FENCE}\n${sourceText}\n${REFINE_FENCE}${identityBlock}\n\n${blocks}`,
+          `ORIGINAL (Chinese), for checking that meaning survives\n${fence}\n${sourceText}\n${fence}${identityBlock}\n\n${blocks}`,
       },
     ],
   };
