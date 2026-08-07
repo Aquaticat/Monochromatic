@@ -498,7 +498,50 @@ them.
  a reading of the state before a
 change is not evidence about the state after it.
 
-### What the 1682 remaining findings are, measured
+### Reclassified after the channel and iterator work, 2026-08-07
+
+The count is 1628 now,
+ from 1689 when this session started,
+ with read-only offers at 33 throughout
+and semantic failures at 0.
+ Grouping by findings whose every named cause is one member:
+
+- 94 `JSON.stringify`,
+   40 `Error.isError`,
+   16 `json`:
+   host calls that can reach a getter,
+   a proxy
+  trap or a `toJSON`.
+- 51 `push`,
+   24 `set`:
+   an argument stored into a caller-owned container, which really does leave.
+- 47 `report`,
+   33 `getScope`,
+   15 `getLastToken`:
+   the linter's own plugin API, outside analyzable
+  source.
+- 35 `map`,
+   34 `reduce`,
+   30 `filter`,
+   15 `find`:
+   observer-bearing members whose observer is not
+  resolvable to owned source, which is the honest answer for a callback the caller supplies.
+- 20 `entries`,
+   16 `get`:
+   collection members carrying a relation whose result escapes the callable.
+
+No provably inert group remains,
+ checked rather than assumed:
+ `includes`,
+ `indexOf`,
+ `lastIndexOf` and
+`at` are already listed,
+ and they were the last candidates for the treatment `join` received, since they
+compare with `===` and coerce nothing.
+ What `join` had and these groups do not is a specification-defined
+operation that provably runs no user code on a stated condition about the receiver.
+
+### What the 1682 findings were before that, measured
 
 Taken from the same sweep,
  so nobody reads the number as a backlog.
