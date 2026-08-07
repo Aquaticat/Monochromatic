@@ -32,7 +32,7 @@ extends = "lint:types"
 extends = "test:unit"
 
 [tasks.buildAndTest]
-description = "Build the neutral bundle, then run unit tests against the built dist"
+description = "Build the node bundle, then run unit tests against the built dist"
 run = ["mise run build", "mise run test:unit"]
 
 [tasks."corpus-pass"]
