@@ -175,7 +175,11 @@ export {
   collectRepairRegions,
   type RepairRegion,
 } from './repair-region.ts';
-export { measurePatchedCandidate, } from './chunk-measure.ts';
+export {
+  measurePatchedCandidate,
+  selectCreditableIssues,
+} from './chunk-measure.ts';
+export { downgradeCount, } from './downgrade-count.ts';
 export {
   attemptStageCall,
   type StageVoice,

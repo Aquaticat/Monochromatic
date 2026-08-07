@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  corroboratedCount,
   type IssueProbeReading,
   judgeRegionProbe,
   type RegionDefectTally,
@@ -222,6 +223,70 @@ await describe({
         expect(summary.regions,).toBe(0,);
         expect(summary.majorityIntroduced,).toBe(0,);
         expect(summary.noneIntroduced,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: corroboratedCount.name,
+  children: [
+    it({
+      name: 'sums BOTH directions, because the differential upholds a claim '
+        + 'either by finding wording the edit added or by finding wording it '
+        + 'dropped, and counting only the added direction was the original '
+        + 'defect: an omission claim could never corroborate at all',
+      fn: async () => {
+        expect(
+          corroboratedCount({
+            tally: catTally({
+              envelopeId: 'envelope/nap',
+              corroborated: 2,
+              removalCorroborated: 3,
+            },),
+          },),
+        ).toBe(5,);
+      },
+    },),
+
+    it({
+      name: 'counts a purely dropped-wording region, the case a forward-only '
+        + 'screen would have reported as finding nothing',
+      fn: async () => {
+        expect(
+          corroboratedCount({
+            tally: catTally({
+              envelopeId: 'envelope/nap',
+              removalCorroborated: 2,
+            },),
+          },),
+        ).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'IGNORES contradicted claims, so a region whose probers were all '
+        + 'refuted by the differential reads as nothing upheld rather than as '
+        + 'damage found',
+      fn: async () => {
+        expect(
+          corroboratedCount({
+            tally: catTally({
+              envelopeId: 'envelope/nap',
+              contradicted: 4,
+            },),
+          },),
+        ).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'counts zero for a clean region, which is the reading a whole '
+        + 'quiet round produces and must not be confused with a broken probe',
+      fn: async () => {
+        expect(
+          corroboratedCount({ tally: catTally({ envelopeId: 'envelope/nap', },), },),
+        ).toBe(0,);
       },
     },),
   ],

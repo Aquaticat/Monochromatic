@@ -18,6 +18,7 @@ import {
   hashContent,
   type IssueResolutionTally,
   measurePatchedCandidate,
+  selectCreditableIssues,
   parseDocument,
   type PatchOperation,
 } from '../dist/final/node/index.mjs';
@@ -294,6 +295,143 @@ await describe({
           targetDocument: parseDocument({ text: wholeText, },),
         },);
         expect(broken.integrityOk,).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: selectCreditableIssues.name,
+  children: [
+    it({
+      name: 'credits an issue whose envelope an applied operation actually '
+        + 'served, which is the only credit that says the patch improved '
+        + 'anything',
+      fn: async () => {
+        expect(
+          selectCreditableIssues({
+            acceptedIssues: [
+              catIssue({
+                issueId: 'adjudicated/nap',
+                severity: 'major',
+              },),
+            ],
+            envelopes: [catEnvelope({ baseText: 'naps', },),],
+            applied: [catOperation({ newText: 'sleeps', },),],
+          },).map(function toId(issue,) {
+            return issue.issueId;
+          },),
+        ).toStrictEqual(['adjudicated/nap',],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES credit for an issue no applied operation served, which is '
+        + 'the defect this exists to remove: checkers answer per issue against '
+        + 'the whole patched text, so they will call an untouched issue fixed '
+        + 'whenever the original wording already reads acceptably, and counting '
+        + 'that let a patch touching issue A beat unchanged on credit for '
+        + 'issue B that nothing touched',
+      fn: async () => {
+        expect(
+          selectCreditableIssues({
+            acceptedIssues: [
+              catIssue({
+                issueId: 'adjudicated/nap',
+                severity: 'major',
+              },),
+              catIssue({
+                issueId: 'adjudicated/untouched',
+                severity: 'critical',
+              },),
+            ],
+            envelopes: [catEnvelope({ baseText: 'naps', },),],
+            applied: [catOperation({ newText: 'sleeps', },),],
+          },).map(function toId(issue,) {
+            return issue.issueId;
+          },),
+        ).toStrictEqual(['adjudicated/nap',],);
+      },
+    },),
+
+    it({
+      name: 'credits nothing when the patch applied nothing, so a candidate '
+        + 'whose every operation was rejected cannot beat unchanged on credit '
+        + 'it never earned',
+      fn: async () => {
+        expect(
+          selectCreditableIssues({
+            acceptedIssues: [
+              catIssue({
+                issueId: 'adjudicated/nap',
+                severity: 'major',
+              },),
+            ],
+            envelopes: [catEnvelope({ baseText: 'naps', },),],
+            applied: [],
+          },),
+        ).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'credits nothing when an applied operation names an envelope that '
+        + 'is not on the list, rather than crediting every issue or throwing: '
+        + 'an unmatched envelope means the caller passed mismatched sets, and '
+        + 'guessing either way would move a milestone number',
+      fn: async () => {
+        expect(
+          selectCreditableIssues({
+            acceptedIssues: [
+              catIssue({
+                issueId: 'adjudicated/nap',
+                severity: 'major',
+              },),
+            ],
+            envelopes: [],
+            applied: [catOperation({ newText: 'sleeps', },),],
+          },),
+        ).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'returns credited issues in ISSUE order rather than in operation '
+        + 'order, so a scorecard reads the same way whichever order the editor '
+        + 'happened to write its operations',
+      fn: async () => {
+        /**
+         * Envelope naming both issues, so both are served by one operation.
+         */
+        const envelope = {
+          ...catEnvelope({ baseText: 'naps', },),
+          issueIds: [
+            'adjudicated/second',
+            'adjudicated/nap',
+          ],
+        };
+
+        expect(
+          selectCreditableIssues({
+            acceptedIssues: [
+              catIssue({
+                issueId: 'adjudicated/nap',
+                severity: 'major',
+              },),
+              catIssue({
+                issueId: 'adjudicated/second',
+                severity: 'minor',
+              },),
+            ],
+            envelopes: [envelope,],
+            applied: [catOperation({ newText: 'sleeps', },),],
+          },).map(function toId(issue,) {
+            return issue.issueId;
+          },),
+        ).toStrictEqual([
+          'adjudicated/nap',
+          'adjudicated/second',
+        ],);
       },
     },),
   ],
