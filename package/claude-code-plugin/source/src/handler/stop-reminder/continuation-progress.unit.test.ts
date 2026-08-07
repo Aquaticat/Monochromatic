@@ -77,6 +77,15 @@ await describe({
           },
         },),
         it({
+          name: 'errs toward blocking when the block itself fell outside the tail',
+          fn: async () => {
+            // The opposite direction from the task-list release, which refuses to read a
+            // truncated tail because its absence reads as finished. Here an unseen block
+            // reads as work, so the hook keeps pushing, which the depth guard bounds.
+            expect(workedSinceLastForcedContinuation([TEXT_LINE,],),).toBe(true,);
+          },
+        },),
+        it({
           name: 'skips a truncated final line rather than throwing',
           fn: async () => {
             expect(workedSinceLastForcedContinuation([BLOCK_LINE, '{"type":"assist',],),).toBe(false,);

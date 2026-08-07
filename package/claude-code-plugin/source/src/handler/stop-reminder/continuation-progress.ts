@@ -98,6 +98,13 @@ function isRunningTask(task: BackgroundTask,): boolean {
  * a turn that engaged with the task, and treating research as idleness would
  * release exactly when the agent is orienting.
  *
+ * On a truncated tail this errs toward blocking, unlike the task-list release
+ * which errs toward releasing and therefore refuses to read a truncated tail at
+ * all. If the block itself fell outside the window, the scan finds no block and
+ * answers `true`, so the hook keeps pushing rather than releasing on an absence
+ * it cannot verify. That direction is bounded by the depth guard, which is why
+ * this reader needs no truncation flag.
+ *
  * @param transcriptLines - transcript JSONL lines, oldest first
  *
  * @returns whether work followed the last forced continuation
