@@ -7,6 +7,7 @@ import {
 
 import {
   ITERATOR_MEMBER_NAMES,
+  UNPAIRED_VIEW_INTERFACES,
   MEMBER_CHANNEL_RECEIVER_INDEX,
   MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
   MEMBER_CHANNELS_BY_INTERFACE,
@@ -51,6 +52,11 @@ const RECEIVER_INDEX_HITS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Bytes in the probe buffer, wide enough for the widest buffer member.
+ */
+const PROBE_BUFFER_BYTES = 16;
+
+/**
  * Arguments satisfying each probed member's required parameters.
  *
  * Two roles, deliberately distinct. A lookup or removal needs a value the receiver
@@ -73,14 +79,27 @@ const RECEIVER_INDEX_HITS: ReadonlySet<string> = new Set([
  * ```
  */
 function probeArguments({
+  ownerName,
   memberName,
   element,
   fresh,
 }: {
+  readonly ownerName: string;
   readonly memberName: string;
   readonly element: unknown;
   readonly fresh: unknown;
 },): readonly unknown[] {
+  /* A buffer accessor takes an offset and, when it writes, a value. Both are plain
+   * numbers on purpose: a recording argument would report its own coercion, and what
+   * this probe asks is what the member reaches on the *receiver*. Passing something
+   * user-defined would answer a different question and answer it wrongly. */
+  if (ownerName === 'DataView') {
+    if (!memberName.startsWith('set',))
+      return [0,];
+    return memberName.includes('Big',)
+      ? [0, 1n,]
+      : [0, 1,];
+  }
   /**
    * Members needing an index, a key, or a value to be meaningful.
    */
@@ -200,7 +219,9 @@ function instrumentedReceiver({
    * `ArraySpeciesCreate` reads `constructor` off the receiver and then `@@species`
    * off that, so an own property suffices and no subclass is needed.
    */
-  const receiver: unknown = ownerName.endsWith('Map',)
+  const receiver: unknown = (ownerName === 'DataView')
+    ? new DataView(new ArrayBuffer(PROBE_BUFFER_BYTES,),)
+    : ownerName.endsWith('Map',)
     ? new Map([
       [element, element,],
       [other, other,],
@@ -345,6 +366,7 @@ function reachedHooksByPhase({
   try {
     invocation.result = (member as (this: unknown, ...args: unknown[]) => unknown)
       .apply(receiver, [...probeArguments({
+        ownerName,
         memberName,
         element,
         fresh,
@@ -526,8 +548,15 @@ await describe({
         /* Every listed interface declares all three, so absence from any one of them
          * would mean the table grew unevenly rather than deliberately. */
         for (const memberName of ITERATOR_MEMBER_NAMES) {
-          for (const [, members,] of MEMBER_CHANNELS_BY_INTERFACE)
+          for (const [ownerName, members,] of MEMBER_CHANNELS_BY_INTERFACE) {
+            /* Scoped to collections, because the table no longer holds only those. A
+             * `DataView` is a buffer accessor with no iterator at all, and the library
+             * pairs no read-only view for it, which is what marks it as not a collection
+             * here rather than a name test doing the same job less honestly. */
+            if (UNPAIRED_VIEW_INTERFACES.has(ownerName,))
+              continue;
             expect(members.has(memberName,),).toBe(true,);
+          }
         }
         /* Creation reaches nothing, on every owner and every member. This is the half
          * of the claim that was never in doubt, and it is asserted so that a future

@@ -74,7 +74,43 @@ The count is pinned in two files,
 `catalog-free-architecture.unit.test.ts` as well,
  which is the point at which the probe becomes unavoidable.
 
-## What it does not do yet, measured
+## What it does, measured
+
+Both halves landed. The channel probe gained a `DataView` receiver: a real view over a real
+`ArrayBuffer`,
+ driven with plain numeric arguments on purpose,
+ since a recording argument would report
+its own coercion and the question here is what the member reaches on the *receiver*.
+ The species
+recorder the probe already installs proves no constructor hook is consulted.
+
+Workspace either side:
+ 3020 errors to 3015,
+ 1682 rule findings to 1677,
+ semantic failures and read-only
+offers unchanged at 4 and 33.
+ Twelve findings naming a `view` parameter disappeared across
+`package/cli/mvm`,
+ `package/figma/kiwi` and `package/module/zip-writer`,
+ and seven reappeared naming only
+`buffer`,
+ which is the honest remainder:
+ a `Uint8Array` is a different interface and this authority says
+nothing about it.
+ No parameter became opaque that was not opaque before.
+
+`writeEndOfCentralDirectory` now reads `referentMutated=[0]` with `opaque=[]`,
+ so its `@mutates view`
+contract is satisfied by inference and its `ForeignBorrowed` marker is no longer doing any work.
+
+The obvious next extension is the typed arrays,
+ which the `buffer` remainder names precisely.
+ They are a
+larger surface than `DataView` and each carries genuine collection members alongside the buffer ones,
+ so
+they are a separate measurement rather than a copy of this one.
+
+## What it did not do on its own, measured
 
 Nothing,
  on its own.
@@ -101,9 +137,7 @@ there produces a probe that passes without measuring anything,
  which is the failure mode that authority's
 own design is meant to prevent.
 
-So this lands as a prerequisite,
- on the same footing as the result relations that changed no verdict when they
-landed:
- a true, probed fact the consuming half needs.
- Whether to extend the channel probe to a receiver kind
-with no elements is a separate decision.
+That was the state at the first commit,
+ which landed the authority alone as a prerequisite.
+ The channel
+probe extension was accepted separately and is described above.
