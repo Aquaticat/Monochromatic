@@ -348,6 +348,57 @@ The bar used here is the one set in "What this proposal does not establish":
  the applied annotation compiles clean,
  and the caller observes a mutation the annotation denies.
 
+## The structural false offer no longer reproduces, re-measured 2026-08-07
+
+Re-run before starting the holder-set item,
+ because that item's justification here is the false offer above
+and a justification is worth re-deriving before it is acted on.
+
+Same four functions,
+ same shapes,
+ read at the user boundary with the fixture config on a disposable probe
+file:
+ `pickDeep`,
+ `driveDeep`,
+ `pickAliasedDeep` and `driveAliasedDeep` all report receiver opacity naming
+`config.rows.at`,
+ and none is offered `readonly`.
+ The one alias hop that was the entire difference between
+the withheld pair and the offered pair no longer makes any difference at all.
+
+The absence of an offer is evidence rather than silence.
+ A control in the same file,
+ `countRows`,
+ reading
+`config.rows.length` and nothing else,
+ is offered `Parameter "config" should be readonly`,
+ so the offer
+mechanism is live in exactly the file where the aliased pair failed to be offered.
+ Summary level agrees:
+all four read `opaque=[0]`,
+ with `returned=[0]` on both selectors and `referentMutated=[0]` on both writers.
+
+What closed it is not established here.
+ The assignment-classification item landed in `a57bb6f56` and is
+the obvious candidate,
+ and this document already predicted that closing the holder set without fixing
+reference-position classification would misreport every assignment-established alias,
+ so the two are
+entangled by design.
+
+What follows for the ranking is narrower than it looks.
+ The holder-set item is no longer the fail-closed
+half of a remedy for a live false offer,
+ because there is no live false offer on this probe.
+ It may still
+be worth doing for precision,
+ since every one of these four now reports opacity where at least the two
+selectors arguably should not.
+ That is a different case from the one recorded above,
+ and it needs its own
+measurement before it is taken:
+ the argument for it can no longer be "a wrong offer is being made".
+
 ## Recommendation
 
 Ranking:
