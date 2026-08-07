@@ -12265,3 +12265,54 @@ discharge stops working.
 Everything written for it before was exported,
  run through a per-file task,
  or both.
+
+### Two of the guards do have a failing case after all
+
+The withdrawal above left the question open in both directions.
+It is now settled for two of the seven,
+ and settled the other way:
+ they discriminate.
+
+`localReassignedElements` and `localRepointedElements` are the positive control with one
+statement added.
+The first holds its rows in a `let` pointed at the other parameter before the member runs;
+ the
+second points the parameter itself.
+Neutralising the reassignable-binding guard offers four parameters that must not be offered,
+and neutralising the written-endpoint guard offers four more.
+Checked in both directions:
+ the unit suite fails with either guard removed and passes with it
+restored,
+ so these are regression tests rather than counts that happen to match.
+
+What made this possible was not a better program but a usable one.
+Every earlier attempt was exported,
+ so `callersAreEnumerable` refused it before any guard was
+consulted,
+ and each was probed through a per-file task where the discharge is refused before
+that.
+Unexported,
+ with an in-file caller,
+ run through the unit suite:
+ the same three conditions the
+positive control needed,
+ and the same three every future probe of this feature will need.
+
+Five remain untested,
+ and two of those look unreachable rather than merely untested.
+The relation guard was retested here and does not discriminate,
+ because `owned.map(...)`
+charges its receiver through the observer path whatever the discharge decides.
+The unresolved-base guard is rejected earlier by the relation requirement,
+ and the cycle guard
+needs an alias cycle that ordinary code reaches only through a temporal dead zone.
+
+The honest summary of the whole sequence is that the claim was right,
+ the retraction was
+wrong,
+ and the withdrawal of the retraction was right to reopen it.
+Three of those four steps were caused by measuring through something that could not observe
+the thing being measured,
+ and the fix each time was a control:
+ a program known to move when
+the code moves.
