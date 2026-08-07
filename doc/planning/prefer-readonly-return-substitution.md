@@ -12503,3 +12503,83 @@ Removing the contract is what made absence of an offer mean something.
 That is the fifth instance in this session of an instrument that could not answer the question
 put to it,
  and the second where the tell was a result that looked clean.
+
+### Widening the position condition, and what it cost
+
+The position test required the call to be the returned expression itself.
+That is the narrowest case of the question rather than the question:
+ a call bound to a `const`
+and then returned,
+ or wrapped in an assertion,
+ hands the caller the same value by the same
+route.
+
+Replaced with the condition that always mattered:
+ returning must be the result's *only*
+escape.
+`resultEscapesCallable` gained `returnsAttributed`,
+ which discounts a return belonging to the
+body being scanned,
+ and the discharge asks whether anything else still carries the result out.
+One question answers every spelling,
+ because the escape test already follows a result through
+its holders.
+
+Cold-cache sweep:
+ 2893 errors against 2898,
+ 1555 rule findings against 1560,
+ and the offer set
+byte-identical at 35.
+Five charges cleared and no offer appeared,
+ which is the best available outcome for a change
+that removes charges.
+
+The five are worth naming,
+ because they are the complaint issue #414 was filed about.
+`requiredEntry` in `package/figma/kiwi/src/parse.ts` takes
+`zipEntries: ReadonlyMap<string, Uint8Array>`,
+ already readonly at every level,
+ and was
+reported for using it as the object of a collection call.
+Its body is `const entry = zipEntries.get(entryName,); ... return entry;`,
+ the bound-then-returned
+shape exactly.
+No offer follows because the parameter is already readonly,
+ so the whole effect is removing a
+report that named no action its author could take.
+
+The same holds for `spliceInstances` in `package/module/toml-edit/src/set-aot.ts` and three
+others.
+
+This was landed against a recommendation recorded in this document not to widen the discharge,
+on the grounds that each new route removes charges and one route had needed seven guards.
+The measurement says the recommendation was wrong about this route:
+ the widening is expressible
+as one condition that is *stronger* than the test it replaced,
+ since "returning is the only
+escape" refuses shapes "returned outright" accepted,
+ and it removed five reports of exactly the
+kind the rule was criticised for.
+
+### The negative control had to count charges, not offers
+
+`localBoundAndStoredElements` writes its copy into a module-level holder and returns it,
+ and
+must keep its report:
+ a store is not an escape any caller substitutes for.
+
+Two attempts to prove that condition load-bearing failed before one worked.
+The first stored through `carriedSink.push(copy,)`,
+ and a collection call charges the parameter
+by itself,
+ so the program was charged whatever the discharge decided.
+The second used a property assignment,
+ which fixed that,
+ and still reported no difference,
+because the comparison script printed *offers* and neither callable is offered either way.
+Counting charges showed it immediately:
+ both diagnostics vanish when the condition is removed.
+
+Third instrument in one session that answered a different question than the one asked,
+ and the
+first where the instrument was a script written that same hour to check the previous one.
