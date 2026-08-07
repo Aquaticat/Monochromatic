@@ -65,7 +65,7 @@ This is not a flaw to fix;
  it is the reason a raw probe rate cannot be read as a damage rate.
 
 THE CORROBORATION COLUMNS SEPARATE CLEANLY.
-`majorityIntroduced` has stayed at exactly 1 across 1,
+`majorityIntroduced` held at exactly 1 across 1,
  5,
  6,
  7,
@@ -77,12 +77,19 @@ THE CORROBORATION COLUMNS SEPARATE CLEANLY.
  72,
  79,
  83,
- 210.
-`minorityIntroduced` went from 1 to 18,
+ 210,
+then reached 2 at 18 entries and 246 regions.
+`minorityIntroduced` went from 1 to 23 over the same span,
  tracking region count almost exactly.
-The region count has now grown by a factor of 16 without the majority column
- moving off 1,
-which is the strongest form this evidence has taken.
+
+The second corroborated region does not change the shape.
+Regions grew by a factor of 19 while the majority column went from 1 to 2,
+so the rate is roughly 1 in 120 and has stayed there rather than climbing.
+What the change does remove is the temptation to argue from a single point:
+ the column is not pinned at 1 by construction,
+ it moves,
+and it has now been observed moving,
+which makes the low rate a measurement rather than an absence.
 Probers keep making claims;
  what stays rare is a majority agreeing on one region.
 That is the shape of a sensitive but noisy instrument,
@@ -90,11 +97,11 @@ That is the shape of a sensitive but noisy instrument,
 
 THE DETERMINISTIC SCREEN IS HOLDING,
  and it has now fired.
-At 210 regions it has thrown out 1 contradicted claim and 2 unanchored ones,
+By 246 regions it has thrown out 1 contradicted claim and 2 unanchored ones,
  where at 83 regions it had thrown out none,
 so the screen is demonstrably capable of rejecting a claim rather than merely
  never having met one it disliked.
-`unprobedRecords` stays at zero over 647 shipped records
+`unprobedRecords` stays at zero over 740 shipped records
  and `degradedRosterRegions` at zero,
 so the probe is reaching everything it should rather than skipping quietly.
 A quote must be new in the replacement,
