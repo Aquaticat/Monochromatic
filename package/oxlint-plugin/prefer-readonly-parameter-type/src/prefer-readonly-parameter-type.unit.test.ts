@@ -155,10 +155,10 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
-      /* Sixteen to twenty-one when the returned-result discharge grew its two ownership
-       * guards, and five of the twenty-one are the pair of programs those guards exist for.
-       * Each contributes a report per parameter plus an offer for its observer's `child`,
-       * which is offerable in both and unrelated to what they pin.
+      /* Sixteen to twenty when the returned-result discharge grew its two ownership guards,
+       * and four of the twenty are the pair of programs those guards exist for. Each
+       * contributes one report naming every parameter it charges plus an offer for its
+       * observer's `child`, which is offerable in both and unrelated to what they pin.
        *
        * `filterReassignedForeignFixtureTree` holds the foreign tree's children in a `let`
        * first bound to this fixture's own array. The discharge followed a name to its
@@ -174,7 +174,7 @@ children: [
        * where it needed provenance, reaching `owned` and finding it clean while the elements
        * are the foreign tree's. `map` carries no receiver relation for exactly that reason,
        * so requiring one is the test the descent was missing. */
-      expect(diagnostics.length,).toBe(21,);
+      expect(diagnostics.length,).toBe(20,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
@@ -187,9 +187,9 @@ children: [
        * out, not which of the two texts carries it. Splitting the count would let a finding
        * lose the claim entirely by moving between messages.
        *
-       * Nine to twelve with the two ownership-guard programs, whose three reports each carry
-       * the claim: a guard that restores a report must restore one saying the same thing as
-       * the reports beside it, or it has traded a wrong discharge for a wrong remediation. */
+       * Nine to eleven with the two ownership-guard programs, whose reports each carry the
+       * claim: a guard that restores a report must restore one saying the same thing as the
+       * reports beside it, or it has traded a wrong discharge for a wrong remediation. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
@@ -197,7 +197,7 @@ children: [
           || message.includes(
             'ForeignHostCapability does not apply here.',
           );
-      },).length,).toBe(12,);
+      },).length,).toBe(11,);
     },
   },),
   it({

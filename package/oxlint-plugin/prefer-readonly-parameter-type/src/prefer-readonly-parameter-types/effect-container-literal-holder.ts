@@ -4,9 +4,9 @@
  * @module
  */
 
-import {
-  type Node,
-  type VariableDeclaration,
+import type {
+  Node,
+  VariableDeclaration,
 } from 'typescript/unstable/ast';
 import {
   isArrayLiteralExpression,

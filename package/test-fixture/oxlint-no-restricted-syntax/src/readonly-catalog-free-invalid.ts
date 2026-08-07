@@ -235,14 +235,26 @@ export function sortForeignFixtureTree(
  *
  * @returns children carrying non-empty values.
  */
-export function filterReassignedForeignFixtureTree(
-  owned: ForeignFixtureChild[],
-  tree: ForeignBorrowed<ForeignFixtureTree>,
-): readonly ForeignFixtureChild[] {
+export function filterReassignedForeignFixtureTree({
+  owned,
+  tree,
+}: {
+  owned: ForeignFixtureChild[];
+  tree: ForeignBorrowed<ForeignFixtureTree>;
+},): readonly ForeignFixtureChild[] {
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- A reassignable binding whose
+   * value survives to the return is the entire program under test, and every remedy the rule
+   * names removes it. `const` deletes the reassignment. The helper shape and the named-function
+   * IIFE both require the body to end in `return <identifier>`, while this fixture requires the
+   * member call to be the returned expression itself, which is the position the discharge tests
+   * for. A tighter scope cannot hold the binding as far as the return. Rule source read at
+   * `package/oxlint-plugin/no-restricted-syntax/src/rule/no-function-root-let.ts`, whose own
+   * message prescribes this disable for the unavoidable case. */
   /**
    * Children held first from this fixture's own array and then from the foreign tree.
    */
   let held = owned;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   held = tree.children;
   return held.filter(function retainReassignedNonEmptyChild(child,) {
     return child.value.length > 0;
@@ -264,10 +276,13 @@ export function filterReassignedForeignFixtureTree(
  *
  * @returns children lifted out of the foreign tree.
  */
-export function filterMappedForeignFixtureTree(
-  owned: readonly ForeignFixtureChild[],
-  tree: ForeignBorrowed<ForeignFixtureTree>,
-): readonly ForeignFixtureChild[] {
+export function filterMappedForeignFixtureTree({
+  owned,
+  tree,
+}: {
+  owned: readonly ForeignFixtureChild[];
+  tree: ForeignBorrowed<ForeignFixtureTree>;
+},): readonly ForeignFixtureChild[] {
   return owned
     .map(function liftForeignFixtureChild(child,) {
       return tree.children[0] ?? child;
