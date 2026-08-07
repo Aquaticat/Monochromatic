@@ -12400,3 +12400,15 @@ The predicate admits four out of five callables it is asked about,
  so requiring closed-world
 callers did not disable the feature at workspace scale.
 The provenance fixture made it look otherwise only because every callable in it is exported.
+
+### Decision recorded
+
+The boundary question is settled and moved out of this document:
+`doc/decision/readonly-caller-enumeration-boundary.md`.
+Module export stays the reachable-from-outside test,
+ entry-point resolution is rejected on the
+measurement above,
+ and the conditions for reopening it are stated there.
+
+This document remains the working record,
+ including the two claims made and withdrawn.
