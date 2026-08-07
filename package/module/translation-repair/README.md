@@ -166,3 +166,20 @@ The one reproducible shortfall class
 (long omissions restored compressed)
 drove a rule now promoted into the baseline editor prompt:
 enumerate the omitted source sentences clause by clause.
+
+Milestone three (detection precision) is NOT met.
+Its gate is human-graded precision of at least 0.9 over a stratified sample
+of accepted issues,
+and the second graded round returned 0.740, 0.787, and 0.800 across its bands.
+A third round is accumulating against a fresh seed.
+Read the milestone-two figures above as recall claims only:
+they say the ensemble finds seeded defects,
+not that what it reports is right.
+Nothing here should be taken as evidence that an accepted issue is a real one
+until this gate is measured and passes.
+
+Every number above comes from a graded measurement rather than a self-report.
+Where a stage grades itself the figure is named as telemetry and excluded:
+`runIntroducedDefectProbe` ships in shadow mode for exactly that reason,
+and the checker stage's resolution rate is a stage self-report,
+which is why repair quality is graded on its own human sheet instead.
