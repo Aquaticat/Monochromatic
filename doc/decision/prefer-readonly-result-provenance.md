@@ -659,9 +659,42 @@ site*,
 observer derivation beside it.
  The entries are present and the checks reject them.
 
-So the next increment is not about escapes and not about the table.
- It is to find why the identity
-comparison fails at these sites,
+### The identity comparison was too strict for a type-guard filter, fixed
+
+Instrumenting `callResultElementReceiver` named it in one run:
+ `identity-mismatch` on
+`updates.filter(function hasContent(update,): update is PushUpdate & { readonly localOid: string })`
+in `package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`.
+
+A predicate that is a type guard selects `filter`'s narrowing overload,
+ so the result holds `S` where
+`S extends T`.
+ `S` is a different type object from the receiver's `T` while the values are the very
+same objects at runtime,
+ and comparing by identity refused a relation that plainly holds.
+
+`heldTypeSurvives` accepts identity or `checker.isTypeAssignableTo(resultHeldType, heldType)`,
+ in that
+direction only.
+ A narrowing of the receiver's element type can only have come from the receiver,
+ which
+is what the entry claims;
+ the reverse would admit a widening,
+ where a result could hold values the
+receiver never did.
+
+Measured:
+ 2966 errors to 2959,
+ 1628 rule findings to 1621,
+ semantic failures and read-only offers
+unchanged at 0 and 33.
+ Ten findings removed and three added,
+ and every one of the three is at a location
+that also appears among the removed,
+ so no parameter became opaque that was not opaque before.
+
+Superseded next step,
+ kept because the instrumentation that replaced it is the method worth copying:
  starting with `records.reduce<Run[]>` in
 `package/module/logger/src/sink/console.ts` and the `filter` in
 `package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`,

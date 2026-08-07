@@ -338,6 +338,50 @@ export function callResultComesFromObserver({
 }
 
 /**
+ * Tests whether a result's held type is the receiver's, or a narrowing of it.
+ *
+ * Identity alone was too strict, and the case that shows it is ordinary rather than exotic: a
+ * `filter` whose predicate is a type guard selects the narrowing overload, so its result holds
+ * `S` where `S extends T`, and `S` is a different type object from the receiver's `T` while the
+ * values are the very same objects at runtime. Measured on
+ * `package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`, whose predicate returns
+ * `update is PushUpdate & { readonly localOid: string }`.
+ *
+ * Assignability in this direction only. A narrowing of the receiver's element type can only have
+ * come from the receiver, which is what the entry claims; the reverse would admit a widening,
+ * where a result could hold values the receiver never did.
+ *
+ * @param checker - TypeScript checker deciding assignability.
+ *
+ * @param heldType - Type the receiver is instantiated over.
+ *
+ * @param resultHeldType - Type the result is instantiated over.
+ *
+ * @returns whether the result's elements can only have come from the receiver.
+ *
+ * @example
+ * ```ts
+ * heldTypeSurvives({ checker, heldType, resultHeldType });
+ * ```
+ */
+function heldTypeSurvives({
+  checker,
+  heldType,
+  resultHeldType,
+}: {
+  readonly checker: Checker;
+  readonly heldType: Type;
+  readonly resultHeldType: Type;
+},): boolean {
+  if (resultHeldType === heldType)
+    return true;
+  return checker.isTypeAssignableTo(
+    resultHeldType,
+    heldType,
+  );
+}
+
+/**
  * Resolves the receiver whose values a call's fresh container result may hold.
  *
  * The container half of the same question `callResultReceiver` answers for direct values,
@@ -426,7 +470,11 @@ export function callResultElementReceiver({
   if (resultHeldType === undefined)
     return RESULT_NOT_RECEIVER_STATE;
   if (provenance.relation === RESULT_RELATION_RECEIVER_ELEMENTS)
-    return (resultHeldType === heldType)
+    return heldTypeSurvives({
+      checker,
+      heldType,
+      resultHeldType,
+    },)
       ? receiver
       : RESULT_NOT_RECEIVER_STATE;
   // One level deeper for a paired result, whose elements are tuples the member built.
