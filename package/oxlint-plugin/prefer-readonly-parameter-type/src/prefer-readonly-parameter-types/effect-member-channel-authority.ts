@@ -235,7 +235,12 @@ const CHANNELS_BY_OWNER: Readonly<
      * widens the `unique symbol` to `symbol`. Reduced to four lines and reproduced against
      * TypeScript 7.0.2, where the same literal accepts `toISOString` and
      * `toLocaleDateString` beside it and rejects only this key. Its two siblings need no
-     * assertion, which is the tell. */
+     * assertion, which is the tell.
+     *
+     * What holds this entry is the probe rather than the type. An assertion accepts any
+     * member of the union, so the compiler would take a wrong channel here as readily as
+     * the right one; `effect-member-channel-authority.unit.test.ts` drives all three locale
+     * members in both directions and is what would catch that. */
     toLocaleString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS as MemberUserCodeChannel,
     toLocaleDateString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
     toLocaleTimeString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
