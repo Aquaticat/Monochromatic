@@ -212,6 +212,7 @@ export function directEffectSummary({
   const {
     parameterInitializerNodes,
     resultSitesBySymbolId,
+    containerLiteralHolders,
   } = discoverBodyBindings({
     project,
     declaration,
@@ -359,6 +360,7 @@ export function directEffectSummary({
         checker,
         bindingOriginBySymbolId,
         resultSitesBySymbolId,
+        containerLiteralHolders,
         call: node,
         summary,
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },

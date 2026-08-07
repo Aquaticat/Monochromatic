@@ -76,6 +76,8 @@ import { handoffProvenance, } from './effect-retention-provenance.ts';
  *
  * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
  *
+ * @param containerLiteralHolders - Bindings holding a container this callable built.
+ *
  * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
  *
  * @param call - Call expression to classify.
@@ -100,6 +102,7 @@ export function inspectEffectCall({
   checker,
   bindingOriginBySymbolId,
   resultSitesBySymbolId,
+  containerLiteralHolders,
   call,
   summary,
   foreignInbound,
@@ -111,6 +114,7 @@ export function inspectEffectCall({
   readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
+  readonly containerLiteralHolders: ReadonlySet<number>;
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
   readonly foreignInbound: boolean;
@@ -314,6 +318,7 @@ export function inspectEffectCall({
       project,
       checker,
       bindingOriginBySymbolId,
+      containerLiteralHolders,
       call,
       receiver: collectionReceiver,
       declaration: resolvedDeclaration,

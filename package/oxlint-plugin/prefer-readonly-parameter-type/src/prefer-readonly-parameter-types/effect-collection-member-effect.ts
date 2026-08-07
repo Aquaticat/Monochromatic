@@ -21,6 +21,7 @@ import {
   memberChannelIsVerifiedNarrow,
 } from './effect-default-library-readonly-view.ts';
 import { rootParameterOrigins, } from './effect-call-resolution.ts';
+import { receiverHoldsConstructedContainer, } from './effect-container-literal-holder.ts';
 import { receiverElementsArePrimitiveHere, } from './effect-receiver-elements.ts';
 import {
   callResultElementReceiver,
@@ -203,13 +204,14 @@ function receiverClaimAnswerable({
  *
  * @example
  * ```ts
- * recordCollectionMemberEffect({ project, checker, bindingOriginBySymbolId, call, receiver, declaration, summary });
+ * recordCollectionMemberEffect({ project, checker, bindingOriginBySymbolId, containerLiteralHolders, call, receiver, declaration, summary });
  * ```
  */
 export function recordCollectionMemberEffect({
   project,
   checker,
   bindingOriginBySymbolId,
+  containerLiteralHolders,
   call,
   receiver,
   declaration,
@@ -220,6 +222,7 @@ export function recordCollectionMemberEffect({
   readonly project: Project;
   readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly containerLiteralHolders: ReadonlySet<number>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly declaration: Node;
@@ -242,9 +245,25 @@ export function recordCollectionMemberEffect({
      * Caller parameters owning receiver, when receiver can carry mutable state.
      */
     const mutatedParameterOrigins = expressionCanCarryMutableState({
-        checker,
-        node: receiver,
-      },)
+          checker,
+          node: receiver,
+        },)
+        /* A container this callable built is not the caller's, however much of the
+         * caller's state it holds. `const stack = [root,]; stack.pop();` restructures the
+         * fresh array and leaves `root` alone, and charging the receiver's origins there
+         * reported a write nothing performs, on the work-stack shape `AGENTS.md` requires
+         * over recursion. Reachability runs the other way: the container reaches the
+         * parameter, and the parameter does not reach the container.
+         *
+         * Only this charge consults the record. Origins are untouched, so a write made
+         * *through* the container, `stack[0].label = x`, keeps its attribution through the
+         * element path, which is what makes suppressing this one safe rather than a hole.
+         * Recorded in `doc/planning/prefer-readonly-container-value-provenance.md`. */
+        && (!receiverHoldsConstructedContainer({
+          project,
+          containerLiteralHolders,
+          node: receiver,
+        },))
       ? rootParameterOrigins({
         project,
         bindingOriginBySymbolId,
