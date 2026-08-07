@@ -301,10 +301,14 @@ export function returnedResultDischargeable({
      * held would report a cycle clean. Ending it at all is still required, since nothing
      * else bounds the alias hops.
      *
-     * MASKED, and unreachable rather than merely masked: no program was found that reaches
-     * a repeat. A `const` alias cycle needs each binding to read the next before it is
-     * initialised, which a temporal dead zone rejects at runtime. Kept as the loop's
-     * termination answer, which it has to give whether or not anything reaches it. */
+     * Believed unreachable, and this is reasoning rather than a measurement, which the
+     * annotations beside it earn the right to distinguish. Only `const` bindings are followed
+     * here, so a cycle needs each to read the next before it is initialised, and TypeScript
+     * rejects that as use before declaration. No program was written to confirm it.
+     *
+     * Kept regardless, because it is the loop's termination answer and has to be given
+     * whether or not anything reaches it. The alternative is not "no check" but "fall out of
+     * the loop and classify whatever the cursor holds", which is the wrong answer. */
     if (visited.has(base.current,))
       return false;
     visited.add(base.current,);
@@ -388,10 +392,16 @@ export function returnedResultDischargeable({
       break;
     base.current = declared;
   }
-  /* MASKED, measured 2026-08-07: the relation requirement in the loop rejects these shapes
-   * first, since a call reaching this sentinel names no member and so carries no receiver
-   * relation either. Kept because the two say different things: that one requires a proven
-   * relation, this one requires a node to classify at all.
+  /* UNREACHABLE by construction rather than masked, which is a different claim and the one
+   * the code actually supports. Both entry points are closed. The gates reach this only for a
+   * member call: `effect-call-analysis.ts` runs `recordCollectionMemberEffect` only when the
+   * receiver is not the sentinel, and `recordReadonlyViewApplications` is handed a receiver
+   * expression. And inside the loop a call is descended only after passing the relation test,
+   * which `effect-member-result-relation.ts` answers by calling `memberCallReceiver` and
+   * refusing the sentinel, so a call that passes has a receiver by definition.
+   *
+   * Kept because it states an invariant the two entry points happen to satisfy rather than one
+   * this function enforces, and a third caller would not inherit it.
    *
    * An unresolved base is refused rather than skipped, and the two are opposite answers.
    * The sentinel means the descent ran out of receiver before it reached anything ownership
