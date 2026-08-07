@@ -1485,6 +1485,13 @@ CPN:
  leaving imports unresolvable at that commit while the working tree still builds.
 Verify with `git status --short` after committing.
 
+IHN:
+ `#N` in a commit body always means a GitHub issue,
+ never a task-tool ID;
+ the two namespaces collide.
+Verify with `gh issue view N` before writing any closing keyword,
+ or name the tracker instead.
+
 XCM:
  External communications report result,
  never work-inviting offers ("happy to",
