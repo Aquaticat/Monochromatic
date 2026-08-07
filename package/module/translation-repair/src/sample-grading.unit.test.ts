@@ -9,9 +9,11 @@ import {
   allocateBandQuota,
   type BandQuota,
   classifyBand,
+  classifySourceAnchor,
   drawStratifiedSample,
   extractGradingCandidate,
   formatGradingSheet,
+  type GradableIssue,
   type GradingCandidate,
   MEDIUM_BAND_MAX_BYTES,
   type SizeBand,
@@ -439,5 +441,159 @@ await describe({
     },),
 
     //endregion formatGradingSheet
+  ],
+},);
+
+/**
+ * Builds a gradable issue from span descriptions, so a case reads as the shape
+ * it is testing rather than as nested boilerplate.
+ *
+ * @param spans - spans across the issue's claims, one claim per span
+ *
+ * @returns Issue whose source anchoring is under classification
+ *
+ * @example
+ * ```ts
+ * const issue = catAnchoredIssue({ spans: [{ side: 'source', quotedText: '猫猫', },], },);
+ * ```
+ */
+function catAnchoredIssue(
+  { spans, }: { readonly spans: readonly { readonly side: 'source' | 'target'; readonly quotedText: string; }[]; },
+): GradableIssue {
+  return {
+    issueId: 'adjudicated/nap',
+    severity: 'major',
+    claims: spans.map(function toClaim(span,) {
+      return {
+        claim: {
+          category: 'accuracy/omission',
+          summary: 'A clause about the windowsill is missing.',
+          spans: [span,],
+        },
+      };
+    },),
+  };
+}
+
+await describe({
+  name: classifySourceAnchor.name,
+  children: [
+    it({
+      name: 'reports a quoted anchor when the issue names source text, which '
+        + 'is the anchoring a grader can actually check against the original',
+      fn: async () => {
+        expect(
+          classifySourceAnchor({
+            issue: catAnchoredIssue({
+              spans: [
+                {
+                  side: 'source',
+                  quotedText: '猫猫在窗台上睡觉',
+                },
+              ],
+            },),
+          },),
+        ).toBe('quoted',);
+      },
+    },),
+
+    it({
+      name: 'reports an INSERTION POINT for an empty source span, because an '
+        + 'empty span is a real place in the original with no text at it, '
+        + 'which is exactly how a correctly anchored addition claim looks: '
+        + 'collapsing it into unanchored would condemn every correct insertion',
+      fn: async () => {
+        expect(
+          classifySourceAnchor({
+            issue: catAnchoredIssue({
+              spans: [
+                {
+                  side: 'source',
+                  quotedText: '',
+                },
+              ],
+            },),
+          },),
+        ).toBe('insertion-point',);
+      },
+    },),
+
+    it({
+      name: 'reports UNANCHORED when no span points into the original at all, '
+        + 'which is the claim that points at nothing and is the thing worth '
+        + 'separating from a correct insertion',
+      fn: async () => {
+        expect(
+          classifySourceAnchor({
+            issue: catAnchoredIssue({
+              spans: [
+                {
+                  side: 'target',
+                  quotedText: 'The cat sleeps on the windowsill.',
+                },
+              ],
+            },),
+          },),
+        ).toBe('unanchored',);
+      },
+    },),
+
+    it({
+      name: 'reports unanchored for an issue with no spans whatsoever, rather '
+        + 'than throwing on a shape the adjudicator can produce',
+      fn: async () => {
+        expect(
+          classifySourceAnchor({ issue: catAnchoredIssue({ spans: [], },), },),
+        ).toBe('unanchored',);
+      },
+    },),
+
+    it({
+      name: 'prefers QUOTED when an issue carries both a quoted source span '
+        + 'and an empty one, since one real quote is enough for a grader to '
+        + 'check the original and the sheet has something to show',
+      fn: async () => {
+        expect(
+          classifySourceAnchor({
+            issue: catAnchoredIssue({
+              spans: [
+                {
+                  side: 'source',
+                  quotedText: '',
+                },
+                {
+                  side: 'source',
+                  quotedText: '猫猫在窗台上睡觉',
+                },
+              ],
+            },),
+          },),
+        ).toBe('quoted',);
+      },
+    },),
+
+    it({
+      name: 'looks across EVERY claim of the issue rather than the first, so a '
+        + 'merged issue whose source anchor arrived on a later claim is not '
+        + 'reported as unanchored',
+      fn: async () => {
+        expect(
+          classifySourceAnchor({
+            issue: catAnchoredIssue({
+              spans: [
+                {
+                  side: 'target',
+                  quotedText: 'The cat sleeps.',
+                },
+                {
+                  side: 'source',
+                  quotedText: '猫猫在窗台上睡觉',
+                },
+              ],
+            },),
+          },),
+        ).toBe('quoted',);
+      },
+    },),
   ],
 },);

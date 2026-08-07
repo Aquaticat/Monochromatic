@@ -75,6 +75,8 @@ export {
   assertRepairMeasurable,
   type BandQuota,
   classifyBand,
+  classifySourceAnchor,
+  type SourceAnchorKind,
   countUnrecordedRepairs,
   UnmeasurableRepairError,
   DEFAULT_PRECISION_BAR,
