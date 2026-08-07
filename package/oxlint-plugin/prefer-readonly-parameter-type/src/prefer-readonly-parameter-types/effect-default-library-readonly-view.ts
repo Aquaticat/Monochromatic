@@ -22,6 +22,7 @@ import {
 } from './effect-default-library-view-members.ts';
 import {
   collectionMemberUserCodeChannel,
+  MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
   MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
   MEMBER_CHANNEL_UNPROVEN,
   memberInvokesObserver,
@@ -200,10 +201,12 @@ export function memberChannelIsVerifiedNarrow({
   project,
   declaration,
   elementsArePrimitive,
+  argumentsAreAbsent,
 }: {
   readonly project: Project;
   readonly declaration: Node;
   readonly elementsArePrimitive: boolean;
+  readonly argumentsAreAbsent: boolean;
 }): boolean {
   if ((!isMethodSignatureDeclaration(declaration,))
     || (!isIdentifier(declaration.name,))
@@ -238,5 +241,12 @@ export function memberChannelIsVerifiedNarrow({
    * no shape in the type system constrains. */
   if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION)
     return elementsArePrimitive;
+  /* The other conditional channel, decided at the call site for the same kind of reason.
+   * A date locale member reads properties off whatever options object it is handed, so it
+   * runs any accessor on one; handed nothing, there is no object and no accessor to run.
+   * `pubDateDate.toLocaleString()` passes nothing, which is the shape that made this worth
+   * separating from an outright refusal. */
+  if (channel === MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS)
+    return argumentsAreAbsent;
   return channel !== MEMBER_CHANNEL_UNPROVEN;
 }

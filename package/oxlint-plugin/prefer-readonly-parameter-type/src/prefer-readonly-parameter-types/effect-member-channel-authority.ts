@@ -91,6 +91,28 @@ export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION: unique symbol = Symbol(
 );
 
 /**
+ * Member reads its own internal slot and whatever the caller handed it, and nothing else.
+ *
+ * Narrow conditionally, like the coercion channel and for the same kind of reason: what the
+ * member can reach is decided at the call site rather than by the member name.
+ * `memberChannelIsVerifiedNarrow` discharges it only where the call passes no arguments at
+ * all, and withholds otherwise.
+ *
+ * The date locale members are the case. ECMA-402 has them process caller-supplied `locales`
+ * and `options`, reading properties off the options object and so running any accessor on
+ * it, which is why the name alone cannot answer. Called with an empty argument list there is
+ * no such object: the member reads `[[DateValue]]`, consults ambient locale data, and
+ * returns a string. Measured on `pubDateDate.toLocaleString()` in
+ * `package/webapp-productivity/rss/src/html-item.ts`, which passes nothing.
+ *
+ * Ambient locale and time zone change what the string says and not what the receiver holds,
+ * so they are not a channel into caller state.
+ */
+export const MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS: unique symbol = Symbol(
+  'collection member reads its internal slot and whatever the caller passed it',
+);
+
+/**
  * Member opens a channel this authority has not verified.
  */
 export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
@@ -102,6 +124,7 @@ export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
  */
 export type MemberUserCodeChannel =
   | typeof MEMBER_CHANNEL_INTERNAL_SLOT
+  | typeof MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS
   | typeof MEMBER_CHANNEL_RECEIVER_INDEX
   | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES
   | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION;
@@ -206,6 +229,16 @@ const CHANNELS_BY_OWNER: Readonly<
    * member name alone. They stay off until a probe drives them. */
   Date: {
     toISOString: MEMBER_CHANNEL_INTERNAL_SLOT,
+    /* Asserted for one reason and it is not this table's semantics: `toLocaleString` is a
+     * member of `Object.prototype`, so an object literal checked against
+     * `Record<string, MemberUserCodeChannel>` meets the apparent member at that key and
+     * widens the `unique symbol` to `symbol`. Reduced to four lines and reproduced against
+     * TypeScript 7.0.2, where the same literal accepts `toISOString` and
+     * `toLocaleDateString` beside it and rejects only this key. Its two siblings need no
+     * assertion, which is the tell. */
+    toLocaleString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS as MemberUserCodeChannel,
+    toLocaleDateString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
+    toLocaleTimeString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
   },
   Map: {
     get: MEMBER_CHANNEL_INTERNAL_SLOT,
@@ -268,7 +301,7 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 78;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 81;
 
 /**
  * Members returning an iterator, whose entries claim creation and drainage together.

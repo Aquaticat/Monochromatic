@@ -111,6 +111,11 @@ function receiverClaimAnswerable({
   readonly declaration: Node;
   readonly body?: Node;
 },): boolean {
+  /**
+   * How many arguments this call site passes, deciding the argument-conditional channel.
+   */
+  const passedArgumentCount = call.arguments
+    .length;
   if (!memberChannelIsVerifiedNarrow({
     project,
     declaration,
@@ -118,6 +123,10 @@ function receiverClaimAnswerable({
       checker,
       call,
     },),
+    /* Asked of this call rather than of the member, because that is where the answer
+     * lives: the same locale member reaches an accessor when handed an options object and
+     * reaches nothing when handed nothing. */
+    argumentsAreAbsent: passedArgumentCount === 0,
   },))
     return false;
   /**

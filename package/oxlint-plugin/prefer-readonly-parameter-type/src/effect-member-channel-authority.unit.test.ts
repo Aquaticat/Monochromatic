@@ -63,6 +63,15 @@ const PROBE_BUFFER_BYTES = 16;
 const PROBE_DATE_MILLISECONDS = 946_782_245_006;
 
 /**
+ * Date members listed on the channel that is narrow only for an empty argument list.
+ */
+const DATE_LOCALE_MEMBER_NAMES: readonly string[] = [
+  'toLocaleString',
+  'toLocaleDateString',
+  'toLocaleTimeString',
+];
+
+/**
  * Arguments satisfying each probed member's required parameters.
  *
  * Two roles, deliberately distinct. A lookup or removal needs a value the receiver
@@ -126,6 +135,15 @@ function probeArguments({
     delete: [element,],
     add: [fresh,],
   };
+  /* Own keys only. `byMember` is an object literal, so a member sharing a name with an
+   * `Object.prototype` member finds the inherited one instead of `undefined`, the `??`
+   * never fires, and the caller spreads a function. Found by this probe rather than
+   * reasoned about: listing `toLocaleString` made every call throw
+   * "probeArguments is not a function or its return value is not iterable", which the
+   * channel assertion reported as the member reaching a hook. The same collision rejects
+   * `toLocaleString` as a key in the authority's own table under TypeScript 7. */
+  if (!Object.hasOwn(byMember, memberName,))
+    return [];
   return byMember[memberName] ?? [];
 }
 
@@ -614,6 +632,44 @@ await describe({
           ownerName: 'Date',
           memberName: 'toISOString',
         },),).toEqual([],);
+        /* The locale members are listed on a channel that is narrow only for an empty
+         * argument list, so they need the tripwire driven in both directions or the entry
+         * claims something no probe has seen. Called with nothing, they reach none of the
+         * receiver recorders. */
+        for (const memberName of DATE_LOCALE_MEMBER_NAMES) {
+          expect(reachedHooks({
+            ownerName: 'Date',
+            memberName,
+          },),).toEqual([],);
+        }
+        /* And handed an options object carrying an accessor, the same members read it, which
+         * is the half that makes the condition a condition rather than a formality. Driven on
+         * the intrinsic rather than through the table, since the table's probe passes no
+         * arguments by construction. */
+        for (const memberName of DATE_LOCALE_MEMBER_NAMES) {
+          /**
+           * Whether the member read a property of the options object it was handed.
+           */
+          const optionsRead = { any: false, };
+          /**
+           * Intrinsic locale member, taken as data so no method reference is held.
+           */
+          const intrinsic = (Date.prototype as unknown as Record<string, unknown>)[memberName];
+          Reflect.apply(
+            intrinsic as (this: Date, ...args: readonly unknown[]) => unknown,
+            new Date(PROBE_DATE_MILLISECONDS,),
+            [
+              'en-US',
+              {
+                get timeZone(): string {
+                  optionsRead.any = true;
+                  return 'UTC';
+                },
+              },
+            ],
+          );
+          expect(optionsRead.any,).toBe(true,);
+        }
         /**
          * Hooks reached by reading a `Map` property directly, with no member involved.
          */
