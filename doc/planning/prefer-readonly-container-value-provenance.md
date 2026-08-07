@@ -314,6 +314,47 @@ removes the wrong fact and leaves the report.
  which
 `doc/planning/prefer-readonly-return-substitution.md` owns.
 
+### What it measured
+
+Workspace either side:
+ 2908 errors to 2907,
+ 1570 rule findings to 1569,
+ warnings unchanged at 3902,
+stale `@mutates` findings unchanged at 14.
+ One finding cleared,
+ which is what this document predicted:
+the change removes a wrong fact rather than a report.
+
+The read-only offer set is byte-identical either side,
+ none appearing,
+ disappearing or moving.
+ That
+was the number to watch,
+ because withdrawing a mutation is exactly what makes a parameter offerable,
+and an offer minted by a withdrawal that should not have happened is the failure this rule guards.
+
+The one finding that cleared is `createExtensionContext` in
+`package/pi-plugin/spawn/src/pi-test-harness.ts`,
+ and it is the shape this was built for:
+ a fresh array
+built by spreading the parameter's own property,
+ then pushed onto.
+ The push restructures the copy,
+ the
+caller's array is untouched,
+ and charging it to the parameter reported a write nothing performs.
+
+Held to four fixture cases in `readonly-result-provenance-invalid.ts` rather than to the probes alone:
+both wrong-offer programs this document names,
+ the restructure the record exists for,
+ and a caller-owned
+container reached through one local hop.
+ The restructure case also produces the record's visible
+consequence,
+ an offer where there was a report,
+ and it is listed in the fixture's exhaustive offer list
+so a future change that withdraws it has to say why.
+
 ## Recommendation
 
 Not now,
