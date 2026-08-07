@@ -1486,10 +1486,10 @@ CPN:
 Verify with `git status --short` after committing.
 
 IHN:
- `#N` in a commit body always means a GitHub issue,
+ `#N` in a commit body means a GitHub issue,
  never a task-tool ID;
- the two namespaces collide.
-Verify with `gh issue view N` before writing any closing keyword,
+ the namespaces collide.
+Verify with `gh issue view N` before any closing keyword,
  or name the tracker instead.
 
 XCM:
