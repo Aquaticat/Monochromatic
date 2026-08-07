@@ -415,6 +415,59 @@ justification written for it,
  and that anyone picking this up should start by re-deriving whether the
 holder set is worth closing on its own terms rather than inheriting an argument that no longer measures.
 
+## The deferred fourth item now has a measured stake, 2026-08-07
+
+It never had one.
+ The ranking argued order and hazard and left size unstated,
+ which makes a deferral hard
+to revisit honestly.
+
+Counted over the current workspace sweep,
+ attributing each finding by the calls its own message names:
+1262 findings name at least one call,
+ and 134 of them name only members that now carry a verified result
+relation.
+ For those 134 the relation is present and the per-call verification is what withholds it,
+ and
+the condition doing the withholding is overwhelmingly the escape check:
+ a container or element of
+receiver state that leaves the callable.
+
+Measured directly rather than inferred from the count.
+ `rows.toReversed()`,
+ `rows.toSorted(cmp,)` and
+`rows.slice(0,)` are each clean when the result is discarded,
+ read,
+ or written through,
+ and each is
+`opaque=[0]` when the result is returned.
+ `orderedRoots` in
+`package/desktop-app/file-manager-electron/src/strip.ts` is the shape:
+ it returns
+`panes.filter(rootLike,).toSorted(bySpawnOrder,)`,
+ and the chain is not what withholds it.
+
+This does not argue the deferral was wrong,
+ and it does not shorten the path.
+ The third item remains a
+precondition for the fourth by this document's own reasoning:
+ a returned container has to become a fact
+the caller can propagate,
+ through `returnedParameterIndexes`,
+ before the receiver's opacity can be
+discharged on the strength of it.
+ Discharging first would hand back a clean parameter with the return
+unmodelled,
+ which is the shape `#35` refuted after it looked obviously safe.
+
+What the number changes is the accounting.
+ The remaining work on this rule's argument side is now
+concentrated rather than scattered:
+ the external host calls and the genuine coercions are correct as they
+stand,
+ the observer members are excluded on stated grounds,
+ and what is left in one place is these 134.
+
 ## Recommendation
 
 Ranking:
