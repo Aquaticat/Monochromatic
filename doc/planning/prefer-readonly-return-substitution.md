@@ -10951,3 +10951,61 @@ is a separate step from establishing that the parameter reaches the call at all.
 The same sequence happened two increments earlier,
  where composing container relations added
 a finding that the locale channel then discharged.
+
+### The alias cap went, 2026-08-07
+
+The entry tracking this predicted a lost origin.
+Re-probing before touching it found half of it already gone and the other half worse than
+predicted,
+ which is why it was re-probed rather than worked from the description.
+
+Gone:
+ the element walk's own hop,
+ added by the composition,
+ has no cap,
+ so a nine-hop alias
+chain reaching a container records its origin now.
+
+Worse:
+ `containerElementReceiver` has a second caller,
+ `expressionValueOrigins`,
+ with no hop
+of its own,
+ and there the cap still governed.
+Chaining a container call through local aliases and writing through an element of the last:
+
+```text
+one alias, three aliases    referentMutated=[0]  opaque=[]
+seven aliases onward        referentMutated=[]   opaque=[]
+```
+
+Past the threshold the parameter is not merely unattributed.
+It carries no mutation and no opacity,
+ which is a clean parameter,
+ and the rule offers a
+clean parameter read-only while this one rewrites a row the caller owns.
+
+The count never made the walk terminate.
+Each step either answers or moves to a declaration initializer,
+ a file holds finitely many of
+those,
+ and the visited set beside it already refused a repeat.
+What the count did was truncate,
+ and its own comment named the consequence as "only withholds
+an origin".
+For this rule that is the whole of the problem rather than a mitigation of it:
+ withholding an
+origin withholds a charge,
+ every consumer of these origins only ever adds one,
+ and a parameter
+with no charge is a parameter offered read-only.
+
+Both bounds in this neighbourhood are now gone,
+ removed one increment apart so each could be
+attributed.
+No fixture accompanies this one.
+Removing a cap deletes a branch rather than adding one,
+ the existing alias cases already drive
+the loop,
+ and the threshold and its reason sit on the visited set where a reader tempted to
+reinstate a bound will be reading.
