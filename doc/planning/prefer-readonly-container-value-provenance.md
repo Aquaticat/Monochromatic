@@ -256,6 +256,64 @@ on this repository's own standard,
 But it should not be sold as clearing the 26 findings,
  because it will not.
 
+## The narrow shape landed, 2026-08-07
+
+Built as described,
+ in `effect-container-literal-holder.ts`,
+ recorded in `effect-body-bindings.ts`
+beside the origins and the result sites,
+ and consulted in exactly one place:
+ the structural-mutation
+charge in `recordCollectionMemberEffect`.
+
+Three conditions decide the record,
+ and each was added for a case rather than for symmetry.
+ The bound
+name must be a plain identifier,
+ because a destructuring pattern binds what a container holds rather than
+the container itself.
+ The declaration must be `const`,
+ which is the guard that makes the record safe to
+consult at a call site instead of only at the declaration:
+ `let stack = [root,]; stack = config.rows;
+stack.pop();` holds a container this callable built when it is declared and one the caller owns by the time
+the member runs,
+ and a `const` cannot move like that.
+ The initializer must be an array or object literal
+written here,
+ or an identifier already recorded,
+ which is what carries the record across
+`const alias = stack;` the way origins already cross it.
+
+Verified against the probes this document set out,
+ all four holding:
+
+- `const stack: Node[] = [root,]; stack.pop();` reports `referentMutated=[]`,
+ where it reported `[0]`.
+- `const stack: Node[] = [root,]; const alias = stack; alias.pop();` reports `referentMutated=[]` too,
+ so
+the aliased form and the direct form agree.
+ A record that stopped at the declaration would have discharged
+one and suppressed the other,
+ which is the `find` against `at` asymmetry this session spent a commit
+closing.
+- `const stack: Node[] = [root,]; stack.push(root,); stack[0].label = x;` still reports
+ `referentMutated=[0]`,
+ through the element path rather than the suppressed charge.
+- `const inner = config.rows; inner.push(row,);` still reports `referentMutated=[0]`,
+ and so does the
+direct `config.rows.push(row,)`.
+ Its binding arrives through a property step,
+ so the record is not set.
+
+The work-stack shape reports `referentMutated=[]` and still `opaque=[0]`,
+ exactly as predicted:
+ this
+removes the wrong fact and leaves the report.
+ Clearing the report is the escape question,
+ which
+`doc/planning/prefer-readonly-return-substitution.md` owns.
+
 ## Recommendation
 
 Not now,
