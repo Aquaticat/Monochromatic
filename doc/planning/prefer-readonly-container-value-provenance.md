@@ -187,6 +187,75 @@ conflation is what currently makes the unresolved case safe,
  so removing it without an opaque fallback
 converts every gap into an offer.
 
+## A narrower shape that dodges every wrong-offer case, and what it does not buy
+
+Proposed after the redesign above was costed,
+ because the wrong-offer cases all depend on emptying value
+origins and this does not empty them.
+
+Leave `expressionValueOrigins` exactly as it is,
+ so every attribution that works today keeps working.
+Record separately,
+ alongside the origins,
+ which bindings received theirs through a fresh container literal,
+propagating that record through alias hops the same way origins already propagate.
+ Consult it in one place
+only:
+ the structural-mutation charge in `recordCollectionMemberEffect`,
+ which skips crediting the receiver's
+origins when every one of them arrived that way.
+
+Nothing is removed,
+ so `const stack = [root,]; stack[0].label = x` keeps its attribution through the
+element path,
+ and `const held = { inner: root, }; held.inner.label = x` keeps its through the value path.
+Both wrong-offer programs recorded above depend on those paths going away,
+ and under this they do not.
+
+Three probes decide whether the record can be kept honest,
+ and all three were run:
+
+- `const stack: Node[] = [root,]; const alias = stack; alias.pop();` reports `referentMutated=[0]`
+ exactly as the direct form does,
+ so origins already survive one alias hop and the record has to survive it
+too.
+ A record that did not would discharge the aliased form while suppressing the direct one,
+ which is the
+same asymmetry between `find` and `at` that this session spent a commit fixing.
+- `const inner = config.rows; inner.push(row,);` reports `referentMutated=[0]`,
+ and must keep doing so.
+ Its
+binding arrives through a property step rather than a container literal,
+ so the record is not set and the
+charge stands.
+- `const stack: Node[] = [root,]; stack.push(root,); stack[0].label = x;` reports
+ `referentMutated=[0]`,
+ through the element path rather than the structural charge,
+ so suppressing the
+charge does not lose it.
+
+What it does not buy is most of the findings.
+ The work-stack shape reports `referentMutated=[0]` and
+`opaque=[0]` together,
+ and this addresses only the first.
+ The opacity comes from `stack.push(child,)`
+handing parameter-derived state to a container whose later use nothing follows,
+ which is the escape
+question again and not this one.
+ Measured:
+ `const stack: Node[] = [root,]; stack.pop();` is already
+`opaque=[]`,
+ while adding the push makes it `opaque=[0]`.
+
+So the honest description is that this removes a wrong fact rather than a report.
+ That is still worth doing
+on this repository's own standard,
+ recorded in
+`doc/decision/prefer-readonly-unpaired-view-membership.md`:
+ a wrong inference is worse than an absent one.
+But it should not be sold as clearing the 26 findings,
+ because it will not.
+
 ## Recommendation
 
 Not now,
