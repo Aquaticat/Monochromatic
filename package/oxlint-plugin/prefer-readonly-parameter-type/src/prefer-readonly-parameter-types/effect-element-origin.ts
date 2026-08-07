@@ -11,16 +11,11 @@ import {
   containerElementReceiver,
   NOT_A_RECEIVER_CONTAINER,
 } from './effect-container-element-origin.ts';
-import { expressionValueOrigins, } from './effect-expression-provenance.ts';
+import {
+  expressionValueOrigins,
+  selectedOperandSuccessors,
+} from './effect-expression-provenance.ts';
 import type { SlotOrigins, } from './effect-summary-model.ts';
-
-/**
- * Container relations the element walk composes before it stops.
- *
- * A backstop rather than the terminator: the walk ends when a step finds no verified
- * relation, and each step consumes one member call, so authored chains end far sooner.
- */
-const CONTAINER_CHAIN_HOP_LIMIT = 8;
 
 /**
  * Resolves parameter origins a binding takes from an expression's elements.
@@ -59,46 +54,76 @@ export function expressionElementOrigins({
   readonly node: Node;
 },): SlotOrigins {
   /**
-   * Origins the expression's own value carries.
+   * Origins found so far, starting from what the expression's own value carries.
    */
-  const valueOrigins = expressionValueOrigins({
+  const origins = new Set(expressionValueOrigins({
     project,
     bindingOriginBySymbolId,
     node,
-  },);
+  },),);
   /**
-   * Origins found so far, starting from what the expression's own value carries.
+   * Expressions already queued, so a declaration hop cannot revisit its own subject.
+   *
+   * A visited set rather than a hop count, and the distinction is a soundness one rather
+   * than a tidiness one. `containerElementReceiver` follows an identifier to its
+   * declaration initializer, which is not a descendant of the node it started from, so
+   * this walk leaves its own subtree and the descendant argument that bounds
+   * `expressionValueOrigins` does not hold here. What does hold is that a file has
+   * finitely many nodes and no node is examined twice.
+   *
+   * The count it replaces truncated silently, and truncation is the unsafe direction for
+   * this rule rather than a neutral one. Every consumer of the returned set only ever adds
+   * a charge, so a withheld origin is a withheld charge and a withheld charge is an offer.
+   * Measured 2026-08-07: eight composed `slice` calls recorded the parameter and nine
+   * recorded nothing, and at twelve the parameter came back with no opacity at all, which
+   * is the state a read-only offer is minted from. Nine composed calls do not appear in the
+   * corpus, so this cleared nothing; it removes a way to be wrong rather than a report.
    */
-  const origins = new Set(valueOrigins,);
+  const visited = new Set<Node>([node,],);
   /**
-   * Cursor descending one container relation at a time toward a named receiver.
-   *
-   * A loop rather than one resolution, because container members compose and the corpus
-   * composes them. `panes.filter(rootLike,).toSorted(bySpawnOrder,)` in
-   * `package/desktop-app/file-manager-electron/src/strip.ts` is the shape: the outer
-   * member's receiver is the inner call, whose own value origins are empty because the
-   * array it returns is fresh. Resolving once answered `rows.slice(0,)` and answered
-   * nothing at all for `rows.slice(0,).toReversed()`, so a chain of relations each of
-   * which holds reported no origin between them.
-   *
-   * Bounded rather than recursive, per `ITR`, and the bound is a backstop: each step
-   * consumes one syntactic member call, so a chain in real source ends long before it.
+   * Expressions still to examine for a container relation.
    */
-  const walk = {
-    current: node,
-    hops: 0,
-  };
-  while (walk.hops < CONTAINER_CHAIN_HOP_LIMIT) {
+  const pending: Node[] = [node,];
+  while (pending.length > 0) {
     /**
-     * Receiver whose elements the cursor's value holds, when that relation is verified.
+     * Next expression whose container relation is examined.
+     */
+    const current = pending.pop();
+    if (current === undefined)
+      continue;
+    /* Selection has to be traversed before the relation is asked for, because a selector
+     * carries no relation of its own and the value inside it does. `return (rows.slice(0,));`
+     * and `return cond ? rows.slice(0,) : [];` recorded nothing while `return (rows);` and
+     * `return cond ? rows : [];` recorded correctly, because value provenance already saw
+     * through these forms and the container relation did not. Sharing one definition of the
+     * family with `expressionValueOrigins` is what keeps the two walks from disagreeing.
+     *
+     * Their own origins are not collected here on purpose: `expressionValueOrigins` descends
+     * through the same family internally, so the root call above already carries them, and
+     * asking again would only repeat the work. */
+    for (const successor of selectedOperandSuccessors({ node: current, },))
+      if (!visited.has(successor,)) {
+        visited.add(successor,);
+        pending.push(successor,);
+      }
+    /**
+     * Receiver whose elements the current value holds, when that relation is verified.
+     *
+     * Queued as well as collected, because container members compose and the corpus
+     * composes them. `panes.filter(rootLike,).toSorted(bySpawnOrder,)` in
+     * `package/desktop-app/file-manager-electron/src/strip.ts` is the shape: the outer
+     * member's receiver is the inner call, whose own value origins are empty because the
+     * array it returns is fresh.
      */
     const elementReceiver = containerElementReceiver({
       project,
       checker: project.checker,
-      node: walk.current,
+      node: current,
     },);
-    if (elementReceiver === NOT_A_RECEIVER_CONTAINER)
-      break;
+    if ((elementReceiver === NOT_A_RECEIVER_CONTAINER)
+      || visited.has(elementReceiver,))
+      continue;
+    visited.add(elementReceiver,);
     for (
       const slot of expressionValueOrigins({
         project,
@@ -107,8 +132,7 @@ export function expressionElementOrigins({
       },)
     )
       origins.add(slot,);
-    walk.current = elementReceiver;
-    walk.hops += 1;
+    pending.push(elementReceiver,);
   }
   return origins;
 }

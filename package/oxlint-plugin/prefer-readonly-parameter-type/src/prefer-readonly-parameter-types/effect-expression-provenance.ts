@@ -148,6 +148,68 @@ function transparentOperand(
 }
 
 /**
+ * Operands one of which the expression's own value already is.
+ *
+ * The selection family, kept apart from the aggregate family below it because the two
+ * answer different questions. Everything here yields a value that some operand already
+ * held, either by erasing at runtime or by choosing between operands, so any walk asking
+ * "where did this value come from" inherits from these without needing a relation to
+ * explain the step. An aggregate is the opposite: `[a, b,]` builds a value no operand
+ * held, and crediting its contents is a separate claim about what a container packages.
+ *
+ * Exported because the element walk needs exactly this family and nothing else. Measured
+ * 2026-08-07: `return (rows.slice(0,));` and `return cond ? rows.slice(0,) : [];` recorded
+ * no element origins while the bare `return (rows);` and `return cond ? rows : [];`
+ * recorded them correctly, because value provenance saw through the wrappers and the
+ * container relation did not. Sharing one definition is what stops the two walks
+ * disagreeing about identical state, which is the same hazard the spread rule on
+ * `isArrayLiteralExpression` was written to avoid.
+ *
+ * @param node - Expression whose selected operands are wanted.
+ *
+ * @returns operands whose value this expression's own may be.
+ *
+ * @example
+ * ```ts
+ * selectedOperandSuccessors({ node });
+ * ```
+ */
+export function selectedOperandSuccessors(
+  { node, }: { readonly node: Node; },
+): readonly Node[] {
+  /**
+   * Operand of a wrapper that changes nothing about the value.
+   */
+  const unwrapped = transparentOperand({ node, },);
+  if (unwrapped !== NOTHING_WRAPPED)
+    return [unwrapped,];
+  if (isConditionalExpression(node,))
+    /* Both results and never the condition. The condition decides which value arrives
+     * and is not itself a value that arrives, so descending into it would credit state
+     * the expression cannot produce. */
+    return [
+      node.whenTrue,
+      node.whenFalse,
+    ];
+  if (isBinaryExpression(node,)) {
+    if (EITHER_OPERAND_OPERATORS.has(node.operatorToken
+      .kind,))
+      return [
+        node.left,
+        node.right,
+      ];
+    /* Right operand only, for the reason recorded on `EITHER_OPERAND_OPERATORS`: a
+     * mutable object produced by `&&` or by an assignment can only be the right
+     * operand's value. */
+    if (RIGHT_OPERAND_OPERATORS.has(node.operatorToken
+      .kind,))
+      return [node.right,];
+    return [];
+  }
+  return [];
+}
+
+/**
  * Successor expressions whose origins the current expression inherits.
  *
  * Every returned node is a strict AST descendant of the input, which is what bounds
@@ -173,31 +235,11 @@ function provenanceSuccessors({
   readonly node: Node;
 },): readonly Node[] {
   /**
-   * Operand of a wrapper that changes nothing about the value.
+   * Operands this expression's value may already be, when it selects rather than builds.
    */
-  const unwrapped = transparentOperand({ node, },);
-  if (unwrapped !== NOTHING_WRAPPED)
-    return [unwrapped,];
-  if (isConditionalExpression(node,))
-    return [
-      node.whenTrue,
-      node.whenFalse,
-    ];
-  if (isBinaryExpression(node,)) {
-    if (EITHER_OPERAND_OPERATORS.has(node.operatorToken
-      .kind,))
-      return [
-        node.left,
-        node.right,
-      ];
-    /* Right operand only, for the reason recorded on `EITHER_OPERAND_OPERATORS`: a
-     * mutable object produced by `&&` or by an assignment can only be the right
-     * operand's value. */
-    if (RIGHT_OPERAND_OPERATORS.has(node.operatorToken
-      .kind,))
-      return [node.right,];
-    return [];
-  }
+  const selected = selectedOperandSuccessors({ node, },);
+  if (selected.length > 0)
+    return selected;
   if (isObjectLiteralExpression(node,))
     /* An aggregate holds whatever was written into it, so a callee writing through one of its
      * properties writes into the value that property holds. The literal's own identity is fresh
