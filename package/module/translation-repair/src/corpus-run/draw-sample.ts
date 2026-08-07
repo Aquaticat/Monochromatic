@@ -236,7 +236,12 @@ async function drawGradingSample(): Promise<void> {
   const names = (await readdir(artifactsDir,))
     .filter(function isArtifact(name,) {
       return name.endsWith('.json',);
-    },);
+    },)
+    // Sorted so the pool is built in one fixed order. The draw itself sorts by
+    // keys derived from the seed and the ids, so it does not depend on this,
+    // but the POOL report and any error naming "the first bad artifact" do, and
+    // a report that changes with directory order is a report nobody can cite.
+    .toSorted();
 
   /**
    * Every settled entry banded with its candidates.
@@ -345,6 +350,17 @@ async function drawGradingSample(): Promise<void> {
    * pre-recording artifacts looks like.
    */
   const unrecorded = countUnrecordedRepairs({ sample, },);
+
+  /**
+   * Pool-wide candidates carrying no recorded repair.
+   *
+   * Reported because {@link assertRepairMeasurable} only inspects what was
+   * DRAWN, so pre-recording candidates left in the pool escape it whenever the
+   * seed happens not to select them. Seeing the pool figure says whether a
+   * clean sample means a clean pool or a lucky draw, and it is the number that
+   * predicts whether the final draw will abort.
+   */
+  const unrecordedPool = countUnrecordedRepairs({ sample: pool, },);
   if (isFinal)
     assertRepairMeasurable({ sample, },);
 
@@ -356,9 +372,10 @@ async function drawGradingSample(): Promise<void> {
     ? ''
     : '> PRELIMINARY draw over whatever has settled so far, for validating the '
       + 'sheets and the pool, NOT for final grading. It is drawn with a '
-      + 'different seed from the gate sheet, so these are deliberately not the '
-      + 'items the gate will draw, and the final draw shifts again as the pool '
-      + 'grows.\n\n';
+      + 'different seed from the gate sheet, so it is not a preview of the gate '
+      + 'draw; individual items can still coincide, since a different seed '
+      + 'reorders the pool rather than excluding anything from it. The final '
+      + 'draw shifts again as the pool grows.\n\n';
 
   // Both paths resolve BEFORE either file is written. Writing the detection
   // sheet first would leave it in place, and protected against overwrite, when
@@ -451,7 +468,9 @@ async function drawGradingSample(): Promise<void> {
       String(pool.length,)
     } drawn=${String(sample.length,)} unrecordedRepairs=${
       String(unrecorded,)
-    } out=${outPath} repairOut=${repairPath} manifest=${manifestPath}`,
+    } unrecordedInPool=${String(unrecordedPool,)} out=${outPath} repairOut=${
+      repairPath
+    } manifest=${manifestPath}`,
   );
 }
 
