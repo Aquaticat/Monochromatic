@@ -31,15 +31,6 @@ export const NOT_A_RECEIVER_CONTAINER: unique symbol = Symbol(
 );
 
 /**
- * Hops followed through local declarations before the walk gives up.
- *
- * A bound rather than a cycle guard alone, because the visited set already stops a cycle
- * and this stops a long alias chain from costing a declaration resolution per hop. Chains
- * this long do not appear in the corpus, and stopping early only withholds an origin.
- */
-const CONTAINER_ALIAS_HOP_LIMIT = 8;
-
-/**
  * Resolves the receiver whose elements an expression's container value holds.
  *
  * The container relation is recorded on a call, and code rarely writes through the call
@@ -76,31 +67,48 @@ export function containerElementReceiver({
   readonly node: Node;
 },): Expression | typeof NOT_A_RECEIVER_CONTAINER {
   /**
-   * Declarations already visited, so an alias cycle cannot spin the walk.
+   * Declarations already visited, and the only thing that ends this walk.
+   *
+   * Each step either answers or moves to a declaration initializer, a file holds finitely
+   * many of those, and no node is examined twice, so the loop terminates on the set alone.
+   *
+   * A hop count sat beside it and has been removed. Its stated reason was cost, saving a
+   * declaration resolution per hop on chains it said do not appear in the corpus, and its
+   * stated consequence was that stopping early "only withholds an origin". That is backwards
+   * for this rule. Withholding an origin withholds a charge, every consumer of these origins
+   * only ever adds one, and a parameter with no charge is a parameter offered read-only.
+   *
+   * Measured at the count's threshold, chaining a container call through local aliases and
+   * writing through an element of the last: at three aliases the write is attributed to the
+   * parameter, and from seven onward the parameter comes back with no mutation and no
+   * opacity at all. Not an unattributed write but a clean parameter, which is the state a
+   * read-only offer is minted from, on a callable that rewrites a row the caller owns.
    */
   const visited = new Set<Node>();
   /**
-   * Cursor descending through local declarations toward a container call.
+   * Next declaration to examine, holding one node at a time.
+   *
+   * A one-element queue rather than a cursor, matching `expressionElementOrigins`, because
+   * the loop is now ended by the visited set rather than by a counter and a queue says that
+   * in the condition. This walk follows a single chain, so the queue never holds two.
    */
-  const cursor: {
-    current: Node;
-    hops: number;
-  } = {
-    current: node,
-    hops: 0,
-  };
-  while (cursor.hops < CONTAINER_ALIAS_HOP_LIMIT) {
-    if (visited.has(cursor.current,))
+  const pending: Node[] = [node,];
+  while (pending.length > 0) {
+    /**
+     * Declaration being examined for a container relation.
+     */
+    const current = pending.pop();
+    if ((current === undefined) || visited.has(current,))
       return NOT_A_RECEIVER_CONTAINER;
-    visited.add(cursor.current,);
-    if (isCallExpression(cursor.current,)) {
+    visited.add(current,);
+    if (isCallExpression(current,)) {
       /**
        * Receiver this call's container result may hold the elements of.
        */
       const receiver = callResultElementReceiver({
         project,
         checker,
-        call: cursor.current,
+        call: current,
       },);
       return (receiver === RESULT_NOT_RECEIVER_STATE)
         ? NOT_A_RECEIVER_CONTAINER
@@ -112,12 +120,11 @@ export function containerElementReceiver({
     const initializer = bindingDeclarationInitializer({
       project,
       checker,
-      node: cursor.current,
+      node: current,
     },);
     if (initializer === NO_BINDING_INITIALIZER)
       return NOT_A_RECEIVER_CONTAINER;
-    cursor.current = initializer;
-    cursor.hops += 1;
+    pending.push(initializer,);
   }
   return NOT_A_RECEIVER_CONTAINER;
 }
