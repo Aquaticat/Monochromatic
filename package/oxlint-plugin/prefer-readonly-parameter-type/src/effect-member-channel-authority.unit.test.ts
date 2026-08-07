@@ -58,6 +58,11 @@ const RECEIVER_INDEX_HITS: ReadonlySet<string> = new Set([
 const PROBE_BUFFER_BYTES = 16;
 
 /**
+ * Instant the probe date holds, fixed so a formatted result never varies by run.
+ */
+const PROBE_DATE_MILLISECONDS = 946_782_245_006;
+
+/**
  * Arguments satisfying each probed member's required parameters.
  *
  * Two roles, deliberately distinct. A lookup or removal needs a value the receiver
@@ -122,6 +127,60 @@ function probeArguments({
     add: [fresh,],
   };
   return byMember[memberName] ?? [];
+}
+
+/**
+ * Builds a date instrumented on every receiver lookup a date member can dispatch to.
+ *
+ * A `Date` has no elements, no species and no size, so the channels the collection
+ * receivers instrument do not exist on it. What it has instead is conversion: ECMA-262
+ * `Date.prototype.toJSON` performs `ToPrimitive` on its receiver and then
+ * `Invoke(O, "toISOString")`, and `Date.prototype[Symbol.toPrimitive]` runs
+ * `OrdinaryToPrimitive`, which gets and calls `toString` or `valueOf` off the receiver.
+ * Each of those is a property lookup a caller can answer, so each gets a recorder.
+ *
+ * `toISOString` is deliberately not shadowed. It is the member under probe, and this
+ * function resolves members off the receiver, so a recorder in that position would
+ * measure the recorder rather than the intrinsic.
+ *
+ * @param hits - Accumulator recording every hook reached.
+ *
+ * @returns date carrying a recorder on each conversion lookup.
+ *
+ * @example
+ * ```ts
+ * dateReceiver({ hits: [], });
+ * ```
+ */
+function dateReceiver({ hits, }: { readonly hits: ProbeHits; },): Date {
+  /**
+   * Date under probe, at a fixed instant so a formatted result never varies.
+   */
+  const date = new Date(PROBE_DATE_MILLISECONDS,);
+  Object.defineProperty(date, 'toString', {
+    value: function recordToString(): string {
+      hits.push('date-dispatch',);
+      return 'probe-date';
+    },
+    configurable: true,
+  },);
+  Object.defineProperty(date, 'valueOf', {
+    value: function recordValueOf(): number {
+      hits.push('date-dispatch',);
+      return PROBE_DATE_MILLISECONDS;
+    },
+    configurable: true,
+  },);
+  Object.defineProperty(date, Symbol.toPrimitive, {
+    value: function recordToPrimitive(hint: string,): number | string {
+      hits.push('date-dispatch',);
+      return (hint === 'string')
+        ? 'probe-date'
+        : PROBE_DATE_MILLISECONDS;
+    },
+    configurable: true,
+  },);
+  return date;
 }
 
 /**
@@ -222,6 +281,8 @@ function instrumentedReceiver({
    */
   const receiver: unknown = (ownerName === 'DataView')
     ? new DataView(new ArrayBuffer(PROBE_BUFFER_BYTES,),)
+    : (ownerName === 'Date')
+    ? dateReceiver({ hits, },)
     : ownerName.endsWith('Map',)
     ? new Map([
       [element, element,],
@@ -538,6 +599,21 @@ await describe({
           ownerName: 'Array',
           memberName: 'fill',
         },).includes('index-set',),).toBe(true,);
+        /* The date tripwire needs a control of its own, and it is the sharpest one here.
+         * `Date` lists a single member, so "the probe reached nothing" is exactly what a
+         * receiver carrying no instrumentation at all would report. `toJSON` is the
+         * excluded sibling that proves otherwise: ECMA-262 has it perform `ToPrimitive`
+         * on its receiver before `Invoke(O, "toISOString")`, so it reaches a lookup the
+         * caller answers, and it stays off the table for that reason. */
+        expect(reachedHooks({
+          ownerName: 'Date',
+          memberName: 'toJSON',
+        },).includes('date-dispatch',),).toBe(true,);
+        /* And the listed member reaches none of it, which is the entry's whole claim. */
+        expect(reachedHooks({
+          ownerName: 'Date',
+          memberName: 'toISOString',
+        },),).toEqual([],);
         /**
          * Hooks reached by reading a `Map` property directly, with no member involved.
          */

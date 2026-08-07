@@ -49,12 +49,81 @@ const DATA_VIEW_READONLY_MEMBERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Members a read-only `Date` would carry, by name.
+ *
+ * `Date` is unpaired for the same reason `DataView` is: the default library declares no
+ * `ReadonlyDate`, so the diff had nothing to compare and every member answered
+ * `COLLECTION_UNRECOGNIZED`. Measured before this existed, on the real
+ * `package/module/toml-edit/src/values.ts`: `encodeValue` and the three callables around
+ * it all read `opaque=[0]`, and 48 workspace findings named `input.toISOString` as the
+ * sole remaining cause once `Object.getPrototypeOf` was discharged.
+ *
+ * A `Date` instance has one mutable specification slot, `[[DateValue]]`, and the fifteen
+ * declared setters write it. Everything here leaves it alone, which is what makes the
+ * membership derivable rather than asserted.
+ *
+ * Three names the engine provides are deliberately absent, and their absence claims
+ * nothing: `getYear`, `setYear` and `toGMTString` are Annex B members TypeScript never
+ * declares, so no lookup can reach this table for them. `getVarDate` is declared, but
+ * only by `lib.scripthost.d.ts`, which `package/config/typescript/tsconfig.options.json`
+ * never includes and no engine here provides; an entry for it could not be probed, and an
+ * unprobed entry is the one thing this design refuses. `[Symbol.toPrimitive]` is declared
+ * and preserving, and is still absent, because `collectionStructureClaim` rejects a
+ * computed member name before consulting this table: it stays unrecognized rather than
+ * being claimed to mutate.
+ *
+ * `toJSON`, `toLocaleString`, `toLocaleDateString` and `toLocaleTimeString` belong here.
+ * Each preserves its receiver, which is the only question this table answers. That they
+ * dispatch to receiver-selected code is a channel question, and the channel authority
+ * answers it separately by listing none of them.
+ *
+ * Enforced by `effect-unpaired-view.unit.test.ts`, which drives a real `Date` and proves
+ * every declared member leaves both `[[DateValue]]` and the receiver's own properties
+ * unchanged, and every absent one changes the timestamp under at least one argument.
+ */
+const DATE_READONLY_MEMBERS: ReadonlySet<string> = new Set([
+  'getDate',
+  'getDay',
+  'getFullYear',
+  'getHours',
+  'getMilliseconds',
+  'getMinutes',
+  'getMonth',
+  'getSeconds',
+  'getTime',
+  'getTimezoneOffset',
+  'getUTCDate',
+  'getUTCDay',
+  'getUTCFullYear',
+  'getUTCHours',
+  'getUTCMilliseconds',
+  'getUTCMinutes',
+  'getUTCMonth',
+  'getUTCSeconds',
+  'toDateString',
+  'toISOString',
+  'toJSON',
+  'toLocaleDateString',
+  'toLocaleString',
+  'toLocaleTimeString',
+  'toString',
+  'toTemporalInstant',
+  'toTimeString',
+  'toUTCString',
+  'valueOf',
+],);
+
+/**
  * Read-only view membership for every interface the default library leaves unpaired.
  */
 const UNPAIRED_VIEW_MEMBERS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
   [
     'DataView',
     DATA_VIEW_READONLY_MEMBERS,
+  ],
+  [
+    'Date',
+    DATE_READONLY_MEMBERS,
   ],
 ],);
 
@@ -64,7 +133,7 @@ const UNPAIRED_VIEW_MEMBERS: ReadonlyMap<string, ReadonlySet<string>> = new Map(
  * A literal in the architecture guard must match this, so adding a member means changing a
  * number in a second file, which is where the probe becomes unavoidable.
  */
-export const VERIFIED_UNPAIRED_VIEW_COUNT = 14;
+export const VERIFIED_UNPAIRED_VIEW_COUNT = 43;
 
 /**
  * Sentinel for an interface this authority says nothing about.

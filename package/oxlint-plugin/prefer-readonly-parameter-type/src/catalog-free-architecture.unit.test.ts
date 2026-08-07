@@ -64,7 +64,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
         'effect-member-channel-authority.unit.test.ts',
         'effect-member-channel-traps.unit.test.ts',
       ],
-      entryCount: 77,
+      entryCount: 78,
     },
   ],
   [
@@ -84,7 +84,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
       enforcedBy: [
         'effect-unpaired-view.unit.test.ts',
       ],
-      entryCount: 14,
+      entryCount: 43,
     },
   ],
   [

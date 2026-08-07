@@ -193,6 +193,20 @@ const CHANNELS_BY_OWNER: Readonly<
     setUint16: MEMBER_CHANNEL_INTERNAL_SLOT,
     setUint32: MEMBER_CHANNEL_INTERNAL_SLOT,
   },
+  /* One member rather than the twenty-nine the read-only view membership declares, and
+   * the asymmetry is the design rather than an unfinished table. Membership must be
+   * complete, because omitting a member there claims it restructures its receiver. A
+   * channel entry claims the opposite direction, so an absent member simply stays
+   * unproven, and listing only what a probe has driven is what keeps this table honest.
+   *
+   * `toISOString` reads `[[DateValue]]` and formats it, reaching no property of its
+   * receiver. Its siblings are not all so simple: `toJSON` performs `ToPrimitive` and
+   * then `Invoke(O, "toISOString")`, both receiver-selected lookups, and the locale
+   * members process caller-supplied `locales` and `options` this table cannot see from a
+   * member name alone. They stay off until a probe drives them. */
+  Date: {
+    toISOString: MEMBER_CHANNEL_INTERNAL_SLOT,
+  },
   Map: {
     get: MEMBER_CHANNEL_INTERNAL_SLOT,
     has: MEMBER_CHANNEL_INTERNAL_SLOT,
@@ -254,7 +268,7 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 77;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 78;
 
 /**
  * Members returning an iterator, whose entries claim creation and drainage together.
