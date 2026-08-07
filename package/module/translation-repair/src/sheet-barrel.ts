@@ -58,6 +58,11 @@ export {
 } from './corpus-run/attempt-store.ts';
 export { resolveRunsDir, } from './corpus-run/run-config.ts';
 export {
+  discardSliceCache,
+  listResumableEntries,
+  openSliceCache,
+} from './corpus-run/slice-cache-store.ts';
+export {
   bandOf,
   countSettledPerBand,
   MEDIUM_PAGE_BYTES,
