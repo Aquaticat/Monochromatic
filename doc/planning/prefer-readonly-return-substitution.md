@@ -590,6 +590,60 @@ container relations,
  following an identifier to its declaration but answering
 immediately at the first call it reaches.
 
+### The chain step landed, 2026-08-07
+
+`expressionElementOrigins` resolved one relation and took the value origins of what it found.
+ For
+`rows.slice(0,).toReversed()` what it found was the inner call,
+ whose own value origins are empty because
+the array it returns is fresh,
+ so a chain of relations each of which holds reported no origin between them.
+Composing them is a bounded loop over the same resolution,
+ per `ITR`,
+ stopping at the first step that finds
+no verified relation.
+
+Four of the six shapes now record the fact:
+ the chain and the binding-then-chain join the direct return,
+the single binding hop and the spread literal.
+ The conditional still records nothing and needs branch
+descent,
+ which this does not add.
+
+Workspace either side:
+ 2906 errors to 2907,
+ 1568 rule findings to 1569,
+ read-only offers byte-identical at
+34.
+ One finding arrived and none left,
+ which is the expected direction:
+ the change adds attribution,
+ and
+attribution reaching an unproven channel reports.
+
+The arrival is `getIndexHtmlBody` in `package/webapp-productivity/rss/src/html.ts`,
+ whose `options` now
+reaches `pubDateDate.toLocaleString` through the composed elements.
+ Consistent rather than novel:
+`toLocaleString` is named as a cause three times across the sweep,
+ and this parameter genuinely does reach
+one of them.
+ It reports because the `Date` channel authority withholds the locale members,
+ recorded in
+`doc/decision/prefer-readonly-unpaired-view-membership.md`,
+ on the ground that a member name alone cannot
+say whether caller-supplied `locales` and `options` carry accessors.
+
+That last point is a lead rather than a defect.
+ The call is `pubDateDate.toLocaleString()`,
+ with no
+arguments at all,
+ so there is nothing caller-supplied for it to reach.
+ A channel admitted conditionally on
+an empty argument list would discharge it the way the coercion channel is admitted conditionally on
+strictly primitive elements.
+ Not taken here.
+
 Nothing here takes either.
  The three fixture cases added with the container half are the shape the
 discharge would clear,
