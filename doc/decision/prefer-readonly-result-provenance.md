@@ -624,6 +624,56 @@ then leave through the return.
 the relation working.
  A fold whose accumulator never holds a receiver element is already silent.
 
+### The largest remaining group is not about escaping, measured
+
+Recorded 2026-08-07 after instrumenting `viewResultUnaccounted`, because the obvious reading is wrong
+and cost part of a session.
+
+The reading was that `map`,
+ `reduce`,
+ `filter` and `find` report because a result carrying receiver
+state leaves through a call.
+ Two sampled cases supported it.
+ Instrumenting the gate on three files
+refutes it:
+ seven of nine refusals are the no-relation branch and two are the container escape.
+
+Two things follow.
+ First,
+ the escape walk already treats a call argument as non-escaping,
+ documented
+in `effect-result-escape.ts`:
+ the obligation moves to that sink rather than disappearing.
+ So "escapes
+into a call" was never the mechanism for an argument position at all,
+ only for a return.
+
+Second,
+ and this is the useful part:
+ the no-relation branch fires for `filter`,
+ which *has* a relation.
+So that branch does not mean "no table entry".
+ It means neither relation was *verified at this call
+site*,
+ and the verification is the type-identity comparison in `callResultElementReceiver` and the
+observer derivation beside it.
+ The entries are present and the checks reject them.
+
+So the next increment is not about escapes and not about the table.
+ It is to find why the identity
+comparison fails at these sites,
+ starting with `records.reduce<Run[]>` in
+`package/module/logger/src/sink/console.ts` and the `filter` in
+`package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`,
+ both of which appear in the
+instrumented output and neither of which is exotic.
+
+That also explains the seeded-fold result above.
+ The relation was added and changed nothing because a
+relation the verification rejects is not consulted:
+ adding entries cannot help while the gate ahead of
+them refuses.
+
 No provably inert group remains,
  checked rather than assumed:
  `includes`,
