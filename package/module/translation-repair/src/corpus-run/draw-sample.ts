@@ -119,23 +119,42 @@ async function loadEntry(
    */
   const parsed = parseSettledArtifact({ value: raw, },);
 
-  if (isJsonRecord(raw,)) {
-    /**
-     * The accepted count the pipeline recorded when it wrote the artifact.
-     */
-    const declaredAccepted = raw.acceptedCount;
-    if (((typeof declaredAccepted) === 'number')
-      && (declaredAccepted
-        !== parsed.acceptedIssues
-        .length))
-      throw new Error(
-        `reconcile failed for ${parsed.id}: artifact acceptedCount `
-          + `${String(declaredAccepted,)} != parsed ${
-            String(parsed.acceptedIssues
-              .length,)
-          }; the accepted population would be silently short.`,
-      );
-  }
+  // The reconcile is REQUIRED, not opportunistic. It used to run only when
+  // `acceptedCount` happened to be a number, which meant the one artifact shape
+  // it could not check was the shape most likely to be wrong: a missing or
+  // malformed field passed silently and its entry joined the pool unverified.
+  // `corpus-pass.ts` writes this field on every artifact it produces, so an
+  // artifact without it did not come from this pipeline, and this reader feeds
+  // the precision gate where a short population is the exact harm.
+  if (!isJsonRecord(raw,))
+    throw new Error(
+      `reconcile failed for ${parsed.id}: artifact is not an object, so the `
+        + 'accepted count it recorded cannot be read and the pool would be '
+        + 'built from an unverified entry.',
+    );
+
+  /**
+   * The accepted count the pipeline recorded when it wrote the artifact.
+   */
+  const declaredAccepted = raw.acceptedCount;
+  if ((typeof declaredAccepted) !== 'number')
+    throw new Error(
+      `reconcile failed for ${parsed.id}: artifact records no numeric `
+        + `acceptedCount (found ${JSON.stringify(declaredAccepted,)}). Every `
+        + 'artifact this pipeline writes carries one, so its absence means the '
+        + 'file came from somewhere else and nothing can confirm the accepted '
+        + 'population is complete.',
+    );
+  if (declaredAccepted
+    !== parsed.acceptedIssues
+    .length)
+    throw new Error(
+      `reconcile failed for ${parsed.id}: artifact acceptedCount `
+        + `${String(declaredAccepted,)} != parsed ${
+          String(parsed.acceptedIssues
+            .length,)
+        }; the accepted population would be silently short.`,
+    );
 
   /**
    * The entry's zh source at the pinned corpus commit.
