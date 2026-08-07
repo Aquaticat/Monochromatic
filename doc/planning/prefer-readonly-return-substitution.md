@@ -11410,3 +11410,83 @@ origins and carry that category,
  which is a small fraction of a program,
  and it is asked
 about the declaration once rather than about every call in its body.
+
+### The discharge was built, measured and reverted, 2026-08-07
+
+Reverted for reach rather than for a defect in the condition.
+Recording it in full,
+ because the design is proven on the shapes it was written for and the
+next attempt should not rediscover any of this.
+
+Two predicates,
+ asked at the decision point rather than through a post-pass:
+ whether the
+result leaves solely by being returned,
+ and whether every caller of the enclosing callable is
+one TypeScript can enumerate and resolve.
+The second is one checker call,
+ `getSignatureUsage`,
+ measured at one to two milliseconds per
+declaration on workspace source,
+ which is what made the post-pass and its plumbing
+unnecessary.
+
+It behaves correctly on the shapes it targets:
+
+```text
+returnsContainer     opaque=[0] -> []   returned=[0]
+writesThroughReturn  referentMutated=[0] before AND after
+storesContainer      opaque=[0] kept, "stored into sink.held"
+returnsThenStored    opaque=[0] kept, same
+readsLengthOnly      clean;  localOnly  clean
+```
+
+The second line is the acceptance test and it passes.
+Discharging the callee does not lose the caller's write:
+ it is still attributed to the
+caller's own parameter,
+ so the change trades a report for an attribution rather than for
+silence.
+
+#### Two findings worth keeping
+
+There are two gates asking the escape question,
+ not one.
+Changing `effect-view-result-gate.ts` alone did nothing at all,
+ because
+`effect-collection-member-effect.ts` asks the same question for the same discharge,
+ and the
+opacity provenance recorded on the summary is what showed which one was still charging.
+
+`valueConsumer` returns the value node rather than its consumer.
+`effect-result-escape.ts` takes the parent of that node to name the position,
+ and testing
+the returned node directly never matches a return statement.
+
+#### Why it went back
+
+The reach is far wider than the shape this thread is about.
+Fixture diagnostics fell from sixteen to thirteen and from eighteen to fourteen,
+ and the
+pinned effect list in `effect-summaries.unit.test.ts` changed on callables having nothing to
+do with returned containers.
+
+That list is the one `effect-collection-member-effect.ts` names when it says landing this
+discharge while the attributions were empty "would produce a false offer,
+ which is what
+`effect-summaries.unit.test.ts` pins".
+A change to it is the signal that test exists to give,
+ and accepting it by updating a number
+would remove the guard rather than satisfy it.
+
+So the next attempt is a review job rather than a coding job.
+Rebuild the predicates,
+ change both gates,
+ then decide every changed pin and every vanished
+diagnostic one at a time before any count is touched,
+ and only then sweep.
+Worth trying first:
+ a narrower condition requiring the returned expression to be the call
+itself rather than merely reaching a return,
+ which would shrink the blast radius to the shape
+this document is actually about.
