@@ -5095,6 +5095,51 @@ blocks would have been RIGHT is exactly what the repair grades decide. Do not
 read 8 percent as a defect rate; read it as the population `refutedByHuman` will
 be measured against.
 
+### Coverage gap CLOSED (2026-08-06)
+
+Re-measured after the work below: of 192 exported functions, 2 are named by no
+test, down from 33. Both are deliberate and are listed here so nobody reopens
+them as oversights.
+
+`applyCandidate` is a pure delegation to `applyPatchOperations`, which has
+its own suite. Its one plausible misuse, swapping the arguments, is a type
+error because `EditableEnvelope[]` and `PatchOperation[]` are distinct. A
+test there asserts nothing the compiler does not.
+
+`runCriticStage` runs on every case of the `runChunkCriticPhase` suite,
+which scripts critic replies and asserts wire-level vote counting, resolution
+failures reaching findings, and heard-critic accounting. Its branches execute;
+only its name is absent.
+
+TWO LIVE DEFECTS came out of writing these, both in code that looked fine:
+
+`requireRecord` delegated to `isJsonRecord`, whose test is
+`typeof value === object && value !== null`, so an ARRAY satisfied a guard
+whose entire doctrine is throwing loudly. Fixed locally rather than in
+`isJsonRecord`, which nineteen modules share for values where arrays are fine.
+
+The refiner prompt fenced both the original chunk and every paragraph with a
+fixed `=====`. Enclosed text carrying that line closes its own block early, so
+the rest of the paragraph reads to the model as instructions. `=====` is a
+setext heading underline, a shape real documents contain. Not currently
+triggered (no corpus file carries a five-or-longer equals run, checked first),
+fixed because `candidate-select-wire.ts` and the probe already settled this
+with `selectFence`.
+
+TWO LATENT FRAGILITIES are documented rather than changed: `bandOf` duplicates
+`classifyBand` with the same two cuts, now pinned by an agreement test; and
+`ensembleRecall` never intersects hits with the seed universe, safe only
+because `prepare-entry.ts` and `gradeHits` derive both from one list.
+
+METHOD NOTE WORTH KEEPING: four of my own fixtures were wrong before the
+toolchain or a reviewer caught them. Two asserted shapes production cannot
+produce (a duplicate seed hit; two records sharing one model and entry), one
+asserted bug-shaped output as expected (`ensembleRecall > 1`), and one
+compiled only because a cast stopped TypeScript checking the literal
+(`refusal-shaped` carries `marker`, not `detail`). Before writing a case,
+check the shape can occur; before trusting a passing case, check nothing cast
+the fixture into silence.
+
 ### Coverage gap: 33 exported functions no test names
 
 Measured 2026-08-06 while acting on the user instruction "Fix even pre-existing
