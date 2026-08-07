@@ -74,7 +74,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
       enforcedBy: [
         'effect-default-library-reader.unit.test.ts',
       ],
-      entryCount: 4,
+      entryCount: 5,
     },
   ],
   [
