@@ -398,7 +398,23 @@ export function expressionValueOrigins({
    */
   const origins = new Set<EffectSlot>();
   /**
-   * Expressions still to examine, each a descendant of one already seen.
+   * Expressions still to examine, mostly but not only descendants of one already seen.
+   *
+   * The qualification is the point, and the flat claim that stood here was wrong. Successors
+   * are descendants and `provenanceSuccessors` says so, but the element-access and spread
+   * branches also queue a `containerElementReceiver` result, and that follows a name to its
+   * declaration initializer, which is anywhere in the file. So the descendant argument
+   * covers most of what is queued and not all of it, and this walk keeps no visited set.
+   *
+   * Probed rather than left as a worry, on five self-referential and mutually referential
+   * container declarations, including `const a = [...b]; const b = [...a];` and
+   * `const a = [a[0]!];`. None failed to terminate. Two exhaust the stack instead, inside
+   * the checker's own member aggregation rather than here, and `effect-demand-index` catches
+   * that, logs the omission and leaves the callable without a summary, which the unresolved
+   * boundary then withholds on. Degraded and safe rather than unsound.
+   *
+   * A visited set is therefore not added here. It would cost a set operation per node on one
+   * of the hottest walks in the rule, against a cycle nothing has produced.
    */
   const pending: Node[] = [node,];
   while (pending.length > 0) {
