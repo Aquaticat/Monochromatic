@@ -530,7 +530,21 @@ children: [
        * `containerGrowthEffect` is what keeps that from being a blanket discharge. It
        * pushes a caller-owned row into a fresh container and is still reported at its row
        * parameter, because nothing attributes where that row ends up. */
-      expect(messages.length,).toBe(16,);
+      /* The selection pair takes it to eighteen, and reports for the same reason as the
+       * composed pair through a selector instead of an extra member. The element walk asked
+       * the container question only where the selector stood, so
+       * `return cond ? rows.slice(0,) : [];` carried no origin while the bare
+       * `return cond ? rows : [];` carried one, and value provenance and the element walk
+       * disagreed about identical state. Ten further spellings were in the same state,
+       * including parentheses and `as`, which is why the fix shares one definition of the
+       * family rather than naming the conditional.
+       *
+       * Both are reports and neither is an offer, which is the load-bearing part. The offer
+       * count in this fixture is unchanged, and `writesThroughSelectedContainer` is why it
+       * had to be: with the returned origin missing it had nothing to substitute, so its
+       * write landed on no parameter and `rows` was offerable while the callable rewrites a
+       * row it holds. */
+      expect(messages.length,).toBe(18,);
       /* Three of the fourteen are the returned-container trio, and all three are correct as
        * things stand rather than tolerated. `returnsReceiverElements` hands back a container
        * of the caller's own rows, which the escape condition refuses to discharge because

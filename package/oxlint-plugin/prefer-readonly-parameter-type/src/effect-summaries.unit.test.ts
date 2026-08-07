@@ -295,6 +295,10 @@ await describe({
         const composedContainer = returnedIndexes('returnsComposedReceiverElements',);
         /** Write through a composed container another callable returned. */
         const wroteThroughComposed = mutatedIndexes('writesThroughComposedContainer',);
+        /** Returned origins of a callable whose container sits inside a selector. */
+        const selectedContainer = returnedIndexes('returnsSelectedReceiverElements',);
+        /** Write through a container another callable returned past a selector. */
+        const wroteThroughSelected = mutatedIndexes('writesThroughSelectedContainer',);
         /** Mutation through a lookup narrowed by a runtime-erased assertion. */
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
@@ -355,6 +359,17 @@ await describe({
          * two disagree about identical state reached through one extra member. */
         expect(composedContainer,).toEqual([0,],);
         expect(wroteThroughComposed,).toEqual([0,],);
+        /* The same disagreement reached through a selector instead of an extra member. The
+         * element walk asked the container question only where the selector stood, so
+         * `cond ? rows.slice(0,) : []` reported no origin while the bare `cond ? rows : []`
+         * reported one, and value provenance and the element walk answered differently about
+         * identical state. Ten further spellings shared it, parentheses and `as` among them.
+         *
+         * The write below is the half that makes it a soundness fact rather than a precision
+         * one. With no returned origin to substitute, it landed on no parameter at all and
+         * `rows` became offerable while the callable rewrites a row it holds. */
+        expect(selectedContainer,).toEqual([0,],);
+        expect(wroteThroughSelected,).toEqual([0,],);
         /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
          * assertion expressions from `transparentOperand` empties this one. */
         expect(asserted,).toEqual([0,],);

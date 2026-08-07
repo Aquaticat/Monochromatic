@@ -22,3 +22,10 @@ run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-valid.
 [tasks."lint-fixture-readonly-invalid"]
 description = "Exercise readonly-effect diagnostics on invalid fixture"
 run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-invalid.ts"
+
+# The result-provenance fixture is asserted by prefer-readonly-parameter-type.unit.test.ts,
+# which reports only a count when it disagrees. This runs the same file directly so the
+# messages behind a count change can be read without editing the test to print them.
+[tasks."lint-fixture-readonly-provenance"]
+description = "Exercise readonly-effect diagnostics on result-provenance fixture"
+run = "oxlint --threads 1 -c .oxlintrc.readonly.fixture.json src/readonly-result-provenance-invalid.ts"

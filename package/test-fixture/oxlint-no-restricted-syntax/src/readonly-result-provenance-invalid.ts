@@ -1469,3 +1469,61 @@ export function filteredElementWriteEffect(rows: LabelledRow[],): void {
   if (first !== undefined)
     first.label = 'written';
 }
+
+/**
+ * Hands back the receiver's elements from whichever branch supplies them.
+ *
+ * The container relation sits inside a selector rather than at the returned expression's
+ * root. Value provenance already saw through `?:`, so the bare `return cond ? rows : [];`
+ * recorded its origin, while this recorded nothing: the element walk asked the container
+ * question only where the selector stood. Ten further spellings behaved the same way,
+ * `??`, `||`, `&&`, parentheses, `as`, a non-null assertion, `satisfies` and the comma
+ * operator among them, which is why the fix shares one definition of the family with the
+ * value walk instead of naming the conditional.
+ *
+ * @param rows - Rows whose elements the selected result carries.
+ *
+ * @returns fresh container of the caller's own rows, or an empty one.
+ *
+ * @example
+ * ```ts
+ * returnsSelectedReceiverElements([],);
+ * ```
+ */
+export function returnsSelectedReceiverElements(
+  rows: readonly Labelled[],
+): readonly Labelled[] {
+  return rows.length > 0
+    ? rows.slice(0,)
+    : [];
+}
+
+/**
+ * Writes the caller's row through a container reached past a selector.
+ *
+ * The half that makes the selection matter, and the reason it is not merely precision. With
+ * the returned origin missing, this callable had nothing to substitute, so the write landed
+ * on no parameter at all and `rows` became offerable while this rewrites a row it holds.
+ * Its composed sibling is the control: both record `referentMutated=[0]` in
+ * `effect-summaries.unit.test.ts`, and a walk that stops at the selector separates them.
+ *
+ * @param rows - Rows whose element is rewritten through a selected container.
+ *
+ * @example
+ * ```ts
+ * writesThroughSelectedContainer([],);
+ * ```
+ */
+export function writesThroughSelectedContainer(rows: readonly Labelled[],): void {
+  /**
+   * Container returned past a selector, holding the caller's rows.
+   */
+  const carried = returnsSelectedReceiverElements(rows,);
+  /**
+   * Row reached through the selected container.
+   */
+  const first = carried[0];
+  if (first === undefined)
+    throw new Error('Expected a selected row to rewrite.',);
+  first.label = 'rewritten';
+}
