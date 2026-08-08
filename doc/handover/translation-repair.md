@@ -5698,3 +5698,60 @@ from before the tooling was designed: `sample-draw.ts` has exactly ONE commit
 `selectFromBand`'s round-robin. Round one's sheet is dated 2026-07-26, after it.
 So both graded rounds were drawn entry-balanced and the comparability argument
 holds.
+
+## The round-three gate sheet is drawn
+
+Run 008 ended on its soft budget:
+
+```text
+SOFT budget reached after 48328009ms; not starting new entries
+DONE processed=9 of pending=83; artifacts=18/92 elapsed=48328009ms
+```
+
+Note the elapsed time exceeds the 43200000ms soft budget.
+The budget stops the driver STARTING entries;
+ the ones already in flight finish,
+so a pass always overruns by roughly its slowest surviving entry.
+
+The gate sheet was drawn at 18 settled entries,
+ with the pass stopped so nothing could be added mid-read,
+ and the user chose that timing over accumulating further:
+
+```text
+SAMPLE final=true seed=milestone-three-precision-round-three pool=740 drawn=50 unrecordedRepairs=0 unrecordedInPool=0
+```
+
+Contributing entries were 5 small, 7 medium, 5 large.
+The slot distribution is the thing to look at,
+ because it settles the concentration question empirically rather than by
+ argument:
+
+```text
+Arita:4 Futajuhuacha:3 Chinatsu_Suzuki:3 Dethelly:3 Jennife80677612:3
+```
+
+`Dethelly` brought 198 candidates and `Jennife80677612` brought 12,
+ and both received 3 slots.
+The two entries holding 81% of the large pool took 6 of its 16 slots.
+Round-robin does what it claims.
+
+The one-shot guard was then verified rather than trusted:
+ a second `--final` run refused with `GradedSheetExistsError`,
+ and all three files were byte-identical afterwards.
+
+## What is true right now
+
+-   The gate sheet, repair sheet, and manifest exist under the round-three seed
+     and must not be redrawn.
+    Nothing in this session has READ the detection sheet, so #48's blind
+     pre-grade path is still clean.
+    Keep it that way:
+     do not `cat`, `head`, or `sed` it.
+-   Corpus pass run 009 is running, logging to `pass8-run-009.log`.
+    It cannot affect the drawn sheet, which is already written,
+     and its entries serve round four, recall (#51), and the naturalness probe
+     (#58).
+-   `score-probe` reads 18 entries, 740 shipped records, 246 regions,
+     `majorityIntroduced=2`.
+    The join runs and reports `joined=50` against the preliminary pair;
+     it has not been run against the FINAL pair because that needs human grades.
