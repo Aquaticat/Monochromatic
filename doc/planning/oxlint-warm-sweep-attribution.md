@@ -38,19 +38,51 @@ That matters before trusting any timing:
 meaningless,
  and this one does not.
 
+## Which three minutes
+
+Measured by turning the one rule off in `oxlint.config.ts`,
+ keeping the same task, invocation
+and warm cache,
+ and putting the file back afterwards.
+
+Warm run with `prefer-readonly-parameter-type/prefer-readonly-parameter-types` disabled:
+**13.0s** wall,
+ against 3m04.7s with it on,
+ and zero findings from it confirming it really was
+off.
+
+So this rule is about 171 of the 184 seconds,
+ roughly ninety-three per cent of warm whole-repo
+lint time.
+Everything else oxlint does across the repository,
+ core passes and every other plugin together,
+is thirteen seconds.
+
+That reframes issue #374 entirely.
+The target is not a broad performance problem to chase across the linter;
+ it is one rule,
+ and
+the rest of the run already sits comfortably inside sixty seconds with two thirds of the budget
+to spare.
+Reaching the target means taking this rule from 171 seconds to about 47,
+ a factor of three and
+a half,
+ with no other component needing to change.
+
 ## What this does not yet say
 
-Which part of the 3m04s belongs to this rule.
-`prefer-readonly-parameter-type` is a semantic plugin doing whole-program analysis and is the
-obvious suspect,
- but no measurement here separates it from oxlint's own passes or from the
-other plugins in `@monochromatic-dev/config-oxlint`.
+Where inside the rule those 171 seconds go.
+The suspects are the whole-program summary construction,
+ the checker queries each summary
+makes,
+ and the per-file diagnostic pass,
+ and nothing here separates them.
 
-Attributing that needs a run with the rule disabled,
- which needs a config that spreads the
-shared base and overrides one rule,
- since the root `oxlint.config.ts` takes its rules from that
-package rather than declaring them.
+Nor does it say what the cache is worth per phase.
+Cold costs 645 seconds against 184 warm,
+ so 461 seconds are avoided by reuse,
+ but whether the
+remaining 171 is mostly unavoidable analysis or mostly cache misses is unmeasured.
 
 ## Why the cold number was the one being quoted
 
