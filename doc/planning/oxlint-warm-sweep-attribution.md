@@ -47,30 +47,54 @@ reduction**,
  and the final sweeps
 byte-identical to the pinned digests.
 
-### Left open, deliberately, with issues
+### The two holes left open, then closed
 
-Both are wrong-offer paths that this work narrowed rather than closed,
- and both are documented at
-the code that carries them.
+Both were filed rather than fixed,
+ then fixed.
+Recording the intermediate state because the reasoning for deferring them was wrong in the same
+way twice:
+ each was deferred on a cost that had never been measured.
 
-- **#420**,
- the outgoing overlay.
-`openSemanticFile` never reports the file leaving the overlay,
- so the server keeps the text it was
-handed for it.
-Harmless while Oxlint supplies disk text,
- which is what makes keeping the decoded-source cache
-safe,
- and falsified the moment an editor integration supplies a buffer.
-- **#421**,
- declaration files in the fingerprint.
-Analysed sources are hashed from the snapshot;
- declarations are still read from disk,
+**#420, the outgoing overlay.**
+`openSemanticFile` cleared its overlay map to the incoming source and reported only that source
+through `fileChanges`,
+ so the native server kept holding the text it was last given for a source
+the overlay had stopped claiming.
+This is the assumption the decoded-source cache rests on:
+ `getRetained` never rechecks the content
+hash,
+ so retention is only as complete as the server's change report,
+ and the report was missing
+the outgoing source.
+Unreachable under Oxlint, which hands over what it read from disk.
+Reachable by anything supplying an unsaved buffer.
+
+Closed in `4add69903` by retaining every text handed to the bridge instead of clearing.
+Reporting the outgoing source would have meant a snapshot update per file,
+ including on the reuse
+path that exists to avoid one,
+ and a snapshot update replaces every `Project` in the process.
+Retaining reaches the same invariant for nothing.
+
+The assertion that was supposed to cover this reopened one path twice,
+ so it could not tell
+retention from clearing and passed either way.
+It now opens a second source of the same project,
+ and was shown to fail when retention is removed.
+
+**#421, declaration files in the fingerprint.**
+Analysed sources were hashed from the snapshot and declarations still read from disk,
  so a
-workspace `.d.ts` rebuilt underneath a running lint can key summaries to text nothing analysed.
-The cost of closing it is unmeasured rather than measured and rejected:
- the 6.2s once attributed
-to it sat inside the noise band.
+workspace `.d.ts` rebuilt underneath a running lint could key summaries to text nothing analysed.
+A declaration file decides types,
+ so a stale one poisons an entry as effectively as a stale
+implementation.
+
+Closed in `41aab4ab9`.
+It had been left open on a 6.2s cost that came from one run against one run,
+ inside a 4.6s band,
+which is to say from nothing.
+Measured properly below.
 
 ### What these timings can and cannot support
 
