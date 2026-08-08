@@ -5867,3 +5867,53 @@ That is BETTER than the 5/7/5 the gate sheet was drawn at,
  the draw is one-shot and already spent,
 so these entries serve round four, recall (#51), and the naturalness probe
  (#58).
+
+## The probe judges wording the naturalness lane can replace
+
+Found while sizing #58, and it changes what #60 can conclude.
+
+Ordering, from the source rather than from memory:
+ `repair-chunk.ts:299` runs `runIntroducedDefectProbe` inside the accuracy
+ stage,
+and `repair-translation.ts:429` runs `runRefinePhase` afterwards over those
+ outcomes.
+So on a slice the lane rewrote, the probe's before/after pair is the accuracy
+ stage's, and the text that reached the reader is `finalSliceText`.
+
+`repair-sheet.ts:175` handles its side of this correctly and always did.
+For a refined slice it prints
+ "a later naturalness pass rewrote this slice, so the wording above is not
+ final",
+ shows "the slice as actually returned",
+and instructs "grade the RETURNED wording".
+So the human grades post-refinement text while the probe judged
+ pre-refinement text,
+and joining them treats the two as one.
+
+Measured across 28 entries:
+ 151 refined records,
+ 90 of them shipped,
+ out of 1214 shipped records,
+and 10 of the 50 positions in the drawn round-three gate sample.
+
+Two consequences that must not be conflated:
+
+-   GATING is unaffected.
+    A gate would act during candidate selection, which is also before the lane
+     runs, so the probe judges exactly the text such a gate would judge.
+-   VALIDATION against human repair grades is affected, on those positions only.
+    `score-probe` now reports `refinedJoined` so they can be excluded and the
+     exclusion reported.
+
+DETECTION PRECISION IS NOT AFFECTED AT ALL, and this is worth stating plainly
+ because it is the number currently out for grading.
+The detection sheet asks whether an accepted issue is a real defect in the
+ ORIGINAL translation.
+It shows the original's wording and no correction, so nothing the repair or the
+ lane did afterwards can reach that question.
+
+The remaining work is #58 proper:
+ nothing probes whether the naturalness lane itself introduces defects,
+ and it rewrote 90 shipped records here.
+That is the same blind spot the introduced-defect probe was built to close,
+ one stage later.
