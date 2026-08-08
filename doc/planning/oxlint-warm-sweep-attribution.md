@@ -326,3 +326,49 @@ inside the plugin,
  which is precisely what the cache key makes self-defeating.
 Resolving that tension is the first problem for whoever takes this further,
  not the profiling.
+
+#### The tension resolves by running the instrumented build twice
+
+The obstacle was that instrumenting the plugin changes the cache key,
+ so a probe measures its
+own edit.
+The fix needs no cleverness:
+ run the instrumented build twice.
+The first run repopulates the cache under the new fingerprint and the second is genuinely warm
+relative to that code,
+ with the counters differing from production only by two integers.
+
+- Run A,
+ repopulating:
+ 4778 calls,
+ 51.5 per cent hits,
+ 48.5 per cent misses
+- Run B,
+ warm:
+ 4764 calls,
+ **100.0 per cent hits,
+ zero misses**
+
+Run A reproduces the withdrawn 47.3 per cent almost exactly,
+ which confirms what that number
+was:
+ the cost of repopulating after an edit,
+ measured once and mistaken for steady state.
+
+Run B is the answer.
+Every single one of 4764 source loads hits,
+ and the run still takes 2m49s.
+
+So the rule's warm cost is entirely work done *despite* a perfect hit rate.
+With deserialising the whole cache measured at 0.26s,
+ it is not reading the entries either.
+Whatever `loadSource` does with a hit beyond reading it,
+ validation and reconstruction being
+the obvious candidates,
+ or work in the `source` span outside `loadSource` altogether,
+ is where
+the 171 seconds are.
+
+That is a much smaller haystack than this section started with,
+ and the method for searching it
+is now established rather than blocked.
