@@ -1349,3 +1349,49 @@ The fingerprint at 15.0s is the one piece with a known and different remedy,
  under the
 text-equality condition recorded above,
  and it is a fifth of what the scope derivation costs.
+
+#### Why the fingerprint costs 20.7ms: it reads the project from disk
+
+`projectSourceText` in `effect-project-fingerprint.ts` returns the overlay text for the active
+file and `readFileSync` for every other file in the project.
+
+So a derivation reads some four thousand files from disk and hashes them,
+ once per
+worker-project pair.
+That is what the 20.7ms and the 15.0 warm seconds are,
+ and it is disk I/O rather than
+computation.
+
+It also makes the memo condition cheap in a way that was not obvious before reading it.
+Establishing that the active file's overlay matches its own disk text costs **one** read,
+ and
+when it does,
+ every text the fingerprint would read is the disk text,
+ so a stored all-disk
+fingerprint describes the call exactly.
+One read to avoid four thousand.
+
+An attempt at that implementation is not in the tree.
+It broke on rewriting the return statement and referenced a text helper that does not exist,
+was reverted,
+ and types and the unit suite are clean.
+Recorded rather than retried,
+ because the edit needs the file open in front of it rather than
+another blind substitution,
+ which is the same discipline that produced the two changes that did
+land.
+
+The shape for whoever writes it:
+
+1. Module-level `WeakMap<Project, EffectProjectFingerprint>`,
+ keyed as the other three stores
+are.
+2. Compare `activeSourceFile.text` against that one file's disk text.
+3. Reuse the stored fingerprint only when they match.
+4. Store only from a call where they already matched,
+ so what is kept is always the all-disk
+fingerprint and never one carrying an overlay.
+
+Worth about 15 warm seconds against the 58.8 the scope derivation costs,
+ so it is the smaller
+of the two remaining pieces and the only one with a known remedy.
