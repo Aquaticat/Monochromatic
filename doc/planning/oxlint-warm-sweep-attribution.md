@@ -71,7 +71,33 @@ a half,
 
 ## What this does not yet say
 
-Where inside the rule those 171 seconds go.
+### How to measure the next split, and what tripped
+
+`EffectAnalysisBudget` in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-analysis-budget.ts`
+already receives every timed span through `record({ startedAt, phase, },)`,
+ and already knows
+the phase label.
+It accumulates only a single total,
+ so the breakdown needs a temporary map keyed by the first
+word of the label plus a dump on process exit.
+That instrumentation type-checks and is the shortest path to the answer.
+
+What tripped is the harness rather than the method:
+ the run takes about three minutes and a
+foreground command is cut off at two,
+ which killed the workers before the exit handler wrote
+anything and left the instrumented file in place until it was restored deliberately.
+Run it in the background.
+
+Only five sites report a phase at present,
+ so the breakdown will account for part of the 171
+seconds rather than all of it,
+ and the size of the unaccounted remainder is itself the useful
+number:
+ it says how much sits outside every span the rule currently times.
+
+### Where inside the rule those 171 seconds go
 The suspects are the whole-program summary construction,
  the checker queries each summary
 makes,
