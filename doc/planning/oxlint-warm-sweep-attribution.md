@@ -1127,3 +1127,42 @@ is a cache:
 The second is oxlint's file distribution rather than this rule.
 
 Warm now stands at 1m50.7s against a sixty-second target.
+
+### A probe inside the derivation produced nothing, cause unknown
+
+Attempted the split inside a single derivation,
+ timing the scope and digest work,
+ the project
+fingerprint,
+ and the demand index with its propagation.
+It type-checked,
+ both runs completed,
+ and **no probe output was written at all**.
+
+That is not a null result about the code.
+It is a broken instrument,
+ and the difference matters:
+ 724 derivations occur per run,
+ so the
+counters should have fired hundreds of times.
+
+Not diagnosed.
+The likely candidates are the closing timer being anchored on a `return index;` that is not the
+path taken,
+ or the exit hook never registering on the branch that runs.
+Recorded rather than retried because guessing at a second instrument to check the first is how
+this document acquired four withdrawn figures.
+
+The tree was restored and verified clean,
+ and the unit suite passes,
+ so nothing is left behind.
+
+What stands unmeasured as a result:
+ the composition of a single derivation,
+ currently
+estimated at about 105ms from 76 seconds across 724 of them.
+That estimate is arithmetic over a total,
+ not an observation of one derivation,
+ and by the
+standard this document has had to adopt twice it should not be trusted until something opens
+one successfully.
