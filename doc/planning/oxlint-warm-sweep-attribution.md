@@ -439,3 +439,39 @@ replaced,
 Two of the five substantive numbers in this document were wrong in the same way,
  and the second
 survived a reading pass that was looking for exactly that fault.
+
+#### Where to instrument next, and the shape the edit must take
+
+The target is the rule's per-file entry:
+ `Program` in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types.ts`,
+which opens a semantic file session inside a `try` and is wrapped by no `record` call.
+Timing entry to exit there,
+ summed and compared against the rule's 169 warm seconds,
+ says
+directly whether the unaccounted time is inside the rule body or in setup around it.
+
+An attempt at that edit failed and is worth describing so the next one does not repeat it.
+The visitor's body is a single `try` whose `catch` uses a logger bound above it,
+ so splicing a
+timing `try` around the outside by text substitution detaches that binding and the file stops
+compiling with `Cannot find name 'rl'`.
+The edit needs to add accounting *inside* the existing `try` and a `finally`,
+ not wrap it.
+
+Run it with the two-run method like everything else here,
+ and read run B only.
+
+The three cautions this document has earned,
+ in the order they bit:
+
+1. Instrumenting the plugin changes the cache key,
+ because the key derives from a
+project-level fingerprint and the plugin's sources are in the linted workspace.
+Run twice and read the second run.
+2. Recorded spans are summed across parallel workers,
+ so they exceed wall time and only
+proportions are comparable.
+3. The rule's own phase labels cover a small fraction of its warm work,
+ so a breakdown of them
+is not a breakdown of the rule.
