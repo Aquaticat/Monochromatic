@@ -302,6 +302,12 @@ Single-file lint,
  wrong assertion:
  each answers a different question than asked.
 
+QNB:
+ Comparing timings:
+ measure the run-to-run band on one unchanged build first.
+Single runs resolve nothing smaller than that spread;
+ smaller differences are noise you will credit to a change.
+
 ASK:
  **Non-measurable facts:
  ask.
