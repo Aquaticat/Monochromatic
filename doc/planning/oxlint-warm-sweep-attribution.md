@@ -779,3 +779,52 @@ confirm the saving,
  and a full sweep to confirm the diagnostic set is byte-identical,
  since a
 wrong-index bug would show there as changed findings rather than as a slow run.
+
+### Landed: deriving the inclusion scope once per project
+
+Implemented as specified,
+ and measured.
+
+Warm whole-repo lint **2m22.4s against 3m04.7s**,
+ saving 42 seconds,
+ twenty-three per cent of
+the command.
+That tracks the prediction:
+ 30.7ms per call across 2080 calls is about 64 worker-seconds of key
+derivation,
+ most of which is skipped once the scope is reused.
+
+Findings and offers are **byte-identical**,
+ 1555 and 35,
+ matching the sweep before the change.
+That is the test that mattered.
+The failure mode for this optimisation is selecting an index built for a different inclusion
+scope,
+ which produces wrong diagnostics rather than a slow run,
+ so the unit suite passing was
+never sufficient on its own.
+
+Two details decided whether it was safe,
+ and both are in the code's own comments rather than
+only here.
+Only the key set and digest are stored,
+ never the map,
+ because the map's values hold the overlay
+`SourceFile` of whichever run built it.
+And the store is keyed on the project object,
+ as `effect-final-index-cache.ts` keys its own,
+ so
+a new semantic snapshot reaches none of the entries.
+
+#### What is left for #374
+
+Warm is 2m22s against a sixty-second target,
+ so 2.4 times over rather than 3.
+The attribution says the rest is verification,
+ around 56.5 warm seconds,
+ and the 35.6 per cent
+of index calls that still miss and rebuild.
+Neither has been attempted,
+ and the arithmetic recorded in "Reaching sixty seconds" still
+holds:
+ no single remaining component closes the gap alone.
