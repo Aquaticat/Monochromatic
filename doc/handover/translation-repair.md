@@ -5755,3 +5755,39 @@ The one-shot guard was then verified rather than trusted:
      `majorityIntroduced=2`.
     The join runs and reports `joined=50` against the preliminary pair;
      it has not been run against the FINAL pair because that needs human grades.
+
+## Round-three blind pre-grades are recorded
+
+Written to `pre-grades-milestone-three-precision-round-three.json` in the runs
+directory,
+ which is where `score-agreement` looks for them by seed.
+50 items, indices 1 to 50 complete, 49 scored and 1 left `unscored` and handed
+ over as genuinely contested.
+`parsePreGrades` accepts the file.
+
+THE VERDICTS ARE NOT REPRODUCED HERE, and were not reported to the user when
+ they were written.
+The decision recorded under "PRE-GRADES STAY IN THEIR OWN FILE" is that showing
+ the agent's grade anchors the human toward agreeing,
+and the same sheet produces the milestone gate number,
+so the calibration would be bought by corrupting the measurement it calibrates
+ against.
+Naming which items the agent called false positives does that just as
+ effectively as printing them on the sheet.
+The per-item reasoning lives in the `note` field of each pre-grade,
+ which stays outside git because it quotes corpus text.
+
+Method worth repeating next round:
+ the sheet deliberately shows no source anchor for addition-class claims,
+ because an addition points at nothing in the original,
+so an addition claim cannot be graded from the sheet alone.
+For those the corpus was read directly at the pinned commit
+ (`/var/home/user/one-among-us/data`, read-only, never committed),
+ and several claims resolved cleanly in one direction or the other on evidence
+ the sheet could not carry.
+Grades reached that way are marked `VERIFIED AGAINST SOURCE` in their note.
+
+This creates a real asymmetry to disclose at scoring time:
+ the agent graded some items with more information than the sheet shows.
+Disagreement on those items may reflect that asymmetry rather than judgment,
+ and the agreement rate should be read with the marked items identified.
