@@ -1300,3 +1300,52 @@ Not implemented.
 The remaining unknown is where the other sixty seconds of index construction sit,
  which this
 probe does not time and which is the larger share.
+
+### The index accounts fully, and the scope derivation is what is left
+
+Warm:
+
+- memo fast path 1.7s over 1368 calls,
+ **1.21ms each**
+- entry to derivation 58.8s over 710 calls,
+ **82.8ms each**
+- project fingerprint 15.0s,
+ 20.7ms each
+- demand index and propagation 0.4s,
+ 0.6ms each
+
+Those sum to about 76 seconds,
+ which is index construction as measured independently,
+ so
+nothing is unaccounted here any more.
+
+Two readings follow.
+
+The inclusion-scope memo works as intended.
+A fast-path call costs 1.21ms against the 30.7ms that deriving the key used to cost,
+ and run A
+shows the same path at 33.98ms while the memo is still filling,
+ which is the before-and-after
+in one run.
+
+And what remains is the scope derivation itself:
+ 58.8 warm seconds building
+`indexedSourceFileMap` and digesting its keys,
+ 82.8ms for each of 710 first touches.
+That is roughly twenty microseconds per file across some four thousand files,
+ repeated once per
+worker-project pair.
+
+So the remaining index cost is not repetition a cache can remove.
+It is the first construction of a project's scope,
+ paid once per worker that touches that
+project,
+ and the levers are making that construction cheaper or reducing how many worker-project
+pairs exist.
+The second is oxlint's file distribution,
+ as established earlier.
+
+The fingerprint at 15.0s is the one piece with a known and different remedy,
+ under the
+text-equality condition recorded above,
+ and it is a fifth of what the scope derivation costs.
