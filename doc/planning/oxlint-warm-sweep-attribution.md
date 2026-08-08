@@ -47,6 +47,31 @@ reduction**,
  and the final sweeps
 byte-identical to the pinned digests.
 
+### Left open, deliberately, with issues
+
+Both are wrong-offer paths that this work narrowed rather than closed,
+ and both are documented at
+the code that carries them.
+
+- **#420**,
+ the outgoing overlay.
+`openSemanticFile` never reports the file leaving the overlay,
+ so the server keeps the text it was
+handed for it.
+Harmless while Oxlint supplies disk text,
+ which is what makes keeping the decoded-source cache
+safe,
+ and falsified the moment an editor integration supplies a buffer.
+- **#421**,
+ declaration files in the fingerprint.
+Analysed sources are hashed from the snapshot;
+ declarations are still read from disk,
+ so a
+workspace `.d.ts` rebuilt underneath a running lint can key summaries to text nothing analysed.
+The cost of closing it is unmeasured rather than measured and rejected:
+ the 6.2s once attributed
+to it sat inside the noise band.
+
 ### What these timings can and cannot support
 
 Read this before quoting any number above as the effect of any one change.
