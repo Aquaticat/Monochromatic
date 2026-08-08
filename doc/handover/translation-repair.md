@@ -5831,3 +5831,39 @@ The general lesson is about the failure mode rather than the bundle:
  a question sent to a reviewer and never answered leaves a premise looking
  examined when nothing examined it.
 A dead call is not a deferred answer.
+
+## Run 009 was killed from outside, and nothing was lost
+
+Four background tasks stopped at the same moment:
+ run 009 and three stale `pi` calls left over from an earlier session.
+The log ends `ERROR sh exited with non-zero status: no exit status`,
+ which is a signal rather than an exit,
+and the simultaneity points at a harness-level cleanup of background tasks
+ rather than anything the pass did.
+
+Nothing was lost,
+ and this is worth checking rather than assuming next time it happens:
+
+-   All four round-three gate files are byte-for-byte intact
+     (sheet 22087, repair sheet 52756, manifest 8213, pre-grades 9662).
+    The draw is already written, so no pass can affect it.
+-   All 21 artifacts pass the accepted-count reconcile, which is now STRICT,
+     so a half-written artifact from the kill would have thrown rather than
+     joined the pool silently.
+    None did.
+-   Run 009 settled 3 entries before dying:
+     `Huasheng`, `LCG_Akiball`, `CuspariaKLSY`.
+
+`Huasheng` is the notable one.
+It was run 008's deadline casualty (`ms=10800002 aborted=true`),
+ and it came back on resume with 145 accepted issues,
+which is a third independent confirmation of the #61 finding that the per-entry
+ deadline costs a restart rather than an entry.
+
+Band composition is now 6 small, 7 medium, 7 large contributing,
+ over a pool of 939.
+That is BETTER than the 5/7/5 the gate sheet was drawn at,
+ and it changes nothing about the gate:
+ the draw is one-shot and already spent,
+so these entries serve round four, recall (#51), and the naturalness probe
+ (#58).
