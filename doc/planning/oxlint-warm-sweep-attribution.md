@@ -333,6 +333,20 @@ this went unnoticed:
  that check catches a wrong answer for every project except the one whose
 `include` is absent.
 
+Swept after the fix:
+ 6795 diagnostic lines,
+ 1555 rule findings,
+ 35 offers,
+ `diff` against the
+baseline empty.
+So the substitution reached no diagnostic in this run,
+ the same shape of result as the
+classification defect:
+ the path is real and reachable on demand,
+ and this repository's file order
+did not take it.
+Both fixes remove a way for the answer to depend on something that is not the code being linted.
+
 ### How to measure this safely
 
 1. Instrumenting the plugin changes the cache key,
