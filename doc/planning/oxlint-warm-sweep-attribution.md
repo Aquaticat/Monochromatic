@@ -372,3 +372,70 @@ the 171 seconds are.
 That is a much smaller haystack than this section started with,
  and the method for searching it
 is now established rather than blocked.
+
+#### Withdrawn too: `source` is not ninety-five per cent
+
+The phase split recorded earlier came from a single instrumented run,
+ which is the same
+mistake as the miss rate and was not noticed at the time.
+Re-measured with the two-run method:
+
+- Run A,
+ repopulating:
+ `source` 595.0s (95.7 per cent),
+ `project` 21.2s,
+ `fixed-point` 4.6s,
+`foreign` 0.8s
+- Run B,
+ warm:
+ `project` 21.8s (87.3 per cent),
+ `source` **2.0s** (8.0 per cent),
+ `foreign`
+0.8s,
+ `fixed-point` 0.4s
+
+Run A reproduces the withdrawn 95.3 per cent,
+ confirming its origin.
+Warm,
+ `source` is two worker-seconds,
+ not five hundred and eighty-three,
+ and the phase that
+led every earlier conclusion in this document leads nothing.
+
+The larger fact is the total.
+Warm,
+ every instrumented span in the rule sums to **25.0 worker-seconds** while the rule takes
+about 169 seconds of wall time,
+ across workers that together have far more than 25 seconds of
+work to do.
+
+So the rule's own phase instrumentation accounts for almost none of its warm cost.
+The time is outside every span the analyzer currently times,
+ which points at the per-file
+diagnostic pass or setup that no `record` call wraps,
+ rather than at anything measured so far.
+
+That is where the search should start,
+ and it is not where any earlier section of this document
+pointed.
+
+#### What survives, and what does not
+
+Sound:
+ warm total 3m04.7s,
+ ninety-three per cent of it attributable to this rule by disabling
+it,
+ cache hit rate 100 per cent warm,
+ cache deserialisation 0.26s.
+Each came from runs whose instrumentation could not affect what they measured.
+
+Withdrawn:
+ the 47.3 per cent miss rate,
+ and the ninety-five per cent `source` share.
+Both came from single instrumented runs and both are now explained rather than merely
+replaced,
+ which is the only reason to trust the corrections more than the originals.
+
+Two of the five substantive numbers in this document were wrong in the same way,
+ and the second
+survived a reading pass that was looking for exactly that fault.
