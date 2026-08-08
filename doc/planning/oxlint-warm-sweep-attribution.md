@@ -163,3 +163,44 @@ Anyone reading those eleven-minute figures as the cost of linting this repositor
 conclude the target is an order of magnitude away.
 It is closer to three times,
  and the first question is which three minutes.
+
+### Why `source` costs so much warm, measured and then doubted
+
+Instrumented the hit and miss branches inside `loadSource` and ran the warm sweep:
+ 4899 calls,
+2584 hits and 2315 misses,
+ a 47.3 per cent miss rate on an unchanged repository.
+
+That would answer the question cleanly.
+Nearly half of all source loads redo semantic analysis despite a populated cache,
+ which is
+where the seconds would be.
+
+It is not safe to report yet,
+ and the reason is the instrumentation itself.
+Measuring required editing `effect-demand-index.ts`,
+ which is plugin source.
+If the layered summary cache keys on plugin identity or content in any way,
+ then editing the
+plugin invalidated every entry and the miss rate is an artifact of the act of measuring rather
+than a property of the rule.
+
+A quick search for a plugin version or hash in the cache key found nothing,
+ which is weak
+evidence against the confound and not enough:
+ absence of a match for the names guessed is not
+absence of the mechanism.
+
+To settle it,
+ either read `layered-summary-cache` and establish exactly what the key contains,
+or measure without touching plugin source,
+ for instance by counting from the cache directory's
+own contents across two consecutive unmodified runs.
+Until one of those is done the 47.3 per cent should be treated as unmeasured.
+
+This is the same failure this repository's `QPC` and `QIV` rules were written for,
+ reached
+from a new direction:
+ not an instrument that could not see a difference,
+ but one that created
+the difference it then reported.
