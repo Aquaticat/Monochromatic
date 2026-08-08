@@ -12919,3 +12919,29 @@ remediation had to name that text explicitly rather than taking the first match:
  it had
 silently begun asserting the general remediation against a message that no longer carried it,
 which is an assertion testing itself.
+
+#### What the new message is claiming, exactly
+
+Spot-checked against workspace findings rather than fixtures alone.
+
+`writeRecordToEntry` in `package/module/logger/src/create-logger.ts` takes
+`readonly entryIndex: number` and `readonly record: LogRecord`,
+ and the message fits plainly:
+there is no type change left to make.
+
+`package/module/test/src/expect.ts` is the case worth stating.
+Its reported input is a rest parameter typed from `Parameters<MatcherSet[K]>`,
+ where "readonly
+at every level" is not evident from the declaration at all.
+
+So the claim the message makes is precisely `classifyReadonlyType`'s verdict of
+`honest-readonly`,
+ not an independent assertion about the source text.
+That is the right coupling:
+ the sentence cannot disagree with the rule's own reasoning about
+the same parameter,
+ and if the classifier is wrong somewhere then the defect is the
+classifier's and reaches further than this message.
+It does mean the sentence is only as true as that classification,
+ which is worth knowing before
+trusting it in a case where the declaration does not obviously support it.
