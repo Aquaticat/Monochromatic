@@ -9,6 +9,106 @@ No optimization proposed yet:
  because every number quoted
 for this before was a cold run.
 
+## Current state, 2026-08-08
+
+This document is long and append-only.
+What follows is where things stand;
+ everything below it is the record of getting here,
+including four claims that were withdrawn.
+
+### Landed
+
+- `4fedeac65` derives the project inclusion scope once rather than per file.
+- `f2eea0182` shares settled type classifications per project.
+
+Warm whole-repo `mise run lint:oxlint`:
+ **3m04.7s to 1m50.7s,
+ a forty per cent reduction**,
+with findings and offers byte-identical at 1555 and 35 through every step.
+
+### Reverted
+
+`433135885`,
+ reusing the all-disk project fingerprint,
+ reverted in `144b97d51`.
+Correct and byte-identical,
+ but measured at 0.3 per cent reuse:
+ the fingerprint is derived once
+per worker-project pair,
+ so a per-project memo is consulted exactly as often as it is filled.
+
+### Where the remaining time is
+
+Warm,
+ inside the rule,
+ all figures summed across parallel workers:
+
+- scope derivation 58.8s,
+ 82.8ms for each of 710 first touches
+- project fingerprint 15.0s,
+ 20.7ms each,
+ which is `readFileSync` over the whole project
+- verification 13.3s,
+ 6.4ms per file
+- memo fast path 1.7s,
+ 1.21ms per call
+- demand index and propagation 0.4s
+
+Those sum to the independently measured index and verification totals,
+ so nothing is
+unaccounted.
+
+### The open question
+
+Whether anything here is worth optimising further,
+ and the test to apply first is **how many
+times an answer is asked for,
+ not what it costs to compute**.
+The two memos that worked cached values consulted far more often than derived.
+The one that failed is derived once per consultation by construction,
+ and no measurement of its
+cost could have shown that.
+
+The remaining scope derivation is one per worker-project pair,
+ so it has the same shape as the
+failed memo and probably the same answer.
+Reducing it means fewer worker-project pairs,
+ which is Oxlint's file distribution rather than
+this rule.
+
+### Claims withdrawn, with their causes
+
+1. A 47.3 per cent cache miss rate:
+ the probe edited the plugin,
+ which is in the linted
+workspace and feeds the cache key.
+2. `source` at ninety-five per cent of phases:
+ single instrumented run,
+ so it measured
+repopulation.
+3. No waste left inside the rule:
+ verification was classified by its position in the call tree
+rather than opened.
+4. The fingerprint memo being worth fifteen seconds:
+ cost measured,
+ reuse ratio never
+measured.
+
+Each is explained where it appears rather than merely replaced.
+
+### How to measure this safely
+
+1. Instrumenting the plugin changes the cache key,
+ so run twice and read the second run only.
+2. Register any probe's writer where every call reaches,
+ never on the path being measured.
+3. Recorded spans are summed across workers and exceed wall time;
+ only proportions compare.
+4. The rule's own phase labels cover a fraction of its warm work.
+5. Verify a byte-identical sweep for any change to caching,
+ since the failure mode is wrong
+diagnostics rather than a slow run.
+
 ## What was measured
 
 Warm run,
