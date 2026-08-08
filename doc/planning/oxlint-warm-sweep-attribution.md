@@ -828,3 +828,55 @@ Neither has been attempted,
  and the arithmetic recorded in "Reaching sixty seconds" still
 holds:
  no single remaining component closes the gap alone.
+
+### The remaining derivations are first-touch, not scope mismatches
+
+Instrumented the memo after it landed,
+ warm,
+ 2080 calls:
+
+- scope memo present:
+ 1358,
+ 65.3 per cent
+- active file already in that scope:
+ **1358**,
+ the same number
+- final index hit on it:
+ 1356
+- full derivation still needed:
+ 724,
+ 34.8 per cent
+
+The middle two being identical is the result.
+Whenever a scope has been derived for a project partition,
+ the active file is in it every
+single time,
+ so the case the memo declines to cover,
+ an active file outside the project's
+filtered set,
+ does not arise in this repository at all.
+
+The 724 remaining derivations are therefore first touches:
+ calls where no scope exists yet for
+that partition.
+Their number is a property of how work is distributed rather than of the cache,
+ since each
+worker holds its own module state and must derive once per project it is handed.
+Two thousand and eighty files across some hundreds of package partitions and several workers
+gives roughly that count.
+
+So the memo has reached its ceiling as designed.
+Sixty-five per cent is not a hit rate to be improved by better keying;
+ it is one derivation per
+worker per project,
+ and the only ways below it are fewer partitions per worker or state shared
+between workers,
+ which are scheduling questions rather than caching ones.
+
+That also revises what "the 35.6 per cent of index calls that still miss" meant in
+"Reaching sixty seconds".
+Those misses are not repeated work on the same scope.
+They are the irreducible first derivation for each partition a worker sees,
+ and closing them
+means changing how oxlint distributes files,
+ which is outside this rule.
