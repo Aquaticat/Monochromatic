@@ -44,6 +44,40 @@ Diagnostics were compared as text rather than as counts:
 sorted from two consecutive runs,
  `diff` empty.
 
+### The diagnostic baseline, and how to regenerate it
+
+Any change to caching or scope is verified against this,
+ never against a count and never against
+a faster run.
+
+```sh
+mise run lint:oxlint > sweep.txt 2>&1
+rg --no-line-number '^\s+[x!]\s' sweep.txt | sort > diag.txt
+sha256sum diag.txt
+rg 'prefer-readonly-parameter-type' diag.txt | sha256sum
+rg --multiline --count 'Parameter "(\{[^"]*)?[^"]*" should be readonly' sweep.txt
+```
+
+At `2883e6b30`:
+
+- all diagnostics,
+ sorted:
+ `388defaeca1c99e7ef711d8e4048ab879a15f7e1c374d7b383c2b86896e6c8ea`,
+ 6795 lines
+- rule diagnostics,
+ sorted:
+ `852b54ef0097dfb8f2e3a3858beac93574ce0f5e601e807fa64da304725a23ed`,
+ 1555 lines
+- offers:
+ 35,
+ being 27 whose parameter name is on one line and 8 whose destructured name is not
+
+Count offers with the multiline form.
+A plain `rg 'should be readonly'` answers 27,
+ because a destructured parameter's name spans
+lines,
+ and 27 was very nearly recorded here as a change from 35 that had not happened.
+
 ### Reverted
 
 `433135885`,
