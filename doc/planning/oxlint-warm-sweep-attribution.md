@@ -1022,3 +1022,37 @@ Point three is the one that decides it,
  and it is exactly the shape of the question that made
 the inclusion-scope memo safe:
  does the result depend on anything but the key.
+
+#### Point three holds: the classification depends on nothing but the type
+
+Read rather than assumed,
+ since this was the deciding condition.
+
+Every use of `checker` and `project` inside `classifyReadonlyType` is derived from the type
+being classified:
+ `handle.resolve(project,)` on that type's own declaration handle,
+`checker.getBaseConstraintOfType(current,)`,
+ `checker.isArrayType(current,)`,
+`checker.getTypeArguments(current,)`.
+None consults anything outside the type.
+
+So the classification is a pure function of the type,
+ computed through the checker that owns
+it.
+Type IDs are meaningful only within one checker instance,
+ and that is the same boundary the
+result is valid within,
+ so keying a shared store on the project and the type ID is exactly
+right:
+ within that scope the answer depends on nothing else,
+ and outside it the key cannot
+collide because the store does not span instances.
+
+All three conditions are therefore satisfied,
+ and widening the memo is sound.
+`CLASSIFICATION_ACTIVE` still must not escape:
+ it means "this traversal is currently below
+this type",
+ which is true of a traversal rather than of a type,
+ so only settled results may be
+published.
