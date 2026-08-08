@@ -971,3 +971,54 @@ That this section exists is the finding worth keeping.
 The attribution was declared complete three times before it was,
  each time because a component
 was classified by its position rather than by opening it.
+
+### The repeat is visible in the source: the classifier memo is per-call
+
+No measurement needed for the first half of the question.
+`classifyReadonlyType` in
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/readonly-classifier.ts`
+opens with:
+
+```ts
+const memo = new Map<number, ReadonlyClassification | typeof CLASSIFICATION_ACTIVE>();
+```
+
+A fresh map per call.
+It is keyed by semantic type ID and does its job within one traversal,
+ which is cycle handling
+for a recursive walk,
+ and it retains nothing between calls.
+
+So every parameter re-classifies its whole type graph from scratch.
+A `Row` mentioned by two hundred callables is walked two hundred times,
+ and each walk redoes
+every nested property,
+ element and signature beneath it.
+That is consistent with 4.2ms per callable in `readonlyParameterFacts`,
+ and it is waste of the
+same kind already removed from the index key:
+ a memo whose scope is narrower than the
+repetition it faces.
+
+The lever is therefore to widen that memo's lifetime rather than to compute less.
+
+What has to hold for it to be safe,
+ and what to check before writing it:
+
+1. Type IDs are stable only within one checker or project instance,
+ so the shared store must be
+keyed on that, as `effect-final-index-cache.ts` and the inclusion-scope memo already are.
+2. `CLASSIFICATION_ACTIVE` is a traversal marker,
+ not a result,
+ and must never be published to
+a later call.
+3. Whatever the classification depends on besides the type itself must be part of the key.
+`classifyReadonlyType` takes `checker` and `project` alongside `type`,
+ and whether the result
+can differ for one type across those is the thing to establish by reading rather than assuming,
+because getting it wrong returns a classification from a different semantic world.
+
+Point three is the one that decides it,
+ and it is exactly the shape of the question that made
+the inclusion-scope memo safe:
+ does the result depend on anything but the key.
