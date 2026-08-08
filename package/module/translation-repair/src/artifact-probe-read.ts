@@ -1,6 +1,7 @@
 import {
   ArtifactParseError,
   requireArray,
+  requireBoolean,
   requireCount,
   requireRecord,
   requireString,
@@ -165,6 +166,18 @@ export type OwnedProbeReading = {
    * Reading exactly as that record carried it.
    */
   readonly reading: IssueProbeReading;
+
+  /**
+   * Whether the naturalness lane rewrote this issue's slice afterwards.
+   *
+   * Carried because it decides whether the reading is about the text that
+   * SHIPPED. The probe runs inside the accuracy stage, and the naturalness lane
+   * runs after it over those outcomes, so on a refined slice the probe judged
+   * wording the lane then replaced. The repair sheet shows the human the
+   * returned wording and tells them to grade that, so joining a probe verdict
+   * to a human repair grade silently compares two different texts exactly here.
+   */
+  readonly refined: boolean;
 };
 
 /**
@@ -517,6 +530,11 @@ export function readArtifactProbe(
         issueId: requireString({
           value: issue.issueId,
           path: `${path}.issues[${String(entry.index,)}].issue.issueId`,
+        },),
+        refined: requireBoolean({
+          value: entry.record
+            .refined,
+          path: `${path}.issues[${String(entry.index,)}].refined`,
         },),
         reading: {
           heardProbers: requireCount({

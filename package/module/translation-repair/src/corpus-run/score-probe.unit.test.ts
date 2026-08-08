@@ -126,10 +126,12 @@ await describe({
             {
               issueId: 'adjudicated/nap',
               reading: napReading,
+              refined: false,
             },
             {
               issueId: 'adjudicated/chase',
               reading: chaseReading,
+              refined: false,
             },
           ],
         },);
@@ -153,9 +155,11 @@ await describe({
               {
                 issueId: 'adjudicated/nap',
                 reading: catReading({ regions: [], },),
+                refined: false,
               },
               {
                 issueId: 'adjudicated/nap',
+                refined: false,
                 reading: catReading({
                   regions: [
                     catTally({
@@ -189,10 +193,12 @@ await describe({
             {
               issueId: 'adjudicated/nap',
               reading,
+              refined: false,
             },
             {
               issueId: 'adjudicated/nap',
               reading,
+              refined: false,
             },
           ],
         },);

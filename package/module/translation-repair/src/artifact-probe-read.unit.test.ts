@@ -120,17 +120,19 @@ function catRecord(
     repairDisposition,
     introducedDefects,
     issueId = 'adjudicated/nap',
+    refined = false,
   }: {
     readonly repairDisposition: string;
     readonly introducedDefects?: unknown;
     readonly issueId?: string;
+    readonly refined?: boolean;
   },
 ): Record<string, unknown> {
   return {
     chunkIndex: 0,
     repairDisposition,
     resolved: true,
-    refined: false,
+    refined,
     issue: { issueId, },
     ...(introducedDefects === undefined ? {} : { introducedDefects, }),
   };
@@ -313,6 +315,52 @@ await describe({
             path: 'Kitten',
           },);
         },).toThrow(ArtifactParseError,);
+      },
+    },),
+
+    it({
+      name: 'carries the REFINED flag with each reading, because it decides '
+        + 'whether the reading is about the text that shipped. The probe runs '
+        + 'inside the accuracy stage and the naturalness lane runs after it, so '
+        + 'on a refined slice the probe judged wording the lane replaced, while '
+        + 'the repair sheet asks the human to grade the returned wording. '
+        + 'Without this flag that mismatch joins silently',
+      fn: async () => {
+        const reading = readArtifactProbe({
+          value: {
+            id: 'Kitten',
+            issues: [
+              catRecord({
+                repairDisposition: 'shipped',
+                issueId: 'adjudicated/nap',
+                refined: true,
+                introducedDefects: {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [],
+                },
+              },),
+              catRecord({
+                repairDisposition: 'shipped',
+                issueId: 'adjudicated/chase',
+                introducedDefects: {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [],
+                },
+              },),
+            ],
+          },
+          path: 'Kitten',
+        },);
+
+        expect(reading.owned
+          .map(function toRefined(entry,) {
+            return entry.refined;
+          },),).toEqual([
+          true,
+          false,
+        ],);
       },
     },),
 

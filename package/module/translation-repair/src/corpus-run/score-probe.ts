@@ -52,6 +52,7 @@ async function gatherReadings(
 ): Promise<{
   readonly readings: readonly IssueProbeReading[];
   readonly byIssueId: ReadonlyMap<string, IssueProbeReading>;
+  readonly refinedIssueIds: ReadonlySet<string>;
   readonly entries: number;
   readonly shippedRecords: number;
   readonly unprobedRecords: number;
@@ -95,13 +96,25 @@ async function gatherReadings(
     return entry.readings;
   },);
 
+  /**
+   * Every reading paired with its owning issue, across every artifact.
+   */
+  const owned = perEntry.flatMap(function toOwned(entry,) {
+    return entry.owned;
+  },);
+
   return {
     readings,
-    byIssueId: indexReadingsByIssue({
-      owned: perEntry.flatMap(function toOwned(entry,) {
-        return entry.owned;
-      },),
-    },),
+    byIssueId: indexReadingsByIssue({ owned, },),
+    // Issues whose slice the naturalness lane rewrote after the probe ran, so
+    // the probe's verdict is about wording that did not ship.
+    refinedIssueIds: new Set(owned
+      .filter(function wasRefined(entry,) {
+        return entry.refined;
+      },)
+      .map(function toIssueId(entry,) {
+        return entry.issueId;
+      },),),
     entries: perEntry.length,
     shippedRecords: perEntry.reduce(
       function addShipped(
@@ -290,6 +303,22 @@ async function main(): Promise<void> {
    */
   const agreement = scoreProbeAgainstGrades({ items, },);
 
+  /**
+   * Joined positions whose slice the naturalness lane rewrote after probing.
+   *
+   * Reported rather than silently folded in. The probe runs inside the accuracy
+   * stage and the lane runs after it, so on these positions the probe judged
+   * one text while the repair sheet asked the human to grade another. Every
+   * cell of the agreement table treats the two as being about the same wording,
+   * which is true everywhere except here.
+   */
+  const refinedJoined = manifest.items
+    .filter(function wasRefined(entry,) {
+      return gathered.refinedIssueIds
+        .has(entry.issueId,);
+    },)
+    .length;
+
   console.log(
     `AGREEMENT joined=${String(agreement.joined,)} probeFlagged=${
       String(agreement.probeFlagged,)
@@ -297,8 +326,17 @@ async function main(): Promise<void> {
       String(agreement.sharedWithHuman,)
     } flaggedUnscored=${String(agreement.flaggedUnscored,)} unflaggedFailures=${
       String(agreement.unflaggedFailures,)
-    }`,
+    } refinedJoined=${String(refinedJoined,)}`,
   );
+  if (refinedJoined > 0)
+    console.log(
+      `NOTE refinedJoined counts positions where the naturalness lane rewrote `
+        + `the slice AFTER the probe ran. There the probe judged the accuracy `
+        + `stage's wording while the repair sheet asked the human to grade the `
+        + `RETURNED wording, so those rows compare two different texts and `
+        + `belong in neither column as evidence about the probe. Read the other `
+        + `counts over the remaining ${String(agreement.joined - refinedJoined,)}.`,
+    );
   console.log(
     'NOTE refutedByHuman is the clean number: the human read the same wording '
       + 'and said it breaks nothing nearby, so each one is a correct repair a '
