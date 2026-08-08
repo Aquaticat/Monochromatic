@@ -527,3 +527,69 @@ Whoever optimizes this should start by splitting those 82.8ms between session op
 per-callable verification,
  which is one more `finally` in the same visitor and the same two-run
 method.
+
+#### The split: index construction dominates even at a perfect hit rate
+
+Same visitor,
+ accounting around `openSemanticFile` and `buildEffectSummaryIndex` with the
+remainder attributed to verification,
+ run twice.
+
+Run B,
+ warm,
+ 172.1 worker-seconds across 2080 files:
+
+- `buildEffectSummaryIndex` **104.0s,
+ 60.4 per cent,
+ 50.0ms per file**
+- verification of callables 56.5s,
+ 32.8 per cent,
+ 27.2ms per file
+- `openSemanticFile` 11.5s,
+ 6.7 per cent,
+ 5.5ms per file
+
+Run A,
+ repopulating,
+ for contrast:
+ 546.6s index,
+ 54.3s verification,
+ 11.0s session.
+
+Two things follow.
+
+The index build is the target.
+It costs 104 warm seconds *with every summary a cache hit*,
+ down from 546 when they are not,
+so the cache already removes eighty-one per cent of it and fifty milliseconds per file remain
+regardless.
+That residue is per-file index construction rather than analysis:
+ assembling and wiring an
+index from summaries already in hand.
+
+And it reconciles the earlier finding.
+Instrumented phases sum to 25.0 warm worker-seconds while `buildEffectSummaryIndex` alone takes
+104.0,
+ so roughly seventy-nine seconds are spent inside that call in code no `record` wraps.
+The untimed eighty-five per cent is not scattered:
+ it is nearly all inside index construction.
+
+Verification is second at 27.2ms per file and worth knowing about,
+ since it barely moves
+between the two runs,
+ 11.0s against 11.5s for the session and 54.3s against 56.5s for
+verification.
+Both are insensitive to the cache,
+ which is expected:
+ they work from the index rather than
+building it.
+
+#### Reaching sixty seconds
+
+The rule must go from about 171 seconds to about 47 for the whole command to fit the target.
+Removing index construction entirely would leave roughly 68 warm seconds of rule time,
+ which is
+still over.
+So the target is not reachable by fixing one of these three alone,
+ and any plan for #374 has to
+say which combination it intends.
