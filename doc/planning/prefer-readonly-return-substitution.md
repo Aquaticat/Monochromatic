@@ -143,6 +143,49 @@ type",
  and no timing
 measurement could have caught the difference.
 
+Isolated against this repository afterwards by removing only the guard and sweeping:
+ no
+diagnostic moved.
+So no type cycle here currently reaches it.
+That is the blast radius,
+ not an argument that the defect did not exist;
+ the disposable-project
+probe is what establishes it.
+
+### A second wrong-offer path, pre-existing, 2026-08-08
+
+Found in the same reading.
+`cachedProjectForFile` answered with the deepest project root already discovered that contains a
+source,
+ which is not the project TypeScript would choose for it.
+`openSemanticFile` does check that the project it receives contains the source,
+ and that catches
+a wrong answer for every project except one:
+ the repository root `tsconfig.json` declares no
+`include`,
+ so its program holds package sources too and the check passes.
+
+The consequence is that a source is analysed under a different project depending on whether that
+worker linted a root-level file earlier:
+
+```text
+package file alone:  package/module/logger/tsconfig.json (371 files)
+root file first:     tsconfig.json (646 files)
+```
+
+Set containment decides whether that is dangerous,
+ not set size.
+Restricted to sources the rule would analyse,
+ the package project holds 117 and the root project
+196,
+ and **62 of the 117 are absent from the root**.
+Those 62 are callers,
+ and a caller that is not read is a mutation that is not charged.
+
+`f84c5f487` stops the upward walk at the first ancestor that either names a discovered project or
+declares an undiscovered one,
+ so the answer follows the filesystem rather than lint order.
+
 ### Open questions
 
 `callersAllResolve` proves every *enumerable* usage resolves,
