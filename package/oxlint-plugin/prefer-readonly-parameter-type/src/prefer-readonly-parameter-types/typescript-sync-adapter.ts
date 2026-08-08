@@ -272,8 +272,24 @@ export function openSemanticFile({
     : [];
   /* oxlint-enable no-restricted-syntax/no-sync */
   bridgeState.activeFileName = normalizedFileName;
-  bridgeState.overlays
-    .clear();
+  /* Every text handed to this bridge is kept, rather than cleared down to the active source.
+   *
+   * Clearing left the native server holding the text it was last given for a source the overlay
+   * no longer claimed, because only the incoming source is reported through `fileChanges` and
+   * nothing ever reported the outgoing one. Reporting it instead would mean a snapshot update on
+   * every source, including the reuse path that exists precisely to avoid one, and a snapshot
+   * update replaces every `Project` object in the process.
+   *
+   * Retaining reaches the same invariant for nothing: the server's view of a source is always the
+   * text this bridge handed it, never a text it replaced without saying so. Under Oxlint the two
+   * agree anyway, since it reads from disk; under a caller supplying an unsaved buffer the buffer
+   * is the authority for that source, which is what retaining preserves.
+   *
+   * Bounded by the sources one process lints, whose text the fingerprint already holds. */
+  deletedFiles.forEach(function dropDeletedOverlay(deletedFileName,): void {
+    bridgeState.overlays
+      .delete(deletedFileName,);
+  },);
   bridgeState
     .overlays
     .set(
