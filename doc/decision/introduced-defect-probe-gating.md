@@ -78,18 +78,36 @@ THE CORROBORATION COLUMNS SEPARATE CLEANLY.
  79,
  83,
  210,
-then reached 2 at 18 entries and 246 regions.
-`minorityIntroduced` went from 1 to 23 over the same span,
+then reached 2 at 18 entries and 246 regions,
+ and 7 at 28 entries and 412 regions.
+`minorityIntroduced` went from 1 to 45 over the same span,
  tracking region count almost exactly.
 
-The second corroborated region does not change the shape.
-Regions grew by a factor of 19 while the majority column went from 1 to 2,
-so the rate is roughly 1 in 120 and has stayed there rather than climbing.
-What the change does remove is the temptation to argue from a single point:
- the column is not pinned at 1 by construction,
- it moves,
-and it has now been observed moving,
-which makes the low rate a measurement rather than an absence.
+A CORRECTION BELONGS HERE.
+At 2 events this document said the rate was "roughly 1 in 120 and has stayed
+ there rather than climbing."
+That was not supportable and should not have been written.
+Two events carry almost no information about a rate:
+ the interval around 2 in 246 comfortably contains the 7 in 412 measured
+ afterwards,
+so the honest reading is that the early numbers were too sparse to say anything
+ about stability,
+not that stability was observed and later broken.
+
+What 7 events do support is a firmer estimate:
+ roughly 1.7% of distinct shipped regions draw a majority,
+ about 1 in 59.
+The 7 are spread one apiece across 7 different entries
+ (`AmbeR_the_anpa`, `Kotori`, `LCG_Akiball`, `MTF_0615`, `MeowBot233`, `Mio`,
+ `Mizuki_Yuuki`),
+so this is a low per-entry base rate rather than one pathological document
+ inflating a total.
+
+The direction of the decision is unchanged, but the ARGUMENT has to change with
+ the evidence.
+It no longer rests on the majority column barely moving.
+It rests on the rate being low and, more importantly, on nobody yet knowing
+ whether those 7 regions were damaged at all.
 Probers keep making claims;
  what stays rare is a majority agreeing on one region.
 That is the shape of a sensitive but noisy instrument,
@@ -97,13 +115,29 @@ That is the shape of a sensitive but noisy instrument,
 
 THE DETERMINISTIC SCREEN IS HOLDING,
  and it has now fired.
-By 246 regions it has thrown out 1 contradicted claim and 2 unanchored ones,
+By 246 regions it had thrown out 1 contradicted claim and 2 unanchored ones,
  where at 83 regions it had thrown out none,
 so the screen is demonstrably capable of rejecting a claim rather than merely
  never having met one it disliked.
-`unprobedRecords` stays at zero over 740 shipped records
+`unprobedRecords` stays at zero over 1214 shipped records
  and `degradedRosterRegions` at zero,
 so the probe is reaching everything it should rather than skipping quietly.
+
+ONE SCOPE LIMIT MATTERS FOR THE GRADING, NOT FOR THE GATING.
+The probe runs inside the accuracy stage and the naturalness lane runs after it,
+ so on a slice the lane rewrote, the probe judged wording that did not ship.
+For the GATING question this is harmless:
+ a gate would act during candidate selection,
+ which is also before the lane runs,
+so the probe judges exactly the text such a gate would judge.
+For VALIDATING the probe against human repair grades it is not harmless,
+ because the repair sheet shows the human the returned wording and asks them to
+ grade that.
+Those positions compare two texts.
+`score-probe` now reports them as `refinedJoined`,
+ 10 of the 50 in the round-three sample,
+so the comparison this decision waits on can exclude them rather than average
+ them in.
 A quote must be new in the replacement,
  or gone from it for dropped content,
 so an impossible claim is dismissed without anyone having to prove a possible one.
