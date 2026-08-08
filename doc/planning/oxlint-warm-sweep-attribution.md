@@ -1253,3 +1253,50 @@ sixty seconds sit in the scope and digest work ahead of them,
 That is the larger share and the inclusion-scope memo already addresses part of it;
  what
 remains there is the derivation path the memo does not cover.
+
+#### The fingerprint does depend on the active file, unlike the previous two
+
+Read it,
+ and the answer differs from the earlier memos rather than repeating them.
+
+`effect-project-fingerprint.ts` digests every project file's *text*,
+ and for the active file it
+substitutes the Oxlint overlay:
+
+```ts
+if (fileName === activeSourceFile.fileName)
+  return activeSourceFile.text;
+```
+
+That is the whole purpose of the overlay,
+ so the fingerprint is genuinely per-active-file.
+A plain per-project memo would hand a later file a fingerprint computed from a different file's
+unsaved text,
+ which selects a stale index:
+ wrong diagnostics rather than a slow run.
+
+The condition that makes it sound is the same *shape* as the inclusion-scope one and a different
+*test*.
+Memoise the fingerprint computed from on-disk text,
+ and use it only when the active file's
+overlay text matches what the project already holds for it.
+When they differ,
+ which is what an editor overlay means and what a lint of unmodified files does
+not produce,
+ compute fresh.
+
+That is worth stating because the obvious version of this optimisation is unsafe,
+ and the
+previous two were safe for reasons that do not carry over.
+Three memos,
+ three different safety arguments:
+ the inclusion scope because the filter ignores
+which file is active,
+ the classification because it depends only on the type,
+ and this one only
+under a text-equality condition it must test at each call.
+
+Not implemented.
+The remaining unknown is where the other sixty seconds of index construction sit,
+ which this
+probe does not time and which is the larger share.
