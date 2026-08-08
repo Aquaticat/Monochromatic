@@ -104,15 +104,25 @@ function nearestLockfile(
 }
 
 /**
- * Reads exact source text from active overlay or filesystem.
+ * Reads exact source text from active overlay or analysed snapshot.
  *
- * @param project - TypeScript project providing fallback decoded source.
+ * Asks the snapshot rather than the filesystem, because the fingerprint names the state the
+ * summaries beneath it were derived from, and that state is the snapshot. Reading disk instead
+ * pairs an unchanged abstract syntax tree with a digest of whatever a concurrent write left
+ * behind, and stores summaries under a key describing text nothing analysed.
+ *
+ * Disk remains the fallback for a source the snapshot cannot produce, which is the case the
+ * filesystem read was there to cover in the first place.
+ *
+ * @param project - TypeScript project providing analysed source.
  *
  * @param activeSourceFile - Active Oxlint overlay source.
  *
  * @param fileName - Program source path to fingerprint.
  *
  * @returns exact source text.
+ *
+ * @throws {@link Error} when neither snapshot nor filesystem can produce source.
  */
 function projectSourceText({
   project,
@@ -125,10 +135,18 @@ function projectSourceText({
 },): string {
   if (fileName === activeSourceFile.fileName)
     return activeSourceFile.text;
+  /**
+   * Source text as the analysed snapshot holds it.
+   */
+  const snapshotText = project.program
+    .getSourceFile(fileName,)
+    ?.text;
+  if (snapshotText !== undefined)
+    return snapshotText;
   try {
-    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor hashes project files once on cache lookup. */
+    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor reads a source its own snapshot could not produce. */
     /**
-     * Disk source text matching configured project snapshot.
+     * Disk source text for a path the snapshot omits.
      */
     const text = readFileSync(
       fileName,
@@ -138,14 +156,6 @@ function projectSourceText({
     return text;
   }
   catch (error) {
-    /**
-     * Decoded virtual or bundled source unavailable through ordinary filesystem.
-     */
-    const fallback = project.program
-      .getSourceFile(fileName,)
-      ?.text;
-    if (fallback !== undefined)
-      return fallback;
     throw new Error(
       `Cannot fingerprint project source ${fileName}: ${String(error,)}`,
       { cause: error },
