@@ -644,3 +644,44 @@ once per worker;
  since a third of calls still rebuild.
 The first looks like the larger and safer win,
  and neither has been attempted.
+
+#### What a cheaper key has to respect
+
+The obvious fix,
+ computing the file-list digest once per worker,
+ is not sound as stated,
+ and
+the reason is worth recording before anyone writes it.
+
+`fileNames` is the program's source file names *plus* `activeSourceFile.fileName`,
+ sorted.
+The digest is then taken over `indexedSourceFiles.keys()`,
+ which is that list after
+`indexedSourceFileMap` applies the ownership policy,
+ not over `fileNames` directly.
+
+So the digest is genuinely per-active-file in general,
+ and memoising it on the project key
+alone would reuse an index built for a different inclusion scope.
+That is a wrong-index bug rather than a slow one,
+ in a rule whose failure mode is a wrong
+read-only offer.
+
+What makes the optimisation plausible anyway is that the active file is almost always already
+in `project.program.getSourceFileNames()`,
+ so adding it changes nothing and the sorted list is
+identical across every file of that project.
+That is also why the final-index cache hits 64.4 per cent rather than never.
+
+A sound version therefore needs a condition,
+ something like:
+ reuse the memoised digest only
+when the active file was already among the program's names *and* the ownership filter's result
+does not depend on which file is active.
+The second half is the part to establish rather than assume,
+ by reading `indexedSourceFileMap`.
+
+Not implemented here.
+The finding is sound and the fix is not yet safe to write,
+ and the gap between those two is
+where this session's errors have consistently lived.
