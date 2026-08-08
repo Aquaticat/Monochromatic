@@ -1193,3 +1193,59 @@ export function storedClosureSemanticEffect({
     void JSON.stringify(closureState,);
   };
 }
+
+/**
+ * Cycle head carrying the one writable slot both members of the cycle reach.
+ */
+type SemanticCycleHead = {
+  readonly member: SemanticCycleMember;
+  slot: string;
+};
+
+/**
+ * Cycle member reaching the writable slot only through readonly properties.
+ */
+type SemanticCycleMember = {
+  readonly head: SemanticCycleHead;
+};
+
+/**
+ * Reads the cycle head, whose own writable slot makes it mutable.
+ *
+ * Classified first by `readonly-classifier.unit.test.ts`, which is what makes the member below
+ * it a test rather than a restatement: the head's walk assumes `HONEST_READONLY` for itself where
+ * the member reaches back, and the member finishes standing on that assumption.
+ *
+ * @param cycleHead - Cycle head read for its writable slot.
+ *
+ * @returns slot text.
+ *
+ * @example
+ * ```ts
+ * readsSemanticCycleHead({ member, slot: 'x', },);
+ * ```
+ */
+export function readsSemanticCycleHead(cycleHead: SemanticCycleHead,): string {
+  return cycleHead.slot;
+}
+
+/**
+ * Reads the cycle member, which reaches the same writable slot one hop away.
+ *
+ * Mutable for the same reason the head is, and by a path made entirely of readonly properties.
+ * Answering `honest-readonly` here would tell `effect-outward-handoff.ts` that nothing writes
+ * through a handed value of this type, withhold the opaque effect it would otherwise charge, and
+ * offer `readonly` on a parameter a constructor can write through.
+ *
+ * @param cycleMember - Cycle member reaching the slot through its head.
+ *
+ * @returns slot text.
+ *
+ * @example
+ * ```ts
+ * readsSemanticCycleMember({ head, },);
+ * ```
+ */
+export function readsSemanticCycleMember(cycleMember: SemanticCycleMember,): string {
+  return cycleMember.head.slot;
+}
