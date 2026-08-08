@@ -1091,3 +1091,39 @@ What the measurements bought was knowing which function to open,
  which was worth having;
  what
 they could not do was substitute for opening it.
+
+### Re-measured after both changes
+
+Warm,
+ 2076 files:
+
+- `buildEffectSummaryIndex` **76.0s**,
+ 36.6ms per file,
+ from 104.0s
+- verification **13.3s**,
+ 6.4ms per file,
+ from 56.5s
+
+Verification fell by seventy-six per cent,
+ which is the shared classification memo doing what it
+was written for and confirms the mechanism rather than merely the wall clock.
+
+The rule now spends about 89 warm seconds against roughly 171 before,
+ and index construction is
+once again the dominant component at eighty-five per cent of it.
+
+That returns to the 724 first-touch derivations.
+At 76 seconds across 724 of them the arithmetic is about 105ms each,
+ which accounts for
+essentially the whole remaining index cost:
+ what is left is not repeated work but the first
+derivation for each project a worker is handed.
+
+So the two levers already established are the only ones the measurements point at,
+ and neither
+is a cache:
+ make a single derivation cheaper,
+ or reduce how many worker-project pairs exist.
+The second is oxlint's file distribution rather than this rule.
+
+Warm now stands at 1m50.7s against a sixty-second target.
