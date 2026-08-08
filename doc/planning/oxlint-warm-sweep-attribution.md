@@ -274,6 +274,18 @@ would otherwise charge the handed slot,
 Fixed in `2b86858fe`,
  pinned by a test shown to fail without the guard in `eb1714905`.
 
+Isolated against this repository by removing only the publication condition,
+ rebuilding,
+ and
+sweeping:
+ 6795 diagnostic lines,
+ `diff` empty.
+The conclusion that carries is **no type cycle in this repository currently reaches the defect**,
+not that the defect never mattered.
+The defect is established by the disposable-project probe;
+ the sweep measures its blast radius
+here and nothing more.
+
 **A file's project can depend on what the worker linted before it.**
 `cachedProjectForFile` returns the deepest project root already discovered that contains a file,
 which is not the project TypeScript would choose for it.
@@ -290,11 +302,28 @@ The same source is analysed under a different project,
  with a different inclusion scope,
  decided
 by whether that worker happened to lint a root-level file earlier.
-Whether it can hide a caller,
- which is the wrong-offer direction,
- depends on whether the package
-project's sources are a subset of the root project's.
-That is not yet measured.
+
+Whether it can hide a caller is set containment rather than set size,
+ and it does.
+Restricted to sources the rule would analyse,
+ the package project holds 117 and the root project
+196,
+ and **62 of the 117 are absent from the root**:
+ `module/async-time`,
+ `module/const`,
+`module/numeric-format` and others the logger imports.
+Those 62 are callers,
+ and a caller that is not read is a mutation that is not charged.
+
+Fixed in `f84c5f487`.
+The upward walk now stops at the first ancestor that either names a discovered project or declares
+an undiscovered one,
+ so the answer is a function of the filesystem rather than of lint order.
+`openSemanticFile` already checks that the project it receives contains the source,
+ which is why
+this went unnoticed:
+ that check catches a wrong answer for every project except the one whose
+`include` is absent.
 
 ### How to measure this safely
 
