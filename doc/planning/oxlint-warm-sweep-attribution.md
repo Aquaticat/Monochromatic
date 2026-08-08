@@ -285,6 +285,33 @@ thing that moved.
 "How many times is the answer asked for" is only half the test.
 The other half is **whether the store you would ask still exists when you ask**.
 
+### Why the churn itself was never fixed
+
+`Project` object churn is real and was never removed.
+What was removed is its cost,
+ which is the part worth removing.
+
+A return to an earlier project used to mean re-deriving the inclusion scope,
+ re-reading the whole
+project from disk to fingerprint it,
+ and rebuilding the demand index.
+The first is now about three times cheaper and no longer decodes what it discards;
+ the second no
+longer re-decodes anything,
+ since the decoded sources survive snapshot replacement;
+ the third was
+measured at 0.4s in total across the whole sweep.
+
+So the standing proposal to remove churn by opening every configured project at bridge startup is
+withdrawn rather than pending.
+It carries a real memory risk,
+ one native TypeScript child per worker holding every project,
+ and it
+would now be buying back something that costs little.
+Anyone reopening it should first measure what a return to a project still costs,
+ rather than
+assuming it costs what it did when this document was opened.
+
 ### Two correctness defects found while measuring
 
 Neither is a performance question,
