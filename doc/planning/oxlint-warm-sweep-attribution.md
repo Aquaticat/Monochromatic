@@ -27,15 +27,17 @@ defect `f2eea0182` introduced.
 - `f84c5f487` refuses a configured project farther than the nearest declared one,
  correcting a
 pre-existing wrong-offer path.
-
-Two of those four are correctness fixes rather than optimisations.
-Both were found by reading code while measuring it,
- which is the argument for measuring by
-reading rather than only by timing.
-
 - `05b2c415e` keeps the decoded sources TypeScript already retains across snapshot replacement.
 - `f583d6110` holds final indexes weakly and builds the file list where it is read.
 - `1f9aa095d` fingerprints analysed sources from the snapshot and declarations from disk.
+
+Three of those are correctness fixes rather than optimisations,
+ and all three were found by
+reading the code while measuring it rather than by timing it.
+That is the argument for reading:
+ the timing said where to look,
+ and every defect was visible only
+once something was actually opened.
 
 Warm whole-repo `mise run lint:oxlint`:
  **3m04.7s to about 59s,
@@ -94,13 +96,15 @@ Any future comparison of two configurations here needs repeated runs of each,
 The band was never measured until after five changes had been attributed to differences inside
 it.
 
-The second step is the declaration-file decode skip net of the classification guard,
- which
-withholds publications the store used to make and so costs some of what `f2eea0182` won.
-Both are in the same measurement,
- and the correctness change is not optional,
- so they are not
-worth separating.
+The one step that clears it easily,
+ 1m50.7s to 70.7s,
+ is the declaration-file decode skip net of
+the classification guard,
+ which withholds publications the store used to make and so gives back
+some of what `f2eea0182` won.
+Both are in that measurement and the correctness change is not optional,
+ so they are not worth
+separating.
 
 Diagnostics were compared as text rather than as counts:
  6795 diagnostic lines extracted and
