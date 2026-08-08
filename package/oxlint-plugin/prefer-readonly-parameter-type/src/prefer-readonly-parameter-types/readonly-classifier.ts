@@ -128,6 +128,32 @@ export function propertyIsReadonly({
 }
 
 /**
+ * Settled classifications by semantic type ID, per project.
+ *
+ * The memo inside `classifyReadonlyType` is created per call, which is correct for the cycle
+ * marker it also holds and far narrower than the repetition it faces: a `Row` named by two
+ * hundred callables was walked two hundred times, and each walk redid every property, element
+ * and signature beneath it. Measured at 4.2ms per callable in
+ * `doc/planning/oxlint-warm-sweep-attribution.md`.
+ *
+ * Safe to share because the classification depends on nothing but the type. Every use of
+ * `checker` and `project` inside the walk is derived from the type being classified: its own
+ * declaration handle, its base constraint, whether it is an array, its type arguments.
+ *
+ * Keyed on the project because a type ID means nothing outside the checker that issued it, which
+ * is the same boundary the result is valid within, so the key cannot collide across instances.
+ * `effect-final-index-cache.ts` keys its own store the same way.
+ *
+ * Only settled results are published. `CLASSIFICATION_ACTIVE` describes a traversal currently
+ * below a type rather than a property of that type, and reaches this store by no path, since
+ * `finish` is the only writer.
+ */
+const settledClassificationsByProject = new WeakMap<
+  Project,
+  Map<number, ReadonlyClassification>
+>();
+
+/**
  * Classifies deep readonly honesty for one resolved type graph.
  *
  * Recursive calls are bounded by unique TypeScript type IDs and break cycles
@@ -159,6 +185,15 @@ export function classifyReadonlyType({
    * Memoized result or active traversal marker by semantic type ID.
    */
   const memo = new Map<number, ReadonlyClassification | typeof CLASSIFICATION_ACTIVE>();
+  /**
+   * Classifications this project has already settled, shared across every call.
+   */
+  const settled = settledClassificationsByProject.get(project,)
+    ?? new Map<number, ReadonlyClassification>();
+  settledClassificationsByProject.set(
+    project,
+    settled,
+  );
 
   /**
    * Recursively classifies one type with cycle-aware memoization.
@@ -168,6 +203,12 @@ export function classifyReadonlyType({
    * @returns classification for current graph root.
    */
   function classify(current: Type,): ReadonlyClassification {
+    /**
+     * Result this project settled for the type on an earlier call, when it has.
+     */
+    const shared = settled.get(current.id,);
+    if (shared !== undefined)
+      return shared;
     /**
      * Prior result or active cycle marker for current type ID.
      */
@@ -190,6 +231,10 @@ export function classifyReadonlyType({
      */
     function finish(result: ReadonlyClassification,): ReadonlyClassification {
       memo.set(
+        current.id,
+        result,
+      );
+      settled.set(
         current.id,
         result,
       );
