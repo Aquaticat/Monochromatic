@@ -180,57 +180,6 @@ function projectSourceText({
 }
 
 /**
- * Fingerprint over on-disk text alone, per project.
- *
- * `projectSourceText` returns the overlay for the active file and reads every other from disk,
- * so one derivation reads some four thousand files and hashes them, once per worker-project
- * pair. Measured at 20.7ms each and 15.0 warm seconds in
- * `doc/planning/oxlint-warm-sweep-attribution.md`.
- *
- * Stored only from a call whose overlay already matched disk, so what is kept is always the
- * all-disk fingerprint and never one carrying unsaved text.
- */
-const diskFingerprintByProject = new WeakMap<Project, EffectProjectFingerprint>();
-
-/**
- * Reads one file's text from disk, for comparing an overlay against it.
- *
- * Absent rather than throwing when the file cannot be read, since a file the overlay describes
- * but disk does not is exactly the case where the fingerprint must be computed rather than
- * reused.
- *
- * @param fileName - File whose disk text is wanted.
- *
- * @returns disk text, or sentinel when it cannot be read.
- *
- * @example
- * ```ts
- * activeFileDiskText({ fileName });
- * ```
- */
-function activeFileDiskText(
-  { fileName, }: { readonly fileName: string; },
-): string | typeof DISK_TEXT_UNAVAILABLE {
-  try {
-    /* oxlint-disable no-restricted-syntax/no-sync -- One read deciding whether four thousand can be skipped, in the same synchronous visitor that already reads them. */
-    return readFileSync(
-      fileName,
-      'utf8',
-    );
-    /* oxlint-enable no-restricted-syntax/no-sync */
-  }
-  catch (error) {
-    void error;
-    return DISK_TEXT_UNAVAILABLE;
-  }
-}
-
-/**
- * Sentinel for a file whose disk text cannot be read.
- */
-const DISK_TEXT_UNAVAILABLE: unique symbol = Symbol('file has no readable disk text',);
-
-/**
  * Computes exact semantic project fingerprint and source digest map.
  *
  * @param project - Configured TypeScript project.
@@ -253,25 +202,6 @@ export function effectProjectFingerprint({
   readonly project: Project;
   readonly activeSourceFile: SourceFile;
 },): EffectProjectFingerprint {
-  /**
-   * Whether the active file's overlay says the same as that file on disk.
-   *
-   * Costs one read to establish. When it holds, every text this function goes on to read is the
-   * disk text, since `projectSourceText` substitutes the overlay for that file alone, so a
-   * stored all-disk fingerprint describes this call exactly.
-   *
-   * Required rather than defensive. The overlay exists so an unsaved buffer can differ, and
-   * reusing a fingerprint across that difference would select an index built for other text.
-   */
-  const overlayMatchesDisk = activeSourceFile.text === activeFileDiskText({
-    fileName: activeSourceFile.fileName,
-  },);
-  /**
-   * All-disk fingerprint this project settled on an earlier call, when one applies.
-   */
-  const storedDiskFingerprint = diskFingerprintByProject.get(project,);
-  if (overlayMatchesDisk && (storedDiskFingerprint !== undefined))
-    return storedDiskFingerprint;
   /**
    * Stable program file order independent from TypeScript insertion order.
    */
@@ -389,10 +319,7 @@ export function effectProjectFingerprint({
       value: contentDigest(lockfileText,),
     },);
   }
-  /**
-   * Fingerprint for this call, kept only when it describes disk text alone.
-   */
-  const fingerprint: EffectProjectFingerprint = {
+  return {
     digest: digest.digest('hex',),
     fileListDigest,
     sourceDigests,
@@ -404,11 +331,4 @@ export function effectProjectFingerprint({
       lockfileDigest: lockfileState.digest,
     },
   };
-  if (overlayMatchesDisk) {
-    diskFingerprintByProject.set(
-      project,
-      fingerprint,
-    );
-  }
-  return fingerprint;
 }
