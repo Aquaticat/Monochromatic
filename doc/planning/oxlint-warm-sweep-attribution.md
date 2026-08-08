@@ -1166,3 +1166,40 @@ That estimate is arithmetic over a total,
  and by the
 standard this document has had to adopt twice it should not be trusted until something opens
 one successfully.
+
+#### Diagnosed: the probe registered its writer on the path it was measuring
+
+Tested by writing unconditionally at the miss path instead of on exit.
+On a single-file lint the miss path executed **zero** times,
+ the final index being already
+cached.
+
+That is the fault.
+The failed probe registered its `process.on('exit')` writer inside the miss path,
+ so any
+process that never misses never registers a writer and never writes,
+ whatever it accumulated.
+The three probes that worked in this same file all registered at a path every call reaches.
+
+The instrument's registration was conditional on the thing it was measuring,
+ which is the same
+shape as everything else this document has had to withdraw,
+ and it produced silence rather than
+a wrong number.
+Silence was the lucky outcome:
+ a partial registration across workers would have written a
+plausible total from whichever processes happened to miss.
+
+The fix is to register the writer at function entry,
+ unconditionally,
+ and accumulate only on
+the miss path.
+
+Whether that alone explains it is not established.
+`process.on('exit')` in a worker thread is not the same as in a process,
+ and how oxlint hosts
+JS plugins was never checked here.
+The three successful probes prove writers can fire at all,
+ so at minimum the registration
+placement is necessary;
+ whether it is sufficient wants the retry rather than an argument.
