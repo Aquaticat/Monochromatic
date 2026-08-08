@@ -204,3 +204,43 @@ from a new direction:
  not an instrument that could not see a difference,
  but one that created
 the difference it then reported.
+
+#### Settled: the miss rate was an artifact
+
+Read the key rather than guessing at its field names.
+
+`effect-summaries.ts` builds
+`projectDigest = contentDigest(`${projectFingerprint.digest}\0${analysisRoot ?? ''}`,)`,
+ and
+`effect-summary-cache.ts` stores each entry under that digest together with the file's own
+`sourceText`.
+
+Both halves are reached by editing a plugin file.
+The plugin's own sources sit in the workspace this command lints,
+ so changing
+`effect-demand-index.ts` changes that file's `sourceText` directly and feeds a project-level
+fingerprint that is not per-file.
+
+So the 47.3 per cent miss rate measured the cost of having just edited the analyzer,
+ not the
+cost of running it.
+Withdrawn.
+
+The earlier search for a plugin version or hash found nothing and was read as weak evidence
+*against* the confound.
+It was evidence of nothing:
+ the mechanism is there under names that describe the project
+rather than the plugin,
+ and the plugin is part of the project.
+Guessing field names is not reading a key.
+
+What remains true and unaffected:
+ the warm run is 3m04.7s,
+ the rule is ninety-three per cent
+of it,
+ and `source` is ninety-five per cent of instrumented spans.
+Those came from runs with no plugin edit in place.
+
+Measuring the warm miss rate needs a method that touches no plugin source,
+ such as reading the
+cache directory's own contents across two consecutive unmodified runs.
