@@ -217,11 +217,16 @@ still holds.
 That case wants the outgoing file reported as changed,
  not a cache emptied.
 
-### Where the remaining time is
+### Where the time went at 1m50.7s, before any of the changes above
 
+Superseded.
+Kept because it is what pointed at the derivation,
+ and because three of its five lines have since
+been changed out from under it.
 Warm,
  inside the rule,
- all figures summed across parallel workers:
+ summed across parallel workers,
+ measured when the sweep was 1m50.7s:
 
 - scope derivation 58.8s,
  82.8ms for each of 710 first touches
@@ -234,9 +239,23 @@ Warm,
  1.21ms per call
 - demand index and propagation 0.4s
 
-Those sum to the independently measured index and verification totals,
- so nothing is
-unaccounted.
+Those summed to the independently measured index and verification totals,
+ so nothing was
+unaccounted at that point.
+
+What has changed since,
+ and why none of these numbers should be quoted as current:
+
+- the scope derivation no longer decodes the two thirds of each project it discards
+- it no longer re-decodes anything on a return to a project,
+ so the "first touch" cost is a first
+touch per process rather than per snapshot generation
+- the fingerprint reads analysed sources from the snapshot rather than from disk,
+ leaving only
+declarations on `readFileSync`
+
+Re-attributing warm time inside the rule has not been redone since.
+Anyone doing it should read "What these timings can and cannot support" first.
 
 ### The open question
 
