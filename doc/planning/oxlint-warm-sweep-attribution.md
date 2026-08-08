@@ -244,3 +244,41 @@ Those came from runs with no plugin edit in place.
 Measuring the warm miss rate needs a method that touches no plugin source,
  such as reading the
 cache directory's own contents across two consecutive unmodified runs.
+
+#### Measured without touching the plugin: the cache is not the problem
+
+Two consecutive `mise run lint:oxlint` runs with the working tree clean,
+ comparing the cache
+directory's own contents by path, modification time and size.
+
+- 4104 entries after the first run,
+ 4124 after the second
+- 4095 identical across both
+- 29 rewritten or added
+
+A hit does not rewrite its entry,
+ so 29 of 4124 is an upper bound on misses:
+ about 0.7 per
+cent,
+ and lower still if any of those rewrites are ordinary bookkeeping rather than
+recomputation.
+
+That refutes the withdrawn 47.3 per cent outright,
+ by a method with no plugin edit anywhere
+near it.
+Cache reuse on an unchanged repository is essentially complete.
+
+So the 171 seconds are not cache misses,
+ and improving the hit rate is the wrong target.
+The time is spent on work that happens *despite* hits:
+ candidates are the cache read and
+validation path itself,
+ which runs for every one of those 4000-odd entries,
+ and whatever
+per-source work sits inside the `source` span outside `loadSource`'s cached branch.
+
+That is the next thing to separate,
+ and the method is now established:
+ measure from outside the
+plugin,
+ or accept that any edit to it invalidates what is being measured.
