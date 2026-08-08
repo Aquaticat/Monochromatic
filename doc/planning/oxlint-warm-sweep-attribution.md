@@ -20,6 +20,10 @@ including four claims that were withdrawn.
 
 - `4fedeac65` derives the project inclusion scope once rather than per file.
 - `f2eea0182` shares settled type classifications per project.
+- `843e267de` recognises declaration files by name instead of decoding them to ask.
+- `2b86858fe` withholds classifications that stood on an unresolved assumption,
+ correcting a
+defect `f2eea0182` introduced.
 
 Warm whole-repo `mise run lint:oxlint`:
  **3m04.7s to 1m50.7s,
@@ -65,24 +69,66 @@ Whether anything here is worth optimising further,
 times an answer is asked for,
  not what it costs to compute**.
 The two memos that worked cached values consulted far more often than derived.
-The one that failed is derived once per consultation by construction,
- and no measurement of its
-cost could have shown that.
 
-That test is already answered for the scope derivation,
- by the memo probe rather than by
-inference.
-The scope is asked for 2078 times and derived 710 times,
- and the memo answers the 1368
-difference at 1.21ms each.
-So the profitable reuse has been taken:
- what remains is 710 first touches with no second ask
-against them,
- which is the failed memo's ratio exactly.
+### What the derivation actually costs, and why the memo key died
 
-Reducing it therefore means fewer worker-project pairs rather than another cache,
- and that is
-Oxlint's file distribution rather than this rule.
+Both halves of the earlier answer here were wrong,
+ and each was wrong in a way the measurement
+that produced it could not show.
+
+**The cost is decoding sources,
+ not reading four thousand files.**
+A configured project holds several hundred files rather than four thousand:
+ 573 for this plugin,
+ 371 for `module/logger`,
+ 874 for `config/oxlint`.
+`indexedSourceFileMap` asked `program.getSourceFile` for every one of them so it could read
+`isDeclarationFile`,
+ and that call decodes an abstract syntax tree.
+Measured at 270 microseconds each,
+ 154.6ms over 573 files,
+ against 0.6ms for a second pass once
+they are decoded.
+Two thirds of what it decoded it discarded on the next line.
+
+**The memo key died;
+ the answer was not asked once.**
+`openSemanticFile` replaces the whole snapshot whenever a file needs project discovery,
+ and takes
+`Project` objects from the new snapshot.
+Returning to a project after any later discovery therefore yields a different object,
+ and
+`inclusionScopeByProject`,
+ `finalIndexesByProject`,
+ `settledClassificationsByProject` and the
+reverted fingerprint memo are all keyed on that object.
+
+Measured directly,
+ with the control first:
+
+```text
+0. array-or-throw.ts        -> module/or-throw  first visit
+1. async-iterable-or-throw  -> module/or-throw  SAME object     <- control
+2. create-logger.ts         -> module/logger    first visit
+3. array-or-throw.ts        -> module/or-throw  NEW object
+4. ascii.ts                 -> module/const     first visit
+5. array-or-throw.ts        -> module/or-throw  NEW object
+6. create-logger.ts         -> module/logger    NEW object
+```
+
+Two files of one project in a row share the object,
+ so the probe can see identity.
+After any new discovery,
+ every earlier project comes back as a new object.
+One discovery invalidates every cache for every project,
+ not only for the project discovered.
+
+So the sentence this section used to end with,
+ that reducing the derivation meant fewer
+worker-project pairs and was Oxlint's file distribution rather than this rule,
+ is withdrawn.
+It is snapshot generations,
+ and this rule's own bridge creates them.
 
 ### Claims withdrawn, with their causes
 
@@ -101,8 +147,75 @@ rather than opened.
  cost measured,
  reuse ratio never
 measured.
+5. Reducing the scope derivation meaning fewer worker-project pairs,
+ and being Oxlint's file
+distribution rather than this rule:
+ the 0.3 per cent reuse was read as a property of the value,
+when it was a property of the key.
+`Project` objects are replaced on every project discovery,
+ so the memo was not consulted once
+per fill,
+ it was emptied.
 
 Each is explained where it appears rather than merely replaced.
+
+The fourth and fifth share one cause.
+A reuse ratio was measured and believed without asking what the key was,
+ and the key was the
+thing that moved.
+"How many times is the answer asked for" is only half the test.
+The other half is **whether the store you would ask still exists when you ask**.
+
+### Two correctness defects found while measuring
+
+Neither is a performance question,
+ and one of them was introduced by a performance change here.
+
+**A shared classification could be decided by lint order.**
+`f2eea0182` published every finished classification to a per-project store,
+ including results
+computed while an enclosing type was still being walked.
+`classify` answers `HONEST_READONLY` for a type already active above it,
+ which only the walk that
+assumed it resolves.
+On a two-type cycle whose head carries the writable slot,
+ so that both types reach a write:
+
+```text
+head first:    cycleHead mutable, cycleMember honest-readonly
+member first:  cycleMember mutable, cycleHead mutable
+```
+
+That is the wrong-offer direction rather than a withheld one.
+`effect-outward-handoff.ts:181` returns early on `honest-readonly`,
+ skipping the opaque effect it
+would otherwise charge the handed slot,
+ so the parameter reads as unmutated and the rule offers
+`readonly` on something a constructor can write through.
+Fixed in `2b86858fe`,
+ pinned by a test shown to fail without the guard in `eb1714905`.
+
+**A file's project can depend on what the worker linted before it.**
+`cachedProjectForFile` returns the deepest project root already discovered that contains a file,
+which is not the project TypeScript would choose for it.
+The repository root `tsconfig.json` declares no `include`.
+Measured,
+ with the control first:
+
+```text
+package file alone:  package/module/logger/tsconfig.json (371 files)
+root file first:     tsconfig.json (646 files)
+```
+
+The same source is analysed under a different project,
+ with a different inclusion scope,
+ decided
+by whether that worker happened to lint a root-level file earlier.
+Whether it can hide a caller,
+ which is the wrong-offer direction,
+ depends on whether the package
+project's sources are a subset of the root project's.
+That is not yet measured.
 
 ### How to measure this safely
 
