@@ -921,3 +921,53 @@ Warm now stands at 2m22s against a sixty-second target.
 Verification at roughly 40 seconds and the per-worker first derivations are what remain,
  and
 neither yields to a cache.
+
+### Correction: "productive work" was an inference, and it reopened
+
+The previous section concluded there was no waste left inside this rule.
+That was reached from where verification sits in the call tree,
+ not from measuring inside it,
+which is the same fault as the two withdrawn figures wearing different clothes:
+ a conclusion
+about a component nobody had opened.
+
+Split it,
+ warm,
+ 8337 callables:
+
+- `readonlyParameterFacts` **35.0s,
+ 4.2ms per callable**,
+ ninety-three per cent of verification
+- reporting decisions 2.7s,
+ 0.33ms per callable
+
+Four point two milliseconds inside one function,
+ per callable,
+ is not self-evidently
+irreducible.
+It is where parameter types are classified,
+ and type classification across a codebase repeats
+enormously:
+ the same `Row`,
+ the same `readonly string[]`,
+ the same `AbortSignal`,
+ resolved
+again for every callable that mentions them.
+
+So the conclusion that reaching sixty seconds requires computing less is withdrawn as premature.
+It may still be true.
+It is not established,
+ and the obvious thing to establish first is whether classification
+results are being recomputed for types already seen,
+ which would be waste of exactly the kind
+already removed once from the index key.
+
+The lever to try is memoisation keyed on type identity,
+ and the measurement to take first is
+how often the same type is classified more than once.
+Neither has been attempted.
+
+That this section exists is the finding worth keeping.
+The attribution was declared complete three times before it was,
+ each time because a component
+was classified by its position rather than by opening it.
