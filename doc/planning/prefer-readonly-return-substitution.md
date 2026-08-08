@@ -88,6 +88,61 @@ in-file caller,
  and the first assertion in this repository that fails if the discharge stops
 working at all.
 
+### A wrong offer arrived from the performance work, 2026-08-08
+
+Recorded here rather than only in `doc/planning/oxlint-warm-sweep-attribution.md`,
+ because it
+is a wrong-offer path and this is where those live.
+
+`f2eea0182`,
+ a warm-time change sharing settled type classifications per project,
+ published
+every finished classification including ones computed while an enclosing type was still being
+walked.
+`classify` answers `HONEST_READONLY` for a type already active above it,
+ and only the walk that
+made that assumption resolves it.
+Every other member of the cycle finished standing on it and was published.
+
+Measured on a disposable project holding two mutually reaching types whose head carries the one
+writable slot,
+ so both are mutable and the member reaches the write through readonly properties
+alone:
+
+```text
+head first:    cycleHead mutable, cycleMember honest-readonly
+member first:  cycleMember mutable, cycleHead mutable
+```
+
+Order cannot change what a type is,
+ so the store was answering with something that is not a
+property of the type.
+
+The direction is the dangerous one.
+`effect-outward-handoff.ts:181` returns early on `honest-readonly` and skips the opaque effect
+it would otherwise charge the handed slot,
+ so the parameter reads as unmutated and the rule
+offers `readonly` on a parameter a constructor can write through.
+
+`2b86858fe` counts answers taken from unfinished types and publishes only results that took
+none,
+ carrying the assumption onward when a later reader meets an assumed entry rather than the
+marker behind it.
+The type each call was asked about is still published whatever it stood on,
+ because a walk
+starting there begins from an empty memo and computes exactly what an unshared classifier
+computes.
+`eb1714905` pins it with a test shown to fail without the guard.
+
+The lesson worth keeping:
+ a cache added for speed is a claim that two questions have the same
+answer.
+This one was justified in its own comment by "the classification depends on nothing but the
+type",
+ which is true of the finished answers and false of the provisional ones,
+ and no timing
+measurement could have caught the difference.
+
 ### Open questions
 
 `callersAllResolve` proves every *enumerable* usage resolves,
