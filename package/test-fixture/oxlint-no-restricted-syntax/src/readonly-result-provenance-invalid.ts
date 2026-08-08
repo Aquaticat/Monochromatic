@@ -2022,3 +2022,29 @@ export function nestedSelectorWriteEffect(rows: LabelledRow[],): void {
     row.label = 'written';
   }
 }
+
+/**
+ * Hands an input already readonly at every level to a call this rule cannot resolve.
+ *
+ * The remaining shape of issue #414. The finding is true, since `readonly` is erased at compile
+ * time and the callee receives the underlying array, but the general message closes by offering
+ * to make the type honest and it already is. This one gets its own wording instead.
+ *
+ * @param handedNames - Strings handed to an unresolvable call.
+ */
+export function handsReadonlyNamesOnward(handedNames: readonly string[],): void {
+  void JSON.parse(JSON.stringify(handedNames,),);
+}
+
+/**
+ * Hands a mutable array into the readonly-typed parameter beside it.
+ *
+ * The control that keeps the new message from spreading. This parameter is not readonly, the
+ * charge propagates here through `handsReadonlyNamesOnward`, and the type change the general
+ * message advises does apply, so it must keep the general message.
+ *
+ * @param handedNames - Strings this callable owns and hands onward.
+ */
+export function handsMutableNamesOnward(handedNames: string[],): void {
+  handsReadonlyNamesOnward(handedNames,);
+}

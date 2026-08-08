@@ -172,7 +172,12 @@ children: [
        * two of them say it in the collection message's words instead. Both sentences are
        * counted, because the claim this pins is that no finding offers a contract as a way
        * out, not which of the two texts carries it. Splitting the count would let a finding
-       * lose the claim entirely by moving between messages. */
+       * lose the claim entirely by moving between messages.
+       *
+       * Nine to eight when the already-readonly message was added. One finding here names an
+       * input readonly at every level, and that message mentions no contract at all, so the
+       * claim it pins is kept rather than lost: what is counted is texts that refuse a
+       * contract as a way out, and a text that never raises one refuses it by omission. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
@@ -180,7 +185,7 @@ children: [
           || message.includes(
             'ForeignHostCapability does not apply here.',
           );
-      },).length,).toBe(9,);
+      },).length,).toBe(8,);
     },
   },),
   it({
@@ -611,8 +616,29 @@ children: [
        * destructuring might void the very tests these programs exist for. It does not: only
        * this total moved, and every discriminating assertion below is unchanged, because the
        * reassignable binding under test is a `let` inside the body and the repointed one is
-       * reached by symbol rather than by declaration kind. */
-      expect(messages.length,).toBe(33,);
+       * reached by symbol rather than by declaration kind.
+       *
+       * Thirty-three to thirty-five for the already-readonly message pair. */
+      expect(messages.length,).toBe(35,);
+      /* The already-readonly message, pinned against its own control.
+       *
+       * `handsReadonlyNamesOnward` takes `readonly string[]` and hands it to a call this rule
+       * cannot resolve. The finding is true, since `readonly` is erased at compile time and the
+       * callee receives the underlying array, but the general message closes by advising the
+       * author to make the type honest and it already is. That is issue #414's complaint in the
+       * form that survived everything else.
+       *
+       * `handsMutableNamesOnward` is the control and must keep the general message. Its
+       * parameter is not readonly, the charge reaches it by propagation through its callee, and
+       * there the advised type change does apply. One message each, which is also what proves
+       * the new text is not simply replacing the old one everywhere. */
+      expect(messages.filter(function alreadyReadonlyText(message,): boolean {
+        return message.includes('already readonly at every level',);
+      },).length,).toBe(1,);
+      expect(messages.filter(function generalUnresolvedText(message,): boolean {
+        return message.includes('"handedNames" is used by these calls',)
+          && message.includes('An @mutates block alone',);
+      },).length,).toBe(1,);
       /* The condition that makes widening safe, pinned by the charge it keeps rather than by
        * an offer, which is what makes this assertion the discriminating one.
        *
@@ -758,9 +784,12 @@ children: [
        * which is only possible because the value carries `facts` as an origin for the
        * argument analysis to find. Removing the call case from
        * `provenanceSuccessors` puts this back to naming `facts.get`. */
+      /* One to three with the already-readonly message pair, which reaches an unresolved call
+       * the same way. `JSON.stringify` is this fixture's stand-in for a call the rule cannot
+       * inspect, so a program needing one reuses it rather than inventing a second stand-in. */
       expect(messages.filter(function namesEscape(message,): boolean {
         return message.includes('JSON.stringify',);
-      },).length,).toBe(1,);
+      },).length,).toBe(3,);
       /* No lookup receiver is offered read-only yet, not even `readOnlyLookupEffect`'s,
        * which only reads: that awaits the discharge, not the attribution. `rows` belongs
        * here too, since a discharged `at` result was the second route to the
@@ -1827,11 +1856,28 @@ children: [
           'The function input named "state" is used by these calls: JSON.stringify [',
         );
       },).length,).toBe(5,);
+      /* And how the five split, so a change that moves one between texts has to say why. */
+      expect(messages.filter(function alreadyReadonlyState(message,): boolean {
+        return message.startsWith(
+          'The function input named "state" is used by these calls: JSON.stringify [',
+        )
+          && message.includes('already readonly at every level',);
+      },).length,).toBe(3,);
+      /* Three of those five now carry the already-readonly text instead, because their input
+       * is honest-readonly and the general message closes by advising a type change that is
+       * already made. The count above is unchanged because both texts share a prefix, which is
+       * deliberate: what the finding is about did not change, only what it advises.
+       *
+       * So this selection names the general text explicitly rather than taking the first
+       * match. Without that it silently began asserting the general remediation against a
+       * message that no longer carries it, which is the assertion testing itself rather than
+       * the rule. */
       /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
       const opaqueMessage = messages.find(function unsafeJson(message,): boolean {
         return message.startsWith(
           'The function input named "state" is used by these calls: JSON.stringify [',
-        );
+        )
+          && message.includes('An @mutates block alone',);
       },);
       if (opaqueMessage === undefined)
         throw new Error('Expected JSON.stringify uncertainty diagnostic.',);

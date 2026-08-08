@@ -84,6 +84,27 @@ const UNKNOWN_CALL_REMEDIATION = '\n\nResolve the call by one of these proof-pre
   + '\n\nAn @mutates block alone documents known effects but cannot make an unresolved implementation safe.';
 
 /**
+ * What is left to say when the input's type is already as readonly as it can be.
+ *
+ * Issue #414's complaint in its remaining form. A parameter typed `readonly string[]` that
+ * reaches an unresolved call is reported truthfully, and the general remediation list then
+ * offers to make the type honest, which it already is. The finding is real, since `readonly`
+ * is erased at runtime and an unresolved callee receives a mutable array, but the reader has
+ * to be told that the exposure is runtime rather than type-level or the message reads as an
+ * instruction they already followed.
+ *
+ * The charge itself is untouched, and deliberately: a mutable array assigned into this
+ * parameter and handed onward really can be mutated, so callers whose own parameters are not
+ * readonly keep their report and their remediation applies there.
+ */
+const ALREADY_READONLY_EXPLANATION = '\n\nThis input is already readonly at every level, so no type change resolves this finding. A readonly type is erased at compile time: the call still receives the underlying object and this rule cannot see whether it writes to it.'
+  + '\n\nResolve it by one of these changes, or accept it:'
+  + '\n1. Include the exact repository-owned implementation in the nearest tsconfig.json so the rule can inspect it.'
+  + '\n2. Pass a copy the callee may keep, so no caller-owned identity crosses the boundary.'
+  + '\n3. Remove or replace the call so no caller-owned input reaches unresolved code.'
+  + '\n\nMaking the type readonly is not among them, because it already is. Callers that pass a mutable value into this parameter are reported separately, and there the type change does apply.';
+
+/**
  * Why a collection call can carry caller state whatever the input's type says.
  */
 const COLLECTION_CHANGE_EXPLANATION = '\n\nA readonly type stops this code from writing through the input. It does not stop the call from handing an element to code this rule cannot follow, and that is what stays unproven here: not what this function does to the input, but which of its values leave.';
@@ -129,6 +150,8 @@ export const preferReadonlyParameterTypes: CreateOnceRule = {
       redundantForeignBorrowed:
         'Parameter "{{parameterName}}" carries a ForeignBorrowed marker that no longer affects any classification: the underlying type is already deeply readonly and no effect reaches this parameter. Remove the marker, or mark the genuinely mutable foreign type instead.',
       opaqueEffect: `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
+      opaqueEffectAlreadyReadonly:
+        `{{inputSubject}} used by these calls: {{boundaries}}.${UNKNOWN_CALL_CHANGE_EXPLANATION}${ALREADY_READONLY_EXPLANATION}`,
       opaqueMethodEffect: `{{inputSubject}} used as the object for these method calls: {{boundaries}}.\n\nA method can change data stored inside its object or in the system that object controls, even when this code never assigns a new value to the input.${UNKNOWN_CALL_CHANGE_EXPLANATION}${UNKNOWN_CALL_REMEDIATION}`,
       opaqueCollectionEffect:
         `{{inputSubject}} used as the object for these collection calls: {{boundaries}}.${COLLECTION_CHANGE_EXPLANATION}${COLLECTION_REMEDIATION}`,
