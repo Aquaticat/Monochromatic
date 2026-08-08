@@ -1443,3 +1443,55 @@ rather than kept.
 
 Recorded rather than reverted immediately because reverting on an unmeasured guess is the same
 error as keeping on one.
+
+#### Answered: the condition always holds, and the memo has nothing to reuse
+
+Measured,
+ warm:
+ 720 fingerprint calls,
+ **720 matched disk (100.0 per cent)**,
+ and **2 reused
+the memo (0.3 per cent)**.
+
+Both candidates in the previous section were wrong.
+The overlay never differed from disk,
+ so byte-order marks and line endings were not the
+problem,
+ and the worker-second conversion was not either.
+
+The real reason is structural,
+ and it was already in this document.
+The fingerprint is computed once per derivation,
+ and derivations are one per worker-project
+pair.
+So a per-project memo is consulted exactly as often as it is filled,
+ with nothing left over:
+there is no *second* call for the same project in the same worker to hit it.
+
+That makes the change correct,
+ useless,
+ and slightly costly,
+ since it adds one read per
+derivation to answer a question whose answer is never needed twice.
+Reverted in `144b97d51`.
+
+The lesson is not about fingerprints.
+Two earlier memos worked because the value they cached was consulted far more often than it was
+derived:
+ the inclusion scope 2080 times against 710 derivations,
+ the classification once per
+parameter against once per type.
+This one is consulted once per derivation *by construction*,
+ and no measurement of its cost
+could have revealed that,
+ because the cost was real.
+The question that separates a useful memo from a useless one is not what it costs to compute
+but how many times the answer is asked for,
+ and that ratio is what should be checked first.
+
+`doc/planning/oxlint-warm-sweep-attribution.md` records the cost of not checking it:
+ one
+implementation,
+ one sweep,
+ one probe,
+ and a revert.
