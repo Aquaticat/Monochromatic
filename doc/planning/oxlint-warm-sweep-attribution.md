@@ -26,9 +26,23 @@ including four claims that were withdrawn.
 defect `f2eea0182` introduced.
 
 Warm whole-repo `mise run lint:oxlint`:
- **3m04.7s to 1m50.7s,
- a forty per cent reduction**,
-with findings and offers byte-identical at 1555 and 35 through every step.
+ **3m04.7s to 1m50.7s to 70.7s,
+ a sixty-two per cent
+reduction overall**,
+ with 2893 errors and 1555 rule findings through every step.
+
+The second step is the declaration-file decode skip net of the classification guard,
+ which
+withholds publications the store used to make and so costs some of what `f2eea0182` won.
+Both are in the same measurement,
+ and the correctness change is not optional,
+ so they are not
+worth separating.
+
+Diagnostics were compared as text rather than as counts:
+ 6795 diagnostic lines extracted and
+sorted from two consecutive runs,
+ `diff` empty.
 
 ### Reverted
 
@@ -40,6 +54,37 @@ Correct and byte-identical,
  the fingerprint is derived once
 per worker-project pair,
  so a per-project memo is consulted exactly as often as it is filled.
+
+### The decode cache TypeScript already keeps, and the call that empties it
+
+Not yet applied,
+ and the largest remaining lever found.
+
+`SourceFileCache` in `typescript/dist/api/sourceFileCache.js` is keyed by path,
+ parse options and
+**content hash**,
+ and `API.updateSnapshot` calls `retainForSnapshot` to carry entries from the
+previous snapshot forward for every file the server did not report as changed.
+So TypeScript already keeps decoded sources across snapshot replacement,
+ which is precisely what
+churn would otherwise cost.
+
+`openSemanticFile` calls `api.clearSourceFileCache()` before every snapshot update it performs,
+and that method is `this.sourceFileCache.clear()`:
+ it empties the whole store, for every project,
+on every discovery.
+Measured cost of refilling it for one project is 154.6ms against 0.6ms for a pass that finds it
+already there.
+
+Whether the clear is load-bearing is the open question.
+The stale-text worry it names is answered by the cache's own key,
+ since an entry is matched by
+content hash,
+ and by the server's change report,
+ which the plugin does supply through
+`fileChanges`.
+Removing it must be verified by comparing diagnostics as text,
+ not by a faster run.
 
 ### Where the remaining time is
 
