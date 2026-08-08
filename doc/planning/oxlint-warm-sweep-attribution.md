@@ -33,11 +33,15 @@ Both were found by reading code while measuring it,
  which is the argument for measuring by
 reading rather than only by timing.
 
+- `05b2c415e` keeps the decoded sources TypeScript already retains across snapshot replacement.
+
 Warm whole-repo `mise run lint:oxlint`:
- **3m04.7s to 1m50.7s to 70.7s,
- a sixty-two per cent
-reduction overall**,
- with 2893 errors and 1555 rule findings through every step.
+ **3m04.7s to 1m50.7s to 70.7s to 67.3s to 58.3s,
+ a
+sixty-eight per cent reduction overall**,
+ with 2893 errors and 1555 rule findings through every
+step,
+ and the final sweep byte-identical to the pinned digests.
 
 The second step is the declaration-file decode skip net of the classification guard,
  which
@@ -97,10 +101,13 @@ Correct and byte-identical,
 per worker-project pair,
  so a per-project memo is consulted exactly as often as it is filled.
 
-### The decode cache TypeScript already keeps, and the call that empties it
+### The decode cache TypeScript already keeps, and the call that emptied it
 
-Not yet applied,
- and the largest remaining lever found.
+Landed in `05b2c415e`.
+Warm 67.3s to **58.3s**,
+ cold 247.0s to 207.5s,
+ diagnostics byte-identical to the pinned
+digests.
 
 `SourceFileCache` in `typescript/dist/api/sourceFileCache.js` is keyed by path,
  parse options and
@@ -118,15 +125,40 @@ on every discovery.
 Measured cost of refilling it for one project is 154.6ms against 0.6ms for a pass that finds it
 already there.
 
-Whether the clear is load-bearing is the open question.
-The stale-text worry it names is answered by the cache's own key,
- since an entry is matched by
-content hash,
- and by the server's change report,
- which the plugin does supply through
-`fileChanges`.
-Removing it must be verified by comparing diagnostics as text,
- not by a faster run.
+Measured both ways with the same probe,
+ the first pass acting as control:
+
+```text
+                                    without the clear   with it
+first visit (control, must be slow)      158.4ms        167.2ms
+immediate revisit, same Project             0.5ms          0.5ms
+revisit after two discoveries               0.5ms         98.6ms
+```
+
+The control stays slow in both,
+ so the probe is seeing decodes rather than a warm process.
+
+**The safety argument is not that the store is hashed.**
+That was the first reading and it is wrong:
+ `getRetained` matches on the retained reference and
+never rechecks the content hash.
+What makes it safe is that the only text this bridge changes is the active file's overlay,
+ and it
+reports that file through `fileChanges`,
+ so retention excludes it and it alone is refetched.
+
+The one text the server is never told about is the previously active file,
+ whose overlay is
+dropped and whose content reverts to disk.
+Oxlint reads from disk and hands the bridge what it read,
+ so the two agree.
+An editor integration handing an unsaved buffer would break that agreement,
+ and would break it
+with or without the clear,
+ since clearing the client store only refetches the text the server
+still holds.
+That case wants the outgoing file reported as changed,
+ not a cache emptied.
 
 ### Where the remaining time is
 
