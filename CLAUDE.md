@@ -1300,6 +1300,15 @@ TC2:
  compare test names against implementation branches,
  confirm no untested path.
 
+GFP:
+ Guard test proves nothing until shown to fail:
+ remove guard,
+ rebuild,
+ run,
+ restore.
+Commit the guard first;
+ restoring discards uncommitted work on that file.
+
 CXL:
  Semantic plugin/process cleanup must not emit bare shutdown errors such as `context canceled`.
  Capture stderr in lifecycle tests and fix hook ordering;
