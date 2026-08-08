@@ -97,7 +97,47 @@ seconds rather than all of it,
 number:
  it says how much sits outside every span the rule currently times.
 
-### Where inside the rule those 171 seconds go
+### Which phase, measured
+
+Warm run with per-phase accumulation,
+ summed across every worker:
+
+- `source` 583.3s
+- `project` 23.4s
+- `fixed-point` 4.5s
+- `foreign` 0.8s
+- 611.9s recorded in total
+
+Two cautions before reading anything into those,
+ both of which change what the numbers mean.
+
+The total exceeds the rule's 171 seconds of wall time because the sweep runs workers in
+parallel and each contributes its own spans,
+ so these are worker-seconds and only their
+*proportions* are meaningful.
+And only five sites report a phase,
+ so 611.9 worker-seconds is the total of instrumented spans
+rather than of the rule's work;
+ what falls outside them cannot be derived from this,
+ because
+wall time and summed time are not comparable under parallelism.
+
+Within what is instrumented,
+ `source` is 95.3 per cent and nothing else is close.
+
+That is the phase to look at next,
+ and the sharper question it raises is why it costs so much on
+a *warm* cache:
+ the cache exists to avoid re-deriving summaries,
+ and a source phase still
+dominating afterwards suggests either that it covers work the cache does not cover,
+ or that
+reuse is missing more often than intended.
+Answering that needs the phase broken down further rather than another total.
+
+### What the earlier suspects were
+
+
 The suspects are the whole-program summary construction,
  the checker queries each summary
 makes,
