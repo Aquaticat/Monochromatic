@@ -475,3 +475,55 @@ proportions are comparable.
 3. The rule's own phase labels cover a small fraction of its warm work,
  so a breakdown of them
 is not a breakdown of the rule.
+
+#### Found: the time is inside `Program`, outside every phase span
+
+Instrumented the per-file entry as described,
+ accounting inside the existing `try` with a
+`finally`,
+ and run twice.
+
+- Run A,
+ repopulating:
+ 636.7 worker-seconds across 2080 file visits,
+ 306.1ms per file
+- Run B,
+ warm:
+ **172.3 worker-seconds across 2080 file visits,
+ 82.8ms per file**
+
+The rule contributes about 171 seconds to the warm wall time,
+ and `Program` accounts for 172.3
+worker-seconds of it,
+ so the per-file visitor is essentially the whole cost rather than a part
+of it.
+
+Set that against the 25.0 worker-seconds all instrumented phases sum to,
+ and roughly **147
+worker-seconds,
+ about eighty-five per cent,
+ sits inside `Program` and outside every span the
+analyzer times.**
+
+That is the answer this section has been circling.
+The warm cost is not summary construction,
+ not cache misses,
+ not reading the cache,
+ and not
+any labelled phase.
+It is the per-file work that happens after `buildEffectSummaryIndex` returns:
+ opening the
+semantic file session,
+ and verifying each callable to decide what to report.
+
+Eighty-three milliseconds per file across 2080 files is the shape of the target,
+ and the
+repopulating figure of 306ms per file gives the contrast:
+ even with every summary already
+built,
+ each file still costs a quarter of what a full analysis costs.
+
+Whoever optimizes this should start by splitting those 82.8ms between session opening and
+per-callable verification,
+ which is one more `finally` in the same visitor and the same two-run
+method.
