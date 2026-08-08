@@ -19,6 +19,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import type { SourceFile, } from 'typescript/unstable/ast';
 
 import { ancestorDirectories, } from './ancestor-directories.ts';
+import { isDeclarationFileName, } from './declaration-file-name.ts';
 import {
   updateHashPlainValue,
   updateHashString,
@@ -56,33 +57,6 @@ export type EffectProjectFingerprint = {
   readonly sourceDigests: ReadonlyMap<string, string>;
   readonly surfaces: EffectProjectSurfaces;
 };
-
-/**
- * Declaration-file suffixes excluded from incremental dependency closures.
- */
-const DECLARATION_SURFACE_SUFFIXES: readonly string[] = [
-  '.d.ts',
-  '.d.mts',
-  '.d.cts',
-];
-
-/**
- * Tests whether file participates in declaration surface.
- *
- * @param fileName - Program source path.
- *
- * @returns whether path names a declaration file.
- *
- * @example
- * ```ts
- * isDeclarationSurfaceFileName('/repo/src/env.d.ts');
- * ```
- */
-export function isDeclarationSurfaceFileName(fileName: string,): boolean {
-  return DECLARATION_SURFACE_SUFFIXES.some(function declaration(suffix,): boolean {
-    return fileName.endsWith(suffix,);
-  },);
-}
 
 /**
  * Tests whether source text can carry global or module augmentation.
@@ -269,7 +243,7 @@ export function effectProjectFingerprint({
       digest,
       value: sourceDigest,
     },);
-    if (isDeclarationSurfaceFileName(fileName,)) {
+    if (isDeclarationFileName(fileName,)) {
       updateHashString({
         digest: declarationSurface,
         value: fileName,

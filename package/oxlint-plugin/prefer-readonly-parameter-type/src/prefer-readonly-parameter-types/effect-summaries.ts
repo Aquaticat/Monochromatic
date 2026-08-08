@@ -7,6 +7,7 @@
 import type { SourceFile, } from 'typescript/unstable/ast';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { isDeclarationFileName, } from './declaration-file-name.ts';
 import { createEffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { createDemandDrivenEffectIndex, } from './effect-demand-index.ts';
 import {
@@ -94,6 +95,11 @@ function indexedSourceFileMap({
     string,
     SourceFile,
   ])[] {
+    /* Declaration files are refused a line below whichever way they are recognised, and asking
+     * `getSourceFile` decodes an abstract syntax tree to answer it. Recognising them by name
+     * first costs no decode and refuses exactly the same files. */
+    if (isDeclarationFileName(fileName,))
+      return [];
     /**
      * Program source matching configured path or exact active wrapper.
      */
