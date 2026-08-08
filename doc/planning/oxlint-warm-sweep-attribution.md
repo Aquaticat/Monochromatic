@@ -685,3 +685,56 @@ Not implemented here.
 The finding is sound and the fix is not yet safe to write,
  and the gap between those two is
 where this session's errors have consistently lived.
+
+#### The filter does not depend on the active file, so the memo is sound
+
+Read `indexedSourceFileMap` rather than assuming,
+ since this was the blocking unknown.
+
+For every file *other* than the active one the result is independent of which file is active.
+`activeSourceFile` appears twice and both uses concern that file alone:
+ once to substitute the
+Oxlint overlay for its own entry,
+ and once to include it unconditionally,
+ ahead of the
+declaration-file test,
+ the project checks,
+ `isWorkspaceSourceFileName` and the `analysisRoot`
+prefix.
+
+So the key set is exactly:
+ the ownership-filtered set,
+ which is a property of the project,
+union the active file.
+
+That yields a sound design rather than a hopeful one.
+Memoise the *filtered map* per project key,
+ not the digest,
+ because building the map is the
+expensive part:
+ a `flatMap` over some four thousand names,
+ repeated for each of 2080 files.
+Then per call,
+ test whether the active file is already in the memoised set,
+ which is O(1).
+When it is,
+ and it usually is for workspace sources since `isWorkspaceSourceFileName` admits
+them,
+ the digest is the memoised one and nothing is recomputed.
+When it is not,
+ digest the union,
+ which is the rare path.
+
+That removes most of the 63.8 warm worker-seconds now spent before the cache check,
+ without
+changing which index is selected for any file:
+ the set it keys on is identical either way,
+ by
+the argument above rather than by measurement.
+
+Still not implemented,
+ and the remaining risk is no longer soundness but placement:
+ the memo
+must be keyed on something that cannot outlive the project it describes,
+ and picking that key
+wrongly is the same wrong-index bug by another route.
