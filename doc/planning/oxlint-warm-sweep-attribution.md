@@ -34,14 +34,65 @@ Both were found by reading code while measuring it,
 reading rather than only by timing.
 
 - `05b2c415e` keeps the decoded sources TypeScript already retains across snapshot replacement.
+- `f583d6110` holds final indexes weakly and builds the file list where it is read.
+- `1f9aa095d` fingerprints analysed sources from the snapshot and declarations from disk.
 
 Warm whole-repo `mise run lint:oxlint`:
- **3m04.7s to 1m50.7s to 70.7s to 67.3s to 58.3s,
- a
-sixty-eight per cent reduction overall**,
- with 2893 errors and 1555 rule findings through every
-step,
- and the final sweep byte-identical to the pinned digests.
+ **3m04.7s to about 59s,
+ a sixty-eight per cent
+reduction**,
+ with 2893 errors and 1555 rule findings throughout,
+ and the final sweeps
+byte-identical to the pinned digests.
+
+### What these timings can and cannot support
+
+Read this before quoting any number above as the effect of any one change.
+
+Four warm sweeps of one unchanged build measured **57.3s,
+ 58.9s,
+ 59.3s and 61.9s**.
+The spread is 4.6s,
+ so a single run resolves nothing smaller than about five seconds,
+ and every
+step in this document before this section was a single run.
+
+What survives that:
+
+- 3m04.7s to 1m50.7s,
+ from the earlier session.
+- 1m50.7s to 70.7s,
+ the declaration-file decode skip net of the classification guard.
+ Forty
+seconds, far outside the band.
+- The decode-cache change,
+ 67.3s to 58.3s.
+ Nine seconds is only twice the band,
+ but it does not
+rest on the sweep:
+ a project revisit after two discoveries costs 98.6ms with the clear and
+0.5ms without it,
+ measured directly with a control.
+
+What does not survive it,
+ and is withdrawn:
+
+- The project-selection fix "saving 3.4s".
+ Noise.
+- The snapshot fingerprint "costing 6.2s".
+ Noise.
+ That number was quoted in a decision put to
+the user,
+ and it should not have been.
+- Weak retention plus the file-list move "saving 3.1s".
+ Noise.
+ The change is justified by what
+it retains, not by that figure.
+
+Any future comparison of two configurations here needs repeated runs of each,
+ not one of each.
+The band was never measured until after five changes had been attributed to differences inside
+it.
 
 The second step is the declaration-file decode skip net of the classification guard,
  which
@@ -104,10 +155,12 @@ per worker-project pair,
 ### The decode cache TypeScript already keeps, and the call that emptied it
 
 Landed in `05b2c415e`.
-Warm 67.3s to **58.3s**,
- cold 247.0s to 207.5s,
- diagnostics byte-identical to the pinned
-digests.
+Warm 67.3s to 58.3s and cold 247.0s to 207.5s,
+ both single runs,
+ diagnostics byte-identical to
+the pinned digests.
+The sweep is corroboration rather than the evidence;
+ the evidence is the probe below.
 
 `SourceFileCache` in `typescript/dist/api/sourceFileCache.js` is keyed by path,
  parse options and
@@ -266,7 +319,12 @@ rather than opened.
  cost measured,
  reuse ratio never
 measured.
-5. Reducing the scope derivation meaning fewer worker-project pairs,
+5. Five separate timing attributions of three to six seconds each,
+ made from one run per
+configuration before the run-to-run band was ever measured.
+It is 4.6s.
+Listed under "What these timings can and cannot support".
+6. Reducing the scope derivation meaning fewer worker-project pairs,
  and being Oxlint's file
 distribution rather than this rule:
  the 0.3 per cent reuse was read as a property of the value,
@@ -278,7 +336,7 @@ per fill,
 
 Each is explained where it appears rather than merely replaced.
 
-The fourth and fifth share one cause.
+The fourth and sixth share one cause.
 A reuse ratio was measured and believed without asking what the key was,
  and the key was the
 thing that moved.
