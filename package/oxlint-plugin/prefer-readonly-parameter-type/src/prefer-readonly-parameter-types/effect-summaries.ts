@@ -203,15 +203,6 @@ export function buildEffectSummaryIndex({
    */
   const cacheProjectKey = `${project.configFileName}\0${analysisRoot ?? ''}\0${String(analysisBudgetMilliseconds,)}`;
   /**
-   * Stable configured project membership including active external overlay.
-   */
-  const fileNames = [...new Set([
-    ...project
-      .program
-      .getSourceFileNames(),
-    activeSourceFile.fileName,
-  ],),].toSorted();
-  /**
    * Inclusion scopes already derived for this project, by cache partition.
    */
   const scopesForProject = inclusionScopeByProject.get(project,)
@@ -250,6 +241,18 @@ export function buildEffectSummaryIndex({
       return scopedIndex;
     }
   }
+  /* Built here rather than above, because only the scope derivation reads it and the fast path
+   * returns before reaching it. Above, every reused scope still paid for a program membership
+   * call, a set, a spread and a sort of some hundreds of names. */
+  /**
+   * Stable configured project membership including active external overlay.
+   */
+  const fileNames = [...new Set([
+    ...project
+      .program
+      .getSourceFileNames(),
+    activeSourceFile.fileName,
+  ],),].toSorted();
   /**
    * Exact source scope admitted by current ownership policy.
    */
