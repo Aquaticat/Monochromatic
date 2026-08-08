@@ -12818,3 +12818,58 @@ The pattern worth keeping:
 one,
  and the cost of not testing it here was six lint findings carried for several hours
 behind a justification that turned out to be false.
+
+### Why the unresolved-call reports on readonly parameters cannot simply be suppressed
+
+Fifty-seven reports name a parameter already declared readonly that reaches a call this rule
+cannot resolve.
+No type change resolves any of them,
+ which is the #414 complaint shape,
+ so the obvious move
+is to stop reporting a parameter that is already as readonly as it can be.
+
+There is precedent for the principle.
+`effect-summaries.unit.test.ts` records the construction channel asking the classifier rather
+than the leaf test,
+ on the ground that "`honest-readonly` means every reachable position is
+readonly,
+ so no write can travel through the value",
+ and `constructFromReadonlyKeys` is not
+opaque while `constructFromMutableRows` is.
+
+Measured 2026-08-07,
+ and the move is unsafe:
+ the charge propagates.
+
+```ts
+function probeReadonlySink(probeReadonly: readonly string[],): void {
+  void JSON.parse(JSON.stringify(probeReadonly,),);
+}
+
+export function probeMutableCaller(probeMutable: string[],): void {
+  probeReadonlySink(probeMutable,);
+}
+```
+
+Both are reported,
+ the second *through* the first.
+`readonly` is erased at runtime,
+ so a mutable array assigned into a readonly-typed parameter
+and handed to an unresolved callee really can be mutated,
+ and the caller's parameter is not
+readonly.
+Suppressing the charge on the readonly one clears it on the mutable one,
+ which is a wrong
+offer waiting to happen:
+ the guarded failure exactly.
+
+So the reports are sound and the analysis has to keep the charge.
+What remains is a narrower and different question,
+ about display rather than about effects:
+whether a diagnostic should be *emitted* on a parameter where no available remediation changes
+anything,
+ while the charge it represents still propagates to callers where remediation does
+apply.
+That is a question about what the rule should say rather than about what is true,
+ and it is
+recorded here undecided.
