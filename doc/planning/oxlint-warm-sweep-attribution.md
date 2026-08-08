@@ -593,3 +593,54 @@ still over.
 So the target is not reachable by fixing one of these three alone,
  and any plan for #374 has to
 say which combination it intends.
+
+#### The index is reused; deciding whether to reuse it is what costs
+
+`buildEffectSummaryIndex` does hold a whole-index cache,
+ `cachedFinalEffectIndex`,
+ with an
+early return.
+So the index is not simply rebuilt per file.
+Measured warm,
+ across 2080 calls:
+
+- final-index hits **64.4 per cent**,
+ 1340 of 2080
+- work performed *before* the cache check:
+ **63.8 worker-seconds,
+ 30.7ms per call**
+
+That is 61 per cent of the 104 warm seconds spent deciding whether the cached index applies,
+paid on every file whether it hits or not.
+
+The pre-check work is the key computation itself:
+ collecting file names,
+ building
+`indexedSourceFileMap`,
+ then `contentDigest` over every indexed file name sorted and joined.
+The digest is over the whole file list,
+ so its cost scales with project size and is repeated
+once per linted file:
+ 2080 files each hashing a list of some four thousand names.
+
+So the answer to "is the index rebuilt per file" is no,
+ and the useful finding is the one
+underneath it:
+ a cache whose lookup costs 30.7ms cannot pay for itself at this call frequency,
+and roughly 64 of the 171 warm seconds are spent on cache administration rather than on
+analysis or on reporting.
+
+The remaining 35.6 per cent of calls miss and build the index fully,
+ which is the other half of
+the 104 seconds.
+
+Two independent directions follow,
+ and both are now grounded rather than guessed:
+ make the
+key cheaper,
+ since the file list does not change within a run and its digest could be computed
+once per worker;
+ or raise the hit rate above 64 per cent,
+ since a third of calls still rebuild.
+The first looks like the larger and safer win,
+ and neither has been attempted.
