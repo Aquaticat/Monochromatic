@@ -1395,3 +1395,51 @@ fingerprint and never one carrying an overlay.
 Worth about 15 warm seconds against the 58.8 the scope derivation costs,
  so it is the smaller
 of the two remaining pieces and the only one with a known remedy.
+
+### The fingerprint memo landed and delivered about a second, not fifteen
+
+Warm 1m49.5s against 1m50.7s.
+Findings and offers byte-identical,
+ so it is correct;
+ it is simply not worth what the
+component measurement suggested.
+
+The prediction was around fifteen seconds,
+ from 20.7ms across 727 derivations,
+ and the gap is
+undiagnosed.
+Two candidates,
+ neither tested:
+
+The condition may rarely hold.
+`overlayMatchesDisk` compares Oxlint's overlay text against `readFileSync`,
+ and those can
+differ for reasons that have nothing to do with unsaved edits:
+ a byte-order mark,
+ line-ending
+normalisation,
+ or any decoding Oxlint applies before handing text to a plugin.
+If it seldom matches,
+ the memo is never consulted and the extra read is pure cost.
+
+Or worker-seconds may not convert to wall time at anything near one to one.
+Every component figure in this document is summed across parallel workers,
+ and fifteen
+worker-seconds spread over several of them is a much smaller wall saving.
+That would apply to the two earlier changes as well,
+ whose wall savings were larger than this
+reasoning predicts,
+ so the conversion is evidently not uniform and is not understood here.
+
+The measurement to take is whether `overlayMatchesDisk` holds,
+ counted the way the other
+probes count,
+ registering its writer where every call reaches.
+Until that is known the change is unjustified rather than wrong:
+ it costs one extra read per
+derivation and returns about a second,
+ and if the condition seldom holds it should be reverted
+rather than kept.
+
+Recorded rather than reverted immediately because reverting on an unmeasured guess is the same
+error as keeping on one.
