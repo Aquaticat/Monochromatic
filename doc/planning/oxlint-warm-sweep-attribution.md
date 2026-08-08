@@ -1056,3 +1056,38 @@ this type",
  which is true of a traversal rather than of a type,
  so only settled results may be
 published.
+
+### Landed: sharing settled classifications per project
+
+Warm whole-repo lint **1m50.7s against 2m22.4s**,
+ another 32 seconds.
+Findings and offers byte-identical at 1555 and 35.
+
+Cumulative across both changes:
+ **3m04.7s to 1m50.7s,
+ a forty per cent reduction**,
+ with the
+diagnostic set unchanged throughout.
+
+The byte-identical sweep is what confirms it rather than the unit suite.
+A classification leaking across semantic worlds would surface as changed diagnostics,
+ not as a
+fast run,
+ which is the same reason the inclusion-scope memo was gated on a sweep.
+
+#### What this cost to find
+
+Two sections of this document concluded there was no waste left,
+ and both were wrong the same
+way:
+ a component classified by its position in the call tree rather than by opening it.
+The second of those was written after the first had been withdrawn for exactly that fault.
+
+The finding needed no measurement in the end.
+`classifyReadonlyType` builds its memo per call,
+ which is visible on the line that declares it,
+and the repetition it faces is a property of any codebase that names a type more than once.
+What the measurements bought was knowing which function to open,
+ which was worth having;
+ what
+they could not do was substitute for opening it.
