@@ -111,17 +111,18 @@ function nearestLockfile(
  * concurrent write left behind, and stores summaries under a key describing text nothing
  * analysed. That entry then persists, and a later ordinary run can reuse it.
  *
- * So the snapshot answers for every source the rule walks. It costs nothing to ask, because
- * `indexedSourceFileMap` has already decoded exactly the non-declaration sources by the time this
- * runs.
+ * So the snapshot answers for every source, declarations included. A declaration file decides
+ * types, so a stale one is as capable of poisoning a cache entry as a stale implementation.
  *
- * Declaration files are still read from disk, and that is a deliberate, measured limit rather
- * than an oversight. Nothing else decodes them: asking the snapshot for all 574 sources of one
- * project cost 136.9ms against 13.0ms for the whole disk pass, and 6.2 warm seconds across the
- * repository, because the 303 declarations are decoded for this and nothing else. The residual
- * hole is a declaration file rewritten during a sweep, which in practice means a workspace
- * `.d.ts` rebuilt underneath a running lint. Closing that means asking the snapshot for them too
- * and paying the decode.
+ * Declarations were briefly excluded here on the belief that including them cost 6.2 warm
+ * seconds. That figure came from one run against one run, and the run-to-run band is 4.6s, so it
+ * never measured anything. See `doc/planning/oxlint-warm-sweep-attribution.md` for what repeated
+ * runs of each say.
+ *
+ * Asking the snapshot for all 574 sources of one project does cost 136.9ms the first time against
+ * 13.0ms for a disk pass, because nothing else decodes declarations. Entries are keyed by path
+ * and shared across projects, so the repository-wide effect is not that per-project figure
+ * multiplied by projects.
  *
  * @param project - TypeScript project providing analysed source.
  *
@@ -144,20 +145,18 @@ function projectSourceText({
 },): string {
   if (fileName === activeSourceFile.fileName)
     return activeSourceFile.text;
-  if (!isDeclarationFileName(fileName,)) {
-    /**
-     * Source text as the analysed snapshot holds it, already decoded by the scope derivation.
-     */
-    const snapshotText = project.program
-      .getSourceFile(fileName,)
-      ?.text;
-    if (snapshotText !== undefined)
-      return snapshotText;
-  }
+  /**
+   * Source text as the analysed snapshot holds it.
+   */
+  const snapshotText = project.program
+    .getSourceFile(fileName,)
+    ?.text;
+  if (snapshotText !== undefined)
+    return snapshotText;
   try {
-    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor hashes declaration files once on cache lookup. */
+    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor reads a source its own snapshot could not produce. */
     /**
-     * Disk source text for a declaration, or for a path the snapshot omits.
+     * Disk source text for a path the snapshot omits.
      */
     const text = readFileSync(
       fileName,
