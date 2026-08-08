@@ -1203,3 +1203,53 @@ The three successful probes prove writers can fire at all,
  so at minimum the registration
 placement is necessary;
  whether it is sufficient wants the retry rather than an argument.
+
+### Inside a derivation: the project fingerprint, recomputed per derivation
+
+The corrected probe fired.
+Warm,
+ 727 derivations,
+ 15.5s between the two steps it times:
+
+- project fingerprint **15.0s,
+ 20.7ms each**
+- demand index and propagation 0.4s,
+ 0.6ms each
+
+Repopulating,
+ for contrast:
+ 15.3s fingerprint and 186.2s demand index,
+ 245.4ms each.
+
+So once summaries are cached the index build is essentially free,
+ and what a warm derivation
+costs is the fingerprint.
+
+That is the same defect a third time.
+`effectProjectFingerprint` describes the project,
+ not the file being linted,
+ and it is
+recomputed for every derivation of that project.
+The inclusion-scope memo and the classification memo were both this:
+ a value whose scope is the
+project,
+ derived once per call.
+
+The lever is the same and its safety question is the same:
+ what does the fingerprint depend on
+besides the project,
+ and is that stable within a run.
+It is named `effectProjectFingerprint` and takes the project,
+ which is suggestive and not
+evidence;
+ the earlier two were only safe because reading established that the result depended
+on nothing outside the key.
+
+One caution against over-reading this.
+The two timed steps sum to 15.5s while index construction measures about 76s warm,
+ so roughly
+sixty seconds sit in the scope and digest work ahead of them,
+ which this probe does not time.
+That is the larger share and the inclusion-scope memo already addresses part of it;
+ what
+remains there is the derivation path the memo does not cover.
