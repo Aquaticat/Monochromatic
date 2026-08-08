@@ -880,3 +880,44 @@ They are the irreducible first derivation for each partition a worker sees,
  and closing them
 means changing how oxlint distributes files,
  which is outside this rule.
+
+### The last component is productive work, not overhead
+
+Split the verification pass,
+ warm,
+ 2076 files and 667608 collected AST nodes:
+
+- `collectAstNodes` **0.0s**,
+ 0.0ms per file
+- `verifyReadonlyCallable` **40.3s**,
+ 19.4ms per file
+
+The walk is free.
+Collecting two thirds of a million nodes costs nothing measurable,
+ because they are already
+materialised by the time this asks for them.
+That eliminates the one candidate here that would have been cheap to fix.
+
+What remains is the rule deciding what to report,
+ nineteen milliseconds per file,
+ and it is
+the first component measured in this document that is not overhead.
+The index key derivation was pure waste and was removed.
+The remaining index derivations are a scheduling artefact.
+The walk is free.
+Verification is the analysis itself:
+ building each parameter's facts and demanding the proofs
+before emitting anything.
+
+So the attribution is complete,
+ and it ends somewhere different from where it started.
+There is no further waste to remove inside this rule.
+Going faster from here means computing less,
+ which means deciding what the rule may stop
+proving,
+ and that is a correctness conversation rather than a performance one.
+
+Warm now stands at 2m22s against a sixty-second target.
+Verification at roughly 40 seconds and the per-worker first derivations are what remain,
+ and
+neither yields to a cache.
