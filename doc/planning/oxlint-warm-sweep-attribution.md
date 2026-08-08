@@ -282,3 +282,47 @@ That is the next thing to separate,
  measure from outside the
 plugin,
  or accept that any edit to it invalidates what is being measured.
+
+#### The cache read is not it either
+
+Bounded from outside the plugin,
+ by a standalone script reading and parsing every file in the
+cache directory:
+ 4124 files,
+ 71.1 MB,
+ **0.26s** single-threaded,
+ with all 4124 parsing as JSON.
+
+So deserialising the entire cache costs a quarter of a second against 171 seconds of rule time.
+The read and validate path is eliminated as the explanation,
+ and with cache misses already
+eliminated at 0.7 per cent,
+ both candidates named in the previous section are gone.
+
+One number worth carrying to whoever continues:
+ the confounded run counted 4899 `loadSource`
+calls against 4124 cache files on disk.
+If that call count survives re-measurement by an uncontaminated method,
+ then roughly 775 loads,
+about sixteen per cent,
+ have no cache entry to hit at all,
+ and full analysis of those would be
+a candidate the phase labels do not currently distinguish from cached ones.
+It is a lead rather than a finding,
+ since its source is the run that was withdrawn.
+
+What is established for issue #374,
+ all of it from runs with no plugin edit in place:
+ warm is
+3m04.7s,
+ the rule is ninety-three per cent of it,
+ `source` is ninety-five per cent of
+instrumented spans,
+ cache reuse is essentially complete,
+ and reading the cache is free.
+The remaining time is per-source work done despite hits,
+ and separating it needs instrumentation
+inside the plugin,
+ which is precisely what the cache key makes self-defeating.
+Resolving that tension is the first problem for whoever takes this further,
+ not the profiling.
