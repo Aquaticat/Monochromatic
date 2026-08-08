@@ -738,3 +738,44 @@ Still not implemented,
 must be keyed on something that cannot outlive the project it describes,
  and picking that key
 wrongly is the same wrong-index bug by another route.
+
+#### Placement is settled by precedent, so the fix is fully specified
+
+The last stated risk was where to keep the memo without it outliving the project it describes.
+`effect-final-index-cache.ts` already answers that:
+ `finalIndexesByProject` is a process-level
+`Map` keyed on the project *object*,
+ then partitioned by `projectKey`.
+Project identity bounds the entry,
+ since a new semantic snapshot is a new project and reaches
+none of the old entries.
+
+The filtered-map memo belongs in exactly that shape,
+ keyed the same way and living beside it.
+Nothing new has to be decided about lifetime,
+ and following the existing structure is also what
+keeps a fourth caching layer from acquiring a fourth invalidation story.
+
+So the change is now fully specified:
+
+1. Memoise the ownership-filtered map per project object and `projectKey`,
+ beside
+`finalIndexesByProject`.
+2. Per call,
+ test whether the active file is in the memoised set;
+ reuse its digest when it is
+and digest the union when it is not.
+3. Sound because the filter is active-file independent,
+ which
+"The filter does not depend on the active file" establishes by reading it.
+4. Expected to remove most of 63.8 warm worker-seconds,
+ which is the measured cost of the work
+before the cache check.
+
+What remains is writing and verifying it,
+ which means the unit suite,
+ the two-run timing to
+confirm the saving,
+ and a full sweep to confirm the diagnostic set is byte-identical,
+ since a
+wrong-index bug would show there as changed findings rather than as a slow run.
