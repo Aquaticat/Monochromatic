@@ -24,6 +24,14 @@ including four claims that were withdrawn.
 - `2b86858fe` withholds classifications that stood on an unresolved assumption,
  correcting a
 defect `f2eea0182` introduced.
+- `f84c5f487` refuses a configured project farther than the nearest declared one,
+ correcting a
+pre-existing wrong-offer path.
+
+Two of those four are correctness fixes rather than optimisations.
+Both were found by reading code while measuring it,
+ which is the argument for measuring by
+reading rather than only by timing.
 
 Warm whole-repo `mise run lint:oxlint`:
  **3m04.7s to 1m50.7s to 70.7s,
