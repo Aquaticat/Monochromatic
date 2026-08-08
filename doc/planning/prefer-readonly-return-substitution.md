@@ -12873,3 +12873,49 @@ apply.
 That is a question about what the rule should say rather than about what is true,
  and it is
 recorded here undecided.
+
+### The already-readonly message, measured
+
+Landed as a message change only,
+ and the sweep confirms it:
+ 2893 errors,
+ 1555 findings,
+ 35
+offers,
+ every count identical to the sweep before it.
+The charge is untouched,
+ which was the constraint.
+
+201 findings carry the new text,
+ thirteen percent of the rule's output.
+
+That is far more than the 57 the earlier text-based estimate suggested,
+ and the gap is
+instructive:
+ the estimate matched declarations that *looked* like readonly arrays,
+ while the
+rule asks `classifyReadonlyType` and gets `honest-readonly` for many shapes a regular expression
+over source will not recognise.
+The crude instrument undercounted by more than three to one here,
+ having overcounted by five to
+one on the question before it,
+ in the same direction each time:
+ away from what the rule itself
+would say.
+
+The message says the exposure is runtime rather than type-level,
+ lists the three remediations
+that can apply,
+ and says plainly that making the type readonly is not among them because it
+already is.
+It also names that callers passing a mutable value into the parameter are reported separately
+and that the type change applies there,
+ so the reader is not left thinking the rule contradicts
+itself between the two.
+
+Three findings in `readonly-invalid.ts` moved to it,
+ and the assertion checking the general
+remediation had to name that text explicitly rather than taking the first match:
+ it had
+silently begun asserting the general remediation against a message that no longer carried it,
+which is an assertion testing itself.
