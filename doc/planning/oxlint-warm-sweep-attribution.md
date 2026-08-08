@@ -92,9 +92,41 @@ implementation.
 
 Closed in `41aab4ab9`.
 It had been left open on a 6.2s cost that came from one run against one run,
- inside a 4.6s band,
-which is to say from nothing.
-Measured properly below.
+ inside a band wider
+than itself,
+ which is to say on nothing.
+
+Measured properly,
+ five warm sweeps of each configuration run back to back:
+
+```text
+declarations from snapshot   61.2  61.5  62.4  60.5  61.0     mean 61.32s
+declarations from disk       60.4  61.5  62.8  61.5  60.5     mean 61.34s
+```
+
+**Two hundredths of a second apart,
+ in favour of the correct one.**
+Diagnostics byte-identical to the pinned digests on both,
+ 35 offers.
+
+Two further things fall out of that table.
+
+The spread within each configuration is 1.9s and 2.4s,
+ against the 4.6s measured earlier.
+The band is not a constant;
+ the earlier figure was sampled while probes competed for the same
+cores.
+Treat it as a property of the conditions, not of the sweep.
+
+Both configurations now measure about 61.3s,
+ where the same code measured 57.3s to 61.9s earlier
+in the day.
+So a comparison is only meaningful between runs taken close together on an otherwise quiet
+machine,
+ and a number quoted from one session should not be compared against a number from
+another.
+Neither fix caused the shift:
+ the second configuration is the older code and it moved too.
 
 ### What these timings can and cannot support
 

@@ -115,14 +115,18 @@ function nearestLockfile(
  * types, so a stale one is as capable of poisoning a cache entry as a stale implementation.
  *
  * Declarations were briefly excluded here on the belief that including them cost 6.2 warm
- * seconds. That figure came from one run against one run, and the run-to-run band is 4.6s, so it
- * never measured anything. See `doc/planning/oxlint-warm-sweep-attribution.md` for what repeated
- * runs of each say.
+ * seconds. That figure came from one run against one run inside a band wider than itself. Five
+ * warm sweeps of each, run back to back:
  *
- * Asking the snapshot for all 574 sources of one project does cost 136.9ms the first time against
- * 13.0ms for a disk pass, because nothing else decodes declarations. Entries are keyed by path
- * and shared across projects, so the repository-wide effect is not that per-project figure
- * multiplied by projects.
+ * ```text
+ * declarations from snapshot   61.2  61.5  62.4  60.5  61.0     mean 61.32s
+ * declarations from disk       60.4  61.5  62.8  61.5  60.5     mean 61.34s
+ * ```
+ *
+ * Two hundredths of a second apart, in favour of asking the snapshot. Asking it for all 574
+ * sources of one project does cost 136.9ms the first time against 13.0ms for a disk pass, because
+ * nothing else decodes declarations, but entries are keyed by path and shared across projects, so
+ * that per-project figure never multiplied by projects the way the single-run comparison implied.
  *
  * @param project - TypeScript project providing analysed source.
  *
