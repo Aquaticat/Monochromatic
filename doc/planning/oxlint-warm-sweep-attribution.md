@@ -69,12 +69,20 @@ The one that failed is derived once per consultation by construction,
  and no measurement of its
 cost could have shown that.
 
-The remaining scope derivation is one per worker-project pair,
- so it has the same shape as the
-failed memo and probably the same answer.
-Reducing it means fewer worker-project pairs,
- which is Oxlint's file distribution rather than
-this rule.
+That test is already answered for the scope derivation,
+ by the memo probe rather than by
+inference.
+The scope is asked for 2078 times and derived 710 times,
+ and the memo answers the 1368
+difference at 1.21ms each.
+So the profitable reuse has been taken:
+ what remains is 710 first touches with no second ask
+against them,
+ which is the failed memo's ratio exactly.
+
+Reducing it therefore means fewer worker-project pairs rather than another cache,
+ and that is
+Oxlint's file distribution rather than this rule.
 
 ### Claims withdrawn, with their causes
 
