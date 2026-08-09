@@ -117,6 +117,23 @@ const result = await repairTranslation({
   Model and corpus text reaches those sheets fenced
   (`fenceForMarkdown`), since a replacement is arbitrary text crossing into
   Markdown grammar and can otherwise invent a heading or a grade box.
+- **A grade is bound to the draw it was written on.**
+  Sheets print no issue ids, deliberately, because a hash is noise a human has
+  to read past, so grades are joined back to machine verdicts BY POSITION.
+  Seed and corpus pin cannot carry that join alone:
+  the draw is deterministic in its seed but not in its POOL, and the pool grows
+  with every entry that settles, so one seed at one commit names different
+  items at different times.
+  Two draws can then agree on seed, pin and item count while describing
+  different issues, and a positional join would mislabel every verdict without
+  erroring anywhere.
+  `computeDrawDigest` fingerprints the ordered item identities, both sheets and
+  the manifest carry it from one computation, and `parseSampleManifest`
+  recomputes it rather than trusting the stored string, since a digest never
+  checked against its own contents proves only that two files share characters.
+  A draw taken before the binding existed is scoreable and says so;
+  a pair where only one side carries a digest is refused, because one draw
+  writes both in the same instant.
 - **Text entering a prompt is fenced against its own content.**
   `selectFence` chooses a delimiter strictly longer than any run inside every
   string a prompt encloses.
