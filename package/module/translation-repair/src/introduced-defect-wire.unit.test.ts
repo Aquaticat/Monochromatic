@@ -86,6 +86,77 @@ await describe({
   name: buildIntroducedDefectMessages.name,
   children: [
     it({
+      name: 'frames the NATURALNESS refinement as an edit that was not fixing '
+        + 'anything, because a prober told the editor was repairing defects '
+        + 'reads every rephrasing as a failed repair, and rephrasing is the '
+        + 'whole purpose of that lane',
+      fn: async () => {
+        /**
+         * Arguments shared by both framings.
+         */
+        const args = {
+          sourceText: '猫在睡觉。',
+          baselineText: 'The cat is doing the sleeping.',
+          regions: [REGION,],
+          issues: [ISSUE,],
+        };
+
+        /**
+         * Prompt for the accuracy stage, the default.
+         */
+        const accuracy = buildIntroducedDefectMessages(args,).messages[0]
+          ?.content ?? '';
+
+        /**
+         * Prompt for the naturalness lane.
+         */
+        const refinement = buildIntroducedDefectMessages({
+          ...args,
+          editKind: 'naturalness-refinement',
+        },).messages[0]
+          ?.content ?? '';
+
+        expect(refinement.includes('NATURALNESS ALONE',),).toBe(true,);
+        expect(refinement.includes('It was NOT fixing defects.',),).toBe(true,);
+        expect(accuracy.includes('NATURALNESS ALONE',),).toBe(false,);
+        // The rule that keeps a fluency rewrite from being reported as damage
+        // matters more here than anywhere, so it must survive the reframing.
+        expect(
+          refinement.includes('Stylistic preference is NOT a defect',),
+        ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'leaves the ACCURACY prompt byte-identical to the one every '
+        + 'artifact so far was produced under. The probe is telemetry compared '
+        + 'across runs, so rewording its prompt while adding a second framing '
+        + 'would make later readings incomparable with earlier ones for a '
+        + 'reason nothing records',
+      fn: async () => {
+        const plan = buildIntroducedDefectMessages({
+          sourceText: '猫在睡觉。',
+          baselineText: 'The cat is doing the sleeping.',
+          regions: [REGION,],
+          issues: [ISSUE,],
+        },);
+
+        expect(plan.messages[0]
+          ?.content
+          ?.startsWith(
+            'You are a strict bilingual translation reviewer auditing an edit '
+              + 'for collateral damage.\nEditors replaced the BEFORE text of '
+              + 'each numbered region with its AFTER text, trying to fix '
+              + 'defects that were ALREADY THERE.\nJudge ONLY this: did the '
+              + 'replacement CAUSE a defect that the BEFORE text did not have?',
+          ),).toBe(true,);
+        expect(plan.messages[0]
+          ?.content
+          ?.includes('created while attempting the repair',),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'shows the pre-existing defects and marks them as NOT findings, '
         + 'which is the one instruction standing between the probe and '
         + 're-reporting the defect the edit was written to fix',

@@ -92,15 +92,62 @@ export function isIntroducedDefectVerdict(value: unknown,): value is IntroducedD
  * defect sitting in every region is the thing a general "review this" prompt
  * reports first.
  */
-const PROBE_SYSTEM_PROMPT = `You are a strict bilingual translation reviewer auditing an edit for collateral damage.
-Editors replaced the BEFORE text of each numbered region with its AFTER text, trying to fix defects that were ALREADY THERE.
-Judge ONLY this: did the replacement CAUSE a defect that the BEFORE text did not have?
+/**
+ * Which edit a probe run is auditing.
+ *
+ * The question is identical for both and the rules below are shared; only what
+ * the editor was TRYING to do differs, and that changes what a prober should
+ * expect to see. Telling a prober that an edit was fixing defects, when it was
+ * actually rewriting already-repaired text for fluency, invites them to read
+ * every rephrasing as a failed repair.
+ *
+ * @example
+ * ```ts
+ * const kind: ProbedEditKind = 'naturalness-refinement';
+ * ```
+ */
+export type ProbedEditKind = 'accuracy-repair' | 'naturalness-refinement';
+
+/**
+ * Opening framing per edit kind, prepended to the shared rules.
+ */
+const PROBE_FRAMING: Readonly<Record<ProbedEditKind, string>> = {
+  'accuracy-repair':
+    `Editors replaced the BEFORE text of each numbered region with its AFTER text, trying to fix defects that were ALREADY THERE.`,
+  'naturalness-refinement':
+    `A later pass rewrote the BEFORE text of each numbered region into its AFTER text for NATURALNESS ALONE.
+It was NOT fixing defects. Any listed issue was already repaired in the BEFORE text, so a rephrasing that keeps the meaning is the edit working as intended, not a failure.`,
+};
+
+/**
+ * The one rule that names what the editor was doing, per edit kind.
+ *
+ * Kept per kind rather than neutralised into "the edit" so the accuracy
+ * prompt stays byte-identical to the one every artifact so far was produced
+ * under. A probe is telemetry compared across runs, and silently rewording its
+ * prompt mid-series would make a later reading incomparable with an earlier one
+ * for a reason nothing records.
+ */
+const PROBE_CREATED_CLAUSE: Readonly<Record<ProbedEditKind, string>> = {
+  'accuracy-repair':
+    `- DO report a distinct defect created while attempting the repair, even where it concerns the same source passage as a pre-existing issue.`,
+  'naturalness-refinement':
+    `- DO report a distinct defect the rewrite created, even where it concerns the same source passage as a pre-existing issue.`,
+};
+
+/**
+ * Rules preceding the per-kind clause.
+ */
+const PROBE_RULES_HEAD = `Judge ONLY this: did the replacement CAUSE a defect that the BEFORE text did not have?
 
 Rules:
 - Do NOT report a listed pre-existing issue merely because the replacement failed to fix it. That is not damage.
-- Do NOT report a defect that is present in BOTH the BEFORE text and the AFTER text. It was not introduced.
-- DO report a distinct defect created while attempting the repair, even where it concerns the same source passage as a pre-existing issue.
-- Stylistic preference is NOT a defect. A different word being nicer is not damage. Report only concrete loss of accuracy, grammar, coherence, or consistency.
+- Do NOT report a defect that is present in BOTH the BEFORE text and the AFTER text. It was not introduced.`;
+
+/**
+ * Rules and reply contract following the per-kind clause.
+ */
+const PROBE_RULES_TAIL = `- Stylistic preference is NOT a defect. A different word being nicer is not damage. Report only concrete loss of accuracy, grammar, coherence, or consistency.
 
 Verdicts:
 - introduced-defect: the replacement caused a specific defect absent from BEFORE
@@ -115,6 +162,32 @@ Say in "reason" why this is damage the edit caused.
 Leave "evidence", "omittedText", "category", "severity" and "reason" as empty strings for other verdicts.
 Reply with ONLY a JSON object of shape {"checks": [{"region": 1, "verdict": "no-introduced-defect-found", "category": "", "severity": "", "evidence": "", "omittedText": "", "reason": ""}]}. No prose, no code fences.
 Every region number must appear exactly once in checks.`;
+
+/**
+ * Composes the prober's system prompt for one edit kind.
+ *
+ * Composed rather than substituted into a placeholder: the framing is prose
+ * built from a closed set, and a template with a marker in it is a small
+ * grammar that arbitrary text could later be interpolated into.
+ *
+ * @param editKind - which edit this run audits
+ *
+ * @returns System prompt with the matching framing
+ *
+ * @example
+ * ```ts
+ * const prompt = probeSystemPrompt({ editKind: 'accuracy-repair', },);
+ * ```
+ */
+function probeSystemPrompt(
+  { editKind, }: { readonly editKind: ProbedEditKind; },
+): string {
+  return `You are a strict bilingual translation reviewer auditing an edit for collateral damage.
+${PROBE_FRAMING[editKind]}
+${PROBE_RULES_HEAD}
+${PROBE_CREATED_CLAUSE[editKind]}
+${PROBE_RULES_TAIL}`;
+}
 
 /**
  * Messages plus the region order checks resolve through:
@@ -197,6 +270,9 @@ function renderPriorIssues(
  *
  * @param issues - accepted issues of the chunk, for the pre-existing lists
  *
+ * @param editKind - which edit is being audited; defaults to the accuracy
+ * repair so the stage this prompt was written for is unchanged
+ *
  * @returns Messages plus region numbering order
  *
  * @example
@@ -210,11 +286,13 @@ export function buildIntroducedDefectMessages(
     baselineText,
     regions,
     issues,
+    editKind = 'accuracy-repair',
   }: {
     readonly sourceText: string;
     readonly baselineText: string;
     readonly regions: readonly RepairRegion[];
     readonly issues: readonly AdjudicatedIssue[];
+    readonly editKind?: ProbedEditKind;
   },
 ): IntroducedDefectPromptPlan {
   /**
@@ -262,7 +340,7 @@ ${region.editorAfter}`;
     messages: [
       {
         role: 'system',
-        content: PROBE_SYSTEM_PROMPT,
+        content: probeSystemPrompt({ editKind, },),
       },
       {
         role: 'user',
