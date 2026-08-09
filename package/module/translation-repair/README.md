@@ -166,6 +166,16 @@ Milestone one (detection) is complete:
 the seven-critic ensemble reached 0.981 recall on seeded errors
 over the reference corpus,
 gated by the seeded-error benchmark harness.
+Read that figure with its date attached.
+It was measured on 2026-07-17 over 54 seeds against a roster of seven models,
+and that roster no longer exists:
+the provider has since withdrawn two of them and offered one replacement,
+so six critics run today.
+The critic prompt has also gained a house policy that did not exist then,
+which is why the recall re-measure is tracked separately
+rather than treated as a formality.
+Nothing here claims the current roster reaches 0.981;
+it claims the design reached it once, under a configuration named above.
 
 Milestone two (repair) is complete:
 the full loop
