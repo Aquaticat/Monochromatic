@@ -142,6 +142,23 @@ const result = await repairTranslation({
   a quote must be new in the replacement, or gone from it for dropped content,
   and `screenNonTranslationVotes` is the precedent for evidence that dismisses
   an impossible claim without having to prove a possible one.
+- **Every stage that changes shipped text is audited, including the last one.**
+  The naturalness lane runs after the accuracy stage and rewrites whole slices,
+  so the accuracy probe's verdict describes text the lane may have replaced.
+  `retainsResolvedIssues` guards only the opposite direction, that a rewrite did
+  not undo a confirmed repair, and a rewrite can leave every confirmed repair
+  standing while damaging the wording around them.
+  An accepted refinement therefore runs the same probe against its own pair,
+  the repaired text against the refined text, recorded as `refinementDefects`
+  and reported apart from the accuracy figures because the two audit different
+  edits against different baselines.
+  Its prompt gets a second framing: telling a prober that an editor was fixing
+  defects, when it was rewriting already-correct text for fluency, invites
+  reading every rephrasing as a failed repair.
+  `probe-sensitivity` checks that framing against injected damage, and its
+  control is the case that matters, since a probe that reads rephrasing as
+  damage would flag every refinement the lane ships and would look identical to
+  a clean run while doing it.
 
 ## Status
 
@@ -174,7 +191,12 @@ Milestone three (detection precision) is NOT met.
 Its gate is human-graded precision of at least 0.9 over a stratified sample
 of accepted issues,
 and the second graded round returned 0.740, 0.787, and 0.800 across its bands.
-A third round is accumulating against a fresh seed.
+Round three's gate sheet is drawn and awaiting its human grade:
+50 items over a pool of 740 accepted issues from 18 settled entries,
+with 5, 7 and 5 contributing entries in the small, medium and large bands.
+The draw is one-shot, since a final sheet may already carry hours of grading
+that nothing else reproduces, so it is not redrawn as more entries settle.
+Grading it is `doc/runbook/translation-repair-round-three-grading.md`.
 Read the milestone-two figures above as recall claims only:
 they say the ensemble finds seeded defects,
 not that what it reports is right.
