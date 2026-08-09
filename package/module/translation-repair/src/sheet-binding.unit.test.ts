@@ -17,6 +17,7 @@ import {
   buildSampleManifest,
   computeDrawDigest,
   type GradingCandidate,
+  requireSheetSeed,
   type SampleManifest,
 } from '../dist/final/node/index.mjs';
 
@@ -129,7 +130,7 @@ await describe({
     },),
 
     it({
-      name: 'reports a HEADER-ONLY binding for a sheet carrying no digest, '
+      name: 'reports a HEADER-ONLY binding when NEITHER side carries a digest, '
         + 'rather than refusing it. Round three was drawn before the binding '
         + 'existed and a final draw refuses to overwrite itself, so refusing '
         + 'would strand hours of grading that nothing can reproduce',
@@ -140,9 +141,69 @@ await describe({
             corpusSha: 'sha/1',
             drawDigest: '',
           },
-          manifest: catManifest({ issueId: 'adjudicated/nap', },),
+          manifest: {
+            seed: 'cat-seed',
+            corpusSha: 'sha/1',
+            items: [
+              {
+                position: 1,
+                entryId: 'Kitten',
+                issueId: 'adjudicated/nap',
+              },
+            ],
+          },
           sheetLabel: 'detection sheet',
         },),).toBe('header-only',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a pair where only ONE side carries a digest, in both '
+        + 'directions. One draw writes sheet and manifest in the same instant '
+        + 'and always computes a digest now, so a one-sided pair was assembled '
+        + 'from two draws or lost a digest; treating it as legacy would let '
+        + 'the older file\'s absence excuse the newer file\'s presence and '
+        + 'reopen the very join this check closes',
+      fn: async () => {
+        /** Manifest of a bound draw. */
+        const bound = catManifest({ issueId: 'adjudicated/nap', },);
+
+        /** Manifest of an unbound draw carrying the same items. */
+        const unbound = {
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          items: [
+            {
+              position: 1,
+              entryId: 'Kitten',
+              issueId: 'adjudicated/nap',
+            },
+          ],
+        };
+
+        expect(function legacySheetWithBoundManifest() {
+          assertSheetMatchesManifest({
+            identity: {
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              drawDigest: '',
+            },
+            manifest: bound,
+            sheetLabel: 'detection sheet',
+          },);
+        },).toThrow('disagree about whether this draw is bound',);
+
+        expect(function boundSheetWithLegacyManifest() {
+          assertSheetMatchesManifest({
+            identity: {
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              drawDigest: bound.drawDigest ?? '',
+            },
+            manifest: unbound,
+            sheetLabel: 'detection sheet',
+          },);
+        },).toThrow('disagree about whether this draw is bound',);
       },
     },),
 
@@ -177,6 +238,46 @@ await describe({
             sheetLabel: 'detection sheet',
           },);
         },).toThrow('different corpus',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireSheetSeed.name,
+  children: [
+    it({
+      name: 'returns the seed a sheet declares',
+      fn: async () => {
+        expect(requireSheetSeed({
+          identity: {
+            seed: 'cat-seed',
+            corpusSha: 'sha/1',
+            drawDigest: '',
+          },
+          sheetLabel: 'detection sheet',
+        },),).toBe('cat-seed',);
+      },
+    },),
+
+    it({
+      name: 'THROWS on a sheet declaring no seed, rather than falling back to '
+        + 'the current default. Every sheet the formatters write carries the '
+        + 'header, so a file without one cannot be placed, and defaulting it '
+        + 'would resolve its pre-grades and manifest under whichever round is '
+        + 'being worked on now: the mispairing the binding exists to stop, '
+        + 'arriving through the back door',
+      fn: async () => {
+        expect(function scoresAnUnplaceableSheet() {
+          requireSheetSeed({
+            identity: {
+              seed: '',
+              corpusSha: 'sha/1',
+              drawDigest: '',
+            },
+            sheetLabel: 'detection sheet',
+          },);
+        },).toThrow('declares no draw seed',);
       },
     },),
   ],

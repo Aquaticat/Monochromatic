@@ -100,6 +100,7 @@ export {
 export {
   assertSheetMatchesManifest,
   HEADER_ONLY_BINDING_NOTE,
+  requireSheetSeed,
   type SheetBindingStrength,
 } from './sheet-binding.ts';
 export {

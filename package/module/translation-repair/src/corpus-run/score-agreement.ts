@@ -15,6 +15,7 @@ import { parseSampleManifest, } from '../sample-manifest.ts';
 import {
   assertSheetMatchesManifest,
   HEADER_ONLY_BINDING_NOTE,
+  requireSheetSeed,
 } from '../sheet-binding.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
@@ -220,7 +221,10 @@ async function reportGrades(): Promise<void> {
   /**
    * Seed the pre-grades and manifest are looked up under.
    */
-  const seed = identity.seed || DEFAULT_SAMPLE_SEED;
+  const seed = requireSheetSeed({
+    identity,
+    sheetLabel: 'detection sheet',
+  },);
 
   // Validated BEFORE anything is reported, and not beside the code that needs
   // it. Placing this check next to the pre-grade join put it after the early

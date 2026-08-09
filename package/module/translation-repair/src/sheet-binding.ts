@@ -83,12 +83,38 @@ export function assertSheetMatchesManifest(
         + 'artifacts would be about different documents.',
     );
 
-  // Absent on either side means one of them predates the binding, which is
-  // true of every sheet drawn before it existed and is not a fault. Refusing
-  // those would strand graded sheets that nothing can redraw, since a final
-  // draw refuses to overwrite itself precisely because it may already carry
-  // hours of grading.
-  if ((identity.drawDigest === '') || (manifest.drawDigest === undefined))
+  /**
+   * Whether the sheet declares a digest.
+   */
+  const sheetBound = identity.drawDigest !== '';
+
+  /**
+   * Whether the manifest declares one.
+   */
+  const manifestBound = manifest.drawDigest !== undefined;
+
+  // Absence has to be SYMMETRIC to mean anything. One draw writes all three
+  // files in one breath and now always computes a digest, so a pair where
+  // exactly one side carries one did not come from a single draw: it is a
+  // legacy sheet paired with a new manifest, or a sheet whose header line was
+  // lost. Both are the mislabelling this check exists to prevent, and treating
+  // them as legacy would let the newer file's presence be ignored by the older
+  // file's absence.
+  if (sheetBound !== manifestBound)
+    throw new Error(
+      `${sheetLabel} and manifest disagree about whether this draw is bound: `
+        + `the ${sheetBound ? 'sheet' : 'manifest'} carries a draw digest and `
+        + `the ${sheetBound ? 'manifest' : 'sheet'} carries none. One draw `
+        + 'writes both in the same instant, so this pair was assembled from '
+        + 'two different draws, or one of them lost its digest.',
+    );
+
+  // Absent on BOTH sides means the draw predates the binding, which is true of
+  // every sheet drawn before it existed and is not a fault. Refusing those
+  // would strand graded sheets that nothing can redraw, since a final draw
+  // refuses to overwrite itself precisely because it may already carry hours of
+  // grading.
+  if (!sheetBound)
     return 'header-only';
 
   if (identity.drawDigest !== manifest.drawDigest)
@@ -103,6 +129,47 @@ export function assertSheetMatchesManifest(
     );
 
   return 'digest';
+}
+
+/**
+ * Reads the draw a sheet belongs to, refusing a sheet that names none.
+ *
+ * Every sheet the formatters have ever written declares its seed, so a sheet
+ * without one is not an older sheet: it is a file nothing can place. Falling
+ * back to the current default seed would resolve that file's pre-grades and
+ * manifest under whatever round is being worked on now, which is exactly the
+ * mispairing the binding exists to stop, arriving through the back door.
+ *
+ * @param identity - what the sheet's header declares
+ *
+ * @param sheetLabel - which sheet this is, for the failure message
+ *
+ * @returns Seed the sheet declares
+ *
+ * @throws {@link Error} when the sheet declares no seed
+ *
+ * @example
+ * ```ts
+ * const seed = requireSheetSeed({ identity, sheetLabel: 'detection sheet', },);
+ * ```
+ */
+export function requireSheetSeed(
+  {
+    identity,
+    sheetLabel,
+  }: {
+    readonly identity: SheetIdentity;
+    readonly sheetLabel: string;
+  },
+): string {
+  if (identity.seed === '')
+    throw new Error(
+      `${sheetLabel} declares no draw seed, so nothing can say which draw it `
+        + 'came from. Every sheet the formatters write carries a "Draw seed: " '
+        + 'header above its first item; a file without one cannot be paired '
+        + 'with a manifest or with pre-grades except by guessing.',
+    );
+  return identity.seed;
 }
 
 /**
