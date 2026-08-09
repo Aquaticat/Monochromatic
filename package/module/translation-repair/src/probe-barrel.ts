@@ -35,8 +35,15 @@ export {
 } from './prompt-fence.ts';
 export {
   type ArtifactProbeReading,
+  type OwnedProbeReading,
   readArtifactProbe,
 } from './artifact-probe-read.ts';
+export { parseRegionTally, } from './artifact-probe-tally.ts';
+export {
+  type ProbeClaimAttribution,
+  type TelemetryProbeReading,
+  type TelemetryRegionTally,
+} from './probe-attribution.ts';
 export {
   type ProbeAgreement,
   type ProbeAgreementItem,

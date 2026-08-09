@@ -1,5 +1,7 @@
-import type { IssueProbeReading, } from './repair-record.ts';
-import type { RegionDefectTally, } from './introduced-defect-screen.ts';
+import type {
+  TelemetryProbeReading,
+  TelemetryRegionTally,
+} from './probe-attribution.ts';
 
 //region Probe telemetry
 // Aggregating the shadow-mode probe across a run, so its false-positive rate
@@ -105,7 +107,7 @@ export type ProbeTelemetrySummary = {
  * ```
  */
 export function corroboratedCount(
-  { tally, }: { readonly tally: RegionDefectTally; },
+  { tally, }: { readonly tally: TelemetryRegionTally; },
 ): number {
   return tally.corroborated + tally.removalCorroborated;
 }
@@ -144,7 +146,7 @@ const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
  * ```
  */
 export function corroboratingProberCount(
-  { tally, }: { readonly tally: RegionDefectTally; },
+  { tally, }: { readonly tally: TelemetryRegionTally; },
 ): number {
   return new Set(
     tally.claims
@@ -186,7 +188,7 @@ export function judgeRegionProbe(
     tally,
     configuredProbers,
   }: {
-    readonly tally: RegionDefectTally;
+    readonly tally: TelemetryRegionTally;
     readonly configuredProbers: number;
   },
 ): RegionProbeVerdict {
@@ -208,7 +210,7 @@ type RegionEvidence = {
   /**
    * Screened tally of the region.
    */
-  readonly tally: RegionDefectTally;
+  readonly tally: TelemetryRegionTally;
 
   /**
    * Probers asked for the region's chunk.
@@ -314,7 +316,7 @@ function sameRegionEvidence(
  * ```
  */
 export function summarizeProbeTelemetry(
-  { readings, }: { readonly readings: readonly IssueProbeReading[]; },
+  { readings, }: { readonly readings: readonly TelemetryProbeReading[]; },
 ): ProbeTelemetrySummary {
   /**
    * One entry per distinct envelope, keeping the first reading that named it.

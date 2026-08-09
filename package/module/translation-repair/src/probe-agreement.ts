@@ -1,5 +1,5 @@
 import { judgeRegionProbe, } from './probe-telemetry.ts';
-import type { IssueProbeReading, } from './repair-record.ts';
+import type { TelemetryProbeReading, } from './probe-attribution.ts';
 import type { RepairVerdict, } from './repair-grade-read.ts';
 
 //region Probe agreement
@@ -90,7 +90,7 @@ export type ProbeAgreementItem = {
    * Probe reading for the regions serving it, absent where the chunk was never
    * probed.
    */
-  readonly reading?: IssueProbeReading;
+  readonly reading?: TelemetryProbeReading;
 };
 
 /**
@@ -109,7 +109,7 @@ export type ProbeAgreementItem = {
  * ```
  */
 export function probeFlaggedIssue(
-  { reading, }: { readonly reading: IssueProbeReading; },
+  { reading, }: { readonly reading: TelemetryProbeReading; },
 ): boolean {
   return reading.regions
     .some(function isFlagged(tally,) {

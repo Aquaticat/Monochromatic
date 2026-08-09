@@ -6,13 +6,9 @@ import {
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
-import type {
-  ClaimAdmissibility,
-  RegionDefectTally,
-  ScreenedDefectClaim,
-} from './introduced-defect-screen.ts';
+import { parseRegionTally, } from './artifact-probe-tally.ts';
+import type { TelemetryProbeReading, } from './probe-attribution.ts';
 import {
-  type IssueProbeReading,
   REPAIR_DISPOSITIONS,
   type RepairDisposition,
 } from './repair-record.ts';
@@ -87,68 +83,6 @@ function requireDisposition(
 }
 
 /**
- * Every admissibility the screen can record.
- */
-const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
-  'corroborated',
-  'removal-corroborated',
-  'contradicted',
-  'unanchored',
-];
-
-/**
- * Reads a claim's admissibility, refusing a value the screen cannot have
- * written.
- *
- * Narrowing rather than asserting, because the majority rule counts only the
- * two upheld values. An unrecognized string would be silently non-upholding, so
- * a writer emitting a new verdict name would quietly zero the corroboration
- * every region reports rather than announce that the schemas diverged.
- *
- * @param value - candidate admissibility from artifact JSON
- *
- * @param path - dotted path for error messages
- *
- * @returns Admissibility as the screen recorded it
- *
- * @throws {@link ArtifactParseError} when the value is not one the screen emits
- *
- * @example
- * ```ts
- * const admissibility = requireAdmissibility({ value, path, },);
- * ```
- */
-function requireAdmissibility(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): ClaimAdmissibility {
-  /**
-   * Candidate as a string, which it must be before it can be one of the set.
-   */
-  const text = requireString({
-    value,
-    path,
-  },);
-  /**
-   * Matching admissibility, absent when the writer emitted something else.
-   */
-  const found = ADMISSIBILITY_VALUES.find(function matches(candidate,) {
-    return candidate === text;
-  },);
-  if (found === undefined)
-    throw new ArtifactParseError({
-      path,
-      reason: `one of ${ADMISSIBILITY_VALUES.join(', ',)}`,
-    },);
-  return found;
-}
-
-/**
  * One probe reading together with the issue that owns it.
  *
  * @example
@@ -165,7 +99,7 @@ export type OwnedProbeReading = {
   /**
    * Reading exactly as that record carried it.
    */
-  readonly reading: IssueProbeReading;
+  readonly reading: TelemetryProbeReading;
 
   /**
    * Whether the naturalness lane rewrote this issue's slice afterwards.
@@ -192,7 +126,7 @@ export type ArtifactProbeReading = {
   /**
    * One reading per shipped record that carried probe telemetry.
    */
-  readonly readings: readonly IssueProbeReading[];
+  readonly readings: readonly TelemetryProbeReading[];
 
   /**
    * The same readings, each paired with the issue whose record carried it.
@@ -226,204 +160,8 @@ export type ArtifactProbeReading = {
    * envelope id, so passing this list through it counts each rewrite once
    * rather than once per issue the slice happened to contain.
    */
-  readonly refinementReadings: readonly IssueProbeReading[];
+  readonly refinementReadings: readonly TelemetryProbeReading[];
 };
-
-/**
- * Parses one region tally.
- *
- * @param value - candidate tally from artifact JSON
- *
- * @param path - dotted path for error messages
- *
- * @returns Tally as the summary reads it
- *
- * @throws {@link ArtifactParseError} when any count or id is malformed
- *
- * @example
- * ```ts
- * const tally = parseRegionTally({ value, path: 'Kitten.issues[0]...regions[0]', },);
- * ```
- */
-function parseRegionTally(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): RegionDefectTally {
-  /**
-   * Tally as a record.
-   */
-  const tally = requireRecord({
-    value,
-    path,
-  },);
-
-  /**
-   * Reads one named count off the tally.
-   *
-   * @param field - count to read
-   *
-   * @returns Count value
-   *
-   * @example
-   * ```ts
-   * countAt('corroborated',);
-   * ```
-   */
-  function countAt(field: string,): number {
-    return requireCount({
-      value: tally[field],
-      path: `${path}.${field}`,
-    },);
-  }
-
-  // Claim IDENTITY only. The majority rule counts distinct probers, so the
-  // verdict cannot be computed without modelId and admissibility, and reading
-  // the counts alone silently judged every region as uncorroborated.
-  //
-  // The quote fields stay empty on purpose, which is the original reason this
-  // list was dropped whole: `evidence`, `omittedText`, and `reason` carry
-  // UNLICENSED corpus text, this reader feeds a summary that is meant to be
-  // pasteable into a verdict, and nothing downstream of here reads them.
-  // Parsing who said what is not the same as parsing what they quoted.
-  /**
-   * Screened claims of this region, identity only.
-   */
-  const claims = parseClaimIdentities({
-    value: tally.claims,
-    path,
-  },);
-
-  /**
-   * Counts as the artifact declares them.
-   */
-  const declared = {
-    corroborated: countAt('corroborated',),
-    removalCorroborated: countAt('removalCorroborated',),
-    contradicted: countAt('contradicted',),
-    unanchored: countAt('unanchored',),
-  };
-
-  // The screen DERIVES each count from the claim list, so the two are one fact
-  // written twice and can only disagree in a malformed artifact. They are not
-  // interchangeable downstream: the CLAIMS report sums the counts while the
-  // majority rule reads the claims, so a disagreement makes a region report one
-  // corroboration and flag nothing, or flag a majority while reporting none.
-  // Both look like ordinary output.
-  for (const [field, count,] of Object.entries(declared,)) {
-    /**
-     * Claims actually carrying this admissibility.
-     */
-    const observed = claims
-      .filter(function matches(claim,) {
-        return claim.admissibility === ADMISSIBILITY_FIELDS[field];
-      },)
-      .length;
-    if (observed !== count)
-      throw new ArtifactParseError({
-        path: `${path}.${field}`,
-        reason: `${String(observed,)} to match its claim list, not ${
-          String(count,)
-        }`,
-      },);
-  }
-
-  return {
-    envelopeId: requireString({
-      value: tally.envelopeId,
-      path: `${path}.envelopeId`,
-    },),
-    issueIds: requireArray({
-      value: tally.issueIds,
-      path: `${path}.issueIds`,
-    },)
-      .map(function toId(
-        entry,
-        index,
-      ) {
-        return requireString({
-          value: entry,
-          path: `${path}.issueIds[${String(index,)}]`,
-        },);
-      },),
-    ...declared,
-    noneFound: countAt('noneFound',),
-    uncertain: countAt('uncertain',),
-    claims,
-  };
-}
-
-/**
- * Admissibility each declared count is the tally of.
- */
-const ADMISSIBILITY_FIELDS: Readonly<Record<string, ClaimAdmissibility>> = {
-  corroborated: 'corroborated',
-  removalCorroborated: 'removal-corroborated',
-  contradicted: 'contradicted',
-  unanchored: 'unanchored',
-};
-
-/**
- * Parses a region's claim list down to who said what.
- *
- * @param value - candidate claim array from artifact JSON
- *
- * @param path - dotted path of the owning tally, for error messages
- *
- * @returns Claims carrying identity and empty quote fields
- *
- * @throws {@link ArtifactParseError} when a claim is malformed
- *
- * @example
- * ```ts
- * const claims = parseClaimIdentities({ value: tally.claims, path, },);
- * ```
- */
-function parseClaimIdentities(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly ScreenedDefectClaim[] {
-  return requireArray({
-    value,
-    path: `${path}.claims`,
-  },)
-    .map(function toClaim(
-      entry,
-      index,
-    ) {
-      /**
-       * Claim as a record.
-       */
-      const claim = requireRecord({
-        value: entry,
-        path: `${path}.claims[${String(index,)}]`,
-      },);
-      return {
-        modelId: requireString({
-          value: claim.modelId,
-          path: `${path}.claims[${String(index,)}].modelId`,
-        },),
-        admissibility: requireAdmissibility({
-          value: claim.admissibility,
-          path: `${path}.claims[${String(index,)}].admissibility`,
-        },),
-        category: '',
-        severity: '',
-        evidence: '',
-        omittedText: '',
-        reason: '',
-      };
-    },);
-}
 
 /**
  * Parses one probe reading, whichever edit produced it.
@@ -454,7 +192,7 @@ function parseProbeReading(
     readonly value: unknown;
     readonly path: string;
   },
-): IssueProbeReading {
+): TelemetryProbeReading {
   /**
    * Reading as a record.
    */

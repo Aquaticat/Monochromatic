@@ -15,7 +15,7 @@ import {
   parseGradedRepairSheet,
   readSheetIdentity,
 } from '../repair-grade-read.ts';
-import type { IssueProbeReading, } from '../repair-record.ts';
+import type { TelemetryProbeReading, } from '../probe-attribution.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
@@ -50,10 +50,10 @@ import { resolveRunsDir, } from './run-config.ts';
 async function gatherReadings(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<{
-  readonly readings: readonly IssueProbeReading[];
-  readonly byIssueId: ReadonlyMap<string, IssueProbeReading>;
+  readonly readings: readonly TelemetryProbeReading[];
+  readonly byIssueId: ReadonlyMap<string, TelemetryProbeReading>;
   readonly refinedIssueIds: ReadonlySet<string>;
-  readonly refinementReadings: readonly IssueProbeReading[];
+  readonly refinementReadings: readonly TelemetryProbeReading[];
   readonly entries: number;
   readonly shippedRecords: number;
   readonly unprobedRecords: number;

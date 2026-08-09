@@ -1,5 +1,5 @@
 import type { OwnedProbeReading, } from './artifact-probe-read.ts';
-import type { IssueProbeReading, } from './repair-record.ts';
+import type { TelemetryProbeReading, } from './probe-attribution.ts';
 
 //region Probe issue index
 // The join a graded sheet position takes to reach a probe verdict: position to
@@ -37,11 +37,11 @@ import type { IssueProbeReading, } from './repair-record.ts';
  */
 export function indexReadingsByIssue(
   { owned, }: { readonly owned: readonly OwnedProbeReading[]; },
-): ReadonlyMap<string, IssueProbeReading> {
+): ReadonlyMap<string, TelemetryProbeReading> {
   /**
    * Issue-keyed readings, filled with a conflict check per insertion.
    */
-  const byIssueId = new Map<string, IssueProbeReading>();
+  const byIssueId = new Map<string, TelemetryProbeReading>();
   for (const entry of owned) {
     /**
      * Reading already recorded for this issue, absent on first sighting.
