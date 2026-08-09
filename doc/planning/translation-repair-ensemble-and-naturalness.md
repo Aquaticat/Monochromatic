@@ -140,6 +140,16 @@ and repair acceptability.
 
 Excluding refinements from defect precision must not leave them unmeasured.
 
+BUILT since this was written, covering the semantic-regression half of that
+list:
+the lane runs (task 46), and an accepted refinement is now audited for damage it
+caused, by the introduced-defect probe under a second framing, recorded as
+`refinementDefects` and reported on `score-probe`'s `REFINEMENT` line (task 58).
+`retainsResolvedIssues` covers issue retention.
+Still unbuilt from this list:
+refinement precision, blinded pairwise naturalness win/tie/loss, refinement
+yield, and repair acceptability.
+
 Use the round-two graded items as regression fixtures:
 the poetry, `总是`, and conjunction false positives are hard negatives for detection,
 and the four "is there a better way?" items are repair-quality fixtures.
