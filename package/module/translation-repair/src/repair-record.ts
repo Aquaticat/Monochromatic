@@ -170,6 +170,18 @@ export type RepairIssueRecord = {
   readonly refined: boolean;
 
   /**
+   * Audit of damage the naturalness REWRITE caused, present only where the lane
+   * rewrote this issue's slice.
+   *
+   * Every issue of a rewritten slice carries the same report, because the lane
+   * edits the slice as a whole. Kept apart from
+   * {@link RepairIssueRecord.introducedDefects}, which audits the accuracy
+   * stage against a different baseline: one compares the original translation
+   * with the repaired one, the other the repaired one with what shipped.
+   */
+  readonly refinementDefects?: IssueProbeReading;
+
+  /**
    * Final text of this issue's slice, carried ONLY when
    * {@link RepairIssueRecord.refined} is set.
    *
@@ -303,6 +315,29 @@ export function buildIssueRecords(
           ...(outcome.refined
             ? { finalSliceText: outcome.repairedText, }
             : {}),
+          // Carried unfiltered, unlike introducedDefects above. That one is
+          // narrowed to the regions serving THIS issue, because the accuracy
+          // stage replaces one region per envelope and an issue is served by
+          // some of them. The lane rewrites the whole slice as one edit, so
+          // every issue in the slice shares the same single region and there is
+          // nothing to select.
+          // Rebuilt field by field rather than spread. The outcome carries an
+          // IntroducedDefectReport, which also holds `findings`, and a record
+          // is an IssueProbeReading, which does not. Structural typing accepts
+          // the wider value silently, so spreading it would write a field into
+          // every artifact that nothing declares and nothing reads.
+          ...(outcome.refinementDefects === undefined
+            ? {}
+            : {
+              refinementDefects: {
+                heardProbers: outcome.refinementDefects
+                  .heardProbers,
+                configuredProbers: outcome.refinementDefects
+                  .configuredProbers,
+                regions: outcome.refinementDefects
+                  .regions,
+              },
+            }),
         };
       },);
   },);
