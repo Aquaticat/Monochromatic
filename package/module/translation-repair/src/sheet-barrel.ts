@@ -93,6 +93,16 @@ export {
   type SampleManifestItem,
 } from './sample-manifest.ts';
 export {
+  computeDrawDigest,
+  DRAW_IDENTITY_DOMAIN,
+  type DrawIdentityItem,
+} from './sample-draw-identity.ts';
+export {
+  assertSheetMatchesManifest,
+  HEADER_ONLY_BINDING_NOTE,
+  type SheetBindingStrength,
+} from './sheet-binding.ts';
+export {
   assertRepairMeasurable,
   type BandQuota,
   classifyBand,

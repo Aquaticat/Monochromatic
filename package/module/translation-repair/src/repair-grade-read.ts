@@ -36,6 +36,11 @@ const SEED_PREFIX = 'Draw seed: ';
 const CORPUS_PREFIX = 'Corpus pin: ';
 
 /**
+ * Header line carrying the fingerprint of the draw a sheet came from.
+ */
+const DIGEST_PREFIX = 'Draw digest: ';
+
+/**
  * What a sheet says about the draw it belongs to.
  *
  * @example
@@ -53,6 +58,15 @@ export type SheetIdentity = {
    * Corpus commit the sheet declares, empty when the header carried none.
    */
   readonly corpusSha: string;
+
+  /**
+   * Draw fingerprint the sheet declares, empty when the header carried none.
+   *
+   * Empty is the ordinary reading for every sheet drawn before the binding
+   * existed, including round three's, which is why an absent digest is scored
+   * under the weaker check rather than refused.
+   */
+  readonly drawDigest: string;
 };
 
 /**
@@ -82,6 +96,7 @@ export function readSheetIdentity(
   const found = {
     seed: '',
     corpusSha: '',
+    drawDigest: '',
   };
   for (const line of text.split('\n',)) {
     if (line.startsWith(ITEM_PREFIX,))
@@ -91,6 +106,9 @@ export function readSheetIdentity(
         .trim();
     else if (line.startsWith(CORPUS_PREFIX,))
       found.corpusSha = line.slice(CORPUS_PREFIX.length,)
+        .trim();
+    else if (line.startsWith(DIGEST_PREFIX,))
+      found.drawDigest = line.slice(DIGEST_PREFIX.length,)
         .trim();
   }
   return found;

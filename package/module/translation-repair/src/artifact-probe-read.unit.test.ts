@@ -274,9 +274,18 @@ await describe({
 
         expect(claim?.modelId,).toBe('cat/one',);
         expect(claim?.admissibility,).toBe('corroborated',);
-        expect(claim?.evidence,).toBe('',);
-        expect(claim?.omittedText,).toBe('',);
-        expect(claim?.reason,).toBe('',);
+
+        // ABSENT, not empty. The reader used to write '' into every quote
+        // field so the result satisfied a full claim type, which made "this
+        // reader does not parse quotes" indistinguishable from "the prober
+        // quoted nothing" to anyone reading the value. Only the first is ever
+        // true here, since the screen cannot admit an unanchored claim as
+        // corroborated.
+        expect(Object.keys(claim ?? {},)
+          .toSorted(),).toEqual([
+          'admissibility',
+          'modelId',
+        ],);
       },
     },),
 

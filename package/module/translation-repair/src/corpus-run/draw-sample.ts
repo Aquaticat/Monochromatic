@@ -5,6 +5,8 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { parseSettledArtifact, } from '../artifact-read.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { formatGradingSheet, } from '../grading-sheet.ts';
@@ -446,6 +448,26 @@ async function drawGradingSample(): Promise<void> {
    */
   await using outputs = trackDrawOutputs({ enabled: isFinal, },);
 
+  // Built BEFORE either sheet, so one object is the source of the digest all
+  // three files carry. Computing it twice would let the sheets and the manifest
+  // disagree about the very thing that exists to prove they agree.
+  /**
+   * What sat at each sheet position, and the fingerprint of this exact draw.
+   */
+  const manifest = buildSampleManifest({
+    sample,
+    seed: drawSeed,
+    corpusSha: RUN_CORPUS_PIN.commitSha,
+  },);
+
+  /**
+   * Draw fingerprint printed into both sheet headers.
+   *
+   * Non-null because `buildSampleManifest` always computes one; the field is
+   * optional only so manifests written before the binding can still be read.
+   */
+  const drawDigest = nonNullishOrThrow(manifest.drawDigest,);
+
   // Recorded BEFORE each write, since a write can create the file and then
   // fail, and a path recorded only on success would leave that file behind.
   outputs.record({ path: outPath, },);
@@ -457,6 +479,7 @@ async function drawGradingSample(): Promise<void> {
         seed: drawSeed,
         bar: DEFAULT_PRECISION_BAR,
         corpusSha: RUN_CORPUS_PIN.commitSha,
+        drawDigest,
       },)
     }`,
     { flag: writeFlag, },
@@ -469,6 +492,7 @@ async function drawGradingSample(): Promise<void> {
         sample,
         seed: drawSeed,
         corpusSha: RUN_CORPUS_PIN.commitSha,
+        drawDigest,
       },)
     }`,
     { flag: writeFlag, },
@@ -483,11 +507,7 @@ async function drawGradingSample(): Promise<void> {
   await writeFile(
     manifestPath,
     `${JSON.stringify(
-      buildSampleManifest({
-        sample,
-        seed: drawSeed,
-        corpusSha: RUN_CORPUS_PIN.commitSha,
-      },),
+      manifest,
       undefined,
       2,
     )}\n`,

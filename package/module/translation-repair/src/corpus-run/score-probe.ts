@@ -17,6 +17,10 @@ import {
 } from '../repair-grade-read.ts';
 import type { TelemetryProbeReading, } from '../probe-attribution.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
+import {
+  assertSheetMatchesManifest,
+  HEADER_ONLY_BINDING_NOTE,
+} from '../sheet-binding.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Score probe
@@ -275,25 +279,15 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Draw the sheet says it belongs to.
+   * How firmly the sheet is tied to this manifest; refuses if it is not.
    */
-  const identity = readSheetIdentity({ text: sheetText, },);
-  if (identity.seed !== manifest.seed)
-    throw new Error(
-      `sheet and manifest belong to different draws: sheet says seed ${
-        JSON.stringify(identity.seed,)
-      }, manifest says ${JSON.stringify(manifest.seed,)}. Item counts can `
-        + 'match across unrelated draws of the same size, so position is not '
-        + 'evidence they describe the same items.',
-    );
-  if (identity.corpusSha !== manifest.corpusSha)
-    throw new Error(
-      `sheet and manifest were produced against different corpus commits: `
-        + `sheet says ${JSON.stringify(identity.corpusSha,)}, manifest says ${
-          JSON.stringify(manifest.corpusSha,)
-        }. The same entry can carry different text at two commits, so the `
-        + 'grades and the artifacts would be about different documents.',
-    );
+  const binding = assertSheetMatchesManifest({
+    identity: readSheetIdentity({ text: sheetText, },),
+    manifest,
+    sheetLabel: 'repair sheet',
+  },);
+  if (binding === 'header-only')
+    console.log(HEADER_ONLY_BINDING_NOTE,);
 
   /**
    * Human verdicts in sheet order.

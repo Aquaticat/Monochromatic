@@ -233,6 +233,7 @@ await describe({
           sample: candidates,
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes(REPLACEMENT,),).toBe(true,);
         expect(sheet.includes('- repair grade: [ ]',),).toBe(true,);
@@ -256,6 +257,7 @@ await describe({
           sample: candidates,
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
 
         /** Same sheet with the one box filled in, as a grader leaves it. */
@@ -291,6 +293,7 @@ await describe({
           sample: candidates,
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes(REPLACEMENT,),).toBe(true,);
         expect(sheet.includes('- repair grade: [ ]',),).toBe(false,);
@@ -308,6 +311,7 @@ await describe({
           seed: 'cat-seed',
           bar: 0.9,
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
 
         /** Detection sheet where it did not. */
@@ -316,6 +320,7 @@ await describe({
           seed: 'cat-seed',
           bar: 0.9,
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(shipped,).toBe(rejected,);
         expect(shipped.includes(REPLACEMENT,),).toBe(false,);

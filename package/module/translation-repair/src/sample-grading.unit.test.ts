@@ -425,6 +425,7 @@ await describe({
               seed: 'meow',
               bar: 0.9,
               corpusSha: 'a41fc60',
+              drawDigest: 'digest-of-this-draw',
             },);
             expect(sheet,).toContain('Draw seed: meow',);
             expect(sheet,).toContain('Precision bar: 0.9',);

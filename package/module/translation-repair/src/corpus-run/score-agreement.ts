@@ -9,7 +9,13 @@ import {
   scoreGradedPrecision,
 } from '../grade-agreement.ts';
 import { parseGradedSheet, } from '../grade-sheet-read.ts';
+import { readSheetIdentity, } from '../repair-grade-read.ts';
 import { DEFAULT_SAMPLE_SEED, } from '../sample-grading.ts';
+import { parseSampleManifest, } from '../sample-manifest.ts';
+import {
+  assertSheetMatchesManifest,
+  HEADER_ONLY_BINDING_NOTE,
+} from '../sheet-binding.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Score agreement
@@ -192,14 +198,67 @@ async function reportGrades(): Promise<void> {
     );
 
   /**
+   * Sheet contents, read once and used for both identity and verdicts.
+   */
+  const sheetText = await readFile(
+    sheetPath,
+    'utf8',
+  );
+
+  /**
+   * Draw this sheet declares, which decides which pre-grades may be joined to
+   * it.
+   *
+   * Read off the sheet rather than assumed from {@link DEFAULT_SAMPLE_SEED}.
+   * `--sheet` can point anywhere, and a fixed default seed meant an earlier
+   * round's graded sheet could be scored against THIS round's pre-grades, by
+   * position, reporting a confident agreement rate between two unrelated
+   * draws.
+   */
+  const identity = readSheetIdentity({ text: sheetText, },);
+
+  /**
+   * Seed the pre-grades and manifest are looked up under.
+   */
+  const seed = identity.seed || DEFAULT_SAMPLE_SEED;
+
+  // Validated BEFORE anything is reported, and not beside the code that needs
+  // it. Placing this check next to the pre-grade join put it after the early
+  // return taken when no pre-grades exist, so the run that most looks like a
+  // plain precision reading was exactly the one that checked nothing.
+  /**
+   * Manifest of the draw this sheet came from, when one sits beside it.
+   */
+  const manifest = await readOptional({
+    path: optionValue({ flag: '--manifest', },)
+      || join(
+        runsDir,
+        `sample-manifest-${seed}.json`,
+      ),
+  },);
+  if (manifest.found) {
+    /**
+     * How firmly the sheet is tied to that manifest; refuses if it is not.
+     */
+    const binding = assertSheetMatchesManifest({
+      identity,
+      manifest: parseSampleManifest({ value: JSON.parse(manifest.text,), },),
+      sheetLabel: 'detection sheet',
+    },);
+    if (binding === 'header-only')
+      console.log(HEADER_ONLY_BINDING_NOTE,);
+  }
+  else
+    console.log(
+      'NOTE no manifest found beside this sheet, so nothing proves the '
+        + 'pre-grades below describe the same draw. Both files are joined by '
+        + 'POSITION and neither prints an issue id.',
+    );
+
+  /**
    * Human's grades read off the sheet.
    */
-  const human = parseGradedSheet({
-    text: await readFile(
-      sheetPath,
-      'utf8',
-    ),
-  },);
+  const human = parseGradedSheet({ text: sheetText, },);
 
   /**
    * Precision over the items the human scored.
@@ -247,7 +306,7 @@ async function reportGrades(): Promise<void> {
     path: optionValue({ flag: '--pre-grades', },)
       || join(
         runsDir,
-        preGradeName({ seed: DEFAULT_SAMPLE_SEED, },),
+        preGradeName({ seed, },),
       ),
   },);
   if (!preGrades.found) {

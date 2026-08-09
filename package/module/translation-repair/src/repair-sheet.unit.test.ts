@@ -183,6 +183,7 @@ await describe({
           seed: 'cat-seed',
           bar: 0.9,
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
 
         /** Line prefixes the detection sheet is allowed to render per item. */
@@ -223,6 +224,7 @@ await describe({
           sample: [catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('GRADE THE DETECTION SHEET FIRST',),).toBe(true,);
         expect(sheet.includes(REPLACEMENT,),).toBe(true,);
@@ -238,6 +240,7 @@ await describe({
           sample: [catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         // Asserted against the model rather than against wording: GradableRepair
         // carries no checker field at all, so no rewording of this sheet can
@@ -280,6 +283,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
 
         // Counted OUTSIDE fenced blocks, because that is the real property:
@@ -329,6 +333,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('DELETED',),).toBe(true,);
       },
@@ -350,6 +355,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('The cat sleeps on the windowsill all afternoon.',))
           .toBe(true,);
@@ -366,6 +372,7 @@ await describe({
           sample: [catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('猫猫在窗台上睡觉。',),).toBe(true,);
       },
@@ -385,6 +392,7 @@ await describe({
             sample: [catCandidate({ repair: catRepair({ disposition, },), },),],
             seed: 'cat-seed',
             corpusSha: 'sha/1',
+            drawDigest: 'digest-of-this-draw',
           },);
           expect(sheet.includes('repair grade: [ ]',),).toBe(false,);
           expect(sheet.includes(disposition,),).toBe(true,);
@@ -409,6 +417,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('grade the FINAL wording',),).toBe(false,);
         expect(sheet.includes('counts against coverage',),).toBe(true,);
@@ -463,6 +472,7 @@ await describe({
           sample: [catCandidate({},),],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('NOT GRADABLE',),).toBe(true,);
         expect(sheet.includes('repair grade: [ ]',),).toBe(false,);
@@ -484,6 +494,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('The cat sleeps on the windowsill all afternoon.',))
           .toBe(true,);
@@ -509,6 +520,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('SHARED',),).toBe(true,);
         // Issue ids are 64-character hashes a grader cannot look up, so the
@@ -543,6 +555,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('appear here as item(s) 2',),).toBe(true,);
         expect(sheet.includes('appear here as item(s) 1',),).toBe(true,);
@@ -560,6 +573,7 @@ await describe({
           ],
           seed: 'cat-seed',
           corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
         },);
         expect(sheet.includes('### 1. Kitten',),).toBe(true,);
         expect(sheet.includes('### 2. Kitten',),).toBe(true,);

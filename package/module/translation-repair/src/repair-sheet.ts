@@ -287,6 +287,8 @@ function renderCandidate(
  *
  * @param corpusSha - pinned corpus commit artifacts were produced against
  *
+ * @param drawDigest - fingerprint binding this sheet to one exact draw
+ *
  * @returns Repair grading sheet as markdown text
  *
  * @example
@@ -295,6 +297,7 @@ function renderCandidate(
  *   sample,
  *   seed: DEFAULT_SAMPLE_SEED,
  *   corpusSha: 'a41fc60',
+ *   drawDigest,
  * },);
  * ```
  */
@@ -303,10 +306,12 @@ export function formatRepairSheet(
     sample,
     seed,
     corpusSha,
+    drawDigest,
   }: {
     readonly sample: readonly GradingCandidate[];
     readonly seed: string;
     readonly corpusSha: string;
+    readonly drawDigest: string;
   },
 ): string {
   /**
@@ -328,6 +333,7 @@ export function formatRepairSheet(
     '',
     `Draw seed: ${seed}`,
     `Corpus pin: ${corpusSha}`,
+    `Draw digest: ${drawDigest}`,
     `Sample size: ${String(sample.length,)}`,
     '',
     '---',

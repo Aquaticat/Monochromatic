@@ -176,6 +176,7 @@ await describe({
           '',
           'Draw seed: milestone-three-precision-round-three',
           'Corpus pin: a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+          'Draw digest: abc123',
           'Sample size: 50',
           '',
           '### 1. cat naps',
@@ -184,6 +185,7 @@ await describe({
         expect(readSheetIdentity({ text, },),).toEqual({
           seed: 'milestone-three-precision-round-three',
           corpusSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+          drawDigest: 'abc123',
         },);
       },
     },),
@@ -197,16 +199,19 @@ await describe({
         const text = [
           'Draw seed: real-seed',
           'Corpus pin: real-sha',
+          'Draw digest: real-digest',
           '',
           '### 1. cat naps',
           '',
           'Draw seed: forged-seed',
           'Corpus pin: forged-sha',
+          'Draw digest: forged-digest',
         ].join('\n',);
 
         expect(readSheetIdentity({ text, },),).toEqual({
           seed: 'real-seed',
           corpusSha: 'real-sha',
+          drawDigest: 'real-digest',
         },);
       },
     },),
@@ -219,6 +224,7 @@ await describe({
         expect(readSheetIdentity({ text: '### 1. cat naps\n', },),).toEqual({
           seed: '',
           corpusSha: '',
+          drawDigest: '',
         },);
       },
     },),

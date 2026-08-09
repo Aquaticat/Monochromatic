@@ -95,6 +95,8 @@ function sourceLine(candidate: GradingCandidate,): string {
  *
  * @param corpusSha - pinned corpus commit the artifacts were produced against
  *
+ * @param drawDigest - fingerprint binding this sheet to one exact draw
+ *
  * @returns The grading sheet as markdown text
  *
  * @example
@@ -104,6 +106,7 @@ function sourceLine(candidate: GradingCandidate,): string {
  *   seed: DEFAULT_SAMPLE_SEED,
  *   bar: DEFAULT_PRECISION_BAR,
  *   corpusSha: 'a41fc60',
+ *   drawDigest,
  * },);
  * ```
  */
@@ -113,11 +116,13 @@ export function formatGradingSheet(
     seed,
     bar,
     corpusSha,
+    drawDigest,
   }: {
     readonly sample: readonly GradingCandidate[];
     readonly seed: string;
     readonly bar: number;
     readonly corpusSha: string;
+    readonly drawDigest: string;
   },
 ): string {
   /**
@@ -149,6 +154,7 @@ export function formatGradingSheet(
     `Precision bar: ${String(bar,)} (accepted-issue precision must clear this).`,
     `Draw seed: ${seed}`,
     `Corpus pin: ${corpusSha}`,
+    `Draw digest: ${drawDigest}`,
     `Sample size: ${String(sample.length,)} (${sampledPerBand})`,
     '',
     '---',
