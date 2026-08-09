@@ -5917,3 +5917,51 @@ The remaining work is #58 proper:
  and it rewrote 90 shipped records here.
 That is the same blind spot the introduced-defect probe was built to close,
  one stage later.
+
+## The naturalness lane is audited now, and the audit was checked before trusting it
+
+#58 is built, wired, read, reported, and validated live.
+
+An accepted refinement runs the same introduced-defect probe against the pair
+ that actually matters for it:
+ `baselineText` is the repaired text and the region is the rewritten slice.
+One region per slice, because `RefineStageResult` exposes only whole-slice text
+ and because `retainsResolvedIssues` already rolls back per slice,
+so the audit's unit matches the lane's own unit of decision.
+The roster is the checkers, whom `assertCheckerIndependence` has already proved
+ disjoint from the refiners.
+
+THE PROMPT NEEDED A SECOND FRAMING, and this was the part worth being careful
+ about.
+The probe tells reviewers the editor was "trying to fix defects that were
+ ALREADY THERE",
+ which is false of a lane that rewrites already-correct text for fluency.
+The rule that saves it, "Stylistic preference is NOT a defect", was already
+ there and is shared.
+A first attempt neutralised that rule's neighbour into kind-agnostic wording,
+ which would have silently reworded the ACCURACY prompt too;
+the accuracy prompt is byte-identical to the one every artifact was produced
+ under, and a test pins it.
+
+VALIDATED LIVE rather than assumed, all three at 3/3 heard:
+
+```text
+SENSITIVITY refinement/clean          noneFound=3   (no claims)
+SENSITIVITY refinement/omitting       removal=3
+SENSITIVITY refinement/contradicting  corroborated=3
+```
+
+The control is the one that mattered.
+This lane exists to rephrase, so a prober reading rephrasing as damage would
+ flag every refinement the pipeline ships,
+and in a shadow-mode stage nobody reads, that failure looks exactly like a clean
+ run.
+It reported nothing on the clean rewrite and caught both injected damages.
+
+READING IT: `score-probe` prints a REFINEMENT line, kept separate from the
+ accuracy figures because the two audit different edits against different
+ baselines and their region counts are different units (rewritten slices against
+ replaced envelopes).
+`rewrittenSlices=0` prints a note saying so, because every artifact before run
+ 012 predates the audit and a bare zero there would read as "the lane broke
+ nothing" when it means "nothing asked".
