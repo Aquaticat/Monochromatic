@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
+import type { ProbedEditKind, } from '../introduced-defect-wire.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import {
   createRunClient,
@@ -69,6 +70,52 @@ const CONTRADICTING_REGION: RepairRegion = {
 };
 
 /**
+ * Repaired text the NATURALNESS regions are rewrites of.
+ *
+ * Already correct and already grammatical, which is the state the lane actually
+ * receives. A fixture that started from broken text would let a prober credit
+ * the rewrite for fixing something, and the question here is only what the
+ * rewrite BROKE.
+ */
+const REFINED_BASELINE_TEXT =
+  `The cat sleeps on the windowsill, and she wakes when the sun moves.
+The cat chases butterflies, which she loves.`;
+
+/**
+ * Rewrite that only smooths the wording.
+ *
+ * The control for the naturalness framing, and the one that matters most: this
+ * lane exists to rephrase, so a prober that reports rephrasing as damage would
+ * flag every refinement the pipeline ever makes.
+ */
+const REFINED_CLEAN_REGION: RepairRegion = {
+  envelopeId: 'refinement/clean',
+  issueIds: ['adjudicated/tense',],
+  before: 'The cat sleeps on the windowsill, and she wakes when the sun moves.',
+  editorAfter: 'The cat sleeps on the windowsill and wakes when the sun moves.',
+};
+
+/**
+ * Rewrite that smooths the wording and DROPS the waking clause.
+ */
+const REFINED_OMITTING_REGION: RepairRegion = {
+  envelopeId: 'refinement/omitting',
+  issueIds: ['adjudicated/tense',],
+  before: 'The cat sleeps on the windowsill, and she wakes when the sun moves.',
+  editorAfter: 'The cat sleeps on the windowsill.',
+};
+
+/**
+ * Rewrite that smooths the wording and inverts the meaning.
+ */
+const REFINED_CONTRADICTING_REGION: RepairRegion = {
+  envelopeId: 'refinement/contradicting',
+  issueIds: ['adjudicated/tense',],
+  before: 'The cat chases butterflies, which she loves.',
+  editorAfter: 'The cat chases butterflies, which she hates.',
+};
+
+/**
  * Original the regions are judged against.
  */
 const SOURCE_TEXT = `猫猫在窗台上睡觉，太阳移动时她会醒来。
@@ -126,11 +173,15 @@ async function probeOne(
     expectation,
     issues,
     condition,
+    editKind = 'accuracy-repair',
+    baselineText = BASELINE_TEXT,
   }: {
     readonly region: RepairRegion;
     readonly expectation: string;
     readonly issues: readonly AdjudicatedIssue[];
     readonly condition: string;
+    readonly editKind?: ProbedEditKind;
+    readonly baselineText?: string;
   },
 ): Promise<void> {
   /**
@@ -140,9 +191,10 @@ async function probeOne(
     client: createRunClient(),
     proberModelIds: RUN_MODELS.checkerModelIds,
     sourceText: SOURCE_TEXT,
-    baselineText: BASELINE_TEXT,
+    baselineText,
     regions: [region,],
     issues,
+    editKind,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-sensitivity', },),
@@ -217,12 +269,45 @@ async function main(): Promise<void> {
       condition: 'shown',
     },);
   }
+  // The NATURALNESS framing gets its own arm, because it is a different prompt
+  // asking the same question and a working accuracy probe proves nothing about
+  // it. Its control carries the weight here: the lane exists to rephrase, so a
+  // prober that reads rephrasing as damage would flag every refinement the
+  // pipeline makes, and that failure is invisible in production because a
+  // shadow-mode stage nobody reads looks identical either way.
+  for (const probe of [
+    {
+      region: REFINED_CLEAN_REGION,
+      expectation: 'no-damage',
+    },
+    {
+      region: REFINED_OMITTING_REGION,
+      expectation: 'damage-omission',
+    },
+    {
+      region: REFINED_CONTRADICTING_REGION,
+      expectation: 'damage-meaning-inverted',
+    },
+  ]) {
+    await probeOne({
+      ...probe,
+      issues: [PRIOR_ISSUE,],
+      condition: 'shown',
+      editKind: 'naturalness-refinement',
+      baselineText: REFINED_BASELINE_TEXT,
+    },);
+  }
   /* oxlint-enable no-await-in-loop */
 
   console.log(
     'NOTE compare each region\'s two lines. A stage that claims damage with '
       + 'prior=absent and goes quiet with prior=shown is one the production '
       + 'prompt silences, and its zeros in a real run would mean nothing.',
+  );
+  console.log(
+    'NOTE the refinement/* lines test the naturalness framing. Its control is '
+      + 'refinement/clean: a claim there means the probe reads mere rephrasing '
+      + 'as damage, which would flag every refinement the lane ever ships.',
   );
 }
 
