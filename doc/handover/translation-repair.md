@@ -6061,3 +6061,75 @@ The deferral still stands, but on "low and unvalidated" rather than on a column
      bind sheets to an exact draw by digest, and stop the telemetry reader
      returning claims with empty quote fields.
 -   #51 and #31 are untouched and need quota, so they contend with the pass.
+
+## Run 012 settled, and the naturalness audit has its first live numbers
+
+Run 012 ended on its SOFT budget, not on a fault.
+
+```text
+DONE processed=4 of pending=54; artifacts=42/92 elapsed=43529854ms
+SOFT budget reached after 43529854ms; not starting new entries
+```
+
+Two entries settled (40 to 42 artifacts) out of 4 processed.
+`Y1Ran` burned its full 3-hour per-entry deadline and ended `status=ERROR
+ aborted=true`.
+Per #61 that costs a restart rather than an entry:
+ `attempts.json` shows `Y1Ran: 1`, so its banked chunks resume on the next
+ attempt.
+Throughput was poor and the log says why, in the drain lines rather than in any
+ pipeline stage:
+ first-byte times of 43s, 112s, 143s, 161s, 191s, 217s and 262s on a single
+ stage, and one critic round losing 6 of 6 voices to the 360s deadline before
+ the retry recovered all six.
+That is provider latency, recorded here as an observation with its evidence and
+ NOT as a trend: it is one run.
+
+RUN 013 IS RUNNING, launched from the same task at the same tip, log
+ `pass8-run-013.log`.
+
+### The first REFINEMENT line, and how not to misread it
+
+`score-probe` at 42 entries:
+
+```text
+PROBE       entries=42 shippedRecords=1791 unprobedRecords=0 regions=583
+            majorityIntroduced=12 minorityIntroduced=67 noneIntroduced=504
+CLAIMS      added=60 dropped=32 contradicted=1 unanchored=2
+            degradedRosterRegions=0
+REFINEMENT  rewrittenSlices=9 majorityIntroduced=1 minorityIntroduced=3
+            noneIntroduced=5 added=3 dropped=2 contradicted=0 unanchored=1
+```
+
+The audit built in #58 is producing output on live corpus data.
+Three artifacts carry it (`Toka_ls`, `SS3B_0016`, `TianqiChen666`), being the
+ ones settled since the lane was instrumented.
+
+WHAT THESE NINE SLICES DO NOT SUPPORT: any rate, and any comparison against the
+ accuracy line.
+n IS 9.
+The two lines count different units, rewritten slices against replaced
+ envelopes, which `score-probe.ts` states at its own REFINEMENT summary;
+ setting 1 in 9 beside 12 in 583 would be a ratio between incompatible
+ denominators AND a rate from single digits.
+That is the same move withdrawn from
+ `doc/decision/introduced-defect-probe-gating.md`, which asserted a stable rate
+ on two events.
+Report the counts with their denominator and stop there until the sample grows.
+
+What IS supportable at n=9: the lane's audit is wired end to end, it reports
+ non-zero, and it does not report zero everywhere (which would have been the
+ signature of a probe that never fires).
+The `noneIntroduced=5` cell matters as much as the flagged one: a probe reading
+ every rephrasing as damage would have flagged all nine.
+
+### Checked rather than assumed, for whoever picks up #63
+
+The suspicion that a re-draw could overwrite the MANIFEST while `wx` protected
+ the sheets is FALSE.
+`corpus-run/draw-sample.ts` uses one `writeFlag` for all three outputs, and a
+ final draw sets it to `wx`, so a final draw creates every output exclusively or
+ creates none.
+The digest binding is still worth building, for a different reason:
+ the sheets print no issue id anywhere, so a header is the ONLY thing that can
+ tie a sheet to the items it was drawn from.
