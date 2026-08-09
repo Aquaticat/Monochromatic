@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { parseDocument, } from './parse-document.ts';
 import {
   collectDefinitions,
@@ -211,6 +212,42 @@ export async function runRefinePhase(
         .push(outcome,);
       continue;
     }
+    /**
+     * Shadow-mode audit of damage the REWRITE caused.
+     *
+     * The accuracy probe already ran, but it compared the original translation
+     * with the repaired one and finished before this lane started, so it says
+     * nothing about the text this rewrite produced. Auditing one whole slice
+     * rather than each rewritten paragraph matches the unit the lane itself
+     * decides in: `retainsResolvedIssues` rolls back the whole slice too.
+     *
+     * The roster is the checkers, exactly as the accuracy probe uses, and
+     * `assertCheckerIndependence` above has already established that no
+     * refiner is among them, so nobody audits their own rewrite.
+     */
+    const refinementDefects = await runIntroducedDefectProbe({
+      client,
+      proberModelIds: models.checkerModelIds,
+      sourceText,
+      baselineText: outcome.repairedText,
+      regions: [
+        {
+          envelopeId: `refinement/${String(outcome.chunkIndex,)}`,
+          issueIds: outcome.issues
+            .map(function toId(issue,) {
+              return issue.issueId;
+            },),
+          before: outcome.repairedText,
+          editorAfter: refined.refinedText,
+        },
+      ],
+      issues: outcome.issues,
+      editKind: 'naturalness-refinement',
+      signal,
+      perCallTimeoutMs,
+      l,
+    },);
+
     collected.outcomes
       .push({
         ...outcome,
@@ -220,6 +257,7 @@ export async function runRefinePhase(
         // a grading sheet can say so instead of presenting an editor
         // replacement as the words that shipped.
         refined: true,
+        refinementDefects,
       },);
     /* oxlint-enable no-await-in-loop */
   }

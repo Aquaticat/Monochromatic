@@ -191,6 +191,25 @@ function scriptedPhase(
           best: 1,
           reason: 'scripted',
         }
+        // The naturalness probe answers a DIFFERENT schema from the checker,
+        // and the checker-shaped fallback below fails its guard. That failure
+        // is swallowed as a lost voice, so without this branch the probe would
+        // report nothing heard and a case asserting it ran would pass for the
+        // wrong reason.
+        : stage === 'introduced_defect_report'
+        ? {
+          checks: [
+            {
+              region: 1,
+              verdict: 'no-introduced-defect-found',
+              category: '',
+              severity: '',
+              evidence: '',
+              omittedText: '',
+              reason: '',
+            },
+          ],
+        }
         : {
           checks: [...Array.from(
             { length: content.split('\nISSUE ',).length - 1, },
@@ -309,6 +328,60 @@ await describe({
               return finding.includes('refine-recheck-passed',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'AUDITS the rewrite it accepted, attaching a refinement probe '
+        + 'report to the refined outcome. retainsResolvedIssues only proves a '
+        + 'rewrite did not UNDO a confirmed repair; a rewrite can leave every '
+        + 'confirmed repair standing and still damage the wording around it, '
+        + 'and before this the lane was the one stage that could change shipped '
+        + 'text with nothing asking',
+      fn: async () => {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          checkerVerdict: 'fixed',
+        },);
+
+        expect(phase.outcomes[0]?.refined,).toBe(true,);
+        /**
+         * Report the lane attached for its own rewrite.
+         */
+        const report = phase.outcomes[0]
+          ?.refinementDefects;
+        expect(report,).toBeDefined();
+        // Heard rather than lost: a report of zero heard probers is what a
+        // silently broken wiring also produces, so the count is the assertion.
+        expect(report
+          ?.heardProbers,).toBeGreaterThan(0,);
+        expect(report
+          ?.regions
+          .length,).toBe(1,);
+        expect(report
+          ?.regions[0]
+          ?.envelopeId,).toBe('refinement/0',);
+      },
+    },),
+
+    it({
+      name: 'attaches NO refinement report when the lane changed nothing, so '
+        + 'an absent report means no rewrite happened rather than a rewrite '
+        + 'nobody checked',
+      fn: async () => {
+        /** Roster with the lane off. */
+        const laneOff: RepairModels = {
+          ...MODELS,
+          refinerModelIds: [],
+        };
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          checkerVerdict: 'fixed',
+          models: laneOff,
+        },);
+
+        expect(phase.outcomes[0]?.refined,).toBe(false,);
+        expect(phase.outcomes[0]?.refinementDefects,).toBeUndefined();
       },
     },),
 

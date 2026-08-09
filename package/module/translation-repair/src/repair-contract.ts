@@ -423,6 +423,24 @@ export type ChunkRepairOutcome = {
   readonly refined: boolean;
 
   /**
+   * Shadow-mode audit of damage the NATURALNESS REWRITE caused, present only on
+   * a slice the lane actually rewrote.
+   *
+   * Separate from {@link ChunkRepairOutcome.introducedDefects} because the two
+   * audit different edits against different baselines, and merging them would
+   * produce a rate about neither: the accuracy probe compares the original
+   * translation with the repaired one, this compares the repaired one with the
+   * refined one.
+   *
+   * It exists because the lane was the one stage that could change shipped text
+   * with nothing asking whether it broke anything. `retainsResolvedIssues`
+   * guards the opposite direction, that a rewrite did not UNDO a confirmed
+   * repair, and a rewrite can leave every confirmed repair standing while
+   * damaging the wording around them.
+   */
+  readonly refinementDefects?: IntroducedDefectReport;
+
+  /**
    * Critics reporting critical non-translation at wire level.
    */
   readonly nonTranslationVotes: number;
