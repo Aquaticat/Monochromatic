@@ -14,6 +14,7 @@ export {
   type IntroducedDefectVerdict,
   isIntroducedDefectReportWire,
   isIntroducedDefectVerdict,
+  type ProbedEditKind,
 } from './introduced-defect-wire.ts';
 export {
   type ClaimAdmissibility,

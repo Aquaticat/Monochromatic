@@ -8,6 +8,7 @@ import {
   type IntroducedDefectCheckWire,
   INTRODUCED_DEFECT_RESPONSE_FORMAT,
   isIntroducedDefectReportWire,
+  type ProbedEditKind,
 } from './introduced-defect-wire.ts';
 import {
   type RegionDefectTally,
@@ -105,6 +106,7 @@ export async function runIntroducedDefectProbe(
     baselineText,
     regions,
     issues,
+    editKind = 'accuracy-repair',
     signal,
     perCallTimeoutMs,
     l,
@@ -115,6 +117,7 @@ export async function runIntroducedDefectProbe(
     readonly baselineText: string;
     readonly regions: readonly RepairRegion[];
     readonly issues: readonly AdjudicatedIssue[];
+    readonly editKind?: ProbedEditKind;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -131,6 +134,7 @@ export async function runIntroducedDefectProbe(
     baselineText,
     regions,
     issues,
+    editKind,
   },);
 
   /**
