@@ -2898,6 +2898,19 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   matchers include `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toHaveLength`, `toThrow`.
 - mise task wrappers swallow findings into inherited stdio:
   capture full output to a scratchpad file and `rg` it; tails alone mislead.
+- **`test:unit` alone tests the PREVIOUS BUILD.**
+  Every `*.unit.test.ts` here imports `../dist/final/node/index.mjs`, the built
+  bundle, not the source beside it,
+  and `lint:types` does NOT type-check `*.unit.test.ts` at all.
+  So a green `test:unit` straight after a source edit is evidence about the
+  build from before that edit,
+  and a test calling a function without a newly required argument is reported by
+  neither task.
+  Always use `mise run //package/module/translation-repair:buildAndTest`.
+  Measured rather than suspected:
+  two green `test:unit` runs were collected in the 2026-08-09 session before
+  this was noticed, and neither had executed a line of the new code;
+  the first `buildAndTest` after it failed immediately on a real assertion.
 - Run `pnpm install` after every `package.json` dependency edit (TS2307 otherwise).
 - Fixtures must never contain real-person data or recognizable source content;
   cat-themed invention mirroring structure only (user corrected this twice; treat as hard rule).
@@ -6228,3 +6241,27 @@ So `mise run //package/module/translation-repair:test:unit` on its own tests the
 Use `buildAndTest`.
 Two green runs were collected here before that was noticed, and neither had
  executed a line of the new code.
+
+### Two follow-ups from the task 63 review, one closed and one recorded
+
+CLOSED: absence was accepted ASYMMETRICALLY.
+A legacy sheet paired with a NEW manifest passed under the weaker check, as did
+ a bound sheet whose manifest carried nothing.
+One draw writes all three files in one instant and always computes a digest now,
+ so a one-sided pair was assembled from two draws, which is the case the binding
+ exists to refuse.
+It throws now, and `requireSheetSeed` replaced the
+ `identity.seed || DEFAULT_SAMPLE_SEED` fallback for the same reason:
+ measured first, every grading and repair sheet in the runs directory carries a
+ `Draw seed` header (only the gate verdicts do not), so the fallback was
+ unreachable for real input and only ever a way to place an unplaceable file
+ under whichever round is current.
+
+RECORDED, NOT CLOSED: the pre-grades file carries no draw identity at all.
+It is a bare position-to-verdict map with keys `"0"` to `"49"`, joined by
+ position like everything else here.
+Deriving its path from the seed the sheet declares is enough for round three,
+ because the one-shot draw guard means exactly one draw ever held that seed.
+It is not enough in general, and the fix is a schema change to a file that
+ currently exists once, on disk, in the middle of the measurement it feeds.
+Do it when #48 and #60 close, not before.
