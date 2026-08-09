@@ -6133,3 +6133,98 @@ The suspicion that a re-draw could overwrite the MANIFEST while `wx` protected
 The digest binding is still worth building, for a different reason:
  the sheets print no issue id anywhere, so a header is the ONLY thing that can
  tie a sheet to the items it was drawn from.
+
+## Task 63 landed: sheets bind to a draw, and the reader stops faking claims
+
+Both halves are built, tested, and exercised on the real command path.
+
+### The binding
+
+Sheets are joined to their manifest BY POSITION, and the only check was that
+ both declared the same seed and the same corpus pin.
+That check cannot do the job it was asked to do.
+The draw is deterministic in its SEED but not in its POOL, the pool grows with
+ every entry that settles, and so one seed at one corpus commit names a
+ different set of items at different times.
+Two draws can agree on seed, on pin, and on item count while describing
+ different issues;
+ the join would then mislabel every verdict and error nowhere.
+
+Now all three outputs carry a digest over the ordered item identities
+ (`position`, `entryId`, `issueId`), plus the seed and pin, under a
+ `sample-draw/v1` domain prefix.
+It is computed ONCE per draw, from the manifest object both sheets are rendered
+ beside, so the three files cannot disagree about the thing that exists to prove
+ they agree.
+Canonicalized through `JSON.stringify`, never a delimiter join:
+ an entry id containing the delimiter would otherwise let two different draws
+ hash alike, which is the SYB failure in miniature.
+
+`parseSampleManifest` RECOMPUTES the digest rather than trusting the stored
+ string.
+A digest never checked against its own contents proves only that two files carry
+ the same characters, so editing the items and leaving the digest alone would
+ still match a sheet carrying the stale value.
+
+Positions are now checked against where each item sits.
+`requireCount` admits zero and admits any ordering, while both scorers read
+ grades by ARRAY INDEX and take the issue id from the item at that index, so a
+ manifest recording another order described one join while the code performed a
+ different one.
+
+### Two defects found on the way, neither in the original task
+
+`score-agreement` had NO manifest check at all, and looked up pre-grades under
+ a fixed default seed while `--sheet` could point anywhere.
+An earlier round's graded sheet scored against this round's pre-grades would
+ have reported a confident agreement rate between unrelated draws.
+It now derives the pre-grade path from the seed the sheet declares, and
+ validates a manifest.
+
+The first version of that check sat AFTER the early return taken when no
+ pre-grades exist, so it never ran.
+The unit tests passed the whole time.
+What caught it was running the real command against a deliberately mismatched
+ pair: two preliminary draws from pools of 304 and 364 candidates at the same
+ seed and pin, then scoring the first sheet against the second manifest.
+It printed the precision line and no refusal.
+The check now runs before anything is reported.
+
+### Legacy sheets are scoreable, and say so
+
+A missing digest is a NOTE, not a refusal.
+Round three was drawn before the binding existed, and a final draw refuses to
+ overwrite itself precisely because a sheet may already carry hours of grading,
+ so refusing would strand work nothing can reproduce.
+Verified: both scoring commands still run against the real round-three files and
+ print the weaker-binding note.
+The round-three files were NOT backfilled with a digest.
+Writing into a sheet the user may open at any moment buys a retroactively
+ trusted association, which is not what the digest is for.
+
+### The reader half
+
+`ProbeClaimAttribution`, `TelemetryRegionTally` and `TelemetryProbeReading` name
+ what the artifact reader actually returns.
+It parses `modelId` and `admissibility` and drops every quote field, because
+ those carry unlicensed corpus text into a summary meant to be pasteable;
+ it used to satisfy the full claim type by writing `''` into all five text
+ fields, which is a claim shaped exactly like a complete one.
+A caller reading `claim.evidence` could not tell "not parsed" from "quoted
+ nothing", and only the first is ever true, since the screen cannot admit an
+ unanchored claim as corroborated.
+
+Region parsing moved to `artifact-probe-tally.ts`.
+That was forced rather than chosen: the refinement audit had pushed
+ `artifact-probe-read.ts` to 326 code lines against a 300 cap, which the package
+ lint reported and the previous session did not re-run after landing it.
+
+### A methodology trap worth carrying forward
+
+`*.unit.test.ts` files import `../dist/final/node/index.mjs`, the BUILT bundle,
+ and `lint:types` does NOT type-check them.
+So `mise run //package/module/translation-repair:test:unit` on its own tests the
+ PREVIOUS build, and a green run right after a source edit means nothing.
+Use `buildAndTest`.
+Two green runs were collected here before that was noticed, and neither had
+ executed a line of the new code.

@@ -23,6 +23,15 @@ sample-manifest-milestone-three-precision-round-three.json
 A `-preliminary` suffix means a scratch draw taken before coverage filled.
 Those are meant to be redrawn and are not the gate.
 
+Both scoring commands now print a NOTE about the DRAW DIGEST before their
+numbers, and for round three it will say the binding is the weaker one.
+That is expected and is not a problem with your grading.
+Sheets drawn from now on carry a fingerprint of the exact item list, and the
+scorers refuse a sheet whose fingerprint disagrees with its manifest;
+round three was drawn before that existed, so it is checked on seed and corpus
+pin as it always was.
+Nothing about the numbers changes.
+
 The manifest is not for you to read.
 It records which issue sat at which sheet position,
 which is the only way a grade you write can be matched to what the pipeline
