@@ -209,10 +209,16 @@ WHEN FIFTEEN SETTLE:
     round one 0.560/0.636/0.680, round two 0.740/0.787/0.800).
 4.    `score-probe --repair-sheet PATH --manifest PATH` for the probe.
 
-THEN ASK, DO NOT ASSUME. Task 53's gate-versus-rank question is the user's.
-They declined all four options offered and named a better one they have not
-written down. `refutedByHuman` from step 4 is the evidence that question needed,
-not its answer.
+SUPERSEDED 2026-08-07: TASK 53 IS ANSWERED, do not re-ask it. Put to the user
+with `AskUserQuestion`, they chose to keep the probe in SHADOW MODE. The four
+options, the full ranking, and the condition that reopens the question live in
+`doc/decision/introduced-defect-probe-gating.md`, which is canonical.
+`refutedByHuman` from step 4 is the evidence that reopens it, and revising that
+document is what to do with it.
+
+When scoring the probe, subtract `refinedJoined` before reading any other
+count: on those positions the probe judged wording the naturalness lane
+replaced, so they compare two different texts.
 
 DO NOT start the recall re-measure (task 51) while a pass is running; it
 contends for the same quota.
@@ -5220,6 +5226,14 @@ regions a gate would have blocked has stayed at exactly 1 while the denominator
 went 13, 67, 68, 72. Reading that as roughly 1.4 percent is the wrong emphasis;
 the shape is that a SECOND blocking region has not appeared at all across
 seventy-odd regions of real corpus output.
+
+WRONG, AND KEPT HERE AS THE MISTAKE IT WAS. A second blocking region did appear,
+at 18 entries, and by 38 entries the count was 8 across 508 regions, about 1.6%.
+"Roughly 1.4 percent" was the right emphasis all along and this paragraph
+talked itself out of it. One event cannot distinguish a rare thing from an
+absent one, and dressing a small numerator up as a qualitative shape is how a
+sample size gets mistaken for a finding. The corrected series and the reasoning
+are in `doc/decision/introduced-defect-probe-gating.md`.
 
 WHAT IT MEANS FOR ISSUE #53. Every option on the table (fall back to a
 runner-up candidate, salvage by dropping confirmed-defective operations and
