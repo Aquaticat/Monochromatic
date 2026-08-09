@@ -216,6 +216,17 @@ export type ArtifactProbeReading = {
    * Shipped records carrying no probe field at all.
    */
   readonly unprobedRecords: number;
+
+  /**
+   * Readings of the NATURALNESS lane's own rewrites.
+   *
+   * Kept as a flat list rather than deduplicated here, because every issue of a
+   * rewritten slice carries the same report and the region ids are per slice
+   * (`refinement/<chunkIndex>`). `summarizeProbeTelemetry` already collapses by
+   * envelope id, so passing this list through it counts each rewrite once
+   * rather than once per issue the slice happened to contain.
+   */
+  readonly refinementReadings: readonly IssueProbeReading[];
 };
 
 /**
@@ -415,6 +426,68 @@ function parseClaimIdentities(
 }
 
 /**
+ * Parses one probe reading, whichever edit produced it.
+ *
+ * Shared by the accuracy probe and the naturalness one, because the two audit
+ * different edits and record the identical shape. Two copies of this would be
+ * two chances for the readers to drift, and a reader that drifts from its
+ * writer produces counts rather than errors.
+ *
+ * @param value - candidate reading from artifact JSON
+ *
+ * @param path - dotted path for error messages
+ *
+ * @returns Reading as the summary reads it
+ *
+ * @throws {@link ArtifactParseError} when any count or region is malformed
+ *
+ * @example
+ * ```ts
+ * const reading = parseProbeReading({ value: probe, path, },);
+ * ```
+ */
+function parseProbeReading(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): IssueProbeReading {
+  /**
+   * Reading as a record.
+   */
+  const reading = requireRecord({
+    value,
+    path,
+  },);
+  return {
+    heardProbers: requireCount({
+      value: reading.heardProbers,
+      path: `${path}.heardProbers`,
+    },),
+    configuredProbers: requireCount({
+      value: reading.configuredProbers,
+      path: `${path}.configuredProbers`,
+    },),
+    regions: requireArray({
+      value: reading.regions,
+      path: `${path}.regions`,
+    },)
+      .map(function toTally(
+        regionValue,
+        regionIndex,
+      ) {
+        return parseRegionTally({
+          value: regionValue,
+          path: `${path}.regions[${String(regionIndex,)}]`,
+        },);
+      },),
+  };
+}
+
+/**
  * Reads probe telemetry out of one settled artifact.
  *
  * @param value - parsed artifact JSON
@@ -536,29 +609,10 @@ export function readArtifactProbe(
             .refined,
           path: `${path}.issues[${String(entry.index,)}].refined`,
         },),
-        reading: {
-          heardProbers: requireCount({
-            value: reading.heardProbers,
-            path: `${probePath}.heardProbers`,
-          },),
-          configuredProbers: requireCount({
-            value: reading.configuredProbers,
-            path: `${probePath}.configuredProbers`,
-          },),
-          regions: requireArray({
-            value: reading.regions,
-            path: `${probePath}.regions`,
-          },)
-            .map(function toTally(
-              regionValue,
-              regionIndex,
-            ) {
-              return parseRegionTally({
-                value: regionValue,
-                path: `${probePath}.regions[${String(regionIndex,)}]`,
-              },);
-            },),
-        },
+        reading: parseProbeReading({
+          value: probe,
+          path: probePath,
+        },),
       },
     ];
   },);
@@ -571,11 +625,35 @@ export function readArtifactProbe(
     return entry.reading;
   },);
 
+  /**
+   * Naturalness-rewrite readings, from the shipped records that carry one.
+   *
+   * Absent on every record of a slice the lane did not rewrite, and on every
+   * artifact written before the lane was audited at all, so absence is ordinary
+   * here exactly as it is for the accuracy probe.
+   */
+  const refinementReadings = shipped.flatMap(function toRefinement(entry,) {
+    /**
+     * Refinement probe field of this record.
+     */
+    const probe = entry.record
+      .refinementDefects;
+    if (probe === undefined)
+      return [];
+    return [
+      parseProbeReading({
+        value: probe,
+        path: `${path}.issues[${String(entry.index,)}].refinementDefects`,
+      },),
+    ];
+  },);
+
   return {
     readings,
     owned,
     shippedRecords: shipped.length,
     unprobedRecords: shipped.length - readings.length,
+    refinementReadings,
   };
 }
 

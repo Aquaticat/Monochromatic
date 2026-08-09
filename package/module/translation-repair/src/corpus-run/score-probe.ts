@@ -53,6 +53,7 @@ async function gatherReadings(
   readonly readings: readonly IssueProbeReading[];
   readonly byIssueId: ReadonlyMap<string, IssueProbeReading>;
   readonly refinedIssueIds: ReadonlySet<string>;
+  readonly refinementReadings: readonly IssueProbeReading[];
   readonly entries: number;
   readonly shippedRecords: number;
   readonly unprobedRecords: number;
@@ -115,6 +116,9 @@ async function gatherReadings(
       .map(function toIssueId(entry,) {
         return entry.issueId;
       },),),
+    refinementReadings: perEntry.flatMap(function toRefinement(entry,) {
+      return entry.refinementReadings;
+    },),
     entries: perEntry.length,
     shippedRecords: perEntry.reduce(
       function addShipped(
@@ -204,6 +208,36 @@ async function main(): Promise<void> {
       String(summary.unanchored,)
     } degradedRosterRegions=${String(summary.degradedRosterRegions,)}`,
   );
+
+  /**
+   * Summary over the naturalness lane's own rewrites.
+   *
+   * Reported on its own line rather than folded into the accuracy figures,
+   * because the two audit different edits against different baselines. Its
+   * region count is rewritten SLICES, not replaced envelopes, so the two are
+   * not comparable as rates either.
+   */
+  const refinement = summarizeProbeTelemetry({
+    readings: gathered.refinementReadings,
+  },);
+  console.log(
+    `REFINEMENT rewrittenSlices=${String(refinement.regions,)} majorityIntroduced=${
+      String(refinement.majorityIntroduced,)
+    } minorityIntroduced=${String(refinement.minorityIntroduced,)} noneIntroduced=${
+      String(refinement.noneIntroduced,)
+    } added=${String(refinement.corroborated,)} dropped=${
+      String(refinement.removalCorroborated,)
+    } contradicted=${String(refinement.contradicted,)} unanchored=${
+      String(refinement.unanchored,)
+    }`,
+  );
+  if (refinement.regions === 0)
+    console.log(
+      'NOTE rewrittenSlices=0 means no artifact here carries a refinement '
+        + 'audit. That is what artifacts written before the lane was audited '
+        + 'look like, and it is NOT evidence the lane rewrote nothing: read '
+        + 'refined records in the artifacts to tell the two apart.',
+    );
   /**
    * Graded repair sheet and its draw manifest, when both were passed.
    */
