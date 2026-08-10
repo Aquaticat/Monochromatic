@@ -15,11 +15,15 @@ which was not tested beyond this one game.
 
 A caveat that shapes the whole document.
 Vulkan places the burden of submitting valid SPIR-V on the application,
-and a driver is generally taken to be within its rights to behave arbitrarily on invalid input,
-so a clean `VkResult` here is hardening rather than a guaranteed contract.
-That reading is this document's own, not a quotation from the specification.
-What is not arguable is the internal inconsistency:
-Mesa's own `spirv_to_nir()` defines a NULL failure return that RADV then ignores.
+and it does not define the result of the invalid calls shown here,
+including whether the process survives them.
+A clean `VkResult` is therefore hardening rather than a conformance requirement,
+and that reading is this document's own rather than a quotation from the specification.
+
+The narrower demonstrated fact is that RADV leaves an implemented failure return unchecked
+and that invalid input reaches it.
+A maintainer could reasonably answer that the caller carries a valid-input precondition
+under which the NULL is unreachable, which is why this is filed as a hardening request.
 
 ## Symptom
 
@@ -178,10 +182,11 @@ $ objdump --disassemble --start-address=0x13e240 --wide /usr/lib64/libvulkan_rad
 With `rax` holding the NULL return, that instruction writes to address `0x40`,
 matching `info[0]=1` (write) and `info[1]=0x40` (address) from the exception record.
 
-The `assert` on the following line is not a safety net even in debug builds:
-evaluating `nir->info.stage` dereferences `nir` as well,
-so a build with assertions enabled faults at the assert instead of reporting it.
-The dereference on the preceding line gets there first regardless.
+The `assert` on the following line is not a safety net even in debug builds.
+As written, `nir->info.internal` dereferences the NULL before execution ever reaches the assertion.
+Even if that preceding write were removed,
+evaluating the assertion's condition would itself dereference the NULL
+rather than produce an assertion diagnostic.
 
 ### Resolving the stripped symbols
 
@@ -238,10 +243,14 @@ Running with `VK_LOADER_LAYERS_DISABLE='~implicit~'` falsified both readings at 
 The crash was unchanged at byte-identical RADV offsets,
 and the Fossilize frame disappeared from the backtrace,
 which proves the variable took effect and that no implicit layer is required to trigger the fault.
-No explicit layers were requested in any run
-(`VK_INSTANCE_LAYERS` and `VK_LOADER_LAYERS_ENABLE` were unset),
-and the standalone harness enables none,
-so the crash needs no layer at all.
+
+The stronger claim, that no layer of any kind participates, is carried by the standalone harness.
+It leaves `enabledLayerCount` at zero in its `VkInstanceCreateInfo`,
+so it requests no explicit layers,
+and running it under `VK_LOADER_LAYERS_DISABLE='~implicit~'` still segfaults
+while the control module still returns `VkResult 0`.
+`VK_INSTANCE_LAYERS` and `VK_LOADER_LAYERS_ENABLE` were unset throughout,
+which only rules out layers injected through those variables.
 
 ## Verification
 
@@ -420,11 +429,13 @@ Synthetic clicks reached the window but did not advance the scene,
 and on this Wayland session an input-injection artifact cannot be told apart
 from the game's own behaviour.
 
-### Report the shader to the game's developer
+### Report the shader pair to the game's developer
 
-The rejected SPIR-V is generated from one specific Godot compute shader.
-Restructuring that shader upstream in the game would avoid the construct.
-This is only actionable by the game's developer and is listed for completeness.
+The rejected SPIR-V and its `.dxil` input can be handed to the game's developer,
+who is the only party able to correlate them back to a shader in their project.
+Whether any source change on their side avoids the construct is not established here:
+the responsible translation pass was never identified,
+so prescribing a shader rewrite would be guesswork.
 
 ## What does not work
 
@@ -478,7 +489,9 @@ Two candidate upstreams exist, and the audit lands differently for each.
     and this document does not claim a specification violation.
     Against that, Mesa's own `spirv_to_nir()` returns NULL on failure
     and RADV ignores it, which is an internal inconsistency independent of the input.
-    The stage-mismatch route reaches the same crash without any invalid SPIR-V at all.
+    The second route uses a validator-clean module with an invalid module-to-stage pairing.
+    It broadens the reachable failure cases,
+    but it is still invalid Vulkan usage rather than a failure on a valid call.
 2.  Can upstream fix it?
     Yes.
     A NULL check that frees `spec_entries` and propagates the existing failure path is small.
@@ -515,7 +528,9 @@ A future session must not read "fileable" as permission to post.
     Which pass produced the malformed graph is an attribution, not a demonstrated cause,
     as recorded under "What was not established".
 2.  Can upstream fix it?
-    Yes, in the dxil-spirv control-flow structurizer.
+    Yes, somewhere in the DXIL to SPIR-V pipeline.
+    Which pass is responsible, and whether it lives in vkd3d-proton or in dxil-spirv,
+    is not established.
 3.  Are they supporting this use case?
     Yes.
     Running D3D12 titles under Proton is the project's stated purpose,
@@ -529,7 +544,8 @@ A future session must not read "fileable" as permission to post.
     No existing issue covers it and development is active.
 6.  Have we prototyped a minimal fix?
     No.
-    The fix belongs in the dxil-spirv structurizer, which was not prototyped.
+    The fix belongs somewhere in the DXIL to SPIR-V pipeline,
+    and the responsible pass was not identified, let alone patched.
     Prototyping it needs the DXIL input validated
     and the conversion reproduced outside the game first,
     neither of which was done.
@@ -797,7 +813,8 @@ are available on request.
 ## Workaround
 
 Forcing Godot's Vulkan rendering driver (`--rendering-driver vulkan`) avoids vkd3d-proton
-entirely and the game runs normally.
+entirely. The game then launches, reaches its title screen and renders animated frames,
+where before it exited after about five seconds. Play beyond the title screen was not tested.
 
 Disclosure: this report was prepared with AI assistance. A human verified the reproduction,
 the validator output, and the workaround.
