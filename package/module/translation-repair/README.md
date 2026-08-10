@@ -188,11 +188,24 @@ It was measured on 2026-07-17 over 54 seeds against a roster of seven models,
 and that roster no longer exists:
 the provider has since withdrawn two of them and offered one replacement,
 so six critics run today.
-The critic prompt has also gained a house policy that did not exist then,
-which is why the recall re-measure is tracked separately
-rather than treated as a formality.
-Nothing here claims the current roster reaches 0.981;
-it claims the design reached it once, under a configuration named above.
+
+The current roster was re-measured on 2026-08-10 and detected
+24 of 27 planted omissions, a rate of 0.889,
+over nine entries balanced across the three size bands.
+Zero of the misses were policy declines,
+so all three are the critics failing to see a seeded omission
+rather than the panel correctly ruling one a source defect.
+
+Do not read the pair as a regression.
+The two runs differ in roster, entry set, seed count,
+and several stages between detection and reporting,
+so no delta is attributable to any one of them,
+and the difference between 53 of 54 and 24 of 27 is not statistically
+established in the first place
+(two-proportion z of about 1.8).
+What can be said is narrower and is the reason the re-measure was run:
+the current configuration detects seeded omissions at 0.889 on this sample,
+and the milestone-one number is not evidence about it.
 
 Milestone two (repair) is complete:
 the full loop

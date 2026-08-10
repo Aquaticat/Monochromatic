@@ -6424,3 +6424,51 @@ Do not change the roster before that, and do not change it unasked:
  round three already carries an accepted attribution cost for changing the
  roster, the editor, the checker set and the lane at once.
 Task #64 holds the decision.
+
+## Task 51 is measured: recall on the current roster is 0.889
+
+```text
+SCORECARD dispatched=9 coverage=1.000 planted=27 detected=24 detectionRate=0.889
+REPAIR judged=27 restored=23 partial=1 strict=0.852 lenient=0.889
+```
+
+From the scorecard JSON, which the driver was not printing:
+ `policyDeclinedSeeds=0`, so `seedDetectionRateExcludingPolicy` equals the raw
+ rate and all three misses are genuine.
+That also removes one stated objection to comparability:
+ the handover has said since 2026-08-06 that the house policy makes round-three
+ recall non-comparable on that axis, and on THIS run the policy never fired.
+
+The driver now prints both fields.
+Computing an attribution and leaving it in a file nobody opens is the same
+ failure as the naturalness lane's: the number that distinguishes two very
+ different situations existed and reached no reader.
+
+### What 0.889 against 0.981 does and does not say
+
+It does NOT say recall regressed.
+Two proportions, 24 of 27 against 53 of 54, give a z of about 1.8, which is not
+ significant at any conventional threshold, and the Wilson intervals overlap
+ across roughly 0.90 to 0.96.
+Three misses against one is also a difference of two events, and this document
+ already carries two withdrawn claims built on event counts that small.
+
+The runs are not otherwise matched either:
+ different roster (seven models against six), different entries, half the seeds,
+ and several changed stages between detection and reporting.
+
+What IS supportable: the configuration running today detects seeded omissions at
+ 0.889 on this sample, with no policy declines, and the milestone-one figure is
+ evidence about a configuration that no longer exists.
+The README now says exactly that.
+
+### Read this beside task 64
+
+The recall run's own log carries the same refiner failure:
+ `refiner hf:moonshotai/Kimi-K3: schema-mismatch, voice lost`, through all three
+ retry rounds, plus a `restoration-judge` voice lost to the same cause.
+So Kimi-K3's schema-mismatch is now observed in a THIRD run, on a different
+ driver, hours after run 013.
+That is no longer comfortably a provider window, and it is the strongest
+ argument yet for the per-stage minimum rather than waiting.
+Still the user's call.
