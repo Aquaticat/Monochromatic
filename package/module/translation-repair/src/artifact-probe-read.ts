@@ -161,6 +161,21 @@ export type ArtifactProbeReading = {
    * rather than once per issue the slice happened to contain.
    */
   readonly refinementReadings: readonly TelemetryProbeReading[];
+
+  /**
+   * Stage findings this artifact recorded, verbatim.
+   *
+   * Carried so a reader can count what a stage MANAGED, not only what it
+   * produced. The refine stage writes one finding per slice it was offered,
+   * naming how many refiners answered, which is the only record that a lane
+   * producing nothing was unable to speak rather than idle.
+   */
+  readonly findings: readonly string[];
+
+  /**
+   * Whether the naturalness lane rewrote at least one slice here.
+   */
+  readonly hasRewrites: boolean;
 };
 
 /**
@@ -392,6 +407,29 @@ export function readArtifactProbe(
     shippedRecords: shipped.length,
     unprobedRecords: shipped.length - readings.length,
     refinementReadings,
+    // Read as plain strings and NOT validated into a vocabulary. These feed a
+    // coverage count that says whether a stage could speak, and a run whose
+    // findings drifted must still be countable: throwing here would silence
+    // the very diagnostic that exists to notice a stage going quiet.
+    findings: (artifact.findings === undefined
+      ? []
+      : requireArray({
+        value: artifact.findings,
+        path: `${path}.findings`,
+      },))
+      .flatMap(function toText(entry,) {
+        return (typeof entry === 'string')
+          ? [entry,]
+          : [];
+      },),
+    // Whether the naturalness lane rewrote anything here, read off the records
+    // rather than off the audit. The audit is absent on every artifact written
+    // before it existed, so deriving this from the audit would report every
+    // older run as a run the lane never touched.
+    hasRewrites: shipped.some(function wasRefined(entry,) {
+      return entry.record
+        .refined === true;
+    },),
   };
 }
 

@@ -10,6 +10,10 @@ import {
   scoreProbeAgainstGrades,
 } from '../probe-agreement.ts';
 import { indexReadingsByIssue, } from '../probe-issue-index.ts';
+import {
+  type RefineCoverage,
+  summarizeRefineCoverage,
+} from '../refine-coverage.ts';
 import { summarizeProbeTelemetry, } from '../probe-telemetry.ts';
 import {
   parseGradedRepairSheet,
@@ -58,6 +62,7 @@ async function gatherReadings(
   readonly byIssueId: ReadonlyMap<string, TelemetryProbeReading>;
   readonly refinedIssueIds: ReadonlySet<string>;
   readonly refinementReadings: readonly TelemetryProbeReading[];
+  readonly coverage: RefineCoverage;
   readonly entries: number;
   readonly shippedRecords: number;
   readonly unprobedRecords: number;
@@ -122,6 +127,14 @@ async function gatherReadings(
       },),),
     refinementReadings: perEntry.flatMap(function toRefinement(entry,) {
       return entry.refinementReadings;
+    },),
+    coverage: summarizeRefineCoverage({
+      entries: perEntry.map(function toCoverageEntry(entry,) {
+        return {
+          findings: entry.findings,
+          hasRewrites: entry.hasRewrites,
+        };
+      },),
     },),
     entries: perEntry.length,
     shippedRecords: perEntry.reduce(
@@ -235,12 +248,27 @@ async function main(): Promise<void> {
       String(refinement.unanchored,)
     }`,
   );
+  console.log(
+    `LANE slicesOffered=${String(gathered.coverage.slicesOffered,)} slicesSilent=${
+      String(gathered.coverage.slicesSilent,)
+    } entriesWithRewrites=${
+      String(gathered.coverage.entriesWithRewrites,)
+    }/${String(gathered.entries,)}`,
+  );
+  if (gathered.coverage.slicesSilent > 0)
+    console.log(
+      `NOTE slicesSilent counts slices where NO refiner answered, so the lane `
+        + `could not run there. One model refines, and a roster of one has no `
+        + `quorum to lose, so its failure shows up nowhere else: the audit `
+        + `below simply does not grow, which is also what a run with nothing `
+        + `worth rewriting looks like.`,
+    );
   if (refinement.regions === 0)
     console.log(
       'NOTE rewrittenSlices=0 means no artifact here carries a refinement '
         + 'audit. That is what artifacts written before the lane was audited '
         + 'look like, and it is NOT evidence the lane rewrote nothing: read '
-        + 'refined records in the artifacts to tell the two apart.',
+        + 'the LANE line to tell the two apart.',
     );
   /**
    * Graded repair sheet and its draw manifest, when both were passed.
