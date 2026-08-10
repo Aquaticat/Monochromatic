@@ -10,6 +10,7 @@
  * Run:   ./radv-spirv-null-repro <module.spv>
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +57,38 @@ read_spirv(const char *path, size_t *out_bytes)
    return words;
 }
 
+#define SPIRV_MAGIC 0x07230203u
+#define SPIRV_HEADER_WORDS 5
+#define SPIRV_OP_ENTRY_POINT 15
+#define SPIRV_EXECUTION_MODEL_GLCOMPUTE 5
+
+/*
+ * This harness only ever builds a compute pipeline, so handing it a vertex or
+ * fragment module makes spirv_to_nir() reject the stage mismatch and return
+ * NULL. That crashes RADV for the same reason an invalid module does, which
+ * would muddle the result being measured. Refuse those inputs up front.
+ */
+static bool
+is_compute_module(const uint32_t *words, size_t word_count)
+{
+   if (word_count < SPIRV_HEADER_WORDS || words[0] != SPIRV_MAGIC)
+      return false;
+
+   for (size_t at = SPIRV_HEADER_WORDS; at < word_count;) {
+      uint32_t opcode = words[at] & 0xffffu;
+      uint32_t length = words[at] >> 16;
+      if (length == 0 || at + length > word_count)
+         return false;
+
+      if (opcode == SPIRV_OP_ENTRY_POINT && length >= 2)
+         return words[at + 1] == SPIRV_EXECUTION_MODEL_GLCOMPUTE;
+
+      at += length;
+   }
+
+   return false;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -68,6 +101,12 @@ main(int argc, char **argv)
    uint32_t *spirv = read_spirv(argv[1], &spirv_bytes);
    if (!spirv)
       return EXIT_FAILURE;
+
+   if (!is_compute_module(spirv, spirv_bytes / sizeof(uint32_t))) {
+      fprintf(stderr, "%s is not a GLCompute module; this harness only builds compute pipelines\n",
+              argv[1]);
+      return EXIT_FAILURE;
+   }
 
    VkApplicationInfo app_info = {
       .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -217,6 +256,13 @@ main(int argc, char **argv)
    VkResult result =
       vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, NULL, &pipeline);
 
-   printf("survived: VkResult %d (expected a clean error, not a crash)\n", (int)result);
-   return result == VK_SUCCESS ? EXIT_SUCCESS : EXIT_FAILURE;
+   /* Reaching this line at all is the point: a module RADV cannot translate
+    * should land here with a failure VkResult instead of killing the process. */
+   if (result == VK_SUCCESS) {
+      printf("pipeline created: VkResult 0\n");
+      return EXIT_SUCCESS;
+   }
+
+   printf("returned without crashing: VkResult %d\n", (int)result);
+   return EXIT_FAILURE;
 }

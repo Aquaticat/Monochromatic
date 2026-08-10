@@ -1,14 +1,25 @@
-# RADV 26.1.5 segfaults in `radv_shader_spirv_to_nir` when vkd3d-proton emits unstructured SPIR-V
+# RADV 26.1.5 dereferences the NULL `spirv_to_nir()` returns, turning an untranslatable shader into SIGSEGV
 
-Mesa's RADV driver dereferences the NULL that `spirv_to_nir()` returns on failure,
-so any Vulkan application that submits a SPIR-V module RADV cannot translate
-dies with `SIGSEGV` instead of receiving a `VkResult`.
+Mesa's RADV driver assigns the result of `spirv_to_nir()` and immediately writes through it.
+When translation fails and the function returns NULL,
+the calling process dies with `SIGSEGV` instead of receiving a failure `VkResult`.
 
-vkd3d-proton 3.1.0 emits one such module when translating a Godot 4.7.1 D3D12 compute shader,
-which makes Godot games exported with the D3D12 rendering driver quit silently a few seconds after launch.
+vkd3d-proton 3.1.0 emits one SPIR-V module that RADV cannot translate
+while running a Godot 4.7.1 game exported with the D3D12 rendering driver,
+which makes that game quit silently a few seconds after launch.
 
-Observed with the Steam game `Horse Magnifier` (appid `4585340`, buildid `24643098`),
-but nothing in the failure is specific to that title.
+Observed with the Steam game `Horse Magnifier` (appid `4585340`, buildid `24643098`).
+The RADV defect itself is not title-specific,
+but whether any other title reaches it depends on that title generating a module RADV rejects,
+which was not tested beyond this one game.
+
+A caveat that shapes the whole document.
+Vulkan places the burden of submitting valid SPIR-V on the application,
+and a driver is generally taken to be within its rights to behave arbitrarily on invalid input,
+so a clean `VkResult` here is hardening rather than a guaranteed contract.
+That reading is this document's own, not a quotation from the specification.
+What is not arguable is the internal inconsistency:
+Mesa's own `spirv_to_nir()` defines a NULL failure return that RADV then ignores.
 
 ## Symptom
 
@@ -63,12 +74,12 @@ warn:seh:dwarf_virtual_unwind backtrace: 0x7fa0bf41053f: winevulkan.so + 0x3253f
 
 ## Root cause
 
-### Step 1: vkd3d-proton emits SPIR-V that violates structured control flow
+### Step 1: vkd3d-proton emits a module that fails SPIR-V validation
 
 Dumping every module vkd3d-proton generates for this game
 (`VKD3D_SHADER_DUMP_PATH`, see "Verification")
 yields 109 SPIR-V modules.
-Exactly one fails validation:
+Exactly one is rejected by `spirv-val`:
 
 ```text
 $ spirv-val --target-env vulkan1.3 d8693a43c4e96bff.spv
@@ -77,14 +88,18 @@ error: line 2887: block <ID> '2965[%2965]' exits the selection headed by <ID> '2
   %2965 = OpLabel
 ```
 
-That module is a compute shader, which matches the entry point that crashes:
+A validator may stop at its first error,
+so this is the only module `spirv-val` rejects and at least this violation is present in it.
+It is not established that this is the module's only defect.
+
+The module is a compute shader, matching the entry point that crashes:
 
 ```text
 OpEntryPoint GLCompute %main "main" %gl_GlobalInvocationID
 OpExecutionMode %main LocalSize 64 1 1
 ```
 
-The defect is a jump out of an inner selection construct straight to an outer merge block.
+The reported defect is a jump out of an inner selection construct straight to an outer merge block.
 Block `%2880` opens a selection that must merge at `%3009`:
 
 ```text
@@ -95,7 +110,7 @@ Block `%2880` opens a selection that must merge at `%3009`:
 ```
 
 Block `%2965` sits inside that selection but branches to `%2966`,
-which is the merge block of the enclosing selection, bypassing `%3009` entirely:
+which is the merge block of the enclosing selection, bypassing `%3009`:
 
 ```text
 %2965 = OpLabel
@@ -106,15 +121,35 @@ which is the merge block of the enclosing selection, bypassing `%3009` entirely:
         OpUnreachable
 ```
 
-The stranded `%3009` block, reduced to `OpLabel` followed by `OpUnreachable`,
-is the signature of a structurizer that rerouted control flow to an outer merge
-and left the inner merge unreachable.
+`%3009` survives only as `OpLabel` followed by `OpUnreachable`.
+That is consistent with a structurizer having rerouted control flow to the outer merge
+and left the inner merge stranded,
+but the final control-flow graph could also be the product of a later optimization pass,
+so this is evidence rather than proof of which pass produced it.
 
-### Step 2: `spirv_to_nir()` rejects the module and returns NULL
+### Step 2: `spirv_to_nir()` fails and returns NULL
 
-Mesa's SPIR-V front end refuses to translate the construct and returns NULL.
-The return value is documented as nullable by its own failure paths in
-`src/compiler/spirv/spirv_to_nir.c`.
+Mesa's SPIR-V front end returns NULL on translation failure.
+This is implementation behavior read from the source rather than a documented API contract.
+The failure paths are in `src/compiler/spirv/spirv_to_nir.c`,
+including the `setjmp` landing pad that every `vtn_fail()` unwinds to
+at `src/compiler/spirv/spirv_to_nir.c:7509`:
+
+```c
+/* src/compiler/spirv/spirv_to_nir.c:7501 */
+struct vtn_builder *b = vtn_create_builder(words, word_count,
+                                           stage, entry_point_name,
+                                           options);
+
+if (b == NULL)
+   return NULL;
+
+/* See also _vtn_fail() */
+if (vtn_setjmp(b->fail_jump)) {
+   ralloc_free(b);
+   return NULL;
+}
+```
 
 ### Step 3: RADV dereferences the NULL without checking
 
@@ -143,18 +178,19 @@ $ objdump --disassemble --start-address=0x13e240 --wide /usr/lib64/libvulkan_rad
 With `rax` holding the NULL return, that instruction writes to address `0x40`,
 matching `info[0]=1` (write) and `info[1]=0x40` (address) from the exception record.
 
-The `assert` on the following line would have caught the NULL,
-but Mesa release builds compile with `NDEBUG`, so it is absent from the shipped driver.
+The `assert` on the following line is not a safety net even in debug builds:
+evaluating `nir->info.stage` dereferences `nir` as well,
+so a build with assertions enabled faults at the assert instead of reporting it.
+The dereference on the preceding line gets there first regardless.
 
-### Confirming the symbol names
+### Resolving the stripped symbols
 
 The shipped Terra build is stripped and its build-id
 (`95992bc9dc5e7ae821f4d7a58fd0950239c8d7aa`) is not served by any debuginfod,
-so the frames were resolved two independent ways that agree.
+so the frame names come from a byte-pattern transfer.
 
 The seven-byte instruction sequence at the fault is unique in both the installed 26.1.5 build
-and the 26.1.6 build that Terra still ships debuginfo for,
-which lets the symbol transfer across builds:
+and the 26.1.6 build that Terra still ships debuginfo for:
 
 ```bash
 # 440850404889c3 == "or %r10b,0x40(%rax); mov %rax,%rbx"
@@ -164,8 +200,8 @@ addr2line --functions --exe libvulkan_radeon.so-26.1.6-3.fc44.x86_64.debug 0x13e
 # .../src/amd/vulkan/radv_shader.c:543
 ```
 
-The standalone harness then produced a real core dump whose frames match
-the Proton backtrace offset for offset:
+The standalone harness then produced a core dump that `coredumpctl` symbolized,
+and its names and offsets agree with both the transfer above and the Proton backtrace:
 
 ```text
 #0  0x00007fe78b12c240 radv_shader_spirv_to_nir     (libvulkan_radeon.so + 0x13e240)
@@ -174,6 +210,10 @@ the Proton backtrace offset for offset:
 #3  0x00007fe78b10a51a radv_compute_pipeline_create  (libvulkan_radeon.so + 0x11c51a)
 #4  0x00007fe78b10a73b radv_CreateComputePipelines   (libvulkan_radeon.so + 0x11c73b)
 ```
+
+These are not two independent resolutions of the stripped binary.
+The byte-pattern transfer supplies the names;
+the core dump shows the standalone harness reaches the same five frames Proton did.
 
 ### Two earlier readings were wrong
 
@@ -191,13 +231,17 @@ It was only the caller.
 
 A second reading blamed `VK_LAYER_LS_frame_generation`,
 whose manifest at `/usr/local/share/vulkan/implicit_layer.d/VkLayer_LS_frame_generation.json`
-declares `disable_environment` with no `enable_environment`
-and therefore loads into every Vulkan application.
+declares `disable_environment` with no `enable_environment`,
+which makes it eligible by default rather than opt-in.
 
 Running with `VK_LOADER_LAYERS_DISABLE='~implicit~'` falsified both readings at once.
 The crash was unchanged at byte-identical RADV offsets,
 and the Fossilize frame disappeared from the backtrace,
-proving the variable took effect and that no layer participates in the fault.
+which proves the variable took effect and that no implicit layer is required to trigger the fault.
+No explicit layers were requested in any run
+(`VK_INSTANCE_LAYERS` and `VK_LOADER_LAYERS_ENABLE` were unset),
+and the standalone harness enables none,
+so the crash needs no layer at all.
 
 ## Verification
 
@@ -208,10 +252,16 @@ proving the variable took effect and that no layer participates in the fault.
 - Mesa source at tag `mesa-26.1.5`, commit `6a02618ccf6c5651ecb9cccbde571eb61fd73592`,
   from `https://gitlab.freedesktop.org/mesa/mesa.git`.
 - Mesa `mesa-vulkan-drivers-26.1.6-3.fc44.x86_64`, `driverVersion` 109056006, also affected.
+- Mesa `main` at commit `a384e13d8992ba5aba2eceb1745a1cf8dc196f79`, dated 2026-08-10,
+  still contains the unchecked dereference at `src/amd/vulkan/radv_shader.c:539`.
 - Proton Experimental build `1785947781`, `experimental-11.0-20260805`.
 - vkd3d-proton `3.1.0`, build `2c7ba22c5326145`.
 - Steam Linux Runtime `4.0.20260714.251823`, pressure-vessel `0.20260714.0`.
-- AMD Radeon RX 7600, `RADV NAVI33`, PCI `1002:7480`, kernel `7.1.3-ogc5.1.fc44.x86_64`.
+- Kernel `7.1.3-ogc5.1.fc44.x86_64`.
+- GPU PCI `1002:7480`, which is the shared Navi 33 device id.
+  RADV names it `AMD Radeon RX 7600 (RADV NAVI33)`
+  while vkd3d-proton's D3D12 device reports `AMD Radeon RX 7600 XT`.
+  Same card, two naming tables.
 
 ### Harness one: standalone, no Wine, no Steam
 
@@ -219,6 +269,12 @@ proving the variable took effect and that no layer participates in the fault.
 builds a pipeline layout covering the module's three descriptor sets,
 and calls `vkCreateComputePipelines` on a single SPIR-V module.
 [radv-spirv-to-nir-null-deref.spv](radv-spirv-to-nir-null-deref.spv) is the offending module.
+
+Because the harness only ever builds a compute pipeline,
+it refuses non-compute modules up front:
+handing it a vertex or fragment module makes `spirv_to_nir()` reject the stage mismatch
+and return NULL, which crashes through the same unchecked dereference
+and would otherwise be mistaken for a defect in the module.
 
 Run from the repository root, building into a scratch path so nothing lands in the tree:
 
@@ -236,12 +292,12 @@ calling vkCreateComputePipelines...
 Segmentation fault (core dumped)
 ```
 
-Any valid module from the same dump is the positive control and returns cleanly:
+Any valid compute module from the same dump is the positive control and returns cleanly:
 
 ```text
 device: AMD Radeon RX 7600 (RADV NAVI33) (driver 109056005)
 calling vkCreateComputePipelines...
-survived: VkResult 0 (expected a clean error, not a crash)
+pipeline created: VkResult 0
 ```
 
 To test a Mesa build that is not installed system-wide,
@@ -267,17 +323,39 @@ env STEAM_COMPAT_CLIENT_INSTALL_PATH="${HOME}/.local/share/Steam" \
 
 ### Modules that translate cleanly
 
-108 of the 109 dumped SPIR-V modules pass `spirv-val --target-env vulkan1.3`
-and compile through `vkCreateComputePipelines` without incident.
-Godot's Vulkan rendering driver produces no invalid module at all,
-which is why the Vulkan backend never triggers this path.
+The dump holds 109 modules: 101 `GLCompute`, 4 `Vertex`, and 4 `Fragment`.
+Running the harness over all of them gives
+100 compute modules that create a pipeline and return `VK_SUCCESS`,
+one compute module that segfaults,
+and 8 non-compute modules the harness refuses before touching Vulkan.
+
+108 of the 109 modules pass `spirv-val --target-env vulkan1.3`.
+
+Godot's Vulkan rendering driver does not go through vkd3d-proton's DXIL translation at all,
+which is why the Vulkan backend never reaches this path.
+The SPIR-V that Godot's own Vulkan backend generates was not dumped or validated.
 
 ### Modules that fail
 
 One module, dumped as `d8693a43c4e96bff.spv`,
 a `GLCompute` entry point with `LocalSize 64 1 1`.
-It is the only structured-control-flow violation in the set,
-and it is the module being compiled when the process dies.
+It is the only module `spirv-val` rejects
+and the only compute module that crashes the harness.
+
+That it is also the module the game dies on is an inference, not a direct observation:
+the game's device enables everything vkd3d-proton asks for,
+so a capability or stage mismatch cannot explain the in-game crash,
+and this is the only module in the set that RADV cannot translate on a fully featured device.
+
+### What was not established
+
+- The corresponding DXIL input was dumped alongside the SPIR-V but was not validated,
+  and DXIL to SPIR-V conversion was not reproduced outside the game.
+  Attributing the malformed control flow to vkd3d-proton's structurizer
+  is therefore an attribution consistent with the evidence, not a demonstrated cause.
+- Whether other Godot D3D12 titles generate a module RADV rejects was not tested.
+- Whether every untranslatable module reaches this same crash was not tested.
+  Two routes were observed: an invalid module, and a stage mismatch.
 
 ## Verified workarounds
 
@@ -292,10 +370,12 @@ Steam per-game launch options:
 ```
 
 This removes vkd3d-proton from the pipeline entirely,
-so no DXIL to SPIR-V translation happens and no invalid module is produced.
-Verified by launching from Steam: the game reaches its title screen,
-renders animated frames, and stays alive indefinitely
-where it previously exited after roughly five seconds.
+so no DXIL to SPIR-V translation happens and no rejected module is produced.
+Verified by launching from Steam: the game reached its title screen,
+rendered animated frames, and was still running when observation stopped
+at 51 seconds, against roughly 5 seconds to exit before the change.
+A separate manual run under the same launch argument ran for more than 5 minutes
+before being terminated deliberately.
 
 Tradeoffs.
 The Vulkan and D3D12 backends are separate code paths in Godot,
@@ -305,9 +385,14 @@ The setting is per game, so every affected title needs its own launch option.
 Clearing the launch options field silently restores the crash.
 Godot builds exported without the Vulkan backend cannot use this at all.
 
+Menu navigation past the title screen was not confirmed.
+Synthetic clicks reached the window but did not advance the scene,
+and on this Wayland session an input-injection artifact cannot be told apart
+from the game's own behaviour.
+
 ### Report the shader to the game's developer
 
-The invalid SPIR-V is generated from one specific Godot compute shader.
+The rejected SPIR-V is generated from one specific Godot compute shader.
 Restructuring that shader upstream in the game would avoid the construct.
 This is only actionable by the game's developer and is listed for completeness.
 
@@ -326,9 +411,7 @@ This is only actionable by the game's developer and is listed for completeness.
   and removing it reproduces the same crash at the same offset.
 - Updating Mesa from 26.1.5 to 26.1.6.
   Measured with the standalone harness against the extracted 26.1.6 driver: still segfaults.
-  The commit range `mesa-26.1.5..mesa-26.1.6` touches nothing in this path,
-  and the unchecked dereference is still present in Mesa `main` today
-  at `src/amd/vulkan/radv_shader.c:539`.
+  The commit range `mesa-26.1.5..mesa-26.1.6` touches nothing in this path.
 - Reading Mesa's issue tracker directly.
   `gitlab.freedesktop.org` is behind Anubis, which refused both `WebFetch`
   and `agent-browser`, so live maintainer discussion could not be checked.
@@ -341,57 +424,63 @@ This is only actionable by the game's developer and is listed for completeness.
 No exemption covers Mesa, RADV, vkd3d-proton, Proton, or graphics drivers as a class,
 so upstream tracking is in scope for this bug.
 
-Two candidate upstreams exist, and the audit lands differently for each.
-
 Duplicate search.
 For vkd3d-proton, `gh search issues --repo HansKristian-Work/vkd3d-proton`
 was run over both open and closed state for `spirv structured control flow` and for `godot`,
 returning nothing.
 The same command with the term `crash` returns results,
 so the empty result is a real absence and not a broken query.
-For Mesa, a web search surfaced issue `4740`,
+For Mesa, a web search surfaced
+[mesa issue 4740](https://gitlab.freedesktop.org/mesa/mesa/-/issues/4740),
 "the new spirv to nir compiler after 20.2 causes a null pointer which cashes the radv driver",
 which reports the same class of NULL dereference from 2021.
-The issue body could not be read because Anubis blocked direct access,
+Its body could not be read because Anubis blocked direct access,
 so its resolution and any maintainer position are unverified.
 
-#### Mesa and RADV: do not file
+Two candidate upstreams exist, and the audit lands differently for each.
+
+#### Mesa and RADV: file the NULL-check fix
 
 1.  Is it really upstream's fault?
     Soft yes.
-    Vulkan requires applications to submit valid SPIR-V and permits drivers to assume validity,
-    so a crash on invalid input is arguably outside the contract.
-    Against that, Mesa's own `spirv_to_nir()` defines a NULL failure return
-    that RADV then ignores, which is an internal inconsistency regardless of the input.
+    Vulkan puts the burden of valid SPIR-V on the application,
+    so a crash on invalid input is arguably outside the contract,
+    and this document does not claim a specification violation.
+    Against that, Mesa's own `spirv_to_nir()` returns NULL on failure
+    and RADV ignores it, which is an internal inconsistency independent of the input.
+    The stage-mismatch route reaches the same crash without any invalid SPIR-V at all.
 2.  Can upstream fix it?
     Yes.
-    A NULL check that frees `spec_entries` and returns the existing failure path is small.
+    A NULL check that frees `spec_entries` and propagates the existing failure path is small.
 3.  Are they supporting this use case?
     Partially.
-    RADV makes no robustness promise against invalid SPIR-V.
+    RADV makes no robustness promise against SPIR-V it cannot translate.
 4.  Would the repo welcome our contribution?
-    Unverified.
+    Likely, with one unverified area.
     `docs/submittingpatches.rst` documents the merge-request process,
-    and no AI-assistance policy exists anywhere in the tree at tag `mesa-26.1.5`,
-    but the live tracker and any recent policy could not be read because of Anubis.
+    and no policy against outside or AI-assisted contributions exists anywhere in the tree
+    at tag `mesa-26.1.5`.
+    The live tracker could not be read because of Anubis,
+    so a policy added after that tag would have been missed.
 5.  Will they likely fix it?
-    Leaning no.
-    Issue `4740` reported this class in 2021,
-    and the unchecked dereference is still present in `main` today.
-    That is the "actively leaning no" signal the constraint asks for.
+    Unknown, which passes.
+    Issue 4740 reported this class in 2021 and the dereference is still present in `main`,
+    but no documented won't-fix, stated non-goal, or maintainer refusal was found.
+    Silence is not a fail.
 6.  Have we prototyped a minimal fix?
-    No.
-    Verifying a Mesa patch requires building Mesa, which was not attempted.
+    Yes.
+    See "Prototyped fix" below.
 
-Constraint 5 leans no and constraint 6 is unmet, so nothing is filed against Mesa.
+All six constraints hold for the compute path, so the Mesa draft is fileable as written.
 
 #### vkd3d-proton and dxil-spirv: draft kept, not fileable yet
 
 1.  Is it really upstream's fault?
-    Yes.
-    They emit SPIR-V that fails `spirv-val`.
+    Yes for the module: they emit SPIR-V that `spirv-val` rejects.
+    Which pass produced the malformed graph is an attribution, not a demonstrated cause,
+    as recorded under "What was not established".
 2.  Can upstream fix it?
-    Yes, in the dxil-spirv structurizer.
+    Yes, in the dxil-spirv control-flow structurizer.
 3.  Are they supporting this use case?
     Yes.
     Running D3D12 titles under Proton is the project's stated purpose,
@@ -405,32 +494,159 @@ Constraint 5 leans no and constraint 6 is unmet, so nothing is filed against Mes
     No existing issue covers it and development is active.
 6.  Have we prototyped a minimal fix?
     No.
-    The fix belongs in the dxil-spirv control-flow structurizer,
-    which was not prototyped.
+    The fix belongs in the dxil-spirv structurizer, which was not prototyped.
+    Prototyping it needs the DXIL input validated
+    and the conversion reproduced outside the game first,
+    neither of which was done.
 
 Constraints 1 to 5 hold, so the draft is kept.
 Constraint 6 is unmet, so it is marked do not file as-is.
-A future session that prototypes a structurizer fix can file the draft unchanged.
+
+### Prototyped fix for Mesa
+
+Built from a disposable clone of `https://gitlab.freedesktop.org/mesa/mesa.git`
+at tag `mesa-26.1.5`, commit `6a02618ccf6c5651ecb9cccbde571eb61fd73592`,
+configured with `-Dvulkan-drivers=amd -Dgallium-drivers= -Dplatforms= -Dllvm=disabled`
+and `-Dbuildtype=release -Db_ndebug=true`, inside a memory-capped and CPU-capped container.
+
+```diff
+--- a/src/amd/vulkan/radv_shader.c
++++ b/src/amd/vulkan/radv_shader.c
+@@ -540,6 +540,10 @@ radv_shader_spirv_to_nir(struct radv_device *device, struct radv_shader_stage *s
+       nir = spirv_to_nir(spirv, stage->spirv.size / 4, spec_entries, num_spec_entries, stage->stage, stage->entrypoint,
+                          &spirv_options, &pdev->nir_options[stage->stage]);
++      if (!nir) {
++         free(spec_entries);
++         return NULL;
++      }
+       nir->info.internal |= is_internal;
+--- a/src/amd/vulkan/radv_pipeline_compute.c
++++ b/src/amd/vulkan/radv_pipeline_compute.c
+@@ -106,6 +106,8 @@ radv_compile_cs(struct radv_device *device, struct radv_shader_stage *cs_stage,
+    cs_stage->nir = radv_shader_spirv_to_nir(device, cs_stage, NULL, is_internal);
++   if (!cs_stage->nir)
++      return NULL;
+@@ -222,6 +224,11 @@ radv_compute_pipeline_compile(const VkComputePipelineCreateInfo *pCreateInfo, st
+    struct radv_shader_binary *cs_binary = radv_compile_cs(device, &cs_stage, keep_executable_info, keep_statistic_info,
+                                                           pipeline->base.is_internal, &cs_dbg);
++   if (!cs_binary) {
++      result = VK_ERROR_UNKNOWN;
++      radv_pipeline_stage_finish(&cs_stage);
++      goto done;
++   }
+    pipeline->base.shaders[MESA_SHADER_COMPUTE] =
+       radv_shader_create(device, cache, cs_binary, skip_shaders_cache, &cs_dbg);
+```
+
+Scope.
+This covers the compute path, which is the path that crashes here and the path the harness exercises.
+The graphics caller at `src/amd/vulkan/radv_pipeline_graphics.c:2562`
+and the ray-tracing caller at `src/amd/vulkan/radv_pipeline_rt.c:659`
+assign the same function's result without a NULL check
+and need equivalent treatment before the fix is complete upstream.
+Threading a failure out of `radv_rt_spirv_to_nir`, which returns `void`, is the larger part of that work.
+
+Verification command, run against each build with the harness from "Harness one":
+
+```bash
+VK_DRIVER_FILES=<icd pointing at the build> \
+  "${HOME}/temp/agent/radv-spirv-null-repro" doc/troubleshooting/radv-spirv-to-nir-null-deref.spv
+```
+
+Before the patch, the self-built driver crashes exactly as the shipped one does:
+
+```text
+device: AMD Radeon RX 7600 (RADV NAVI33) (driver 109056005)
+calling vkCreateComputePipelines...
+Segmentation fault (core dumped)
+```
+
+A valid compute module against the same unpatched build returns `pipeline created: VkResult 0`,
+which shows the build itself is sound rather than broadly broken.
+
+After the patch, the same module returns an error instead of killing the process:
+
+```text
+device: AMD Radeon RX 7600 (RADV NAVI33) (driver 109056005)
+calling vkCreateComputePipelines...
+returned without crashing: VkResult -13
+```
+
+`-13` is `VK_ERROR_UNKNOWN`, which is what the patch propagates.
+The valid compute module still returns `pipeline created: VkResult 0` against the patched build,
+so the change does not regress the success path.
+
+A more considered upstream patch might pick a different error code
+and add a `vk_errorf` message naming the failing stage,
+which is worth raising in review rather than deciding here.
+
+### New-issue draft for Mesa
+
+~~~md
+Title: radv: NULL dereference when spirv_to_nir() fails, instead of returning an error
+
+`radv_shader_spirv_to_nir()` assigns the result of `spirv_to_nir()` and writes through it
+on the next line without a NULL check, so any SPIR-V module RADV cannot translate kills
+the process instead of producing a VkResult.
+
+src/amd/vulkan/radv_shader.c (tag mesa-26.1.5, and still present in main at a384e13d):
+
+```c
+nir = spirv_to_nir(spirv, stage->spirv.size / 4, spec_entries, num_spec_entries, stage->stage,
+                   stage->entrypoint, &spirv_options, &pdev->nir_options[stage->stage]);
+nir->info.internal |= is_internal;
+```
+
+`nir->info.internal |= is_internal` compiles to `or %r10b,0x40(%rax)`, so with a NULL return
+the process takes SIGSEGV writing to address 0x40. The assert on the following line is not a
+safety net: evaluating `nir->info.stage` dereferences `nir` too.
+
+Reproduced on Mesa 26.1.5 and 26.1.6 (Radeon RX 7600, RADV NAVI33), and on a local
+26.1.5 build configured with `-Dvulkan-drivers=amd -Dllvm=disabled -Db_ndebug=true`.
+
+Backtrace:
+
+```
+#0  radv_shader_spirv_to_nir      (libvulkan_radeon.so + 0x13e240)
+#1  radv_compile_cs               (libvulkan_radeon.so + 0x11bc6b)
+#2  radv_compute_pipeline_compile (libvulkan_radeon.so + 0x11c294)
+#3  radv_compute_pipeline_create  (libvulkan_radeon.so + 0x11c51a)
+#4  radv_CreateComputePipelines   (libvulkan_radeon.so + 0x11c73b)
+```
+
+Two inputs reach it: a module that fails `spirv-val`, and a valid module whose execution
+model does not match the pipeline being created (for example a Fragment module passed to
+`vkCreateComputePipelines`). Both make `spirv_to_nir()` return NULL.
+
+I understand the application is required to submit valid SPIR-V and that the driver is not
+obliged to validate it, so this is a hardening request rather than a spec-conformance claim.
+The inconsistency is that `spirv_to_nir()` already defines a NULL failure return that RADV
+does not check.
+
+A minimal patch for the compute path is attached below; the graphics caller
+(radv_pipeline_graphics.c:2562) and the ray-tracing caller (radv_pipeline_rt.c:659) need the
+same treatment, and `radv_rt_spirv_to_nir` returns void so it needs a way to signal failure.
+
+Disclosure: this report was prepared with AI assistance. A human verified the reproduction,
+the source trace, the local patched and unpatched builds, and the backtrace.
+~~~
 
 ### New-issue draft for vkd3d-proton (do not file as-is)
 
 ~~~md
-Title: Unstructured SPIR-V emitted for a Godot 4.7 D3D12 compute shader crashes RADV
-
-Labels: bug
+Title: Unstructured SPIR-V emitted for a Godot 4.7 D3D12 compute shader is rejected by spirv-val
 
 vkd3d-proton 3.1.0 (build 2c7ba22c5326145, Proton Experimental experimental-11.0-20260805)
-generates one compute SPIR-V module that fails `spirv-val`, which crashes Mesa RADV
-during `vkCreateComputePipelines`.
+generates one compute SPIR-V module that fails `spirv-val`. RADV then crashes translating it,
+though that crash is separately a driver robustness bug.
 
-Affected title: `Horse Magnifier` (Steam appid 4585340, buildid 24643098),
-a Godot Engine 4.7.1 game exported with the D3D12 rendering driver.
-The game exits with status 3 about five seconds after launch, with no error dialog.
+Affected title: `Horse Magnifier` (Steam appid 4585340, buildid 24643098), a Godot Engine
+4.7.1 game exported with the D3D12 rendering driver. The game exits with status 3 about five
+seconds after launch, with no error dialog.
 
 ## Validation error
 
-Dumping with `VKD3D_SHADER_DUMP_PATH` produces 109 SPIR-V modules.
-Exactly one fails validation:
+Dumping with `VKD3D_SHADER_DUMP_PATH` produces 109 modules. Exactly one is rejected:
 
 ```
 $ spirv-val --target-env vulkan1.3 d8693a43c4e96bff.spv
@@ -452,46 +668,28 @@ Block `%2880` opens a selection that must merge at `%3009`:
         OpBranchConditional %737 %3003 %2881
 ```
 
-Block `%2965` is inside that selection but branches to `%2966`,
-the merge block of the enclosing selection, bypassing `%3009`:
+Block `%2965` is inside that selection but branches to `%2966`, the merge block of the
+enclosing selection, bypassing `%3009`:
 
 ```
 %2965 = OpLabel
- %741 = OpPhi %10 %341 %2885 %1238 %2964
         ...
         OpBranch %2966
 %3009 = OpLabel
         OpUnreachable
 ```
 
-`%3009` is left as `OpLabel` followed by `OpUnreachable`,
-which suggests the structurizer rerouted control flow to the outer merge
-and left the inner merge stranded.
+`%3009` survives only as `OpLabel` followed by `OpUnreachable`.
 
-## Resulting driver crash
-
-Mesa's `spirv_to_nir()` returns NULL for this module, and RADV dereferences it
-without checking at `src/amd/vulkan/radv_shader.c:543` (tag `mesa-26.1.5`),
-so the process takes SIGSEGV writing to address 0x40 rather than getting a VkResult.
-
-Reproducible standalone with no Wine or Steam involved, on Mesa 26.1.5 and 26.1.6,
-AMD Radeon RX 7600 (RADV NAVI33): a minimal program that calls
-`vkCreateComputePipelines` on the dumped module segfaults, while every other
-module from the same dump returns `VK_SUCCESS`.
-
-The driver crash is arguably Mesa's to harden, but the invalid module is the trigger.
+I have not validated the corresponding DXIL input or reproduced the conversion outside the
+game, so I cannot say which pass produced this graph. The `.dxil` and `.spv` from the dump
+are available on request.
 
 ## Workaround
 
 Forcing Godot's Vulkan rendering driver (`--rendering-driver vulkan`) avoids vkd3d-proton
 entirely and the game runs normally.
 
-## Suggested fix
-
-In the dxil-spirv control-flow structurizer, the branch from `%2965` should target
-the innermost enclosing merge (`%3009`) and let that construct fall through to `%2966`,
-rather than branching directly to the outer merge and leaving `%3009` unreachable.
-
-Disclosure: this report was prepared with AI assistance. A human verified the
-reproduction, the SPIR-V validation output, the source trace, and the workaround.
+Disclosure: this report was prepared with AI assistance. A human verified the reproduction,
+the validator output, and the workaround.
 ~~~
