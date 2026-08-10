@@ -6376,7 +6376,27 @@ Toka_ls        10 x editor-candidates (2/2 heard, 2 repairing)   [run 012]
 Judges still chose what shipped, so selection was not single-model, but they
  chose among one model's proposals, and the README's claim that "every editor in
  `editorModelIds` rewrites the chunk independently" is false for those chunks.
-Nothing reported a fault.
+
+AND THE STAGE WAS BEHAVING CORRECTLY, which is the part to understand before
+ anyone fixes the wrong thing.
+`stage-quorum.ts:154` computes `Math.ceil(modelIds.length / 2)`, so a roster of
+ two reaches quorum on ONE voice.
+The editor stage met its quorum on every one of those chunks.
+Nothing reported a fault because, by the rule as written, there was none.
+
+This is not a malfunction, it is two rules disagreeing.
+"At least half the roster" is a sensible quorum for a six-model critic panel and
+ a meaningless one for a two-model ensemble, where half is one and the ensemble
+ property is exactly what the second model was added to provide.
+The disagreement is invisible while every model answers, which is why it
+ survived #45 and everything since.
+
+That reframing changes the fix.
+A per-stage MINIMUM, the editor requiring both voices rather than half of them,
+ addresses it without touching roster membership, and is a far smaller change
+ than swapping a model that holds four roles.
+It also fails LOUDLY, which is the direction this whole session has been
+ arguing for.
 
 ### What landed
 
