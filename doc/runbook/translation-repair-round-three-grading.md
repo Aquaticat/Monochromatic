@@ -254,6 +254,24 @@ It means no artifact in the runs directory carries that audit, which is true of
 everything settled before run 012.
 The command prints a note saying so whenever the count is zero.
 
+A `LANE` line sits beside it and answers a different question:
+whether the lane was able to run at all.
+
+```text
+LANE slicesOffered=101 slicesSilent=6 entriesWithRewrites=15/47
+```
+
+`slicesSilent` counts slices where NO refiner answered.
+One model refines, so a roster of one has no quorum to lose and its failure
+moves no other number.
+Run 013 is where the six come from:
+its only refiner lost every voice to schema-mismatch, so five settled entries
+carry no rewrite at all.
+Read a rising `slicesSilent` as the lane going quiet, not as a run with nothing
+worth rewriting;
+`doc/handover/translation-repair.md` has the evidence, and the open decision is
+task 64.
+
 ## What this round cannot tell you
 
 Round three changed many things at once:
