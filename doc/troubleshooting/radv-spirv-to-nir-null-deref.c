@@ -6,8 +6,13 @@
  * writes through the NULL return value instead of propagating an error, so the
  * process dies with SIGSEGV writing to 0x40 rather than returning a VkResult.
  *
- * Build: gcc -O0 -g -o radv-spirv-null-repro radv-spirv-null-repro.c -lvulkan
+ * Build: gcc -O0 -g -o radv-spirv-null-repro radv-spirv-to-nir-null-deref.c -lvulkan
  * Run:   ./radv-spirv-null-repro <module.spv>
+ *
+ * Assemble the modules it expects from the .spvasm files beside this one:
+ * radv-spirv-to-nir-null-deref.spvasm crashes RADV, and
+ * radv-spirv-to-nir-null-deref-control.spvasm is the same shader one branch
+ * target apart and builds a pipeline normally.
  */
 
 #include <stdbool.h>

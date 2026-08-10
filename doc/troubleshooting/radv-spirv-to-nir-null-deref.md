@@ -266,9 +266,16 @@ so the crash needs no layer at all.
 ### Harness one: standalone, no Wine, no Steam
 
 [radv-spirv-to-nir-null-deref.c](radv-spirv-to-nir-null-deref.c) creates a Vulkan device,
-builds a pipeline layout covering the module's three descriptor sets,
-and calls `vkCreateComputePipelines` on a single SPIR-V module.
-[radv-spirv-to-nir-null-deref.spv](radv-spirv-to-nir-null-deref.spv) is the offending module.
+builds a pipeline layout, and calls `vkCreateComputePipelines` on a single SPIR-V module.
+
+The module it is run against is hand-written rather than taken from the game.
+[radv-spirv-to-nir-null-deref.spvasm](radv-spirv-to-nir-null-deref.spvasm)
+reproduces the same structured control flow violation in a few dozen instructions,
+and [radv-spirv-to-nir-null-deref-control.spvasm](radv-spirv-to-nir-null-deref-control.spvasm)
+is the same shader with one operand changed:
+the inner branch targets its own merge block instead of jumping out to the outer one.
+That pair is the whole experiment.
+Same shader, same harness, same driver, one branch target apart.
 
 Because the harness only ever builds a compute pipeline,
 it refuses non-compute modules up front:
@@ -279,12 +286,30 @@ and would otherwise be mistaken for a defect in the module.
 Run from the repository root, building into a scratch path so nothing lands in the tree:
 
 ```bash
+cd doc/troubleshooting
 gcc -O0 -g -o "${HOME}/temp/agent/radv-spirv-null-repro" \
-  doc/troubleshooting/radv-spirv-to-nir-null-deref.c -lvulkan
-"${HOME}/temp/agent/radv-spirv-null-repro" doc/troubleshooting/radv-spirv-to-nir-null-deref.spv
+  radv-spirv-to-nir-null-deref.c -lvulkan
+spirv-as --target-env vulkan1.3 radv-spirv-to-nir-null-deref.spvasm \
+  -o "${HOME}/temp/agent/repro.spv"
+spirv-as --target-env vulkan1.3 radv-spirv-to-nir-null-deref-control.spvasm \
+  -o "${HOME}/temp/agent/control.spv"
+
+spirv-val --target-env vulkan1.3 "${HOME}/temp/agent/repro.spv"    # rejects
+spirv-val --target-env vulkan1.3 "${HOME}/temp/agent/control.spv"  # accepts
+
+"${HOME}/temp/agent/radv-spirv-null-repro" "${HOME}/temp/agent/repro.spv"
+"${HOME}/temp/agent/radv-spirv-null-repro" "${HOME}/temp/agent/control.spv"
 ```
 
-Result on 26.1.5 and on 26.1.6:
+`spirv-val` rejects the first module with the same error class the game shader produced:
+
+```text
+error: line 27: block <ID> '20[%20]' exits the selection headed by <ID> '17[%17]',
+       but not via a structured exit
+  %20 = OpLabel
+```
+
+The harness result on 26.1.5 and on 26.1.6:
 
 ```text
 device: AMD Radeon RX 7600 (RADV NAVI33) (driver 109056005)
@@ -292,13 +317,18 @@ calling vkCreateComputePipelines...
 Segmentation fault (core dumped)
 ```
 
-Any valid compute module from the same dump is the positive control and returns cleanly:
+The control module is the positive control and returns cleanly on both:
 
 ```text
 device: AMD Radeon RX 7600 (RADV NAVI33) (driver 109056005)
 calling vkCreateComputePipelines...
 pipeline created: VkResult 0
 ```
+
+The 109 modules dumped from the game behave the same way,
+but none of them are committed here:
+they are compiled shaders from a paid title,
+and the hand-written pair reproduces the defect without redistributing them.
 
 To test a Mesa build that is not installed system-wide,
 rewrite `library_path` in `radeon_icd.x86_64.json` to an absolute path
@@ -555,7 +585,7 @@ Verification command, run against each build with the harness from "Harness one"
 
 ```bash
 VK_DRIVER_FILES=<icd pointing at the build> \
-  "${HOME}/temp/agent/radv-spirv-null-repro" doc/troubleshooting/radv-spirv-to-nir-null-deref.spv
+  "${HOME}/temp/agent/radv-spirv-null-repro" "${HOME}/temp/agent/repro.spv"
 ```
 
 Before the patch, the self-built driver crashes exactly as the shipped one does:
@@ -608,6 +638,49 @@ safety net: evaluating `nir->info.stage` dereferences `nir` too.
 
 Reproduced on Mesa 26.1.5 and 26.1.6 (Radeon RX 7600, RADV NAVI33), and on a local
 26.1.5 build configured with `-Dvulkan-drivers=amd -Dllvm=disabled -Db_ndebug=true`.
+
+Minimal module, assembled with `spirv-as --target-env vulkan1.3` and passed to
+`vkCreateComputePipelines`. `%inner_then` leaves the selection headed by `%outer_then`
+without going through `%inner_merge`:
+
+```
+               OpCapability Shader
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main" %gid
+               OpExecutionMode %main LocalSize 1 1 1
+               OpDecorate %gid BuiltIn GlobalInvocationId
+       %void = OpTypeVoid
+     %fn_ty  = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %v3uint = OpTypeVector %uint 3
+       %bool = OpTypeBool
+ %ptr_in_v3u = OpTypePointer Input %v3uint
+%ptr_in_uint = OpTypePointer Input %uint
+     %uint_0 = OpConstant %uint 0
+     %uint_1 = OpConstant %uint 1
+        %gid = OpVariable %ptr_in_v3u Input
+       %main = OpFunction %void None %fn_ty
+      %entry = OpLabel
+     %gid_xp = OpAccessChain %ptr_in_uint %gid %uint_0
+      %gid_x = OpLoad %uint %gid_xp
+ %outer_cond = OpIEqual %bool %gid_x %uint_0
+               OpSelectionMerge %outer_merge None
+               OpBranchConditional %outer_cond %outer_then %outer_merge
+ %outer_then = OpLabel
+ %inner_cond = OpIEqual %bool %gid_x %uint_1
+               OpSelectionMerge %inner_merge None
+               OpBranchConditional %inner_cond %inner_then %inner_merge
+ %inner_then = OpLabel
+               OpBranch %outer_merge
+%inner_merge = OpLabel
+               OpBranch %outer_merge
+%outer_merge = OpLabel
+               OpReturn
+               OpFunctionEnd
+```
+
+Changing the `%inner_then` terminator to `OpBranch %inner_merge` makes the module valid,
+and RADV then builds a pipeline from it normally. That one operand is the whole difference.
 
 Backtrace:
 

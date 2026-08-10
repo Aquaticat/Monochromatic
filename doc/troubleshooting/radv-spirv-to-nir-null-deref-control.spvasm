@@ -1,0 +1,55 @@
+; Positive control for radv-spirv-to-nir-null-deref.spvasm.
+;
+; Identical to that module except for one operand: the terminator of %inner_then
+; branches to its own merge block %inner_merge instead of jumping out to
+; %outer_merge. That single change makes the control flow structured, so the
+; module passes spirv-val and RADV builds a pipeline from it.
+;
+; Running both is what isolates the cause: same shader, same harness, same
+; driver, one branch target apart.
+;
+; Assemble with:
+;   spirv-as --target-env vulkan1.3 radv-spirv-to-nir-null-deref-control.spvasm \
+;     -o radv-spirv-to-nir-null-deref-control.spv
+
+               OpCapability Shader
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main" %gid
+               OpExecutionMode %main LocalSize 1 1 1
+
+               OpDecorate %gid BuiltIn GlobalInvocationId
+
+       %void = OpTypeVoid
+     %fn_ty  = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %v3uint = OpTypeVector %uint 3
+       %bool = OpTypeBool
+ %ptr_in_v3u = OpTypePointer Input %v3uint
+%ptr_in_uint = OpTypePointer Input %uint
+     %uint_0 = OpConstant %uint 0
+     %uint_1 = OpConstant %uint 1
+        %gid = OpVariable %ptr_in_v3u Input
+
+       %main = OpFunction %void None %fn_ty
+      %entry = OpLabel
+     %gid_xp = OpAccessChain %ptr_in_uint %gid %uint_0
+      %gid_x = OpLoad %uint %gid_xp
+       %outer_cond = OpIEqual %bool %gid_x %uint_0
+               OpSelectionMerge %outer_merge None
+               OpBranchConditional %outer_cond %outer_then %outer_merge
+
+ %outer_then = OpLabel
+       %inner_cond = OpIEqual %bool %gid_x %uint_1
+               OpSelectionMerge %inner_merge None
+               OpBranchConditional %inner_cond %inner_then %inner_merge
+
+ %inner_then = OpLabel
+; The only difference from the failing module: this exits through its own merge.
+               OpBranch %inner_merge
+
+%inner_merge = OpLabel
+               OpBranch %outer_merge
+
+%outer_merge = OpLabel
+               OpReturn
+               OpFunctionEnd
