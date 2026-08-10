@@ -40,9 +40,9 @@ export {
 } from './artifact-probe-read.ts';
 export { parseRegionTally, } from './artifact-probe-tally.ts';
 export {
-  type RefineCoverage,
-  summarizeRefineCoverage,
-} from './refine-coverage.ts';
+  type StageRosterCoverage,
+  summarizeStageRoster,
+} from './stage-roster.ts';
 export {
   type ProbeClaimAttribution,
   type TelemetryProbeReading,

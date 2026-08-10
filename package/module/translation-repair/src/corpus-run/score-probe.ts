@@ -11,9 +11,9 @@ import {
 } from '../probe-agreement.ts';
 import { indexReadingsByIssue, } from '../probe-issue-index.ts';
 import {
-  type RefineCoverage,
-  summarizeRefineCoverage,
-} from '../refine-coverage.ts';
+  type StageRosterCoverage,
+  summarizeStageRoster,
+} from '../stage-roster.ts';
 import { summarizeProbeTelemetry, } from '../probe-telemetry.ts';
 import {
   parseGradedRepairSheet,
@@ -62,7 +62,9 @@ async function gatherReadings(
   readonly byIssueId: ReadonlyMap<string, TelemetryProbeReading>;
   readonly refinedIssueIds: ReadonlySet<string>;
   readonly refinementReadings: readonly TelemetryProbeReading[];
-  readonly coverage: RefineCoverage;
+  readonly editorRoster: StageRosterCoverage;
+  readonly refineRoster: StageRosterCoverage;
+  readonly entriesWithRewrites: number;
   readonly entries: number;
   readonly shippedRecords: number;
   readonly unprobedRecords: number;
@@ -113,6 +115,13 @@ async function gatherReadings(
     return entry.owned;
   },);
 
+  /**
+   * Stage findings, one list per artifact.
+   */
+  const findingsPerEntry = perEntry.map(function toFindings(entry,) {
+    return entry.findings;
+  },);
+
   return {
     readings,
     byIssueId: indexReadingsByIssue({ owned, },),
@@ -128,14 +137,19 @@ async function gatherReadings(
     refinementReadings: perEntry.flatMap(function toRefinement(entry,) {
       return entry.refinementReadings;
     },),
-    coverage: summarizeRefineCoverage({
-      entries: perEntry.map(function toCoverageEntry(entry,) {
-        return {
-          findings: entry.findings,
-          hasRewrites: entry.hasRewrites,
-        };
-      },),
+    editorRoster: summarizeStageRoster({
+      entries: findingsPerEntry,
+      stage: 'editor',
     },),
+    refineRoster: summarizeStageRoster({
+      entries: findingsPerEntry,
+      stage: 'refine',
+    },),
+    entriesWithRewrites: perEntry
+      .filter(function rewroteSomething(entry,) {
+        return entry.hasRewrites;
+      },)
+      .length,
     entries: perEntry.length,
     shippedRecords: perEntry.reduce(
       function addShipped(
@@ -248,27 +262,43 @@ async function main(): Promise<void> {
       String(refinement.unanchored,)
     }`,
   );
+  // Reported for the stages whose degradation is otherwise INVISIBLE. Critic
+  // and panel announce their heard counts per chunk in the run log and carry a
+  // quorum rule; these two do not, and a stage that ran short here produces
+  // output shaped exactly like a healthy stage with less to do.
   console.log(
-    `LANE slicesOffered=${String(gathered.coverage.slicesOffered,)} slicesSilent=${
-      String(gathered.coverage.slicesSilent,)
+    `ROSTER editorOffered=${String(gathered.editorRoster.offered,)} editorDegraded=${
+      String(gathered.editorRoster.degraded,)
+    } editorSilent=${String(gathered.editorRoster.silent,)} refineOffered=${
+      String(gathered.refineRoster.offered,)
+    } refineDegraded=${String(gathered.refineRoster.degraded,)} refineSilent=${
+      String(gathered.refineRoster.silent,)
     } entriesWithRewrites=${
-      String(gathered.coverage.entriesWithRewrites,)
+      String(gathered.entriesWithRewrites,)
     }/${String(gathered.entries,)}`,
   );
-  if (gathered.coverage.slicesSilent > 0)
+  if (gathered.editorRoster.degraded > 0)
     console.log(
-      `NOTE slicesSilent counts slices where NO refiner answered, so the lane `
-        + `could not run there. One model refines, and a roster of one has no `
-        + `quorum to lose, so its failure shows up nowhere else: the audit `
-        + `below simply does not grow, which is also what a run with nothing `
-        + `worth rewriting looks like.`,
+      'NOTE editorDegraded counts chunks repaired with FEWER editors than the '
+        + 'roster configures. The editor ensemble exists so no single model '
+        + 'writes the shipped text, so on those chunks that property does not '
+        + 'hold: judges still chose, but they chose among one model\'s '
+        + 'proposals.',
+    );
+  if (gathered.refineRoster.silent > 0)
+    console.log(
+      'NOTE refineSilent counts slices where NO refiner answered, so the '
+        + 'naturalness lane could not run there. One model refines, and a '
+        + 'roster of one has no quorum to lose, so its failure shows up '
+        + 'nowhere else: the audit simply does not grow, which is also what a '
+        + 'run with nothing worth rewriting looks like.',
     );
   if (refinement.regions === 0)
     console.log(
       'NOTE rewrittenSlices=0 means no artifact here carries a refinement '
         + 'audit. That is what artifacts written before the lane was audited '
         + 'look like, and it is NOT evidence the lane rewrote nothing: read '
-        + 'the LANE line to tell the two apart.',
+        + 'the ROSTER line to tell the two apart.',
     );
   /**
    * Graded repair sheet and its draw manifest, when both were passed.
