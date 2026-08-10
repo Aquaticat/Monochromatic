@@ -6265,3 +6265,76 @@ Deriving its path from the seed the sheet declares is enough for round three,
 It is not enough in general, and the fix is a schema change to a file that
  currently exists once, on disk, in the middle of the measurement it feeds.
 Do it when #48 and #60 close, not before.
+
+## Run 013, and the naturalness lane failing without saying so
+
+```text
+DONE processed=5 of pending=50; artifacts=47/92 elapsed=43783207ms
+```
+
+Five entries settled, none lost to the per-entry deadline, which is a better
+ return than run 012's two.
+Entries: `Y1Ran` (resumed from its run 012 abort, per #61), `SevenBird`,
+ `Uekawakuyuurei`, `TLL1122`, `cheonwoomaeng`.
+
+### What the numbers looked like, and why that was the tell
+
+At 47 entries the accuracy probe had grown from 583 regions to 666, while
+ `REFINEMENT rewrittenSlices` had not moved from 9.
+Not one of run 013's five entries carries a single `refined: true` record.
+
+The cause is in the log and is unambiguous:
+
+```text
+24 refiner hf:moonshotai/Kimi-K3: schema-mismatch, voice lost
+ 6 refiner: retry round 1 for 1 lost voices    (also rounds 2 and 3)
+```
+
+Six refinement attempts, four tries apiece, every one lost.
+Run 012's log carries ZERO refiner lines, because a lost voice is what gets
+ logged and run 012 never lost one.
+So between two consecutive runs on unchanged pipeline code the lane went from
+ working to producing nothing, which makes it a provider-side change rather than
+ a regression anyone introduced here.
+`Y1Ran` reads `1/1 heard` only because its refine finding came back with its
+ banked slices from run 012.
+
+### Why nothing reported it
+
+The lane is ONE model.
+Every other stage retries to a quorum and reports a degraded roster;
+ a roster of one has no quorum to lose, so total failure moved no number that
+ anything printed.
+The refinement audit stayed at 9 and printed no note, because its zero-note only
+ fires when the total is zero and the total was non-zero from run 012.
+A stage that had stopped working was indistinguishable from a stage nobody had
+ asked to work.
+That is the exact ambiguity the zero-note was written for, arriving in the one
+ shape the note does not cover.
+
+### What landed
+
+`score-probe` prints a LANE line, counted from the per-slice findings the refine
+ stage already wrote:
+
+```text
+LANE slicesOffered=101 slicesSilent=6 entriesWithRewrites=15/47
+```
+
+`slicesSilent` is slices where NO refiner answered.
+Findings are read as plain strings and never validated into a vocabulary,
+ because this count exists to notice a stage going quiet and throwing on drifted
+ wording would silence it in precisely that case.
+
+### What did NOT land, and why
+
+The roster is unchanged.
+Adding a second refiner costs a judge per selection round, and round three
+ already carries an accepted attribution cost from changing the roster, the
+ editor, the checker set and this lane at once;
+ changing it again mid-round would widen that further.
+Whether the schema-mismatch is persistent or was a provider window is not
+ established at ONE run, and treating one run as a stable rate is the error
+ already withdrawn twice in this document.
+Recorded as task #64, needing the user.
+Read the next pass's refiner lines before proposing a roster change.
