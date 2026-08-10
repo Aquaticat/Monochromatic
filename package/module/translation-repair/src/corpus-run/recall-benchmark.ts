@@ -358,8 +358,23 @@ async function runRecallBenchmark(): Promise<void> {
     } detectionRate=${
       scorecard.seedDetectionRate
         .toFixed(RATE_DECIMALS,)
+    } policyDeclined=${String(scorecard.policyDeclinedSeeds,)} detectionRateExcludingPolicy=${
+      scorecard.seedDetectionRateExcludingPolicy
+        .toFixed(RATE_DECIMALS,)
     }`,
   );
+  // Printed beside the raw rate rather than left in the JSON. Attributing a
+  // miss to the house policy instead of to the critics is the whole reason
+  // both numbers are computed, and a driver that prints only the raw one hands
+  // the reader a recall figure with no way to see whether the pipeline failed
+  // to detect a seed or correctly refused to treat it as a defect.
+  if (scorecard.policyDeclinedSeeds > 0)
+    console.log(
+      'NOTE policyDeclined counts seeds the panel ruled a source defect at the '
+        + 'seed region rather than a translation error. Those are the policy '
+        + 'working, not recall failing, which is why the excluding-policy rate '
+        + 'sits beside the raw one instead of replacing it.',
+    );
   console.log(
     `REPAIR judged=${String(scorecard.judgedSeeds,)} restored=${
       String(scorecard.restoredSeeds,)
