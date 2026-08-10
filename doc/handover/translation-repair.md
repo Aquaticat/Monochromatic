@@ -6472,3 +6472,51 @@ So Kimi-K3's schema-mismatch is now observed in a THIRD run, on a different
 That is no longer comfortably a provider window, and it is the strongest
  argument yet for the per-stage minimum rather than waiting.
 Still the user's call.
+
+### CORRECTION, within the hour: 0.889 was measured on a degraded ensemble
+
+The first version of the entry above, and of the README paragraph, presented
+ 0.889 as the current roster's recall.
+It is not, and the run's own log says so.
+
+```text
+recall run   Kimi-K3   312 schema-mismatches
+             (refiner 96, critic 76, panel 69, editor 62, restoration-judge 9)
+             GLM-5.2     3
+
+critic stage:  72 x 5/6 heard    8 x 3/6 heard    1 x 0/6 heard
+panel  stage:  64 x 5/6 heard    4 x 4/6 heard    2 x 3/6 heard
+```
+
+The critic stage NEVER reached 6/6 in this run.
+One chunk was critiqued by NOBODY.
+So the number describes a five-critic ensemble that occasionally fell to three,
+ not the six the roster configures.
+
+That is worth having, because it is what the pipeline actually delivers under
+ the condition it is currently in.
+It is not worth calling "the current roster's recall", and both documents now
+ say which of the two it is.
+
+TWO FURTHER FACTS, both from the scorecard rather than inference:
+
+-   All three misses are ONE entry, `Chinatsu_Suzuki`, which went 0 for 3 while
+     the other eight entries went 24 for 24.
+    An entry failing wholesale and a rate of 0.889 are different objects, and
+     only the first is what happened.
+-   That entry completed normally, `status=repaired` with 19 issues found, so
+     its critics did run and did report.
+    The `0/6` chunk cannot be attributed to it from the log, because the recall
+     log carries NO per-entry markers.
+    Not guessed either way;
+     adding an entry marker to that driver would settle it next time.
+
+### What this does to task 64
+
+It removes the provider-window reading.
+Kimi-K3 now shows schema-mismatch in THREE runs across two drivers, rising:
+ 0 in run 012, 61 in run 013, 312 in the recall run hours later.
+Every stage it sits in is affected, and the two with no meaningful quorum, the
+ editor pair and the single refiner, are affected worst.
+The decision is still the user's, but it should no longer wait on another pass
+ to establish persistence.

@@ -189,23 +189,30 @@ and that roster no longer exists:
 the provider has since withdrawn two of them and offered one replacement,
 so six critics run today.
 
-The current roster was re-measured on 2026-08-10 and detected
-24 of 27 planted omissions, a rate of 0.889,
-over nine entries balanced across the three size bands.
-Zero of the misses were policy declines,
-so all three are the critics failing to see a seeded omission
+A re-measure on 2026-08-10 detected 24 of 27 planted omissions, a rate of 0.889,
+over nine entries balanced across the three size bands,
+with zero policy declines,
+so all three misses are critics failing to see a seeded omission
 rather than the panel correctly ruling one a source defect.
 
-Do not read the pair as a regression.
-The two runs differ in roster, entry set, seed count,
-and several stages between detection and reporting,
+That figure is NOT the configured roster's recall, and the run says so itself.
+One model returned schema-invalid output 312 times across five roles during it,
+and the critic stage never once reached its full roster:
+72 chunks ran at five voices of six, eight at three, and one at none at all.
+So 0.889 describes what the pipeline delivered while one of six critics was
+effectively absent.
+Read it as a measurement of a degraded ensemble,
+which is a real and current operating condition rather than a spoiled run,
+and not as evidence about the roster as configured.
+
+Do not read it against the milestone-one figure as a regression either.
+The two runs differ in roster, entry set, seed count, and several stages,
 so no delta is attributable to any one of them,
-and the difference between 53 of 54 and 24 of 27 is not statistically
-established in the first place
+and 24 of 27 against 53 of 54 is not a statistically established difference
 (two-proportion z of about 1.8).
-What can be said is narrower and is the reason the re-measure was run:
-the current configuration detects seeded omissions at 0.889 on this sample,
-and the milestone-one number is not evidence about it.
+All three misses also fall in a single entry, which went 0 for 3 while the other
+eight went 24 for 24,
+so the sample is one entry failing rather than a uniform detection rate.
 
 Milestone two (repair) is complete:
 the full loop
