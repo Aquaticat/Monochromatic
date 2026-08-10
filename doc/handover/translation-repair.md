@@ -2898,14 +2898,22 @@ Deterministic core plus model stages, revised after an adversarial second-model 
   matchers include `toBe`, `toEqual`, `toStrictEqual`, `toContain`, `toHaveLength`, `toThrow`.
 - mise task wrappers swallow findings into inherited stdio:
   capture full output to a scratchpad file and `rg` it; tails alone mislead.
-- **`test:unit` alone tests the PREVIOUS BUILD.**
+- **`test:unit` alone tests the PREVIOUS BUILD, and `lint:types` reads it too.**
   Every `*.unit.test.ts` here imports `../dist/final/node/index.mjs`, the built
-  bundle, not the source beside it,
-  and `lint:types` does NOT type-check `*.unit.test.ts` at all.
+  bundle, not the source beside it.
+  `lint:types` DOES check the test files;
+  it checks them against the DECLARATIONS OF THAT SAME STALE BUNDLE, which is
+  the trap rather than an exemption.
+  (An earlier version of this note said the type-check skipped test files
+  entirely. It does not. Later evidence: adding an export and running
+  `lint:types` before rebuilding reported
+  `Module "../dist/final/node/index.mjs" has no exported member`, from a test
+  file. The practical rule is unchanged; where you look when a test disagrees
+  with the source in front of you is not.)
   So a green `test:unit` straight after a source edit is evidence about the
   build from before that edit,
-  and a test calling a function without a newly required argument is reported by
-  neither task.
+  and a test calling a function without a newly required argument passes both
+  tasks until the bundle is rebuilt.
   Always use `mise run //package/module/translation-repair:buildAndTest`.
   Measured rather than suspected:
   two green `test:unit` runs were collected in the 2026-08-09 session before
@@ -6338,3 +6346,61 @@ Whether the schema-mismatch is persistent or was a provider window is not
  already withdrawn twice in this document.
 Recorded as task #64, needing the user.
 Read the next pass's refiner lines before proposing a roster change.
+
+## The silent lane was the small half: the EDITOR ensemble degraded too
+
+Chasing the refiner found the same failure one stage earlier, in the stage the
+ user's "no single model controls any part of the pipeline" rule was written
+ for.
+
+Kimi-K3 plays four roles here: critic, panel, editor, refiner.
+Schema-mismatch counts across two consecutive passes on UNCHANGED pipeline code:
+
+```text
+run 012   Kimi-K3   0
+run 013   Kimi-K3   61   (refiner 24, panel 13, critic 13, editor 11)
+```
+
+Critic and panel survive it: they retry to a quorum, and run 013 still shows 62
+ chunk-runs at `critic stage: 6/6 heard`.
+The EDITOR does not announce a stage line at all.
+Its heard count lives only in a per-chunk finding, and there:
+
+```text
+cheonwoomaeng   9 x editor-candidates (1/2 heard, 1 repairing)
+TLL1122         3 x editor-candidates (1/2 heard, 1 repairing)
+Toka_ls        10 x editor-candidates (2/2 heard, 2 repairing)   [run 012]
+```
+
+`cheonwoomaeng` repaired EVERY chunk it has with one editor.
+Judges still chose what shipped, so selection was not single-model, but they
+ chose among one model's proposals, and the README's claim that "every editor in
+ `editorModelIds` rewrites the chunk independently" is false for those chunks.
+Nothing reported a fault.
+
+### What landed
+
+`summarizeStageRoster` replaces the refine-only version, because a count that
+ answers "could this stage speak" belongs to every stage that fans out.
+`score-probe` prints:
+
+```text
+ROSTER editorOffered=322 editorDegraded=15 editorSilent=0
+       refineOffered=101 refineDegraded=6 refineSilent=6
+       entriesWithRewrites=15/47
+```
+
+Twelve of the fifteen degraded editor chunks are run 013's.
+So the degradation is real but bounded at 15 in 322 across everything settled,
+ and it is NOT a rate to quote from one pass.
+
+### What this does NOT establish
+
+That Kimi-K3 is permanently broken.
+Two passes is two points, and one of them is the only one showing the problem.
+The next pass decides whether this is a provider window or a standing condition,
+ and the refiner and editor lines are now the place to read it.
+Do not change the roster before that, and do not change it unasked:
+ round three already carries an accepted attribution cost for changing the
+ roster, the editor, the checker set and the lane at once.
+Task #64 holds the decision.
