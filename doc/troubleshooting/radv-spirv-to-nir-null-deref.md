@@ -471,7 +471,12 @@ Two candidate upstreams exist, and the audit lands differently for each.
     Yes.
     See "Prototyped fix" below.
 
-All six constraints hold for the compute path, so the Mesa draft is fileable as written.
+All six constraints hold for the compute path, so the Mesa draft is fileable on the merits.
+
+Nothing has been filed.
+Posting to an upstream tracker is an outward-facing action,
+so it waits on the user's explicit authorization.
+A future session must not read "fileable" as permission to post.
 
 #### vkd3d-proton and dxil-spirv: draft kept, not fileable yet
 
@@ -623,9 +628,40 @@ obliged to validate it, so this is a hardening request rather than a spec-confor
 The inconsistency is that `spirv_to_nir()` already defines a NULL failure return that RADV
 does not check.
 
-A minimal patch for the compute path is attached below; the graphics caller
-(radv_pipeline_graphics.c:2562) and the ray-tracing caller (radv_pipeline_rt.c:659) need the
-same treatment, and `radv_rt_spirv_to_nir` returns void so it needs a way to signal failure.
+A minimal patch for the compute path, built and verified as described above:
+
+```diff
+--- a/src/amd/vulkan/radv_shader.c
++++ b/src/amd/vulkan/radv_shader.c
+@@ -540,6 +540,10 @@ radv_shader_spirv_to_nir(struct radv_device *device, struct radv_shader_stage *s
+       nir = spirv_to_nir(spirv, stage->spirv.size / 4, spec_entries, num_spec_entries, stage->stage, stage->entrypoint,
+                          &spirv_options, &pdev->nir_options[stage->stage]);
++      if (!nir) {
++         free(spec_entries);
++         return NULL;
++      }
+       nir->info.internal |= is_internal;
+--- a/src/amd/vulkan/radv_pipeline_compute.c
++++ b/src/amd/vulkan/radv_pipeline_compute.c
+@@ -106,6 +106,8 @@ radv_compile_cs(struct radv_device *device, struct radv_shader_stage *cs_stage,
+    cs_stage->nir = radv_shader_spirv_to_nir(device, cs_stage, NULL, is_internal);
++   if (!cs_stage->nir)
++      return NULL;
+@@ -222,6 +224,11 @@ radv_compute_pipeline_compile(const VkComputePipelineCreateInfo *pCreateInfo, st
+    struct radv_shader_binary *cs_binary = radv_compile_cs(device, &cs_stage, keep_executable_info, keep_statistic_info,
+                                                           pipeline->base.is_internal, &cs_dbg);
++   if (!cs_binary) {
++      result = VK_ERROR_UNKNOWN;
++      radv_pipeline_stage_finish(&cs_stage);
++      goto done;
++   }
+    pipeline->base.shaders[MESA_SHADER_COMPUTE] =
+       radv_shader_create(device, cache, cs_binary, skip_shaders_cache, &cs_dbg);
+```
+
+The graphics caller (radv_pipeline_graphics.c:2562) and the ray-tracing caller
+(radv_pipeline_rt.c:659) need the same treatment, and `radv_rt_spirv_to_nir` returns void so it
+needs a way to signal failure. Happy to extend the patch to cover those if that shape is wanted.
 
 Disclosure: this report was prepared with AI assistance. A human verified the reproduction,
 the source trace, the local patched and unpatched builds, and the backtrace.
