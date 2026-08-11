@@ -468,6 +468,44 @@ use a renderer that preserves tags such as `ja`,
 `zh-Hant`,
  or `ko` so the font's `locl` forms can work.
 
+### Per-launch font language default
+
+Fontconfig documents `FC_LANG` as the query's weak default language.
+For a monolingual IDEA session,
+it can activate Fedora's installed regional rules without changing `LANG` or
+writing custom XML:
+
+```bash
+FC_LANG=ja_JP.UTF-8 \
+  "$HOME/.local/share/JetBrains/Toolbox/apps/intellij-idea/bin/idea"
+```
+
+Use `zh_CN.UTF-8`,
+`zh_TW.UTF-8`,
+`zh_HK.UTF-8`,
+ or `ko_KR.UTF-8` instead when appropriate.
+A disposable exact-JBR probe with `LANG=en_US.UTF-8` measured:
+
+```text
+FC_LANG=ja_JP.UTF-8
+sans-serif -> Noto Sans CJK JP
+monospaced -> Noto Sans Mono CJK JP
+
+FC_LANG=zh_CN.UTF-8
+sans-serif -> Noto Sans CJK SC
+monospaced -> Noto Sans Mono CJK SC
+```
+
+Tradeoffs:
+
+- This still selects one whole-process regional default.
+  It cannot distinguish adjacent Japanese and Chinese runs.
+- Fedora prepends the regional Noto family at slot `0`.
+  Because that family also covers Latin,
+  it can change Latin rendering rather than acting only as CJK fallback.
+- Launching through Toolbox without the environment variable returns to the
+  normal `en-US` ordering.
+
 ### Forced regional default for JBR sans and monospace fallback
 
 Use the candidate XML as
@@ -556,12 +594,14 @@ Tradeoffs:
 - **Strongly prepending only the CJK family.**
   The tested order made Noto Sans CJK the first generic family,
   so it also became the Latin font.
-- **Changing `LANG` for IntelliJ.**
-  It changes the JBR startup locale and can affect localization,
+- **Changing `LANG` as a mixed-language fix.**
+  It successfully selects Fedora's family for that locale,
+  but still supplies one whole-process default.
+  It can also affect localization,
   collation,
    formatting,
    and child processes.
-  Font choice alone does not justify those side effects.
+  `FC_LANG` is narrower when a monolingual launch is useful.
 - **Editing `/usr/share/fontconfig/conf.avail`.**
   That path is package-managed and is not a durable Bazzite customization.
 - **Deleting only `$HOME/.java/fonts/25.0.3`.**
