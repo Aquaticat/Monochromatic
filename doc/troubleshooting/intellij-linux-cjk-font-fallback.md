@@ -475,23 +475,26 @@ For a monolingual IDEA session,
 it can activate Fedora's installed regional rules without changing `LANG` or
 writing custom XML:
 
+Fully quit existing IDEA processes,
+then launch:
+
 ```bash
-FC_LANG=ja_JP.UTF-8 \
+FC_LANG=ja \
   "$HOME/.local/share/JetBrains/Toolbox/apps/intellij-idea/bin/idea"
 ```
 
-Use `zh_CN.UTF-8`,
-`zh_TW.UTF-8`,
-`zh_HK.UTF-8`,
- or `ko_KR.UTF-8` instead when appropriate.
+Use `zh-cn`,
+`zh-tw`,
+`zh-hk`,
+ or `ko` instead when appropriate.
 A disposable exact-JBR probe with `LANG=en_US.UTF-8` measured:
 
 ```text
-FC_LANG=ja_JP.UTF-8
+FC_LANG=ja
 sans-serif -> Noto Sans CJK JP
 monospaced -> Noto Sans Mono CJK JP
 
-FC_LANG=zh_CN.UTF-8
+FC_LANG=zh-cn
 sans-serif -> Noto Sans CJK SC
 monospaced -> Noto Sans Mono CJK SC
 ```
