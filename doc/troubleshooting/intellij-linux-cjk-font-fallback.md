@@ -15,9 +15,10 @@ The measured surfaces differ:
   `$HOME/.config/JetBrains/IntelliJIdea2026.2/options/editor-font.xml`.
   IntelliJ therefore reaches its logical monospaced fallback.
   The current JBR cache records `Noto Sans CJK JP` for that fallback.
-- The Swing UI uses JBR's sans-serif composite.
+- Swing UI fonts can reach JBR's sans-serif composite.
   Its current cache records `Droid Sans Fallback` before
   `Noto Sans CJK JP`.
+  The active theme's concrete UI-family hop was not probed directly.
 - The terminal has its own empty `SECONDARY_FONT_FAMILY` in
   `$HOME/.config/JetBrains/IntelliJIdea2026.2/options/terminal-font.xml`.
 
@@ -86,9 +87,13 @@ sans-serif:lang=ko:charset=4e2d    -> Noto Sans CJK KR
 
 ### JBR passes its startup locale into fontconfig
 
-The installed runtime is JBR `25.0.3+9-b508.16-nomod`,
-source commit `c624f1bd958763cf442320ee570b5ad468b226bb`,
-tag `jbr-release-25.0.3b508.16`.
+The installed runtime is JBR `25.0.3+9-b508.16-nomod`.
+Its `release` file reports source commit
+`c624f1bd958763cf442320ee570b5ad468b226bb+`.
+The `+` means the shipped build may contain uncommitted build-tree changes beyond
+that public commit.
+The public commit carries tag `jbr-release-25.0.3b508.16`,
+and the cited fontconfig path matches the installed behavior.
 
 `JetBrainsRuntime@c624f1bd:src/java.desktop/unix/classes/sun/font/FontConfigManager.java:142-149`
 builds the fontconfig locale from JBR's startup locale:
@@ -228,9 +233,10 @@ else {
 return fontWithFallback as? FontUIResource ?: FontUIResource(fontWithFallback)
 ```
 
-This split explains why an editor fallback fixes editor text but not menus,
-tool windows,
- or every terminal engine.
+This split explains why an editor fallback fixes editor text but not every
+UI or terminal path.
+The verified Linux rule changes JBR's generic sans and monospace composites;
+it does not change the serif composite.
 
 ## Verification
 
@@ -353,7 +359,7 @@ and SC ordering with it.
 
 ## Verified workarounds
 
-### User fontconfig rule for the whole IntelliJ process
+### User fontconfig rule for JBR sans and monospace fallback
 
 Use the candidate XML as
 `$HOME/.config/fontconfig/conf.d/50-noto-cjk-fallback.conf`.
@@ -386,6 +392,15 @@ Tradeoffs:
 - One selected region becomes the default for shared Han code points.
   Text from another CJK language can use that region's glyph form unless
   the rendering surface supplies a language tag.
+- Noto Sans CJK also covers arrows,
+   box drawing,
+   geometric shapes,
+  fullwidth forms,
+   and other symbols.
+  Moving it near the start of the sans chain can make it render those characters
+  before dedicated symbol fonts.
+- The rule does not alter JBR's `serif` composite.
+  A surface that explicitly requests serif retains its previous CJK fallback.
 - Existing processes and JBR's generated font cache require a restart after
   `fc-cache` changes the cache directory timestamp.
 
