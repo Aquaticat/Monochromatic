@@ -25,11 +25,16 @@ The measured surfaces differ:
 The installed Noto collection exposes regional families rather than one
 region-neutral `Noto Sans CJK` family:
 
-- `Noto Sans CJK SC`: Simplified Chinese
-- `Noto Sans CJK TC`: Traditional Chinese for Taiwan
-- `Noto Sans CJK HK`: Traditional Chinese for Hong Kong
-- `Noto Sans CJK JP`: Japanese
-- `Noto Sans CJK KR`: Korean
+- `Noto Sans CJK SC`:
+   Simplified Chinese
+- `Noto Sans CJK TC`:
+   Traditional Chinese for Taiwan
+- `Noto Sans CJK HK`:
+   Traditional Chinese for Hong Kong
+- `Noto Sans CJK JP`:
+   Japanese
+- `Noto Sans CJK KR`:
+   Korean
 
 The same suffixes exist for `Noto Sans Mono CJK`.
 Noto's upstream README describes these as language-specific fonts and says
@@ -46,7 +51,8 @@ Bazzite 44 enables Fedora's
 `/usr/share/fontconfig/conf.avail/65-1-google-noto-sans-cjk-fonts.conf`.
 Its rules prepend a regional family only when the font pattern carries the
 matching language.
-For Simplified Chinese, lines 101 to 109 contain:
+For Simplified Chinese,
+ lines 101 to 109 contain:
 
 ```xml
 <match>
@@ -146,8 +152,10 @@ sansserif.0.14.fullName=Droid Sans Fallback
 sansserif.0.32.fullName=Noto Sans CJK JP
 ```
 
-The cache's property order is lexical, so the numeric suffix is the component
-index, not the file line's visual position.
+The cache's property order is lexical,
+ so the numeric suffix is the component
+index,
+ not the file line's visual position.
 
 ### IntelliJ's editor override is separate from Linux fallback
 
@@ -186,7 +194,8 @@ if (state.SECONDARY_FONT_FAMILY != null) {
 ```
 
 `editor-impl/ComplementaryFontsRegistry.java:168-191`
-tries registered families in order, then the logical monospaced fallback:
+tries registered families in order,
+ then the logical monospaced fallback:
 
 ```java
 List<String> fontFamilies = preferences.getEffectiveFontFamilies();
@@ -221,14 +230,18 @@ return fontWithFallback as? FontUIResource ?: FontUIResource(fontWithFallback)
 ```
 
 This split explains why an editor fallback fixes editor text but not menus,
-tool windows, every terminal engine, or JCEF content.
+tool windows,
+ every terminal engine,
+ or JCEF content.
 
 ## Verification
 
 Verified on 2026-08-11 with:
 
-- Bazzite `44.20260721.0`, based on Fedora 44
-- IntelliJ IDEA Ultimate `2026.2.1`, build `262.9437.185`
+- Bazzite `44.20260721.0`,
+   based on Fedora 44
+- IntelliJ IDEA Ultimate `2026.2.1`,
+   build `262.9437.185`
 - JBR `25.0.3+9-b508.16-nomod`
 - fontconfig `2.17.0`
 - Noto Sans CJK `2.004`
@@ -348,25 +361,30 @@ Use the candidate XML as
 `$HOME/.config/fontconfig/conf.d/50-noto-cjk-fallback.conf`.
 Fontconfig's installed `50-user.conf:5-12` explicitly loads both
 `$XDG_CONFIG_HOME/fontconfig/conf.d` and
-`$XDG_CONFIG_HOME/fontconfig/fonts.conf`, so no system file needs editing.
+`$XDG_CONFIG_HOME/fontconfig/fonts.conf`,
+ so no system file needs editing.
 
-After creating the file, refresh fontconfig and restart IntelliJ IDEA:
+After creating the file,
+ refresh fontconfig and restart IntelliJ IDEA:
 
 ```bash
 fc-cache --force --verbose
 ```
 
 Verify the order with the baseline `fc-match --sort` harness.
-After IntelliJ restarts, open a file containing representative CJK text and
+After IntelliJ restarts,
+ open a file containing representative CJK text and
 run `Show Fonts Used by Editor` from `Find Action`.
 The expected regional family is `Noto Sans CJK SC` in this sample.
 
 Tradeoffs:
 
-- This is user-wide Linux configuration, not IntelliJ-only configuration.
+- This is user-wide Linux configuration,
+   not IntelliJ-only configuration.
   Other fontconfig clients inherit the generic family chain.
 - It intentionally pins the current generic Latin choices,
-  `Noto Sans` and `Noto Sans Mono`, before the CJK fallbacks.
+  `Noto Sans` and `Noto Sans Mono`,
+   before the CJK fallbacks.
 - One selected region becomes the default for shared Han code points.
   Text from another CJK language can use that region's glyph form unless
   the rendering surface supplies a language tag.
@@ -384,16 +402,22 @@ Restart IntelliJ IDEA after rollback.
 
 ### IntelliJ editor fallback only
 
-Open `Settings | Editor | Font`, expand `Typography Settings`, and set
+Open `Settings | Editor | Font`,
+ expand `Typography Settings`,
+ and set
 `Fallback font` to the desired `Noto Sans CJK <region>` family.
-For a terminal, set the separate fallback under
+For a terminal,
+ set the separate fallback under
 `Settings | Tools | Terminal | Font Settings` to
 `Noto Sans Mono CJK <region>`.
 
 Tradeoffs:
 
 - This is deterministic and limited to the configured IntelliJ surface.
-- It does not fix CJK in menus, tabs, tool windows, every console path,
+- It does not fix CJK in menus,
+   tabs,
+   tool windows,
+   every console path,
   or JCEF content.
 - `Noto Sans CJK` is proportional for Latin.
   That does not matter when it supplies only missing CJK glyphs,
@@ -410,7 +434,9 @@ Tradeoffs:
   so it also became the Latin font.
 - **Changing `LANG` for IntelliJ.**
   It changes the JBR startup locale and can affect localization,
-  collation, formatting, and child processes.
+  collation,
+   formatting,
+   and child processes.
   Font choice alone does not justify those side effects.
 - **Editing `/usr/share/fontconfig/conf.avail`.**
   That path is package-managed and is not a durable Bazzite customization.
@@ -421,7 +447,10 @@ Tradeoffs:
 
 ### Upstream filing decision
 
-No `.out-of-scope/` entry covers IntelliJ, JBR, fontconfig, or CJK fallback.
+No `.out-of-scope/` entry covers IntelliJ,
+ JBR,
+ fontconfig,
+ or CJK fallback.
 GitHub searches across open and closed JetBrainsRuntime issues and pull requests
 for `fontconfig CJK fallback` returned no match.
 Equivalent searches in `JetBrains/intellij-community` for
