@@ -356,12 +356,12 @@ Face `0` is JP and face `2` is SC.
 The output changes glyphs when a non-default language is supplied:
 
 ```text
-face=0 lang=en:    [gid27873|gid45132|gid9808|gid40043]
-face=0 lang=ja:    [gid27873|gid45132|gid9808|gid40043]
-face=0 lang=zh-cn: [gid27874|gid45133|gid9809|gid40044]
-face=2 lang=en:    [gid27874|gid45133|gid9809|gid40044]
-face=2 lang=ja:    [gid27873|gid45132|gid9808|gid40043]
-face=2 lang=zh-cn: [gid27874|gid45133|gid9809|gid40044]
+face=0 lang=en: [gid27873=0+1000|gid45132=1+1000|gid9808=2+1000|gid40043=3+1000]
+face=0 lang=ja: [gid27873=0+1000|gid45132=1+1000|gid9808=2+1000|gid40043=3+1000]
+face=0 lang=zh-cn: [gid27874=0+1000|gid45133=1+1000|gid9809=2+1000|gid40044=3+1000]
+face=2 lang=en: [gid27874=0+1000|gid45133=1+1000|gid9809=2+1000|gid40044=3+1000]
+face=2 lang=ja: [gid27873=0+1000|gid45132=1+1000|gid9808=2+1000|gid40043=3+1000]
+face=2 lang=zh-cn: [gid27874=0+1000|gid45133=1+1000|gid9809=2+1000|gid40044=3+1000]
 ```
 
 The distinct glyph IDs are a positive control for the regional difference.
