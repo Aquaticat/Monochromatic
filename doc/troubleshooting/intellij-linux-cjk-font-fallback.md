@@ -161,6 +161,60 @@ The cache's property order is lexical,
 index,
  not the file line's visual position.
 
+### Mixed CJK plain text has no automatic regional answer
+
+Unicode assigns one CJK unified ideograph code point to character identities
+that can have different conventional glyphs in Chinese,
+Japanese,
+ and Korean typography.
+The Unicode CJK FAQ says that determining a character's language from its code
+point is largely impossible.
+It recommends language context or heuristics instead.
+
+Noto Sans CJK contains glyphs for all supported regional conventions.
+Noto's deployment guide says switching conventions requires text language tags
+and an application that applies OpenType `locl` substitutions.
+The regional family selects the default convention when no such tag reaches the
+shaper.
+
+JBR does not carry a text language through this layout path.
+`JetBrainsRuntime@c624f1bd:src/java.desktop/share/classes/sun/font/GlyphLayout.java:395-415`
+hardcodes its language value to the default before splitting text into script
+and font runs:
+
+```java
+int lang = -1; // default for now
+// ...
+while (_scriptRuns.next()) {
+    int limit = _scriptRuns.getScriptLimit();
+    int script = _scriptRuns.getScriptCode();
+    while (_fontRuns.next(limit)) {
+        // ...
+        nextEngineRecord(start, pos, script, lang, pfont, slot, slotShift);
+    }
+}
+```
+
+The exact JBR HarfBuzz bridge also sets a default language.
+`JetBrainsRuntime@c624f1bd:src/java.desktop/share/native/libfontmanager/HBShaper.c:226-234`
+contains:
+
+```c
+hb_buffer_t *create_buffer(int script, int ltrDirection) {
+    hb_buffer_t *buffer = hb_buffer_create();
+    // ...
+    hb_buffer_set_script(buffer, getHBScriptCode(script));
+    hb_buffer_set_language(buffer, hb_ot_tag_to_language(HB_OT_TAG_DEFAULT_LANGUAGE));
+    // ...
+}
+```
+
+A fontconfig alias can therefore choose a better regional default,
+but it cannot make one editor line use JP forms and another use SC forms.
+An ordered list of regional faces also cannot solve this:
+each face covers the shared Han code points,
+so JBR's first matching face wins.
+
 ### IntelliJ's editor override is separate from Linux fallback
 
 IntelliJ IDEA's exact source tag is `idea/2026.2.1`,
@@ -281,6 +335,41 @@ monospace:regular:roman
 43: Noto Sans CJK JP
 ```
 
+### Language-tagged shaping harness
+
+Direct HarfBuzz shaping confirms that the installed TTC contains the regional
+forms and that language metadata can select them:
+
+```bash
+font=/usr/share/fonts/google-noto-sans-cjk-fonts/NotoSansCJK-Regular.ttc
+for face in 0 2; do
+  for lang in en ja zh-cn; do
+    printf 'face=%s lang=%s: ' "$face" "$lang"
+    hb-shape --shapers=ot --face-index="$face" \
+      --language="$lang" --script=Hani --direction=ltr \
+      "$font" '直骨令辻'
+  done
+done
+```
+
+Face `0` is JP and face `2` is SC.
+The output changes glyphs when a non-default language is supplied:
+
+```text
+face=0 lang=en:    [gid27873|gid45132|gid9808|gid40043]
+face=0 lang=ja:    [gid27873|gid45132|gid9808|gid40043]
+face=0 lang=zh-cn: [gid27874|gid45133|gid9809|gid40044]
+face=2 lang=en:    [gid27874|gid45133|gid9809|gid40044]
+face=2 lang=ja:    [gid27873|gid45132|gid9808|gid40043]
+face=2 lang=zh-cn: [gid27874|gid45133|gid9809|gid40044]
+```
+
+The distinct glyph IDs are a positive control for the regional difference.
+They also show the better mechanism:
+one Pan-CJK font plus language-tagged runs.
+The JBR source trace shows why IntelliJ's plain editor cannot use that mechanism
+in this version.
+
 ### Candidate fontconfig harness
 
 The verified candidate keeps the current generic Latin families first and
@@ -342,6 +431,8 @@ and SC ordering with it.
   the SC face at TTC index `2`.
 - A language-bearing query such as
   `sans-serif:lang=zh-cn:charset=4e2d` resolves to SC.
+- Direct HarfBuzz shaping selects JP or SC forms from the installed Pan-CJK TTC
+  when the text run carries `ja` or `zh-cn`.
 - The candidate alias chain preserves `Noto Sans` and `Noto Sans Mono` as
   the first generic families and moves the chosen CJK families ahead of
   Droid and JP.
@@ -356,10 +447,28 @@ and SC ordering with it.
 - Leaving the editor and terminal fallback fields empty delegates those
   surfaces to logical fallback order.
 - Setting only the editor fallback does not change Swing UI text.
+- Listing several regional CJK faces does not select among them by text
+  language.
+  Shared Han code points are present in each face,
+  so the first face wins.
+- Installing a Pan-CJK OTC or variable font does not make plain editor text
+  language-aware.
+  The installed TTC already has `locl` forms,
+  but JBR supplies the default language to HarfBuzz.
 
 ## Verified workarounds
 
-### User fontconfig rule for JBR sans and monospace fallback
+There is no automatic mixed-Japanese-and-Chinese workaround for plain text in
+this IntelliJ/JBR version.
+Choose a regional default only when one convention is preferable for untagged
+text.
+For content with language metadata,
+use a renderer that preserves tags such as `ja`,
+`zh-Hans`,
+`zh-Hant`,
+ or `ko` so the font's `locl` forms can work.
+
+### Forced regional default for JBR sans and monospace fallback
 
 Use the candidate XML as
 `$HOME/.config/fontconfig/conf.d/50-noto-cjk-fallback.conf`.
@@ -383,6 +492,9 @@ The expected regional family is `Noto Sans CJK SC` in this sample.
 
 Tradeoffs:
 
+- This does not correctly typeset mixed untagged Japanese and Chinese.
+  An SC default gives shared Han characters SC forms even inside Japanese text;
+  a JP default does the converse for Chinese text.
 - This is user-wide Linux configuration,
    not IntelliJ-only configuration.
   Other fontconfig clients inherit the generic family chain.
