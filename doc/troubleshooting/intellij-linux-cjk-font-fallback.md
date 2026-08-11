@@ -153,8 +153,16 @@ index, not the file line's visual position.
 
 IntelliJ IDEA's exact source tag is `idea/2026.2.1`,
 commit `b75ab523e6adbe1d26112219729eacbcfd24daa0`.
+The source citations use these aliases under that commit:
 
-`intellij-community@b75ab523:platform/platform-impl/src/com/intellij/application/options/editor/fonts/AppFontOptionsPanel.kt:225-230`
+- `editor-fonts/`:
+  `platform/platform-impl/src/com/intellij/application/options/editor/fonts/`
+- `editor-colors-impl/`:
+  `platform/editor-ui-ex/src/com/intellij/openapi/editor/colors/impl/`
+- `editor-impl/`:
+  `platform/platform-impl/src/com/intellij/openapi/editor/impl/`
+
+`editor-fonts/AppFontOptionsPanel.kt:225-230`
 creates the editor's explicit fallback control:
 
 ```kotlin
@@ -168,7 +176,7 @@ row(secondaryFont) {
 ```
 
 The selected value persists as `SECONDARY_FONT_FAMILY`.
-`intellij-community@b75ab523:platform/editor-ui-ex/src/com/intellij/openapi/editor/colors/impl/AppFontOptions.java:84-85`
+`editor-colors-impl/AppFontOptions.java:84-85`
 registers it after the primary family:
 
 ```java
@@ -177,7 +185,7 @@ if (state.SECONDARY_FONT_FAMILY != null) {
 }
 ```
 
-`intellij-community@b75ab523:platform/platform-impl/src/com/intellij/openapi/editor/impl/ComplementaryFontsRegistry.java:168-191`
+`editor-impl/ComplementaryFontsRegistry.java:168-191`
 tries registered families in order, then the logical monospaced fallback:
 
 ```java
