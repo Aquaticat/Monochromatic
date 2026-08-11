@@ -6520,3 +6520,63 @@ Every stage it sits in is affected, and the two with no meaningful quorum, the
  editor pair and the single refiner, are affected worst.
 The decision is still the user's, but it should no longer wait on another pass
  to establish persistence.
+
+## Run 014: the degradation is now the dominant fact about the pipeline
+
+```text
+DONE processed=9 of pending=45; artifacts=56/92 elapsed=53396640ms
+```
+
+Nine entries settled, 47 to 56, one deadline casualty (`hulicaijia`).
+Good throughput, and almost none of it under the configuration the roster
+ describes.
+
+### Kimi-K3, four runs
+
+```text
+run 012        0 schema-mismatches
+run 013       61
+recall run   312
+run 014      507
+```
+
+Run 014's critic stage reached its full roster ONCE in 166 chunk-runs
+ (158 at 5/6, 5 at 4/6, 2 at 3/6, 1 at 6/6).
+
+### What that has done to the two stages with no real quorum
+
+```text
+at 47 entries   editorDegraded=15/322   refineSilent=6/101
+at 56 entries   editorDegraded=71/405   refineSilent=34/129
+```
+
+So run 014 alone contributed 56 degraded editor chunks and 28 silent refine
+ slices.
+The naturalness lane has now produced nothing at all for two consecutive passes:
+ `entriesWithRewrites` is still 15, unchanged since run 012 settled.
+
+This is no longer a curiosity to report beside the real numbers.
+A majority of the recent corpus was repaired by ONE editor of two, and the
+ milestone-two repair figures were measured when both answered.
+
+### The evidence guard fired, and was right
+
+`score-probe` refused to run at 56 entries:
+ an envelope carried disagreeing probe copies.
+The guard was correct and the CALLER was wrong.
+Envelope ids are derived from the text they cover, so they are unique within a
+ document and not across a corpus, and `summarizeProbeTelemetry` collapsed on
+ the id alone across every artifact.
+Two entries containing the same wording produced one id for regions serving
+ different issues, and the guard caught them disagreeing about which.
+
+Measured before fixing, because "how wrong were the old numbers" is the first
+ question a reader will have:
+ exactly TWO envelope ids span more than one entry, and the old global collapse
+ lost two regions out of 848.
+No figure reported so far was materially wrong.
+What the bug did was break the tool outright the first time a colliding pair
+ disagreed, and collisions only get likelier as the corpus grows.
+
+The summary now takes readings grouped by entry and keys on the pair.
+A test pins it: two entries sharing an envelope id count as two regions.
