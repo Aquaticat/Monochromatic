@@ -20,7 +20,6 @@ The measured surfaces differ:
   `Noto Sans CJK JP`.
 - The terminal has its own empty `SECONDARY_FONT_FAMILY` in
   `$HOME/.config/JetBrains/IntelliJIdea2026.2/options/terminal-font.xml`.
-- JCEF views use Chromium's Linux font path rather than the editor preference.
 
 The installed Noto collection exposes regional families rather than one
 region-neutral `Noto Sans CJK` family:
@@ -231,8 +230,7 @@ return fontWithFallback as? FontUIResource ?: FontUIResource(fontWithFallback)
 
 This split explains why an editor fallback fixes editor text but not menus,
 tool windows,
- every terminal engine,
- or JCEF content.
+ or every terminal engine.
 
 ## Verification
 
@@ -351,7 +349,7 @@ and SC ordering with it.
 - An `en-us` generic CJK query resolves to JP.
 - Leaving the editor and terminal fallback fields empty delegates those
   surfaces to logical fallback order.
-- Setting only the editor fallback does not change Swing UI or JCEF text.
+- Setting only the editor fallback does not change Swing UI text.
 
 ## Verified workarounds
 
@@ -417,8 +415,7 @@ Tradeoffs:
 - It does not fix CJK in menus,
    tabs,
    tool windows,
-   every console path,
-  or JCEF content.
+  or every console path.
 - `Noto Sans CJK` is proportional for Latin.
   That does not matter when it supplies only missing CJK glyphs,
   while the Mono family is safer for terminal cell geometry.
