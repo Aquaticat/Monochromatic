@@ -305,29 +305,59 @@ function sameRegionEvidence(
 /**
  * Summarizes probe readings over the distinct regions that actually shipped.
  *
- * @param readings - probe readings of SHIPPED issue records only; the caller
- * filters, because only the caller knows each record's disposition
+ * Scoped BY CORPUS ENTRY, which is what makes the collapse sound. An envelope
+ * id is derived from the text the envelope covers, so it is unique inside one
+ * document and NOT across a corpus: two entries containing the same wording
+ * produce the same id for regions serving different issues. Collapsing on the
+ * id alone merged unrelated documents' regions, undercounting distinct regions
+ * wherever two entries shared a paragraph, until the evidence guard met a pair
+ * whose issue lists disagreed and refused to pick one.
  *
- * @returns Counts over distinct envelopes
+ * @param entries - one group per settled artifact, each holding that entry's
+ * probe readings of SHIPPED issue records only; the caller filters, because
+ * only the caller knows each record's disposition
+ *
+ * @returns Counts over envelopes distinct within their own entry
  *
  * @example
  * ```ts
- * const summary = summarizeProbeTelemetry({ readings, },);
+ * const summary = summarizeProbeTelemetry({ entries, },);
  * ```
  */
 export function summarizeProbeTelemetry(
-  { readings, }: { readonly readings: readonly TelemetryProbeReading[]; },
+  {
+    entries,
+  }: {
+    readonly entries: readonly {
+      readonly entryId: string;
+      readonly readings: readonly TelemetryProbeReading[];
+    }[];
+  },
 ): ProbeTelemetrySummary {
   /**
-   * One entry per distinct envelope, keeping the first reading that named it.
+   * One record per envelope distinct within its entry, keeping the first
+   * reading that named it.
    */
   const distinct = new Map<string, RegionEvidence>();
-  for (const reading of readings) {
+  for (const entry of entries)
+  for (const reading of entry.readings) {
     for (const tally of reading.regions) {
+      /**
+       * Key naming this envelope inside its own entry.
+       *
+       * Built through `JSON.stringify` rather than by joining the parts with a
+       * separator, since an entry id is arbitrary text and one containing the
+       * separator could otherwise impersonate a different pair.
+       */
+      const key = JSON.stringify([
+        entry.entryId,
+        tally.envelopeId,
+      ],);
+
       /**
        * Copy already kept for this envelope, absent on first sighting.
        */
-      const kept = distinct.get(tally.envelopeId,);
+      const kept = distinct.get(key,);
       if (kept !== undefined) {
         // Every record serving a merged envelope carries the SAME tally, and
         // an envelope lives inside one chunk so its records were probed by one
@@ -343,16 +373,16 @@ export function summarizeProbeTelemetry(
           },
         },))
           throw new Error(
-            `envelope ${tally.envelopeId} carries disagreeing probe copies `
-              + 'across the records it served. Every record of a merged '
-              + 'envelope carries the same tally and one roster probed them '
-              + 'all, so keeping either copy would make this summary depend on '
-              + 'the order artifacts were read.',
+            `envelope ${tally.envelopeId} of entry ${entry.entryId} carries `
+              + 'disagreeing probe copies across the records it served. Every '
+              + 'record of a merged envelope carries the same tally and one '
+              + 'roster probed them all, so keeping either copy would make '
+              + 'this summary depend on the order records were read.',
           );
         continue;
       }
       distinct.set(
-        tally.envelopeId,
+        key,
         {
           tally,
           configuredProbers: reading.configuredProbers,

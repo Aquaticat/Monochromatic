@@ -284,7 +284,14 @@ await describe({
           },
         ];
 
-        const summary = summarizeProbeTelemetry({ readings, },);
+        const summary = summarizeProbeTelemetry({
+          entries: [
+            {
+              entryId: 'Kitten',
+              readings,
+            },
+          ],
+        },);
         expect(summary.regions,).toBe(1,);
         expect(summary.majorityIntroduced,).toBe(1,);
         // Summed over DISTINCT regions, so the shared envelope's three claims
@@ -303,7 +310,10 @@ await describe({
       fn: async () => {
         expect(function summarizesDisagreement() {
           summarizeProbeTelemetry({
-            readings: [
+            entries: [
+              {
+                entryId: 'Kitten',
+                readings: [
               {
                 heardProbers: 3,
                 configuredProbers: 3,
@@ -324,6 +334,8 @@ await describe({
                   },),
                 ],
               },
+              ],
+              },
             ],
           },);
         },).toThrow('envelope/shared',);
@@ -338,7 +350,10 @@ await describe({
       fn: async () => {
         expect(function summarizesDifferentProbers() {
           summarizeProbeTelemetry({
-            readings: [
+            entries: [
+              {
+                entryId: 'Kitten',
+                readings: [
               {
                 heardProbers: 3,
                 configuredProbers: 3,
@@ -369,6 +384,8 @@ await describe({
                   },),
                 ],
               },
+              ],
+              },
             ],
           },);
         },).toThrow('envelope/shared',);
@@ -380,7 +397,10 @@ await describe({
         + 'between what a gate would have blocked and what it would not',
       fn: async () => {
         const summary = summarizeProbeTelemetry({
-          readings: [
+          entries: [
+            {
+              entryId: 'Kitten',
+              readings: [
             {
               heardProbers: 3,
               configuredProbers: 3,
@@ -396,6 +416,8 @@ await describe({
                 catTally({ envelopeId: 'envelope/three', },),
               ],
             },
+            ],
+            },
           ],
         },);
         expect(summary.regions,).toBe(3,);
@@ -410,7 +432,10 @@ await describe({
         + 'is silence rather than a clean bill',
       fn: async () => {
         const summary = summarizeProbeTelemetry({
-          readings: [
+          entries: [
+            {
+              entryId: 'Kitten',
+              readings: [
             {
               heardProbers: 2,
               configuredProbers: 3,
@@ -420,6 +445,8 @@ await describe({
               heardProbers: 3,
               configuredProbers: 3,
               regions: [catTally({ envelopeId: 'envelope/whole', },),],
+            },
+            ],
             },
           ],
         },);
@@ -431,10 +458,45 @@ await describe({
       name: 'summarizes an empty run without inventing a region, so a pass '
         + 'that repaired nothing reads as no evidence rather than clean',
       fn: async () => {
-        const summary = summarizeProbeTelemetry({ readings: [], },);
+        const summary = summarizeProbeTelemetry({ entries: [], },);
         expect(summary.regions,).toBe(0,);
         expect(summary.majorityIntroduced,).toBe(0,);
         expect(summary.noneIntroduced,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'counts one envelope id ONCE PER ENTRY rather than once overall. '
+        + 'Envelope ids are derived from the text they cover, so two entries '
+        + 'sharing a paragraph produce the same id for regions serving '
+        + 'different issues; collapsing globally merged unrelated documents '
+        + 'and undercounted regions, which is a silent loss rather than an '
+        + 'error until the evidence guard happens to meet a disagreeing pair',
+      fn: async () => {
+        const summary = summarizeProbeTelemetry({
+          entries: [
+            {
+              entryId: 'Kitten',
+              readings: [
+                {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [catTally({ envelopeId: 'envelope/shared', },),],
+                },
+              ],
+            },
+            {
+              entryId: 'Mittens',
+              readings: [
+                {
+                  heardProbers: 3,
+                  configuredProbers: 3,
+                  regions: [catTally({ envelopeId: 'envelope/shared', },),],
+                },
+              ],
+            },
+          ],
+        },);
+        expect(summary.regions,).toBe(2,);
       },
     },),
   ],

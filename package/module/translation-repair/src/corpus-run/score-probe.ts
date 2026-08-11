@@ -58,10 +58,16 @@ import { resolveRunsDir, } from './run-config.ts';
 async function gatherReadings(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<{
-  readonly readings: readonly TelemetryProbeReading[];
+  readonly readings: readonly {
+    readonly entryId: string;
+    readonly readings: readonly TelemetryProbeReading[];
+  }[];
   readonly byIssueId: ReadonlyMap<string, TelemetryProbeReading>;
   readonly refinedIssueIds: ReadonlySet<string>;
-  readonly refinementReadings: readonly TelemetryProbeReading[];
+  readonly refinementReadings: readonly {
+    readonly entryId: string;
+    readonly readings: readonly TelemetryProbeReading[];
+  }[];
   readonly editorRoster: StageRosterCoverage;
   readonly refineRoster: StageRosterCoverage;
   readonly entriesWithRewrites: number;
@@ -102,10 +108,23 @@ async function gatherReadings(
   },),);
 
   /**
-   * Every reading across every artifact.
+   * Readings grouped by the artifact that carried them.
+   *
+   * Grouped rather than flattened, because envelope ids are derived from the
+   * text they cover and so repeat across documents that share a paragraph.
+   * Flattening let the summary collapse two entries' unrelated regions into
+   * one.
    */
-  const readings = perEntry.flatMap(function toReadings(entry,) {
-    return entry.readings;
+  const readings = names.map(function toGroup(
+    name,
+    index,
+  ) {
+    return {
+      entryId: name,
+      readings: perEntry[index]
+        ?.readings
+        ?? [],
+    };
   },);
 
   /**
@@ -134,8 +153,16 @@ async function gatherReadings(
       .map(function toIssueId(entry,) {
         return entry.issueId;
       },),),
-    refinementReadings: perEntry.flatMap(function toRefinement(entry,) {
-      return entry.refinementReadings;
+    refinementReadings: names.map(function toRefinementGroup(
+      name,
+      index,
+    ) {
+      return {
+        entryId: name,
+        readings: perEntry[index]
+          ?.refinementReadings
+          ?? [],
+      };
     },),
     editorRoster: summarizeStageRoster({
       entries: findingsPerEntry,
@@ -221,7 +248,7 @@ async function main(): Promise<void> {
   /**
    * Summary over distinct shipped regions.
    */
-  const summary = summarizeProbeTelemetry({ readings: gathered.readings, },);
+  const summary = summarizeProbeTelemetry({ entries: gathered.readings, },);
 
   console.log(
     `PROBE entries=${String(gathered.entries,)} shippedRecords=${
@@ -249,7 +276,7 @@ async function main(): Promise<void> {
    * not comparable as rates either.
    */
   const refinement = summarizeProbeTelemetry({
-    readings: gathered.refinementReadings,
+    entries: gathered.refinementReadings,
   },);
   console.log(
     `REFINEMENT rewrittenSlices=${String(refinement.regions,)} majorityIntroduced=${
@@ -267,17 +294,25 @@ async function main(): Promise<void> {
   // quorum rule; these two do not, and a stage that ran short here produces
   // output shaped exactly like a healthy stage with less to do.
   console.log(
-    `ROSTER editorOffered=${String(gathered.editorRoster.offered,)} editorDegraded=${
-      String(gathered.editorRoster.degraded,)
-    } editorSilent=${String(gathered.editorRoster.silent,)} refineOffered=${
-      String(gathered.refineRoster.offered,)
-    } refineDegraded=${String(gathered.refineRoster.degraded,)} refineSilent=${
-      String(gathered.refineRoster.silent,)
+    `ROSTER editorOffered=${String(gathered.editorRoster
+      .offered,)} editorDegraded=${
+      String(gathered.editorRoster
+        .degraded,)
+    } editorSilent=${String(gathered.editorRoster
+      .silent,)} refineOffered=${
+      String(gathered.refineRoster
+        .offered,)
+    } refineDegraded=${String(gathered.refineRoster
+      .degraded,)} refineSilent=${
+      String(gathered.refineRoster
+        .silent,)
     } entriesWithRewrites=${
       String(gathered.entriesWithRewrites,)
     }/${String(gathered.entries,)}`,
   );
-  if (gathered.editorRoster.degraded > 0)
+  if (gathered.editorRoster
+    .degraded
+    > 0)
     console.log(
       'NOTE editorDegraded counts chunks repaired with FEWER editors than the '
         + 'roster configures. The editor ensemble exists so no single model '
@@ -285,7 +320,9 @@ async function main(): Promise<void> {
         + 'hold: judges still chose, but they chose among one model\'s '
         + 'proposals.',
     );
-  if (gathered.refineRoster.silent > 0)
+  if (gathered.refineRoster
+    .silent
+    > 0)
     console.log(
       'NOTE refineSilent counts slices where NO refiner answered, so the '
         + 'naturalness lane could not run there. One model refines, and a '
