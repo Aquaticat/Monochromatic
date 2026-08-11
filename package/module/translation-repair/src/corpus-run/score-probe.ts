@@ -11,6 +11,10 @@ import {
 } from '../probe-agreement.ts';
 import { indexReadingsByIssue, } from '../probe-issue-index.ts';
 import {
+  type GatheredProbe,
+  reportProbeTelemetry,
+} from './probe-telemetry-report.ts';
+import {
   type StageRosterCoverage,
   summarizeStageRoster,
 } from '../stage-roster.ts';
@@ -57,24 +61,7 @@ import { resolveRunsDir, } from './run-config.ts';
  */
 async function gatherReadings(
   { artifactsDir, }: { readonly artifactsDir: string; },
-): Promise<{
-  readonly readings: readonly {
-    readonly entryId: string;
-    readonly readings: readonly TelemetryProbeReading[];
-  }[];
-  readonly byIssueId: ReadonlyMap<string, TelemetryProbeReading>;
-  readonly refinedIssueIds: ReadonlySet<string>;
-  readonly refinementReadings: readonly {
-    readonly entryId: string;
-    readonly readings: readonly TelemetryProbeReading[];
-  }[];
-  readonly editorRoster: StageRosterCoverage;
-  readonly refineRoster: StageRosterCoverage;
-  readonly entriesWithRewrites: number;
-  readonly entries: number;
-  readonly shippedRecords: number;
-  readonly unprobedRecords: number;
-}> {
+): Promise<GatheredProbe> {
   /**
    * Artifact file names, JSON only.
    */
@@ -245,98 +232,7 @@ async function main(): Promise<void> {
    */
   const gathered = await gatherReadings({ artifactsDir, },);
 
-  /**
-   * Summary over distinct shipped regions.
-   */
-  const summary = summarizeProbeTelemetry({ entries: gathered.readings, },);
-
-  console.log(
-    `PROBE entries=${String(gathered.entries,)} shippedRecords=${
-      String(gathered.shippedRecords,)
-    } unprobedRecords=${String(gathered.unprobedRecords,)} regions=${
-      String(summary.regions,)
-    } majorityIntroduced=${String(summary.majorityIntroduced,)} minorityIntroduced=${
-      String(summary.minorityIntroduced,)
-    } noneIntroduced=${String(summary.noneIntroduced,)}`,
-  );
-  console.log(
-    `CLAIMS added=${String(summary.corroborated,)} dropped=${
-      String(summary.removalCorroborated,)
-    } contradicted=${String(summary.contradicted,)} unanchored=${
-      String(summary.unanchored,)
-    } degradedRosterRegions=${String(summary.degradedRosterRegions,)}`,
-  );
-
-  /**
-   * Summary over the naturalness lane's own rewrites.
-   *
-   * Reported on its own line rather than folded into the accuracy figures,
-   * because the two audit different edits against different baselines. Its
-   * region count is rewritten SLICES, not replaced envelopes, so the two are
-   * not comparable as rates either.
-   */
-  const refinement = summarizeProbeTelemetry({
-    entries: gathered.refinementReadings,
-  },);
-  console.log(
-    `REFINEMENT rewrittenSlices=${String(refinement.regions,)} majorityIntroduced=${
-      String(refinement.majorityIntroduced,)
-    } minorityIntroduced=${String(refinement.minorityIntroduced,)} noneIntroduced=${
-      String(refinement.noneIntroduced,)
-    } added=${String(refinement.corroborated,)} dropped=${
-      String(refinement.removalCorroborated,)
-    } contradicted=${String(refinement.contradicted,)} unanchored=${
-      String(refinement.unanchored,)
-    }`,
-  );
-  // Reported for the stages whose degradation is otherwise INVISIBLE. Critic
-  // and panel announce their heard counts per chunk in the run log and carry a
-  // quorum rule; these two do not, and a stage that ran short here produces
-  // output shaped exactly like a healthy stage with less to do.
-  console.log(
-    `ROSTER editorOffered=${String(gathered.editorRoster
-      .offered,)} editorDegraded=${
-      String(gathered.editorRoster
-        .degraded,)
-    } editorSilent=${String(gathered.editorRoster
-      .silent,)} refineOffered=${
-      String(gathered.refineRoster
-        .offered,)
-    } refineDegraded=${String(gathered.refineRoster
-      .degraded,)} refineSilent=${
-      String(gathered.refineRoster
-        .silent,)
-    } entriesWithRewrites=${
-      String(gathered.entriesWithRewrites,)
-    }/${String(gathered.entries,)}`,
-  );
-  if (gathered.editorRoster
-    .degraded
-    > 0)
-    console.log(
-      'NOTE editorDegraded counts chunks repaired with FEWER editors than the '
-        + 'roster configures. The editor ensemble exists so no single model '
-        + 'writes the shipped text, so on those chunks that property does not '
-        + 'hold: judges still chose, but they chose among one model\'s '
-        + 'proposals.',
-    );
-  if (gathered.refineRoster
-    .silent
-    > 0)
-    console.log(
-      'NOTE refineSilent counts slices where NO refiner answered, so the '
-        + 'naturalness lane could not run there. One model refines, and a '
-        + 'roster of one has no quorum to lose, so its failure shows up '
-        + 'nowhere else: the audit simply does not grow, which is also what a '
-        + 'run with nothing worth rewriting looks like.',
-    );
-  if (refinement.regions === 0)
-    console.log(
-      'NOTE rewrittenSlices=0 means no artifact here carries a refinement '
-        + 'audit. That is what artifacts written before the lane was audited '
-        + 'look like, and it is NOT evidence the lane rewrote nothing: read '
-        + 'the ROSTER line to tell the two apart.',
-    );
+  reportProbeTelemetry({ gathered, },);
   /**
    * Graded repair sheet and its draw manifest, when both were passed.
    */
