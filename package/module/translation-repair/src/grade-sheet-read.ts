@@ -165,6 +165,14 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
 }
 
 /**
+ * Answer marking an item as the same defect as an earlier one, lowercased.
+ *
+ * A word rather than a letter, because it is not a verdict about the item: the
+ * grader is saying the question was already answered elsewhere on the sheet.
+ */
+const DUPLICATE_ANSWER = 'duplicate';
+
+/**
  * Classifies one grader answer into a verdict and its remaining prose.
  *
  * @param answer - grader's answer, unbracketed
@@ -176,14 +184,6 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
  * const read = readAnswer({ answer: 'N, anchored to the wrong text', },);
  * ```
  */
-/**
- * Answer marking an item as the same defect as an earlier one, lowercased.
- *
- * A word rather than a letter, because it is not a verdict about the item: the
- * grader is saying the question was already answered elsewhere on the sheet.
- */
-const DUPLICATE_ANSWER = 'duplicate';
-
 function readAnswer({ answer, }: { readonly answer: string; },): {
   readonly verdict: GradeVerdict;
   readonly note: string;
