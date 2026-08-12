@@ -193,16 +193,27 @@ they are actively editing.
 None is deployed;
  changing comparison flags requires a one-off `--resync` to re-baseline.
 
-1.  **`--conflict-resolve newer` plus `--conflict-loser delete`.**
+1.  **`--conflict-resolve newer`, on its own.**
     Cheapest correct-in-practice fix,
      keeps the 3.1 s listing.
+    Leave `--conflict-loser` at its default,
+     which `rclone bisync --help` gives as `num`:
+     the winner then keeps the original filename and only the loser is renamed to
+     `<name>.conflict1`.
+    That is the property that matters here,
+     because the reported harm is the filename disappearing,
+     not the bytes going missing.
     Pro:
      resolves the false conflict in favour of the genuinely newer local edit,
-     and stops littering the tree with two renamed copies.
+     preserves the working filename,
+     and still keeps the losing copy on disk.
     Con:
      it resolves a conflict that should never have been raised,
      so it is a guard rather than a cure,
-     and it silently discards the losing copy.
+     and it leaves a `.conflict1` file behind to be cleaned up.
+    Do **not** pair it with `--conflict-loser delete`:
+     that buys tidiness by destroying the copy that would be the fallback if `newer` ever
+     chooses wrong.
     Ranked above dropping the flag because it costs nothing per run and the phantom cannot
     make the remote win in a single-writer setup:
      the remote's inflated time is the upload of an edit that is already in the local file,
