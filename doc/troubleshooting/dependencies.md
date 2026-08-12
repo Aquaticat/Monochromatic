@@ -1095,6 +1095,30 @@ The remediation was tested with pnpm 11.21.0 on 2026-08-12.
   moderate,
   high,
   or critical vulnerabilities across 718 resolved dependencies.
+- `mise run //package/dev-script/deps-cube:build`,
+  `:test:unit`,
+  and `:lint:types` passed with the compressor absent.
+
+`mise run //package/dev-script/deps-cube:lint:oxlint` remains red on 50 errors
+and 445 warnings in untouched package source.
+The security commits contain no change under
+`package/dev-script/deps-cube/src`,
+and the lockfile already resolved the same
+`oxlint@1.78.0` before this remediation,
+so that baseline is not evidence against the dependency removal.
+
+A disposable built-CLI fixture advanced through package loading and the npm probe,
+then hit an existing entry-path mismatch:
+`render-html` requests
+`package/dev-script/deps-cube/src/scripts/controller.ts`,
+while the tracked file is
+`package/dev-script/deps-cube/src/script/controller.ts`.
+The failed boundary probe does not exercise `texture-compressor` or `image-size`;
+build,
+unit,
+type,
+lockfile,
+and audit checks are the evidence for this scoped dependency change.
 
 The generated lockfile also synchronized stale catalog specifier metadata already
 present in `pnpm-workspace.yaml`.
