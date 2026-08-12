@@ -33,8 +33,17 @@ import {
  */
 const HEALTH_PROMPT =
   'Reply with JSON matching the schema: how many cats are named in this '
-  + 'sentence, and what is the first one called? "Mittens and Tabby sat on the '
-  + 'windowsill."';
+    + 'sentence, and what is the first one called? "Mittens and Tabby sat on the '
+    + 'windowsill."';
+
+/**
+ * How much of a raw reply the log line carries.
+ *
+ * Enough to show a prefix, a fence, or an apology sitting in front of the JSON,
+ * which is what this probe was built to catch, and short enough that six models
+ * fit in one readable screen.
+ */
+const RAW_REPLY_PREVIEW_CHARS = 300;
 
 /**
  * Schema the reply must satisfy.
@@ -75,7 +84,7 @@ function isHealthReply(value: unknown,): value is {
   readonly count: number;
   readonly first: string;
 } {
-  return (typeof value === 'object')
+  return ((typeof value) === 'object')
     && (value !== null)
     && ('count' in value)
     && ('first' in value);
@@ -121,16 +130,18 @@ async function reportModelHealth(): Promise<void> {
 
     l.info(
       `${modelId}: ${outcome.kind}${
-        ('detail' in outcome) ? ` -- ${String(outcome.detail,)}` : ''
+        ('detail' in outcome) ? ` -- ${outcome.detail}` : ''
       }`,
     );
-    if (('rawText' in outcome) && (typeof outcome.rawText === 'string'))
+    if (('rawText' in outcome) && ((typeof outcome.rawText) === 'string'))
       l.info(
-        `${modelId}: first 300 chars of raw reply: ${
+        `${modelId}: first ${
+          String(RAW_REPLY_PREVIEW_CHARS,)
+        } chars of raw reply: ${
           JSON.stringify(outcome.rawText
             .slice(
               0,
-              300,
+              RAW_REPLY_PREVIEW_CHARS,
             ),)
         }`,
       );

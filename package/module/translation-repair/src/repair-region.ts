@@ -105,19 +105,16 @@ export function collectRepairRegions(
   /**
    * Envelopes by identity, so attribution stays linear in the operation count.
    */
-  const byId = new Map(envelopes.map(function toEntry(envelope,) {
-    return [
-      envelope.envelopeId,
-      envelope,
-    ] as const;
-  },),);
+  const byId: Record<string, EditableEnvelope> = {};
+  for (const envelope of envelopes)
+    byId[envelope.envelopeId] = envelope;
 
   return applied.map(function toRegion(operation,): RepairRegion {
     /**
      * Envelope this operation targets, present because the apply gate rejects
      * every operation naming an unknown envelope.
      */
-    const envelope = nonNullishOrThrow(byId.get(operation.envelopeId,),);
+    const envelope = nonNullishOrThrow(byId[operation.envelopeId],);
 
     return {
       envelopeId: envelope.envelopeId,
