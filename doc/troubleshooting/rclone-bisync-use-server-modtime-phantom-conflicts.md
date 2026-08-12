@@ -129,7 +129,10 @@ An editing session spanning two consecutive hourly runs meets that condition eve
 ## Verification
 
 Versions:
- rclone `v1.74.3` via the mise shim,
+ rclone `v1.75.0` via the mise shim
+ (`rclone version`;
+ the mise shim resolves to `rclone-v1.75.0-linux-amd64`,
+ so this is a later rclone than the `v1.74.3` recorded in the sibling document),
  Garage `dxflrs/garage:v2.3.0`,
  single node,
  bucket `files`.
