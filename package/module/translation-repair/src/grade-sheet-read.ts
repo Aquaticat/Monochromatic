@@ -51,7 +51,23 @@ export type GradeVerdict =
    * own state rather than folded into either: an item the grader declined to
    * score belongs in no precision denominator.
    */
-  | 'unscored';
+  | 'unscored'
+  /**
+   * Answered `Duplicate`: this item is the same underlying defect as an earlier
+   * item in the same sample.
+   *
+   * Separate from `unscored` because the two are declined for opposite reasons.
+   * An unscored item is one nobody could decide; a duplicate is one already
+   * decided, at another position. Round three drew seven of them, 14 percent of
+   * the sample, and counting them as false positives dragged strict precision
+   * from 0.740 to 0.680 while every other reading rose. That movement described
+   * the sampling instrument, not the detector.
+   *
+   * The pipeline emitting one defect as several accepted issues is a real
+   * defect of its own, tracked separately; it is simply not the thing precision
+   * measures.
+   */
+  | 'duplicate';
 
 /**
  * One item read back off a graded sheet.
@@ -160,6 +176,14 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
  * const read = readAnswer({ answer: 'N, anchored to the wrong text', },);
  * ```
  */
+/**
+ * Answer marking an item as the same defect as an earlier one, lowercased.
+ *
+ * A word rather than a letter, because it is not a verdict about the item: the
+ * grader is saying the question was already answered elsewhere on the sheet.
+ */
+const DUPLICATE_ANSWER = 'duplicate';
+
 function readAnswer({ answer, }: { readonly answer: string; },): {
   readonly verdict: GradeVerdict;
   readonly note: string;
@@ -185,6 +209,17 @@ function readAnswer({ answer, }: { readonly answer: string; },): {
         verdict,
         note: trimLeadingDelimiters({ text: answer.slice(letter.length,), },),
       };
+
+  // Checked AFTER the letters, not before, so an answer opening with a real
+  // verdict keeps it however the grader continued the sentence.
+  if (answer
+    .trimStart()
+    .toLowerCase()
+    .startsWith(DUPLICATE_ANSWER,))
+    return {
+      verdict: 'duplicate',
+      note: answer,
+    };
 
   // Everything else, including an untouched `[ ]` box and answers like
   // "Not enough context to grade", is deliberately not a verdict.

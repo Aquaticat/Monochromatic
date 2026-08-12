@@ -274,12 +274,14 @@ async function reportGrades(): Promise<void> {
   // its published 0.740 / 0.787 / 0.800 exactly through these, which is the
   // check that this reader agrees with how the number was reported before.
   console.log(
-    `PRECISION items=${String(human.length,)} scored=${
+    `PRECISION items=${String(human.length,)} gradeable=${
+      String(precision.gradeable,)
+    } scored=${
       String(precision.scored,)
     } realDefects=${String(precision.realDefects,)} strict=${
       rate({
         numerator: precision.realDefects,
-        denominator: human.length,
+        denominator: precision.gradeable,
       },)
     } excluded=${
       rate({
@@ -291,8 +293,15 @@ async function reportGrades(): Promise<void> {
         numerator: precision.realDefects
           + precision.unscored
           .length,
-        denominator: human.length,
+        denominator: precision.gradeable,
       },)
+    } duplicates=${
+      precision.duplicates
+        .length
+        === 0
+        ? 'none'
+        : precision.duplicates
+          .join(',',)
     } unscored=${
       precision.unscored
         .length

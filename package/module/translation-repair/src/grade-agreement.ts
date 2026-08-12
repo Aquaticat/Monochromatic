@@ -77,12 +77,32 @@ export type PrecisionTally = {
    * Sheet positions the human declined to score.
    */
   readonly unscored: readonly number[];
+
+  /**
+   * Sheet positions the human marked as the same defect as an earlier item.
+   *
+   * Reported apart from `unscored` and excluded from every denominator, on the
+   * user's decision of 2026-08-12. A duplicate is a defect already counted at
+   * another position, so counting it again measures how often the pipeline
+   * repeats itself rather than how often it is right.
+   */
+  readonly duplicates: readonly number[];
+
+  /**
+   * Items the rates are taken over: everything drawn, less the duplicates.
+   */
+  readonly gradeable: number;
 };
 
 /**
  * Verdict meaning the grader declined to answer.
  */
 const UNSCORED: GradeVerdict = 'unscored';
+
+/**
+ * Verdict meaning the item repeats a defect graded at an earlier position.
+ */
+const DUPLICATE: GradeVerdict = 'duplicate';
 
 /**
  * Verdicts a recorded pre-grade may carry, which are exactly the verdicts a
@@ -243,9 +263,16 @@ export function scoreGradeAgreement(
   /**
    * Items the human scored, which is the only population an agreement rate
    * means anything over.
+   *
+   * Duplicates are excluded for the same reason declines are, and it is not a
+   * technicality: on a duplicate the human answered a question about the SHEET,
+   * that this defect was already graded elsewhere, while the pre-grade answered
+   * the question the item asks. Counting those as disagreements charged the
+   * agent seven wrong answers for reaching the same conclusion by another
+   * route, since its notes named the same seven as repeats.
    */
   const scored = human.filter(function hasVerdict(item,) {
-    return item.verdict !== UNSCORED;
+    return (item.verdict !== UNSCORED) && (item.verdict !== DUPLICATE);
   },);
 
   /**
@@ -281,16 +308,30 @@ export function scoreGradeAgreement(
 export function scoreGradedPrecision(
   { human, }: { readonly human: readonly GradedItem[]; },
 ): PrecisionTally {
+  /**
+   * Items the rates are taken over, duplicates removed.
+   */
+  const gradeable = human.filter(function notDuplicate(item,) {
+    return item.verdict !== DUPLICATE;
+  },);
+
   return {
-    scored: human.filter(function hasVerdict(item,) {
+    scored: gradeable.filter(function hasVerdict(item,) {
       return item.verdict !== UNSCORED;
     },)
       .length,
-    realDefects: human.filter(function isReal(item,) {
+    realDefects: gradeable.filter(function isReal(item,) {
       return item.verdict === 'real-defect';
     },)
       .length,
     unscored: unscoredPositions({ human, },),
+    duplicates: human.filter(function isDuplicate(item,) {
+      return item.verdict === DUPLICATE;
+    },)
+      .map(function toIndex(item,) {
+        return item.index;
+      },),
+    gradeable: gradeable.length,
   };
 }
 
