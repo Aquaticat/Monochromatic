@@ -6910,3 +6910,88 @@ Channel-marker fix recovering Kimi-K3 across five roles; widened rosters with
  stage degradation; duplicate as a first-class grade verdict; the round-three
  gate verdict; and the recall re-measure.
 All committed and pushed on `translation-repair-rebased`.
+
+## The probe's blindness, measured 2026-08-12
+
+Task `#66` asked for the introduced-defect probe's false-NEGATIVE rate.
+Measured over all 857 distinct probed regions in the 56 settled artifacts of
+ `node_modules/.monochromatic/translation-repair-runs/artifacts`:
+
+```text
+prober verdicts        2571  = 857 regions x 3 probers, exactly
+no-introduced-defect   2438  (94.8 percent)
+corroborated             86
+removal-corroborated     40
+contradicted              2
+unanchored                3
+uncertain                 2
+regions where every prober found nothing   743 of 857 (86.7 percent)
+```
+
+### Three causes eliminated, so they do not get re-investigated
+
+Lost prober voices absorbed into `noneFound`.
+NO: all 2626 recorded probe blocks read 3/3 heard, and the verdict total is
+ exactly three per region, so no region is missing a voice.
+
+The deterministic screen erasing true claims before they are recorded.
+NO: every one of the 131 raised claims persists in the artifact with its
+ `admissibility`, and only 5 were rejected, 2 contradicted and 3 unanchored.
+`screenIntroducedDefects` is not where the damage disappears.
+
+The sensitivity control being unrepresentative in size or issue count.
+NO: production regions have median `before` length 55 characters, p90 115, and
+ median 1 issue per region, p90 7.
+The `OMITTING_REGION` fixture is 82 characters with 1 issue, inside both
+ distributions.
+
+### What survives
+
+The probers genuinely cast `no-introduced-defect-found`, and their raise rate
+ barely moves with how much text the edit removed:
+
+```text
+regions deleting over half their text   0.060
+regions at 0.50 to 0.80 of before       0.057
+regions at 0.80 to 1.20                 0.032
+regions that grew                       0.066
+```
+
+A probe that could see removal damage would show a steep gradient there.
+It shows none, which is the signature of an instrument whose output does not
+ depend on its input.
+
+### Live hypothesis, and the experiment built for it
+
+Each region reaches the prober with its accepted issues rendered under
+ `PRE-EXISTING DEFECTS THIS EDIT TARGETED (these are NOT your findings)`, and
+ the rules forbid reporting one.
+When an accepted issue is a FALSE POSITIVE calling source-supported content an
+ unsupported addition, the editor deletes that content and the prober is told
+ the deletion was the repair.
+The damage is then invisible by construction, which would put probe blindness
+ DOWNSTREAM of detection precision rather than in the probe.
+
+`probe-sensitivity` gained a labelling arm that holds the deletion fixed and
+ moves only the label, cat fixtures only, in
+ `src/corpus-run/probe-sensitivity-input.ts`:
+
+-   `deletion/unlabelled` deletes source-supported text, prior issue unrelated.
+     A working probe reports damage.
+-   `deletion/mislabelled` deletes byte-identical text, prior issue falsely
+     calls it an addition. A working probe still reports damage, because the
+     prober is shown the original.
+-   `deletion/licensed` deletes content the original genuinely lacks, truthfully
+     labelled. Silence is correct, and a claim here would disqualify the probe
+     as a gate.
+
+A gap between the first two measures how far a false accepted issue can talk the
+ probe out of seeing real damage.
+
+### Consequence for the re-plan if the hypothesis holds
+
+`#66` stops being a separate defect and becomes a second symptom of the
+ precision gap, and the planning document's proposal to separate repair SAFETY
+ from QUALITY needs the deterministic preservation check to carry the safety
+ verdict, since no model-based probe can be trusted while it is fed accepted
+ issues as ground truth.
