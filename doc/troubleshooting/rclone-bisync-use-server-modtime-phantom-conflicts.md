@@ -107,12 +107,27 @@ Consequence:
 A phantom alone is one-sided.
 Path1 appears changed,
  Path2 does not,
- so bisync copies remote to local.
-The bytes are identical,
- and because `--use-server-modtime` also stamps the downloaded file's local mtime with the
-`LastModified`,
- the two sides now agree and the phantom clears itself.
+ so bisync queues a copy from remote to local.
+No bytes move.
+The sizes match and only the times differ,
+ so rclone satisfies the queued copy by stamping the local file's mtime with the
+`LastModified` it compared against:
+
+```text
+INFO  : - Path1    Queue copy to Path2       - /local/.../DIR/file-a.html
+INFO  : DIR/file-a.html: Updated modification time in destination
+```
+
+The two sides then agree and the phantom clears itself.
 That silent self-heal is why this does not fire on every file every hour.
+It is also why an unhealed phantom costs almost nothing on its own:
+ a run that heals one transfers no data,
+ which is what makes the destructive case easy to miss until it lands.
+
+An earlier draft of this document said bisync downloads the file and stamps the downloaded
+copy.
+It does not.
+The distinction matters for anyone reasoning about cost or about bandwidth-triggered alerts.
 
 It becomes destructive only when the local file **also** changes before that heal runs:
 
@@ -166,6 +181,13 @@ phantom protects,
  and the next run puts it back.
 Delete on both sides in the same window,
  then confirm both listings are empty.
+
+Confirmed rather than assumed:
+ four artifacts deleted from both sides between two runs were reported by the next run as
+`File was deleted` on Path1 and Path2 together,
+ with no copy queued in either direction and no resurrection.
+The same run logged the phantom on two unrelated files and healed both without a transfer,
+ so the deletions held while the phantom was demonstrably still active.
 
 ## Verification
 
