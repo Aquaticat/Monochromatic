@@ -5,6 +5,25 @@ import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import type { ProbedEditKind, } from '../introduced-defect-wire.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import {
+  BASELINE_TEXT,
+  CLEAN_REGION,
+  COMMA_ISSUE,
+  CONTRADICTING_REGION,
+  LABEL_BASELINE_TEXT,
+  LICENSED_DELETION_REGION,
+  LICENSING_ISSUE,
+  MISLABELLED_DELETION_REGION,
+  MISLABELLING_ISSUE,
+  OMITTING_REGION,
+  PRIOR_ISSUE,
+  REFINED_BASELINE_TEXT,
+  REFINED_CLEAN_REGION,
+  REFINED_CONTRADICTING_REGION,
+  REFINED_OMITTING_REGION,
+  SOURCE_TEXT,
+  UNLABELLED_DELETION_REGION,
+} from './probe-sensitivity-input.ts';
+import {
   createRunClient,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_MODELS,
@@ -25,134 +44,8 @@ import {
 // Waiting for the round to end does not separate those. Injecting damage does:
 // a probe that misses an obvious fabrication is not conservative, it is deaf.
 //
-// The fixtures are cat-themed invention. NO corpus text, licensed or otherwise,
-// takes part in this check, and it writes nothing.
-
-/**
- * Region whose replacement fixes the stated defect and introduces nothing.
- *
- * The control. A probe that flags this is over-eager, which is the failure this
- * prompt was built to avoid, and finding it here would be as informative as
- * finding the opposite.
- */
-const CLEAN_REGION: RepairRegion = {
-  envelopeId: 'envelope/clean',
-  issueIds: ['adjudicated/tense',],
-  before: 'The cat is doing the sleeping on the windowsill.',
-  editorAfter: 'The cat sleeps on the windowsill.',
-};
-
-/**
- * Region whose replacement fixes the tense and DROPS the second clause.
- *
- * Omission is the damage class the screen was widened for, and the one a
- * forward-only quote requirement could never anchor.
- */
-const OMITTING_REGION: RepairRegion = {
-  envelopeId: 'envelope/omitting',
-  issueIds: ['adjudicated/tense',],
-  before: 'The cat is doing the sleeping on the windowsill, and she wakes when the sun moves.',
-  editorAfter: 'The cat sleeps on the windowsill.',
-};
-
-/**
- * Region whose replacement fixes the tense and inverts the meaning.
- *
- * Blatant on purpose: the source says the cat likes butterflies and the
- * replacement says she hates them. A reviewer shown both texts cannot miss it
- * without failing at the task entirely.
- */
-const CONTRADICTING_REGION: RepairRegion = {
-  envelopeId: 'envelope/contradicting',
-  issueIds: ['adjudicated/tense',],
-  before: 'The cat is doing the chasing of butterflies, which she loves.',
-  editorAfter: 'The cat chases butterflies, which she hates.',
-};
-
-/**
- * Repaired text the NATURALNESS regions are rewrites of.
- *
- * Already correct and already grammatical, which is the state the lane actually
- * receives. A fixture that started from broken text would let a prober credit
- * the rewrite for fixing something, and the question here is only what the
- * rewrite BROKE.
- */
-const REFINED_BASELINE_TEXT =
-  `The cat sleeps on the windowsill, and she wakes when the sun moves.
-The cat chases butterflies, which she loves.`;
-
-/**
- * Rewrite that only smooths the wording.
- *
- * The control for the naturalness framing, and the one that matters most: this
- * lane exists to rephrase, so a prober that reports rephrasing as damage would
- * flag every refinement the pipeline ever makes.
- */
-const REFINED_CLEAN_REGION: RepairRegion = {
-  envelopeId: 'refinement/clean',
-  issueIds: ['adjudicated/tense',],
-  before: 'The cat sleeps on the windowsill, and she wakes when the sun moves.',
-  editorAfter: 'The cat sleeps on the windowsill and wakes when the sun moves.',
-};
-
-/**
- * Rewrite that smooths the wording and DROPS the waking clause.
- */
-const REFINED_OMITTING_REGION: RepairRegion = {
-  envelopeId: 'refinement/omitting',
-  issueIds: ['adjudicated/tense',],
-  before: 'The cat sleeps on the windowsill, and she wakes when the sun moves.',
-  editorAfter: 'The cat sleeps on the windowsill.',
-};
-
-/**
- * Rewrite that smooths the wording and inverts the meaning.
- */
-const REFINED_CONTRADICTING_REGION: RepairRegion = {
-  envelopeId: 'refinement/contradicting',
-  issueIds: ['adjudicated/tense',],
-  before: 'The cat chases butterflies, which she loves.',
-  editorAfter: 'The cat chases butterflies, which she hates.',
-};
-
-/**
- * Original the regions are judged against.
- */
-const SOURCE_TEXT = `猫猫在窗台上睡觉，太阳移动时她会醒来。
-猫猫追蝴蝶，她很喜欢蝴蝶。`;
-
-/**
- * Translation before any replacement.
- */
-const BASELINE_TEXT = `The cat is doing the sleeping on the windowsill, and she wakes when the sun moves.
-The cat is doing the chasing of butterflies, which she loves.`;
-
-/**
- * Accepted issue every region was cut for, rendered into the sheet exactly as
- * production renders it.
- *
- * Its summary names the progressive gloss, which IS present in each region's
- * before text and IS fixed by each replacement. That is the point: a prober
- * tempted to report the region's known defect has one sitting in front of it,
- * labelled as not a finding.
- */
-const PRIOR_ISSUE: AdjudicatedIssue = {
-  issueId: 'adjudicated/tense',
-  status: 'accepted',
-  severity: 'major',
-  claims: [
-    {
-      claimId: 'claim/tense',
-      claim: {
-        category: 'style/awkward-phrasing',
-        severity: 'major',
-        summary: 'Progressive gloss "is doing the" reads as machine output.',
-        spans: [],
-      },
-    },
-  ],
-  tallies: {},
-};
+// Probe inputs live in `probe-sensitivity-input.ts` and are cat-themed invention.
+// NO corpus text, licensed or otherwise, takes part, and this writes nothing.
 
 /**
  * Runs the probe over one deliberately shaped region and reports what it said.
@@ -162,9 +55,17 @@ const PRIOR_ISSUE: AdjudicatedIssue = {
  * @param expectation - what a working probe should conclude, for the verdict
  * line only; nothing branches on it
  *
+ * @param issues - accepted issues rendered into the sheet as pre-existing
+ *
+ * @param condition - label for the arm, printed so two lines can be compared
+ *
+ * @param editKind - framing under test
+ *
+ * @param baselineText - translation the region was cut from
+ *
  * @example
  * ```ts
- * await probeOne({ region: OMITTING_REGION, expectation: 'damage', },);
+ * await probeOne({ region: OMITTING_REGION, expectation: 'damage', issues: [], condition: 'absent', },);
  * ```
  */
 async function probeOne(
@@ -297,6 +198,43 @@ async function main(): Promise<void> {
       baselineText: REFINED_BASELINE_TEXT,
     },);
   }
+  // The LABELLING arm asks what the pre-existing issue list itself does to a
+  // verdict, which the arms above cannot answer: they vary whether a list is
+  // shown, never what it SAYS. Corpus-wide the probe returns no finding on
+  // 94.8 percent of prober verdicts, and its raise rate barely moves with how
+  // much text an edit removed, so the remaining suspect is that the list is
+  // read as ground truth rather than as a claim.
+  //
+  // All three regions delete a trailing clause. The first two delete the SAME
+  // source-supported clause and differ only in what the list says about it; the
+  // third deletes content the original genuinely lacks. If the mislabelled line
+  // goes quiet while the unlabelled one reports damage, the probe is believing
+  // the label, and its blindness is downstream of detection precision rather
+  // than a defect of its own.
+  for (const probe of [
+    {
+      region: UNLABELLED_DELETION_REGION,
+      expectation: 'damage-omission',
+      issues: [COMMA_ISSUE,],
+      condition: 'unrelated-issue',
+    },
+    {
+      region: MISLABELLED_DELETION_REGION,
+      expectation: 'damage-omission',
+      issues: [MISLABELLING_ISSUE,],
+      condition: 'false-addition-claim',
+    },
+    {
+      region: LICENSED_DELETION_REGION,
+      expectation: 'no-damage',
+      issues: [LICENSING_ISSUE,],
+      condition: 'true-addition-claim',
+    },
+  ])
+    await probeOne({
+      ...probe,
+      baselineText: LABEL_BASELINE_TEXT,
+    },);
   /* oxlint-enable no-await-in-loop */
 
   console.log(
@@ -308,6 +246,13 @@ async function main(): Promise<void> {
     'NOTE the refinement/* lines test the naturalness framing. Its control is '
       + 'refinement/clean: a claim there means the probe reads mere rephrasing '
       + 'as damage, which would flag every refinement the lane ever ships.',
+  );
+  console.log(
+    'NOTE the deletion/* lines vary only what the issue list SAYS. '
+      + 'deletion/unlabelled and deletion/mislabelled delete identical '
+      + 'source-supported text; a gap between them measures how far a false '
+      + 'accepted issue can talk the probe out of seeing real damage. '
+      + 'deletion/licensed is the negative control, where silence is correct.',
   );
 }
 
