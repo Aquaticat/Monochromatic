@@ -28,6 +28,7 @@ import {
 } from 'typescript/unstable/ast/is';
 
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
+import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { expressionValueOrigins, } from './effect-expression-provenance.ts';
 import {
   expressionCanCarryMutableState,
@@ -241,6 +242,27 @@ export function parameterIndexes({
         direct.forEach(function collectDirect(origin,): void {
           origins.add(origin,);
         },);
+      return;
+    }
+    /* Handing over a fresh container hands over what it holds. `unresolvedSink(rows.slice())`
+     * gives the callee every row the caller owns while the container's own value carries no
+     * origin, so the value question answers empty and the call looked like it received
+     * nothing. Measured with the container discharge in place and this branch absent: that
+     * call reported no effect on `rows` at all, where it reported the receiver's opacity
+     * before the discharge. A report traded for silence rather than for an attribution is the
+     * one outcome the discharge may not produce. */
+    /**
+     * Origins this argument hands over through its elements, for a verified container.
+     */
+    const throughElements = expressionElementOrigins({
+      project,
+      bindingOriginBySymbolId,
+      node: current,
+    },);
+    if (throughElements.size > 0) {
+      throughElements.forEach(function collectThroughElements(origin,): void {
+        origins.add(origin,);
+      },);
       return;
     }
     if (isArrayLiteralExpression(current,)) {

@@ -155,6 +155,12 @@ children: [
     name: 'rejects former catalog and contract exemptions',
     fn: async () => {
       const diagnostics = await lintReadonly('readonly-catalog-free-invalid.ts',);
+      /* Back to sixteen. Four programs were added here for the returned-result discharge's
+       * ownership guards and all four were removed again, because each was charged through
+       * the foreign-borrowed opaque boundary and never reached the discharge at all: removing
+       * every guard left their diagnostics byte-identical. A fixture that answers the same
+       * with and without the code it was written for tests that code not at all, and keeping
+       * it would have recorded a passing count as evidence of a guard it never exercised. */
       expect(diagnostics.length,).toBe(16,);
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
@@ -162,11 +168,61 @@ children: [
       expect(messages.some(function catalogRemediationRemoved(message,): boolean {
         return message.includes('audited-call catalogue',);
       },),).toBe(false,);
+      /* Nine findings still say a contract cannot discharge an unresolved implementation, and
+       * two of them say it in the collection message's words instead. Both sentences are
+       * counted, because the claim this pins is that no finding offers a contract as a way
+       * out, not which of the two texts carries it. Splitting the count would let a finding
+       * lose the claim entirely by moving between messages.
+       *
+       * Nine to eight when the already-readonly message was added. One finding here names an
+       * input readonly at every level, and that message mentions no contract at all, so the
+       * claim it pins is kept rather than lost: what is counted is texts that refuse a
+       * contract as a way out, and a text that never raises one refuses it by omission. */
       expect(messages.filter(function contractsCannotDischarge(message,): boolean {
         return message.includes(
           'An @mutates block alone documents known effects but cannot make an unresolved implementation safe.',
-        );
-      },).length,).toBe(9,);
+        )
+          || message.includes(
+            'ForeignHostCapability does not apply here.',
+          );
+      },).length,).toBe(8,);
+    },
+  },),
+  it({
+    name: 'tells a collection finding what would resolve it, and nothing that would not',
+    fn: async () => {
+      /* The message issue #414 asked for, pinned by content rather than by count. Its
+       * complaint was that the four printed remediations named no change resolving a finding
+       * about an array method: an engine intrinsic has no repository-owned implementation to
+       * add to a tsconfig, and ordinary rows are not a runtime-owned host capability. A
+       * finding whose every cause is a collection member now gets a message whose every
+       * remediation is a measured behaviour of this rule. */
+      const messages = (await lintReadonly('readonly-result-provenance-invalid.ts',))
+        .map(function diagnosticMessage(diagnostic,): string {
+          return diagnostic.message;
+        },);
+      /**
+       * Findings routed to the collection message.
+       */
+      const collectionMessages = messages.filter(function isCollection(message,): boolean {
+        return message.includes('used as the object for these collection calls',);
+      },);
+      expect(collectionMessages.length > 0,).toBe(true,);
+      expect(collectionMessages.every(function namesEveryRemediation(message,): boolean {
+        return message.includes('an observer this repository owns',)
+          && message.includes('Keep the result inside this function.',)
+          && message.includes('Fold to a primitive',)
+          && message.includes('Iterate directly with for...of',);
+      },),).toBe(true,);
+      /* And none of the remediations that fit nothing here. The tsconfig one names a
+       * repository-owned implementation, which no intrinsic has, and the marker one names a
+       * host capability, which ordinary collection data is not. */
+      expect(collectionMessages.some(function offersTsconfig(message,): boolean {
+        return message.includes('nearest tsconfig.json',);
+      },),).toBe(false,);
+      expect(collectionMessages.every(function refusesTheMarker(message,): boolean {
+        return message.includes('ForeignHostCapability does not apply here.',);
+      },),).toBe(true,);
     },
   },),
   it({
@@ -212,9 +268,21 @@ children: [
        * it an enumeration "without a hook-class effect", so recognizing it is the fixture
        * author's stated intent rather than a weakening. No offer appeared with the report
        * removed, which is the check that matters: this file emits none. */
-      expect(diagnostics.length,).toBe(3,);
+      /* Two, since `joinPlainElements` stopped reporting when `join` gained the coercion
+       * channel. Its elements are `number`, so the coercion the member performs provably
+       * runs nothing and the receiver claim is answered. `labels.toSorted` and the `String`
+       * argument still report, which is what keeps this from reading as a blanket discharge
+       * of the fixture: the first invokes a comparator and the second hands a value to a
+       * host call that can reach a getter. */
+      expect(diagnostics.length,).toBe(2,);
+      /* Every one still says the input reaches something unproven, and the collection findings
+       * among them now say it in the collection message's words: `join` and a bare `toSorted()`
+       * supply no observer to analyze, so they keep reporting and get the text that names what
+       * would resolve them. Accepting either sentence keeps this about the claim rather than
+       * about which message carries it. */
       expect(diagnostics.every(function unresolvedBoundary(diagnostic,): boolean {
-        return diagnostic.message.includes('cannot inspect enough of those calls',);
+        return diagnostic.message.includes('cannot inspect enough of those calls',)
+          || diagnostic.message.includes('code this rule cannot follow',);
       },),).toBe(true,);
     },
   },),
@@ -281,7 +349,7 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      expect(messages.length,).toBe(7,);
+      expect(messages.length,).toBe(4,);
       /* A channel entry for an iterator member discharges exactly when the iterator
        * yields primitives, and these two are the whole of what it buys on its own.
        * Both loops iterate something whose element type carries no receiver state, so
@@ -294,21 +362,27 @@ children: [
       expect(messages.some(function indexIterationStaysSilent(message,): boolean {
         return message.includes('values.keys',);
       },),).toBe(false,);
-      /* And the two it does not buy, which is why the entries are not the whole
-       * answer. `values` hands back what the receiver holds, and `entries` hands back
-       * a tuple, an object however primitive its positions are. Both keep reporting,
-       * and both would clear only under a relation describing a container whose
-       * elements are receiver state. */
-      expect(messages.some(function heldValueIterationStaysOpaque(
+      /* And the two the entries did not buy on their own, which now clear under exactly
+       * the condition this case predicted: a relation describing a container whose
+       * elements are receiver state. `values` carries the element relation and `entries`
+       * the paired one, and admitting the `for...of` position stops the iterator reading
+       * as a value that leaves.
+       *
+       * Both loops only read, `held.label.length` and `key.length + held.length`, so no
+       * attribution replaces these two: there is nothing beneath them to attribute. That
+       * is what separates them from the container cases in the sibling fixture, where a
+       * report is traded for a recorded write rather than for a proof that no write
+       * exists. */
+      expect(messages.some(function heldValueIterationDischarges(
         message,
       ): boolean {
         return message.includes('entries.values',);
-      },),).toBe(true,);
-      expect(messages.some(function primitivePairIterationStaysOpaque(
+      },),).toBe(false,);
+      expect(messages.some(function primitivePairIterationDischarges(
         message,
       ): boolean {
         return message.includes('entries.entries',);
-      },),).toBe(true,);
+      },),).toBe(false,);
       /* A higher-order member is not opaque by virtue of being higher-order.
        * `[...records,].reduce(owned, 0)` is answered by
        * `recordReadonlyViewApplications`, which runs before the channel check and
@@ -330,9 +404,13 @@ children: [
        * returning the accumulator it was handed has result type `string[]` over
        * `string[][]`, a type reference whose only argument is primitive, which the
        * exposure test alone reads as a fresh container of primitives. */
+      /* Named as a collection call now, since every cause of this finding is one. The claim is
+       * unchanged and so is the finding: `reduce` has no result relation, the aliasing fallback
+       * still refuses it, and the parameter stays opaque. Only the sentence naming the calls
+       * moved, which is what issue #414 asked for. */
       expect(messages.some(function accumulatorStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "rows" is used as the object for these method calls: rows.reduce [',
+          'The function input named "rows" is used as the object for these collection calls: rows.reduce [',
         );
       },),).toBe(true,);
       /* An answered receiver claim must not carry the argument analysis with it.
@@ -346,10 +424,16 @@ children: [
       },),).toBe(true,);
       /* `join` returns a `string`, so the result condition alone would discharge it
        * while it coerces every element. Dropping the verified-channel condition puts
-       * this diagnostic out. */
+       * this diagnostic out.
+       *
+       * Named as a collection call since `join` joined the channel table under the
+       * coercion channel. The finding is unchanged and so is the reason for it: its
+       * elements are `SealedLabel`, an object, so the coercion reaches that value's own
+       * `toString` and the channel is withheld. Only the sentence naming the calls moved,
+       * which is what `COLLECTION_MEMBER_NAMES` deriving from the tables does. */
       expect(messages.some(function coercionStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "values" is used as the object for these method calls: values.join [',
+          'The function input named "values" is used as the object for these collection calls: values.join [',
         );
       },),).toBe(true,);
       /* `ReadonlyMap.has` reaches no user code and returns a boolean, so the
@@ -358,15 +442,22 @@ children: [
       expect(messages.some(function statelessResultStaysSilent(message,): boolean {
         return message.includes('entries.has',);
       },),).toBe(false,);
-      /* `find` answers what user code runs, its observer being owned, but returns
-       * `Labelled | undefined`. A union carries no type arguments, so a species
-       * gate reading only those discharged the call and handed back a clean
-       * read-only suggestion for an array whose element the body rewrites. */
+      /* `find` no longer reports either, and it closed the same hole `at` did rather
+       * than widening a discharge. Both carry the verified relation saying the result is
+       * one of the receiver's own elements; `at` answered from the channel table while
+       * `find`, being observer-bearing, reached the result gate, which had an observer arm
+       * and a container arm and no arm for a bare value. So the identical write through the
+       * identical kind of element was attributed for one member and merely reported for the
+       * other. With the value arm present, `observerResultEscapeEffect` reads
+       * `mutated=[0]` with `opaque=[]`, exactly as its `at` sibling does, and
+       * `effect-summaries.unit.test.ts` asserts the mutation that replaced this message
+       * through `observerValueResultMutationEffect`. Removing the value arm from
+       * `viewResultUnaccounted` puts this message back. */
       expect(messages.some(function observerResultStaysOpaque(message,): boolean {
         return message.startsWith(
-          'The function input named "values" is used as the object for these method calls: values.find [',
+          'The function input named "values" is used as the object for these collection calls: values.find [',
         );
-      },),).toBe(true,);
+      },),).toBe(false,);
       /* `at` no longer reports, and that is the hole this rule was carrying rather than
        * a discharge granted on trust. `interiorEscapeEffect` writes through the element
        * `values.at(0)` hands back, and result provenance now tracks that element as
@@ -416,12 +507,219 @@ children: [
       const messages = diagnostics.map(function diagnosticMessage(diagnostic,): string {
         return diagnostic.message;
       },);
-      /* Five reports and one offer. The count went to seven while the packaged-callable
+      /* Five reports and three offers. The count went to seven while the packaged-callable
        * gap was open, since that gap produced offers rather than reports, and back to
        * five once both halves of it landed. Caller-side property matching then added the
-       * sixth, which is the offer: `narrowingPrecisionCostEffect` hands `second` to a
-       * property its callee only reads, so nothing writes it. */
-      expect(messages.length,).toBe(6,);
+       * sixth, which is an offer: `narrowingPrecisionCostEffect` hands `second` to a
+       * property its callee only reads, so nothing writes it.
+       *
+       * The shorthand provenance pair added two, and both are correct: neither
+       * `packageRowShorthand` nor `packageRowExplicit` writes the row it packages, so each
+       * earns the offer its sibling assertion below names. Their callers, which do write
+       * through the returned holder, are contracted and report nothing.
+       *
+       * The container cases added seven reports, and discharging `slice` removed two of them
+       * and added one offer, which is that increment's whole visible effect here. What went
+       * silent went silent because the write beneath it is attributed instead: every
+       * container parameter is recorded as mutated in `effect-summaries.unit.test.ts`, and
+       * `containerGrowthEffect` writes nothing at all, which is why it earns the projection
+       * offer the enumeration below names.
+       *
+       * Replacing the type-shape gate took the last one: `filteredElementWriteEffect` writes
+       * through a filtered copy, that write is attributed to `rows`, and the report it used
+       * to carry is now that attribution. Every container case in this fixture has made the
+       * same trade, which is why the count fell three times and no offer appeared for a
+       * parameter any of them writes. */
+      /* Admitting the iterated element step took the twelfth: `iteratedContainerWriteEffect`
+       * reached its copy through `for...of`, a spelling the escape walk did not attribute,
+       * so a container that never leaves reported anyway. Its write is recorded against
+       * `rows` in `effect-summaries.unit.test.ts`, so this is the same trade every other
+       * container case in this fixture made. `spreadContainerWriteEffect` went the same way
+       * once the spread step was ascended to the literal carrying it: `referentMutated`
+       * reads `[0]` for both, so both traded a report for a write already recorded.
+       *
+       * `containerGrowthEffect` is what keeps that from being a blanket discharge. It
+       * pushes a caller-owned row into a fresh container and is still reported at its row
+       * parameter, because nothing attributes where that row ends up. */
+      /* The selection pair takes it to eighteen, and reports for the same reason as the
+       * composed pair through a selector instead of an extra member. The element walk asked
+       * the container question only where the selector stood, so
+       * `return cond ? rows.slice(0,) : [];` carried no origin while the bare
+       * `return cond ? rows : [];` carried one, and value provenance and the element walk
+       * disagreed about identical state. Ten further spellings were in the same state,
+       * including parentheses and `as`, which is why the fix shares one definition of the
+       * family rather than naming the conditional.
+       *
+       * Both are reports and neither is an offer, which is the load-bearing part. The offer
+       * count in this fixture is unchanged, and `writesThroughSelectedContainer` is why it
+       * had to be: with the returned origin missing it had nothing to substitute, so its
+       * write landed on no parameter and `rows` was offerable while the callable rewrites a
+       * row it holds. */
+      /* Eighteen to sixteen when the returned-result discharge landed, and the two that
+       * went quiet are the ones this fixture carried for it.
+       * `writesThroughReturnedContainer` and `writesThroughComposedContainer` are two thirds
+       * of the returned-container trio that
+       * `doc/planning/prefer-readonly-return-substitution.md` named as the shape a discharge
+       * would clear, on the stated condition that their write attribution survive. It does:
+       * both still record `referentMutated=[0]` in `effect-summaries.unit.test.ts`, so each
+       * traded a report for an attribution rather than for silence.
+       *
+       * Three controls keep it from being a blanket discharge, each measured rather than
+       * assumed. `returnedLookupEffect` keeps its report, having no caller in the program at
+       * all, and a discharge resting on callers that do not exist rests on nothing. The
+       * three `ForeignBorrowed` cases in the catalog-free fixture are untouched, since a
+       * container returned out of foreign-owned state is refused however completely its
+       * callers enumerate. And the pinned effect list in `effect-summaries.unit.test.ts` is
+       * unchanged. */
+      /* Sixteen to seventeen when `returnsFromNestedCallable` was added, and it is a control
+       * on which callable the discharge reasons about rather than another instance of the
+       * shape. Its `rows.slice(0,)` is returned outright exactly as in
+       * `returnsReceiverElements`, and it keeps its report because the `return` belongs to a
+       * nested declaration while the callers being enumerated are the outer function's.
+       * Those callers substitute for a result that is a callable rather than a container, so
+       * none of them accounts for a write through what the inner one returns.
+       *
+       * Measured 2026-08-07, correcting what this comment first claimed. Removing the
+       * containment check leaves this program's diagnostics byte-identical: `rows` is charged
+       * either way, by a path that never consults the discharge. So it pins the shape and
+       * does not isolate the check, and no program was found that does. The check stays as
+       * defence in depth, and this count records a report rather than a prevented offer. */
+      /* Seventeen to nineteen when the shared completeness predicate began requiring
+       * closed-world callers, and the two that came back are the two the discharge had
+       * cleared. Every callable here is exported, so `callersAreEnumerable` refuses each one:
+       * a file's module surface is how a caller outside this program reaches it, and an
+       * enumeration that cannot see those callers cannot license removing a charge on the
+       * strength of what they substitute.
+       *
+       * The offer count falls with it, which is the honest price of the change rather than a
+       * side effect. The discharge now fires only for a callable no other file can import, so
+       * on this fixture it fires for none of them.
+       *
+       * Measured through this harness rather than through the `lint-fixture-readonly-*` mise
+       * tasks. Those lint one file on its own, so `getSignatureUsage` finds no callers at all
+       * and the discharge is refused before any of its own conditions are reached. A probe run
+       * there reports no difference for any change to this feature, which is a property of the
+       * probe and not of the code. */
+      /* Nineteen to twenty-one for the positive control and its caller, then to twenty-nine
+       * for the two guard programs and theirs, then to thirty-three for a third. Each of those
+       * six callables charges both its parameters, which is the whole of the difference: they
+       * are the positive control with one statement added, and that statement is what the
+       * guard refuses to reason past. */
+      /* Thirty-three to thirty-nine when the position condition widened from "returned
+       * outright" to "returning is the only escape", then back to thirty-three when the six
+       * two-parameter programs took a destructured parameter, which merges each pair of
+       * charges into one message naming both inputs.
+       *
+       * Destructuring them was measured rather than assumed. The first version kept positional
+       * parameters on the reasoning that a destructured binding declares a `BindingElement`
+       * rather than a `VariableDeclaration`, which is what `bindingIsReassignable` keys on, so
+       * destructuring might void the very tests these programs exist for. It does not: only
+       * this total moved, and every discriminating assertion below is unchanged, because the
+       * reassignable binding under test is a `let` inside the body and the repointed one is
+       * reached by symbol rather than by declaration kind.
+       *
+       * Thirty-three to thirty-five for the already-readonly message pair. */
+      expect(messages.length,).toBe(35,);
+      /* The already-readonly message, pinned against its own control.
+       *
+       * `handsReadonlyNamesOnward` takes `readonly string[]` and hands it to a call this rule
+       * cannot resolve. The finding is true, since `readonly` is erased at compile time and the
+       * callee receives the underlying array, but the general message closes by advising the
+       * author to make the type honest and it already is. That is issue #414's complaint in the
+       * form that survived everything else.
+       *
+       * `handsMutableNamesOnward` is the control and must keep the general message. Its
+       * parameter is not readonly, the charge reaches it by propagation through its callee, and
+       * there the advised type change does apply. One message each, which is also what proves
+       * the new text is not simply replacing the old one everywhere. */
+      expect(messages.filter(function alreadyReadonlyText(message,): boolean {
+        return message.includes('already readonly at every level',);
+      },).length,).toBe(1,);
+      expect(messages.filter(function generalUnresolvedText(message,): boolean {
+        return message.includes('"handedNames" is used by these calls',)
+          && message.includes('An @mutates block alone',);
+      },).length,).toBe(1,);
+      /* The condition that makes widening safe, pinned by the charge it keeps rather than by
+       * an offer, which is what makes this assertion the discriminating one.
+       *
+       * `localBoundAndStoredElements` writes its copy into a module-level holder and then
+       * returns it. Returning is the one escape whose destination this analysis follows; the
+       * store is not, and no caller substitution accounts for a write made through it. So the
+       * charge has to stand, and with the condition removed it silently does not: both this
+       * callable and its caller lose their diagnostic entirely.
+       *
+       * Ten with the condition and eight without it, measured both ways. Counted rather than
+       * named because the message carries no callable name, and the two that vanish are this
+       * program and its caller.
+       *
+       * The store is a property assignment rather than a `push` on purpose. A collection call
+       * charges the parameter by itself, which hid this condition completely when the first
+       * version of the program used one, and made a probe of it report no difference. The
+       * probe that finally showed it had to count charges rather than offers, since neither
+       * callable is offered either way. */
+      expect(messages.filter(function keepsStoredCharge(message,): boolean {
+        return message.includes('used as the object for these collection calls: rows.slice',);
+      },).length,).toBe(10,);
+      /* The two guards that are now known to have a failing case, pinned by the programs that
+       * fail without them rather than by a count that would not move.
+       *
+       * `localReassignedElements` holds its rows in a `let` pointed at the other parameter
+       * before the member runs, and `localRepointedElements` does the same to a parameter
+       * directly. Both are `localReceiverElements` with one statement added, and both are
+       * offered read-only if their guard is removed: measured by neutralising each condition
+       * in turn, four offers appear in the first case and four in the second.
+       *
+       * `localAssertedRepointedElements` is the third, and it works by making another guard
+       * unreachable rather than by being refused itself. `bindingAssignedWithin` can only
+       * answer about an `Identifier`, so an assertion around the base hides the name from it
+       * and the written-endpoint check passes on a parameter that was pointed elsewhere.
+       * Removing the wrapper unwrap offers four parameters that must not be offered.
+       *
+       * That is what the earlier guard programs could not show. They were exported, so
+       * `callersAreEnumerable` refused them before any guard was consulted, and they were run
+       * through a per-file task where the discharge is refused before that. Being unexported
+       * with an in-file caller is what makes these three reach the code they test. */
+      expect(messages.filter(function offersGuardedProgram(message,): boolean {
+        return message.includes('"other" should be readonly',);
+      },).length,).toBe(0,);
+      /* Three of the fourteen are the returned-container trio, and all three are correct as
+       * things stand rather than tolerated. `returnsReceiverElements` hands back a container
+       * of the caller's own rows, which the escape condition refuses to discharge because
+       * nothing attributes a use that leaves the callable; its two callers inherit that.
+       *
+       * They are here as the shape the deferred discharge in
+       * `doc/planning/prefer-readonly-return-substitution.md` would clear. When it lands,
+       * these three go quiet and the write attribution asserted for them in
+       * `effect-summaries.unit.test.ts` has to survive: a discharge that empties both is the
+       * failure that document records being refuted once already.
+       *
+       * The composed pair beside them takes the count to sixteen and reports for the same
+       * reason through one more member. They are here because the element walk resolved a
+       * single relation before composing them, so `rows.slice(0,).toReversed()` carried no
+       * origin at all while its one-member sibling carried one, and the two disagreed about
+       * identical state reached through one extra call. */
+      /* The eleventh is the container record's visible consequence, and it is an offer
+       * rather than a report. `heldContainerRestructureEffect` builds an array around its
+       * parameter and pops it, so it restructures a container this callable made and writes
+       * nothing the caller owns. It was reported as mutating before the record existed, so
+       * no offer could be made; now the parameter is correctly offered read-only.
+       *
+       * Its three siblings in the same fixture are the controls and stay silent here:
+       * `heldObjectMutationEffect` and `heldArrayMutationEffect` write the caller's value
+       * through the container they built, and `borrowedContainerRestructureEffect`
+       * restructures a container the caller owns. `effect-summaries.unit.test.ts` pins all
+       * four at summary level, which is where the distinction actually lives. */
+      expect(messages.some(function offersContainerHolder(message,): boolean {
+        return message.startsWith('Parameter "box" should be readonly',);
+      },),).toBe(true,);
+      /* Both spellings of the packaging pair are offered, which is what makes the pair a
+       * control for each other rather than two unrelated cases. Before the shorthand value
+       * symbol reached the provenance walk the offers were also two, and the difference sat
+       * where no message could show it: in whether the callers' writes were attributed.
+       * `effect-summaries.unit.test.ts` pins that half. */
+      expect(messages.filter(function offersPackagedRow(message,): boolean {
+        return message.startsWith('Parameter "held" should be readonly',);
+      },).length,).toBe(2,);
       /* No offer on a computed-access receiver, which was an unsound suggestion until
        * `memberCallReceiver` gave every consumer one definition of "the receiver".
        * `computedStructureEffect` calls `values['push']('appended')`, and the
@@ -449,7 +747,11 @@ children: [
        */
       function namingCall(call: string,): number {
         return messages.filter(function namesCall(message,): boolean {
-          return message.includes(`method calls: ${call} [`,);
+          /* Either phrasing, since a finding whose causes are all collection members now says
+           * so, and which of the two texts carries a named call is not what these counts are
+           * about. */
+          return message.includes(`method calls: ${call} [`,)
+            || message.includes(`collection calls: ${call} [`,);
         },).length;
       }
       /* Two `Map.get` receivers left, down from five, and which two is the whole point.
@@ -482,20 +784,77 @@ children: [
        * which is only possible because the value carries `facts` as an origin for the
        * argument analysis to find. Removing the call case from
        * `provenanceSuccessors` puts this back to naming `facts.get`. */
+      /* One to three with the already-readonly message pair, which reaches an unresolved call
+       * the same way. `JSON.stringify` is this fixture's stand-in for a call the rule cannot
+       * inspect, so a program needing one reuses it rather than inventing a second stand-in. */
       expect(messages.filter(function namesEscape(message,): boolean {
         return message.includes('JSON.stringify',);
-      },).length,).toBe(1,);
+      },).length,).toBe(3,);
       /* No lookup receiver is offered read-only yet, not even `readOnlyLookupEffect`'s,
        * which only reads: that awaits the discharge, not the attribution. `rows` belongs
        * here too, since a discharged `at` result was the second route to the
        * contract-name defect. `row` is deliberately absent from this filter: the offers
        * this fixture still emits name a parameter called `row`, and they are pinned as a
        * set immediately below rather than folded into a claim about lookup receivers. */
+      /* `rows` is matched on the writable-property form alone, which is the shape the
+       * `at`-result defect produced. The projection form is a different claim and a correct
+       * one: `containerGrowthEffect` copies its parameter and writes only the copy, so a
+       * `readonly` projection applies and still type-checks, since `ReadonlyArray.slice`
+       * returns a mutable array. Matching the name alone would have made this assertion
+       * reject the first true offer the container discharge produced. */
       expect(messages.filter(function offersLookupReceiver(message,): boolean {
         return message.includes('"facts" should be readonly',)
-          || message.includes('"records" should be readonly',)
-          || message.includes('"rows" should be readonly',);
+          || message.includes('"records" should be readonly',);
       },),).toEqual([],);
+      /* `rows` moved out of the filter above rather than being dropped from it, because the
+       * two claims stopped being the same one. That filter guards the `at`-result defect,
+       * which offered a receiver whose element a callable had written through, and it still
+       * guards it for every lookup receiver named there.
+       *
+       * These three are a different cause and each is true of its own callable.
+       * `returnsReceiverElements` and `returnsComposedReceiverElements` hand back a fresh
+       * container of the caller's rows, and `readsReturnedContainerLength` reads a length;
+       * none of the three writes anything, so a read-only parameter is an accurate
+       * description of what each does.
+       *
+       * The judgement they rest on is the repository's own, recorded for the packaging pair
+       * in this same fixture: neither `packageRowShorthand` nor `packageRowExplicit` writes
+       * the row it packages, "so each earns the offer". Those return caller-owned state in a
+       * fresh holder; these return it in a fresh container. Refusing one while allowing the
+       * other would make the rule's answer depend on the shape of the wrapper rather than on
+       * what the callable does.
+       *
+       * What keeps that from spreading to callables that do write is unchanged: a write
+       * through any of these results is attributed to the caller's own parameter, which is
+       * why `writesThroughReturnedContainer` still records `referentMutated=[0]` and is
+       * still reported.
+       *
+       * Three to two when the shared completeness predicate began requiring closed-world
+       * callers, and the two are not among the three. Each of the original three is still
+       * accurate about its callable; what changed is that none can be *proven* any more. All
+       * three are exported, a file's module surface is how a caller outside this program
+       * reaches one, and a discharge licensed by what callers substitute cannot rest on an
+       * enumeration that may not have seen them all.
+       *
+       * The two that remain are `localReceiverElements` and its caller, added with that
+       * predicate and identical in shape to the first of the three but for being unexported.
+       * They are what keeps this number honest in both directions: without them the count
+       * would read zero and the feature would look dead rather than scoped, and a probe of
+       * this feature reporting no difference would again be indistinguishable from a probe
+       * that cannot see it.
+       *
+       * Whether the price is worth paying is recorded in
+       * `doc/planning/prefer-readonly-return-substitution.md`; this number is what it costs.
+       *
+       * Two to six when the position condition widened to "returning is the only escape".
+       * `localBoundElements` binds its call to a `const` before returning and
+       * `localWrappedElements` wraps it in an assertion, and each is joined by its caller.
+       * Both hand the caller the same value by the same route as `localReceiverElements`, so
+       * refusing them was a property of how the return was spelled rather than of what the
+       * callable does. */
+      expect(messages.filter(function offersReturningReceiver(message,): boolean {
+        return message.includes('"rows" should be readonly: property',);
+      },).length,).toBe(6,);
       /* Every offer in the fixture, and there is one. Four defects surfaced here as an
        * offer and each is gone: `row` through a contract-omitted property with no lookup
        * involved, `rows` through a discharged `at` result, and
@@ -511,9 +870,61 @@ children: [
        * slot the callee reads. Reverting `effect-argument-properties.ts` empties this
        * list again, and `narrowingPrecisionCostEffect` goes back to reporting both
        * parameters written in `effect-summaries.unit.test.ts`. */
+      /* The packaging pair adds two more, and both are correct rather than tolerated:
+       * `packageRowShorthand` and `packageRowExplicit` return the row they are handed and
+       * write nothing, so a read-only projection applies to each. They are listed here in
+       * full rather than counted, so a future change that turns one of them into a defect
+       * has to edit this list and say why. */
+      /* The container discharge added the projection offer, and it is the first offer in this
+       * fixture that exists because a member was discharged rather than despite it.
+       * `containerGrowthEffect` slices its parameter and pushes onto the copy, so nothing
+       * reaches the caller's array and `readonly LabelledRow[]` applies. */
       expect(messages.filter(function offersAnyParameter(message,): boolean {
         return message.includes('should be readonly',);
-      },),).toEqual([
+      },)
+        .toSorted(),).toEqual([
+        /* The container record added this one, and it is the first offer in this fixture
+         * that exists because a wrong mutation was withdrawn rather than because a call was
+         * discharged. `heldContainerRestructureEffect` pops an array it built around `box`,
+         * so it writes nothing the caller owns. */
+        'Parameter "box" should be readonly: property label is writable.',
+        'Parameter "held" should be readonly: property label is writable.',
+        'Parameter "held" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection.',
+        /* Three offers from the returned-result discharge stood here, on the callables that
+         * hand a container of the caller's rows back, and all three are gone. Removed rather
+         * than left with a note, because a list that names offers the rule no longer makes
+         * would stop being the exhaustive record it exists to be.
+         *
+         * They were accurate: `returnsReceiverElements` and `returnsComposedReceiverElements`
+         * build a fresh container and write nothing, and `readsReturnedContainerLength` reads
+         * a length through one. What changed is not the judgement but what can be proven.
+         * All three are exported, so a caller outside this program can reach them, and a
+         * discharge licensed by what callers substitute cannot rest on an enumeration that may
+         * not have seen every caller.
+         *
+         * Their absence is the visible price of requiring closed-world callers, and the
+         * assertion above keeps it at an explicit zero so the cost stays legible. */
+        /* The positive control and its caller, and the only offers here the returned-result
+         * discharge still makes. `localReceiverElements` is `returnsReceiverElements` with one
+         * difference, that no other file can import it, and `readsLocalContainerLength` reads
+         * a length through it. Both write nothing, so read-only describes each accurately.
+         *
+         * They earn their place by answering the question the six removed guard programs could
+         * not. A probe reporting no difference proves nothing until the harness is known to be
+         * able to show one, and these are that proof: they are offered, they were not offered
+         * while every program here was exported, and they go quiet if the discharge is
+         * disabled. Any future probe of this feature belongs beside them. */
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
+        /* Four more once returning stopped having to be spelled outright: a call bound to a
+         * `const` and one wrapped in an assertion, each with its caller. Listed rather than
+         * counted for the same reason as the pair above, so a change that turns any of them
+         * into a defect has to edit this list and say why. */
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
+        'Parameter "rows" should be readonly: property label is writable.',
         'Parameter "second" should be readonly: property label is writable.',
       ],);
     },
@@ -1338,7 +1749,10 @@ children: [
        *
        * Twenty-eight since the assignment group arrived, one for each of its two registry parameters. */
       const opacityMessages = messages.filter(function isOpacity(message,): boolean {
-        return message.includes('used as the object for these method calls',);
+        /* Both phrasings, so the count keeps measuring opacity reports rather than which
+         * message text a finding was routed to. */
+        return message.includes('used as the object for these method calls',)
+          || message.includes('used as the object for these collection calls',);
       },);
       expect(opacityMessages.length,).toBe(28,);
       expect(opacityMessages.every(function namesMemberCall(message,): boolean {
@@ -1442,11 +1856,28 @@ children: [
           'The function input named "state" is used by these calls: JSON.stringify [',
         );
       },).length,).toBe(5,);
+      /* And how the five split, so a change that moves one between texts has to say why. */
+      expect(messages.filter(function alreadyReadonlyState(message,): boolean {
+        return message.startsWith(
+          'The function input named "state" is used by these calls: JSON.stringify [',
+        )
+          && message.includes('already readonly at every level',);
+      },).length,).toBe(3,);
+      /* Three of those five now carry the already-readonly text instead, because their input
+       * is honest-readonly and the general message closes by advising a type change that is
+       * already made. The count above is unchanged because both texts share a prefix, which is
+       * deliberate: what the finding is about did not change, only what it advises.
+       *
+       * So this selection names the general text explicitly rather than taking the first
+       * match. Without that it silently began asserting the general remediation against a
+       * message that no longer carries it, which is the assertion testing itself rather than
+       * the rule. */
       /** Plain-language uncertainty diagnostic for unsafe JSON serialization. */
       const opaqueMessage = messages.find(function unsafeJson(message,): boolean {
         return message.startsWith(
           'The function input named "state" is used by these calls: JSON.stringify [',
-        );
+        )
+          && message.includes('An @mutates block alone',);
       },);
       if (opaqueMessage === undefined)
         throw new Error('Expected JSON.stringify uncertainty diagnostic.',);
@@ -1573,13 +2004,13 @@ children: [
        * A note for anyone retrying it: `Type.isTupleType()` answers false for these
        * arguments and `checker.isTupleType(type)` answers true, so a first attempt
        * can look like a safe no-op while testing nothing. */
-      expect(diagnostics.length,).toBe(3,);
-      expect(diagnostics.every(function reportsIteratorOpacity(
-        diagnostic,
-      ): boolean {
-        return diagnostic.message
-          .includes('rows.values',);
-      },),).toBe(true,);
+      expect(diagnostics.length,).toBe(0,);
+      /* The assertion that still carries the guarantee, because an empty list satisfies
+       * every "no offer" test vacuously. What must remain true is the attribution, and it
+       * is asserted where it lives: `effect-summaries.unit.test.ts` pins
+       * `rewriteMutableStoredPair` and `rewriteStoredPair` at `referentMutated=[0]`, which
+       * is what withholds the read-only offer the comment above warns about. Silence here
+       * is only correct while that pin holds, so the two move together. */
       expect(diagnostics.some(function offersAnything(diagnostic,): boolean {
         return diagnostic.message
           .includes('should be readonly',);

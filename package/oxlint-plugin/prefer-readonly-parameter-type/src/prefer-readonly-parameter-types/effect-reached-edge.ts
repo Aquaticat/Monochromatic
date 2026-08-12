@@ -91,18 +91,26 @@ export function reachedSourceFileNames({
  *
  * @param summaries - Complete reached summary map after source expansion.
  *
+ * @param omittedCallableKeys - Callables deliberately left out because their summary threw.
+ *
  * @throws SemanticBridgeError when an owned callee or callback key is absent.
  *
  * @example
  * ```ts
- * assertReachedCallSummaries(summaries);
+ * assertReachedCallSummaries({ summaries, omittedCallableKeys });
  * ```
  */
-export function assertReachedCallSummaries(
-  summaries: ReadonlyMap<string, MutableEffectSummary>,
-): void {
+export function assertReachedCallSummaries({
+  summaries,
+  omittedCallableKeys,
+}: {
+  readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
+  readonly omittedCallableKeys: ReadonlySet<string>;
+},): void {
   for (const summary of summaries.values()) {
     for (const edge of summary.calls) {
+      if (omittedCallableKeys.has(edge.calleeKey,))
+        continue;
       if (!summaries.has(edge.calleeKey,)) {
         throw new SemanticBridgeError({
           reason: 'node-not-found',
@@ -111,6 +119,7 @@ export function assertReachedCallSummaries(
       }
       for (const callbackKey of edge.callbackKeysByCalleeSlot) {
         if (((typeof callbackKey) === 'string')
+          && (!omittedCallableKeys.has(callbackKey,))
           && (!summaries.has(callbackKey,))) {
           throw new SemanticBridgeError({
             reason: 'node-not-found',

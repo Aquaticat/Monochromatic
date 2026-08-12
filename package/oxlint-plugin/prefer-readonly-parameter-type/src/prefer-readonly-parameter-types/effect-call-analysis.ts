@@ -76,6 +76,8 @@ import { handoffProvenance, } from './effect-retention-provenance.ts';
  *
  * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
  *
+ * @param containerLiteralHolders - Bindings holding a container this callable built.
+ *
  * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
  *
  * @param call - Call expression to classify.
@@ -100,6 +102,7 @@ export function inspectEffectCall({
   checker,
   bindingOriginBySymbolId,
   resultSitesBySymbolId,
+  containerLiteralHolders,
   call,
   summary,
   foreignInbound,
@@ -111,6 +114,7 @@ export function inspectEffectCall({
   readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
+  readonly containerLiteralHolders: ReadonlySet<number>;
   readonly call: CallExpression;
   readonly summary: MutableEffectSummary;
   readonly foreignInbound: boolean;
@@ -291,6 +295,9 @@ export function inspectEffectCall({
           project,
           body,
           call,
+          /* Element steps are not attributed on this path: nothing here walks the
+           * elements of a call result reaching an argument. */
+          elementStepsAttributed: false,
         },)))
         /* The result carries the operand's values, and every use of it is one this
          * analysis attributes, so tracking replaces the boundary exactly as it does for a
@@ -311,6 +318,7 @@ export function inspectEffectCall({
       project,
       checker,
       bindingOriginBySymbolId,
+      containerLiteralHolders,
       call,
       receiver: collectionReceiver,
       declaration: resolvedDeclaration,

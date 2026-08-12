@@ -625,12 +625,38 @@ A test file covering sync matchers but skipping async matchers is the same as no
 
 `AGENTS.md` deliberately does not expose the existence of Claude Code hooks,
  not merely their names:
- the stop hook (`ccsr`) enforcing hedge-phrase and trailing-question rules,
+ the stop hook (`ccsr`) enforcing hedge-phrase and trailing-question rules
+ and refusing stops that state says another turn could still advance,
  the PreToolUse guardrail (`ccgr`),
  the roadmap PostToolUse type-check.
  Flagging the machinery at all lets agents game the surface pattern (swapping one hedge for a novel one that passes but carries the same epistemic gap) and reframes an internalized rule as an external gate to dodge.
  The rule the agent must own stays (the hedge-phrase list);
  the fact that a hook backstops it is omitted.
+
+`ccsr`'s forced-continuation detector is the one exception to that reasoning,
+ and the exception proves the rule.
+ It reads none of the response text,
+ so there is no surface pattern to swap:
+ knowing it exists cannot help an agent rewrite its way past it,
+ and satisfying it means doing the work.
+ Every other detector conditions on wording,
+ which is exactly why naming them would let an agent rewrite around them.
+
+ It is not unbeatable,
+ and the way it can be beaten is worth naming rather than leaving implicit.
+ The depth guard that bounds the chain also bounds the enforcement:
+ an agent that produces nothing useful for enough consecutive blocks
+ exhausts the limit and is then allowed to stop.
+ So the detector cannot be defeated by rewording,
+ only by outlasting it,
+ which costs the agent every one of those turns
+ and leaves the whole run in the transcript.
+ That tradeoff is deliberate:
+ an enforcement with no exit is an unbounded loop,
+ and the bound has to sit somewhere.
+ The rule it backstops (`PXQ`) stayed in `AGENTS.md` and was measured failing there for a month,
+ which is the evidence that an internalized rule needs a gate when the model will not own it:
+ `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
  The trailing-question rule is dropped from `AGENTS.md` entirely rather than reworded:
  "ask via the question tool,
  never end on a bare question" restates standard harness behavior the `AskUserQuestion` tool and its description already carry,

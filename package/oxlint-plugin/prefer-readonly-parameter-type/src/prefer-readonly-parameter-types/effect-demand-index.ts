@@ -137,6 +137,16 @@ export function createDemandDrivenEffectIndex(
    */
   const summaries = new Map<string, MutableEffectSummary>();
   /**
+   * Callables left out of the index because building their summary threw.
+   *
+   * Kept so the completeness assertion can tell a deliberate omission from a missing key it
+   * should refuse. The omission path is documented as fail-closed, callers taking opacity
+   * through the absent-callee branch, and the assertion did not know that, so one upstream
+   * panic cost every file in the program its analysis rather than one callable its summary.
+   * Measured in `doc/troubleshooting/typescript-go-tuple-type-panic.md`.
+   */
+  const omittedCallableKeys = new Set<string>();
+  /**
    * Source paths already loaded into current graph.
    */
   const loadedFileNames = new Set<string>();
@@ -253,6 +263,7 @@ export function createDemandDrivenEffectIndex(
          * cannot act on it. The live cause is an upstream panic recorded in
          * `doc/troubleshooting/typescript-go-tuple-type-panic.md`, which no ordering of API
          * calls avoids. */
+        omittedCallableKeys.add(callableKey(declaration,),);
         dl.warn(
           `omitting ${callableKey(declaration,)} from the effect index: ${caughtValueStack(error,)}`,
         );
@@ -346,7 +357,10 @@ export function createDemandDrivenEffectIndex(
      * Start time for cache publication and fixed-point completion.
      */
     const finalizationStartedAt = analysisBudget.start();
-    assertReachedCallSummaries(summaries,);
+    assertReachedCallSummaries({
+      summaries,
+      omittedCallableKeys,
+    },);
     pendingStores.forEach(function persistReachedSource(pendingStore,): void {
       /**
        * Complete dependency closure after every reached edge is loaded.

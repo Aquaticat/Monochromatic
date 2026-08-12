@@ -58,6 +58,10 @@ import { bindingContainsForeignBorrowed, } from './foreign-borrowed-classifier.t
 import { inspectEffectCall, } from './effect-call-analysis.ts';
 import { declarationDirectlyOwnsNode, } from './effect-foreign-inbound.ts';
 import { addOpaqueEffect, } from './effect-call-resolution.ts';
+import {
+  chargeDrainedIterator,
+  recordIterationEffects,
+} from './effect-drain-charge.ts';
 import type { ExternalCallableEffectResolver, } from './external-callable-effect.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import {
@@ -208,6 +212,7 @@ export function directEffectSummary({
   const {
     parameterInitializerNodes,
     resultSitesBySymbolId,
+    containerLiteralHolders,
   } = discoverBodyBindings({
     project,
     declaration,
@@ -320,11 +325,7 @@ export function directEffectSummary({
       return;
     }
     if (isForOfStatement(node,)) {
-      /* Asked of every iteration statement, including the awaiting form, because what the
-       * target retains does not depend on how the iterator was drained. The awaiting branch
-       * below returned first when this lived inside it, so `for await (held of rows)`
-       * recorded the drain and lost the retention. */
-      recordIterationStore({
+      recordIterationEffects({
         project,
         bindingOriginBySymbolId,
         resultSitesBySymbolId,
@@ -332,22 +333,21 @@ export function directEffectSummary({
         node,
         body,
       },);
-      if (node.awaitModifier !== undefined) {
-        addEffectSlots({
-          target: summary.directMutated,
-          values: expressionOrigins({
-            project,
-            bindingOriginBySymbolId,
-            node: node.expression,
-          },),
-        },);
-      }
       return;
     }
     /* Asked of every node rather than inside another branch, because a construction, a yield, a
      * tagged template and a throw are none of them calls or stores or returns, which is why
      * nothing answered for any of them. Each was found by walking escape channels and each was
      * falsified. Collected behind one call for this file's line budget. */
+    /* Draining an iterator is a call, and the baseline trusts only one the library declares.
+     * Asked of every node, since a spread and a `for...of` ask one question from two
+     * branches. */
+    chargeDrainedIterator({
+      project,
+      bindingOriginBySymbolId,
+      summary,
+      node,
+    },);
     recordOutwardHandoffs({
       project,
       bindingOriginBySymbolId,
@@ -360,6 +360,7 @@ export function directEffectSummary({
         checker,
         bindingOriginBySymbolId,
         resultSitesBySymbolId,
+        containerLiteralHolders,
         call: node,
         summary,
         ...(analysisRoot === undefined) ? {} : { analysisRoot, },

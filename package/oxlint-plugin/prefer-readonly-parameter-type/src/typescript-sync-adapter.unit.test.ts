@@ -57,9 +57,21 @@ function createSemanticFixtureDirectory(): SemanticFixtureDirectory {
   };
 }
 
+/** Second source of the same configured project, for asserting overlay retention. */
+const SIBLING_PATH = fileURLToPath(new URL(
+  '../../../test-fixture/oxlint-no-restricted-syntax/src/valid/all-rules-passing.ts',
+  import.meta.url,
+),);
+
 /** Original source retained on disk while overlays change in memory. */
 const SOURCE = readFileSync(
   FIXTURE_PATH,
+  'utf8',
+);
+
+/** Sibling source text handed to the bridge alongside the fixture. */
+const SIBLING_SOURCE = readFileSync(
+  SIBLING_PATH,
   'utf8',
 );
 
@@ -355,7 +367,7 @@ await describe({
           },
         },),
         it({
-          name: 'bounds overlays by active file and projects by configured root',
+          name: 'retains the text handed for each source, and one project per configured root',
           fn: async () => {
             closeSemanticBridge();
             const first = openSemanticFile({
@@ -371,6 +383,21 @@ await describe({
             expect(second.sourceFile,).toBe(first.sourceFile,);
             expect(semanticBridgeCacheStats(),).toEqual({
               overlayCount: 1,
+              projectRootCount: 1,
+            },);
+            /* A second, different source of the same project. Reopening the same path twice
+             * cannot tell retention from clearing, which is what the earlier form of this
+             * assertion did, so it passed either way and measured nothing. */
+            openSemanticFile({
+              fileName: SIBLING_PATH,
+              sourceText: SIBLING_SOURCE,
+              hasBOM: false,
+            },);
+            /* Two overlays, not one. The bridge no longer clears down to the active source,
+             * because clearing left the native server holding text for a source the overlay had
+             * stopped claiming, and nothing ever reported that source as changed. */
+            expect(semanticBridgeCacheStats(),).toEqual({
+              overlayCount: 2,
               projectRootCount: 1,
             },);
           },

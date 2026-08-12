@@ -400,6 +400,139 @@ export function reduceElementParameterEffect(
 }
 
 /**
+ * Folds a filtered container consumed directly as the next call's receiver.
+ *
+ * The receiver of `reduce` is a container `filter` built, so no parameter is the
+ * value it holds and the question the observer derivation needs is where its
+ * elements came from. Asking for the value answers nothing, which left the call
+ * to the receiver claim, which cannot answer for a member carrying an observer,
+ * so the parameter stayed opaque for a fold that reads nothing but a length.
+ *
+ * @param states - Readonly container this reads.
+ *
+ * @returns total length of every non-empty value.
+ *
+ * @example
+ * ```ts
+ * chainedContainerFoldEffect([{ value: '' }]);
+ * ```
+ */
+export function chainedContainerFoldEffect(
+  states: readonly { value: string; }[],
+): number {
+  return states
+    .filter(function present(state,): boolean {
+      return state.value !== '';
+    },)
+    .reduce(function fold(total, state,): number {
+      return total + state.value
+        .length;
+    }, 0,);
+}
+
+/**
+ * Folds the same filtered container through a binding.
+ *
+ * The control for `chainedContainerFoldEffect`, and the reason the receiver
+ * resolution rather than the chaining is what this pins: binding the container
+ * changes the spelling of the cause and nothing else, so both forms must clear
+ * together or neither does.
+ *
+ * @param states - Readonly container this reads.
+ *
+ * @returns total length of every non-empty value.
+ *
+ * @example
+ * ```ts
+ * boundContainerFoldEffect([{ value: '' }]);
+ * ```
+ */
+export function boundContainerFoldEffect(
+  states: readonly { value: string; }[],
+): number {
+  /**
+   * Entries carrying a value.
+   */
+  const present = states
+    .filter(function carriesValue(state,): boolean {
+      return state.value !== '';
+    },);
+  return present
+    .reduce(function fold(total, state,): number {
+      return total + state.value
+        .length;
+    }, 0,);
+}
+
+/**
+ * Writes elements of a filtered container consumed as the next call's receiver.
+ *
+ * The half of the container-receiver question that must not go quiet. Resolving the
+ * receiver through its elements is what lets the observer derivation run at all, and a
+ * derivation that runs has to attribute what the observer does: `filter` hands back the
+ * receiver's own rows, so the write inside the fold reaches what the caller passed and
+ * belongs to the parameter. A discharge that cleared the opacity without recording this
+ * would have traded a report for silence rather than for a proof.
+ *
+ * @param states - Container whose elements this writes while folding.
+ *
+ * @returns count of written elements.
+ *
+ * @mutates states - Writes value on every folded element that carries one.
+ *
+ * @example
+ * ```ts
+ * chainedContainerFoldWriteEffect([{ value: 'x' }]);
+ * ```
+ */
+export function chainedContainerFoldWriteEffect(
+  states: { value: string; }[],
+): number {
+  return states
+    .filter(function present(state,): boolean {
+      return state.value !== '';
+    },)
+    .reduce(function foldWriting(total, state,): number {
+      state.value = 'changed';
+      return total + 1;
+    }, 0,);
+}
+
+/**
+ * Writes elements of the same filtered container through a binding.
+ *
+ * The control for `chainedContainerFoldWriteEffect`, holding the pair symmetric with the
+ * reading pair: binding the container may not change whether the write is attributed.
+ *
+ * @param states - Container whose elements this writes while folding.
+ *
+ * @returns count of written elements.
+ *
+ * @mutates states - Writes value on every folded element that carries one.
+ *
+ * @example
+ * ```ts
+ * boundContainerFoldWriteEffect([{ value: 'x' }]);
+ * ```
+ */
+export function boundContainerFoldWriteEffect(
+  states: { value: string; }[],
+): number {
+  /**
+   * Entries carrying a value.
+   */
+  const present = states
+    .filter(function carriesValue(state,): boolean {
+      return state.value !== '';
+    },);
+  return present
+    .reduce(function foldWriting(total, state,): number {
+      state.value = 'changed';
+      return total + 1;
+    }, 0,);
+}
+
+/**
  * Mutates receiver-reachable state through the whole-array callback parameter.
  *
  * `forEach` hands the receiver itself to parameter 2, so matching only the
@@ -1059,4 +1192,60 @@ export function storedClosureSemanticEffect({
     closureState.value = 'changed';
     void JSON.stringify(closureState,);
   };
+}
+
+/**
+ * Cycle head carrying the one writable slot both members of the cycle reach.
+ */
+type SemanticCycleHead = {
+  readonly member: SemanticCycleMember;
+  slot: string;
+};
+
+/**
+ * Cycle member reaching the writable slot only through readonly properties.
+ */
+type SemanticCycleMember = {
+  readonly head: SemanticCycleHead;
+};
+
+/**
+ * Reads the cycle head, whose own writable slot makes it mutable.
+ *
+ * Classified first by `readonly-classifier.unit.test.ts`, which is what makes the member below
+ * it a test rather than a restatement: the head's walk assumes `HONEST_READONLY` for itself where
+ * the member reaches back, and the member finishes standing on that assumption.
+ *
+ * @param cycleHead - Cycle head read for its writable slot.
+ *
+ * @returns slot text.
+ *
+ * @example
+ * ```ts
+ * readsSemanticCycleHead({ member, slot: 'x', },);
+ * ```
+ */
+export function readsSemanticCycleHead(cycleHead: SemanticCycleHead,): string {
+  return cycleHead.slot;
+}
+
+/**
+ * Reads the cycle member, which reaches the same writable slot one hop away.
+ *
+ * Mutable for the same reason the head is, and by a path made entirely of readonly properties.
+ * Answering `honest-readonly` here would tell `effect-outward-handoff.ts` that nothing writes
+ * through a handed value of this type, withhold the opaque effect it would otherwise charge, and
+ * offer `readonly` on a parameter a constructor can write through.
+ *
+ * @param cycleMember - Cycle member reaching the slot through its head.
+ *
+ * @returns slot text.
+ *
+ * @example
+ * ```ts
+ * readsSemanticCycleMember({ head, },);
+ * ```
+ */
+export function readsSemanticCycleMember(cycleMember: SemanticCycleMember,): string {
+  return cycleMember.head.slot;
 }

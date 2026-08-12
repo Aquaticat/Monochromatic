@@ -12,23 +12,23 @@ autoInstallPeers: false
 modulesCacheMaxAge: 0
 
 catalog:
-  '@anthropic-ai/sdk': '>=0.111.0'
+  '@anthropic-ai/sdk': '>=0.116.0'
   '@clack/prompts': '>=1.7.0'
   '@csstools/css-tokenizer': '>=4.0.0'
-  '@deck.gl/core': '>=9.3.6'
-  '@deck.gl/layers': '>=9.3.6'
-  '@deck.gl/mesh-layers': '>=9.3.6'
-  '@earendil-works/pi-ai': '>=0.80.6'
-  '@earendil-works/pi-coding-agent': '>=0.80.6'
-  '@earendil-works/pi-tui': '>=0.80.6'
-  '@electron/packager': '>=20.0.2'
-  '@homebridge/dbus-native': '>=0.7.7'
+  '@deck.gl/core': '>=9.3.9'
+  '@deck.gl/layers': '>=9.3.9'
+  '@deck.gl/mesh-layers': '>=9.3.9'
+  '@earendil-works/pi-ai': '>=0.84.1'
+  '@earendil-works/pi-coding-agent': '>=0.84.1'
+  '@earendil-works/pi-tui': '>=0.84.1'
+  '@electron/packager': '>=20.2.0'
+  '@homebridge/dbus-native': '>=0.7.8'
   '@lezer/common': '>=1.5.2'
-  '@lezer/css': '>=1.3.4'
+  '@lezer/css': '>=1.3.6'
   '@lezer/highlight': '>=1.2.3'
   '@lezer/html': '>=1.3.13'
   '@lezer/javascript': '>=1.5.4'
-  '@lezer/markdown': '>=1.7.1'
+  '@lezer/markdown': '>=1.7.2'
   '@lezer/rust': '>=1.0.2'
   '@lezer/xml': '>=1.0.6'
   '@lezer/yaml': '>=1.0.4'
@@ -38,29 +38,29 @@ catalog:
   '@luma.gl/engine': '>=9.3.6'
   '@mdx-js/mdx': '>=3.1.1'
   '@mitata/counters': '>=0.0.8'
-  '@msgpack/msgpack': '>=3.0.0-beta2'
+  '@msgpack/msgpack': '>=3.1.3'
   # TODO: deprecate Optique
-  '@optique/core': '>=1.1.1'
+  '@optique/core': '>=1.2.0'
   # TODO: deprecate Optique
-  '@optique/run': '>=1.1.1'
-  '@oxlint/plugins': '>=1.73.0'
-  '@playwright/test': '>=1.61.1'
+  '@optique/run': '>=1.2.0'
+  '@oxlint/plugins': '>=1.78.0'
+  '@playwright/test': '>=1.62.1'
   '@total-typescript/ts-reset': '>=0.6.1'
-  '@tursodatabase/database': '>=0.6.1'
+  '@tursodatabase/database': '>=0.7.2'
   '@types/chai': '>=5.2.3'
   '@types/chai-as-promised': '>=8.0.2'
   '@types/hast': '>=3.0.5'
   '@types/hyphen': '>=1.14.0'
   '@types/mdast': '>=4.0.4'
-  '@types/mdx': '>=2.0.13'
-  '@types/node': '>=26.1.1'
+  '@types/mdx': '>=2.0.14'
+  '@types/node': '>=26.2.0'
   '@types/sinon': '>=22.0.0'
   '@types/sinon-chai': '>=4.0.0'
   '@types/three': '>=0.182.0'
   '@types/unist': '>=3.0.3'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
-  'browserslist': '>=4.28.5'
+  'browserslist': '>=4.28.8'
   'chai': '>=6.2.2'
   'chai-as-promised': '>=8.0.2'
   'chokidar': '>=5.0.0'
@@ -70,24 +70,24 @@ catalog:
   'css-tree': '>=3.2.1'
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
-  'dot-prop': '>=10.1.0'
-  'electron': '>=43.1.0'
-  'execa': '>=9.6.1'
+  'dot-prop': '>=10.2.0'
+  'electron': '>=43.3.0'
+  'execa': '>=10.0.1'
   'expect-type': '>=1.4.0'
   'fast-check': '>=4.9.0'
   'farmhashjs': '>=1.0.1'
-  'feedsmith': '>=3.0.0-rc.1'
+  'feedsmith': '>=3.0.0-rc.3'
   'file-type': '>=21.3.0'
   'find-up': '>=8.0.0'
-  'h3': '>=2.0.1-rc.24'
+  'h3': '>=2.0.1-rc.26'
   'happy-dom': '>=20.5.0'
-  'happy-opfs': '>=2.1.0'
+  'happy-opfs': '>=2.2.0'
   'happy-rusty': '>=1.9.1'
   'hb-subset-wasm': '>=0.4.0'
   'hyphen': '>=1.14.1'
   'ignore': '>=7.0.6'
   'isomorphic-git': '>=1.27.0'
-  'jsonc-eslint-parser': '>=3.1.0'
+  'jsonc-eslint-parser': '>=3.3.0'
   'jsonc-parser': '>=3.3.1'
   'jspdf': '>=4.2.1'
   'kysely': '>=0.28.17'
@@ -100,13 +100,13 @@ catalog:
   'neovim': '>=5.4.0'
   'openai': '>=6.22.0'
   'opentype.js': '>=2.0.0'
-  'oxlint': '>=1.73.0'
-  'oxlint-tsgolint': '>=0.24.0'
-  'p-limit': '>=7.3.0'
+  'oxlint': '>=1.78.0'
+  'oxlint-tsgolint': '>=7.0.2001'
+  'p-limit': '>=7.3.1'
   'pdfjs-dist': '>=4.0.0'
   'picomatch': '>=4.0.5'
   'postcss': '>=8.5.16'
-  'postcss-html': '>=1.8.1'
+  'postcss-html': '>=2.0.0'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
   'rehype-autolink-headings': '>=7.1.0'
@@ -119,17 +119,17 @@ catalog:
   'remark-parse': '>=11.0.0'
   'remark-rehype': '>=11.1.2'
   'remark-sectionize': '>=2.1.0'
-  'rolldown': '>=1.1.5'
-  'rolldown-plugin-dts': '>=0.27.9'
+  'rolldown': '>=1.2.3'
+  'rolldown-plugin-dts': '>=0.28.1'
   'safe-stringify': '>=1.3.0'
   'satteri': '>=0.9.5'
   'serialize-error': '>=13.0.1'
   'sharp': '>=0.35.3'
-  'sinon': '>=22.0.0'
+  'sinon': '>=22.1.0'
   'sinon-chai': '>=4.0.1'
   'smol-toml': '>=1.6.0'
   'string-dedent': '>=3.0.2'
-  'stylelint': '>=17.14.0'
+  'stylelint': '>=17.14.1'
   'stylelint-config-standard': '>=40.0.0'
   'superjson': '>=2.2.6'
   'the-new-css-reset': '>=1.11.3'
@@ -139,19 +139,19 @@ catalog:
   'toml-eslint-parser': '>=1.0.3'
   'ts-pattern': '>=5.9.0'
   'type-fest': '>=5.8.0'
-  'typebox': '>=1.3.6'
+  'typebox': '>=1.3.12'
   'typesafe-i18n': '>=5.27.1'
   'typescript': '>=7.0.2'
-  'unbash': '>=4.0.2'
+  'unbash': '>=4.0.10'
   'unified': '>=11.0.5'
   'valibot': '>=1.4.2'
   'wawoff2': '>=2.0.1'
   'why-is-node-running': '>=3.2.2'
   'woff2-encode-wasm': '>=0.1.1'
   'yaml': '>=3.0.0-1'
-  'yuku-analyzer': '>=0.7.3'
-  'yuku-ast': '>=0.7.3'
-  'yuku-parser': '>=0.7.3'
+  'yuku-analyzer': '>=0.8.4'
+  'yuku-ast': '>=0.8.4'
+  'yuku-parser': '>=0.8.4'
   'zeptomatch': '>=2.1.0'
 catalogMode: strict
 
@@ -196,6 +196,16 @@ overrides:
   # dynamic require is wrapped in try/catch and degrades Shift+Tab handling.
   '@earendil-works/pi-tui>koffi': '-'
   '@earendil-works/pi-tui>mime-types': '-'
+  # Remove texture-compressor from @loaders.gl/textures@4.4.4. The sole
+  # integration launches its CLI by name through npx; no JavaScript import
+  # requires the package, and deps-cube uses SimpleMeshLayer rather than the
+  # experimental CompressedTextureWriter. This drops image-size@0.7.5, which
+  # has no patched release for GHSA-5p2g-fcmc-qvqq or GHSA-w3rx-r6r6-pgpr.
+  # Upstream made the same dependency optional after loaders.gl#3552/#3553.
+  # The 4.4.4 writer can still ask npx to download the absent CLI; keep that
+  # writer unreachable. Remove this override after a stable release carries #3553.
+  # See doc/troubleshooting/dependencies.md for the source and runtime audit.
+  '@loaders.gl/textures>texture-compressor': '-'
   # Substitute @ungap/structured-clone@1.3.0 with a workspace shim that
   # re-exports globalThis.structuredClone (the native function on Node 17+,
   # Bun, and every browser meeting the Firefox ESR 140 baseline). The
@@ -239,12 +249,11 @@ overrides:
   # (last commit 2022-05).
   # See doc/troubleshooting/dependencies.md and doc/dependency-blocklist.md.
   'argparse': '-'
-  # Patch GHSA-mh99-v99m-4gvg / CVE-2026-14257: <=5.0.7 bounds the number of
-  # expand() results but not their length, so a chain of brace groups can
-  # exhaust memory and crash the process with an uncatchable OOM. Only
-  # transitive consumer is minimatch@10.2.5 (`brace-expansion: ^5.0.5`);
-  # patch-level bump is range-compatible.
-  'brace-expansion': '>=5.0.8'
+  # Patch GHSA-rgw5-rvv9-x895 / CVE-2026-69152: >=4.0.0 <5.0.9 can build
+  # unbounded intermediate arrays, bypassing the prior output cap and allowing
+  # denial of service. Every transitive path resolves through minimatch@10.2.5
+  # (`brace-expansion: ^5.0.5`), so the fixed release is range-compatible.
+  'brace-expansion': '>=5.0.9'
   # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
   # the native binary; each invocation pays the Node startup cost (multiple
   # seconds in this workspace, vs sub-100ms for the native binary directly).
@@ -258,12 +267,12 @@ overrides:
   # package/config/dprint/README.md for the policy and VSCode-extension
   # workaround. Refs #163.
   'dprint': '-'
-  # Patch GHSA-v39h-62p7-jpjc / CVE-2026-6322: <=3.1.1 decodes percent-encoded
-  # authority delimiters inside the host, letting a normalized URL re-parse
-  # against a different host than the source string appeared to encode. Only
-  # transitive consumer is ajv@8.18.0 (pulled in by stylelint > table); a
-  # patch-level bump is range-compatible with ajv's `^3.0.0` dep.
-  'fast-uri': '>=3.1.2'
+  # Patch GHSA-7p8r-x3mc-p8w7 / CVE-2026-18446: >=4.0.0 <4.1.2 can treat a
+  # backslash as an authority introducer, causing host confusion. Only
+  # transitive consumer is ajv@8.20.0 (pulled in by stylelint > table); the
+  # workspace already overrides ajv's `^3.0.1` request to v4, and this keeps
+  # the effective dependency on a patched v4 release.
+  'fast-uri': '>=4.1.2'
   # Patch GHSA-5wm8-gmm8-39j9 / CVE-2026-44665: <=1.1.6 lets quote characters
   # in attribute values break out of the attribute and inject sibling
   # attributes when processEntities is disabled. Only transitive consumer is

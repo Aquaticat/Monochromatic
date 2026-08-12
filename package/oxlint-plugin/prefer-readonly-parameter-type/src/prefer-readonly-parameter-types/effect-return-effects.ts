@@ -21,6 +21,7 @@ import type {
 } from 'typescript/unstable/sync';
 
 import { expressionOrigins, } from './effect-binding-origins.ts';
+import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { expressionCanCarryMutableState, } from './effect-primitive-origin.ts';
 import { targetResultSites, } from './effect-result-binding.ts';
 import { recordResultApplicationSites, } from './effect-result-substitution.ts';
@@ -109,6 +110,31 @@ export function recordReturnEffects({
     project,
     bindingOriginBySymbolId,
     node: returned,
+      },),
+    },);
+    /* And the same question asked of the result's elements, because a returned container of
+     * receiver elements carries the caller's own values while its own identity is fresh.
+     * `expressionOrigins` answers for the value and correctly finds nothing on
+     * `return rows.slice(0,)`: the array handed back is not `rows`. What the caller can reach
+     * through it is every element `rows` held.
+     *
+     * Measured before this existed: `pickElement`, returning `rows.at(0,)`, recorded
+     * `returned=[0]` and a caller writing through the result attributed the write, while
+     * `pickContainer`, returning `rows.slice(0,)`, recorded nothing and the identical write
+     * through the identical elements attributed nothing. One relation was consulted and its
+     * sibling was not.
+     *
+     * This adds attribution rather than removing it, which is the safe direction here, and it
+     * is the precondition the deferred discharge in
+     * `doc/planning/prefer-readonly-return-substitution.md` actually needs: a returned
+     * container has to be a fact a caller can propagate before any opacity is discharged on
+     * the strength of it. */
+    addEffectSlots({
+      target: summary.directReturned,
+      values: expressionElementOrigins({
+        project,
+        bindingOriginBySymbolId,
+        node: returned,
       },),
     },);
     /* Returning another callable's result carries whatever that result carries, and

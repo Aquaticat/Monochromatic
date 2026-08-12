@@ -88,14 +88,23 @@ export type ReaderResultRelation =
 /**
  * Verified readers by default-library interface owner and member name.
  *
- * Every entry reads own enumerable string-keyed properties of its first argument and
- * returns a fresh container. None writes, and none is given a caller-supplied callback,
- * so the only user code any of them can reach is an accessor on the operand.
+ * Every entry reads its first argument without writing it, and none is given a
+ * caller-supplied callback, so the only user code any of them can reach is an accessor or a
+ * proxy trap on the operand.
+ *
+ * `getPrototypeOf` is the narrowest of them: the others walk own enumerable string-keyed
+ * properties, while it reads one internal slot and can reach only the corresponding trap.
+ * It is recorded as carrying its operand rather than as fresh, which is the conservative
+ * reading: the prototype it hands back is reachable from the operand, and writing through
+ * it changes what the operand does. Measured as the largest single root cause on the
+ * argument side, named by 53 findings through `isPlainObject` in
+ * `package/module/toml-edit/src/value-encoders.ts`.
  */
 const VERIFIED_READERS: Readonly<Record<string, Readonly<Record<string, ReaderResultRelation>>>> = {
   ObjectConstructor: {
     entries: READER_RESULT_CARRIES_OPERAND,
     values: READER_RESULT_CARRIES_OPERAND,
+    getPrototypeOf: READER_RESULT_CARRIES_OPERAND,
     keys: READER_RESULT_FRESH,
     hasOwn: READER_RESULT_FRESH,
   },
@@ -104,7 +113,7 @@ const VERIFIED_READERS: Readonly<Record<string, Readonly<Record<string, ReaderRe
 /**
  * Count of verified reader entries, pinned so the architecture guard can compare it.
  */
-export const VERIFIED_READER_COUNT = 4;
+export const VERIFIED_READER_COUNT = 5;
 
 /**
  * The caller-owned value a verified reader reads, with what its result shares.

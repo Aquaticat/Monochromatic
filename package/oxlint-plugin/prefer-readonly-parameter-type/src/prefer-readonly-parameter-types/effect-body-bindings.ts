@@ -30,6 +30,7 @@ import type { Project, } from 'typescript/unstable/sync';
 
 
 import { discoverAliasOrigins, } from './effect-binding-origins.ts';
+import { containerLiteralHolderSymbolIds, } from './effect-container-literal-holder.ts';
 import { discoverResultBindings, } from './effect-result-binding.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
 import {
@@ -56,6 +57,7 @@ const ALIAS_ESTABLISHING_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 export type BodyBindings = {
   readonly parameterInitializerNodes: readonly Node[];
   readonly resultSitesBySymbolId: ReadonlyMap<number, ReadonlySet<string>>;
+  readonly containerLiteralHolders: ReadonlySet<number>;
 };
 
 /**
@@ -171,5 +173,12 @@ export function discoverBodyBindings({
   return {
     parameterInitializerNodes,
     resultSitesBySymbolId,
+    /* Beside the origins for the same reason the result sites are: it records a syntactic
+     * fact about where a binding's value was built rather than which parameters that value
+     * can reach, and exactly one consumer asks the first question. */
+    containerLiteralHolders: containerLiteralHolderSymbolIds({
+      project,
+      variableDeclarations,
+    },),
   };
 }

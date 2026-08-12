@@ -1,0 +1,62 @@
+; Hand-written minimal reproduction for the RADV NULL dereference documented in
+; radv-spirv-to-nir-null-deref.md. Nothing here is derived from any shipped game.
+;
+; The module reproduces the same structured control flow violation the real
+; failing shader contained: a block inside an inner selection branches straight
+; to the merge block of the *enclosing* selection, bypassing its own merge, which
+; leaves the inner merge block unreachable.
+;
+;   entry            OpSelectionMerge %outer_merge
+;     └─ outer_then  OpSelectionMerge %inner_merge
+;          └─ inner_then  OpBranch %outer_merge   <-- unstructured exit
+;          └─ inner_merge (now unreachable)
+;
+; Assemble with:
+;   spirv-as --target-env vulkan1.3 radv-spirv-to-nir-null-deref.spvasm \
+;     -o radv-spirv-to-nir-null-deref.spv
+;
+; Expected: spirv-val rejects it, and RADV segfaults translating it.
+
+               OpCapability Shader
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main" %gid
+               OpExecutionMode %main LocalSize 1 1 1
+
+               OpDecorate %gid BuiltIn GlobalInvocationId
+
+       %void = OpTypeVoid
+     %fn_ty  = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %v3uint = OpTypeVector %uint 3
+       %bool = OpTypeBool
+ %ptr_in_v3u = OpTypePointer Input %v3uint
+%ptr_in_uint = OpTypePointer Input %uint
+     %uint_0 = OpConstant %uint 0
+     %uint_1 = OpConstant %uint 1
+        %gid = OpVariable %ptr_in_v3u Input
+
+       %main = OpFunction %void None %fn_ty
+      %entry = OpLabel
+     %gid_xp = OpAccessChain %ptr_in_uint %gid %uint_0
+      %gid_x = OpLoad %uint %gid_xp
+       %outer_cond = OpIEqual %bool %gid_x %uint_0
+               OpSelectionMerge %outer_merge None
+               OpBranchConditional %outer_cond %outer_then %outer_merge
+
+ %outer_then = OpLabel
+       %inner_cond = OpIEqual %bool %gid_x %uint_1
+               OpSelectionMerge %inner_merge None
+               OpBranchConditional %inner_cond %inner_then %inner_merge
+
+ %inner_then = OpLabel
+; The defect: this leaves the selection headed by %outer_then without going
+; through %inner_merge. Replacing the target with %inner_merge makes the module
+; valid, which is how the paired control module in the doc is produced.
+               OpBranch %outer_merge
+
+%inner_merge = OpLabel
+               OpBranch %outer_merge
+
+%outer_merge = OpLabel
+               OpReturn
+               OpFunctionEnd

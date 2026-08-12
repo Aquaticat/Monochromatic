@@ -107,7 +107,11 @@ export {
   ITERATOR_MEMBER_NAMES,
   MEMBER_CHANNEL_INTERNAL_SLOT,
   MEMBER_CHANNEL_RECEIVER_INDEX,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
   MEMBER_CHANNELS_BY_INTERFACE,
+  memberInvokesObserver,
+  OBSERVER_BEARING_MEMBER_NAMES,
   VERIFIED_MEMBER_CHANNEL_COUNT,
 } from './prefer-readonly-parameter-types/effect-member-channel-authority.ts';
 
@@ -146,8 +150,15 @@ export {
  * @internal
  */
 export {
+  UNPAIRED_VIEW_INTERFACES,
+  VERIFIED_UNPAIRED_VIEW_COUNT,
+} from './prefer-readonly-parameter-types/effect-unpaired-view-authority.ts';
+
+export {
   FRESH_CONTAINER_MEMBER_NAMES,
   RESULT_PROVENANCE_BY_INTERFACE,
+  RESULT_RELATION_OBSERVER_RETURN,
+  RESULT_RELATION_RECEIVER_ELEMENTS_PAIRED,
   RESULT_RELATION_RECEIVER_VALUE,
   VERIFIED_RESULT_RELATION_COUNT,
 } from './prefer-readonly-parameter-types/effect-result-provenance-authority.ts';

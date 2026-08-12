@@ -49,8 +49,8 @@ jobs:
     - name: Set up pnpm
       run: npm install --global pnpm@11.10.0
 
-    - name: Install cli-git dependency closure
-      run: pnpm install --frozen-lockfile --filter @monochromatic-dev/cli-git...
+    - name: Install git-policy-cli dependency closure
+      run: pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
 
     - name: Exercise real filesystem identity commands
       run: node package/module/fs-id/src/host-evidence.ts

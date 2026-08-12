@@ -19,6 +19,7 @@ import type { Project, } from 'typescript/unstable/sync';
 import type { SourceFile, } from 'typescript/unstable/ast';
 
 import { ancestorDirectories, } from './ancestor-directories.ts';
+import { isDeclarationFileName, } from './declaration-file-name.ts';
 import {
   updateHashPlainValue,
   updateHashString,
@@ -56,33 +57,6 @@ export type EffectProjectFingerprint = {
   readonly sourceDigests: ReadonlyMap<string, string>;
   readonly surfaces: EffectProjectSurfaces;
 };
-
-/**
- * Declaration-file suffixes excluded from incremental dependency closures.
- */
-const DECLARATION_SURFACE_SUFFIXES: readonly string[] = [
-  '.d.ts',
-  '.d.mts',
-  '.d.cts',
-];
-
-/**
- * Tests whether file participates in declaration surface.
- *
- * @param fileName - Program source path.
- *
- * @returns whether path names a declaration file.
- *
- * @example
- * ```ts
- * isDeclarationSurfaceFileName('/repo/src/env.d.ts');
- * ```
- */
-export function isDeclarationSurfaceFileName(fileName: string,): boolean {
-  return DECLARATION_SURFACE_SUFFIXES.some(function declaration(suffix,): boolean {
-    return fileName.endsWith(suffix,);
-  },);
-}
 
 /**
  * Tests whether source text can carry global or module augmentation.
@@ -130,15 +104,39 @@ function nearestLockfile(
 }
 
 /**
- * Reads exact source text from active overlay or filesystem.
+ * Reads exact source text from active overlay, analysed snapshot, or disk.
  *
- * @param project - TypeScript project providing fallback decoded source.
+ * The fingerprint names the state the summaries beneath it were derived from, and that state is
+ * the snapshot. Reading disk instead pairs an unchanged syntax tree with a digest of whatever a
+ * concurrent write left behind, and stores summaries under a key describing text nothing
+ * analysed. That entry then persists, and a later ordinary run can reuse it.
+ *
+ * So the snapshot answers for every source, declarations included. A declaration file decides
+ * types, so a stale one is as capable of poisoning a cache entry as a stale implementation.
+ *
+ * Declarations were briefly excluded here on the belief that including them cost 6.2 warm
+ * seconds. That figure came from one run against one run inside a band wider than itself. Five
+ * warm sweeps of each, run back to back:
+ *
+ * ```text
+ * declarations from snapshot   61.2  61.5  62.4  60.5  61.0     mean 61.32s
+ * declarations from disk       60.4  61.5  62.8  61.5  60.5     mean 61.34s
+ * ```
+ *
+ * Two hundredths of a second apart, in favour of asking the snapshot. Asking it for all 574
+ * sources of one project does cost 136.9ms the first time against 13.0ms for a disk pass, because
+ * nothing else decodes declarations, but entries are keyed by path and shared across projects, so
+ * that per-project figure never multiplied by projects the way the single-run comparison implied.
+ *
+ * @param project - TypeScript project providing analysed source.
  *
  * @param activeSourceFile - Active Oxlint overlay source.
  *
  * @param fileName - Program source path to fingerprint.
  *
  * @returns exact source text.
+ *
+ * @throws {@link Error} when neither snapshot nor filesystem can produce source.
  */
 function projectSourceText({
   project,
@@ -151,10 +149,18 @@ function projectSourceText({
 },): string {
   if (fileName === activeSourceFile.fileName)
     return activeSourceFile.text;
+  /**
+   * Source text as the analysed snapshot holds it.
+   */
+  const snapshotText = project.program
+    .getSourceFile(fileName,)
+    ?.text;
+  if (snapshotText !== undefined)
+    return snapshotText;
   try {
-    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor hashes project files once on cache lookup. */
+    /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor reads a source its own snapshot could not produce. */
     /**
-     * Disk source text matching configured project snapshot.
+     * Disk source text for a path the snapshot omits.
      */
     const text = readFileSync(
       fileName,
@@ -269,7 +275,7 @@ export function effectProjectFingerprint({
       digest,
       value: sourceDigest,
     },);
-    if (isDeclarationSurfaceFileName(fileName,)) {
+    if (isDeclarationFileName(fileName,)) {
       updateHashString({
         digest: declarationSurface,
         value: fileName,

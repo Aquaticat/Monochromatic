@@ -269,6 +269,9 @@ export function verifyReadonlyCallable({
         targetIndexes,
         parameterIndex,
         uncertainty,
+        /* Whether the general message's closing advice, to make the type honest, would be
+         * telling this author to do what they already did. The charge is unaffected. */
+        alreadyReadonly: classification.kind === 'honest-readonly',
         ...(affectedNames === undefined) ? {} : { affectedNames, },
       },),);
       return;

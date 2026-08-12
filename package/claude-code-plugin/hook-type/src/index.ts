@@ -63,6 +63,7 @@ export type * from './events-tool-post.ts';
 export type * from './events-tool.ts';
 export type * from './tool-inputs-union.ts';
 export type * from './tool-inputs.ts';
+export type * from './transcript.ts';
 
 //endregion
 

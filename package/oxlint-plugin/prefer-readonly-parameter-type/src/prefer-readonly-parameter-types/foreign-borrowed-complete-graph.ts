@@ -10,6 +10,8 @@ import type {
   SourceFile,
 } from 'typescript/unstable/ast';
 import { isCallExpression, } from 'typescript/unstable/ast/is';
+
+import { callersAreEnumerable, } from './effect-caller-enumeration.ts';
 import type {
   Project,
   SignatureUsage,
@@ -307,6 +309,20 @@ export function completeForeignBorrowedGraph({
           declaration,
         },),
       );
+    }
+    /* The same completeness question the returned-result discharge asks, and asked here for
+     * the same reason: this walk proves an inbound closure, and a callable other files may
+     * import has inbounds no enumeration reaches. Recorded as an unknown inbound rather than
+     * abandoning the walk, since that is exactly this graph's existing way of saying an edge
+     * could not be proven, and it already rejects inferred provenance. */
+    if (!callersAreEnumerable({
+      project,
+      declaration,
+    },)) {
+      addUnknownInbound({
+        summaries,
+        declaration,
+      },);
     }
     /**
      * Start time for exact TypeScript signature reference query.

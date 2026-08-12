@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/claude-code-plugin-stop-reminder",
-  "description": "Claude Code Stop hook that detects uncertain language in responses and reminds Claude to investigate before guessing.",
+  "description": "Claude Code Stop hook that reminds Claude to investigate before guessing, and that refuses a stop whenever pushing could plausibly help, so a turn cannot end on an announced-but-unperformed next action.",
   "type": "module",
   "bin": {
     "ccsr": "./bundle/node/index.mjs"
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:"
   }
 }

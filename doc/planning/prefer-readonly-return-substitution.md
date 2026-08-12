@@ -1,7 +1,9 @@
 # Caller-side substitution for returned parameter state
 
-Proposal,
- not an accepted decision.
+Working record.
+The proposal it opened as has landed;
+ the settled part is
+`doc/decision/readonly-caller-enumeration-boundary.md`.
 Scope:
  `package/oxlint-plugin/prefer-readonly-parameter-type`.
 Opened from task #38,
@@ -21,6 +23,205 @@ On the structural path the same alias hop does produce a false offer,
  measured end to end against the shipped rule with nothing mutated,
  and it is set out in "A false offer on the structural path".
 That finding is what the ranking now rests on.
+
+## Current state, 2026-08-07
+
+This document is long and append-only,
+ so what follows is where things stand.
+Everything below this section is the record of getting here,
+ including claims that were made
+and withdrawn.
+
+The returned-result discharge is landed and measured.
+A verified collection member whose result carries receiver state no longer forces the receiver
+opaque when returning is that result's only escape,
+ the callable's callers are all enumerable
+and resolvable,
+ and the base of its receiver chain is not foreign-owned.
+
+Workspace effect:
+ 2893 errors and 1555 rule findings against 2906 and 1568 before any of this,
+with the offer set unchanged at 34 through every increment except one adjudicated addition,
+`stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts`,
+ which is correct.
+
+Eight conditions decide the discharge,
+ and each states at its point of use which of four
+kinds it is.
+
+Four have a failing case in `prefer-readonly-parameter-type.unit.test.ts`,
+ meaning the suite
+fails when the condition is removed:
+ the reassignable binding,
+ the written endpoint,
+ the
+wrapper unwrap,
+ and the only-escape condition.
+
+Two are masked by other charge paths and were measured to be so:
+ the containment check,
+ which
+`resultEscapesCallable` pre-empts by treating any reference inside a nested callable as
+escaping,
+ and the relation requirement,
+ which the observer path pre-empts.
+
+One is unreachable by construction,
+ the unresolved base,
+ because both entry points reach this
+only for a member call and the relation test refuses the sentinel before the descent can
+produce one.
+
+One is believed unreachable by argument rather than measurement,
+ the alias-cycle refusal,
+since only `const` bindings are followed and TypeScript rejects a cycle among them as use
+before declaration.
+
+"Two of the guards do have a failing case after all" records how the first three of the tested
+four were finally isolated,
+ after two earlier attempts concluded the opposite.
+
+`localReceiverElements` in the provenance fixture is the positive control:
+ unexported,
+ with an
+in-file caller,
+ and the first assertion in this repository that fails if the discharge stops
+working at all.
+
+### A wrong offer arrived from the performance work, 2026-08-08
+
+Recorded here rather than only in `doc/planning/oxlint-warm-sweep-attribution.md`,
+ because it
+is a wrong-offer path and this is where those live.
+
+`f2eea0182`,
+ a warm-time change sharing settled type classifications per project,
+ published
+every finished classification including ones computed while an enclosing type was still being
+walked.
+`classify` answers `HONEST_READONLY` for a type already active above it,
+ and only the walk that
+made that assumption resolves it.
+Every other member of the cycle finished standing on it and was published.
+
+Measured on a disposable project holding two mutually reaching types whose head carries the one
+writable slot,
+ so both are mutable and the member reaches the write through readonly properties
+alone:
+
+```text
+head first:    cycleHead mutable, cycleMember honest-readonly
+member first:  cycleMember mutable, cycleHead mutable
+```
+
+Order cannot change what a type is,
+ so the store was answering with something that is not a
+property of the type.
+
+The direction is the dangerous one.
+`effect-outward-handoff.ts:181` returns early on `honest-readonly` and skips the opaque effect
+it would otherwise charge the handed slot,
+ so the parameter reads as unmutated and the rule
+offers `readonly` on a parameter a constructor can write through.
+
+`2b86858fe` counts answers taken from unfinished types and publishes only results that took
+none,
+ carrying the assumption onward when a later reader meets an assumed entry rather than the
+marker behind it.
+The type each call was asked about is still published whatever it stood on,
+ because a walk
+starting there begins from an empty memo and computes exactly what an unshared classifier
+computes.
+`eb1714905` pins it with a test shown to fail without the guard.
+
+The lesson worth keeping:
+ a cache added for speed is a claim that two questions have the same
+answer.
+This one was justified in its own comment by "the classification depends on nothing but the
+type",
+ which is true of the finished answers and false of the provisional ones,
+ and no timing
+measurement could have caught the difference.
+
+Isolated against this repository afterwards by removing only the guard and sweeping:
+ no
+diagnostic moved.
+So no type cycle here currently reaches it.
+That is the blast radius,
+ not an argument that the defect did not exist;
+ the disposable-project
+probe is what establishes it.
+
+### A second wrong-offer path, pre-existing, 2026-08-08
+
+Found in the same reading.
+`cachedProjectForFile` answered with the deepest project root already discovered that contains a
+source,
+ which is not the project TypeScript would choose for it.
+`openSemanticFile` does check that the project it receives contains the source,
+ and that catches
+a wrong answer for every project except one:
+ the repository root `tsconfig.json` declares no
+`include`,
+ so its program holds package sources too and the check passes.
+
+The consequence is that a source is analysed under a different project depending on whether that
+worker linted a root-level file earlier:
+
+```text
+package file alone:  package/module/logger/tsconfig.json (371 files)
+root file first:     tsconfig.json (646 files)
+```
+
+Set containment decides whether that is dangerous,
+ not set size.
+Restricted to sources the rule would analyse,
+ the package project holds 117 and the root project
+196,
+ and **62 of the 117 are absent from the root**.
+Those 62 are callers,
+ and a caller that is not read is a mutation that is not charged.
+
+`f84c5f487` stops the upward walk at the first ancestor that either names a discovered project or
+declares an undiscovered one,
+ so the answer follows the filesystem rather than lint order.
+
+### Open questions
+
+`callersAllResolve` proves every *enumerable* usage resolves,
+ and module export is a
+deliberate over-approximation of reachable-from-outside.
+Narrowing it to published entry points was measured and rejected;
+ the argument and the
+reopening conditions are in the decision document.
+
+Overload canonicalization and interface dispatch are unmodelled,
+ recorded in "Known
+limitations left in place, with the argument for leaving them",
+ and neither is a branch to
+patch in the discharge.
+
+Extending the discharge to further escape routes is now mostly moot:
+ a returned object literal
+or spread is refused by the escape test itself,
+ correctly,
+ because substitution does not track
+through them.
+Widening that would mean widening what substitution tracks,
+ which is a different change.
+
+### Reading this document
+
+The three corrections worth knowing before trusting any measurement quoted below:
+ "Correction:
+none of the guards has a program that isolates it",
+ "Correction to the correction:
+ the probe
+harness was blind",
+ and "Two of the guards do have a failing case after all",
+ in that order.
+They contradict each other on purpose,
+ and the last one is current.
 
 ## What was measured
 
@@ -347,6 +548,308 @@ A suggestion that fails to compile is self-limiting,
 The bar used here is the one set in "What this proposal does not establish":
  the applied annotation compiles clean,
  and the caller observes a mutation the annotation denies.
+
+## The structural false offer no longer reproduces, re-measured 2026-08-07
+
+Re-run before starting the holder-set item,
+ because that item's justification here is the false offer above
+and a justification is worth re-deriving before it is acted on.
+
+Same four functions,
+ same shapes,
+ read at the user boundary with the fixture config on a disposable probe
+file:
+ `pickDeep`,
+ `driveDeep`,
+ `pickAliasedDeep` and `driveAliasedDeep` all report receiver opacity naming
+`config.rows.at`,
+ and none is offered `readonly`.
+ The one alias hop that was the entire difference between
+the withheld pair and the offered pair no longer makes any difference at all.
+
+The absence of an offer is evidence rather than silence.
+ A control in the same file,
+ `countRows`,
+ reading
+`config.rows.length` and nothing else,
+ is offered `Parameter "config" should be readonly`,
+ so the offer
+mechanism is live in exactly the file where the aliased pair failed to be offered.
+ Summary level agrees:
+all four read `opaque=[0]`,
+ with `returned=[0]` on both selectors and `referentMutated=[0]` on both writers.
+
+What closed it is not established here.
+ The assignment-classification item landed in `a57bb6f56` and is
+the obvious candidate,
+ and this document already predicted that closing the holder set without fixing
+reference-position classification would misreport every assignment-established alias,
+ so the two are
+entangled by design.
+
+What is left reporting is not a nesting question either,
+ which is worth stating because the probe above
+invites that reading.
+ Measured against the flat equivalent:
+ `config.rows.at(0,)` read for a property is
+clean,
+ and so is `rows.at(0,)`;
+ `return rows.at(0,)` is opaque,
+ and so is the nested form.
+ Returning the
+element discriminates and the extra property step does not,
+ so this document's earlier claim that a nested
+receiver is classified exactly as a flat one is confirmed rather than contradicted.
+
+That places the entire remainder inside the last of the four items,
+ whether a verified direct return may
+discharge receiver opacity,
+ which this document already defers on stated grounds.
+ The holder-set item is
+therefore not the fail-closed half of a remedy for a live false offer,
+ because there is no live false offer
+and what still reports is the deferred question wearing a different shape.
+
+Nothing here argues the deferral was wrong.
+ It argues that the ranking's second item has lost the
+justification written for it,
+ and that anyone picking this up should start by re-deriving whether the
+holder set is worth closing on its own terms rather than inheriting an argument that no longer measures.
+
+## The deferred fourth item now has a measured stake, 2026-08-07
+
+It never had one.
+ The ranking argued order and hazard and left size unstated,
+ which makes a deferral hard
+to revisit honestly.
+
+Counted over the current workspace sweep,
+ attributing each finding by the calls its own message names:
+1262 findings name at least one call,
+ and 134 of them name only members that now carry a verified result
+relation.
+ For those 134 the relation is present and the per-call verification is what withholds it,
+ and
+the condition doing the withholding is overwhelmingly the escape check:
+ a container or element of
+receiver state that leaves the callable.
+
+Measured directly rather than inferred from the count.
+ `rows.toReversed()`,
+ `rows.toSorted(cmp,)` and
+`rows.slice(0,)` are each clean when the result is discarded,
+ read,
+ or written through,
+ and each is
+`opaque=[0]` when the result is returned.
+ `orderedRoots` in
+`package/desktop-app/file-manager-electron/src/strip.ts` is the shape:
+ it returns
+`panes.filter(rootLike,).toSorted(bySpawnOrder,)`,
+ and the chain is not what withholds it.
+
+This does not argue the deferral was wrong,
+ and it does not shorten the path.
+ The third item remains a
+precondition for the fourth by this document's own reasoning:
+ a returned container has to become a fact
+the caller can propagate,
+ through `returnedParameterIndexes`,
+ before the receiver's opacity can be
+discharged on the strength of it.
+ Discharging first would hand back a clean parameter with the return
+unmodelled,
+ which is the shape `#35` refuted after it looked obviously safe.
+
+What the number changes is the accounting.
+ The remaining work on this rule's argument side is now
+concentrated rather than scattered:
+ the external host calls and the genuine coercions are correct as they
+stand,
+ the observer members are excluded on stated grounds,
+ and what is left in one place is these 134.
+
+## The third item is half built, and the measurement says which half
+
+Probed after the stake above,
+ because "build caller-side substitution" is a large description and a
+large description is worth checking against what already runs.
+
+A callable returning one receiver *element* already records the fact and the caller already uses it:
+
+```text
+pickElement(rows)  { return rows.at(0,); }        returned=[0]
+drivePickElement   { pickElement(rows,)?.label = x }  referentMutated=[0]
+```
+
+A callable returning a *container* of receiver elements records nothing,
+ and the caller attributes
+nothing:
+
+```text
+pickContainer(rows) { return rows.slice(0,); }    returned=[]
+drivePickContainer  { pickContainer(rows,)[0].label = x }  referentMutated=[]
+```
+
+Both are `opaque=[0]`,
+ which is what keeps the second pair safe today:
+ the caller is told nothing about
+the parameter,
+ so nothing is offered.
+ It is also exactly why the fourth item cannot be taken first.
+Discharge that opacity while the container return records no fact and `drivePickContainer` gets a clean
+parameter with an unattributed write through it,
+ which is the shape `#35` refuted.
+
+So the third item is narrower than its own description.
+ The value half works;
+ what is missing is the
+container half:
+ a returned container of receiver elements has to record its parameter the way a returned
+element does.
+ That direction adds attribution rather than removing it,
+ which is the safe direction for this
+rule,
+ and it is the precondition the fourth item actually needs.
+
+### The container half landed, 2026-08-07
+
+One line of cause and a long comment.
+ `recordReturnStatementEffects` asked `expressionOrigins` of the
+returned expression and never asked `expressionElementOrigins`,
+ so one relation was consulted and its
+sibling was not.
+ The value question is right to answer nothing on `return rows.slice(0,)`:
+ the array
+handed back is not `rows`.
+ What a caller reaches through it is every element `rows` held,
+ which is what
+the element question answers.
+
+Measured either side:
+ `pickContainer` records `returned=[0]` where it recorded nothing,
+ and
+`drivePickContainer` reports `referentMutated=[0]` where it reported nothing.
+ The element pair is
+unchanged,
+ and a caller reading only the returned container's length still attributes nothing,
+ which is
+the control that keeps a returned origin from becoming a claim that every caller used it.
+
+Across the workspace it changes no diagnostic at all:
+ 2906 errors,
+ 1568 findings,
+ 34 read-only offers
+byte-identical,
+ 14 stale contracts.
+ That is the honest description and it is not an argument against the
+change.
+ It moves a summary fact rather than a message,
+ the fact is the one the fourth item is blocked
+on,
+ and the `DataView` authority landed on the same footing:
+ a prerequisite measured at the boundary it
+actually affects.
+ Held to `effect-summaries.unit.test.ts` rather than to a diagnostic count,
+ since no
+diagnostic count could hold it.
+
+The fourth item is still blocked,
+ and the container half landing is what made it possible to say so
+precisely.
+
+Probed across the shapes a return actually takes,
+ rather than the one the fix was built against:
+
+```text
+return rows.slice(0,);                                  returned=[0]
+const part = rows.slice(0,); return part;               returned=[0]
+return [...rows.slice(0,),];                            returned=[0]
+return rows.slice(0,).toReversed();                     returned=[]
+const part = rows.slice(0,); return part.toReversed();  returned=[]
+return rows.length > 0 ? rows.slice(0,) : [];           returned=[]
+```
+
+Three of six record nothing,
+ and the chain is not an exotic case:
+ `orderedRoots` returns
+`panes.filter(rootLike,).toSorted(bySpawnOrder,)`,
+ which is the shape most of the 134 take.
+ Discharging
+the return escape today would hand those callers a clean parameter with no returned fact at all,
+ which is
+exactly the hole this document records being refuted once already.
+
+So the precondition holds for a direct return and for a single binding hop,
+ and fails for a chain and for a
+conditional.
+ The next step is not the discharge:
+ it is making the element-origin walk follow a chain of
+container relations,
+ which is the same safe direction the container half was and which
+`containerElementReceiver` stops short of today,
+ following an identifier to its declaration but answering
+immediately at the first call it reaches.
+
+### The chain step landed, 2026-08-07
+
+`expressionElementOrigins` resolved one relation and took the value origins of what it found.
+ For
+`rows.slice(0,).toReversed()` what it found was the inner call,
+ whose own value origins are empty because
+the array it returns is fresh,
+ so a chain of relations each of which holds reported no origin between them.
+Composing them is a bounded loop over the same resolution,
+ per `ITR`,
+ stopping at the first step that finds
+no verified relation.
+
+Four of the six shapes now record the fact:
+ the chain and the binding-then-chain join the direct return,
+the single binding hop and the spread literal.
+ The conditional still records nothing and needs branch
+descent,
+ which this does not add.
+
+Workspace either side:
+ 2906 errors to 2907,
+ 1568 rule findings to 1569,
+ read-only offers byte-identical at
+34.
+ One finding arrived and none left,
+ which is the expected direction:
+ the change adds attribution,
+ and
+attribution reaching an unproven channel reports.
+
+The arrival is `getIndexHtmlBody` in `package/webapp-productivity/rss/src/html.ts`,
+ whose `options` now
+reaches `pubDateDate.toLocaleString` through the composed elements.
+ Consistent rather than novel:
+`toLocaleString` is named as a cause three times across the sweep,
+ and this parameter genuinely does reach
+one of them.
+ It reports because the `Date` channel authority withholds the locale members,
+ recorded in
+`doc/decision/prefer-readonly-unpaired-view-membership.md`,
+ on the ground that a member name alone cannot
+say whether caller-supplied `locales` and `options` carry accessors.
+
+That last point is a lead rather than a defect.
+ The call is `pubDateDate.toLocaleString()`,
+ with no
+arguments at all,
+ so there is nothing caller-supplied for it to reach.
+ A channel admitted conditionally on
+an empty argument list would discharge it the way the coercion channel is admitted conditionally on
+strictly primitive elements.
+ Not taken here.
+
+Nothing here takes either.
+ The three fixture cases added with the container half are the shape the
+discharge would clear,
+ and the write attribution asserted beside them is what a careless discharge would
+empty.
 
 ## Recommendation
 
@@ -10289,3 +10792,2254 @@ So five panics correspond to three omitted callables,
  But a capture must now be read for omissions under `node_modules` too,
  which no
  earlier capture needed.
+
+### Selection landed, 2026-08-07
+
+The chain step closed one of the shapes this document tracks and left the conditional open.
+Probing the conditional found that it was not one gap but eleven,
+ and that the boundary was not "branching" but "selection".
+
+`expressionValueOrigins` already saw through every form whose result is an operand it was
+given:
+ parentheses,
+ `as`,
+ a non-null assertion,
+ `satisfies`,
+ the comma operator,
+ `?:`,
+ `??`,
+ `||` and `&&`.
+The container relation saw through none of them.
+So `return (rows.slice(0,));` recorded no element origins while the bare `return (rows);`
+recorded them correctly,
+ and the same split appeared for every form.
+Measured before the change,
+ with the bare form as the control in each case:
+
+```text
+direct, binding, chain            returned=[0]     already worked
+conditional, nested conditional   returned=[]      recorded nothing
+??, ||, &&                        returned=[]      recorded nothing
+parens, as, non-null, satisfies   returned=[]      recorded nothing
+comma                             returned=[]      recorded nothing
+bare parameter in all the above   returned=[0]     value provenance saw through them
+```
+
+The control line is what named the cause.
+A walk that loses `(rows.slice(0,))` and keeps `(rows)` is not failing at parentheses;
+ it is failing to ask the container question anywhere except the root.
+
+So the fix is not branch descent.
+It is one shared definition of the family,
+ `selectedOperandSuccessors`,
+ exported from
+`effect-expression-provenance.ts` and consulted by both walks.
+Growing a second copy inside the element walk would have been the smaller diff and the worse
+one:
+ that file's own comments already worry twice about the two walks disagreeing about
+identical state,
+ once for spreads and once for shorthand properties,
+ and a second copy is the
+mechanism by which that happens.
+
+Aggregates are deliberately outside the shared family.
+`[a, b,]` builds a value no operand held,
+ so crediting its contents is a claim about what a
+container packages rather than about which operand arrived,
+ and `provenanceSuccessors` keeps
+that claim to itself.
+
+#### The hop count was unsound, not merely approximate
+
+Reviewing the walk for branching surfaced a defect in the chain step that shipped two
+increments earlier.
+`CONTAINER_CHAIN_HOP_LIMIT = 8` truncated silently:
+
+```text
+eight composed slice calls    returned=[0]  opaque=[0]
+nine composed slice calls     returned=[]   opaque=[0]
+twelve composed slice calls   returned=[]   opaque=[]
+```
+
+The third line is the one that matters.
+At twelve the parameter comes back with no opacity at all,
+ which is the state a read-only
+offer is minted from.
+Its TSDoc claimed that stopping early "only withholds an origin",
+ and that framing is backwards for this rule:
+ every consumer of the returned set only ever
+adds a charge,
+ so a withheld origin is a withheld charge and a withheld charge is an offer.
+
+A hop count could not have bounded this walk correctly in any case.
+`containerElementReceiver` follows an identifier to its declaration initializer,
+ which is not
+a descendant of the node it started from,
+ so the walk leaves its own subtree and the
+descendant argument that bounds `expressionValueOrigins` does not hold here.
+What does hold is that a file has finitely many nodes and no node is examined twice,
+ so the
+count is replaced by a visited set and the truncation goes away rather than moving.
+
+Nine composed container calls do not appear in the corpus,
+ so this cleared nothing.
+It removes a way to be wrong rather than a report,
+ which is the same standard
+`doc/decision/prefer-readonly-unpaired-view-membership.md` set:
+ a wrong inference is worse
+than an absent one.
+
+#### What the monotonicity check covered, and what it nearly missed
+
+The change only adds origins,
+ so it is safe exactly to the extent that every consumer treats a
+larger set as more conservative.
+Checked at all six call sites of `expressionElementOrigins` rather than at the returned set
+alone,
+ which was the first and insufficient reading:
+
+- `effect-return-effects.ts` records them,
+ and every consumer of the returned set adds a
+charge:
+ `effect-element-application.ts` adds opacity,
+ `substituteRetainedOrigins` adds opacity
+and provenance,
+ `substituteReturnedOrigins` adds origins.
+ `returnedParameterIndexes` has no
+production consumer at all.
+- `effect-opaque-boundary.ts` turns each origin into an `addOpaqueEffect`,
+ one charge per
+origin.
+- `effect-readonly-view-application.ts` is the one worth the scrutiny,
+ because it decides a
+discharge rather than a charge.
+ It still comes out safe in both directions.
+ With an empty
+origin set it returns early and the call falls to the opaque boundary,
+ which uses the same
+walk and so was equally empty before the change,
+ meaning the receiver was charged nothing by
+either path.
+ With a larger set its derivation loop has more chances to reach
+`READONLY_VIEW_UNDISCHARGED`,
+ and any one of them sends the whole call back to the opaque
+boundary.
+- `effect-binding-origins.ts` and `effect-call-resolution.ts` feed the origin maps the
+charges are read from.
+
+#### A composition this did not fix
+
+`containerElementReceiver` owns the declaration hop and answers only when it lands on a call,
+so an initializer that is itself a selector still stops it,
+ while the outer walk owns
+selection and never performs a declaration hop.
+The two steps do not compose:
+
+```ts
+const maybe: LabelledRow[] | undefined = cond ? rows.slice() : undefined;
+const copy = maybe ?? [];
+```
+
+Recorded as a prediction from reading the source rather than as a measurement,
+ and it is
+tracked with a probe as its required first step.
+Two hypotheses were refuted by measurement earlier in the same session,
+ so a trace is a lead
+here and not a finding.
+
+#### What selection measured
+
+Workspace either side:
+ errors unchanged at 2904,
+ warnings unchanged at 3902,
+ rule findings unchanged at 1566,
+ and the read-only offer set byte-identical at 34.
+No diagnostic moved anywhere in the corpus.
+
+So this is a prerequisite rather than a result,
+ and belongs in the same category as the two
+increments before it that moved a summary fact and cleared nothing.
+The shapes it fixes are real and the corpus does not currently write them at a point where a
+diagnostic depends on them.
+
+The comparison itself needed correcting once,
+ which is worth recording because the first
+reading looked like the guarded failure.
+Pairing each offer with the nearest preceding source location reported four offers withdrawn
+and four appearing,
+ which would have meant offers moving.
+The location line follows its message in this output rather than preceding it,
+ so every offer
+had been paired with the previous diagnostic's location.
+Pairing forward instead gives byte-identical sets.
+A measurement that reports the failure mode is worth re-deriving before it is believed,
+ in
+the direction that confirms it as well as the direction that clears it.
+
+#### The fixture that was written, measured and reverted
+
+Two fixtures were written for the iteration spelling,
+ `const copy = cond ? rows.slice() : [];`
+followed by a `for...of` that writes through `copy`,
+ on the assumption that they exercised
+what had just been fixed.
+They did not.
+Each produced two diagnostics:
+ a stale `@mutates` contract,
+ and a read-only offer on a
+parameter the callable writes.
+
+The cause is a composition neither half of the walk owns.
+Element origins are asked about `copy`,
+ a plain identifier;
+ `containerElementReceiver` follows
+it to its declaration initializer,
+ finds a selector rather than a call,
+ and gives up;
+ and the
+selection family is empty for an identifier,
+ so the walk never reaches the initializer.
+The existing `iteratedContainerWriteEffect` passes only because its initializer is
+`rows.slice()` directly.
+
+They were reverted rather than committed with an updated count.
+Recording a wrong offer as the expected value is how it stops being visible,
+ and the offer
+list in that fixture exists so that a change withdrawing an entry has to say why.
+The shape is tracked instead,
+ with the measurement that produced it,
+ and it is the acceptance
+test for the composition when that is taken.
+
+What was committed in their place is the pair that does exercise the change:
+a callable returning its receiver's elements from whichever branch supplies them,
+ and a
+caller writing through that result.
+Both are pinned at summary level and both report at diagnostic level,
+ taking that fixture
+from sixteen to eighteen with its offer set unchanged.
+
+### The composition landed, 2026-08-07
+
+The fixture reverted in the selection entry is the acceptance test for this one,
+ and it now
+passes.
+
+Two steps existed and neither owned their composition.
+`containerElementReceiver` follows a name to its declaration initializer,
+ but answers only
+when it lands on a call,
+ so an initializer that is a selector stopped it.
+The element walk traverses selection,
+ but only where it stands in the expression,
+ and the
+selection family is empty for a name,
+ so it never reached an initializer.
+Between them,
+ `const copy = cond ? rows.slice() : [];` was reachable by neither.
+
+What that cost was not a report.
+Measured on the fixture before the fix,
+ each of two spellings produced two diagnostics:
+
+```text
+Parameter "rows" has stale @mutates contract
+Parameter "rows" should be readonly: mutable Array has ReadonlyArray projection
+```
+
+The second is the guarded failure.
+The callable rewrites a row the caller owns,
+ the write was attributed to no parameter,
+ and
+the rule offered the parameter read-only.
+
+The hop is now `bindingDeclarationInitializer`,
+ one definition shared by both rather than
+repeated in each,
+ and the element walk performs it over the same visited set it already uses
+for selection.
+Names and selectors then compose however they alternate,
+ which
+`nestedSelectorWriteEffect` measures:
+ a name whose initializer is a selector,
+ whose operand
+is another name,
+ whose initializer is the container call.
+A single pass of each step answers the two simpler cases and still answers nothing for that
+one.
+
+All three fixtures add no diagnostic at all.
+Their contracts are satisfied,
+ where two of them each produced a wrong offer before,
+ and the
+fixture's total stays at eighteen with its offer set unchanged.
+
+#### It dissolved one tracked item and sharpened another
+
+The alias truncation tracked separately was re-probed rather than assumed still to hold,
+ and
+half of it had gone:
+ a nine-hop alias chain reaching a container now records its origin,
+because the element walk's own hop has no cap.
+
+The other half got worse than the entry describing it claimed.
+`containerElementReceiver` has a second caller,
+ `expressionValueOrigins`,
+ which has no hop of
+its own,
+ and there the cap still bites.
+Measured by chaining a container call through N aliases and writing through an element:
+
+```text
+one alias, three aliases    referentMutated=[0]  opaque=[]
+seven aliases onward        referentMutated=[]   opaque=[]
+```
+
+The parameter is not merely unattributed past the threshold.
+It is clean,
+ opacity included,
+ so the rule offers it read-only while the callable writes a
+row through it.
+That is the guarded failure occurring today rather than a precision loss,
+ and it is what the
+remaining entry is now about.
+
+#### What the composition measured
+
+Workspace either side:
+ 2904 errors to 2908,
+ 1566 rule findings to 1570,
+ warnings unchanged at 3902,
+and the read-only offer set byte-identical at 34,
+ none withdrawn and none appearing.
+Sweep wall time 10m42s,
+ so removing the element walk's bound cost nothing measurable.
+
+Four findings added and none cleared,
+ which is the direction this change can move in:
+ it adds
+attribution,
+ every consumer of the origins adds a charge,
+ and a charge is a report.
+
+All four name `availableModels` in `package/pi-shared/model-selection`,
+ and the shape is the
+one the synthetic fixture was written from,
+ found in the corpus rather than invented:
+
+```ts
+const aliases = matches.filter(function keepAlias(model,) { return isAlias(model.id,); },);
+const candidates = aliases.length > 0 ? aliases : matches;
+const sortedCandidates = candidates.toSorted(compareByIdDesc,);
+```
+
+`candidates` is a name whose initializer selects between two names,
+ one of which is a filter
+of a container that traces back to the parameter.
+The walk stopped at that conditional before,
+ so the receiver of `toSorted` carried no origin
+and the parameter was not implicated.
+It is implicated now,
+ and correctly:
+ the parameter really does reach that call.
+
+Worth stating plainly,
+ because the temptation is to read four new reports as a regression.
+The finding is true.
+Whether the call should then be discharged is the escape question this document owns,
+ and it
+is a separate step from establishing that the parameter reaches the call at all.
+The same sequence happened two increments earlier,
+ where composing container relations added
+a finding that the locale channel then discharged.
+
+### The alias cap went, 2026-08-07
+
+The entry tracking this predicted a lost origin.
+Re-probing before touching it found half of it already gone and the other half worse than
+predicted,
+ which is why it was re-probed rather than worked from the description.
+
+Gone:
+ the element walk's own hop,
+ added by the composition,
+ has no cap,
+ so a nine-hop alias
+chain reaching a container records its origin now.
+
+Worse:
+ `containerElementReceiver` has a second caller,
+ `expressionValueOrigins`,
+ with no hop
+of its own,
+ and there the cap still governed.
+Chaining a container call through local aliases and writing through an element of the last:
+
+```text
+one alias, three aliases    referentMutated=[0]  opaque=[]
+seven aliases onward        referentMutated=[]   opaque=[]
+```
+
+Past the threshold the parameter is not merely unattributed.
+It carries no mutation and no opacity,
+ which is a clean parameter,
+ and the rule offers a
+clean parameter read-only while this one rewrites a row the caller owns.
+
+The count never made the walk terminate.
+Each step either answers or moves to a declaration initializer,
+ a file holds finitely many of
+those,
+ and the visited set beside it already refused a repeat.
+What the count did was truncate,
+ and its own comment named the consequence as "only withholds
+an origin".
+For this rule that is the whole of the problem rather than a mitigation of it:
+ withholding an
+origin withholds a charge,
+ every consumer of these origins only ever adds one,
+ and a parameter
+with no charge is a parameter offered read-only.
+
+Both bounds in this neighbourhood are now gone,
+ removed one increment apart so each could be
+attributed.
+No fixture accompanies this one.
+Removing a cap deletes a branch rather than adding one,
+ the existing alias cases already drive
+the loop,
+ and the threshold and its reason sit on the visited set where a reader tempted to
+reinstate a bound will be reading.
+
+#### What the alias cap removal measured
+
+Workspace either side:
+ errors unchanged at 2908,
+ warnings unchanged at 3902,
+ rule findings
+unchanged at 1570,
+ and the read-only offer set byte-identical at 34.
+No diagnostic moved.
+
+Wall time 10m31s against 10m of the increment before it,
+ slightly faster rather than slower.
+Both bounds in this neighbourhood were cost bounds by their own comments,
+ and removing both
+cost nothing measurable.
+That is the only cost data on either,
+ and it is worth having before a third conservatism in the
+same walk is considered.
+
+So this cleared nothing,
+ exactly like the chain cap before it.
+Chains of seven local aliases between a container call and a write do not appear in the
+corpus,
+ and the entry predicted that.
+What it removes is a way for the rule to be confidently wrong about code nobody has written
+yet,
+ in the direction that produces advice rather than noise:
+ not a missing report but a
+parameter offered read-only while the callable writes through it.
+
+### The value-origin pruning stays, 2026-08-07
+
+Raised by external review as an under-attribution hole,
+ confirmed by measurement,
+ and
+deliberately left alone.
+Recorded because "confirmed and not fixed" is easy to mistake later for "not noticed".
+
+`expressionValueOrigins` filters its successors through `expressionCanCarryMutableState`
+before traversing them,
+ so a selected operand whose declared type carries no mutable state is
+never followed.
+The reviewer's shape reaches a parameter behind exactly such an operand:
+
+```ts
+for (const raw of choose ? (rows as unknown as string) : '') {
+  (raw as unknown as Row).label = 'written';
+}
+```
+
+Measured,
+ with the honest iteration as the control:
+
+```text
+prunedSelector, prunedNullish   referentMutated=[]   opaque=[]
+honestIteration                 referentMutated=[0]  opaque=[]
+freshContainer                  referentMutated=[]   opaque=[]
+```
+
+The first line is a clean parameter on a callable that writes through it,
+ which is the state
+an offer is minted from,
+ so the hole is real on its own terms.
+
+What decided it was asking which shapes can reach it.
+Every honestly typed spelling attributes correctly:
+
+```text
+honestUnion      choose ? rows : 'abc'          referentMutated=[0]
+honestOptional   rows ?? []                     referentMutated=[0]
+widenedUnknown   const held: unknown = rows     referentMutated=[0]
+```
+
+The last is the one that settles it.
+`typeCanCarryMutableState` fails closed on `unknown` by its own documentation,
+ so widening
+does not prune,
+ and the only way through is to assert past `unknown` to a primitive.
+That is the canonical statement that the author knows better than the checker.
+
+So the hole is not reachable by writing ordinary code,
+ only by telling the checker something
+false.
+The whole rule rests on declared types,
+ and an author who writes `as unknown as` defeats any
+analysis built on them;
+ the pruning is type evidence used in the one direction its own comment
+permits.
+
+The available fix is to collect value origins at every node the element walk reaches rather
+than at containers and the root.
+That adds origins wherever the pruner currently declines,
+ across the corpus,
+ against a shape
+that requires a deliberate lie.
+Precision is what pays for the offers this rule does make,
+ so it is not spent here.
+
+### The reduce asymmetry, narrowed again, 2026-08-07
+
+Re-probed after the walk changes rather than assumed still to hold,
+ which is how two other
+entries in this document turned out to be stale.
+It survives all of them,
+ and the reproduction recorded for it was itself wrong about the cause.
+
+The entry said the asymmetry needed an accumulator holding the receiver's own elements.
+It does not.
+Holding the member and the chain fixed and varying only the accumulator:
+
+```text
+directFlat          chunks.reduce(fold, {n:0})               opaque=[]
+chainedFlat         chunks.slice(0).reduce(fold, {n:0})      opaque=[0]
+chainedFlatTwoHops  chunks.slice(0).toReversed().reduce(..)  opaque=[0]
+chainedMapFlat      chunks.slice(0).map(..)                  opaque=[]
+```
+
+The accumulator is `{ readonly n: number }`.
+It holds one number,
+ shares nothing with the receiver by construction,
+ and the chained form
+is still reported opaque while the identical fold on the parameter directly is clean.
+
+Two readings fall out of that.
+It is not about what the accumulator holds,
+ since a flat object triggers it,
+ though it is
+about the result being an object at all:
+ a number accumulator and a `readonly string[]` one
+are clean either way.
+And it is not about chained receivers generally,
+ since `map` over the same chain is clean.
+It is `reduce` on a chain.
+
+Which narrows where to instrument,
+ and the gate says where.
+`viewResultUnaccounted` documents `reduce` as the member with no result relation,
+ the case
+the aliasing fallback was kept for.
+So for `reduce` the observer, container and value arms are false by construction and
+`resultAliasesReceiverState` is what must be answering true.
+The open question is why it answers differently for a chained receiver when the result type is
+identical,
+ which points at how `elementTypes` are resolved for a view whose receiver is a call
+result rather than a name.
+
+Still not taken.
+Clearing this removes an opacity charge,
+ and removing a charge is the direction that mints
+offers.
+The report is a precision cost rather than a wrong answer,
+ since opacity withholds an offer,
+so it earns the same treatment as the discharge this document owns:
+ evidence that nothing
+unattributed escapes,
+ before anything is withdrawn.
+
+### The observer receiver landed, 2026-08-07
+
+Instrumenting the gate settled the mechanism the entry above could only narrow.
+Printing every arm for both forms of the same fold showed one difference and no others:
+
+```text
+chunks.reduce(fold, seed,)           observerDerived=true    clean
+chunks.slice(0,).reduce(fold, seed,) observerDerived=false   opaque
+```
+
+Everything else matched:
+ `exposes` true both times,
+ container and value arms false both times,
+the aliasing fallback false both times,
+ element types `string` both times,
+ result type
+identical.
+So `resultAliasesReceiverState` was not answering after all,
+ which the entry above had reasoned
+its way to;
+ the first arm was firing because no arm was true.
+
+The refusal turned out to be deliberate and documented rather than missing.
+`callResultComesFromObserver` refuses a fold whose receiver is itself a call,
+ because the
+elements folded may have come from a call this analysis cannot see into,
+ and
+`Object.entries(root,).reduce(fold, seed,)` is the case recorded on it.
+
+Blunt rather than wrong.
+It refused every call receiver,
+ including one carrying a verified element relation,
+ which
+says exactly what it holds:
+ its own receiver's elements.
+A fold on that sees what a fold on the named receiver sees.
+Narrowed to receivers whose elements are genuinely unknown,
+ `Object.entries` and
+`Object.values` stay refused and the chained form agrees with the direct one.
+
+Not a discharge,
+ which matters for how much evidence it needs.
+Making the observer arm true routes the fold to the handling the named-receiver form already
+gets,
+ where `propagateElementApplications` marks the receiver opaque when the observer hands
+an element back.
+An earlier note on this thread claimed it needed the escape-sufficiency evidence the return
+discharge needs.
+It does not,
+ and the two are not coupled.
+
+#### What it measured
+
+Workspace either side:
+ 2908 errors to 2906,
+ 1570 rule findings to 1568,
+ warnings unchanged
+at 3902,
+ and the read-only offer set byte-identical at 34,
+ none appearing,
+ moving or
+withdrawing.
+Wall time 10m35s.
+
+The offer set was the gate rather than a formality here.
+Every increment before this one added charges;
+ this one removes them,
+ so an offer appearing
+was possible for the first time.
+None did.
+
+Four findings cleared and two returned at the same two locations with fewer calls named,
+ so
+two cleared outright.
+Both check out:
+
+- `retainNewest` in `package/pi-plugin/goal/src/review-contract.ts` folds `readonly string[]`
+into an accumulator holding `readonly string[]`.
+ Elements and accumulator are primitive
+throughout,
+ so no caller-owned object is reachable and the opacity described nothing.
+- The second is its caller,
+ inheriting the same opacity transitively.
+
+#### The prediction that was wrong
+
+This thread expected `package/module/toml-edit/src/value-materialize.ts` to clear,
+ and it did
+not.
+That expectation was wrong rather than unfulfilled.
+Its accumulator is
+`{ readonly cursor: Record<string, unknown>; readonly frames: readonly DescentFrame[] }`,
+ a
+cursor descending into caller-owned state,
+ and the observer carries `@mutates acc` because
+`Object.hasOwn` can reach proxy descriptor hooks through it.
+That fold really does carry caller state,
+ so its receiver stays opaque and should.
+
+Which is the reassuring half of the measurement.
+The narrowing cleared folds over primitives and left the fold that touches caller state alone,
+without either outcome being asked for by name.
+
+### The discharge, scoped rather than built, 2026-08-07
+
+This document owns the discharge and has deferred it three times.
+Scoped properly here,
+ with the variant chosen and a cost that only appeared once the
+mechanism was read.
+
+The current state,
+ re-probed rather than taken from the earlier entry:
+
+```text
+returnsContainer      opaque=[0]  returned=[0]  referentMutated=[]
+writesThroughReturn   opaque=[0]  returned=[]   referentMutated=[0]
+readsLengthOnly       opaque=[0]  returned=[]   referentMutated=[]
+storesContainer       opaque=[0]  returned=[]   referentMutated=[1]
+localOnly             opaque=[]   returned=[]   referentMutated=[]
+```
+
+`localOnly` is the line that matters for framing.
+A container that never leaves is already clean,
+ so the charge is about escape and nothing
+else,
+ and `writesThroughReturn` shows that an in-program caller does substitute through
+`directReturned` and does attribute the write.
+
+So the precondition the charge names is met for callers this analysis can see.
+`effect-result-escape.ts` states the charge exactly:
+ returning parameter-reachable state is
+benign by accepted policy,
+ "that policy is about the callee not being blamed,
+ not about the
+value becoming untracked:
+ until a caller substitutes through `directReturned`,
+ a returned
+result is still a use this analysis cannot follow".
+
+That is a precisely reasoned charge rather than a blunt one,
+ which is the difference between
+this and the observer guard narrowed earlier today.
+The observer guard refused a case its own reason did not reach.
+This one refuses exactly what its reason describes,
+ so the way through is to prove the
+caller-side precondition rather than to narrow the guard.
+
+#### The predicate already exists
+
+`foreign-borrowed-complete-graph.ts` enumerates inbound callers through TypeScript signature
+usage,
+ and represents incompleteness by adding a synthetic caller,
+`\0unknown-inbound:<calleeKey>`,
+ whenever the usage query is unavailable or a usage will not
+resolve.
+A synthetic edge rather than a boolean,
+ so uncertainty propagates through the fixed point
+instead of depending on every reader remembering to check a flag.
+
+That is the "all callers resolve" predicate,
+ already built and already trusted for ownership
+inference.
+
+#### The cost that appeared on reading it
+
+The graph is demand-bounded.
+It is built for foreign-borrowed candidates only,
+ and each callable in it costs a signature
+usage query that the analysis budget times by name.
+Consulting it for every callable's escape decision means whole-program signature enumeration,
+which is a different order of cost from anything landed today,
+ against a sweep currently
+running about ten and a half minutes.
+
+So the shape to build is the demand-bounded one:
+ ask the expensive question only for callables
+that actually record returned container origins,
+ which is a small fraction of the program and
+the only place the answer can change a verdict.
+
+#### One cheap subset considered and rejected
+
+"Not exported" is tempting and is not sufficient.
+A callable that is not exported can still be handed to external code as a callback,
+ or reached
+through an exported object,
+ so its callers are not all visible merely because its name is not.
+Any cheap variant needs callable-escape analysis,
+ which is the same class of work as the
+question it was meant to avoid.
+
+#### Direction
+
+Unchanged and worth repeating,
+ because every increment landed today ran the other way.
+This removes a charge.
+Every other change this session added them,
+ which is why their offer sets could not move for
+structural reasons;
+ here an offer appearing is genuinely possible,
+ and the offer set is the
+gate rather than a formality.
+
+#### Reading the decision point changed the plan
+
+Three things settled the shape,
+ each read rather than assumed.
+
+The predicate is not reachable from where the decision is made.
+`readonlyViewElementApplications` holds the project,
+ the checker,
+ the enclosing body and an
+optional analysis root,
+ and nothing that reaches the inbound graph.
+Consulting it there means threading the summaries,
+ the analysis budget and the indexed
+sources down into the view layer,
+ which is the wrong shape for a question asked about a
+declaration rather than about a call.
+
+The opacity cannot currently be traced back to this cause.
+`effect-opaque-boundary.ts` sets its provenance to `effectCallName(call.expression,)`,
+ the
+call's own name such as `rows.slice`,
+ rather than a category.
+So a later pass cannot tell opacity charged for a returned result from opacity charged for
+any other unresolved call,
+ and a post-pass has nothing to select on.
+
+Both point at the same plan,
+ and it is cheaper than threading anything.
+Record a distinguishable category when the refusal is specifically that the result escapes by
+return while its origins are recorded.
+Then add a pass over summaries that withdraws opacity whose only cause is that category,
+ for
+callables whose inbound enumeration finds no synthetic unknown caller.
+
+The demand bound falls out rather than being imposed.
+The expensive signature query is asked only for callables that both record returned container
+origins and carry that category,
+ which is a small fraction of a program,
+ and it is asked
+about the declaration once rather than about every call in its body.
+
+### The discharge was built, measured and reverted, 2026-08-07
+
+Reverted for reach rather than for a defect in the condition.
+Recording it in full,
+ because the design is proven on the shapes it was written for and the
+next attempt should not rediscover any of this.
+
+Two predicates,
+ asked at the decision point rather than through a post-pass:
+ whether the
+result leaves solely by being returned,
+ and whether every caller of the enclosing callable is
+one TypeScript can enumerate and resolve.
+The second is one checker call,
+ `getSignatureUsage`,
+ measured at one to two milliseconds per
+declaration on workspace source,
+ which is what made the post-pass and its plumbing
+unnecessary.
+
+It behaves correctly on the shapes it targets:
+
+```text
+returnsContainer     opaque=[0] -> []   returned=[0]
+writesThroughReturn  referentMutated=[0] before AND after
+storesContainer      opaque=[0] kept, "stored into sink.held"
+returnsThenStored    opaque=[0] kept, same
+readsLengthOnly      clean;  localOnly  clean
+```
+
+The second line is the acceptance test and it passes.
+Discharging the callee does not lose the caller's write:
+ it is still attributed to the
+caller's own parameter,
+ so the change trades a report for an attribution rather than for
+silence.
+
+#### Two findings worth keeping
+
+There are two gates asking the escape question,
+ not one.
+Changing `effect-view-result-gate.ts` alone did nothing at all,
+ because
+`effect-collection-member-effect.ts` asks the same question for the same discharge,
+ and the
+opacity provenance recorded on the summary is what showed which one was still charging.
+
+`valueConsumer` returns the value node rather than its consumer.
+`effect-result-escape.ts` takes the parent of that node to name the position,
+ and testing
+the returned node directly never matches a return statement.
+
+#### Why it went back
+
+The reach is far wider than the shape this thread is about.
+Fixture diagnostics fell from sixteen to thirteen and from eighteen to fourteen,
+ and the
+pinned effect list in `effect-summaries.unit.test.ts` changed on callables having nothing to
+do with returned containers.
+
+That list is the one `effect-collection-member-effect.ts` names when it says landing this
+discharge while the attributions were empty "would produce a false offer,
+ which is what
+`effect-summaries.unit.test.ts` pins".
+A change to it is the signal that test exists to give,
+ and accepting it by updating a number
+would remove the guard rather than satisfy it.
+
+So the next attempt is a review job rather than a coding job.
+Rebuild the predicates,
+ change both gates,
+ then decide every changed pin and every vanished
+diagnostic one at a time before any count is touched,
+ and only then sweep.
+Worth trying first:
+ a narrower condition requiring the returned expression to be the call
+itself rather than merely reaching a return,
+ which would shrink the blast radius to the shape
+this document is actually about.
+
+#### The narrower condition, tried and measured
+
+Written because the first attempt's reach looked like an artifact of how the position was
+tested.
+It was not,
+ which is worth more than the narrowing was.
+
+The first form asked `valueConsumer` for the position and tested its parent,
+ which ascends
+through every step that passes a value outward and so admits a call reaching a return from
+other positions.
+The second required the call to be the returned expression itself,
+ `return rows.slice(0,);`
+and nothing looser.
+
+```text
+wide     fixture counts 16 -> 13 and 18 -> 14,  pinned effect list changes
+narrow   fixture counts 16 -> 13 and 18 -> 15,  pinned effect list changes
+```
+
+One diagnostic came back and the guard still trips.
+So the reach is not an artifact of the loose position test,
+ and tightening the position
+further is not the lever.
+Both forms discharge the target shapes correctly and keep the caller's write attributed,
+ so
+what is left is not a question about the condition at all.
+
+It is a question about roughly a dozen pinned effects and three fixture diagnostics,
+ each of
+which has to be decided on its own terms:
+ whether every write is still charged to the
+parameter,
+ and whether the discharge is right for that shape.
+That list does not exist yet,
+ and producing it is the first thing the next attempt should do,
+before any code is kept.
+
+#### The blast radius, enumerated
+
+The reach that reverted this twice turned out to be six diagnostics and one pinned effect,
+not the dozen the earlier entry guessed at.
+Enumerating it took one probe over the pinned list and a lint task per fixture,
+ and it
+converts the remaining work from a review of unknown size into three named decisions.
+
+One pinned effect changed out of fifty-three,
+ and it is correct.
+`objectArraySortCallbackEffect` goes from `opaque=[0]` to clean while recording
+`returned=[0]`,
+ so what it trades is an unexplained opacity for a precise fact about where
+its result came from,
+ which callers substitute through.
+That is the property the discharge has to have.
+
+Three went quiet in the result-provenance fixture,
+ and two of them are the ones this document
+predicted would.
+The entry recording the returned-container trio said they are "here as the shape the deferred
+discharge would clear",
+ with the condition that "the write attribution asserted for them in
+`effect-summaries.unit.test.ts` has to survive:
+ a discharge that empties both is the failure".
+It survives.
+The third,
+ `returnedLookupEffect`,
+ hands back the receiver's own value through
+`facts.get(key,)` and wants the same check applied before it is accepted.
+
+#### The exclusion the enumeration found
+
+The other three are all `ForeignBorrowed` parameters,
+ and they are the reason this cannot land
+as written.
+
+```text
+filterForeignFixtureTree
+filterAliasedForeignFixtureTree
+sortForeignFixtureTree
+```
+
+`effect-opaque-boundary.ts` names the first two directly.
+Its comment records that they "lost their finding entirely" once before,
+ diagnosed as a
+defect and fixed by asking the element question about an unresolved receiver.
+Discharging them now reintroduces precisely that loss.
+
+Which is the right answer rather than an obstacle.
+`ForeignBorrowed` marks an ownership boundary,
+ and a container returned out of foreign-owned
+state is not something an in-program caller can be trusted to account for,
+ however completely
+that caller enumerates.
+The discharge needs an exclusion for it,
+ and with one the three findings should return while
+the six correct outcomes stay.
+
+So the next attempt is the two predicates,
+ both gate edits,
+ that exclusion,
+ and then a
+justified update of two counts and one pin rather than a bare renumbering.
+
+### The discharge reduced to one question, 2026-08-07
+
+Built again against the enumerated blast radius,
+ and every mechanical objection to it is now
+answered.
+What is left is a design question that no measurement settles.
+
+Three conditions,
+ and each was found by measuring rather than designed:
+
+- the call must be returned outright;
+- the base of its receiver chain must not be foreign-borrowed,
+ descending through composed
+member calls **and** through declaration initializers,
+ because
+`filterAliasedForeignFixtureTree` binds its copy first and stayed silenced when only calls
+were descended;
+- its callers must be enumerable,
+ all resolvable,
+ and **non-empty**.
+
+The last is the one worth keeping.
+`every` over an empty enumeration is true,
+ so a callable with no caller in the program
+discharged vacuously,
+ and a callable with no caller in the program is exactly the one whose
+callers cannot be seen:
+ an exported `returnedLookupEffect` handing back a `Set` its caller
+owns has consumers no enumeration in this repository reaches.
+Requiring a caller means the discharge rests on substitution that demonstrably happens rather
+than on absence of evidence.
+
+With all three,
+ the reach is two diagnostics.
+`writesThroughReturnedContainer` and `writesThroughComposedContainer` go quiet and both keep
+`referentMutated=[0]`,
+ which is the trade this document asked for.
+The pinned effect list and the catalog-free fixture are byte-identical to baseline.
+
+#### What blocks it
+
+Three read-only offers appear,
+ all naming `rows` on the callables that return caller
+elements.
+Offers appearing is this rule's guarded failure,
+ and
+`prefer-readonly-parameter-type.unit.test.ts` asserts that none do.
+
+Its comment anticipated them:
+ "No lookup receiver is offered read-only yet,
+ not even
+`readOnlyLookupEffect`'s,
+ which only reads:
+ that awaits the discharge,
+ not the attribution."
+Foreseen,
+ and never decided.
+
+The question is whether a callable that returns caller-owned state may have its parameter
+offered deeply read-only.
+It writes nothing itself,
+ so the offer is true of its own body.
+But the effect of taking the offer is to make what it returns deeply read-only,
+ which is
+exactly how a caller is stopped from writing through the value it hands back.
+
+Answer yes and the three offers are correct and this lands.
+Answer no and the escape charge has to survive for any callable whose result carries receiver
+elements,
+ which makes this task unlandable as conceived and it should be closed rather than
+deferred again.
+
+The module is kept in the scratch notes on the task,
+ finished,
+ pending that answer.
+
+### Suppressing the offer, built and measured
+
+The mechanism the third option named does exist,
+ and it was smaller than expected.
+
+`verifier.ts` has one offer gate,
+ and `retained` already sits in it as a fact that "gates the
+offer and nothing else".
+A sibling fact,
+ `returnedOutward`,
+ reading the `returnedParameterIndexes` set that was already
+computed and had no production consumer at all,
+ drops into the same position.
+So the report can be cleared while the offer stays withheld,
+ which is exactly what was asked
+for.
+
+What it does not do is discriminate.
+
+```text
+suppressed as intended   the returning callables the discharge clears
+suppressed wrongly       packageRowShorthand and packageRowExplicit
+appeared, and correct    readsReturnedContainerLength
+```
+
+The middle line is the problem,
+ and it is a conflict rather than a bug.
+`prefer-readonly-parameter-type.unit.test.ts` records a judgement on those two:
+ "both are
+correct:
+ neither `packageRowShorthand` nor `packageRowExplicit` writes the row it packages,
+ so
+each earns the offer".
+
+`packageRowShorthand` returns `{ held, }`.
+`returnsReceiverElements` returns `rows.slice(0,)`.
+Both hand caller-owned state outward and neither writes it.
+If the first earns an offer,
+ the second is hard to refuse,
+ and the repository has therefore
+already half-answered the question that blocked this.
+
+The last line supports the same reading.
+`readsReturnedContainerLength` only reads a length,
+ gains an offer,
+ and the assertion
+forbidding such offers says in its own comment that this one "awaits the discharge".
+
+So the choice is between accepting that family of offers as correct and adjudicating the
+three,
+ or finding a fact narrower than "this parameter's state is returned":
+ one that
+separates handing back the caller's own elements from packaging the parameter into a fresh
+holder.
+That distinction is real,
+ the elements being the caller's objects while the holder is not,
+ and
+`returnedParameterIndexes` does not carry it.
+
+The blunt form must not land either way,
+ because it withdraws two offers this repository has
+already decided are correct.
+
+### The discharge landed, 2026-08-07
+
+Three requirements,
+ each found by measuring rather than designed:
+ the call is returned
+outright;
+ the base of its receiver chain,
+ descended through composed member calls and through
+declaration initializers,
+ is not foreign-borrowed;
+ and its callers are enumerable,
+ all
+resolvable,
+ and non-empty.
+
+Two reports clear,
+ and both keep `referentMutated=[0]`,
+ so each trades a report for an
+attribution rather than for silence.
+The pinned effect list and the catalog-free fixture are byte-identical.
+
+#### The offers were accepted by extending a judgement, not by applying one
+
+Worth stating plainly,
+ because the commit that landed this says the three offers "rest on
+the judgement this fixture already records for the packaging pair",
+ and a reader who checks
+that comment will find it does not mention returned containers at all.
+
+The recorded judgement is about `packageRowShorthand` and `packageRowExplicit`:
+ neither writes
+the row it packages,
+ "so each earns the offer".
+It was written about shorthand value-symbol provenance,
+ a different mechanism from this one.
+
+What was done here is to extend it.
+Those two return caller-owned state in a fresh holder;
+ `returnsReceiverElements` returns it
+in a fresh container;
+ and none of them writes anything.
+Refusing the second while allowing the first would make the rule's answer depend on the shape
+of the wrapper rather than on what the callable does,
+ which is not a distinction the rule
+makes anywhere else.
+
+That is an inference rather than a precedent,
+ and it is the load-bearing step in accepting
+three offers where this rule had never emitted one.
+Anyone revisiting the decision should weigh it as such.
+
+#### What the guarded failure means for this increment
+
+It has to be restated for this one change,
+ because the standing form of it would reject
+something deliberately accepted.
+
+Every other increment this session added charges,
+ so a new offer meant the reasoning was
+wrong.
+This one removes a charge and mints offers by design,
+ so the test becomes whether each new
+offer names a callable that writes nothing,
+ and whether callers that write through a returned
+result still report.
+An offer on a parameter with a recorded write would be the failure,
+ and would mean the
+discharge is firing where substitution does not happen.
+
+### Four fail-open branches, found by review rather than by measurement
+
+The workspace sweep after the discharge landed was byte-identical in its offer set,
+ and that
+turned out not to be evidence of soundness.
+It is evidence that the workspace contains none of the shapes below,
+ which is a different
+claim,
+ and the fixture where the discharge does fire exercised none of them either.
+So the discharge shipped with no test covering any branch that decides it.
+
+A review pass over the whole helper found four,
+ each confirmed against source before being
+believed,
+ and each in the direction that mints a wrong offer.
+
+#### The return had to belong to the callable whose callers were counted
+
+`callIsReturnedOutright` tests that a call's parent is a `ReturnStatement`.
+It does not test whose.
+Callers are enumerated for the body the gates hand in,
+ so:
+
+```ts
+function outer(rows: Row[],): () => Row[] {
+  function inner(): Row[] {
+    return rows.slice(0,);
+  }
+  return inner;
+}
+```
+
+discharges `inner`'s return on `outer`'s callers.
+They substitute for `outer`,
+ whose result is a callable and not a container,
+ so no caller
+accounts for a write through what `inner` later hands back.
+`returnsFromNestedCallable` in the provenance fixture is the program,
+ and it keeps its report
+while its two siblings,
+ differing only in where the `return` is written,
+ keep their offers.
+
+The ascent answering this is the one `resultEscapesCallable` already had for its own reason,
+so it moved to `effect-enclosing-callable.ts`.
+The two had disagreed about the case neither reaches:
+ the escape test answered "not nested"
+on running off the root,
+ which is permissive,
+ where this needs the conservative answer.
+Unified on the conservative one.
+
+#### The declaration hop was borrowed from a walk with the opposite failure direction
+
+`bindingDeclarationInitializer` resolves a declaration initializer and ignores later
+assignment.
+Its own doc calls that "the over-attributing direction and deliberate",
+ correctly:
+ a
+reassigned local keeps answering for the container it was declared with,
+ which costs
+precision and never an offer.
+
+Read backwards for a proof that a receiver is *not* foreign-owned,
+ the same property is
+unsound,
+ and `filterReassignedForeignFixtureTree` answers clean two separate ways.
+Following the hop reaches the owned array the binding was declared with.
+Stopping at the name instead reaches a name carrying the type that array gave it.
+Only refusing a reassignable binding outright reports it,
+ which is why the fix is
+`bindingIsReassignable` rather than a `const`-only hop:
+ a hop returning one sentinel cannot
+distinguish a parameter,
+ which must be classified,
+ from a reassignable local,
+ which must not.
+
+`declaredConst` already carried this argument for the container record against the same `let`
+shape,
+ and moved beside the hop it guards.
+
+#### The receiver-chain descent read syntax where it needed provenance
+
+Every member call was descended without asking what its result is made of.
+`owned.map(lift,).slice()` reaches `owned`,
+ reports a clean base,
+ and every element of the
+returned container came from the observer.
+`map` and `flatMap` carry no receiver relation for exactly that reason,
+ so requiring one
+turns the assumption into a test.
+`filterMappedForeignFixtureTree` is the program.
+
+#### An unresolved base was skipped rather than refused
+
+When the descent ended at `NO_MEMBER_RECEIVER` the ownership test was not run at all,
+ which
+reads an absent answer as a clean one.
+
+This one has no discriminating program and is recorded as an invariant rather than as a
+measured fix.
+The relation requirement rejects the same shapes earlier,
+ since a call reaching the sentinel
+is a call whose callee names no member and therefore carries no receiver relation either.
+A fixture written for it produced no diagnostic either way and was removed rather than kept as
+a control that controls nothing.
+
+### Known limitations left in place, with the argument for leaving them
+
+`callersAllResolve` tests that each enumerated usage resolves.
+That is an AST-resolution test,
+ not a substitution test,
+ and the difference is real:
+
+```ts
+export function copyRows(rows: Row[],): Row[] {
+  return rows.slice();
+}
+
+void copyRows([],);
+```
+
+The in-project call makes the enumeration non-empty and resolvable.
+A consumer outside the repository can then write `copyRows(rows,)[0].value = 1`,
+ and no
+substitution attributes it.
+
+Left as it is,
+ and the reason is consistency rather than comfort.
+`completeForeignBorrowedGraph` already treats "every usage TypeScript can enumerate resolves"
+as completeness,
+ and adopting a stricter notion here alone would leave the two mechanisms
+disagreeing about identical callables.
+Tightening it means deciding the export-visibility question for the ownership inference too,
+which is a separate change touching a separate fixed point.
+
+Two smaller ones share that status.
+An overloaded callable resolves each call to the selected overload signature while the body
+belongs to the implementation,
+ so the discharge is safe only if both canonicalize to one
+summary key,
+ which nothing here tests.
+And a call through an interface method resolves to the interface's declaration rather than to
+any implementation,
+ so discharging one implementation would require a closed dispatch set.
+Neither is a branch to patch in this file.
+
+### What the guards measured
+
+Workspace sweep after all four:
+ the rule's 1557 findings and 34 offers are byte-identical to
+the sweep before them.
+The one error of difference is `no-import-type-side-effects` on
+`effect-container-literal-holder.ts:7:1`,
+ left behind when `NodeFlags` moved out of that
+file and fixed after the sweep was launched.
+
+That is the expected result and not a weak one.
+These branches were found by reading the helper rather than by measuring it,
+ precisely
+because the workspace holds none of the shapes:
+ no returned member call in the corpus sits
+inside a nested declaration,
+ travels through a reassignable local,
+ or takes its base from a
+mapped container.
+A sweep can only report the shapes present in what it sweeps,
+ so it confirms that the guards
+cost nothing and cannot confirm that they were unnecessary.
+
+The fixtures are where they are decided.
+The catalog-free fixture goes from sixteen findings to twenty and the provenance fixture from
+sixteen to seventeen,
+ and each added report is a discharge that the unfixed code granted.
+
+### The third gate asking the escape question, and why it does not get the discharge
+
+`resultEscapesCallable` has three callers,
+ not the two the discharge was fitted to.
+The third is the verified-reader path in `effect-call-analysis.ts`,
+ which asks it with
+`elementStepsAttributed: false` and consults no discharge.
+
+That asymmetry is deliberate now that it has been looked at,
+ and it is the conservative
+direction:
+ the reader path keeps a boundary the collection path releases,
+ so it charges more
+rather than fewer.
+Two independent reasons say it should stay that way.
+
+The ownership question is about a different node.
+A reader takes its caller-owned value as an argument rather than as a receiver,
+ which is the
+distinction that path exists for.
+`returnedResultDischargeable` descends the receiver chain through `memberCallReceiver`,
+ so on
+`Object.keys(rows,)` it would classify `Object`,
+ find nothing foreign about it,
+ and discharge
+on the ownership of a node that carries none of the state in question.
+Applying the helper here unchanged would not extend the discharge;
+ it would add a fifth
+fail-open branch.
+
+And the element attribution the discharge rests on is absent.
+The collection path passes `elementStepsAttributed: true` because a write through `copy[0]`,
+a destructured element,
+ an iterated one or a spread one is attributed to the receiver's
+parameter,
+ and that attribution is what makes trading the report for tracking honest.
+The reader path passes `false`,
+ with the note that nothing walks the elements of a call result
+reaching an argument,
+ so the same trade there would be a report exchanged for silence.
+
+Extending the discharge to readers is therefore a separate piece of work needing an
+argument-chain descent and element attribution on that path,
+ not a third call added to the
+existing helper.
+
+### Which part of the shared ascent is asserted rather than measured
+
+Moving the ascent into `effect-enclosing-callable.ts` changed one answer in
+`resultEscapesCallable`,
+ and it is worth naming because it is the least-verified thing in the
+change.
+
+The old `enclosedByNestedCallable` answered false when the walk ran off the root,
+ meaning
+"not nested",
+ which lets the escape scan continue.
+The shared form answers "not written directly in this body",
+ which that caller reads as
+nested,
+ so the reference is treated as escaping.
+Permissive to conservative,
+ which is the safe direction for a charge,
+ but still a changed
+answer on a hot predicate.
+
+The argument that no caller can observe it is the claim the replaced comment made:
+ "every
+caller passes a node inside `body`".
+That is an assertion inherited from the code being replaced,
+ not something proven here.
+
+The evidence that it is at least not observable in practice is the sweep:
+ 1557 findings and
+34 offers byte-identical across the whole workspace,
+ where a reachable difference in a
+predicate consulted for every result holder in every scanned callable would be unlikely to
+leave every verdict intact.
+That is strong for absence and is not proof,
+ since a reachable off-root walk could exist
+whose answer no final verdict depends on.
+
+Anyone changing this should know the inversion rests on those two things together and on no
+direct test,
+ because no fixture reaches the root.
+
+### Correction: none of the guards has a program that isolates it
+
+An earlier section here says the guard fixtures "each keep a report that was discharged
+before".
+That is wrong,
+ and the commits that landed them say the same wrong thing.
+Recorded rather than quietly fixed,
+ because the error is the interesting part.
+
+Measured 2026-08-07 by neutralising each guard's condition in turn and re-running the
+fixtures.
+Every guard,
+ including the containment check,
+ leaves its intended program's diagnostics
+byte-identical.
+Six programs were written across two fixtures to isolate them and not one does.
+
+The reasons differ and both are instructive.
+Two were written into the catalog-free fixture,
+ where the receiver is `ForeignBorrowed`,
+ so
+they take the opaque boundary and never reach the discharge at all.
+Four more were written into the provenance fixture,
+ where the discharge does fire,
+ and were
+refused by the non-empty caller requirement instead,
+ having no caller in the fixture.
+Adding a caller for each did not change the answer either:
+ the parameters stay charged by
+paths that never consult the discharge.
+
+So the guards are defence in depth,
+ not fixes with a failing case behind them.
+Each closes a branch confirmed by reading the source,
+ each fails closed,
+ and the workspace
+sweep says each costs nothing.
+None is known to change an outcome on any program,
+ and the honest reading is that this
+analysis charges these shapes through several independent paths,
+ so removing one wrong
+discharge among them is not observable from the outside.
+
+That is worth keeping in mind before writing the next guard here.
+A fixture that answers the same with and without the code it was written for tests that code
+not at all,
+ and a passing count next to it reads exactly like evidence while being none.
+The two removed vacuous fixtures and the corrected comment on `returnsFromNestedCallable` are
+there so a later reader does not have to rediscover this.
+
+The general lesson has a sharper form.
+This session repeatedly found that measurement answered a different question from the one
+asked:
+ the byte-identical sweep looked like proof the discharge was sound and was only proof
+the workspace lacked the shapes,
+ and a passing fixture count looked like proof a guard worked
+and was only proof the count had not moved.
+Both failures share a shape,
+ which is reading the absence of a difference as evidence for the
+mechanism you happened to be thinking about.
+
+### Final sweep
+
+3902 warnings and 2895 errors,
+ 1557 rule findings,
+ 34 offers,
+ all byte-identical to the
+sweep before any of the seven guards landed.
+
+Wall time 10m53s,
+ against 10m57s for the previous sweep and 11m10s for the one before it.
+Worth stating because `bindingAssignedWithin` walks the whole body at every discharge endpoint
+where the previous code did a symbol lookup,
+ and the concern was that this sits next to
+issue #374,
+ which wants a warm whole-repo run under sixty seconds.
+The walk is not measurable against sweep noise,
+ so it adds nothing that issue has to account
+for.
+
+### Correction to the correction: the probe harness was blind
+
+The retraction recorded above says no guard has a program that isolates it,
+ measured by
+neutralising each guard and re-running the fixtures.
+Those runs went through the `lint-fixture-readonly-*` tasks in
+`package/test-fixture/oxlint-no-restricted-syntax/mise.toml`,
+ which lint one file on its own.
+
+A single file is its own program.
+`getSignatureUsage` therefore finds no callers for anything in it,
+ `callersAllResolve`
+refuses on the empty enumeration,
+ and the discharge returns false before any of its own
+conditions are reached.
+Every probe run there reports no difference for any change to this feature,
+ including
+disabling the feature outright,
+ which is what those runs actually showed.
+
+The unit suite is the valid harness and disagrees plainly.
+It pins three offers from the discharge in `prefer-readonly-parameter-type.unit.test.ts`,
+ and
+requiring closed-world callers takes that assertion from three to zero while the fixture count
+goes from seventeen to nineteen.
+Same fixture,
+ same guards,
+ opposite answer:
+ the feature is live there and inert through the
+task.
+
+So two claims have to be withdrawn,
+ not one.
+The first is the original claim that the guard fixtures discriminate.
+The second is the retraction of it.
+Both were measured through a harness that cannot observe this feature at all,
+ which makes the
+question open rather than settled in either direction.
+
+What a valid test needs is now known.
+The program has to be reached by the discharge,
+ which means it must not be exported,
+ since
+`callersAreEnumerable` refuses every exported callable,
+ and it must have an in-file caller,
+since the empty enumeration is refused.
+It has to be exercised through the unit suite rather than through a per-file task.
+None of the six programs written for these guards met the first two conditions and none was
+run under the third.
+
+The general failure is worth naming twice over,
+ because it recurred within one session after
+being written down.
+A measurement that reports no difference is evidence only once you know the harness could have
+shown one,
+ and neither the sweep,
+ the fixture count,
+ nor the per-file task was ever checked
+against that.
+
+### What requiring closed-world callers cost, measured
+
+Workspace sweep on a cold cache:
+ 2898 errors against 2895,
+ 1560 rule findings against 1557,
+ 34 offers to 35.
+
+Two of the three added findings are restored charges,
+`package/cli/mutation-test/src/engine/suppression.ts:229:38` and
+`package/desktop-app/file-manager-electron/src/listing-sort.ts:103:3`,
+ which is the direction
+a stricter completeness requirement is supposed to move.
+
+The third is an offer,
+ and an offer appearing is the guarded failure's own signature,
+ so it
+was adjudicated rather than accepted.
+`stateMatches` in `package/desktop-app/electron-infra/src/wayland-state.ts` takes
+`expected: ExpectedObservedState`,
+ which is `JsonObject` and carries a writable index
+signature.
+It reads the parameter through `Object.entries` and compares values;
+ nothing in the file
+writes it.
+So read-only describes what the callable does and the offer is correct.
+
+Why it appeared is the interesting half.
+The parameter previously carried *inferred* foreign provenance,
+ which suppressed the offer.
+Requiring complete inbounds makes the ownership graph record an unknown inbound instead,
+ and
+an unknown inbound rejects inferred provenance,
+ so the parameter is now treated as the
+ordinary value it is.
+Strengthening the predicate therefore adds charges on one side and removes a foreign
+inference on the other,
+ and only the first was expected.
+
+Worth carrying forward:
+ this predicate is shared by a mechanism that adds charges and one
+that removes them,
+ so tightening it moves the output in both directions at once.
+The reasoning that "stricter is always safer" does not survive contact with that,
+ which is
+the same shape as the reasoning it replaced.
+
+### The fixture cost, and the control that makes it readable
+
+All three offers the discharge made in the provenance fixture are gone,
+ because every callable
+there is exported.
+`localReceiverElements` and `readsLocalContainerLength` were added unexported,
+ and are
+offered,
+ which is what distinguishes a scoped feature from a dead one.
+
+That pair is also the first assertion in this repository that fails if the returned-result
+discharge stops working.
+Everything written for it before was exported,
+ run through a per-file task,
+ or both.
+
+### Two of the guards do have a failing case after all
+
+The withdrawal above left the question open in both directions.
+It is now settled for two of the seven,
+ and settled the other way:
+ they discriminate.
+
+`localReassignedElements` and `localRepointedElements` are the positive control with one
+statement added.
+The first holds its rows in a `let` pointed at the other parameter before the member runs;
+ the
+second points the parameter itself.
+Neutralising the reassignable-binding guard offers four parameters that must not be offered,
+and neutralising the written-endpoint guard offers four more.
+Checked in both directions:
+ the unit suite fails with either guard removed and passes with it
+restored,
+ so these are regression tests rather than counts that happen to match.
+
+What made this possible was not a better program but a usable one.
+Every earlier attempt was exported,
+ so `callersAreEnumerable` refused it before any guard was
+consulted,
+ and each was probed through a per-file task where the discharge is refused before
+that.
+Unexported,
+ with an in-file caller,
+ run through the unit suite:
+ the same three conditions the
+positive control needed,
+ and the same three every future probe of this feature will need.
+
+Four remain untested,
+ and two of those look unreachable rather than merely untested.
+The wrapper unwrap was the fifth and is settled below;
+ it discriminates.
+The relation guard was retested here and does not discriminate,
+ because `owned.map(...)`
+charges its receiver through the observer path whatever the discharge decides.
+The unresolved-base guard is rejected earlier by the relation requirement,
+ and the cycle guard
+needs an alias cycle that ordinary code reaches only through a temporal dead zone.
+
+The honest summary of the whole sequence is that the claim was right,
+ the retraction was
+wrong,
+ and the withdrawal of the retraction was right to reopen it.
+Three of those four steps were caused by measuring through something that could not observe
+the thing being measured,
+ and the fix each time was a control:
+ a program known to move when
+the code moves.
+
+### The containment guard is masked, not merely untested
+
+Retried under all three conditions the positive control established:
+ unexported,
+ with an
+in-file caller,
+ through the unit suite.
+Neutralising it changes nothing,
+ and the reason is in `effect-result-escape.ts` rather than
+in the discharge.
+
+A reference inside a nested callable is treated as escaping by that test outright,
+ on the
+stated ground that a captured use outlives its reasoning about statement order.
+So a parameter reached from inside `inner` is charged whether or not the discharge refuses,
+and the containment guard cannot be the deciding step for any program of that shape.
+
+That puts it with the relation guard,
+ the unresolved-base guard and the cycle guard:
+ three
+of the five remaining are masked or unreachable rather than waiting for a better program.
+Only the wrapper guard is untested in the ordinary sense,
+ and it looks masked too,
+ since the
+requirement it protects is itself masked.
+
+### What the module-export over-approximation actually costs
+
+Measured 2026-08-07 by instrumenting `callersAreEnumerable` to record every verdict during a
+cold-cache workspace sweep,
+ then classifying each declaring file as public or internal.
+A file counts as public when a `package.json` `exports` entry names it,
+ when a public file
+re-exports it,
+ or when a wildcard subpath such as `"./ts/*": "./src/*"` publishes its tree.
+
+The predicate is consulted 377 times:
+ 302 admitted,
+ 75 refused,
+ across 40 distinct files.
+Twenty-eight of those files are reachable from a package export,
+ so refusing them is correct
+rather than costly.
+Twelve are internal,
+ and they carry 27 of the 75 refusals.
+
+Twenty-seven refusals is the entire precision cost of using module export as the boundary.
+The concentration is worth seeing:
+ `package/pi-plugin/auto-mode/src/signals.ts` accounts for
+eight of them and
+`package/rolldown-plugin/import-attributes/src/ast-extract.ts` for five,
+ so half the cost sits
+in two files.
+
+That answers the question against building entry-point resolution.
+The upper bound on what the narrower predicate could recover is 27 refusals,
+ and the real
+figure is lower,
+ because a refusal only becomes an offer when no other path charges the
+parameter,
+ which this rule's redundancy makes uncommon.
+Against that:
+ entry resolution has to follow conditional exports,
+ wildcards and re-export
+chains,
+ and a bug in it fails *open*,
+ which is the direction that mints wrong offers.
+
+The wildcard handling is the part worth remembering,
+ because getting it wrong changed the
+answer by a factor of four.
+A first pass ignored `*` specifiers and classified 377 of 3054 workspace sources as public;
+expanding wildcards raised that to 1483.
+Reported from the first pass,
+ the same probe would have said most refusals were internal and
+argued for building the machinery.
+
+### Where the discharge stands
+
+The predicate admits four out of five callables it is asked about,
+ so requiring closed-world
+callers did not disable the feature at workspace scale.
+The provenance fixture made it look otherwise only because every callable in it is exported.
+
+### Decision recorded
+
+The boundary question is settled and moved out of this document:
+`doc/decision/readonly-caller-enumeration-boundary.md`.
+Module export stays the reachable-from-outside test,
+ entry-point resolution is rejected on the
+measurement above,
+ and the conditions for reopening it are stated there.
+
+This document remains the working record,
+ including the two claims made and withdrawn.
+
+### The wrapper unwrap discriminates, and the guess that it did not was wrong
+
+Recorded because the error has the same shape as the two before it.
+
+The unwrap was annotated `MASKED` on the reasoning that the relation requirement it protects
+is masked,
+ so anything a wrapper hides would be charged anyway.
+That reasoning was never measured.
+It was an inference from one true fact,
+ written in the place where the file records
+measurements,
+ which is exactly the confusion the rest of this document is about.
+
+The relation requirement is not the only thing a wrapper hides.
+`bindingAssignedWithin` can answer only about an `Identifier`,
+ so
+`return (rows as readonly Labelled[]).slice(0,);` after `rows = other;` hides the name from
+the written-endpoint check and the discharge accepts a parameter pointed somewhere else.
+`localAssertedRepointedElements` and its caller are offered read-only without the unwrap,
+ four
+offers,
+ and none with it.
+
+So three of the seven guards have a demonstrated failing case:
+ the reassignable-binding guard,
+the written-endpoint guard,
+ and the unwrap that makes the second of those reachable at all.
+
+The general form is worth stating once more,
+ since this is the third instance.
+A structural test is only as good as its ability to see what it is testing,
+ whether the thing
+that cannot see is a probe harness,
+ a per-file lint scope,
+ or a predicate handed an
+`AsExpression` where it expects a name.
+
+### Auditing the wrapper class across the rule
+
+The unwrap finding is about a predicate handed an `AsExpression` where it expects a name,
+ so
+every other place the rule tests `isIdentifier` was checked for the same hazard.
+Two shapes exist and only one of them has it.
+
+**Enumerate then filter** is immune.
+`resultEscapesCallable` walks `collectAstNodes(body,)` and keeps the identifiers,
+ and a
+wrapper is a separate node *containing* the identifier rather than replacing it,
+ so nothing is
+hidden.
+The same holds everywhere `collectAstNodes` feeds the test.
+
+**Walk then test at the endpoint** is the hazard,
+ because there the wrapper *is* the endpoint.
+`bindingAssignedWithin` was the only instance sitting in a charge-dropping position,
+ and the
+unwrap already fixes it.
+
+The others in that shape fail the safe way.
+`effect-result-holders.ts` descends wrappers itself through `carrierSuccessors`.
+`inspectDirectWrite` returns early only for a bare name,
+ so a wrapped target falls through to
+`expressionOrigins` and is over-attributed,
+ which adds a charge.
+`receiverHoldsConstructedContainer` suppresses a charge when it recognises a locally built
+container,
+ so failing to recognise one through a wrapper leaves the charge standing.
+
+Checked rather than reasoned,
+ on the most dangerous member of the class:
+ a mutation hidden
+behind a cast.
+`rowsPlain.push(...)` and `(rowsCast as Labelled[]).push(...)` produce identical output,
+ and
+neither parameter is offered.
+Had the cast hidden the write,
+ `rowsCast` would have been offered read-only while its plain
+twin was not.
+
+The first attempt at that probe was inconclusive and nearly reported as a result.
+Both functions carried `@mutates`,
+ which makes a correctly contracted mutation silent either
+way,
+ so the probe could not have distinguished a seen write from a missed one.
+Removing the contract is what made absence of an offer mean something.
+That is the fifth instance in this session of an instrument that could not answer the question
+put to it,
+ and the second where the tell was a result that looked clean.
+
+### Widening the position condition, and what it cost
+
+The position test required the call to be the returned expression itself.
+That is the narrowest case of the question rather than the question:
+ a call bound to a `const`
+and then returned,
+ or wrapped in an assertion,
+ hands the caller the same value by the same
+route.
+
+Replaced with the condition that always mattered:
+ returning must be the result's *only*
+escape.
+`resultEscapesCallable` gained `returnsAttributed`,
+ which discounts a return belonging to the
+body being scanned,
+ and the discharge asks whether anything else still carries the result out.
+One question answers every spelling,
+ because the escape test already follows a result through
+its holders.
+
+Cold-cache sweep:
+ 2893 errors against 2898,
+ 1555 rule findings against 1560,
+ and the offer set
+byte-identical at 35.
+Five charges cleared and no offer appeared,
+ which is the best available outcome for a change
+that removes charges.
+
+The five are worth naming,
+ because they are the complaint issue #414 was filed about.
+`requiredEntry` in `package/figma/kiwi/src/parse.ts` takes
+`zipEntries: ReadonlyMap<string, Uint8Array>`,
+ already readonly at every level,
+ and was
+reported for using it as the object of a collection call.
+Its body is `const entry = zipEntries.get(entryName,); ... return entry;`,
+ the bound-then-returned
+shape exactly.
+No offer follows because the parameter is already readonly,
+ so the whole effect is removing a
+report that named no action its author could take.
+
+The same holds for `spliceInstances` in `package/module/toml-edit/src/set-aot.ts` and three
+others.
+
+This was landed against a recommendation recorded in this document not to widen the discharge,
+on the grounds that each new route removes charges and one route had needed seven guards.
+The measurement says the recommendation was wrong about this route:
+ the widening is expressible
+as one condition that is *stronger* than the test it replaced,
+ since "returning is the only
+escape" refuses shapes "returned outright" accepted,
+ and it removed five reports of exactly the
+kind the rule was criticised for.
+
+### The negative control had to count charges, not offers
+
+`localBoundAndStoredElements` writes its copy into a module-level holder and returns it,
+ and
+must keep its report:
+ a store is not an escape any caller substitutes for.
+
+Two attempts to prove that condition load-bearing failed before one worked.
+The first stored through `carriedSink.push(copy,)`,
+ and a collection call charges the parameter
+by itself,
+ so the program was charged whatever the discharge decided.
+The second used a property assignment,
+ which fixed that,
+ and still reported no difference,
+because the comparison script printed *offers* and neither callable is offered either way.
+Counting charges showed it immediately:
+ both diagnostics vanish when the condition is removed.
+
+Third instrument in one session that answered a different question than the one asked,
+ and the
+first where the instrument was a script written that same hour to check the previous one.
+
+### How much of the issue #414 class is left
+
+The five reports the widening cleared were all on parameters already readonly at every
+level,
+ which is what #414 was filed about:
+ a finding whose printed remediations name no action
+its author can take.
+So the remaining population was measured.
+
+Between 6 and 66 of the 1483 parsed reports,
+ against 6 and 69 before the widening.
+The range is the answer rather than a hedge around one,
+ because the two bounds are computed
+from different assumptions about types this cannot resolve.
+
+The upper bound counts a parameter whose declared type is a readonly array,
+ `ReadonlyMap`,
+`ReadonlySet` or `Readonly<...>`.
+It over-counts,
+ and `statementWorkItems` in
+`package/agent-harness-shared/shell-command-analyzer/src/work-items.ts` shows how:
+ its
+`readonly statements: readonly ForeignBorrowed<UnbashStatement>[]` is a readonly array of
+*foreign-owned* elements,
+ so the report is about ownership reaching those elements and is
+correct rather than noise.
+
+The lower bound additionally requires every named type in the annotation to be one this can
+verify,
+ which excludes every element type with a name.
+It under-counts by exactly the cases where a named element type is in fact deeply readonly.
+
+Splitting that upper bound by message family sharpens it considerably,
+ because #414 was about
+one family and not the others.
+
+Of the 66,
+ fifty-seven say "used by these calls",
+ which names an unresolved owned or external
+call rather than a collection member.
+That family is defensible on an already-readonly parameter:
+ `readonly` is erased at runtime,
+so a callee this rule cannot read receives a genuinely mutable array whatever the annotation
+says.
+`runAdb` in `package/cli/android-exempt-unused/src/adb.ts` hands `readonly string[]` to
+`nano-spawn`,
+ and the report is about exactly that.
+
+Eight are the collection family,
+ which is the shape #414 cites.
+One is a method call.
+
+So the complaint's own class is at most eight of 1555 findings,
+ about one in two hundred,
+ and
+some of those eight are correct too:
+ `locateBlock` in
+`package/module/toml-edit/src/resolve-block.ts` takes `readonly Block[]` and calls `find`,
+ which
+hands back an element whose own properties this classifier cannot check and which the caller
+may well be able to write through.
+
+The measurement therefore closes the question rather than opening work.
+Sizing it exactly needs the checker,
+ and the number it would refine is already small enough
+that no remediation follows from it.
+
+#### The classifier's own controls caught two defects
+
+Written down because it is the rule working on its author.
+The first version reported 375,
+ five times the upper bound above.
+Two faults,
+ both caught by a control asserting known cases before any count was believed.
+
+`readonly signal: AbortSignal` counted as already-readonly,
+ conflating a readonly *binding*
+with immutable *data*;
+ a capability object behind a readonly modifier is exactly what the rule
+should still report.
+And the type capture stopped at the first `;`,
+ which truncates
+`readonly { readonly a: number; }[]` mid-annotation,
+ so the shape #414 actually cites was
+being missed while looser shapes were counted.
+
+Reporting 375 would have argued that a quarter of the rule's output is unactionable noise.
+The measured figure argues the opposite.
+
+### A leftover inference of my own, tested and found wrong
+
+Six guard programs were written with positional parameters,
+ adding six
+`require-destructured-params` findings to a fixture that carried fourteen.
+The reason recorded at the time:
+ a destructured binding declares a `BindingElement` rather than
+a `VariableDeclaration`,
+ which is what `bindingIsReassignable` keys on,
+ so destructuring might
+void the tests those programs exist for.
+
+That was reasoning presented where a measurement belonged,
+ which is the fault this document
+spends most of its length on,
+ committed by the same hand that wrote QPC.
+
+Destructured and measured:
+ only the total moves,
+ from thirty-nine to thirty-three,
+ because
+each pair of charges merges into one message naming both inputs.
+Every discriminating assertion is unchanged:
+ ten collection charges on the negative control,
+six `rows` offers,
+ zero `other` offers.
+The reason the fear was misplaced is that the reassignable binding under test is a `let` inside
+the body,
+ not a parameter,
+ and the repointed parameter is reached by symbol rather than by
+declaration kind.
+
+All four conditions were then re-checked against the new baseline rather than the old one,
+ and
+each still fails the suite when removed.
+The fixture is back to its pre-existing fourteen findings.
+
+The pattern worth keeping:
+ an inference is cheapest to test at the moment you notice you made
+one,
+ and the cost of not testing it here was six lint findings carried for several hours
+behind a justification that turned out to be false.
+
+### Why the unresolved-call reports on readonly parameters cannot simply be suppressed
+
+Fifty-seven reports name a parameter already declared readonly that reaches a call this rule
+cannot resolve.
+No type change resolves any of them,
+ which is the #414 complaint shape,
+ so the obvious move
+is to stop reporting a parameter that is already as readonly as it can be.
+
+There is precedent for the principle.
+`effect-summaries.unit.test.ts` records the construction channel asking the classifier rather
+than the leaf test,
+ on the ground that "`honest-readonly` means every reachable position is
+readonly,
+ so no write can travel through the value",
+ and `constructFromReadonlyKeys` is not
+opaque while `constructFromMutableRows` is.
+
+Measured 2026-08-07,
+ and the move is unsafe:
+ the charge propagates.
+
+```ts
+function probeReadonlySink(probeReadonly: readonly string[],): void {
+  void JSON.parse(JSON.stringify(probeReadonly,),);
+}
+
+export function probeMutableCaller(probeMutable: string[],): void {
+  probeReadonlySink(probeMutable,);
+}
+```
+
+Both are reported,
+ the second *through* the first.
+`readonly` is erased at runtime,
+ so a mutable array assigned into a readonly-typed parameter
+and handed to an unresolved callee really can be mutated,
+ and the caller's parameter is not
+readonly.
+Suppressing the charge on the readonly one clears it on the mutable one,
+ which is a wrong
+offer waiting to happen:
+ the guarded failure exactly.
+
+So the reports are sound and the analysis has to keep the charge.
+What remains is a narrower and different question,
+ about display rather than about effects:
+whether a diagnostic should be *emitted* on a parameter where no available remediation changes
+anything,
+ while the charge it represents still propagates to callers where remediation does
+apply.
+That is a question about what the rule should say rather than about what is true,
+ and it is
+recorded here undecided.
+
+### The already-readonly message, measured
+
+Landed as a message change only,
+ and the sweep confirms it:
+ 2893 errors,
+ 1555 findings,
+ 35
+offers,
+ every count identical to the sweep before it.
+The charge is untouched,
+ which was the constraint.
+
+201 findings carry the new text,
+ thirteen percent of the rule's output.
+
+That is far more than the 57 the earlier text-based estimate suggested,
+ and the gap is
+instructive:
+ the estimate matched declarations that *looked* like readonly arrays,
+ while the
+rule asks `classifyReadonlyType` and gets `honest-readonly` for many shapes a regular expression
+over source will not recognise.
+The crude instrument undercounted by more than three to one here,
+ having overcounted by five to
+one on the question before it,
+ in the same direction each time:
+ away from what the rule itself
+would say.
+
+The message says the exposure is runtime rather than type-level,
+ lists the three remediations
+that can apply,
+ and says plainly that making the type readonly is not among them because it
+already is.
+It also names that callers passing a mutable value into the parameter are reported separately
+and that the type change applies there,
+ so the reader is not left thinking the rule contradicts
+itself between the two.
+
+Three findings in `readonly-invalid.ts` moved to it,
+ and the assertion checking the general
+remediation had to name that text explicitly rather than taking the first match:
+ it had
+silently begun asserting the general remediation against a message that no longer carried it,
+which is an assertion testing itself.
+
+#### What the new message is claiming, exactly
+
+Spot-checked against workspace findings rather than fixtures alone.
+
+`writeRecordToEntry` in `package/module/logger/src/create-logger.ts` takes
+`readonly entryIndex: number` and `readonly record: LogRecord`,
+ and the message fits plainly:
+there is no type change left to make.
+
+`package/module/test/src/expect.ts` is the case worth stating.
+Its reported input is a rest parameter typed from `Parameters<MatcherSet[K]>`,
+ where "readonly
+at every level" is not evident from the declaration at all.
+
+So the claim the message makes is precisely `classifyReadonlyType`'s verdict of
+`honest-readonly`,
+ not an independent assertion about the source text.
+That is the right coupling:
+ the sentence cannot disagree with the rule's own reasoning about
+the same parameter,
+ and if the classifier is wrong somewhere then the defect is the
+classifier's and reaches further than this message.
+It does mean the sentence is only as true as that classification,
+ which is worth knowing before
+trusting it in a case where the declaration does not obviously support it.

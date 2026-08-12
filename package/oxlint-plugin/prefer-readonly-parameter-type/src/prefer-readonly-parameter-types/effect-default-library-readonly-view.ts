@@ -13,12 +13,19 @@ import {
 import type { Project, } from 'typescript/unstable/sync';
 
 import {
+  UNPAIRED_VIEW_UNKNOWN,
+  unpairedViewMembers,
+} from './effect-unpaired-view-authority.ts';
+import {
   defaultLibraryViewMembers,
   READONLY_VIEW_INTERFACE_PREFIX,
 } from './effect-default-library-view-members.ts';
 import {
   collectionMemberUserCodeChannel,
+  MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
   MEMBER_CHANNEL_UNPROVEN,
+  memberInvokesObserver,
 } from './effect-member-channel-authority.ts';
 
 /**
@@ -129,14 +136,27 @@ export function collectionStructureClaim({
    */
   const pairedViewMembers = defaultLibraryViewMembers({ project, },)
     .get(`${READONLY_VIEW_INTERFACE_PREFIX}${ownerName}`,);
-  if (pairedViewMembers === undefined)
-    return COLLECTION_UNRECOGNIZED;
   /**
-   * Member name deciding whether the paired view retains this operation.
+   * Member name deciding whether the read-only view retains this operation.
    */
   const memberName = declaration.name
     .text;
-  return pairedViewMembers.has(memberName,)
+  if (pairedViewMembers !== undefined)
+    return pairedViewMembers.has(memberName,)
+      ? COLLECTION_STRUCTURE_PRESERVED
+      : COLLECTION_STRUCTURE_MUTATED;
+  /* The library pairs most of what this rule cares about and leaves some of it unpaired,
+   * `DataView` being the measured case, so the derivation above has nothing to diff and
+   * answered "unrecognized" for every buffer write. The authority declares the membership
+   * the library omits, which lets the identical diff run rather than introducing a second
+   * rule that could disagree with it. */
+  /**
+   * Declared read-only membership for an interface the library never paired.
+   */
+  const declaredViewMembers = unpairedViewMembers({ ownerName, },);
+  if (declaredViewMembers === UNPAIRED_VIEW_UNKNOWN)
+    return COLLECTION_UNRECOGNIZED;
+  return declaredViewMembers.has(memberName,)
     ? COLLECTION_STRUCTURE_PRESERVED
     : COLLECTION_STRUCTURE_MUTATED;
 }
@@ -156,6 +176,16 @@ export function collectionStructureClaim({
  * them distinct in the authority is about what each probe must prove, not about
  * what either discharges.
  *
+ * A member that invokes a caller-supplied observer is refused here whatever its
+ * ambient channel is, and that refusal is the invariant rather than an accident of
+ * which members the table currently lists. The ambient half and the observer half
+ * are separate obligations: `filter` reaches own-index access and default species,
+ * both trusted under the stated baseline, and it also runs whatever predicate the
+ * caller passed. Only `recordReadonlyViewApplications` can answer the second half,
+ * by resolving that predicate to owned source. Discharging on the first half alone
+ * would accept `rows.filter(foreignMutatingPredicate)`, whose predicate received
+ * every element of the receiver.
+ *
  * @param project - TypeScript project proving default-library ownership.
  *
  * @param declaration - Selected callable declaration.
@@ -170,9 +200,13 @@ export function collectionStructureClaim({
 export function memberChannelIsVerifiedNarrow({
   project,
   declaration,
+  elementsArePrimitive,
+  argumentsAreAbsent,
 }: {
   readonly project: Project;
   readonly declaration: Node;
+  readonly elementsArePrimitive: boolean;
+  readonly argumentsAreAbsent: boolean;
 }): boolean {
   if ((!isMethodSignatureDeclaration(declaration,))
     || (!isIdentifier(declaration.name,))
@@ -186,10 +220,33 @@ export function memberChannelIsVerifiedNarrow({
   const owner = declaration.parent;
   if ((!isInterfaceDeclaration(owner,)) || (!isIdentifier(owner.name,)))
     return false;
-  return collectionMemberUserCodeChannel({
+  /**
+   * Member name deciding both the ambient channel and the observer obligation.
+   */
+  const memberName = declaration.name
+    .text;
+  if (memberInvokesObserver({ memberName, },))
+    return false;
+  /**
+   * Channel this member opens on its receiver.
+   */
+  const channel = collectionMemberUserCodeChannel({
     ownerName: owner.name
       .text,
-    memberName: declaration.name
-      .text,
-  },) !== MEMBER_CHANNEL_UNPROVEN;
+    memberName,
+  },);
+  /* One channel is narrow conditionally: a member coercing what it read reaches user code
+   * exactly when an element is not primitive. `parts.join(' ')` over strings runs nothing, and
+   * the same call over `{ readonly label: string }` reaches that value's own `toString`, which
+   * no shape in the type system constrains. */
+  if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION)
+    return elementsArePrimitive;
+  /* The other conditional channel, decided at the call site for the same kind of reason.
+   * A date locale member reads properties off whatever options object it is handed, so it
+   * runs any accessor on one; handed nothing, there is no object and no accessor to run.
+   * `pubDateDate.toLocaleString()` passes nothing, which is the shape that made this worth
+   * separating from an outright refusal. */
+  if (channel === MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS)
+    return argumentsAreAbsent;
+  return channel !== MEMBER_CHANNEL_UNPROVEN;
 }

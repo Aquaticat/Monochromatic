@@ -7,8 +7,13 @@ import {
 
 import {
   ITERATOR_MEMBER_NAMES,
+  UNPAIRED_VIEW_INTERFACES,
   MEMBER_CHANNEL_RECEIVER_INDEX,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
+  MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
   MEMBER_CHANNELS_BY_INTERFACE,
+  memberInvokesObserver,
+  OBSERVER_BEARING_MEMBER_NAMES,
   VERIFIED_MEMBER_CHANNEL_COUNT,
 } from '../dist/final/node/index.mjs';
 
@@ -48,6 +53,25 @@ const RECEIVER_INDEX_HITS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Bytes in the probe buffer, wide enough for the widest buffer member.
+ */
+const PROBE_BUFFER_BYTES = 16;
+
+/**
+ * Instant the probe date holds, fixed so a formatted result never varies by run.
+ */
+const PROBE_DATE_MILLISECONDS = 946_782_245_006;
+
+/**
+ * Date members listed on the channel that is narrow only for an empty argument list.
+ */
+const DATE_LOCALE_MEMBER_NAMES: readonly string[] = [
+  'toLocaleString',
+  'toLocaleDateString',
+  'toLocaleTimeString',
+];
+
+/**
  * Arguments satisfying each probed member's required parameters.
  *
  * Two roles, deliberately distinct. A lookup or removal needs a value the receiver
@@ -70,14 +94,27 @@ const RECEIVER_INDEX_HITS: ReadonlySet<string> = new Set([
  * ```
  */
 function probeArguments({
+  ownerName,
   memberName,
   element,
   fresh,
 }: {
+  readonly ownerName: string;
   readonly memberName: string;
   readonly element: unknown;
   readonly fresh: unknown;
 },): readonly unknown[] {
+  /* A buffer accessor takes an offset and, when it writes, a value. Both are plain
+   * numbers on purpose: a recording argument would report its own coercion, and what
+   * this probe asks is what the member reaches on the *receiver*. Passing something
+   * user-defined would answer a different question and answer it wrongly. */
+  if (ownerName === 'DataView') {
+    if (!memberName.startsWith('set',))
+      return [0,];
+    return memberName.includes('Big',)
+      ? [0, 1n,]
+      : [0, 1,];
+  }
   /**
    * Members needing an index, a key, or a value to be meaningful.
    */
@@ -98,7 +135,70 @@ function probeArguments({
     delete: [element,],
     add: [fresh,],
   };
+  /* Own keys only. `byMember` is an object literal, so a member sharing a name with an
+   * `Object.prototype` member finds the inherited one instead of `undefined`, the `??`
+   * never fires, and the caller spreads a function. Found by this probe rather than
+   * reasoned about: listing `toLocaleString` made every call throw
+   * "probeArguments is not a function or its return value is not iterable", which the
+   * channel assertion reported as the member reaching a hook. The same collision rejects
+   * `toLocaleString` as a key in the authority's own table under TypeScript 7. */
+  if (!Object.hasOwn(byMember, memberName,))
+    return [];
   return byMember[memberName] ?? [];
+}
+
+/**
+ * Builds a date instrumented on every receiver lookup a date member can dispatch to.
+ *
+ * A `Date` has no elements, no species and no size, so the channels the collection
+ * receivers instrument do not exist on it. What it has instead is conversion: ECMA-262
+ * `Date.prototype.toJSON` performs `ToPrimitive` on its receiver and then
+ * `Invoke(O, "toISOString")`, and `Date.prototype[Symbol.toPrimitive]` runs
+ * `OrdinaryToPrimitive`, which gets and calls `toString` or `valueOf` off the receiver.
+ * Each of those is a property lookup a caller can answer, so each gets a recorder.
+ *
+ * `toISOString` is deliberately not shadowed. It is the member under probe, and this
+ * function resolves members off the receiver, so a recorder in that position would
+ * measure the recorder rather than the intrinsic.
+ *
+ * @param hits - Accumulator recording every hook reached.
+ *
+ * @returns date carrying a recorder on each conversion lookup.
+ *
+ * @example
+ * ```ts
+ * dateReceiver({ hits: [], });
+ * ```
+ */
+function dateReceiver({ hits, }: { readonly hits: ProbeHits; },): Date {
+  /**
+   * Date under probe, at a fixed instant so a formatted result never varies.
+   */
+  const date = new Date(PROBE_DATE_MILLISECONDS,);
+  Object.defineProperty(date, 'toString', {
+    value: function recordToString(): string {
+      hits.push('date-dispatch',);
+      return 'probe-date';
+    },
+    configurable: true,
+  },);
+  Object.defineProperty(date, 'valueOf', {
+    value: function recordValueOf(): number {
+      hits.push('date-dispatch',);
+      return PROBE_DATE_MILLISECONDS;
+    },
+    configurable: true,
+  },);
+  Object.defineProperty(date, Symbol.toPrimitive, {
+    value: function recordToPrimitive(hint: string,): number | string {
+      hits.push('date-dispatch',);
+      return (hint === 'string')
+        ? 'probe-date'
+        : PROBE_DATE_MILLISECONDS;
+    },
+    configurable: true,
+  },);
+  return date;
 }
 
 /**
@@ -197,7 +297,11 @@ function instrumentedReceiver({
    * `ArraySpeciesCreate` reads `constructor` off the receiver and then `@@species`
    * off that, so an own property suffices and no subclass is needed.
    */
-  const receiver: unknown = ownerName.endsWith('Map',)
+  const receiver: unknown = (ownerName === 'DataView')
+    ? new DataView(new ArrayBuffer(PROBE_BUFFER_BYTES,),)
+    : (ownerName === 'Date')
+    ? dateReceiver({ hits, },)
+    : ownerName.endsWith('Map',)
     ? new Map([
       [element, element,],
       [other, other,],
@@ -342,6 +446,7 @@ function reachedHooksByPhase({
   try {
     invocation.result = (member as (this: unknown, ...args: unknown[]) => unknown)
       .apply(receiver, [...probeArguments({
+        ownerName,
         memberName,
         element,
         fresh,
@@ -440,9 +545,22 @@ await describe({
               memberName,
             },)
               .filter(function outsideChannel(hit,): boolean {
-                return (channel === MEMBER_CHANNEL_RECEIVER_INDEX)
-                  ? !RECEIVER_INDEX_HITS.has(hit,)
-                  : true;
+                if (channel === MEMBER_CHANNEL_RECEIVER_INDEX)
+                  return !RECEIVER_INDEX_HITS.has(hit,);
+                /* The species channel admits everything own-index access admits and the
+                 * species hook besides, and nothing else. Element coercion and a property
+                 * read still fail a member claiming it, which is what keeps this wider
+                 * channel from becoming a way to list anything. */
+                if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES)
+                  return (hit !== 'species') && (!RECEIVER_INDEX_HITS.has(hit,));
+                /* The coercion channel admits own-index access and the coercion itself, and
+                 * nothing else. That is not a free pass: the consumer discharges this channel
+                 * only where every element is strictly primitive, so the admitted coercion is
+                 * one that provably runs nothing. */
+                if (channel === MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION)
+                  return (hit !== 'element-coercion')
+                    && (!RECEIVER_INDEX_HITS.has(hit,));
+                return true;
               },);
             if (disallowed.length > 0)
               escaped.push(`${ownerName}.${memberName} reached ${disallowed.join(', ',)}`,);
@@ -463,6 +581,17 @@ await describe({
          * report a clean run for every member, and the table would look verified
          * while proving nothing. Each names an excluded member and the channel that
          * excludes it. */
+        /* The species control moved off `slice` when the stated trust baseline admitted
+         * that channel and `slice` joined the table. A control has to name a member the
+         * authority still excludes, or it stops proving the instrumentation is live and
+         * starts restating an entry. `concat` consults species and stays excluded, for
+         * reasons of its own recorded beside `FRESH_CONTAINER_MEMBER_NAMES`. */
+        expect(reachedHooks({
+          ownerName: 'Array',
+          memberName: 'concat',
+        },).includes('species',),).toBe(true,);
+        /* And the listed member reaches it too, which is the claim rather than the
+         * control: the channel is admitted, not avoided. */
         expect(reachedHooks({
           ownerName: 'Array',
           memberName: 'slice',
@@ -488,6 +617,59 @@ await describe({
           ownerName: 'Array',
           memberName: 'fill',
         },).includes('index-set',),).toBe(true,);
+        /* The date tripwire needs a control of its own, and it is the sharpest one here.
+         * `Date` lists a single member, so "the probe reached nothing" is exactly what a
+         * receiver carrying no instrumentation at all would report. `toJSON` is the
+         * excluded sibling that proves otherwise: ECMA-262 has it perform `ToPrimitive`
+         * on its receiver before `Invoke(O, "toISOString")`, so it reaches a lookup the
+         * caller answers, and it stays off the table for that reason. */
+        expect(reachedHooks({
+          ownerName: 'Date',
+          memberName: 'toJSON',
+        },).includes('date-dispatch',),).toBe(true,);
+        /* And the listed member reaches none of it, which is the entry's whole claim. */
+        expect(reachedHooks({
+          ownerName: 'Date',
+          memberName: 'toISOString',
+        },),).toEqual([],);
+        /* The locale members are listed on a channel that is narrow only for an empty
+         * argument list, so they need the tripwire driven in both directions or the entry
+         * claims something no probe has seen. Called with nothing, they reach none of the
+         * receiver recorders. */
+        for (const memberName of DATE_LOCALE_MEMBER_NAMES) {
+          expect(reachedHooks({
+            ownerName: 'Date',
+            memberName,
+          },),).toEqual([],);
+        }
+        /* And handed an options object carrying an accessor, the same members read it, which
+         * is the half that makes the condition a condition rather than a formality. Driven on
+         * the intrinsic rather than through the table, since the table's probe passes no
+         * arguments by construction. */
+        for (const memberName of DATE_LOCALE_MEMBER_NAMES) {
+          /**
+           * Whether the member read a property of the options object it was handed.
+           */
+          const optionsRead = { any: false, };
+          /**
+           * Intrinsic locale member, taken as data so no method reference is held.
+           */
+          const intrinsic = (Date.prototype as unknown as Record<string, unknown>)[memberName];
+          Reflect.apply(
+            intrinsic as (this: Date, ...args: readonly unknown[]) => unknown,
+            new Date(PROBE_DATE_MILLISECONDS,),
+            [
+              'en-US',
+              {
+                get timeZone(): string {
+                  optionsRead.any = true;
+                  return 'UTC';
+                },
+              },
+            ],
+          );
+          expect(optionsRead.any,).toBe(true,);
+        }
         /**
          * Hooks reached by reading a `Map` property directly, with no member involved.
          */
@@ -506,8 +688,15 @@ await describe({
         /* Every listed interface declares all three, so absence from any one of them
          * would mean the table grew unevenly rather than deliberately. */
         for (const memberName of ITERATOR_MEMBER_NAMES) {
-          for (const [, members,] of MEMBER_CHANNELS_BY_INTERFACE)
+          for (const [ownerName, members,] of MEMBER_CHANNELS_BY_INTERFACE) {
+            /* Scoped to collections, because the table no longer holds only those. A
+             * `DataView` is a buffer accessor with no iterator at all, and the library
+             * pairs no read-only view for it, which is what marks it as not a collection
+             * here rather than a name test doing the same job less honestly. */
+            if (UNPAIRED_VIEW_INTERFACES.has(ownerName,))
+              continue;
             expect(members.has(memberName,),).toBe(true,);
+          }
         }
         /* Creation reaches nothing, on every owner and every member. This is the half
          * of the claim that was never in doubt, and it is asserted so that a future
@@ -559,6 +748,42 @@ await describe({
             },).drainage,).toEqual([],);
           }
         }
+      },
+    },),
+    it({
+      name: 'lists no observer-bearing member, whose second obligation this table cannot discharge',
+      fn: async () => {
+        /* The invariant rather than an accident of which members are listed today. A
+         * member's ambient channel and its observer are separate obligations, and only
+         * the first is answerable here: `filter` reaches own-index access and default
+         * species, both trusted under the stated baseline, and it also runs whatever
+         * predicate the caller passed. An entry for it would discharge
+         * `rows.filter(foreignMutatingPredicate)` on the ambient half alone, which is the
+         * first draft of the trust-baseline work and the reason this assertion exists.
+         *
+         * Adding `filter` to the table fails this and nothing else, which is the point:
+         * without it the mistake is caught by no probe, because every tripwire that
+         * member trips is one the baseline now admits. */
+        /**
+         * Every member the authority lists, whichever interface declares it.
+         */
+        const listed = [...MEMBER_CHANNELS_BY_INTERFACE.values(),]
+          .flatMap(function listedMembers(members,): readonly string[] {
+            return [...members.keys(),];
+          },);
+        expect(listed.filter(function bearsObserver(memberName,): boolean {
+          return memberInvokesObserver({ memberName, },);
+        },),).toEqual([],);
+        /* And the classifier answers rather than always refusing, so the assertion above
+         * is not vacuous on an empty predicate. */
+        expect(memberInvokesObserver({ memberName: 'filter', },),).toBe(true,);
+        expect(memberInvokesObserver({ memberName: 'map', },),).toBe(true,);
+        expect(memberInvokesObserver({ memberName: 'at', },),).toBe(false,);
+        expect(memberInvokesObserver({ memberName: 'get', },),).toBe(false,);
+        /* The set is reachable as data too, since the composition step in
+         * `effect-default-library-readonly-view.ts` consults it rather than re-deriving
+         * which members take an observer. */
+        expect(OBSERVER_BEARING_MEMBER_NAMES.has('reduce',),).toBe(true,);
       },
     },),
   ],

@@ -12,6 +12,7 @@ import {
   boundariesAreReportable,
   splitRetentionBoundaries,
 } from './effect-retention-provenance.ts';
+import { COLLECTION_MEMBER_NAMES, } from './effect-member-channel-authority.ts';
 import {
   everyBoundaryIsInputMethod,
   inputMethodUsageSubject,
@@ -96,6 +97,33 @@ export function uncertaintyBoundaries({
 }
 
 /**
+ * Reads the member name out of one recorded boundary.
+ *
+ * A boundary is authored text plus a location, `slices.filter [path:line]`, so the member is
+ * the last dotted segment of the expression half. Parsed rather than carried alongside
+ * because the boundary set is what crosses into the summary and the cache, and widening that
+ * to a structured record would change the serialized shape for one message's benefit.
+ *
+ * @param boundary - Recorded boundary text.
+ *
+ * @returns member name, empty when the boundary names no member.
+ *
+ * @example
+ * ```ts
+ * collectionMemberOf({ boundary: 'slices.filter [src/a.ts:7]' });
+ * ```
+ */
+function collectionMemberOf({ boundary, }: { readonly boundary: string; },): string {
+  /**
+   * Expression half, before the location this boundary was recorded at.
+   */
+  const [expression = '',] = boundary.split(' [',);
+  return expression.split('.',)
+    .at(-1,)
+    ?? '';
+}
+
+/**
  * Builds unresolved external effect report for one input.
  *
  * @param loc - Parameter source location.
@@ -124,6 +152,7 @@ export function opaqueEffectReport({
   parameterIndex,
   uncertainty,
   affectedNames,
+  alreadyReadonly,
 }: {
   readonly loc: {
     readonly start: {
@@ -140,6 +169,7 @@ export function opaqueEffectReport({
   readonly parameterIndex: number;
   readonly affectedNames?: ReadonlySet<string>;
   readonly uncertainty: UncertaintyBoundaries;
+  readonly alreadyReadonly?: boolean;
 },): Parameters<Context['report']>[0] {
   /**
    * Whether every unknown call is a method on one current input binding.
@@ -149,10 +179,46 @@ export function opaqueEffectReport({
     targetIndexes,
     parameterIndex,
   },);
+  /* A finding whose every cause is a collection member gets a message about collection
+   * members. The general one offers to add a repository-owned implementation to a tsconfig,
+   * which no engine intrinsic has, and to mark the input as a runtime-owned host capability,
+   * which ordinary array data is not. Issue #414 reports exactly that: the message names no
+   * change that resolves the finding it is attached to. */
+  /**
+   * How many calls this finding names as causes.
+   */
+  const namedCallCount = uncertainty.facts
+    .length;
+  /**
+   * Whether every named call is a recognised collection member.
+   *
+   * Vacuously true for an empty list, which is why the count is asked separately: a finding
+   * with no named cause speaks through the general message rather than claiming to be about
+   * collections.
+   */
+  const everyCauseIsCollection = uncertainty.facts
+    .every(function namesCollectionMember(boundary,): boolean {
+      return COLLECTION_MEMBER_NAMES.has(collectionMemberOf({ boundary, },),);
+    },);
+  /**
+   * Whether this finding is entirely about collection members on one input.
+   */
+  const onlyCollectionMembers = onlyInputMethods
+    && (namedCallCount > 0)
+    && everyCauseIsCollection;
   return {
     loc,
-    messageId: onlyInputMethods
+    /* The already-readonly variant is chosen last among the general forms and never over a
+     * specific one. The collection and method messages name what the calls are, which is more
+     * use to a reader than naming what the type already is, and both carry remediations that
+     * still apply to a readonly input. Only the general message ends in advice to make the
+     * type honest, so only it misreads when the type already is. */
+    messageId: onlyCollectionMembers
+      ? 'opaqueCollectionEffect'
+      : onlyInputMethods
       ? 'opaqueMethodEffect'
+      : (alreadyReadonly === true)
+      ? 'opaqueEffectAlreadyReadonly'
       : 'opaqueEffect',
     data: {
       inputSubject: onlyInputMethods

@@ -134,6 +134,45 @@ await describe({
       },);
     },),
     it({
+      name: 'classifies a cycle member the same whichever member is asked for first',
+      fn: async () => {
+        /* One session for both, because the defect this guards is the shared classification
+         * store carrying an answer from the first walk into the second. Two sessions would pass
+         * with the guard removed. */
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        /**
+         * Kinds for both cycle parameters, head asked for first.
+         */
+        const kinds = [
+          'cycleHead:',
+          'cycleMember:',
+        ].map(function classifyCycleParameter(parameter,): string {
+          const parameterNode = session.nodeAtOffset(SOURCE.indexOf(parameter,),);
+          const type = session.checker
+            .getTypeAtLocation(parameterNode,);
+          if (type === undefined)
+            throw new Error(`Expected semantic type for ${parameter}.`,);
+          return classifyReadonlyType({
+            checker: session.checker,
+            project: session.project,
+            type,
+          },).kind;
+        },);
+        closeSemanticBridge();
+        /* Both reach the head's writable slot, the member through readonly properties alone.
+         * Reading honest-readonly for the member is the wrong-offer direction: it withholds the
+         * opaque effect an outward handoff would charge. */
+        expect(kinds,).toEqual([
+          'mutable',
+          'mutable',
+        ],);
+      },
+    },),
+    it({
       name: 'classifies exact foreign borrowed marker as capability',
       fn: async () => {
         const session = openSemanticFile({

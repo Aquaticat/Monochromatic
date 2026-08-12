@@ -28,11 +28,13 @@ import {
   isCallExpression,
   isElementAccessExpression,
   isExpressionStatement,
+  isForOfStatement,
   isIdentifier,
   isObjectLiteralExpression,
   isPrefixUnaryExpression,
   isPropertyAccessExpression,
   isReturnStatement,
+  isSpreadElement,
   isTypeOfExpression,
   isVariableDeclaration,
   isVoidExpression,
@@ -45,11 +47,9 @@ import {
   isPresentNode,
   valueConsumer,
 } from './effect-value-consumer.ts';
-import {
-  collectAstNodes,
-  isEffectCallableDeclaration,
-} from './effect-summary-model.ts';
+import { collectAstNodes, } from './effect-summary-model.ts';
 import { resultReachableSymbolIds, } from './effect-result-holders.ts';
+import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
 
 /**
  * Binary operators that only test a value and keep no reference to it.
@@ -138,6 +138,42 @@ function isEnclosingLiteral({ node, }: { readonly node: Node; },): boolean {
 }
 
 /**
+ * Ascends spread-into-array-literal steps to the literal that carries the value.
+ *
+ * `[...pairs.entries(),].flatMap(compare)` puts one collection's elements into a literal
+ * whose own position decides everything: as a call's receiver or argument the obligation
+ * transfers to that call, and stored or returned it leaves. Classifying the spread instead
+ * asks about a node whose parent is always a literal, which answers "is that literal an
+ * argument", and for a literal used as a receiver that is no.
+ *
+ * Starts from the node itself rather than its parent, because `valueConsumer` already
+ * returns the spread element. Ascending from the parent instead looks one node too high,
+ * finds no spread, and changes nothing, which is exactly what a first attempt at this
+ * measured.
+ *
+ * Iterative because the step composes: `[...[...pairs,],]` is two hops asking the identical
+ * question one node further out.
+ *
+ * @param node - Expression possibly sitting inside one or more spreads.
+ *
+ * @returns outermost literal carrying this value, or node itself when it is not spread.
+ *
+ * @example
+ * ```ts
+ * spreadCarrier({ node: spreadElement });
+ * ```
+ */
+function spreadCarrier({ node, }: { readonly node: Node; },): Node {
+  /**
+   * Value reached so far while ascending spread steps.
+   */
+  let carried = node;
+  while (isSpreadElement(carried,) && isArrayLiteralExpression(carried.parent,))
+    carried = carried.parent;
+  return carried;
+}
+
+/**
  * Tests whether a node sits in a position this analysis cannot follow.
  *
  * Attributed positions are deliberately enumerated rather than inferred from what is
@@ -145,20 +181,76 @@ function isEnclosingLiteral({ node, }: { readonly node: Node; },): boolean {
  *
  * @param node - Expression whose enclosing use is classified.
  *
+ * @param elementStepsAttributed - Whether a caller walks this result's elements.
+ *
+ * @param returnsAttributed - Whether returning counts as followed rather than as leaving.
+ *
+ * @param body - Body whose own returns may be attributed, absent when none may be.
+ *
  * @returns whether the value at this position leaves attributed tracking.
  *
  * @example
  * ```ts
- * useEscapes({ node: identifier });
+ * useEscapes({ node: identifier, elementStepsAttributed, returnsAttributed });
  * ```
  */
-function useEscapes({ node, }: { readonly node: Node; },): boolean {
+function useEscapes({
+  node,
+  elementStepsAttributed,
+  returnsAttributed,
+  body,
+}: {
+  readonly node: Node;
+  readonly elementStepsAttributed: boolean;
+  readonly returnsAttributed: boolean;
+  readonly body?: Node;
+},): boolean {
+  /* A spread carries its operand's elements into the enclosing array literal, so the
+   * question is about where that literal goes rather than about the spread. Gated with
+   * the iterated position below: only a caller that walks elements may treat reaching one
+   * as attributed. */
+  /**
+   * Value whose position decides this, with spread-into-literal steps ascended.
+   */
+  const carried = elementStepsAttributed
+    ? spreadCarrier({ node, },)
+    : node;
   /**
    * Syntactic context consuming this value.
    */
-  const { parent, } = node;
-  if (isReturnStatement(parent,) || isYieldExpression(parent,))
+  const { parent, } = carried;
+  if (isYieldExpression(parent,))
     return true;
+  if (isReturnStatement(parent,)) {
+    /* Returning is the one escape whose destination this analysis can follow, and only a
+     * caller asking for that may treat it as followed. `yield` stays an escape beside it: a
+     * generator's consumer is not enumerable the way a call site is.
+     *
+     * The return must belong to the body being scanned. A `return` written inside a nested
+     * declaration hands the value to whoever calls *that*, and this scan's callers are the
+     * outer callable's, so attributing it would credit substitution nobody performs. */
+    return !(returnsAttributed
+      && (body !== undefined)
+      && writtenDirectlyInBody({
+        node: parent,
+        body,
+      },));
+  }
+  /* The other element step reaching a value without writing an access node.
+   * `containerElementWriteEffect` consumes its container through `copy[0]`, which the
+   * access branch below already answers, while `iteratedContainerWriteEffect` reaches the
+   * same elements through `for...of` and was answered as leaving, so a container that
+   * never leaves reported anyway.
+   *
+   * Gated rather than unconditional, because the position is only attributed where
+   * something walks the elements. `effect-call-analysis.ts` asks the same question about a
+   * call result reaching an argument, and there nothing does: widening it globally cleared
+   * an argument-side obligation that arrives by propagation from a callee, measured on
+   * `formatUsageWarningStatus`. */
+  if (elementStepsAttributed
+    && isForOfStatement(parent,)
+    && (parent.expression === carried))
+    return false;
   /* Placed in an object or array literal. Whether that is an escape depends entirely
    * on where the literal goes, and getting this wrong defeats discharge throughout
    * this repository: `ST9` makes every multi-argument call pass one object literal, so
@@ -273,14 +365,23 @@ export function resultEscapesCallable({
   project,
   body,
   call,
+  elementStepsAttributed,
+  returnsAttributed = false,
 }: {
   readonly project: Project;
   readonly body: Node;
   readonly call: CallExpression;
+  readonly elementStepsAttributed: boolean;
+  readonly returnsAttributed?: boolean;
 },): boolean {
   /* The call's own position first. A call whose result is returned outright, or
    * placed straight into a container, escapes without ever being bound. */
-  if (useEscapes({ node: valueConsumer({ node: call, },), },))
+  if (useEscapes({
+    node: valueConsumer({ node: call, },),
+    elementStepsAttributed,
+    returnsAttributed,
+    body,
+  },))
     return true;
   /* Then any store performed on the way to that position. `sink.value = facts.get(k)`
    * consumes the assignment expression as a discarded statement, so the position test
@@ -320,7 +421,12 @@ export function resultEscapesCallable({
         node,
         body,
       },)
-        || useEscapes({ node: valueConsumer({ node, },), },)
+        || useEscapes({
+          node: valueConsumer({ node, },),
+          elementStepsAttributed,
+          returnsAttributed,
+          body,
+        },)
         || assignmentStoreEscapes({
           project,
           node,
@@ -331,6 +437,14 @@ export function resultEscapesCallable({
 
 /**
  * Tests whether a node sits inside a callable nested under the given body.
+ *
+ * The ascent itself moved to `effect-enclosing-callable.ts`, where the returned-result
+ * discharge asks the same containment question for a different reason. Two walks answering
+ * one question is what `AGENTS.md` calls a shared definition, and keeping them apart had
+ * already let them disagree about the case neither reaches: this one answered "not nested"
+ * when it ran off the root, which is the permissive direction, while the discharge needs the
+ * conservative one. Unified on the conservative answer, since the note this replaces states
+ * that every caller passes a node inside `body` and so neither can observe the difference.
  *
  * @param node - Reference being classified.
  *
@@ -350,28 +464,8 @@ function enclosedByNestedCallable({
   readonly node: Node;
   readonly body: Node;
 },): boolean {
-  /**
-   * Cursor ascending toward the outer body, absent once the root is passed.
-   *
-   * Stops on an absent parent as well as a self-referential one, for the reason recorded
-   * on `nodeWithin` in `effect-value-consumer.ts`: a source file's parent is `undefined`
-   * here while the type says otherwise. Every caller passes a node inside `body`, so this
-   * walk should meet the boundary first, and carrying the same false assumption as the
-   * function that did throw is not worth the wager.
-   */
-  const cursor: { current: Node; } = { current: node.parent, };
-  while (cursor.current !== body) {
-    if (isEffectCallableDeclaration(cursor.current,))
-      return true;
-    /**
-     * Enclosing node, absent at the root whatever the declared type says.
-     */
-    const { parent, } = cursor.current;
-    if (!isPresentNode({ candidate: parent, },))
-      return false;
-    if (parent === cursor.current)
-      return false;
-    cursor.current = parent;
-  }
-  return false;
+  return !writtenDirectlyInBody({
+    node: node.parent,
+    body,
+  },);
 }

@@ -275,6 +275,30 @@ await describe({
         const chained = mutatedIndexes('chainedLookupMutationEffect',);
         /** Property write through an element obtained by `at`. */
         const element = mutatedIndexes('chainedElementWriteEffect',);
+        /** Property write through an element obtained by an observer member. */
+        const observerValue = mutatedIndexes('observerValueResultMutationEffect',);
+        /** Write through an object this callable built around the parameter. */
+        const heldObject = mutatedIndexes('heldObjectMutationEffect',);
+        /** Write through an array this callable built around the parameter. */
+        const heldArray = mutatedIndexes('heldArrayMutationEffect',);
+        /** Restructuring of a container this callable built, writing nothing. */
+        const heldContainer = mutatedIndexes('heldContainerRestructureEffect',);
+        /** Restructuring of a container the caller owns, reached through one hop. */
+        const borrowedContainer = mutatedIndexes('borrowedContainerRestructureEffect',);
+        /** Returned origins of a callable handing back the receiver's own elements. */
+        const carriedContainer = returnedIndexes('returnsReceiverElements',);
+        /** Write through a container another callable returned. */
+        const wroteThroughCarried = mutatedIndexes('writesThroughReturnedContainer',);
+        /** Read of nothing but the returned container's length. */
+        const readCarriedLength = mutatedIndexes('readsReturnedContainerLength',);
+        /** Returned origins of a callable composing two container members. */
+        const composedContainer = returnedIndexes('returnsComposedReceiverElements',);
+        /** Write through a composed container another callable returned. */
+        const wroteThroughComposed = mutatedIndexes('writesThroughComposedContainer',);
+        /** Returned origins of a callable whose container sits inside a selector. */
+        const selectedContainer = returnedIndexes('returnsSelectedReceiverElements',);
+        /** Write through a container another callable returned past a selector. */
+        const wroteThroughSelected = mutatedIndexes('writesThroughSelectedContainer',);
         /** Mutation through a lookup narrowed by a runtime-erased assertion. */
         const asserted = mutatedIndexes('assertedLookupMutationEffect',);
         /** Mutation through a lookup whose value type is a union of object types. */
@@ -293,6 +317,59 @@ await describe({
         expect(bound,).toEqual([0,],);
         expect(chained,).toEqual([0,],);
         expect(element,).toEqual([0,],);
+        /* The observer sibling of the `at` case above, and the reason it is asserted here
+         * rather than as a message: the value arm of `viewResultUnaccounted` discharges the
+         * receiver, so `find` stopped reporting opacity and only the summary shows the write
+         * that replaced it. Removing that arm reports opacity again; removing the element
+         * attribution beneath it empties this and grants a read-only offer for an array whose
+         * element the body rewrites. */
+        expect(observerValue,).toEqual([0,],);
+        /* The two programs `doc/planning/prefer-readonly-container-value-provenance.md`
+         * names as the ones a careless container fix would wrongly offer read-only. Both
+         * write the caller's value *through* a container this callable built, one by
+         * property and one by element, and both must stay attributed. Emptying a fresh
+         * literal's value origins, which is the redesign that document costs and rejects,
+         * empties these two and nothing else here would catch it. */
+        expect(heldObject,).toEqual([0,],);
+        expect(heldArray,).toEqual([0,],);
+        /* And the direction the record exists for. Nothing writes the parameter: `pop`
+         * restructures the fresh array, and the parameter is what the array holds rather
+         * than what holds the array. This read `[0]` before the record existed. */
+        expect(heldContainer,).toEqual([],);
+        /* The control that keeps the record from covering every local. `inner` names the
+         * caller's own array, so its binding arrives through a property step, the record
+         * is not set, and the charge stands. Keying the record on locality rather than on
+         * how the value was built discharges this and loses a real write. */
+        expect(borrowedContainer,).toEqual([0,],);
+        /* A returned container of receiver elements is a fact callers propagate, and it was
+         * not recorded at all until the return asked its element sibling as well as its
+         * value one. The value question is right to answer nothing here: the array handed
+         * back is not `rows`. What a caller reaches through it is every element `rows` held. */
+        expect(carriedContainer,).toEqual([0,],);
+        /* Which is what makes the caller's write attributable. Dropping the element origins
+         * from the return empties both of these while every diagnostic count stays put,
+         * since the callables involved are opaque either way. */
+        expect(wroteThroughCarried,).toEqual([0,],);
+        /* And the control that keeps it from being blanket attribution: a returned origin
+         * says a caller can reach the parameter through the result, not that this one did. */
+        expect(readCarriedLength,).toEqual([],);
+        /* Container members compose, and the element walk resolved one relation and
+         * stopped, so `rows.slice(0,).toReversed()` reported no origin though every step in
+         * it holds. Its one-member sibling above is the control: without the composition the
+         * two disagree about identical state reached through one extra member. */
+        expect(composedContainer,).toEqual([0,],);
+        expect(wroteThroughComposed,).toEqual([0,],);
+        /* The same disagreement reached through a selector instead of an extra member. The
+         * element walk asked the container question only where the selector stood, so
+         * `cond ? rows.slice(0,) : []` reported no origin while the bare `cond ? rows : []`
+         * reported one, and value provenance and the element walk answered differently about
+         * identical state. Ten further spellings shared it, parentheses and `as` among them.
+         *
+         * The write below is the half that makes it a soundness fact rather than a precision
+         * one. With no returned origin to substitute, it landed on no parameter at all and
+         * `rows` became offerable while the callable rewrites a row it holds. */
+        expect(selectedContainer,).toEqual([0,],);
+        expect(wroteThroughSelected,).toEqual([0,],);
         /* `as` erases at runtime, so the asserted value is the lookup's own. Dropping
          * assertion expressions from `transparentOperand` empties this one. */
         expect(asserted,).toEqual([0,],);
@@ -325,6 +402,49 @@ await describe({
         /* A function returning nothing parameter-derived records nothing, so the fact
          * is not simply "every callable returns something". */
         expect(returnedIndexes('readOnlyLookupEffect',),).toEqual([],);
+        /* How the callee spells its returned literal must not decide what its callers
+         * can see. A shorthand property's name resolves to the property rather than to
+         * the local it reads, so the provenance walk asked for the wrong symbol and
+         * `packageRowShorthand` recorded no returned origin while its longhand sibling
+         * recorded one. Reverting the shorthand value-symbol lookup in
+         * `effect-expression-provenance.ts` empties the first of each pair below and
+         * leaves the second passing, which is the asymmetry these pin. */
+        expect(returnedIndexes('packageRowShorthand',),).toEqual([0,],);
+        expect(returnedIndexes('packageRowExplicit',),).toEqual([0,],);
+        /* And the consequence that made it a defect rather than a precision gap: the
+         * caller's write through the returned holder was attributed to nothing, so the
+         * row it mutates kept its read-only offer while the identical longhand write
+         * reported the mutation. */
+        expect(mutatedIndexes('shorthandPackagedWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('explicitPackagedWriteEffect',),).toEqual([0,],);
+        /* And the other direction of the same question. `packageCountFresh` returns an
+         * object holding one string, so a caller reaches nothing through it, while the walk
+         * credited the parameter because `expressionRoot` strips a property access back to
+         * its receiver. Dropping the successor pruning in `effect-expression-provenance.ts`
+         * turns this into `[0]` and makes it indistinguishable from the pair above, which
+         * is the distinction result provenance is being built on. */
+        expect(returnedIndexes('packageCountFresh',),).toEqual([],);
+        /* What carries the parameter through a fresh container, and what does not. Both
+         * element writes reach the caller's own row through a copy that holds it, and the
+         * push reaches a container whose identity is fresh. One set of origins cannot answer
+         * both, which is why the element step is resolved before the access layers are
+         * stripped rather than after.
+         *
+         * All three were empty before the element step was answered, and the growth staying
+         * empty is what makes the other two evidence: dropping the element-access branch in
+         * `effect-expression-provenance.ts` empties the writes, and crediting the container
+         * itself would fill the growth. */
+        expect(mutatedIndexes('containerElementWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('filteredElementWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('containerGrowthEffect',),).toEqual([],);
+        /* The three spellings that take an element step without writing an element access.
+         * Each was empty until the element question was asked of the pattern's initializer,
+         * the iterated expression and the spread source, and each reaches the caller's row
+         * exactly as the access spelling does. Syntax decides how the step is spelled and
+         * nothing about what it reaches. */
+        expect(mutatedIndexes('destructuredContainerWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('iteratedContainerWriteEffect',),).toEqual([0,],);
+        expect(mutatedIndexes('spreadContainerWriteEffect',),).toEqual([0,],);
       },
     },),
     it({
@@ -2589,6 +2709,266 @@ await describe({
         if (helperSummary === NO_EFFECT_SUMMARY)
           throw new Error('Expected overloaded helper summary.',);
         expect([...index.proveForeignBorrowed(helperImplementation,),],).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
+      name: 'resolves a container receiver through its elements, in both fold spellings',
+      fn: async () => {
+        const session = openSemanticFile({
+          fileName: FIXTURE_PATH,
+          sourceText: SOURCE,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns opaque parameter indexes in ascending order.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /* Both spellings fold a container `filter` built, and no parameter is the value
+         * that container holds, so asking where the receiver's value came from answers
+         * nothing and the call falls to the receiver claim, which cannot answer for a
+         * member carrying an observer. Asking where its elements came from answers the
+         * parameter, and the observer derivation then discharges on its merits: the fold
+         * reads a length and returns a number, so nothing receiver-reachable leaves.
+         *
+         * Measured by reverting `recordReadonlyViewApplications` to resolve the receiver
+         * through `rootParameterOrigins`, where both read `[0]` with `reduce` named as
+         * the cause. The pair matters as much as either case: binding the container
+         * changes only the spelling of the cause, so both clear together or the fix is
+         * keyed to syntax rather than to provenance. */
+        expect(opaqueIndexes('chainedContainerFoldEffect',),).toEqual([],);
+        expect(opaqueIndexes('boundContainerFoldEffect',),).toEqual([],);
+        /* A fold whose receiver is the parameter itself, which resolved before this and
+         * must keep resolving: the element question has to subsume the value question,
+         * never replace it. */
+        expect(opaqueIndexes('reduceElementParameterEffect',),).toEqual([],);
+        /* The controls that keep the three above from passing vacuously. Widening how a
+         * receiver resolves must not discharge a parameter whose opacity is real, and
+         * these two are opaque for reasons the receiver walk never touches: an
+         * unanalyzable callee, and a default sort on an array carrying an own hook. */
+        expect(opaqueIndexes('opaqueSemanticEffect',),).toEqual([0,],);
+        expect(opaqueIndexes('hookedArrayDefaultSortOpaqueEffect',),).toEqual([0,],);
+        /**
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * Reads `referentMutatedParameterIndexes`, the set the read-only offer is gated
+         * on, rather than its union with the invoked set.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns written parameter indexes in ascending order.
+         */
+        function writtenIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            SOURCE.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.referentMutatedParameterIndexes,]
+            .toSorted(function byIndex(left: number, right: number,): number {
+              return left - right;
+            },);
+        }
+        /* The other half of the same question, and the half a discharge can quietly lose.
+         * Clearing the opacity is only correct if the derivation that cleared it also
+         * reports what the observer does, so the same two spellings with a writing fold
+         * must attribute the write to the parameter: `filter` hands back the receiver's
+         * own rows, and the fold writes one. A discharge that recorded nothing here would
+         * have traded a report for silence rather than for a proof, which is the failure
+         * the effect-model split already caught once when an empty observer match dropped
+         * a real mutation. */
+        expect(writtenIndexes('chainedContainerFoldWriteEffect',),).toEqual([0,],);
+        expect(writtenIndexes('boundContainerFoldWriteEffect',),).toEqual([0,],);
+        /* And the reading pair stays unwritten, so the assertions above are discriminating
+         * rather than true of every fold. */
+        expect(writtenIndexes('chainedContainerFoldEffect',),).toEqual([],);
+        expect(writtenIndexes('boundContainerFoldEffect',),).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
+      name: 'keeps a write through an iterated tuple attributed to its parameter',
+      fn: async () => {
+        /** Fixture separating a held pair from a freshly built one. */
+        const tuplePath = fileURLToPath(new URL(
+          '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-tuple-exposure-invalid.ts',
+          import.meta.url,
+        ),);
+        /** Current tuple-exposure fixture text. */
+        const tupleSource = readFileSync(tuplePath, 'utf8',);
+        const session = openSemanticFile({
+          fileName: tuplePath,
+          sourceText: tupleSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the written parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns written parameter indexes.
+         */
+        function writtenIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            tupleSource.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.referentMutatedParameterIndexes,];
+        }
+        /* This is the guarantee `prefer-readonly-parameter-type.unit.test.ts` gave up when
+         * the opacity reports on this fixture went silent. A tuple the receiver holds is
+         * caller-owned state whatever its positions are, because the tuple itself is
+         * writable, so `pair[0] = 'rewritten'` reached through `rows.values()` writes
+         * `rows`. While these two read `[0]` no read-only offer can be made for a
+         * parameter either of them rewrites, which is what makes the silence over there
+         * correct rather than merely quiet. */
+        expect(writtenIndexes('rewriteMutableStoredPair',),).toEqual([0,],);
+        expect(writtenIndexes('rewriteStoredPair',),).toEqual([0,],);
+        /* The control, and the reason a change making all three silent has answered the
+         * wrong question: the reader iterates the identical receiver through the identical
+         * member and writes nothing. */
+        expect(writtenIndexes('readStoredPair',),).toEqual([],);
+        /* The key side of the same question. A map holds caller-owned state on both sides
+         * of an entry, and `keys` carries the element relation for position 0, so a write
+         * through an iterated key lands on the parameter exactly as a write through an
+         * iterated value does. Measured before the entry existed: this read `[]` while the
+         * parameter was reported opaque, which is the shape that produces a false offer the
+         * moment anything discharges that report. */
+        expect(writtenIndexes('rewriteMapKey',),).toEqual([0,],);
+        expect(writtenIndexes('readMapKey',),).toEqual([],);
+        closeSemanticBridge();
+        clearEffectSummaryCache();
+        clearFinalEffectIndexCache();
+      },
+    },),
+    it({
+      name: 'charges draining an iterator this repository declares, and not the trusted one',
+      fn: async () => {
+        /** Fixture separating a trusted iterator from a repository-declared one. */
+        const drainPath = fileURLToPath(new URL(
+          '../../../test-fixture/oxlint-no-restricted-syntax/src/readonly-iteration-channel-invalid.ts',
+          import.meta.url,
+        ),);
+        /** Current iteration-channel fixture text. */
+        const drainSource = readFileSync(drainPath, 'utf8',);
+        const session = openSemanticFile({
+          fileName: drainPath,
+          sourceText: drainSource,
+          hasBOM: false,
+        },);
+        const index = buildEffectSummaryIndex({
+          project: session.project,
+          activeSourceFile: session.sourceFile,
+        },);
+        /**
+         * Reads the opaque parameter indexes of one fixture function.
+         *
+         * @param functionName - Exported fixture function to inspect.
+         *
+         * @returns parameter indexes left opaque.
+         */
+        function opaqueIndexes(functionName: string,): readonly number[] {
+          /**
+           * Name node of the requested fixture declaration.
+           */
+          const nameNode = session.nodeAtOffset(
+            drainSource.indexOf(`function ${functionName}`,)
+              + 'function '.length,
+          );
+          /**
+           * Declaration owning that name.
+           */
+          const declaration = nameNode.parent;
+          if (!isFunctionLikeDeclaration(declaration,))
+            throw new Error(`Expected a declaration for ${functionName}.`,);
+          /**
+           * Effect summary for that declaration.
+           */
+          const summary = index.get(declaration,);
+          if (summary === NO_EFFECT_SUMMARY)
+            throw new Error(`Expected an effect summary for ${functionName}.`,);
+          return [...summary.opaqueParameterIndexes,];
+        }
+        /* Draining is a call, and the baseline trusts only an iterator the default library
+         * declares. `CountingIterable` declares its own and writes `count` from it, so both
+         * spellings run repository code that mutates what the caller passed. Measured before
+         * `effect-iteration-channel.ts`: both read `[]`, so the parameter was offerable while
+         * the loop rewrote it. The pair matters because the two reach the walk through
+         * different branches, `for...of` and a spread element. */
+        expect(opaqueIndexes('iterateCountingValue',),).toEqual([0,],);
+        expect(opaqueIndexes('spreadCountingValue',),).toEqual([0,],);
+        /* The control, and the reason this is not simply "iteration is opaque now": a plain
+         * array drains an iterator too, and that one the library declares. */
+        expect(opaqueIndexes('iterateTrustedRows',),).toEqual([],);
         closeSemanticBridge();
         clearEffectSummaryCache();
         clearFinalEffectIndexCache();

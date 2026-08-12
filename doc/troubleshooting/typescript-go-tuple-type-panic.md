@@ -257,6 +257,89 @@ A future version is worth retesting the same way:
  sweep,
  and grep the output for `semantic rule failed`.
 
+## The omission was fail-closed on one side only, fixed
+
+Recorded 2026-08-07,
+ because the panic's cost was much larger than this document described and the
+reason was on our side.
+
+`effect-demand-index.ts` catches the failed summary build and omits that one callable,
+ and its comment
+states the omission is fail-closed:
+ callers hit the absent-callee branch in
+`effect-fixed-point-propagation.ts` and take opacity.
+ That half was true.
+ `assertReachedCallSummaries` in
+`effect-reached-edge.ts` then refused any call edge whose callee had no summary,
+ including the one just
+omitted on purpose,
+ and threw.
+ The throw aborts the whole program's analysis.
+
+So one panicking callable cost every file in that program its readonly analysis rather than costing
+itself its summary.
+ Measured before the fix:
+ `package/claude-code-plugin/statusline` lost `activity.ts`,
+`render.ts` and `statusline.ts` entirely,
+ reported as `semantic rule failed, so ... has no readonly
+analysis this run`.
+
+The assertion now receives the set of deliberately omitted keys and skips them,
+ for callee and callback
+edges alike.
+ Measured after:
+ workspace semantic failures 3 to 0,
+ rule findings 1677 to 1678,
+ which is the
+one real finding those three files were hiding,
+ and read-only offers unchanged at 33.
+
+The panic itself is untouched and still fires.
+ Checked across every sweep taken during this work,
+ the
+earliest predating all of it:
+ 16 occurrences each time, so nothing in the rule's own changes caused or
+worsened it.
+
+## The remaining cost, and the shape of a narrower catch
+
+With the assertion fixed the panic no longer costs a program its analysis,
+ but it still costs 16
+callables their summaries per sweep,
+ counted identically in every sweep taken during this work.
+ Their
+callers take opacity through the absent-callee branch,
+ so this is precision rather than soundness:
+ the
+answer is conservative, not wrong.
+
+The trigger is narrower than "a tuple".
+ `findGerundInText` in
+`package/claude-code-plugin/statusline/src/activity.ts` writes
+`lowercaseValue.match(GERUND_PATTERN,) ?? []`,
+ whose type is `RegExpMatchArray | []`,
+ and `[]` is an empty
+tuple.
+ The serializer reads `Reference | Tuple` off that type's own object flags and immediately asserts
+tuple data,
+ which an instantiated type does not carry.
+ So the shape to look for when this fires elsewhere
+is a `?? []` or `: []` fallback beside a non-tuple array type, not a declared tuple.
+
+A narrower catch would recover the 16.
+ The panic surfaces when a type crosses the sync bridge, so
+catching it at the type query rather than at the callable would lose one fact instead of one summary,
+and the rule already treats an unresolved type as fail-closed nearly everywhere.
+ The cost is that
+`getTypeAtLocation` is called from about a dozen modules,
+ so it means a helper plus a mechanical
+replacement at every site,
+ and every site then has to be checked for whether `undefined` really is its
+fail-closed direction.
+ Not attempted here:
+ a wide mechanical change to recover precision is worth doing
+deliberately rather than at the end of a long session.
+
 ## What we do about it
 
 An internal failure no longer reports a lint issue.

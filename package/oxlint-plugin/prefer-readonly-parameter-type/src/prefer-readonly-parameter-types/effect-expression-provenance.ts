@@ -20,6 +20,7 @@ import {
   isBinaryExpression,
   isCallExpression,
   isConditionalExpression,
+  isElementAccessExpression,
   isIdentifier,
   isNonNullExpression,
   isObjectLiteralExpression,
@@ -43,7 +44,14 @@ import {
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
-import { receiverElementsArePrimitive, } from './effect-primitive-origin.ts';
+import {
+  containerElementReceiver,
+  NOT_A_RECEIVER_CONTAINER,
+} from './effect-container-element-origin.ts';
+import {
+  expressionCanCarryMutableState,
+  receiverElementsArePrimitive,
+} from './effect-primitive-origin.ts';
 import {
   expressionRoot,
   NO_SLOT_ORIGIN,
@@ -99,7 +107,7 @@ const RIGHT_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
  * A sentinel rather than `undefined`, since this repo models absence without nullish
  * unions.
  */
-const NOTHING_WRAPPED: unique symbol = Symbol(
+export const NOTHING_WRAPPED: unique symbol = Symbol(
   'expression passes through no operand value',
 );
 
@@ -124,7 +132,7 @@ const NOTHING_WRAPPED: unique symbol = Symbol(
  * transparentOperand({ node });
  * ```
  */
-function transparentOperand(
+export function transparentOperand(
   { node, }: { readonly node: Node; },
 ): Node | typeof NOTHING_WRAPPED {
   /**
@@ -137,6 +145,68 @@ function transparentOperand(
   return passesThrough
     ? node.expression
     : NOTHING_WRAPPED;
+}
+
+/**
+ * Operands one of which the expression's own value already is.
+ *
+ * The selection family, kept apart from the aggregate family below it because the two
+ * answer different questions. Everything here yields a value that some operand already
+ * held, either by erasing at runtime or by choosing between operands, so any walk asking
+ * "where did this value come from" inherits from these without needing a relation to
+ * explain the step. An aggregate is the opposite: `[a, b,]` builds a value no operand
+ * held, and crediting its contents is a separate claim about what a container packages.
+ *
+ * Exported because the element walk needs exactly this family and nothing else. Measured
+ * 2026-08-07: `return (rows.slice(0,));` and `return cond ? rows.slice(0,) : [];` recorded
+ * no element origins while the bare `return (rows);` and `return cond ? rows : [];`
+ * recorded them correctly, because value provenance saw through the wrappers and the
+ * container relation did not. Sharing one definition is what stops the two walks
+ * disagreeing about identical state, which is the same hazard the spread rule on
+ * `isArrayLiteralExpression` was written to avoid.
+ *
+ * @param node - Expression whose selected operands are wanted.
+ *
+ * @returns operands whose value this expression's own may be.
+ *
+ * @example
+ * ```ts
+ * selectedOperandSuccessors({ node });
+ * ```
+ */
+export function selectedOperandSuccessors(
+  { node, }: { readonly node: Node; },
+): readonly Node[] {
+  /**
+   * Operand of a wrapper that changes nothing about the value.
+   */
+  const unwrapped = transparentOperand({ node, },);
+  if (unwrapped !== NOTHING_WRAPPED)
+    return [unwrapped,];
+  if (isConditionalExpression(node,))
+    /* Both results and never the condition. The condition decides which value arrives
+     * and is not itself a value that arrives, so descending into it would credit state
+     * the expression cannot produce. */
+    return [
+      node.whenTrue,
+      node.whenFalse,
+    ];
+  if (isBinaryExpression(node,)) {
+    if (EITHER_OPERAND_OPERATORS.has(node.operatorToken
+      .kind,))
+      return [
+        node.left,
+        node.right,
+      ];
+    /* Right operand only, for the reason recorded on `EITHER_OPERAND_OPERATORS`: a
+     * mutable object produced by `&&` or by an assignment can only be the right
+     * operand's value. */
+    if (RIGHT_OPERAND_OPERATORS.has(node.operatorToken
+      .kind,))
+      return [node.right,];
+    return [];
+  }
+  return [];
 }
 
 /**
@@ -165,31 +235,11 @@ function provenanceSuccessors({
   readonly node: Node;
 },): readonly Node[] {
   /**
-   * Operand of a wrapper that changes nothing about the value.
+   * Operands this expression's value may already be, when it selects rather than builds.
    */
-  const unwrapped = transparentOperand({ node, },);
-  if (unwrapped !== NOTHING_WRAPPED)
-    return [unwrapped,];
-  if (isConditionalExpression(node,))
-    return [
-      node.whenTrue,
-      node.whenFalse,
-    ];
-  if (isBinaryExpression(node,)) {
-    if (EITHER_OPERAND_OPERATORS.has(node.operatorToken
-      .kind,))
-      return [
-        node.left,
-        node.right,
-      ];
-    /* Right operand only, for the reason recorded on `EITHER_OPERAND_OPERATORS`: a
-     * mutable object produced by `&&` or by an assignment can only be the right
-     * operand's value. */
-    if (RIGHT_OPERAND_OPERATORS.has(node.operatorToken
-      .kind,))
-      return [node.right,];
-    return [];
-  }
+  const selected = selectedOperandSuccessors({ node, },);
+  if (selected.length > 0)
+    return selected;
   if (isObjectLiteralExpression(node,))
     /* An aggregate holds whatever was written into it, so a callee writing through one of its
      * properties writes into the value that property holds. The literal's own identity is fresh
@@ -233,13 +283,31 @@ function provenanceSuccessors({
          */
         const spreadType = project.checker
           .getTypeAtLocation(element.expression,);
-        return ((spreadType !== undefined)
-            && receiverElementsArePrimitive({
-              checker: project.checker,
-              type: spreadType,
-            },))
-          ? []
-          : [element.expression,];
+        if ((spreadType !== undefined)
+          && receiverElementsArePrimitive({
+            checker: project.checker,
+            type: spreadType,
+          },))
+          return [];
+        /* Spreading is the fourth element-step spelling. `[...rows.slice()]` builds an array
+         * holding the receiver's own rows, and the spread expression's own value carries
+         * nothing, so following it as a value loses them exactly as iteration did. Both are
+         * returned rather than one: the value answers when a parameter is spread directly,
+         * and the receiver answers when a fresh container is. */
+        /**
+         * Receiver whose elements the spread container holds, when that is verified.
+         */
+        const elementReceiver = containerElementReceiver({
+          project,
+          checker: project.checker,
+          node: element.expression,
+        },);
+        return (elementReceiver === NOT_A_RECEIVER_CONTAINER)
+          ? [element.expression,]
+          : [
+            element.expression,
+            elementReceiver,
+          ];
       },);
   if (!isCallExpression(node,))
     return [];
@@ -330,7 +398,23 @@ export function expressionValueOrigins({
    */
   const origins = new Set<EffectSlot>();
   /**
-   * Expressions still to examine, each a descendant of one already seen.
+   * Expressions still to examine, mostly but not only descendants of one already seen.
+   *
+   * The qualification is the point, and the flat claim that stood here was wrong. Successors
+   * are descendants and `provenanceSuccessors` says so, but the element-access and spread
+   * branches also queue a `containerElementReceiver` result, and that follows a name to its
+   * declaration initializer, which is anywhere in the file. So the descendant argument
+   * covers most of what is queued and not all of it, and this walk keeps no visited set.
+   *
+   * Probed rather than left as a worry, on five self-referential and mutually referential
+   * container declarations, including `const a = [...b]; const b = [...a];` and
+   * `const a = [a[0]!];`. None failed to terminate. Two exhaust the stack instead, inside
+   * the checker's own member aggregation rather than here, and `effect-demand-index` catches
+   * that, logs the omission and leaves the callable without a summary, which the unresolved
+   * boundary then withholds on. Degraded and safe rather than unsound.
+   *
+   * A visited set is therefore not added here. It would cost a set operation per node on one
+   * of the hottest walks in the rule, against a cycle nothing has produced.
    */
   const pending: Node[] = [node,];
   while (pending.length > 0) {
@@ -340,6 +424,30 @@ export function expressionValueOrigins({
     const current = pending.pop();
     if (current === undefined)
       continue;
+    /* An element step is where a container's two answers separate. `copy.push(row)` reaches
+     * the container, whose identity is fresh and shares nothing with the caller, while
+     * `copy[0].label = 'x'` reaches an element, which is the receiver's own row. Stripping
+     * both to `copy` and asking one question about it cannot answer them differently, so the
+     * element step is answered here, before the strip, and only for a container whose
+     * relation is verified.
+     *
+     * Nothing is queued when the relation is unproven, which leaves the walk exactly as it
+     * was: a fresh container of unknown provenance still contributes no origin, and the
+     * receiver's own opacity is what withholds the offer until it is discharged. */
+    if (isElementAccessExpression(current,)) {
+      /**
+       * Receiver whose elements this container holds, when that is verified.
+       */
+      const elementReceiver = containerElementReceiver({
+        project,
+        checker: project.checker,
+        node: current.expression,
+      },);
+      if (elementReceiver !== NOT_A_RECEIVER_CONTAINER) {
+        pending.push(elementReceiver,);
+        continue;
+      }
+    }
     /**
      * Root after property and element access removal.
      */
@@ -357,9 +465,24 @@ export function expressionValueOrigins({
     if (isIdentifier(root,) || isThisExpression(root,)) {
       /**
        * Symbol the root identifier or `this` expression resolves to.
+       *
+       * A shorthand property's name resolves to the property rather than to the local it
+       * reads, so the value symbol has to be asked for separately. Every other walk in this
+       * package already does: `packagedCallableOrigins`, `parameterIndexes` and the
+       * `ForeignBorrowed` classifier. This one did not, and the object-literal branch above
+       * hands it exactly that node, so a returned `{ slice }` recorded no origin while
+       * `{ slice: slice }` recorded one. Measured: a caller writing through the returned
+       * object was attributed nothing and kept its read-only offer, while the identical
+       * write through the explicit form reported the mutation.
        */
-      const symbol = project.checker
-        .getSymbolAtLocation(root,);
+      const symbol = isShorthandPropertyAssignment(root.parent,)
+          && (root.parent
+            .name
+            === root)
+        ? project.checker
+          .getShorthandAssignmentValueSymbol(root.parent,)
+        : project.checker
+          .getSymbolAtLocation(root,);
       /**
        * Origins already recorded for this binding.
        */
@@ -371,10 +494,33 @@ export function expressionValueOrigins({
       },);
       continue;
     }
+    /* A successor that cannot carry mutable identity contributes no origin, however it was
+     * derived from a parameter. `{ chars: slice.targetChars }` packages a number, and the
+     * walk reached `slice` from it only because `expressionRoot` strips the property access
+     * back to the receiver, which answers "what was read" rather than "what can be reached".
+     * Measured: the fresh object recorded the callback parameter as a returned origin, so a
+     * caller could not tell it apart from `row => row`, which is exactly the distinction the
+     * result-provenance decision rests on.
+     *
+     * This is type evidence used in the one direction the decision permits. A type may prove
+     * a value carries no mutable identity, and `typeCanCarryMutableState` fails closed for
+     * `any` and `unknown`. It may never prove that a mutable value is fresh, which stays a
+     * provenance question and is why this prunes leaves rather than deciding results.
+     *
+     * The sibling walks already do this at their own boundaries: `packagedCallableOrigins`
+     * skips a binding that cannot carry state, the array-literal branch above drops a spread
+     * of primitives, and `recordReturnEffects` gates the whole returned expression the same
+     * way. Doing it here is what keeps them agreeing on identical state. */
     provenanceSuccessors({
       project,
       node: root,
     },)
+      .filter(function carriesIdentity(successor,): boolean {
+        return expressionCanCarryMutableState({
+          checker: project.checker,
+          node: successor,
+        },);
+      },)
       .forEach(function queueSuccessor(successor,): void {
         pending.push(successor,);
       },);

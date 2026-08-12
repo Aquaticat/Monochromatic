@@ -105,6 +105,11 @@ await describe({
           function readHasOwn(value: Record<string, unknown>,): unknown {
             return Object.hasOwn(value, 'first',);
           },
+          /* Reaches one trap and no other, which is the whole of its claim: it reads the
+           * prototype slot and touches no property of the operand at all. */
+          function readPrototype(value: Record<string, unknown>,): unknown {
+            return Object.getPrototypeOf(value,);
+          },
         ]) {
           /** Traps this reader reached. */
           const hits: TrapHits = [];
@@ -155,7 +160,11 @@ await describe({
         /* The table's size, pinned so a reader added without evidence fails here as well
          * as in the architecture registry. The sentinels themselves need no assertion:
          * they are distinct symbols and the compiler rejects comparing them. */
-        expect(VERIFIED_READER_COUNT,).toBe(4,);
+        /* The prototype a reader hands back is reachable from the operand rather than
+         * freshly built, which is why its entry carries the operand: writing through it
+         * changes what the operand does. */
+        expect(Object.getPrototypeOf(operand,) === Object.prototype,).toBe(true,);
+        expect(VERIFIED_READER_COUNT,).toBe(5,);
       },
     },),
   ],

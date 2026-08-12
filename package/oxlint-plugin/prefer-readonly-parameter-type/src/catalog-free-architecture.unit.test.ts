@@ -64,7 +64,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
         'effect-member-channel-authority.unit.test.ts',
         'effect-member-channel-traps.unit.test.ts',
       ],
-      entryCount: 51,
+      entryCount: 81,
     },
   ],
   [
@@ -74,7 +74,17 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
       enforcedBy: [
         'effect-default-library-reader.unit.test.ts',
       ],
-      entryCount: 4,
+      entryCount: 5,
+    },
+  ],
+  [
+    'effect-unpaired-view-authority.ts',
+    {
+      decision: 'doc/decision/prefer-readonly-unpaired-view-membership.md',
+      enforcedBy: [
+        'effect-unpaired-view.unit.test.ts',
+      ],
+      entryCount: 43,
     },
   ],
   [
@@ -84,7 +94,7 @@ const PERMITTED_AUTHORITY_MODULES: ReadonlyMap<string, {
       enforcedBy: [
         'effect-result-provenance.unit.test.ts',
       ],
-      entryCount: 6,
+      entryCount: 36,
     },
   ],
 ],);

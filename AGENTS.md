@@ -278,6 +278,36 @@ Agent has tools;
  using them is its job,
  not user's.
 
+QAB:
+ Before-state reading isn't after-state evidence.
+Predicting a change's effect from unchanged code is inference.
+Apply it in a fork,
+ measure,
+ then conclude.
+Covers reverting on a predicted regression.
+
+QPC:
+ "No difference" is evidence only from a probe proven able to show one.
+Run a positive control first:
+ a case that must move.
+Unvalidated null result means nothing.
+
+QIV:
+ Validate scope,
+ caches,
+ and harness before trusting a null.
+Single-file lint,
+ stale cache,
+ contract-silenced fixture,
+ wrong assertion:
+ each answers a different question than asked.
+
+QNB:
+ Comparing timings:
+ measure the run-to-run band on one unchanged build first.
+Single runs resolve nothing smaller than that spread;
+ smaller differences are noise you will credit to a change.
+
 ASK:
  **Non-measurable facts:
  ask.
@@ -1228,6 +1258,15 @@ TC2:
  "Tests exist and pass" isn't completeness evidence;
  compare test names against implementation branches,
  confirm no untested path.
+
+GFP:
+ Guard test proves nothing until shown to fail:
+ remove guard,
+ rebuild,
+ run,
+ restore.
+Commit the guard first;
+ restoring discards uncommitted work on that file.
 
 CXL:
  Semantic plugin/process cleanup must not emit bare shutdown errors such as `context canceled`.

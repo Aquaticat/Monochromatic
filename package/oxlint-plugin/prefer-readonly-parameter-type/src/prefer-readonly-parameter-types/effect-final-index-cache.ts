@@ -25,11 +25,21 @@ type CachedFinalEffectIndex = {
 
 /**
  * Final indexes keyed by TypeScript's immutable semantic snapshot object.
+ *
+ * Held weakly. A snapshot is replaced whenever a source needs project discovery, so a process
+ * meets many `Project` objects for the same configured project, and the index of a replaced one
+ * is unreachable while still holding that project, its decoded sources, and the whole summary
+ * graph beneath them. Strong keys kept every generation alive for the life of the process.
+ *
+ * In a reassignable slot because clearing a `WeakMap` means replacing it, and
+ * `clearFinalEffectIndexCache` exists for lifecycle tests.
  */
-const finalIndexesByProject = new Map<
-  Project,
-  Map<string, CachedFinalEffectIndex>
->();
+const store = {
+  indexes: new WeakMap<
+    Project,
+    Map<string, CachedFinalEffectIndex>
+  >(),
+};
 
 /**
  * Process-local fixed-point cache counters.
@@ -79,7 +89,7 @@ export function cachedFinalEffectIndex({
   /**
    * Prior fixed-point index for exact semantic snapshot and analysis scope.
    */
-  const cached = finalIndexesByProject
+  const cached = store.indexes
     .get(project,)
     ?.get(projectKey,);
   if ((cached === undefined)
@@ -119,7 +129,8 @@ export function cacheFinalEffectIndex({
   /**
    * Analysis partitions already cached for exact semantic snapshot.
    */
-  const snapshotIndexes = finalIndexesByProject.get(project,)
+  const snapshotIndexes = store.indexes
+    .get(project,)
     ?? new Map<string, CachedFinalEffectIndex>();
   snapshotIndexes.set(
     projectKey,
@@ -128,10 +139,11 @@ export function cacheFinalEffectIndex({
       index,
     },
   );
-  finalIndexesByProject.set(
-    project,
-    snapshotIndexes,
-  );
+  store.indexes
+    .set(
+      project,
+      snapshotIndexes,
+    );
   counters.writeCount++;
 }
 
@@ -158,7 +170,10 @@ export function finalEffectIndexCacheStats(): FinalEffectIndexCacheStats {
  * ```
  */
 export function clearFinalEffectIndexCache(): void {
-  finalIndexesByProject.clear();
+  store.indexes = new WeakMap<
+    Project,
+    Map<string, CachedFinalEffectIndex>
+  >();
   counters.hitCount = 0;
   counters.writeCount = 0;
 }

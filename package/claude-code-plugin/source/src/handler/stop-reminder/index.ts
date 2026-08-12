@@ -5,6 +5,21 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 
 import {
+  autoContinueActive,
+  autoContinueReason,
+} from './auto-continue.ts';
+import {
+  continuationDepth,
+  MAX_DEPTH_ENV,
+  maxContinuationDepth,
+  readTranscriptTail,
+} from './continuation-depth.ts';
+import {
+  hasRunningBackgroundTask,
+  workedSinceLastForcedContinuation,
+} from './continuation-progress.ts';
+import { taskListState, } from './continuation-tasks.ts';
+import {
   findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
@@ -29,8 +44,11 @@ type StopRemindersOutput = StopOutput;
  *
  * Decision tree:
  *
- * 1. **Loop guard**: when `stop_hook_active` is `true`, returns `{}` to allow
- *    the stop unconditionally; re-blocking would create an endless cycle.
+ * 1. **Response-quality gate**: the hedging, dismissal, and trailing-question
+ *    detectors run only when `stop_hook_active` is `false`. They ask whether
+ *    this response is defective, so re-running them inside a blocked chain
+ *    would re-block on text the agent was already told about. Claude Code sets
+ *    `stop_hook_active` on every stop of a blocked chain and never clears it.
  * 2. **Prose extraction**: {@link stripNonProseRegions} strips code blocks,
  *    inline code, blockquotes, and quoted strings from `last_assistant_message`
  *    before scanning.
@@ -40,22 +58,49 @@ type StopRemindersOutput = StopOutput;
  * 4. **Trailing-question scan**: {@link findTrailingQuestion} looks for
  *    sentences ending in `?` in the last 500 characters; rhetorical/conditional
  *    prefixes are excluded.
- * 5. **Result**: if any reasons accumulated, returns
+ * 5. **Forced continuation**: unless a trailing question matched, and unless
+ *    `forcedContinuationAllowed` is false, {@link autoContinueReason} is
+ *    appended on every stop including stops inside a blocked chain. This is the
+ *    one detector that re-arms, and it reads none of the response text.
+ *    Claude Code does not reliably end the resulting chain, so the caller is
+ *    responsible for bounding it; see `continuation-depth.ts`.
+ * 6. **Result**: if any reasons accumulated, returns
  *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
  *    otherwise `\{\}`.
  *
+ * Pure by construction: every ambient input arrives as a parameter, so each
+ * branch is reachable in a test without touching process state. An earlier
+ * revision read the kill switch inside this function, which made the disabled
+ * branch testable only by mutating `process.env` and left those tests racing
+ * once the handler became asynchronous.
+ *
  * @param event - parsed {@link StopInput} event from Claude Code
+ *
+ * @param forcedContinuationAllowed - whether to append the continuation reason
  *
  * @returns blocking output when reminders apply, otherwise `{}`
  *
  * @example
  * ```ts
- * stopRemindersHandler({ stop_hook_active: false, last_assistant_message: 'Done?' });
+ * stopRemindersDecision({ event, forcedContinuationAllowed: true });
  * ```
  */
-function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOutput {
-  if (event.stop_hook_active)
-    return {};
+function stopRemindersDecision(
+  {
+    event,
+    forcedContinuationAllowed,
+  }: {
+    readonly event: ReadonlyDeep<StopInput>;
+    readonly forcedContinuationAllowed: boolean;
+  },
+): StopRemindersOutput {
+  /**
+   * Whether the response-quality detectors apply to this stop.
+   *
+   * False for every stop after the first in a blocked chain, so a forced
+   * continuation is never re-blocked for wording the agent already answered for.
+   */
+  const responseQualityApplies = !event.stop_hook_active;
 
   /**
    * Final assistant message with code blocks, inline code, and quotes stripped before scanning.
@@ -65,15 +110,21 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   /**
    * First hedging-phrase hit, or `NO_MATCH`; populates the uncertainty reminder when matched.
    */
-  const match = findUncertainty(prose,);
+  const match = responseQualityApplies
+    ? findUncertainty(prose,)
+    : NO_MATCH;
   /**
    * First uncited categorical-dismissal hit, or `NO_MATCH`; populates the dismissal reminder when matched.
    */
-  const dismissal = findCategoricalDismissal(prose,);
+  const dismissal = responseQualityApplies
+    ? findCategoricalDismissal(prose,)
+    : NO_MATCH;
   /**
    * Trailing user-directed question hit, or `NO_MATCH`; populates the AskUserQuestion reminder when matched.
    */
-  const question = findTrailingQuestion(prose,);
+  const question = responseQualityApplies
+    ? findTrailingQuestion(prose,)
+    : NO_MATCH;
 
   /**
    * Reminder lines accumulated across the three detectors; joined into the final block reason.
@@ -111,6 +162,14 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
     );
   }
 
+  // A trailing question takes precedence over forced continuation: instructing the
+  // agent to resume work and to route its question through AskUserQuestion in the
+  // same reason would be contradictory, and the question reason already refuses the stop.
+  if ((question === NO_MATCH)
+    && forcedContinuationAllowed) {
+    reasons.push(...autoContinueReason(),);
+  }
+
   if (reasons.length
     > 0) {
     return {
@@ -120,6 +179,80 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   }
 
   return {};
+}
+
+/**
+ * Reads ambient state, then delegates to {@link stopRemindersDecision}.
+ *
+ * All environment and filesystem access lives here so the policy stays pure and
+ * testable. Depth is only computed when forced continuation is enabled, since
+ * the transcript read is pointless otherwise.
+ *
+ * @param event - parsed {@link StopInput} event from Claude Code
+ *
+ * @returns blocking output when reminders apply, otherwise `{}`
+ *
+ * @example
+ * ```ts
+ * await stopRemindersHandler(event);
+ * ```
+ */
+async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<StopRemindersOutput> {
+  /**
+   * Whether the kill switch leaves forced continuation enabled.
+   */
+  const enabled = autoContinueActive();
+  /**
+   * Forced continuations already issued for this human turn.
+   *
+   * Claude Code does not reliably end a blocked chain, so this bound is the
+   * only termination guarantee; see `continuation-depth.ts` for the measurement.
+   */
+  const transcript = enabled
+    ? await readTranscriptTail(event.transcript_path,)
+    : {
+      lines: [],
+      truncated: false,
+    };
+  /**
+   * Forced continuations already issued for this human turn.
+   */
+  const depth = continuationDepth(transcript.lines,);
+  /**
+   * Whether the previous forced continuation produced any tool call.
+   *
+   * Releases a session that is blocked on something outside the agent control,
+   * where pushing again yields another restatement rather than work.
+   */
+  const worked = workedSinceLastForcedContinuation(transcript.lines,);
+  /**
+   * Whether a background task is still running.
+   *
+   * The session is waiting on something another turn cannot advance, so pushing
+   * buys a restatement of the wait rather than work.
+   */
+  const waiting = hasRunningBackgroundTask(event.background_tasks,);
+  /**
+   * Whether every tracked task is finished.
+   *
+   * A session with no task list is excluded, since most sessions never create
+   * one and releasing on an empty list would disable forced continuation
+   * everywhere. A truncated tail is excluded too: a task created before the
+   * window and never updated inside it is invisible, so an open list can look
+   * finished, and this release must not conclude anything from an absence it
+   * cannot see.
+   */
+  const nothingTracked = (!transcript.truncated)
+    && (taskListState(transcript.lines,) === 'all-finished');
+
+  return stopRemindersDecision({
+    event,
+    forcedContinuationAllowed: enabled
+      && (depth < maxContinuationDepth(process.env[MAX_DEPTH_ENV] ?? '',))
+      && worked
+      && (!waiting)
+      && (!nothingTracked),
+  },);
 }
 
 /**
@@ -164,6 +297,7 @@ function stopRemindersWriter(output: StopRemindersOutput,): string {
 export type { StopRemindersOutput, };
 
 export {
+  stopRemindersDecision,
   stopRemindersHandler,
   stopRemindersParser,
   stopRemindersWriter,

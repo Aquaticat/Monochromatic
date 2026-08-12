@@ -20,7 +20,7 @@ Specifically:
 
 ## What we do instead
 
-- **Document the defect in `TROUBLESHOOTING.*.md` at the repo root.** Source-trace the
+- **Document the defect in `doc/troubleshooting/<topic>.md`.** Source-trace the
   cause if possible. Include the workaround we use locally.
 - **Skip filing a GitHub issue for tracking.** No `track-upstream-claude-code-X` issues.
 - **Implement the local workaround in `AGENTS.md` rules** so future agent sessions
@@ -36,8 +36,8 @@ The following local tracking issues were closed as wontfix per this policy:
 - `#162` Claude Code Edit/Write non-atomic fallback exposing empty file window
 - `#163` Claude Code overrides ghostty cursor style
 
-Each of those corresponds to a `TROUBLESHOOTING.*.md` file at the repo root that
-remains the canonical record. The TROUBLESHOOTING file is where the institutional
+Each of those corresponds to a file under `doc/troubleshooting/` that
+remains the canonical record. That file is where the institutional
 knowledge lives.
 
 ## Exception

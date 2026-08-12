@@ -362,6 +362,14 @@ probe('forEach', (a,) => a.forEach(() => {},),);
 Prints `true` for `map identity` and `filter`,
  `false` for `map primitive` and `forEach`.
 
+The gate this section installs is superseded in direction as of 2026-08-06.
+It reads the result's type shape,
+ which refuses a `map` whose owned callback allocates every object it
+returns,
+ a case no rewrite resolves and the one issue #414 reports.
+`doc/decision/prefer-readonly-result-provenance.md` records the replacement and the measurement.
+The semantics stated here stand until that lands.
+
 ## What this does not change
 
 The four removals recorded in `doc/planning/replace-prefer-readonly-parameter-types.md` all stand:

@@ -441,6 +441,84 @@ nothing here is proved.
  and it is accepted
 knowingly rather than by omission.
 
+## The stated trust baseline, accepted 2026-08-06
+
+Accepted by the repository owner,
+ resolving issue #415.
+ The rule had three implicit assumptions and one
+stated one,
+ and the line between them was an artifact of where the analyzer happens to look rather than a
+position anyone took.
+
+For a value typed as a default-library collection view,
+ the rule trusts four things:
+
+- standard method dispatch,
+   so declaration resolution names the intrinsic that runs;
+- ordinary indexed data properties,
+   which is the assumption this document already stated;
+- the standard iterator,
+   which `for...of` and spread invoke;
+- default `Symbol.species`,
+   which `ArraySpeciesCreate` consults.
+
+Three of those were already trusted before this was written,
+ two of them silently.
+ Measured on a plain array
+with no subclass and no accessor,
+ an own `Symbol.iterator` runs caller code during `for...of` and during
+spread and turns a one-element array into three elements observed by spread,
+ and an own `constructor`
+carrying `Symbol.species` runs caller code during `filter` and receives the caller's own element.
+ Both hooks
+are ordinary data properties,
+ so the fourth assumption was refusing what the other three already admitted.
+The probe is in `doc/decision/prefer-readonly-result-provenance.md`.
+
+What follows from it:
+
+- the species gate installed by `f7c35802a` is withdrawn as a discharge condition.
+   `filter`,
+   `slice`,
+  `concat` and `flat` stop failing on the channel,
+   and what their results carry is decided by result
+  provenance instead;
+- iterator members fall under the same baseline,
+   so the exclusion recorded in
+  "Scope, and what the residue becomes" is lifted for the channel question.
+   `entries` still answers to its
+  tuple result under result provenance;
+- species stops being a disqualifying channel in
+  `effect-member-channel-authority.unit.test.ts` and becomes a recorded one.
+   The control assertion that
+  proves the instrumentation is live stays,
+   and the suite must still fail when a member reaches a channel
+  outside the four trusted here.
+
+What stays distrusted is unchanged:
+ a caller-supplied observer is analyzed rather than assumed,
+ argument-side
+findings for `String`,
+ `Object.entries` and `JSON.stringify` stand,
+ and an unowned implementation resolves or
+reports.
+
+The baseline is unsound for an exotic receiver,
+ knowingly.
+ A `Proxy`,
+ a subclass overriding a member,
+ an own
+`Symbol.iterator` or a reassigned `constructor` are outside the model.
+ Measured in this workspace at the time
+of the decision,
+ `extends Array` occurs zero times outside a decision document and `Symbol.species` appears
+only in this plugin's own test and one source comment.
+ That is workspace evidence,
+ not a boundary guarantee:
+an exported surface that genuinely accepts adversarial collections marks them `ForeignHostCapability` and
+documents the effects with `@mutates`,
+ which is the mechanism that already exists for exactly that.
+
 ## Consequences, measured
 
 - `readonly-catalog-free-invalid.ts` moves from 19 diagnostics to 16,
@@ -546,3 +624,71 @@ back is attributed to the parameter it came from.
  not a table entry,
  and it is not
 attempted here.
+
+## A channel that is narrow conditionally, added 2026-08-07
+
+`join` was absent from the table, and that absence was nearly right rather than an oversight.
+It reads `length` and each index,
+ both trusted by the baseline above,
+ and then calls `ToString` on
+what it read.
+ For a primitive element that runs nothing.
+ For an object element it reaches that
+value's own `toString` or `valueOf`,
+ which is user code.
+
+So its channel is narrow conditionally,
+ on a fact about the receiver's elements rather than about
+the member,
+ and the table is keyed by member name and cannot say that.
+ Leaving it out was the correct
+answer for a table that can only speak about members.
+
+`MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION` names the composition,
+ in the same shape
+`MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES` already composes two facts,
+ and
+`memberChannelIsVerifiedNarrow` discharges it only where every element type is strictly primitive.
+The probe admits the coercion hit for this channel alone,
+ exactly as it admits the species hook for
+the species channel,
+ so a member claiming it still fails on anything else.
+
+### Strictly primitive, and the fixture that insisted on it
+
+The first condition was "elements cannot carry mutable state",
+ reusing `typeCanCarryMutableState`.
+`elementCoercionEffect` in `readonly-member-channel-invalid.ts` refutes that in one run:
+ its element
+is `type SealedLabel = { readonly label: string; }`,
+ which carries nothing writable and is still an
+object,
+ so coercing it reaches whatever `toString` the runtime value actually has and no shape in
+the type system constrains that.
+
+Worth stating because the obvious helper is wrong for this too:
+ `receiverElementsArePrimitive` in
+`effect-primitive-origin.ts` delegates to the same looser test and would admit the sealed object.
+
+### Measured
+
+Workspace either side:
+ 3016 errors to 2967,
+ 1678 rule findings to 1628,
+ semantic failures and
+read-only offers unchanged at 0 and 33.
+ Sixty findings removed and ten added,
+ and every one of the
+ten is at a location that also appears among the removed:
+ its `join` cause was discharged and another
+cause remains,
+ so no parameter became opaque that was not opaque before.
+
+One diagnostic sentence moved rather than disappearing.
+ `values.join` over `readonly SealedLabel[]`
+still reports and now reads "collection calls" instead of "method calls",
+ because
+`COLLECTION_MEMBER_NAMES` derives from these tables.
+ That wording change is what a first reading of the
+failing pin mistook for a lost report,
+ and the finding was there the whole time.

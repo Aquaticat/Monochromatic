@@ -29,6 +29,52 @@ type StopInput = HookInputBase & {
    * Text content of Claude's final response. May be absent if the stop was triggered before any message was generated.
    */
   last_assistant_message?: string;
+
+  /**
+   * Background tasks known to the session, including ones still running.
+   *
+   * Verified against Claude Code 2.1.224 by dumping a live `Stop` payload; the
+   * published hook reference does not list it.
+   */
+  background_tasks?: readonly BackgroundTask[];
+
+  /**
+   * Scheduled jobs registered for the session; empty when none are set.
+   */
+  session_crons?: readonly unknown[];
+};
+
+/**
+ * One background task as reported on the `Stop` event.
+ *
+ * A `status` of `running` means the session is waiting on something the agent
+ * cannot advance by taking another turn.
+ */
+type BackgroundTask = {
+  /**
+   * Identifier used to address the task from tooling.
+   */
+  readonly id: string;
+
+  /**
+   * Task family, `shell` for backgrounded commands.
+   */
+  readonly type: string;
+
+  /**
+   * Lifecycle state; `running` while the task has not exited.
+   */
+  readonly status: string;
+
+  /**
+   * Human-readable summary shown in the session UI.
+   */
+  readonly description?: string;
+
+  /**
+   * Command backing the task, present for shell tasks.
+   */
+  readonly command?: string;
 };
 
 /**
@@ -205,6 +251,7 @@ type TaskCompletedOutput = HookOutputBase;
 //endregion
 
 export type {
+  BackgroundTask,
   StopInput,
   StopOutput,
   SubagentStartInput,

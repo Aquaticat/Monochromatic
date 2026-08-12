@@ -7,6 +7,7 @@
 import type {
   CallExpression,
   Expression,
+  Node,
 } from 'typescript/unstable/ast';
 import {
   type Checker,
@@ -15,15 +16,13 @@ import {
   type Type,
 } from 'typescript/unstable/sync';
 
-import {
-  callableDeclaration,
-  rootParameterOrigins,
-} from './effect-call-resolution.ts';
+import { callableDeclaration, } from './effect-call-resolution.ts';
+import { expressionOrigins, } from './effect-binding-origins.ts';
+import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { typeDefinitelyCallable, } from './effect-definitely-callable.ts';
-import { resultAliasesReceiverState, } from './effect-view-result-aliasing.ts';
+import { viewResultUnaccounted, } from './effect-view-result-gate.ts';
 import {
   expressionCanCarryMutableState,
-  resultExposesMutableState,
   typeCanCarryMutableState,
 } from './effect-primitive-origin.ts';
 import {
@@ -194,6 +193,8 @@ function observedParameterIndexes({
  *
  * @param checker - TypeScript checker resolving receiver and parameter types.
  *
+ * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ *
  * @param call - Read-only view call expression.
  *
  * @param receiver - Receiver expression rooted at a caller parameter.
@@ -212,17 +213,21 @@ function observedParameterIndexes({
 export function readonlyViewElementApplications({
   project,
   checker,
+  bindingOriginBySymbolId,
   call,
   receiver,
   receiverSlot,
   analysisRoot,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
+  readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly receiverSlot: EffectSlot;
   readonly analysisRoot?: string;
+  readonly body?: Node;
 },): readonly ElementApplication[] | typeof READONLY_VIEW_UNDISCHARGED {
   /**
    * Receiver collection type carrying the element type argument.
@@ -266,29 +271,13 @@ export function readonlyViewElementApplications({
   const resultType = checker.getTypeAtLocation(call,);
   if (resultType === undefined)
     return READONLY_VIEW_UNDISCHARGED;
-  if (resultExposesMutableState({
+  if (viewResultUnaccounted({
+    project,
     checker,
-    type: resultType,
-  },))
-    return READONLY_VIEW_UNDISCHARGED;
-  // Being a generic instantiation does not make a result freshly built. That is a
-  // fact about the type's representation, not about where the value came from, and
-  // reading it as provenance let one case through: `rows.reduce((kept) => kept)`
-  // over `string[][]` returns the accumulator it was handed, whose type is `string[]`,
-  // a type reference whose only argument is primitive. The exposure test above reads
-  // that as a fresh container of primitives and discharges, so `first.push('x')`
-  // mutated a caller-owned row unreported, while the same mutation through `rows[0]`
-  // was reported.
-  //
-  // Identity separates them. The member's signature is instantiated with the
-  // receiver's type arguments, so a result that is receiver state is the identical
-  // `Type` instance rather than merely an equivalent one, exactly as observed
-  // positions are matched. State-carrying only: a `readonly string[]` filtered to
-  // `string[]` shares the primitive element type and exposes nothing.
-  if (resultAliasesReceiverState({
-    checker,
+    call,
     resultType,
     elementTypes,
+    ...(body === undefined) ? {} : { body, },
   },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
@@ -333,16 +322,31 @@ export function readonlyViewElementApplications({
   // Anything else passed alongside the observers reaches the member by a route
   // the element-flow derivation does not describe, `map`'s `thisArg` being the
   // standing example, so state arriving that way leaves the call underived.
+  /* "Arriving" is the whole of it. Asking whether the argument's type can carry state asked
+   * something wider: a fold's `[]` seed is an object, so the type test said yes, while the
+   * value holds nothing at the moment of the call and nothing the receiver owns can arrive
+   * through it. What the observer puts in afterwards is the observer's effect. */
   if (typedArguments
     .some(function unobservedArgument({ argument, },): boolean {
-      return (!observers
+      if (observers
         .some(function isObserver(observer,): boolean {
           return observer.argument === argument;
         },))
-        && expressionCanCarryMutableState({
-          checker,
-          node: argument,
-        },);
+        return false;
+      if (!expressionCanCarryMutableState({
+        checker,
+        node: argument,
+      },))
+        return false;
+      /**
+       * Caller parameters this argument already holds when the call is made.
+       */
+      const arriving = expressionOrigins({
+        project,
+        bindingOriginBySymbolId,
+        node: argument,
+      },);
+      return arriving.size > 0;
     },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
@@ -422,7 +426,7 @@ export function readonlyViewElementApplications({
  *
  * @param call - Read-only view call expression.
  *
- * @param receiver - Receiver expression whose parameter root is required.
+ * @param receiver - Receiver expression whose element origins are required.
  *
  * @param summary - Caller summary receiving derived relations.
  *
@@ -445,6 +449,7 @@ export function recordReadonlyViewApplications({
   receiver,
   summary,
   analysisRoot,
+  body,
 }: {
   readonly project: Project;
   readonly checker: Checker;
@@ -453,15 +458,29 @@ export function recordReadonlyViewApplications({
   readonly receiver: Expression;
   readonly summary: MutableEffectSummary;
   readonly analysisRoot?: string;
+  readonly body?: Node;
 },): boolean {
+  // The element question rather than the value question, and the two differ exactly
+  // where this derivation is needed most. A receiver that is a container another
+  // member built, `rows.filter(keep).reduce(fold, 0)` in either its chained or its
+  // bound spelling, is a value no parameter holds, so asking which parameter owns it
+  // answers nothing and this returns before deriving anything. The call then falls to
+  // the receiver claim, which cannot answer for a member carrying an observer, and the
+  // parameter stayed opaque for a fold that reads a length. Asking where the receiver's
+  // elements came from answers the parameter, which is what the observer derivation is
+  // about: the observer receives elements, never the container.
+  //
+  // Widening only, never narrowing: for a receiver that is a parameter the element walk
+  // finds no declaration initializer to follow and falls back to exactly the value
+  // origins, which is why every container fixture reads identically across the change.
   /**
-   * Caller parameters owning receiver, when receiver can carry mutable state.
+   * Caller parameters owning receiver elements, when receiver can carry mutable state.
    */
   const receiverOrigins = expressionCanCarryMutableState({
       checker,
       node: receiver,
     },)
-    ? rootParameterOrigins({
+    ? expressionElementOrigins({
       project,
       bindingOriginBySymbolId,
       node: receiver,
@@ -485,9 +504,11 @@ export function recordReadonlyViewApplications({
     const applications = readonlyViewElementApplications({
       project,
       checker,
+      bindingOriginBySymbolId,
       call,
       receiver,
       receiverSlot,
+      ...(body === undefined) ? {} : { body, },
       ...(analysisRoot === undefined) ? {} : { analysisRoot, },
     },);
     if (applications === READONLY_VIEW_UNDISCHARGED)

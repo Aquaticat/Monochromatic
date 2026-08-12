@@ -52,10 +52,68 @@ export const MEMBER_CHANNEL_RECEIVER_INDEX: unique symbol = Symbol(
 );
 
 /**
+ * Member reaching own-index access and the species construction channel.
+ *
+ * `Array.prototype.slice` builds its result through `ArraySpeciesCreate`, which reads
+ * `constructor[Symbol.species]` and calls what it returns. That is caller-selected code,
+ * and the stated trust baseline in
+ * `doc/decision/prefer-readonly-member-channel-authority.md` admits it: an own
+ * `constructor` and an own `Symbol.iterator` are both ordinary data properties, so
+ * refusing species while `for...of` and spread are accepted drew a line no principle
+ * supports.
+ *
+ * Kept distinct from the own-index channel rather than merged into it, because what each
+ * probe must prove differs. A member here is permitted to reach the species hook and
+ * nothing wider, so the probe still fails it for element coercion or a property read.
+ *
+ * This says nothing about what the result carries. `effect-result-provenance-authority.ts`
+ * answers that separately, and a container result stays tracked through its own relation.
+ */
+export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES: unique symbol = Symbol(
+  'collection member reaches own-index access and the species construction channel',
+);
+
+/**
  * Member whose channel no probe has established, so it stays failing closed.
  *
  * Absence from the table is never a claim that a member dispatches, only that
  * nothing here has shown it does not.
+ */
+/**
+ * Member reads its receiver by index and then coerces each element it read.
+ *
+ * Narrow conditionally rather than absolutely, which is why it is its own symbol.
+ * `memberChannelIsVerifiedNarrow` discharges it only where every element type is strictly
+ * primitive, and withholds otherwise.
+ */
+export const MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION: unique symbol = Symbol(
+  'collection member reads its receiver by index and coerces each element it read',
+);
+
+/**
+ * Member reads its own internal slot and whatever the caller handed it, and nothing else.
+ *
+ * Narrow conditionally, like the coercion channel and for the same kind of reason: what the
+ * member can reach is decided at the call site rather than by the member name.
+ * `memberChannelIsVerifiedNarrow` discharges it only where the call passes no arguments at
+ * all, and withholds otherwise.
+ *
+ * The date locale members are the case. ECMA-402 has them process caller-supplied `locales`
+ * and `options`, reading properties off the options object and so running any accessor on
+ * it, which is why the name alone cannot answer. Called with an empty argument list there is
+ * no such object: the member reads `[[DateValue]]`, consults ambient locale data, and
+ * returns a string. Measured on `pubDateDate.toLocaleString()` in
+ * `package/webapp-productivity/rss/src/html-item.ts`, which passes nothing.
+ *
+ * Ambient locale and time zone change what the string says and not what the receiver holds,
+ * so they are not a channel into caller state.
+ */
+export const MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS: unique symbol = Symbol(
+  'collection member reads its internal slot and whatever the caller passed it',
+);
+
+/**
+ * Member opens a channel this authority has not verified.
  */
 export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
   'collection member has no verified user-code channel',
@@ -66,7 +124,10 @@ export const MEMBER_CHANNEL_UNPROVEN: unique symbol = Symbol(
  */
 export type MemberUserCodeChannel =
   | typeof MEMBER_CHANNEL_INTERNAL_SLOT
-  | typeof MEMBER_CHANNEL_RECEIVER_INDEX;
+  | typeof MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES
+  | typeof MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION;
 
 /**
  * Default-library collection members whose user-code channel is verified, by owner.
@@ -97,7 +158,9 @@ const CHANNELS_BY_OWNER: Readonly<
   Record<string, Readonly<Record<string, MemberUserCodeChannel>>>
 > = {
   Array: {
+    join: MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
+    slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
     indexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
     lastIndexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -116,7 +179,9 @@ const CHANNELS_BY_OWNER: Readonly<
     entries: MEMBER_CHANNEL_RECEIVER_INDEX,
   },
   ReadonlyArray: {
+    join: MEMBER_CHANNEL_RECEIVER_INDEX_AND_COERCION,
     at: MEMBER_CHANNEL_RECEIVER_INDEX,
+    slice: MEMBER_CHANNEL_RECEIVER_INDEX_AND_SPECIES,
     includes: MEMBER_CHANNEL_RECEIVER_INDEX,
     indexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
     lastIndexOf: MEMBER_CHANNEL_RECEIVER_INDEX,
@@ -126,6 +191,59 @@ const CHANNELS_BY_OWNER: Readonly<
     keys: MEMBER_CHANNEL_RECEIVER_INDEX,
     values: MEMBER_CHANNEL_RECEIVER_INDEX,
     entries: MEMBER_CHANNEL_RECEIVER_INDEX,
+  },
+  DataView: {
+    getBigInt64: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getBigUint64: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getFloat16: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getFloat32: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getFloat64: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getInt8: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getInt16: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getInt32: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getUint8: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getUint16: MEMBER_CHANNEL_INTERNAL_SLOT,
+    getUint32: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setBigInt64: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setBigUint64: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setFloat16: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setFloat32: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setFloat64: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setInt8: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setInt16: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setInt32: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setUint8: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setUint16: MEMBER_CHANNEL_INTERNAL_SLOT,
+    setUint32: MEMBER_CHANNEL_INTERNAL_SLOT,
+  },
+  /* One member rather than the twenty-nine the read-only view membership declares, and
+   * the asymmetry is the design rather than an unfinished table. Membership must be
+   * complete, because omitting a member there claims it restructures its receiver. A
+   * channel entry claims the opposite direction, so an absent member simply stays
+   * unproven, and listing only what a probe has driven is what keeps this table honest.
+   *
+   * `toISOString` reads `[[DateValue]]` and formats it, reaching no property of its
+   * receiver. Its siblings are not all so simple: `toJSON` performs `ToPrimitive` and
+   * then `Invoke(O, "toISOString")`, both receiver-selected lookups, and the locale
+   * members process caller-supplied `locales` and `options` this table cannot see from a
+   * member name alone. They stay off until a probe drives them. */
+  Date: {
+    toISOString: MEMBER_CHANNEL_INTERNAL_SLOT,
+    /* Asserted for one reason and it is not this table's semantics: `toLocaleString` is a
+     * member of `Object.prototype`, so an object literal checked against
+     * `Record<string, MemberUserCodeChannel>` meets the apparent member at that key and
+     * widens the `unique symbol` to `symbol`. Reduced to four lines and reproduced against
+     * TypeScript 7.0.2, where the same literal accepts `toISOString` and
+     * `toLocaleDateString` beside it and rejects only this key. Its two siblings need no
+     * assertion, which is the tell.
+     *
+     * What holds this entry is the probe rather than the type. An assertion accepts any
+     * member of the union, so the compiler would take a wrong channel here as readily as
+     * the right one; `effect-member-channel-authority.unit.test.ts` drives all three locale
+     * members in both directions and is what would catch that. */
+    toLocaleString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS as MemberUserCodeChannel,
+    toLocaleDateString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
+    toLocaleTimeString: MEMBER_CHANNEL_INTERNAL_SLOT_AND_ARGUMENTS,
   },
   Map: {
     get: MEMBER_CHANNEL_INTERNAL_SLOT,
@@ -188,7 +306,7 @@ export const MEMBER_CHANNELS_BY_INTERFACE: ReadonlyMap<
  * this number, which is the point at which the decision document and the probe
  * requirement are unavoidable.
  */
-export const VERIFIED_MEMBER_CHANNEL_COUNT = 51;
+export const VERIFIED_MEMBER_CHANNEL_COUNT = 81;
 
 /**
  * Members returning an iterator, whose entries claim creation and drainage together.
@@ -228,6 +346,82 @@ export const ITERATOR_MEMBER_NAMES: ReadonlySet<string> = new Set([
   'values',
   'entries',
 ],);
+
+/**
+ * Members that invoke a caller-supplied observer, whatever their ambient channel is.
+ *
+ * The channel above and this set answer different halves of one question, and collapsing
+ * them was the first draft of the trust-baseline work. `filter` reaches own-index access
+ * and default species, both trusted, and it also calls whatever predicate the caller
+ * passed. Admitting it to the table on the strength of the first half alone would
+ * discharge `rows.filter(foreignMutatingPredicate)` on a receiver every element of which
+ * that predicate received.
+ *
+ * So the ambient half may be recorded in the table and the observer half may not be
+ * discharged there at all: it belongs to `recordReadonlyViewApplications`, which resolves
+ * the observer to owned source and derives what its effects do to the receiver, or leaves
+ * the call undischarged when it cannot.
+ *
+ * Keyed by member name alone, deliberately over-approximating. A name listed here can
+ * only withhold a discharge, never grant one, so a name that turns out to take no
+ * observer costs precision and nothing else. `sort` and `toSorted` are listed although
+ * their comparator is optional, because an absent comparator runs the default one, which
+ * coerces elements and is not owned source either way.
+ *
+ * Enforced by `effect-member-channel-authority.unit.test.ts`, which fails when any entry
+ * in the table names a member listed here.
+ */
+export const OBSERVER_BEARING_MEMBER_NAMES: ReadonlySet<string> = new Set([
+  'every',
+  'filter',
+  'find',
+  'findIndex',
+  'findLast',
+  'findLastIndex',
+  'flatMap',
+  'forEach',
+  'map',
+  'reduce',
+  'reduceRight',
+  'some',
+  'sort',
+  'toSorted',
+],);
+
+/**
+ * Every default-library collection member name this rule recognises, for any purpose.
+ *
+ * Derived from the tables rather than written out, so it cannot drift from them. It exists
+ * for one consumer, the diagnostic, which needs to know whether a finding is entirely about
+ * collection calls in order to say something true about them: the remediations that fit an
+ * unresolved package call fit none of these, which is what issue #414 reports.
+ *
+ * Recognition only. Membership here proves nothing about a member's channel or its result,
+ * and no discharge may consult it.
+ */
+export const COLLECTION_MEMBER_NAMES: ReadonlySet<string> = new Set([
+  ...Object.values(CHANNELS_BY_OWNER,)
+    .flatMap(function ownerMembers(members,): readonly string[] {
+      return Object.keys(members,);
+    },),
+  ...OBSERVER_BEARING_MEMBER_NAMES,
+],);
+
+/**
+ * Tests whether a member invokes a caller-supplied observer.
+ *
+ * @param memberName - Member being called.
+ *
+ * @returns whether the member hands receiver state to a function the caller passed.
+ *
+ * @example
+ * ```ts
+ * memberInvokesObserver({ memberName: 'filter' });
+ * ```
+ */
+export function memberInvokesObserver({ memberName, }: { readonly memberName: string; },): boolean {
+  return OBSERVER_BEARING_MEMBER_NAMES.has(memberName,);
+}
 
 /**
  * Resolves which user-code channel a collection member is verified to open.

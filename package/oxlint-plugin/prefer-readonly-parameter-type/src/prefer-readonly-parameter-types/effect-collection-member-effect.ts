@@ -21,11 +21,15 @@ import {
   memberChannelIsVerifiedNarrow,
 } from './effect-default-library-readonly-view.ts';
 import { rootParameterOrigins, } from './effect-call-resolution.ts';
+import { receiverHoldsConstructedContainer, } from './effect-container-literal-holder.ts';
+import { receiverElementsArePrimitiveHere, } from './effect-receiver-elements.ts';
 import {
+  callResultElementReceiver,
   callResultReceiver,
   RESULT_NOT_RECEIVER_STATE,
 } from './effect-member-result-relation.ts';
 import { resultEscapesCallable, } from './effect-result-escape.ts';
+import { returnedResultDischargeable, } from './effect-returned-result-discharge.ts';
 import {
   expressionCanCarryMutableState,
   resultExposesMutableState,
@@ -108,9 +112,22 @@ function receiverClaimAnswerable({
   readonly declaration: Node;
   readonly body?: Node;
 },): boolean {
+  /**
+   * How many arguments this call site passes, deciding the argument-conditional channel.
+   */
+  const passedArgumentCount = call.arguments
+    .length;
   if (!memberChannelIsVerifiedNarrow({
     project,
     declaration,
+    elementsArePrimitive: receiverElementsArePrimitiveHere({
+      checker,
+      call,
+    },),
+    /* Asked of this call rather than of the member, because that is where the answer
+     * lives: the same locale member reaches an accessor when handed an options object and
+     * reaches nothing when handed nothing. */
+    argumentsAreAbsent: passedArgumentCount === 0,
   },))
     return false;
   /**
@@ -130,16 +147,40 @@ function receiverClaimAnswerable({
    * body there is nothing to scan, so nothing can be shown non-escaping. */
   if (body === undefined)
     return false;
+  /* Asked once, before either relation, because the escape test is relation-agnostic: it
+   * follows this call's result to whatever binding holds it and answers about every holder,
+   * whichever relation the result satisfies. */
+  /* Both gates ask this for the same discharge, so narrowing one alone changes nothing. */
+  if (resultEscapesCallable({
+      project,
+      body,
+      call,
+      elementStepsAttributed: true,
+    },)
+    && (!returnedResultDischargeable({
+      project,
+      call,
+      body,
+    },)))
+    return false;
+  /* Either relation licenses the discharge on that same condition. A direct result is the
+   * receiver's own value and a container result holds them, and once provenance tracks
+   * either, the opacity report is redundant exactly while every use stays inside this
+   * callable. The element step is what makes the container half true: a write through
+   * `copy[0]`, a destructured element, an iterated one or a spread one is attributed to the
+   * receiver's parameter, so this trades a report for an attribution rather than for
+   * silence. Landing it while those attributions were empty would produce a false offer,
+   * which is what `effect-summaries.unit.test.ts` pins. */
   return (callResultReceiver({
       project,
       checker,
       call,
     },) !== RESULT_NOT_RECEIVER_STATE)
-    && (!resultEscapesCallable({
+    || (callResultElementReceiver({
       project,
-      body,
+      checker,
       call,
-    },));
+    },) !== RESULT_NOT_RECEIVER_STATE);
 }
 
 /**
@@ -179,13 +220,14 @@ function receiverClaimAnswerable({
  *
  * @example
  * ```ts
- * recordCollectionMemberEffect({ project, checker, bindingOriginBySymbolId, call, receiver, declaration, summary });
+ * recordCollectionMemberEffect({ project, checker, bindingOriginBySymbolId, containerLiteralHolders, call, receiver, declaration, summary });
  * ```
  */
 export function recordCollectionMemberEffect({
   project,
   checker,
   bindingOriginBySymbolId,
+  containerLiteralHolders,
   call,
   receiver,
   declaration,
@@ -196,6 +238,7 @@ export function recordCollectionMemberEffect({
   readonly project: Project;
   readonly checker: Checker;
   readonly bindingOriginBySymbolId: ReadonlyMap<number, SlotOrigins>;
+  readonly containerLiteralHolders: ReadonlySet<number>;
   readonly call: CallExpression;
   readonly receiver: Expression;
   readonly declaration: Node;
@@ -218,9 +261,25 @@ export function recordCollectionMemberEffect({
      * Caller parameters owning receiver, when receiver can carry mutable state.
      */
     const mutatedParameterOrigins = expressionCanCarryMutableState({
-        checker,
-        node: receiver,
-      },)
+          checker,
+          node: receiver,
+        },)
+        /* A container this callable built is not the caller's, however much of the
+         * caller's state it holds. `const stack = [root,]; stack.pop();` restructures the
+         * fresh array and leaves `root` alone, and charging the receiver's origins there
+         * reported a write nothing performs, on the work-stack shape `AGENTS.md` requires
+         * over recursion. Reachability runs the other way: the container reaches the
+         * parameter, and the parameter does not reach the container.
+         *
+         * Only this charge consults the record. Origins are untouched, so a write made
+         * *through* the container, `stack[0].label = x`, keeps its attribution through the
+         * element path, which is what makes suppressing this one safe rather than a hole.
+         * Recorded in `doc/planning/prefer-readonly-container-value-provenance.md`. */
+        && (!receiverHoldsConstructedContainer({
+          project,
+          containerLiteralHolders,
+          node: receiver,
+        },))
       ? rootParameterOrigins({
         project,
         bindingOriginBySymbolId,
@@ -255,6 +314,7 @@ export function recordCollectionMemberEffect({
     receiver,
     summary,
     ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+    ...(body === undefined) ? {} : { body, },
   },))
     return COLLECTION_CALL_DERIVED;
   return receiverClaimAnswerable({
