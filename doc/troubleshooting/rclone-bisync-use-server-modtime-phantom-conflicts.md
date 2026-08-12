@@ -171,6 +171,31 @@ This doubles as the positive control:
  the phantom has to be observable on a file nobody edited,
  otherwise the mechanism above is not what is happening.
 
+### The fix reproduced and proved on a throwaway fixture
+
+Run against two local directories under `~/temp/agent`,
+ never against the real bucket.
+Twenty files,
+ so that changing one stays under bisync's "all files were changed" safety abort;
+ an earlier single-file fixture tripped that guard and proved nothing.
+A genuine conflict is created by changing `f3.txt` on **both** sides,
+ with the Path2 copy given the later mtime by `touch -d`:
+
+```text
+DEFAULT (current behaviour, no flag)
+  files named f3*: f3.txt.conflict1 f3.txt.conflict2
+  f3.txt: ABSENT (original name destroyed)
+
+WITH --conflict-resolve newer
+  files named f3*: f3.txt f3.txt.conflict1
+  f3.txt content: FROM-B-newer
+```
+
+The first block reproduces the reported symptom exactly.
+The second shows the flag doing the two things that matter:
+ the original filename survives and holds the newer bytes,
+ and the losing copy is retained rather than deleted.
+
 ### The cost that motivated the flag
 
 Listing all 9948 objects,
@@ -178,20 +203,36 @@ Listing all 9948 objects,
  `--fast-list --checkers 32`:
 
 - with `--use-server-modtime`:
-   3.1 s
+   3.08 s
 - without it (per-object HEAD):
-   still running past 12 minutes when this was written
+   19 min 27 s
 
-So the flag is not a micro-optimisation and the sibling document's "took minutes" is not an
-exaggeration.
-Any fix that reintroduces the per-object HEAD pays that on every hourly run.
+Both returned the same object count,
+ so the difference is the per-object HEAD and nothing else.
+That is a factor of roughly 380.
+The flag is not a micro-optimisation,
+ and the sibling document's "took minutes" understates it.
+
+This settles the ranking below rather than merely informing it.
+The timer fires hourly,
+ so a 19-minute listing would spend a third of every hour in a run that currently takes
+seconds,
+ and `TimeoutStartSec=3000` leaves under 31 minutes of margin before a stalled run is reaped.
+Any fix that reintroduces the per-object HEAD pays that on every run,
+ forever,
+ to correct a comparison that a single flag already resolves correctly.
 
 ## Candidate fixes
 
 Ranked for an operator whose priority is never silently losing the newest version of a file
 they are actively editing.
-None is deployed;
- changing comparison flags requires a one-off `--resync` to re-baseline.
+
+Option 1 is now deployed,
+ chosen by the operator after the measurement above.
+Adding `--conflict-resolve` does **not** require a `--resync`,
+ unlike a filter change;
+ verified on a throwaway fixture by adding the flag mid-stream between two runs,
+ which completed normally with exit 0.
 
 1.  **`--conflict-resolve newer`, on its own.**
     Cheapest correct-in-practice fix,
