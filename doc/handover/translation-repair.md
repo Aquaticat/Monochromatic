@@ -6995,3 +6995,60 @@ A gap between the first two measures how far a false accepted issue can talk the
  from QUALITY needs the deterministic preservation check to carry the safety
  verdict, since no model-based probe can be trusted while it is fed accepted
  issues as ground truth.
+
+### The labelling arm ran, and it refutes the hypothesis it was built for
+
+```text
+deletion/unlabelled   prior = unrelated issue        3/3 removal-corroborated
+deletion/mislabelled  prior = FALSE addition claim   2/3 removal-corroborated, 1 none
+deletion/licensed     prior = TRUE addition claim    3/3 none, which is correct
+```
+
+Read them in order.
+The probe DOES see a deleted clause the source supports.
+A false accepted issue naming that clause costs exactly one voice of three, so
+ the labelling effect is real and modest rather than silencing.
+The negative control is perfect, and it is the one that matters most: the probe
+ stays quiet when the deletion really is licensed, so it is reading the original
+ rather than flagging every deletion.
+
+So probe blindness is NOT simply downstream of detection precision.
+That was the leading hypothesis and the measurement does not support it.
+
+Two other candidate explanations died in the same pass:
+
+-   Region count per call. Production sends one region per call in 848 of 854
+     calls, which is exactly what the fixture sends.
+-   Prior-issue count. Raise rate rises slightly with more listed issues, 0.044
+     at one issue to 0.061 at six or more, which is the wrong direction for a
+     list that silences.
+
+### What is left, and it is now a narrow question
+
+The fixture damage is a clean clause deletion with a verbatim span present in
+ BEFORE and absent from AFTER.
+Production damage is usually a compression or rewrite, and judging it needs the
+ cross-lingual question of whether the deleted English was licensed by Chinese
+ prose elsewhere.
+The probe scores 3/3 on the first and near zero on the second.
+
+Probers also disagree enormously about how often anything is worth raising,
+ measured across 857 regions each:
+
+```text
+hf:openai/gpt-oss-120b                    81 claims   rate 0.095
+hf:nvidia/NVIDIA-Nemotron-3-Super-120B    45 claims   rate 0.053
+hf:Qwen/Qwen3.6-27B                        5 claims   rate 0.006
+```
+
+Qwen raised claims on both blatant fixtures, so it is not broken; it is far more
+ conservative than the other two on real edits, and a third of the ensemble
+ contributing almost nothing drags a majority-of-three toward silence.
+
+### Next action for `#66`
+
+Re-probe the specific regions a human graded as damaged, once with their
+ accepted issues shown and once with them withheld.
+That is the only remaining way to tell whether production damage is invisible
+ because it is subtle or because the label suppresses it, and unlike the cat
+ fixtures it uses cases already known to be damaged.
