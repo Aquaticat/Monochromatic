@@ -947,6 +947,234 @@ assertions (`expected '✳ X' to equal 'π X'`) that predate the override
 work;
  those are test-fixture issues to fix separately.
 
+### `image-size` (removed through an `@loaders.gl/textures` override)
+
+#### Symptom
+
+On 2026-08-12,
+Dependabot alerts
+[#77](https://github.com/Aquaticat/Monochromatic/security/dependabot/77) and
+[#78](https://github.com/Aquaticat/Monochromatic/security/dependabot/78)
+reported `image-size@0.7.5` for
+GHSA-5p2g-fcmc-qvqq / CVE-2025-71329 and
+GHSA-w3rx-r6r6-pgpr / CVE-2025-71330.
+Both advisories cover every published `image-size` version through `2.0.2`,
+and both list no patched version.
+
+The pre-remediation dependency chain was:
+
+```text
+@monochromatic-dev/dev-script-deps-cube
+└── @deck.gl/mesh-layers@9.3.9
+    └── @loaders.gl/gltf@4.4.4
+        └── @loaders.gl/textures@4.4.4
+            └── texture-compressor@1.0.2
+                └── image-size@0.7.5
+```
+
+`pnpm why image-size --recursive` reproduced that chain and found no second consumer.
+
+#### Root cause
+
+The npm package `@loaders.gl/textures@4.4.4` was inspected at its registry
+`gitHead`,
+`visgl/loaders.gl@44e7a4e978a63fad0ee257fedb688826f5f279e5`.
+`modules/textures/package.json:77-85` declares `texture-compressor`
+unconditionally:
+
+```json
+"dependencies": {
+  "@loaders.gl/images": "4.4.4",
+  "@loaders.gl/loader-utils": "4.4.4",
+  "@loaders.gl/schema": "4.4.4",
+  "@loaders.gl/worker-utils": "4.4.4",
+  "@math.gl/types": "^4.1.0",
+  "ktx-parse": "^0.7.0",
+  "texture-compressor": "^1.0.2"
+}
+```
+
+The package never imports the dependency as JavaScript.
+At the same commit,
+`git grep texture-compressor -- modules/textures` found only the manifest edge,
+a documentation link,
+a comment,
+and the CLI argument.
+`modules/textures/src/lib/encoders/encode-texture.ts:17-30` invokes the name
+through `npx`:
+
+```ts
+const args = [
+  // Note: our actual executable is `npx`, so `texture-compressor` is an argument
+  'texture-compressor',
+  '--type', 's3tc',
+  '--compression', 'DXT1',
+  '--quality', 'normal',
+  '--input', inputUrl,
+  '--output', outputUrl
+];
+const childProcess = new ChildProcessProxy();
+await childProcess.start({
+  command: 'npx',
+  arguments: args,
+  spawn: options
+});
+```
+
+The declaration therefore exists only to put the CLI on `npx`'s local search path
+for the experimental `CompressedTextureWriter`.
+The workspace never names that writer or its encoder.
+Its only `@deck.gl/mesh-layers` imports are `SimpleMeshLayer` in
+`package/dev-script/deps-cube/src/deck-layers.ts:33` and
+`package/dev-script/deps-cube/src/deck-scatter.ts:31`.
+A repository-wide search found no first-party
+`CompressedTextureWriter`,
+`encodeImageURLToCompressedTextureURL`,
+or direct `@loaders.gl/textures` reference.
+
+The upstream diagnosis matches this source trace.
+[visgl/loaders.gl#3552](https://github.com/visgl/loaders.gl/issues/3552)
+documented the unconditional vulnerable chain,
+and
+[visgl/loaders.gl#3553](https://github.com/visgl/loaders.gl/pull/3553)
+removed it on 2026-08-12 at merge commit
+`ce8b32afcd24c5d59b96321424f2bc9c8f83e1f5`.
+That commit's `docs/upgrade-guide.md:149-152` says the CLI was only used by
+`CompressedTextureWriter` and all other texture loaders and writers are unaffected.
+No stable release contains the change yet:
+`@loaders.gl/textures@4.4.4` remains the latest stable package,
+while the source tree is on `5.0.0-alpha.1`.
+
+#### Verified workaround
+
+`pnpm-workspace.yaml` now carries this parent-scoped removal:
+
+```yaml
+'@loaders.gl/textures>texture-compressor': '-'
+```
+
+This matches the dependency removal already merged upstream without replacing
+`@deck.gl/mesh-layers` or changing the dependency-audit visualization.
+The scope matters:
+if another package deliberately adopts `CompressedTextureWriter`,
+it must install and audit a compressor itself rather than inheriting this removal
+silently.
+
+Tradeoff:
+the installed 4.4.4 writer still runs `npx texture-compressor` without
+`--no`,
+so invoking that unused writer could ask npm to download the missing CLI.
+The workspace does not expose or invoke the writer.
+Upstream merge commit `ce8b32a` adds `npx --no -- texture-compressor` so its
+unreleased writer rejects instead of downloading when the application does not
+supply the CLI.
+
+#### Verification
+
+The remediation was tested with pnpm 11.21.0 on 2026-08-12.
+
+**Vulnerable catalog before the override:**
+
+- `pnpm why image-size --recursive` reported the single chain through
+  `texture-compressor@1.0.2`.
+- `pnpm-lock.yaml` contained resolution and snapshot entries for
+  `texture-compressor@1.0.2` and `image-size@0.7.5`.
+- GitHub reported alerts #77 and #78 as open against `pnpm-lock.yaml`.
+
+**Clean catalog after the override:**
+
+- `mise run prepare:pnpm:install` completed successfully and removed both packages.
+- `pnpm why image-size --recursive` and
+  `pnpm why texture-compressor --recursive` produced no dependency paths.
+- An uncapped search of `pnpm-lock.yaml` found no `image-size` or
+  `texture-compressor` resolution,
+  snapshot,
+  or dependency edge.
+- `pnpm audit --json` reported no advisories:
+  zero low,
+  moderate,
+  high,
+  or critical vulnerabilities across 718 resolved dependencies.
+
+The generated lockfile also synchronized stale catalog specifier metadata already
+present in `pnpm-workspace.yaml`.
+Those entries retained their existing resolved versions;
+the only removed package resolutions were `texture-compressor@1.0.2` and
+`image-size@0.7.5`.
+
+#### What does not work
+
+- Upgrading `@deck.gl/mesh-layers` from 9.3.9 to the current 9.3.10 does not
+  remove the chain.
+  Its published manifest still requests `@loaders.gl/gltf@^4.4.3`,
+  and the latest stable `@loaders.gl/textures@4.4.4` still declares
+  `texture-compressor`.
+- Overriding `image-size` to another npm release cannot patch the advisories.
+  GitHub marks every release through the latest `2.0.2` vulnerable and lists no
+  patched version.
+- Patching `image-size@0.7.5` locally would retain a version that Dependabot
+  identifies as vulnerable,
+  and it would maintain dead code that no workspace path uses.
+- Dismissing the alerts as unused would leave the vulnerable package installed.
+  Removing the unreachable CLI edge produces a clean dependency graph instead.
+- Removing `@deck.gl/mesh-layers` would remove the vulnerable chain,
+  but it would also remove the `SimpleMeshLayer` geometry used for every scatter
+  glyph and axis arrowhead.
+
+#### Upstream filing decision
+
+No `.out-of-scope/` entry covers loaders.gl,
+`texture-compressor`,
+or dependency security remediation.
+The upstream issue and pull-request searches found exact duplicates,
+so no new issue or comment should be posted.
+Issue #3552 and merged PR #3553 already contain the dependency chain,
+source trace,
+workaround,
+and verification;
+a comment from this workspace would add nothing.
+Open follow-up PR #3555 only changes how an application-supplied compressor is
+resolved and does not restore the vulnerable dependency for ordinary consumers.
+
+The filing constraints resolve as follows:
+
+1. **Upstream's fault?**
+   Yes.
+   Version 4.4.4 installs a deprecated CLI for every textures consumer even though
+   source code only launches it for one experimental writer.
+2. **Can upstream fix it?**
+   Yes.
+   PR #3553 removed the manifest edge while preserving the application-supplied
+   CLI path.
+3. **Does upstream support the use case?**
+   Yes.
+   `@loaders.gl/textures` documents `CompressedTextureWriter`,
+   and package installation without an unused vulnerable tool is part of that
+   published surface.
+4. **Would upstream welcome the contribution?**
+   Yes.
+   `CONTRIBUTING.md:1-13` welcomes contributions,
+   `.github/ISSUE_TEMPLATE/bug-report.yml:13-28` requests actionable,
+   deduplicated reports,
+   no contribution policy or tracker result bans AI-assisted work,
+   and maintainers merged PR #3553.
+5. **Will upstream fix it?**
+   Yes,
+   already fixed on `master` by merge commit `ce8b32a`.
+6. **Was a minimal compatible fix prototyped?**
+   Yes.
+   The candidate fix was absent from installed 4.4.4 and present on current
+   `master`.
+   The workspace applied the same dependency removal at its consumer boundary,
+   regenerated the lockfile,
+   and verified the clean graph and zero-advisory audit.
+
+**Decision:
+post nothing upstream.**
+The exact issue is closed by a merged fix,
+and this section is the workspace audit trail until a stable loaders.gl release
+carries it.
+
 ### ms (kept intentionally; no override)
 
 `pnpm install` emits no warning for `ms`;
