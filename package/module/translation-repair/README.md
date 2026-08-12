@@ -259,6 +259,19 @@ not that what it reports is right.
 Nothing here should be taken as evidence that an accepted issue is a real one
 until this gate is measured and passes.
 
+The REPAIR half is not fit to be measured yet, and that is a finding rather
+than a gap in the schedule.
+Round three's repair sheet was deliberately left ungraded:
+reading it showed repairs that fix their claim while deleting nearby
+source-supported content, including a contributor credit removed by an edit
+asked only to change a colon,
+and 21 of 50 edits replacing a span more than 1.35 times the quoted defect.
+The introduced-defect probe, which exists to catch exactly that, reported no
+finding from any prober on every one of those repairs.
+So a shadow-mode probe reading clean is currently false assurance, not
+evidence, and repair quality claims should be read as unestablished until
+that instrument is fixed.
+
 Every number above comes from a graded measurement rather than a self-report.
 Where a stage grades itself the figure is named as telemetry and excluded:
 `runIntroducedDefectProbe` ships in shadow mode for exactly that reason,
