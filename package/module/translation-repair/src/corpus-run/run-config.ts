@@ -50,9 +50,35 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
 ];
 
 /**
- * Role roster for a corpus run: all SIX critique and adjudicate, two edit
- * against each other, one refines the result for naturalness, and three check
+ * Role roster for a corpus run: all SIX critique and adjudicate, THREE edit
+ * against each other, THREE refine the result for naturalness, and three check
  * the shipped repair.
+ *
+ * THREE refiners rather than the two first proposed, because two does not
+ * achieve what widening was for. The quorum is `ceil(rosterSize / 2)`, which is
+ * 1 on a roster of two, so a two-refiner lane could still ship on one voice and
+ * the single-model failure this change exists to prevent would survive it. At
+ * three the quorum is 2 and a lone survivor cannot carry the stage. The same
+ * arithmetic is why editors are three and not two.
+ *
+ * Editors went from two to three and refiners from one to three on 2026-08-12,
+ * on the user's rule that the system must not have single-model failures.
+ * The reason is structural rather than a reaction to one incident:
+ * `gatherStageVoices` computes its quorum as `ceil(rosterSize / 2)`, which on a
+ * roster of two is satisfied by ONE voice and on a roster of one cannot fail at
+ * all. So the two-editor pair could ship a repair written by a single model
+ * while reporting a met quorum, and the single refiner could vanish entirely
+ * with nothing to report. Both stages now also retry to `full-roster` rather
+ * than to quorum, since the flat-rate plan does not meter retries and an
+ * independent voice is the whole product of an ensemble.
+ *
+ * GLM-4.7-Flash takes the third editor seat because it is the only model not
+ * already checking or editing, and the constraints leave no other choice:
+ * checkers must exclude every editor and refiner, judges need two disinterested
+ * seats, and the other three models hold the checker roster. It is also the
+ * model that most often loses its voice, which is now an argument FOR seating
+ * it here rather than against: a third editor that sometimes drops still leaves
+ * two, whereas the same model in the checker set would cost proof.
  *
  * The panel is six rather than seven because the provider withdrew two models
  * and only one replacement (Kimi-K3) appeared. `gatherStageVoices` computes
@@ -115,9 +141,14 @@ export const RUN_MODELS: RepairModels = {
   editorModelIds: [
     'hf:moonshotai/Kimi-K3',
     'hf:zai-org/GLM-5.2',
+    'hf:zai-org/GLM-4.7-Flash',
   ],
   judgeModelIds: RUN_ROSTER,
-  refinerModelIds: ['hf:moonshotai/Kimi-K3',],
+  refinerModelIds: [
+    'hf:moonshotai/Kimi-K3',
+    'hf:zai-org/GLM-5.2',
+    'hf:zai-org/GLM-4.7-Flash',
+  ],
   checkerModelIds: [
     'hf:Qwen/Qwen3.6-27B',
     'hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4',

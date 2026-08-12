@@ -153,6 +153,14 @@ export async function runEditorStage(
     responseFormat: EDITOR_RESPONSE_FORMAT,
     validate: isEditorReportWire,
     stage: 'editor',
+    // Every voice, not half of them. This stage is an ENSEMBLE, and the
+    // quorum rule computes ceil(rosterSize / 2), which on a small roster is
+    // satisfied by a single model: that is how one provider-side output
+    // change halved the editor pair on 71 of 405 chunks without any run
+    // reporting a fault. Retries cost tokens, which this plan does not
+    // meter, and losing an independent voice costs the property the stage
+    // exists to provide.
+    retryTarget: 'full-roster',
     l,
   },);
 
