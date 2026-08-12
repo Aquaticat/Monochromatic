@@ -126,6 +126,47 @@ It becomes destructive only when the local file **also** changes before that hea
 
 An editing session spanning two consecutive hourly runs meets that condition every time.
 
+### The phantom also reverses a local deletion
+
+Deleting a file locally while its remote counterpart carries a phantom does not delete it.
+bisync sees a change on Path1 and a deletion on Path2,
+ resolves in favour of the change,
+ and copies the remote object back down.
+The local deletion is undone and never reaches the remote.
+
+One run supplies both halves of the comparison at once.
+Eight files had been deleted locally in the same directory:
+ four whose remote objects bisync had uploaded,
+ and four whose remote objects bisync had created by server-side copy while resolving an
+earlier conflict.
+Only the uploaded four carried a phantom:
+
+```text
+INFO  : - Path1    File changed: time (newer) - DIR/file-c.md.conflict2
+INFO  : - Path2    File was deleted          - DIR/file-c.md.conflict1
+INFO  : - Path2    File was deleted          - DIR/file-c.md.conflict2
+INFO  : - Path1    Queue delete              - garage:.../DIR/file-c.md.conflict1
+INFO  : - Path1    Queue copy to Path2       - /local/.../DIR/file-c.md.conflict2
+```
+
+Same directory,
+ same run,
+ same local deletion,
+ opposite outcomes.
+The server-side-copied object took the delete;
+ the uploaded object was restored to the local disk.
+The two differ in nothing but provenance,
+ which makes this a natural experiment on the upload-path claim rather than another
+observation consistent with it.
+
+Operational consequence:
+ conflict artifacts cannot be cleaned up locally.
+Deleting `<name>.conflict1` or `<name>.conflict2` on one side only leaves whichever copy the
+phantom protects,
+ and the next run puts it back.
+Delete on both sides in the same window,
+ then confirm both listings are empty.
+
 ## Verification
 
 Versions:
@@ -158,7 +199,7 @@ The first prints the source mtime,
  the second the upload time.
 Any difference predicts a phantom on the next run.
 
-### Standing prediction, to be confirmed rather than assumed
+### Standing prediction, confirmed
 
 A byte-identical,
  locally untouched file whose baseline and `LastModified` disagree
@@ -170,6 +211,18 @@ If a run logs no such line for such a file,
 This doubles as the positive control:
  the phantom has to be observable on a file nobody edited,
  otherwise the mechanism above is not what is happening.
+
+The next scheduled run logged six such lines,
+ none of them a conflict.
+Two were files nobody had opened or edited in that session,
+ which is the positive control the prediction demanded:
+ the phantom appears on untouched files,
+ so it is a property of how the baseline is written and not a side effect of editing.
+The remaining four are the deletion case described above.
+
+The prediction stays in this document as written.
+It is cheap to re-run against any later log and is the fastest way to find out that something
+about the upload path has changed.
 
 ### The fix reproduced and proved on a throwaway fixture
 
