@@ -6762,3 +6762,83 @@ Verified rather than assumed:
 Read its ROSTER line first:
  `editorDegraded` should collapse toward zero, and if it does not, the cause is
  something this session has not found.
+
+## The repair sheet is not gradeable, and the reason is not the sheet
+
+The user stopped before grading it: "the repairs are currently too broken to
+ grade".
+Read end to end, that judgement is correct, and it is not harsh.
+
+### What reading found
+
+Many repairs ARE competent and surgical.
+Items 3, 5, 6, 8, 9, 12, 13, 16, 17 and 18 fix exactly what was claimed and
+ touch nothing else.
+So the stage is not uniformly broken, which is what makes the failures worth
+ naming precisely rather than dismissing the whole thing.
+
+The failures are two distinct modes.
+
+SCOPE. Measured: 21 of the 50 drawn edits replace a span more than 1.35 times
+ the length of the quoted defect;
+ the widest are 12.2x, 5.1x and 4.4x.
+Reaching past the defect is where damage enters:
+
+-   `2/7/11/15` asked to remove an unsupported "often shared her insights",
+     replaced four lines with one and DELETED the clause about the hi3861 board
+     and the Klipper videos, which the source does contain.
+-   `21` asked to change a full-width colon, changed it and deleted `Bilibi - `
+     from a contributor credit line.
+-   `43` asked about one omitted parenthetical, re-translated two sentences and
+     invented "in numbered form" and "via private messages".
+-   `37` fixed 断断续续 correctly and turned "reminiscing" into "pleading".
+-   `20` reordered two sentences and rewrote both.
+
+QUALITY, which the user raised and which scope does not cover.
+Item `1` renders 家庭变故 as "a family misfortune".
+That fixes the semantic complaint, since "discord" wrongly implies conflict, and
+ it is still not English anyone writes:
+ 变故 is an upheaval or a change in circumstances, so "upheaval at home" or
+ "what happened in her family" is the register.
+Item `24` ends at "chose release".
+Fixing scope would not fix these.
+
+### The finding that matters more than either
+
+THE PROBE MISSED ALL OF IT.
+
+```text
+item  2/7/11/15  deleted a source-supported clause     3/3 probers noneFound
+item 21          deleted a contributor's name          3/3 probers noneFound
+item 37          "reminiscing" became "pleading"       3/3 probers noneFound
+item 20          two sentences reordered and rewritten 3/3 probers noneFound
+item 43          re-translation with invented detail   1/3 corroborated
+```
+
+`runIntroducedDefectProbe` exists to answer exactly "did this repair break
+ something nobody raised".
+Across 848 regions it reports 16 majority-introduced, about 1.9 percent, and on
+ the specific repairs a reader can see are damaged it reported nothing.
+
+That inverts task #60 and the gating decision.
+Both defer gating until the probe's FALSE-POSITIVE rate is known, reasoning that
+ a probe blocking correct repairs would discard good work.
+The measured behaviour is the opposite problem:
+ the probe barely fires, so its false-NEGATIVE rate is what matters, and a
+ shadow-mode instrument that almost never fires is not a safety net but a source
+ of false assurance.
+`doc/decision/introduced-defect-probe-gating.md` states a reopening condition
+ that is now wrong as written.
+
+The probe is NOT blind in principle:
+ `probe-sensitivity` shows it catching injected omission and contradiction at
+ 3/3.
+So the gap is in what it is shown or how it is framed, not in whether it can
+ see. Item `21` is the sharpest test case available: deleting a name while
+ fixing a colon, inside a two-line span.
+
+Tracked as #66 (probe false negatives) and #67 (editor scope and quality).
+The repair sheet stays UNGRADED on purpose;
+ asking for grades against "fixes it and breaks nothing nearby" would spend
+ hours to produce a column of N and teach nothing that reading five items did
+ not.
