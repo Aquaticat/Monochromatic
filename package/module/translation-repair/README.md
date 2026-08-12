@@ -146,12 +146,21 @@ const result = await repairTranslation({
   keyed by issues a critic already filed.
   It ships in shadow mode: the report reaches the outcome and the artifacts,
   and candidate selection does not read it.
+  It was built expecting the opposite failure.
   Every region it inspects contains a defect by construction, that being why
-  the region was edited, so a model asked whether anything is wrong will find
-  something;
-  until that false-positive rate is measured against human repair grades,
-  letting the probe block a repair would discard correct fixes on unmeasured
-  evidence.
+  the region was edited, so a model asked whether anything is wrong was expected
+  to find something, and gating on an over-eager probe would have discarded
+  correct fixes.
+  Measured on 2026-08-12 over all 857 probed regions of the settled artifacts,
+  that expectation is wrong in the other direction:
+  2438 of 2571 prober verdicts found nothing, 743 of 857 regions were negative
+  from every prober, and the raise rate barely moves with how much text the edit
+  removed, from 0.060 where over half the region was deleted to 0.032 where it
+  barely changed.
+  The probe is not too eager; it is nearly silent, and its silence carries almost
+  no information about the edit.
+  Shadow mode therefore stands for a new reason, recorded in `#66`:
+  a stage whose output does not vary with its input cannot gate anything.
   Shadow mode is a recorded decision rather than an unfinished edge, with the
   rejected gating designs and the condition that reopens it in
   `doc/decision/introduced-defect-probe-gating.md`.
