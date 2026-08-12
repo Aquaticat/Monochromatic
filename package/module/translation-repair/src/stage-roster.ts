@@ -82,7 +82,10 @@ function readVoices(
     readonly finding: string;
     readonly prefix: string;
   },
-): readonly { readonly heard: number; readonly asked: number; }[] {
+): readonly {
+  readonly heard: number;
+  readonly asked: number
+}[] {
   /**
    * Where the heard count ends.
    */
@@ -118,7 +121,7 @@ function readVoices(
     ),),
     asked: Number(pair.slice(separatorAt + HEARD_SEPARATOR.length,),),
   };
-  if (!Number.isInteger(counts.heard,) || !Number.isInteger(counts.asked,))
+  if ((!Number.isInteger(counts.heard,)) || (!Number.isInteger(counts.asked,)))
     return [];
   return [counts,];
 }

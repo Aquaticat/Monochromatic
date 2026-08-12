@@ -181,8 +181,8 @@ export function requireSheetSeed(
 export const HEADER_ONLY_BINDING_NOTE: string =
   'NOTE sheet and manifest agree on seed and corpus pin, but one of them '
   + 'carries no draw digest, so this join rests on the file names and the '
-  + 'header rather than on the items. Draws taken before the digest existed '
-  + 'read this way, and are scoreable; a NEW draw reading this way means the '
-  + 'digest was dropped somewhere and the pairing is unproven.';
+    + 'header rather than on the items. Draws taken before the digest existed '
+    + 'read this way, and are scoreable; a NEW draw reading this way means the '
+    + 'digest was dropped somewhere and the pairing is unproven.';
 
 //endregion Sheet binding

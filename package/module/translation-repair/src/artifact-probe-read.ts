@@ -418,7 +418,7 @@ export function readArtifactProbe(
         path: `${path}.findings`,
       },))
       .flatMap(function toText(entry,) {
-        return (typeof entry === 'string')
+        return ((typeof entry) === 'string')
           ? [entry,]
           : [];
       },),
@@ -428,7 +428,8 @@ export function readArtifactProbe(
     // older run as a run the lane never touched.
     hasRewrites: shipped.some(function wasRefined(entry,) {
       return entry.record
-        .refined === true;
+        .refined
+        === true;
     },),
   };
 }
