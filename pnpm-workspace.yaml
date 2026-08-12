@@ -202,6 +202,8 @@ overrides:
   # experimental CompressedTextureWriter. This drops image-size@0.7.5, which
   # has no patched release for GHSA-5p2g-fcmc-qvqq or GHSA-w3rx-r6r6-pgpr.
   # Upstream made the same dependency optional after loaders.gl#3552/#3553.
+  # The 4.4.4 writer can still ask npx to download the absent CLI; keep that
+  # writer unreachable. Remove this override after a stable release carries #3553.
   # See doc/troubleshooting/dependencies.md for the source and runtime audit.
   '@loaders.gl/textures>texture-compressor': '-'
   # Substitute @ungap/structured-clone@1.3.0 with a workspace shim that
