@@ -6659,3 +6659,61 @@ They cancel in the numerator. The lesson is not the arithmetic, it is that a
  caught two of five.
 The graded sheet keeps both revisions inline, marked and dated, beside a
  `.graded-backup.md` of the sheet as first submitted.
+
+## The model was never broken: a two-character prefix cost four runs
+
+Kimi-K3 began emitting a `|>` channel marker in front of its JSON.
+The JSON behind it was correct and complete every time.
+
+```text
+hf:zai-org/GLM-5.2      ok   {"count": 2, "first": "Mittens"}
+hf:zai-org/GLM-4.7-Flash ok  {"count": 2, "first": "Mittens"}
+hf:Qwen/Qwen3.6-27B     ok   {"count": 2, "first": "Mittens"}
+hf:moonshotai/Kimi-K3   schema-mismatch   |>{"count":2,"first":"Mittens"}
+hf:nvidia/...Nemotron   ok   {"count": 2, "first": "Mittens"}
+hf:openai/gpt-oss-120b  ok   {"count": 2, "first": "Mittens"}
+```
+
+That single prefix produced 0, then 61, then 312, then 507 schema-mismatches
+ across four runs, in every one of the five roles Kimi-K3 holds, and everything
+ attributed to "the degradation" in this document traces to it:
+ the editor pair collapsing to one voice on 71 of 405 chunks,
+ the naturalness lane silent on 34 of 129 slices,
+ run 014's critic stage reaching a full roster once in 166 chunk-runs,
+ and task 51's recall measured on an effectively five-critic ensemble.
+
+### Why four runs went by without anyone seeing it
+
+`schema-mismatch, voice lost` is where THREE different faults arrive wearing one
+ label: truncated thinking, content that is not JSON, and JSON the guard
+ rejected.
+`synthetic-client.ts` does distinguish them, and says which at DEBUG level.
+A corpus run records none of that.
+So the logs could name the model and the stage and never the cause, and four
+ passes of evidence pointed at a model that was answering correctly.
+
+THE DIAGNOSIS TOOK ONE CALL once the right question was asked.
+`mise run //package/module/translation-repair:model-health` asks every roster
+ model one trivial structured question and prints the raw reply.
+Reach for it FIRST the next time a model looks dead.
+
+### The fix, and what it deliberately does not do
+
+`stripChannelMarker` removes a marker from a known list, and only when what
+ follows opens a JSON value.
+A general "skip forward to the first brace" rule would have worked here and
+ would also swallow a model that prefixes an apology before refusing, turning
+ content the refusal detector exists to classify into a silent parse success.
+Verified live: the identical call that returned `schema-mismatch` returns `ok`.
+
+### What this does NOT fix
+
+`stage-quorum.ts:154` still computes `Math.ceil(rosterSize / 2)`, so a two-model
+ editor roster still reaches quorum on ONE voice.
+That is why one model's trouble could halve the ensemble silently, and it stays
+ true of whichever model has trouble next.
+The user chose to widen the editor and refiner rosters and to switch them to
+ `full-roster` retry, but chose it believing Kimi-K3 was dead, and that choice
+ included dropping Kimi-K3 from both stages.
+That specific membership change is now wrong.
+Re-confirm before acting: the premise changed, not necessarily the decision.
