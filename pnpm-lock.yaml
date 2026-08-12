@@ -13,34 +13,34 @@ catalogs:
       specifier: '>=4.0.0'
       version: 4.0.0
     '@deck.gl/core':
-      specifier: '>=9.3.6'
+      specifier: '>=9.3.9'
       version: 9.3.9
     '@deck.gl/layers':
-      specifier: '>=9.3.6'
+      specifier: '>=9.3.9'
       version: 9.3.9
     '@deck.gl/mesh-layers':
-      specifier: '>=9.3.6'
+      specifier: '>=9.3.9'
       version: 9.3.9
     '@earendil-works/pi-ai':
-      specifier: '>=0.80.6'
+      specifier: '>=0.84.1'
       version: 0.84.1
     '@earendil-works/pi-coding-agent':
-      specifier: '>=0.80.6'
+      specifier: '>=0.84.1'
       version: 0.84.1
     '@earendil-works/pi-tui':
-      specifier: '>=0.80.6'
+      specifier: '>=0.84.1'
       version: 0.84.1
     '@electron/packager':
-      specifier: '>=20.0.2'
+      specifier: '>=20.2.0'
       version: 20.2.0
     '@homebridge/dbus-native':
-      specifier: '>=0.7.7'
+      specifier: '>=0.7.8'
       version: 0.7.8
     '@lezer/common':
       specifier: '>=1.5.2'
       version: 1.5.2
     '@lezer/css':
-      specifier: '>=1.3.4'
+      specifier: '>=1.3.6'
       version: 1.3.6
     '@lezer/highlight':
       specifier: '>=1.2.3'
@@ -52,7 +52,7 @@ catalogs:
       specifier: '>=1.5.4'
       version: 1.5.4
     '@lezer/markdown':
-      specifier: '>=1.7.1'
+      specifier: '>=1.7.2'
       version: 1.7.2
     '@lezer/rust':
       specifier: '>=1.0.2'
@@ -73,22 +73,22 @@ catalogs:
       specifier: '>=0.0.8'
       version: 0.0.8
     '@msgpack/msgpack':
-      specifier: '>=3.0.0-beta2'
+      specifier: '>=3.1.3'
       version: 3.1.3
     '@optique/core':
-      specifier: '>=1.1.1'
+      specifier: '>=1.2.0'
       version: 1.2.0
     '@optique/run':
-      specifier: '>=1.1.1'
+      specifier: '>=1.2.0'
       version: 1.2.0
     '@oxlint/plugins':
-      specifier: '>=1.73.0'
+      specifier: '>=1.78.0'
       version: 1.78.0
     '@playwright/test':
-      specifier: '>=1.61.1'
+      specifier: '>=1.62.1'
       version: 1.62.1
     '@tursodatabase/database':
-      specifier: '>=0.6.1'
+      specifier: '>=0.7.2'
       version: 0.7.2
     '@types/chai':
       specifier: '>=5.2.3'
@@ -106,10 +106,10 @@ catalogs:
       specifier: '>=4.0.4'
       version: 4.0.4
     '@types/mdx':
-      specifier: '>=2.0.13'
+      specifier: '>=2.0.14'
       version: 2.0.14
     '@types/node':
-      specifier: '>=26.1.1'
+      specifier: '>=26.2.0'
       version: 26.2.0
     '@types/sinon':
       specifier: '>=22.0.0'
@@ -121,7 +121,7 @@ catalogs:
       specifier: '>=3.0.3'
       version: 3.0.3
     browserslist:
-      specifier: '>=4.28.5'
+      specifier: '>=4.28.8'
       version: 4.28.8
     chai:
       specifier: '>=6.2.2'
@@ -145,13 +145,13 @@ catalogs:
       specifier: '>=1.0.0'
       version: 1.0.0
     dot-prop:
-      specifier: '>=10.1.0'
+      specifier: '>=10.2.0'
       version: 10.2.0
     electron:
-      specifier: '>=43.1.0'
+      specifier: '>=43.3.0'
       version: 43.3.0
     execa:
-      specifier: '>=9.6.1'
+      specifier: '>=10.0.1'
       version: 10.0.1
     expect-type:
       specifier: '>=1.4.0'
@@ -163,16 +163,16 @@ catalogs:
       specifier: '>=4.9.0'
       version: 4.9.0
     feedsmith:
-      specifier: '>=3.0.0-rc.1'
+      specifier: '>=3.0.0-rc.3'
       version: 3.0.0-rc.3
     find-up:
       specifier: '>=8.0.0'
       version: 8.0.0
     h3:
-      specifier: '>=2.0.1-rc.24'
+      specifier: '>=2.0.1-rc.26'
       version: 2.0.1-rc.26
     happy-opfs:
-      specifier: '>=2.1.0'
+      specifier: '>=2.2.0'
       version: 2.2.0
     hb-subset-wasm:
       specifier: '>=0.4.0'
@@ -184,7 +184,7 @@ catalogs:
       specifier: '>=7.0.6'
       version: 7.0.6
     jsonc-eslint-parser:
-      specifier: '>=3.1.0'
+      specifier: '>=3.3.0'
       version: 3.3.0
     jsonc-parser:
       specifier: '>=3.3.1'
@@ -202,19 +202,19 @@ catalogs:
       specifier: '>=2.0.0'
       version: 2.0.0
     oxlint:
-      specifier: '>=1.73.0'
+      specifier: '>=1.78.0'
       version: 1.78.0
     oxlint-tsgolint:
-      specifier: '>=0.24.0'
+      specifier: '>=7.0.2001'
       version: 7.0.2001
     p-limit:
-      specifier: '>=7.3.0'
+      specifier: '>=7.3.1'
       version: 7.3.1
     picomatch:
       specifier: '>=4.0.5'
       version: 4.0.5
     postcss-html:
-      specifier: '>=1.8.1'
+      specifier: '>=2.0.0'
       version: 2.0.0
     rehype-autolink-headings:
       specifier: '>=7.1.0'
@@ -232,10 +232,10 @@ catalogs:
       specifier: '>=2.1.0'
       version: 2.1.0
     rolldown:
-      specifier: '>=1.1.5'
+      specifier: '>=1.2.3'
       version: 1.2.3
     rolldown-plugin-dts:
-      specifier: '>=0.27.9'
+      specifier: '>=0.28.1'
       version: 0.28.1
     satteri:
       specifier: '>=0.9.5'
@@ -244,7 +244,7 @@ catalogs:
       specifier: '>=0.35.3'
       version: 0.35.3
     sinon:
-      specifier: '>=22.0.0'
+      specifier: '>=22.1.0'
       version: 22.1.0
     sinon-chai:
       specifier: '>=4.0.1'
@@ -253,7 +253,7 @@ catalogs:
       specifier: '>=3.0.2'
       version: 3.0.2
     stylelint:
-      specifier: '>=17.14.0'
+      specifier: '>=17.14.1'
       version: 17.14.1
     stylelint-config-standard:
       specifier: '>=40.0.0'
@@ -274,13 +274,13 @@ catalogs:
       specifier: '>=5.8.0'
       version: 5.8.0
     typebox:
-      specifier: '>=1.3.6'
+      specifier: '>=1.3.12'
       version: 1.3.12
     typescript:
       specifier: '>=7.0.2'
       version: 7.0.2
     unbash:
-      specifier: '>=4.0.2'
+      specifier: '>=4.0.10'
       version: 4.0.10
     unified:
       specifier: '>=11.0.5'
@@ -298,20 +298,20 @@ catalogs:
       specifier: '>=3.0.0-1'
       version: 3.0.0-1
     yuku-analyzer:
-      specifier: '>=0.7.3'
+      specifier: '>=0.8.4'
       version: 0.8.4
     yuku-ast:
-      specifier: '>=0.7.3'
+      specifier: '>=0.8.4'
       version: 0.8.4
     yuku-parser:
-      specifier: '>=0.7.3'
+      specifier: '>=0.8.4'
       version: 0.8.4
     zeptomatch:
       specifier: '>=2.1.0'
       version: 2.1.0
 
 overrides:
-  '@anthropic-ai/sdk': '>=0.111.0'
+  '@anthropic-ai/sdk': '>=0.116.0'
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
   '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
@@ -324,6 +324,7 @@ overrides:
   '@earendil-works/pi-tui>chalk': '-'
   '@earendil-works/pi-tui>koffi': '-'
   '@earendil-works/pi-tui>mime-types': '-'
+  '@loaders.gl/textures>texture-compressor': '-'
   '@ungap/structured-clone': link:package/shim/ungap-structured-clone
   abort-controller: '-'
   argparse: '-'
@@ -2855,7 +2856,7 @@ importers:
   package/module/token-count:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: '>=0.111.0'
+        specifier: '>=0.116.0'
         version: 0.116.0
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
@@ -5269,6 +5270,7 @@ packages:
   '@xmldom/xmldom@0.9.10':
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==, tarball: https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.10.tgz}
     engines: {node: '>=14.6'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@yuku-analyzer/binding-android-arm64@0.8.4':
     resolution: {integrity: sha512-c1OkNBGG2Du/rWjYBC65tBw6loWb6mifqKtyQL2wKYJMP15SbCXzQuRVFiwyebga9TTxnVaHYY4KWiO4kzLikg==, tarball: https://registry.npmjs.org/@yuku-analyzer/binding-android-arm64/-/binding-android-arm64-0.8.4.tgz}
@@ -6087,11 +6089,6 @@ packages:
   ignore@7.0.6:
     resolution: {integrity: sha512-BAg6QkE8W+TuQLrrw0Ugr7HegXduRuuj8/ti2kSOc+jz1dmx8/WNcjr6XGnq5YpDWxFwwaavqD0+jIUOKelTsw==, tarball: https://registry.npmjs.org/ignore/-/ignore-7.0.6.tgz}
     engines: {node: '>= 4'}
-
-  image-size@0.7.5:
-    resolution: {integrity: sha512-Hiyv+mXHfFEP7LzUL/llg9RwFxxY+o9N3JVLIeG5E7iFIFAalxvRU9UZthBdYDEVnzHMgjnKJPPpay5BWf1g9g==, tarball: https://registry.npmjs.org/image-size/-/image-size-0.7.5.tgz}
-    engines: {node: '>=6.9.0'}
-    hasBin: true
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==, tarball: https://registry.npmjs.org/import-fresh/-/import-fresh-3.3.1.tgz}
@@ -6912,10 +6909,6 @@ packages:
   text-segmentation@1.0.3:
     resolution: {integrity: sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw==, tarball: https://registry.npmjs.org/text-segmentation/-/text-segmentation-1.0.3.tgz}
 
-  texture-compressor@1.0.2:
-    resolution: {integrity: sha512-dStVgoaQ11mA5htJ+RzZ51ZxIZqNOgWKAIvtjLrW1AliQQLCmrDqNzQZ8Jh91YealQ95DXt4MEduLzJmbs6lig==, tarball: https://registry.npmjs.org/texture-compressor/-/texture-compressor-1.0.2.tgz}
-    hasBin: true
-
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==, tarball: https://registry.npmjs.org/through/-/through-2.3.8.tgz}
 
@@ -7711,7 +7704,6 @@ snapshots:
       '@loaders.gl/worker-utils': 4.4.4(@loaders.gl/core@4.4.4)
       '@math.gl/types': 4.1.0
       ktx-parse: 0.7.1
-      texture-compressor: 1.0.2
 
   '@loaders.gl/worker-utils@4.4.4(@loaders.gl/core@4.4.4)':
     dependencies:
@@ -8935,8 +8927,6 @@ snapshots:
 
   ignore@7.0.6: {}
 
-  image-size@0.7.5: {}
-
   import-fresh@3.3.1:
     dependencies:
       parent-module: 1.0.1
@@ -10093,10 +10083,6 @@ snapshots:
     dependencies:
       utrie: 1.0.2
     optional: true
-
-  texture-compressor@1.0.2:
-    dependencies:
-      image-size: 0.7.5
 
   through@2.3.8: {}
 
