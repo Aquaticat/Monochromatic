@@ -6717,3 +6717,48 @@ The user chose to widen the editor and refiner rosters and to switch them to
  included dropping Kimi-K3 from both stages.
 That specific membership change is now wrong.
 Re-confirm before acting: the premise changed, not necessarily the decision.
+
+## Every fan-out stage now has a quorum one voice cannot meet
+
+Landed 2026-08-12 on the user's rule that the system must not have single-model
+ failures.
+
+```text
+             before            after
+editors      2 (quorum 1)      3 (quorum 2)
+refiners     1 (quorum 1)      3 (quorum 2)
+checkers     3 (quorum 2)      3 (quorum 2)
+retry        quorum            full-roster on editor and refine
+```
+
+The arithmetic is the whole point.
+`ceil(rosterSize / 2)` is ONE on a roster of two and cannot fail at all on a
+ roster of one, so the old editor pair could ship a repair written by a single
+ model while reporting a met quorum.
+That is not a bug in the stages;
+ it is a quorum rule sized for a six-model critic panel being applied to a pair.
+
+DEVIATION FROM WHAT WAS APPROVED, recorded rather than buried:
+ the option the user chose said refiners two.
+Two leaves the quorum at one, which would not have achieved what the change is
+ for, so refiners are THREE.
+One line to revert if that is unwanted.
+
+GLM-4.7-Flash takes the third editor and refiner seat because the constraints
+ leave no alternative: checkers must exclude every editor and refiner, judges
+ need two disinterested seats, and the other three models hold the checker
+ roster.
+It is the model that most often loses its voice, which now argues FOR seating it
+ there: a third editor that sometimes drops still leaves two, while the same
+ model among the checkers would cost proof rather than coverage.
+
+Verified rather than assumed:
+ `assertJudgeableEditorRoster` and `assertCheckerIndependence` both pass, all
+ three producing rosters sit at three voices with a quorum of two, and three
+ disinterested judges remain for each.
+
+`pass9-run-001` is running on this configuration, and is the first pass with
+ the channel-marker fix, the widened rosters, and full-roster retry all in place.
+Read its ROSTER line first:
+ `editorDegraded` should collapse toward zero, and if it does not, the cause is
+ something this session has not found.
