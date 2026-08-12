@@ -236,14 +236,23 @@ enumerate the omitted source sentences clause by clause.
 
 Milestone three (detection precision) is NOT met.
 Its gate is human-graded precision of at least 0.9 over a stratified sample
-of accepted issues,
-and the second graded round returned 0.740, 0.787, and 0.800 across its bands.
-Round three's gate sheet is drawn and awaiting its human grade:
-50 items over a pool of 740 accepted issues from 18 settled entries,
-with 5, 7 and 5 contributing entries in the small, medium and large bands.
-The draw is one-shot, since a final sheet may already carry hours of grading
-that nothing else reproduces, so it is not redrawn as more entries settle.
-Grading it is `doc/runbook/translation-repair-round-three-grading.md`.
+of accepted issues.
+Round three was graded on 2026-08-12 and returned
+0.791 strict, 0.810 excluded, and 0.814 lenient
+over 43 gradeable items drawn from a pool of 740 across 18 settled entries.
+All three readings improved on round two's 0.740, 0.787 and 0.800,
+and none reaches the bar.
+
+Round three also found a defect in the sampling instrument itself.
+Seven of the 50 drawn items repeat a defect already drawn at an earlier
+position, which the grader marked `Duplicate` and the blind pre-grades had
+independently annotated the same way.
+A duplicate is now its own verdict, excluded from every denominator,
+because the pipeline reporting one defect several times is a different failure
+from reporting a defect that is not there,
+and only the second is what precision measures.
+Counting them as false positives had dragged strict to 0.680 while every other
+reading rose, which described the instrument rather than the detector.
 Read the milestone-two figures above as recall claims only:
 they say the ensemble finds seeded defects,
 not that what it reports is right.
