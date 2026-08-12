@@ -140,6 +140,7 @@ export type {
 export {
   formatUsageNote,
   parseModelJson,
+  stripChannelMarker,
   stripCodeFence,
   stripThinkBlock,
 } from './model-content.ts';

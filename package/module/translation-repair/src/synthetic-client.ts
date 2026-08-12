@@ -13,6 +13,7 @@ import { SyntheticHttpError, } from './completion-shape.ts';
 import {
   formatUsageNote,
   parseModelJson,
+  stripChannelMarker,
   stripCodeFence,
   stripThinkBlock,
 } from './model-content.ts';
@@ -357,7 +358,9 @@ export function createSyntheticClient(
     /**
      * Parse attempt over fence-stripped answer.
      */
-    const attempt = parseModelJson({ text: stripCodeFence({ text: answer, },), },);
+    const attempt = parseModelJson({
+      text: stripChannelMarker({ text: stripCodeFence({ text: answer, },), },),
+    },);
 
     if (!attempt.parsed) {
       /**
