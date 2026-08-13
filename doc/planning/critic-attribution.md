@@ -374,3 +374,67 @@ The artifact also carries a third status, `needs-human`, alongside `accepted`
  and `rejected`. Only `accepted` counts toward hits, which is what the reader
  does, but the third value is worth naming: a reader written against a
  two-status assumption would have been wrong here without failing.
+
+## Second review, on the whole source rather than the diff
+
+The first review read the change. A second read the finished files, and found
+ that tolerance had been applied in the one place it must not be. Everything
+ below was fixed before any artifact carrying attribution existed, so no
+ measurement was ever taken through any of it.
+
+MALFORMED WAS INDISTINGUISHABLE FROM LEGACY, which is the serious one. The
+ reader omitted `chunkCritics` whenever the value was not an array, so
+ `{"chunkCritics": null}` and `{"chunkCritics": "corrupt"}` both read as
+ artifacts settled before attribution existed. Corruption moved an artifact into
+ the pre-feature population, and that population is what every number divides
+ by. Only an ABSENT key means legacy now. A present one is decoded strictly by
+ `attribution-decode.ts` and throws through the `ArtifactParseError` the repo
+ already had, naming the artifact and the path.
+
+The same reading applies inside the subtree, and each of these now throws:
+
+-   A chunk index that is not a non-negative safe integer, and an emission count
+    that is not a positive one. `typeof x === 'number'` admits negatives,
+    fractions, and the `Infinity` that `JSON.parse` yields from `1e400`.
+-   A repeated heard critic, chunk index, proposer or claim id. Each of those
+    fields is a SET written as an array, and each repeat inflates a count in
+    silence: a critic listed twice as heard on one chunk doubles its own
+    denominator.
+
+PARTIAL JOINS WERE COUNTED AS SUPPORT. An accepted issue naming one attributed
+ claim and one the index does not hold was reported as sole-proposer with zero
+ unattributed. Its support is unknown rather than sole, because the missing
+ member may have come from a critic nobody credited. Those issues are now held
+ out of every count and reported as `partialJoin`, so a broken join reads as the
+ defect it is instead of as a confident calibration.
+
+A zero denominator no longer renders `0.00`. That was FALSE rather than merely
+ uninformative, and indistinguishable from a critic heard often that raised
+ nothing, which is the exact conflation the heard roster exists to prevent. A
+ nonzero numerator over a zero denominator renders `INCONSISTENT`.
+
+### Three tests that could not have failed
+
+Worth recording separately, because the suite was green throughout and none of
+ these would have gone red no matter how the reader broke.
+
+-   Every reader fixture had empty `claimAttributions` and empty `issues`, so
+    implementations of the proposer, claim-id and issue readers that always
+    returned nothing would have passed all of them.
+-   The malformed-chunk case asserted only `toHaveLength(1)`, which holds
+    equally if the implementation keeps the malformed record and discards the
+    valid one.
+-   Nothing anywhere asserted an `emissions` value, so folding `emissionCount`
+    into `claimsRaised` was invisible. The difference between those two numbers
+    IS the self-repetition that `#65` turns on.
+
+### One finding handled at the rendering layer on purpose
+
+The reader does not verify that every proposer appears in its chunk's
+ `heardCriticIds`. The invariant holds by construction, since both come from the
+ same `gather.voices`, and enforcing it with a throw would risk losing the whole
+ report on real data tonight for a condition that should be impossible.
+
+It is surfaced rather than ignored: a critic with claims but no heard chunks
+ renders `INCONSISTENT` instead of a tidy zero. That makes the violation visible
+ without letting a telemetry invariant take down a report.
