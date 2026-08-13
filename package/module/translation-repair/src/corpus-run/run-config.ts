@@ -91,21 +91,27 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * ballot before any decision rises from 3-of-7 (43 percent) to 3-of-6 (50).
  * User decision, 2026-08-05: "50% is okay here."
  *
- * TWO editors, not one, on the user's rule that no single model should control
+ * MORE THAN ONE editor, on the user's rule that no single model should control
  * any part of the pipeline. Kimi-K3 is one of them because the user reports it
  * as much stronger than anything else currently offered, and the editor is
  * where model strength converts most directly into repair quality. The
  * round-two grading supports spending strength there specifically: four of the
  * 37 true positives carried notes saying detection was right but the proposed
  * repair was poor ("is there a better way?"), which is an editor complaint, not
- * a critic one. GLM-5.2 is the second editor, having held the role alone
- * before.
+ * a critic one. GLM-5.2 was the second editor, having held the role alone
+ * before, and GLM-4.7-Flash is the third.
  *
- * Two rather than three deliberately. Every editor is barred from judging its
- * own chunk, so each added editor costs a judge as well as its own calls: at
- * two editors four judges remain, at three only three, and a plurality gets
- * harder to reach exactly as the candidate set gets wider. Raise it only after
- * the `editor-chunk-select` findings show how often judging converges.
+ * The count was TWO until 2026-08-12, and the paragraph that follows is kept as
+ * the reasoning for that earlier choice rather than as current policy. Every
+ * editor is barred from judging its own chunk, so each added editor costs a
+ * judge as well as its own calls: at two editors four judges remain, at three
+ * only three, and a plurality gets harder to reach exactly as the candidate set
+ * gets wider.
+ *
+ * That cost was accepted on the quorum argument this block opens with: a stage
+ * of two is satisfied by a single voice, so a two-editor pair could ship a
+ * repair written by one model while reporting a met quorum. Losing a judge is
+ * the smaller harm.
  *
  * Judges are the WHOLE roster. Selection removes producers per round, so
  * passing the whole roster lets an editor judge the envelopes it did not
