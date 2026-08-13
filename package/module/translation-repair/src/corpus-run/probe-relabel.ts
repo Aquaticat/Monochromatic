@@ -91,6 +91,13 @@ async function probeOnce(
    */
   const [tally,] = report.regions;
 
+  // Which prober spoke is printed rather than only how many did, because the
+  // corpus telemetry shows the three disagree by more than an order of
+  // magnitude about how often an edit is worth a claim, 0.095 against 0.006,
+  // and `#68` cannot be settled from counts that hide the speaker.
+  for (const claim of tally?.claims ?? [])
+    console.log(`    ${claim.modelId} ${claim.admissibility} (${claim.category})`,);
+
   return `heard=${String(report.heardProbers,)}/${
     String(report.configuredProbers,)
   } corroborated=${String(tally?.corroborated ?? 0,)} removal=${
