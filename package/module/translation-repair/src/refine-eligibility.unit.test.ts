@@ -146,5 +146,47 @@ await describe({
         ).toBe(1,);
       },
     },),
+
+    it({
+      name: 'keeps a slice eligible when its only finding is a blanked '
+        + 'invisible line, because that finding records a REPAIR rather than a '
+        + 'loss: masking restores the paragraph break a byte-order mark had '
+        + 'welded shut, making the tree a MORE faithful account of the bytes. '
+        + 'Counting findings instead of naming their kinds disqualified a slice '
+        + 'for having been repaired',
+      fn: async () => {
+        /**
+         * Two paragraphs a mark had welded, with the break restored by masking.
+         */
+        const welded = `${LONG_PROSE}\n\u{FEFF}\n${LONG_PROSE}\n`;
+
+        expect(
+          parseDocument({ text: welded, },)
+            .parseFindings
+            .map(function toKind(finding,) {
+              return finding.kind;
+            },),
+        ).toEqual(['invisible-line-masked',],);
+        expect(
+          judge(welded,).filter(function isEligible(verdict,) {
+            return verdict.eligible;
+          },).length,
+        ).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'still disqualifies a slice whose comment was blanked, since those '
+        + 'bytes really are absent from the tree. The distinction is between '
+        + 'kinds of finding, not a blanket exemption from the rule',
+      fn: async () => {
+        expect(
+          judge(`${LONG_PROSE}\n\n<!-- note -->\n\n${LONG_PROSE}\n`,)
+            .filter(function isEligible(verdict,) {
+              return verdict.eligible;
+            },).length,
+        ).toBe(0,);
+      },
+    },),
   ],
 },);

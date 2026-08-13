@@ -40,6 +40,21 @@ const MAX_REFINE_CHARS = 1_200;
 const ELIGIBLE_KIND = 'paragraph';
 
 /**
+ * Parse findings that make the tree a LESS faithful account of the bytes.
+ *
+ * `invisible-line-masked` is deliberately absent, and its absence is the whole
+ * point of naming kinds rather than counting them. Blanking a line that showed
+ * a reader nothing makes the parse more faithful, not less: it restores the
+ * paragraph break the author wrote, which the byte-order mark had welded shut.
+ * Treating it as degradation disqualified a slice for having been repaired.
+ */
+const DEGRADING_FINDINGS: ReadonlySet<string> = new Set([
+  'mdx-downgraded',
+  'html-comment-skipped',
+  'unterminated-html-comment',
+],);
+
+/**
  * Markup that can carry a line break or a structural element without a newline
  * appearing in the node text, which is what makes the single-line check alone
  * insufficient.
@@ -229,13 +244,18 @@ export function selectRefinableParagraphs(
   },
 ): readonly ParagraphEligibility[] {
   /**
-   * Whether parsing this slice reported anything, which disqualifies the
-   * whole slice rather than the offending block alone: a downgrade to plain
-   * markdown or a masked region changes how every block was read.
+   * Whether the tree is a less faithful account of the bytes than usual, which
+   * disqualifies the whole slice rather than the offending block alone: a
+   * downgrade to plain markdown or a blanked comment changes how every block
+   * was read.
+   *
+   * Asked of the finding KIND rather than of the count, because not every
+   * finding is a loss. See {@link DEGRADING_FINDINGS}.
    */
   const degraded = document.parseFindings
-    .length
-    > 0;
+    .some(function isLoss(finding,) {
+      return DEGRADING_FINDINGS.has(finding.kind,);
+    },);
   return document.nodes
     .map(function toVerdict(node,) {
       return judgeParagraph({

@@ -72,9 +72,11 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  *
  * Version 7 is the same lesson applied straight away: widening typography
  * restoration from the replaced region to the whole document changes the text
- * that ships, with every prompt and every roster identical.
+ * that ships, with every prompt and every roster identical. Version 8 likewise:
+ * naturalness eligibility stopped counting a repaired parse as a degraded one,
+ * so slices that skipped the lane now enter it.
  */
-const SLICE_CACHE_VERSION = 7;
+const SLICE_CACHE_VERSION = 8;
 
 /**
  * Completion status of one repair run;
