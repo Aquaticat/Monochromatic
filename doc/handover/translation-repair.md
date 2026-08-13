@@ -7864,8 +7864,17 @@ Issue or envelope. 570 of 2650 accepted issues share a span with another, but
 
 ### Not decisions, just waiting on the running pass
 
--   `#72`'s incidence, from the `[line-break-collapsible]` suffix.
--   `#73`'s cause, from `voice-loss.log` in the `pass13` runs directory.
+-   `#72`'s incidence, from the `[line-break-collapsible]` suffix. The
+    DIRECTION is already known and does not depend on further counting: the
+    "roughly a quarter" estimate is rejected, every miss so far is unsuffixed,
+    and the lead closes outright once 30 misses accumulate with none suffixed,
+    which is where even a 10% share falls below 5% likelihood. A monitor
+    carries the running tally and fires at that threshold. Live figures in
+    `doc/troubleshooting/translation-repair-unread-signals.md` rather than
+    repeated here, so there is one copy to keep true.
+-   `#73` is CLOSED, not waiting. It was already fixed by `eb21ffa6b` before it
+    was found. `#75` replaces it, and needs no decision until a debug capture
+    names which schema-mismatch sub-kind Kimi-K3 is hitting.
 
-Neither needs anything from the user. Both are unanswerable from the existing
+Neither needs anything from the user. `#72` was unanswerable from the existing
  56-entry population, which is why `pass13` was restarted rather than left.
