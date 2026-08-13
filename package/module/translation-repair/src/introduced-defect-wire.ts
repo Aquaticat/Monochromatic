@@ -122,11 +122,20 @@ It was NOT fixing defects. Any listed issue was already repaired in the BEFORE t
 /**
  * The one rule that names what the editor was doing, per edit kind.
  *
- * Kept per kind rather than neutralised into "the edit" so the accuracy
- * prompt stays byte-identical to the one every artifact so far was produced
- * under. A probe is telemetry compared across runs, and silently rewording its
- * prompt mid-series would make a later reading incomparable with an earlier one
- * for a reason nothing records.
+ * Kept per kind rather than neutralised into "the edit" because the two lanes
+ * really are doing different things, and a prober told the wrong one reads
+ * every rephrasing as a failed repair.
+ *
+ * This comment used to say the accuracy prompt was byte-identical to the one
+ * every artifact had been produced under, so telemetry stayed comparable across
+ * runs. That is no longer true and the comparability is no longer worth having.
+ * The old prompt asked whether the replacement introduced a defect the BEFORE
+ * text did not have, which made the pre-edit TRANSLATION the standard of
+ * accuracy. Read back, every claim it produced argued from the before text, and
+ * one called a corrected mistranslation an introduced inaccuracy. A series of
+ * readings taken through that question measured whether an edit CHANGED
+ * anything, so preserving comparability with it would preserve a measurement of
+ * the wrong quantity.
  */
 const PROBE_CREATED_CLAUSE: Readonly<Record<ProbedEditKind, string>> = {
   'accuracy-repair':
@@ -138,9 +147,16 @@ const PROBE_CREATED_CLAUSE: Readonly<Record<ProbedEditKind, string>> = {
 /**
  * Rules preceding the per-kind clause.
  */
-const PROBE_RULES_HEAD = `Judge ONLY this: did the replacement CAUSE a defect that the BEFORE text did not have?
+const PROBE_RULES_HEAD =
+  `Judge ONLY this: does the AFTER text misrepresent the ORIGINAL in a way the BEFORE text did not?
+
+THE ORIGINAL IS THE ONLY STANDARD OF ACCURACY. The BEFORE text is a translation and may itself be wrong. Correcting it is the edit working, not damage.
 
 Rules:
+- A change that brings the AFTER text CLOSER to the ORIGINAL is NEVER damage, however much text it rewrites.
+- Content the AFTER text drops is damage ONLY IF THE ORIGINAL SUPPORTS IT. Dropping wording the ORIGINAL never had is a correct repair, not an omission.
+- Wording the AFTER text adds is damage only if the ORIGINAL does not support it.
+- "It was in the BEFORE text" is NOT a reason. Say what the ORIGINAL says and how the AFTER text departs from it.
 - Do NOT report a listed pre-existing issue merely because the replacement failed to fix it. That is not damage.
 - Do NOT report a defect that is present in BOTH the BEFORE text and the AFTER text. It was not introduced.`;
 
@@ -158,7 +174,7 @@ For introduced-defect, anchor the claim with EXACTLY ONE of these, never both:
 - "evidence": the exact damaged wording quoted FROM THE AFTER TEXT, when the edit ADDED or altered something. Leave "omittedText" empty.
 - "omittedText": the exact wording quoted FROM THE BEFORE TEXT that the edit DROPPED, when the defect is missing content. Leave "evidence" empty.
 Quote verbatim. A paraphrase cannot be checked and the claim will be discarded.
-Say in "reason" why this is damage the edit caused.
+Say in "reason" what the ORIGINAL says and how the AFTER text departs from it. A reason that only cites the BEFORE text has not judged accuracy at all.
 Leave "evidence", "omittedText", "category", "severity" and "reason" as empty strings for other verdicts.
 Reply with ONLY a JSON object of shape {"checks": [{"region": 1, "verdict": "no-introduced-defect-found", "category": "", "severity": "", "evidence": "", "omittedText": "", "reason": ""}]}. No prose, no code fences.
 Every region number must appear exactly once in checks.`;

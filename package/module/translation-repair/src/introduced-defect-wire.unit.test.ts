@@ -128,11 +128,12 @@ await describe({
     },),
 
     it({
-      name: 'leaves the ACCURACY prompt byte-identical to the one every '
-        + 'artifact so far was produced under. The probe is telemetry compared '
-        + 'across runs, so rewording its prompt while adding a second framing '
-        + 'would make later readings incomparable with earlier ones for a '
-        + 'reason nothing records',
+      name: 'names the ORIGINAL as the standard of accuracy and refuses '
+        + '"it was in the BEFORE text" as a reason. Asking whether the edit '
+        + 'introduced a defect the BEFORE text lacked made the pre-edit '
+        + 'TRANSLATION the standard, and every claim it produced argued from '
+        + 'that text, one of them calling a corrected mistranslation an '
+        + 'introduced inaccuracy',
       fn: async () => {
         const plan = buildIntroducedDefectMessages({
           sourceText: '猫在睡觉。',
@@ -141,18 +142,27 @@ await describe({
           issues: [ISSUE,],
         },);
 
-        expect(plan.messages[0]
-          ?.content
-          ?.startsWith(
-            'You are a strict bilingual translation reviewer auditing an edit '
-              + 'for collateral damage.\nEditors replaced the BEFORE text of '
-              + 'each numbered region with its AFTER text, trying to fix '
-              + 'defects that were ALREADY THERE.\nJudge ONLY this: did the '
-              + 'replacement CAUSE a defect that the BEFORE text did not have?',
-          ),).toBe(true,);
-        expect(plan.messages[0]
-          ?.content
-          ?.includes('created while attempting the repair',),).toBe(true,);
+        /** System prompt every prober reads. */
+        const system = plan.messages[0]
+          ?.content ?? '';
+
+        expect(system.includes(
+          'does the AFTER text misrepresent the ORIGINAL in a way the BEFORE text did not?',
+        ),).toBe(true,);
+        expect(system.includes(
+          'THE ORIGINAL IS THE ONLY STANDARD OF ACCURACY',
+        ),).toBe(true,);
+        expect(system.includes(
+          'CLOSER to the ORIGINAL is NEVER damage',
+        ),).toBe(true,);
+        expect(system.includes(
+          'ONLY IF THE ORIGINAL SUPPORTS IT',
+        ),).toBe(true,);
+        expect(system.includes(
+          '"It was in the BEFORE text" is NOT a reason',
+        ),).toBe(true,);
+        expect(system.includes('created while attempting the repair',),)
+          .toBe(true,);
       },
     },),
 
