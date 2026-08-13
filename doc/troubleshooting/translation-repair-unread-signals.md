@@ -596,3 +596,57 @@ And the direction is not established: nothing here shows a cached failure
 Re-read both populations separately when `pass13` settles more entries. The
  comparison that matters is artifact-share then against artifact-share now, and
  it is the only one that speaks to the closure.
+
+### It fired again on the settled population, and it was one entry
+
+The fixed monitor, counting `artifacts` alone as it should, alarmed at 12
+ settled entries: 8 of 59 wrap-explained, 13.6%, against the roughly 3% the
+ closure assumed. On the right population, with the pooling bug gone.
+
+It is still a false alarm, and the reason is the one this session keeps
+ relearning:
+
+```text
+  Futajuhuacha        7/20     35%
+  Aniloviraw          1/6
+  every other entry   0/33
+
+  all 12 entries      8/59     13.6%
+  excluding the top   1/39      2.6%
+```
+
+Seven of the eight hits are ONE entry. Drop it and the share is 2.6%, which is
+ the closure's number to within noise. `#72` stands, again.
+
+The watch item recorded when the pooling bug was fixed did predict this
+ correctly in one respect: the in-flight `slice-cache` hits were 7 of 19, and
+ they settled into `artifacts` unchanged, so the cache was a genuine leading
+ indicator of what would land. What it led to was an outlier, not a population
+ shift.
+
+#### The guard that generalises all three false alarms
+
+Three alarms this session, three different surface causes, one shape:
+
+-   `needs-human` at 31%, which was `AmbeR_the_anpa` alone.
+-   Wrap-explained at 13.8%, which was `slice-cache` pooled with `artifacts`.
+-   Wrap-explained at 13.6%, which was `Futajuhuacha` alone.
+
+A threshold on the share cannot separate these from a real shift, and the
+ second and third cases prove that fixing one surface cause does not stop the
+ next. The rule that does separate them is stated once and applies to all:
+
+A share is a POPULATION signal only if it survives dropping its largest single
+ contributor.
+
+The monitor now computes both figures and alarms only when BOTH clear the
+ threshold. It reports the excluded-top share on every progress line too, so the
+ concentration is visible before it becomes an alarm rather than after.
+
+#### Left open, and worth a look when the pass ends
+
+`Futajuhuacha` really is 35% wrap-explained where every other settled entry is
+ near zero. That is a fact about one entry rather than about the pipeline, but
+ nothing here explains WHY one entry's critic quotes should fail line-break
+ collapse at ten times the corpus rate. Cheap to check once the pass stops:
+ whether that entry's target text is wrapped differently from the rest.
