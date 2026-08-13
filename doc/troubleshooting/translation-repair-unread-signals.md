@@ -407,6 +407,40 @@ The duplicate rate here is higher than the 21.5% recorded in the planning doc
  target-side span, where the planning doc required every span to match. They
  count one phenomenon at two strictnesses, and neither contradicts the other.
 
+## The recurring wall: outcomes are recorded, causes are not
+
+This document is a census of signals the pipeline EMITS. Four separate
+ investigations in one session stalled on the opposite problem, and they stall
+ the same way, so it is worth naming as one thing rather than four.
+
+-   `quote-not-found` records that a quote failed to anchor, and discards the
+    QUOTE. So the 225 misses in the settled population could not be diagnosed
+    at all, and the suffix added in `a6bbeca50` only makes future ones legible.
+-   `schema-mismatch` records that a model reply failed to parse, and
+    `attemptStageCall` discards the `rawText` the outcome carries. The
+    sub-kind, which is the diagnosis and decides between three different fixes,
+    is logged at debug and captured nowhere.
+-   Accepted issues record their claims but NOT which critic raised each one.
+    So `#65` cannot ask whether a duplicated issue is independent
+    corroboration, because independence means "different critics" and the
+    artifact cannot say.
+-   The refiner's silences recorded `refiner 0/1` and no reason, so the cause
+    was only recoverable once a live run was watched.
+
+The shape is identical every time: the pipeline records WHAT happened and drops
+ WHY, so any question about cause needs a fresh run rather than the artifacts
+ already paid for. Each of those runs costs days.
+
+That is a design observation rather than a defect, and it is not obviously
+ worth fixing wholesale, since retaining every cause would bloat artifacts that
+ already carry full repaired text. But the four cases share one cheap remedy:
+ retain the reason alongside the outcome at the point the outcome is recorded,
+ truncated where the payload is large.
+
+Raised here rather than acted on. It would change what `#65`, `#72` and `#75`
+ can be answered from, so it belongs in a priority conversation rather than in
+ a commit.
+
 ## What still reads nothing
 
 `alignment.findings` is turned into scorecard text and recorded, and reaches no
