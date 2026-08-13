@@ -232,13 +232,13 @@ component ChromiumTab inherits Rectangle {
         width: parent.width;
         height: parent.height;
         border-radius: 14px;
-        background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #ffffff;
+        background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #e8eaed;
     }
     if root.selected: Rectangle {
         y: 14px;
         width: parent.width;
         height: parent.height - 14px;
-        background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #ffffff;
+        background: Palette.color-scheme == ColorScheme.dark ? #3b3b3b : #e8eaed;
     }
     if !root.selected: Rectangle {
         x: parent.width - 1px;
