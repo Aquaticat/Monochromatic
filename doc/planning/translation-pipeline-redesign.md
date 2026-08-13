@@ -51,6 +51,79 @@ Five to fifteen times is not English being wordier than Chinese, so either those
 Any proposal that only answers "translate what is missing" answers pairs 3, 10
  and 6, and says nothing about pairs 7 and 5.
 
+### Pairs 7 and 5 are mispairing, and no entry carries unsupported content
+
+Settled 2026-08-13 by rebuilding the pairing outside the production fallback.
+This section CORRECTS the paragraph before it.
+
+Pairs 7 and 5 do not exist under correct pairing. Both are products of the
+ proportional-by-character fallback that `XingZ60` triggers, recorded as `#71`.
+Pairing `XingZ60`'s sections by index instead leaves one real coverage gap,
+ 76 blocks against 14, and two untranslated tail sections of 915 and 1459
+ characters. The five-to-fifteen ratio is an artifact of the aligner rather than
+ a property of the translation.
+
+So the branch resolves to MISPAIRED, and the "carries content the original does
+ not" reading is refuted.
+
+The corpus-wide check agrees, and it needed the right unit to say so. Measuring
+ every entry except `XingZ60`, over the 271 pairs where both sides are present:
+
+```text
+  equal block count           180
+  source has MORE blocks       38
+  target has MORE blocks       53
+
+  source >= 3x target blocks   11
+  target >= 3x source blocks    0
+```
+
+Not one pair in the corpus carries three times the blocks on the translation
+ side. The extreme asymmetry runs in exactly one direction, and it is the
+ coverage-gap direction every option already addresses.
+
+CHARACTER COUNTS CANNOT ANSWER THIS QUESTION, and reading them first gave the
+ opposite answer. The same sweep in characters reports 255 pairs with the target
+ longer and 83 at more than three times the source, which reads like widespread
+ unsupported content. It is not. Chinese carries far more meaning per character
+ than English, so over the 246 paired sections holding more than 100 source
+ characters the expansion is:
+
+```text
+  p10 1.72    median 2.91    p90 3.76    max 16.84
+```
+
+A three-times character ratio is the MEDIAN translation, not an anomaly. A
+ character threshold below about 3.8 flags ordinary work as suspect. Block
+ counts are script-independent, and they are the unit this question needs.
+
+The 11 extreme source-heavy pairs sit in exactly two entries, and both are
+ genuine partial translations rather than alignment faults:
+
+-   `XIEPT2`, 8 pairs, the widest holding 1605 source characters against 20.
+-   `shi_Yumiaoya`, 3 pairs, the widest holding 1203 source characters against
+    12.
+
+Their English pages carry headings with no bodies beneath them, `## Experience`
+ followed immediately by `## Departure`, confirmed in the raw bytes.
+`parseDocument` reads them correctly as `kind: "heading"` nodes; the sections
+ are empty because the translator left them empty. That is the case `#69`
+ already decided: the pipeline must yield a good translation even when the
+ translation fed in does not make sense.
+
+WHAT THIS CHANGES FOR THE OPTIONS. The claim that a proposal answering only
+ "translate what is missing" says nothing about pairs 7 and 5 no longer holds,
+ because pairs 7 and 5 are an aligner defect with its own fix in `#74`. Every
+ remaining asymmetry in the corpus is a coverage gap.
+
+The two sweeps are CONSISTENT despite different totals. This one finds 91 of
+ 271 both-sides pairs differing in block count, a rate of 33.6%, against the
+ earlier 60 of 172, a rate of 34.9%. The totals differ because the sweeps cover
+ different entry sets, but the underlying rate is the same to about one point,
+ so neither reading contradicts the other. Carry this one forward because it
+ names its method: `alignDocumentSections` at the pinned corpus SHA, counting
+ `nodes.length` per side, `XingZ60` excluded as the known mispairing.
+
 ## The options
 
 ### Option A: route barely-covered sections to a translate stage
@@ -149,9 +222,10 @@ B > C > A.
     after, and B removes the before. The source-anchored damage question built
     on 2026-08-12 is the natural replacement, since it never needed the before
     text except to establish that the edit caused the change.
--   What pairs 7 and 5 actually are. Whether the translation carries unsupported
-    content or the sections are mispaired changes which option even applies, and
-    the settled artifacts cannot answer it because they predate the parser fix.
+-   ~~What pairs 7 and 5 actually are.~~ ANSWERED 2026-08-13: they are
+    mispairing, and no entry in the corpus carries unsupported content. Details
+    in "Pairs 7 and 5 are mispairing, and no entry carries unsupported content".
+    This no longer gates the decision.
 -   Cost. B multiplies generation by the editor roster over every slice of every
     entry, against a provider that already fails transport under load.
 
