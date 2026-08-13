@@ -24,11 +24,19 @@ import { seatJudges, } from './judge-independence.ts';
 /**
  * Which side of the crosscheck a claim sits on.
  *
- * `control` covers every non-accepted status together, `rejected`,
- * `needs-human` and `source-defect` alike, because what the arm needs is
- * claims the panel did not accept, not a particular reason for not accepting.
+ * `undecided` is separated from `control` rather than folded into it, and the
+ * distinction is the difference between a rate and an average over two
+ * incommensurable things. `rejected` means the panel DECIDED AGAINST the
+ * claim, so there is a verdict for a judge to agree or disagree with.
+ * `needs-human` means the panel DECLINED TO DECIDE, so agreement is undefined:
+ * there is no verdict to survive re-asking. Measured on this run those claims
+ * lean supported 228 to 23, so filing them as control would fill the control
+ * arm with claims the panel mostly believed.
+ *
+ * `source-defect` sits in `control` because it IS a verdict, the panel ruling
+ * the original text wrong at the claimed spot rather than the translation.
  */
-export type CrosscheckArm = 'accepted' | 'control';
+export type CrosscheckArm = 'accepted' | 'control' | 'undecided';
 
 /**
  * One claim queued for re-examination, with its seating already worked out.
@@ -133,6 +141,40 @@ export type CrosscheckCensus = {
 };
 
 /**
+ * Adjudication statuses that carry a verdict a judge can be asked to confirm.
+ *
+ * A `Record` rather than a chain, so adding a status is a data edit and an
+ * UNKNOWN status is visibly absent rather than silently swept into a default.
+ */
+const ARM_OF_STATUS: Readonly<Record<string, CrosscheckArm>> = {
+  'accepted': 'accepted',
+  'rejected': 'control',
+  'source-defect': 'control',
+  'needs-human': 'undecided',
+} as const;
+
+/**
+ * Places one claim in an arm by the verdict its issue carries.
+ *
+ * An unrecognized status lands in `undecided` rather than `control`, which is
+ * the conservative direction: a status this code has never seen is one whose
+ * meaning it cannot assert, and `undecided` is reported apart from every rate
+ * instead of quietly becoming a denominator.
+ *
+ * @param status - adjudication status verbatim from the artifact
+ *
+ * @returns Arm the claim belongs to
+ *
+ * @example
+ * ```ts
+ * const arm = armOf({ status: 'rejected', },);
+ * ```
+ */
+function armOf({ status, }: { readonly status: string; },): CrosscheckArm {
+  return ARM_OF_STATUS[status] ?? 'undecided';
+}
+
+/**
  * Enumerates every claim a disinterested judge may re-examine, both arms.
  *
  * @param entries - settled entries as the attribution reader returns them
@@ -200,7 +242,7 @@ export function buildCrosscheckCensus(
           return {
             entryId: entry.id,
             claimId,
-            arm: (issue.status === 'accepted') ? 'accepted' : 'control',
+            arm: armOf({ status: issue.status, },),
             status: issue.status,
             proposers,
             judges,

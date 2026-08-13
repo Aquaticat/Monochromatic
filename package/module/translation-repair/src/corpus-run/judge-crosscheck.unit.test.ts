@@ -119,9 +119,11 @@ await describe({
     },),
 
     it({
-      name: 'folds needs-human and source-defect into the control arm, since '
-        + 'the arm needs claims the panel did not accept rather than a '
-        + 'particular reason for not accepting',
+      name: 'holds needs-human OUT of the control arm while keeping '
+        + 'source-defect in it, because rejected and source-defect are '
+        + 'verdicts a judge can agree with and declining to decide is not. '
+        + 'Those claims lean supported 228 to 23 on the current run, so '
+        + 'filing them as control would fill it with claims the panel believed',
       fn: async () => {
         const census = buildCrosscheckCensus({
           entries: [
@@ -152,7 +154,7 @@ await describe({
 
         expect(census.items.map(function toArm(item,) {
           return item.arm;
-        },),).toEqual(['control', 'control',],);
+        },),).toEqual(['undecided', 'control',],);
 
         // Status is kept verbatim beside the arm so a control result can be
         // broken down by reason without re-reading artifacts.

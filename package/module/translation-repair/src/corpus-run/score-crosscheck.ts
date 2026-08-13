@@ -96,9 +96,12 @@ function tallyAuthors(
         control: 0,
         sole: 0,
       };
+      // Only the two arms a rate is computed over are counted here. An
+      // `undecided` claim belongs to neither, and adding it to control would
+      // put the panel's non-verdicts into a column read as rejections.
       if (item.arm === 'accepted')
         row.accepted += 1;
-      else
+      else if (item.arm === 'control')
         row.control += 1;
       if (item.proposers.length === 1)
         row.sole += 1;
@@ -226,10 +229,24 @@ async function main(): Promise<void> {
   },);
 
   /**
-   * Claims per arm.
+   * Claims per arm, counted separately because `undecided` belongs in no rate.
    */
   const accepted = census.items.filter(function isAccepted(item,): boolean {
     return item.arm === 'accepted';
+  },);
+
+  /**
+   * Claims the panel decided against, the only legitimate control.
+   */
+  const control = census.items.filter(function isControl(item,): boolean {
+    return item.arm === 'control';
+  },);
+
+  /**
+   * Claims the panel declined to decide, held out of every rate.
+   */
+  const undecided = census.items.filter(function isUndecided(item,): boolean {
+    return item.arm === 'undecided';
   },);
 
   console.log(
@@ -251,7 +268,16 @@ async function main(): Promise<void> {
   }
   console.log(
     `ARMS accepted=${String(accepted.length,)} `
-      + `control=${String(census.items.length - accepted.length,)}`,
+      + `control=${String(control.length,)} `
+      + `undecided=${String(undecided.length,)}`,
+  );
+  console.log(
+    'NOTE undecided is needs-human, held OUT of every rate rather than filed '
+      + 'as control. Rejected means the panel decided against a claim, so a '
+      + 'judge can agree or disagree with it; needs-human means the panel '
+      + 'declined to decide, and agreement with a verdict never given is '
+      + 'undefined. Those claims lean supported on this run, so folding them '
+      + 'into control would fill it with claims the panel mostly believed.',
   );
 
   if (census.items.length === 0) {
@@ -267,13 +293,10 @@ async function main(): Promise<void> {
    * Control-arm claims broken down by why the panel refused them.
    */
   const byStatus: Record<string, number> = {};
-  for (const item of census.items) {
-    if (item.arm === 'accepted')
-      continue;
+  for (const item of [...control, ...undecided,])
     byStatus[item.status] = (byStatus[item.status] ?? 0) + 1;
-  }
   console.log(
-    `CONTROL BY STATUS ${
+    `NON-ACCEPTED BY STATUS ${
       Object
         .entries(byStatus,)
         .map(function toPair([status, count,],): string {
