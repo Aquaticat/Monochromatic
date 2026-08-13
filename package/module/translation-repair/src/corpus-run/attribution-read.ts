@@ -4,6 +4,8 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import {
   isJsonArray,
@@ -169,15 +171,68 @@ function toEntry(
 }
 
 /**
- * Reads every settled artifact into the shape the report needs.
- *
- * @param artifactsDir - directory the pass writes entries into
- *
- * @returns Entries in directory order
+ * One artifact that could not be read at all.
  *
  * @example
  * ```ts
- * const entries = await gatherAttributionEntries({ artifactsDir, },);
+ * const failure: MalformedArtifact = { name: 'Kitten.json', reason: 'Unexpected end of JSON input', };
+ * ```
+ */
+export type MalformedArtifact = {
+  /**
+   * File that failed, so a reader can go look at it.
+   */
+  readonly name: string;
+
+  /**
+   * Why it failed, named rather than summarized.
+   */
+  readonly reason: string;
+};
+
+/**
+ * Everything a run directory yielded, including what it could not.
+ *
+ * @example
+ * ```ts
+ * const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+ * ```
+ */
+export type AttributionGather = {
+  /**
+   * Entries that parsed.
+   */
+  readonly entries: readonly AttributionEntry[];
+
+  /**
+   * Artifacts that did not, held apart from the eligible and ineligible
+   * populations rather than folded into either.
+   */
+  readonly malformed: readonly MalformedArtifact[];
+};
+
+/**
+ * Reads every settled artifact into the shape the report needs.
+ *
+ * ISOLATED PER ARTIFACT, which is the difference between a loud failure and a
+ * useless one. The decoding below throws by design, and a bare
+ * `Promise.all` over the directory would let ONE bad file reject the whole
+ * gather: a single truncated artifact would mean no calibration at all for
+ * every other entry in the run. That is the same disproportion the writer
+ * avoids by not throwing on a telemetry invariant.
+ *
+ * Half-written artifacts are a real case rather than a hypothetical one. A pass
+ * killed at its hard cap can leave one, which is why `openSliceCache` already
+ * treats a half-written slice as absent, and `JSON.parse` on it raises a
+ * `SyntaxError` that has nothing to do with attribution.
+ *
+ * @param artifactsDir - directory the pass writes entries into
+ *
+ * @returns Entries that parsed, and the artifacts that did not
+ *
+ * @example
+ * ```ts
+ * const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
  * ```
  */
 export async function gatherAttributionEntries(
@@ -186,7 +241,7 @@ export async function gatherAttributionEntries(
   }: {
     readonly artifactsDir: string;
   },
-): Promise<readonly AttributionEntry[]> {
+): Promise<AttributionGather> {
   /**
    * Artifact file names.
    */
@@ -194,23 +249,52 @@ export async function gatherAttributionEntries(
     return name.endsWith('.json',);
   },);
 
-  return await Promise.all(names.map(async function readOne(name,): Promise<AttributionEntry> {
-    /**
-     * Raw artifact text.
-     */
-    const text = await readFile(
-      join(
-        artifactsDir,
-        name,
-      ),
-      'utf8',
-    );
+  /**
+   * One outcome per artifact: the entry it yielded, or why it yielded none.
+   */
+  const outcomes = await Promise.all(names.map(async function readOne(name,): Promise<
+    { readonly entry: AttributionEntry; } | { readonly failure: MalformedArtifact; }
+  > {
+    try {
+      /**
+       * Raw artifact text.
+       */
+      const text = await readFile(
+        join(
+          artifactsDir,
+          name,
+        ),
+        'utf8',
+      );
 
-    return toEntry({
-      name,
-      parsed: JSON.parse(text,),
-    },);
+      return {
+        entry: toEntry({
+          name,
+          parsed: JSON.parse(text,),
+        },),
+      };
+    }
+    catch (error) {
+      // Recorded rather than rethrown, and never swallowed: the reason travels
+      // to the caller, which reports it beside the population it is missing
+      // from.
+      return {
+        failure: {
+          name,
+          reason: caughtValueText(error,),
+        },
+      };
+    }
   },),);
+
+  return {
+    entries: outcomes.flatMap(function toEntries(outcome,): readonly AttributionEntry[] {
+      return ('entry' in outcome) ? [outcome.entry,] : [];
+    },),
+    malformed: outcomes.flatMap(function toFailures(outcome,): readonly MalformedArtifact[] {
+      return ('failure' in outcome) ? [outcome.failure,] : [];
+    },),
+  };
 }
 
 //endregion Attribution read

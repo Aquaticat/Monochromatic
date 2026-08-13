@@ -2944,6 +2944,9 @@ importers:
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
       '@monochromatic-dev/module-llm-type':
         specifier: workspace:*
         version: link:../llm-type
@@ -2992,7 +2995,7 @@ importers:
         version: 4.0.4
       '@types/node':
         specifier: 'catalog:'
-        version: 26.1.1
+        version: 26.2.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

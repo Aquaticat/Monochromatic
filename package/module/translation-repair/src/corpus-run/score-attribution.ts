@@ -153,11 +153,28 @@ async function main(): Promise<void> {
   );
 
   /**
+   * Entries that parsed, and the artifacts that did not.
+   */
+  const {
+    entries,
+    malformed,
+  } = await gatherAttributionEntries({ artifactsDir, },);
+
+  /**
    * Report over every settled artifact.
    */
-  const report = buildAttributionReport({
-    entries: await gatherAttributionEntries({ artifactsDir, },),
-  },);
+  const report = buildAttributionReport({ entries, },);
+
+  if (malformed.length > 0) {
+    console.log(
+      `WARNING ${String(malformed.length,)} artifacts could not be read and are `
+        + 'in NEITHER population below, so every count is over the rest. Named '
+        + 'rather than summarized, because a truncated artifact is a different '
+        + 'problem from a malformed one:',
+    );
+    for (const failure of malformed)
+      console.log(`  ${failure.name}: ${failure.reason}`,);
+  }
 
   console.log(
     `POPULATION eligible=${String(report.eligibleEntries,)} `

@@ -63,7 +63,11 @@ export {
   readHeadSha,
   resolveRunsDir,
 } from './corpus-run/run-config.ts';
-export { gatherAttributionEntries, } from './corpus-run/attribution-read.ts';
+export {
+  type AttributionGather,
+  gatherAttributionEntries,
+  type MalformedArtifact,
+} from './corpus-run/attribution-read.ts';
 export {
   type AcceptedIssueView,
   type AttributionEntry,

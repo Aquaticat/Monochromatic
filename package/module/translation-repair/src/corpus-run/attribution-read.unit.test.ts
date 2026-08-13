@@ -78,7 +78,7 @@ async function writeArtifacts(
         dir,
         name,
       ),
-      JSON.stringify(body,),
+      ((typeof body) === 'string') ? body : JSON.stringify(body,),
       'utf8',
     );
   },),);
@@ -164,7 +164,7 @@ await describe({
         /**
          * Entries as the CLI would gather them.
          */
-        const entries = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+        const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
         /**
          * Chunk record the artifact carried.
@@ -197,12 +197,54 @@ await describe({
         /**
          * Entries as the CLI would gather them.
          */
-        const entries = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+        const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
         // Undefined, NOT an empty array. An empty array would read as an entry
         // whose critics raised nothing, which is the exact conflation the
         // eligible population exists to prevent.
         expect(entries[0]?.chunkCritics,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'ISOLATES a failure to the artifact that caused it, so one corrupt '
+        + 'or half-written file costs its own row and not the whole run. A pass '
+        + 'killed at its hard cap can leave a truncated artifact, and a bare '
+        + 'Promise.all over the directory would turn that single file into no '
+        + 'calibration at all for every other entry',
+      fn: async () => {
+        /**
+         * One sound artifact beside one truncated mid-write.
+         */
+        await using scratch = await writeArtifacts({
+          artifacts: {
+            'whiskers.json': artifactWith({
+              chunkCritics: [{
+                chunkIndex: 0,
+                heardCriticIds: [TABBY,],
+                claimAttributions: [],
+              },],
+            },),
+            'truncated.json': '{"id":"Mittens","chunkCri',
+          },
+        },);
+
+        /**
+         * What the directory yielded.
+         */
+        const { entries, malformed, } = await gatherAttributionEntries({
+          artifactsDir: scratch.dir,
+        },);
+
+        // The sound artifact still produces its entry.
+        expect(entries,).toHaveLength(1,);
+        expect(entries[0]?.id,).toBe('Whiskers',);
+
+        // The broken one is NAMED rather than silently absent, since an
+        // artifact missing from both populations changes every count above it.
+        expect(malformed,).toHaveLength(1,);
+        expect(malformed[0]?.name,).toBe('truncated.json',);
+        expect(malformed[0]?.reason.length,).toBeGreaterThan(0,);
       },
     },),
 
@@ -220,9 +262,10 @@ await describe({
             artifacts: { 'whiskers.json': artifactWith({ chunkCritics: corrupt, },), },
           },);
 
-          await expect(gatherAttributionEntries({ artifactsDir: scratch.dir, },),)
-            .rejects
-            .toThrow('chunkCritics',);
+          expect(
+            (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('chunkCritics',);
         },),);
       },
     },),
@@ -249,9 +292,10 @@ await describe({
             },
           },);
 
-          await expect(gatherAttributionEntries({ artifactsDir: scratch.dir, },),)
-            .rejects
-            .toThrow('chunkIndex',);
+          expect(
+            (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('chunkIndex',);
         },),);
       },
     },),
@@ -276,9 +320,10 @@ await describe({
             },),
           },
         },);
-        await expect(gatherAttributionEntries({ artifactsDir: heard.dir, },),)
-          .rejects
-          .toThrow('distinct',);
+        expect(
+            (await gatherAttributionEntries({ artifactsDir: heard.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('distinct',);
 
         /**
          * Two records claiming to describe the same chunk.
@@ -293,9 +338,10 @@ await describe({
             },),
           },
         },);
-        await expect(gatherAttributionEntries({ artifactsDir: chunks.dir, },),)
-          .rejects
-          .toThrow('one record per chunk',);
+        expect(
+            (await gatherAttributionEntries({ artifactsDir: chunks.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('one record per chunk',);
 
         /**
          * One claim crediting the same critic twice.
@@ -317,9 +363,10 @@ await describe({
             },),
           },
         },);
-        await expect(gatherAttributionEntries({ artifactsDir: proposers.dir, },),)
-          .rejects
-          .toThrow('one entry per critic',);
+        expect(
+            (await gatherAttributionEntries({ artifactsDir: proposers.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('one entry per critic',);
       },
     },),
 
@@ -346,9 +393,10 @@ await describe({
           },
         },);
 
-        await expect(gatherAttributionEntries({ artifactsDir: scratch.dir, },),)
-          .rejects
-          .toThrow('emissionCount',);
+        expect(
+            (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
+              ?.reason,
+          ).toContain('emissionCount',);
       },
     },),
   ],
