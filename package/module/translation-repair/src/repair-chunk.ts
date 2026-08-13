@@ -9,6 +9,7 @@ import {
   measurePatchedCandidate,
   selectCreditableIssues,
 } from './chunk-measure.ts';
+import { dedupeAcceptedIssues, } from './dedupe-issues.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
 import { parseDocument, } from './parse-document.ts';
 import { collectRepairRegions, } from './repair-region.ts';
@@ -190,11 +191,22 @@ export async function repairChunk(
   },);
 
   /**
+   * Panel issues with same-place accepted duplicates merged into one.
+   *
+   * Applied HERE, before envelopes are cut, because the cost a duplicate
+   * imposes is the editor repairing one defect twice and cutting two
+   * overlapping envelopes for it. Deduplicating after that work is done would
+   * correct the arithmetic and keep the waste.
+   */
+  const deduped = dedupeAcceptedIssues({ issues: panel.issues, },);
+
+  /**
    * Findings across the stages so far.
    */
   const stageFindings = [
     ...critic.findings,
     ...panel.findings,
+    ...deduped.findings,
   ];
 
   /**
@@ -204,14 +216,14 @@ export async function repairChunk(
     envelopes,
     unenveloped,
   } = deriveEditableEnvelopes({
-    issues: panel.issues,
+    issues: deduped.issues,
     targetText,
   },);
   if (envelopes.length === 0) {
     l.info(`chunk ${String(chunkIndex,)}: nothing to edit, unchanged`,);
     return {
       ...unchangedOutcome,
-      issues: panel.issues,
+      issues: deduped.issues,
       findings: stageFindings,
     };
   }
@@ -219,7 +231,7 @@ export async function repairChunk(
   /**
    * Accepted issues, the editor's and checkers' work list.
    */
-  const acceptedIssues = panel.issues
+  const acceptedIssues = deduped.issues
     .filter(function isAccepted(issue,) {
     return issue.status === 'accepted';
   },);
@@ -237,7 +249,7 @@ export async function repairChunk(
     sourceText,
     targetText,
     envelopes,
-    issues: panel.issues,
+    issues: deduped.issues,
     signal,
     perCallTimeoutMs,
     l,
@@ -249,7 +261,7 @@ export async function repairChunk(
     l.info(`chunk ${String(chunkIndex,)}: no operation survived the gate, unchanged`,);
     return {
       ...unchangedOutcome,
-      issues: panel.issues,
+      issues: deduped.issues,
       findings: [
         ...stageFindings,
         ...editor.findings,
@@ -375,7 +387,7 @@ export async function repairChunk(
     repairedText: selection.winner
       .text,
     changed,
-    issues: panel.issues,
+    issues: deduped.issues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
     candidateResolvedIssueIds: acceptedIssues
       .filter(function confirmedOnCandidate(issue,) {

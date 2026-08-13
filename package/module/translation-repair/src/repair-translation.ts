@@ -92,8 +92,16 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * so an entry would silently mix attributable and unattributable slices. That
  * is precisely the population confusion the fields exist to prevent, so
  * resolving it by tolerating the old shape would defeat them.
+ *
+ * Version 11 is the first bump for a BEHAVIOUR change since 8: accepted issues
+ * naming one defect in one place are now merged before envelopes are cut, so a
+ * chunk emits fewer issues and cuts fewer envelopes than it did. A slice
+ * resumed from a version-10 file would carry the duplicates the merge exists to
+ * remove, and would have spent the editor's budget on them, so the two cannot
+ * be mixed within one entry. Ratified in
+ * `doc/decision/translation-repair-duplicate-issue-emission.md`.
  */
-const SLICE_CACHE_VERSION = 10;
+const SLICE_CACHE_VERSION = 11;
 
 /**
  * Completion status of one repair run;

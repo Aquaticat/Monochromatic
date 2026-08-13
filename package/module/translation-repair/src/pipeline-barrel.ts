@@ -117,6 +117,10 @@ export {
   pickFallbackPatch,
 } from './editor-candidates.ts';
 export {
+  dedupeAcceptedIssues,
+  type DedupeOutcome,
+} from './dedupe-issues.ts';
+export {
   checkPreservation,
   type PreservationVerdict,
 } from './preservation-check.ts';
