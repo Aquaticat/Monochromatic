@@ -68,6 +68,42 @@ The remaining odd characters are harmless where they sit.
  `---\r`, which matched no closing fence, so the whole document parsed as body
  with a phantom heading. Fixed in `front-matter.ts`.
 
+## The corpus contains no fenced code blocks at all
+
+Confirmed by fixed-string search across all 184 files: no ``` and no `~~~`
+ anywhere.
+That bounds a whole second family.
+Masking cannot corrupt fenced content here, comment delimiters cannot hide
+ inside code here, and fence markers cannot hide inside comments here, because
+ there is no code to hide in.
+
+A cross-check with `git grep --extended-regexp '^\s*(\`\`\`|~~~)'` reported
+ matches in nearly every file and was wrong.
+Backslash-backtick is the buffer-start anchor in GNU regex, so each `` \` ``
+ became a zero-width assertion and the alternation matched almost every line.
+The fixed-string search is the one to trust.
+
+## HTML comments are present and every one is balanced
+
+110 comments across 39 files.
+None sits inside a fence, none is unterminated, and no file ends inside one.
+`maskHtmlComments` recognises `<!--` without regard to context, so an
+ unterminated delimiter inside code would mask from there to end of input; that
+ cannot happen at this pin.
+
+## What this means for a pass already running
+
+Every parser change landed while `pass10` was in flight is provably inert on
+ this corpus except on the two entries named here.
+The invisible-character masking touches `Toka_ls` and nothing else; the
+ front-matter line-ending fix touches `gqt` and nothing else; the fence
+ exemption touches nothing, since there are no fences.
+
+So a pass started before those fixes stays usable for its other entries, and
+ only `Toka_ls` and `gqt` need excluding or re-running.
+Wiring in the section aligner would add `XingZ60` to that list, because it is
+ the only entry whose heading counts differ.
+
 ## Two holes the census proves are unexercised
 
 Neither of these can happen in this corpus.
