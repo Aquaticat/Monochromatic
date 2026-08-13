@@ -809,20 +809,37 @@ The algorithm therefore cannot distinguish "correct pair, no shared tokens" from
  order, which tries source gap, then target gap, then pairing. That order is a
  PRIOR about where omissions fall, not a result computed from the headings.
 
-### Confirmed independently, from the corpus
+### Confirmed by probing `alignHeadings` directly
 
-The corpus sweep run for `#70` counted, across all 92 entries and 284
- both-sides section pairs, how many sections the aligner left unpaired:
+An earlier version of this section cited the `#70` corpus sweep, which found 0
+ unpaired sections across 92 entries and 284 pairs, as independent confirmation.
+That was a CONFLATION and is withdrawn: the sweep ran `alignDocumentSections`,
+ the production path, which never calls `alignHeadings` at all. It confirms the
+ proportional fallback pairs everything, which was already known and is what
+ `#71` is about. It says nothing about the arithmetic.
+
+The claim needs the actual function, so here it is on the actual function. The
+ count that matters is MUTUAL gaps, meaning a source and a target both left
+ unpaired where they could have been paired together, since a length difference
+ forces surplus gaps no matter what the scores say:
 
 ```text
-  source-only sections   0
-  target-only sections   0
+  equal length, zero affinity (3v3)            pairs 3   mutual gaps 0
+  equal length, one strong anchor misplaced    pairs 3   mutual gaps 0
+  unequal 5v3, zero affinity                   pairs 3   mutual gaps 0
+  middle omission with anchors either side     pairs 3   mutual gaps 0
 ```
 
-Not one, anywhere. That is the predicted consequence of the arithmetic, arrived
- at from the opposite direction, and it is also a direct contradiction of `#71`'s
- stated requirement that a section which cannot be paired confidently must not
- reach the critics. Today no section is ever withheld.
+Never once. Every gap it emits is the forced surplus of a length difference,
+ and it never CHOOSES to withhold a pairing on evidence. That is what the
+ arithmetic predicts, and `#71` requires the opposite.
+
+The second row is the more damaging one. A perfect anchor at affinity `1.00`
+ sat at source 0 and target 2, and the aligner ignored it and paired by position
+ instead, because reaching the anchor costs four reciprocal gaps at `-1.40`
+ against a gain of `1.00`. So a fixed scalar penalty does not merely fail to
+ withhold pairs, it discards the strongest evidence the affinity function can
+ produce.
 
 ### What it does to attempt five
 
