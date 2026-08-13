@@ -189,7 +189,7 @@ function renderItem(
   } = region;
 
   return [
-    `### Item ${String(position,)}`,
+    `### ${String(position,)}. grade: [ ]  (Y = the edit damaged the text · N = the edit is acceptable)`,
     '',
     'Original:',
     '',
@@ -214,13 +214,10 @@ function renderItem(
         return renderClaim({ claim, },);
       },),
     '',
-    'Did this edit DAMAGE the translation, judged against the original?',
-    'Answer Y if the edit lost or distorted something the original supports.',
-    'Answer N if the edit is acceptable, even where it is not the wording you',
-    'would have chosen. Answer N if the only problem is a defect that was',
-    'already there before the edit.',
-    '',
-    'Grade: ',
+    'Y if the edit lost or distorted something the original supports.',
+    'N if the edit is acceptable, even where it is not the wording you would',
+    'have chosen, and N if the only problem is a defect that was already there',
+    'before the edit.',
     '',
   ].join('\n',);
 }
@@ -257,6 +254,8 @@ export function formatVerifySheet(
     'already wrong before the edit is not damage the edit caused, and the',
     'reviewer has been told that too, so a claim pointing at a pre-existing',
     'problem is a wrong claim.',
+    '',
+    'Replace each `[ ]` on a heading with `Y` or `N`.',
     '',
     `Items: ${String(ordered.length,)}`,
     '',

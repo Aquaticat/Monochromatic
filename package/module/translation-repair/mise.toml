@@ -67,6 +67,10 @@ run = "node src/corpus-run/probe-sensitivity.ts"
 description = "Probe damaged and unread regions with the accepted issues withheld, and write one blind sheet asking whether each flagged edit really damaged the text"
 run = "node src/corpus-run/probe-verify.ts"
 
+[tasks."score-verify"]
+description = "Join the graded blind verification sheet to its manifest and report what the unlabelled probe's flags are worth on regions nobody had read"
+run = "node src/corpus-run/score-verify.ts"
+
 [tasks."probe-relabel"]
 description = "Re-probe the regions a human read as damaged, once with the accepted issues shown and once withheld, to separate a suppressing label from a hard judgement"
 run = "node src/corpus-run/probe-relabel.ts"
