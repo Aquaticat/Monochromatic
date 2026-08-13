@@ -1812,9 +1812,7 @@ fun playerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     // ```ts
     // useBackHandler(showingSettings, () => setShowingSettings(false));
     // ```
-    BackHandler(enabled = showingSettings) {
-        showingSettings = false
-    }
+    BackHandler(enabled = showingSettings) { showingSettings = false }
     // What:     `var position by remember { mutableDoubleStateOf(0.0) }` declares a
     //           state-backed `Double` local via the `useState` idiom: `remember` keeps it
     //           across recompositions, `mutableDoubleStateOf(0.0)` is the (number-specialized)
