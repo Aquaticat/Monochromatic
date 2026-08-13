@@ -12,6 +12,7 @@ import {
 import { buildFootnoteGraph, } from './footnote-graph.ts';
 import type { FootnoteGraph, } from './footnote-model.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
+import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
   MdxParseError,
   parseMarkdownBody,
@@ -196,7 +197,14 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
   const {
     masked,
     regions,
-  } = maskHtmlComments({ text: split.body, },);
+  } = maskHtmlComments({
+    // Invisible-only lines are blanked FIRST, because such a line is not blank
+    // to CommonMark and therefore welds the paragraphs either side of it into
+    // one block. One corpus translation parses to 29 blocks instead of 33 that
+    // way, and every block after the first weld pairs with the wrong original.
+    // Length is preserved, so every offset still indexes the same character.
+    text: maskInvisibleLines({ text: split.body, },),
+  },);
 
   /**
    * Findings for every masked comment, in absolute document offsets.
