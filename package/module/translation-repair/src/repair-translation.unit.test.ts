@@ -248,6 +248,76 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES per-chunk critic calibration into the result, so the '
+        + 'artifact records who was asked and who raised each claim. Without '
+        + 'this the whole attribution path ends in memory: every stage below '
+        + 'collects it correctly and nothing durable ever sees it, which is '
+        + 'indistinguishable from never having built it',
+      fn: async () => {
+        /** Full run over the scripted client. */
+        const result = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        expect(result.chunkCritics.length,).toBeGreaterThan(0,);
+
+        // The roster is the DENOMINATOR: a critic asked that raised nothing and
+        // a critic never asked both leave no attribution entry, so hits are
+        // countable without it and rates are not.
+        for (const record of result.chunkCritics)
+          expect(record.heardCriticIds,)
+            .toStrictEqual([...MODELS.criticModelIds,].toSorted(),);
+
+        /** Critics credited with raising something, across every chunk. */
+        const raisers = new Set(result.chunkCritics
+          .flatMap(function toProposerIds(record,) {
+          return record.claimAttributions
+            .flatMap(function toIds(attribution,) {
+            return attribution.proposers
+              .map(function toModelId(proposer,) {
+              return proposer.modelId;
+            },);
+          },);
+        },),);
+
+        expect(raisers.size,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'orders chunk records by CHUNK INDEX, so an artifact compared '
+        + 'across runs does not differ merely because chunks settled in a '
+        + 'different order',
+      fn: async () => {
+        /** Full run over the scripted client. */
+        const result = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+
+        /** Chunk indexes in recorded order. */
+        const indexes = result.chunkCritics
+          .map(function toIndex(record,) {
+          return record.chunkIndex;
+        },);
+
+        expect(indexes,).toStrictEqual([...indexes,].toSorted(function ascending(
+          left,
+          right,
+        ) {
+          return left - right;
+        },),);
+      },
+    },),
+
+    it({
       name: 'gives an accepted issue no envelope could serve no resolution '
         + 'credit, however confidently the checkers call it fixed',
       fn: async () => {
