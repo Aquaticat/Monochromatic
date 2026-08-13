@@ -160,15 +160,23 @@ const result = await repairTranslation({
   to find something, and gating on an over-eager probe would have discarded
   correct fixes.
   Measured on 2026-08-12 over all 857 probed regions of the settled artifacts,
-  that expectation is wrong in the other direction:
-  2438 of 2571 prober verdicts found nothing, 743 of 857 regions were negative
-  from every prober, and the raise rate barely moves with how much text the edit
-  removed, from 0.060 where over half the region was deleted to 0.032 where it
-  barely changed.
-  The probe is not too eager; it is nearly silent, and its silence carries almost
-  no information about the edit.
-  Shadow mode therefore stands for a new reason, recorded in `#66`:
-  a stage whose output does not vary with its input cannot gate anything.
+  the probe was nearly silent instead: 2438 of 2571 prober verdicts found
+  nothing, and the raise rate barely moved with how much text the edit removed.
+  READ THAT AS HISTORY, NOT AS THE PROBE'S BEHAVIOUR.
+  Those verdicts were produced under a question that made the pre-edit
+  TRANSLATION the standard of accuracy, asking whether the replacement
+  introduced a defect the BEFORE text did not have.
+  Read back, every claim it produced argued from that text, and one reported a
+  corrected mistranslation as damage, so the figure measures whether an edit
+  CHANGED anything rather than whether it damaged anything.
+  The question is now anchored on the ORIGINAL, and every probe figure taken
+  before that change is withdrawn.
+  Under the new question, on a twenty-region draw read against the Chinese, the
+  probe flagged three of three damaged regions with one false positive and no
+  misses, which is the first version of this instrument that discriminated at
+  all.
+  That reading is one agent's and one draw's, so it sizes nothing.
+  Shadow mode stands until a human grades a sample: `#66`.
   Shadow mode is a recorded decision rather than an unfinished edge, with the
   rejected gating designs and the condition that reopens it in
   `doc/decision/introduced-defect-probe-gating.md`.
