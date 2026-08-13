@@ -200,3 +200,43 @@ CAUSE UNKNOWN AND PROBABLY NOT ATTRIBUTABLE. The two runs differ by many
  commits, not only by the night's work, and model sampling is not fixed. This is
  a fact about the artifacts rather than a diagnosis, and chasing it to a single
  commit would need a bisect over passes that each cost days.
+
+### The drop is concentrated in the most SUBJECTIVE category, which hints at direction
+
+The section above says the direction of quality is unknown. It can be narrowed
+ without human grading, by asking WHICH issues the panel stopped accepting.
+
+Taking every issue the old run ACCEPTED whose target span `pass13` also
+ produced, 132 of them, and asking what `pass13` did with the same span:
+
+```text
+  category      dropped  kept   drop rate
+    style           7      3     70%
+    accuracy       21     78     21%
+    policy          1      9     10%
+    fluency         0      9      0%
+    terminology     1      1     50%
+    extension       1      1     50%
+
+  overall          31    101     23%
+```
+
+Style is dropped at 70% where the overall rate predicts 23%. Seven of ten,
+ against an expectation of 2.3, has a 0.24% chance of arising from the overall
+ rate, so the concentration is real rather than small-sample noise.
+
+WHAT THAT SUGGESTS, carefully. Style is the most SUBJECTIVE class the taxonomy
+ has: a claim that a rendering reads awkwardly is the one most likely to be a
+ defensible difference of opinion rather than a defect. A panel that rejects
+ style claims far harder while leaving fluency untouched at 0% and policy at
+ 10% looks like it became more DISCRIMINATING, not merely quieter.
+
+WHAT IT DOES NOT ESTABLISH. That is a hint from where the losses fall, not a
+ verdict on whether any individual rejection was correct. Real style defects
+ being missed would produce the same table. Only human grading separates those,
+ and that is `#66`.
+
+So the honest statement is: the acceptance rate fell 11 points, the fall is
+ concentrated in the class where false positives are most likely, and that is
+ weak evidence for improvement rather than regression. Weak evidence is still
+ better than the "unknown" this section started with.
