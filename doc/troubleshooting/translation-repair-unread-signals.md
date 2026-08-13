@@ -8,7 +8,7 @@ Measured 2026-08-13 across all 92 entries at pin
 That is a pattern rather than an incident, so every signal the deterministic
  core emits was censused at once, and the census found a second defect.
 
-## The whole census
+## Census one: what the deterministic core emits over the 92-entry corpus
 
 ```text
 PARSE findings, both sides of 92 entries
@@ -150,7 +150,7 @@ Both rest on the graph being right, which until 2026-08-13 it was not: it would
  have reported ten false breaks on `shihai4h` and could not see a definition
  inside a container at all.
 
-## The whole finding census, over 56 settled entries
+## Census two: what a run records across the 56 settled entries
 
 Taken 2026-08-13 from `node_modules/.monochromatic/translation-repair-runs`,
  collapsing each finding's parenthesised payload so kinds group.
@@ -177,7 +177,7 @@ The tail below those runs to single figures: `no-quotes`, `unknown-severity`,
 
 Most of it is ordinary bookkeeping. Two families are not.
 
-## Quote anchoring discards 398 critic claims, and the corpus wrapping explains part of it
+## Quote anchoring discards 398 critic claims, and the cause is still unknown
 
 `quote-not-found` 225, `empty-quote` 129, `ambiguous-quote` 30,
  `quote-outside-blocks` 12, `no-quotes` 2.
