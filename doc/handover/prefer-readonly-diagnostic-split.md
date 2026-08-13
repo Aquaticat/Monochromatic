@@ -66,11 +66,28 @@ Resolved after handover creation:
 Historical Git commits remain unchanged.
 Unrelated prose using the ordinary English term outside readonly analysis remains out of scope.
 
-Open decisions:
+Further resolved decisions:
 
-- whether the existing no-disable policy applies only to the preference rule or later expands to the disabled rules;
-- readiness criteria and acceptance mechanism recorded by the new tracking issue;
-- shared-analysis architecture that prevents three enabled rules from tripling project analysis work.
+- no-disable policy:
+  retain the existing preference-rule guard only;
+  defer guards or a reviewed acceptance mechanism for disabled rules to the readiness issue;
+- shared architecture:
+  compute category-neutral parameter evidence once per semantic source snapshot,
+  then let thin rule reporters filter their categories;
+- previously hidden contract policy:
+  add `no-invalid-parameter-effect-contracts` for stale or missing mutation contracts,
+  overload-contract disagreement,
+  and redundant ownership markers.
+
+The complete public split therefore has four rules.
+Only the preference rule starts at `error`.
+The other three start at `off`,
+share the tracking-issue comment,
+and eventually move directly to `error`.
+
+Open decision:
+
+- readiness criteria and acceptance mechanism recorded by the new tracking issue.
 
 Do not implement until the user confirms the grilling session has reached shared understanding.
 
