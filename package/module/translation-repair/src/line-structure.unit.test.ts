@@ -22,7 +22,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { isLineStructured, } from '../dist/final/node/index.mjs';
+import {
+  buildEditorAddendum,
+  isLineStructured,
+} from '../dist/final/node/index.mjs';
 
 /**
  * Builds a slice from blocks.
@@ -147,6 +150,86 @@ await describe({
             ],
           },),
         },),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: buildEditorAddendum.name,
+  children: [
+    it({
+      name: 'speaks about the ORIGINAL, not the current text, because the '
+        + 'predicate reads the source and the two disagree on exactly the case '
+        + 'this exists for: Toka_ls has 21 source blocks at median 22 against '
+        + '18 target blocks at median 101, so an addendum asserting the CURRENT '
+        + 'text is line-structured told the editor something untrue about the '
+        + 'text in front of it',
+      fn: async () => {
+        /** Source shaped like verse: many short blocks. */
+        const verseSource = slice({
+          blocks: [
+            'Paws on the windowsill',
+            'A tail curled tight',
+            'Rain against the glass',
+            'The kettle starts to sing',
+            'Nobody comes home',
+            'The cushion keeps its shape',
+          ],
+        },);
+
+        /** Addendum the editor is handed for that slice. */
+        const addendum = buildEditorAddendum({
+          baseAddendum: '',
+          sourceText: verseSource,
+        },);
+
+        expect(addendum.includes('ORIGINAL IS line-structured',),).toBe(true,);
+        expect(addendum.includes('CURRENT TEXT IS line-structured',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'forbids the failure that was actually observed, not only reflow. '
+        + 'The editor replaced three correct Toka_ls lines with invented text, '
+        + 'one carrying a correct translation of a DIFFERENT line, and a rule '
+        + 'that only preserved line counts would have permitted every one',
+      fn: async () => {
+        /** Any line-structured source produces the rule. */
+        const addendum = buildEditorAddendum({
+          baseAddendum: '',
+          sourceText: slice({
+            blocks: [
+              'Paws on the windowsill',
+              'A tail curled tight',
+              'Rain against the glass',
+              'The kettle starts to sing',
+              'Nobody comes home',
+            ],
+          },),
+        },);
+
+        expect(addendum.includes('never invent a line',),).toBe(true,);
+        expect(addendum.includes('content belonging to another',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'adds nothing for ordinary prose, so the rule reaches only the '
+        + 'slices the predicate names and cannot quietly govern the corpus',
+      fn: async () => {
+        expect(buildEditorAddendum({
+          baseAddendum: '',
+          sourceText: slice({
+            blocks: [
+              'The cat considered the windowsill at some length, weighing the sun against the draught.',
+              'Having decided, she then reconsidered, which is the privilege of cats and of committees.',
+              'The kettle boiled unattended, as kettles will when nobody in the house has hands.',
+              'By evening the cushion had taken her shape and refused, politely, to give it back.',
+              'This is the whole of the afternoon, and it was enough for everyone concerned.',
+            ],
+          },),
+        },),).toBe('',);
       },
     },),
   ],

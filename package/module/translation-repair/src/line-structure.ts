@@ -8,10 +8,14 @@
 // 42nd of 54. A number the pipeline computes and hands over as a fact removes
 // that guess from both sides.
 //
-// MEASURED over all 286 chunks of the corpus: this trips on 55 of them across
-// 34 entries, and `Toka_ls`, whose editor fabricated three lines, trips at
-// median 22. A threshold of 20 would have missed it, which is why the control
-// was run before the threshold was chosen.
+// MEASURED over every corpus chunk: 49 of 275 trip, across 31 entries, and
+// `Toka_ls`, whose editor fabricated three lines, trips at median 22 while its
+// two prose chunks sit at 49 and 86. A threshold of 20 would have missed it,
+// which is why the control was run before the threshold was chosen.
+//
+// The counts were 55 of 286 across 34 entries when first taken. Nothing about
+// this predicate changed; the ALIGNER did, in `#71`, and chunk boundaries are
+// its output. Re-measured through the shipped predicate on the forced aligner.
 
 /**
  * Blocks a slice needs before its shape means anything.

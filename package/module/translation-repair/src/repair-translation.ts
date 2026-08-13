@@ -140,8 +140,17 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * internal newline and 29 carry a hard break, so a version-20 slice was refined
  * over a small fraction of the prose the lane could have reached. Those cached
  * slices hold text the current lane would have been free to rewrite.
+ *
+ * Version 22 corrects the line-structure sentence the editor is handed. It
+ * opened `This region's CURRENT TEXT IS line-structured`, while the predicate
+ * behind it reads the SOURCE, and on the case it exists for the two disagree:
+ * `Toka_ls`'s verse chunk is 21 source blocks at median 22 against 18 target
+ * blocks at median 101. Version-21 slices were edited under a sentence that
+ * asserted something untrue about the text in front of the model and then asked
+ * for one output line per INPUT line, which on an already-merged translation
+ * asks for the merge to be preserved.
  */
-const SLICE_CACHE_VERSION = 21;
+const SLICE_CACHE_VERSION = 22;
 
 /**
  * Completion status of one repair run;

@@ -13,10 +13,24 @@ import { isLineStructured, } from './line-structure.ts';
  * itself, and an attempt to write that same recognition as a heuristic failed
  * its positive control, so leaving the judgement to a model is not obviously
  * safer than measuring it.
+ *
+ * SPEAKS ABOUT THE ORIGINAL, because that is the side the predicate reads. An
+ * earlier wording opened `This region's CURRENT TEXT IS line-structured`, which
+ * on the case this exists for is false: `Toka_ls`'s verse chunk is 21 source
+ * blocks at median 22 against 18 target blocks at median 101. It told the
+ * editor something untrue about the text in front of it, and then asked for one
+ * output line per INPUT line, which on an already-merged translation asks for
+ * the merged shape to be preserved.
+ *
+ * NAMES THE OBSERVED FAILURE rather than only the desired shape. The editor did
+ * not merely reflow `Toka_ls`: it replaced three correctly translated lines with
+ * invented text, one of them with a correct translation of a DIFFERENT line.
+ * Forbidding reflow would not have covered that, so both are stated.
  */
-const LINE_STRUCTURE_RULE = 'This region\'s CURRENT TEXT IS line-structured: '
-  + 'treat every line as a unit, keep one output line per input line in the '
-  + 'same order, and recast only within a line.';
+const LINE_STRUCTURE_RULE = 'This region\'s ORIGINAL IS line-structured: each '
+  + 'original line is a unit. Keep every existing line in place and in order, '
+  + 'recast only within a line, and never invent a line, drop a line, or fill '
+  + 'one line with content belonging to another.';
 
 /**
  * Builds the editor rule addendum for one slice.
