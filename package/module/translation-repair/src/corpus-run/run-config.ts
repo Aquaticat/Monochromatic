@@ -117,17 +117,22 @@ export const RUN_ROSTER: readonly SyntheticModelId[] = [
  * that most often loses its voice to schema mismatch, and the checker stage is
  * where a lost voice costs proof rather than coverage.
  *
- * ONE refiner runs the naturalness lane, and it is Kimi-K3, which also edits.
- * Nothing forbids that: judges exclude producers per selection round, so the
- * refinement is still chosen by models with no stake in it, and the checker
- * roster excludes every editor and every refiner, so nothing certifies its own
- * text. The tradeoff is real and is accepted rather than hidden: a model that
- * just wrote a paragraph is a poor judge of whether that paragraph reads
- * awkwardly. The alternative was GLM-4.7-Flash, the only strong-enough model
- * that neither edits nor checks, and it is also the model that most often
- * loses its voice to schema mismatch. Naturalness is a writing task, so
- * strength won. Revisit if the `refine-` findings show the lane changing
- * little.
+ * The naturalness lane runs on the same three models that edit, Kimi-K3 among
+ * them. Nothing forbids a refiner also editing: judges exclude producers per
+ * selection round, so the refinement is still chosen by models with no stake in
+ * it, and the checker roster excludes every editor and every refiner, so
+ * nothing certifies its own text. The tradeoff is real and is accepted rather
+ * than hidden: a model that just wrote a paragraph is a poor judge of whether
+ * that paragraph reads awkwardly.
+ *
+ * This paragraph read "ONE refiner runs the naturalness lane" until 2026-08-13,
+ * left stale by `eb21ffa6b`, which took the lane from one refiner to three. The
+ * staleness mattered rather than being cosmetic: a one-model lane loses the
+ * whole stage to a single lost voice, and 34 such losses across 7 entries were
+ * measured on the corpus run that ended 2026-08-11, every one recorded as
+ * `refiner 0/1`. On a roster of three the same failure no longer empties the
+ * stage, because quorum is two. Recorded in
+ * `doc/planning/naturalness-lane-reach.md`.
  *
  * Attribution cost, accepted by the user ("Bundle all the improvements that
  * could be made, in"): round three changes the roster, the editor, the checker

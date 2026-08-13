@@ -111,14 +111,28 @@ B > C > A.
  the majority of the prose the lane was built for, on a criterion that
  correlates with nothing about quality.
 
-## The lane also fails silently on an eighth of the corpus
+## The lane failed silently on an eighth of the corpus, and that is already fixed
 
 Found 2026-08-13, after the reach measurement, by censusing findings across all
  56 settled entries.
 
-The refiner is a ONE-model stage, so its quorum is one voice and losing that
- voice loses the stage. Across 129 refiner invocations, 34 heard nothing, and
- the partition by entry is exact:
+READ THE DATE BEFORE THE FINDING. The 56-entry population ran from 2026-08-06
+ to 2026-08-11, when the refiner was a ONE-model stage: quorum was one voice, so
+ losing that voice lost the stage. Every one of the 34 losses is recorded as
+ `refiner 0/1`, which is the artifact stating the roster size itself.
+
+`eb21ffa6b`, on 2026-08-12, took the lane from one refiner to three, under the
+ title "give every fan-out stage a quorum a single voice cannot meet". Quorum is
+ now two of three, so the failure below no longer empties the stage. The problem
+ this section describes was fixed before it was found, and what follows is
+ therefore a record of a resolved defect rather than an open one.
+
+It is kept because the measurement still says something about the lane's real
+ reach on the population every existing figure was drawn from, and because the
+ cause is worth naming.
+
+Across 129 refiner invocations, 34 heard nothing, and the partition by entry is
+ exact:
 
 ```text
   entries that never invoked the refiner               20
@@ -168,11 +182,24 @@ It is recoverable from a live run, though, with no code change. The warning
 Since the failure is entry-determined, `pass13` should reproduce it on the same
  entries and name the cause.
 
-This bears on the decision rather than settling it. Whichever option is chosen,
- a lane that silently does nothing on an eighth of the corpus is worth less
- than its reach figure implies, and a one-model roster is why one loss costs
- the whole stage. Option B triples the eligible blocks but would triple them
- against the same single voice.
+What this leaves for the decision, now that the roster is three:
+
+-   The reliability objection to Option B is GONE. Tripling the eligible blocks
+    no longer triples them against a single voice, because a lost voice no
+    longer empties the stage.
+-   Every reach and damage figure drawn from the 56-entry population still
+    understates the lane, since a twelfth of its entries were refined on no
+    voices at all. Numbers taken from `pass13` onward will not have that.
+-   The cause is worth naming, because the model is still on the roster. All
+    nine voice losses `pass13` has recorded so far are Kimi-K3 returning
+    `schema-mismatch`, across the editor, critic and panel stages, with none
+    from either GLM. Kimi-K3 is also a refiner. That is the same failure family
+    as the channel-marker defect fixed at the parser earlier, so the parser fix
+    did not close all of it.
+
+So the open question is no longer whether the lane survives a lost voice. It is
+ whether one model losing its voice this often is acceptable on rosters where it
+ sits, which is a separate decision from this one and is not blocking it.
 
 ## What has to be settled first
 
