@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { hashContent, } from './document-node.ts';
+import { restoreTypography, } from './restore-typography.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 
 //region Patch application
@@ -249,7 +250,19 @@ export function applyPatchOperations(
       continue;
     }
     claimed.add(operation.envelopeId,);
-    applied.push(operation,);
+    // Quote style is restored from the text being replaced, deterministically,
+    // before the operation is recorded as applied. Editors flatten curly quotes
+    // to straight ones often enough that a repaired paragraph ends up reading
+    // differently from every paragraph around it, and the difference
+    // accumulates with each edit. Recording the restored text rather than what
+    // the editor wrote keeps the region's record equal to what shipped.
+    applied.push({
+      ...operation,
+      newText: restoreTypography({
+        replacement: operation.newText,
+        replaced: envelope.baseText,
+      },),
+    },);
   }
 
   /**

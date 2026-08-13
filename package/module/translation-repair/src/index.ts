@@ -66,6 +66,7 @@ export {
   maskHtmlComments,
 } from './mask-html-comments.ts';
 export { maskInvisibleLines, } from './mask-invisible-lines.ts';
+export { restoreTypography, } from './restore-typography.ts';
 export {
   MdxParseError,
   parseMarkdownBody,
