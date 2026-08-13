@@ -8400,3 +8400,71 @@ The judging pass itself. It needs quota, and the corpus pass contends for the
  same per-model slots, so it waits. `MIN_JUDGED_CLAIMS = 30` is now documented
  as a provisional guard rather than a calibrated threshold, unlike
  `LOSS_FRACTION_LIMIT`, which was fitted on 50 human-graded repairs.
+
+### The crosscheck's headroom is bounded at 10%, computed without a single call
+
+Three checks after the enumeration landed, each of which changed the design.
+
+FIRST, the panel does not bar proposers, and that is deliberate.
+ `adjudicate-model.ts` states it: panelists judge each claim strictly on
+ document evidence, they never learn which model proposed what, and the
+ electorate is fixed up front, because a variable electorate of non-proposers
+ was found to shrink consensus. So a claim's author DID vote on its own claim,
+ blind. That makes "does the verdict survive removing the author" a real
+ question rather than a no-op, which is what the crosscheck needed to be worth
+ running at all.
+
+It also means the crosscheck deliberately does the thing the architecture
+ rejected. That is fine for a measurement, which changes no pipeline behaviour,
+ but a reader must not take a crosscheck result as a recommendation to seat a
+ non-proposer electorate. The settled decision already weighed that and went the
+ other way.
+
+SECOND, and decisively: the recorded tallies bound what the whole measurement
+ can find. A claim's plurality can only change when a single removed vote closes
+ the gap, which needs a margin of one or less.
+
+```text
+accepted claims 1027   could flip if one vote is removed 105   10.2%
+rejected claims  440   could flip                         73   16.6%
+```
+
+Roughly nine in ten accepted claims are decided by a margin of two or more and
+ cannot move no matter how their author voted. That is an upper bound and the
+ worst case, since it assumes the author voted with the plurality every time.
+
+The consequence is a much better run than the one planned. Rather than judging
+ all 371 claims, target the near-ties: the 105 accepted and 73 rejected claims
+ where the electorate actually decides anything. They are also the closest thing
+ to a MATCHED pair the data holds, since near-tie claims on both sides of the
+ accept line are similar in difficulty by construction and differ in outcome.
+ That answers the confounding objection to the two arms without matching on
+ severity or category, and it costs half the calls.
+
+THIRD, arm assignment currently reads `issue.status`, which is per ISSUE, while
+ the panel votes per CLAIM. Deduplication merges claims naming one defect, so
+ 201 of 1258 issue records hold several claims. Measured, the two disagree:
+
+```text
+accepted -> supported     1018
+rejected -> unsupported    440
+needs-human -> supported   228
+needs-human -> unsupported  23
+accepted -> unsupported      9
+source-defect -> sourceDefect 1
+```
+
+Nine claims sit inside an accepted issue carrying a plurality the panel never
+ gave them. Small, and free to fix by reading the arm from `tallies[claimId]`
+ and keeping `issue.status` as a separate field.
+
+The `needs-human` split is the bigger one. Those 228 claims lean SUPPORTED, and
+ the current census files all 182 non-accepted claims into one control arm on
+ the grounds that the arm wants claims the panel did not accept rather than a
+ particular reason. That is wrong: `rejected` means the panel decided against,
+ `needs-human` means it declined to decide, and agreement is undefined against a
+ verdict never given. Score `rejected` as the control and report `needs-human`
+ separately.
+
+None of these three needed a model call. Two needed a grep and one needed a
+ fold over artifacts already on disk.
