@@ -250,6 +250,54 @@ await describe({
     },),
 
     it({
+      name: 'MERGES proposers when two chunks of one entry carry the same '
+        + 'claim id, rather than letting the later chunk overwrite the earlier '
+        + 'one. The writer keeps chunks apart so neither inflates the other, '
+        + 'and a reader that overwrites turns that care into silent deletion: '
+        + 'two critics who each found the defect read as one',
+      fn: async () => {
+        /**
+         * Entry where two chunks produced an identical claim id, each from a
+         * different critic.
+         */
+        const report = buildAttributionReport({
+          entries: [{
+            id: 'Whiskers',
+            chunkCritics: [
+              {
+                chunkIndex: 0,
+                heardCriticIds: [QUIET, TABBY,],
+                claimAttributions: [{
+                  claimId: NAP_CLAIM,
+                  proposers: [{ modelId: TABBY, emissionCount: 1, },],
+                },],
+              },
+              {
+                chunkIndex: 1,
+                heardCriticIds: [QUIET, TABBY,],
+                claimAttributions: [{
+                  claimId: NAP_CLAIM,
+                  proposers: [{ modelId: QUIET, emissionCount: 1, },],
+                },],
+              },
+            ],
+            issues: [{ status: 'accepted', claimIds: [NAP_CLAIM,], },],
+          } as AttributionEntry,],
+        },);
+
+        expect(report.multiProposerAccepted,).toBe(1,);
+        expect(report.soleProposerAccepted,).toBe(0,);
+        // Both critics keep their hit. Overwriting drops one of these to zero.
+        expect(
+          report.critics
+            .map(function toHits(critic,) {
+            return critic.acceptedHits;
+          },),
+        ).toStrictEqual([1, 1,],);
+      },
+    },),
+
+    it({
       name: 'reports nothing rather than throwing when no entry carries '
         + 'attribution, which is what every runs directory looks like until a '
         + 'post-attribution pass settles its first entry',

@@ -161,33 +161,28 @@ function readProposers(
 /**
  * Reads an artifact's per-chunk calibration.
  *
- * Returns `undefined` for an artifact that carries none, which is what an entry
- * settled before attribution existed looks like and is the distinction the
- * whole report rests on.
+ * Takes the raw array rather than the artifact, so the caller establishes
+ * PRESENCE and this only has to parse. Whether an artifact carries calibration
+ * at all is the eligibility question the whole report rests on, and it belongs
+ * beside the key that encodes it rather than inside a return value that has to
+ * smuggle absence back out.
  *
- * @param raw - parsed artifact
+ * @param chunkCritics - raw calibration array the artifact carries
  *
- * @returns Chunk views, or undefined when the artifact predates attribution
+ * @returns Chunk views, dropping records that do not parse
  *
  * @example
  * ```ts
- * const chunkCritics = readChunkCritics({ raw, },);
+ * const views = readChunkCritics({ chunkCritics, },);
  * ```
  */
 function readChunkCritics(
   {
-    raw,
+    chunkCritics,
   }: {
-    readonly raw: Record<string, unknown>;
+    readonly chunkCritics: readonly unknown[];
   },
-): readonly ChunkCriticView[] | undefined {
-  /**
-   * Recorded calibration of this artifact.
-   */
-  const { chunkCritics, } = raw;
-  if (!isJsonArray(chunkCritics,))
-    return undefined;
-
+): readonly ChunkCriticView[] {
   return chunkCritics.flatMap(function toView(record,) {
     if (!isJsonRecord(record,))
       return [];
@@ -196,6 +191,11 @@ function readChunkCritics(
      * Chunk position this record describes.
      */
     const { chunkIndex, } = record;
+    // Dropped rather than defaulted, like every other field in this parser. A
+    // record with no usable index is not chunk 0; inventing one would inflate
+    // the chunk count, which is the denominator every rate divides by.
+    if ((typeof chunkIndex) !== 'number')
+      return [];
 
     /**
      * Critics that answered on this chunk.
@@ -208,7 +208,7 @@ function readChunkCritics(
     const { claimAttributions, } = record;
 
     return [{
-      chunkIndex: ((typeof chunkIndex) === 'number') ? chunkIndex : 0,
+      chunkIndex,
       heardCriticIds: (isJsonArray(heardCriticIds,) ? heardCriticIds : [])
         .flatMap(function toModelId(modelId,) {
         return ((typeof modelId) === 'string') ? [modelId,] : [];
@@ -270,13 +270,18 @@ function toEntry(
   const { id, } = parsed;
 
   /**
-   * Per-chunk calibration, absent before attribution existed.
+   * Raw calibration, which an artifact settled before attribution lacks.
    */
-  const chunkCritics = readChunkCritics({ raw: parsed, },);
+  const { chunkCritics, } = parsed;
 
   return {
     id: ((typeof id) === 'string') ? id : name,
-    ...((chunkCritics === undefined) ? {} : { chunkCritics, }),
+    // OMITTED rather than set to undefined or to an empty array. Absence is
+    // what makes the entry ineligible, and an empty array would read instead as
+    // an entry whose critics were asked and raised nothing.
+    ...(isJsonArray(chunkCritics,)
+      ? { chunkCritics: readChunkCritics({ chunkCritics, },), }
+      : {}),
     issues: readIssueViews({ raw: parsed, },),
   };
 }

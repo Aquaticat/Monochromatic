@@ -142,7 +142,7 @@ export type AttributionEntry = {
    * Per-chunk calibration, absent on entries settled before attribution
    * existed.
    */
-  readonly chunkCritics?: readonly ChunkCriticView[] | undefined;
+  readonly chunkCritics?: readonly ChunkCriticView[];
 
   /**
    * Adjudicated issues of this entry.
@@ -265,13 +265,88 @@ function indexProposers(
    */
   const index = new Map<string, readonly ProposerView[]>();
   for (const record of chunkCritics) {
-    for (const attribution of record.claimAttributions)
+    for (const attribution of record.claimAttributions) {
+      // MERGED rather than overwritten. Two chunks can carry the same claim id,
+      // and the writer deliberately keeps their proposers apart so neither
+      // chunk inflates the other; overwriting here would make the last chunk
+      // win and silently DELETE the earlier chunk's critics from every rate.
+      // Deflating is no more correct than inflating.
       index.set(
         attribution.claimId,
-        attribution.proposers,
+        [
+          ...(index.get(attribution.claimId,) ?? []),
+          ...attribution.proposers,
+        ],
       );
+    }
   }
   return index;
+}
+
+/**
+ * What one accepted issue rested on.
+ *
+ * Separated from the counting so each count is a `filter` over a fact already
+ * established, rather than a counter mutated in a loop that also decides the
+ * fact.
+ *
+ * @example
+ * ```ts
+ * const support: IssueSupport = { contributors: ['hf:openai/gpt-oss-120b',], repeated: false, };
+ * ```
+ */
+type IssueSupport = {
+  /**
+   * Distinct critics behind any claim the issue represents.
+   */
+  readonly contributors: readonly string[];
+
+  /**
+   * Whether some critic emitted one of those claims more than once, which is
+   * self-repetition and must never read as agreement.
+   */
+  readonly repeated: boolean;
+};
+
+/**
+ * Reads what one accepted issue rested on.
+ *
+ * @param issue - accepted issue
+ *
+ * @param proposersOf - proposers by claim id, for the issue's own entry
+ *
+ * @returns Support behind it
+ *
+ * @example
+ * ```ts
+ * const support = readIssueSupport({ issue, proposersOf, },);
+ * ```
+ */
+function readIssueSupport(
+  {
+    issue,
+    proposersOf,
+  }: {
+    readonly issue: AcceptedIssueView;
+    readonly proposersOf: Map<string, readonly ProposerView[]>;
+  },
+): IssueSupport {
+  /**
+   * Every proposer behind any claim this issue represents.
+   */
+  const proposers = issue.claimIds
+    .flatMap(function toProposers(claimId,): readonly ProposerView[] {
+    return proposersOf.get(claimId,) ?? [];
+  },);
+
+  return {
+    contributors: [...new Set(proposers.map(function toModelId(proposer,): string {
+      return proposer.modelId;
+    },),),],
+    repeated: proposers.some(function isRepeat(proposer,): boolean {
+      return proposer.emissionCount > 1;
+    },),
+  };
 }
 
 /**
@@ -324,20 +399,22 @@ export function buildAttributionReport(
    */
   const hits = new Map<string, number>();
 
-  let chunks = 0;
-  let soleProposerAccepted = 0;
-  let multiProposerAccepted = 0;
-  let selfRepeatedAccepted = 0;
-  let unattributedAccepted = 0;
+  /**
+   * Chunks across the eligible population, the denominator every rate divides
+   * by.
+   */
+  const chunks = eligible.reduce(
+    function addChunks(
+      total,
+      entry,
+    ): number {
+    return total + (entry.chunkCritics ?? []).length;
+  },
+    0,
+  );
 
   for (const entry of eligible) {
-    /**
-     * Calibration records of this entry.
-     */
-    const records = entry.chunkCritics ?? [];
-    chunks += records.length;
-
-    for (const record of records) {
+    for (const record of entry.chunkCritics ?? []) {
       for (const modelId of record.heardCriticIds)
         bump({
           counter: heard,
@@ -347,10 +424,10 @@ export function buildAttributionReport(
       for (const attribution of record.claimAttributions) {
         for (const proposer of attribution.proposers) {
           bump({
-          counter: raised,
-          modelId: proposer.modelId,
-          by: 1,
-        },);
+            counter: raised,
+            modelId: proposer.modelId,
+            by: 1,
+          },);
           bump({
             counter: emitted,
             modelId: proposer.modelId,
@@ -359,51 +436,78 @@ export function buildAttributionReport(
         }
       }
     }
+  }
 
+  /**
+   * Support behind every accepted issue of the eligible population.
+   */
+  const supports = eligible.flatMap(function toSupports(entry,): readonly IssueSupport[] {
     /**
      * Proposers of this entry's claims, by claim id.
      */
-    const proposersOf = indexProposers({ chunkCritics: records, },);
+    const proposersOf = indexProposers({ chunkCritics: entry.chunkCritics ?? [], },);
 
-    for (const issue of entry.issues) {
-      if (issue.status !== 'accepted')
-        continue;
+    return entry.issues
+      .filter(function isAccepted(issue,): boolean {
+      return issue.status === 'accepted';
+    },)
+      .map(function toSupport(issue,): IssueSupport {
+      return readIssueSupport({
+        issue,
+        proposersOf,
+      },);
+    },);
+  },);
 
-      /**
-       * Every critic behind any claim this accepted issue represents.
-       */
-      const contributors = new Set<string>();
-
-      /**
-       * Whether some critic emitted one of these claims more than once.
-       */
-      let repeated = false;
-      for (const claimId of issue.claimIds) {
-        for (const proposer of proposersOf.get(claimId,) ?? []) {
-          contributors.add(proposer.modelId,);
-          if (proposer.emissionCount > 1)
-            repeated = true;
-        }
-      }
-
-      if (contributors.size === 0) {
-        unattributedAccepted += 1;
-        continue;
-      }
-      for (const modelId of contributors)
-        bump({
-          counter: hits,
-          modelId,
-          by: 1,
-        },);
-      if (repeated)
-        selfRepeatedAccepted += 1;
-      if (contributors.size === 1)
-        soleProposerAccepted += 1;
-      else
-        multiProposerAccepted += 1;
-    }
+  for (const support of supports) {
+    for (const modelId of support.contributors)
+      bump({
+        counter: hits,
+        modelId,
+        by: 1,
+      },);
   }
+
+  /**
+   * Accepted issues carrying no attribution at all.
+   */
+  const unattributedAccepted = supports.filter(function isUnattributed(support,): boolean {
+    return support.contributors
+      .length
+      === 0;
+  },)
+    .length;
+
+  /**
+   * Accepted issues resting on exactly one critic.
+   */
+  const soleProposerAccepted = supports.filter(function isSole(support,): boolean {
+    return support.contributors
+      .length
+      === 1;
+  },)
+    .length;
+
+  /**
+   * Accepted issues drawing more than one critic.
+   */
+  const multiProposerAccepted = supports.filter(function isMulti(support,): boolean {
+    return support.contributors
+      .length
+      > 1;
+  },)
+    .length;
+
+  /**
+   * Accepted issues where some critic repeated itself. Restricted to attributed
+   * issues, so it stays a subset of what the sole and multi counts cover.
+   */
+  const selfRepeatedAccepted = supports.filter(function isRepeated(support,): boolean {
+    return support.repeated && (support.contributors
+      .length
+      > 0);
+  },)
+    .length;
 
   /**
    * Every critic seen in any role, so a critic heard but silent still gets a
