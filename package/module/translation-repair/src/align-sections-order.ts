@@ -169,6 +169,50 @@ export function alignHeadings(
        */
       const here = scores[(row * columns) + column] ?? 0;
 
+      // Gaps are tried BEFORE pairing, and only ties can reach them, because
+      // `here` is the maximum and a strictly better pairing makes the gap tests
+      // false. The order decides where gaps land in a document whose headings
+      // carry no evidence at all, and there every affinity is zero, so every
+      // placement scores the same and the traceback alone chooses.
+      //
+      // This walk runs backwards, so taking a gap first leaves it LATE in the
+      // document. That is the right prior: a translation is written front to
+      // back, so an incomplete one is truncated at the end far more often than
+      // it is missing a prologue. Preferring the pairing instead put the gaps
+      // at the FRONT, which slid every section of a zero-evidence document by
+      // the count difference, reproducing the exact defect this file exists to
+      // remove.
+
+      /**
+       * Score the upper predecessor would have to carry for a source gap.
+       */
+      const fromSourceGap = (scores[((row - 1) * columns) + column] ?? 0)
+        - GAP_PENALTY;
+      if ((row > 0) && (here === fromSourceGap)) {
+        steps.push({
+          sourceIndex: row - 1,
+          targetIndex: (-1),
+          affinity: 0,
+        },);
+        row -= 1;
+        continue;
+      }
+
+      /**
+       * Score the left predecessor would have to carry for a target gap.
+       */
+      const fromTargetGap = (scores[(row * columns) + (column - 1)] ?? 0)
+        - GAP_PENALTY;
+      if ((column > 0) && (here === fromTargetGap)) {
+        steps.push({
+          sourceIndex: (-1),
+          targetIndex: column - 1,
+          affinity: 0,
+        },);
+        column -= 1;
+        continue;
+      }
+
       /**
        * Score the diagonal predecessor would have to carry for a pairing.
        */
@@ -184,26 +228,13 @@ export function alignHeadings(
         column -= 1;
         continue;
       }
-      /**
-       * Score the upper predecessor would have to carry for a source gap.
-       */
-      const fromSourceGap = (scores[((row - 1) * columns) + column] ?? 0)
-        - GAP_PENALTY;
-      if ((row > 0) && (here === fromSourceGap)) {
-        steps.push({
-          sourceIndex: row - 1,
-          targetIndex: (-1),
-          affinity: 0,
-        },);
-        row -= 1;
-        continue;
-      }
-      steps.push({
-        sourceIndex: (-1),
-        targetIndex: column - 1,
-        affinity: 0,
-      },);
-      column -= 1;
+
+      // Unreachable: `here` is the maximum of exactly these three, so one of
+      // them must have matched. Throwing rather than guessing, because a silent
+      // fallback here would emit a pairing the score table never chose.
+      throw new Error(
+        `alignment traceback matched no predecessor at row ${String(row,)}, column ${String(column,)}`,
+      );
     }
 
     return steps.toReversed();

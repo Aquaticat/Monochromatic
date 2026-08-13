@@ -191,5 +191,135 @@ await describe({
         },),);
       },
     },),
+
+    it({
+      name: 'leaves the gaps at the END when no heading carries any evidence. '
+        + 'Every affinity is then zero, so every placement scores the same and '
+        + 'the traceback alone chooses. Preferring the pairing put them at the '
+        + 'FRONT, which slid every section by the count difference and so '
+        + 'reproduced the exact defect this aligner exists to remove; XingZ60 '
+        + 'hid it, because its Latin names anchor three pairs outright',
+      fn: async () => {
+        /**
+         * Headings with no Latin run anywhere, so nothing can be matched.
+         */
+        const sourceHeadings: readonly string[] = [
+          '## 一',
+          '## 二',
+          '## 三',
+          '## 四',
+          '## 五',
+        ];
+
+        /**
+         * Two fewer, standing for a translation that stops early.
+         */
+        const targetHeadings: readonly string[] = [
+          '## 甲',
+          '## 乙',
+          '## 丙',
+        ];
+
+        expect(
+          alignHeadings({
+            sourceHeadings,
+            targetHeadings,
+          },),
+        ).toEqual([
+          {
+            sourceIndex: 0,
+            targetIndex: 0,
+            affinity: 0,
+          },
+          {
+            sourceIndex: 1,
+            targetIndex: 1,
+            affinity: 0,
+          },
+          {
+            sourceIndex: 2,
+            targetIndex: 2,
+            affinity: 0,
+          },
+          {
+            sourceIndex: 3,
+            targetIndex: (-1),
+            affinity: 0,
+          },
+          {
+            sourceIndex: 4,
+            targetIndex: (-1),
+            affinity: 0,
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'does the same when the extra sections sit on the TRANSLATION side, '
+        + 'so neither direction slides. A translation carrying sections its '
+        + 'original does not is the shape that put 613 characters of original '
+        + 'against 9551 characters of English',
+      fn: async () => {
+        /**
+         * Steps for a target longer than its source.
+         */
+        const steps = alignHeadings({
+          sourceHeadings: [
+            '## 甲',
+            '## 乙',
+            '## 丙',
+          ],
+          targetHeadings: [
+            '## 一',
+            '## 二',
+            '## 三',
+            '## 四',
+            '## 五',
+          ],
+        },);
+
+        expect(
+          steps.filter(function isGap(step,) {
+            return step.sourceIndex === (-1);
+          },).length,
+        ).toBe(2,);
+        expect(steps.at(0,)?.sourceIndex,).toBe(0,);
+        expect(steps.at(-1,)?.sourceIndex,).toBe(-1,);
+      },
+    },),
+
+    it({
+      name: 'lets a confident pairing beat the gap preference, since only exact '
+        + 'ties reach the tie-break and a shared name scores strictly above a '
+        + 'gap. Without this the new ordering would trade one sliding defect '
+        + 'for another',
+      fn: async () => {
+        /**
+         * A name shared across the boundary, sitting after unmatched headings.
+         */
+        const steps = alignHeadings({
+          sourceHeadings: [
+            '## 一',
+            '## 二',
+            '### 其六：Mikä',
+          ],
+          targetHeadings: [
+            '## 甲',
+            '### Mikä',
+          ],
+        },);
+
+        /**
+         * The step carrying the shared name.
+         */
+        const anchored = steps.find(function isAnchor(step,) {
+          return step.affinity > 0;
+        },);
+
+        expect(anchored?.sourceIndex,).toBe(2,);
+        expect(anchored?.targetIndex,).toBe(1,);
+      },
+    },),
   ],
 },);
