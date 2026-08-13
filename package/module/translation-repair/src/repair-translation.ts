@@ -21,6 +21,10 @@ import {
 import { runRefinePhase, } from './refine-phase.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import {
+  buildChunkCriticRecords,
+  type ChunkCriticRecord,
+} from './critic-attribution.ts';
+import {
   buildIssueRecords,
   type RepairIssueRecord,
 } from './repair-record.ts';
@@ -81,8 +85,15 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * line breaks would have located the quote. No claim changes fate, but
  * `findings` is part of the cached payload, so a resumed slice would report
  * the old bare reason and understate the count the suffix exists to produce.
+ *
+ * Version 10 is telemetry again, and required for the same reason: the outcome
+ * gained `claimAttributions` and `heardCriticIds`. No claim changes fate and no
+ * text changes, but a slice resumed from a version-9 file would carry neither,
+ * so an entry would silently mix attributable and unattributable slices. That
+ * is precisely the population confusion the fields exist to prevent, so
+ * resolving it by tolerating the old shape would defeat them.
  */
-const SLICE_CACHE_VERSION = 9;
+const SLICE_CACHE_VERSION = 10;
 
 /**
  * Completion status of one repair run;
@@ -162,6 +173,16 @@ export type RepairTranslationResult = {
    * Alignment and stage findings in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   * Per-chunk critic calibration: who answered, and who raised each claim.
+   *
+   * Separate from {@link RepairTranslationResult.issues} because a chunk whose
+   * critics raised nothing produces no issue record, and that chunk is exactly
+   * the one a rate needs: it is the difference between a critic that was asked
+   * and stayed quiet and a critic that was never asked.
+   */
+  readonly chunkCritics: readonly ChunkCriticRecord[];
 };
 
 /**
@@ -424,6 +445,7 @@ export async function repairTranslation(
           outcomes,
           blocked: true,
         },),
+        chunkCritics: buildChunkCriticRecords({ outcomes, },),
         findings: [
           ...alignmentFindings,
           ...outcomes.flatMap(function toFindings(done,) {
@@ -509,7 +531,13 @@ export async function repairTranslation(
     }/${String(finalOutcomes.length,)} chunks changed, ${String(issues.length,)} issues`,
   );
 
+  /**
+   * Per-chunk critic calibration for the artifact.
+   */
+  const chunkCritics = buildChunkCriticRecords({ outcomes: finalOutcomes, },);
+
   return {
+    chunkCritics,
     repairedText,
     status: anyChanged ? 'repaired' : 'unchanged',
     issues,

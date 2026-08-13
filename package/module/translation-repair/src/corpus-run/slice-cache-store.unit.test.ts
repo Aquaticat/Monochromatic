@@ -102,6 +102,8 @@ function catOutcome({ chunkIndex, }: { readonly chunkIndex: number; },) {
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 6,
+    heardCriticIds: ['hf:openai/gpt-oss-120b', 'hf:zai-org/GLM-5.2',],
+    claimAttributions: [],
     findings: [],
   };
 }

@@ -540,6 +540,7 @@ async function runCorpusPass(): Promise<void> {
         resolvedCount: resolved.length,
         findings: result.findings,
         issues: result.issues,
+        chunkCritics: result.chunkCritics,
         repairedText: result.repairedText,
       };
       /* oxlint-disable-next-line no-await-in-loop -- one artifact written per entry, sequential by design */

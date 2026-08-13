@@ -138,6 +138,8 @@ export async function repairChunk(
     nonTranslationContradicted: critic.contradicted,
     nonTranslationStanding: critic.votesStand,
     heardCritics: critic.heardCritics,
+    heardCriticIds: critic.heardCriticIds,
+    claimAttributions: critic.claimAttributions,
   };
   if (critic.votesStand) {
     l.warn(
@@ -392,6 +394,8 @@ export async function repairChunk(
     nonTranslationContradicted: critic.contradicted,
     nonTranslationStanding: critic.votesStand,
     heardCritics: critic.heardCritics,
+    heardCriticIds: critic.heardCriticIds,
+    claimAttributions: critic.claimAttributions,
     findings: [
       ...stageFindings,
       ...editor.findings,

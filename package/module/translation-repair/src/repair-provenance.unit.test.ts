@@ -146,6 +146,8 @@ function settledOutcome(
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 6,
+    heardCriticIds: [],
+    claimAttributions: [],
     findings: [],
   };
 }

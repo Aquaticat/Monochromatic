@@ -117,6 +117,8 @@ export {
   pickFallbackPatch,
 } from './editor-candidates.ts';
 export {
+  buildChunkCriticRecords,
+  type ChunkCriticRecord,
   type ClaimAttribution,
   type ClaimEmission,
   type ClaimProposer,

@@ -1,5 +1,6 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { MIN_SELECTION_VOTES, } from './candidate-select-model.ts';
+import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IntroducedDefectReport, } from './introduced-defect-probe.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
@@ -357,6 +358,34 @@ export type ChunkRepairOutcome = {
    * Adjudicated issues of this chunk.
    */
   readonly issues: readonly AdjudicatedIssue[];
+
+  /**
+   * Which critics raised each surviving claim, keyed by deterministic claim id.
+   *
+   * Chunk-level rather than attached to each issue, deliberately. Every
+   * `AdjudicatedIssue` already carries its member claims with their ids, so a
+   * consumer joins on the ids an issue actually holds. That sidesteps the
+   * transitive-cluster hazard by construction: clustering can chain A to B to C
+   * without A and C overlapping, so unioning a cluster's proposers onto each
+   * issue it produced would credit critics for claims their issue does not
+   * represent. Nothing is unioned here, so nothing can be miscredited.
+   *
+   * Calibration only. Adjudication never sees it, and it must never enter a
+   * judging prompt: a real defect can arrive with exactly one proposer.
+   */
+  readonly claimAttributions: readonly ClaimAttribution[];
+
+  /**
+   * WHICH critics answered on this chunk, sorted by model id.
+   *
+   * The denominator {@link ChunkRepairOutcome.claimAttributions} cannot supply.
+   * A critic heard that raised nothing and a critic never heard both leave no
+   * attribution entry, so hits are countable without this and rates are not.
+   * Its presence also marks the chunk as attributable at all, which is what
+   * separates a critic that stayed silent from an outcome written before any of
+   * this existed.
+   */
+  readonly heardCriticIds: readonly SyntheticModelId[];
 
   /**
    * Accepted issues the checkers confirmed fixed in the winning text;

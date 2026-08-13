@@ -49,6 +49,8 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
     && Array.isArray(value.candidateResolvedIssueIds,)
     && ((typeof value.accuracyPatchSelected) === 'boolean')
     && ((typeof value.refined) === 'boolean')
+    && Array.isArray(value.claimAttributions,)
+    && Array.isArray(value.heardCriticIds,)
     && Array.isArray(value.findings,);
 }
 

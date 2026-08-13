@@ -204,4 +204,70 @@ export function retainAttributions(
   },);
 }
 
+/**
+ * One chunk's calibration record, as the run artifact carries it.
+ *
+ * @example
+ * ```ts
+ * const record: ChunkCriticRecord = { chunkIndex: 0, heardCriticIds, claimAttributions, };
+ * ```
+ */
+export type ChunkCriticRecord = {
+  /**
+   * Chunk position within the document.
+   */
+  readonly chunkIndex: number;
+
+  /**
+   * Critics that answered on this chunk, sorted by model id.
+   */
+  readonly heardCriticIds: readonly SyntheticModelId[];
+
+  /**
+   * Which critics raised each surviving claim of this chunk.
+   */
+  readonly claimAttributions: readonly ClaimAttribution[];
+};
+
+/**
+ * Collects each chunk's calibration record for the run artifact.
+ *
+ * PER CHUNK rather than folded into the issue list, because a chunk whose
+ * critics raised nothing produces no issue record at all, and dropping it would
+ * discard exactly the denominator that makes a rate computable. Keeping the
+ * chunks separate also stops two chunks that happened to produce an identical
+ * claim from merging their proposers into one inflated entry.
+ *
+ * @param outcomes - settled chunk outcomes in any order
+ *
+ * @returns One record per chunk, ordered by chunk index
+ *
+ * @example
+ * ```ts
+ * const chunkCritics = buildChunkCriticRecords({ outcomes, },);
+ * ```
+ */
+export function buildChunkCriticRecords(
+  {
+    outcomes,
+  }: {
+    readonly outcomes: readonly ChunkCriticRecord[];
+  },
+): readonly ChunkCriticRecord[] {
+  return outcomes
+    .map(function toRecord(outcome,): ChunkCriticRecord {
+    return {
+      chunkIndex: outcome.chunkIndex,
+      heardCriticIds: outcome.heardCriticIds,
+      claimAttributions: outcome.claimAttributions,
+    };
+  },)
+    .toSorted(function byChunkIndex(
+      left,
+      right,
+    ): number {
+    return left.chunkIndex - right.chunkIndex;
+  },);
+}
+
 //endregion Critic attribution

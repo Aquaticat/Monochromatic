@@ -141,6 +141,8 @@ function catOutcome(
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 7,
+    heardCriticIds: [],
+    claimAttributions: [],
     findings: [],
   };
 }

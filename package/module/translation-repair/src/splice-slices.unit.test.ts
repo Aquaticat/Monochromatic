@@ -164,6 +164,8 @@ function outcomeFor(
   readonly nonTranslationContradicted: boolean;
   readonly nonTranslationStanding: boolean;
   readonly heardCritics: number;
+  readonly heardCriticIds: readonly never[];
+  readonly claimAttributions: readonly never[];
   readonly findings: readonly string[];
 } {
   return {
@@ -183,6 +185,8 @@ function outcomeFor(
     nonTranslationContradicted: false,
     nonTranslationStanding: false,
     heardCritics: 0,
+    heardCriticIds: [],
+    claimAttributions: [],
     findings: [],
   };
 }

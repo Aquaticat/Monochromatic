@@ -610,6 +610,7 @@ await describe({
             status: 'repaired',
             issues: [],
             findings: [],
+            chunkCritics: [],
           }
         );
         /** Benchmark over one entry. */
