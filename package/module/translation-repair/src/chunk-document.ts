@@ -1,3 +1,4 @@
+import { alignHeadingsForced, } from './align-headings-forced.ts';
 import type { DocumentNode, } from './document-node.ts';
 import type { RepairDocument, } from './parse-document.ts';
 
@@ -468,6 +469,32 @@ function alignProportionally(
 }
 
 /**
+ * Reads the label the aligner reasons over for one chunk.
+ *
+ * A heading chunk carries its heading text; a preamble chunk carries an EMPTY
+ * label. Building units this way makes UNIT INDEX EQUAL CHUNK INDEX by
+ * construction, since `chunkByHeadings` emits the preamble as chunk 0 and then
+ * one chunk per heading. No offset arithmetic remains to get wrong, and offset
+ * arithmetic is what an earlier adapter got wrong.
+ *
+ * @param chunk - chunk to label
+ *
+ * @returns Heading text, or empty for a preamble
+ *
+ * @example
+ * ```ts
+ * const label = chunkLabel(chunk,);
+ * ```
+ */
+function chunkLabel(chunk: DocumentChunk,): string {
+  /**
+   * Leading node, which is the heading when the chunk has one.
+   */
+  const [first,] = chunk.nodes;
+  return ((first !== undefined) && (first.kind === 'heading')) ? first.text : '';
+}
+
+/**
  * Aligns two parsed documents into critic-sized section pairs, totally and
  * automatically.
  * Mirrored structures (equal chunk counts, matching leading node kinds)
@@ -565,12 +592,52 @@ export function alignDocumentSections(
     };
   }
 
-  return alignProportionally({
-    source,
-    target,
-    sourceChunks,
-    targetChunks,
+  /**
+   * Pairings the aligner commits to, plus its refusals.
+   */
+  const steps = alignHeadingsForced({
+    sourceHeadings: sourceChunks.map(chunkLabel,),
+    targetHeadings: targetChunks.map(chunkLabel,),
   },);
+
+  // ONLY forced pairings become pairs, and a refusal is never a block. The
+  // section passes through unrepaired and the document still settles with its
+  // text, per `doc/decision/translation-repair-always-yields-output.md`.
+  // Leaving text alone cannot damage it; a guessed pairing feeds critics the
+  // wrong original and the repairs that follow damage text that was correct.
+  return {
+    pairs: steps.flatMap(function toPair(step,): readonly ChunkPair[] {
+      if (step.kind !== 'paired')
+        return [];
+
+      /**
+       * Original-side chunk of this pair.
+       */
+      const sourceChunk = sourceChunks[step.sourceIndex];
+
+      /**
+       * Translation-side chunk of this pair.
+       */
+      const targetChunk = targetChunks[step.targetIndex];
+      if ((sourceChunk === undefined) || (targetChunk === undefined))
+        throw new Error('unreachable: the aligner paired an index outside its own input',);
+
+      return [{
+        source: sourceChunk,
+        target: targetChunk,
+      },];
+    },),
+    findings: steps.flatMap(function toFinding(step,): readonly AlignmentFinding[] {
+      if (step.kind === 'paired')
+        return [];
+
+      return [{
+        kind: 'structure-mismatch',
+        pairIndex: (step.kind === 'source-only') ? step.sourceIndex : step.targetIndex,
+        detail: `${step.kind} (${step.reason}); passes through unrepaired`,
+      },];
+    },),
+  };
 }
 
 //endregion Section chunking

@@ -151,87 +151,66 @@ await describe({
     },),
 
     it({
-      name: 'merges extra sections proportionally and reports the degradation',
+      name: 'REFUSES sections it cannot pair rather than merging them '
+        + 'proportionally, and the document still settles. Proportional merging '
+        + 'produced a confident wrong pairing, which fed critics the wrong '
+        + 'original and made every issue filed on that entry noise',
       fn: async () => {
-        /** Parsed sides with an extra target section. */
-        const source = parseDocument({ text: SOURCE_FIXTURE, },);
-        const target = parseDocument({ text: EXTRA_SECTION_FIXTURE, },);
-        /** Alignment across mismatched structures. */
+        /**
+         * Sides whose section counts differ and whose headings share nothing.
+         */
         const alignment = alignDocumentSections({
-          source,
-          target,
+          source: parseDocument({ text: SOURCE_FIXTURE, },),
+          target: parseDocument({ text: EXTRA_SECTION_FIXTURE, },),
         },);
 
-        // Frame is the source (3 chunks) against the target's 4.
-        expect(alignment.pairs,).toHaveLength(3,);
+        // Nothing is forced, so nothing is paired, and that is the point.
+        expect(alignment.pairs,).toHaveLength(0,);
         expect(alignment.findings.map(function toKind(finding,): string {
           return finding.kind;
         },),).toContain('structure-mismatch',);
-        expect(alignment.findings.map(function toKind(finding,): string {
-          return finding.kind;
-        },),).toContain('sections-merged',);
-        // Every node of both sides lands in exactly one pair, in order.
-        expect(alignment.pairs.flatMap(function toSourceNodes(pair,) {
-          return pair.source.nodes;
-        },),).toEqual(source.nodes,);
-        expect(alignment.pairs.flatMap(function toTargetNodes(pair,) {
-          return pair.target.nodes;
-        },),).toEqual(target.nodes,);
-        // Merged chunks still slice exactly from the owning document text.
-        for (const pair of alignment.pairs) {
-          expect(pair.target.text,).toBe(target.text.slice(
-            pair.target.startOffset,
-            pair.target.endOffset,
-          ),);
-        }
       },
     },),
 
     it({
-      name: 'absorbs a wildly wider side into the single framing chunk',
+      name: 'NEVER blocks: a document the aligner cannot pair at all still '
+        + 'returns, with findings and no pairs, because the pipeline yields '
+        + 'output for every entry whatever the input and an entry that refuses '
+        + 'to settle vanishes from every measurement silently',
       fn: async () => {
-        /** One-section source against a three-section target. */
-        const source = parseDocument({ text: '## 简介\n\n猫猫喜欢晒太阳。\n', },);
-        const target = parseDocument({
-          text: '## One\n\nA cat.\n\n## Two\n\nAnother cat.\n\n## Three\n\nThird cat.\n',
-        },);
-        /** Alignment framed by the single source section. */
+        /**
+         * One-section source against a three-section target, sharing nothing.
+         */
         const alignment = alignDocumentSections({
-          source,
-          target,
+          source: parseDocument({ text: '## 简介\n\n猫猫喜欢晒太阳。\n', },),
+          target: parseDocument({
+            text: '## One\n\nA cat.\n\n## Two\n\nAnother cat.\n\n## Three\n\nThird cat.\n',
+          },),
         },);
 
-        expect(alignment.pairs,).toHaveLength(1,);
-        expect(alignment.pairs[0]?.target.nodes,).toEqual(target.nodes,);
+        expect(alignment.pairs,).toHaveLength(0,);
+        expect(alignment.findings.length,).toBeGreaterThan(0,);
       },
     },),
 
     it({
-      name: 'returns no pairs and a finding when one side is content-free',
+      name: 'PAIRS a leading-kind mismatch with equal counts instead of '
+        + 'reporting a structure mismatch. That report was spurious: with one '
+        + 'chunk on each side the old test could only fail on leading node '
+        + 'kinds, so it described an asymmetric preamble and called it structure',
       fn: async () => {
-        /** Alignment against an empty-bodied target. */
-        const alignment = alignDocumentSections({
-          source: parseDocument({ text: SOURCE_FIXTURE, },),
-          target: parseDocument({ text: '---\nname: n\n---\n', },),
-        },);
-        expect(alignment.pairs,).toEqual([],);
-        expect(alignment.findings[0]?.kind,).toBe('structure-mismatch',);
-        expect(alignment.findings[0]?.detail,).toContain('no content',);
-      },
-    },),
-
-    it({
-      name: 'degrades to proportional pairing on leading-kind mismatches',
-      fn: async () => {
-        /** Preamble-led source against a headings-only target, equal counts. */
+        /**
+         * Preamble-led source against a headings-only target, equal counts.
+         */
         const alignment = alignDocumentSections({
           source: parseDocument({ text: SOURCE_FIXTURE, },),
           target: parseDocument({
             text: '## One\n\nA cat.\n\n## Two\n\nAnother cat.\n\n## Three\n\nThird cat.\n',
           },),
         },);
+
         expect(alignment.pairs,).toHaveLength(3,);
-        expect(alignment.findings[0]?.kind,).toBe('structure-mismatch',);
+        expect(alignment.findings,).toHaveLength(0,);
       },
     },),
   ],
