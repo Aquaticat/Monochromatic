@@ -90,6 +90,9 @@ run = "node src/corpus-run/probe-relabel.ts"
 [tasks."model-health"]
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
 run = "node src/corpus-run/model-health.ts"
+[tasks."model-catalog"]
+description = "Compare what the provider serves against the compiled catalog, so a model that vanished stops costing a silent lost voice per call and a model holding no run role becomes visible"
+run = "node src/corpus-run/model-catalog.ts"
 [tasks."checker-sensitivity"]
 description = "Ask whether the resolution checkers can say no: a genuine fix, an untouched text, and a fix that damaged its slice, cat-themed fixtures only"
 run = "node src/corpus-run/checker-sensitivity.ts"

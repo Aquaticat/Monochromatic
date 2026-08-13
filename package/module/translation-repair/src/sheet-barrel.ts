@@ -78,6 +78,14 @@ export {
   type ProposerView,
 } from './corpus-run/attribution-report.ts';
 export {
+  CATALOG_MODEL_IDS,
+  type CatalogComparison,
+  compareCatalog,
+  decodeModelList,
+  formatCatalogReport,
+  type ServedModel,
+} from './corpus-run/model-catalog-compare.ts';
+export {
   discardSliceCache,
   listResumableEntries,
   openSliceCache,
