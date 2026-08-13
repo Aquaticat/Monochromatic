@@ -117,6 +117,15 @@ export {
   pickFallbackPatch,
 } from './editor-candidates.ts';
 export {
+  buildGrid,
+  type Grid as HeadingAlignGrid,
+} from './align-headings-grid.ts';
+export {
+  alignHeadingsForced,
+  type ForcedAlignStep,
+  type UnpairedReason,
+} from './align-headings-forced.ts';
+export {
   dedupeAcceptedIssues,
   type DedupeOutcome,
 } from './dedupe-issues.ts';
