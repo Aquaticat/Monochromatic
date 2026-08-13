@@ -266,9 +266,10 @@ export async function runEditorStage(
   },);
 
   /**
-   * Winning patch, or the strongest editor patch when judges declined.
+   * Winning patch, or the strongest editor patch when judges declined,
+   * alongside the findings from judging it.
    */
-  const patch = await selectChunkPatch({
+  const chunkSelection = await selectChunkPatch({
     client,
     candidates: chunkSet.candidates,
     judgeModelIds,
@@ -279,6 +280,11 @@ export async function runEditorStage(
     perCallTimeoutMs,
     l,
   },);
+
+  /**
+   * Patch that ships.
+   */
+  const { patch, } = chunkSelection;
 
   l.info(
     `editor stage: ${String(patch.applied
@@ -295,6 +301,11 @@ export async function runEditorStage(
       .length,
     findings: [
       ...stageFindings,
+      // Judge fan-out losses from both selection passes. These were built and
+      // discarded until 2026-08-13: the selection path had no findings channel
+      // at all, so a judge going silent left no trace anywhere durable.
+      ...perEnvelope.findings,
+      ...chunkSelection.findings,
       `editor-envelope-select (${String(perEnvelope.soleCount,)} sole, ${
         String(perEnvelope.judgedCount,)
       } judged, ${String(perEnvelope.declinedCount,)} declined)`,

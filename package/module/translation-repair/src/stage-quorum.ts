@@ -275,10 +275,17 @@ export async function gatherStageVoices<ValueT,>(
    * Emitted even when quorum was MET, which is the case the old findings
    * dropped entirely and the one that hides a model degrading quietly while
    * the stage still looks healthy.
+   *
+   * ONE FINDING PER MODEL rather than one naming a list, so counting the
+   * findings counts voices lost. A list-valued finding counts GATHERS that
+   * lost at least one voice, which is a different number, and reading the
+   * first as the second is the mistake that made the earlier per-model tally
+   * unusable: it summed to 113 mentions over 97 lines and was reported as
+   * though it were events.
    */
-  const lostFindings: readonly string[] = (unheard.length === 0)
-    ? []
-    : [`stage-voice-lost (${stage}: ${unheard.join(', ',)})`,];
+  const lostFindings: readonly string[] = unheard.map(function toFinding(modelId,): string {
+    return `stage-voice-lost (${stage} ${modelId})`;
+  },);
 
   if (!quorumMet) {
     return {

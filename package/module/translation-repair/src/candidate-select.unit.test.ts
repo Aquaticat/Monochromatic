@@ -438,7 +438,7 @@ await describe({
         const counter = { calls: 0, };
 
         /** Verdict over two candidates the judges tie on. */
-        const patch = await selectChunkPatch({
+        const { patch, } = await selectChunkPatch({
           client: scriptedJudges({
             ballots: {
               'hf:moonshotai/Kimi-K3': 1,
@@ -496,7 +496,7 @@ await describe({
         const counter = { calls: 0, };
 
         /** Verdict over candidates every judge refuses. */
-        const patch = await selectChunkPatch({
+        const { patch, } = await selectChunkPatch({
           client: scriptedJudges({
             ballots: {},
             counter,
@@ -543,7 +543,7 @@ await describe({
         },).patch;
 
         /** Verdict over the one distinct candidate. */
-        const patch = await selectChunkPatch({
+        const { patch, } = await selectChunkPatch({
           client: scriptedJudges({
             ballots: {},
             counter,

@@ -158,6 +158,17 @@ export type EnvelopeSelection = {
    * Envelopes left unedited because judges declined every proposal.
    */
   readonly declinedCount: number;
+
+  /**
+   * Degradation findings from every judge fan-out this pass ran.
+   *
+   * Carried up rather than logged because the caller writes findings into the
+   * per-entry artifact, and a log line only exists if something captured it.
+   * The counts above say how many envelopes were decided which way; they do
+   * not say which judge went silent, and that identity is what every
+   * voice-loss diagnosis has turned on.
+   */
+  readonly findings: readonly string[];
 };
 
 /**
@@ -238,6 +249,11 @@ export async function selectPerEnvelope(
    * Models already credited as contributors.
    */
   const seen = new Set<SyntheticModelId>();
+
+  /**
+   * Degradation findings gathered from every envelope's judge fan-out.
+   */
+  const selectionFindings: string[] = [];
 
   /**
    * How each envelope was decided.
@@ -336,6 +352,7 @@ export async function selectPerEnvelope(
       perCallTimeoutMs,
       l,
     },);
+    selectionFindings.push(...outcome.findings,);
     if (outcome.kind === 'declined') {
       counters.declined += 1;
       el.info(
@@ -358,8 +375,34 @@ export async function selectPerEnvelope(
     soleCount: counters.sole,
     judgedCount: counters.judged,
     declinedCount: counters.declined,
+    findings: selectionFindings,
   };
 }
+
+/**
+ * Patch that ships, with the findings from judging it.
+ *
+ * Wrapped rather than widening `PatchOutcome`, which is shared across the apply
+ * path: putting a telemetry field there would attach it to every operation
+ * result in the pipeline. The wrapper keeps the reporting local to the stage
+ * that produced it.
+ *
+ * @example
+ * ```ts
+ * const { patch, findings, } = await selectChunkPatch({ client, candidates, ... },);
+ * ```
+ */
+export type ChunkPatchSelection = {
+  /**
+   * Winning patch, or the fallback when judges decline.
+   */
+  readonly patch: PatchOutcome;
+
+  /**
+   * Degradation findings from the judge fan-out, empty when no vote was held.
+   */
+  readonly findings: readonly string[];
+};
 
 /**
  * Judges whole-chunk candidates and returns the patch that ships.
@@ -384,7 +427,8 @@ export async function selectPerEnvelope(
  *
  * @param l - pipeline logger
  *
- * @returns Winning patch, or the fallback when judges decline
+ * @returns Winning patch, or the fallback when judges decline, plus the
+ * judge fan-out findings for the caller to carry into the artifact
  *
  * @example
  * ```ts
@@ -413,7 +457,7 @@ export async function selectChunkPatch(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
   }>,
-): Promise<PatchOutcome> {
+): Promise<ChunkPatchSelection> {
   /**
    * Logger tagged with this selection pass.
    */
@@ -433,7 +477,11 @@ export async function selectChunkPatch(
   const [sole,] = candidates;
   if ((candidates.length === 1) && (sole !== undefined)) {
     cl.info(`every proposal was identical; shipping ${describeProducer(sole.producer,)} unjudged`,);
-    return sole.value;
+    // No judges were asked, so there is no fan-out to report on.
+    return {
+      patch: sole.value,
+      findings: [],
+    };
   }
 
   /**
@@ -472,10 +520,16 @@ export async function selectChunkPatch(
     // overrule the panel rather than route around its silence.
     if (outcome.disposition === 'indecision') {
       cl.info(`${outcome.reason}; shipping the strongest repair anyway`,);
-      return indecisionFallback;
+      return {
+        patch: indecisionFallback,
+        findings: outcome.findings,
+      };
     }
     cl.info(`${outcome.reason}; shipping no repair for this chunk`,);
-    return rejectionFallback;
+    return {
+      patch: rejectionFallback,
+      findings: outcome.findings,
+    };
   }
   cl.info(
     `chunk patch from ${describeProducer(outcome.producer,)} won ${String(outcome.votes,)} of ${
@@ -483,7 +537,10 @@ export async function selectChunkPatch(
         .ballots,)
     } ballots`,
   );
-  return outcome.value;
+  return {
+    patch: outcome.value,
+    findings: outcome.findings,
+  };
 }
 
 /**

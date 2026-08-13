@@ -201,9 +201,15 @@ await describe({
         // read `toHaveLength(0)` until 2026-08-13, which is precisely the case
         // the findings dropped: a healthy-looking stage silently short two
         // voices, recorded nowhere the artifact could carry.
-        expect(gather.findings,).toContain(
-          'stage-voice-lost (panel: hf:moonshotai/Kimi-K3, hf:openai/gpt-oss-120b)',
-        );
+        expect(gather.findings,).toContain('stage-voice-lost (panel hf:moonshotai/Kimi-K3)',);
+        expect(gather.findings,).toContain('stage-voice-lost (panel hf:openai/gpt-oss-120b)',);
+        // TWO findings, not one naming two models, so counting them counts
+        // voices lost rather than gathers that lost at least one.
+        expect(
+          gather.findings.filter(function isLoss(finding,) {
+            return finding.startsWith('stage-voice-lost',);
+          },),
+        ).toHaveLength(2,);
       },
     },),
 
@@ -233,9 +239,7 @@ await describe({
           l,
         },);
         expect(gather.quorumMet,).toBe(true,);
-        expect(gather.findings,).toContain(
-          'stage-voice-lost (critic: hf:moonshotai/Kimi-K3)',
-        );
+        expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
       },
     },),
 

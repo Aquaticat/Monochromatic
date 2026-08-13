@@ -261,6 +261,18 @@ export type SelectionOutcome<ValueT,> =
      * What the round counted.
      */
     readonly tally: SelectionTally;
+
+    /**
+     * Degradation findings from the judge fan-out, for the caller to carry
+     * into the artifact.
+     *
+     * The tally already counts how many judges answered, and that is not the
+     * same thing: it says how many voices were lost without saying WHICH model
+     * went silent, and the identity is what every voice-loss diagnosis has
+     * turned on. This channel existed nowhere on the selection path until
+     * 2026-08-13, so the fan-out's findings were built and discarded.
+     */
+    readonly findings: readonly string[];
   }
   | {
     readonly kind: 'declined';
@@ -280,6 +292,11 @@ export type SelectionOutcome<ValueT,> =
      * What the round counted.
      */
     readonly tally: SelectionTally;
+
+    /**
+     * {@inheritDoc SelectionOutcome.findings}
+     */
+    readonly findings: readonly string[];
   };
 
 //endregion Candidate selection model

@@ -312,6 +312,7 @@ export async function runRefineStage(
       ...unchanged,
       findings: [
         ...stageFindings,
+        ...outcome.findings,
         `refine-declined (${outcome.reason})`,
       ],
     };
@@ -334,6 +335,7 @@ export async function runRefineStage(
     contributors,
     findings: [
       ...stageFindings,
+      ...outcome.findings,
       `refine-selected (${String(outcome.votes,)} of ${String(outcome.tally
         .ballots,)} ballots)`,
     ],

@@ -118,8 +118,15 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * when quorum was met. Findings are read as a whole per entry, so an entry
  * holding version-17 and version-18 slices would under-report voice loss on
  * exactly half of itself while looking complete.
+ *
+ * Version 19 completes that record in two ways it was still incomplete. One
+ * finding is emitted PER MODEL rather than one naming a list, so counting
+ * findings counts voices lost rather than gathers that lost at least one. And
+ * the selection path carries its findings at all: `selectBestCandidate` built
+ * them and every caller discarded them, so a judge going silent left no trace.
+ * A version-18 slice under-counts on both.
  */
-const SLICE_CACHE_VERSION = 18;
+const SLICE_CACHE_VERSION = 19;
 
 /**
  * Completion status of one repair run;

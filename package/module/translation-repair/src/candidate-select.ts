@@ -124,6 +124,7 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'no candidates proposed',
       disposition: 'rejection',
       tally: emptyTally,
+      findings: [],
     };
 
   /**
@@ -148,6 +149,7 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'no disinterested judge available',
       disposition: 'rejection',
       tally: emptyTally,
+      findings: [],
     };
   }
 
@@ -236,6 +238,7 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'every judge declined',
       disposition: 'rejection',
       tally: counted,
+      findings: gather.findings,
     };
   }
 
@@ -250,6 +253,7 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'judges tied',
       disposition: 'indecision',
       tally: counted,
+      findings: gather.findings,
     };
   }
   if (leader[1] < MIN_SELECTION_VOTES) {
@@ -265,6 +269,7 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'winner short of the minimum vote count',
       disposition: 'indecision',
       tally: counted,
+      findings: gather.findings,
     };
   }
 
@@ -278,6 +283,7 @@ export async function selectBestCandidate<ValueT,>(
       reason: 'winning index out of range',
       disposition: 'rejection',
       tally: counted,
+      findings: gather.findings,
     };
   }
   sl.info(
@@ -290,6 +296,7 @@ export async function selectBestCandidate<ValueT,>(
     producer: winner.producer,
     votes: leader[1],
     tally: counted,
+    findings: gather.findings,
   };
 }
 
