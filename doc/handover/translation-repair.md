@@ -7455,3 +7455,61 @@ This matters for `#70` beyond the untranslated case: a re-design premised on
  "translate what is missing" answers pair 3 and pair 10, and says nothing about
  pair 7. Whatever shape is proposed has to state what it does when the
  translation carries far MORE than the original.
+
+### XingZ60 is not partly untranslated. It is mispaired end to end.
+
+Correcting what this document said earlier tonight. `alignDocumentSections`
+ pairs every section of that entry with the WRONG one, shifted by two:
+
+```text
+### 其一：伊良子      || ## Engagement in Trans Aid
+### 其二：铃语        || ## Memories by Friends
+### 其三：绘都        || ### Irako
+### 其四：无常        || ### Lingyu
+### 其五：东云        || ### HiYku
+### 其六：Mikä       || ### Ann
+### 其七：wing       || ### Shinonome
+### 其八：白毛 suki   || ### Mikä
+### 其九：空白        || ### wing
+### 其十：锦心        || ### Baimao suki
+## 致曾划过夜空的流星   || ### __
+```
+
+The correct pairing is legible from the headings themselves: 其一：伊良子 with
+ Irako, 其二：铃语 with Lingyu, 其六：Mikä with Mikä, 其七：wing with wing,
+ 其八：白毛 suki with Baimao suki. The English headings carry the romanised
+ names outright.
+
+Cause: the Chinese has 14 headings and the English 12, missing two sections at
+ the END. Facing 15 source chunks against 13 target chunks, the aligner reports
+ `structure-mismatch` and falls back to aligning PROPORTIONALLY BY CHARACTER
+ FRACTION, which slides everything by two.
+
+### What that invalidates
+
+The section I called the worst untranslated case is not untranslated. `其二：铃语`
+ has a full English rendering in the same file under `### Lingyu`, four
+ occurrences of the name included. The translate prototype rendered a section
+ that was already translated, so its output demonstrates capability and NOT a
+ gap being filled.
+
+For this entry every critic call compared the wrong original against the wrong
+ translation, so every issue filed against it is noise, every repair damaged
+ correct text, and the probe agreed because it was handed the same wrong source.
+
+The signal existed the whole time. The artifact carries
+ `alignment structure-mismatch` and two `sections-merged` findings, and an
+ earlier measurement in this document counted 5 of 56 entries carrying an
+ alignment finding. Nothing reads them.
+
+### What it means for `#69` and `#70`
+
+Both were premised on sections whose translation covers a fraction of their
+ source. Some of that is real, and some of it is this. The block-count gaps
+ measured across the corpus, 60 of 172 pairs, were computed from the same
+ possibly-shifted pairing, so the figure describes alignment quality as much as
+ translation coverage.
+
+Fixing alignment now outranks both. A pipeline that pairs sections wrongly
+ cannot be repaired into correctness by any later stage, and cannot be
+ re-designed around either.
