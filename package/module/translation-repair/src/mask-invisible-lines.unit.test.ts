@@ -76,5 +76,52 @@ await describe({
           .toBe(parseDocument({ text: 'Alpha.\n\nBeta.\n', },).nodes.length,);
       },
     },),
+
+    it({
+      name: 'blanks a line of NON-ASCII space, which welds exactly as the mark '
+        + 'does. CommonMark counts only U+0020 and U+0009 as blank, so a line '
+        + 'holding one of these is a paragraph continuation however much it '
+        + 'looks like whitespace',
+      fn: async () => {
+        for (const space of [
+          '\u{00A0}',
+          '\u{202F}',
+          '\u{3000}',
+          '\u{2007}',
+          '\u{00AD}',
+        ]) {
+          expect(maskInvisibleLines({ text: `Alpha.\n${space}\nBeta.\n`, },),)
+            .toBe('Alpha.\n \nBeta.\n',);
+        }
+      },
+    },),
+
+    it({
+      name: 'catches those spaces despite every one of them being ECMAScript '
+        + 'whitespace, which is the trap that broke the first draft of this '
+        + 'file: any check phrased with trim() calls them empty and passes over '
+        + 'the very characters it exists to catch',
+      fn: async () => {
+        for (const space of [
+          '\u{00A0}',
+          '\u{202F}',
+          '\u{3000}',
+        ])
+          expect(space.trim(),).toBe('',);
+
+        expect(parseDocument({ text: 'Alpha.\n\u{00A0}\nBeta.\n', },).nodes.length,)
+          .toBe(parseDocument({ text: 'Alpha.\n\nBeta.\n', },).nodes.length,);
+      },
+    },),
+
+    it({
+      name: 'blanks a line mixing ordinary spaces with an invisible one, since '
+        + 'the ordinary spaces alone would already have been blank and it is '
+        + 'the invisible character that keeps the line from ending a paragraph',
+      fn: async () => {
+        expect(maskInvisibleLines({ text: `Alpha.\n  ${MARK} \nBeta.\n`, },),)
+          .toBe('Alpha.\n    \nBeta.\n',);
+      },
+    },),
   ],
 },);
