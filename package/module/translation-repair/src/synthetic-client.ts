@@ -371,9 +371,14 @@ export function createSyntheticClient(
       rl.info(`${request.modelId}: stripped channel marker ${JSON.stringify(marker,)} ahead of JSON`,);
 
     /**
-     * Parse attempt over fence-stripped answer.
+     * Parse attempt over the unwrapped answer. The fence stripper runs a SECOND
+     * time because it cannot see a fence hidden behind a marker: a reply of
+     * `ep|>` then a fenced object leaves the first pass looking at the marker,
+     * and without this the voice is lost to the very defect just repaired.
      */
-    const attempt = parseModelJson({ text: content, },);
+    const attempt = parseModelJson({
+      text: (marker === '') ? content : stripCodeFence({ text: content, },),
+    },);
 
     if (!attempt.parsed) {
       /**

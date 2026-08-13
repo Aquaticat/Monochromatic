@@ -79,17 +79,32 @@ function lostVoiceCause(
 ): string {
   /**
    * Model text flattened to one line and bounded, since a warning is one line.
+   *
+   * Both line terminators are replaced, not just the newline: a reply using
+   * carriage returns would otherwise break the one-line guarantee this exists
+   * to keep. Bounded by CODE POINT rather than by `slice`, so cutting at the
+   * limit cannot split a surrogate pair and leave a lone half in the log, which
+   * is exactly the diagnostic that has to survive to be read.
    */
-  const opening = outcome
+  const opening = [...outcome
     .rawText
+    .replaceAll(
+      '\r\n',
+      ' ',
+    )
     .replaceAll(
       '\n',
       ' ',
     )
+    .replaceAll(
+      '\r',
+      ' ',
+    ),]
     .slice(
       0,
       RAW_PREVIEW_CHARS,
-    );
+    )
+    .join('',);
   if (outcome.kind === 'schema-mismatch')
     return `schema-mismatch (${outcome.detail}) raw=${JSON.stringify(opening,)}`;
   return `refusal-shaped (${outcome.marker}) raw=${JSON.stringify(opening,)}`;

@@ -123,6 +123,76 @@ await describe({
     },),
 
     it({
+      name: 'leaves an APOLOGY THAT IS FOLLOWED BY VALID JSON untouched, which '
+        + 'is the case that actually separates this from a skip-to-the-brace '
+        + 'rule. A refusal with no brace in it would be left alone by both '
+        + 'implementations and so proves nothing; this one is mended by the '
+        + 'rule we rejected and must not be mended here',
+      fn: async () => {
+        expect(stripChannelMarker({
+          text: 'I cannot comply.\n{"count":2}',
+        },),).toStrictEqual({
+          content: 'I cannot comply.\n{"count":2}',
+          marker: '',
+        },);
+      },
+    },),
+
+    it({
+      name: 'strips a marker sitting in front of a FENCED object, since the '
+        + 'fence stripper runs before this and cannot see a fence hidden '
+        + 'behind a marker: without this the voice is lost to the very defect '
+        + 'this function repairs',
+      fn: async () => {
+        expect(stripChannelMarker({
+          text: 'p|>```json\n{"count":2}\n```',
+        },),).toStrictEqual({
+          content: '```json\n{"count":2}\n```',
+          marker: 'p|>',
+        },);
+      },
+    },),
+
+    it({
+      name: 'consumes SEVERAL leaked markers in a row, which is what two tokens '
+        + 'straddling one delta boundary produces, while still requiring every '
+        + 'fragment to be marker-shaped on its own',
+      fn: async () => {
+        expect(stripChannelMarker({
+          text: String.raw`p|><|im_sep|>{"count":2}`,
+        },),).toStrictEqual({
+          content: String.raw`{"count":2}`,
+          marker: 'p|><|im_sep|>',
+        },);
+      },
+    },),
+
+    it({
+      name: 'leaves the input WHOLLY untouched when a marker run does not reach '
+        + 'real content, rather than returning it partially repaired, so a '
+        + 'caller can never parse a fragment of a reply as if it were all of it',
+      fn: async () => {
+        expect(stripChannelMarker({
+          text: 'p|>|> I still cannot help.',
+        },),).toStrictEqual({
+          content: 'p|>|> I still cannot help.',
+          marker: '',
+        },);
+      },
+    },),
+
+    it({
+      name: 'does NOT strip a bare `>`, which is deliberate: every observed '
+        + 'tail closes with `|>`, and accepting `>` alone would also eat a '
+        + 'Markdown blockquote marker sitting in front of JSON',
+      fn: async () => {
+        expect(stripChannelMarker({
+          text: String.raw`>{"count":2}`,
+        },).marker,).toBe('',);
+      },
+    },),
+
+    it({
       name: 'refuses a fragment longer than a marker of this family can be, so '
         + 'a sentence that happens to close with those two characters is not '
         + 'mistaken for a token tail',
