@@ -26,8 +26,8 @@ description = "Cross-compile the native engine .so for both 64-bit ABIs (arm64-v
 dir = "{{config_root}}/rust"
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { existsSync, readdirSync, readFileSync, rmSync } = require("node:fs");
-const { join } = require("node:path");
+const { existsSync, readdirSync, readFileSync, rmSync } = await import("node:fs");
+const { join } = await import("node:path");
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) {
   throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` at the repo root.");
@@ -81,7 +81,7 @@ if (existsSync(buildRoot)) {
 // reads ANDROID_NDK_HOME to apply the CMake android toolchain; without it that
 // build silently falls back to a HOST compile (and a /usr/local install). So set
 // it explicitly, derived from the mise SDK, keeping the build self-contained.
-const { execFileSync } = require("node:child_process");
+const { execFileSync } = await import("node:child_process");
 // Build both 64-bit ABIs in one invocation: arm64-v8a for physical devices and
 // x86_64 for emulators (which run the x86_64 system image on an x86_64 host). A
 // repeated -t makes cargo-ndk cross-compile each and drop libmusicplayer_native.so
@@ -134,8 +134,8 @@ dir = "{{config_root}}"
 depends = ["build:release"]
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { execFileSync } = require("node:child_process");
-const { join } = require("node:path");
+const { execFileSync } = await import("node:child_process");
+const { join } = await import("node:path");
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) {
   throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` at the repo root.");
