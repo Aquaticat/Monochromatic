@@ -218,18 +218,18 @@ component SegmentedControls inherits Rectangle {
 
 // A measured Chromium tab: 50px tall under 8px of tab-strip headroom,
 // with a 10px top radius, 12px outward shoulders, a 1.5px contour,
-// a music favicon, left-aligned label, and close glyph.
+// and the reference's left-aligned label spacing.
 component ChromiumTab inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
     in property <bool> show-divider;
     callback clicked();
-    private property <color> strip-color: Palette.color-scheme == ColorScheme.dark ? #2c2c2c : #dfe1e5;
+    private property <color> backplate-color: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
     private property <color> active-color: Palette.color-scheme == ColorScheme.dark ? #383838 : #f8fafd;
     private property <color> outline-color: Palette.color-scheme == ColorScheme.dark ? #626262 : #aeb0b4;
     private property <color> ink-color: Palette.color-scheme == ColorScheme.dark ? #ededeb : #202124;
     horizontal-stretch: 0;
-    width: chromium-label.preferred-width + 118px;
+    width: chromium-label.preferred-width + 48px;
     height: 58px;
     preferred-height: 58px;
     background: transparent;
@@ -317,46 +317,16 @@ component ChromiumTab inherits Rectangle {
         background: root.outline-color.with-alpha(0.55);
     }
 
-    Rectangle {
-        x: 24px;
-        y: 22px;
-        width: 22px;
-        height: 22px;
-        border-radius: 11px;
-        background: root.ink-color;
-        Text {
-            text: "♪";
-            width: parent.width;
-            height: parent.height;
-            font-size: 14px;
-            horizontal-alignment: center;
-            vertical-alignment: center;
-            color: root.selected ? root.active-color : root.strip-color;
-        }
-    }
-
     chromium-label := Text {
-        x: 58px;
+        x: 24px;
         y: 8px;
-        width: parent.width - 118px;
+        width: parent.width - 48px;
         height: 50px;
         text: root.text;
-        font-size: Typography.body-rem * 1rem;
+        font-size: 15px;
         vertical-alignment: center;
         horizontal-alignment: left;
         overflow: elide;
-        color: root.ink-color;
-    }
-
-    Text {
-        x: parent.width - 42px;
-        y: 8px;
-        width: 18px;
-        height: 50px;
-        text: "×";
-        font-size: 23px;
-        horizontal-alignment: center;
-        vertical-alignment: center;
         color: root.ink-color;
     }
 
@@ -375,7 +345,7 @@ component ChromiumControls inherits Rectangle {
     callback select-page(int);
     height: chromium-layout.preferred-height;
     preferred-height: chromium-layout.preferred-height;
-    background: Palette.color-scheme == ColorScheme.dark ? #2c2c2c : #dfe1e5;
+    background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
 
     chromium-layout := FlexboxLayout {
         width: parent.width;
