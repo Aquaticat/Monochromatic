@@ -318,7 +318,20 @@ The value is stored by `repair-chunk.ts` and read by nothing, but the FEATURE
  provenance rather than a defect.
 
 `documentHash` is genuinely dead. `parseDocument` hashes the full document text
- on every call and nothing outside its own test ever reads the result.
+ on every call and nothing outside its own test ever reads the result. Drift
+ detection, the obvious candidate purpose, uses the per-span `nodeHash`
+ instead.
+
+Left in place, on measurement rather than on caution. Over a 33451-character
+ entry, five timed runs of a hundred iterations each:
+
+```text
+  parseDocument        median 13.077 ms   band 12.931 to 13.179
+  hashContent alone    median  0.048 ms   band  0.048 to  0.049
+```
+
+The hash is 0.4% of a parse. Removing it would change a published type for no
+ measurable gain, so it stays until something else touches that type.
 
 So the finer-grained pass turned up no second aligner. That is the useful
  outcome: the unwired-MODULE check earns its keep, and the unread-FIELD check
