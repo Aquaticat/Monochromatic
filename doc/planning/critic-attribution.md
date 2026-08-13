@@ -254,3 +254,96 @@ THE TESTING LESSON, which cost a mutation to learn: the fold had tests and the
 -   A sentinel proposer model id never appears in any message passed to the
     panel client.
 -   A cached outcome and a fresh outcome produce identical artifact attribution.
+
+## The reader, and why it shipped the same night as the writer
+
+`mise run //package/module/translation-repair:score-attribution` reads a run's
+ settled artifacts and prints per-critic calibration. It takes the runs
+ directory from `TRANSLATION_REPAIR_RUNS_DIR` exactly as every other reader
+ does.
+
+It prints no corpus text. Claim ids are hashes and model ids are model ids, so
+ its output is safe to paste where the artifacts themselves are not, including
+ into a third-party model. That is a deliberate property of the output, not an
+ accident of the current fixtures.
+
+Shape of what it prints:
+
+-   `POPULATION` splits entries into eligible and ineligible and reports the
+    chunk count, so a reader can see at once how much of the directory could
+    contribute at all.
+-   One row per critic: chunks heard, distinct claims raised, emissions
+    including self-repeats, accepted issues backed, and the two per-chunk rates
+    those imply.
+-   `SUPPORT` counts accepted issues by what they rested on: `sole`, `multi`,
+    `selfRepeated`, `unattributed`.
+
+The rates are RATES, not percentages. One critic can raise several claims in one
+ chunk, so claims per chunk heard legitimately exceeds one. Rendering them as
+ percentages produced readings like `3400%`, and nothing but running the task at
+ the user boundary would have caught it: every unit test passed on the numbers
+ underneath.
+
+BUILT ALONGSIDE THE WRITER ON PURPOSE. The recurring failure this pipeline keeps
+ producing is telemetry recorded and never read, which `#71` documents at its
+ sharpest: the alignment findings were recorded for the whole corpus and nothing
+ consulted them, so a document-wide mispairing survived every stage. Shipping a
+ data path with no reader would have repeated it. Unread data is
+ indistinguishable from data never collected.
+
+## Three defects the reader shipped with, and how they were found
+
+Landed the same night, before the first real artifact carrying attribution
+ existed, so no measurement was ever taken through the broken join.
+
+-   **`indexProposers` overwrote on a shared claim id.** Walking an entry's
+    chunks, it did a bare `index.set(claimId, proposers)`, so two chunks
+    carrying the same id left only the last chunk's critics and silently
+    deleted the earlier chunk's. That is the exact OPPOSITE of the error the
+    writer takes care to avoid: `buildChunkCriticRecords` keys per chunk
+    precisely so two chunks cannot merge into one inflated entry, and the
+    reader then merged them the wrong way. Deflating is no more correct than
+    inflating. Proposers are now concatenated, and the accepted-issue loop
+    dedupes by model id as it already did.
+-   **`chunkIndex` defaulted to zero** when it did not parse, alone among that
+    parser's fields, every one of which drops the record instead. A malformed
+    record became a real chunk 0 and inflated the chunk count, which is the
+    denominator every rate divides by.
+-   **The eligibility decision had no test at all.** Every case handed
+    `chunkCritics` in by hand, so all of them exercised the fold and none the
+    wiring, and the decision is not made in the fold: it is made in `toEntry`,
+    which omits the key entirely for an artifact that predates attribution.
+
+A collision needs two chunks producing identical category, severity, summary and
+ absolute spans, so the first is latent rather than live. It was fixed anyway,
+ because it is the same shape as the `claims[0].spans` mistake that produced a
+ confident 81.3%: a key that collapses yields a wrong number with no error
+ anywhere, and no measurement taken through it looks suspicious.
+
+VERIFIED BY MUTATION, each mutation having left the suite green beforehand:
+ returning an empty array instead of omitting the key made every entry eligible;
+ defaulting a malformed index to zero restored the inflated count; overwriting
+ instead of merging dropped one of two critics' accepted hits to zero.
+
+The wiring-versus-fold hole is now the third instance in one session, after the
+ deleted `emissions.push` and the emptied `chunkCritics` at the driver return.
+ The pattern is consistent enough to state as a rule: when a value's MEANING
+ depends on a decision made outside the function that computes it, test the
+ decision where it is made, not the function.
+
+## A lint filter that hid its own failures
+
+Worth recording because it is a measurement failure, not a coding one, and the
+ same shape has now cost time twice.
+
+The lint run was being classified with `rg -- '-- '`, which matches only lines
+ containing a literal `-- `. It reported no findings outside the ignored rule
+ while five `no-function-root-let` errors, one missing TSDoc and eleven
+ `chain-per-line` warnings were present in the output the whole time. The error
+ COUNT was right there in the summary line and disagreed with the classification,
+ which is what eventually exposed it.
+
+The replacement counts rule names rather than trusting a substring:
+ `rg --only-matching '^\s{0,3}\S{1,2} [a-z@/-]+\([a-z-]+\)' <log> | sort | uniq --count`.
+ It reports every diagnostic marker `oxlint` emits, error and warning alike, so a
+ census that misses a rule is visible as a census that does not sum.
