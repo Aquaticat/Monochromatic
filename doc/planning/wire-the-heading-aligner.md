@@ -116,14 +116,36 @@ Cons:
 
 ### Option B: wire `alignHeadings` into `alignDocumentSections`
 
+"Wiring" needs qualifying, because the two functions speak different units.
+`alignHeadings` returns `sourceIndex` and `targetIndex` over the HEADING arrays
+ it was given, while `alignDocumentSections` returns pairs of CHUNK objects
+ carrying text ranges. Something has to carry indices across.
+
+That something is mechanical rather than inferential, and it was checked rather
+ than assumed. `chunkByHeadings` starts a fresh chunk at every heading node and
+ puts anything before the first heading in a preamble chunk, so chunk count
+ equals heading count plus one whenever a document does not open with a
+ heading. Measured over all 184 documents at this pin, that correspondence
+ holds EXACTLY:
+
+```text
+  184 documents, correspondence exact 184, off 0
+```
+
+So heading index `h` maps to chunk index `h + 1` when a preamble exists, and to
+ `h` when it does not.
+
 Pros:
- uses the function that already exists, is already tested, and already carries
- the gap-placement fix, so the change is wiring rather than new logic;
+ reuses a function that exists, is tested, and carries the gap-placement fix,
+ against a heading-to-chunk mapping proven exact on every document at the pin;
  handles a gap ANYWHERE in the sequence rather than only a trailing one;
  produces explicit unpaired sections, which is what `#71` asks for when a
  section cannot be paired confidently.
 
 Cons:
+ NOT pure wiring: the adapter must still pair the preamble chunks with each
+ other and build pair objects for gap steps, which is small but is new code
+ with its own failure modes;
  unpaired sections need a destination, and that is exactly the open question in
  `#70`, so this cannot land without answering it;
  alignment feeds every later stage, so it invalidates the slice cache and costs
@@ -146,10 +168,18 @@ Cons:
 
 B > C > A.
 
-**B over C** because both need the same decision from `#70` and both invalidate
- the same cache, so C's smaller diff buys nothing, while B inherits a general
- gap-placement rule and a test suite instead of a trailing-surplus assumption
- that holds on the single entry it was checked against.
+**B over C** because both need the same decision from `#70`, both invalidate
+ the same cache, and both have to build pair objects for unpaired sections, so
+ C's smaller diff buys less than it looks like it should. What separates them
+ is that B inherits a general gap-placement rule and a test suite, where C
+ rests on a trailing-surplus assumption that holds on the single entry it was
+ checked against.
+
+The margin is narrower than it first appeared. B's advantage was originally
+ written as "wiring rather than new logic", which was wrong: the heading-to-
+ chunk adapter is new code, even though the correspondence it rests on is exact
+ corpus-wide. If the adapter turns out to be more than a few lines in practice,
+ C deserves a fresh look rather than deference to this ranking.
 
 **C over A** because A is the only option that produces a confidently wrong
  pairing. C is never worse than index pairing, and index pairing is already
@@ -263,3 +293,20 @@ The value is stored by `repair-chunk.ts` and read by nothing, but the FEATURE
 So the finer-grained pass turned up no second aligner. That is the useful
  outcome: the unwired-MODULE check earns its keep, and the unread-FIELD check
  did not, at least on these two types.
+
+## Verification notes
+
+Both load-bearing claims were checked at the level the recommendation needs,
+ not at the level that was convenient.
+
+The aligner claim rested on `alignHeadings` producing the right HEADING
+ pairing, which does not by itself prove that wiring it fixes a CHUNK-level
+ aligner. The heading-to-chunk correspondence was therefore measured
+ separately, and is exact on all 184 documents at the pin.
+
+The derivability claim rested on a search for the word "derivability", which
+ would miss a consumer importing a symbol whose name lacks it. Re-run against
+ `runDerivabilityProbe`, `SeedDerivability` and `DERIVABILITY_RESPONSE_FORMAT`
+ specifically, the only consumer outside the module's own files is
+ `recall-barrel.ts`, and neither `repair-benchmark.ts` nor
+ `restoration-judge.ts` mentions it at all.
