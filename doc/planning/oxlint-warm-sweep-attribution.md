@@ -490,12 +490,12 @@ On a two-type cycle whose head carries the writable slot,
  so that both types reach a write:
 
 ```text
-head first:    cycleHead mutable, cycleMember honest-readonly
+head first:    cycleHead mutable, cycleMember deep-readonly
 member first:  cycleMember mutable, cycleHead mutable
 ```
 
 That is the wrong-offer direction rather than a withheld one.
-`effect-outward-handoff.ts:181` returns early on `honest-readonly`,
+`effect-outward-handoff.ts:181` returns early on `deep-readonly`,
  skipping the opaque effect it
 would otherwise charge the handed slot,
  so the parameter reads as unmutated and the rule offers
