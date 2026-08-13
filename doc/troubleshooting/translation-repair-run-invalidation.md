@@ -326,7 +326,42 @@ The needle preview changes neither: it appends diagnostic text to a finding for
  a claim that was already being discarded, so a slice cached before it and
  resumed after it produces the same repair decisions.
 
-### `pass14` is armed by a detached watcher, not by a note
+### The next run is armed by a detached watcher, not by a note
+
+SUPERSEDES the `pass14` framing below, which was written before the target
+ changed. The watcher RESUMES `translation-repair-runs-pass13` rather than
+ creating a fresh `pass14` directory, and its script is
+ `~/temp/agent/continue-pass13.sh`. The commit that introduced it,
+ `a63c44a94`, says "arm pass14" and is inaccurate for that reason; it is not
+ amended, per the no-amend rule.
+
+WHY RESUME rather than start fresh. A new runs directory has no artifacts and
+ no slice cache, so `listResumableEntries` would find nothing in flight and the
+ stratified ranking would work from the top, re-settling the same early entries
+ `pass13` already holds. That is hours of provider capacity spent reproducing
+ existing artifacts, unattended, overnight. Resuming carries the settled
+ entries forward, takes a fresh 720-minute budget, and pushes corpus coverage
+ past what one pass reaches.
+
+The separate-directory discipline that produced `pass10` through `pass13` was
+ for BEHAVIOURAL changes, where population purity decides whether figures can
+ be compared. The needle preview is diagnostic only, so purity buys nothing
+ here and coverage costs real capacity.
+
+TWO HAZARDS were found while arming it, both worth keeping:
+
+-   `pgrep --full 'corpus-run/corpus-pass.ts'` matches any SHELL whose command
+    line contains that string, including the run monitor's own. Measured: the
+    loose pattern matched 4 processes where only one was the pass. A watcher
+    using it would see the pass alive forever and never fire. The fix is
+    `pgrep --full --exact 'node src/corpus-run/corpus-pass.ts'`, which matched
+    exactly the real process.
+-   sops decryption had to be proven NON-INTERACTIVE before trusting an
+    unattended launch, since `createRunClient` refuses to build a client with
+    no key and the run would die instantly at 03:00 with only a log line.
+    Verified from a `setsid` shell with stdin closed: the key resolves.
+
+### Superseded: `pass14` is armed by a detached watcher, not by a note
 
 The paragraph above says `pass14` should start when `pass13` stops, and the run
  monitor emits `PROCESS GONE` as the cue. That is a note to whoever reads it,
