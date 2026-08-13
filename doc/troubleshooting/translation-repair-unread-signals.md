@@ -150,10 +150,122 @@ Both rest on the graph being right, which until 2026-08-13 it was not: it would
  have reported ten false breaks on `shihai4h` and could not see a definition
  inside a container at all.
 
+## The whole finding census, over 56 settled entries
+
+Taken 2026-08-13 from `node_modules/.monochromatic/translation-repair-runs`,
+ collapsing each finding's parenthesised payload so kinds group.
+Each pair is occurrences, then how many entries carry the kind at least once.
+
+```text
+    509  55  refine-skip block/0          43  16  group-index-out-of-range
+    461  54  refine-skipped               41  18  refine-selected
+    405  54  editor-candidates            34   7  stage-quorum-unmet
+    405  54  editor-envelope-select       32  15  refine-recheck-passed
+    405  54  editor-chunk-select          30  21  ambiguous-quote
+    253  51  refine-skip block/1          24   8  missing-verdict
+    137  44  refine-skip block/2          12   6  quote-outside-blocks
+    225  45  quote-not-found              10   9  refine-declined
+    129  33  empty-quote                   7   3  unknown-regrade-severity
+    129  36  refine-candidates             5   5  alignment structure-mismatch
+     64  30  refine-skip block/3           4   3  alignment sections-merged
+```
+
+The tail below those runs to single figures: `no-quotes`, `unknown-severity`,
+ `unknown-vote`, `duplicate-check`, `missing-check`, `refine-rolled-back`,
+ `non-translation dominance`, and the per-quorum `non-translation votes stand`
+ lines.
+
+Most of it is ordinary bookkeeping. Two families are not.
+
+## Quote anchoring discards 398 critic claims, and the corpus wrapping explains part of it
+
+`quote-not-found` 225, `empty-quote` 129, `ambiguous-quote` 30,
+ `quote-outside-blocks` 12, `no-quotes` 2.
+Each one is a critic claim that never reached adjudication.
+Confirmed at the call site rather than inferred from a TSDoc example:
+ `repair-stages.ts` pushes the reason and returns an empty array, so the claim
+ is dropped.
+
+The buckets are different failures and must not be pooled.
+`empty-quote` is a malformed model response,
+ `ambiguous-quote` is a quote found more than once,
+ and only `quote-not-found` is a location miss.
+
+For that last bucket there is a mechanism the code cannot currently see.
+The corpus soft-wraps its prose, so a paragraph holds line breaks that are not
+ paragraph breaks. A critic quoting across a wrap returns a space where the
+ document holds a line break. `locateQuote` searches byte-exact first, then
+ falls back to `normalizePunctuation`, whose map covers curly punctuation,
+ CJK corner brackets and U+00A0. Line breaks are deliberately absent from it,
+ so both searches miss.
+
+The competing explanation was ruled out first: if the critic prompt re-wrapped
+ the text, a space-joined quote would be faithful to what the model was shown
+ and the fix would belong at the rendering boundary instead.
+`critic-prompt.ts` interpolates `sourceText` and `targetText` raw, so the model
+ saw the line breaks and collapsed them itself.
+
+### What was done about it
+
+Telemetry only, in `a6bbeca50`. `quote-not-found` now carries a suffix naming
+ what a soft-line-break collapse would have produced:
+ `[line-break-collapsible]` for a unique hit, `[line-break-ambiguous]` for one
+ that lands twice, nothing at all when the quote is genuinely absent.
+No claim changes fate. `SLICE_CACHE_VERSION` went to 9 because findings are
+ part of the cached payload.
+
+Counting outcome TRANSITIONS rather than "does it locate now" is the point.
+Collapsing line breaks makes the haystack more uniform, so some misses will
+ become ambiguous rather than located, and a fix that traded silent discards
+ for silent ambiguity would look like a win in a naive count.
+
+Admitting those quotes was NOT done, and is blocked rather than merely
+ deferred. A repair anchored to a quote spanning a wrap replaces several lines
+ with one, which is exactly the line-structure question left open in
+ `doc/planning/naturalness-lane-reach.md`. Landing it quietly would decide that
+ question without asking.
+
+### A gap this exposed
+
+The failing quote is not retained anywhere. Artifacts keep adjudicated issues
+ only, 2650 accepted plus 1033 rejected plus 415 needs-human, and a claim
+ discarded at anchoring never becomes one. So the incidence of each mechanism
+ cannot be measured from the existing 56 entries at all, only from a pass run
+ after the suffix landed. A recorded signal that omits the evidence needed to
+ act on it is the same failure this document is about, one layer down.
+
+## Dropped merge opinions do not explain the duplicate issues
+
+`group-index-out-of-range` is the adjudication panel naming a cluster number
+ that does not exist; `adjudicate-wire.ts` drops that merge opinion and records
+ the finding. A dropped merge opinion leaves claims unmerged, which looked like
+ a candidate mechanism for the duplicates in
+ `doc/planning/duplicate-accepted-issues.md`.
+
+Measured over the same 56 entries, split by whether an entry carries any
+ dropped merge opinion:
+
+```text
+  entries WITH a dropped merge opinion   16 entries  1503 accepted  36.8% duplicate
+  entries WITHOUT                        40 entries  1147 accepted  35.1% duplicate
+```
+
+No effect, and no monotone relation inside the affected group either: the entry
+ with the most dropped opinions has a lower duplicate rate than several
+ carrying one. The hypothesis is refuted.
+
+The duplicate rate here is higher than the 21.5% recorded in the planning doc
+ because the key is looser. This measurement groups on an issue's first
+ target-side span, where the planning doc required every span to match. They
+ count one phenomenon at two strictnesses, and neither contradicts the other.
+
 ## What still reads nothing
 
-`alignment.findings` is turned into scorecard text and recorded.
-`footnoteGraph` is read by nothing at all outside its construction.
-Both are deterministic detectors of real defects in the input, computed on
- every entry, and neither reaches any stage that could act on them.
-Whether they should is a design question this document does not settle.
+`alignment.findings` is turned into scorecard text and recorded, and reaches no
+ stage that could act on it.
+`footnoteGraph` was in that position until 2026-08-13 and no longer is:
+ `footnoteBreakCount` reads it, and the chunk-integrity gate refuses a patch
+ raising the break count.
+The quote-anchoring findings are recorded, and now carry a diagnosis, but
+ nothing acts on them either.
+Whether any of these should is a design question this document does not settle.
