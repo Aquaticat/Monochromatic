@@ -389,6 +389,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
    joined content-width segmented buttons,
    and the previous rounded buttons.
+   Segmented sections and visible outlines stay fitted to label content;
+   unused row width remains transparent and unframed.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),

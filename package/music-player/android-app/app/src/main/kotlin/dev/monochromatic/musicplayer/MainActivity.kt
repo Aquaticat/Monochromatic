@@ -355,16 +355,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
 
-// What:     `import androidx.compose.foundation.layout.fillMaxHeight` makes a child use
-//           all height offered by its parent.
-// Why:      A one-sided segmented-button divider must span its whole section.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { fillMaxHeight } from "androidx/compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.fillMaxHeight
-
 // What:     `import androidx.compose.foundation.layout.fillMaxWidth` pulls in the
 //           `fillMaxWidth` MODIFIER (occupy all available width).
 // Why:      Rows and the track list use `Modifier.fillMaxWidth()`.
@@ -412,6 +402,16 @@ import androidx.compose.foundation.layout.size
 // import { width } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.width
+
+// What:     `import androidx.compose.foundation.layout.wrapContentWidth` relaxes an
+//           inherited minimum width while retaining the parent's maximum width.
+// Why:      The segmented frame should fit its used segments, then wrap at screen width.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { wrapContentWidth } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.wrapContentWidth
 
 // What:     `import androidx.compose.foundation.lazy.LazyColumn` pulls in `LazyColumn`, a
 //           SCROLLING column that only composes visible items (like a virtualized list).
@@ -2589,6 +2589,7 @@ private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -
         modifier = Modifier
             .defaultMinSize(minHeight = 48.dp)
             .background(containerColor)
+            .border(0.5.dp, MaterialTheme.colorScheme.outline)
             .selectable(
                 selected = selected,
                 role = Role.RadioButton,
@@ -2599,20 +2600,6 @@ private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -
             text = label,
             color = labelColor,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .width(1.dp)
-                .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.outline),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.outline),
         )
     }
 }
@@ -2630,7 +2617,11 @@ private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -
 private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
     /** Holds the shared outer shape for clipping and border drawing. */
     val groupShape: RoundedCornerShape = RoundedCornerShape(12.dp)
-    Box(modifier = Modifier.clip(groupShape)) {
+    Box(
+        modifier = Modifier
+            .wrapContentWidth(align = Alignment.Start)
+            .clip(groupShape),
+    ) {
         FlowRow(modifier = Modifier.selectableGroup()) {
             state.pageLabels.forEachIndexed { page, label ->
                 /** Records whether this page is currently visible. */
