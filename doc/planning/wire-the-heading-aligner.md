@@ -909,3 +909,90 @@ Option C, pair by index and leave the tail unpaired, gains ground on this
  finding. It is honest about having no evidence, where B-as-designed was
  confidently wrong. C remains a prior about tails, but it is a STATED prior
  rather than one hidden in a traceback tie order.
+
+## Attempt six: lexicographic scoring, prototyped and validated
+
+Built 2026-08-13 after the structural defect was found. This is the first
+ attempt that satisfies every case, including the two that defeated attempts
+ three and five.
+
+### The algorithm
+
+Three changes to `alignHeadings`, none of them to `headingAffinity`.
+
+FIRST, the score becomes a lexicographic triple instead of one clamped scalar:
+
+```text
+  [ trustedAnchorAffinity   maximised
+    gapCount                minimised
+    softAffinity            maximised ]
+```
+
+A transition contributes `[trusted ? affinity : 0, 0, affinity]` when pairing
+ and `[0, 1, 0]` when gapping. Gaps never contribute negative heading evidence,
+ which is what makes an affinity of `0` mean "no information" rather than
+ "mismatch".
+
+SECOND, a TRUSTED anchor is a candidate at or above a threshold that is also the
+ STRICT maximum of both its row and its column. Strictness on both axes is what
+ stops a name repeated across several headings from anchoring anything.
+
+THIRD, and this is the part that satisfies `#71`, a pairing is emitted only when
+ it is FORCED. Run the table forwards and backwards, then a transition lies on
+ some optimal path exactly when `forward[cell] + transition + backward[next]`
+ equals the optimal score. A pair is emitted only when it is the sole partner
+ for its source across every optimal path, the sole partner for its target, and
+ neither side could instead be a gap. Everything else returns as `ambiguous`.
+
+The return type becomes a discriminated union of `paired`, `source-only` and
+ `target-only` rather than indices with `-1` sentinels.
+
+### The cases that killed the earlier attempts
+
+-   MIDDLE OMISSION with anchors on both sides. Anchors hold, and the
+    zero-evidence middle returns ambiguous instead of sliding. Attempt five
+    shifted it.
+-   LONG DISPLACEMENT, an anchor needing three reciprocal gaps on each side.
+    The anchor survives. Under the old scalar those six gaps cost `2.10` and
+    would have crushed an affinity of `1.00`.
+-   ALL-ZERO UNEQUAL sequences. No confident pair anywhere, where the current
+    aligner confidently pairs by traceback order.
+-   REPEATED NAME across several headings. Ties break strictness, so it never
+    becomes a hard anchor.
+-   EQUAL LENGTH with zero evidence anywhere. Still pairs by position, which is
+    what keeps the corpus from moving.
+
+### Blast radius, measured over all 92 entries
+
+```text
+  identical pairings to the current aligner   89
+  changed                                      3
+  entries with an ambiguous section            3, holding 20 sections
+```
+
+The three that change are exactly `XingZ60`, `interrgned` and `noname`, all of
+ which already emit an alignment finding today. Not one of the 85 cleanly
+ aligned entries moves.
+
+On `XingZ60` every essay section pairs correctly. The three romanised-name
+ anchors score `1.00` and pin the alignment; the zero-affinity pairs ahead of
+ them follow by monotonicity; the untranslated tail sections and the one
+ unmatched target heading come back ambiguous rather than being absorbed. That
+ is the outcome `#71` asked for.
+
+### The consequence that still needs a decision
+
+`interrgned` and `noname` go from 4 and 3 pairs to ZERO. Both have unequal
+ heading counts with no shared-name evidence anywhere, so nothing is forced and
+ everything is honestly ambiguous.
+
+That is the stated requirement working as designed, since `#71` holds that a
+ wrong pairing is worse than no pairing. It is also a coverage LOSS: those two
+ entries get critic work today, wrongly paired, and would get none.
+
+So the blocker named earlier has grown rather than gone. It is no longer three
+ unpaired sections needing a destination, it is 20 sections across 3 entries,
+ and two entire entries that the pipeline would decline to process. Whether
+ ambiguous sections should fall back to positional pairing, route to a
+ translate stage, or simply be reported is the decision that gates landing this,
+ and it belongs with `#70` because option B answers it differently from A and C.
