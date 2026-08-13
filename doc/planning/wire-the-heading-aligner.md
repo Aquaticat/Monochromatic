@@ -1446,3 +1446,37 @@ So wiring needs a FLOOR before it lands. Either the aligner forcing nothing at
 
 The 92-entry comparison should also be re-run reporting zero-pair entries per
  side, which the original did not.
+
+## Landed, and re-measured against the whole corpus rather than inherited
+
+Wired 2026-08-13. The zero-pair risk raised when the first attempt was reverted
+ is REAL AND BOUNDED, and this is a fresh measurement of the shipped code rather
+ than the earlier 90-of-92 figure, which was taken with a different adapter and
+ never counted entries that ended with no pairing at all.
+
+Over every corpus entry carrying both sides at the pinned commit:
+
+```text
+  entries with both sides                     92
+  pairs produced                             275
+  sections refused                            21
+  ZERO-PAIR entries                            1   XIEPT2
+  entries pairing WITH some refusal            1   XingZ60
+```
+
+So 90 of 92 entries pair completely and refuse nothing. `XingZ60`, the defect
+ that started this, now pairs by name and refuses only what it should.
+ `XIEPT2` is the single entry that refuses everything, and that is the case the
+ record already settled: it is a partial translation with six empty target
+ bodies, so its "correct" pairing feeds critics Chinese prose against bare
+ English headings and manufactures omission claims for content nobody
+ translated.
+
+Under `doc/decision/translation-repair-always-yields-output.md`, `XIEPT2` still
+ settles, with its translation unchanged and a finding per refused section. It
+ does no repair work, which is the honest outcome until a translate stage
+ exists, and it never blocks.
+
+The concern was worth raising and the answer was worth measuring: had disjoint
+ heading vocabularies been common rather than singular, the same change would
+ have quietly emptied a large part of the corpus.
