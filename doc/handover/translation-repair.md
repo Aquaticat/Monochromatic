@@ -7794,6 +7794,21 @@ Asking whether a built feature FIRES caught typography restoration in the
 Supersedes the earlier "Four decisions waiting" list, which is now incomplete.
 Ordered by how much else is blocked behind each.
 
+Amended later the same day, after two items moved:
+
+-   `#73`, the naturalness refiner going silent on 7 entries, is CLOSED. It was
+    already fixed before it was found: `eb21ffa6b` on 2026-08-12 took the lane
+    from one refiner to three, so a single lost voice no longer empties the
+    stage. What misled the investigation was a stale comment in
+    `run-config.ts`, since corrected. This removes the reliability objection
+    raised against decision 3 below.
+-   `#75` is NEW and needs no decision yet. Kimi-K3 accounts for every
+    schema-mismatch voice loss `pass13` has recorded, on rosters where it both
+    edits and refines. The next step is free and specific: capture debug output
+    on the next pass restart to read which of the three schema-mismatch
+    sub-kinds it is. Only then does keeping or replacing the model become a
+    question worth putting to anyone.
+
 ### 1. What an unpaired source section is for (`#70`, blocks `#71` and `#74`)
 
 A section the translation genuinely lacks needs a destination. An empty target
