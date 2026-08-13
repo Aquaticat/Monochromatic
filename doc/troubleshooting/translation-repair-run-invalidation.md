@@ -65,9 +65,13 @@ It would invalidate on comment and test changes too, and a pass takes days, so
     a consistent old-pipeline population rather than a mixed one.
 -   `pass11`, started 04:27 UTC, stopped 04:36 UTC with nothing settled.
     Superseded before it had produced anything, by the typography fix.
--   `pass12`, started 04:35 UTC into
-    `node_modules/.monochromatic/translation-repair-runs-pass12`, running every
-    fix landed that night including document-wide typography restoration.
+-   `pass12`, started 04:35 UTC, stopped 05:14 UTC with nothing settled and six
+    slices cached. Ran cache version 7: the typography fix landed 04:34, one
+    minute before it started, so it carried that and nothing later.
+-   `pass13`, started 05:12 UTC into
+    `node_modules/.monochromatic/translation-repair-runs-pass13`, running cache
+    version 9, so it carries the naturalness-eligibility fix `pass12` lacked
+    plus the quote-anchoring telemetry.
 
 Two restarts in ten minutes is cheap and a third would not be: a restart costs
  whatever the current pass has settled, so its price rises with every hour.
@@ -76,13 +80,23 @@ Batching is the reason `pass12` waited for a check that the other settled
  prompts. They had, so it started with nothing else pending.
 
 `pass12` was NOT restarted for the naturalness-eligibility fix landed after it
- (cache version 8), and the asymmetry is deliberate rather than fatigue.
+ (cache version 8), and the asymmetry was deliberate rather than fatigue.
 The typography fix touched every repaired region of every entry, 99 curly
  characters lost corpus-wide; the eligibility fix touches only slices holding an
  invisible-only line, which is 3 lines in `Toka_ls` and nowhere else.
-So `pass12` will refine `Toka_ls` on fewer slices than the current code would,
- and nothing else differs.
-Restart it when convenient rather than urgently.
+So `pass12` would have refined `Toka_ls` on fewer slices than the current code,
+ and nothing else differed. Restarting was worth doing but not urgent.
+
+The quote-anchoring telemetry then made it worth doing at once, on a different
+ argument: that telemetry is measurable ONLY on a pass that runs it, so leaving
+ `pass12` alone would have spent days of provider capacity producing a
+ population that cannot answer the question the suffix exists to answer.
+`pass12` was two hours from having settled anything, which is the cheapest a
+ restart ever gets, and the cost only rises from here.
+
+The ordering held: `pass13` was confirmed streaming completions, applying an
+ editor patch and hearing 3 of 3 checkers BEFORE `pass12` was signalled, so no
+ window existed with nothing running.
 
 Restarting rather than continuing follows the standing instruction to land
  certainly-good pipeline changes immediately and restart runs as needed.
