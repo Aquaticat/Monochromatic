@@ -40,6 +40,59 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 const CONTROL_REGIONS_PER_ENTRY = 2;
 
 /**
+ * Orders an entry's unflagged regions by how closely they match the damaged
+ * region's replaced length.
+ *
+ * Taking whichever regions appear first makes the arm answer the wrong
+ * question. Measured on the first control run, the unflagged regions that
+ * happened to come first replaced 12 to 63 characters while the damaged regions
+ * replaced 60 to 268, and a short replacement has less room to drop anything,
+ * so a quiet control would have been partly a statement about length. Matching
+ * length leaves the human verdict as the thing that differs.
+ *
+ * @param regions - unflagged regions of one entry, with their replaced lengths
+ *
+ * @param targetLength - replaced length of that entry's damaged region
+ *
+ * @returns Same regions, closest length first
+ *
+ * @example
+ * ```ts
+ * const ordered = byLengthDistance({ regions, targetLength: 189, },);
+ * ```
+ */
+function byLengthDistance<Region extends { readonly before: string; },>(
+  {
+    regions,
+    targetLength,
+  }: {
+    readonly regions: readonly Region[];
+    readonly targetLength: number;
+  },
+): readonly Region[] {
+  return regions
+    .toSorted(function closerFirst(
+      left,
+      right,
+    ) {
+      /**
+       * Replaced length of the left-hand region.
+       */
+      const leftLength = left.before
+        .length;
+
+      /**
+       * Replaced length of the right-hand region.
+       */
+      const rightLength = right.before
+        .length;
+
+      return Math.abs(leftLength - targetLength,)
+        - Math.abs(rightLength - targetLength,);
+    },);
+}
+
+/**
  * Builds control cases from regions the reader did not flag.
  *
  * @param manifestPath - sample manifest naming the drawn entries
@@ -150,59 +203,102 @@ export async function gatherControlCases(
       },);
 
     /**
+     * Replaced length of this entry's damaged region, the length to match.
+     */
+    const targetLength = Math.max(
+      0,
+      ...damaged
+        .filter(function isThisEntry(entry,) {
+          return entry.entryId === entryId;
+        },)
+        .map(function toLength(entry,) {
+          return entry.region
+            .before
+            .length;
+        },),
+    );
+
+    /**
+     * Every unflagged region of this entry, paired with its owning record and
+     * ordered so the closest length in replaced text comes first.
+     */
+    const candidates = byLengthDistance({
+      regions: records
+        .flatMap(function toPairs(record,) {
+          return record.repairRegions
+            .map(function withOwner(region,) {
+              return {
+                record,
+                region,
+                before: region.before,
+              };
+            },);
+        },)
+        .filter(function isUnflagged(candidate,) {
+          /**
+           * Envelope this candidate would probe.
+           */
+          const { envelopeId, } = candidate.region;
+
+          return !flagged.has(`${entryId} ${envelopeId}`,);
+        },),
+      targetLength,
+    },);
+
+    /**
      * Envelopes of this entry already taken, so one edit is probed once.
      */
     const taken = new Set<string>();
-    for (const record of records) {
+    for (const candidate of candidates) {
+      /**
+       * Region and the record that owns it.
+       */
+      const {
+        record,
+        region,
+      } = candidate;
       if (taken.size >= CONTROL_REGIONS_PER_ENTRY)
         break;
+      if (taken.has(region.envelopeId,))
+        continue;
 
-      for (const region of record.repairRegions) {
-        if (taken.size >= CONTROL_REGIONS_PER_ENTRY)
-          break;
-        if (flagged.has(`${entryId} ${region.envelopeId}`,))
-          continue;
-        if (taken.has(region.envelopeId,))
-          continue;
-
-        /**
-         * Slice whose translation carries this region.
-         */
-        const holder = slices
-          .find(function holdsBefore(slice,) {
-            return slice.target
-              .text
-              .includes(region.before,);
-          },);
-        if (holder === undefined)
-          continue;
-
-        taken.add(region.envelopeId,);
-        controls.push({
-          entryId,
-          positions: [],
-          region,
-          issues: records
-            .filter(function isServed(candidate,) {
-              /**
-               * Settled id of the candidate record.
-               */
-              const candidateId = candidate.issue
-                .issueId;
-
-              return region.issueIds
-                .includes(candidateId,);
-            },)
-            .map(function toIssue(candidate,) {
-              return candidate.issue;
-            },),
-          sourceText: holder.source
-            .text,
-          baselineText: holder.target
-            .text,
-          recorded: record.recorded[region.envelopeId] ?? 'not probed',
+      /**
+       * Slice whose translation carries this region.
+       */
+      const holder = slices
+        .find(function holdsBefore(slice,) {
+          return slice.target
+            .text
+            .includes(region.before,);
         },);
-      }
+      if (holder === undefined)
+        continue;
+
+      taken.add(region.envelopeId,);
+      controls.push({
+        entryId,
+        positions: [],
+        region,
+        issues: records
+          .filter(function isServed(served,) {
+            /**
+             * Settled id of the candidate record.
+             */
+            const servedId = served.issue
+              .issueId;
+
+            return region.issueIds
+              .includes(servedId,);
+          },)
+          .map(function toIssue(served,) {
+            return served.issue;
+          },),
+        sourceText: holder.source
+          .text,
+        baselineText: holder.target
+          .text,
+        recorded: record.recorded[region.envelopeId] ?? 'not probed',
+      },);
     }
   }
   /* oxlint-enable no-await-in-loop */
