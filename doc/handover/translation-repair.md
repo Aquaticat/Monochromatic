@@ -8599,3 +8599,58 @@ Four of the six worst are one entry, and its id begins `shi_`, so verse
  measurement, and they count entries rather than sections. A gap figure that
  accounted for refusals separately would need the aligner's steps, not its
  pairs.
+
+### Correction: the block-count rate is not a coverage measure at all
+
+The recompute above concluded that the premise behind `#69` and `#70` survives,
+ because the share of pairs differing in block count barely moved, 34.9% to
+ 30.9%. That conclusion was wrong, and the error was in the metric rather than
+ in the arithmetic.
+
+Block count conflates two unrelated things. Reading the worst gaps by CHARACTER
+ RATIO, target characters over source characters, separates them immediately:
+
+```text
+shi_Yumiaoya    695 ->   14   ratio 0.02
+shi_Yumiaoya    988 ->   13   ratio 0.01
+shi_Yumiaoya   1203 ->   12   ratio 0.01
+mikaela_khara   517 -> 1731   ratio 3.35
+Aniloviraw      751 -> 1498   ratio 1.99
+```
+
+The first three are stubs: a dozen characters standing in for a thousand. The
+ last two are ordinary translations, at or above the expansion a faithful
+ zh-to-en rendering produces, whose block counts differ only because paragraphs
+ split differently. Both shapes were being counted identically.
+
+Measured corpus-wide over 254 pairs with a substantive source, at least 80
+ source characters:
+
+```text
+absent    ratio < 0.25        3   1.2%
+partial   0.25 to 0.75        3   1.2%
+covered   0.75 to 4         230  90.6%
+expanded  ratio > 4          18   7.1%
+```
+
+And of the 84 pairs that differ in block count, 68 (81.0%) are fully covered by
+ character ratio. The block-count gap is overwhelmingly a formatting difference.
+
+The three genuinely untranslated sections are all in ONE entry, `shi_Yumiaoya`.
+
+### What this does to `#70`
+
+`#70` proposes re-designing the pipeline to PRODUCE a translation rather than
+ repair one, and its case was that a large share of sections are only partly
+ translated. On the corpus at the pinned commit that share is 2.4%, absent plus
+ partial, concentrated in a single entry. The corpus is essentially translated,
+ and the pipeline is repairing translations that exist.
+
+That does not settle `#70`, which is the user's decision to make, but it removes
+ its evidentiary basis. The honest framing for the proposal is now: one entry
+ needs translation rather than repair, and a per-entry escape hatch would serve
+ it without re-designing the pipeline everything else depends on.
+
+The 18 pairs expanding beyond 4x are unexamined. They could be translator
+ additions, which house policy keeps when accurate, or a pairing artifact.
+ Worth a look before anyone cites the coverage table as complete.
