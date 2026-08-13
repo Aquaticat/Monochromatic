@@ -1104,6 +1104,14 @@ Whether to fix this in `headingAffinity`, by dividing by the LARGER token count
  every existing test asserts, and this document's rule has been that
  `headingAffinity` stays untouched.
 
+MEASURED, rather than left as an open hazard: saturation causes no corpus-wide
+ harm at this pin. A false single-token anchor would pull an entry away from
+ production's pairing, and under attempt seven only `XIEPT2` and `XingZ60`
+ differ, both for reasons that are understood and neither involving a spurious
+ anchor. So the hazard is real in principle and absent in this corpus, which
+ makes it a reason to keep the uniqueness rule strict rather than a reason to
+ change the affinity function now.
+
 ## The prototype, inlined so it survives
 
 Kept verbatim rather than described, because this session's repeated lesson is
