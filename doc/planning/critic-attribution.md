@@ -121,25 +121,32 @@ Carried through `CriticStageResult`, then `ChunkCriticPhase`, filtered to the
     the critic that emitted them. Separate telemetry, and still never a panel
     input.
 
-## Eligibility must be recorded, or the population is unreadable
-
-This is the trap that outranks the rest, because it cannot be repaired after the
- fact.
+## Eligibility should be recorded, so the population is readable
 
 A change reaches only what is recorded after it lands, exactly as the voice-loss
- telemetry does. At entry granularity that means `pass13`'s artifacts would
- split into entries written before attribution existed and entries written
- after. Any calibration averaged over that directory silently mixes a population
- where a large share of entries CANNOT contribute, and "critic X raised nothing
- in entry Y" becomes indistinguishable from "entry Y predates the map".
+ telemetry does. At entry granularity that means `pass13`'s artifacts split into
+ entries written before attribution existed and entries written after. Any
+ calibration averaged over that directory mixes a population where a large share
+ of entries CANNOT contribute, and "critic X raised nothing in entry Y" reads
+ identically to "entry Y predates the map".
 
 That is the same failure the quiet-prober finding in `#68` is about: a silent
  stage reads identically to a clean one.
 
-So the artifact must record that attribution was AVAILABLE for the entry, not
+So the artifact should record that attribution was AVAILABLE for the entry, not
  merely carry the map. A reader can then restrict to the eligible population
- instead of inferring absence from an empty map. Written at negligible cost;
- unrecoverable if omitted.
+ instead of inferring absence from an empty map.
+
+NOT UNRECOVERABLE, though an earlier version of this section and of `#76` both
+ said so. Every artifact carries `tip`, and `--plan` prints ONE tip for the
+ whole process, so every entry settled by a single pass shares it and a resumed
+ run gets a different one. Verified on `pass13`: all 13 settled artifacts carry
+ the same tip. Entries predating the attribution commit are therefore
+ identifiable after the fact by git ancestry on `tip`.
+
+Build the marker anyway. Self-describing beats git archaeology, it costs
+ nothing, and a reader should not need the repository to interpret a run
+ directory. But the reason is ergonomics, not data loss.
 
 ## Cost
 
