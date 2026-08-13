@@ -80,8 +80,8 @@ export type ClaimEmission = {
  *
  * @param emissions - every emission in critic then report order
  *
- * @returns Attribution per claim, claims in first-emission order and proposers
- * sorted by model id
+ * @returns Attribution per claim, both claims and proposers sorted by id so
+ * identical evidence serializes identically
  *
  * @example
  * ```ts
@@ -122,7 +122,24 @@ export function collectClaimAttributions(
     );
   }
 
-  return [...tally.entries(),].map(function toAttribution(
+  return [...tally.entries(),]
+    // Sorted by claim id, NOT left in insertion order. Insertion order follows
+    // voice ARRIVAL, and `gatherStageVoices` orders voices by retry round then
+    // roster position, so a run that heard one critic on the first round and
+    // another on a retry would order these differently from a run that heard
+    // them the other way around, even with identical evidence. That reaches a
+    // cached outcome compared across runs.
+    .toSorted(function byClaimId(
+      [left,],
+      [right,],
+    ): number {
+      if (left < right)
+        return -1;
+      if (left > right)
+        return 1;
+      return 0;
+    },)
+    .map(function toAttribution(
     [
       claimId,
       byModel,

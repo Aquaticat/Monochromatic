@@ -166,9 +166,12 @@ await describe({
     },),
 
     it({
-      name: 'keeps claims in FIRST-EMISSION order and separates them, so one '
-        + 'critic emitting two different claims produces two attributions '
-        + 'rather than a merged one',
+      name: 'SEPARATES distinct claims and orders them by CLAIM ID rather than '
+        + 'by emission, so one critic emitting two different claims produces '
+        + 'two attributions rather than a merged one. Emission order follows '
+        + 'voice ARRIVAL, and gatherStageVoices orders voices by retry round, '
+        + 'so insertion order would serialize identical evidence differently '
+        + 'depending on which critic happened to answer first',
       fn: async () => {
         /**
          * Two distinct claims from overlapping critics.
@@ -185,9 +188,45 @@ await describe({
           attributions.map(function toId(attribution,) {
             return attribution.claimId;
           },),
-        ).toStrictEqual([PURR_CLAIM, NAP_CLAIM,],);
-        expect(attributions[0]?.proposers,).toHaveLength(2,);
-        expect(attributions[1]?.proposers,).toHaveLength(1,);
+        ).toStrictEqual([NAP_CLAIM, PURR_CLAIM,],);
+        expect(attributions[0]?.proposers,).toHaveLength(1,);
+        expect(attributions[1]?.proposers,).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'serializes identically across two runs that heard the SAME '
+        + 'critics in different orders while carrying SEVERAL claims. The '
+        + 'other determinism case uses one claim, so its outer array always '
+        + 'has length one and it cannot detect outer misordering at all; a '
+        + 'retry that changes which critic answers first is the real case',
+      fn: async () => {
+        /**
+         * One arrival order over three distinct claims.
+         */
+        const first = collectClaimAttributions({
+          emissions: emissionsOf([
+            [PURR_CLAIM, TABBY,],
+            ['issue/knead', CALICO,],
+            [NAP_CLAIM, BENGAL,],
+            [PURR_CLAIM, CALICO,],
+          ],),
+        },);
+
+        /**
+         * Same evidence, reversed arrival, as a retry round would produce.
+         */
+        const second = collectClaimAttributions({
+          emissions: emissionsOf([
+            [PURR_CLAIM, CALICO,],
+            [NAP_CLAIM, BENGAL,],
+            ['issue/knead', CALICO,],
+            [PURR_CLAIM, TABBY,],
+          ],),
+        },);
+
+        expect(first,).toHaveLength(3,);
+        expect(JSON.stringify(first,),).toBe(JSON.stringify(second,),);
       },
     },),
 
@@ -253,8 +292,9 @@ await describe({
     },),
 
     it({
-      name: 'preserves order among survivors, so attribution stays aligned '
-        + 'with the claim order the stage returns',
+      name: 'preserves the CANONICAL order among survivors, so filtering never '
+        + 'reshuffles what the fold already sorted by claim id and a screened '
+        + 'run serializes like an unscreened one',
       fn: async () => {
         /**
          * Three claims, middle one screened out.
@@ -274,7 +314,7 @@ await describe({
           },).map(function toId(attribution,) {
             return attribution.claimId;
           },),
-        ).toStrictEqual([PURR_CLAIM, NAP_CLAIM,],);
+        ).toStrictEqual([NAP_CLAIM, PURR_CLAIM,],);
       },
     },),
   ],
