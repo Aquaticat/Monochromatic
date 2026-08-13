@@ -194,9 +194,9 @@ The first package unit run confirmed the legacy fixture enabled only the prefere
 The dedicated fixture now enables all four rules,
 and the external-worker test enables the opaque-effect rule it measures.
 
-The split revealed intentional diagnostic additions hidden by old early returns:
-opaque inputs carrying stale contracts now receive both independent diagnostics,
-and invalid host-capability boundaries receive both unresolved-effect and missing-contract diagnostics.
+The split revealed one intentional diagnostic combination hidden by old early returns:
+invalid host-capability boundaries receive both unresolved-effect and missing-contract diagnostics.
+Opaque inputs do not receive stale-contract diagnostics while their effects remain unresolved.
 Updated assertions name rule ownership rather than accepting count changes alone.
 
 Coverage landed in `253fa5841` and follow-up fixes:
@@ -251,6 +251,14 @@ Independent review found and closed two semantic gaps in `96e04609a`:
 The same commit adds changed-source evidence-cache invalidation coverage.
 The full plugin unit suite passed after these fixes.
 Issue #423 now also requires extending self-hosting overrides before promotion.
+
+The pre-existing verified `one-var` direction fix was integrated as `660d36792`.
+After rebuilding the shared configuration,
+package Oxlint passed with zero warnings and zero errors.
+The config build,
+config type lint,
+built-severity assertion,
+and `module/caught-value` consumer check also passed again.
 
 The evidence cache uses immutable semantic `SourceFile` identity as its key.
 Changed source text is measured to create one miss and one fresh computation.
