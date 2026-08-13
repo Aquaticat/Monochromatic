@@ -242,6 +242,16 @@ import androidx.compose.foundation.isSystemInDarkTheme
 // ```
 import androidx.compose.foundation.selection.selectable
 
+// What:     `import androidx.compose.foundation.selection.selectableGroup` marks children
+//           as one mutually exclusive selection group for accessibility services.
+// Why:      TalkBack should announce segmented pages as one radio-like choice set.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { selectableGroup } from "androidx/compose/foundation/selection";
+// ```
+import androidx.compose.foundation.selection.selectableGroup
+
 // What:     `import androidx.compose.foundation.layout.Arrangement` pulls in
 //           `Arrangement`, the namespace describing how children are spaced inside a
 //           `Row`/`Column` (e.g. `Arrangement.spacedBy(8.dp)`).
@@ -345,6 +355,16 @@ import androidx.compose.foundation.layout.defaultMinSize
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
 
+// What:     `import androidx.compose.foundation.layout.fillMaxHeight` makes a child use
+//           all height offered by its parent.
+// Why:      A one-sided segmented-button divider must span its whole section.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { fillMaxHeight } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.fillMaxHeight
+
 // What:     `import androidx.compose.foundation.layout.fillMaxWidth` pulls in the
 //           `fillMaxWidth` MODIFIER (occupy all available width).
 // Why:      Rows and the track list use `Modifier.fillMaxWidth()`.
@@ -363,6 +383,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 // import { height } from "androidx/compose/foundation/layout";
 // ```
 import androidx.compose.foundation.layout.height
+
+// What:     `import androidx.compose.foundation.layout.matchParentSize` makes a Box child
+//           exactly match the size determined by its content siblings.
+// Why:      The rounded segmented-group frame must overlay the wrapped segment grid.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { matchParentSize } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.matchParentSize
 
 // What:     `import androidx.compose.foundation.layout.padding` pulls in the `padding`
 //           MODIFIER (inner spacing around a composable).
@@ -2569,10 +2599,9 @@ private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -
         modifier = Modifier
             .defaultMinSize(minHeight = 48.dp)
             .background(containerColor)
-            .border(1.dp, MaterialTheme.colorScheme.outline)
             .selectable(
                 selected = selected,
-                role = Role.Button,
+                role = Role.RadioButton,
                 onClick = onSelect,
             ),
     ) {
@@ -2580,6 +2609,53 @@ private fun segmentedPageButton(label: String, selected: Boolean, onSelect: () -
             text = label,
             color = labelColor,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(1.dp)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.outline),
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.outline),
+        )
+    }
+}
+
+// What:     `segmentedPageControls` renders content-width segments in one rounded frame.
+// Why:      A separate overlay keeps the shared border visible over child backgrounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function SegmentedPageControls(props: PageControlsProps) { ... }
+// ```
+/** Displays a wrapped, mutually exclusive segmented page-control group. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun segmentedPageControls(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
+    /** Holds the shared outer shape for clipping and border drawing. */
+    val groupShape: RoundedCornerShape = RoundedCornerShape(12.dp)
+    Box(modifier = Modifier.clip(groupShape)) {
+        FlowRow(modifier = Modifier.selectableGroup()) {
+            state.pageLabels.forEachIndexed { page, label ->
+                /** Records whether this page is currently visible. */
+                val selected: Boolean = page == state.selectedPage
+                segmentedPageButton(
+                    label = label,
+                    selected = selected,
+                    onSelect = { onSelectPage(page) },
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .border(2.dp, MaterialTheme.colorScheme.outline, groupShape),
         )
     }
 }
@@ -2627,27 +2703,13 @@ private fun pageTabs(
     // ```ts
     // <FlowRow horizontalArrangement={Arrangement.spacedBy(dp(4))}> ... </FlowRow>
     // ```
-    /** Holds the rounded frame only when joined segmented buttons are selected. */
-    val controlsModifier: Modifier = if (pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS) {
-        /** Holds the shared outer shape for clipping and border drawing. */
-        val groupShape: RoundedCornerShape = RoundedCornerShape(12.dp)
-        Modifier
-            .clip(groupShape)
-            .border(2.dp, MaterialTheme.colorScheme.outline, groupShape)
-    } else {
-        Modifier
+    if (pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS) {
+        segmentedPageControls(state = state, onSelectPage = onSelectPage)
+        return
     }
     FlowRow(
-        modifier = controlsModifier,
         horizontalArrangement = Arrangement.spacedBy(
-            if (
-                pageControlStyle == PageControlStyle.MD1_TABS ||
-                pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS
-            ) {
-                0.dp
-            } else {
-                4.dp
-            },
+            if (pageControlStyle == PageControlStyle.MD1_TABS) 0.dp else 4.dp,
         ),
     ) {
         // What:     `state.pageLabels.forEachIndexed { page, label -> ... }` iterates the page
@@ -2681,8 +2743,6 @@ private fun pageTabs(
                 radioOption(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (pageControlStyle == PageControlStyle.MD1_TABS) {
                 md1PageTab(label = label, selected = selected, onSelect = { onSelectPage(page) })
-            } else if (pageControlStyle == PageControlStyle.SEGMENTED_BUTTONS) {
-                segmentedPageButton(label = label, selected = selected, onSelect = { onSelectPage(page) })
             } else if (selected) {
                 Button(onClick = { onSelectPage(page) }) { Text(label) }
             } else {

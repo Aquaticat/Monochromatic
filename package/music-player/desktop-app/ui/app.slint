@@ -159,20 +159,15 @@ component Md1Tab inherits Rectangle {
 }
 
 // A content-width section in one joined segmented control. Adjacent sections
-// have no gap, the selected section uses the accent fill, and only the ends are
-// rounded when the whole group fits on one row.
+// have no gap, and one-sided divider lines keep every seam a consistent width.
 component SegmentedButton inherits Rectangle {
     in property <string> text;
     in property <bool> selected;
-    in property <bool> is-edge;
     callback clicked();
     horizontal-stretch: 0;
     width: segment-label.preferred-width + 32px;
     height: 48px;
     preferred-height: 48px;
-    border-width: 1px;
-    border-color: Palette.foreground.with-alpha(0.6);
-    border-radius: root.is-edge ? 8px : 0px;
     background: root.selected ? Palette.accent-background : Palette.control-background;
 
     segment-label := Text {
@@ -185,10 +180,60 @@ component SegmentedButton inherits Rectangle {
         horizontal-alignment: center;
         color: root.selected ? Palette.accent-foreground : Palette.foreground;
     }
+    Rectangle {
+        x: parent.width - 1px;
+        width: 1px;
+        height: parent.height;
+        background: Palette.foreground;
+    }
+    Rectangle {
+        y: parent.height - 1px;
+        width: parent.width;
+        height: 1px;
+        background: Palette.foreground;
+    }
     TouchArea {
         clicked => {
             root.clicked();
         }
+    }
+}
+
+// A wrapping segmented group with one clipped, rounded outer silhouette. The
+// parent frame contains naturally sized segments and paints its border last so
+// child fills cannot cover it.
+component SegmentedControls inherits Rectangle {
+    in property <[string]> labels;
+    in property <int> selected-page;
+    callback select-page(int);
+    height: segment-layout.preferred-height;
+    preferred-height: segment-layout.preferred-height;
+    background: Palette.control-background;
+    border-radius: 8px;
+    clip: true;
+
+    segment-layout := FlexboxLayout {
+        width: parent.width;
+        flex-wrap: wrap;
+        alignment: start;
+        align-content: start;
+        cross-axis-alignment: start;
+        vertical-stretch: 0;
+        for label[p] in root.labels: SegmentedButton {
+            text: label;
+            selected: p == root.selected-page;
+            clicked => {
+                root.select-page(p);
+            }
+        }
+    }
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        border-width: 2px;
+        border-color: Palette.foreground;
+        border-radius: 8px;
+        background: transparent;
     }
 }
 
@@ -248,19 +293,11 @@ component PageControls inherits VerticalLayout {
             }
         }
     }
-    if root.control-style == 3: FlexboxLayout {
-        flex-wrap: wrap;
-        alignment: start;
-        align-content: start;
-        cross-axis-alignment: start;
-        vertical-stretch: 0;
-        for label[p] in root.labels: SegmentedButton {
-            text: label;
-            selected: p == root.selected-page;
-            is-edge: p == 0 || p == root.labels.length - 1;
-            clicked => {
-                root.select-page(p);
-            }
+    if root.control-style == 3: SegmentedControls {
+        labels: root.labels;
+        selected-page: root.selected-page;
+        select-page(p) => {
+            root.select-page(p);
         }
     }
 }
