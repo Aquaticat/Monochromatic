@@ -282,8 +282,8 @@ B > C > A.
     one: the transcribed-image class has no answer in any of the three options,
     and it is a specific hazard for B.
 -   ~~Cost.~~ MEASURED 2026-08-13, and it is smaller than this bullet assumed.
-    Details in "What option B actually costs". B raises editor CALLS by 1.67x
-    and editor OUTPUT volume by 3.9x, because the editor already runs on 60% of
+    Details in "What option B actually costs". B raises editor CALLS by 1.56x
+    and editor OUTPUT volume by 3.9x, because the editor already runs on 64% of
     slices. It does not multiply generation over the whole pipeline.
 
 ## What the prototype did, run against pair 3
@@ -463,10 +463,11 @@ The premise that needed checking is in option B's con list, "most expensive by
 
 ```text
   slices                              97
-  slices the editor runs on today     58   (60%)
+  slices the editor fires on today    62   (64%)
+  share of all slice TEXT they hold        75%
 
-  editor CALLS      today  3 x 58 =  174
-  editor CALLS      in B   3 x 97 =  291      1.67x
+  editor CALLS      today  3 x 62 =  186
+  editor CALLS      in B   3 x 97 =  291      1.56x
 
   distinct envelopes today           116, holding 8365 characters
   target characters in all slices  32361
@@ -478,17 +479,22 @@ The premise that needed checking is in option B's con list, "most expensive by
   mean repair envelope 72 characters
 ```
 
-So B costs 1.67 times the editor calls, each producing about 4.6 times more
+So B costs 1.56 times the editor calls, each producing about 4.6 times more
  text, for 3.9 times the editor output volume. That is a real increase and it is
  nothing like a multiplication of the run.
 
 The reason is that the current pipeline is ALREADY mostly-rewriting. The editor
- fires on 60% of slices, so B's "every slice" adds 39 slices rather than 97.
+ fires on 64% of slices, and those slices hold 75% of all slice text, so B's
+ "every slice" adds 35 slices carrying a quarter of the text.
+
+The 3.9x output figure is where B's real cost sits, and it comes from the SIZE
+ of what is generated rather than from how often: a full slice averages 334
+ characters against a repair envelope's 72.
 
 ### What this does not measure
 
 Only the editor stage. The critic stage fans out to a six-model roster on every
- slice, which is 582 calls over the same 97 slices, against the editor's 174.
+ slice, which is 582 calls over the same 97 slices, against the editor's 186.
 Panel, refiner and probe calls were not counted. So the editor is a MINORITY of
  pipeline calls, and adding 117 of them is a small fraction of total traffic
  rather than 67% of it.
@@ -504,7 +510,7 @@ Option B says the judges "choose per slice" among candidates, with the existing
  obvious the CRITIC stage is still needed at all: critics exist to find defects
  for an editor to repair, and B repairs nothing.
 
-Dropping critics would remove 582 calls and add 117, making B CHEAPER than the
+Dropping critics would remove 582 calls and add 105, making B CHEAPER than the
  pipeline it replaces rather than more expensive. The redesign note does not say
  whether critics survive B, and the answer moves B from "most expensive by far"
  to "least expensive". This should be settled before the cost con is weighed.
