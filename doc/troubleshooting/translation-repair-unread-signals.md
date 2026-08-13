@@ -491,9 +491,11 @@ This document is a census of signals the pipeline EMITS. Four separate
  investigations in one session stalled on the opposite problem, and they stall
  the same way, so it is worth naming as one thing rather than four.
 
--   `quote-not-found` records that a quote failed to anchor, and discards the
-    QUOTE. So the 225 misses in the settled population could not be diagnosed
-    at all, and the suffix added in `a6bbeca50` only makes future ones legible.
+-   ~~`quote-not-found` records that a quote failed to anchor, and discards the
+    QUOTE.~~ FIXED 2026-08-13 in `b8c678e0a`: the finding now carries a bounded
+    preview of the needle. The 225 misses already recorded stay undiagnosable,
+    but future ones name the quote that missed. See "The wall came down on one
+    of the four".
 -   `schema-mismatch` records that a model reply failed to parse, and
     `attemptStageCall` discards the `rawText` the outcome carries. The
     sub-kind, which is the diagnosis and decides between three different fixes,
@@ -650,3 +652,53 @@ The monitor now computes both figures and alarms only when BOTH clear the
  nothing here explains WHY one entry's critic quotes should fail line-break
  collapse at ten times the corpus rate. Cheap to check once the pass stops:
  whether that entry's target text is wrapped differently from the rest.
+
+## The wall came down on one of the four
+
+The recurring wall says outcomes are recorded and causes are not. One of its
+ four instances is now fixed, and what forced it is worth keeping, because the
+ wall had been recorded twice without anything changing.
+
+WHAT FORCED IT was a concrete blocked question rather than the principle.
+`Futajuhuacha` runs at 35% wrap-explained where every other settled entry is
+ near zero. Trying to explain that:
+
+-   The obvious hypothesis, that the entry is wrapped differently, is REFUTED.
+    At 8.3 intra-paragraph line breaks per thousand characters it is
+    unremarkable: `AkiraComplex` is 18.0, `Aniloviraw` 16.7 and `Anilovr` 14.4,
+    all with zero or one wrap-explained miss, and `Dethelly` is higher again at
+    8.9 with none.
+-   The next hypothesis, that its critics quoted longer spans, CANNOT BE TESTED
+    from the artifacts. Reconstructing the anchoring over every claim span in
+    all 12 settled entries found 1027 target spans and every single one located
+    exactly, with none needing a collapse and none missing.
+
+That second result is the wall itself, stated precisely. Claims that FAIL
+ anchoring never become issues, so they never reach the artifact, so the only
+ quotes an artifact carries are the ones that succeeded. The failures are
+ counted and their text is gone.
+
+THE FIX is one call site. `lineBreakSuffix` already had the needle in scope, so
+ the finding now appends a bounded preview: line breaks collapsed so a finding
+ stays one line, truncated at 60 characters so a paragraph-length quote cannot
+ swamp a scorecard line.
+
+WHY IT IS SAFE for consumers, checked rather than assumed. The only non-test
+ reader of `unresolvedReasons` is `unresolvedCountOf`, which takes `.length`;
+ the field is documented as feeding prompt iteration, which is exactly the use
+ the needle serves; and findings already carry variable payloads by convention,
+ as `stage-quorum-unmet (${shortfall})` and `duplicate-check (${check.issue})`
+ do. Nothing groups them by string equality.
+
+VERIFIED BY MUTATION, not by the suite passing. Removing the preview and
+ rebuilding fails 24 assertions across the three test files, so the two new
+ cases covering truncation and flattening are load-bearing rather than
+ decorative.
+
+THE OTHER THREE WALLS still stand: `schema-mismatch` discards `rawText`,
+ accepted issues do not record which critic raised each claim, and refiner
+ silences record no reason. Each is the same shape and each would take the same
+ kind of change at the site where the discarded value is still in scope.
+
+`Futajuhuacha` stays unexplained until a pass runs the new telemetry. That is
+ the honest state: the instrument is built and has not yet been read.
