@@ -271,9 +271,7 @@ component LedSegmentButton inherits Rectangle {
         width: parent.width - (root.selected ? 20px : 16px);
         height: root.selected ? 40px : 44px;
         border-radius: root.selected ? 7px : 9px;
-        background: root.selected
-            ? @radial-gradient(circle, #ffffff5c 0%, #a63fd0 58%, #782597 100%)
-            : @radial-gradient(circle, #ffffff36 0%, #aaaaaa 58%, #747474 100%);
+        background: root.selected ? #a63fd0 : #aaaaaa;
         drop-shadow-offset-x: root.selected ? 0px : 2.5px;
         drop-shadow-offset-y: root.selected ? 0px : 3.5px;
         drop-shadow-blur: root.selected ? 10px : 5px;
@@ -282,6 +280,17 @@ component LedSegmentButton inherits Rectangle {
             duration: 160ms;
             easing: ease;
         }
+    }
+
+    Rectangle {
+        x: cap-face.x;
+        y: cap-face.y;
+        width: cap-face.width;
+        height: cap-face.height;
+        border-radius: cap-face.border-radius;
+        background: root.selected
+            ? @radial-gradient(circle, #ffffff5c 0%, transparent 100%)
+            : @radial-gradient(circle, #ffffff36 0%, transparent 100%);
     }
 
     Rectangle {
