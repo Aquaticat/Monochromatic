@@ -335,10 +335,10 @@ THE SAMPLE WAS CHECKED BEFORE THE NULL WAS TRUSTED, because a lightly-wrapped
 
 VERDICT. The mechanism is real and is proven by unit test: a quote spanning a
  soft wrap, returned with a space, fails both the exact and the
- punctuation-normalized search. Its INCIDENCE in practice is at most 9.5% of
- misses and indistinguishable from zero. Admitting wrap-spanning quotes would
- therefore recover at most three of these thirty claims and plausibly none, so
- the anchoring change is not worth making.
+ punctuation-normalized search. Its INCIDENCE in practice is about 3%, with a
+ one-sided 95% ceiling of 13.5%. Admitting wrap-spanning quotes would therefore
+ recover roughly 7 of the 225 misses in the settled population, so the
+ anchoring change is not worth making.
 
 The telemetry stays. It costs nothing, it is what closed this, and it will
  notice if a future corpus wraps differently.
