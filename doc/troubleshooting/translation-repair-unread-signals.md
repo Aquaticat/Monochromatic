@@ -431,15 +431,34 @@ The shape is identical every time: the pipeline records WHAT happened and drops
  WHY, so any question about cause needs a fresh run rather than the artifacts
  already paid for. Each of those runs costs days.
 
-That is a design observation rather than a defect, and it is not obviously
- worth fixing wholesale, since retaining every cause would bloat artifacts that
- already carry full repaired text. But the four cases share one cheap remedy:
- retain the reason alongside the outcome at the point the outcome is recorded,
- truncated where the payload is large.
+The four cases share one remedy: retain the reason alongside the outcome at the
+ point the outcome is recorded, truncated where the payload is large. That was
+ first written here as "cheap", which is a claim with a number behind it, so
+ here is the number:
 
-Raised here rather than acted on. It would change what `#65`, `#72` and `#75`
- can be answered from, so it belongs in a priority conversation rather than in
- a commit.
+```text
+  56 artifacts, 15362 KiB total, median 274 KiB each
+
+  failed quote text        255 x 120B =  30 KiB
+  truncated model replies   34 x 500B =  17 KiB
+  critic id per claim     5453 x  28B = 149 KiB
+
+  TOTAL                                 196 KiB  = +1.3%
+```
+
+So the whole remedy costs about a hundredth of what the artifacts already
+ occupy, and the largest single part is the critic attribution that `#65`
+ needs.
+
+One correction while measuring this: the same paragraph originally justified
+ caution by saying artifacts "already carry full repaired text", implying that
+ is the bulk. It is not. `repairedText` totals 240 KiB across all 56 artifacts,
+ under 2% of the 15362 KiB; the bulk is the 5453 recorded claims and their
+ quoted spans. The caution was pointing at the wrong thing.
+
+Raised here rather than acted on, on scope rather than on cost. It would change
+ what `#65`, `#72` and `#75` can be answered from, so it belongs in a priority
+ conversation rather than in a commit landed overnight.
 
 ## What still reads nothing
 
