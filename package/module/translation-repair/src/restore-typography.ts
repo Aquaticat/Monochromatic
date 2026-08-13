@@ -80,9 +80,10 @@ function countStraightDoubles({ text, }: { readonly text: string; },): number {
 /**
  * Restores the quote style the replaced text used.
  *
- * Only ever converts straight to curly, and only where the replaced text shows
- * that convention, so a document written with straight quotes throughout is
- * left alone. An apostrophe converts only between word characters; a double
+ * Only ever converts straight to curly, and only where the replaced text or the
+ * surrounding document shows that convention, so a document written with
+ * straight quotes throughout is left alone. An apostrophe converts only between
+ * word characters; a double
  * quote converts only when the replacement's straight doubles are balanced, and
  * then in open-close order, since an odd count means the quote is doing
  * something this rule cannot read.
@@ -92,34 +93,56 @@ function countStraightDoubles({ text, }: { readonly text: string; },): number {
  *
  * @param replacement - text the editor wrote
  *
- * @param replaced - text it replaces, which supplies the convention
+ * @param replaced - text it replaces
  *
- * @returns Replacement with the replaced text's quote style restored
+ * @param convention - wider text whose quote style the replacement should
+ * match, ordinarily the whole document being repaired
+ *
+ * @returns Replacement with the document's quote style restored
  *
  * @example
  * ```ts
- * restoreTypography({ replacement: "didn't", replaced: 'didn\u{2019}t know', },);
+ * restoreTypography({
+ *   replacement: "didn't",
+ *   replaced: 'did not know',
+ *   convention: documentText,
+ * },);
  * ```
  */
 export function restoreTypography(
   {
     replacement,
     replaced,
+    convention,
   }: {
     readonly replacement: string;
     readonly replaced: string;
+    readonly convention: string;
   },
 ): string {
   /**
-   * Whether the replaced text apostrophises with a curly mark.
+   * Whether curly apostrophes are this text's convention.
+   *
+   * Asked of the REPLACED region and of the wider document alike, because the
+   * region alone answers the wrong question. Editor regions run to a median of
+   * 75 characters, so most hold no quote at all, while English prose is full of
+   * apostrophes; a region-only test therefore stays silent exactly when the
+   * editor writes a fresh contraction into a curly-quoted document.
+   *
+   * Measured over 56 settled entries before this was widened: 40 of the 51
+   * whose input carried curly quotes came out worse, 99 curly characters lost
+   * against 163 straight ones gained.
    */
-  const wantsCurlyApostrophe = replaced.includes(CURLY_APOSTROPHE,);
+  const wantsCurlyApostrophe = replaced.includes(CURLY_APOSTROPHE,)
+    || convention.includes(CURLY_APOSTROPHE,);
 
   /**
-   * Whether the replaced text quotes with curly doubles.
+   * Same question for double quotes.
    */
   const wantsCurlyDouble = replaced.includes(CURLY_OPEN_DOUBLE,)
-    || replaced.includes(CURLY_CLOSE_DOUBLE,);
+    || replaced.includes(CURLY_CLOSE_DOUBLE,)
+    || convention.includes(CURLY_OPEN_DOUBLE,)
+    || convention.includes(CURLY_CLOSE_DOUBLE,);
 
   /**
    * Straight doubles in the replacement, which must pair up to be convertible.

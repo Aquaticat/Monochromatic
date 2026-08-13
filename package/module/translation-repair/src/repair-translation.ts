@@ -69,8 +69,12 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * the models are ASKED and a gate changes only what the code does with their
  * answers. Nothing enforces this bump; it was missed once already, on the very
  * commit that added that gate.
+ *
+ * Version 7 is the same lesson applied straight away: widening typography
+ * restoration from the replaced region to the whole document changes the text
+ * that ships, with every prompt and every roster identical.
  */
-const SLICE_CACHE_VERSION = 6;
+const SLICE_CACHE_VERSION = 7;
 
 /**
  * Completion status of one repair run;
