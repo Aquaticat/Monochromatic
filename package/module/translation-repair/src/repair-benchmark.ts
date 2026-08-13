@@ -19,9 +19,17 @@ import {
   type RepairTranslationResult,
 } from './repair-translation.ts';
 import {
+  runDerivabilityProbe,
+  type SeedDerivability,
+} from './derivability-probe.ts';
+import {
   runRestorationJudge,
   type SeedJudgment,
 } from './restoration-judge.ts';
+import {
+  computeRepairScorecard,
+  type RepairScorecard,
+} from './repair-scorecard.ts';
 import { applySeededErrors, } from './seeded-error.ts';
 import type { SyntheticModelId, } from './synthetic-catalog.ts';
 
@@ -100,6 +108,15 @@ export type RepairAttemptRecord = {
   readonly seedJudgments: Readonly<Record<string, SeedJudgment>>;
 
   /**
+   * Whether each planted seed was recoverable from the Chinese at all.
+   *
+   * Judged against the SOURCE and the deletion, never against the repaired
+   * text, so it is independent of what the pipeline did. A seed the source
+   * does not license cannot fairly count against detection.
+   */
+  readonly seedDerivability: Readonly<Record<string, SeedDerivability>>;
+
+  /**
    * Lexical overlap grade per planted seed id;
    * a lower-bound signal kept for comparison, never the headline rate.
    */
@@ -134,235 +151,6 @@ export type RepairAttemptRecord = {
   readonly repairedText?: string;
 };
 
-/**
- * Milestone-two scorecard.
- *
- * @example
- * ```ts
- * const scorecard = computeRepairScorecard({ records, },);
- * ```
- */
-export type RepairScorecard = {
-  /**
-   * Entries dispatched (not skipped).
-   */
-  readonly dispatchedEntries: number;
-
-  /**
-   * Fraction of entries dispatched before the budget cut.
-   */
-  readonly coverage: number;
-
-  /**
-   * Planted seeds across dispatched entries, detection's denominator.
-   */
-  readonly plantedSeeds: number;
-
-  /**
-   * Planted seeds with an accepted issue anchored at their region.
-   */
-  readonly detectedSeeds: number;
-
-  /**
-   * Detection rate: detected over planted;
-   * the gap between this and the repair rate is the editor's share of
-   * every miss.
-   */
-  readonly seedDetectionRate: number;
-
-  /**
-   * Planted seeds the panel saw and declined on protective grounds.
-   *
-   * Not detection failures. The house policy instructs the pipeline never to
-   * restore a suicide method or a drug name and dosage even when the original
-   * states it plainly, while this benchmark plants seeds by deleting published
-   * English and scores restoration. Where the two meet, declining is the
-   * pipeline obeying its own rules, and counting it as a miss would score
-   * correct behavior as failure.
-   */
-  readonly policyDeclinedSeeds: number;
-
-  /**
-   * Detection rate over seeds the pipeline was actually free to repair.
-   *
-   * Published BESIDE {@link RepairScorecard.seedDetectionRate} rather than
-   * replacing it: both are true, and a verdict has to say which one it cites.
-   * They differ only when `policyDeclinedSeeds` is above zero.
-   */
-  readonly seedDetectionRateExcludingPolicy: number;
-
-  /**
-   * Seeds the bilingual judge ensemble reached a quorum verdict on,
-   * the zh-anchored rate's denominator.
-   */
-  readonly judgedSeeds: number;
-
-  /**
-   * Judged seeds ruled fully restored.
-   */
-  readonly restoredSeeds: number;
-
-  /**
-   * Judged seeds ruled partially restored.
-   */
-  readonly partialSeeds: number;
-
-  /**
-   * THE go/no-go number: judge-restored over judged seeds,
-   * anchored on the Chinese source.
-   */
-  readonly seededRepairRate: number;
-
-  /**
-   * Judge-restored-or-partial over judged seeds;
-   * the lenient companion to the strict rate.
-   */
-  readonly seededRepairRateLenient: number;
-
-  /**
-   * Lexical-overlap grade's measurable-seed denominator, for comparison.
-   */
-  readonly lexicalUniverse: number;
-
-  /**
-   * Lexical-overlap seeds graded restored.
-   */
-  readonly lexicalRestoredSeeds: number;
-
-  /**
-   * Lexical-overlap repair rate, the retired grader kept for comparison.
-   */
-  readonly lexicalRepairRate: number;
-
-  /**
-   * Runs per completion status.
-   */
-  readonly statusCounts: Readonly<Record<string, number>>;
-};
-
-/**
- * Aggregates graded repair attempts into the milestone-two scorecard.
- *
- * @param records - graded attempts in run order
- *
- * @returns Scorecard over dispatched attempts with honest coverage
- *
- * @example
- * ```ts
- * const scorecard = computeRepairScorecard({ records, },);
- * ```
- */
-export function computeRepairScorecard(
-  { records, }: { readonly records: readonly RepairAttemptRecord[]; },
-): RepairScorecard {
-  /**
-   * Attempts that actually dispatched.
-   */
-  const dispatched = records.filter(function isDispatched(record,) {
-    return record.outcomeKind !== 'skipped';
-  },);
-
-  /**
-   * Measurable seed grades across dispatched attempts.
-   */
-  const grades = dispatched.flatMap(function toGrades(record,) {
-    return Object
-      .values(record.seedGrades,)
-      .filter(function isMeasurable(grade,) {
-        return grade.measurable;
-      },);
-  },);
-
-  /**
-   * Grades that reached the restoration threshold.
-   */
-  const restored = grades.filter(function isRestored(grade,) {
-    return grade.restored;
-  },);
-
-  /**
-   * Detection verdicts across dispatched attempts.
-   */
-  const detections = dispatched.flatMap(function toDetections(record,) {
-    return Object.values(record.seedDetection,);
-  },);
-
-  /**
-   * Seeds whose region carried an accepted issue.
-   */
-  const detected = detections.filter(function isDetected(verdict,) {
-    return verdict === 'accepted';
-  },);
-
-  /**
-   * Seeds the panel saw and declined on protective grounds, which the house
-   * policy makes correct behavior rather than a miss.
-   */
-  const policyDeclined = detections.filter(function isProtective(verdict,) {
-    return verdict === 'declined-protective';
-  },);
-
-  /**
-   * Seeds the pipeline was free to repair at all.
-   */
-  const repairableSeeds = detections.length - policyDeclined.length;
-
-  /**
-   * Judge verdicts with a quorum ruling across dispatched attempts.
-   */
-  const judgments = dispatched.flatMap(function toJudgments(record,) {
-    return Object
-      .values(record.seedJudgments,)
-      .filter(function isJudged(judgment,) {
-        return judgment.judged;
-      },);
-  },);
-
-  /**
-   * Judged seeds ruled fully restored.
-   */
-  const judgeRestored = judgments.filter(function isRestored(judgment,) {
-    return judgment.verdict === 'restored';
-  },);
-
-  /**
-   * Judged seeds ruled restored or partial.
-   */
-  const judgeLenient = judgments.filter(function isLenient(judgment,) {
-    return (judgment.verdict === 'restored') || (judgment.verdict === 'partial');
-  },);
-
-  /**
-   * Runs per completion status.
-   */
-  const statusCounts: Record<string, number> = {};
-  for (const record of dispatched) {
-    if (record.status === undefined)
-      continue;
-    statusCounts[record.status] = (statusCounts[record.status] ?? 0) + 1;
-  }
-
-  return {
-    dispatchedEntries: dispatched.length,
-    coverage: records.length === 0 ? 1 : dispatched.length / records.length,
-    plantedSeeds: detections.length,
-    detectedSeeds: detected.length,
-    seedDetectionRate: detections.length === 0 ? 0 : detected.length / detections.length,
-    policyDeclinedSeeds: policyDeclined.length,
-    seedDetectionRateExcludingPolicy: repairableSeeds === 0
-      ? 0
-      : detected.length / repairableSeeds,
-    judgedSeeds: judgments.length,
-    restoredSeeds: judgeRestored.length,
-    partialSeeds: judgeLenient.length - judgeRestored.length,
-    seededRepairRate: judgments.length === 0 ? 0 : judgeRestored.length / judgments.length,
-    seededRepairRateLenient: judgments.length === 0 ? 0 : judgeLenient.length / judgments.length,
-    lexicalUniverse: grades.length,
-    lexicalRestoredSeeds: restored.length,
-    lexicalRepairRate: grades.length === 0 ? 0 : restored.length / grades.length,
-    statusCounts,
-  };
-}
 
 /**
  * Whole repair benchmark result.
@@ -431,6 +219,7 @@ export async function runRepairBenchmark(
     runBudgetMs,
     repair = repairTranslation,
     judge = runRestorationJudge,
+    derivability = runDerivabilityProbe,
     judgeModelIds = DEFAULT_JUDGE_MODEL_IDS,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -442,6 +231,7 @@ export async function runRepairBenchmark(
     readonly runBudgetMs?: number;
     readonly repair?: typeof repairTranslation;
     readonly judge?: typeof runRestorationJudge;
+    readonly derivability?: typeof runDerivabilityProbe;
     readonly judgeModelIds?: readonly SyntheticModelId[];
   }>,
 ): Promise<RepairBenchmarkResult> {
@@ -475,6 +265,7 @@ export async function runRepairBenchmark(
         entryId: entry.entryId,
         outcomeKind: 'skipped',
         seedJudgments: {},
+        seedDerivability: {},
         seedGrades: {},
         seedDetection: {},
         issueCount: 0,
@@ -510,6 +301,17 @@ export async function runRepairBenchmark(
         ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
       },);
       /**
+       * Seeds this entry planted, as the judge and probe both address them.
+       */
+      const references = entry.seeds
+        .map(function toReference(seed,) {
+        return {
+          seedId: seed.id,
+          deletedText: seed.needle,
+        };
+      },);
+
+      /**
        * Zh-anchored judge verdicts over this entry's restored seeds.
        */
       const seedJudgments = await judge({
@@ -517,13 +319,26 @@ export async function runRepairBenchmark(
         judgeModelIds,
         sourceText: entry.sourceText,
         repairedText: result.repairedText,
-        references: entry.seeds
-          .map(function toReference(seed,) {
-          return {
-            seedId: seed.id,
-            deletedText: seed.needle,
-          };
-        },),
+        references,
+        signal,
+        perCallTimeoutMs: perCallTimeoutMs ?? DEFAULT_JUDGE_TIMEOUT_MS,
+        l: rl,
+      },);
+
+      /**
+       * Whether each deleted sentence was recoverable from the Chinese at all.
+       *
+       * Asked of the SOURCE and the deletion, never of the repaired text, so
+       * it is independent of whether the pipeline restored anything. A seed the
+       * source does not license cannot fairly count against detection: there is
+       * nothing to notice missing. The scorecard reports it as its own
+       * category rather than folding it into the headline rate.
+       */
+      const seedDerivability = await derivability({
+        client,
+        judgeModelIds,
+        sourceText: entry.sourceText,
+        references,
         signal,
         perCallTimeoutMs: perCallTimeoutMs ?? DEFAULT_JUDGE_TIMEOUT_MS,
         l: rl,
@@ -534,6 +349,7 @@ export async function runRepairBenchmark(
         outcomeKind: 'ok',
         status: result.status,
         seedJudgments,
+        seedDerivability,
         seedGrades: Object.fromEntries(entry.seeds
           .map(function gradeSeed(seed,) {
           return [
@@ -571,6 +387,7 @@ export async function runRepairBenchmark(
         entryId: entry.entryId,
         outcomeKind: 'error',
         seedJudgments: {},
+        seedDerivability: {},
         seedGrades: {},
         seedDetection: {},
         issueCount: 0,

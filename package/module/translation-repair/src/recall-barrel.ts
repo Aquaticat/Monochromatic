@@ -25,14 +25,16 @@ export {
   type SeedRestoration,
 } from './lexical-restoration.ts';
 export {
-  computeRepairScorecard,
   DEFAULT_JUDGE_MODEL_IDS,
   MIN_REPAIR_DISPATCH_BUDGET_MS,
   type RepairAttemptRecord,
   type RepairBenchmarkResult,
-  type RepairScorecard,
   runRepairBenchmark,
 } from './repair-benchmark.ts';
+export {
+  computeRepairScorecard,
+  type RepairScorecard,
+} from './repair-scorecard.ts';
 export {
   buildRestorationJudgeMessages,
   isRestorationJudgeWire,

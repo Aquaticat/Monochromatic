@@ -375,6 +375,19 @@ async function runRecallBenchmark(): Promise<void> {
         + 'working, not recall failing, which is why the excluding-policy rate '
         + 'sits beside the raw one instead of replacing it.',
     );
+
+  // The same reasoning one step further out, and printed ALWAYS rather than
+  // only when nonzero. A zero here is a real reading: it says the probe ran and
+  // found every deleted sentence recoverable from the Chinese. Printing it only
+  // when nonzero would make "the probe never ran" and "nothing was unfair" look
+  // identical, which is the failure this whole run keeps rediscovering.
+  console.log(
+    `DERIVABILITY nonDerivable=${String(scorecard.nonDerivableSeeds,)} `
+    + `detectionExcludingUnfair=${
+      scorecard.seedDetectionRateExcludingUnfair
+        .toFixed(RATE_DECIMALS,)
+    }`,
+  );
   console.log(
     `REPAIR judged=${String(scorecard.judgedSeeds,)} restored=${
       String(scorecard.restoredSeeds,)

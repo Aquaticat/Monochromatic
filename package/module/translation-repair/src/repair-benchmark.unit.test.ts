@@ -179,6 +179,7 @@ await describe({
                 votes: 3,
               },
             },
+            seedDerivability: {},
             seedGrades: {
               'seed/omission-0': {
                 measurable: true,
@@ -218,6 +219,7 @@ await describe({
                 votes: 0,
               },
             },
+            seedDerivability: {},
             seedGrades: {
               'seed/omission-0': {
                 measurable: true,
@@ -235,6 +237,7 @@ await describe({
             entryId: 'shadow',
             outcomeKind: 'skipped',
             seedJudgments: {},
+            seedDerivability: {},
             seedGrades: {},
             seedDetection: {},
             issueCount: 0,
@@ -266,6 +269,147 @@ await describe({
         expect(scorecard.seedDetectionRateExcludingPolicy,).toBe(1,);
         expect(scorecard.statusCounts.repaired,).toBe(1,);
         expect(scorecard.statusCounts.unchanged,).toBe(1,);
+        // Records written before the probe was wired carry no derivability,
+        // and an absent verdict counts as derivable rather than as unfair, so
+        // the fair denominator equals the repairable one here.
+        expect(scorecard.nonDerivableSeeds,).toBe(0,);
+        expect(scorecard.seedDetectionRateExcludingUnfair,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'holds a NOT-DERIVABLE seed out of the fair denominator, since the '
+        + 'benchmark plants seeds by deleting published English and published '
+        + 'English may carry a translator addition the Chinese never stated. '
+        + 'Deleting one leaves a hole no reader of the source could find, so '
+        + 'counting it as a miss scores the pipeline on a question nobody asked',
+      fn: async () => {
+        /**
+         * One entry: two seeds detected, one missed and not derivable.
+         */
+        const records: readonly RepairAttemptRecord[] = [
+          {
+            entryId: 'mittens',
+            outcomeKind: 'ok',
+            status: 'repaired',
+            seedJudgments: {},
+            seedDerivability: {
+              'seed/omission-0': {
+                verdict: 'derivable',
+                judged: true,
+                votes: 3,
+              },
+              'seed/omission-1': {
+                verdict: 'not-derivable',
+                judged: true,
+                votes: 3,
+              },
+            },
+            seedGrades: {},
+            seedDetection: {
+              'seed/omission-0': 'accepted',
+              'seed/omission-1': 'undetected',
+            },
+            issueCount: 1,
+            resolvedIssueCount: 1,
+            detail: '',
+          },
+        ];
+
+        /** Scorecard over the one entry. */
+        const scorecard = computeRepairScorecard({ records, },);
+
+        expect(scorecard.nonDerivableSeeds,).toBe(1,);
+        // Raw rate counts the unfindable seed against detection: 1 of 2.
+        expect(scorecard.seedDetectionRate,).toBe(1 / 2,);
+        // The fair rate does not: 1 of 1.
+        expect(scorecard.seedDetectionRateExcludingUnfair,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'counts a seed that is BOTH policy-declined and not-derivable only '
+        + 'ONCE. Subtracting the two tallies from the total would remove it '
+        + 'twice, shrinking the denominator and making the rate too generous '
+        + 'by exactly the overlap, which is why the two records are joined per '
+        + 'seed id rather than counted separately',
+      fn: async () => {
+        /**
+         * One entry whose second seed is excluded for both reasons at once.
+         */
+        const records: readonly RepairAttemptRecord[] = [
+          {
+            entryId: 'whiskers',
+            outcomeKind: 'ok',
+            status: 'repaired',
+            seedJudgments: {},
+            seedDerivability: {
+              'seed/omission-1': {
+                verdict: 'not-derivable',
+                judged: true,
+                votes: 3,
+              },
+            },
+            seedGrades: {},
+            seedDetection: {
+              'seed/omission-0': 'accepted',
+              'seed/omission-1': 'declined-protective',
+            },
+            issueCount: 1,
+            resolvedIssueCount: 1,
+            detail: '',
+          },
+        ];
+
+        /** Scorecard over the overlapping exclusion. */
+        const scorecard = computeRepairScorecard({ records, },);
+
+        expect(scorecard.policyDeclinedSeeds,).toBe(1,);
+        expect(scorecard.nonDerivableSeeds,).toBe(1,);
+        // One seed remains fair, not zero. Naive subtraction would give
+        // 2 - 1 - 1 = 0 and then a rate of 0 for a run that detected
+        // everything it could.
+        expect(scorecard.seedDetectionRateExcludingUnfair,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'ignores an UNJUDGED not-derivable verdict, so a probe that lost '
+        + 'its quorum cannot excuse a detection miss. An unheard probe and a '
+        + 'probe that found the seed underivable must never read alike',
+      fn: async () => {
+        /**
+         * One entry whose miss carries an unjudged derivability verdict.
+         */
+        const records: readonly RepairAttemptRecord[] = [
+          {
+            entryId: 'shadow',
+            outcomeKind: 'ok',
+            status: 'repaired',
+            seedJudgments: {},
+            seedDerivability: {
+              'seed/omission-1': {
+                verdict: 'not-derivable',
+                judged: false,
+                votes: 0,
+              },
+            },
+            seedGrades: {},
+            seedDetection: {
+              'seed/omission-0': 'accepted',
+              'seed/omission-1': 'undetected',
+            },
+            issueCount: 1,
+            resolvedIssueCount: 1,
+            detail: '',
+          },
+        ];
+
+        /** Scorecard over the unjudged verdict. */
+        const scorecard = computeRepairScorecard({ records, },);
+
+        expect(scorecard.nonDerivableSeeds,).toBe(0,);
+        expect(scorecard.seedDetectionRateExcludingUnfair,).toBe(1 / 2,);
       },
     },),
   ],
