@@ -107,6 +107,69 @@ const FENCE_CLOSE_INNER = `\n${FRONT_MATTER_FENCE}\n`;
 const FENCE_CLOSE_EOF = `\n${FRONT_MATTER_FENCE}`;
 
 /**
+ * The three fence strings for one document's line ending.
+ */
+type FenceSet = {
+  /**
+   * Sequence the document must open with.
+   */
+  readonly open: string;
+
+  /**
+   * Sequence closing front matter when a body follows.
+   */
+  readonly closeInner: string;
+
+  /**
+   * Sequence closing front matter at end of input.
+   */
+  readonly closeEof: string;
+};
+
+/**
+ * Fences matching the line ending this document actually uses.
+ *
+ * The fences were fixed to `\n`, so a document written with CRLF failed
+ * `startsWith` and reported NO front matter at all. One corpus original does
+ * exactly that, and the consequence is not a missing field: the whole YAML
+ * block is then parsed as body, where `---` becomes a thematic break and
+ * `name: Ara` becomes a setext heading. The critics receive the metadata as
+ * content to compare, and the identity context built from front matter is
+ * empty for the one entry whose names most needed declaring.
+ *
+ * Matching rather than rewriting, because every offset downstream indexes the
+ * original text and normalising line endings would move all of them.
+ *
+ * @param text - whole document text
+ *
+ * @returns Fence strings to match with
+ *
+ * @example
+ * ```ts
+ * const fences = fencesFor({ text, },);
+ * ```
+ */
+function fencesFor({ text, }: { readonly text: string; },): FenceSet {
+  /**
+   * Opening fence spelled with a carriage return.
+   */
+  const carriageOpen = `${FRONT_MATTER_FENCE}\r\n`;
+  if (!text.startsWith(carriageOpen,)) {
+    return {
+      open: FENCE_OPEN,
+      closeInner: FENCE_CLOSE_INNER,
+      closeEof: FENCE_CLOSE_EOF,
+    };
+  }
+
+  return {
+    open: carriageOpen,
+    closeInner: `\r\n${FRONT_MATTER_FENCE}\r\n`,
+    closeEof: `\r\n${FRONT_MATTER_FENCE}`,
+  };
+}
+
+/**
  * Parses YAML between fences, converting parser failures into domain errors.
  *
  * @param yamlSource - text between fence lines
@@ -154,10 +217,12 @@ function buildSplit(
     text,
     closeStart,
     rawEnd,
+    openLength,
   }: {
     readonly text: string;
     readonly closeStart: number;
     readonly rawEnd: number;
+    readonly openLength: number;
   },
 ): SplitMdxDocument {
   /**
@@ -165,7 +230,7 @@ function buildSplit(
    */
   const data: unknown = parseFrontMatterYaml({
     yamlSource: text.slice(
-      FENCE_OPEN.length,
+      openLength,
       closeStart,
     ),
   },);
@@ -205,7 +270,11 @@ function buildSplit(
  * ```
  */
 export function splitFrontMatter({ text, }: { readonly text: string; },): SplitMdxDocument {
-  if (!text.startsWith(FENCE_OPEN,))
+  /**
+   * Fences spelled with this document's own line ending.
+   */
+  const fences = fencesFor({ text, },);
+  if (!text.startsWith(fences.open,))
     return {
       body: text,
       bodyOffset: 0,
@@ -215,30 +284,49 @@ export function splitFrontMatter({ text, }: { readonly text: string; },): SplitM
    * Index of newline beginning closing fence sequence; -1 when only EOF close can apply.
    * Search starts at opening fence's newline so empty front matter still terminates.
    */
+  const {
+    open,
+    closeInner,
+    closeEof,
+  } = fences;
+
+  /**
+   * Where the search for a closing fence begins: at the opening fence's own
+   * line break, so empty front matter still terminates.
+   */
+  const searchFrom = open.length - closeInner.indexOf(
+    FRONT_MATTER_FENCE,
+    0,
+  );
+
+  /**
+   * Index of the line break beginning the closing fence; -1 when only an
+   * end-of-input close can apply.
+   */
   const closeStart = text.indexOf(
-    FENCE_CLOSE_INNER,
-    FENCE_OPEN.length - 1,
+    closeInner,
+    searchFrom,
   );
 
   if (closeStart !== (-1)) {
     return buildSplit({
       text,
       closeStart,
-      rawEnd: closeStart + FENCE_CLOSE_INNER.length,
+      rawEnd: closeStart + closeInner.length,
+      openLength: open.length,
     },);
   }
 
   /**
    * Candidate index of newline beginning EOF-terminated closing fence.
    */
-  const eofCloseStart = text.length - FENCE_CLOSE_EOF.length;
-
-  if (text.endsWith(FENCE_CLOSE_EOF,) && (eofCloseStart >= (FENCE_OPEN.length
-    - 1))) {
+  const eofCloseStart = text.length - closeEof.length;
+  if (text.endsWith(closeEof,) && (eofCloseStart >= (open.length - 1))) {
     return buildSplit({
       text,
       closeStart: eofCloseStart,
       rawEnd: text.length,
+      openLength: open.length,
     },);
   }
 

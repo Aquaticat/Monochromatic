@@ -99,3 +99,51 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'splitFrontMatter line endings',
+  children: [
+    it({
+      name: 'reads front matter written with CRLF, which the fixed `\\n` fences '
+        + 'refused outright. One corpus original uses Windows line endings, and '
+        + 'the consequence was not a missing field: the whole YAML block parsed '
+        + 'as BODY, where `---` became a thematic break and `name: Ara` became a '
+        + 'setext heading, so the critics received the metadata as content and '
+        + 'the identity context was empty for that entry',
+      fn: async () => {
+        /**
+         * Same document in both line endings.
+         */
+        const lf = splitFrontMatter({ text: '---\nname: Ara\n---\n\nBody.\n', },);
+
+        /**
+         * Windows-flavoured counterpart.
+         */
+        const crlf = splitFrontMatter({
+          text: '---\r\nname: Ara\r\n---\r\n\r\nBody.\r\n',
+        },);
+
+        expect(lf.frontMatter?.data,).toEqual({ name: 'Ara', },);
+        expect(crlf.frontMatter?.data,).toEqual({ name: 'Ara', },);
+      },
+    },),
+
+    it({
+      name: 'leaves the body starting after the closing fence in both, so the '
+        + 'body offset every later anchor is measured from stays exact',
+      fn: async () => {
+        /**
+         * CRLF document whose body is one paragraph.
+         */
+        const split = splitFrontMatter({
+          text: '---\r\nname: Ara\r\n---\r\n\r\nBody.\r\n',
+        },);
+
+        expect(split.body.trim(),).toBe('Body.',);
+        expect(split.bodyOffset,).toBe(
+          '---\r\nname: Ara\r\n---\r\n'.length,
+        );
+      },
+    },),
+  ],
+},);
