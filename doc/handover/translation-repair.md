@@ -8297,3 +8297,106 @@ Against the two rejected implementations, the previous shipped version and the
     against NEITHER. It guards the transactional property against a
     partial-strip implementation, which neither comparison has. Weaker test,
     recorded as such rather than counted as proof.
+
+## The judge crosscheck has a population, and its control arm survives contact
+
+Session of 2026-08-13, late. `#31` had a design and a seating primitive and no
+ idea whether the run could support the measurement. It can, and enumerating it
+ cost no quota.
+
+### What the enumeration measured
+
+Over the 20 entries settled in `translation-repair-runs-pass13` at the time:
+
+```text
+judgeable claims 371   accepted arm 189   control arm 182
+control by status  rejected 97   needs-human 85
+entries carrying attribution 6 of 20
+join failures 0
+```
+
+Per author, claims proposed and which arms can carry a rate against the
+ provisional `MIN_JUDGED_CLAIMS` floor of 30:
+
+```text
+Kimi-K3          accepted 44  control 26   accepted only
+Nemotron-3-Super accepted 41  control 41   both
+GLM-5.2          accepted 41  control 39   both
+Qwen3.6-27B      accepted 32  control 22   accepted only
+gpt-oss-120b     accepted 21  control 31   control only
+GLM-4.7-Flash    accepted 11  control 23   neither
+```
+
+Run it with
+ `mise run //package/module/translation-repair:score-crosscheck`, and note that
+ the task reads `resolveRunsDir()`, which defaults to
+ `translation-repair-runs`, NOT the current pass. Point it at the right run with
+ `TRANSLATION_REPAIR_RUNS_DIR`. Run bare against the default it reported 56
+ entries, none carrying attribution, and every count zero. That output is not
+ wrong, it is a reading of a different run, and it looks identical to a run
+ with nothing to say.
+
+### Three things the measurement settled that guessing would have got wrong
+
+Rejected claims DO carry proposers. Attribution is collected at the critic
+ stage, and `retainAttributions` in `chunk-critic-phase.ts` only drops claims
+ the deterministic screen killed, never claims the panel later refused. So both
+ arms seat judges by the identical rule and the control needs no fallback. Had
+ it needed one, the control would have been seated from the full roster while
+ the accepted arm was seated from five of six, and the two arms would not have
+ been comparable at all.
+
+Sole authorship covers essentially every claim, 298 of 299 at the first
+ snapshot. That is not critics failing to agree; it is what the claim id is.
+ `computeIssueClaimId` hashes category, severity, summary and every span offset
+ and quoted string, so two critics who spot the same defect in the same words
+ still produce different ids unless their summaries match character for
+ character. The practical consequence is good for seating, since five of six
+ models are free to judge almost anything, and bad for any reading of
+ "corroboration" measured at id level.
+
+Only 6 of 20 entries carry attribution, because it landed partway through the
+ pass. That is why the census covers 371 claims against a far larger issue
+ population, and it will fix itself as entries settle.
+
+### The join key is computed, not stored
+
+The artifact nests claim ids at `issues[].issue.claims[].claimId`, and the
+ issue record itself carries no claim id. An issue GROUPS several claims,
+ because deduplication merges claims naming one defect, and `status` lives on
+ the issue while attribution is per claim. A first attempt joined on
+ `issue.claimId` and `issue.id`, both absent, and reported 0 of 299 attributed
+ claims matching an accepted issue. That reads exactly like a broken pipeline
+ and was a broken query. `QRY` covers this: a search result claims the search
+ ran, and a join result claims the key existed.
+
+### Unattributed claims are two different things and were one number
+
+The first version counted every claim an issue named that attribution did not
+ cover, and reported 1368. Nearly all of those sit on the 14 entries that
+ predate attribution, which is expected absence. A claim missing on an entry
+ that DOES carry attribution is something else entirely: the two records
+ disagreeing about claim identity. Folded into one number, a broken join would
+ have been invisible inside an expected 1368. Split, the join failures read
+ zero, which is now evidence rather than silence.
+
+### What the crosscheck can and cannot establish, restated
+
+It can bar a claim's authors. It cannot bar its adjudicators, because
+ `RUN_MODELS` seats the same six models as critics, panel and judges and the
+ provider serves no seventh. It measures whether a verdict survives being
+ re-asked with the author removed. It is not precision. The report prints that
+ sentence itself, so a reader who never opens this document still gets it.
+
+The accepted arm alone would mean nothing: a roster answering `supported` to
+ everything scores identically to one reading carefully. The finding is the gap
+ between the arms. Whether that gap is confounded, since a claim is in the
+ accepted arm precisely because the panel accepted it, is the open question a
+ sol review is currently chewing on.
+
+### Still open
+
+The judging pass itself. It needs quota, and the corpus pass contends for the
+ same per-model slots, so it waits. `MIN_JUDGED_CLAIMS = 30` is now documented
+ as a provisional guard rather than a calibrated threshold, unlike
+ `LOSS_FRACTION_LIMIT`, which was fitted on 50 human-graded repairs.
