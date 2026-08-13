@@ -48,9 +48,26 @@ Resolved:
 - future severity:
   both disabled rules move directly to `error`.
 
+Resolved after handover creation:
+
+- public rule IDs:
+  `no-readonly-parameter-mutations` and `no-opaque-parameter-effects`;
+- terminology cleanup:
+  eliminate moralized readonly terminology from the complete current readonly domain,
+  including internal discriminants,
+  message IDs,
+  fixtures,
+  tests,
+  documentation,
+  and editable issue #422 comments;
+- policy gap:
+  add an `AGENTS.md` rule requiring neutral operation or evidence terms in diagnostic names and messages.
+
+Historical Git commits remain unchanged.
+Unrelated prose using the ordinary English term outside readonly analysis remains out of scope.
+
 Open decisions:
 
-- exact public rule IDs;
 - whether the existing no-disable policy applies only to the preference rule or later expands to the disabled rules;
 - readiness criteria and acceptance mechanism recorded by the new tracking issue;
 - shared-analysis architecture that prevents three enabled rules from tripling project analysis work.
