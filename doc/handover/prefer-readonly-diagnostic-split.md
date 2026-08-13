@@ -192,15 +192,32 @@ opaque inputs carrying stale contracts now receive both independent diagnostics,
 and invalid host-capability boundaries receive both unresolved-effect and missing-contract diagnostics.
 Those assertions are being updated with rule-ownership checks rather than count-only acceptance.
 
-New coverage in progress:
+Coverage landed in `253fa5841` and follow-up fixes:
 
-- one fixture with exactly one finding owned by each public rule;
-- a projected unresolved capability that must not appear under the mutation rule;
-- direct evidence-cache counters proving one computation plus three hits across four distinct contexts;
-- the existing readonly-to-mutable propagation pair now asserts ownership by
+- one fixture has exactly one finding owned by each public rule;
+- a projected unresolved capability does not appear under the mutation rule;
+- direct evidence-cache counters prove one computation plus three hits across four distinct contexts;
+- the existing readonly-to-mutable propagation pair asserts ownership by
   `no-opaque-parameter-effects`.
 
-Shared configuration remains untouched as required until implementation and verification are otherwise complete.
+Verification completed before the shared configuration edit:
+
+- plugin build passed;
+- plugin type lint passed;
+- complete plugin unit suite passed after the final source edits;
+- `no-restricted-syntax` unit suite passed after neutralizing its no-disable diagnostic;
+- affected Markdown lint passed;
+- package Oxlint reported zero errors and 1,206 warnings after removing warnings introduced by this change.
+  A detached baseline at `49d832467` also reported zero errors and 1,206 warnings,
+  all from the separately introduced workspace `one-var` policy.
+
+The deferred-enforcement tracker is
+[issue #423](https://github.com/Aquaticat/Monochromatic/issues/423).
+It requires direct promotion from `off` to `error`,
+allows reviewed fingerprinted acceptance with stale-entry detection,
+and defers no-disable policy until that mechanism is chosen.
+
+Shared configuration remains untouched as required until implementation and pre-configuration verification are complete.
 
 ## Planned verification
 

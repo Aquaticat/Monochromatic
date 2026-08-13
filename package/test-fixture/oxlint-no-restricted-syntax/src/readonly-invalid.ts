@@ -35,7 +35,7 @@ export function staleMutationContract(controller: AbortController,): AbortSignal
  *
  * @param controller - Readonly projection retaining callable capability.
  */
-export function projectedReadonlyCapabilityCapability(
+export function projectedReadonlyCapability(
   controller: ReadonlyDeep<AbortController>,
 ): AbortSignal {
   return controller.signal;
