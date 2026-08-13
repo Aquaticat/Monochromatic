@@ -173,6 +173,21 @@ The path runs from the critic stage to the artifact. Each entry artifact now
  carries `chunkCritics`: one record per chunk holding `chunkIndex`,
  `heardCriticIds` and `claimAttributions`. `SLICE_CACHE_VERSION` moved to 10.
 
+IT ADDS NO CORPUS TEXT TO THE ARTIFACT, which is worth stating because the
+ boundary matters and someone will ask. `claimAttributions` holds claim-id
+ hashes and model ids; `heardCriticIds` holds model ids. Artifacts already carry
+ corpus text elsewhere and are already gitignored, so the new key changes
+ nothing about how they may be handled.
+
+READERS VERIFIED BEFORE THE FIRST ARTIFACT WAS WRITTEN, not after. A passing
+ test suite proved the WRITERS worked and said nothing about whether consumers
+ accept an unexpected top-level key, because every reader fixture still
+ describes the old shape. Checked on a throwaway copy of four settled artifacts
+ with a realistic `chunkCritics` injected: the draw path built its pools and
+ reconciled `acceptedCount`, and the probe telemetry reader produced its usual
+ figures. Both parsed real numbers out of those artifacts, so neither result is
+ a vacuous pass.
+
 TWO OF THE TRAPS BELOW TURNED OUT MOOT, by construction rather than by luck,
  and that is the argument for this shape:
 
