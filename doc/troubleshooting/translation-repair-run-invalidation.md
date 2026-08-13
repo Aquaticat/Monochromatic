@@ -102,3 +102,37 @@ Restarting rather than continuing follows the standing instruction to land
  certainly-good pipeline changes immediately and restart runs as needed.
 The new pass was confirmed authenticating and doing real work BEFORE the old
  one was stopped, so no window existed with nothing running.
+
+## First artifact under the new code, and what it does and does not show
+
+`pass13` settled `AmbeR_the_anpa` first, and the same entry exists in the
+ 56-entry population, so the two can be put side by side. They are NOT a
+ controlled comparison: the runs differ by many commits, not only by the
+ night's, and this is one entry.
+
+```text
+                     pass13      old run
+  status             repaired    repaired
+  duration           27 min      79 min
+  issues filed       36          53
+  accepted           19          35
+  rejected            6          13
+  needs-human        11           5
+  findings           39          42
+```
+
+What it rules out is useful even at one entry. The finding profile is nearly
+ identical, kind for kind: same `quote-not-found` count, same
+ `refine-candidates`, `refine-selected` and `refine-declined` counts, same
+ editor-stage counts within one. If the night's stricter gates were refusing
+ patches in bulk, the editor and refine findings would move and they did not.
+
+The difference sits UPSTREAM of any patch gate. Fewer claims were filed and a
+ larger share of them landed on `needs-human`, 31% against 9%. That is critic
+ and adjudication behaviour, which the footnote-integrity gate and the
+ typography change do not touch.
+
+Worth watching rather than acting on. If the `needs-human` share stays near a
+ third as `pass13` accumulates, the composition of any sheet drawn from it
+ differs from the sheets drawn so far, and that matters for comparing precision
+ figures across passes.
