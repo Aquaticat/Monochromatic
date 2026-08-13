@@ -185,6 +185,12 @@ Explain uncertainty and every valid remediation path.
 Avoid unexplained implementation terms;
  length is unconstrained.
 
+DNL:
+ Diagnostic names and messages use neutral operation or evidence terms.
+Never characterize code,
+types,
+or authors with moral judgments.
+
 JCH:
  Never use `@mutates` for absent effects.
 Move work to an ownership-known boundary,
