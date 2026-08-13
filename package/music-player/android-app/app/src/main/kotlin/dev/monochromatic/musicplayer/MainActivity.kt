@@ -345,16 +345,6 @@ import androidx.compose.foundation.layout.FlowRow
 // ```
 import androidx.compose.foundation.layout.IntrinsicSize
 
-// What:     `import androidx.compose.foundation.layout.matchParentSize` makes a Box child use
-//           its measured parent's exact size without contributing a second measurement.
-// Why:      LED cap shading layers must cover one content-sized opening.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { matchParentSize } from "androidx/compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.matchParentSize
-
 // What:     `import androidx.compose.foundation.layout.Row` pulls in `Row`, the horizontal
 //           layout composable (places children left to right).
 // Why:      Many UI pieces lay out horizontally in a `Row`.
@@ -3054,7 +3044,7 @@ private fun ledPlateModifier(shape: RoundedCornerShape): Modifier {
 // function ledFaceModifier(selected: boolean, shape: RoundedShape): Modifier { ... }
 // ```
 /** Returns rigid translucent-cap styling for one LED page button state. */
-private fun ledFaceModifier(selected: Boolean, shape: RoundedCornerShape): Modifier {
+private fun BoxScope.ledFaceModifier(selected: Boolean, shape: RoundedCornerShape): Modifier {
     /** Holds purple LED flood or unlit translucent factory pigment. */
     val fill: Color = if (selected) Color(0xFFA63FD0) else Color(0xFFAAAAAA)
     /** Holds radial cap illumination with a steep outer shoulder. */
