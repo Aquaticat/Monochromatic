@@ -1,6 +1,6 @@
 # Hetzner cloud firewall outbound-allowlist operational consequences
 
-This file documents six independent operational consequences of
+This file documents independent operational consequences of
 running with an outbound-allowlist firewall on Hetzner's cloud,
 which was adopted after Hetzner flagged the server for port
 scanning (caused by a Tor relay,
@@ -285,7 +285,6 @@ which unions fresh DNS with `seed_resolved_hosts.json` and a local
 accumulation cache so a moved host keeps its previously-seen IPs.
 Published or broad ranges that do not map to one host (Anthropic,
 Hetzner DNS,
- Syncthing/Oracle,
  Chrome) stay hardcoded as locals.
 
 ### Verified workaround
@@ -668,10 +667,273 @@ balance rules before sending them to hcloud.
 
 ---
 
+## Bug 8: Syncthing package hosts moved outside stale Oracle ranges
+
+### Symptom
+
+On OpenTofu 1.12.5 with hcloud provider 1.60.1,
+the configured outbound firewall does not permit the current
+`apt.syncthing.net` HTTPS endpoints.
+The host resolves normally,
+but a machine behind the five `tofu-*` firewalls cannot reach the
+Syncthing APT repository on TCP 443.
+
+Syncthing's current installation instructions also fetch
+`https://syncthing.net/release-key.gpg` before configuring the APT source,
+so both hostnames belong in the package-installation allowlist.
+The instructions are visible in the `syncthing/apt-web` source at commit
+`0614dbd78df77f62f4f4f1b243db05c08b3e6ee5`,
+`site/index.html:41-49`:
+
+```html
+sudo curl -L -o /etc/apt/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg
+...
+echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable-v2"
+```
+
+### Root cause
+
+Before commit `7fab53e54`,
+`package/config/tofu/hetzner.tf:445-449` represented the repository with
+three static Oracle ranges instead of its hostname:
+
+```hcl
+syncthing_apt_ips = [
+  "141.144.200.0/21", # Oracle Cloud London (where the .net nodes live)
+  "193.122.0.0/17",   # Oracle Cloud Global range often used for their nodes
+  "2603:c022::/32"    # Syncthing IPv6 Range
+]
+```
+
+Those entries flowed through `small_cdn_ips` into `cdn_ips`,
+then each IPv4 destination was widened to a `/12` and each IPv6
+destination to a `/40` at
+`package/config/tofu/hetzner.tf:578-592`:
+
+```hcl
+cdn_ips_v4_greedy = distinct([
+  for ip in local.cdn_ips :
+  cidrsubnet(format("%s/%s", cidrhost(ip, 0), 12), 0, 0)
+  if !strcontains(ip, ":")
+])
+
+cdn_ips_v6_greedy = distinct([
+  for ip in local.cdn_ips :
+  cidrsubnet(format("%s/%s", cidrhost(ip, 0), 40), 0, 0)
+  if strcontains(ip, ":")
+])
+```
+
+`web_out_rules` emits those chunks as outbound TCP and UDP 443 rules at
+`package/config/tofu/hetzner.tf:647-667`:
+
+```hcl
+web_out_rules = flatten([
+  for service in local.web_out : concat(
+    [for i, chunk in local.cdn_ips_v4_chunks : {
+      destination_ips = chunk
+      direction       = "out"
+      port            = service.port
+      protocol        = service.proto
+```
+
+On 2026-08-13,
+three independent DNS resolvers returned `49.12.16.80` and
+`2a01:4f8:c01e:c05::1` for `apt.syncthing.net`.
+WHOIS attributed both to Hetzner AS24940,
+not the hardcoded Oracle ranges.
+The five live `tofu-*` firewalls contained the widened stale ranges
+`141.144.0.0/12`,
+`193.112.0.0/12`,
+and `2603:c022::/40`,
+but contained neither current destination range
+`49.0.0.0/12` nor `2a01:4f8:c000::/40`.
+All five firewalls were attached to the server,
+so a missing attachment did not explain the failure.
+The Tor guard cache also contained neither current endpoint.
+
+This disproved the earlier configuration comment that Syncthing was a
+published broad Oracle range that should stay hardcoded.
+It is a single DNS hostname whose provider and addresses moved.
+
+The hcloud provider cannot retain the hostname itself.
+Provider 1.60.1 validates each `destination_ips` element with
+`validateIPDiag` in
+`internal/firewall/resource.go:123-130`:
+
+```go
+"destination_ips": {
+    Type: schema.TypeSet,
+    Elem: &schema.Schema{
+        Type:             schema.TypeString,
+        ValidateDiagFunc: validateIPDiag,
+        StateFunc:        normalizeIP,
+    },
+```
+
+`internal/firewall/validation.go:18-29` then requires an IP or CIDR:
+
+```go
+ipS := i.(string)
+ip, n, err := net.ParseCIDR(ipS)
+if err != nil {
+    return hcloudutil.ErrorToDiag(err)
+}
+```
+
+The provider sends parsed networks to the API in
+`internal/firewall/resource.go:220-223`:
+
+```go
+for _, destinationIP := range tfRule["destination_ips"].(*schema.Set).List() {
+    _, destination, _ := net.ParseCIDR(destinationIP.(string))
+    rule.DestinationIPs = append(rule.DestinationIPs, *destination)
+}
+```
+
+### Verification
+
+The diagnosis and fix were verified against repository commit
+`7fab53e54bddfca7ea2f3b19313683785a059bcb`,
+OpenTofu 1.12.5,
+hcloud provider 1.60.1,
+and hcloud provider source tag `v1.60.1` at commit
+`96c590b233cf51fb308e7b8eb56b3ef23a81944c`.
+
+#### Failing catalog before the fix
+
+- `apt.syncthing.net` resolved to `49.12.16.80/32` and
+  `2a01:4f8:c01e:c05::1/128`.
+- The firewall's widening transforms those into `49.0.0.0/12` and
+  `2a01:4f8:c000::/40`.
+- Neither widened range existed in local state or the live five-firewall
+  destination union.
+- The configured and live stale ranges did exist.
+
+#### Working catalog before the fix
+
+A positive control proved the probe could detect allowlisted destinations:
+`designsystems.news` resolved to `142.93.187.240/32`,
+which widened to `142.80.0.0/12` and occurred twice in local state for the
+TCP and UDP 443 rules.
+
+#### Passing catalog after the fix
+
+A throwaway worktree plan reported five in-place firewall updates and no
+creation or destruction:
+
+```text
+Plan: 0 to add, 5 to change, 0 to destroy.
+```
+
+Its plan JSON contained all four Syncthing installation ranges:
+
+```text
+185.192.0.0/12        true
+2606:50c0:8000::/40  true
+49.0.0.0/12           true
+2a01:4f8:c000::/40   true
+```
+
+The same plan removed all three stale widened Oracle ranges.
+The package test suite,
+`lint:tofu`,
+and `lint:types` passed in the throwaway worktree:
+
+```bash
+mise run //package/config/tofu:test
+mise run //package/config/tofu:lint:tofu
+mise run //package/config/tofu:lint:types
+```
+
+The full `lint` aggregator did not pass because the current oxlint
+configuration reports 32 pre-existing `eslint(one-var)` warnings in the
+package's TypeScript files.
+The Syncthing change edits only HCL and JSON,
+and the OpenTofu and TypeScript gates passed.
+
+### Verified workaround
+
+Commit `7fab53e54` replaces `syncthing_apt_ips` with
+`syncthing.net` and `apt.syncthing.net` in
+`local.resolvable_hostnames`.
+It also commits current `/32` and `/128` seeds in
+`package/config/tofu/src/seed_resolved_hosts.json`.
+`resolve_hosts.ts` now unions those seeds with fresh DNS and its local
+accumulation cache before the firewall widens and emits the destinations.
+
+Tradeoff:
+the existing greedy policy still widens each resolved endpoint to a `/12`
+or `/40`,
+so this fixes freshness rather than narrowing the outbound surface.
+Previously observed addresses remain accumulated intentionally,
+which favors availability when DNS changes over prompt removal of old
+addresses.
+The change has been committed but is not active until `tofu apply` updates
+the five live firewalls.
+
+### What does not work
+
+- Keeping the Oracle CIDRs:
+  DNS and WHOIS show that the current endpoints moved to Hetzner,
+  and neither current address is inside the old ranges.
+- Updating only the static CIDRs:
+  another provider or address move would reproduce the same drift.
+- Adding only `apt.syncthing.net`:
+  Syncthing's installation instructions fetch the release key from
+  `syncthing.net` first.
+- Relying on a direct curl from the development machine:
+  that traffic does not exercise the remote server's attached cloud
+  firewalls.
+- Passing hostnames to `destination_ips`:
+  hcloud provider 1.60.1 validates and sends only parsed IP networks.
+
+### Upstream filing decision
+
+No `.out-of-scope/` entry covers Syncthing,
+Hetzner,
+hcloud,
+or firewall DNS drift.
+Searches across open and closed `syncthing/syncthing` and
+`syncthing/apt-web` issues and pull requests found no matching report about
+consumer firewall CIDRs drifting after the repository moved.
+`syncthing/apt-web#31` concerned an upstream Kubernetes outage and is not a
+duplicate.
+
+1. **Is it really upstream's fault?** No.
+   Syncthing publishes a stable hostname,
+   and Hetzner accepts the IP/CIDR rules it documents.
+   This repository incorrectly modeled a movable host as static Oracle
+   provider ranges.
+2. **Can upstream fix it?** No upstream change is needed.
+   The consumer must refresh hostname destinations before sending CIDRs to
+   hcloud.
+3. **Are they supporting this use case?** Syncthing supports its APT
+   hostname,
+   and hcloud supports IP/CIDR firewall destinations,
+   but neither promises that Syncthing will remain in one provider's
+   ranges.
+4. **Would the repo welcome our contribution?** `syncthing/apt-web` has no
+   contribution policy or issue template prohibiting outside or
+   AI-assisted reports,
+   but that does not make a consumer configuration bug upstream.
+5. **Will they likely fix it?** Not applicable because no upstream defect
+   was found.
+6. **Have we prototyped a minimal fix compatible with their architecture?**
+   Yes,
+   at the consumer boundary.
+   The OpenTofu plan and package gates verified it without changing either
+   upstream project.
+
+**Nothing to file upstream.**
+There is no additive issue or comment draft because the fault and fix are
+entirely in `package/config/tofu`.
+
+---
+
 ## Why we do not loosen the firewall
 
-Each of the seven sections concludes with a small tradeoff
-acceptable given the original abuse report.
+Each section concludes with a tradeoff acceptable given the original abuse report.
  The blanket "open
 ICMP / open all 443 / open all DNS / open all 445" alternative re-creates the
 exposure that motivated the firewall.
