@@ -178,6 +178,8 @@ so the surviving error proves the charge still propagated.
 
 The patched plugin built successfully.
 `mise run //package/oxlint-plugin/prefer-readonly-parameter-type:lint:types` passed after the build.
+The full unit suite was not run because its current assertions require the already-readonly diagnostic.
+An implementation must update that expectation while retaining the mutable-caller propagation control.
 
 The historical frozen installation was not independently reproducible with the current pnpm.
 `pnpm install --offline --frozen-lockfile --ignore-scripts` emitted
@@ -224,16 +226,12 @@ These are genuine user-code channels.
 They justify withholding a readonly suggestion when effects remain unresolved.
 They do not make an already-readonly preference error actionable.
 
-### Primitive provenance
-
-The `grade-agreement.ts` diagnostic reaches `String(verdict)` from `value: unknown`.
-`isGradeVerdict(verdict)` has already narrowed `verdict` to a string-literal union at that call.
-The diagnostic's own remediation says passing only primitives resolves the boundary,
-but this call already does that.
-
-Call-site type and provenance should discharge an edge when the actual value is proved primitive.
-No caller-owned object identity can cross that edge.
-This precision fix is independent of the rule split.
+The `grade-agreement.ts` finding is a valid example of this uncertainty.
+`String(verdict)` runs inside the branch where `isGradeVerdict(verdict)` returned false,
+so `verdict` remains `unknown` and can be an object carrying conversion hooks.
+An investigation comment initially misread this as the positively narrowed branch;
+[the correction](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286087654)
+withdraws that claim.
 
 ### Host state
 
@@ -252,6 +250,21 @@ The Encoding Standard's built-in `encode(input)` creates and returns a new `Uint
 A caller-supplied value typed `TextEncoder` does not prove that the exact built-in method runs.
 A positive-evidence preference rule should withhold the suggestion at that boundary.
 It should not convert the withholding into an error.
+
+## Accepted policy requiring reconciliation
+
+`doc/audit/tech-prefer-readonly-native-effect-analysis-vet-2026-07-22.md` requires every unresolved effect to be
+derived,
+contained by a verified isolation boundary,
+or reported as opaque.
+Its hard constraints also require fail-closed behavior.
+
+Splitting the diagnostics can preserve that policy when the separate unresolved-effect rule remains enabled at error
+severity in the enforced scope.
+Making that rule optional,
+a warning,
+or disabled would weaken the accepted policy and requires an explicit amendment.
+The rule split itself does not authorize that change.
 
 ## Recommended diagnostic split
 
@@ -347,4 +360,5 @@ The investigation was posted incrementally:
 - [source trace and wording](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5285601690);
 - [external prior art and ranked design](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5285939316);
 - [matched prototype and propagation control](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286022557);
-- [intrinsic and host cause families](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286036647).
+- [intrinsic and host cause families](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286036647);
+- [correction of the `grade-agreement.ts` branch and accepted-policy constraint](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286087654).
