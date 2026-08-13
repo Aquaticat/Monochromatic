@@ -125,8 +125,30 @@ Every one of the four passed the integrity check and shipped, because integrity
 
 This is the whole thesis in one measurement: the pipeline computes a
  deterministic detector for exactly this damage, on every document, and never
- consults it. Had the apply gate asked, all four would have been caught, and
- the graph would have had to be right first, which until 2026-08-13 it was not.
+ consults it.
+
+### What was done about it
+
+`footnoteBreakCount` now joins `downgradeCount` in the candidate integrity
+ gate: a patched chunk may carry no more footnote findings than the chunk it
+ replaced.
+Comparison rather than an absolute count, so a chunk holding a dangling
+ reference the translation arrived with is still repairable.
+
+Two limits, both deliberate and neither hidden:
+
+-   The gate is CHUNK-scoped, like every other measurement beside it, so it
+    sees damage a patch does within one chunk. A definition deleted in one
+    chunk whose reference lives in another passes, because neither chunk's own
+    count rises. `Y1Ran` may be exactly that shape. Catching it needs a
+    document-scoped check, which is not built.
+-   The measurement that found this compared WHOLE documents, so it does not
+    prove each of the four would have been refused by a chunk-scoped gate. It
+    proves the damage is detectable by a detector already running.
+
+Both rest on the graph being right, which until 2026-08-13 it was not: it would
+ have reported ten false breaks on `shihai4h` and could not see a definition
+ inside a container at all.
 
 ## What still reads nothing
 
