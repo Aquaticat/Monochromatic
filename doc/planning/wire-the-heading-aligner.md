@@ -726,3 +726,39 @@ WHAT WOULD CHANGE IT: a larger recall run. Nine entries and 27 seeds is a small
  population, and partials are the rare class within it. If a future run produces
  partials in double figures, the probe starts earning its calls and this
  conclusion should be re-taken rather than inherited.
+
+## The block-count gap re-measured, which `#71` required
+
+`#71` asked for the corpus-wide block-count gap to be re-measured, on the
+ grounds that the figure was computed from the same suspect pairing and so
+ measured alignment quality as much as translation coverage. It matters because
+ `doc/decision/translation-repair-output-goal.md` rests on it.
+
+Measured against the current build over all 92 entries:
+
+```text
+  aligned chunk pairs          284
+  differing in block count     103   (36%)
+
+  the decision record cites     60 of 172   (35%)
+
+  XingZ60, the only mispairing entry, contributes 12 of the 103
+  excluding it                  91 of 271   (34%)
+```
+
+THE DECISION'S EVIDENCE SURVIVES. The rate is 36% against the recorded 35%, and
+ removing the mispaired entry entirely leaves 34%. The absolute counts differ
+ only because the record measured 56 settled entries and this measures all 92.
+
+TWO OF ITS THREE CITED EXTREMES ARE ARTIFACTS, and one is not. The record cites
+ `XingZ60 76 against 5` and `XingZ60 62 against 1`, both of which come from the
+ entry whose pairing slides, so those specific numbers describe the defect
+ rather than the corpus. `XIEPT2 24 against 1` comes from an entry that pairs
+ CORRECTLY, so it is genuine evidence of a barely-translated section.
+
+That is the useful distinction: the phenomenon the decision was taken about is
+ real and survives independently of the aligner defect, while two of the
+ headline numbers illustrating it should be replaced with ones from correctly
+ paired entries when that record is next touched.
+
+`XIEPT2` alone supplies three: 24 against 1, 18 against 1, and 18 against 2.
