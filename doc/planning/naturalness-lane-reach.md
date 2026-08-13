@@ -190,12 +190,16 @@ What this leaves for the decision, now that the roster is three:
 -   Every reach and damage figure drawn from the 56-entry population still
     understates the lane, since a twelfth of its entries were refined on no
     voices at all. Numbers taken from `pass13` onward will not have that.
--   The cause is worth naming, because the model is still on the roster. Every
-    schema-mismatch voice loss `pass13` has recorded is Kimi-K3, across the
-    editor, critic, panel and refiner stages. The one non-Kimi loss is GLM-5.2
-    exceeding its exchange deadline, a different mechanism. Schema mismatch is
-    the same failure family as the channel-marker defect fixed at the parser
-    earlier, so that fix did not close all of it. Tracked as `#75`.
+-   The cause is worth naming, because the model is still on the roster.
+    Kimi-K3 accounts for the large majority of schema-mismatch voice losses in
+    `pass13`, across the editor, critic, panel and refiner stages, with
+    GLM-4.7-Flash contributing a small remainder and GLM-5.2 losing voices to a
+    separate mechanism, its exchange deadline. Schema mismatch is the same
+    failure family as the channel-marker defect fixed at the parser earlier, so
+    that fix did not close all of it. Live counts and the split by mechanism
+    are in `#75`; they are deliberately not repeated here, because this is an
+    accumulating dataset and a number copied into prose goes stale within the
+    hour.
 -   THE LANE ITSELF IS HEALTHY NOW, which is the part that bears on this
     decision. `refine-stage.ts` retries to a FULL roster rather than to quorum,
     and at 3 settled entries every one of the 13 `refine-candidates` findings
