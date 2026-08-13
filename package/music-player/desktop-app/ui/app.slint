@@ -224,7 +224,6 @@ component ChromiumTab inherits Rectangle {
     in property <bool> selected;
     in property <bool> show-divider;
     callback clicked();
-    private property <color> backplate-color: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
     private property <color> active-color: Palette.color-scheme == ColorScheme.dark ? #383838 : #f8fafd;
     private property <color> outline-color: Palette.color-scheme == ColorScheme.dark ? #626262 : #aeb0b4;
     private property <color> ink-color: Palette.color-scheme == ColorScheme.dark ? #ededeb : #202124;

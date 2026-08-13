@@ -273,6 +273,16 @@ import androidx.compose.foundation.layout.Arrangement
 // ```
 import androidx.compose.foundation.layout.Box
 
+// What:     `import androidx.compose.foundation.layout.BoxScope` exposes child alignment
+//           modifiers inside a `Box`.
+// Why:      Extracted Chromium tab decoration still aligns to its owning tab box.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { BoxScope } from "androidx/compose/foundation/layout";
+// ```
+import androidx.compose.foundation.layout.BoxScope
+
 // What:     `import androidx.compose.foundation.layout.Column` pulls in `Column`, the
 //           vertical layout composable (stacks children top to bottom).
 // Why:      Several screens lay their content out in a `Column`.
@@ -667,6 +677,16 @@ import androidx.compose.ui.draw.clip
 // import { Color } from "androidx/compose/ui/graphics";
 // ```
 import androidx.compose.ui.graphics.Color
+
+// What:     `import androidx.compose.foundation.shape.GenericShape` creates a shape from
+//           measured path commands.
+// Why:      Chromium tabs need curved shoulders that rounded rectangles cannot express.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { GenericShape } from "androidx/compose/foundation/shape";
+// ```
+import androidx.compose.foundation.shape.GenericShape
 
 // What:     `import androidx.compose.foundation.shape.RoundedCornerShape` creates a shape
 //           whose four corners use the supplied radius.
@@ -2570,8 +2590,91 @@ private fun md1PageTab(label: String, selected: Boolean, onSelect: () -> Unit) {
     }
 }
 
+// What:     `ChromiumTabColors` groups measured browser-tab colors.
+// Why:      Active contour colors stay consistent while the backplate follows the page.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ChromiumTabColors = {
+//   active: Color;
+//   outline: Color;
+//   ink: Color;
+// };
+// ```
+/** Holds colors used by Chromium-like page tabs. */
+private data class ChromiumTabColors(
+    /** Fills selected tab contour. */
+    val active: Color,
+    /** Draws selected contour and inactive separators. */
+    val outline: Color,
+    /** Draws tab labels. */
+    val ink: Color,
+)
+
+// What:     `chromiumTabColors` selects measured dark or light contour colors.
+// Why:      Chromium geometry needs contrast without painting inactive-tab backgrounds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function chromiumTabColors(): ChromiumTabColors { ... }
+// ```
+/** Returns Chromium-like colors for current system appearance. */
+@Composable
+private fun chromiumTabColors(): ChromiumTabColors {
+    /** Records current system appearance for reference-matched colors. */
+    val dark: Boolean = isSystemInDarkTheme()
+    /** Holds selected tab fill measured from dark reference or Chromium light equivalent. */
+    val active: Color = if (dark) Color(0xFF383838) else Color(0xFFF8FAFD)
+    /** Holds selected contour measured from dark reference or Chromium light equivalent. */
+    val outline: Color = if (dark) Color(0xFF626262) else Color(0xFFAEB0B4)
+    return ChromiumTabColors(
+        active = active,
+        outline = outline,
+        ink = MaterialTheme.colorScheme.onBackground,
+    )
+}
+
+// What:     `chromiumTabShape` traces Chromium's rounded top and outward shoulders.
+// Why:      Rounded rectangles cannot reproduce the concave transition into the tab strip.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function chromiumTabShape(): Shape { ... }
+// ```
+/** Returns content-width Chromium-like selected-tab silhouette. */
+private fun chromiumTabShape(): GenericShape = GenericShape { size, _ ->
+    /** Holds measured shoulder width relative to 50dp tab height. */
+    val shoulder: Float = size.height * 12f / 50f
+    /** Holds measured upper-corner radius relative to 50dp tab height. */
+    val radius: Float = size.height * 10f / 50f
+    /** Holds right-side edge before outward shoulder. */
+    val rightEdge: Float = size.width - shoulder
+    moveTo(0f, size.height)
+    cubicTo(
+        shoulder / 2f,
+        size.height,
+        shoulder,
+        size.height - shoulder / 2f,
+        shoulder,
+        size.height - shoulder,
+    )
+    lineTo(shoulder, radius)
+    cubicTo(shoulder, radius / 2f, shoulder + radius / 2f, 0f, shoulder + radius, 0f)
+    lineTo(rightEdge - radius, 0f)
+    cubicTo(rightEdge - radius / 2f, 0f, rightEdge, radius / 2f, rightEdge, radius)
+    lineTo(rightEdge, size.height - shoulder)
+    cubicTo(
+        rightEdge,
+        size.height - shoulder / 2f,
+        size.width - shoulder / 2f,
+        size.height,
+        size.width,
+        size.height,
+    )
+}
+
 // What:     `ChromiumPageTabOptions` groups inputs for one browser-style tab.
-// Why:      The tab function receives one named options boundary instead of positional values.
+// Why:      Tab function receives one named options boundary instead of positional values.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -2594,8 +2697,76 @@ private data class ChromiumPageTabOptions(
     val onSelect: () -> Unit,
 )
 
-// What:     `chromiumPageTab` renders one content-width browser-style tab.
-// Why:      Selected pages need the raised, rounded-upper-corner silhouette in the reference.
+// What:     `ChromiumPageTabPresentation` groups state with measured colors.
+// Why:      Extracted tab decoration receives one named rendering boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type ChromiumPageTabPresentation = {
+//   options: ChromiumPageTabOptions;
+//   colors: ChromiumTabColors;
+// };
+// ```
+/** Holds all values needed to paint Chromium tab contents. */
+private data class ChromiumPageTabPresentation(
+    /** Holds tab state and selection behavior. */
+    val options: ChromiumPageTabOptions,
+    /** Holds appearance-aware contour colors. */
+    val colors: ChromiumTabColors,
+)
+
+// What:     `chromiumPageTabContent` paints label, baseline, and separator.
+// Why:      Geometry and inner decoration remain independently readable and lint-sized.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function ChromiumPageTabContent(presentation: ChromiumPageTabPresentation) { ... }
+// ```
+/** Paints inner decoration for one Chromium-like tab. */
+@Composable
+private fun BoxScope.chromiumPageTabContent(presentation: ChromiumPageTabPresentation) {
+    /** Holds tab state for concise decoration bindings. */
+    val options: ChromiumPageTabOptions = presentation.options
+    /** Holds measured colors for concise decoration bindings. */
+    val colors: ChromiumTabColors = presentation.colors
+    Text(
+        text = options.label,
+        color = colors.ink,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(horizontal = 24.dp),
+    )
+    if (options.selected) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(colors.active),
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(colors.outline.copy(alpha = 0.55f)),
+        )
+    }
+    if (!options.selected && options.showDivider) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(1.dp)
+                .height(24.dp)
+                .background(colors.outline.copy(alpha = 0.55f)),
+        )
+    }
+}
+
+// What:     `chromiumPageTab` renders one measured browser-style tab.
+// Why:      Selected page needs Chromium's outlined top contour and outward shoulders.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -2604,46 +2775,42 @@ private data class ChromiumPageTabOptions(
 /** Displays one selectable Chromium-like page tab. */
 @Composable
 private fun chromiumPageTab(options: ChromiumPageTabOptions) {
-    /** Holds upper-rounded and lower-square active-tab corners. */
-    val tabShape: RoundedCornerShape = RoundedCornerShape(
-        topStart = 16.dp,
-        topEnd = 16.dp,
-        bottomEnd = 0.dp,
-        bottomStart = 0.dp,
-    )
-    /** Holds raised active-tab fill or transparent inactive fill. */
-    val containerColor: Color = if (options.selected) {
-        MaterialTheme.colorScheme.surfaceVariant
+    /** Holds measured dark or light Chromium colors. */
+    val colors: ChromiumTabColors = chromiumTabColors()
+    /** Holds curved selected-tab silhouette. */
+    val tabShape: GenericShape = chromiumTabShape()
+    /** Paints active contour while leaving inactive tabs on parent background. */
+    val stateModifier: Modifier = if (options.selected) {
+        Modifier
+            .clip(tabShape)
+            .background(colors.active)
+            .border(1.5.dp, colors.outline, tabShape)
     } else {
-        Color.Transparent
+        Modifier
     }
     Box(
-        contentAlignment = Alignment.Center,
         modifier = Modifier
             .width(IntrinsicSize.Max)
-            .defaultMinSize(minHeight = 48.dp)
-            .clip(tabShape)
-            .background(containerColor)
-            .selectable(
-                selected = options.selected,
-                role = Role.Tab,
-                onClick = options.onSelect,
-            ),
+            .height(58.dp),
     ) {
-        Text(
-            text = options.label,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
-        if (!options.selected && options.showDivider) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(1.dp)
-                    .height(24.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant),
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .width(IntrinsicSize.Max)
+                .height(50.dp)
+                .then(stateModifier)
+                .selectable(
+                    selected = options.selected,
+                    role = Role.Tab,
+                    onClick = options.onSelect,
+                ),
+        ) {
+            chromiumPageTabContent(
+                ChromiumPageTabPresentation(
+                    options = options,
+                    colors = colors,
+                ),
             )
         }
     }
