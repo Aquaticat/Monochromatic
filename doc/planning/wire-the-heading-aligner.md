@@ -1480,3 +1480,30 @@ Under `doc/decision/translation-repair-always-yields-output.md`, `XIEPT2` still
 The concern was worth raising and the answer was worth measuring: had disjoint
  heading vocabularies been common rather than singular, the same change would
  have quietly emptied a large part of the corpus.
+
+## The block-count gap, recomputed on the corrected pairing
+
+Measured 2026-08-13 on the shipped aligner, over all 92 entries carrying both
+ sides:
+
+```text
+  pairs whose source and target block counts differ    85 of 275   30.9%
+```
+
+NOT DIRECTLY COMPARABLE with the earlier 60 of 172, and saying so matters more
+ than the number. Those denominators describe different populations: 172 pairs
+ came from a smaller settled set under the old proportional pairing, while 275
+ come from every corpus entry under forced pairing. Reading a drop from 34.9% to
+ 30.9% out of them would be comparing two different questions.
+
+What can be said is narrower and sounder. On pairings the aligner committed to
+ only when they were forced, roughly three in ten pairs still differ in block
+ count. That is now a statement about translation coverage rather than about
+ alignment, which is what `#69` and `#70` needed and what the old figure could
+ not provide.
+
+ONE BIAS TO CARRY FORWARD: this population is self-selected toward confident
+ pairings, because ambiguous sections are refused rather than paired. If
+ ambiguity correlates with uneven coverage, and it plausibly does, the true gap
+ is somewhat higher than 30.9%. A comparable figure would restrict both
+ measurements to the same entries.
