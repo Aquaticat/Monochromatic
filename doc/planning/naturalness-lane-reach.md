@@ -201,9 +201,17 @@ What this leaves for the decision, now that the roster is three:
     and at 3 settled entries every one of the 13 `refine-candidates` findings
     reports `3/3 heard`, with no `stage-quorum-unmet` for any stage. Kimi-K3
     lost the refiner voice three times and was retried back each time. So the
-    losses cost an extra call, not a narrower ensemble, and the reach figures a
-    future pass produces will not carry the silent-lane deficit the 56-entry
-    population does.
+    reach figures a future pass produces will not carry the silent-lane deficit
+    the 56-entry population does.
+-   That recovery does NOT generalize to every stage, and the difference is the
+    retry target rather than the model. The critic stage retries only to
+    quorum, so a voice lost after quorum is already met is never recovered: at
+    3 settled entries it finished `5/6 heard` five times against `6/6` twenty
+    times, with zero critic retries fired, matching its five losses exactly
+    (four Kimi-K3 mismatches and one GLM-5.2 timeout). A fifth of critic calls
+    therefore ran one voice short. Whether that costs claims is not measured
+    here, but the critic stage is where claims are found, so it is a coverage
+    question rather than a capacity one. Tracked in `#75`.
 
 So the open question is no longer whether the lane survives a lost voice. It is
  whether one model losing its voice this often is acceptable on rosters where it
