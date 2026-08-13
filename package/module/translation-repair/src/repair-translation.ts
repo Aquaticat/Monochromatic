@@ -100,8 +100,13 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * remove, and would have spent the editor's budget on them, so the two cannot
  * be mixed within one entry. Ratified in
  * `doc/decision/translation-repair-duplicate-issue-emission.md`.
+ *
+ * Version 12 is behaviour again: the preservation gate now runs inside
+ * `applyPatchOperations` and rejects an operation that drops content no
+ * accepted issue quoted. A slice resumed from version 11 carries text an edit
+ * the gate would now refuse already changed, so the two cannot be mixed.
  */
-const SLICE_CACHE_VERSION = 11;
+const SLICE_CACHE_VERSION = 12;
 
 /**
  * Completion status of one repair run;

@@ -367,5 +367,46 @@ await describe({
         },).toThrow(EnvelopeOverlapError,);
       },
     },),
+
+    it({
+      name: 'REJECTS an operation that deletes a name no issue quoted, which is '
+        + 'the whole point of wiring the preservation check here: the check '
+        + 'existed and gated nothing, and a gate with no test at the call site '
+        + 'is the failure this codebase keeps repeating',
+      fn: async () => {
+        /**
+         * Envelope whose text carries a contributor name.
+         */
+        const envelope = {
+          envelopeId: 'envelope/credit',
+          startOffset: 0,
+          endOffset: 46,
+          baseText: 'Contributor for this entry: Whiskers - Archive',
+          baseHash: hashContent({ content: 'Contributor for this entry: Whiskers - Archive', },),
+          issueIds: ['issue/colon',],
+        };
+
+        /**
+         * Edit that fixes nothing quoted and drops the name.
+         */
+        const outcome = applyPatchOperations({
+          targetText: 'Contributor for this entry: Whiskers - Archive',
+          envelopes: [envelope,],
+          operations: [{
+            envelopeId: 'envelope/credit',
+            baseHash: envelope.baseHash,
+            newText: 'Contributor for this entry: Archive',
+          },],
+          preservation: {
+            mode: 'enforce',
+            licensedQuotes: new Map([['envelope/credit', ['Contributor for this entry:',],],],),
+          },
+        },);
+
+        expect(outcome.rejected,).toHaveLength(1,);
+        expect(outcome.rejected[0]?.reason,).toContain('preservation-lost-distinctive',);
+        expect(outcome.patchedText,).toBe('Contributor for this entry: Whiskers - Archive',);
+      },
+    },),
   ],
 },);
