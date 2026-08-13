@@ -240,3 +240,48 @@ So the honest statement is: the acceptance rate fell 11 points, the fall is
  concentrated in the class where false positives are most likely, and that is
  weak evidence for improvement rather than regression. Weak evidence is still
  better than the "unknown" this section started with.
+
+## What one pass actually covers, and when `pass13` will stop
+
+A pass is bounded by wall time, not by the corpus. `corpus-pass.ts` carries a
+ SOFT budget of 720 minutes, at which it stops STARTING entries and logs
+ `SOFT budget reached`, and a HARD per-entry cap of 180 minutes. The in-flight
+ entry when the soft budget hits runs on to its own ceiling, so a run ends
+ somewhat after twelve hours rather than exactly at it.
+
+Projected from `pass13`'s own rate:
+
+```text
+  soft budget        720 min
+  elapsed            415 min at 10 settled
+  rate                42 min per entry
+  remaining          305 min  ->  about 7 more entries
+
+  projected total    about 17 of 92 = 18% coverage in ONE run
+  runs for the corpus  about 6 at this rate
+```
+
+So `pass13` will settle roughly 17 entries and stop. That is the design working
+ rather than a fault: slice-level resumability means a capped entry resumes in
+ the next run, and `listResumableEntries` prefers in-flight documents, so
+ successive runs accumulate coverage rather than restarting it. The 56-entry
+ population was built the same way.
+
+Worth stating because "a corpus pass" reads like it covers the corpus. It does
+ not, and a reader expecting 92 settled entries from `pass13` would conclude
+ something had gone wrong when it stops near 17.
+
+## The timeout batching is already documented, and this run reproduces it
+
+`RUN_EXCHANGE_TIMEOUT_MS` carries a note that timeouts "arrive in correlated
+ batches, about five per retry round", explained by the provider slowing every
+ concurrent call together under load rather than by hangs.
+
+`pass13` reproduces exactly that. Its GLM-5.2 deadline timeouts went 1, then 3,
+ then 9 across the early entries, which read like a growing problem, and then
+ added ONE across the next two entries while schema mismatches added twelve.
+Throughput improved over the same stretch, from 46 to 42 minutes per entry.
+
+A batch during congestion, then quiet. The existing note predicted the shape
+ before it was observed, which is worth knowing before treating a timeout
+ cluster as a new signal.
