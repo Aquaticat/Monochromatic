@@ -207,9 +207,9 @@ await describe({
     },),
 
     it({
-      name: 'never shows a prober the accepted issues of a region it is not '
-        + 'being asked about, which is what keeps one region\'s prior defects '
-        + 'from reading as another\'s',
+      name: 'sends no pre-existing defect list at all by default, which is what '
+        + 'stopped the stage answering the same way whether or not damage was '
+        + 'present, while still sending both texts the prober has to compare',
       fn: async () => {
         /** Sheets the stage sent. */
         const prompts: string[] = [];
@@ -228,9 +228,38 @@ await describe({
 
         /** Single sheet the one prober received. */
         const sheet = prompts[0] ?? '';
-        expect(sheet.includes('(none recorded)',),).toBe(true,);
+        expect(sheet.includes('PRE-EXISTING',),).toBe(false,);
+        expect(sheet.includes('(none recorded)',),).toBe(false,);
         expect(sheet.includes(REGION.editorAfter,),).toBe(true,);
         expect(sheet.includes(REGION.before,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'still renders the list on request, and still shows a prober only '
+        + 'the accepted issues of the region it is being asked about, which is '
+        + 'what keeps one region\'s prior defects from reading as another\'s',
+      fn: async () => {
+        /** Sheets the stage sent. */
+        const prompts: string[] = [];
+
+        await runIntroducedDefectProbe({
+          client: catClient({ prompts, },),
+          proberModelIds: ['hf:Qwen/Qwen3.6-27B',],
+          sourceText: '猫在睡觉。',
+          baselineText: REGION.before,
+          regions: [REGION,],
+          issues: [],
+          disclosure: 'rendered',
+          signal: new AbortController().signal,
+          perCallTimeoutMs: 1_000,
+          l,
+        },);
+
+        /** Single sheet the one prober received. */
+        const sheet = prompts[0] ?? '';
+        expect(sheet.includes('PRE-EXISTING',),).toBe(true,);
+        expect(sheet.includes('(none recorded)',),).toBe(true,);
       },
     },),
   ],

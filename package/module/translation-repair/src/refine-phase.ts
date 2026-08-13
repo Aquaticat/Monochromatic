@@ -243,6 +243,11 @@ export async function runRefinePhase(
       ],
       issues: outcome.issues,
       editKind: 'naturalness-refinement',
+      // Withheld for the same reason the accuracy stage withholds, and with
+      // more force here: this lane rewrites text whose accepted issues were
+      // ALREADY repaired, so listing them describes defects that are no longer
+      // present and excuses damage to wording that was correct.
+      disclosure: 'withheld',
       signal,
       perCallTimeoutMs,
       l,

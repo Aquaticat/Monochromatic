@@ -8,6 +8,7 @@ import {
   type IntroducedDefectCheckWire,
   INTRODUCED_DEFECT_RESPONSE_FORMAT,
   isIntroducedDefectReportWire,
+  type PriorIssueDisclosure,
   type ProbedEditKind,
 } from './introduced-defect-wire.ts';
 import {
@@ -107,6 +108,7 @@ export async function runIntroducedDefectProbe(
     regions,
     issues,
     editKind = 'accuracy-repair',
+    disclosure = 'withheld',
     signal,
     perCallTimeoutMs,
     l,
@@ -118,6 +120,7 @@ export async function runIntroducedDefectProbe(
     readonly regions: readonly RepairRegion[];
     readonly issues: readonly AdjudicatedIssue[];
     readonly editKind?: ProbedEditKind;
+    readonly disclosure?: PriorIssueDisclosure;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -135,6 +138,7 @@ export async function runIntroducedDefectProbe(
     regions,
     issues,
     editKind,
+    disclosure,
   },);
 
   /**
@@ -175,6 +179,7 @@ export async function runIntroducedDefectProbe(
   const screened = screenIntroducedDefects({
     regions,
     ballots,
+    issues,
   },);
 
   /**
@@ -190,6 +195,7 @@ export async function runIntroducedDefectProbe(
         removalCorroborated: running.removalCorroborated + tally.removalCorroborated,
         contradicted: running.contradicted + tally.contradicted,
         unanchored: running.unanchored + tally.unanchored,
+        preExisting: running.preExisting + tally.preExisting,
         noneFound: running.noneFound + tally.noneFound,
         uncertain: running.uncertain + tally.uncertain,
       };
@@ -199,6 +205,7 @@ export async function runIntroducedDefectProbe(
       removalCorroborated: 0,
       contradicted: 0,
       unanchored: 0,
+      preExisting: 0,
       noneFound: 0,
       uncertain: 0,
     },
@@ -217,6 +224,8 @@ export async function runIntroducedDefectProbe(
     } dropped-content corroborated, ${
       String(totals.contradicted,)
     } contradicted by the baseline, ${String(totals.unanchored,)} unanchored, ${
+      String(totals.preExisting,)
+    } restating an accepted issue, ${
       String(totals.noneFound,)
     } found nothing, ${String(totals.uncertain,)} declined`,
   );

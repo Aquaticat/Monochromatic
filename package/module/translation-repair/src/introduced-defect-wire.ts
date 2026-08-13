@@ -211,6 +211,28 @@ export type IntroducedDefectPromptPlan = {
 };
 
 /**
+ * Whether a prober is shown the accepted issues its region was cut for.
+ *
+ * `rendered` was the only behaviour until it was measured. Listing the issues
+ * and forbidding a prober from re-reporting them silenced the stage: across 45
+ * verdicts on regions a reader called damaged it raised 2 admissible claims,
+ * and the same regions with the list withheld raised 18. It answered
+ * undamaged regions the same way, 0.033 against 0.044, so its output barely
+ * depended on its input.
+ *
+ * `withheld` moves that defence to `introduced-defect-screen.ts`, which
+ * dismisses a claim quoting wording an accepted issue already complained
+ * about. The prober then reads the text without being told what to excuse, and
+ * the excusing happens where it can be checked.
+ *
+ * @example
+ * ```ts
+ * const disclosure: PriorIssueDisclosure = 'withheld';
+ * ```
+ */
+export type PriorIssueDisclosure = 'rendered' | 'withheld';
+
+/**
  * Renders the pre-existing issues a region was cut for, so a prober can
  * recognise and discount them.
  *
@@ -287,12 +309,14 @@ export function buildIntroducedDefectMessages(
     regions,
     issues,
     editKind = 'accuracy-repair',
+    disclosure = 'rendered',
   }: {
     readonly sourceText: string;
     readonly baselineText: string;
     readonly regions: readonly RepairRegion[];
     readonly issues: readonly AdjudicatedIssue[];
     readonly editKind?: ProbedEditKind;
+    readonly disclosure?: PriorIssueDisclosure;
   },
 ): IntroducedDefectPromptPlan {
   /**
@@ -324,12 +348,16 @@ export function buildIntroducedDefectMessages(
     region,
     index,
   ) {
-    return `${fence} REGION ${index + 1} ${fence}
+    return `${fence} REGION ${index + 1} ${fence}${
+      disclosure === 'rendered'
+        ? `
 PRE-EXISTING DEFECTS THIS EDIT TARGETED (these are NOT your findings):
 ${renderPriorIssues({
-      region,
-      issues,
-    },)}
+          region,
+          issues,
+        },)}`
+        : ''
+    }
 ${fence} BEFORE ${String(index + 1,)} ${fence}
 ${region.before}
 ${fence} AFTER ${String(index + 1,)} ${fence}

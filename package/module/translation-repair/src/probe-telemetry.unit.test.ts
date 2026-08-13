@@ -117,6 +117,7 @@ function catTally(
     removalCorroborated,
     contradicted,
     unanchored: 0,
+    preExisting: 0,
     noneFound: 0,
     uncertain: 0,
     claims: claims ?? [

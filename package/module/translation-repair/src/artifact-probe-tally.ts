@@ -31,6 +31,7 @@ const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
   'removal-corroborated',
   'contradicted',
   'unanchored',
+  'pre-existing',
 ];
 
 /**
@@ -152,6 +153,7 @@ const ADMISSIBILITY_FIELDS: Readonly<Record<string, ClaimAdmissibility>> = {
   removalCorroborated: 'removal-corroborated',
   contradicted: 'contradicted',
   unanchored: 'unanchored',
+  preExisting: 'pre-existing',
 };
 
 /**
@@ -226,6 +228,14 @@ export function parseRegionTally(
     removalCorroborated: countAt('removalCorroborated',),
     contradicted: countAt('contradicted',),
     unanchored: countAt('unanchored',),
+    // Read tolerantly, unlike every other count. This outcome did not exist
+    // when the settled artifacts were written, and `requireCount` refuses an
+    // absent field, so demanding it would make every earlier artifact
+    // unreadable by the same reader that has to keep scoring them. Zero is the
+    // honest default rather than a convenience: those runs rendered the
+    // accepted issues into the prompt, so no claim could be dismissed as
+    // restating one.
+    preExisting: tally.preExisting === undefined ? 0 : countAt('preExisting',),
   };
 
   // The screen DERIVES each count from the claim list, so the two are one fact

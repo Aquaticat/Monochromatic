@@ -52,6 +52,7 @@ function catTally(
     removalCorroborated: 0,
     contradicted: 0,
     unanchored: 0,
+    preExisting: 0,
     noneFound: 3,
     uncertain: 0,
     claims: [],

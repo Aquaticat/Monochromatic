@@ -303,6 +303,10 @@ export async function repairChunk(
     baselineText: targetText,
     regions: repairRegions,
     issues: acceptedIssues,
+    // Withheld on purpose: rendering the accepted issues into the prompt was
+    // measured to silence this stage, and `introduced-defect-screen.ts` now
+    // dismisses a claim that merely restates one.
+    disclosure: 'withheld',
     signal,
     perCallTimeoutMs,
     l,

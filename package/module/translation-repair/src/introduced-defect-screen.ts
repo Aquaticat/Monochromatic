@@ -1,3 +1,4 @@
+import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import {
   type IntroducedDefectCheckWire,
@@ -28,7 +29,8 @@ export type ClaimAdmissibility =
   | 'corroborated'
   | 'removal-corroborated'
   | 'contradicted'
-  | 'unanchored';
+  | 'unanchored'
+  | 'pre-existing';
 
 /**
  * One prober claim of introduced damage, after screening.
@@ -124,6 +126,19 @@ export type RegionDefectTally = {
    * nothing to check them against.
    */
   readonly unanchored: number;
+
+  /**
+   * Claims quoting wording an accepted issue already complained about, so the
+   * prober is re-reporting the defect the region was cut for rather than
+   * damage the edit caused.
+   *
+   * Counted apart from every other outcome because it is the only one that
+   * says the claim is about the WRONG THING rather than wrong. Folding it into
+   * `contradicted` would say the differential refuted the claim, which it did
+   * not, and folding it into a damage count would credit the probe for finding
+   * the defect it was told to ignore.
+   */
+  readonly preExisting: number;
 
   /**
    * Probers that looked and reported no introduced defect.
@@ -248,6 +263,126 @@ export function screenEvidence(
 }
 
 /**
+ * Target-side wording every accepted issue a region serves complained about.
+ *
+ * Read from the claims' own evidence rather than from the region, because the
+ * region records what was REPLACED and an issue records what was WRONG, and a
+ * replacement is routinely wider than any single complaint it answers.
+ *
+ * @param region - region whose served issues are collected
+ *
+ * @param issues - accepted issues of the chunk
+ *
+ * @returns Flattened target-side quotes, empty strings dropped
+ *
+ * @example
+ * ```ts
+ * const quotes = collectPriorQuotes({ region, issues, },);
+ * ```
+ */
+function collectPriorQuotes(
+  {
+    region,
+    issues,
+  }: {
+    readonly region: RepairRegion;
+    readonly issues: readonly AdjudicatedIssue[];
+  },
+): readonly string[] {
+  return issues
+    .filter(function isServed(issue,) {
+      return region.issueIds
+        .includes(issue.issueId,);
+    },)
+    .flatMap(function toQuotes(issue,) {
+      return issue.claims
+        .flatMap(function toSpans(member,) {
+          return member.claim
+            .spans
+            .filter(function isTargetSide(span,) {
+              return span.side === 'target';
+            },)
+            .map(function toText(span,) {
+              return flattenSpace({ text: span.quotedText, },);
+            },);
+        },);
+    },)
+    .filter(function isUsable(quote,) {
+      return quote !== '';
+    },);
+}
+
+/**
+ * Whether an anchored verdict would otherwise count as damage the edit caused.
+ *
+ * The pre-existing check only ever DOWNGRADES a claim that survived the
+ * differential. A contradicted claim has already been refuted mechanically, by
+ * the stronger fact that its wording was present before the edit, and an
+ * unanchored one quotes nothing checkable; relabelling either would replace a
+ * precise verdict with a vaguer one.
+ *
+ * @param anchored - what the differential made of the claim
+ *
+ * @returns Whether the verdict is one the pre-existing check may replace
+ *
+ * @example
+ * ```ts
+ * const replaceable = countsAsDamage({ anchored: 'removal-corroborated', },);
+ * ```
+ */
+function countsAsDamage(
+  { anchored, }: { readonly anchored: ClaimAdmissibility; },
+): boolean {
+  return (anchored === 'corroborated') || (anchored === 'removal-corroborated');
+}
+
+/**
+ * Decides whether a claim is pointing at a defect that was already reported.
+ *
+ * This is the defence the PROMPT used to provide by listing the accepted issues
+ * and forbidding a prober from re-reporting them. Listing them measurably
+ * silenced the stage: with the list shown the probe raised 2 admissible claims
+ * across 45 verdicts on regions a reader called damaged, and with it withheld,
+ * 18. Moving the same defence here keeps it while letting the prober look at
+ * the text without being told what to excuse, which is the split
+ * `screenNonTranslationVotes` already set as precedent: deterministic evidence
+ * dismisses a claim rather than a prompt preventing it.
+ *
+ * Containment is checked BOTH ways because the two quotes are cut by different
+ * parties. A critic quotes the phrase it objected to, and a prober quotes as
+ * much of the surrounding wording as it thinks damaged, so neither is reliably
+ * the longer one.
+ *
+ * @param quoted - wording the claim anchors on, already flattened
+ *
+ * @param priorQuotes - flattened target-side quotes of the served issues
+ *
+ * @returns Whether the claim restates an accepted issue
+ *
+ * @example
+ * ```ts
+ * const known = restatesPriorIssue({ quoted, priorQuotes, },);
+ * ```
+ */
+function restatesPriorIssue(
+  {
+    quoted,
+    priorQuotes,
+  }: {
+    readonly quoted: string;
+    readonly priorQuotes: readonly string[];
+  },
+): boolean {
+  if (quoted === '')
+    return false;
+
+  return priorQuotes
+    .some(function overlaps(prior,) {
+      return prior.includes(quoted,) || quoted.includes(prior,);
+    },);
+}
+
+/**
  * Counts screened claims sharing one admissibility.
  *
  * @param claims - screened claims of one region
@@ -299,15 +434,24 @@ export function screenIntroducedDefects(
   {
     regions,
     ballots,
+    issues = [],
   }: {
     readonly regions: readonly RepairRegion[];
     readonly ballots: Readonly<Record<string, readonly IntroducedDefectCheckWire[]>>;
+    readonly issues?: readonly AdjudicatedIssue[];
   },
 ): readonly RegionDefectTally[] {
   return regions.map(function toTally(
     region,
     index,
   ): RegionDefectTally {
+    /**
+     * Wording the accepted issues of this region already complained about.
+     */
+    const priorQuotes = collectPriorQuotes({
+      region,
+      issues,
+    },);
     /**
      * Every check cast on this region, paired with its prober.
      */
@@ -343,6 +487,32 @@ export function screenIntroducedDefects(
           === 'introduced-defect';
       },)
       .map(function toClaim(entry,): ScreenedDefectClaim {
+        /**
+         * What the differential makes of this claim's anchors.
+         */
+        const anchored = screenEvidence({
+          evidence: entry.check
+            .evidence,
+          omittedText: entry.check
+            .omittedText,
+          region,
+        },);
+
+        /**
+         * Both anchors as the prober wrote them.
+         */
+        const {
+          evidence,
+          omittedText,
+        } = entry.check;
+
+        /**
+         * Wording the claim anchors on, from whichever side it quoted.
+         */
+        const quoted = flattenSpace({
+          text: omittedText === '' ? evidence : omittedText,
+        },);
+
         return {
           modelId: entry.modelId,
           category: entry.check
@@ -355,13 +525,13 @@ export function screenIntroducedDefects(
             .omittedText,
           reason: entry.check
             .reason,
-          admissibility: screenEvidence({
-            evidence: entry.check
-              .evidence,
-            omittedText: entry.check
-              .omittedText,
-            region,
-          },),
+          admissibility: countsAsDamage({ anchored, },)
+              && restatesPriorIssue({
+                quoted,
+                priorQuotes,
+              },)
+            ? 'pre-existing'
+            : anchored,
         };
       },);
 
@@ -383,6 +553,10 @@ export function screenIntroducedDefects(
       unanchored: countAdmissibility({
         claims,
         wanted: 'unanchored',
+      },),
+      preExisting: countAdmissibility({
+        claims,
+        wanted: 'pre-existing',
       },),
       noneFound: cast.filter(function foundNone(entry,) {
         return entry.check
