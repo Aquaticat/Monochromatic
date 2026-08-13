@@ -69,10 +69,6 @@ export {
   maskHtmlComments,
 } from './mask-html-comments.ts';
 export {
-  type AlignmentStep,
-  alignHeadings,
-} from './align-sections-order.ts';
-export {
   headingAffinity,
   latinTokens,
 } from './heading-affinity.ts';
