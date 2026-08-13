@@ -7807,54 +7807,63 @@ Asking whether a built feature FIRES caught typography restoration in the
 Supersedes the earlier "Four decisions waiting" list, which is now incomplete.
 Ordered by how much else is blocked behind each.
 
-Amended later the same day, after two items moved:
+REWRITTEN at the end of the stretch rather than amended again. Three
+ amendments had stacked on this list and two of its items had gone false, which
+ is the same accretion this session diagnosed elsewhere. What follows is the
+ current state, not a history of it.
 
--   `#73`, the naturalness refiner going silent on 7 entries, is CLOSED. It was
-    already fixed before it was found: `eb21ffa6b` on 2026-08-12 took the lane
-    from one refiner to three, so a single lost voice no longer empties the
-    stage. What misled the investigation was a stale comment in
-    `run-config.ts`, since corrected. This removes the reliability objection
-    raised against decision 3 below.
--   `#75` is NEW and needs no decision yet. Kimi-K3 accounts for every
-    schema-mismatch voice loss `pass13` has recorded, on rosters where it both
-    edits and refines. The next step is free and specific: capture debug output
-    on the next pass restart to read which of the three schema-mismatch
-    sub-kinds it is. Only then does keeping or replacing the model become a
-    question worth putting to anyone.
+### 1. What an unpaired source section is for (`#70`, blocks `#71`)
 
-### 1. What an unpaired source section is for (`#70`, blocks `#71` and `#74`)
+Sized, and smaller than it reads. There are three unpaired sections at this
+ pin, and one is a seven-character `(To-Do)` placeholder with no body that
+ needs no decision at all. That leaves TWO genuinely untranslated sections, 915
+ and 1459 characters, BOTH IN ONE ENTRY. So this is a policy for one document's
+ trailing pair, not for the corpus.
 
-A section the translation genuinely lacks needs a destination. An empty target
- produces the unrepairable 915-characters-against-nothing shape; skipping
- contradicts the decided output goal.
+The 915-character one opens with an HTML disclosure block rather than prose, so
+ whichever policy is chosen has to survive markup.
 
-This now blocks TWO landings rather than one, which raises its value: both
- options for the aligner produce explicitly unpaired sections, so neither can
- land until this is answered. `doc/planning/translation-pipeline-redesign.md`
- and `doc/planning/wire-the-heading-aligner.md`.
+Still the highest-value decision, because the aligner fix cannot land without
+ it. `doc/planning/translation-pipeline-redesign.md` and
+ `doc/planning/wire-the-heading-aligner.md`.
 
-### 2. Whether to wire the two unwired features (`#74`)
+### 2. Naturalness lane reach: does changing line structure count as damage
 
-The heading aligner and the derivability probe were both built, tested,
- committed and never connected. The aligner is ranked B > C > A and is blocked
- by decision 1. The derivability probe is not blocked by anything: wiring it
- would let recall stop charging the pipeline for restorations of sentences that
- were never derivable from the source.
-`doc/planning/wire-the-heading-aligner.md`.
+Ranked B > C > A, with two things that moved since the ranking was written.
 
-### 3. Line structure: does changing it count as damage (`#72` and the naturalness lane)
+The reliability objection to B is GONE: `#73` closed, because the refiner is a
+ three-model stage since `eb21ffa6b` and `pass13` confirms every invocation at
+ full roster.
 
-This also now governs two changes rather than one. Admitting soft-wrapped
- paragraphs into the naturalness lane triples its reach; admitting
- wrap-spanning quotes into anchoring recovers discarded critic claims. Both
- replace several lines with one, and nothing measures whether that is harm.
-Ranked B > C > A. `doc/planning/naturalness-lane-reach.md`.
+The line-structure cost is now measured rather than abstract: admitting the 620
+ blocks removes 1329 line breaks and turns paragraphs of median 3 lines into
+ single lines of median 212 characters, p90 413, max 1063. That WEAKENS B over
+ C, because B's argument rests on the corpus wrapping inconsistently and inside
+ these blocks it does not (median line 65, p90 130).
+
+It governs ONE change now, not two. `#72` closed, so wrap-spanning quotes are
+ no longer part of this question. `doc/planning/naturalness-lane-reach.md`.
+
+### 3. Whether the critic stage should retry to a full roster (from `#75`)
+
+New, and separable from everything else. The editor and refiner retry lost
+ voices until the roster is whole; the critic retries only to quorum, so a
+ voice lost after quorum is met is never recovered. At 7 settled entries that
+ is 18.6% of critic invocations running one voice short, permanently, on the
+ stage where claims are DETECTED.
+
+Cost of fixing it, measured: about 3% more critic calls. The exposure is
+ measured; the harm is not, and measuring it needs a paired run.
 
 ### 4. Which unit precision is denominated in (`#65`)
 
 Issue or envelope. 570 of 2650 accepted issues share a span with another, but
  every duplicate pair shares one repair envelope, so the harm is counting
  rather than wasted work. Ranked C > B > A.
+
+One half of it CANNOT be answered from existing data: whether a duplicate is
+ independent corroboration depends on the two copies coming from different
+ critics, and artifacts do not record which critic raised a claim.
 `doc/planning/duplicate-accepted-issues.md`.
 
 ### 5. The damage sheet still wants human grading (`#66`, then `#68`)
