@@ -42,6 +42,7 @@ Rules, strictly enforced by a machine:
 - The ORIGINAL's own language is never such a phrase: render it fully into the TRANSLATION's language as usual, including inside quotations and stylized multilingual lines. Only the genuinely foreign phrase keeps its own wording.
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
+- When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.`;
 
 /**

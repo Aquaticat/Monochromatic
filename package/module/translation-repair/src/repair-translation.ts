@@ -106,7 +106,7 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * accepted issue quoted. A slice resumed from version 11 carries text an edit
  * the gate would now refuse already changed, so the two cannot be mixed.
  */
-const SLICE_CACHE_VERSION = 13;
+const SLICE_CACHE_VERSION = 14;
 
 /**
  * Completion status of one repair run;
