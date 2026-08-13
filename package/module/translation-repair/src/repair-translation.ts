@@ -132,8 +132,16 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  * lost voice is least distinguishable from a clean result. Every producer of
  * findings is now consumed except `derivability-probe.ts`, which is reached
  * only by the recall benchmark and writes into no per-entry artifact.
+ *
+ * Version 21 widens what the naturalness lane may touch. Eligibility excluded
+ * every paragraph containing a newline, which rejected soft source wraps along
+ * with authored line breaks; it now excludes only the latter. Measured over the
+ * 92 entries at the pinned corpus commit, 811 of 2067 prose paragraphs carry an
+ * internal newline and 29 carry a hard break, so a version-20 slice was refined
+ * over a small fraction of the prose the lane could have reached. Those cached
+ * slices hold text the current lane would have been free to rewrite.
  */
-const SLICE_CACHE_VERSION = 20;
+const SLICE_CACHE_VERSION = 21;
 
 /**
  * Completion status of one repair run;

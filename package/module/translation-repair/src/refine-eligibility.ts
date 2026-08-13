@@ -7,10 +7,18 @@ import type { RepairDocument, } from './parse-document.ts';
 // This is an ELIGIBILITY FILTER and deliberately not called a verse detector.
 // Nothing in the parsed model identifies poetry: an mdast `break`, a soft
 // source wrap inside a node's text, and an HTML or MDX `<br>` are three
-// different things and none of them means verse. The filter is tuned to admit
-// only ordinary single-line prose, which means single-line poetry still passes
-// it and correctly wrapped prose is still skipped. That asymmetry is acceptable
-// for a filter and would be dishonest for a detector.
+// different things and none of them means verse. Single-line poetry still
+// passes this filter, which is the asymmetry that makes it honest as a filter
+// and dishonest as a detector.
+//
+// It once excluded EVERY paragraph containing a newline, which collapsed the
+// very distinction the paragraph above draws: a soft wrap renders as a space
+// and carries no authored structure, while a hard break does. Measured over
+// the 92 entries at the pinned corpus commit, 811 of 2067 prose paragraphs
+// carry an internal newline and only 29 carry a hard break, so that rule
+// discarded 782 ordinary wrapped paragraphs to protect 29, and the lane
+// reported zero eligible paragraphs on 175 chunks of the run. It now excludes
+// authored line structure only.
 //
 // Everything here reads the REPAIRED slice, never the original target. Accuracy
 // edits shift offsets and can change block structure, so eligibility computed
@@ -71,13 +79,13 @@ const MARKUP_MARKERS = [
  *
  * @example
  * ```ts
- * const reason: IneligibleReason = 'multi-line';
+ * const reason: IneligibleReason = 'hard-break';
  * ```
  */
 export type IneligibleReason =
   | 'not-a-paragraph'
   | 'not-body-zone'
-  | 'multi-line'
+  | 'hard-break'
   | 'carries-markup'
   | 'too-short'
   | 'too-long'
@@ -146,6 +154,53 @@ function skipped(
 }
 
 /**
+ * Whether a paragraph's line breaks are AUTHORED rather than incidental.
+ *
+ * The distinction this draws is the one the module header names and the code
+ * previously collapsed. A soft source wrap inside a paragraph is insignificant
+ * whitespace that renders as a space, so rewriting across it changes nothing a
+ * reader sees. A hard break is authored line structure, which is what verse
+ * uses and what a rewrite must never flatten.
+ *
+ * Markdown spells a hard break two ways: a line ending in two or more spaces,
+ * or a line ending in a backslash. An HTML `<br>` is a third, and it needs no
+ * check here because `MARKUP_MARKERS` already excludes any paragraph
+ * containing `<`.
+ *
+ * MEASURED before changing the rule, over the 92 entries at the pinned corpus
+ * commit: 811 of 2067 prose paragraphs carry an internal newline, and 29 of
+ * those carry a hard break. Rejecting every multi-line paragraph therefore
+ * discarded 782 ordinary wrapped paragraphs to protect 29, which is why the
+ * lane reported zero eligible paragraphs on 175 chunks.
+ *
+ * A linear scan rather than a pattern, since the rule is positional (does THIS
+ * line, which is not the last, end in a break marker) and reads plainly as a
+ * loop.
+ *
+ * @param text - paragraph source text, offsets intact
+ *
+ * @returns Whether any non-final line ends in a hard-break marker
+ *
+ * @example
+ * ```ts
+ * const authored = carriesHardBreak({ text: node.text, },);
+ * ```
+ */
+function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
+  /**
+   * Source lines; only the breaks BETWEEN them can be hard, so the last line
+   * is never examined.
+   */
+  const lines = text.split('\n',);
+
+  return lines
+    .slice(0, -1,)
+    .some(function endsInBreak(line,): boolean {
+      return line.endsWith('  ',) || line.endsWith('\\',);
+    },);
+}
+
+/**
  * Judges one block against every eligibility rule, reporting the first that
  * excluded it.
  *
@@ -188,11 +243,10 @@ function judgeParagraph(
       node,
       reason: 'parse-degraded',
     },);
-  if (node.text
-    .includes('\n',))
+  if (carriesHardBreak({ text: node.text, },))
     return skipped({
       node,
-      reason: 'multi-line',
+      reason: 'hard-break',
     },);
   if (MARKUP_MARKERS.some(function present(marker,) {
     return node.text

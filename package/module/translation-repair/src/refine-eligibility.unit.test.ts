@@ -79,15 +79,55 @@ await describe({
     },),
 
     it({
-      name: 'skips a wrapped paragraph, accepting that correctly wrapped prose '
-        + 'is lost rather than risking verse read as prose',
+      name: 'ADMITS a soft-wrapped paragraph, because a source wrap renders as '
+        + 'a space and carries no authored structure. 811 of 2067 prose '
+        + 'paragraphs at the pinned corpus commit carry an internal newline '
+        + 'and only 29 carry a hard break, so refusing them all cost 782 '
+        + 'ordinary paragraphs to protect 29',
       fn: async () => {
         /** The same prose broken across two physical lines. */
         const wrapped = LONG_PROSE.replace(
           ', and when',
           ',\nand when',
         );
-        expect(firstReason(wrapped,),).toBe('multi-line',);
+        expect(firstReason(wrapped,),).toBe('eligible',);
+      },
+    },),
+
+    it({
+      name: 'skips a paragraph whose line ends in two spaces, which is Markdown '
+        + 'for an AUTHORED break and is what verse uses. This is the case the '
+        + 'newline rule was really protecting, and the only one it needed to',
+      fn: async () => {
+        /** The same prose with a hard break where the wrap was. */
+        const broken = LONG_PROSE.replace(
+          ', and when',
+          ',  \nand when',
+        );
+        expect(firstReason(broken,),).toBe('hard-break',);
+      },
+    },),
+
+    it({
+      name: 'skips a paragraph whose line ends in a backslash, the other '
+        + 'Markdown spelling of a hard break, so the rule does not depend on '
+        + 'which spelling an author reached for',
+      fn: async () => {
+        /** The same prose using the backslash spelling. */
+        const broken = LONG_PROSE.replace(
+          ', and when',
+          ',\\\nand when',
+        );
+        expect(firstReason(broken,),).toBe('hard-break',);
+      },
+    },),
+
+    it({
+      name: 'does not read a TRAILING hard-break marker as authored structure, '
+        + 'since a break after the last line separates the paragraph from what '
+        + 'follows rather than dividing it',
+      fn: async () => {
+        expect(firstReason(`${LONG_PROSE}  `,),).toBe('eligible',);
       },
     },),
 
